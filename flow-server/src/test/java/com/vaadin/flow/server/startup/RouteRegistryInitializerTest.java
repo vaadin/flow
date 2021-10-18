@@ -18,6 +18,7 @@ package com.vaadin.flow.server.startup;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 
+import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -60,6 +61,7 @@ import com.vaadin.flow.router.RouteAliasData;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouteParameterRegex;
+import com.vaadin.flow.router.RoutePathProvider;
 import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RouterTest.FileNotFound;
@@ -71,6 +73,7 @@ import com.vaadin.flow.router.internal.PathUtil;
 import com.vaadin.flow.server.InitialPageSettings;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
+import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.PageConfigurator;
 import com.vaadin.flow.server.VaadinServletContext;
 
@@ -84,9 +87,11 @@ public class RouteRegistryInitializerTest {
     private ServletContext servletContext;
     private VaadinServletContext vaadinContext;
     private Lookup lookup;
+    private RoutePathProvider pathProvider;
 
     @Before
     public void init() {
+        pathProvider = Mockito.mock(RoutePathProvider.class);
         routeRegistryInitializer = new RouteRegistryInitializer();
         registry = new TestRouteRegistry();
         servletContext = Mockito.mock(ServletContext.class);
@@ -101,6 +106,15 @@ public class RouteRegistryInitializerTest {
                 .thenReturn(
                         new ApplicationRouteRegistry.ApplicationRouteRegistryWrapper(
                                 registry));
+
+        Mockito.when(lookup.lookup(RoutePathProvider.class))
+                .thenReturn(pathProvider);
+
+        Mockito.doAnswer(invocation -> {
+            Class clazz = invocation.getArgument(0, Class.class);
+            Annotation route = clazz.getAnnotation(Route.class);
+            return ((Route) route).value()[0];
+        }).when(pathProvider).getRoutePath(Mockito.any());
     }
 
     @Rule
@@ -1591,6 +1605,10 @@ public class RouteRegistryInitializerTest {
         boolean cleanCalled;
 
         boolean removeCalled;
+
+        TestApplicationRouteRegistry() {
+            super(new MockVaadinContext());
+        }
 
         @Override
         public void clean() {

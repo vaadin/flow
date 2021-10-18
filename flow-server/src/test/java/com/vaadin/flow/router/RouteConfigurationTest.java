@@ -21,9 +21,11 @@ import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.MockServletContext;
+import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.SessionRouteRegistry;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletContext;
@@ -43,7 +45,7 @@ public class RouteConfigurationTest {
     @Before
     public void init() {
         servletContext = new MockServletContext();
-        vaadinContext = new VaadinServletContext(servletContext);
+        vaadinContext = new MockVaadinContext(servletContext);
         registry = ApplicationRouteRegistry.getInstance(vaadinContext);
 
         vaadinService = Mockito.mock(MockService.class);
@@ -437,8 +439,7 @@ public class RouteConfigurationTest {
 
     @Test
     public void setRoutes_allExpectedRoutesAreSet() {
-
-        RouteRegistry registry = Mockito.mock(RouteRegistry.class);
+        RouteRegistry registry = mockRegistry();
         RouteConfiguration routeConfiguration = RouteConfiguration
                 .forRegistry(registry);
 
@@ -472,7 +473,7 @@ public class RouteConfigurationTest {
 
     @Test
     public void registeredRouteWithAlias_allPathsAreRegistered() {
-        RouteRegistry registry = Mockito.mock(RouteRegistry.class);
+        RouteRegistry registry = mockRegistry();
         RouteConfiguration routeConfiguration = RouteConfiguration
                 .forRegistry(registry);
 
@@ -491,7 +492,7 @@ public class RouteConfigurationTest {
 
     @Test
     public void routeWithParent_parentsAreCollectedCorrectly() {
-        RouteRegistry registry = Mockito.mock(RouteRegistry.class);
+        RouteRegistry registry = mockRegistry();
         RouteConfiguration routeConfiguration = RouteConfiguration
                 .forRegistry(registry);
 
@@ -525,6 +526,13 @@ public class RouteConfigurationTest {
         } catch (InterruptedException e) {
             Assert.fail();
         }
+    }
+
+    private RouteRegistry mockRegistry() {
+        RouteRegistry registry = Mockito.mock(RouteRegistry.class);
+        VaadinContext context = new MockVaadinContext();
+        Mockito.when(registry.getContext()).thenReturn(context);
+        return registry;
     }
 
     @Tag("div")

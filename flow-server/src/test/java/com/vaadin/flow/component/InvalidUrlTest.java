@@ -15,28 +15,30 @@
  */
 package com.vaadin.flow.component;
 
-import static org.junit.Assert.assertEquals;
-
 import java.util.Arrays;
-
-import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.flow.router.RouteConfiguration;
-import com.vaadin.flow.server.BootstrapHandlerTest;
-import com.vaadin.flow.server.InvalidRouteConfigurationException;
-import com.vaadin.flow.server.MockVaadinServletService;
-import com.vaadin.flow.server.MockVaadinSession;
-import com.vaadin.flow.server.ServiceException;
-import com.vaadin.flow.server.VaadinResponse;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServletRequest;
-import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.router.RouteConfiguration;
+import com.vaadin.flow.server.BootstrapHandlerTest;
+import com.vaadin.flow.server.InvalidRouteConfigurationException;
+import com.vaadin.flow.server.MockVaadinContext;
+import com.vaadin.flow.server.MockVaadinServletService;
+import com.vaadin.flow.server.MockVaadinSession;
+import com.vaadin.flow.server.ServiceException;
+import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServletRequest;
+import com.vaadin.tests.util.AlwaysLockedVaadinSession;
+
+import static org.junit.Assert.assertEquals;
 
 public class InvalidUrlTest {
 
@@ -74,7 +76,12 @@ public class InvalidUrlTest {
         }
         Mockito.when(request.getPathInfo()).thenReturn(pathInfo);
 
-        VaadinService service = new MockVaadinServletService();
+        VaadinService service = new MockVaadinServletService() {
+            @Override
+            public VaadinContext getContext() {
+                return new MockVaadinContext();
+            }
+        };
         service.setCurrentInstances(request, response);
 
         MockVaadinSession session = new AlwaysLockedVaadinSession(service);

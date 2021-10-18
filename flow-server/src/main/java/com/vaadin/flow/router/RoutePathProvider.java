@@ -15,24 +15,25 @@
  */
 package com.vaadin.flow.router;
 
-import com.vaadin.flow.server.MockVaadinContext;
-import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
-
 /**
- * Route registry with a public constructor for testing purposes.
- *
+ * Allows to implement a custom navigation target path generation logic for
+ * components annotated with {@code @Route(Route.NAMING_CONVENTION)}.
+ * 
  * @author Vaadin Ltd
- * @since 1.0
+ * @since
+ *
  */
-public class TestRouteRegistry extends ApplicationRouteRegistry {
-    /**
-     * Creates a new test route registry.
-     */
-    public TestRouteRegistry() {
-        super(new MockVaadinContext(new DefaultRoutePathProvider()));
-    }
+@FunctionalInterface
+public interface RoutePathProvider {
 
-    public TestRouteRegistry(RoutePathProvider provider) {
-        super(new MockVaadinContext(provider));
-    }
+    /**
+     * Produces a path for the {@code navigationTarget} component class.
+     * 
+     * @param navigationTarget
+     *            a navigation target class
+     * @return a route path for the navigation target, may be {@code null} if
+     *         the provided class is not a navigation target
+     */
+    String getRoutePath(Class<?> navigationTarget);
+
 }

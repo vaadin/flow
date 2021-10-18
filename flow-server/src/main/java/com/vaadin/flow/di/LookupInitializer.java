@@ -41,6 +41,8 @@ import org.apache.commons.io.IOUtils;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.function.VaadinApplicationInitializationBootstrap;
 import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.router.DefaultRoutePathProvider;
+import com.vaadin.flow.router.RoutePathProvider;
 import com.vaadin.flow.server.StaticFileHandler;
 import com.vaadin.flow.server.StaticFileHandlerFactory;
 import com.vaadin.flow.server.StaticFileServer;
@@ -276,6 +278,8 @@ public class LookupInitializer implements AbstractLookupInitializer {
                 DefaultApplicationConfigurationFactory.class);
         ensureService(services, StaticFileHandlerFactory.class,
                 StaticFileHandlerFactoryImpl.class);
+        ensureService(services, RoutePathProvider.class,
+                DefaultRoutePathProvider.class);
         bootstrap.bootstrap(createLookup(context, services));
     }
 

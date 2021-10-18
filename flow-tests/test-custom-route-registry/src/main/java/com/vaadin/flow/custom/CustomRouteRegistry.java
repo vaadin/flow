@@ -43,6 +43,12 @@ import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 public class CustomRouteRegistry extends AbstractRouteRegistry
         implements ErrorRouteRegistry {
 
+    private final VaadinContext context;
+
+    private CustomRouteRegistry(VaadinContext context) {
+        this.context = context;
+    }
+
     public static CustomRouteRegistry getInstance(VaadinContext context) {
         assert context != null;
 
@@ -51,7 +57,8 @@ public class CustomRouteRegistry extends AbstractRouteRegistry
             attribute = context.getAttribute(RegistryWrapper.class);
 
             if (attribute == null) {
-                final CustomRouteRegistry registry = new CustomRouteRegistry();
+                final CustomRouteRegistry registry = new CustomRouteRegistry(
+                        context);
                 attribute = new RegistryWrapper(registry);
                 context.setAttribute(attribute);
 
@@ -109,5 +116,10 @@ public class CustomRouteRegistry extends AbstractRouteRegistry
 
     private Logger getLogger() {
         return LoggerFactory.getLogger(CustomRouteRegistry.class);
+    }
+
+    @Override
+    public VaadinContext getContext() {
+        return context;
     }
 }

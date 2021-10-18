@@ -25,11 +25,11 @@ import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteData;
+import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.RoutePrefix;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RoutesChangedListener;
-import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.internal.NavigationRouteTarget;
 import com.vaadin.flow.router.internal.RouteTarget;
 import com.vaadin.flow.shared.Registration;
@@ -252,4 +252,11 @@ public interface RouteRegistry extends Serializable {
      * Clear all registered routes from the registry.
      */
     void clean();
+
+    /**
+     * Gets the Vaadin context which the registry belongs to.
+     * 
+     * @return the Vaadin context
+     */
+    VaadinContext getContext();
 }

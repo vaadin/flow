@@ -25,10 +25,10 @@ import java.util.stream.Collectors;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.router.RouteData;
+import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.RoutesChangedEvent;
 import com.vaadin.flow.router.RoutesChangedListener;
-import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.internal.AbstractRouteRegistry;
 import com.vaadin.flow.router.internal.ConfiguredRoutes;
 import com.vaadin.flow.router.internal.NavigationRouteTarget;
@@ -224,6 +224,11 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
             return targetRoute;
         }
         return getParentRegistry().getTemplate(navigationTarget);
+    }
+
+    @Override
+    public VaadinContext getContext() {
+        return session.getService().getContext();
     }
 
     /**
