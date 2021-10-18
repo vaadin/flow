@@ -57,7 +57,7 @@ const init = function(appInitResponse) {
   /*
    * Needed for wrapping custom javascript functionality in the components (i.e. connectors)
    */
-  window.Vaadin.Flow.tryCatchWrapper = function(originalFunction, component, _repo) {
+  window.Vaadin.Flow.tryCatchWrapper = function(originalFunction, component) {
     return function() {
       try {
         // eslint-disable-next-line
