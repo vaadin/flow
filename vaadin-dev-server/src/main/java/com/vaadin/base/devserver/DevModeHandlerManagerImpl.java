@@ -15,6 +15,9 @@
  */
 package com.vaadin.base.devserver;
 
+import javax.servlet.annotation.HandlesTypes;
+
+import com.vaadin.base.devserver.startup.DevModeInitializer;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 
@@ -29,6 +32,12 @@ import com.vaadin.flow.internal.DevModeHandlerManager;
 public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
 
     private DevModeHandler devModeHandler;
+
+    @Override
+    public Class<?>[] getHandlesTypes() {
+        return DevModeInitializer.class.getAnnotation(HandlesTypes.class)
+                .value();
+    }
 
     @Override
     public void initDevModeHandler(DevModeHandler devModeHandler) {

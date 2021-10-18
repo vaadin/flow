@@ -484,6 +484,11 @@ public class IndexHtmlRequestHandlerTest {
         DevModeHandlerManager devModeHandlerManager = new DevModeHandlerManager() {
 
             @Override
+            public Class<?>[] getHandlesTypes() {
+                return new Class[0];
+            }
+
+            @Override
             public void initDevModeHandler(DevModeHandler devModeHandler) {
 
             }
