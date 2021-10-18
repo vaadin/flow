@@ -54,7 +54,7 @@
         console.error(
             `There seems to be an error in ${component}:
 ${error.message}
-Please submit an issue to https://github.com/vaadin/flow-components/issues/new`);
+Please submit an issue to https://github.com/vaadin/flow-components/issues/new/choose`);
       }
     }
   };
