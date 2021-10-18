@@ -142,7 +142,8 @@ public class WebpackHandlerTest {
         }
     }
 
-    public static void removeDevModeHandlerInstance() throws Exception {
+    public static void removeDevModeHandlerInstance(Lookup lookup)
+            throws Exception {
         // Reset unique instance of DevModeHandler
         Field atomicHandler = WebpackHandler.class
                 .getDeclaredField("atomicHandler");
@@ -170,18 +171,20 @@ public class WebpackHandlerTest {
     @Test
     public void avoidStoringPortOfFailingWebPackDevServer_failWebpackStart_startWebPackSucessfullyAfter()
             throws Exception {
-        handler = WebpackHandler.start(createDevModeLookup(), npmFolder,
+        Lookup lookup = createDevModeLookup();
+        handler = WebpackHandler.start(lookup, npmFolder,
                 CompletableFuture.completedFuture(null));
 
         handler.join();
 
-        removeDevModeHandlerInstance();
-        // dev mode handler should fail because of non-existent npm folder: it
+        removeDevModeHandlerInstance(lookup);
+        // dev mode handler should fail because of non-existent npm
+        // folder: it
         // means the port number should not have been written
 
         // use non-existent folder for as npmFolder, it should fail the
         // validation (which means server instance won't be reused)
-        WebpackHandler newhHandler = WebpackHandler.start(createDevModeLookup(),
+        WebpackHandler newhHandler = WebpackHandler.start(lookup,
                 new File(npmFolder, UUID.randomUUID().toString()),
                 CompletableFuture.completedFuture(null));
 
@@ -467,15 +470,16 @@ public class WebpackHandlerTest {
         final String manifestJsonContents = "{}";
         int port = prepareHttpServer(0, HTTP_OK, manifestJsonContents);
 
-        handler = WebpackHandler.start(port, createDevModeLookup(), npmFolder,
+        Lookup lookup = createDevModeLookup();
+        handler = WebpackHandler.start(port, lookup, npmFolder,
                 CompletableFuture.completedFuture(null));
         handler.join();
         assertNotNull(handler);
         assertEquals(port, handler.getPort());
 
-        removeDevModeHandlerInstance();
+        removeDevModeHandlerInstance(lookup);
 
-        handler = WebpackHandler.start(createDevModeLookup(), npmFolder,
+        handler = WebpackHandler.start(lookup, npmFolder,
                 CompletableFuture.completedFuture(null));
         handler.join();
         assertNotNull(handler);
