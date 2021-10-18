@@ -228,26 +228,18 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     private <T extends Annotation> void collectAnnotationValues(
             BiConsumer<Class<?>, String> valueHandler, Class<T> annotationType,
             Function<Annotation, String> valueExtractor) {
-        try {
-            Set<String> logs = new HashSet<>();
-            Class<? extends Annotation> loadedAnnotation = getFinder()
-                    .loadClass(annotationType.getName());
-            Set<Class<?>> annotatedClasses = getFinder()
-                    .getAnnotatedClasses(loadedAnnotation);
+        Set<String> logs = new HashSet<>();
+        Set<Class<?>> annotatedClasses = getFinder()
+                .getAnnotatedClasses(annotationType);
 
-            annotatedClasses.stream().forEach(clazz -> annotationFinder
-                    .apply(clazz, loadedAnnotation).forEach(ann -> {
-                        String value = valueExtractor.apply(ann);
-                        valueHandler.accept(clazz, value);
-                        logs.add(value + " " + clazz);
-                    }));
+        annotatedClasses.stream().forEach(clazz -> annotationFinder
+                .apply(clazz, annotationType).forEach(ann -> {
+                    String value = valueExtractor.apply(ann);
+                    valueHandler.accept(clazz, value);
+                    logs.add(value + " " + clazz);
+                }));
 
-            debug("@" + annotationType.getSimpleName(), logs);
-        } catch (ClassNotFoundException exception) {
-            throw new IllegalStateException(
-                    COULD_NOT_LOAD_ERROR_MSG + annotationType.getName(),
-                    exception);
-        }
+        debug("@" + annotationType.getSimpleName(), logs);
     }
 
     private void debug(String label, Set<String> log) {

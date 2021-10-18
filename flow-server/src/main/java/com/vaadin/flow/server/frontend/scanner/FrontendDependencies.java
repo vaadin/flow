@@ -264,23 +264,23 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             collectEndpoints(route);
         }
 
-        for (Class<?> initListener : getFinder().getSubTypesOf(
-                getFinder().loadClass(UIInitListener.class.getName()))) {
+        for (Class<?> initListener : getFinder()
+                .getSubTypesOf(UIInitListener.class)) {
             collectEndpoints(initListener);
         }
 
-        for (Class<?> initListener : getFinder().getSubTypesOf(getFinder()
-                .loadClass(VaadinServiceInitListener.class.getName()))) {
+        for (Class<?> initListener : getFinder()
+                .getSubTypesOf(VaadinServiceInitListener.class)) {
             collectEndpoints(initListener);
         }
 
-        for (Class<?> appShell : getFinder().getSubTypesOf(
-                getFinder().loadClass(AppShellConfigurator.class.getName()))) {
+        for (Class<?> appShell : getFinder()
+                .getSubTypesOf(AppShellConfigurator.class)) {
             collectEndpoints(appShell);
         }
 
-        for (Class<?> errorParameters : getFinder().getSubTypesOf(
-                getFinder().loadClass(HasErrorParameter.class.getName()))) {
+        for (Class<?> errorParameters : getFinder()
+                .getSubTypesOf(HasErrorParameter.class)) {
             collectEndpoints(errorParameters);
         }
 
@@ -421,7 +421,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                 getFinder(), NpmPackage.class.getName());
 
         for (Class<?> component : getFinder()
-                .getAnnotatedClasses(NpmPackage.class.getName())) {
+                .getAnnotatedClasses(NpmPackage.class)) {
             npmPackageVisitor.visitClass(component.getName());
         }
 
@@ -451,7 +451,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                 getFinder(), PWA.class.getName());
 
         for (Class<?> hopefullyAppShellClass : getFinder()
-                .getAnnotatedClasses(PWA.class.getName())) {
+                .getAnnotatedClasses(PWA.class)) {
             if (!Arrays.asList(hopefullyAppShellClass.getInterfaces())
                     .contains(AppShellConfigurator.class)) {
                 throw new IllegalStateException(ERROR_INVALID_PWA_ANNOTATION);

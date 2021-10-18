@@ -26,7 +26,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -54,7 +53,6 @@ import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.Theme;
 
-@Ignore("temporary disable test")
 public class FullDependenciesScannerTest {
 
     private ClassFinder finder = Mockito.mock(ClassFinder.class);
@@ -96,8 +94,6 @@ public class FullDependenciesScannerTest {
                 Collections.emptySet(), Collections.emptySet(),
                 (type, annotationType) -> Collections.emptyList());
 
-        Mockito.verify(finder).loadClass(AbstractTheme.class.getName());
-
         Assert.assertNotNull(scanner.getTheme());
         Assert.assertEquals("foo", scanner.getTheme().getBaseUrl());
         Assert.assertEquals(FakeLumoTheme.class,
@@ -130,8 +126,6 @@ public class FullDependenciesScannerTest {
         FrontendDependenciesScanner scanner = setUpThemeScanner(
                 getAnnotatedClasses(Theme.class), Collections.emptySet(),
                 (type, annotationType) -> findAnnotations(type, Theme.class));
-
-        Mockito.verify(finder).loadClass(AbstractTheme.class.getName());
 
         Assert.assertNotNull(scanner.getTheme());
         Assert.assertEquals("theme/lumo/", scanner.getTheme().getThemeUrl());
@@ -270,25 +264,12 @@ public class FullDependenciesScannerTest {
     @Test
     public void getModules_explcitTheme_returnAllModulesExcludingNotUsedTheme_getClassesReturnAllModuleAnnotatedComponents()
             throws ClassNotFoundException {
-        // use this fake/mock class for the loaded class to check that annotated
-        // classes are requested for the loaded class and not for the
-        // annotationType
-        Class clazz = Object.class;
-
-        Mockito.when(finder.loadClass(JsModule.class.getName()))
-                .thenReturn(clazz);
-
-        Mockito.when(finder.getAnnotatedClasses(clazz))
+        Mockito.when(finder.getAnnotatedClasses(JsModule.class))
                 .thenReturn(getAnnotatedClasses(JsModule.class));
-
-        Class themeClass = Throwable.class;
-
-        Mockito.when(finder.loadClass(Theme.class.getName()))
-                .thenReturn(themeClass);
 
         Set<Class<?>> themeClasses = getAnnotatedClasses(Theme.class);
         themeClasses.add(FakeLumoTheme.class);
-        Mockito.when(finder.getAnnotatedClasses(themeClass))
+        Mockito.when(finder.getAnnotatedClasses(Theme.class))
                 .thenReturn(themeClasses);
         Assert.assertTrue(themeClasses.size() >= 2);
 
@@ -298,18 +279,11 @@ public class FullDependenciesScannerTest {
                 .thenReturn((Class) FakeLumoTheme.class);
 
         FrontendDependenciesScanner scanner = new FullDependenciesScanner(
-                finder, (type, annotation) -> {
-                    if (annotation.equals(clazz)) {
-                        return findAnnotations(type, JsModule.class);
-                    } else if (annotation.equals(themeClass)) {
-                        return findAnnotations(type, Theme.class);
-                    }
-                    Assert.fail();
-                    return null;
-                }, false);
+                finder, this::findAnnotations, false);
 
         List<String> modules = scanner.getModules();
         Assert.assertEquals(23, modules.size());
+
         assertJsModules(modules);
 
         // Theme modules should be included now
