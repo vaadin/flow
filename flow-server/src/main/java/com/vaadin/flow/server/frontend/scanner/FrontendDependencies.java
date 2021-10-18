@@ -260,9 +260,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     private void computeEndpoints() throws ClassNotFoundException, IOException {
         // Because of different classLoaders we need compare against class
         // references loaded by the specific class finder loader
-        Class<? extends Annotation> routeClass = getFinder()
-                .loadClass(Route.class.getName());
-        for (Class<?> route : getFinder().getAnnotatedClasses(routeClass)) {
+        for (Class<?> route : getFinder().getAnnotatedClasses(Route.class)) {
             collectEndpoints(route);
         }
 
@@ -451,13 +449,11 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     private void computePwaConfiguration() throws ClassNotFoundException {
         FrontendAnnotatedClassVisitor pwaVisitor = new FrontendAnnotatedClassVisitor(
                 getFinder(), PWA.class.getName());
-        Class<?> appShellConfiguratorClass = getFinder()
-                .loadClass(AppShellConfigurator.class.getName());
 
         for (Class<?> hopefullyAppShellClass : getFinder()
                 .getAnnotatedClasses(PWA.class.getName())) {
             if (!Arrays.asList(hopefullyAppShellClass.getInterfaces())
-                    .contains(appShellConfiguratorClass)) {
+                    .contains(AppShellConfigurator.class)) {
                 throw new IllegalStateException(ERROR_INVALID_PWA_ANNOTATION);
             }
             pwaVisitor.visitClass(hopefullyAppShellClass.getName());
@@ -520,11 +516,8 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             throws ClassNotFoundException, IOException {
         // Because of different classLoaders we need compare against class
         // references loaded by the specific class finder loader
-        Class<? extends Annotation> routeClass = getFinder()
-                .loadClass(Route.class.getName());
-        Class<?> exporterClass = getFinder().loadClass(clazz.getName());
         Set<? extends Class<?>> exporterClasses = getFinder()
-                .getSubTypesOf(exporterClass);
+                .getSubTypesOf(clazz);
 
         // if no exporters in the project, return
         if (exporterClasses.isEmpty()) {
@@ -542,7 +535,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             }
 
             if (!Modifier.isAbstract(exporter.getModifiers())) {
-                visitComponenClass(routeClass, exporterClass, exportedPoints,
+                visitComponenClass(Route.class, clazz, exportedPoints,
                         exporter);
             }
         }

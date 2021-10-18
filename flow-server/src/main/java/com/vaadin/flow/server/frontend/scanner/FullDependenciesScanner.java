@@ -71,8 +71,6 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     private Set<CssData> cssData;
     private List<String> modules;
 
-    private final Class<?> abstractTheme;
-
     private final SerializableBiFunction<Class<?>, Class<? extends Annotation>, List<? extends Annotation>> annotationFinder;
 
     private final boolean useV14Bootstrap;
@@ -108,12 +106,6 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
 
         long start = System.currentTimeMillis();
         this.annotationFinder = annotationFinder;
-        try {
-            abstractTheme = finder.loadClass(AbstractTheme.class.getName());
-        } catch (ClassNotFoundException exception) {
-            throw new IllegalStateException("Could not load "
-                    + AbstractTheme.class.getName() + " class", exception);
-        }
 
         packages = discoverPackages();
 
@@ -201,52 +193,36 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     }
 
     private Map<String, String> discoverPackages() {
-        try {
-            Class<? extends Annotation> loadedAnnotation = getFinder()
-                    .loadClass(NpmPackage.class.getName());
-            Set<Class<?>> annotatedClasses = getFinder()
-                    .getAnnotatedClasses(loadedAnnotation);
-            Map<String, String> result = new HashMap<>();
-            Set<String> logs = new HashSet<>();
-            for (Class<?> clazz : annotatedClasses) {
-                classes.add(clazz.getName());
-                List<? extends Annotation> packageAnnotations = annotationFinder
-                        .apply(clazz, loadedAnnotation);
-                packageAnnotations.forEach(pckg -> {
-                    String value = getAnnotationValueAsString(pckg, VALUE);
-                    String vers = getAnnotationValueAsString(pckg, "version");
-                    logs.add(value + " " + vers + " " + clazz.getName());
-                    result.put(value, vers);
-                });
-            }
-            debug("npm dependencies", logs);
-            return result;
-        } catch (ClassNotFoundException exception) {
-            throw new IllegalStateException(
-                    COULD_NOT_LOAD_ERROR_MSG + NpmPackage.class.getName(),
-                    exception);
+        Set<Class<?>> annotatedClasses = getFinder()
+                .getAnnotatedClasses(NpmPackage.class);
+        Map<String, String> result = new HashMap<>();
+        Set<String> logs = new HashSet<>();
+        for (Class<?> clazz : annotatedClasses) {
+            classes.add(clazz.getName());
+            List<? extends Annotation> packageAnnotations = annotationFinder
+                    .apply(clazz, NpmPackage.class);
+            packageAnnotations.forEach(pckg -> {
+                String value = getAnnotationValueAsString(pckg, VALUE);
+                String vers = getAnnotationValueAsString(pckg, "version");
+                logs.add(value + " " + vers + " " + clazz.getName());
+                result.put(value, vers);
+            });
         }
+        debug("npm dependencies", logs);
+        return result;
     }
 
     private Set<CssData> discoverCss() {
-        try {
-            Class<? extends Annotation> loadedAnnotation = getFinder()
-                    .loadClass(CssImport.class.getName());
-            Set<Class<?>> annotatedClasses = getFinder()
-                    .getAnnotatedClasses(loadedAnnotation);
-            Set<CssData> result = new LinkedHashSet<>();
-            for (Class<?> clazz : annotatedClasses) {
-                classes.add(clazz.getName());
-                List<? extends Annotation> imports = annotationFinder
-                        .apply(clazz, loadedAnnotation);
-                imports.stream().forEach(imp -> result.add(createCssData(imp)));
-            }
-            return result;
-        } catch (ClassNotFoundException exception) {
-            throw new IllegalStateException(
-                    COULD_NOT_LOAD_ERROR_MSG + CssData.class.getName(),
-                    exception);
+        Set<Class<?>> annotatedClasses = getFinder()
+                .getAnnotatedClasses(CssImport.class);
+        Set<CssData> result = new LinkedHashSet<>();
+        for (Class<?> clazz : annotatedClasses) {
+            classes.add(clazz.getName());
+            List<? extends Annotation> imports = annotationFinder.apply(clazz,
+                    CssImport.class);
+            imports.stream().forEach(imp -> result.add(createCssData(imp)));
         }
+        return result;
     }
 
     private <T extends Annotation> void collectAnnotationValues(
@@ -319,50 +295,37 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     }
 
     private ThemeData verifyTheme() {
-        try {
-            Class<? extends Annotation> loadedThemeAnnotation = getFinder()
-                    .loadClass(Theme.class.getName());
+        Set<Class<?>> annotatedClasses = getFinder()
+                .getAnnotatedClasses(Theme.class);
+        Set<ThemeData> themes = annotatedClasses.stream().flatMap(
+                clazz -> annotationFinder.apply(clazz, Theme.class).stream())
+                .map(theme -> new ThemeData(
+                        ((Class<?>) getAnnotationValue(theme, "themeClass"))
+                                .getName(),
+                        getAnnotationValueAsString(theme, "variant"),
+                        getAnnotationValueAsString(theme, VALUE)))
+                .collect(Collectors.toSet());
 
-            Set<Class<?>> annotatedClasses = getFinder()
-                    .getAnnotatedClasses(loadedThemeAnnotation);
-            Set<ThemeData> themes = annotatedClasses.stream()
-                    .flatMap(clazz -> annotationFinder
-                            .apply(clazz, loadedThemeAnnotation).stream())
-                    .map(theme -> new ThemeData(
-                            ((Class<?>) getAnnotationValue(theme, "themeClass"))
-                                    .getName(),
-                            getAnnotationValueAsString(theme, "variant"),
-                            getAnnotationValueAsString(theme, VALUE)))
-                    .collect(Collectors.toSet());
-
-            Class<? extends Annotation> loadedNoThemeAnnotation = getFinder()
-                    .loadClass(NoTheme.class.getName());
-
-            Set<Class<?>> notThemeClasses = getFinder()
-                    .getAnnotatedClasses(loadedNoThemeAnnotation).stream()
-                    .collect(Collectors.toSet());
-            if (themes.size() > 1) {
-                throw new IllegalStateException(
-                        "Using multiple different Theme configurations is not "
-                                + "supported. The list of found themes:\n"
-                                + getThemesList(themes));
-            }
-            if (!themes.isEmpty() && !notThemeClasses.isEmpty()) {
-                throw new IllegalStateException(
-                        "@" + Theme.class.getSimpleName() + " ("
-                                + getThemesList(themes) + ") and @"
-                                + NoTheme.class.getSimpleName()
-                                + " annotations can't be used simultaneously.");
-            }
-            if (!notThemeClasses.isEmpty()) {
-                return ThemeData.createNoTheme();
-
-            }
-            return themes.isEmpty() ? null : themes.iterator().next();
-        } catch (ClassNotFoundException exception) {
+        Set<Class<?>> notThemeClasses = getFinder()
+                .getAnnotatedClasses(NoTheme.class).stream()
+                .collect(Collectors.toSet());
+        if (themes.size() > 1) {
             throw new IllegalStateException(
-                    "Could not load theme annotation class", exception);
+                    "Using multiple different Theme configurations is not "
+                            + "supported. The list of found themes:\n"
+                            + getThemesList(themes));
         }
+        if (!themes.isEmpty() && !notThemeClasses.isEmpty()) {
+            throw new IllegalStateException("@" + Theme.class.getSimpleName()
+                    + " (" + getThemesList(themes) + ") and @"
+                    + NoTheme.class.getSimpleName()
+                    + " annotations can't be used simultaneously.");
+        }
+        if (!notThemeClasses.isEmpty()) {
+            return ThemeData.createNoTheme();
+
+        }
+        return themes.isEmpty() ? null : themes.iterator().next();
     }
 
     private String getThemesList(Collection<ThemeData> themes) {
@@ -376,7 +339,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     private void handleModule(Class<?> clazz, String module,
             Set<String> modules, Map<String, Set<String>> themeModules) {
 
-        if (abstractTheme.isAssignableFrom(clazz)) {
+        if (AbstractTheme.class.isAssignableFrom(clazz)) {
             Set<String> themingModules = themeModules.computeIfAbsent(
                     clazz.getName(), cl -> new LinkedHashSet<>());
             themingModules.add(module);
@@ -438,55 +401,45 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     }
 
     private PwaConfiguration discoverPwa() {
-        try {
-            Class<? extends Annotation> loadedPWAAnnotation = getFinder()
-                    .loadClass(PWA.class.getName());
-
-            Set<Class<?>> annotatedClasses = getFinder()
-                    .getAnnotatedClasses(loadedPWAAnnotation);
-            if (annotatedClasses.isEmpty()) {
-                return new PwaConfiguration(useV14Bootstrap);
-            } else if (annotatedClasses.size() != 1) {
-                throw new IllegalStateException(ERROR_INVALID_PWA_ANNOTATION);
-            }
-
-            Class<?> hopefullyAppShellClass = annotatedClasses.iterator()
-                    .next();
-            if (!useV14Bootstrap
-                    && !Arrays.stream(hopefullyAppShellClass.getInterfaces())
-                            .map(Class::getName).collect(Collectors.toList())
-                            .contains(AppShellConfigurator.class.getName())) {
-                throw new IllegalStateException(ERROR_INVALID_PWA_ANNOTATION);
-            }
-
-            Annotation pwa = annotationFinder
-                    .apply(hopefullyAppShellClass, loadedPWAAnnotation).get(0);
-
-            String name = getAnnotationValueAsString(pwa, "name");
-            String shortName = getAnnotationValueAsString(pwa, "shortName");
-            String description = getAnnotationValueAsString(pwa, "description");
-            String backgroundColor = getAnnotationValueAsString(pwa,
-                    "backgroundColor");
-            String themeColor = getAnnotationValueAsString(pwa, "themeColor");
-            String iconPath = getAnnotationValueAsString(pwa, "iconPath");
-            String manifestPath = getAnnotationValueAsString(pwa,
-                    "manifestPath");
-            String offlinePath = getAnnotationValueAsString(pwa, "offlinePath");
-            String display = getAnnotationValueAsString(pwa, "display");
-            String startPath = getAnnotationValueAsString(pwa, "startPath");
-            String[] offlineResources = (String[]) getAnnotationValue(pwa,
-                    "offlineResources");
-
-            assert shortName != null; // required in @PWA annotation
-
-            return new PwaConfiguration(true, name, shortName, description,
-                    backgroundColor, themeColor, iconPath, manifestPath,
-                    offlinePath, display, startPath, offlineResources,
-                    useV14Bootstrap);
-        } catch (ClassNotFoundException exception) {
-            throw new IllegalStateException(
-                    "Could not load PWA annotation class", exception);
+        Set<Class<?>> annotatedClasses = getFinder()
+                .getAnnotatedClasses(PWA.class);
+        if (annotatedClasses.isEmpty()) {
+            return new PwaConfiguration(useV14Bootstrap);
+        } else if (annotatedClasses.size() != 1) {
+            throw new IllegalStateException(ERROR_INVALID_PWA_ANNOTATION);
         }
+
+        Class<?> hopefullyAppShellClass = annotatedClasses.iterator().next();
+        if (!useV14Bootstrap
+                && !Arrays.stream(hopefullyAppShellClass.getInterfaces())
+                        .map(Class::getName).collect(Collectors.toList())
+                        .contains(AppShellConfigurator.class.getName())) {
+            throw new IllegalStateException(ERROR_INVALID_PWA_ANNOTATION);
+        }
+
+        Annotation pwa = annotationFinder
+                .apply(hopefullyAppShellClass, PWA.class).get(0);
+
+        String name = getAnnotationValueAsString(pwa, "name");
+        String shortName = getAnnotationValueAsString(pwa, "shortName");
+        String description = getAnnotationValueAsString(pwa, "description");
+        String backgroundColor = getAnnotationValueAsString(pwa,
+                "backgroundColor");
+        String themeColor = getAnnotationValueAsString(pwa, "themeColor");
+        String iconPath = getAnnotationValueAsString(pwa, "iconPath");
+        String manifestPath = getAnnotationValueAsString(pwa, "manifestPath");
+        String offlinePath = getAnnotationValueAsString(pwa, "offlinePath");
+        String display = getAnnotationValueAsString(pwa, "display");
+        String startPath = getAnnotationValueAsString(pwa, "startPath");
+        String[] offlineResources = (String[]) getAnnotationValue(pwa,
+                "offlineResources");
+
+        assert shortName != null; // required in @PWA annotation
+
+        return new PwaConfiguration(true, name, shortName, description,
+                backgroundColor, themeColor, iconPath, manifestPath,
+                offlinePath, display, startPath, offlineResources,
+                useV14Bootstrap);
     }
 
     private Logger getLogger() {
