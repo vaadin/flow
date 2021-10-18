@@ -435,21 +435,11 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
                 Mockito.anyObject());
         Mockito.when(servletContext.getAttribute(Mockito.anyString()))
                 .thenAnswer(answer -> {
-                    if (answer.getArgument(0).equals(Lookup.class.getName())) {
-                        return lookup;
-                    }
                     return servletContextAttributes.get(answer.getArgument(0));
                 });
 
-        Mockito.when(servletContext
-                .getAttribute(ApplicationConfiguration.class.getName()))
-                .thenReturn(appConfig);
-
-        ResourceProvider resourceProvider = Mockito
-                .mock(ResourceProvider.class);
-        Mockito.when(lookup.lookup(ResourceProvider.class))
-                .thenReturn(resourceProvider);
         servletContextAttributes.put(Lookup.class.getName(), lookup);
+        servletContextAttributes.put(ApplicationConfiguration.class.getName(), appConfig);
 
         process();
         assertTrue(DevModeInitializer.isDevModeAlreadyStarted(
