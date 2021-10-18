@@ -439,7 +439,8 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
                 });
 
         servletContextAttributes.put(Lookup.class.getName(), lookup);
-        servletContextAttributes.put(ApplicationConfiguration.class.getName(), appConfig);
+        servletContextAttributes.put(ApplicationConfiguration.class.getName(),
+                appConfig);
 
         process();
         assertTrue(DevModeInitializer.isDevModeAlreadyStarted(
@@ -616,10 +617,6 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
 
     private void assertDevModeHandlerStarted() {
         Assert.assertTrue(hasWebpackProcess());
-    }
-
-    private void assertDevModeHandlerNotStarted() {
-        Assert.assertFalse(hasWebpackProcess());
     }
 
 }
