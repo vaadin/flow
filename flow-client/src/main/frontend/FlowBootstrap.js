@@ -65,9 +65,10 @@ const init = function(appInitResponse) {
         return result;
       } catch (error) {
         console.error(
-          'There seems to be an error in the ' + component + ':\n' + error.message + '\n'
-            + 'Please submit an issue to https://github.com/vaadin/' + repo
-            + '/issues/new!');
+          `There seems to be an error in ${component}:
+${error.message}
+Please submit an issue to https://github.com/vaadin/flow-components/issues/new`
+        );
       }
     };
   };
