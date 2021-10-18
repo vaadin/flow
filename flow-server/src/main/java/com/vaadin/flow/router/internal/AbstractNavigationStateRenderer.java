@@ -964,8 +964,7 @@ public abstract class AbstractNavigationStateRenderer
         DeploymentConfiguration configuration = ui.getSession()
                 .getConfiguration();
         if (!configuration.isProductionMode()
-                && configuration.isDevModeLiveReloadEnabled()
-                && configuration.isDevModeGizmoEnabled()) {
+                && configuration.isDevModeLiveReloadEnabled()) {
             ui.getPage().executeJs(
                     "Vaadin.devModeGizmo.showNotification('warning', '@PreserveOnRefresh enabled', 'When refreshing the page in the browser, the server-side Java view instance is reused rather than being recreated.', null, 'preserveOnRefreshWarning')");
         }

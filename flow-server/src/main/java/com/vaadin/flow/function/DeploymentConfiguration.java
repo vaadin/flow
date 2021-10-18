@@ -309,7 +309,9 @@ public interface DeploymentConfiguration
     boolean isDevModeLiveReloadEnabled();
 
     /**
-     * Checks if dev mode gizmo (debug window) is enabled or not.
+     * Checks if dev mode gizmo (debug window) is enabled or not. It is always
+     * disabled in production mode. In development mode, it is enabled by
+     * default.
      *
      * @return {@code true} if dev mode gizmo is enabled, {@code false}
      *         otherwise

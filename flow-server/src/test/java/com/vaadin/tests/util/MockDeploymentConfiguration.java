@@ -187,7 +187,7 @@ public class MockDeploymentConfiguration
 
     @Override
     public boolean isDevModeLiveReloadEnabled() {
-        return devModeLiveReloadEnabled;
+        return isDevModeGizmoEnabled() && devModeLiveReloadEnabled;
     }
 
     @Override
