@@ -17,6 +17,8 @@ package com.vaadin.experimental;
 
 import java.io.Serializable;
 
+import com.vaadin.flow.internal.UsageStatistics;
+
 /**
  * Information about a feature available behind a flag.
  */
@@ -60,6 +62,10 @@ public class Feature implements Serializable {
     }
 
     public void setEnabled(boolean enabled) {
+        if (enabled) {
+            UsageStatistics.markAsUsed("flow/featureflags/" + getId(), null);
+        }
+
         this.enabled = enabled;
     }
 }
