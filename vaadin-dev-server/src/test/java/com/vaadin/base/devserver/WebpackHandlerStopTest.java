@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URL;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
 
 import com.sun.net.httpserver.HttpServer;
 import com.vaadin.base.devserver.startup.AbstractDevModeTest;
@@ -39,6 +40,7 @@ import net.jcip.annotations.NotThreadSafe;
 public class WebpackHandlerStopTest extends AbstractDevModeTest {
 
     private HttpServer httpServer;
+    private CountDownLatch stopped;
 
     @Override
     public void teardown() {
@@ -61,13 +63,9 @@ public class WebpackHandlerStopTest extends AbstractDevModeTest {
         assertNotNull(requestWebpackServer(port, "/bar"));
 
         // Stop server
+        stopped = new CountDownLatch(1);
         assertNotNull(requestWebpackServer(port, "/stop"));
-        /*
-         * Stopping is done in a separate thread to avoid a JDK 11 bug where
-         * apparently you cannot shut down the server while in a request so we
-         * need to wait until it has shut down
-         */
-        Thread.sleep(100);
+        stopped.await();
         assertNull(requestWebpackServer(port, "/foo"));
     }
 
@@ -85,13 +83,10 @@ public class WebpackHandlerStopTest extends AbstractDevModeTest {
         assertNotNull(requestWebpackServer(port, "/bar"));
         Assert.assertTrue(((WebpackHandler) handler).isRunning());
 
+        stopped = new CountDownLatch(1);
         handler.stop();
-        /*
-         * Stopping is done in a separate thread to avoid a JDK 11 bug where
-         * apparently you cannot shut down the server while in a request so we
-         * need to wait until it has shut down
-         */
-        Thread.sleep(100);
+        stopped.await();
+
         Assert.assertFalse(((WebpackHandler) handler).isRunning());
         assertNull(requestWebpackServer(port, "/bar"));
     }
@@ -116,13 +111,10 @@ public class WebpackHandlerStopTest extends AbstractDevModeTest {
         // Webpack server should continue working on the same port
         assertNotNull(requestWebpackServer(port, "/bar"));
 
+        stopped = new CountDownLatch(1);
         handler.stop();
-        /*
-         * Stopping is done in a separate thread to avoid a JDK 11 bug where
-         * apparently you cannot shut down the server while in a request so we
-         * need to wait until it has shut down
-         */
-        Thread.sleep(100);
+        stopped.await();
+
         Assert.assertFalse(((WebpackHandler) handler).isRunning());
         assertNull(requestWebpackServer(port, "/bar"));
     }
@@ -154,7 +146,15 @@ public class WebpackHandlerStopTest extends AbstractDevModeTest {
             exchange.close();
             String uri = exchange.getRequestURI().toString();
             if ("/stop".equals(uri)) {
-                new Thread(() -> httpServer.stop(0)).start();
+                new Thread(() -> {
+                    /*
+                     * Running this in a thread is a workaround for
+                     * https://bugs.openjdk.java.net/browse/JDK-8233185 for
+                     * JDK<14
+                     */
+                    httpServer.stop(0);
+                    stopped.countDown();
+                }).start();
             }
         });
         httpServer.start();
