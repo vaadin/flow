@@ -42,12 +42,12 @@ public interface DevModeHandlerManager {
     Class<?>[] getHandlesTypes();
 
     /**
-     * Initializes the manager with the given handler.
+     * Defines the handler to use with this manager.
      *
      * @param devModeHandler
      *            the dev mode handler to use
      */
-    void initDevModeHandler(DevModeHandler devModeHandler);
+    void setDevModeHandler(DevModeHandler devModeHandler);
 
     /**
      * Returns a {@link DevModeHandler} instance for the given {@code service}.

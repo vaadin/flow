@@ -83,7 +83,6 @@ import org.mockito.Mockito;
 import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
-@SuppressWarnings("restriction")
 public class WebpackHandlerTest extends AbstractDevModeTest {
 
     private HttpServer httpServer;
@@ -410,7 +409,7 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
         int port = prepareHttpServer(0, HTTP_OK, statsContent);
         handler = WebpackHandler.start(port, lookup, npmFolder,
                 CompletableFuture.completedFuture(null));
-        devModeHandlerManager.initDevModeHandler(handler);
+        devModeHandlerManager.setDevModeHandler(handler);
         waitForDevServer();
 
         assertEquals(statsContent,
@@ -424,7 +423,7 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
 
         handler = WebpackHandler.start(port, lookup, npmFolder,
                 CompletableFuture.completedFuture(null));
-        devModeHandlerManager.initDevModeHandler(handler);
+        devModeHandlerManager.setDevModeHandler(handler);
         waitForDevServer();
         assertNotNull(handler);
         assertEquals(port, getDevServerPort());
@@ -676,7 +675,7 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
             throws ServletException, IOException {
         handler = WebpackHandler.start(port, lookup, npmFolder,
                 CompletableFuture.completedFuture(null));
-        devModeHandlerManager.initDevModeHandler(handler);
+        devModeHandlerManager.setDevModeHandler(handler);
         waitForDevServer();
         VaadinServlet servlet = new VaadinServlet();
         ServletConfig cfg = mock(ServletConfig.class);

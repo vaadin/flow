@@ -218,7 +218,7 @@ public class DevModeInitializer
         Lookup lookup = context.getAttribute(Lookup.class);
         DevModeHandlerManager devModeHandlerManager = lookup
                 .lookup(DevModeHandlerManager.class);
-        devModeHandlerManager.initDevModeHandler(devModeHandler);
+        devModeHandlerManager.setDevModeHandler(devModeHandler);
 
         setDevModeStarted(context);
     }
@@ -459,12 +459,10 @@ public class DevModeInitializer
 
     @Override
     public void contextDestroyed(ServletContextEvent ctx) {
-        Optional<DevModeHandler> handler = DevModeHandlerManager
+        DevModeHandlerManager
                 .getDevModeHandler(
-                        new VaadinServletContext(ctx.getServletContext()));
-        if (handler.isPresent()) {
-            handler.get().stop();
-        }
+                        new VaadinServletContext(ctx.getServletContext()))
+                .ifPresent(DevModeHandler::stop);
     }
 
     /*

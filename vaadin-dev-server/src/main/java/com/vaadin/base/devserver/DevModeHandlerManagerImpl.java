@@ -40,7 +40,7 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
     }
 
     @Override
-    public void initDevModeHandler(DevModeHandler devModeHandler) {
+    public void setDevModeHandler(DevModeHandler devModeHandler) {
         if (this.devModeHandler != null) {
             throw new IllegalStateException(
                     "Unable to initialize dev mode handler. A handler is already present: "

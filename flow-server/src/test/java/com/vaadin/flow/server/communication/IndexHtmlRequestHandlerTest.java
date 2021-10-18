@@ -489,7 +489,7 @@ public class IndexHtmlRequestHandlerTest {
             }
 
             @Override
-            public void initDevModeHandler(DevModeHandler devModeHandler) {
+            public void setDevModeHandler(DevModeHandler devModeHandler) {
 
             }
 
