@@ -44,9 +44,9 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.UsageStatistics;
-import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
@@ -676,7 +676,8 @@ public class IndexHtmlRequestHandlerTest {
                         + "window.Vaadin.registrations.push(" + entries + ");");
 
         assertEquals(StringUtil.normaliseWhitespace(expected),
-                bodyInlineElements.get(1).childNode(0).outerHtml());
+                StringUtil.normaliseWhitespace(
+                        bodyInlineElements.get(1).childNode(0).outerHtml()));
     }
 
     @Test
