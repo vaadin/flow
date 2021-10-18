@@ -62,6 +62,12 @@ public class WebpackHandlerStopTest extends AbstractDevModeTest {
 
         // Stop server
         assertNotNull(requestWebpackServer(port, "/stop"));
+        /*
+         * Stopping is done in a separate thread to avoid a JDK 11 bug where
+         * apparently you cannot shut down the server while in a request so we
+         * need to wait until it has shut down
+         */
+        Thread.sleep(100);
         assertNull(requestWebpackServer(port, "/foo"));
     }
 
@@ -80,6 +86,12 @@ public class WebpackHandlerStopTest extends AbstractDevModeTest {
         Assert.assertTrue(((WebpackHandler) handler).isRunning());
 
         handler.stop();
+        /*
+         * Stopping is done in a separate thread to avoid a JDK 11 bug where
+         * apparently you cannot shut down the server while in a request so we
+         * need to wait until it has shut down
+         */
+        Thread.sleep(100);
         Assert.assertFalse(((WebpackHandler) handler).isRunning());
         assertNull(requestWebpackServer(port, "/bar"));
     }
@@ -105,6 +117,12 @@ public class WebpackHandlerStopTest extends AbstractDevModeTest {
         assertNotNull(requestWebpackServer(port, "/bar"));
 
         handler.stop();
+        /*
+         * Stopping is done in a separate thread to avoid a JDK 11 bug where
+         * apparently you cannot shut down the server while in a request so we
+         * need to wait until it has shut down
+         */
+        Thread.sleep(100);
         Assert.assertFalse(((WebpackHandler) handler).isRunning());
         assertNull(requestWebpackServer(port, "/bar"));
     }
@@ -136,7 +154,7 @@ public class WebpackHandlerStopTest extends AbstractDevModeTest {
             exchange.close();
             String uri = exchange.getRequestURI().toString();
             if ("/stop".equals(uri)) {
-                httpServer.stop(0);
+                new Thread(() -> httpServer.stop(0)).start();
             }
         });
         httpServer.start();
