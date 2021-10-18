@@ -34,11 +34,10 @@ import com.vaadin.flow.server.VaadinService;
 public interface DevModeHandlerManager {
 
     /**
-     * A dev mode handler implementation is interested in certain annotations to
-     * be be scanned from the class path and passed to the
-     * {@link #initDevModeHandler(Set, VaadinContext)} initializer.
+     * The annotations the dev mode handler is interested in having scanned from
+     * the class path.
      *
-     * @return an array of types the dev mode handler is interested id.
+     * @return an array of types the dev mode handler is interested in
      */
     Class<?>[] getHandlesTypes();
 
