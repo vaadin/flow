@@ -74,6 +74,7 @@ public class UidlRequestHandlerTest {
                 .mock(ApplicationConfiguration.class);
         Mockito.when(config.getPropertyNames())
                 .thenReturn(Collections.emptyEnumeration());
+        Mockito.when(config.getBuildFolder()).thenReturn(".");
         VaadinService service = new VaadinServletService(null,
                 new DefaultDeploymentConfiguration(config, getClass(),
                         new Properties()));
