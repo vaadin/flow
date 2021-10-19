@@ -7,7 +7,7 @@ module.exports = {
     "ecmaVersion": 2017,
     "sourceType": "module"
   },
-  "ignorePatterns": ["**/FlowClient.js"],
+  "ignorePatterns": ["**/FlowClient.js", "**/copy-to-clipboard.js"],
 
   "overrides": [
     {
@@ -56,7 +56,7 @@ module.exports = {
         "no-else-return": 0,
         "no-nested-ternary": 0,
         "no-restricted-globals": 0,
-        "no-restricted-syntax": 0,
+        "no-restricted-syntax": 0
       },
     },
   ]

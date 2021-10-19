@@ -74,7 +74,7 @@ public interface DeploymentConfiguration
      * the client will then wait for the predecessors of a received out-order
      * message, before considering them missing and requesting a full
      * resynchronization of the application state from the server.
-     * 
+     *
      * @return The maximum message suspension timeout
      */
     int getMaxMessageSuspendTimeout();
@@ -298,10 +298,24 @@ public interface DeploymentConfiguration
 
     /**
      * Checks if dev mode live reload is enabled or not.
+     * <p>
+     * Note that if the dev mode gizmo is disabled
+     * ({@link #isDevModeGizmoEnabled()} returns {@code false}), the live reload
+     * will be disabled as well.
      *
      * @return {@code true} if dev mode live reload is enabled, {@code false}
      *         otherwise
      */
     boolean isDevModeLiveReloadEnabled();
+
+    /**
+     * Checks if dev mode gizmo (debug window) is enabled or not. It is always
+     * disabled in production mode. In development mode, it is enabled by
+     * default.
+     *
+     * @return {@code true} if dev mode gizmo is enabled, {@code false}
+     *         otherwise
+     */
+    boolean isDevModeGizmoEnabled();
 
 }

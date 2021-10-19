@@ -71,7 +71,12 @@ public abstract class ClassesSerializableTest extends ClassFinder {
 
                 "com\\.vaadin\\.flow\\.internal\\.VaadinContextInitializer",
                 "com\\.vaadin\\.flow\\.internal\\.ApplicationClassLoaderAccess",
+                "com\\.vaadin\\.base\\.devserver\\.BrowserLiveReloadAccessorImpl",
+                "com\\.vaadin\\.base\\.devserver\\.BrowserLiveReloadImpl",
                 "com\\.vaadin\\.base\\.devserver\\.DevModeHandlerManagerImpl",
+                "com\\.vaadin\\.base\\.devserver\\.DevServerWatchDog",
+                "com\\.vaadin\\.base\\.devserver\\.DevServerWatchDog\\$WatchDogServer",
+                "com\\.vaadin\\.base\\.devserver\\.util\\.BrowserLauncher",
                 "com\\.vaadin\\.flow\\.data\\.provider\\.InMemoryDataProviderHelpers",
                 "com\\.vaadin\\.flow\\.di\\.InstantiatorFactory",
                 "com\\.vaadin\\.flow\\.di\\.Lookup(\\$.*)?",
@@ -146,6 +151,8 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.component\\.Key",
                 "com\\.vaadin\\.flow\\.server\\.VaadinRequest",
                 "com\\.vaadin\\.flow\\.server\\.DevServerWatchDog(\\$.*)?",
+                "com\\.vaadin\\.flow\\.router\\.DefaultRoutePathProvider",
+                "com\\.vaadin\\.flow\\.router\\.RoutePathProvider",
                 "com\\.vaadin\\.flow\\.router\\.RouteNotFoundError\\$LazyInit",
                 "com\\.vaadin\\.flow\\.router\\.internal\\.RouteSegment\\$RouteSegmentValue",
                 // De-facto abstract class

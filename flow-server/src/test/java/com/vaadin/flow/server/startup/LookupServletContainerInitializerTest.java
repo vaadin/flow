@@ -38,6 +38,7 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.LookupInitializer;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.VaadinApplicationInitializationBootstrap;
+import com.vaadin.flow.router.RoutePathProvider;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.startup.testdata.TestResourceProvider;
 
@@ -71,6 +72,15 @@ public class LookupServletContainerInitializerTest {
         public ApplicationConfiguration create(VaadinContext context) {
             return null;
         }
+    }
+
+    public static class TestRoutePathProvider implements RoutePathProvider {
+
+        @Override
+        public String getRoutePath(Class<?> navigationTarget) {
+            return null;
+        }
+
     }
 
     private static class TestLookup implements Lookup {
@@ -135,6 +145,23 @@ public class LookupServletContainerInitializerTest {
         Assert.assertEquals(1, allHandlers.size());
 
         Assert.assertEquals(TestPolymerPublishedEventHandler.class,
+                allHandlers.iterator().next().getClass());
+    }
+
+    @Test
+    public void processLookupServletContainerInitializer_routePathProviderIsProvidedAsScannedClass_lookupReturnsTheProviderInstance()
+            throws ServletException {
+        Lookup lookup = mockLookup(TestRoutePathProvider.class);
+
+        RoutePathProvider handler = lookup.lookup(RoutePathProvider.class);
+        Assert.assertNotNull(handler);
+        Assert.assertEquals(TestRoutePathProvider.class, handler.getClass());
+
+        Collection<RoutePathProvider> allHandlers = lookup
+                .lookupAll(RoutePathProvider.class);
+        Assert.assertEquals(1, allHandlers.size());
+
+        Assert.assertEquals(TestRoutePathProvider.class,
                 allHandlers.iterator().next().getClass());
     }
 

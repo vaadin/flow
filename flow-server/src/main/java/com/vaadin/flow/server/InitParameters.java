@@ -130,10 +130,21 @@ public class InitParameters implements Serializable {
 
     /**
      * Configuration parameter name for enabling live reload.
+     * <p>
+     * Note that if the dev mode gizmo is disabled
+     * ({@link #SERVLET_PARAMETER_DEVMODE_ENABLE_GIZMO} is set to {@code
+     * false}), the live reload will be disabled as well.
      *
      * @since
      */
     public static final String SERVLET_PARAMETER_DEVMODE_ENABLE_LIVE_RELOAD = "devmode.liveReload.enabled";
+
+    /**
+     * Configuration parameter name for enabling dev mode gizmo (debug window).
+     *
+     * @since 9.0
+     */
+    public static final String SERVLET_PARAMETER_DEVMODE_ENABLE_GIZMO = "devmode.gizmo.enabled";
 
     /**
      * Configuration parameter name for enabling session serialization in

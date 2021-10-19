@@ -64,12 +64,15 @@ public class SessionRouteRegistryTest {
 
         vaadinService = Mockito.mock(MockService.class);
         Mockito.when(vaadinService.getRouteRegistry()).thenReturn(registry);
-        VaadinContext context = Mockito.mock(VaadinContext.class);
+        VaadinServletContext context = new MockVaadinContext();
+
         ApplicationConfiguration applicationConfiguration = Mockito
                 .mock(ApplicationConfiguration.class);
+
+        context.setAttribute(ApplicationConfiguration.class,
+                applicationConfiguration);
+
         Mockito.when(vaadinService.getContext()).thenReturn(context);
-        Mockito.when(context.getAttribute(Mockito.any(), Mockito.any()))
-                .thenReturn(applicationConfiguration);
         Mockito.when(applicationConfiguration.isProductionMode())
                 .thenReturn(true);
 

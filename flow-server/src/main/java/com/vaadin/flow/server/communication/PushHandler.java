@@ -22,7 +22,9 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.function.Consumer;
 
+import org.apache.commons.io.IOUtils;
 import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResource.TRANSPORT;
@@ -178,6 +180,27 @@ public class PushHandler {
     }
 
     /**
+     * Invokes a command with the current service set.
+     *
+     * @param resource
+     *            the atmosphere resource for the current request
+     * @param command
+     *            the command to run
+     */
+    private void callWithService(final AtmosphereResource resource,
+            final Consumer<AtmosphereRequest> command) {
+        AtmosphereRequest req = resource.getRequest();
+        VaadinServletRequest vaadinRequest = new VaadinServletRequest(req,
+                service);
+        service.setCurrentInstances(vaadinRequest, null);
+        try {
+            command.accept(req);
+        } finally {
+            CurrentInstance.clearAll();
+        }
+    }
+
+    /**
      * Find the UI for the atmosphere resource, lock it and invoke the callback.
      *
      * @param resource
@@ -321,7 +344,7 @@ public class PushHandler {
 
         Optional<BrowserLiveReload> liveReload = BrowserLiveReloadAccessor
                 .getLiveReloadFromService(service);
-        if (isLiveReloadConnection(resource) && liveReload.isPresent()
+        if (isDebugWindowConnection(resource) && liveReload.isPresent()
                 && liveReload.get().isLiveReload(resource)) {
             liveReload.get().onDisconnect(resource);
             return null;
@@ -512,9 +535,10 @@ public class PushHandler {
      *            The related atmosphere resources
      */
     void onConnect(AtmosphereResource resource) {
-        if (isLiveReloadConnection(resource)) {
-            BrowserLiveReloadAccessor.getLiveReloadFromService(service)
-                    .ifPresent(liveReload -> liveReload.onConnect(resource));
+        if (isDebugWindowConnection(resource)) {
+            callWithService(resource, request -> BrowserLiveReloadAccessor
+                    .getLiveReloadFromService(service)
+                    .ifPresent(liveReload -> liveReload.onConnect(resource)));
         } else {
             callWithUi(resource, establishCallback);
         }
@@ -527,18 +551,36 @@ public class PushHandler {
      *            The related atmosphere resources
      */
     void onMessage(AtmosphereResource resource) {
-        if (isLiveReloadConnection(resource)) {
-            getLogger().debug("Received live reload heartbeat");
+        if (isDebugWindowConnection(resource)) {
+            callWithService(resource, this::handleDebugWindowMessage);
         } else {
             callWithUi(resource, receiveCallback);
         }
     }
 
-    private boolean isLiveReloadConnection(AtmosphereResource resource) {
+    private void handleDebugWindowMessage(AtmosphereRequest request) {
+        try {
+            String msg = IOUtils.toString(request.getReader());
+            Optional<BrowserLiveReload> liveReload = BrowserLiveReloadAccessor
+                    .getLiveReloadFromService(service);
+            if (liveReload.isPresent()) {
+                liveReload.get().onMessage(msg);
+            } else {
+                getLogger().error(
+                        "Received message for debug window but there is no debug window connection available");
+            }
+        } catch (IOException e) {
+            getLogger().error(
+                    "Unable to read contents of debug connection message", e);
+        } finally {
+            CurrentInstance.clearAll();
+        }
+    }
+
+    private boolean isDebugWindowConnection(AtmosphereResource resource) {
         String refreshConnection = resource.getRequest()
-                .getParameter(ApplicationConstants.LIVE_RELOAD_CONNECTION);
-        return service.getDeploymentConfiguration().isDevModeLiveReloadEnabled()
-                && refreshConnection != null
+                .getParameter(ApplicationConstants.DEBUG_WINDOW_CONNECTION);
+        return refreshConnection != null
                 && TRANSPORT.WEBSOCKET.equals(resource.transport());
     }
 

@@ -1,12 +1,36 @@
-import { css, html, LitElement } from 'lit';
-import { property } from 'lit/decorators.js';
+import { css, html, LitElement, nothing, svg } from 'lit';
+import { property, state } from 'lit/decorators.js';
+import { classMap } from 'lit/directives/class-map.js';
+// @ts-ignore
+import { copy } from './copy-to-clipboard.js';
 
+interface ServerInfo {
+  vaadinVersion: string;
+  flowVersion: string;
+  javaVersion: string;
+  osVersion: string;
+}
+
+interface Feature {
+  id: string;
+  title: string;
+  moreInfoLink: string;
+  enabled: boolean;
+}
+
+interface Tab {
+  id: 'log' | 'info' | 'features';
+  title: string;
+  render: () => unknown;
+}
 export class VaadinDevmodeGizmo extends LitElement {
   static BLUE_HSL = css`206, 100%, 70%`;
   static GREEN_HSL = css`145, 80%, 42%`;
   static GREY_HSL = css`0, 0%, 50%`;
   static YELLOW_HSL = css`38, 98%, 64%`;
   static RED_HSL = css`355, 100%, 68%`;
+  static MAX_LOG_ROWS = 1000;
+  static copyO = svg`<svg style="width: 16px; height: 16px"><g id="copy-o"><path d="M13 3h-3l-3-3h-7v13h6v3h10v-10l-3-3zM7 1l2 2h-2v-2zM1 12v-11h5v3h3v8h-8zM15 15h-8v-2h3v-9h2v3h3v8zM13 6v-2l2 2h-2z"></path></g></svg>`;
 
   static get styles() {
     return css`
@@ -21,6 +45,7 @@ export class VaadinDevmodeGizmo extends LitElement {
         --gizmo-text-color: rgba(255, 255, 255, 0.85);
         --gizmo-text-color-secondary: rgba(255, 255, 255, 0.65);
         --gizmo-text-color-emphasis: rgba(255, 255, 255, 1);
+        --gizmo-text-color-active: rgba(255, 255, 255, 1);
 
         --gizmo-background-color-inactive: rgba(50, 50, 50, 0.15);
         --gizmo-background-color-active: rgba(50, 50, 50, 0.98);
@@ -237,6 +262,7 @@ export class VaadinDevmodeGizmo extends LitElement {
         overflow: hidden;
         margin: 0.5rem;
         width: 30rem;
+        min-height: 10rem;
         max-width: calc(100% - 1rem);
         max-height: calc(50vh - 1rem);
         flex-shrink: 0;
@@ -261,6 +287,12 @@ export class VaadinDevmodeGizmo extends LitElement {
       .tab {
         color: var(--gizmo-text-color-secondary);
         font-weight: 600;
+        padding-inline-end: 0.5rem;
+        background: none;
+        border: none;
+      }
+      .tab.active {
+        color: var(--gizmo-text-color-active);
       }
 
       .ahreflike {
@@ -297,7 +329,8 @@ export class VaadinDevmodeGizmo extends LitElement {
         --gizmo-notification-color: var(--gizmo-blue-color);
       }
 
-      .message.warning {
+      .message.warning,
+      .experimental-warning {
         --gizmo-notification-color: var(--gizmo-yellow-color);
       }
 
@@ -322,7 +355,7 @@ export class VaadinDevmodeGizmo extends LitElement {
         user-select: text;
       }
 
-      .message .message-heading {
+      .message-heading {
         position: relative;
         display: flex;
         align-items: center;
@@ -333,7 +366,7 @@ export class VaadinDevmodeGizmo extends LitElement {
         font-weight: 600;
       }
 
-      .message .message-heading::before {
+      .message-heading::before {
         position: absolute;
         margin-left: -1.5rem;
         display: inline-block;
@@ -355,12 +388,27 @@ export class VaadinDevmodeGizmo extends LitElement {
       }
 
       .message.warning .message-heading::before,
-      .message.error .message-heading::before {
+      .message.error .message-heading::before,
+      .experimental-warning.message-heading::before {
         content: '!';
         color: var(--gizmo-background-color-active);
         background-color: var(--gizmo-notification-color);
       }
 
+      .features-tray {
+        padding-left: 0.5rem;
+        padding-top: 0.5rem;
+      }
+      .feature-toggle {
+        position: absolute;
+      }
+      .feature-title {
+        padding-left: 1.7rem;
+        display: block;
+      }
+      .experimental-warning {
+        padding-left: 1.7rem;
+      }
       .message .message-details {
         font-weight: 400;
         color: var(--gizmo-text-color-secondary);
@@ -511,6 +559,21 @@ export class VaadinDevmodeGizmo extends LitElement {
         display: none;
       }
 
+      .info-tray {
+        position: relative;
+      }
+      .info-message {
+        display: flex;
+        padding: 0.125rem 0.75rem 0.125rem 0.5rem;
+        background-clip: padding-box;
+        user-select: text;
+      }
+      .copy {
+        position: absolute;
+        fill: white;
+        top: 0.125rem;
+        right: 0.75rem;
+      }
       @keyframes slideIn {
         from {
           transform: translateX(100%);
@@ -578,6 +641,9 @@ export class VaadinDevmodeGizmo extends LitElement {
   @property({ type: String })
   url?: string;
 
+  @property({ type: Boolean, attribute: true })
+  liveReloadDisabled?: boolean;
+
   @property({ type: String })
   backend?: string;
 
@@ -590,7 +656,7 @@ export class VaadinDevmodeGizmo extends LitElement {
   @property({ type: Array, attribute: false })
   messages: Message[] = [];
 
-  @property({ type: Object, attribute: false })
+  @property({ type: String, attribute: false })
   splashMessage?: string;
 
   @property({ type: Array, attribute: false })
@@ -602,14 +668,29 @@ export class VaadinDevmodeGizmo extends LitElement {
   @property({ type: String, attribute: false })
   javaStatus: ConnectionStatus = ConnectionStatus.UNAVAILABLE;
 
-  javaConnection?: Connection;
-  frontendConnection?: Connection;
+  @state()
+  private tabs: readonly Tab[] = [
+    { id: 'log', title: 'Log', render: this.renderLog },
+    { id: 'info', title: 'Info', render: this.renderInfo },
+    { id: 'features', title: 'Features', render: this.renderFeatures }
+  ];
+  @state()
+  private activeTab: string = 'log';
 
-  nextMessageId: number = 1;
+  @state()
+  private serverInfo: ServerInfo = { flowVersion: '', vaadinVersion: '', javaVersion: '', osVersion: '' };
 
-  disableEventListener?: EventListener;
+  @state()
+  private features: Feature[] = [];
 
-  transitionDuration: number = 0;
+  private javaConnection?: Connection;
+  private frontendConnection?: Connection;
+
+  private nextMessageId: number = 1;
+
+  private disableEventListener?: EventListener;
+
+  private transitionDuration: number = 0;
 
   constructor() {
     super();
@@ -619,8 +700,11 @@ export class VaadinDevmodeGizmo extends LitElement {
     this.frontendStatus = ConnectionStatus.UNAVAILABLE;
     this.javaStatus = ConnectionStatus.UNAVAILABLE;
 
-    const onConnectionError = (msg: string) => this.showMessage(MessageType.ERROR, msg);
+    const onConnectionError = (msg: string) => this.log(MessageType.ERROR, msg);
     const onReload = () => {
+      if (this.liveReloadDisabled) {
+        return;
+      }
       this.showSplashMessage('Reloading…');
       const lastReload = window.sessionStorage.getItem(VaadinDevmodeGizmo.TRIGGERED_COUNT_KEY_IN_SESSION_STORAGE);
       const nextReload = lastReload ? parseInt(lastReload, 10) + 1 : 1;
@@ -631,7 +715,7 @@ export class VaadinDevmodeGizmo extends LitElement {
 
     const frontendConnection = new Connection(this.getDedicatedWebSocketUrl());
     frontendConnection.onHandshake = () => {
-      this.showMessage(MessageType.LOG, 'Vaadin development mode initialized');
+      this.log(MessageType.LOG, 'Vaadin development mode initialized');
       if (!VaadinDevmodeGizmo.isActive) {
         frontendConnection.setActive(false);
       }
@@ -640,6 +724,16 @@ export class VaadinDevmodeGizmo extends LitElement {
     frontendConnection.onReload = onReload;
     frontendConnection.onStatusChange = (status: ConnectionStatus) => {
       this.frontendStatus = status;
+    };
+    frontendConnection.onMessage = (message: any) => {
+      if (message?.command === 'serverInfo') {
+        this.serverInfo = message.data as ServerInfo;
+      } else if (message?.command === 'featureFlags') {
+        this.features = message.data.features as Feature[];
+      } else {
+        // eslint-disable-next-line no-console
+        console.error('Unknown message from frontend connection:', JSON.stringify(message));
+      }
     };
     this.frontendConnection = frontendConnection;
 
@@ -667,7 +761,7 @@ export class VaadinDevmodeGizmo extends LitElement {
     javaConnection.onHandshake = () => {
       prevOnHandshake();
       if (this.backend) {
-        this.showMessage(
+        this.log(
           MessageType.INFORMATION,
           `Java live reload available: ${VaadinDevmodeGizmo.BACKEND_DISPLAY_NAME[this.backend]}`
         );
@@ -703,7 +797,7 @@ export class VaadinDevmodeGizmo extends LitElement {
       console.error('The protocol of the url should be http or https for live reload to work.');
       return undefined;
     }
-    return `${connectionBaseUrl.replace(/^http/, 'ws')}?v-r=push&refresh_connection`;
+    return `${connectionBaseUrl.replace(/^http/, 'ws')}?v-r=push&debug_window`;
   }
 
   getSpringBootWebSocketUrl(location: any) {
@@ -720,6 +814,7 @@ export class VaadinDevmodeGizmo extends LitElement {
 
   connectedCallback() {
     super.connectedCallback();
+    this.catchErrors();
 
     // when focus or clicking anywhere, move the splash message to the message tray
     this.disableEventListener = (_: any) => this.demoteSplashMessage();
@@ -746,6 +841,24 @@ export class VaadinDevmodeGizmo extends LitElement {
     if ((window as any).Vaadin) {
       (window as any).Vaadin.devModeGizmo = this;
     }
+  }
+  format(o: any): string {
+    return o.toString();
+  }
+  catchErrors() {
+    // Process stored messages
+    const queue = (window as any).Vaadin.ConsoleErrors as any[];
+    if (queue) {
+      queue.forEach((args: any[]) => {
+        this.log(MessageType.ERROR, args.map((o) => this.format(o)).join(' '));
+      });
+    }
+    // Install new handler that immediately processes messages
+    (window as any).Vaadin.ConsoleErrors = {
+      push: (args: any[]) => {
+        this.log(MessageType.ERROR, args.map((o) => this.format(o)).join(' '));
+      }
+    };
   }
 
   disconnectedCallback() {
@@ -777,12 +890,12 @@ export class VaadinDevmodeGizmo extends LitElement {
 
   demoteSplashMessage() {
     if (this.splashMessage) {
-      this.showMessage(MessageType.LOG, this.splashMessage);
+      this.log(MessageType.LOG, this.splashMessage);
     }
     this.showSplashMessage(undefined);
   }
 
-  showMessage(type: MessageType, message: string, details?: string, link?: string) {
+  log(type: MessageType, message: string, details?: string, link?: string) {
     const id = this.nextMessageId;
     this.nextMessageId += 1;
     this.messages.push({
@@ -794,11 +907,20 @@ export class VaadinDevmodeGizmo extends LitElement {
       dontShowAgain: false,
       deleted: false
     });
+    while (this.messages.length > VaadinDevmodeGizmo.MAX_LOG_ROWS) {
+      this.messages.shift();
+    }
     this.requestUpdate();
     this.updateComplete.then(() => {
       // Scroll into view
       setTimeout(() => {
-        this.shadowRoot!.querySelector('.message-tray .message:last-child')!.scrollIntoView({ behavior: 'smooth' });
+        const messageTray = this.shadowRoot!.querySelector('.message-tray .message:last-child');
+        if (messageTray) {
+          messageTray.scrollIntoView({ behavior: 'smooth' });
+          if (type === MessageType.ERROR) {
+            this.expanded = true;
+          }
+        }
       }, this.transitionDuration);
     });
   }
@@ -832,7 +954,7 @@ export class VaadinDevmodeGizmo extends LitElement {
       }
       this.requestUpdate();
     } else {
-      this.showMessage(type, message, details, link);
+      this.log(type, message, details, link);
     }
   }
 
@@ -853,7 +975,7 @@ export class VaadinDevmodeGizmo extends LitElement {
       }
 
       notification.deleted = true;
-      this.showMessage(notification.type, notification.message, notification.details, notification.link);
+      this.log(notification.type, notification.message, notification.details, notification.link);
 
       // give some time for the animation
       setTimeout(() => {
@@ -944,14 +1066,24 @@ export class VaadinDevmodeGizmo extends LitElement {
   render() {
     return html` <div class="window ${this.expanded ? 'visible' : 'hidden'}">
         <div class="window-toolbar">
-          <span class="tab">Log</span>
+          ${this.tabs.map(
+            (tab) =>
+              html`<button
+                class=${classMap({ tab: true, active: this.activeTab === tab.id })}
+                id="${tab.id}"
+                @click=${() => (this.activeTab = tab.id)}
+              >
+                ${tab.title}
+              </button> `
+          )}
           <label class="switch">
             <input
               id="toggle"
               type="checkbox"
-              ?disabled=${(this.frontendStatus === ConnectionStatus.UNAVAILABLE ||
+              ?disabled=${this.liveReloadDisabled ||
+              ((this.frontendStatus === ConnectionStatus.UNAVAILABLE ||
                 this.frontendStatus === ConnectionStatus.ERROR) &&
-              (this.javaStatus === ConnectionStatus.UNAVAILABLE || this.javaStatus === ConnectionStatus.ERROR)}
+                (this.javaStatus === ConnectionStatus.UNAVAILABLE || this.javaStatus === ConnectionStatus.ERROR))}
               ?checked="${this.frontendStatus === ConnectionStatus.ACTIVE ||
               this.javaStatus === ConnectionStatus.ACTIVE}"
               @change=${(e: any) => this.setActive(e.target.checked)}
@@ -970,7 +1102,7 @@ export class VaadinDevmodeGizmo extends LitElement {
             </svg>
           </button>
         </div>
-        <div class="message-tray">${this.messages.map((msg) => this.renderMessage(msg))}</div>
+        ${this.tabs.map((tab) => (this.activeTab === tab.id ? tab.render.call(this) : nothing))}
       </div>
 
       <div class="notification-tray">${this.notifications.map((msg) => this.renderMessage(msg))}</div>
@@ -994,6 +1126,68 @@ export class VaadinDevmodeGizmo extends LitElement {
           ? html`<span class="status-description">${this.splashMessage}</span></div>`
           : html`<span class="status-description">Live reload (JS: ${this.frontendStatus}, Java: ${this.javaStatus}) </span><span class="ahreflike">Details</span></div>`}
       </div>`;
+  }
+
+  renderLog() {
+    return html`<div class="message-tray">${this.messages.map((msg) => this.renderMessage(msg))}</div>`;
+  }
+  renderInfo() {
+    return html`<div class="info-tray">
+      <span class="copy" @click=${this.copyInfoToClipboard}>${VaadinDevmodeGizmo.copyO}</span>
+      <div class="info-message">Vaadin version: ${this.serverInfo.vaadinVersion}</div>
+      <div class="info-message">Flow version: ${this.serverInfo.flowVersion}</div>
+      <div class="info-message">Java version: ${this.serverInfo.javaVersion}</div>
+      <div class="info-message">Operating system: ${this.serverInfo.osVersion}</div>
+      <div class="info-message">Browser: ${navigator.userAgent}</div>
+    </div>`;
+  }
+
+  private renderFeatures() {
+    return html`<div class="features-tray">
+              <p class="message-heading experimental-warning">Experimental features ahead!</p>
+              <p>
+                These features are work in progress and the implementation, API, look and feel is not yet finished.
+              </p>
+
+                ${this.features.map(
+                  (feature) => html`<div class="feature">
+                    <input
+                      class="feature-toggle"
+                      id="feature-toggle-${feature.id}"
+                      type="checkbox"
+                      ?checked=${feature.enabled}
+                      @change=${(e: Event) => this.toggleFeatureFlag(e, feature)}
+                    />
+
+                    <label for="feature-toggle-${feature.id}" class="feature-title"
+                      >${feature.title}
+                      <span class="feature-link">
+                        <a class="ahreflike" href="${feature.moreInfoLink}" target="_blank">More info</a>
+                      </span></label
+                    >
+                  </div>`
+                )}
+              </p>
+            </div>`;
+  }
+
+  copyInfoToClipboard(): void {
+    const messages = this.renderRoot.querySelectorAll('.info-message');
+    const text = Array.from(messages)
+      .map((message) => message.textContent)
+      .join('\n');
+    copy(text);
+    this.showNotification(MessageType.INFORMATION, 'Version information copied to clipboard');
+  }
+
+  toggleFeatureFlag(e: Event, feature: Feature) {
+    const enabled = (e.target! as HTMLInputElement).checked;
+    if (this.frontendConnection) {
+      this.frontendConnection.setFeature(feature.id, enabled);
+      this.log(MessageType.INFORMATION, `Feature '${feature.title}' ${enabled ? 'enabled' : 'disabled'}`);
+    } else {
+      this.log(MessageType.ERROR, `Unable to toggle feature ${feature.title}: No server connection available`);
+    }
   }
 }
 
@@ -1041,31 +1235,28 @@ class Connection extends Object {
 
   onStatusChange(_: ConnectionStatus) {}
 
+  onMessage(message: any) {
+    // eslint-disable-next-line no-console
+    console.error('Unknown message received from the live reload server:', message);
+  }
+
   handleMessage(msg: any) {
     let json;
     try {
       json = JSON.parse(msg.data);
-    } catch (e) {
+    } catch (e: any) {
       this.handleError(`[${e.name}: ${e.message}`);
       return;
     }
-    const { command } = json;
-    switch (command) {
-      case 'hello': {
-        this.setStatus(ConnectionStatus.ACTIVE);
-        this.onHandshake();
-        break;
+    if (json.command === 'hello') {
+      this.setStatus(ConnectionStatus.ACTIVE);
+      this.onHandshake();
+    } else if (json.command === 'reload') {
+      if (this.status === ConnectionStatus.ACTIVE) {
+        this.onReload();
       }
-
-      case 'reload':
-        if (this.status === ConnectionStatus.ACTIVE) {
-          this.onReload();
-        }
-        break;
-
-      default:
-        // eslint-disable-next-line no-console
-        console.error('Unknown command received from the live reload server:', command);
+    } else {
+      this.onMessage(json);
     }
   }
 
@@ -1093,6 +1284,15 @@ class Connection extends Object {
       this.status = status;
       this.onStatusChange(status);
     }
+  }
+
+  private send(command: string, data: any) {
+    const message = { command, data };
+    this.webSocket!.send(JSON.stringify(message));
+  }
+
+  setFeature(featureId: string, enabled: boolean) {
+    this.send('setFeature', { featureId, enabled });
   }
 }
 

@@ -1,10 +1,16 @@
 package com.vaadin.base.devserver;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletRegistration;
+import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
+import static com.vaadin.flow.server.Constants.TARGET;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_JAVA_SOURCE_FOLDER;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_OPENAPI_JSON_FILE;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR;
+import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
+import static com.vaadin.flow.testutil.FrontendStubs.createStubWebpackServer;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
@@ -12,47 +18,30 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import net.jcip.annotations.NotThreadSafe;
+import javax.servlet.ServletRegistration;
+
+import com.vaadin.base.devserver.startup.AbstractDevModeTest;
+import com.vaadin.base.devserver.startup.DevModeInitializer;
+import com.vaadin.flow.di.ResourceProvider;
+import com.vaadin.flow.internal.DevModeHandlerManager;
+import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinServletContext;
+import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
+import com.vaadin.fusion.frontend.EndpointGeneratorTaskFactoryImpl;
+
 import org.apache.commons.io.FileUtils;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
-import com.vaadin.base.devserver.startup.DevModeInitializer;
-import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.di.ResourceProvider;
-import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
-import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.fusion.frontend.EndpointGeneratorTaskFactoryImpl;
-import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
-import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
-import static com.vaadin.flow.testutil.FrontendStubs.createStubWebpackServer;
-import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
-import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_JAVA_SOURCE_FOLDER;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_OPENAPI_JSON_FILE;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
-public class DevModeInitializerEndpointTest {
+public class DevModeInitializerEndpointTest extends AbstractDevModeTest {
 
-    String baseDir;
-    ServletContext servletContext;
     Set<Class<?>> classes;
     DevModeInitializer devModeInitializer;
-    private ApplicationConfiguration appConfig;
-
-    private final TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     private static class VaadinServletSubClass extends VaadinServlet {
 
@@ -61,15 +50,12 @@ public class DevModeInitializerEndpointTest {
     @Before
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public void setup() throws Exception {
-        assertNull("No DevModeHandler should be available at test start",
-                WebpackHandler.getDevModeHandler());
-
-        temporaryFolder.create();
-        baseDir = temporaryFolder.getRoot().getPath();
-        Boolean enablePnpm = Boolean.TRUE;
-
-        appConfig = Mockito.mock(ApplicationConfiguration.class);
-        mockApplicationConfiguration(appConfig, enablePnpm);
+        super.setup();
+        assertFalse("No DevModeHandler should be available at test start",
+                DevModeHandlerManager
+                        .getDevModeHandler(
+                                new VaadinServletContext(servletContext))
+                        .isPresent());
 
         createStubNode(false, true, baseDir);
         createStubWebpackServer("Compiled", 500, baseDir, true);
@@ -77,17 +63,8 @@ public class DevModeInitializerEndpointTest {
         // Prevent TaskRunNpmInstall#cleanUp from deleting node_modules
         new File(baseDir, "node_modules/.modules.yaml").createNewFile();
 
-        servletContext = Mockito.mock(ServletContext.class);
         ServletRegistration vaadinServletRegistration = Mockito
                 .mock(ServletRegistration.class);
-
-        Mockito.when(servletContext
-                .getAttribute(ApplicationConfiguration.class.getName()))
-                .thenReturn(appConfig);
-
-        Lookup lookup = Mockito.mock(Lookup.class);
-        Mockito.when(servletContext.getAttribute(Lookup.class.getName()))
-                .thenReturn(lookup);
 
         Mockito.doReturn(new EndpointGeneratorTaskFactoryImpl()).when(lookup)
                 .lookup(EndpointGeneratorTaskFactory.class);
@@ -123,21 +100,6 @@ public class DevModeInitializerEndpointTest {
         devModeInitializer = new DevModeInitializer();
     }
 
-    @After
-    public void teardown() throws Exception {
-        final WebpackHandler devModeHandler = WebpackHandler
-                .getDevModeHandler();
-        if (devModeHandler != null) {
-            devModeHandler.stop();
-            // Wait until dev mode handler has stopped.
-            while (WebpackHandler.getDevModeHandler() != null) {
-                Thread.sleep(200); // NOSONAR
-            }
-        }
-
-        temporaryFolder.delete();
-    }
-
     @Test
     public void should_generateOpenApi_when_EndpointPresents()
             throws Exception {
@@ -153,7 +115,8 @@ public class DevModeInitializerEndpointTest {
         Assert.assertFalse(generatedOpenApiJson.exists());
         DevModeInitializer devModeInitializer = new DevModeInitializer();
         devModeInitializer.onStartup(classes, servletContext);
-        waitForDevModeServer();
+        handler = getDevModeHandler();
+        waitForDevServer();
         Assert.assertTrue("Should generate OpenAPI spec if Endpoint is used.",
                 generatedOpenApiJson.exists());
     }
@@ -167,7 +130,8 @@ public class DevModeInitializerEndpointTest {
 
         Assert.assertFalse(generatedOpenApiJson.exists());
         devModeInitializer.onStartup(classes, servletContext);
-        waitForDevModeServer();
+        handler = getDevModeHandler();
+        waitForDevServer();
         Assert.assertFalse(
                 "Should not generate OpenAPI spec if Endpoint is not used.",
                 generatedOpenApiJson.exists());
@@ -195,47 +159,10 @@ public class DevModeInitializerEndpointTest {
         assertFalse(ts1.exists());
         assertFalse(ts2.exists());
         devModeInitializer.onStartup(classes, servletContext);
-        waitForDevModeServer();
+        handler = getDevModeHandler();
+        waitForDevServer();
         assertTrue(ts1.exists());
         assertTrue(ts2.exists());
-    }
-
-    private void waitForDevModeServer() throws NoSuchMethodException,
-            IllegalAccessException, InvocationTargetException {
-        WebpackHandler handler = WebpackHandler.getDevModeHandler();
-        Assert.assertNotNull(handler);
-        Method join = WebpackHandler.class.getDeclaredMethod("join");
-        join.setAccessible(true);
-        join.invoke(handler);
-    }
-
-    private ServletContext mockServletContext() {
-        ServletContext context = Mockito.mock(ServletContext.class);
-        Mockito.when(
-                context.getAttribute(ApplicationConfiguration.class.getName()))
-                .thenReturn(appConfig);
-        return context;
-    }
-
-    private void mockApplicationConfiguration(
-            ApplicationConfiguration appConfig, boolean enablePnpm) {
-        Mockito.when(appConfig.isProductionMode()).thenReturn(false);
-        Mockito.when(appConfig.enableDevServer()).thenReturn(true);
-        Mockito.when(appConfig.isPnpmEnabled()).thenReturn(enablePnpm);
-
-        Mockito.when(appConfig.getStringProperty(Mockito.anyString(),
-                Mockito.anyString()))
-                .thenAnswer(invocation -> invocation.getArgument(1));
-        Mockito.when(appConfig.getBooleanProperty(Mockito.anyString(),
-                Mockito.anyBoolean()))
-                .thenAnswer(invocation -> invocation.getArgument(1));
-
-        Mockito.when(appConfig.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
-                null)).thenReturn(baseDir);
-        Mockito.when(appConfig.getBuildFolder()).thenReturn(TARGET);
-        Mockito.when(appConfig.getFlowResourcesFolder()).thenReturn(
-                Paths.get(TARGET, FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER)
-                        .toString());
     }
 
 }

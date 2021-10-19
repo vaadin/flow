@@ -40,8 +40,10 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.ErrorStateRenderer.ExceptionsTrace;
+import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
@@ -211,7 +213,12 @@ public class ErrorStateRendererTest {
     }
 
     private UI configureMocks() {
-        MockVaadinServletService service = new MockVaadinServletService();
+        MockVaadinServletService service = new MockVaadinServletService() {
+            @Override
+            public VaadinContext getContext() {
+                return new MockVaadinContext();
+            }
+        };
 
         MockVaadinSession session = new AlwaysLockedVaadinSession(service);
         session.setConfiguration(new MockDeploymentConfiguration());

@@ -15,59 +15,39 @@
  */
 package com.vaadin.base.devserver;
 
-import java.io.File;
+import static java.net.HttpURLConnection.HTTP_OK;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URL;
 import java.util.concurrent.CompletableFuture;
 
 import com.sun.net.httpserver.HttpServer;
-import net.jcip.annotations.NotThreadSafe;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-
-import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.base.devserver.startup.AbstractDevModeTest;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
-import static java.net.HttpURLConnection.HTTP_OK;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import org.junit.Assert;
+import org.junit.Ignore;
+import org.junit.Test;
+
+import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 @SuppressWarnings("restriction")
 @Ignore("This test may cause freeze of a build. "
         + "It happens all the time for Java 11 validation and it happens sometimes on PR validation")
-public class WebpackHandlerStopTest {
-
-    private MockDeploymentConfiguration configuration;
+public class WebpackHandlerStopTest extends AbstractDevModeTest {
 
     private HttpServer httpServer;
-    private File npmFolder;
 
-    @Rule
-    public final TemporaryFolder temporaryFolder = new TemporaryFolder();
-
-    @Before
-    public void setup() throws Exception {
-
-        npmFolder = temporaryFolder.getRoot();
-        configuration = new MockDeploymentConfiguration();
-    }
-
-    @After
-    public void teardown() throws Exception {
+    @Override
+    public void teardown() {
+        super.teardown();
         if (httpServer != null) {
             httpServer.stop(0);
-        }
-        WebpackHandler handler = WebpackHandler.getDevModeHandler();
-        if (handler != null) {
-            handler.stop();
         }
     }
 
@@ -79,7 +59,7 @@ public class WebpackHandlerStopTest {
         assertNull(requestWebpackServer(port, "/foo"));
 
         // Running server should handle any request
-        startTestServer(port, HTTP_OK, "OK");
+        startTestServer(port, HTTP_OK, "{}");
         assertNotNull(requestWebpackServer(port, "/foo"));
         assertNotNull(requestWebpackServer(port, "/bar"));
 
@@ -93,15 +73,17 @@ public class WebpackHandlerStopTest {
 
         int port = WebpackHandler.getFreePort();
 
-        startTestServer(port, HTTP_OK, "OK");
+        startTestServer(port, HTTP_OK, "{}");
 
-        WebpackHandler.start(port, createDevModeLookup(), npmFolder,
-                CompletableFuture.completedFuture(null)).join();
-        assertEquals(port, WebpackHandler.getDevModeHandler().getPort());
+        handler = WebpackHandler.start(port, lookup, npmFolder,
+                CompletableFuture.completedFuture(null));
+        waitForDevServer();
+        assertEquals(port, ((WebpackHandler) handler).getPort());
         assertNotNull(requestWebpackServer(port, "/bar"));
+        Assert.assertTrue(((WebpackHandler) handler).isRunning());
 
-        WebpackHandler.getDevModeHandler().stop();
-        assertNull(WebpackHandler.getDevModeHandler());
+        handler.stop();
+        Assert.assertFalse(((WebpackHandler) handler).isRunning());
         assertNull(requestWebpackServer(port, "/bar"));
     }
 
@@ -109,24 +91,31 @@ public class WebpackHandlerStopTest {
     public void devModeHandler_should_Keep_WebPackOnRestart() throws Exception {
         int port = WebpackHandler.getFreePort();
 
-        startTestServer(port, HTTP_OK, "OK");
+        startTestServer(port, HTTP_OK, "{}");
 
-        WebpackHandler.start(port, createDevModeLookup(), npmFolder,
-                CompletableFuture.completedFuture(null)).join();
+        handler = WebpackHandler.start(port, lookup, npmFolder,
+                CompletableFuture.completedFuture(null));
+        waitForDevServer();
 
-        // Simulate a server restart by removing the handler, and starting a new
-        // one
-        WebpackHandlerTest.removeDevModeHandlerInstance();
-        assertNull(WebpackHandler.getDevModeHandler());
-        WebpackHandler.start(createDevModeLookup(), npmFolder,
-                CompletableFuture.completedFuture(null)).join();
+        simulateServerRestart();
+        handler = WebpackHandler.start(lookup, npmFolder,
+                CompletableFuture.completedFuture(null));
+        waitForDevServer();
 
-        // Webpack server should continue working
+        Assert.assertTrue(((WebpackHandler) handler).isRunning());
+
+        // Webpack server should continue working on the same port
         assertNotNull(requestWebpackServer(port, "/bar"));
 
-        WebpackHandler.getDevModeHandler().stop();
-        assertNull(WebpackHandler.getDevModeHandler());
+        handler.stop();
+        Assert.assertFalse(((WebpackHandler) handler).isRunning());
         assertNull(requestWebpackServer(port, "/bar"));
+    }
+
+    private void simulateServerRestart() throws Exception {
+        // On a server restart/redeploy all reference to the running process are
+        // lost so we simulate it by removing the handler reference
+        removeDevModeHandlerInstance();
     }
 
     private String requestWebpackServer(int port, String path) {
@@ -155,10 +144,6 @@ public class WebpackHandlerStopTest {
         });
         httpServer.start();
         return port;
-    }
-
-    private Lookup createDevModeLookup() {
-        return Lookup.of(configuration, DeploymentConfiguration.class);
     }
 
 }

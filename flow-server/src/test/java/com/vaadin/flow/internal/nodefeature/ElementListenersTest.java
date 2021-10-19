@@ -28,16 +28,19 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.spy;
@@ -340,6 +343,57 @@ public class ElementListenersTest
         DomListenerRegistration registration = ns.add("foo", noOp);
 
         registration.synchronizeProperty("");
+    }
+
+    @Test
+    public void mapEventTargetToElement_targetNodeIdInJsonData_elementMapped() {
+        Element parent = new Element("parent");
+        Element child = new Element("child");
+        Element grandChild = new Element("grandChild");
+        parent.appendChild(child.appendChild(grandChild));
+        new StateTree(new UI().getInternals(), ElementChildrenList.class)
+                .getUI().getElement().appendChild(parent);
+
+        AtomicReference<Element> capturedTarget = new AtomicReference<>();
+        final DomListenerRegistration registration = parent
+                .addEventListener("click", e -> {
+                    capturedTarget.set(e.getEventTarget().orElse(null));
+                });
+        final ElementListenerMap listenerMap = parent.getNode()
+                .getFeature(ElementListenerMap.class);
+        Set<String> expressions = getExpressions(listenerMap, "click");
+        Assert.assertEquals(0, expressions.size());
+
+        registration.mapEventTargetElement();
+        expressions = getExpressions(listenerMap, "click");
+
+        Assert.assertEquals(1, expressions.size());
+        Assert.assertEquals(JsonConstants.MAP_EVENT_TARGET,
+                expressions.iterator().next());
+
+        // child
+        final JsonObject eventData = Json.createObject();
+        eventData.put(JsonConstants.MAP_EVENT_TARGET, child.getNode().getId());
+        listenerMap.fireEvent(new DomEvent(parent, "click", eventData));
+        Assert.assertEquals(child, capturedTarget.get());
+
+        // nothing reported -> empty optional
+        listenerMap
+                .fireEvent(new DomEvent(parent, "click", Json.createObject()));
+        Assert.assertNull("no element should be reported",
+                capturedTarget.get());
+
+        // grandchild
+        eventData.put(JsonConstants.MAP_EVENT_TARGET,
+                grandChild.getNode().getId());
+        listenerMap.fireEvent(new DomEvent(parent, "click", eventData));
+        Assert.assertEquals(grandChild, capturedTarget.get());
+
+        // -1 -> empty optional
+        eventData.put(JsonConstants.MAP_EVENT_TARGET, -1);
+        listenerMap.fireEvent(new DomEvent(parent, "click", eventData));
+        Assert.assertNull("no element should be reported",
+                capturedTarget.get());
     }
 
     // Helper for accessing package private API from other tests

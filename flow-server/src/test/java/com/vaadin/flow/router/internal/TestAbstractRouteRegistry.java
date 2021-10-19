@@ -17,6 +17,14 @@
 
 package com.vaadin.flow.router.internal;
 
+import com.vaadin.flow.server.MockVaadinContext;
+import com.vaadin.flow.server.VaadinContext;
+
 public class TestAbstractRouteRegistry extends AbstractRouteRegistry {
+
+    @Override
+    public VaadinContext getContext() {
+        return new MockVaadinContext();
+    }
 
 }

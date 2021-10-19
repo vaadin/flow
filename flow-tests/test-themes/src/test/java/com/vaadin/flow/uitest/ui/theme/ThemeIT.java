@@ -34,8 +34,7 @@ import static com.vaadin.flow.uitest.ui.theme.ThemeView.BUTTERFLY_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.CSS_SNOWFLAKE;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.DICE_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.FONTAWESOME_ID;
-import static com.vaadin.flow.uitest.ui.theme.ThemeView.MY_LIT_ID;
-import static com.vaadin.flow.uitest.ui.theme.ThemeView.MY_POLYMER_ID;
+import static com.vaadin.flow.uitest.ui.theme.ThemeView.MY_COMPONENT_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.OCTOPUSS_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.SNOWFLAKE_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.SUB_COMPONENT_ID;
@@ -163,11 +162,11 @@ public class ThemeIT extends ChromeBrowserTest {
         Assert.assertEquals("Child theme values should be applied", "5px",
                 $(SpanElement.class).id(FONTAWESOME_ID).getCssValue("padding"));
 
-        TestBenchElement myField = $(TestBenchElement.class).id(MY_POLYMER_ID);
+        TestBenchElement myField = $(TestBenchElement.class)
+                .id(MY_COMPONENT_ID);
 
-        TestBenchElement input = myField.$(DivElement.class)
-                .attribute("class", "vaadin-text-field-container").first()
-                .$(DivElement.class).attribute("part", "input-field").first();
+        TestBenchElement input = myField.$("vaadin-input-container")
+                .attribute("part", "input-field").first();
         Assert.assertEquals(
                 "Polymer text field should get parent border radius", "0px",
                 input.getCssValue("border-radius"));
@@ -178,24 +177,14 @@ public class ThemeIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void componentThemeIsApplied_forPolymerAndLit() {
+    public void componentThemeIsApplied() {
         open();
-        TestBenchElement myField = $(TestBenchElement.class).id(MY_POLYMER_ID);
-        TestBenchElement input = myField.$(DivElement.class)
-                .attribute("class", "vaadin-text-field-container").first()
-                .$(DivElement.class).attribute("part", "input-field").first();
+        TestBenchElement myField = $(TestBenchElement.class)
+                .id(MY_COMPONENT_ID);
+        TestBenchElement input = myField.$("vaadin-input-container")
+                .attribute("part", "input-field").first();
         Assert.assertEquals("Polymer text field should have red background",
                 "rgba(255, 0, 0, 1)", input.getCssValue("background-color"));
-
-        myField = $(TestBenchElement.class).id(MY_LIT_ID);
-        final SpanElement radio = myField.$(SpanElement.class).all().stream()
-                .filter(element -> "radio".equals(element.getAttribute("part")))
-                .findFirst().orElseGet(null);
-
-        Assert.assertNotNull("Element with part='radio' was not found", radio);
-
-        Assert.assertEquals("Lit radiobutton should have red background",
-                "rgba(255, 0, 0, 1)", radio.getCssValue("background-color"));
     }
 
     @Test

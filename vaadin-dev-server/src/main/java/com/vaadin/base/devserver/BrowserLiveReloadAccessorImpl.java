@@ -32,7 +32,7 @@ public class BrowserLiveReloadAccessorImpl
     @Override
     public BrowserLiveReload getLiveReload(VaadinContext context) {
         return context.getAttribute(BrowserLiveReload.class,
-                BrowserLiveReloadImpl::new);
+                DebugWindowConnection::new);
     }
 
     @Override
@@ -40,12 +40,6 @@ public class BrowserLiveReloadAccessorImpl
         if (service.getDeploymentConfiguration().isProductionMode()) {
             getLogger().debug(
                     "BrowserLiveReloadAccessImpl::getLiveReload is called in production mode.");
-            return null;
-        }
-        if (!service.getDeploymentConfiguration()
-                .isDevModeLiveReloadEnabled()) {
-            getLogger().debug(
-                    "BrowserLiveReloadAccessImpl::getLiveReload is called when live reload is disabled.");
             return null;
         }
         return getLiveReload(service.getContext());

@@ -30,7 +30,6 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
-import com.vaadin.base.devserver.WebpackHandler;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
@@ -50,8 +49,6 @@ import static com.vaadin.flow.server.Constants.RESOURCES_THEME_JAR_DEFAULT;
 import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_OPENAPI_JSON_FILE;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -216,7 +213,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
 
     public void should_Run_Updaters() throws Exception {
         process();
-        assertNotNull(WebpackHandler.getDevModeHandler());
+        assertDevModeHandlerStarted();
     }
 
     @Test
@@ -224,28 +221,28 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         webpackFile.delete();
         mainPackageFile.delete();
         process();
-        assertNotNull(WebpackHandler.getDevModeHandler());
+        assertDevModeHandlerStarted();
     }
 
     @Test
     public void should_Not_Run_Updaters_when_NoMainPackageFile()
             throws Exception {
-        assertNull(WebpackHandler.getDevModeHandler());
+        assertNoDevModeHandlerCreated();
         mainPackageFile.delete();
-        assertNull(WebpackHandler.getDevModeHandler());
+        assertNoDevModeHandlerCreated();
     }
 
     @Test
     public void should_Run_Updaters_when_NoAppPackageFile() throws Exception {
         process();
-        assertNotNull(WebpackHandler.getDevModeHandler());
+        assertDevModeHandlerStarted();
     }
 
     @Test
     public void should_Run_Updaters_when_NoWebpackFile() throws Exception {
         webpackFile.delete();
         process();
-        assertNotNull(WebpackHandler.getDevModeHandler());
+        assertDevModeHandlerStarted();
     }
 
     @Test
@@ -253,7 +250,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         Mockito.when(appConfig.isProductionMode()).thenReturn(true);
         DevModeInitializer devModeInitializer = new DevModeInitializer();
         devModeInitializer.onStartup(classes, servletContext);
-        assertNull(WebpackHandler.getDevModeHandler());
+        assertNoDevModeHandlerCreated();
     }
 
     @Test
@@ -272,11 +269,9 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
 
         process();
 
-        assertNotNull(WebpackHandler.getDevModeHandler());
-
+        Assert.assertTrue(hasWebpackProcess(handler));
         runDestroy();
-
-        assertNull(WebpackHandler.getDevModeHandler());
+        Assert.assertFalse(hasWebpackProcess(handler));
     }
 
     @Test
@@ -290,7 +285,8 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         classes.add(Visited.class);
         classes.add(RoutedWithReferenceToVisited.class);
         devModeInitializer.onStartup(classes, servletContext);
-        waitForDevModeServer();
+        handler = getDevModeHandler();
+        waitForDevServer();
         ArgumentCaptor<? extends FallbackChunk> arg = ArgumentCaptor
                 .forClass(FallbackChunk.class);
         Mockito.verify(servletContext, Mockito.atLeastOnce()).setAttribute(
@@ -309,7 +305,8 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         classes.add(Visited.class);
         classes.add(RoutedWithReferenceToVisited.class);
         devModeInitializer.onStartup(classes, servletContext);
-        waitForDevModeServer();
+        handler = getDevModeHandler();
+        waitForDevServer();
         Mockito.verify(servletContext, Mockito.times(0)).setAttribute(
                 Mockito.eq(FallbackChunk.class.getName()),
                 Mockito.any(FallbackChunk.class));
@@ -335,7 +332,8 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
             Assert.assertFalse(generatedOpenApiJson.exists());
             DevModeInitializer devModeInitializer = new DevModeInitializer();
             devModeInitializer.onStartup(classes, servletContext);
-            waitForDevModeServer();
+            handler = getDevModeHandler();
+            waitForDevServer();
 
             Mockito.verify(taskGenerateFusion, times(1)).execute();
         } finally {
@@ -367,7 +365,8 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
 
             Assert.assertFalse(generatedOpenApiJson.exists());
             devModeInitializer.onStartup(classes, servletContext);
-            waitForDevModeServer();
+            handler = getDevModeHandler();
+            waitForDevServer();
 
             Mockito.verify(taskGenerateFusion, never()).execute();
         } finally {
@@ -398,7 +397,8 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
             DevModeInitializer devModeInitializer = new DevModeInitializer();
 
             devModeInitializer.onStartup(classes, servletContext);
-            waitForDevModeServer();
+            handler = getDevModeHandler();
+            waitForDevServer();
 
             Mockito.verify(taskGenerateFusion, times(1)).execute();
         } finally {
@@ -417,7 +417,9 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
             throws Exception {
         DevModeInitializer devModeInitializer = new DevModeInitializer();
         devModeInitializer.onStartup(classes, servletContext);
-        assertNotNull(WebpackHandler.getDevModeHandler());
+        handler = getDevModeHandler();
+        waitForDevServer();
+        assertDevModeHandlerStarted();
     }
 
     @Test
@@ -432,19 +434,13 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         }).when(servletContext).setAttribute(Mockito.anyString(),
                 Mockito.anyObject());
         Mockito.when(servletContext.getAttribute(Mockito.anyString()))
-                .thenAnswer(answer -> servletContextAttributes
-                        .get(answer.getArgument(0)));
+                .thenAnswer(answer -> {
+                    return servletContextAttributes.get(answer.getArgument(0));
+                });
 
-        Mockito.when(servletContext
-                .getAttribute(ApplicationConfiguration.class.getName()))
-                .thenReturn(appConfig);
-
-        Lookup lookup = Mockito.mock(Lookup.class);
-        ResourceProvider resourceProvider = Mockito
-                .mock(ResourceProvider.class);
-        Mockito.when(lookup.lookup(ResourceProvider.class))
-                .thenReturn(resourceProvider);
         servletContextAttributes.put(Lookup.class.getName(), lookup);
+        servletContextAttributes.put(ApplicationConfiguration.class.getName(),
+                appConfig);
 
         process();
         assertTrue(DevModeInitializer.isDevModeAlreadyStarted(
@@ -613,6 +609,14 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         // path.
         assertTrue("Resource doesn't load from given path",
                 locations.get(0).exists());
+    }
+
+    private void assertNoDevModeHandlerCreated() {
+        Assert.assertNull(getDevModeHandler());
+    }
+
+    private void assertDevModeHandlerStarted() {
+        Assert.assertTrue(hasWebpackProcess(handler));
     }
 
 }

@@ -1,0 +1,10 @@
+This contains the source files needed to create the Node JS bundle.
+
+The bundle is stored in src/main/resources/vaadin-dev-server-node-bundle.js
+
+The bundle is created using Rollup as follows:
+```
+cd src/main/node-bundle
+npm install
+node_modules/.bin/rollup  -c
+```

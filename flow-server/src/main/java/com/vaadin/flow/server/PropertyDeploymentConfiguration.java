@@ -28,6 +28,7 @@ import com.vaadin.flow.shared.communication.PushMode;
 
 import static com.vaadin.flow.server.InitParameters.BUILD_FOLDER;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_ENABLE_GIZMO;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_ENABLE_LIVE_RELOAD;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
@@ -55,7 +56,7 @@ public class PropertyDeploymentConfiguration
 
     /**
      * Create a new property deployment configuration instance.
-     * 
+     *
      * @param parentConfig
      *            a parent application configuration
      * @param systemPropertyBaseClass
@@ -257,18 +258,17 @@ public class PropertyDeploymentConfiguration
         return allProperties;
     }
 
-    /**
-     * Checks if dev mode live reload is enabled or not. It is always disabled
-     * in production mode. In development mode, it is enabled by default.
-     *
-     * @return {@code true} if dev mode live reload is enabled, {@code false}
-     *         otherwise
-     */
     @Override
     public boolean isDevModeLiveReloadEnabled() {
+        return isDevModeGizmoEnabled() && getBooleanProperty(
+                SERVLET_PARAMETER_DEVMODE_ENABLE_LIVE_RELOAD, true);
+    }
+
+    @Override
+    public boolean isDevModeGizmoEnabled() {
         return !isProductionMode()
-                && getBooleanProperty(
-                        SERVLET_PARAMETER_DEVMODE_ENABLE_LIVE_RELOAD, true)
+                && getBooleanProperty(SERVLET_PARAMETER_DEVMODE_ENABLE_GIZMO,
+                        true)
                 && enableDevServer(); // gizmo excluded from prod bundle
     }
 
@@ -281,7 +281,7 @@ public class PropertyDeploymentConfiguration
      * configuration. The properties which are defined in the deployment
      * configuration itself (own properties) should take precedence: their
      * values should override the parent config properties values.
-     * 
+     *
      * @param property
      *            a property name
      * @return whether the {@code property} is explicitly set in the
@@ -293,7 +293,7 @@ public class PropertyDeploymentConfiguration
 
     /**
      * Returns parent application configuration;
-     * 
+     *
      * @return the parent config
      */
     protected ApplicationConfiguration getParentConfiguration() {

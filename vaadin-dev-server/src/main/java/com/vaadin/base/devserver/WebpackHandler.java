@@ -95,8 +95,6 @@ public final class WebpackHandler implements DevModeHandler {
 
     private static final String START_FAILURE = "Couldn't start dev server because";
 
-    private static final AtomicReference<WebpackHandler> atomicHandler = new AtomicReference<>();
-
     // webpack dev-server allows " character if passed through, need to
     // explicitly check requests for it
     private static final Pattern WEBPACK_ILLEGAL_CHAR_PATTERN = Pattern
@@ -156,6 +154,8 @@ public final class WebpackHandler implements DevModeHandler {
     private final CompletableFuture<Void> devServerStartFuture;
 
     private final File npmFolder;
+
+    private boolean usingAlreadyStartedProcess = false;
 
     private WebpackHandler(Lookup lookup, int runningPort, File npmFolder,
             CompletableFuture<Void> waitFor) {
@@ -224,20 +224,13 @@ public final class WebpackHandler implements DevModeHandler {
                 || !configuration.enableDevServer()) {
             return null;
         }
-        if (atomicHandler.get() == null) {
-            atomicHandler.compareAndSet(null,
-                    createInstance(runningPort, lookup, npmFolder, waitFor));
-        }
-        return getDevModeHandler();
+        return createInstance(runningPort, lookup, npmFolder, waitFor);
     }
 
-    /**
-     * Get the instantiated DevModeHandler.
-     *
-     * @return devModeHandler or {@code null} if not started
-     */
-    public static WebpackHandler getDevModeHandler() {
-        return atomicHandler.get();
+    boolean isRunning() {
+        Process process = webpackProcess.get();
+        return (process != null && process.isAlive())
+                || usingAlreadyStartedProcess;
     }
 
     @Override
@@ -585,22 +578,6 @@ public final class WebpackHandler implements DevModeHandler {
         }
     }
 
-    private boolean checkPort() {
-        if (checkConnection()) {
-            getLogger().info("Reusing webpack-dev-server running at {}:{}",
-                    WEBPACK_HOST, port);
-
-            // Save running port for next usage
-            saveRunningDevServerPort();
-            watchDog.set(null);
-            return false;
-        }
-        throw new IllegalStateException(format(
-                "%s webpack-dev-server port '%d' is defined but it's not working properly",
-                START_FAILURE, port));
-
-    }
-
     private void doStartDevModeServer(ApplicationConfiguration config)
             throws ExecutionFailedException {
         // If port is defined, means that webpack is already running
@@ -723,7 +700,7 @@ public final class WebpackHandler implements DevModeHandler {
                         DEFAULT_TIMEOUT_FOR_PATTERN)));
             }
 
-            if (!webpackProcess.get().isAlive()) {
+            if (!isRunning()) {
                 throw new IllegalStateException("Webpack exited prematurely");
             }
 
@@ -741,6 +718,7 @@ public final class WebpackHandler implements DevModeHandler {
     private void reuseExistingPort(int port) {
         getLogger().info("Reusing webpack-dev-server running at {}:{}",
                 WEBPACK_HOST, port);
+        this.usingAlreadyStartedProcess = true;
 
         // Save running port for next usage
         saveRunningDevServerPort();
@@ -848,9 +826,6 @@ public final class WebpackHandler implements DevModeHandler {
 
     @Override
     public void stop() {
-        if (atomicHandler.get() == null) {
-            return;
-        }
         if (reuseDevServer) {
             return;
         }
@@ -876,7 +851,8 @@ public final class WebpackHandler implements DevModeHandler {
             process.destroy();
         }
 
-        atomicHandler.set(null);
+        webpackProcess.set(null);
+        usingAlreadyStartedProcess = false;
         removeRunningDevServerPort();
     }
 
@@ -885,10 +861,8 @@ public final class WebpackHandler implements DevModeHandler {
      * <p>
      * Suspends the caller's thread until the dev mode server is started (or
      * failed to start).
-     *
-     * @see Thread#join()
      */
-    void join() {
+    public void waitForDevServer() {
         devServerStartFuture.join();
     }
 

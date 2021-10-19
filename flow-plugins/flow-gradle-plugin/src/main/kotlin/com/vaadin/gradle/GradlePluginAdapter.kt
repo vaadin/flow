@@ -83,10 +83,7 @@ internal class GradlePluginAdapter(val project: Project, private val isBeforePro
     }
 
     override fun getJarFiles(): MutableSet<File> {
-        val jarFiles = project.configurations
-            .getByName("runtimeClasspath")
-            .resolve()
-            .filter { it.name.endsWith(".jar", true) }
+        val jarFiles: Set<File> = project.configurations.runtimeClasspath.jars.toSet()
         return jarFiles.toMutableSet()
     }
 
@@ -97,6 +94,8 @@ internal class GradlePluginAdapter(val project: Project, private val isBeforePro
     override fun isDebugEnabled(): Boolean = true
 
     override fun javaSourceFolder(): File = extension.javaSourceFolder
+
+    override fun javaResourceFolder(): File = extension.javaResourceFolder
 
     override fun logDebug(debugMessage: CharSequence) {
         project.logger.debug(debugMessage.toString())

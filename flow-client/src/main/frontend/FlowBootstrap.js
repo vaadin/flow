@@ -57,7 +57,7 @@ const init = function(appInitResponse) {
   /*
    * Needed for wrapping custom javascript functionality in the components (i.e. connectors)
    */
-  window.Vaadin.Flow.tryCatchWrapper = function(originalFunction, component, repo) {
+  window.Vaadin.Flow.tryCatchWrapper = function(originalFunction, component) {
     return function() {
       try {
         // eslint-disable-next-line
@@ -65,9 +65,10 @@ const init = function(appInitResponse) {
         return result;
       } catch (error) {
         console.error(
-          'There seems to be an error in the ' + component + ':\n' + error.message + '\n'
-            + 'Please submit an issue to https://github.com/vaadin/' + repo
-            + '/issues/new!');
+          `There seems to be an error in ${component}:
+${error.message}
+Please submit an issue to https://github.com/vaadin/flow-components/issues/new/choose`
+        );
       }
     };
   };

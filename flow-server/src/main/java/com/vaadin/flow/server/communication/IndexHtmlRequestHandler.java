@@ -63,6 +63,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
+    private static final String SCRIPT_INITIAL = "initial";
+
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException {
@@ -101,7 +103,6 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         configureErrorDialogStyles(indexDocument);
 
         showWebpackErrors(session.getService(), indexDocument);
-
         response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF_8);
 
         VaadinContext context = session.getService().getContext();
@@ -127,9 +128,11 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         // modify the page based on registered IndexHtmlRequestListener:s
         request.getService().modifyIndexHtmlResponse(indexHtmlResponse);
 
-        if (config.isDevModeLiveReloadEnabled()) {
-            addDevmodeGizmo(indexDocument, session, request);
+        if (config.isDevModeGizmoEnabled()) {
+            addDevmodeGizmo(indexDocument, config, session, request);
+            catchErrorsInDevMode(indexDocument);
         }
+
         try {
             response.getOutputStream()
                     .write(indexDocument.html().getBytes(UTF_8));
@@ -138,6 +141,29 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             return false;
         }
         return true;
+    }
+
+    private void catchErrorsInDevMode(Document indexDocument) {
+        Element elm = new Element("script");
+        elm.attr(SCRIPT_INITIAL, "");
+        elm.appendChild(new DataNode("" + //
+                "window.Vaadin = window.Vaadin || {};" + //
+                "window.Vaadin.ConsoleErrors = window.Vaadin.ConsoleErrors || [];"
+                + //
+                "const browserConsoleError = window.console.error.bind(window.console);"
+                + //
+                "console.error = (...args) => {" + //
+                "    browserConsoleError(...args);" + //
+                "    window.Vaadin.ConsoleErrors.push(args);" + //
+                "};" + //
+                "window.onerror = (message, source, lineno, colno, error) => {"
+                + //
+                "const location=source+':'+lineno+':'+colno;" + //
+                "window.Vaadin.ConsoleErrors.push([message, '('+location+')']);"
+                + //
+                "};" //
+        ));
+        indexDocument.head().insertChildren(0, elm);
     }
 
     private void storeAppShellTitleToUI(Document indexDocument) {
@@ -151,7 +177,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         }
     }
 
-    private void addDevmodeGizmo(Document indexDocument, VaadinSession session,
+    private void addDevmodeGizmo(Document indexDocument,
+            DeploymentConfiguration config, VaadinSession session,
             VaadinRequest request) {
         VaadinService service = session.getService();
         Optional<BrowserLiveReload> liveReload = BrowserLiveReloadAccessor
@@ -159,6 +186,9 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         if (liveReload.isPresent()) {
             Element devmodeGizmo = new Element("vaadin-devmode-gizmo");
+            if (!config.isDevModeLiveReloadEnabled()) {
+                devmodeGizmo.attr("liveReloadDisabled", "");
+            }
             devmodeGizmo.attr("url",
                     BootstrapHandlerHelper.getPushURL(session, request));
             BrowserLiveReload.Backend backend = liveReload.get().getBackend();
@@ -176,9 +206,10 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         SpringCsrfTokenUtil.addTokenAsMetaTagsToHeadIfPresentInRequest(
                 indexDocument.head(), request);
         Element elm = new Element("script");
-        elm.attr("initial", "");
-        elm.appendChild(new DataNode("window.Vaadin = {TypeScript: "
-                + JsonUtil.stringify(initialJson) + "};"));
+        elm.attr(SCRIPT_INITIAL, "");
+        elm.appendChild(new DataNode("window.Vaadin = window.Vaadin || {};" + //
+                "window.Vaadin.TypeScript= " + JsonUtil.stringify(initialJson)
+                + ";"));
         indexDocument.head().insertChildren(0, elm);
     }
 
@@ -186,7 +217,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             VaadinSession session, VaadinRequest request,
             VaadinResponse response) {
         JsonObject initial = getInitialJson(request, response, session);
-        initialJson.put("initial", initial);
+        initialJson.put(SCRIPT_INITIAL, initial);
     }
 
     @Override

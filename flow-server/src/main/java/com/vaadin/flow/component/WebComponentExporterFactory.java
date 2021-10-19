@@ -106,10 +106,10 @@ public interface WebComponentExporterFactory<C extends Component>
         public WebComponentExporter<C> create() {
             try {
                 return ReflectTools.createInstance(exporterClass);
-            } catch (Throwable t) {
-                if (t.getCause() != null && t.getCause().getClass()
+            } catch (Exception e) {
+                if (e.getCause() != null && e.getCause().getClass()
                         .equals(InvocationTargetException.class)) {
-                    Throwable cause2 = t.getCause().getCause();
+                    Throwable cause2 = e.getCause().getCause();
                     if (cause2 != null && cause2.getClass()
                             .equals(NullTagException.class)) {
                         throw new IllegalArgumentException(String.format(
@@ -117,16 +117,16 @@ public interface WebComponentExporterFactory<C extends Component>
                                         + "'%s' give null value to "
                                         + "super(String) constructor?",
                                 WebComponentConfiguration.class.getSimpleName(),
-                                exporterClass.getCanonicalName()), t);
+                                exporterClass.getCanonicalName()), e);
                     }
                 }
                 // unknown reason, cannot add information
                 throw new RuntimeException(
                         "Couldn't create a new instance of class "
                                 + exporterClass + " because of "
-                                + t.getClass().getSimpleName() + ": "
-                                + t.getMessage(),
-                        t);
+                                + e.getClass().getSimpleName() + ": "
+                                + e.getMessage(),
+                        e);
             }
         }
 

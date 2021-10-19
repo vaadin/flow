@@ -71,8 +71,10 @@ import com.vaadin.flow.router.internal.BeforeEnterHandler;
 import com.vaadin.flow.router.internal.BeforeLeaveHandler;
 import com.vaadin.flow.server.BootstrapHandlerTest;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
+import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
@@ -210,7 +212,12 @@ public class UITest {
         }
         Mockito.when(request.getPathInfo()).thenReturn(pathInfo);
 
-        VaadinService service = new MockVaadinServletService();
+        VaadinService service = new MockVaadinServletService() {
+            @Override
+            public VaadinContext getContext() {
+                return new MockVaadinContext();
+            }
+        };
         service.setCurrentInstances(request, response);
 
         MockVaadinSession session = new AlwaysLockedVaadinSession(service);

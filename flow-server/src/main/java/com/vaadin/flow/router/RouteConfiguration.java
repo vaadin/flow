@@ -229,17 +229,18 @@ public class RouteConfiguration implements Serializable {
                     navigationTarget.getName());
             throw new InvalidRouteConfigurationException(message);
         }
-        Route routeAnnotation = navigationTarget.getAnnotation(Route.class);
 
-        String route = RouteUtil.getRoutePath(navigationTarget,
-                routeAnnotation);
+        String route = RouteUtil.getRoutePath(handledRegistry.getContext(),
+                navigationTarget);
         handledRegistry.setRoute(route, navigationTarget,
-                RouteUtil.getParentLayouts(navigationTarget, route));
+                RouteUtil.getParentLayouts(handledRegistry.getContext(),
+                        navigationTarget, route));
 
         RouteUtil.getAliasObjects(navigationTarget).forEach(alias -> {
             String path = RouteUtil.getRouteAliasPath(navigationTarget, alias);
             handledRegistry.setRoute(path, navigationTarget,
-                    RouteUtil.getParentLayouts(navigationTarget, path));
+                    RouteUtil.getParentLayouts(handledRegistry.getContext(),
+                            navigationTarget, path));
         });
     }
 
@@ -513,8 +514,7 @@ public class RouteConfiguration implements Serializable {
         if (!targetUrl.isPresent()) {
             throw new NotFoundException(String.format(
                     "No route found for the given navigation target '%s' and parameters '%s'",
-                    navigationTarget.getClass().getName(),
-                    parameters.toString()));
+                    navigationTarget.getName(), parameters.toString()));
         }
         return targetUrl.get();
     }

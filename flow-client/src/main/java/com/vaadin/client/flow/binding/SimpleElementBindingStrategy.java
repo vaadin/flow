@@ -22,7 +22,6 @@ import jsinterop.annotations.JsFunction;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
-
 import com.vaadin.client.ApplicationConfiguration;
 import com.vaadin.client.Command;
 import com.vaadin.client.Console;
@@ -44,6 +43,7 @@ import com.vaadin.client.flow.collection.JsWeakMap;
 import com.vaadin.client.flow.dom.DomApi;
 import com.vaadin.client.flow.dom.DomElement;
 import com.vaadin.client.flow.dom.DomElement.DomTokenList;
+import com.vaadin.client.flow.dom.DomNode;
 import com.vaadin.client.flow.model.UpdatableModelProperties;
 import com.vaadin.client.flow.nodefeature.ListSpliceEvent;
 import com.vaadin.client.flow.nodefeature.MapProperty;
@@ -62,6 +62,7 @@ import elemental.dom.Element;
 import elemental.dom.Node;
 import elemental.events.Event;
 import elemental.events.EventRemover;
+import elemental.events.EventTarget;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
@@ -389,7 +390,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 replaceDomRepeatPropertyChange();
             }
             else {
-                // if there is no dom-repat at the moment just add a dom-change
+                // if there is no dom-repeat at the moment just add a dom-change
                 // listener which will be notified once local DOM is changed
                 // and the  <code>replaceDomRepeatPropertyChange</code> will get a chance
                 // to execute its logic if there is dom-repeat.
@@ -1239,6 +1240,11 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                     String property = expressionString.substring(
                             JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN.length());
                     synchronizeProperties.add(property);
+                } else if (expressionString
+                        .equals(JsonConstants.MAP_EVENT_TARGET)) {
+                    int targetNodeId = getClosestStateNodeToTarget(node,
+                            event.getTarget());
+                    eventData.put(JsonConstants.MAP_EVENT_TARGET, targetNodeId);
                 } else {
                     EventExpression expression = getOrCreateExpression(
                             expressionString);
@@ -1435,4 +1441,43 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         return expression;
     }
 
+    // This method could be moved somewhere to be reusable
+    private int getClosestStateNodeToTarget(StateNode topNode,
+            EventTarget target) {
+        try {
+            DomNode targetNode = DomApi.wrap(WidgetUtil.crazyJsCast(target));
+
+            // collect children and test eagerly for direct match
+            JsArray<StateNode> stack = JsCollections.array();
+            stack.push(topNode);
+            for (int i = 0; i < stack.length(); i++) {
+                final StateNode stateNode = stack.get(i);
+                if (targetNode.isSameNode(stateNode.getDomNode())) {
+                    return stateNode.getId();
+                }
+                stateNode.getList(NodeFeatures.ELEMENT_CHILDREN)
+                        .forEach(child -> stack.push((StateNode) child));
+            }
+            // no direct match, all child element state nodes collected.
+            // bottom-up search elements until matching state node found
+            targetNode = DomApi.wrap(targetNode.getParentNode());
+            while (targetNode != null
+                    && !targetNode.isSameNode(topNode.getDomNode())) {
+                for (int i = stack.length() - 1; i > -1; i--) {
+                    final StateNode stateNode = stack.get(i);
+                    if (targetNode.isSameNode(stateNode.getDomNode())) {
+                        return stateNode.getId();
+                    }
+                }
+                targetNode = DomApi.wrap(targetNode.getParentNode());
+            }
+        } catch (Exception e) {
+            // not going to let event handling fail; just report nothing found
+            Console.debug(
+                    "Flow could not detect state node matching event.target");
+        }
+        // no match / error; not considering topNode as it is reported as
+        // event.currentTarget
+        return -1;
+    }
 }

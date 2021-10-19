@@ -3245,6 +3245,33 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test
+    public void customRoutePathProvider_naming_based_routes()
+            throws InvalidRouteConfigurationException {
+        router = new Router(new TestRouteRegistry(new RoutePathProvider() {
+
+            @Override
+            public String getRoutePath(Class<?> navigationTarget) {
+                if (navigationTarget.equals(NamingConvention.class)) {
+                    return "bar";
+                }
+                if (navigationTarget.equals(Main.class)) {
+                    return "foo";
+                }
+                return null;
+            }
+        }));
+        setNavigationTargets(NamingConvention.class, Main.class);
+
+        Assert.assertEquals(Main.class,
+                router.resolveNavigationTarget("/foo", Collections.emptyMap())
+                        .get().getNavigationTarget());
+
+        Assert.assertEquals(NamingConvention.class,
+                router.resolveNavigationTarget("/bar", Collections.emptyMap())
+                        .get().getNavigationTarget());
+    }
+
+    @Test
     public void basic_naming_based_routes_with_trailing_view()
             throws InvalidRouteConfigurationException {
         setNavigationTargets(NamingConventionView.class, MainView.class);
@@ -3267,6 +3294,27 @@ public class RouterTest extends RoutingTestBase {
 
         Assert.assertEquals(View.class,
                 router.resolveNavigationTarget("/", Collections.emptyMap())
+                        .get().getNavigationTarget());
+    }
+
+    @Test
+    public void customRoutePathProvider_name_view()
+            throws InvalidRouteConfigurationException {
+        router = new Router(new TestRouteRegistry(new RoutePathProvider() {
+
+            @Override
+            public String getRoutePath(Class<?> navigationTarget) {
+                if (navigationTarget.equals(View.class)) {
+                    return "foo";
+                }
+                return null;
+            }
+        }));
+
+        setNavigationTargets(View.class);
+
+        Assert.assertEquals(View.class,
+                router.resolveNavigationTarget("/foo", Collections.emptyMap())
                         .get().getNavigationTarget());
     }
 

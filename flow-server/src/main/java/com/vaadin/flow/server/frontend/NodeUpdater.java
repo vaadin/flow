@@ -351,7 +351,7 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         // Constructable style sheets is only implemented for chrome,
         // polyfill needed for FireFox et.al. at the moment
-        defaults.put("construct-style-sheets-polyfill", "2.4.16");
+        defaults.put("construct-style-sheets-polyfill", "3.0.4");
 
         defaults.put("@vaadin/common-frontend", "0.0.17");
 
@@ -365,7 +365,6 @@ public abstract class NodeUpdater implements FallibleCommand {
         defaults.put("typescript", "4.4.3");
         defaults.put("esbuild-loader", "2.15.1");
         defaults.put("fork-ts-checker-webpack-plugin", "6.2.1");
-        defaults.put("tsconfig-paths-webpack-plugin", "3.5.1");
 
         defaults.put("webpack", "4.46.0");
         defaults.put("webpack-cli", "4.9.0");
