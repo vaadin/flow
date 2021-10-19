@@ -2907,6 +2907,7 @@ public class Binder<BEAN> implements Serializable {
      *
      * Return values for each case are compiled into the following table:
      * <table>
+     * <caption>Return values</caption>
      * <tr>
      * <td></td>
      * <td>After readBean, setBean or removeBean</td>
