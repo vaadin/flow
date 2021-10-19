@@ -286,7 +286,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         classes.add(RoutedWithReferenceToVisited.class);
         devModeInitializer.onStartup(classes, servletContext);
         handler = getDevModeHandler();
-        waitForDevModeServer();
+        waitForDevServer();
         ArgumentCaptor<? extends FallbackChunk> arg = ArgumentCaptor
                 .forClass(FallbackChunk.class);
         Mockito.verify(servletContext, Mockito.atLeastOnce()).setAttribute(
@@ -306,7 +306,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         classes.add(RoutedWithReferenceToVisited.class);
         devModeInitializer.onStartup(classes, servletContext);
         handler = getDevModeHandler();
-        waitForDevModeServer();
+        waitForDevServer();
         Mockito.verify(servletContext, Mockito.times(0)).setAttribute(
                 Mockito.eq(FallbackChunk.class.getName()),
                 Mockito.any(FallbackChunk.class));
@@ -333,7 +333,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
             DevModeInitializer devModeInitializer = new DevModeInitializer();
             devModeInitializer.onStartup(classes, servletContext);
             handler = getDevModeHandler();
-            waitForDevModeServer();
+            waitForDevServer();
 
             Mockito.verify(taskGenerateFusion, times(1)).execute();
         } finally {
@@ -366,7 +366,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
             Assert.assertFalse(generatedOpenApiJson.exists());
             devModeInitializer.onStartup(classes, servletContext);
             handler = getDevModeHandler();
-            waitForDevModeServer();
+            waitForDevServer();
 
             Mockito.verify(taskGenerateFusion, never()).execute();
         } finally {
@@ -398,7 +398,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
 
             devModeInitializer.onStartup(classes, servletContext);
             handler = getDevModeHandler();
-            waitForDevModeServer();
+            waitForDevServer();
 
             Mockito.verify(taskGenerateFusion, times(1)).execute();
         } finally {
@@ -418,7 +418,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         DevModeInitializer devModeInitializer = new DevModeInitializer();
         devModeInitializer.onStartup(classes, servletContext);
         handler = getDevModeHandler();
-        waitForDevModeServer();
+        waitForDevServer();
         assertDevModeHandlerStarted();
     }
 
