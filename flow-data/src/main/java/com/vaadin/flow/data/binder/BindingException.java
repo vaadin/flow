@@ -22,7 +22,7 @@ import com.vaadin.flow.data.binder.Binder.Binding;
  * A subclass of {@link RuntimeException} which may be thrown inside
  * {@link Binding} logic to wrap an exception caused by {@link HasValue},
  * validator, converter, etc. behavior.
- * 
+ *
  * @author Vaadin Ltd
  * @since
  *
@@ -48,7 +48,7 @@ public class BindingException extends RuntimeException {
      *            the detail message
      * @param cause
      *            the cause (which is saved for later retrieval by the
-     *            {@link #getCause()} method). (A <tt>null</tt> value is
+     *            {@link #getCause()} method). (A <code>null</code> value is
      *            permitted, and indicates that the cause is nonexistent or
      *            unknown.)
      */
@@ -58,12 +58,12 @@ public class BindingException extends RuntimeException {
 
     /**
      * Constructs a new binding exception with the specified cause and a detail
-     * message of <tt>(cause==null ? null : cause.toString())</tt> (which
-     * typically contains the class and detail message of <tt>cause</tt>).
+     * message of <code>(cause==null ? null : cause.toString())</code> (which
+     * typically contains the class and detail message of <code>cause</code>).
      *
      * @param cause
      *            the cause (which is saved for later retrieval by the
-     *            {@link #getCause()} method). (A <tt>null</tt> value is
+     *            {@link #getCause()} method). (A <code>null</code> value is
      *            permitted, and indicates that the cause is nonexistent or
      *            unknown.)
      */

@@ -76,11 +76,11 @@ public class ModelList extends StateNodeNodeList {
     }
 
     /**
-     * Returns <tt>true</tt> if this list contains the specified node. More
+     * Returns <code>true</code> if this list contains the specified node. More
      *
      * @param node
      *            node whose presence in this list is to be tested
-     * @return <tt>true</tt> if this list contains the specified node
+     * @return <code>true</code> if this list contains the specified node
      */
     public boolean contains(StateNode node) {
         return indexOf(node) != -1;
