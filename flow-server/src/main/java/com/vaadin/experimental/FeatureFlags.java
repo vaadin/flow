@@ -51,7 +51,7 @@ public class FeatureFlags implements Serializable {
             "exampleFeatureFlag", "https://github.com/vaadin/flow/pull/12004");
     private static List<Feature> features = new ArrayList<>();
 
-    private static File propertiesFolder = null;
+    static File propertiesFolder = null;
 
     static {
         features.add(EXAMPLE);

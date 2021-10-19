@@ -21,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
@@ -41,6 +42,7 @@ public class FeatureFlagsTest {
     @Before
     public void before() {
         CurrentInstance.clearAll();
+        FeatureFlags.propertiesFolder = null;
         FeatureFlags.loadProperties(null); // Reset all features to false
     }
 
@@ -117,6 +119,60 @@ public class FeatureFlagsTest {
                 .get(VaadinService.getCurrent().getContext());
         Mockito.when(conf.isProductionMode()).thenReturn(true);
         FeatureFlags.setEnabled(FeatureFlags.EXAMPLE.getId(), true);
+    }
+
+    @Test
+    public void disabledFeatureFlagsNotMarkedInStatsWhenLoading()
+            throws IOException {
+        UsageStatistics.clearEntries();
+        File folder = createTempFeatureFlagsFile("");
+        mockResourcesLocation(folder);
+        FeatureFlags.loadProperties();
+        Assert.assertFalse(
+                hasUsageStatsEntry("flow/featureflags/exampleFeatureFlag"));
+    }
+
+    @Test
+    public void enabledFeatureFlagsMarkedInStatsWhenLoading()
+            throws IOException {
+        File folder = createTempFeatureFlagsFile(
+                "com.vaadin.experimental.exampleFeatureFlag=true\n");
+        mockResourcesLocation(folder);
+        FeatureFlags.loadProperties();
+        Assert.assertTrue(
+                hasUsageStatsEntry("flow/featureflags/exampleFeatureFlag"));
+    }
+
+    @Test
+    public void disabledFeatureFlagsNotMarkedInStatsWhenToggled()
+            throws IOException {
+        File folder = createTempFeatureFlagsFile(
+                "com.vaadin.experimental.exampleFeatureFlag=true\n");
+        mockResourcesLocation(folder);
+        UsageStatistics.clearEntries();
+        FeatureFlags.setEnabled(FeatureFlags.EXAMPLE.getId(), false);
+        Assert.assertFalse(
+                hasUsageStatsEntry("flow/featureflags/exampleFeatureFlag"));
+
+    }
+
+    @Test
+    public void enabledFeatureFlagsMarkedInStatsWhenToggled()
+            throws IOException {
+        File folder = createTempFeatureFlagsFile(
+                "com.vaadin.experimental.exampleFeatureFlag=false\n");
+        mockResourcesLocation(folder);
+        UsageStatistics.clearEntries();
+        FeatureFlags.setEnabled(FeatureFlags.EXAMPLE.getId(), true);
+        Assert.assertTrue(
+                hasUsageStatsEntry("flow/featureflags/exampleFeatureFlag"));
+
+    }
+
+    private boolean hasUsageStatsEntry(String name) {
+        return UsageStatistics.getEntries()
+                .filter(entry -> entry.getName().equals(name)).findFirst()
+                .isPresent();
     }
 
     private void mockResourcesLocation(File folder) {
