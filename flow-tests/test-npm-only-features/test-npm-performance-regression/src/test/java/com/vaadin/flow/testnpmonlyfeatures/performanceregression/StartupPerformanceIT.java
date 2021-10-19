@@ -30,6 +30,8 @@ import org.openqa.selenium.By;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class StartupPerformanceIT extends ChromeBrowserTest {
+    private static final String SERVER_NAME = "Webpack";
+
     @Test
     public void devModeInitializerToWebpackUpIsBelowThreshold() {
         getDriver().get(getRootURL());
@@ -43,7 +45,7 @@ public class StartupPerformanceIT extends ChromeBrowserTest {
 
         int startupTime = measureLogEntryTimeDistance(
                 "- Starting dev-mode updaters in",
-                "- (Started|Reusing) webpack-dev-server", true);
+                "- (Started|Reusing) " + SERVER_NAME, true);
 
         int npmInstallTime = measureLogEntryTimeDistance(
                 "- Running `pnpm install`",
