@@ -16,10 +16,12 @@
 package com.vaadin.flow.internal;
 
 import java.util.Optional;
+import java.util.Set;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.startup.VaadinInitializerException;
 
 /**
  * Provides API to access to the {@link DevModeHandler} instance by a
@@ -42,12 +44,18 @@ public interface DevModeHandlerManager {
     Class<?>[] getHandlesTypes();
 
     /**
-     * Defines the handler to use with this manager.
+     * Initialize the dev mode server if not in production mode.
      *
-     * @param devModeHandler
-     *            the dev mode handler to use
+     * @param classes
+     *            classes to check for npm and js modules
+     * @param context
+     *            VaadinContext we are running in
+     *
+     * @throws VaadinInitializerException
+     *             if the dev mode server cannot be initialized
      */
-    void setDevModeHandler(DevModeHandler devModeHandler);
+    void initDevModeHandler(Set<Class<?>> classes, VaadinContext context)
+            throws VaadinInitializerException;
 
     /**
      * Returns a {@link DevModeHandler} instance for the given {@code service}.
