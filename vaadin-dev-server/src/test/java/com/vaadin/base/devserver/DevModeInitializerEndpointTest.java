@@ -21,7 +21,7 @@ import java.util.Set;
 import javax.servlet.ServletRegistration;
 
 import com.vaadin.base.devserver.startup.AbstractDevModeTest;
-import com.vaadin.base.devserver.startup.DevModeInitializer;
+import com.vaadin.base.devserver.startup.DevModeStartupListener;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.server.VaadinServlet;
@@ -41,7 +41,7 @@ import net.jcip.annotations.NotThreadSafe;
 public class DevModeInitializerEndpointTest extends AbstractDevModeTest {
 
     Set<Class<?>> classes;
-    DevModeInitializer devModeInitializer;
+    DevModeStartupListener devModeInitializer;
 
     private static class VaadinServletSubClass extends VaadinServlet {
 
@@ -82,8 +82,10 @@ public class DevModeInitializerEndpointTest extends AbstractDevModeTest {
 
         Map registry = new HashMap();
 
-        // Adding extra registrations to make sure that DevModeInitializer picks
-        // the correct registration which is a VaadinServlet registration.
+        // Adding extra registrations to make sure that
+        // DevModeInitializer picks
+        // the correct registration which is a VaadinServlet
+        // registration.
         registry.put("extra1", Mockito.mock(ServletRegistration.class));
         registry.put("foo", vaadinServletRegistration);
         registry.put("extra2", Mockito.mock(ServletRegistration.class));
@@ -97,7 +99,7 @@ public class DevModeInitializerEndpointTest extends AbstractDevModeTest {
         FileUtils.forceMkdir(
                 new File(baseDir, DEFAULT_CONNECT_JAVA_SOURCE_FOLDER));
 
-        devModeInitializer = new DevModeInitializer();
+        devModeInitializer = new DevModeStartupListener();
     }
 
     @Test
@@ -113,7 +115,7 @@ public class DevModeInitializerEndpointTest extends AbstractDevModeTest {
                 Mockito.anyString())).thenReturn(src.getAbsolutePath());
 
         Assert.assertFalse(generatedOpenApiJson.exists());
-        DevModeInitializer devModeInitializer = new DevModeInitializer();
+        DevModeStartupListener devModeInitializer = new DevModeStartupListener();
         devModeInitializer.onStartup(classes, servletContext);
         handler = getDevModeHandler();
         waitForDevServer();
@@ -139,7 +141,8 @@ public class DevModeInitializerEndpointTest extends AbstractDevModeTest {
 
     @Test
     public void should_generateTs_files() throws Exception {
-        // Configure a folder that has .java classes with valid endpoints
+        // Configure a folder that has .java classes with valid
+        // endpoints
         // Not using `src/test/java` because there are invalid endpoint
         // names
         // in some tests
@@ -149,7 +152,7 @@ public class DevModeInitializerEndpointTest extends AbstractDevModeTest {
                 Mockito.eq(CONNECT_JAVA_SOURCE_FOLDER_TOKEN),
                 Mockito.anyString())).thenReturn(src.getAbsolutePath());
 
-        DevModeInitializer devModeInitializer = new DevModeInitializer();
+        DevModeStartupListener devModeInitializer = new DevModeStartupListener();
 
         File ts1 = new File(baseDir,
                 DEFAULT_PROJECT_FRONTEND_GENERATED_DIR + "MyEndpoint.ts");

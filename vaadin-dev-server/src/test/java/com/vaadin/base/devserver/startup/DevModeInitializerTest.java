@@ -248,7 +248,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     @Test
     public void should_Not_Run_Updaters_inProductionMode() throws Exception {
         Mockito.when(appConfig.isProductionMode()).thenReturn(true);
-        DevModeInitializer devModeInitializer = new DevModeInitializer();
+        DevModeStartupListener devModeInitializer = new DevModeStartupListener();
         devModeInitializer.onStartup(classes, servletContext);
         assertNoDevModeHandlerCreated();
     }
@@ -279,7 +279,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         Mockito.when(appConfig.getBooleanProperty(
                 InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
                 false)).thenReturn(true);
-        DevModeInitializer devModeInitializer = new DevModeInitializer();
+        DevModeStartupListener devModeInitializer = new DevModeStartupListener();
         final Set<Class<?>> classes = new HashSet<>();
         classes.add(NotVisitedWithDeps.class);
         classes.add(Visited.class);
@@ -299,7 +299,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
 
     @Test
     public void shouldUseFullPathScannerByDefault() throws Exception {
-        DevModeInitializer devModeInitializer = new DevModeInitializer();
+        DevModeStartupListener devModeInitializer = new DevModeStartupListener();
         final Set<Class<?>> classes = new HashSet<>();
         classes.add(NotVisitedWithDeps.class);
         classes.add(Visited.class);
@@ -330,7 +330,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
                     javaSourceFolder.getRoot().getAbsolutePath());
 
             Assert.assertFalse(generatedOpenApiJson.exists());
-            DevModeInitializer devModeInitializer = new DevModeInitializer();
+            DevModeStartupListener devModeInitializer = new DevModeStartupListener();
             devModeInitializer.onStartup(classes, servletContext);
             handler = getDevModeHandler();
             waitForDevServer();
@@ -364,7 +364,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
                     .lookup(EndpointGeneratorTaskFactory.class);
 
             Assert.assertFalse(generatedOpenApiJson.exists());
-            devModeInitializer.onStartup(classes, servletContext);
+            devModeStartupListener.onStartup(classes, servletContext);
             handler = getDevModeHandler();
             waitForDevServer();
 
@@ -394,7 +394,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
             System.setProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
                     javaSourceFolder.getRoot().getAbsolutePath());
 
-            DevModeInitializer devModeInitializer = new DevModeInitializer();
+            DevModeStartupListener devModeInitializer = new DevModeStartupListener();
 
             devModeInitializer.onStartup(classes, servletContext);
             handler = getDevModeHandler();
@@ -415,7 +415,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     @Test
     public void onStartup_emptyServletRegistrations_shouldCreateDevModeHandler()
             throws Exception {
-        DevModeInitializer devModeInitializer = new DevModeInitializer();
+        DevModeStartupListener devModeInitializer = new DevModeStartupListener();
         devModeInitializer.onStartup(classes, servletContext);
         handler = getDevModeHandler();
         waitForDevServer();
@@ -443,8 +443,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
                 appConfig);
 
         process();
-        assertTrue(DevModeInitializer.isDevModeAlreadyStarted(
-                new VaadinServletContext(servletContext)));
+        Assert.assertNotNull(devModeHandlerManager.getDevModeHandler());
     }
 
     @Test(expected = IllegalStateException.class)
@@ -460,7 +459,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         try {
             originalUserDirValue = System.getProperty("user.dir");
             System.setProperty("user.dir", baseDir);
-            devModeInitializer.onStartup(classes, servletContext);
+            devModeStartupListener.onStartup(classes, servletContext);
         } finally {
             if (originalUserDirValue != null) {
                 System.setProperty("user.dir", originalUserDirValue);
@@ -482,7 +481,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         try {
             originalUserDirValue = System.getProperty("user.dir");
             System.setProperty("user.dir", baseDir);
-            devModeInitializer.onStartup(classes, servletContext);
+            devModeStartupListener.onStartup(classes, servletContext);
         } finally {
             if (originalUserDirValue != null) {
                 System.setProperty("user.dir", originalUserDirValue);
@@ -504,7 +503,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         try {
             originalUserDirValue = System.getProperty("user.dir");
             System.setProperty("user.dir", baseDir);
-            devModeInitializer.onStartup(classes, servletContext);
+            devModeStartupListener.onStartup(classes, servletContext);
         } finally {
             if (originalUserDirValue != null) {
                 System.setProperty("user.dir", originalUserDirValue);
