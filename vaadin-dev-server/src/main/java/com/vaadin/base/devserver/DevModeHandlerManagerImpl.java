@@ -16,18 +16,13 @@
 package com.vaadin.base.devserver;
 
 import javax.servlet.annotation.HandlesTypes;
-import java.util.Set;
 
 import com.vaadin.base.devserver.startup.DevModeInitializer;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
-import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.startup.VaadinInitializerException;
 
 /**
- * Provides API to access to the {@link DevModeHandler} instance by a
- * {@link VaadinService}.
+ * Provides API to access to the {@link DevModeHandler} instance.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -36,6 +31,8 @@ import com.vaadin.flow.server.startup.VaadinInitializerException;
  */
 public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
 
+    private DevModeHandler devModeHandler;
+
     @Override
     public Class<?>[] getHandlesTypes() {
         return DevModeInitializer.class.getAnnotation(HandlesTypes.class)
@@ -43,14 +40,18 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
     }
 
     @Override
-    public void initDevModeHandler(Set<Class<?>> classes, VaadinContext context)
-            throws VaadinInitializerException {
-        DevModeInitializer.initDevModeHandler(classes, context);
+    public void setDevModeHandler(DevModeHandler devModeHandler) {
+        if (this.devModeHandler != null) {
+            throw new IllegalStateException(
+                    "Unable to initialize dev mode handler. A handler is already present: "
+                            + this.devModeHandler);
+        }
+        this.devModeHandler = devModeHandler;
     }
 
     @Override
     public DevModeHandler getDevModeHandler() {
-        return WebpackHandler.getDevModeHandler();
+        return devModeHandler;
     }
 
 }

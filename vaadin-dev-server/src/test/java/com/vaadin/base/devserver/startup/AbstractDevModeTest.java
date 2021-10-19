@@ -2,15 +2,12 @@ package com.vaadin.base.devserver.startup;
 
 import java.io.File;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.servlet.ServletContext;
 
-import com.github.fge.jsonschema.core.exceptions.ExceptionProvider;
 import com.vaadin.base.devserver.DevModeHandlerManagerImpl;
 import com.vaadin.base.devserver.MockDeploymentConfiguration;
 import com.vaadin.base.devserver.WebpackHandler;
@@ -148,20 +145,28 @@ public abstract class AbstractDevModeTest {
         ((WebpackHandler) (devModeHandler)).waitForDevServer();
     }
 
-    protected boolean hasWebpackProcess() {
-        Assert.assertNotNull(getDevModeHandler());
+    protected static boolean hasWebpackProcess(DevModeHandler devModeHandler) {
+        Assert.assertNotNull(devModeHandler);
         Field webpackProcessField;
         try {
             webpackProcessField = WebpackHandler.class
                     .getDeclaredField("webpackProcess");
             webpackProcessField.setAccessible(true);
             AtomicReference<Process> webpackProcess = (AtomicReference<Process>) webpackProcessField
-                    .get(handler);
+                    .get(devModeHandler);
             return webpackProcess.get() != null;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
+    }
+
+    public void removeDevModeHandlerInstance() throws Exception {
+        // Reset unique instance of DevModeHandler
+        Field devModeHandler = DevModeHandlerManagerImpl.class
+                .getDeclaredField("devModeHandler");
+        devModeHandler.setAccessible(true);
+        devModeHandler.set(devModeHandlerManager, null);
     }
 
 }

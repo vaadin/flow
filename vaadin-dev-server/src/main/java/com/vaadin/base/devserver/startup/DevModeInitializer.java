@@ -65,6 +65,7 @@ import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.base.devserver.WebpackHandler;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.DevModeHandler;
+import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.Constants;
@@ -211,7 +212,12 @@ public class DevModeInitializer
     @Override
     public void initialize(Set<Class<?>> classes, VaadinContext context)
             throws VaadinInitializerException {
-        initDevModeHandler(classes, context);
+        DevModeHandler devModeHandler = initDevModeHandler(classes, context);
+
+        Lookup lookup = context.getAttribute(Lookup.class);
+        DevModeHandlerManager devModeHandlerManager = lookup
+                .lookup(DevModeHandlerManager.class);
+        devModeHandlerManager.setDevModeHandler(devModeHandler);
 
         setDevModeStarted(context);
     }
@@ -255,22 +261,24 @@ public class DevModeInitializer
      *            classes to check for npm- and js modules
      * @param context
      *            VaadinContext we are running in
+     * @return the initialized dev mode handler or {@code null} if none was
+     *         created
      *
      * @throws VaadinInitializerException
      *             if dev mode can't be initialized
      */
-    public static void initDevModeHandler(Set<Class<?>> classes,
+    public static DevModeHandler initDevModeHandler(Set<Class<?>> classes,
             VaadinContext context) throws VaadinInitializerException {
 
         ApplicationConfiguration config = ApplicationConfiguration.get(context);
         if (config.isProductionMode()) {
             log().debug("Skipping DEV MODE because PRODUCTION MODE is set.");
-            return;
+            return null;
         }
         if (!config.enableDevServer()) {
             log().debug(
                     "Skipping DEV MODE because dev server shouldn't be enabled.");
-            return;
+            return null;
         }
 
         String baseDir = config.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
@@ -393,7 +401,7 @@ public class DevModeInitializer
         CompletableFuture<Void> nodeTasksFuture = CompletableFuture
                 .runAsync(runnable);
 
-        WebpackHandler.start(
+        return WebpackHandler.start(
                 Lookup.compose(lookup,
                         Lookup.of(config, ApplicationConfiguration.class)),
                 builder.getNpmFolder(), nodeTasksFuture);
@@ -450,10 +458,10 @@ public class DevModeInitializer
 
     @Override
     public void contextDestroyed(ServletContextEvent ctx) {
-        WebpackHandler handler = WebpackHandler.getDevModeHandler();
-        if (handler != null) {
-            handler.stop();
-        }
+        DevModeHandlerManager
+                .getDevModeHandler(
+                        new VaadinServletContext(ctx.getServletContext()))
+                .ifPresent(DevModeHandler::stop);
     }
 
     /*
