@@ -124,7 +124,7 @@ public interface ClassLoaderAwareServletContainerInitializer
 
     /**
      * Whether this initializer requires lookup or not.
-     * 
+     *
      * @return whether this initializer requires lookup
      */
     default boolean requiresLookup() {
@@ -139,14 +139,14 @@ public interface ClassLoaderAwareServletContainerInitializer
      *            the Set of application classes that extend, implement, or have
      *            been annotated with the class types specified by the
      *            {@link javax.servlet.annotation.HandlesTypes HandlesTypes}
-     *            annotation, or <tt>null</tt> if there are no matches, or this
-     *            <tt>ServletContainerInitializer</tt> has not been annotated
-     *            with <tt>HandlesTypes</tt>
+     *            annotation, or <code>null</code> if there are no matches, or
+     *            this <code>ServletContainerInitializer</code> has not been
+     *            annotated with <code>HandlesTypes</code>
      *
      * @param context
-     *            the <tt>ServletContext</tt> of the web application that is
+     *            the <code>ServletContext</code> of the web application that is
      *            being started and in which the classes contained in
-     *            <tt>classSet</tt> were found
+     *            <code>classSet</code> were found
      *
      * @throws ServletException
      *             if an error has occurred
