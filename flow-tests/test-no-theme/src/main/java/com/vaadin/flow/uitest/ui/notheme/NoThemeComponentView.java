@@ -18,15 +18,13 @@ package com.vaadin.flow.uitest.ui.notheme;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.theme.NoTheme;
 
 @Route("com.vaadin.flow.uitest.ui.notheme.NoThemeComponentView")
-@NoTheme
 public class NoThemeComponentView extends Div {
 
     public NoThemeComponentView() {
         Anchor anchor = new Anchor();
-        anchor.setText("link");
+        anchor.setText("Hello notheme");
         add(anchor);
     }
 }
