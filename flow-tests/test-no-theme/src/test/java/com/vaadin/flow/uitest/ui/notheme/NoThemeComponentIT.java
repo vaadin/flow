@@ -31,7 +31,9 @@ public class NoThemeComponentIT extends ChromeBrowserTest {
         String text = link.getText();
         Assert.assertEquals("Hello notheme", text);
         String color = link.getCssValue("color");
-        Assert.assertEquals("Unexpected color for a link. " + "@NoTheme should not theme a link anyhow.",
+        Assert.assertEquals(
+                "Unexpected color for a link. "
+                        + "@NoTheme should not theme a link anyhow.",
                 "rgba(0, 0, 0, 1)", color);
     }
 }
