@@ -32,8 +32,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class TaskGenerateIndexHtml extends AbstractTaskClientGenerator {
 
-    private File frontendDirectory;
-    private File outputDirectory;
+    private File indexHtml;
 
     /**
      * Create a task to generate <code>index.html</code> if necessary.
@@ -44,9 +43,8 @@ public class TaskGenerateIndexHtml extends AbstractTaskClientGenerator {
      * @param outputDirectory
      *            the output directory of the generated file
      */
-    TaskGenerateIndexHtml(File frontendDirectory, File outputDirectory) {
-        this.frontendDirectory = frontendDirectory;
-        this.outputDirectory = outputDirectory;
+    TaskGenerateIndexHtml(File frontendDirectory) {
+        indexHtml = new File(frontendDirectory, INDEX_HTML);
     }
 
     @Override
@@ -57,12 +55,11 @@ public class TaskGenerateIndexHtml extends AbstractTaskClientGenerator {
 
     @Override
     protected File getGeneratedFile() {
-        return new File(outputDirectory, INDEX_HTML);
+        return indexHtml;
     }
 
     @Override
     protected boolean shouldGenerate() {
-        File indexHTML = new File(frontendDirectory, INDEX_HTML);
-        return !indexHTML.exists();
+        return !indexHtml.exists();
     }
 }
