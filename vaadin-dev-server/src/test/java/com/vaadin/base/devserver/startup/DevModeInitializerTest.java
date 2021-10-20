@@ -1,5 +1,16 @@
 package com.vaadin.base.devserver.startup;
 
+import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
+import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
+import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
+import static com.vaadin.flow.server.Constants.RESOURCES_THEME_JAR_DEFAULT;
+import static com.vaadin.flow.server.Constants.TARGET;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_OPENAPI_JSON_FILE;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -21,7 +32,16 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
-import net.jcip.annotations.NotThreadSafe;
+import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
+import com.vaadin.flow.server.frontend.FallbackChunk;
+import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
+import com.vaadin.flow.server.startup.VaadinInitializerException;
+
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -30,28 +50,7 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.di.ResourceProvider;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.InitParameters;
-import com.vaadin.flow.server.VaadinServletContext;
-import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
-import com.vaadin.flow.server.frontend.FallbackChunk;
-import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.startup.ApplicationConfiguration;
-import com.vaadin.flow.server.startup.VaadinInitializerException;
-
-import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
-import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
-import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
-import static com.vaadin.flow.server.Constants.RESOURCES_THEME_JAR_DEFAULT;
-import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_OPENAPI_JSON_FILE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
+import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class DevModeInitializerTest extends DevModeInitializerTestBase {
@@ -248,8 +247,8 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     @Test
     public void should_Not_Run_Updaters_inProductionMode() throws Exception {
         Mockito.when(appConfig.isProductionMode()).thenReturn(true);
-        DevModeStartupListener devModeInitializer = new DevModeStartupListener();
-        devModeInitializer.onStartup(classes, servletContext);
+        devModeStartupListener = new DevModeStartupListener();
+        devModeStartupListener.onStartup(classes, servletContext);
         assertNoDevModeHandlerCreated();
     }
 
@@ -279,12 +278,12 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         Mockito.when(appConfig.getBooleanProperty(
                 InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
                 false)).thenReturn(true);
-        DevModeStartupListener devModeInitializer = new DevModeStartupListener();
+        devModeStartupListener = new DevModeStartupListener();
         final Set<Class<?>> classes = new HashSet<>();
         classes.add(NotVisitedWithDeps.class);
         classes.add(Visited.class);
         classes.add(RoutedWithReferenceToVisited.class);
-        devModeInitializer.onStartup(classes, servletContext);
+        devModeStartupListener.onStartup(classes, servletContext);
         handler = getDevModeHandler();
         waitForDevServer();
         ArgumentCaptor<? extends FallbackChunk> arg = ArgumentCaptor
@@ -299,12 +298,11 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
 
     @Test
     public void shouldUseFullPathScannerByDefault() throws Exception {
-        DevModeStartupListener devModeInitializer = new DevModeStartupListener();
         final Set<Class<?>> classes = new HashSet<>();
         classes.add(NotVisitedWithDeps.class);
         classes.add(Visited.class);
         classes.add(RoutedWithReferenceToVisited.class);
-        devModeInitializer.onStartup(classes, servletContext);
+        devModeStartupListener.onStartup(classes, servletContext);
         handler = getDevModeHandler();
         waitForDevServer();
         Mockito.verify(servletContext, Mockito.times(0)).setAttribute(
@@ -330,8 +328,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
                     javaSourceFolder.getRoot().getAbsolutePath());
 
             Assert.assertFalse(generatedOpenApiJson.exists());
-            DevModeStartupListener devModeInitializer = new DevModeStartupListener();
-            devModeInitializer.onStartup(classes, servletContext);
+            devModeStartupListener.onStartup(classes, servletContext);
             handler = getDevModeHandler();
             waitForDevServer();
 
@@ -394,9 +391,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
             System.setProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
                     javaSourceFolder.getRoot().getAbsolutePath());
 
-            DevModeStartupListener devModeInitializer = new DevModeStartupListener();
-
-            devModeInitializer.onStartup(classes, servletContext);
+            devModeStartupListener.onStartup(classes, servletContext);
             handler = getDevModeHandler();
             waitForDevServer();
 
@@ -415,8 +410,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     @Test
     public void onStartup_emptyServletRegistrations_shouldCreateDevModeHandler()
             throws Exception {
-        DevModeStartupListener devModeInitializer = new DevModeStartupListener();
-        devModeInitializer.onStartup(classes, servletContext);
+        devModeStartupListener.onStartup(classes, servletContext);
         handler = getDevModeHandler();
         waitForDevServer();
         assertDevModeHandlerStarted();
