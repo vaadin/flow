@@ -298,7 +298,7 @@ public class PropertyDeploymentConfiguration
     }
 
     /**
-     * Returns parent application configuration;
+     * Returns parent application configuration.
      *
      * @return the parent config
      */
