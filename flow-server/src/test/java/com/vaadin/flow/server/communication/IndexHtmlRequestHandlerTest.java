@@ -24,6 +24,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -62,6 +63,7 @@ import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.MyAppShellWi
 import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.MyAppShellWithLoadingIndicatorConfig;
 import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.MyAppShellWithPushConfig;
 import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.MyAppShellWithReconnectionDialogConfig;
+import com.vaadin.flow.server.startup.VaadinInitializerException;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import elemental.json.Json;
@@ -486,6 +488,12 @@ public class IndexHtmlRequestHandlerTest {
             @Override
             public Class<?>[] getHandlesTypes() {
                 return new Class[0];
+            }
+
+            @Override
+            public void initDevModeHandler(Set<Class<?>> classes,
+                    VaadinContext context) throws VaadinInitializerException {
+
             }
 
             @Override

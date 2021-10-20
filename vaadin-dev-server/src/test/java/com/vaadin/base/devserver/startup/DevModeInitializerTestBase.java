@@ -44,7 +44,7 @@ import elemental.json.JsonObject;
  */
 public class DevModeInitializerTestBase extends AbstractDevModeTest {
 
-    DevModeInitializer devModeInitializer;
+    DevModeStartupListener devModeStartupListener;
 
     // These fields are intentionally scoped default so
     // as they can be used in package tests
@@ -120,7 +120,7 @@ public class DevModeInitializerTestBase extends AbstractDevModeTest {
         FileUtils.forceMkdir(
                 new File(baseDir, DEFAULT_CONNECT_JAVA_SOURCE_FOLDER));
 
-        devModeInitializer = new DevModeInitializer();
+        devModeStartupListener = new DevModeStartupListener();
     }
 
     private JsonObject getInitalPackageJson() {
@@ -160,7 +160,7 @@ public class DevModeInitializerTestBase extends AbstractDevModeTest {
     }
 
     public void process() throws Exception {
-        devModeInitializer.process(classes, servletContext);
+        devModeStartupListener.process(classes, servletContext);
         handler = getDevModeHandler();
         waitForDevServer();
     }
@@ -168,7 +168,7 @@ public class DevModeInitializerTestBase extends AbstractDevModeTest {
     public void runDestroy() throws Exception {
         ServletContextEvent event = Mockito.mock(ServletContextEvent.class);
         Mockito.when(event.getServletContext()).thenReturn(servletContext);
-        devModeInitializer.contextDestroyed(event);
+        devModeStartupListener.contextDestroyed(event);
     }
 
     static List<URL> getClasspathURLs() {

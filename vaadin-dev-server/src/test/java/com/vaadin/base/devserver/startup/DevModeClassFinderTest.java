@@ -15,7 +15,7 @@
  */
 package com.vaadin.base.devserver.startup;
 
-import javax.servlet.annotation.HandlesTypes;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -24,9 +24,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.Assert;
-import org.junit.Test;
+import javax.servlet.annotation.HandlesTypes;
 
+import com.vaadin.base.devserver.startup.DevModeInitializer.DevModeClassFinder;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.component.dependency.CssImport;
@@ -40,12 +40,12 @@ import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.SessionInitListener;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinServiceInitListener;
-import com.vaadin.base.devserver.startup.DevModeInitializer.DevModeClassFinder;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
-import static org.junit.Assert.assertTrue;
+import org.junit.Assert;
+import org.junit.Test;
 
 public class DevModeClassFinderTest {
 
@@ -130,7 +130,7 @@ public class DevModeClassFinderTest {
     }
 
     private Collection<Class<?>> getApplicableClasses() {
-        HandlesTypes handlesTypes = DevModeInitializer.class
+        HandlesTypes handlesTypes = DevModeStartupListener.class
                 .getAnnotation(HandlesTypes.class);
         return Stream.of(handlesTypes.value()).collect(Collectors.toList());
     }

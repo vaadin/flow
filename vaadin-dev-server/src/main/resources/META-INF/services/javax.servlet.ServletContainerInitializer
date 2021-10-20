@@ -1,1 +1,1 @@
-com.vaadin.base.devserver.startup.DevModeInitializer
+com.vaadin.base.devserver.startup.DevModeStartupListener
