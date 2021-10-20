@@ -44,11 +44,14 @@ public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
     private final File connectClientTsApiFolder;
     private final File frontendDirectory;
     private final String buildDirectory;
+    private boolean productionMode;
 
     TaskGenerateBootstrap(FrontendDependenciesScanner frontDeps,
-            File frontendDirectory, String buildDirectory) {
+            File frontendDirectory, String buildDirectory,
+            boolean productionMode) {
         this.frontDeps = frontDeps;
         this.frontendDirectory = frontendDirectory;
+        this.productionMode = productionMode;
         this.connectClientTsApiFolder = new File(frontendDirectory, GENERATED);
         this.buildDirectory = buildDirectory;
     }
@@ -57,6 +60,10 @@ public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
     protected String getFileContent() {
         List<String> lines = new ArrayList<>();
         lines.add(String.format("import '%s';%n", getIndexTsEntryPath()));
+        if (!productionMode) {
+            lines.add(String.format(
+                    "import '@vaadin/flow-frontend/VaadinDevmodeGizmo.js';%n"));
+        }
         lines.addAll(getThemeLines());
 
         return String.join(System.lineSeparator(), lines);

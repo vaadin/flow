@@ -44,12 +44,13 @@ import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.getClassFinder;
 
 public class TaskGenerateBootstrapTest {
 
+    private static final String DEV_MODE_GIZMO_IMPORT = "import '@vaadin/flow-frontend/VaadinDevmodeGizmo.js';";
+
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     private FrontendDependenciesScanner frontDeps;
     private File frontendFolder;
-    private File generatedFolder;
     private TaskGenerateBootstrap taskGenerateBootstrap;
 
     @Before
@@ -59,9 +60,8 @@ public class TaskGenerateBootstrapTest {
                         Collections.singleton(this.getClass())), false);
 
         frontendFolder = temporaryFolder.newFolder(FRONTEND);
-        generatedFolder = temporaryFolder.newFolder(FRONTEND, GENERATED);
         taskGenerateBootstrap = new TaskGenerateBootstrap(frontDeps,
-                frontendFolder, TARGET);
+                frontendFolder, TARGET, true);
     }
 
     @Test
@@ -69,6 +69,24 @@ public class TaskGenerateBootstrapTest {
         taskGenerateBootstrap.execute();
         String content = taskGenerateBootstrap.getFileContent();
         Assert.assertTrue(content.contains("import '../../target/index';"));
+    }
+
+    @Test
+    public void shouldNot_importDevModeGizmo_inProduction()
+            throws ExecutionFailedException {
+        taskGenerateBootstrap.execute();
+        String content = taskGenerateBootstrap.getFileContent();
+        Assert.assertFalse(content.contains(DEV_MODE_GIZMO_IMPORT));
+    }
+
+    @Test
+    public void should_importDevModeGizmo_inDevMode()
+            throws ExecutionFailedException {
+        taskGenerateBootstrap = new TaskGenerateBootstrap(frontDeps,
+                frontendFolder, TARGET, false);
+        taskGenerateBootstrap.execute();
+        String content = taskGenerateBootstrap.getFileContent();
+        Assert.assertTrue(content.contains(DEV_MODE_GIZMO_IMPORT));
     }
 
     @Test
@@ -84,7 +102,7 @@ public class TaskGenerateBootstrapTest {
     public void should_load_AppTheme()
             throws MalformedURLException, ExecutionFailedException {
         taskGenerateBootstrap = new TaskGenerateBootstrap(getThemedDependency(),
-                frontendFolder, TARGET);
+                frontendFolder, TARGET, true);
         taskGenerateBootstrap.execute();
         String content = taskGenerateBootstrap.getFileContent();
 

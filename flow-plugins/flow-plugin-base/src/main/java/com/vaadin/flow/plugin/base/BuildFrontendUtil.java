@@ -160,8 +160,8 @@ public class BuildFrontendUtil {
                         .withNodeVersion(adapter.nodeVersion())
                         .withNodeDownloadRoot(nodeDownloadRootURI)
                         .setNodeAutoUpdate(adapter.nodeAutoUpdate())
-                        .withHomeNodeExecRequired(
-                                adapter.requireHomeNodeExec());
+                        .withHomeNodeExecRequired(adapter.requireHomeNodeExec())
+                        .withProductionMode(adapter.productionMode());
         // If building a jar project copy jar artifact contents now as we
         // might not be able to read files from jar path.
         if (adapter.isJarProject()) {
