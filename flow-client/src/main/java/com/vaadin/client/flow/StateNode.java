@@ -285,7 +285,7 @@ public class StateNode {
      */
     public void setParent(StateNode parent) {
         if (this.parent != null && this.parent.isUnregistered()
-                && (this.parent.getId() != parent.getId() || parent == null)) {
+                && parent != null && this.parent.getId() != parent.getId()) {
             setDomNode(null);
         }
         this.parent = parent;
