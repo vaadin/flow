@@ -22,7 +22,6 @@ import java.nio.file.Files;
 
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.UsageStatistics;
-import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
@@ -186,9 +185,8 @@ public class FeatureFlagsTest {
         Mockito.when(vaadinContext.getAttribute(
                 Mockito.eq(ApplicationConfiguration.class), Mockito.any()))
                 .thenReturn(applicationConfiguration);
-        Mockito.when(applicationConfiguration.getStringProperty(
-                Constants.JAVA_RESOURCE_FOLDER_TOKEN, "src/main/resources"))
-                .thenReturn(folder.getAbsolutePath());
+        Mockito.when(applicationConfiguration.getJavaResourceFolder())
+                .thenReturn(folder);
 
     }
 

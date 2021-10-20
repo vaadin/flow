@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server;
 
+import java.io.File;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Locale;
@@ -210,6 +211,11 @@ public class PropertyDeploymentConfiguration
     @Override
     public String getFlowResourcesFolder() {
         return super.getFlowResourcesFolder();
+    }
+
+    @Override
+    public File getJavaResourceFolder() {
+        return super.getJavaResourceFolder();
     }
 
     @Override
