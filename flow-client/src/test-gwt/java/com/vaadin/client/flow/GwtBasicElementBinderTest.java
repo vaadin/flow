@@ -80,11 +80,11 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
     }
 
     public void testBindExistingPropertyWithDifferentType() {
-        //set number as a property value for DOM elememnt
-        double value= setNumberValue(element, "bar");
-        
+        // set number as a property value for DOM elememnt
+        double value = setNumberValue(element, "bar");
+
         // set string as a StateTree property value
-        properties.getProperty("bar").setValue(""+value);
+        properties.getProperty("bar").setValue("" + value);
 
         Binder.bind(node, element);
 
@@ -1817,6 +1817,37 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         assertEquals("foobar", WidgetUtil.getJsProperty(element, "baz"));
     }
 
+    public void testBoundNode_canBeBoundAgainOnceDomNodeIsReset() {
+        // set some attribute
+        idAttribute.setValue("foo");
+
+        Binder.bind(node, element);
+
+        Reactive.flush();
+
+        assertEquals("foo", element.getId());
+
+        Element newElement = Browser.getDocument().createElement("div");
+        Binder.bind(node, newElement);
+
+        Reactive.flush();
+
+        // nothing happens since the node is already bound
+        assertEquals("", newElement.getId());
+
+        // reset node
+        node.setDomNode(null);
+
+        newElement = Browser.getDocument().createElement("div");
+
+        Binder.bind(node, newElement);
+
+        Reactive.flush();
+
+        // once the dom node has been reset the element can bound again
+        assertEquals("foo", newElement.getId());
+    }
+
     private void assertDeferredPolymerElement_originalReadyIsCalled(
             Element element) {
         initPolymer(element);
@@ -1975,7 +2006,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
     /*-{
        return typeof obj[name];
     }-*/;
-    
+
     private native double setNumberValue(Object obj, String name)
     /*-{
        obj[name] =2;
