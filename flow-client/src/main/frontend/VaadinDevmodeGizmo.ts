@@ -15,6 +15,7 @@ interface Feature {
   id: string;
   title: string;
   moreInfoLink: string;
+  requiresServerRestart: boolean;
   enabled: boolean;
 }
 
@@ -1185,6 +1186,9 @@ export class VaadinDevmodeGizmo extends LitElement {
     if (this.frontendConnection) {
       this.frontendConnection.setFeature(feature.id, enabled);
       this.log(MessageType.INFORMATION, `Feature '${feature.title}' ${enabled ? 'enabled' : 'disabled'}`);
+      if (feature.requiresServerRestart) {
+        this.showNotification(MessageType.INFORMATION, 'You need to restart the server to enable this feature');
+      }
     } else {
       this.log(MessageType.ERROR, `Unable to toggle feature ${feature.title}: No server connection available`);
     }

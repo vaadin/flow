@@ -38,6 +38,7 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
@@ -366,6 +367,9 @@ public abstract class NodeUpdater implements FallibleCommand {
         defaults.put("esbuild-loader", "2.15.1");
         defaults.put("fork-ts-checker-webpack-plugin", "6.2.1");
 
+        if (FeatureFlags.isEnabled(FeatureFlags.VITE)) {
+            defaults.put("vite", "2.6.10");
+        }
         defaults.put("webpack", "4.46.0");
         defaults.put("webpack-cli", "4.9.0");
         defaults.put("webpack-dev-server", "4.1.1");

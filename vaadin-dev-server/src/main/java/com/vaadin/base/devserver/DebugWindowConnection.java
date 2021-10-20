@@ -22,6 +22,7 @@ import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.experimental.FeatureFlags;
@@ -115,7 +116,9 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
         send(resource, "serverInfo", new ServerInfo());
         send(resource, "featureFlags",
-                new FeatureFlagMessage(FeatureFlags.getFeatures()));
+                new FeatureFlagMessage(FeatureFlags.getFeatures().stream()
+                        .filter(feature -> feature != FeatureFlags.EXAMPLE)
+                        .collect(Collectors.toList())));
     }
 
     private void send(AtmosphereResource resource, String command,

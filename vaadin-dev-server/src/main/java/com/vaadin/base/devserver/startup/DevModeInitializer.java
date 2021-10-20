@@ -62,7 +62,9 @@ import java.util.zip.ZipOutputStream;
 
 import javax.servlet.annotation.HandlesTypes;
 
+import com.vaadin.base.devserver.ViteHandler;
 import com.vaadin.base.devserver.WebpackHandler;
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.server.Constants;
@@ -194,6 +196,9 @@ public class DevModeInitializer implements Serializable {
                     "Skipping DEV MODE because dev server shouldn't be enabled.");
             return null;
         }
+        // This needs to be set as there is no "current service" available in
+        // this call
+        FeatureFlags.setPropertiesLocation(config.getJavaResourceFolder());
 
         String baseDir = config.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
                 null);
@@ -318,10 +323,15 @@ public class DevModeInitializer implements Serializable {
         CompletableFuture<Void> nodeTasksFuture = CompletableFuture
                 .runAsync(runnable);
 
-        return WebpackHandler.start(
-                Lookup.compose(lookup,
-                        Lookup.of(config, ApplicationConfiguration.class)),
-                builder.getNpmFolder(), nodeTasksFuture);
+        Lookup devServerLookup = Lookup.compose(lookup,
+                Lookup.of(config, ApplicationConfiguration.class));
+        if (FeatureFlags.isEnabled(FeatureFlags.VITE)) {
+            return new ViteHandler(devServerLookup, 0, builder.getNpmFolder(),
+                    nodeTasksFuture);
+        } else {
+            return WebpackHandler.start(devServerLookup, builder.getNpmFolder(),
+                    nodeTasksFuture);
+        }
     }
 
     private static boolean isEndpointServiceAvailable(Lookup lookup) {
