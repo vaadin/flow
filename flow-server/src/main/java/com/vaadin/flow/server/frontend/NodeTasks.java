@@ -688,8 +688,7 @@ public class NodeTasks implements FallibleCommand {
         }
 
         if (FeatureFlags.isEnabled(FeatureFlags.VITE)) {
-            commands.add(new TaskUpdateVite(builder.frontendDirectory,
-                    builder.npmFolder));
+            commands.add(new TaskUpdateVite(builder.npmFolder));
         } else if (enableWebpackConfigUpdate) {
             PwaConfiguration pwaConfiguration = frontendDependencies
                     .getPwaConfiguration();

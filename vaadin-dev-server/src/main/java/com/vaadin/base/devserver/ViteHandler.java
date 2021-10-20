@@ -46,6 +46,21 @@ public final class ViteHandler extends AbstractDevServerRunner {
      */
     public static final String VITE_SERVER = "node_modules/vite/bin/vite.js";
 
+    /**
+     * Creates and starts the dev mode handler if none has been started yet.
+     *
+     * @param lookup
+     *            the provided lookup to get required data
+     * @param runningPort
+     *            a port on which Vite is already running or 0 to start a new
+     *            process
+     * @param npmFolder
+     *            folder with npm configuration files
+     * @param waitFor
+     *            a completable future whose execution result needs to be
+     *            available to start the dev server
+     */
+
     public ViteHandler(Lookup lookup, int runningPort, File npmFolder,
             CompletableFuture<Void> waitFor) {
         super(lookup, runningPort, npmFolder, waitFor);

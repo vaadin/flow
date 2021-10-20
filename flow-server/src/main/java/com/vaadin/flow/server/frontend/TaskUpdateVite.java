@@ -37,7 +37,7 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
 
     private File configFolder;
 
-    TaskUpdateVite(File frontendDirectory, File configFolder) {
+    TaskUpdateVite(File configFolder) {
         this.configFolder = configFolder;
     }
 
