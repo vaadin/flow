@@ -1360,7 +1360,6 @@ public class BootstrapHandlerTest {
         Document page = pageBuilder.getBootstrapPage(bootstrapContext);
 
         Elements scripts = page.head().getElementsByTag("script");
-        scripts.forEach(s -> System.err.println(s.outerHtml()));
 
         Element element = scripts.stream()
                 .filter(elem -> elem.attr("src").equals("//module.js"))
