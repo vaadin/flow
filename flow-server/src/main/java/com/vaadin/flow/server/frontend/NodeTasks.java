@@ -147,7 +147,7 @@ public class NodeTasks implements FallibleCommand {
 
         /**
          * Default is true here so we do not accidentally include development
-         * stuff into production
+         * stuff into production.
          */
         private boolean productionMode = true;
 
