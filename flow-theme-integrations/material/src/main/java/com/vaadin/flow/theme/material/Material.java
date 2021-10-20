@@ -52,8 +52,8 @@ public class Material implements AbstractTheme {
 
     @Override
     public List<String> getHeaderInlineContents() {
-        return Collections.singletonList("<custom-style>\n"
-                + "    <style include=\"material-color-light material-typography\"></style>\n"
+        return Collections.singletonList("<custom-style>"
+                + "    <style include=\"material-color-light material-typography\"></style>"
                 + "</custom-style>");
     }
 
