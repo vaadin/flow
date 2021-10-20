@@ -180,6 +180,7 @@ public final class WebpackHandler extends AbstractDevServerRunner {
 
     @Override
     protected void onDevServerCompilation(Result result) {
+        super.onDevServerCompilation(result);
         try {
             readManifestPaths();
         } catch (IOException e) {

@@ -362,18 +362,9 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
              */
             Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
 
-            Consumer<Result> onFirstMatch = (result) -> {
-                if (result.isSuccess()) {
-                    FrontendUtils.console(FrontendUtils.GREEN, SUCCEED_MSG);
-                } else {
-                    FrontendUtils.console(FrontendUtils.RED, FAILED_MSG);
-                    failedOutput = result.getOutput();
-                }
-                onDevServerCompilation(result);
-            };
             DevServerOutputFinder finder = new DevServerOutputFinder(
                     process.getInputStream(), getServerSuccessPattern(),
-                    getServerFailurePattern(), onFirstMatch);
+                    getServerFailurePattern(), this::onDevServerCompilation);
             finder.find();
             getLogger().info(LOG_START);
 
@@ -397,7 +388,15 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
      * Called whenever the dev server output matche the success or failure
      * pattern.
      */
-    protected abstract void onDevServerCompilation(Result result);
+    protected void onDevServerCompilation(Result result) {
+        if (result.isSuccess()) {
+            FrontendUtils.console(FrontendUtils.GREEN, SUCCEED_MSG);
+            failedOutput = null;
+        } else {
+            FrontendUtils.console(FrontendUtils.RED, FAILED_MSG);
+            failedOutput = result.getOutput();
+        }
+    };
 
     @Override
     public String getFailedOutput() {

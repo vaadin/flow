@@ -179,10 +179,17 @@ public class DevServerOutputFinder {
 
     /**
      * Blocks until the first match is found and the callback has been run.
+     * 
+     * @param timeoutInSeconds
+     *            the maximum number of seconds to wait
+     * @throws InterruptedException
+     *             if the finder thread is interrupted
+     * @return {@code true} if a match was found, {@code false} if a timeout
+     *         occurred
      */
-    public void awaitFirstMatch(int timeoutInSeconds)
+    public boolean awaitFirstMatch(int timeoutInSeconds)
             throws InterruptedException {
-        monitor.await(timeoutInSeconds, TimeUnit.SECONDS);
+        return monitor.await(timeoutInSeconds, TimeUnit.SECONDS);
     }
 
 }
