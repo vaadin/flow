@@ -40,134 +40,129 @@ import net.jcip.annotations.NotThreadSafe;
 @NotThreadSafe
 public class DevModeEndpointTest extends AbstractDevModeTest {
 
-        Set<Class<?>> classes;
-        DevModeStartupListener devModeStartupListener;
+    Set<Class<?>> classes;
+    DevModeStartupListener devModeStartupListener;
 
-        private static class VaadinServletSubClass extends VaadinServlet {
+    private static class VaadinServletSubClass extends VaadinServlet {
 
-        }
+    }
 
-        @Before
-        @SuppressWarnings({ "unchecked", "rawtypes" })
-        public void setup() throws Exception {
-                super.setup();
-                assertFalse("No DevModeHandler should be available at test start",
-                                DevModeHandlerManager.getDevModeHandler(
-                                                new VaadinServletContext(
-                                                                servletContext))
-                                                .isPresent());
+    @Before
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public void setup() throws Exception {
+        super.setup();
+        assertFalse("No DevModeHandler should be available at test start",
+                DevModeHandlerManager
+                        .getDevModeHandler(
+                                new VaadinServletContext(servletContext))
+                        .isPresent());
 
-                createStubNode(false, true, baseDir);
-                createStubWebpackServer("Compiled", 500, baseDir, true);
+        createStubNode(false, true, baseDir);
+        createStubWebpackServer("Compiled", 500, baseDir, true);
 
-                // Prevent TaskRunNpmInstall#cleanUp from deleting node_modules
-                new File(baseDir, "node_modules/.modules.yaml").createNewFile();
+        // Prevent TaskRunNpmInstall#cleanUp from deleting node_modules
+        new File(baseDir, "node_modules/.modules.yaml").createNewFile();
 
-                ServletRegistration vaadinServletRegistration = Mockito
-                                .mock(ServletRegistration.class);
+        ServletRegistration vaadinServletRegistration = Mockito
+                .mock(ServletRegistration.class);
 
-                Mockito.doReturn(new EndpointGeneratorTaskFactoryImpl())
-                                .when(lookup)
-                                .lookup(EndpointGeneratorTaskFactory.class);
+        Mockito.doReturn(new EndpointGeneratorTaskFactoryImpl()).when(lookup)
+                .lookup(EndpointGeneratorTaskFactory.class);
 
-                ResourceProvider resourceProvider = Mockito
-                                .mock(ResourceProvider.class);
-                Mockito.when(lookup.lookup(ResourceProvider.class))
-                                .thenReturn(resourceProvider);
+        ResourceProvider resourceProvider = Mockito
+                .mock(ResourceProvider.class);
+        Mockito.when(lookup.lookup(ResourceProvider.class))
+                .thenReturn(resourceProvider);
 
-                Mockito.when(vaadinServletRegistration.getClassName())
-                                .thenReturn(VaadinServletSubClass.class
-                                                .getName());
+        Mockito.when(vaadinServletRegistration.getClassName())
+                .thenReturn(VaadinServletSubClass.class.getName());
 
-                classes = new HashSet<>();
-                classes.add(this.getClass());
+        classes = new HashSet<>();
+        classes.add(this.getClass());
 
-                Map registry = new HashMap();
+        Map registry = new HashMap();
 
-                // Adding extra registrations to make sure that
-                // DevModeInitializer picks
-                // the correct registration which is a VaadinServlet
-                // registration.
-                registry.put("extra1", Mockito.mock(ServletRegistration.class));
-                registry.put("foo", vaadinServletRegistration);
-                registry.put("extra2", Mockito.mock(ServletRegistration.class));
-                Mockito.when(servletContext.getServletRegistrations())
-                                .thenReturn(registry);
-                Mockito.when(servletContext.getInitParameterNames())
-                                .thenReturn(Collections.emptyEnumeration());
-                Mockito.when(servletContext.getClassLoader())
-                                .thenReturn(this.getClass().getClassLoader());
+        // Adding extra registrations to make sure that
+        // DevModeInitializer picks
+        // the correct registration which is a VaadinServlet
+        // registration.
+        registry.put("extra1", Mockito.mock(ServletRegistration.class));
+        registry.put("foo", vaadinServletRegistration);
+        registry.put("extra2", Mockito.mock(ServletRegistration.class));
+        Mockito.when(servletContext.getServletRegistrations())
+                .thenReturn(registry);
+        Mockito.when(servletContext.getInitParameterNames())
+                .thenReturn(Collections.emptyEnumeration());
+        Mockito.when(servletContext.getClassLoader())
+                .thenReturn(this.getClass().getClassLoader());
 
-                FileUtils.forceMkdir(new File(baseDir,
-                                DEFAULT_CONNECT_JAVA_SOURCE_FOLDER));
+        FileUtils.forceMkdir(
+                new File(baseDir, DEFAULT_CONNECT_JAVA_SOURCE_FOLDER));
 
-                devModeStartupListener = new DevModeStartupListener();
-        }
+        devModeStartupListener = new DevModeStartupListener();
+    }
 
-        @Test
-        public void should_generateOpenApi_when_EndpointPresents()
-                        throws Exception {
-                File generatedOpenApiJson = Paths.get(baseDir, TARGET,
-                                DEFAULT_CONNECT_OPENAPI_JSON_FILE).toFile();
-                File src = new File(getClass().getClassLoader()
-                                .getResource("java").getFile());
-                Mockito.when(appConfig.getStringProperty(
-                                Mockito.eq(CONNECT_JAVA_SOURCE_FOLDER_TOKEN),
-                                Mockito.anyString()))
-                                .thenReturn(src.getAbsolutePath());
+    @Test
+    public void should_generateOpenApi_when_EndpointPresents()
+            throws Exception {
+        File generatedOpenApiJson = Paths
+                .get(baseDir, TARGET, DEFAULT_CONNECT_OPENAPI_JSON_FILE)
+                .toFile();
+        File src = new File(
+                getClass().getClassLoader().getResource("java").getFile());
+        Mockito.when(appConfig.getStringProperty(
+                Mockito.eq(CONNECT_JAVA_SOURCE_FOLDER_TOKEN),
+                Mockito.anyString())).thenReturn(src.getAbsolutePath());
 
-                Assert.assertFalse(generatedOpenApiJson.exists());
-                devModeStartupListener.onStartup(classes, servletContext);
-                handler = getDevModeHandler();
-                waitForDevServer();
-                Assert.assertTrue(
-                                "Should generate OpenAPI spec if Endpoint is used.",
-                                generatedOpenApiJson.exists());
-        }
+        Assert.assertFalse(generatedOpenApiJson.exists());
+        devModeStartupListener.onStartup(classes, servletContext);
+        handler = getDevModeHandler();
+        waitForDevServer();
+        Assert.assertTrue("Should generate OpenAPI spec if Endpoint is used.",
+                generatedOpenApiJson.exists());
+    }
 
-        @Test
-        public void should_notGenerateOpenApi_when_EndpointIsNotUsed()
-                        throws Exception {
-                File generatedOpenApiJson = Paths.get(baseDir, TARGET,
-                                DEFAULT_CONNECT_OPENAPI_JSON_FILE).toFile();
+    @Test
+    public void should_notGenerateOpenApi_when_EndpointIsNotUsed()
+            throws Exception {
+        File generatedOpenApiJson = Paths
+                .get(baseDir, TARGET, DEFAULT_CONNECT_OPENAPI_JSON_FILE)
+                .toFile();
 
-                Assert.assertFalse(generatedOpenApiJson.exists());
-                devModeStartupListener.onStartup(classes, servletContext);
-                handler = getDevModeHandler();
-                waitForDevServer();
-                Assert.assertFalse(
-                                "Should not generate OpenAPI spec if Endpoint is not used.",
-                                generatedOpenApiJson.exists());
-        }
+        Assert.assertFalse(generatedOpenApiJson.exists());
+        devModeStartupListener.onStartup(classes, servletContext);
+        handler = getDevModeHandler();
+        waitForDevServer();
+        Assert.assertFalse(
+                "Should not generate OpenAPI spec if Endpoint is not used.",
+                generatedOpenApiJson.exists());
+    }
 
-        @Test
-        public void should_generateTs_files() throws Exception {
-                // Configure a folder that has .java classes with valid
-                // endpoints
-                // Not using `src/test/java` because there are invalid endpoint
-                // names
-                // in some tests
-                File src = new File(getClass().getClassLoader()
-                                .getResource("java").getFile());
-                Mockito.when(appConfig.getStringProperty(
-                                Mockito.eq(CONNECT_JAVA_SOURCE_FOLDER_TOKEN),
-                                Mockito.anyString()))
-                                .thenReturn(src.getAbsolutePath());
+    @Test
+    public void should_generateTs_files() throws Exception {
+        // Configure a folder that has .java classes with valid
+        // endpoints
+        // Not using `src/test/java` because there are invalid endpoint
+        // names
+        // in some tests
+        File src = new File(
+                getClass().getClassLoader().getResource("java").getFile());
+        Mockito.when(appConfig.getStringProperty(
+                Mockito.eq(CONNECT_JAVA_SOURCE_FOLDER_TOKEN),
+                Mockito.anyString())).thenReturn(src.getAbsolutePath());
 
-                File ts1 = new File(baseDir,
-                                DEFAULT_PROJECT_FRONTEND_GENERATED_DIR
-                                                + "MyEndpoint.ts");
-                File ts2 = new File(baseDir,
-                                DEFAULT_PROJECT_FRONTEND_GENERATED_DIR
-                                                + "connect-client.default.ts");
+        File ts1 = new File(baseDir,
+                DEFAULT_PROJECT_FRONTEND_GENERATED_DIR + "MyEndpoint.ts");
+        File ts2 = new File(baseDir, DEFAULT_PROJECT_FRONTEND_GENERATED_DIR
+                + "connect-client.default.ts");
 
-                assertFalse(ts1.exists());
-                assertFalse(ts2.exists());
-                devModeStartupListener.onStartup(classes, servletContext);
-                handler = getDevModeHandler();
-                waitForDevServer();
-                assertTrue(ts1.exists());
-                assertTrue(ts2.exists());
-        }
+        assertFalse(ts1.exists());
+        assertFalse(ts2.exists());
+        devModeStartupListener.onStartup(classes, servletContext);
+        handler = getDevModeHandler();
+        waitForDevServer();
+        assertTrue(ts1.exists());
+        assertTrue(ts2.exists());
+    }
 
 }
