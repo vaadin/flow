@@ -302,8 +302,8 @@ public class CodeGenerator extends AbstractTypeScriptClientCodegen {
         if (schema instanceof ArraySchema) {
             ArraySchema arraySchema = (ArraySchema) schema;
             Schema inner = arraySchema.getItems();
-            return String.format("Array<%s>%s",
-                    this.getTypeDeclaration(inner), optionalSuffix);
+            return String.format("Array<%s>%s", this.getTypeDeclaration(inner),
+                    optionalSuffix);
         } else if (GeneratorUtils.isNotBlank(schema.get$ref())) {
             return OpenAPIUtil.getSimpleRef(schema.get$ref()) + optionalSuffix;
         } else if (schema.getAdditionalProperties() != null) {
