@@ -15,22 +15,12 @@
  */
 package com.vaadin.base.devserver;
 
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
-import static com.vaadin.flow.server.frontend.FrontendUtils.GREEN;
-import static com.vaadin.flow.server.frontend.FrontendUtils.RED;
-import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
-import static com.vaadin.flow.server.frontend.FrontendUtils.console;
 import static java.net.HttpURLConnection.HTTP_OK;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -39,10 +29,9 @@ import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.vaadin.base.devserver.DevServerOutputFinder.Result;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.InitParameters;
-import com.vaadin.flow.server.frontend.FrontendTools;
-import com.vaadin.flow.server.frontend.FrontendToolsSettings;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
@@ -69,20 +58,6 @@ public final class WebpackHandler extends AbstractDevServerRunner {
     // `Failed` in the last line
     private static final String DEFAULT_OUTPUT_PATTERN = ": Compiled.";
     private static final String DEFAULT_ERROR_PATTERN = ": Failed to compile.";
-    private static final String FAILED_MSG = "\n------------------ Frontend compilation failed. ------------------\n\n";
-    private static final String SUCCEED_MSG = "\n----------------- Frontend compiled successfully. -----------------\n\n";
-    private static final String START = "\n------------------ Starting Frontend compilation. ------------------\n";
-    private static final String END = "\n------------------------- Webpack stopped  -------------------------\n";
-    private static final String LOG_START = "Running webpack to compile frontend resources. This may take a moment, please stand by...";
-
-    // If after this time in millisecs, the pattern was not found, we unlock the
-    // process and continue. It might happen if webpack changes their output
-    // without advise.
-    private static final String DEFAULT_TIMEOUT_FOR_PATTERN = "60000";
-
-    private boolean notified = false;
-
-    private volatile String failedOutput;
 
     /**
      * The local installation path of the webpack-dev-server node script.
@@ -93,8 +68,6 @@ public final class WebpackHandler extends AbstractDevServerRunner {
      * The list of static resource paths from webpack manifest.
      */
     private volatile List<String> manifestPaths = new ArrayList<>();
-
-    private StringBuilder cumulativeOutput = new StringBuilder();
 
     private WebpackHandler(Lookup lookup, int runningPort, File npmFolder,
             CompletableFuture<Void> waitFor) {
@@ -156,111 +129,8 @@ public final class WebpackHandler extends AbstractDevServerRunner {
         return false;
     }
 
-    private synchronized void doNotify() {
-        if (!notified) {
-            notified = true;
-            notifyAll(); // NOSONAR
-        }
-    }
-
-    // mirrors a stream to logger, and check whether a success or error pattern
-    // is found in the output.
-    private void logStream(InputStream input, Pattern success,
-            Pattern failure) {
-        Thread thread = new Thread(() -> {
-            InputStreamReader reader = new InputStreamReader(input,
-                    StandardCharsets.UTF_8);
-            try {
-                readLinesLoop(success, failure, reader);
-            } catch (IOException e) {
-                if ("Stream closed".equals(e.getMessage())) {
-                    console(GREEN, END);
-                    getLogger().debug("Exception when reading webpack output.",
-                            e);
-                } else {
-                    getLogger().error("Exception when reading webpack output.",
-                            e);
-                }
-            }
-
-            // Process closed stream, means that it exited, notify
-            // DevModeHandler to continue
-            doNotify();
-        });
-        thread.setDaemon(true);
-        thread.setName("webpack");
-        thread.start();
-    }
-
-    private void readLinesLoop(Pattern success, Pattern failure,
-            InputStreamReader reader) throws IOException {
-        StringBuilder line = new StringBuilder();
-        for (int i; (i = reader.read()) >= 0;) {
-            char ch = (char) i;
-            console("%c", ch);
-            line.append(ch);
-            if (ch == '\n') {
-                processLine(line.toString(), success, failure);
-                line.setLength(0);
-            }
-        }
-    }
-
-    private void processLine(String line, Pattern success, Pattern failure) {
-        // skip progress lines
-        if (line.contains("\b")) {
-            return;
-        }
-
-        // remove color escape codes for console
-        String cleanLine = line.replaceAll("(\u001b\\[[;\\d]*m|[\b\r]+)", "");
-
-        boolean succeed = success.matcher(line).find();
-        boolean failed = failure.matcher(line).find();
-
-        // save output so as it can be used to alert user in browser, unless
-        // it's `: Failed to compile.`
-        if (!failed) {
-            cumulativeOutput.append(cleanLine);
-        }
-
-        // We found the success or failure pattern in stream
-        if (succeed || failed) {
-            if (succeed) {
-                console(GREEN, SUCCEED_MSG);
-            } else {
-                console(RED, FAILED_MSG);
-            }
-            // save output in case of failure
-            failedOutput = failed ? cumulativeOutput.toString() : null;
-
-            // reset cumulative buffer for the next compilation
-            cumulativeOutput = new StringBuilder();
-
-            // Read webpack asset manifest json
-            try {
-                readManifestPaths();
-            } catch (IOException e) {
-                getLogger().error("Error when reading manifest.json "
-                        + "from webpack-dev-server", e);
-            }
-
-            // Notify DevModeHandler to continue
-            doNotify();
-
-            // trigger a live-reload since webpack has recompiled the bundle
-            // if failure, ensures the webpack error is shown in the browser
-            triggerLiveReload();
-        }
-    }
-
     private static Logger getLogger() {
         return LoggerFactory.getLogger(WebpackHandler.class);
-    }
-
-    @Override
-    public String getFailedOutput() {
-        return failedOutput;
     }
 
     @Override
@@ -309,104 +179,35 @@ public final class WebpackHandler extends AbstractDevServerRunner {
     }
 
     @Override
-    protected Process doStartDevServer() {
-        ApplicationConfiguration config = getApplicationConfiguration();
-        ProcessBuilder processBuilder = new ProcessBuilder()
-                .directory(getNpmFolder());
-
-        boolean useHomeNodeExec = config.getBooleanProperty(
-                InitParameters.REQUIRE_HOME_NODE_EXECUTABLE, false);
-        boolean nodeAutoUpdate = config
-                .getBooleanProperty(InitParameters.NODE_AUTO_UPDATE, false);
-        boolean useGlobalPnpm = config.getBooleanProperty(
-                InitParameters.SERVLET_PARAMETER_GLOBAL_PNPM, false);
-
-        FrontendToolsSettings settings = new FrontendToolsSettings(
-                getNpmFolder().getAbsolutePath(),
-                () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
-        settings.setForceAlternativeNode(useHomeNodeExec);
-        settings.setAutoUpdate(nodeAutoUpdate);
-        settings.setUseGlobalPnpm(useGlobalPnpm);
-
-        FrontendTools tools = new FrontendTools(settings);
-        tools.validateNodeAndNpmVersion();
-
-        String nodeExec = null;
-        if (useHomeNodeExec) {
-            nodeExec = tools.forceAlternativeNodeExecutable();
-        } else {
-            nodeExec = tools.getNodeExecutable();
-        }
-
-        List<String> command = makeCommands(config, getServerBinary(),
-                getServerConfig(), nodeExec);
-
-        console(GREEN, START);
-        if (getLogger().isDebugEnabled()) {
-            getLogger().debug(
-                    commandToString(getNpmFolder().getAbsolutePath(), command));
-        }
-
-        processBuilder.command(command);
-
+    protected void onDevServerCompilation(Result result) {
+        super.onDevServerCompilation(result);
         try {
-            Process process = processBuilder
-                    .redirectError(ProcessBuilder.Redirect.PIPE)
-                    .redirectErrorStream(true).start();
-            // We only can save the dev server process reference the first time
-            // that
-            // the DevModeHandler is created. There is no way to store
-            // it in the servlet container, and we do not want to save it in the
-            // global JVM.
-            // We instruct the JVM to stop the webpack-dev-server daemon when
-            // the JVM stops, to avoid leaving daemons running in the system.
-            // NOTE: that in the corner case that the JVM crashes or it is
-            // killed
-            // the daemon will be kept running. But anyways it will also happens
-            // if the system was configured to be stop the daemon when the
-            // servlet context is destroyed.
-            Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
-
-            Pattern succeed = Pattern.compile(config.getStringProperty(
-                    SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN,
-                    DEFAULT_OUTPUT_PATTERN));
-
-            Pattern failure = Pattern.compile(config.getStringProperty(
-                    SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN,
-                    DEFAULT_ERROR_PATTERN));
-
-            logStream(process.getInputStream(), succeed, failure);
-
-            getLogger().info(LOG_START);
-            synchronized (this) {
-                this.wait(Integer.parseInt(config.getStringProperty( // NOSONAR
-                        SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT,
-                        DEFAULT_TIMEOUT_FOR_PATTERN)));
-            }
-
-            return process;
+            readManifestPaths();
         } catch (IOException e) {
-            getLogger().error("Failed to start the webpack process", e);
-        } catch (InterruptedException e) {
-            getLogger().debug("Webpack process start has been interrupted", e);
+            getLogger().error(
+                    "Error when reading manifest.json from " + getServerName(),
+                    e);
         }
-        return null;
+
+        // trigger a live-reload since webpack has recompiled the bundle
+        // if failure, ensures the webpack error is shown in the browser
+        triggerLiveReload();
     }
 
-    private List<String> makeCommands(ApplicationConfiguration config,
-            File webpack, File webpackConfig, String nodeExec) {
+    @Override
+    protected List<String> getServerStartupCommand(String nodeExec) {
         List<String> command = new ArrayList<>();
         command.add(nodeExec);
-        command.add(webpack.getAbsolutePath());
+        command.add(getServerBinary().getAbsolutePath());
         command.add("--config");
-        command.add(webpackConfig.getAbsolutePath());
+        command.add(getServerConfig().getAbsolutePath());
         command.add("--port");
         command.add(String.valueOf(getPort()));
         command.add("--watch-options-stdin"); // Tell wds to stop even if
                                               // watchDog fail
         command.add("--env");
         command.add("watchDogPort=" + getWatchDog().getWatchDogPort());
-        command.addAll(Arrays.asList(config
+        command.addAll(Arrays.asList(getApplicationConfiguration()
                 .getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS,
                         "--devtool=eval-source-map --mode=development")
                 .split(" +")));
@@ -426,6 +227,20 @@ public final class WebpackHandler extends AbstractDevServerRunner {
     @Override
     protected File getServerConfig() {
         return new File(getNpmFolder(), FrontendUtils.WEBPACK_CONFIG);
+    }
+
+    @Override
+    protected Pattern getServerSuccessPattern() {
+        return Pattern.compile(getApplicationConfiguration().getStringProperty(
+                InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN,
+                DEFAULT_OUTPUT_PATTERN));
+    }
+
+    @Override
+    protected Pattern getServerFailurePattern() {
+        return Pattern.compile(getApplicationConfiguration().getStringProperty(
+                InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN,
+                DEFAULT_ERROR_PATTERN));
     }
 
 }

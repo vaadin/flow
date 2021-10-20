@@ -24,6 +24,7 @@ import java.net.ServerSocket;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -36,6 +37,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.vaadin.base.devserver.DevServerOutputFinder.Result;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
@@ -43,11 +45,15 @@ import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.HandlerHelper;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.StaticFileServer;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
+import com.vaadin.flow.server.frontend.FrontendTools;
+import com.vaadin.flow.server.frontend.FrontendToolsSettings;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import org.apache.commons.io.FileUtils;
@@ -65,9 +71,21 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class AbstractDevServerRunner implements DevModeHandler {
 
-    protected static final String START_FAILURE = "Couldn't start dev server because";
+    private static final String START_FAILURE = "Couldn't start dev server because";
 
     private static final String DEV_SERVER_HOST = "http://localhost";
+
+    private static final String FAILED_MSG = "\n------------------ Frontend compilation failed. ------------------\n\n";
+    private static final String SUCCEED_MSG = "\n----------------- Frontend compiled successfully. -----------------\n\n";
+    private static final String START = "\n------------------ Starting Frontend compilation. ------------------\n";
+    private static final String LOG_START = "Running Server to compile frontend resources. This may take a moment, please stand by...";
+
+    /**
+     * If after this time in millisecs, the pattern was not found, we unlock the
+     * process and continue. It might happen if the dev server changes their
+     * output.
+     */
+    private static final String DEFAULT_TIMEOUT_FOR_PATTERN = "60000";
 
     /**
      * UUID system property for identifying JVM restart.
@@ -99,6 +117,8 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
     private boolean usingAlreadyStartedProcess = false;
 
     private ApplicationConfiguration applicationConfiguration;
+
+    private String failedOutput = null;
 
     /**
      * Craete an instance that waits for the given task to complete before
@@ -260,11 +280,127 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
     protected abstract String getServerName();
 
     /**
+     * Gets the commands to run to start the dev server.
+     * 
+     * @param nodeExec
+     *            the path to the node binary
+     */
+    protected abstract List<String> getServerStartupCommand(String nodeExec);
+
+    /**
+     * Gets a pattern to match with the output to determine that the server has
+     * started successfully.
+     */
+    protected abstract Pattern getServerSuccessPattern();
+
+    /**
+     * Gets a pattern to match with the output to determine that the server has
+     * failed to start.
+     */
+    protected abstract Pattern getServerFailurePattern();
+
+    /**
      * Starts the dev server and returns the started process.
      * 
      * @return the started process or {@code null} if no process was started
      */
-    protected abstract Process doStartDevServer();
+    protected Process doStartDevServer() {
+        ApplicationConfiguration config = getApplicationConfiguration();
+        ProcessBuilder processBuilder = new ProcessBuilder()
+                .directory(getNpmFolder());
+
+        boolean useHomeNodeExec = config.getBooleanProperty(
+                InitParameters.REQUIRE_HOME_NODE_EXECUTABLE, false);
+        boolean nodeAutoUpdate = config
+                .getBooleanProperty(InitParameters.NODE_AUTO_UPDATE, false);
+        boolean useGlobalPnpm = config.getBooleanProperty(
+                InitParameters.SERVLET_PARAMETER_GLOBAL_PNPM, false);
+
+        FrontendToolsSettings settings = new FrontendToolsSettings(
+                getNpmFolder().getAbsolutePath(),
+                () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
+        settings.setForceAlternativeNode(useHomeNodeExec);
+        settings.setAutoUpdate(nodeAutoUpdate);
+        settings.setUseGlobalPnpm(useGlobalPnpm);
+
+        FrontendTools tools = new FrontendTools(settings);
+        tools.validateNodeAndNpmVersion();
+
+        String nodeExec = null;
+        if (useHomeNodeExec) {
+            nodeExec = tools.forceAlternativeNodeExecutable();
+        } else {
+            nodeExec = tools.getNodeExecutable();
+        }
+
+        List<String> command = getServerStartupCommand(nodeExec);
+
+        FrontendUtils.console(FrontendUtils.GREEN, START);
+        if (getLogger().isDebugEnabled()) {
+            getLogger().debug(FrontendUtils.commandToString(
+                    getNpmFolder().getAbsolutePath(), command));
+        }
+
+        processBuilder.command(command);
+
+        try {
+            Process process = processBuilder.redirectErrorStream(true).start();
+            /*
+             * We only can save the dev server process reference the first time
+             * that the DevModeHandler is created. There is no way to store it
+             * in the servlet container, and we do not want to save it in the
+             * global JVM.
+             * 
+             * We instruct the JVM to stop the server daemon when the JVM stops,
+             * to avoid leaving daemons running in the system.
+             * 
+             * NOTE: that in the corner case that the JVM crashes or it is
+             * killed the daemon will be kept running. But anyways it will also
+             * happens if the system was configured to be stop the daemon when
+             * the servlet context is destroyed.
+             */
+            Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
+
+            DevServerOutputFinder finder = new DevServerOutputFinder(
+                    process.getInputStream(), getServerSuccessPattern(),
+                    getServerFailurePattern(), this::onDevServerCompilation);
+            finder.find();
+            getLogger().info(LOG_START);
+
+            int timeout = Integer.parseInt(config.getStringProperty(
+                    InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT,
+                    DEFAULT_TIMEOUT_FOR_PATTERN));
+            finder.awaitFirstMatch(timeout);
+
+            return process;
+        } catch (IOException e) {
+            getLogger().error(
+                    "Failed to start the " + getServerName() + " process", e);
+        } catch (InterruptedException e) {
+            getLogger().debug(
+                    getServerName() + " process start has been interrupted", e);
+        }
+        return null;
+    }
+
+    /**
+     * Called whenever the dev server output matche the success or failure
+     * pattern.
+     */
+    protected void onDevServerCompilation(Result result) {
+        if (result.isSuccess()) {
+            FrontendUtils.console(FrontendUtils.GREEN, SUCCEED_MSG);
+            failedOutput = null;
+        } else {
+            FrontendUtils.console(FrontendUtils.RED, FAILED_MSG);
+            failedOutput = result.getOutput();
+        }
+    };
+
+    @Override
+    public String getFailedOutput() {
+        return failedOutput;
+    }
 
     /**
      * Gets the server watch dog.

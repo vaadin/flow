@@ -58,3 +58,5 @@ flow-tests/**/types.d.ts
 /flow-tests/**/generated/**
 flow-tests/**/pnpmfile.js
 flow-tests/**/*.npmrc
+
+*.xml.versionsBackup

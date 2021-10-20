@@ -33,15 +33,12 @@ public class TaskGenerateIndexHtmlTest {
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     private File frontendFolder;
-    private File outputFolder;
     private TaskGenerateIndexHtml taskGenerateIndexHtml;
 
     @Before
     public void setUp() throws IOException {
         frontendFolder = temporaryFolder.newFolder();
-        outputFolder = temporaryFolder.newFolder();
-        taskGenerateIndexHtml = new TaskGenerateIndexHtml(frontendFolder,
-                outputFolder);
+        taskGenerateIndexHtml = new TaskGenerateIndexHtml(frontendFolder);
     }
 
     @Test
@@ -56,15 +53,16 @@ public class TaskGenerateIndexHtmlTest {
     }
 
     @Test
-    public void should_notGenerateIndexHtml_IndexHtmlExists() throws Exception {
-        Files.createFile(new File(frontendFolder, "index.html").toPath());
+    public void should_notOverwriteIndexHtml_IndexHtmlExists()
+            throws Exception {
+        File indexhtml = new File(frontendFolder, "index.html");
+        Files.createFile(indexhtml.toPath());
         taskGenerateIndexHtml.execute();
         Assert.assertFalse(
-                "Should not generate index.html while it exists in"
-                        + " the frontend folder",
+                "Should not generate index.html while it exists in the frontend folder",
                 taskGenerateIndexHtml.shouldGenerate());
-        Assert.assertFalse("The generated file should not exists",
-                taskGenerateIndexHtml.getGeneratedFile().exists());
+        Assert.assertEquals("",
+                IOUtils.toString(indexhtml.toURI(), StandardCharsets.UTF_8));
     }
 
     @Test
@@ -72,11 +70,12 @@ public class TaskGenerateIndexHtmlTest {
         String defaultContent = IOUtils.toString(
                 getClass().getResourceAsStream(INDEX_HTML),
                 StandardCharsets.UTF_8);
-        taskGenerateIndexHtml.execute();
         Assert.assertTrue(
-                "Should generate index.html when it doesn't exists in"
-                        + " the frontend folder",
+                "Should generate index.html when it doesn't exists in the frontend folder",
                 taskGenerateIndexHtml.shouldGenerate());
+
+        taskGenerateIndexHtml.execute();
+
         Assert.assertTrue("The generated file should exists",
                 taskGenerateIndexHtml.getGeneratedFile().exists());
 
