@@ -15,14 +15,11 @@
  */
 package com.vaadin.flow.uitest.ui.notheme;
 
-import java.util.List;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
-
-import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class NoThemeComponentIT extends ChromeBrowserTest {
 
@@ -30,30 +27,13 @@ public class NoThemeComponentIT extends ChromeBrowserTest {
     public void themeIsNotApplied() {
         open();
 
-        List<WebElement> customStyles = $("head").first()
-                .findElements(By.tagName("custom-style"));
-
-        Assert.assertEquals(
-                "Found custom style whereas @NoTheme should disable Lumo "
-                        + "and not add any 'custom-theme' element",
-                0, customStyles.size());
-
-        String color = $("a").first().getCssValue("color");
+        TestBenchElement link = $("a").first();
+        String text = link.getText();
+        Assert.assertEquals("Hello notheme", text);
+        String color = link.getCssValue("color");
         Assert.assertEquals(
                 "Unexpected color for a link. "
                         + "@NoTheme should not theme a link anyhow.",
                 "rgba(0, 0, 0, 1)", color);
-    }
-
-    @Override
-    protected String getTestPath() {
-        String path = super.getTestPath();
-        String view = "view/";
-        String result;
-        if (path.startsWith("/")) {
-            result = path.substring(view.length() + 1);
-        }
-        result = path.substring(view.length());
-        return result;
     }
 }

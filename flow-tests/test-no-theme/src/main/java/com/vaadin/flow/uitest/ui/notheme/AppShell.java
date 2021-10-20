@@ -13,18 +13,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+
 package com.vaadin.flow.uitest.ui.notheme;
 
-import com.vaadin.flow.component.html.Anchor;
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.router.Route;
+import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.theme.NoTheme;
 
-@Route("com.vaadin.flow.uitest.ui.notheme.NoThemeComponentView")
-public class NoThemeComponentView extends Div {
-
-    public NoThemeComponentView() {
-        Anchor anchor = new Anchor();
-        anchor.setText("Hello notheme");
-        add(anchor);
-    }
+@NoTheme
+public class AppShell implements AppShellConfigurator {
 }
