@@ -284,6 +284,10 @@ public class StateNode {
      *            the parent state node
      */
     public void setParent(StateNode parent) {
+        if (this.parent != null && this.parent.isUnregistered()
+                && parent != null && this.parent.getId() != parent.getId()) {
+            setDomNode(null);
+        }
         this.parent = parent;
     }
 
