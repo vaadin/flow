@@ -310,7 +310,7 @@
                 <module>test-dev-mode</module>
                 <module>test-pwa</module>
                 <module>test-pwa/pom-production.xml</module>
-                <module>test-root-ui-context</module>
+                
                 <module>test-router-custom-context</module>
                 <module>test-live-reload</module>
                 <module>test-jetty-reload</module>
@@ -337,8 +337,6 @@
                 <module>test-ccdm-flow-navigation/pom-production.xml</module>
                 <module>test-fusion-csrf</module>
                 <module>test-fusion-csrf-context</module>
-
-                <module>test-root-context</module>
 
                 <module>test-v14-bootstrap</module>
                 <module>test-v14-bootstrap/pom-production.xml</module>
@@ -460,6 +458,18 @@
                         </plugin>
                     </plugins>
             </build>
+        </profile>
+        <profile>
+            <id>root-ui-context</id>
+            <modules>
+                <module>test-root-ui-context</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>test-root-context</id>
+            <modules>
+                <module>test-root-context</module>
+            </modules>
         </profile>
     </profiles>
 
