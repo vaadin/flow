@@ -119,6 +119,11 @@ public final class ViteHandler extends AbstractDevServerRunner {
         return Pattern.compile("ready in .*ms");
     }
 
+    @Override
+    protected boolean isLoadingPageInUse() {
+        return false;
+    }
+
     private static Logger getLogger() {
         return LoggerFactory.getLogger(ViteHandler.class);
     }

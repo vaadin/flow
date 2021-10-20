@@ -243,4 +243,9 @@ public final class WebpackHandler extends AbstractDevServerRunner {
                 DEFAULT_ERROR_PATTERN));
     }
 
+    @Override
+    protected boolean isLoadingPageInUse() {
+        return true;
+    }
+
 }

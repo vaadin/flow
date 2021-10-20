@@ -28,6 +28,9 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
@@ -367,10 +370,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
             finder.find();
             getLogger().info(LOG_START);
 
-            int timeout = Integer.parseInt(config.getStringProperty(
-                    InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT,
-                    DEFAULT_TIMEOUT_FOR_PATTERN));
-            finder.awaitFirstMatch(timeout);
+            finder.awaitFirstMatch(getStartupTimeout());
 
             return process;
         } catch (IOException e) {
@@ -381,6 +381,12 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
                     getServerName() + " process start has been interrupted", e);
         }
         return null;
+    }
+
+    private int getStartupTimeout() {
+        return Integer.parseInt(getApplicationConfiguration().getStringProperty(
+                InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT,
+                DEFAULT_TIMEOUT_FOR_PATTERN));
     }
 
     /**
@@ -593,22 +599,47 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
     @Override
     public boolean handleRequest(VaadinSession session, VaadinRequest request,
             VaadinResponse response) throws IOException {
-        if (devServerStartFuture.isDone()) {
-            try {
-                devServerStartFuture.getNow(null);
-            } catch (CompletionException exception) {
-                isDevServerFailedToStart.set(true);
-                throw getCause(exception);
+        try {
+            if (isLoadingPageInUse()) {
+                if (devServerStartFuture.isDone()) {
+                    // Retrieve a possible exception from the startup process
+                    devServerStartFuture.getNow(null);
+                } else {
+                    InputStream inputStream = AbstractDevServerRunner.class
+                            .getResourceAsStream("dev-mode-not-ready.html");
+                    IOUtils.copy(inputStream, response.getOutputStream());
+                    response.setContentType("text/html;charset=utf-8");
+                    return true;
+                }
+            } else {
+                // No loading page, wait for the server to start
+                if (!devServerStartFuture.isDone()) {
+                    devServerStartFuture.get(getStartupTimeout(),
+                            TimeUnit.SECONDS);
+                }
             }
-            return false;
-        } else {
-            InputStream inputStream = AbstractDevServerRunner.class
-                    .getResourceAsStream("dev-mode-not-ready.html");
-            IOUtils.copy(inputStream, response.getOutputStream());
-            response.setContentType("text/html;charset=utf-8");
-            return true;
+        } catch (TimeoutException | CompletionException | InterruptedException
+                | ExecutionException exception) {
+            isDevServerFailedToStart.set(true);
+            throw getCause(exception);
         }
+
+        return false;
     }
+
+    /**
+     * Checks if a loading page should be shown when the dev server is starting
+     * up.
+     * <p>
+     * If enabled, the dev-mode-not-ready.html page will be shown during server
+     * startup and the browser will poll until the server is started.
+     * <p>
+     * If disabled, any request will remain block and wait until the server is
+     * started.
+     * 
+     * @return {@code true} to enable, {@code false} to disable
+     */
+    protected abstract boolean isLoadingPageInUse();
 
     @Override
     public boolean isDevModeRequest(HttpServletRequest request) {
