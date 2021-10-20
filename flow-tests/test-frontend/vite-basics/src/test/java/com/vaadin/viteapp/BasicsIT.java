@@ -20,6 +20,7 @@ public class BasicsIT extends ChromeBrowserTest {
     public void applicationStarts() {
         getDriver().get(getRootURL());
         TestBenchElement header = $("h2").first();
-        Assert.assertEquals("This place intentionally left empty", header.getText());
+        Assert.assertEquals("This place intentionally left empty",
+                header.getText());
     }
 }

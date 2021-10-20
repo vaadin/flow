@@ -293,12 +293,11 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         Optional<DevModeHandler> devModeHandler = DevModeHandlerManager
                 .getDevModeHandler(service);
         if (devModeHandler.isPresent()) {
-            indexHtmlDocument.head().appendChild(
-                    new Element("script").attr("type", "module").attr("src",
-                            Paths.get(Constants.VAADIN_MAPPING,
-                                    FrontendUtils.GENERATED,
-                                    FrontendUtils.BOOTSTRAP_FILE_NAME)
-                                    .toString()));
+            indexHtmlDocument.head()
+                    .appendChild(new Element("script").attr("type", "module")
+                            .attr("src", Constants.VAADIN_MAPPING
+                                    + FrontendUtils.GENERATED
+                                    + FrontendUtils.BOOTSTRAP_FILE_NAME));
 
             // Workaround for https://github.com/vitejs/vite/issues/5142
             indexHtmlDocument.head().prepend(
