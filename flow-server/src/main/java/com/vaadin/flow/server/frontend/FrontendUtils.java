@@ -327,8 +327,6 @@ public class FrontendUtils {
     static final String SYSTEM_HTTPS_PROXY_PROPERTY_KEY = "HTTPS_PROXY";
     static final String SYSTEM_HTTP_PROXY_PROPERTY_KEY = "HTTP_PROXY";
 
-    private static String operatingSystem = null;
-
     public static final String YELLOW = "\u001b[38;5;111m%s\u001b[0m";
 
     public static final String RED = "\u001b[38;5;196m%s\u001b[0m";
@@ -349,10 +347,7 @@ public class FrontendUtils {
      * @return operating system name
      */
     public static String getOsName() {
-        if (operatingSystem == null) {
-            operatingSystem = System.getProperty("os.name");
-        }
-        return operatingSystem;
+        return System.getProperty("os.name");
     }
 
     /**
