@@ -33,7 +33,7 @@ public class RemoveElementAfterItsChildrenIT extends ChromeBrowserTest {
         WebElement container = findElement(By.id("container"));
 
         Assert.assertEquals(1, container.findElements(By.id("first")).size());
-        Assert.assertEquals(2, container.findElements(By.id("second")).size());
+        Assert.assertEquals(1, container.findElements(By.id("second")).size());
 
         Assert.assertFalse(isElementPresent(By.id("wrapper")));
     }
