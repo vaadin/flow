@@ -8,7 +8,9 @@ import java.util.concurrent.CountDownLatch;
 
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.OptionalParameter;
+import com.vaadin.flow.router.RouteParameterRegex;
 import com.vaadin.flow.router.WildcardParameter;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import org.junit.Assert;
@@ -733,6 +735,40 @@ public class AbstractRouteRegistryTest {
                 config().getTargetRoutes().isEmpty());
     }
 
+    @Test
+    public void check_has_parameters_returns_correctly() {
+        registry.setRoute("", NormalRoute.class, null);
+        registry.setRoute("url", HasUrlRoute.class, null);
+        registry.setRoute("optional", OptionalRoute.class, null);
+        registry.setRoute("wild", WildcardRoute.class, null);
+        registry.setRoute(
+                ParameterView.class.getAnnotation(Route.class).value()[0],
+                ParameterView.class, null);
+
+        Assert.assertEquals("All routes should be registered.", 5,
+                config().getTargetRoutes().size());
+
+        Assert.assertFalse(
+                "Normal route should not mark as requiring parameter",
+                registry.hasMandatoryParameter(NormalRoute.class));
+        Assert.assertFalse(
+                "Optional parameter should not mark as requiring parameter",
+                registry.hasMandatoryParameter(OptionalRoute.class));
+        Assert.assertFalse(
+                "Wildcard parameter should not mark as requiring parameter",
+                registry.hasMandatoryParameter(WildcardRoute.class));
+
+        Assert.assertTrue("HasUrl should require parameter",
+                registry.hasMandatoryParameter(HasUrlRoute.class));
+        Assert.assertTrue("Template parameter should require parameter",
+                registry.hasMandatoryParameter(ParameterView.class));
+
+        Assert.assertThrows(
+                "Checking unregistered route should throw exception",
+                NotFoundException.class,
+                () -> registry.hasMandatoryParameter(Secondary.class));
+    }
+
     /* Private stuff */
 
     private void awaitCountDown(CountDownLatch countDownLatch) {
@@ -822,6 +858,11 @@ public class AbstractRouteRegistryTest {
         public void setParameter(BeforeEvent event,
                 @WildcardParameter String parameter) {
         }
+    }
+
+    @Route(value = "item/:long(" + RouteParameterRegex.LONG + ")")
+    @Tag("div")
+    private static class ParameterView extends Component {
     }
 
     @Tag(Tag.DIV)
