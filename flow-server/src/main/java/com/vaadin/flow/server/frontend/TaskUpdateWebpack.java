@@ -204,7 +204,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
                                 flowImportsFilePath))),
                 new Pair<>("const useClientSideIndexFileForBootstrapping",
                         Boolean.toString(!useV14Bootstrapping)),
-                new Pair<>("const clientSideIndexHTML", getIndexHtmlPath()),
+                new Pair<>("const clientSideIndexHTML", "'./" + INDEX_HTML + "'"),
                 new Pair<>("const clientSideIndexEntryPoint",
                         getClientEntryPoint()),
                 new Pair<>("const devmodeGizmoJS",
@@ -225,19 +225,6 @@ public class TaskUpdateWebpack implements FallibleCommand {
                 new Pair<>("const projectStaticAssetsOutputFolder",
                         formatPathResolve(getEscapedRelativeWebpackPath(
                                 resourceFolder))));
-    }
-
-    private String getIndexHtmlPath() {
-        boolean exists = new File(frontendDirectory.toFile(), INDEX_HTML)
-                .exists();
-        if (!exists) {
-            Path path = Paths.get(
-                    getEscapedRelativeWebpackPath(webpackConfigPath),
-                    buildFolder, INDEX_HTML);
-            return formatPathResolve(getEscapedRelativeWebpackPath(path));
-        } else {
-            return "'./" + INDEX_HTML + "'";
-        }
     }
 
     private String getClientEntryPoint() {
