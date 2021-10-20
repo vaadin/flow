@@ -225,7 +225,7 @@ public class FeatureFlags implements Serializable {
         if (context == null) {
             return null;
         }
-        return ApplicationConfiguration.get(service.getContext());
+        return ApplicationConfiguration.get(context);
     }
 
     private static Logger getLogger() {
