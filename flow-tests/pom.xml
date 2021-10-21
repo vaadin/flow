@@ -254,7 +254,6 @@
                 <module>test-mixed/pom-npm.xml</module>
 
                 <module>test-dev-mode</module>
-                <module>test-root-ui-context</module>
                 <module>test-frontend-production-custom-context</module>
                 <module>test-router-custom-context</module>
                 <module>test-subcontext</module>
@@ -266,7 +265,6 @@
                 <module>test-themes-legacy/pom-npm.xml</module>
                 <module>test-lumo-theme</module>
                 <module>test-material-theme</module>
-                <module>servlet-containers</module>
                 <module>test-live-reload</module>
 
                 <!-- web component embedding -->
@@ -282,9 +280,6 @@
                 <module>test-mixed/pom-bower-production.xml</module>
                 <module>test-npm-only-features</module>
                 <module>test-multi-war</module>
-
-                <!-- This test fails in local -->
-                <module>test-root-context</module>
 				
                 <module>test-custom-route-registry</module>
                 <!-- move theme tests to the end, because theme switch live reload-->
@@ -367,6 +362,14 @@
             <id>npm</id>
             <modules>
                 <module>test-root-context/pom-npm.xml</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>time-consuming-tests</id>
+            <modules>
+                <module>test-root-ui-context</module>
+                <module>test-root-context</module>
+                <module>servlet-containers</module>
             </modules>
         </profile>
     </profiles>

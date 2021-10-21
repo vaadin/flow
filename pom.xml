@@ -15,30 +15,6 @@
         <version>2.0.2</version>
     </parent>
 
-    <modules>
-        <module>flow</module>
-        <module>flow-server</module>
-        <module>flow-lit-template</module>
-        <module>flow-push</module>
-        <module>flow-data</module>
-        <module>flow-osgi</module>
-        <module>flow-client</module>
-        <module>flow-html-components</module>
-        <module>flow-html-components-testbench</module>
-        <module>flow-theme-integrations</module>
-        <module>flow-dnd</module>
-        <module>flow-test-util</module>
-        <module>flow-tests</module>
-        <module>flow-server-production-mode</module>
-        <module>flow-server-compatibility-mode</module>
-        <module>flow-component-demo-helpers</module>
-        <module>flow-migration</module>
-        <module>flow-maven-plugin</module>
-        <module>flow-test-generic</module>
-        <module>flow-bom</module>
-        <module>build-tools</module>
-    </modules>
-
     <organization>
         <name>Vaadin Ltd</name>
         <url>https://vaadin.com</url>
@@ -104,6 +80,7 @@
         <maven.exec.plugin.version>1.6.0</maven.exec.plugin.version>
         <testbench.version>6.2.1</testbench.version>
         <jetty.version>9.4.11.v20180605</jetty.version>
+        <failsafe.forkCount>4</failsafe.forkCount>
 
         <!-- Frontend -->
         <!-- Not the newest version because of https://www.polymer-project.org/2.0/docs/tools/node-support -->
@@ -531,6 +508,7 @@
                     <artifactId>maven-failsafe-plugin</artifactId>
                     <version>${maven.failsafe.plugin.version}</version>
                     <configuration>
+                        <forkCount>${failsafe.forkCount}</forkCount>
                         <trimStackTrace>false</trimStackTrace>
                         <enableAssertions>true</enableAssertions>
                         <parallel>all</parallel>
@@ -709,6 +687,38 @@
                 </pluginManagement>
 
             </build>
+        </profile>
+        <profile>
+            <id>build</id>
+            <modules>
+                <module>flow</module>
+                <module>flow-server</module>
+                <module>flow-lit-template</module>
+                <module>flow-push</module>
+                <module>flow-data</module>
+                <module>flow-osgi</module>
+                <module>flow-client</module>
+                <module>flow-html-components</module>
+                <module>flow-html-components-testbench</module>
+                <module>flow-theme-integrations</module>
+                <module>flow-dnd</module>
+                <module>flow-test-util</module>
+                
+                <module>flow-server-production-mode</module>
+                <module>flow-server-compatibility-mode</module>
+                <module>flow-component-demo-helpers</module>
+                <module>flow-migration</module>
+                <module>flow-maven-plugin</module>
+                <module>flow-test-generic</module>
+                <module>flow-bom</module>
+                <module>build-tools</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>test</id>
+            <modules>
+                <module>flow-tests</module>
+            </modules>
         </profile>
     </profiles>
 </project>
