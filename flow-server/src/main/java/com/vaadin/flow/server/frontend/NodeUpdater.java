@@ -67,7 +67,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public abstract class NodeUpdater implements FallibleCommand {
 
-    private static final String VAADIN_FORM_PKG_LEGACY_VERSION = "target/flow-frontend/form";
+    private static final String VAADIN_FORM_PKG_LEGACY_VERSION = "flow-frontend/form";
 
     private static final String VAADIN_FORM_PKG = "@vaadin/form";
 
