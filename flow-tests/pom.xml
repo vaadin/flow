@@ -310,7 +310,6 @@
                 <module>test-dev-mode</module>
                 <module>test-pwa</module>
                 <module>test-pwa/pom-production.xml</module>
-                <module>test-root-ui-context</module>
                 <module>test-router-custom-context</module>
                 <module>test-live-reload</module>
                 <module>test-jetty-reload</module>
@@ -319,7 +318,6 @@
                 <module>test-memory-leaks</module>
                 <module>test-servlet</module>
                 <module>test-themes</module>
-                <module>servlet-containers</module>
 
                 <!-- web component embedding -->
                 <module>test-embedding</module>
@@ -335,8 +333,6 @@
                 <module>test-ccdm/pom-production.xml</module>
                 <module>test-ccdm-flow-navigation</module>
                 <module>test-ccdm-flow-navigation/pom-production.xml</module>
-
-                <module>test-root-context</module>
 				
                 <module>test-v14-bootstrap</module>
                 <module>test-v14-bootstrap/pom-production.xml</module>
@@ -458,6 +454,14 @@
                         </plugin>
                     </plugins>
             </build>
+        </profile>
+        <profile>
+            <id>time-consuming-tests</id>
+            <modules>
+                <module>test-root-ui-context</module>
+                <module>test-root-context</module>
+                <module>servlet-containers</module>
+            </modules>
         </profile>
     </profiles>
 
