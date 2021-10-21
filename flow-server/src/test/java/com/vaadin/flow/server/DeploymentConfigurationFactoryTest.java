@@ -351,6 +351,7 @@ public class DeploymentConfigurationFactoryTest {
                 InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN,
                 InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT,
                 InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS,
+                InitParameters.SERVLET_PARAMETER_DEVMODE_VITE_OPTIONS,
                 InitParameters.COMPILED_WEB_COMPONENTS_PATH,
                 InitParameters.BUILD_FOLDER));
         Field[] initParamFields = InitParameters.class.getDeclaredFields();

@@ -207,10 +207,19 @@ public final class WebpackHandler extends AbstractDevServerRunner {
                                               // watchDog fail
         command.add("--env");
         command.add("watchDogPort=" + getWatchDog().getWatchDogPort());
-        command.addAll(Arrays.asList(getApplicationConfiguration()
-                .getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS,
-                        "--devtool=eval-source-map --mode=development")
-                .split(" +")));
+        String customParameters = getApplicationConfiguration()
+                .getStringProperty(
+                        InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS,
+                        "");
+        if (!customParameters.isEmpty()) {
+            command.addAll(Arrays.asList(customParameters.split(" +")));
+            getLogger().info("Starting " + getServerName() + " using: "
+                    + String.join(" ", command));
+        } else {
+            command.add("--devtool=eval-source-map");
+            command.add("--mode=development");
+        }
+
         return command;
     }
 
