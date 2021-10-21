@@ -466,14 +466,9 @@
             </build>
         </profile>
         <profile>
-            <id>root-ui-context</id>
+            <id>time-consuming-tests</id>
             <modules>
                 <module>test-root-ui-context</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>test-root-context</id>
-            <modules>
                 <module>test-root-context</module>
                 <module>servlet-containers</module>
             </modules>

@@ -678,18 +678,6 @@
             </modules>
         </profile>
         <profile>
-            <id>flow-plugins</id>
-            <modules>
-                <module>flow-plugins</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>flow-jandex</id>
-            <modules>
-                <module>flow-jandex</module>
-            </modules>
-        </profile>
-        <profile>
             <id>build</id>
             <modules>
                 <module>flow</module>
@@ -710,6 +698,8 @@
                 <module>flow-component-demo-helpers</module>
                 <module>flow-bom</module>
 		            <module>vaadin-dev-server</module>
+                <module>flow-jandex</module>
+                <module>flow-plugins</module>
             </modules>
         </profile>
     </profiles>
