@@ -600,12 +600,19 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
                 isDevServerFailedToStart.set(true);
                 throw getCause(exception);
             }
+            if (request.getHeader("X-DevModePoll") != null) {
+                // Avoid creating a UI that is thrown away for polling requests
+                response.setContentType("text/html;charset=utf-8");
+                response.getWriter().write("Ready");
+                return true;
+            }
             return false;
         } else {
             InputStream inputStream = AbstractDevServerRunner.class
                     .getResourceAsStream("dev-mode-not-ready.html");
             IOUtils.copy(inputStream, response.getOutputStream());
             response.setContentType("text/html;charset=utf-8");
+            response.setHeader("X-DevModePending", "true");
             return true;
         }
     }
