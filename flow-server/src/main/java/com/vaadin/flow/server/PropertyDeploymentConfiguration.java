@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server;
 
+import java.io.File;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Locale;
@@ -213,6 +214,11 @@ public class PropertyDeploymentConfiguration
     }
 
     @Override
+    public File getJavaResourceFolder() {
+        return super.getJavaResourceFolder();
+    }
+
+    @Override
     public boolean isSyncIdCheckEnabled() {
         return getBooleanProperty(SERVLET_PARAMETER_SYNC_ID_CHECK, true);
     }
@@ -292,7 +298,7 @@ public class PropertyDeploymentConfiguration
     }
 
     /**
-     * Returns parent application configuration;
+     * Returns parent application configuration.
      *
      * @return the parent config
      */

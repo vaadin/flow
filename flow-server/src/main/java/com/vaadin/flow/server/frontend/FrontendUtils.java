@@ -117,6 +117,11 @@ public class FrontendUtils {
     public static final String WEBPACK_CONFIG = "webpack.config.js";
 
     /**
+     * The name of the vite configuration file.
+     */
+    public static final String VITE_CONFIG = "vite.config.ts";
+
+    /**
      * The name of the webpack generated configuration file.
      */
     public static final String WEBPACK_GENERATED = "webpack.generated.js";
@@ -516,7 +521,7 @@ public class FrontendUtils {
                     .getDevModeHandler(service);
             if (!config.isProductionMode() && config.enableDevServer()
                     && devModeHandler.isPresent()) {
-                content = getFileFromWebpack(devModeHandler.get(), path);
+                content = getFileFromDevModeHandler(devModeHandler.get(), path);
             }
 
             if (content == null) {
@@ -683,8 +688,8 @@ public class FrontendUtils {
         return stream;
     }
 
-    private static InputStream getFileFromWebpack(DevModeHandler devModeHandler,
-            String filePath) throws IOException {
+    private static InputStream getFileFromDevModeHandler(
+            DevModeHandler devModeHandler, String filePath) throws IOException {
         return devModeHandler.prepareConnection("/" + filePath, "GET")
                 .getInputStream();
     }

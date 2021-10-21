@@ -61,6 +61,9 @@ public interface ApplicationConfiguration extends AbstractConfiguration {
             }
             ApplicationConfigurationFactory factory = lookup
                     .lookup(ApplicationConfigurationFactory.class);
+            if (factory == null) {
+                return null;
+            }
             return factory.create(context);
         });
     }

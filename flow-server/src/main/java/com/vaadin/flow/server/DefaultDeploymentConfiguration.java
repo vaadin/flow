@@ -22,10 +22,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.experimental.Feature;
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.communication.PushMode;
@@ -139,6 +142,7 @@ public class DefaultDeploymentConfiguration
         boolean log = logging.getAndSet(false);
 
         checkProductionMode(log);
+        checkFeatureFlags();
         checkV14Bootsrapping(log);
         checkRequestTiming();
         checkXsrfProtection(log);
@@ -307,6 +311,22 @@ public class DefaultDeploymentConfiguration
                     warnings.add(NOT_PRODUCTION_MODE_WARNING);
                 }
             }
+        }
+    }
+
+    /**
+     * Log information about enabled feature flags.
+     */
+    private void checkFeatureFlags() {
+        List<Feature> enabledFeatures = FeatureFlags.getFeatures().stream()
+                .filter(f -> f.isEnabled()).collect(Collectors.toList());
+        if (!enabledFeatures.isEmpty()) {
+            info.add("\nThe following EXPERIMENTAL features are enabled:");
+            enabledFeatures.forEach(feature -> {
+                info.add("- " + feature.getTitle());
+            });
+
+            info.add("\n");
         }
     }
 

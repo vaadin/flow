@@ -18,6 +18,8 @@ package com.vaadin.client.flow;
 import com.vaadin.client.ClientEngineTestBase;
 import com.vaadin.client.Registry;
 
+import elemental.client.Browser;
+
 public class GwtStateNodeTest extends ClientEngineTestBase {
 
     private StateTree tree;
@@ -37,6 +39,22 @@ public class GwtStateNodeTest extends ClientEngineTestBase {
         TestData data = new TestData();
         node.setNodeData(data);
         assertSame(data, node.getNodeData(TestData.class));
+    }
+
+    public void testSetNewParent_domNodeIsNull() {
+        StateNode parent = new StateNode(2, tree);
+        tree.registerNode(parent);
+
+        StateNode node = new StateNode(3, tree);
+
+        node.setDomNode(Browser.getDocument().createElement("div"));
+        node.setParent(parent);
+
+        assertNotNull(node.getDomNode());
+
+        tree.unregisterNode(parent);
+        node.setParent(new StateNode(4, tree));
+        assertNull(node.getDomNode());
     }
 
 }

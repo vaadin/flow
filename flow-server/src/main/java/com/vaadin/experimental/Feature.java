@@ -28,6 +28,7 @@ public class Feature implements Serializable {
     private String id;
     private String moreInfoLink;
     private boolean enabled;
+    private boolean requiresServerRestart;
 
     /**
      * Creates a new feature with the given options.
@@ -38,11 +39,15 @@ public class Feature implements Serializable {
      *            the unique id of the feature
      * @param moreInfoLink
      *            a link to an issue describing the feature on a high level
+     * @param requiresServerRestart
+     *            {@code true} if toggling the feature requires a server restart
      */
-    public Feature(String title, String id, String moreInfoLink) {
+    public Feature(String title, String id, String moreInfoLink,
+            boolean requiresServerRestart) {
         this.title = title;
         this.id = id;
         this.moreInfoLink = moreInfoLink;
+        this.requiresServerRestart = requiresServerRestart;
     }
 
     public String getTitle() {
@@ -55,6 +60,10 @@ public class Feature implements Serializable {
 
     public String getMoreInfoLink() {
         return moreInfoLink;
+    }
+
+    public boolean isRequiresServerRestart() {
+        return requiresServerRestart;
     }
 
     public boolean isEnabled() {

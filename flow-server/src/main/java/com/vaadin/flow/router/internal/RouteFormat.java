@@ -61,9 +61,11 @@ class RouteFormat implements Serializable {
 
                 int parameterNameEnding = Math.min(regexIndex, slashIndex);
 
-                // Missing regex.
+                // ending -1 then check if it's regex or slash or both that is
+                // missing
                 if (parameterNameEnding < 0) {
-                    parameterNameEnding = slashIndex;
+                    parameterNameEnding = regexIndex == -1 ? slashIndex
+                            : regexIndex;
                 }
                 // End of the string.
                 if (parameterNameEnding < 0) {

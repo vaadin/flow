@@ -135,6 +135,12 @@ public class PushHandlerTest {
         AtomicReference<AtmosphereResource> res = new AtomicReference<>();
         runTest(service, (handler, resource) -> {
             AtmosphereRequest request = resource.getRequest();
+            try {
+                Mockito.when(request.getReader())
+                        .thenReturn(new BufferedReader(new StringReader("")));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
             Mockito.when(request
                     .getParameter(ApplicationConstants.DEBUG_WINDOW_CONNECTION))
                     .thenReturn("");
