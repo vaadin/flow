@@ -16,11 +16,10 @@
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
     </properties>
-
     <dependencies>
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>flow-test-common</artifactId>
+            <artifactId>flow-test-resources</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

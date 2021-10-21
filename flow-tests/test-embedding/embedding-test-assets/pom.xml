@@ -40,7 +40,7 @@
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>flow-test-common</artifactId>
+            <artifactId>flow-test-resources</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
