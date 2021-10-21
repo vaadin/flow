@@ -319,7 +319,6 @@
                 <module>test-memory-leaks</module>
                 <module>test-servlet</module>
                 <module>test-themes</module>
-                <module>servlet-containers</module>
 
                 <!-- web component embedding -->
                 <module>test-embedding</module>
@@ -469,6 +468,7 @@
             <id>test-root-context</id>
             <modules>
                 <module>test-root-context</module>
+                <module>servlet-containers</module>
             </modules>
         </profile>
     </profiles>
