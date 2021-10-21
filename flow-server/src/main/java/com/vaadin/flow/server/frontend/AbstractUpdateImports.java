@@ -96,12 +96,15 @@ abstract class AbstractUpdateImports implements Runnable {
 
     private final File tokenFile;
 
+    private boolean productionMode;
+
     AbstractUpdateImports(File frontendDirectory, File npmDirectory,
-            File generatedDirectory, File tokenFile) {
+            File generatedDirectory, File tokenFile, boolean productionMode) {
         frontendDir = frontendDirectory;
         npmDir = npmDirectory;
         generatedDir = generatedDirectory;
         this.tokenFile = tokenFile;
+        this.productionMode = productionMode;
     }
 
     @Override
@@ -111,7 +114,10 @@ abstract class AbstractUpdateImports implements Runnable {
         lines.addAll(getExportLines());
         lines.addAll(getThemeLines());
         lines.addAll(getCssLines());
-
+        if (!productionMode) {
+            // This is only needed for v14bootstrap mode
+            lines.add(TaskGenerateBootstrap.DEVMODE_GIZMO_IMPORT);
+        }
         collectModules(lines);
 
         writeImportLines(lines);
