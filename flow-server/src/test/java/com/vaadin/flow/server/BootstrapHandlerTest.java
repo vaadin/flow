@@ -1,6 +1,7 @@
 package com.vaadin.flow.server;
 
 import javax.servlet.http.HttpServletRequest;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -83,7 +84,7 @@ public class BootstrapHandlerTest {
             + "customStyle.innerHTML= content;\n"
             + "var firstScript=document.head.querySelector('script');\n"
             + "document.head.insertBefore(customStyle,firstScript);\n" + "}\n"
-            + "_inlineHeader('custom-style','<style include=\"lumo-typography\"></style>');\n"
+            + "_inlineHeader('custom-style','<style include=\"lumo-typography\">  </style>');\n"
             + "var script = document.getElementById('_theme-header-injection');"
             + "if ( script ) { document.head.removeChild(script);}\n"
             + "</script>";
@@ -321,7 +322,7 @@ public class BootstrapHandlerTest {
         @Override
         public List<String> getHeaderInlineContents() {
             return Arrays.asList(
-                    "<custom-style><style include=\"lumo-typography\"></style></custom-style>");
+                    "<custom-style>\n<style include=\"lumo-typography\">\n </style>\r\n</custom-style>");
         }
 
         @Override
