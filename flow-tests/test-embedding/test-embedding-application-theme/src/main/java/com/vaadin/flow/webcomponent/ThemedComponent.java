@@ -19,7 +19,9 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
 
-@NpmPackage(value = "@fortawesome/fontawesome-free", version = "5.15.1")
+import com.vaadin.flow.uitest.ui.dependencies.TestVersion;
+
+@NpmPackage(value = "@fortawesome/fontawesome-free", version = TestVersion.FONTAWESOME)
 public class ThemedComponent extends Div {
 
     public static final String TEST_TEXT_ID = "test-text";

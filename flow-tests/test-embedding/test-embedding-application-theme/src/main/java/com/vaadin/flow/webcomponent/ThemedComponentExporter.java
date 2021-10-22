@@ -20,8 +20,10 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.theme.Theme;
 
+import com.vaadin.flow.uitest.ui.dependencies.TestVersion;
+
 @Theme("embedded-theme")
-@NpmPackage(value = "@fortawesome/fontawesome-free", version = "5.15.1")
+@NpmPackage(value = "@fortawesome/fontawesome-free", version = TestVersion.FONTAWESOME)
 public class ThemedComponentExporter
         extends WebComponentExporter<ThemedComponent> {
     public ThemedComponentExporter() {

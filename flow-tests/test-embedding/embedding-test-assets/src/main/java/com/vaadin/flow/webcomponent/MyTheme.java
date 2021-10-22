@@ -18,7 +18,9 @@ package com.vaadin.flow.webcomponent;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.theme.AbstractTheme;
 
-@NpmPackage(value = "@vaadin/vaadin-themable-mixin", version = "1.4.4")
+import com.vaadin.flow.uitest.ui.dependencies.TestVersion;
+
+@NpmPackage(value = "@vaadin/vaadin-themable-mixin", version = TestVersion.VAADIN)
 public class MyTheme implements AbstractTheme {
 
     @Override
