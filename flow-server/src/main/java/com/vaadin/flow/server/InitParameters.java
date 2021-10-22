@@ -109,6 +109,11 @@ public class InitParameters implements Serializable {
     public static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS = "devmode.webpack.options";
 
     /**
+     * Configuration name for adding extra options to the vite.
+     */
+    public static final String SERVLET_PARAMETER_DEVMODE_VITE_OPTIONS = "devmode.vite.options";
+
+    /**
      * Boolean parameter for enabling/disabling bytecode scanning in dev mode.
      * If enabled, entry points are scanned for reachable frontend resources. If
      * disabled, all classes on the classpath are scanned.

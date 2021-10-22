@@ -21,11 +21,13 @@ import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
 
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import org.slf4j.Logger;
@@ -89,6 +91,17 @@ public final class ViteHandler extends AbstractDevServerRunner {
         command.add(getServerConfig().getAbsolutePath());
         command.add("--port");
         command.add(String.valueOf(getPort()));
+
+        String customParameters = getApplicationConfiguration()
+                .getStringProperty(
+                        InitParameters.SERVLET_PARAMETER_DEVMODE_VITE_OPTIONS,
+                        "");
+        if (!customParameters.isEmpty()) {
+            command.addAll(Arrays.asList(customParameters.split(" +")));
+            getLogger().info("Starting " + getServerName() + " using: "
+                    + String.join(" ", command));
+        }
+
         return command;
     }
 
