@@ -594,6 +594,8 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
     public boolean handleRequest(VaadinSession session, VaadinRequest request,
             VaadinResponse response) throws IOException {
         if (devServerStartFuture.isDone()) {
+            // The server has started, check for any exceptions in the startup
+            // process
             try {
                 devServerStartFuture.getNow(null);
             } catch (CompletionException exception) {
@@ -609,10 +611,12 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
             return false;
         } else {
             if (request.getHeader("X-DevModePoll") == null) {
+                // The initial request while the dev server is starting
                 InputStream inputStream = AbstractDevServerRunner.class
                         .getResourceAsStream("dev-mode-not-ready.html");
                 IOUtils.copy(inputStream, response.getOutputStream());
             } else {
+                // A polling request while the server is starting
                 response.getWriter().write("Pending");
             }
             response.setContentType("text/html;charset=utf-8");
