@@ -316,7 +316,8 @@ public class DevModeInitializer implements Serializable {
                 .populateTokenFileData(tokenFileData)
                 .withEmbeddableWebComponents(true).enablePnpm(enablePnpm)
                 .useGlobalPnpm(useGlobalPnpm)
-                .withHomeNodeExecRequired(useHomeNodeExec).build();
+                .withHomeNodeExecRequired(useHomeNodeExec)
+                .withProductionMode(config.isProductionMode()).build();
 
         Runnable runnable = () -> runNodeTasks(context, tokenFileData, tasks);
 

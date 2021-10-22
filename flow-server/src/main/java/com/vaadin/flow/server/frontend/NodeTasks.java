@@ -146,6 +146,12 @@ public class NodeTasks implements FallibleCommand {
         private Lookup lookup;
 
         /**
+         * Default is true here so we do not accidentally include development
+         * stuff into production.
+         */
+        private boolean productionMode = true;
+
+        /**
          * Create a builder instance given an specific npm folder.
          *
          * @param lookup
@@ -545,6 +551,19 @@ public class NodeTasks implements FallibleCommand {
         }
 
         /**
+         * Sets the production mode.
+         *
+         * @param productionMode
+         *            <code>true</code> to enable production mode, otherwise
+         *            <code>false</code>
+         * @return this builder
+         */
+        public Builder withProductionMode(boolean productionMode) {
+            this.productionMode = productionMode;
+            return this;
+        }
+
+        /**
          * Sets whether it is fine to automatically update the alternate node
          * installation if installed version is older than the current default.
          *
@@ -673,7 +692,8 @@ public class NodeTasks implements FallibleCommand {
             }
 
             commands.add(new TaskGenerateBootstrap(frontendDependencies,
-                    builder.frontendDirectory, builder.buildDirectory));
+                    builder.frontendDirectory, builder.buildDirectory,
+                    builder.productionMode));
         }
 
         if (builder.jarFiles != null && builder.flowResourcesFolder != null) {
@@ -709,7 +729,7 @@ public class NodeTasks implements FallibleCommand {
                             builder.npmFolder, builder.generatedFolder,
                             builder.frontendDirectory, builder.tokenFile,
                             builder.tokenFileData, builder.enablePnpm,
-                            builder.buildDirectory));
+                            builder.buildDirectory, builder.productionMode));
 
             commands.add(new TaskUpdateThemeImport(builder.npmFolder,
                     frontendDependencies.getThemeDefinition(),
