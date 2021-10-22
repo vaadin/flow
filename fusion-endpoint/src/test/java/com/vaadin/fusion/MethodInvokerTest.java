@@ -5,11 +5,11 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -382,11 +382,15 @@ public class MethodInvokerTest {
         when(mapperMock.writeValueAsString(Mockito.isNotNull()))
                 .thenThrow(new JsonMappingException(null, "sss"));
 
-        exception.expect(IllegalStateException.class);
-        exception.expectMessage("Unexpected");
-        createVaadinController(TEST_ENDPOINT, mapperMock).serveEndpoint(
-                TEST_ENDPOINT_NAME, TEST_METHOD.getName(),
-                createRequestParameters("{\"value\": 222}"), requestMock);
+        ResponseEntity<String> response = createVaadinController(TEST_ENDPOINT,
+                mapperMock).serveEndpoint(TEST_ENDPOINT_NAME,
+                        TEST_METHOD.getName(),
+                        createRequestParameters("{\"value\": 222}"),
+                        requestMock);
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR,
+                response.getStatusCode());
+        Assert.assertNull(response.getBody());
+
     }
 
     @Test
@@ -494,13 +498,13 @@ public class MethodInvokerTest {
                 mock(EndpointNameChecker.class));
         EndpointInvoker endpointInvoker = new EndpointInvoker(null,
                 mock(ExplicitNullableTypeChecker.class), contextMock, registry);
-        new FusionController(contextMock, registry, endpointInvoker);
+        new FusionController(null, contextMock, registry, endpointInvoker);
 
         verify(contextMock, never()).getBean(ObjectMapper.class);
-        verify(contextMock, times(1))
+        verify(contextMock, atLeastOnce())
                 .getBean(Jackson2ObjectMapperBuilder.class);
-        verify(contextMock, times(1)).getBean(JacksonProperties.class);
-        verify(mockOwnObjectMapper, times(1)).setVisibility(
+        verify(contextMock, atLeastOnce()).getBean(JacksonProperties.class);
+        verify(mockOwnObjectMapper, atLeastOnce()).setVisibility(
                 PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
     }
 
@@ -528,16 +532,16 @@ public class MethodInvokerTest {
                 mock(EndpointNameChecker.class));
         EndpointInvoker endpointInvoker = new EndpointInvoker(null,
                 mock(ExplicitNullableTypeChecker.class), contextMock, registry);
-        new FusionController(contextMock, registry, endpointInvoker);
+        new FusionController(null, contextMock, registry, endpointInvoker);
 
         verify(contextMock, never()).getBean(ObjectMapper.class);
-        verify(contextMock, times(1))
+        verify(contextMock, atLeastOnce())
                 .getBean(Jackson2ObjectMapperBuilder.class);
         verify(mockDefaultObjectMapper, never()).setVisibility(
                 PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
         verify(mockOwnObjectMapper, never()).setVisibility(PropertyAccessor.ALL,
                 JsonAutoDetect.Visibility.ANY);
-        verify(contextMock, times(1)).getBean(JacksonProperties.class);
+        verify(contextMock, atLeastOnce()).getBean(JacksonProperties.class);
     }
 
     @Test
@@ -703,44 +707,6 @@ public class MethodInvokerTest {
     }
 
     @Test
-    public void should_ReturnException_When_ExplicitNullableTypeChecker_ReturnsError()
-            throws IOException, NoSuchMethodException {
-        final String errorMessage = "Got null";
-
-        ExplicitNullableTypeChecker explicitNullableTypeChecker = mock(
-                ExplicitNullableTypeChecker.class);
-        String testNullMethodName = "testNullMethod";
-        Method testNullMethod = NullCheckerTestClass.class
-                .getMethod(testNullMethodName);
-        when(explicitNullableTypeChecker.checkValueForAnnotatedElement(null,
-                testNullMethod)).thenReturn(errorMessage);
-
-        ResponseEntity<String> response = createVaadinController(
-                new NullCheckerTestClass(), null, null, null,
-                explicitNullableTypeChecker).serveEndpoint(
-                        NullCheckerTestClass.class.getSimpleName(),
-                        testNullMethodName, createRequestParameters("{}"),
-                        requestMock);
-
-        verify(explicitNullableTypeChecker).checkValueForAnnotatedElement(null,
-                testNullMethod);
-
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR,
-                response.getStatusCode());
-        ObjectNode jsonNodes = new ObjectMapper().readValue(response.getBody(),
-                ObjectNode.class);
-
-        assertEquals(EndpointException.class.getName(),
-                jsonNodes.get("type").asText());
-        final String message = jsonNodes.get("message").asText();
-        assertTrue(message.contains("Unexpected return value"));
-        assertTrue(
-                message.contains(NullCheckerTestClass.class.getSimpleName()));
-        assertTrue(message.contains(testNullMethodName));
-        assertTrue(message.contains(errorMessage));
-    }
-
-    @Test
     public void should_ReturnResult_When_CallingSuperClassMethodWithGenericTypedParameter() {
         ResponseEntity<?> response = createVaadinController(
                 new PersonEndpoint())
@@ -855,8 +821,9 @@ public class MethodInvokerTest {
                 vaadinEndpointMapper, explicitNullableTypeChecker,
                 mockApplicationContext, registry));
 
-        FusionController connectController = Mockito.spy(new FusionController(
-                mockApplicationContext, registry, endpointInvoker));
+        FusionController connectController = Mockito
+                .spy(new FusionController(vaadinEndpointMapper,
+                        mockApplicationContext, registry, endpointInvoker));
         Mockito.doReturn(accessChecker).when(endpointInvoker)
                 .getAccessChecker(any());
         return connectController;

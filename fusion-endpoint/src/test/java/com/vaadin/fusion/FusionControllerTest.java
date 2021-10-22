@@ -491,49 +491,6 @@ public class FusionControllerTest {
     }
 
     @Test
-    public void should_Return500_When_MapperFailsToSerializeResponse()
-            throws Exception {
-        ObjectMapper mapperMock = mock(ObjectMapper.class);
-        TypeFactory typeFactory = mock(TypeFactory.class);
-        when(mapperMock.getTypeFactory()).thenReturn(typeFactory);
-        when(typeFactory.constructType(int.class))
-                .thenReturn(SimpleType.constructUnsafe(int.class));
-        when(mapperMock.readerFor(SimpleType.constructUnsafe(int.class)))
-                .thenReturn(new ObjectMapper()
-                        .readerFor(SimpleType.constructUnsafe(int.class)));
-
-        ArgumentCaptor<Object> serializingErrorsCapture = ArgumentCaptor
-                .forClass(Object.class);
-        String expectedError = "expected_error";
-        when(mapperMock.writeValueAsString(serializingErrorsCapture.capture()))
-                .thenThrow(new JsonMappingException(null, "sss"))
-                .thenReturn(expectedError);
-
-        ResponseEntity<String> response = createVaadinController(TEST_ENDPOINT,
-                mapperMock).serveEndpoint(TEST_ENDPOINT_NAME,
-                        TEST_METHOD.getName(),
-                        createRequestParameters("{\"value\": 222}"),
-                        requestMock);
-
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR,
-                response.getStatusCode());
-        String responseBody = response.getBody();
-        assertEquals(expectedError, responseBody);
-
-        List<Object> passedErrors = serializingErrorsCapture.getAllValues();
-        assertEquals(2, passedErrors.size());
-        String lastError = passedErrors.get(1).toString();
-        assertEndpointInfoPresent(lastError);
-        assertTrue(String.format("Invalid response body: '%s'", lastError),
-                lastError.contains(
-                        FusionController.VAADIN_ENDPOINT_MAPPER_BEAN_QUALIFIER));
-
-        verify(mapperMock, times(1))
-                .readerFor(SimpleType.constructUnsafe(int.class));
-        verify(mapperMock, times(2)).writeValueAsString(Mockito.isNotNull());
-    }
-
-    @Test
     public void should_ReturnCorrectResponse_When_EverythingIsCorrect() {
         int inputValue = 222;
         String expectedOutput = TEST_ENDPOINT.testMethod(inputValue);
@@ -547,6 +504,42 @@ public class FusionControllerTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(String.format("\"%s\"", expectedOutput),
                 response.getBody());
+    }
+
+    @Test
+    public void should_ReturnException_When_ExplicitNullableTypeChecker_ReturnsError()
+            throws IOException, NoSuchMethodException {
+        final String errorMessage = "Got null";
+
+        ExplicitNullableTypeChecker explicitNullableTypeChecker = mock(
+                ExplicitNullableTypeChecker.class);
+        String testNullMethodName = "testNullMethod";
+        Method testNullMethod = NullCheckerTestClass.class
+                .getMethod(testNullMethodName);
+        when(explicitNullableTypeChecker.checkValueForAnnotatedElement(null,
+                testNullMethod)).thenReturn(errorMessage);
+
+        ResponseEntity<String> response = createVaadinController(
+                new NullCheckerTestClass(), null, null, null,
+                explicitNullableTypeChecker).serveEndpoint(
+                        NullCheckerTestClass.class.getSimpleName(),
+                        testNullMethodName, createRequestParameters("{}"),
+                        requestMock);
+
+        verify(explicitNullableTypeChecker).checkValueForAnnotatedElement(null,
+                testNullMethod);
+
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR,
+                response.getStatusCode());
+        ObjectNode jsonNodes = new ObjectMapper().readValue(response.getBody(),
+                ObjectNode.class);
+
+        final String message = jsonNodes.get("message").asText();
+        assertTrue(message.contains("Unexpected return value"));
+        assertTrue(
+                message.contains(NullCheckerTestClass.class.getSimpleName()));
+        assertTrue(message.contains(testNullMethodName));
+        assertTrue(message.contains(errorMessage));
     }
 
     @Test
@@ -654,8 +647,9 @@ public class FusionControllerTest {
                 vaadinEndpointMapper, explicitNullableTypeChecker,
                 mockApplicationContext, registry));
 
-        FusionController connectController = Mockito.spy(new FusionController(
-                mockApplicationContext, registry, endpointInvoker));
+        FusionController connectController = Mockito
+                .spy(new FusionController(vaadinEndpointMapper,
+                        mockApplicationContext, registry, endpointInvoker));
         Mockito.doReturn(accessChecker).when(endpointInvoker)
                 .getAccessChecker(any());
         return connectController;

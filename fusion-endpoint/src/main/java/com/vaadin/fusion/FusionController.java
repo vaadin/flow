@@ -17,17 +17,26 @@ package com.vaadin.fusion;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.fusion.exception.EndpointException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.jackson.JacksonProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -60,7 +69,8 @@ public class FusionController {
     /**
      * A qualifier to override the request and response default json mapper.
      *
-     * @see #FusionController(ApplicationContext, EndpointRegistry, EndpointInvoker)
+     * @see #FusionController(ApplicationContext, EndpointRegistry,
+     *      EndpointInvoker)
      */
     public static final String VAADIN_ENDPOINT_MAPPER_BEAN_QUALIFIER = "vaadinEndpointMapper";
 
@@ -68,9 +78,17 @@ public class FusionController {
 
     private EndpointInvoker endpointInvoker;
 
+    private ObjectMapper vaadinEndpointMapper;
+
     /**
      * A constructor used to initialize the controller.
      *
+     * @param vaadinEndpointMapper
+     *            optional bean to override the default {@link ObjectMapper}
+     *            that is used for serializing and deserializing request and
+     *            response bodies Use
+     *            {@link FusionController#VAADIN_ENDPOINT_MAPPER_BEAN_QUALIFIER}
+     *            qualifier to override the mapper.
      * @param context
      *            Spring context to extract beans annotated with
      *            {@link Endpoint} from
@@ -80,9 +98,13 @@ public class FusionController {
      *            the invoker for endpoint methods
      * 
      */
-    public FusionController(ApplicationContext context,
-            EndpointRegistry endpointRegistry,
+    public FusionController(
+            @Autowired(required = false) @Qualifier(FusionController.VAADIN_ENDPOINT_MAPPER_BEAN_QUALIFIER) ObjectMapper vaadinEndpointMapper,
+            ApplicationContext context, EndpointRegistry endpointRegistry,
             EndpointInvoker endpointInvoker) {
+        this.vaadinEndpointMapper = vaadinEndpointMapper != null
+                ? vaadinEndpointMapper
+                : FusionController.createVaadinConnectObjectMapper(context);
         this.endpointInvoker = endpointInvoker;
 
         context.getBeansWithAnnotation(Endpoint.class)
@@ -127,8 +149,68 @@ public class FusionController {
         getLogger().debug("Endpoint: {}, method: {}, request body: {}",
                 endpointName, methodName, body);
 
-        return endpointInvoker.invoke(endpointName, methodName, body, request);
+        try {
+            Object returnValue = endpointInvoker.invoke(endpointName,
+                    methodName, body, request);
+            return ResponseEntity
+                    .ok(vaadinEndpointMapper.writeValueAsString(returnValue));
+        } catch (EndpointException e) {
+            try {
+                return ResponseEntity.badRequest().body(vaadinEndpointMapper
+                        .writeValueAsString(e.getSerializationData()));
+            } catch (JsonProcessingException ee) {
+                String errorMessage = "Failed to serialize exception data";
+                getLogger().error(errorMessage, ee);
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(errorMessage);
+            }
+        } catch (EndpointInvocationException e) {
+            switch (e.getType()) {
+            case ACCESS_DENIED:
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(createResponseErrorObject(e.getErrorMessage()));
+            case INTERNAL_ERROR:
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body(createResponseErrorObject(e.getErrorMessage()));
+            case INVALID_INPUT_DATA:
+                return ResponseEntity.badRequest()
+                        .body(createResponseErrorObject(e.getErrorMessage()));
+            case NOT_FOUND:
+                return ResponseEntity.notFound().build();
+            }
 
+            // This cannot really be reached unless a constant is missing above
+            return ResponseEntity.internalServerError().build();
+        } catch (JsonProcessingException e) {
+            String errorMessage = String.format(
+                    "Failed to serialize endpoint '%s' method '%s' response. "
+                            + "Double check method's return type or specify a custom mapper bean with qualifier '%s'",
+                    endpointName, methodName,
+                    FusionController.VAADIN_ENDPOINT_MAPPER_BEAN_QUALIFIER);
+            getLogger().error(errorMessage, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .build();
+        }
+    }
+
+    private String createResponseErrorObject(String errorMessage) {
+        ObjectNode objectNode = vaadinEndpointMapper.createObjectNode();
+        objectNode.put(EndpointException.ERROR_MESSAGE_FIELD, errorMessage);
+        return objectNode.toString();
+    }
+
+    static ObjectMapper createVaadinConnectObjectMapper(
+            ApplicationContext context) {
+        Jackson2ObjectMapperBuilder builder = context
+                .getBean(Jackson2ObjectMapperBuilder.class);
+        ObjectMapper objectMapper = builder.createXmlMapper(false).build();
+        JacksonProperties jacksonProperties = context
+                .getBean(JacksonProperties.class);
+        if (jacksonProperties.getVisibility().isEmpty()) {
+            objectMapper.setVisibility(PropertyAccessor.ALL,
+                    JsonAutoDetect.Visibility.ANY);
+        }
+        return objectMapper;
     }
 
 }

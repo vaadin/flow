@@ -49,7 +49,7 @@ public class FusionControllerMockBuilder {
                 new EndpointInvoker(objectMapper, explicitNullableTypeChecker,
                         applicationContext, registry));
         FusionController controller = Mockito.spy(new FusionController(
-                applicationContext, registry, endpointInvoker));
+                objectMapper, applicationContext, registry, endpointInvoker));
         Mockito.doReturn(mock(FusionAccessChecker.class)).when(endpointInvoker)
                 .getAccessChecker(Mockito.any());
         return controller;
