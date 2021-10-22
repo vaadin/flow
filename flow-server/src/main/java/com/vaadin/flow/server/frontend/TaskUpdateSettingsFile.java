@@ -67,8 +67,8 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
                 FrontendUtils.getUnixPath(generatedFolder.toPath()));
         String output;
         if (webappResourcesDirectory == null) {
-            output = combinePath(buildDirectory, VAADIN_WEBAPP_RESOURCES,
-                    VAADIN_STATIC_FILES_PATH);
+            output = combinePath(buildDirectory, "classes",
+                    VAADIN_WEBAPP_RESOURCES, VAADIN_STATIC_FILES_PATH);
         } else {
             output = combinePath(webappResourcesDirectory.getPath(),
                     VAADIN_STATIC_FILES_PATH);

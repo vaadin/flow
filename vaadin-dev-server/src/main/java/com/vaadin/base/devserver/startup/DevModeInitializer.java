@@ -246,8 +246,11 @@ public class DevModeInitializer implements Serializable {
         // config,
         // see https://github.com/vaadin/flow/issues/9082
         File target = new File(baseDir, config.getBuildFolder());
-        builder.withWebpack(new File(target, VAADIN_WEBAPP_RESOURCES),
-                new File(target, VAADIN_SERVLET_RESOURCES),
+        builder.withWebpack(
+                Paths.get(target.getPath(), "classes", VAADIN_WEBAPP_RESOURCES)
+                        .toFile(),
+                Paths.get(target.getPath(), "classes", VAADIN_SERVLET_RESOURCES)
+                        .toFile(),
                 FrontendUtils.WEBPACK_CONFIG, FrontendUtils.WEBPACK_GENERATED);
 
         builder.useV14Bootstrap(config.useV14Bootstrap());

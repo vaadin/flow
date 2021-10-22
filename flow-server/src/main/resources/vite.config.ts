@@ -28,6 +28,10 @@ const themeOptions = {
   frontendGeneratedFolder: path.resolve(frontendFolder, settings.generatedFolder)
 };
 
+// Block debug and trace logs.
+console.trace = () => {};
+console.debug =() => {};
+
 // https://vitejs.dev/config/
 export default defineConfig({
   root: 'frontend',
