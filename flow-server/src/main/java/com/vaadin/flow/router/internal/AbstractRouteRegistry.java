@@ -29,6 +29,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.HasErrorParameter;
+import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.RouteAliasData;
 import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.router.RouteData;
@@ -345,6 +346,18 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
     @Override
     public void clean() {
         configure(ConfigureRoutes::clear);
+    }
+
+    @Override
+    public boolean hasMandatoryParameter(
+            Class<? extends Component> navigationTarget) {
+        String template = getTemplate(navigationTarget)
+                .orElseThrow(() -> new NotFoundException(
+                        "Requested navigation target is not registered."));
+        return (HasUrlParameterFormat.hasUrlParameter(navigationTarget)
+                && HasUrlParameterFormat
+                        .hasMandatoryParameter(navigationTarget))
+                || RouteFormat.hasRequiredParameter(template);
     }
 
     private void configureWithFullTemplate(String path,
