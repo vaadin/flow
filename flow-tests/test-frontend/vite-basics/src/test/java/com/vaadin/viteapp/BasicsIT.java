@@ -22,7 +22,8 @@ public class BasicsIT extends ChromeBrowserTest {
         getDriver().get(getRootURL());
         waitForDevServer();
         TestBenchElement header = $("h2").first();
-        Assert.assertEquals("This place intentionally left empty", header.getText());
+        Assert.assertEquals("This place intentionally left empty",
+                header.getText());
     }
 
     @Test
@@ -34,7 +35,7 @@ public class BasicsIT extends ChromeBrowserTest {
 
         TestBenchElement gizmo = $("vaadin-devmode-gizmo").first();
         gizmo.click();
-        Assert.assertNotNull(gizmo.$("div").attributeContains("class", "window").attributeContains("class", "visible")
-                .waitForFirst());
+        Assert.assertNotNull(gizmo.$("div").attributeContains("class", "window")
+                .attributeContains("class", "visible").waitForFirst());
     }
 }
