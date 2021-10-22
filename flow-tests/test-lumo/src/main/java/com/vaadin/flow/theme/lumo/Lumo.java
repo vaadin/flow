@@ -26,12 +26,14 @@ import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.theme.AbstractTheme;
 
+import com.vaadin.flow.uitest.ui.dependencies.TestVersion;
+
 /**
  * Lumo component theme class implementation. Used for testing theming features.
  *
  * @since 1.0
  */
-@NpmPackage(value = "@vaadin/vaadin-lumo-styles", version = "22.0.0-alpha9")
+@NpmPackage(value = "@vaadin/vaadin-lumo-styles", version = TestVersion.VAADIN)
 @JsModule("@vaadin/vaadin-lumo-styles/color.js")
 @JsModule("@vaadin/vaadin-lumo-styles/typography.js")
 @JsModule("@vaadin/vaadin-lumo-styles/sizing.js")

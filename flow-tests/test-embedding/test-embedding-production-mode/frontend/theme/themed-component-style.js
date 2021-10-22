@@ -14,18 +14,10 @@
 * the License.
 */
 
-import {html} from '@polymer/polymer/lib/utils/html-tag.js';
+import { css, registerStyles } from '@vaadin/vaadin-themable-mixin';
 
-const styleContainer = html`
-    <dom-module id="themed-component-style" theme-for="themed-component">
-        <template>
-            <style>
-                [part="content"] {
-                    color: rgba(255, 0, 0, 1);
-                }
-            </style>
-        </template>
-    </dom-module>
-`;
-
-document.head.appendChild(styleContainer.content);
+registerStyles("themed-component", css`
+    [part="content"] {
+        color: rgba(255, 0, 0, 1);
+    }
+ `);

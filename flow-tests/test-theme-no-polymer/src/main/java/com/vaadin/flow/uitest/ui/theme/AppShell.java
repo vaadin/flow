@@ -20,8 +20,10 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.theme.Theme;
 
+import com.vaadin.flow.uitest.ui.dependencies.TestVersion;
+
 @Theme(value = "app-theme")
-@NpmPackage(value = "@vaadin/vaadin-themable-mixin", version = "1.6.1")
-@NpmPackage(value = "@fortawesome/fontawesome-free", version = "5.15.1")
+@NpmPackage(value = "@vaadin/vaadin-themable-mixin", version = TestVersion.VAADIN)
+@NpmPackage(value = "@fortawesome/fontawesome-free", version = TestVersion.FONTAWESOME)
 public class AppShell implements AppShellConfigurator {
 }
