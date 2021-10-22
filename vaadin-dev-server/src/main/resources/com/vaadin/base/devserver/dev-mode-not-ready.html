@@ -47,9 +47,19 @@
 // It allows to work correct waitForVaadin in TB
 window.Vaadin = {Flow: {devServerIsNotLoaded: true}};
 
-setTimeout(function(){
-    location.reload();
-}, 200);
+const delay = 200;
+const poll = () => {
+  fetch(window.location.href, {headers: {'X-DevModePoll': 'true'}}).then(response => {
+    if (response.headers.has("X-DevModePending")) {
+      setTimeout(poll, delay);
+    } else {
+      // App ready
+      debugger;
+      document.location.reload();
+    }
+  })};
+
+setTimeout(poll, delay);
 
 </script>
 </head>
