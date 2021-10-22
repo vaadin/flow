@@ -40,7 +40,7 @@ import elemental.json.JsonValue;
  */
 public class ConstantPoolKey implements Serializable {
     private final JsonValue json;
-    private final String id;
+    private String id;
 
     /**
      * Creates a new constant pool key for the given JSON value. The value
@@ -53,8 +53,6 @@ public class ConstantPoolKey implements Serializable {
     public ConstantPoolKey(JsonValue json) {
         assert json != null;
         this.json = json;
-
-        id = calculateHash(json);
     }
 
     /**
@@ -63,11 +61,14 @@ public class ConstantPoolKey implements Serializable {
      * @return the id used to identify this value
      */
     public String getId() {
+        if (id == null) {
+            id = calculateHash(json);
+        }
         return id;
     }
 
     /**
-     * Exports the this key into a JSON object to send to the client. This
+     * Exports this key into a JSON object to send to the client. This
      * method should be called only by the {@link ConstantPool} instance that
      * manages this value. It may be called multiple times.
      *
@@ -76,9 +77,7 @@ public class ConstantPoolKey implements Serializable {
      *            <code>null</code>
      */
     public void export(JsonObject clientConstantPoolUpdate) {
-        assert id.equals(calculateHash(json)) : "Json value has been changed";
-
-        clientConstantPoolUpdate.put(id, json);
+        clientConstantPoolUpdate.put(getId(), json);
     }
 
     /**
