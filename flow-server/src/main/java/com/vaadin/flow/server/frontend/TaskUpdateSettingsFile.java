@@ -43,14 +43,14 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
     File npmFolder;
     File frontendDirectory;
     File generatedFolder;
-    File webpackOutputDirectory;
+    File webappResourcesDirectory;
     String buildDirectory;
 
     TaskUpdateSettingsFile(NodeTasks.Builder builder) {
         this.npmFolder = builder.getNpmFolder();
         this.frontendDirectory = builder.getFrontendDirectory();
         this.generatedFolder = builder.getGeneratedFolder();
-        this.webpackOutputDirectory = builder.getWebpackOutputDirectory();
+        this.webappResourcesDirectory = builder.getWebappResourcesDirectory();
         this.buildDirectory = builder.getBuildDirectory();
     }
 
@@ -66,11 +66,12 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
         settings.put("themeResourceFolder",
                 getRelativePath(npmFolder.toPath(), generatedFolder.toPath()));
         String output;
-        if (webpackOutputDirectory == null) {
+        if (webappResourcesDirectory == null) {
             output = Paths.get(buildDirectory, VAADIN_WEBAPP_RESOURCES,
                     VAADIN_STATIC_FILES_PATH).toString();
-        } else
-            output = webpackOutputDirectory + VAADIN_STATIC_FILES_PATH;
+        } else {
+            output = webappResourcesDirectory + VAADIN_STATIC_FILES_PATH;
+        }
 
         settings.put("staticOutput",
                 getRelativePath(npmFolder.toPath(), new File(output).toPath()));

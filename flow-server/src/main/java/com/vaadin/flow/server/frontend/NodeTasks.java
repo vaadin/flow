@@ -64,7 +64,7 @@ public class NodeTasks implements FallibleCommand {
 
         private final File frontendDirectory;
 
-        private File webpackOutputDirectory = null;
+        private File webappResourcesDirectory = null;
 
         private File resourceOutputDirectory = null;
 
@@ -222,7 +222,7 @@ public class NodeTasks implements FallibleCommand {
         /**
          * Sets the webpack related properties.
          *
-         * @param webpackOutputDirectory
+         * @param webappResourcesDirectory
          *            the directory to set for webpack to output its build
          *            results, meant for serving from context root.
          * @param resourceOutputDirectory
@@ -237,10 +237,10 @@ public class NodeTasks implements FallibleCommand {
          *            creating the <code>webpack.generated.js</code> file.
          * @return this builder
          */
-        public Builder withWebpack(File webpackOutputDirectory,
+        public Builder withWebpack(File webappResourcesDirectory,
                 File resourceOutputDirectory, String webpackTemplate,
                 String webpackGeneratedTemplate) {
-            this.webpackOutputDirectory = webpackOutputDirectory;
+            this.webappResourcesDirectory = webappResourcesDirectory;
             this.resourceOutputDirectory = resourceOutputDirectory;
             this.webpackTemplate = webpackTemplate;
             this.webpackGeneratedTemplate = webpackGeneratedTemplate;
@@ -580,8 +580,8 @@ public class NodeTasks implements FallibleCommand {
          * 
          * @return webpackOutputDirectory
          */
-        public File getWebpackOutputDirectory() {
-            return webpackOutputDirectory;
+        public File getWebappResourcesDirectory() {
+            return webappResourcesDirectory;
         }
 
         /**
@@ -723,7 +723,7 @@ public class NodeTasks implements FallibleCommand {
             PwaConfiguration pwaConfiguration = frontendDependencies
                     .getPwaConfiguration();
             commands.add(new TaskUpdateWebpack(builder.frontendDirectory,
-                    builder.npmFolder, builder.webpackOutputDirectory,
+                    builder.npmFolder, builder.webappResourcesDirectory,
                     builder.resourceOutputDirectory, builder.webpackTemplate,
                     builder.webpackGeneratedTemplate,
                     new File(builder.generatedFolder, IMPORTS_NAME),
