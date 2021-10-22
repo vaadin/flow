@@ -608,9 +608,13 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
             }
             return false;
         } else {
-            InputStream inputStream = AbstractDevServerRunner.class
-                    .getResourceAsStream("dev-mode-not-ready.html");
-            IOUtils.copy(inputStream, response.getOutputStream());
+            if (request.getHeader("X-DevModePoll") == null) {
+                InputStream inputStream = AbstractDevServerRunner.class
+                        .getResourceAsStream("dev-mode-not-ready.html");
+                IOUtils.copy(inputStream, response.getOutputStream());
+            } else {
+                response.getWriter().write("Pending");
+            }
             response.setContentType("text/html;charset=utf-8");
             response.setHeader("X-DevModePending", "true");
             return true;
