@@ -47,7 +47,6 @@ export default defineConfig({
     {
       name: 'custom-theme',
       config() {
-        // console should not be used as logger.
         processThemeResources(themeOptions, console);
       }
     }

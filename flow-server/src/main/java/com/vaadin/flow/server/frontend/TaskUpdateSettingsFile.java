@@ -20,8 +20,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -69,10 +67,11 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
                 FrontendUtils.getUnixPath(generatedFolder.toPath()));
         String output;
         if (webappResourcesDirectory == null) {
-            output = Paths.get(buildDirectory, VAADIN_WEBAPP_RESOURCES,
-                    VAADIN_STATIC_FILES_PATH).toString();
+            output = combinePath(buildDirectory, VAADIN_WEBAPP_RESOURCES,
+                    VAADIN_STATIC_FILES_PATH);
         } else {
-            output = webappResourcesDirectory + VAADIN_STATIC_FILES_PATH;
+            output = combinePath(webappResourcesDirectory.getPath(),
+                    VAADIN_STATIC_FILES_PATH);
         }
 
         settings.put("staticOutput",
@@ -86,9 +85,19 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
             FileUtils.write(settingsFile, stringify(settings, 2),
                     StandardCharsets.UTF_8);
         } catch (IOException e) {
-            log().error("Failed to write file: {}", settingsFile);
-            log().trace("Failed to write settings file", e);
+            log().error("Failed to write file: {}", settingsFile, e);
         }
+    }
+
+    private String combinePath(String... parts) {
+        StringBuilder path = new StringBuilder();
+        for (String part : parts) {
+            path.append(part);
+            if (!part.endsWith("/")) {
+                path.append('/');
+            }
+        }
+        return path.toString();
     }
 
     private Logger log() {
