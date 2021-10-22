@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 import path from 'path';
 
 import { processThemeResources } from '@vaadin/application-theme-plugin/theme-handle.js';
-import settings from './vaadin-dev-server-settings.json';
+import settings from './target/vaadin-dev-server-settings.json';
 
 const frontendFolder = path.resolve(__dirname, settings.frontendFolder);
 const themeFolder = path.resolve(frontendFolder, settings.themeFolder);
