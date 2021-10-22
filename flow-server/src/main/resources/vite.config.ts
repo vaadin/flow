@@ -2,10 +2,10 @@ import { defineConfig } from 'vite';
 import path from 'path';
 
 import { processThemeResources } from '@vaadin/application-theme-plugin/theme-handle.js';
-import flowSettings from './flow-settings.json';
+import settings from './vaadin-dev-server-settings.json';
 
-const frontendFolder = path.resolve(__dirname, flowSettings.frontendFolder);
-const themeFolder = path.resolve(frontendFolder, flowSettings.themeFolder);
+const frontendFolder = path.resolve(__dirname, settings.frontendFolder);
+const themeFolder = path.resolve(frontendFolder, settings.themeFolder);
 
 const projectStaticAssetsFolders = [
   path.resolve(__dirname, 'src', 'main', 'resources', 'META-INF', 'resources'),
@@ -15,17 +15,17 @@ const projectStaticAssetsFolders = [
 
 // Folders in the project which can contain application themes
 const themeProjectFolders = projectStaticAssetsFolders.map((folder) =>
-    path.resolve(folder, flowSettings.themeFolder)
+    path.resolve(folder, settings.themeFolder)
 );
 
 const themeOptions = {
   devMode: false,
   // The following matches folder 'target/flow-frontend/themes/'
   // (not 'frontend/themes') for theme in JAR that is copied there
-  themeResourceFolder: path.resolve(__dirname, flowSettings.themeResourceFolder),
+  themeResourceFolder: path.resolve(__dirname, settings.themeResourceFolder),
   themeProjectFolders: themeProjectFolders,
-  projectStaticAssetsOutputFolder: path.resolve(__dirname, flowSettings.staticOutput),
-  frontendGeneratedFolder: path.resolve(frontendFolder, flowSettings.generatedFolder)
+  projectStaticAssetsOutputFolder: path.resolve(__dirname, settings.staticOutput),
+  frontendGeneratedFolder: path.resolve(frontendFolder, settings.generatedFolder)
 };
 
 // https://vitejs.dev/config/
@@ -47,6 +47,7 @@ export default defineConfig({
     {
       name: 'custom-theme',
       config() {
+        // console should not be used as logger.
         processThemeResources(themeOptions, console);
       }
     }

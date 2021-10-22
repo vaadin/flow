@@ -594,7 +594,10 @@ public class NodeTasks implements FallibleCommand {
         }
 
         /**
-         * Get the build directory name.
+         * Get the name of the used build directory.
+         * <p>
+         * By default this will be {@code target} for maven and {@code build}
+         * for gradle.
          *
          * @return buildDirectory
          */

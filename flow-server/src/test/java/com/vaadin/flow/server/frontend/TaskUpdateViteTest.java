@@ -11,6 +11,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import static com.vaadin.flow.server.frontend.TaskUpdateSettingsFile.DEV_SETTINGS_FILE;
+
 public class TaskUpdateViteTest {
 
     @Rule
@@ -29,7 +31,7 @@ public class TaskUpdateViteTest {
                 StandardCharsets.UTF_8);
 
         Assert.assertTrue("Settings file folder was not correctly updated.",
-                template.contains("./build/flow-settings.json"));
+                template.contains("./build/" + DEV_SETTINGS_FILE));
     }
 
     @Test
@@ -37,7 +39,8 @@ public class TaskUpdateViteTest {
             throws IOException {
         File configFile = new File(temporaryFolder.getRoot(),
                 FrontendUtils.VITE_CONFIG);
-        final String importString = "import flowSettings from './build/flow-settings.json';";
+        final String importString = "import settings from './build/"
+                + DEV_SETTINGS_FILE + "';";
         FileUtils.write(configFile, importString, StandardCharsets.UTF_8);
 
         new TaskUpdateVite(temporaryFolder.getRoot(), "build").execute();
@@ -54,7 +57,8 @@ public class TaskUpdateViteTest {
             throws IOException {
         File configFile = new File(temporaryFolder.getRoot(),
                 FrontendUtils.VITE_CONFIG);
-        final String importString = "import flowSettings from './target/flow-settings.json';";
+        final String importString = "import settings from './target/"
+                + DEV_SETTINGS_FILE + "';";
         FileUtils.write(configFile, importString, StandardCharsets.UTF_8);
 
         new TaskUpdateVite(temporaryFolder.getRoot(), "build").execute();
@@ -63,7 +67,7 @@ public class TaskUpdateViteTest {
                 StandardCharsets.UTF_8);
 
         Assert.assertEquals("Settings file content was added.",
-                "import flowSettings from './build/flow-settings.json';",
+                "import settings from './build/" + DEV_SETTINGS_FILE + "';",
                 template);
     }
 }

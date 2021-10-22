@@ -30,6 +30,8 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.vaadin.flow.server.frontend.TaskUpdateSettingsFile.DEV_SETTINGS_FILE;
+
 /**
  * Updates the Vite config file according with current project settings.
  * <p>
@@ -41,7 +43,7 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
     private String buildFolder;
 
     Pattern frontendFilePattern = Pattern
-            .compile("import flowSettings from '(.*)';");
+            .compile("import settings from '(.*)';");
 
     TaskUpdateVite(File configFolder, String buildFolder) {
         this.configFolder = configFolder;
@@ -88,11 +90,11 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
     private String updateSettings(String template) {
         final Matcher matcher = frontendFilePattern.matcher(template);
         if (matcher.find() && !matcher.group(1)
-                .equals("./" + buildFolder + "/flow-settings.json")) {
+                .equals("./" + buildFolder + "/" + DEV_SETTINGS_FILE)) {
             template = template.replace(
-                    "import flowSettings from '" + matcher.group(1) + "';",
-                    "import flowSettings from './" + buildFolder
-                            + "/flow-settings.json';");
+                    "import settings from '" + matcher.group(1) + "';",
+                    "import settings from './" + buildFolder + "/"
+                            + DEV_SETTINGS_FILE + "';");
         }
         return template;
     }

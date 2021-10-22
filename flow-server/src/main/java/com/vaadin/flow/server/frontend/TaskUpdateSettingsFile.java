@@ -34,12 +34,14 @@ import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_STATIC_FILES_PA
 import static elemental.json.impl.JsonUtil.stringify;
 
 /**
- * Creates a flow-settings.json file for use with dev server configuration.
+ * Creates a vaadin-dev-server-settings.json file for use with dev server
+ * configuration.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
 public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
 
+    public static final String DEV_SETTINGS_FILE = "vaadin-dev-server-settings.json";
     File npmFolder;
     File frontendDirectory;
     File generatedFolder;
@@ -60,11 +62,11 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
             return;
 
         JsonObject settings = Json.createObject();
-        settings.put("frontendFolder", getRelativePath(npmFolder.toPath(),
-                frontendDirectory.toPath()));
+        settings.put("frontendFolder",
+                FrontendUtils.getUnixPath(frontendDirectory.toPath()));
         settings.put("themeFolder", "themes");
         settings.put("themeResourceFolder",
-                getRelativePath(npmFolder.toPath(), generatedFolder.toPath()));
+                FrontendUtils.getUnixPath(generatedFolder.toPath()));
         String output;
         if (webappResourcesDirectory == null) {
             output = Paths.get(buildDirectory, VAADIN_WEBAPP_RESOURCES,
@@ -74,11 +76,11 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
         }
 
         settings.put("staticOutput",
-                getRelativePath(npmFolder.toPath(), new File(output).toPath()));
+                FrontendUtils.getUnixPath(new File(output).toPath()));
         settings.put("generatedFolder", "generated");
 
         File settingsFile = new File(npmFolder,
-                buildDirectory + "/flow-settings.json");
+                buildDirectory + "/" + DEV_SETTINGS_FILE);
 
         try {
             FileUtils.write(settingsFile, stringify(settings, 2),
@@ -86,14 +88,6 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
         } catch (IOException e) {
             log().error("Failed to write file: {}", settingsFile);
             log().trace("Failed to write settings file", e);
-        }
-    }
-
-    private String getRelativePath(Path source, Path path) {
-        if (path.isAbsolute()) {
-            return FrontendUtils.getUnixRelativePath(source, path);
-        } else {
-            return FrontendUtils.getUnixPath(path);
         }
     }
 
