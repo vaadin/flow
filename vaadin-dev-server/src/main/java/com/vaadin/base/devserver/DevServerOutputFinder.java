@@ -61,10 +61,12 @@ public class DevServerOutputFinder {
                 readLinesLoop(reader);
             } catch (IOException e) {
                 getLogger().error("Exception when reading stream.", e);
+                onMatch.accept(new Result(false));
             }
 
-            // Process closed stream, means that it exited
-            onMatch.accept(new Result(false));
+            // Process closed stream, means that it exited, notify
+            // DevModeHandler to continue without any result
+            onMatch.accept(null);
         }
 
         private void readLinesLoop(InputStreamReader reader)
@@ -153,15 +155,16 @@ public class DevServerOutputFinder {
      *            the pattern indicating success
      * @param failure
      *            the pattern indicating failure
-     * @param whenFinished
-     *            callback triggered th first time either success or failure is
-     *            found or the stream ends
+     * @param onMatch
+     *            callback triggered when either success or failure is found
      */
     public DevServerOutputFinder(InputStream inputStream, Pattern success,
-            Pattern failure, Consumer<Result> whenFinished) {
+            Pattern failure, Consumer<Result> onMatch) {
         monitor = new CountDownLatch(1);
         finder = new Finder(inputStream, success, failure, result -> {
-            whenFinished.accept(result);
+            if (result != null) {
+                onMatch.accept(result);
+            }
             monitor.countDown();
         });
 
