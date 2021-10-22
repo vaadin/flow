@@ -1,15 +1,18 @@
 package com.vaadin.fusion;
 
-import javax.annotation.security.DenyAll;
-import javax.annotation.security.PermitAll;
-import javax.annotation.security.RolesAllowed;
-import javax.servlet.ServletContext;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import java.io.IOException;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.security.Principal;
@@ -18,31 +21,21 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import javax.annotation.security.DenyAll;
+import javax.annotation.security.PermitAll;
+import javax.annotation.security.RolesAllowed;
+import javax.servlet.ServletContext;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.type.SimpleType;
 import com.fasterxml.jackson.databind.type.TypeFactory;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
-import org.springframework.boot.autoconfigure.jackson.JacksonProperties;
-import org.springframework.cglib.proxy.Enhancer;
-import org.springframework.cglib.proxy.NoOp;
-import org.springframework.context.ApplicationContext;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
-
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
@@ -53,25 +46,20 @@ import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.fusion.auth.CsrfChecker;
 import com.vaadin.fusion.auth.FusionAccessChecker;
 import com.vaadin.fusion.exception.EndpointException;
-import com.vaadin.fusion.exception.EndpointValidationException;
-import com.vaadin.fusion.generator.endpoints.iterableendpoint.IterableEndpoint;
-import com.vaadin.fusion.generator.endpoints.superclassmethods.PersonEndpoint;
-import com.vaadin.fusion.testendpoint.BridgeMethodTestEndpoint;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.CALLS_REAL_METHODS;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
+import org.springframework.cglib.proxy.Enhancer;
+import org.springframework.cglib.proxy.NoOp;
+import org.springframework.context.ApplicationContext;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 public class FusionControllerTest {
     private static final TestClass TEST_ENDPOINT = new TestClass();
@@ -196,36 +184,6 @@ public class FusionControllerTest {
     }
 
     @Test
-    public void should_ThrowException_When_NoEndpointNameCanBeReceived() {
-        TestClass anonymousClass = new TestClass() {
-        };
-        assertEquals("Endpoint to test should have no name",
-                anonymousClass.getClass().getSimpleName(), "");
-
-        exception.expect(IllegalStateException.class);
-        exception.expectMessage("anonymous");
-        exception.expectMessage(anonymousClass.getClass().getName());
-        createVaadinController(anonymousClass);
-    }
-
-    @Test
-    public void should_ThrowException_When_IncorrectEndpointNameProvided() {
-        TestClassWithIllegalEndpointName endpointWithIllegalName = new TestClassWithIllegalEndpointName();
-        String incorrectName = endpointWithIllegalName.getClass()
-                .getAnnotation(Endpoint.class).value();
-        EndpointNameChecker nameChecker = new EndpointNameChecker();
-        String expectedCheckerMessage = nameChecker.check(incorrectName);
-        assertNotNull(expectedCheckerMessage);
-
-        exception.expect(IllegalStateException.class);
-        exception.expectMessage(incorrectName);
-        exception.expectMessage(expectedCheckerMessage);
-
-        createVaadinController(endpointWithIllegalName,
-                mock(ObjectMapper.class), null, nameChecker, null);
-    }
-
-    @Test
     public void should_Return404_When_EndpointNotFound() {
         String missingEndpointName = "whatever";
         assertNotEquals(missingEndpointName, TEST_ENDPOINT_NAME);
@@ -283,22 +241,6 @@ public class FusionControllerTest {
     }
 
     @Test
-    public void should_CallEnableCsrf_When_GettingTheAccessChecker() {
-        ApplicationContext appContext = mockApplicationContext(TEST_ENDPOINT);
-        FusionAccessChecker accessChecker = mock(FusionAccessChecker.class);
-        Mockito.doReturn(accessChecker).when(appContext)
-                .getBean(FusionAccessChecker.class);
-
-        EndpointRegistry registry = new EndpointRegistry(
-                mock(EndpointNameChecker.class));
-        FusionController controller = new FusionController(new ObjectMapper(),
-                mock(ExplicitNullableTypeChecker.class), appContext, registry);
-        controller.getAccessChecker(mockServletContext());
-
-        verify(accessChecker).enableCsrf(Mockito.anyBoolean());
-    }
-
-    @Test
     public void should_Return400_When_LessParametersSpecified1() {
         ResponseEntity<String> response = createVaadinController(TEST_ENDPOINT)
                 .serveEndpoint(TEST_ENDPOINT_NAME, TEST_METHOD.getName(), null,
@@ -348,33 +290,6 @@ public class FusionControllerTest {
     }
 
     @Test
-    public void should_NotCallMethod_When_UserPrincipalIsNull() {
-        FusionController vaadinController = createVaadinControllerWithoutPrincipal();
-        ResponseEntity<String> response = vaadinController.serveEndpoint(
-                TEST_ENDPOINT_NAME, TEST_METHOD.getName(),
-                createRequestParameters("{\"value\": 222}"), requestMock);
-
-        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-        String responseBody = response.getBody();
-        assertNotNull("Response body should not be null", responseBody);
-        assertTrue("Should return unauthorized error",
-                responseBody.contains(FusionAccessChecker.ACCESS_DENIED_MSG));
-    }
-
-    @Test
-    public void should_CallMethodAnonymously_When_UserPrincipalIsNullAndAnonymousAllowed() {
-        FusionController vaadinController = createVaadinControllerWithoutPrincipal();
-        ResponseEntity<String> response = vaadinController.serveEndpoint(
-                TEST_ENDPOINT_NAME, "testAnonymousMethod",
-                createRequestParameters("{}"), requestMock);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        String responseBody = response.getBody();
-        assertEquals("Should return message when calling anonymously",
-                "\"Hello, anonymous user!\"", responseBody);
-    }
-
-    @Test
     public void should_NotCallMethod_When_a_CSRF_request() {
         when(appConfig.isXsrfProtectionEnabled()).thenReturn(true);
         when(requestMock.getHeader("X-CSRF-Token")).thenReturn(null);
@@ -392,80 +307,7 @@ public class FusionControllerTest {
     }
 
     @Test
-    public void should_NotCallMethodAnonymously_When_UserPrincipalIsNotInRole() {
-        FusionController vaadinController = createVaadinController(
-                TEST_ENDPOINT, new FusionAccessChecker(
-                        new AccessAnnotationChecker(), new CsrfChecker()));
-
-        ResponseEntity<String> response = vaadinController.serveEndpoint(
-                TEST_ENDPOINT_NAME, "testRoleAllowed",
-                createRequestParameters("{}"), requestMock);
-
-        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-        assertTrue(response.getBody()
-                .contains(FusionAccessChecker.ACCESS_DENIED_MSG));
-    }
-
-    @Test
-    public void should_CallMethodAnonymously_When_UserPrincipalIsInRole() {
-        when(requestMock.isUserInRole("FOO_ROLE")).thenReturn(true);
-
-        FusionController vaadinController = createVaadinController(
-                TEST_ENDPOINT, new FusionAccessChecker(
-                        new AccessAnnotationChecker(), new CsrfChecker()));
-
-        ResponseEntity<String> response = vaadinController.serveEndpoint(
-                TEST_ENDPOINT_NAME, "testRoleAllowed",
-                createRequestParameters("{}"), requestMock);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-
-        assertEquals("\"Hello, user in role!\"", response.getBody());
-    }
-
-    @Test
-    public void should_CallMethodAnonymously_When_AnonymousOverridesRoles() {
-        FusionController vaadinController = createVaadinController(
-                TEST_ENDPOINT, new FusionAccessChecker(
-                        new AccessAnnotationChecker(), new CsrfChecker()));
-
-        ResponseEntity<String> response = vaadinController.serveEndpoint(
-                TEST_ENDPOINT_NAME, "anonymousOverrides",
-                createRequestParameters("{}"), requestMock);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("\"Hello, no user!\"", response.getBody());
-    }
-
-    @Test
-    public void should_NotCallMethod_When_DenyAll() {
-        FusionController vaadinController = createVaadinControllerWithoutPrincipal();
-        ResponseEntity<String> response = vaadinController.serveEndpoint(
-                TEST_ENDPOINT_NAME, "denyAll", createRequestParameters("{}"),
-                requestMock);
-
-        assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
-        assertTrue(response.getBody()
-                .contains(FusionAccessChecker.ACCESS_DENIED_MSG));
-    }
-
-    @Test
-    public void should_bePossibeToGetPrincipalInEndpoint() {
-        when(principal.getName()).thenReturn("foo");
-
-        FusionController vaadinController = createVaadinController(
-                TEST_ENDPOINT, new FusionAccessChecker(
-                        new AccessAnnotationChecker(), new CsrfChecker()));
-
-        ResponseEntity<String> response = vaadinController.serveEndpoint(
-                TEST_ENDPOINT_NAME, "getUserName",
-                createRequestParameters("{}"), requestMock);
-
-        assertEquals("\"foo\"", response.getBody());
-    }
-
-    @Test
-    public void should_clearVaadinRequestInsntace_after_EndpointCall() {
+    public void should_clearVaadinRequestInstance_after_EndpointCall() {
         FusionController vaadinController = createVaadinController(
                 TEST_ENDPOINT, new FusionAccessChecker(
                         new AccessAnnotationChecker(), new CsrfChecker()));
@@ -692,27 +534,6 @@ public class FusionControllerTest {
     }
 
     @Test
-    public void should_ThrowException_When_MapperFailsToSerializeEverything()
-            throws Exception {
-        ObjectMapper mapperMock = mock(ObjectMapper.class);
-        TypeFactory typeFactory = mock(TypeFactory.class);
-        when(mapperMock.getTypeFactory()).thenReturn(typeFactory);
-        when(typeFactory.constructType(int.class))
-                .thenReturn(SimpleType.constructUnsafe(int.class));
-        when(mapperMock.readerFor(SimpleType.constructUnsafe(int.class)))
-                .thenReturn(new ObjectMapper()
-                        .readerFor(SimpleType.constructUnsafe(int.class)));
-        when(mapperMock.writeValueAsString(Mockito.isNotNull()))
-                .thenThrow(new JsonMappingException(null, "sss"));
-
-        exception.expect(IllegalStateException.class);
-        exception.expectMessage("Unexpected");
-        createVaadinController(TEST_ENDPOINT, mapperMock).serveEndpoint(
-                TEST_ENDPOINT_NAME, TEST_METHOD.getName(),
-                createRequestParameters("{\"value\": 222}"), requestMock);
-    }
-
-    @Test
     public void should_ReturnCorrectResponse_When_EverythingIsCorrect() {
         int inputValue = 222;
         String expectedOutput = TEST_ENDPOINT.testMethod(inputValue);
@@ -759,415 +580,6 @@ public class FusionControllerTest {
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(String.format("\"%s\"", expectedOutput),
-                response.getBody());
-    }
-
-    @Test
-    public void should_NotUseBridgeMethod_When_EndpointHasBridgeMethodFromInterface() {
-        String inputId = "2222";
-        String expectedResult = String.format("{\"id\":\"%s\"}", inputId);
-        BridgeMethodTestEndpoint.InheritedClass testEndpoint = new BridgeMethodTestEndpoint.InheritedClass();
-        String testMethodName = "testMethodFromInterface";
-        ResponseEntity<String> response = createVaadinController(testEndpoint)
-                .serveEndpoint(testEndpoint.getClass().getSimpleName(),
-                        testMethodName,
-                        createRequestParameters(String.format(
-                                "{\"value\": {\"id\": \"%s\"}}", inputId)),
-                        requestMock);
-        assertEquals(expectedResult, response.getBody());
-    }
-
-    @Test
-    public void should_NotUseBridgeMethod_When_EndpointHasBridgeMethodFromParentClass() {
-        String inputId = "2222";
-        BridgeMethodTestEndpoint.InheritedClass testEndpoint = new BridgeMethodTestEndpoint.InheritedClass();
-        String testMethodName = "testMethodFromClass";
-
-        ResponseEntity<String> response = createVaadinController(testEndpoint)
-                .serveEndpoint(testEndpoint.getClass().getSimpleName(),
-                        testMethodName,
-                        createRequestParameters(
-                                String.format("{\"value\": %s}", inputId)),
-                        requestMock);
-        assertEquals(inputId, response.getBody());
-    }
-
-    @Test
-    public void should_ReturnCorrectResponse_When_CallingNormalOverriddenMethod() {
-        String inputId = "2222";
-        BridgeMethodTestEndpoint.InheritedClass testEndpoint = new BridgeMethodTestEndpoint.InheritedClass();
-        String testMethodName = "testNormalMethod";
-
-        ResponseEntity<String> response = createVaadinController(testEndpoint)
-                .serveEndpoint(testEndpoint.getClass().getSimpleName(),
-                        testMethodName,
-                        createRequestParameters(
-                                String.format("{\"value\": %s}", inputId)),
-                        requestMock);
-        assertEquals(inputId, response.getBody());
-    }
-
-    @Test
-    public void should_UseCustomEndpointName_When_ItIsDefined() {
-        int input = 111;
-        String expectedOutput = new TestClassWithCustomEndpointName()
-                .testMethod(input);
-        String beanName = TestClassWithCustomEndpointName.class.getSimpleName();
-
-        ApplicationContext contextMock = mock(ApplicationContext.class);
-        when(contextMock.getBeansWithAnnotation(Endpoint.class))
-                .thenReturn(Collections.singletonMap(beanName,
-                        new TestClassWithCustomEndpointName()));
-
-        FusionController fusionController = createVaadinControllerWithApplicationContext(
-                contextMock);
-
-        ResponseEntity<String> response = fusionController
-                .serveEndpoint("CustomEndpoint", "testMethod",
-                        createRequestParameters(
-                                String.format("{\"value\": %s}", input)),
-                        requestMock);
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(String.format("\"%s\"", expectedOutput),
-                response.getBody());
-    }
-
-    @Test
-    public void should_UseCustomEndpointName_When_EndpointClassIsProxied() {
-
-        ApplicationContext contextMock = mock(ApplicationContext.class);
-        TestClassWithCustomEndpointName endpoint = new TestClassWithCustomEndpointName();
-        TestClassWithCustomEndpointName proxy = mock(
-                TestClassWithCustomEndpointName.class, CALLS_REAL_METHODS);
-        when(contextMock.getBeansWithAnnotation(Endpoint.class)).thenReturn(
-                Collections.singletonMap(endpoint.getClass().getSimpleName(),
-                        proxy));
-
-        FusionController fusionController = createVaadinControllerWithApplicationContext(
-                contextMock);
-
-        int input = 111;
-        String expectedOutput = endpoint.testMethod(input);
-
-        ResponseEntity<String> response = fusionController
-                .serveEndpoint("CustomEndpoint", "testMethod",
-                        createRequestParameters(
-                                String.format("{\"value\": %s}", input)),
-                        requestMock);
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(String.format("\"%s\"", expectedOutput),
-                response.getBody());
-    }
-
-    @Test
-    public void should_Never_UseSpringObjectMapper() {
-        ApplicationContext contextMock = mock(ApplicationContext.class);
-        ObjectMapper mockSpringObjectMapper = mock(ObjectMapper.class);
-        ObjectMapper mockOwnObjectMapper = mock(ObjectMapper.class);
-        Jackson2ObjectMapperBuilder mockObjectMapperBuilder = mock(
-                Jackson2ObjectMapperBuilder.class);
-        JacksonProperties mockJacksonProperties = mock(JacksonProperties.class);
-        when(contextMock.getBean(ObjectMapper.class))
-                .thenReturn(mockSpringObjectMapper);
-        when(contextMock.getBean(JacksonProperties.class))
-                .thenReturn(mockJacksonProperties);
-        when(contextMock.getBean(Jackson2ObjectMapperBuilder.class))
-                .thenReturn(mockObjectMapperBuilder);
-        when(mockObjectMapperBuilder.createXmlMapper(false))
-                .thenReturn(mockObjectMapperBuilder);
-        when(mockObjectMapperBuilder.build()).thenReturn(mockOwnObjectMapper);
-        when(mockJacksonProperties.getVisibility())
-                .thenReturn(Collections.emptyMap());
-        EndpointRegistry registry = new EndpointRegistry(
-                mock(EndpointNameChecker.class));
-        new FusionController(null, mock(ExplicitNullableTypeChecker.class),
-                contextMock, registry);
-
-        verify(contextMock, never()).getBean(ObjectMapper.class);
-        verify(contextMock, times(1))
-                .getBean(Jackson2ObjectMapperBuilder.class);
-        verify(contextMock, times(1)).getBean(JacksonProperties.class);
-        verify(mockOwnObjectMapper, times(1)).setVisibility(
-                PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
-    }
-
-    @Test
-    public void should_NotOverrideVisibility_When_JacksonPropertiesProvideVisibility() {
-        ApplicationContext contextMock = mock(ApplicationContext.class);
-        ObjectMapper mockDefaultObjectMapper = mock(ObjectMapper.class);
-        ObjectMapper mockOwnObjectMapper = mock(ObjectMapper.class);
-        Jackson2ObjectMapperBuilder mockObjectMapperBuilder = mock(
-                Jackson2ObjectMapperBuilder.class);
-        JacksonProperties mockJacksonProperties = mock(JacksonProperties.class);
-        when(contextMock.getBean(ObjectMapper.class))
-                .thenReturn(mockDefaultObjectMapper);
-        when(contextMock.getBean(JacksonProperties.class))
-                .thenReturn(mockJacksonProperties);
-        when(contextMock.getBean(Jackson2ObjectMapperBuilder.class))
-                .thenReturn(mockObjectMapperBuilder);
-        when(mockObjectMapperBuilder.createXmlMapper(false))
-                .thenReturn(mockObjectMapperBuilder);
-        when(mockObjectMapperBuilder.build()).thenReturn(mockOwnObjectMapper);
-        when(mockJacksonProperties.getVisibility())
-                .thenReturn(Collections.singletonMap(PropertyAccessor.ALL,
-                        JsonAutoDetect.Visibility.PUBLIC_ONLY));
-        EndpointRegistry registry = new EndpointRegistry(
-                mock(EndpointNameChecker.class));
-        new FusionController(null, mock(ExplicitNullableTypeChecker.class),
-                contextMock, registry);
-
-        verify(contextMock, never()).getBean(ObjectMapper.class);
-        verify(contextMock, times(1))
-                .getBean(Jackson2ObjectMapperBuilder.class);
-        verify(mockDefaultObjectMapper, never()).setVisibility(
-                PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
-        verify(mockOwnObjectMapper, never()).setVisibility(PropertyAccessor.ALL,
-                JsonAutoDetect.Visibility.ANY);
-        verify(contextMock, times(1)).getBean(JacksonProperties.class);
-    }
-
-    @Test
-    public void should_ReturnValidationError_When_DeserializationFails()
-            throws IOException {
-        String inputValue = "\"string\"";
-        String expectedErrorMessage = String.format(
-                "Validation error in endpoint '%s' method '%s'",
-                TEST_ENDPOINT_NAME, TEST_METHOD.getName());
-        ResponseEntity<String> response = createVaadinController(TEST_ENDPOINT)
-                .serveEndpoint(TEST_ENDPOINT_NAME, TEST_METHOD.getName(),
-                        createRequestParameters(
-                                String.format("{\"value\": %s}", inputValue)),
-                        requestMock);
-
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        ObjectNode jsonNodes = new ObjectMapper().readValue(response.getBody(),
-                ObjectNode.class);
-
-        assertEquals(EndpointValidationException.class.getName(),
-                jsonNodes.get("type").asText());
-        assertEquals(expectedErrorMessage, jsonNodes.get("message").asText());
-        assertEquals(1, jsonNodes.get("validationErrorData").size());
-
-        JsonNode validationErrorData = jsonNodes.get("validationErrorData")
-                .get(0);
-        assertEquals("value",
-                validationErrorData.get("parameterName").asText());
-        assertTrue(
-                validationErrorData.get("message").asText().contains("'int'"));
-    }
-
-    @Test
-    public void should_ReturnAllValidationErrors_When_DeserializationFailsForMultipleParameters()
-            throws IOException {
-        String inputValue = String.format(
-                "{\"number\": %s, \"text\": %s, \"date\": %s}",
-                "\"NotANumber\"", "\"ValidText\"", "\"NotADate\"");
-        String testMethodName = "testMethodWithMultipleParameter";
-        String expectedErrorMessage = String.format(
-                "Validation error in endpoint '%s' method '%s'",
-                TEST_ENDPOINT_NAME, testMethodName);
-        ResponseEntity<String> response = createVaadinController(TEST_ENDPOINT)
-                .serveEndpoint(TEST_ENDPOINT_NAME, testMethodName,
-                        createRequestParameters(inputValue), requestMock);
-
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        ObjectNode jsonNodes = new ObjectMapper().readValue(response.getBody(),
-                ObjectNode.class);
-        assertNotNull(jsonNodes);
-
-        assertEquals(EndpointValidationException.class.getName(),
-                jsonNodes.get("type").asText());
-        assertEquals(expectedErrorMessage, jsonNodes.get("message").asText());
-        assertEquals(2, jsonNodes.get("validationErrorData").size());
-
-        List<String> parameterNames = jsonNodes.get("validationErrorData")
-                .findValuesAsText("parameterName");
-        assertEquals(2, parameterNames.size());
-        assertTrue(parameterNames.contains("date"));
-        assertTrue(parameterNames.contains("number"));
-    }
-
-    @Test
-    public void should_ReturnValidationError_When_EndpointMethodParameterIsInvalid()
-            throws IOException {
-        String expectedErrorMessage = String.format(
-                "Validation error in endpoint '%s' method '%s'",
-                TEST_ENDPOINT_NAME, TEST_VALIDATION_METHOD.getName());
-
-        ResponseEntity<String> response = createVaadinController(TEST_ENDPOINT)
-                .serveEndpoint(TEST_ENDPOINT_NAME,
-                        TEST_VALIDATION_METHOD.getName(),
-                        createRequestParameters("{\"parameter\": null}"),
-                        requestMock);
-
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        ObjectNode jsonNodes = new ObjectMapper().readValue(response.getBody(),
-                ObjectNode.class);
-
-        assertEquals(EndpointValidationException.class.getName(),
-                jsonNodes.get("type").asText());
-        assertEquals(expectedErrorMessage, jsonNodes.get("message").asText());
-        assertEquals(1, jsonNodes.get("validationErrorData").size());
-
-        JsonNode validationErrorData = jsonNodes.get("validationErrorData")
-                .get(0);
-        assertTrue(validationErrorData.get("parameterName").asText()
-                .contains(TEST_VALIDATION_METHOD.getName()));
-        String validationErrorMessage = validationErrorData.get("message")
-                .asText();
-        assertTrue(validationErrorMessage
-                .contains(TEST_VALIDATION_METHOD.getName()));
-        assertTrue(validationErrorMessage
-                .contains(TEST_ENDPOINT.getClass().toString()));
-        assertTrue(validationErrorMessage.contains("null"));
-    }
-
-    @Test
-    public void should_ReturnValidationError_When_EndpointMethodBeanIsInvalid()
-            throws IOException {
-        int invalidPropertyValue = 5;
-        String propertyName = "count";
-        String expectedErrorMessage = String.format(
-                "Validation error in endpoint '%s' method '%s'",
-                TEST_ENDPOINT_NAME, TEST_VALIDATION_METHOD.getName());
-
-        ResponseEntity<String> response = createVaadinController(TEST_ENDPOINT)
-                .serveEndpoint(TEST_ENDPOINT_NAME,
-                        TEST_VALIDATION_METHOD.getName(),
-                        createRequestParameters(String.format(
-                                "{\"parameter\": {\"count\": %d}}",
-                                invalidPropertyValue)),
-                        requestMock);
-
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        ObjectNode jsonNodes = new ObjectMapper().readValue(response.getBody(),
-                ObjectNode.class);
-
-        assertEquals(EndpointValidationException.class.getName(),
-                jsonNodes.get("type").asText());
-        assertEquals(expectedErrorMessage, jsonNodes.get("message").asText());
-        assertEquals(1, jsonNodes.get("validationErrorData").size());
-
-        JsonNode validationErrorData = jsonNodes.get("validationErrorData")
-                .get(0);
-        assertTrue(validationErrorData.get("parameterName").asText()
-                .contains(propertyName));
-        String validationErrorMessage = validationErrorData.get("message")
-                .asText();
-        assertTrue(validationErrorMessage.contains(propertyName));
-        assertTrue(validationErrorMessage
-                .contains(Integer.toString(invalidPropertyValue)));
-        assertTrue(validationErrorMessage.contains(
-                TEST_VALIDATION_METHOD.getParameterTypes()[0].toString()));
-    }
-
-    @Test
-    public void should_Invoke_ExplicitNullableTypeChecker()
-            throws NoSuchMethodException {
-        ExplicitNullableTypeChecker explicitNullableTypeChecker = mock(
-                ExplicitNullableTypeChecker.class);
-
-        when(explicitNullableTypeChecker.checkValueForType(
-                eq(NullCheckerTestClass.OK_RESPONSE), eq(String.class)))
-                        .thenReturn(null);
-
-        String testOkMethod = "testOkMethod";
-        ResponseEntity<String> response = createVaadinController(
-                new NullCheckerTestClass(), null, null, null,
-                explicitNullableTypeChecker).serveEndpoint(
-                        NullCheckerTestClass.class.getSimpleName(),
-                        testOkMethod, createRequestParameters("{}"),
-                        requestMock);
-
-        verify(explicitNullableTypeChecker).checkValueForAnnotatedElement(
-                NullCheckerTestClass.OK_RESPONSE,
-                NullCheckerTestClass.class.getMethod(testOkMethod));
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("\"" + NullCheckerTestClass.OK_RESPONSE + "\"",
-                response.getBody());
-    }
-
-    @Test
-    public void should_ReturnException_When_ExplicitNullableTypeChecker_ReturnsError()
-            throws IOException, NoSuchMethodException {
-        final String errorMessage = "Got null";
-
-        ExplicitNullableTypeChecker explicitNullableTypeChecker = mock(
-                ExplicitNullableTypeChecker.class);
-        String testNullMethodName = "testNullMethod";
-        Method testNullMethod = NullCheckerTestClass.class
-                .getMethod(testNullMethodName);
-        when(explicitNullableTypeChecker.checkValueForAnnotatedElement(null,
-                testNullMethod)).thenReturn(errorMessage);
-
-        ResponseEntity<String> response = createVaadinController(
-                new NullCheckerTestClass(), null, null, null,
-                explicitNullableTypeChecker).serveEndpoint(
-                        NullCheckerTestClass.class.getSimpleName(),
-                        testNullMethodName, createRequestParameters("{}"),
-                        requestMock);
-
-        verify(explicitNullableTypeChecker).checkValueForAnnotatedElement(null,
-                testNullMethod);
-
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR,
-                response.getStatusCode());
-        ObjectNode jsonNodes = new ObjectMapper().readValue(response.getBody(),
-                ObjectNode.class);
-
-        assertEquals(EndpointException.class.getName(),
-                jsonNodes.get("type").asText());
-        final String message = jsonNodes.get("message").asText();
-        assertTrue(message.contains("Unexpected return value"));
-        assertTrue(
-                message.contains(NullCheckerTestClass.class.getSimpleName()));
-        assertTrue(message.contains(testNullMethodName));
-        assertTrue(message.contains(errorMessage));
-    }
-
-    @Test
-    public void should_ReturnResult_When_CallingSuperClassMethodWithGenericTypedParameter() {
-        ResponseEntity<?> response = createVaadinController(
-                new PersonEndpoint())
-                        .serveEndpoint(PersonEndpoint.class.getSimpleName(),
-                                "update",
-                                createRequestParameters(
-                                        "{\"entity\":{\"name\":\"aa\"}}"),
-                                requestMock);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("{\"name\":\"aa\"}", response.getBody());
-    }
-
-    @Test
-    public void should_AllowAccessToPackagePrivateEndpoint_PublicMethods()
-            throws ClassNotFoundException, NoSuchMethodException,
-            IllegalAccessException, InvocationTargetException,
-            InstantiationException {
-        Class packagePrivateEndpoint = Class.forName(
-                "com.vaadin.fusion.generator.endpoints.packageprivate.PackagePrivateEndpoint");
-        Constructor packagePrivateEndpointConstructor = packagePrivateEndpoint
-                .getConstructor();
-        packagePrivateEndpointConstructor.setAccessible(true);
-
-        ResponseEntity<?> response = createVaadinController(
-                packagePrivateEndpointConstructor.newInstance()).serveEndpoint(
-                        "PackagePrivateEndpoint", "getRequest",
-                        createRequestParameters("{}"), requestMock);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("\"Hello\"", response.getBody());
-    }
-
-    @Test
-    public void should_ConvertIterableIntoArray() {
-        ResponseEntity<?> response = createVaadinController(
-                new IterableEndpoint()).serveEndpoint("IterableEndpoint",
-                        "getFoos", createRequestParameters("{}"), requestMock);
-
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("[{\"bar\":\"bar\"},{\"bar\":\"bar\"}]",
                 response.getBody());
     }
 
@@ -1235,12 +647,16 @@ public class FusionControllerTest {
 
         ApplicationContext mockApplicationContext = mockApplicationContext(
                 endpoint);
+
         EndpointRegistry registry = new EndpointRegistry(endpointNameChecker);
 
-        FusionController connectController = Mockito.spy(new FusionController(
+        EndpointInvoker endpointInvoker = Mockito.spy(new EndpointInvoker(
                 vaadinEndpointMapper, explicitNullableTypeChecker,
                 mockApplicationContext, registry));
-        Mockito.doReturn(accessChecker).when(connectController)
+
+        FusionController connectController = Mockito.spy(new FusionController(
+                mockApplicationContext, registry, endpointInvoker));
+        Mockito.doReturn(accessChecker).when(endpointInvoker)
                 .getAccessChecker(any());
         return connectController;
     }
