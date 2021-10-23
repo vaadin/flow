@@ -32,4 +32,15 @@ public class DivTest extends ComponentTest {
         super.testHasOrderedComponents();
     }
 
+    @Test
+    @Override
+    public void testHasAriaLabelIsNotImplemented() {
+        // Don't use aria-label or aria-labelledby on a span or div unless
+        // its given a role. When aria-label or aria-labelledby are on
+        // interactive roles (such as a link or button) or an img role,
+        // they override the contents of the div or span.
+        // Other roles besides Landmarks (discussed above) are ignored.
+        // Source: https://www.w3.org/TR/using-aria/#label-support
+        super.testHasAriaLabelIsNotImplemented();
+    }
 }

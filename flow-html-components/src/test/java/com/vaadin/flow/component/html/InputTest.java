@@ -15,10 +15,8 @@
  */
 package com.vaadin.flow.component.html;
 
-import com.vaadin.flow.data.value.HasValueChangeMode;
-import com.vaadin.flow.data.value.ValueChangeMode;
-
 import java.beans.IntrospectionException;
+import org.junit.Test;
 
 public class InputTest extends ComponentTest {
 
@@ -40,4 +38,9 @@ public class InputTest extends ComponentTest {
         addOptionalStringProperty("placeholder");
     }
 
+    @Test
+    @Override
+    public void testHasAriaLabelIsImplemented() {
+        super.testHasAriaLabelIsImplemented();
+    }
 }

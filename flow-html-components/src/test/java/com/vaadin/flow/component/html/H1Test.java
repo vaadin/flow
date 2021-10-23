@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component.html;
 
+import org.junit.Test;
+
 public class H1Test extends ComponentTest {
     // Actual test methods in super class
 
@@ -23,4 +25,13 @@ public class H1Test extends ComponentTest {
         // Component defines no new properties
     }
 
+    @Test
+    @Override
+    public void testHasAriaLabelIsNotImplemented() {
+        // Don't use aria-label or aria-labelledby on any heading elements
+        // because it overrides them on NVDA, VoiceOver and Talkback.
+        // JAWS ignores them.
+        // Source: https://www.w3.org/TR/using-aria/#label-support
+        super.testHasAriaLabelIsNotImplemented();
+    }
 }
