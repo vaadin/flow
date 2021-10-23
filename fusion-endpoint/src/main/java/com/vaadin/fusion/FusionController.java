@@ -23,6 +23,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServletRequest;
+import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.fusion.exception.EndpointException;
 
 import org.slf4j.Logger;
@@ -150,8 +155,16 @@ public class FusionController {
                 endpointName, methodName, body);
 
         try {
+            // Put a VaadinRequest in the instances object so as the request is
+            // available in the end-point method
+            VaadinServletService service = (VaadinServletService) VaadinService
+                    .getCurrent();
+            CurrentInstance.set(VaadinRequest.class,
+                    new VaadinServletRequest(request, service));
+
             Object returnValue = endpointInvoker.invoke(endpointName,
-                    methodName, body, request);
+                    methodName, body, request.getUserPrincipal(),
+                    request::isUserInRole);
             return ResponseEntity
                     .ok(vaadinEndpointMapper.writeValueAsString(returnValue));
         } catch (EndpointException e) {
@@ -190,6 +203,8 @@ public class FusionController {
             getLogger().error(errorMessage, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .build();
+        } finally {
+            CurrentInstance.set(VaadinRequest.class, null);
         }
     }
 

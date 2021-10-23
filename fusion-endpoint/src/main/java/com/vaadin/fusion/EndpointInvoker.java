@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -27,11 +28,11 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
@@ -40,12 +41,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.googlecode.gentyref.GenericTypeReflector;
-import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
-import com.vaadin.flow.server.VaadinServletRequest;
-import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.fusion.EndpointRegistry.VaadinEndpointData;
 import com.vaadin.fusion.auth.FusionAccessChecker;
@@ -80,6 +76,7 @@ public class EndpointInvoker {
     private static EndpointTransferMapper endpointTransferMapper = new EndpointTransferMapper();
     private final ExplicitNullableTypeChecker explicitNullableTypeChecker;
     private ApplicationContext applicationContext;
+    private ServletContext servletContext;
 
     /**
      * Creates an instance of this bean.
@@ -104,7 +101,7 @@ public class EndpointInvoker {
             @Autowired(required = false) @Qualifier(FusionController.VAADIN_ENDPOINT_MAPPER_BEAN_QUALIFIER) ObjectMapper vaadinEndpointMapper,
             ExplicitNullableTypeChecker explicitNullableTypeChecker,
             ApplicationContext applicationContext,
-            EndpointRegistry endpointRegistry) {
+            ServletContext servletContext, EndpointRegistry endpointRegistry) {
         this.vaadinEndpointMapper = vaadinEndpointMapper != null
                 ? vaadinEndpointMapper
                 : FusionController
@@ -112,6 +109,7 @@ public class EndpointInvoker {
 
         this.explicitNullableTypeChecker = explicitNullableTypeChecker;
         this.applicationContext = applicationContext;
+        this.servletContext = servletContext;
         this.endpointRegistry = endpointRegistry;
     }
 
@@ -125,15 +123,18 @@ public class EndpointInvoker {
      *            the name of the method in the endpoint
      * @param methodParameters
      *            method parameters as a JSON object
-     * @param request
-     *            the HTTP request which should not be here in the end
+     * @param principal
+     *            the user principal object
+     * @param rolesChecker
+     *            a function for checking if a user is in a given role
      * @return the return value of the invoked endpoint method
      * @throws EndpointInvocationException
      *             if the invocation failed
      * 
      */
     public Object invoke(String endpointName, String methodName,
-            ObjectNode methodParameters, HttpServletRequest request)
+            ObjectNode methodParameters, Principal principal,
+            Function<String, Boolean> rolesChecker)
             throws EndpointInvocationException {
         VaadinEndpointData vaadinEndpointData = endpointRegistry
                 .get(endpointName);
@@ -152,29 +153,20 @@ public class EndpointInvoker {
                     EndpointInvocationException.Type.NOT_FOUND);
         }
 
-        try {
-            // Put a VaadinRequest in the instances object so as the request is
-            // available in the end-point method
-            VaadinServletService service = (VaadinServletService) VaadinService
-                    .getCurrent();
-            CurrentInstance.set(VaadinRequest.class,
-                    new VaadinServletRequest(request, service));
-            Object returnValue = invokeVaadinEndpointMethod(endpointName,
-                    methodName, methodToInvoke, methodParameters,
-                    vaadinEndpointData, request);
-            return returnValue;
-        } finally {
-            CurrentInstance.set(VaadinRequest.class, null);
-        }
+        Object returnValue = invokeVaadinEndpointMethod(endpointName,
+                methodName, methodToInvoke, methodParameters,
+                vaadinEndpointData, principal, rolesChecker);
+        return returnValue;
     }
 
     private Object invokeVaadinEndpointMethod(String endpointName,
             String methodName, Method methodToInvoke, ObjectNode body,
-            VaadinEndpointData vaadinEndpointData, HttpServletRequest request)
+            VaadinEndpointData vaadinEndpointData, Principal principal,
+            Function<String, Boolean> rolesChecker)
             throws EndpointInvocationException {
-        FusionAccessChecker accessChecker = getAccessChecker(
-                request.getServletContext());
-        String checkError = accessChecker.check(methodToInvoke, request);
+        FusionAccessChecker accessChecker = getAccessChecker();
+        String checkError = accessChecker.check(methodToInvoke, principal,
+                rolesChecker);
         if (checkError != null) {
             throw new EndpointInvocationException(
                     EndpointInvocationException.Type.ACCESS_DENIED,
@@ -416,7 +408,7 @@ public class EndpointInvoker {
         }
     }
 
-    FusionAccessChecker getAccessChecker(ServletContext servletContext) {
+    FusionAccessChecker getAccessChecker() {
         VaadinServletContext vaadinServletContext = new VaadinServletContext(
                 servletContext);
         VaadinConnectAccessCheckerWrapper wrapper = vaadinServletContext
