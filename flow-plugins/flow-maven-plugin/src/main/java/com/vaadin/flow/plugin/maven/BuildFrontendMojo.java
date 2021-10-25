@@ -27,6 +27,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
@@ -125,7 +126,11 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
 
         if (generateBundle()) {
             try {
-                BuildFrontendUtil.runWebpack(this);
+                if (FeatureFlags.isEnabled(FeatureFlags.VITE)) {
+                    BuildFrontendUtil.runVite(this);
+                } else {
+                    BuildFrontendUtil.runWebpack(this);
+                }
             } catch (URISyntaxException | IOException | InterruptedException
                     | TimeoutException exception) {
                 throw new MojoExecutionException(exception.getMessage(),

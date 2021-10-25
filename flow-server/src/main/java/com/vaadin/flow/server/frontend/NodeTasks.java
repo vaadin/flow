@@ -832,7 +832,8 @@ public class NodeTasks implements FallibleCommand {
 
     private FrontendDependenciesScanner getFallbackScanner(Builder builder,
             ClassFinder finder) {
-        if (builder.useByteCodeScanner) {
+        boolean usingWebpack = !FeatureFlags.isEnabled(FeatureFlags.VITE);
+        if (usingWebpack && builder.useByteCodeScanner) {
             return new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
                     .createScanner(true, finder,
                             builder.generateEmbeddableWebComponents,
