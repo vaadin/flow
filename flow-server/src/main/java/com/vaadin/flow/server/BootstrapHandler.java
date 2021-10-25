@@ -404,8 +404,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
     static Document getBootstrapPage(BootstrapContext context) {
         Document document = new Document("");
-        DocumentType doctype = new DocumentType("html", "", "",
-                document.baseUri());
+        DocumentType doctype = new DocumentType("html", "", "");
         document.appendChild(doctype);
         Element html = document.appendElement("html");
         html.attr("lang", context.getUI().getLocale().getLanguage());
@@ -744,8 +743,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         // defer makes no sense without src:
         // https://developer.mozilla.org/en/docs/Web/HTML/Element/script
         Element wrapper = createJavaScriptElement(null, false);
-        wrapper.appendChild(
-                new DataNode(javaScriptContents, wrapper.baseUri()));
+        wrapper.appendChild(new DataNode(javaScriptContents));
         return wrapper;
     }
 
@@ -789,9 +787,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
 
         if (inlineElement) {
-            dependencyElement.appendChild(
-                    new DataNode(dependency.getString(Dependency.KEY_CONTENTS),
-                            dependencyElement.baseUri()));
+            dependencyElement.appendChild(new DataNode(
+                    dependency.getString(Dependency.KEY_CONTENTS)));
         }
 
         return dependencyElement;
