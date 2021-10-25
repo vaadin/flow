@@ -64,8 +64,9 @@ public class DebugWindowErrorHandlingIT extends ChromeBrowserTest {
     @Test
     public void numberOfLogRowsLimited() {
         open();
-        causeErrors("1001");
         DevModeGizmoElement gizmo = $(DevModeGizmoElement.class).first();
+        gizmo.expand();
+        causeErrors("1001");
         gizmo.waitForLastErrorMessageToMatch(msg -> msg.equals("Error 1001"));
 
         Assert.assertEquals("Error 2", gizmo.getFirstErrorLogRow());

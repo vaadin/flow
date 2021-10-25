@@ -11,6 +11,10 @@ import com.vaadin.testbench.elementsbase.Element;
 @Element("vaadin-devmode-gizmo")
 public class DevModeGizmoElement extends TestBenchElement {
 
+    private TestBenchElement getIcon() {
+        return $("*").attributeContains("class", "gizmo").first();
+    }
+
     private List<TestBenchElement> getLogDivs(boolean onlyError) {
         ElementQuery<TestBenchElement> divs = getLogDivsQuery(onlyError);
         return divs.all();
@@ -44,16 +48,25 @@ public class DevModeGizmoElement extends TestBenchElement {
     }
 
     public void waitForErrorMessage(Predicate<String> matcher) {
+        expand();
         waitUntil(driver -> {
             return getErrorLogRows().stream().anyMatch(matcher);
         });
     }
 
     public void waitForLastErrorMessageToMatch(Predicate<String> matcher) {
+        expand();
         waitUntil(driver -> {
             return matcher.test(getLastErrorLogRow());
         });
 
+    }
+
+    public void expand() {
+        if (isExpanded()) {
+            return;
+        }
+        getIcon().click();
     }
 
     public boolean isExpanded() {
