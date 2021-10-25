@@ -1,6 +1,7 @@
 package com.vaadin.flow.server;
 
 import javax.servlet.http.HttpServletRequest;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
@@ -12,6 +13,17 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+
+import org.apache.commons.io.IOUtils;
+import org.hamcrest.CoreMatchers;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Html;
@@ -44,16 +56,6 @@ import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
-import org.apache.commons.io.IOUtils;
-import org.hamcrest.CoreMatchers;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
@@ -298,7 +300,7 @@ public class BootstrapHandlerTest {
         @Override
         public List<String> getHeaderInlineContents() {
             return Arrays.asList(
-                    "<custom-style><style include=\"lumo-typography\"></style></custom-style>");
+                    "<custom-style>\n<style include=\"lumo-typography\">\n </style>\r\n</custom-style>");
         }
     }
 
@@ -339,8 +341,10 @@ public class BootstrapHandlerTest {
 
         @Override
         public void configurePage(InitialPageSettings settings) {
-            settings.getLoadingIndicatorConfiguration().setApplyDefaultTheme(false);
-            settings.getLoadingIndicatorConfiguration().setSecondDelay(SECOND_DELAY);
+            settings.getLoadingIndicatorConfiguration()
+                    .setApplyDefaultTheme(false);
+            settings.getLoadingIndicatorConfiguration()
+                    .setSecondDelay(SECOND_DELAY);
 
             settings.getPushConfiguration().setPushMode(PushMode.MANUAL);
 
@@ -412,7 +416,7 @@ public class BootstrapHandlerTest {
     }
 
     private void initUI(UI ui, VaadinRequest request,
-                        Set<Class<? extends Component>> navigationTargets)
+            Set<Class<? extends Component>> navigationTargets)
             throws InvalidRouteConfigurationException {
 
         service.getRouteRegistry().setNavigationTargets(navigationTargets);
@@ -1026,7 +1030,7 @@ public class BootstrapHandlerTest {
                         + "var firstScript=document.head.querySelector('script');\n"
                         + "document.head.insertBefore(customStyle,firstScript);\n"
                         + "}\n"
-                        + "_inlineHeader('custom-style','<style include=\"lumo-typography\"></style>');\n"
+                        + "_inlineHeader('custom-style','<style include=\"lumo-typography\">  </style>');\n"
                         + "document.head.removeChild(document.getElementById('_theme-header-injection'));\n"
                         + "</script>",
                 allElements.get(14).toString());
@@ -1061,7 +1065,7 @@ public class BootstrapHandlerTest {
                         + "var firstScript=document.head.querySelector('script');\n"
                         + "document.head.insertBefore(customStyle,firstScript);\n"
                         + "}\n"
-                        + "_inlineHeader('custom-style','<style include=\"lumo-typography\"></style>');\n"
+                        + "_inlineHeader('custom-style','<style include=\"lumo-typography\">  </style>');\n"
                         + "document.head.removeChild(document.getElementById('_theme-header-injection'));\n"
                         + "</script>",
                 allElements.get(14).toString());
@@ -1107,7 +1111,7 @@ public class BootstrapHandlerTest {
                         + "var firstScript=document.head.querySelector('script');\n"
                         + "document.head.insertBefore(customStyle,firstScript);\n"
                         + "}\n"
-                        + "_inlineHeader('custom-style','<style include=\"lumo-typography\"></style>');\n"
+                        + "_inlineHeader('custom-style','<style include=\"lumo-typography\">  </style>');\n"
                         + "document.head.removeChild(document.getElementById('_theme-header-injection'));\n"
                         + "</script>",
                 allElements.get(14).toString());
@@ -1481,7 +1485,7 @@ public class BootstrapHandlerTest {
     }
 
     private void assertStringEquals(String message, String expected,
-                                    String actual) {
+            String actual) {
         Assert.assertThat(message,
                 actual.replaceAll(System.getProperty("line.separator"), "\n"),
                 CoreMatchers.equalTo(expected));
@@ -1513,7 +1517,7 @@ public class BootstrapHandlerTest {
     }
 
     private void checkInlinedScript(Element head, String scriptName,
-                                    boolean shouldBeInlined) {
+            boolean shouldBeInlined) {
         StringBuilder builder = new StringBuilder();
         try (InputStream stream = getClass().getResourceAsStream(scriptName)) {
             IOUtils.readLines(stream, StandardCharsets.UTF_8)
@@ -1573,18 +1577,25 @@ public class BootstrapHandlerTest {
 
     @Test
     public void testUIConfiguration_usingPageSettings() throws Exception {
-        Assert.assertTrue("By default loading indicator is themed", testUI.getLoadingIndicatorConfiguration().isApplyDefaultTheme());
+        Assert.assertTrue("By default loading indicator is themed", testUI
+                .getLoadingIndicatorConfiguration().isApplyDefaultTheme());
 
-        initUI(testUI, createVaadinRequest(), Collections.singleton(InitialPageConfiguratorRoute.class));
+        initUI(testUI, createVaadinRequest(),
+                Collections.singleton(InitialPageConfiguratorRoute.class));
         Document page = BootstrapHandler.getBootstrapPage(
                 new BootstrapContext(request, null, session, testUI));
 
-        Assert.assertFalse("Default indicator theme is not themed anymore", testUI.getLoadingIndicatorConfiguration().isApplyDefaultTheme());
+        Assert.assertFalse("Default indicator theme is not themed anymore",
+                testUI.getLoadingIndicatorConfiguration()
+                        .isApplyDefaultTheme());
 
-        Assert.assertEquals(InitialPageConfiguratorRoute.SECOND_DELAY, testUI.getLoadingIndicatorConfiguration().getSecondDelay());
+        Assert.assertEquals(InitialPageConfiguratorRoute.SECOND_DELAY,
+                testUI.getLoadingIndicatorConfiguration().getSecondDelay());
 
-        Assert.assertEquals(PushMode.MANUAL, testUI.getPushConfiguration().getPushMode());
+        Assert.assertEquals(PushMode.MANUAL,
+                testUI.getPushConfiguration().getPushMode());
 
-        Assert.assertTrue(testUI.getReconnectDialogConfiguration().isDialogModal());
+        Assert.assertTrue(
+                testUI.getReconnectDialogConfiguration().isDialogModal());
     }
 }

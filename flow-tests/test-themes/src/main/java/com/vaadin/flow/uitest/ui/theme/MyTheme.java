@@ -33,7 +33,7 @@ public class MyTheme implements AbstractTheme {
 
     @Override
     public List<String> getHeaderInlineContents() {
-        return Collections.singletonList("<custom-style>\n <style>\n   html {\n"
-                + "      font-size: 20px;\n  color:red;  }\n <style>\n </custom-style>");
+        return Collections.singletonList("<custom-style> <style>   html {"
+                + "      font-size: 20px;  color:red;  } </style> </custom-style>");
     }
 }

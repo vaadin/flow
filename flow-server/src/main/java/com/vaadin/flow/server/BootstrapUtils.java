@@ -330,12 +330,13 @@ class BootstrapUtils {
 
     private static StringBuilder createHeaderInjectionCall(String content) {
         StringBuilder inlineContent = new StringBuilder();
-        Document document = Jsoup.parse(content, "", Parser.xmlParser());
+        Document document = Jsoup.parse(content.replaceAll("\\R+", " ").trim(),
+                "", Parser.xmlParser());
         for (Element element : document.children()) {
             String tagName = element.tagName();
             inlineContent.append("_inlineHeader('");
             inlineContent.append(tagName).append("',");
-            inlineContent.append(makeJsString(element.html()));
+            inlineContent.append(makeJsString(element.html().trim()));
             inlineContent.append(");\n");
         }
         return inlineContent;
