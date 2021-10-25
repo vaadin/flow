@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 import path from 'path';
 
-import { processThemeResources } from '@vaadin/application-theme-plugin/theme-handle.js';
+import { processThemeResources, extractThemeName } from '@vaadin/application-theme-plugin/theme-handle.js';
 import settings from './target/vaadin-dev-server-settings.json';
 
 const frontendFolder = path.resolve(__dirname, settings.frontendFolder);
@@ -32,6 +32,20 @@ const themeOptions = {
 console.trace = () => {};
 console.debug =() => {};
 
+function updateTheme(contextPath: string) {
+  const themePath = path.resolve(themeFolder);
+  if(contextPath.startsWith(themePath)) {
+    const changed = path.relative(themePath, contextPath);
+
+    console.debug("Theme file changed", changed);
+
+    const themeName = extractThemeName(themeOptions.frontendGeneratedFolder);
+    if(changed.startsWith(themeName)) {
+      processThemeResources(themeOptions, console);
+    }
+  }
+}
+
 // https://vitejs.dev/config/
 export default defineConfig({
   root: 'frontend',
@@ -52,6 +66,9 @@ export default defineConfig({
       name: 'custom-theme',
       config() {
         processThemeResources(themeOptions, console);
+      },
+      handleHotUpdate(context) {
+        updateTheme(path.resolve(context.file));
       }
     }
   ]
