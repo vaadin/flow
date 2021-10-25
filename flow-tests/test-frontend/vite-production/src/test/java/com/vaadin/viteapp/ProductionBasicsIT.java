@@ -25,8 +25,8 @@ public class ProductionBasicsIT extends ChromeBrowserTest {
         TestBenchElement header = $("h2").first();
         Assert.assertEquals("This place intentionally left empty",
                 header.getText());
-        Assert.assertFalse((Boolean) getCommandExecutor().executeScript(
-                "return Vaadin.developmentMode"));
+        Assert.assertFalse((Boolean) getCommandExecutor()
+                .executeScript("return Vaadin.developmentMode"));
     }
 
     @Test
