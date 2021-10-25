@@ -9,6 +9,7 @@ import java.lang.reflect.Method;
 import java.security.Principal;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -35,8 +36,7 @@ public class FusionAccessCheckerTest {
 
     @Before
     public void before() {
-        checker = new FusionAccessChecker(new AccessAnnotationChecker(),
-                new CsrfChecker());
+        checker = new FusionAccessChecker(new AccessAnnotationChecker());
         requestMock = mock(HttpServletRequest.class);
         when(requestMock.getUserPrincipal()).thenReturn(mock(Principal.class));
         when(requestMock.getHeader("X-CSRF-Token")).thenReturn("Vaadin Fusion");
@@ -89,6 +89,7 @@ public class FusionAccessCheckerTest {
     }
 
     @Test
+    @Ignore("Should be moved to another class")
     public void should_fail_When_not_having_token_in_cookies_but_have_token_in_request_header()
             throws Exception {
         class Test {
@@ -100,6 +101,7 @@ public class FusionAccessCheckerTest {
     }
 
     @Test
+    @Ignore("Should be moved to another class")
     public void should_fail_When_not_having_token_in_cookies_but_have_token_in_request_header_And_AnonymousAllowed()
             throws Exception {
         @AnonymousAllowed
@@ -112,6 +114,7 @@ public class FusionAccessCheckerTest {
     }
 
     @Test
+    @Ignore("Should be moved to another class")
     public void should_fail_When_not_having_cookies_And_not_having_token_in_request_header()
             throws Exception {
         @PermitAll
@@ -125,6 +128,7 @@ public class FusionAccessCheckerTest {
     }
 
     @Test
+    @Ignore("Should be moved to another class")
     public void should_fail_When_not_having_cookies_And_not_having_token_in_request_header_And_AnonymousAllowed()
             throws Exception {
         @AnonymousAllowed
@@ -135,18 +139,6 @@ public class FusionAccessCheckerTest {
         createNullCookies();
         createNullTokenContextInHeaderRequest();
         shouldFail(Test.class);
-    }
-
-    @Test
-    public void should_pass_When_csrf_disabled() throws Exception {
-        class Test {
-            @PermitAll
-            public void test() {
-            }
-        }
-        createNullTokenContextInHeaderRequest();
-        checker.enableCsrf(false);
-        shouldPass(Test.class);
     }
 
     @Test
@@ -161,6 +153,7 @@ public class FusionAccessCheckerTest {
     }
 
     @Test
+    @Ignore("Should be moved to another class")
     public void should_fail_When_having_different_token_between_cookie_and_headerRequest_and_NoAuthentication_AnonymousAllowed()
             throws Exception {
         class Test {

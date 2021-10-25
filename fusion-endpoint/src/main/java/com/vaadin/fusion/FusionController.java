@@ -15,6 +15,7 @@
  */
 package com.vaadin.fusion;
 
+import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
@@ -26,8 +27,12 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
+import com.vaadin.fusion.auth.CsrfChecker;
+import com.vaadin.fusion.auth.FusionAccessChecker;
 import com.vaadin.fusion.exception.EndpointException;
 
 import org.slf4j.Logger;
@@ -85,6 +90,8 @@ public class FusionController {
 
     private ObjectMapper vaadinEndpointMapper;
 
+    private CsrfChecker csrfChecker;
+
     /**
      * A constructor used to initialize the controller.
      *
@@ -101,12 +108,16 @@ public class FusionController {
      *            the registry used to store endpoint information
      * @param endpointInvoker
      *            the invoker for endpoint methods
+     * @param csrfChecker
+     *            the csrf checker to use
      * 
      */
     public FusionController(
             @Autowired(required = false) @Qualifier(FusionController.VAADIN_ENDPOINT_MAPPER_BEAN_QUALIFIER) ObjectMapper vaadinEndpointMapper,
             ApplicationContext context, EndpointRegistry endpointRegistry,
-            EndpointInvoker endpointInvoker) {
+            EndpointInvoker endpointInvoker, CsrfChecker csrfChecker,
+            ServletContext servletContext) {
+        this.csrfChecker = csrfChecker;
         this.vaadinEndpointMapper = vaadinEndpointMapper != null
                 ? vaadinEndpointMapper
                 : FusionController.createVaadinConnectObjectMapper(context);
@@ -115,6 +126,12 @@ public class FusionController {
         context.getBeansWithAnnotation(Endpoint.class)
                 .forEach((name, endpointBean) -> endpointRegistry
                         .registerEndpoint(endpointBean));
+
+        ApplicationConfiguration cfg = ApplicationConfiguration
+                .get(new VaadinServletContext(servletContext));
+        if (cfg != null) {
+            csrfChecker.setCsrfProtection(cfg.isXsrfProtectionEnabled());
+        }
     }
 
     private static Logger getLogger() {
@@ -153,6 +170,12 @@ public class FusionController {
             HttpServletRequest request) {
         getLogger().debug("Endpoint: {}, method: {}, request body: {}",
                 endpointName, methodName, body);
+
+        if (!csrfChecker.validateCsrfTokenInRequest(request)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(createResponseErrorObject(
+                            FusionAccessChecker.ACCESS_DENIED_MSG));
+        }
 
         try {
             // Put a VaadinRequest in the instances object so as the request is

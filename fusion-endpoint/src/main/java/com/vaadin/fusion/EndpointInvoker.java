@@ -415,11 +415,7 @@ public class EndpointInvoker {
                 .getAttribute(VaadinConnectAccessCheckerWrapper.class, () -> {
                     FusionAccessChecker accessChecker = applicationContext
                             .getBean(FusionAccessChecker.class);
-                    ApplicationConfiguration cfg = ApplicationConfiguration
-                            .get(vaadinServletContext);
-                    if (cfg != null) {
-                        accessChecker.enableCsrf(cfg.isXsrfProtectionEnabled());
-                    }
+
                     return new VaadinConnectAccessCheckerWrapper(accessChecker);
                 });
         return wrapper.accessChecker;

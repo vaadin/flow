@@ -2,14 +2,18 @@ package com.vaadin.fusion;
 
 import static org.mockito.Mockito.mock;
 
+import javax.servlet.ServletContext;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.fusion.auth.CsrfChecker;
 import com.vaadin.fusion.auth.FusionAccessChecker;
 
 import org.mockito.Mockito;
 import org.springframework.context.ApplicationContext;
 
 /**
- * A helper class to build a mocked VaadinConnectController.
+ * A helper class to build a mocked FusionController.
  */
 public class FusionControllerMockBuilder {
     private ApplicationContext applicationContext;
@@ -45,13 +49,22 @@ public class FusionControllerMockBuilder {
 
     public FusionController build() {
         EndpointRegistry registry = new EndpointRegistry(endpointNameChecker);
+        ServletContext servletContext = Mockito.mock(ServletContext.class);
+        Lookup lookup = Mockito.mock(Lookup.class);
+        Mockito.when(servletContext.getAttribute(Lookup.class.getName()))
+                .thenReturn(lookup);
         EndpointInvoker endpointInvoker = Mockito.spy(
                 new EndpointInvoker(objectMapper, explicitNullableTypeChecker,
-                        applicationContext, registry));
-        FusionController controller = Mockito.spy(new FusionController(
-                objectMapper, applicationContext, registry, endpointInvoker));
+                        applicationContext, servletContext, registry));
+        CsrfChecker csrfChecker = Mockito.mock(CsrfChecker.class);
+        Mockito.when(csrfChecker.validateCsrfTokenInRequest(Mockito.any()))
+                .thenReturn(true);
+
+        FusionController controller = Mockito.spy(
+                new FusionController(objectMapper, applicationContext, registry,
+                        endpointInvoker, csrfChecker, servletContext));
         Mockito.doReturn(mock(FusionAccessChecker.class)).when(endpointInvoker)
-                .getAccessChecker(Mockito.any());
+                .getAccessChecker();
         return controller;
     }
 }

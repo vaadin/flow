@@ -16,7 +16,12 @@
 
 package com.vaadin.fusion.generator.endpoints;
 
-import javax.annotation.security.DenyAll;
+import static com.vaadin.fusion.ExplicitNullableTypeChecker.isRequired;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
@@ -51,7 +56,29 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import javax.annotation.security.DenyAll;
+import javax.servlet.ServletContext;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.vaadin.flow.server.auth.AccessAnnotationChecker;
+import com.vaadin.fusion.Endpoint;
+import com.vaadin.fusion.EndpointExposed;
+import com.vaadin.fusion.auth.CsrfChecker;
+import com.vaadin.fusion.auth.FusionAccessChecker;
+import com.vaadin.fusion.endpointransfermapper.EndpointTransferMapper;
+import com.vaadin.fusion.generator.OpenAPIObjectGenerator;
+import com.vaadin.fusion.generator.endpoints.complexhierarchymodel.GrandParentModel;
+import com.vaadin.fusion.generator.endpoints.complexhierarchymodel.Model;
+import com.vaadin.fusion.generator.endpoints.complexhierarchymodel.ParentModel;
+import com.vaadin.fusion.mappedtypes.Pageable;
+import com.vaadin.fusion.utils.TestUtils;
+
+import org.apache.commons.lang3.StringUtils;
+import org.junit.Assert;
+import org.mockito.Mockito;
+import org.springframework.data.domain.Sort.Direction;
+import org.springframework.data.domain.Sort.NullHandling;
+
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
@@ -72,29 +99,6 @@ import io.swagger.v3.oas.models.responses.ApiResponse;
 import io.swagger.v3.oas.models.responses.ApiResponses;
 import io.swagger.v3.oas.models.tags.Tag;
 import io.swagger.v3.parser.OpenAPIV3Parser;
-import org.apache.commons.lang3.StringUtils;
-import org.junit.Assert;
-import org.springframework.data.domain.Sort.Direction;
-import org.springframework.data.domain.Sort.NullHandling;
-
-import com.vaadin.flow.server.auth.AccessAnnotationChecker;
-import com.vaadin.fusion.Endpoint;
-import com.vaadin.fusion.EndpointExposed;
-import com.vaadin.fusion.auth.CsrfChecker;
-import com.vaadin.fusion.auth.FusionAccessChecker;
-import com.vaadin.fusion.endpointransfermapper.EndpointTransferMapper;
-import com.vaadin.fusion.generator.OpenAPIObjectGenerator;
-import com.vaadin.fusion.generator.endpoints.complexhierarchymodel.GrandParentModel;
-import com.vaadin.fusion.generator.endpoints.complexhierarchymodel.Model;
-import com.vaadin.fusion.generator.endpoints.complexhierarchymodel.ParentModel;
-import com.vaadin.fusion.mappedtypes.Pageable;
-import com.vaadin.fusion.utils.TestUtils;
-
-import static com.vaadin.fusion.ExplicitNullableTypeChecker.isRequired;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
 
 public abstract class AbstractEndpointGenerationTest
         extends AbstractEndpointGeneratorBaseTest {
@@ -111,7 +115,7 @@ public abstract class AbstractEndpointGenerationTest
     private static final List<Class> DENY_LIST_CHECKING_ABSOLUTE_PATH = Arrays
             .asList(Model.class, ParentModel.class, GrandParentModel.class);
     private static final FusionAccessChecker accessChecker = new FusionAccessChecker(
-            new AccessAnnotationChecker(), new CsrfChecker());
+            new AccessAnnotationChecker());
     private final Set<String> schemaReferences = new HashSet<>();
 
     public AbstractEndpointGenerationTest(List<Class<?>> testClasses) {
