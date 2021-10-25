@@ -81,7 +81,8 @@ public class FeatureFlagsTest {
     }
 
     @Test
-    public void setPropertiesLocationWithNoFileDisablesFeatures() throws Exception {
+    public void setPropertiesLocationWithNoFileDisablesFeatures()
+            throws Exception {
         // given an enabled feature
         File folder = createTempFeatureFlagsFile(
                 "com.vaadin.experimental.exampleFeatureFlag=true\n");
