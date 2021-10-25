@@ -1,6 +1,5 @@
 package com.vaadin.flow.server;
 
-import javax.lang.model.util.Elements;
 import javax.servlet.http.HttpServletRequest;
 
 import java.io.IOException;
@@ -17,6 +16,9 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.io.IOUtils;
 import org.hamcrest.CoreMatchers;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
