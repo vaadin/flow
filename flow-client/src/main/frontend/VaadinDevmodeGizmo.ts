@@ -307,8 +307,10 @@ export class VaadinDevmodeGizmo extends LitElement {
       }
 
       .ahreflike {
-        font-weight: 600;
+        font-weight: 500;
         color: var(--gizmo-text-color-secondary);
+        text-decoration: underline;
+        cursor: pointer;
       }
 
       .ahreflike:hover {
@@ -464,18 +466,6 @@ export class VaadinDevmodeGizmo extends LitElement {
         margin: 0;
         margin-right: 0.375em;
         word-break: break-word;
-      }
-
-      .message .ahreflike {
-        color: var(--gizmo-notification-color, var(--gizmo-text-color));
-        text-decoration: none;
-        opacity: 0.9;
-        font-weight: 500;
-      }
-
-      .message .ahreflike:hover {
-        color: var(--gizmo-notification-color, var(--gizmo-text-color-emphasis));
-        opacity: 1;
       }
 
       .message .persist {
@@ -1167,7 +1157,7 @@ export class VaadinDevmodeGizmo extends LitElement {
           <div class="message-details" ?hidden="${!messageObject.details && !messageObject.link}">
             ${messageObject.details ? html`<p>${messageObject.details}</p>` : ''}
             ${messageObject.link
-              ? html`<a class="ahreflike" href="${messageObject.link}" target="_blank">Read more</a>`
+              ? html`<a class="ahreflike" href="${messageObject.link}" target="_blank">Learn more</a>`
               : ''}
           </div>
           ${messageObject.persistentId
@@ -1353,7 +1343,7 @@ export class VaadinDevmodeGizmo extends LitElement {
             <span class="slider"></span>
             ${feature.title}
           </label>
-          <a class="ahreflike" href="${feature.moreInfoLink}" target="_blank">More info</a>
+          <a class="ahreflike" href="${feature.moreInfoLink}" target="_blank">Learn more</a>
         </div>`
       )}
     </div>`;
