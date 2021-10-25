@@ -844,7 +844,7 @@ export class VaadinDevmodeGizmo extends LitElement {
         this.features = message.data.features as Feature[];
       } else {
         // eslint-disable-next-line no-console
-        console.error('Unknown message from frontend connection:', JSON.stringify(message));
+        console.error('Unknown message from front-end connection:', JSON.stringify(message));
       }
     };
     this.frontendConnection = frontendConnection;
@@ -1315,10 +1315,10 @@ export class VaadinDevmodeGizmo extends LitElement {
           </label>
         </dt>
         <dd class="live-reload-status" style="--status-color: ${this.getStatusColor(this.javaStatus)}">
-          Backend ${this.javaStatus} ${this.backend ? `(${VaadinDevmodeGizmo.BACKEND_DISPLAY_NAME[this.backend]})` : ''}
+          Java ${this.javaStatus} ${this.backend ? `(${VaadinDevmodeGizmo.BACKEND_DISPLAY_NAME[this.backend]})` : ''}
         </dd>
         <dd class="live-reload-status" style="--status-color: ${this.getStatusColor(this.frontendStatus)}">
-          Frontend ${this.frontendStatus}
+          Front end ${this.frontendStatus}
         </dd>
       </dl>
     </div>`;
