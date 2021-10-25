@@ -62,8 +62,8 @@ public class Lumo implements AbstractTheme {
 
     @Override
     public List<String> getHeaderInlineContents() {
-        return Collections.singletonList("<custom-style>\n"
-                + "    <style include=\"lumo-color lumo-typography\"></style>\n"
+        return Collections.singletonList("<custom-style>"
+                + "    <style include=\"lumo-color lumo-typography\"></style>"
                 + "</custom-style>");
     }
 
