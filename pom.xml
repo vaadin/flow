@@ -102,9 +102,6 @@
         <node.version>v7.10.1</node.version>
         <npm.version>5.3.0</npm.version>
         
-        <flow.dev.dependencies.folder>generatedDeps</flow.dev.dependencies.folder>
-        <flow.dev.dependencies.file>devDependencies.json</flow.dev.dependencies.file>
-
         <maven.test.skip>false</maven.test.skip>
     </properties>
 
