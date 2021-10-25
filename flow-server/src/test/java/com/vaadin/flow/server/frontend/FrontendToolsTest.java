@@ -618,7 +618,7 @@ public class FrontendToolsTest {
                 pnpmCommand.get(pnpmCommand.size() - 1));
     }
 
-    @Test
+    @Test @Ignore
     public void getSuitablePnpm_tooOldGlobalVersionInstalled_throws() {
         settings.setUseGlobalPnpm(true);
         tools = new FrontendTools(settings);
@@ -636,7 +636,7 @@ public class FrontendToolsTest {
         }
     }
 
-    @Test
+    @Test @Ignore
     public void getSuitablePnpm_tooOldGlobalVersionInstalledAndSkipVersionCheck_accepted() {
         settings.setUseGlobalPnpm(true);
         settings.setIgnoreVersionChecks(true);
@@ -652,7 +652,7 @@ public class FrontendToolsTest {
         }
     }
 
-    @Test
+    @Test @Ignore
     public void getSuitablePnpm_supportedGlobalVersionInstalled_accepted() {
         settings.setUseGlobalPnpm(true);
         tools = new FrontendTools(settings);

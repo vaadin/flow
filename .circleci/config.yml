@@ -1,0 +1,89 @@
+version: 2.1
+orbs:
+  browser-tools: circleci/browser-tools@1.2.3
+jobs:
+  build-flow:
+    docker:
+      - image: cimg/openjdk:11.0
+    steps:
+      - checkout
+      - run:
+          name: Install Tools
+          command: /home/circleci/project/.circleci/support.sh install-tools
+      - run:
+          name: Compile and Install
+          command: |
+            mvn -B -q -DnewVersion=999.99-SNAPSHOT versions:set  -T 1C
+            mvn -B -DskipTests install -T 2C -q
+            mvn -B -q install -DskipITs -pl flow-tests/test-fusion-csrf
+      - persist_to_workspace:
+          root: /home/circleci/
+          paths:
+            - .m2
+            - .npm
+            - .vaadin
+            - .gradle
+            - ./project/*
+  run-unit-tests:
+    parallelism: 4
+    docker:
+      - image: cimg/openjdk:11.0
+    steps:
+      - checkout
+      - run:
+          name: Install Tools
+          command: /home/circleci/project/.circleci/support.sh install-tools
+      - run:
+          name: Run Unit Tests
+          command:  |
+            mvn -B -DskipTests install -T 2C -q
+            T=`/home/circleci/project/.circleci/support.sh get-flow-modules`
+            mvn test -V -B -e \
+              -pl $(echo "$T" | tr -d ' ' | circleci tests split | tr '\n' ',')
+      - run:
+          name: Save test results
+          command: |
+            mkdir -p test-results
+            find . -type f -regex ".*/target/.*-reports/.*xml" -exec cp '{}' test-results ';'
+          when: always
+      - store_test_results:
+          path: test-results
+  run-it-tests:
+    parallelism: 12
+    docker:
+      - image: cimg/openjdk:11.0
+    steps:
+      - browser-tools/install-chrome
+      - browser-tools/install-chromedriver
+      - attach_workspace:
+          at: /home/circleci/
+      - run:
+          name: Install Tools
+          command: /home/circleci/project/.circleci/support.sh install-tools
+      - run:
+          name: Run Integration Tests
+          command:  |
+            cd /home/circleci/project
+            T=`/home/circleci/project/.circleci/support.sh get-it-modules`
+            mvn clean verify -V -B -e \
+              -Dvaadin.testbench.developer.license=$TB_LICENSE \
+              -Dwebdriver.chrome.driver=/usr/local/bin/chromedriver \
+              -Dcom.vaadin.testbench.Parameters.testsInParallel=2 \
+              -pl $(echo "$T" | tr -d ' ' | circleci tests split | tr '\n' ',')
+      - run:
+          name: Save test results
+          command: |
+            mkdir -p test-results
+            find . -type f -regex ".*/target/.*-reports/.*xml" -exec cp '{}' test-results ';'
+          when: always
+      - store_test_results:
+          path: test-results
+workflows:
+  build-and-test:
+    jobs:
+      - build-flow
+      - run-unit-tests
+      - run-it-tests:
+          requires:
+            - build-flow
+
