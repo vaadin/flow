@@ -58,8 +58,6 @@ import com.vaadin.flow.theme.ThemeDefinition;
  */
 class FullDependenciesScanner extends AbstractDependenciesScanner {
 
-    private static final String COULD_NOT_LOAD_ERROR_MSG = "Could not load annotation class ";
-
     private static final String VALUE = "value";
 
     private ThemeDefinition themeDefinition;
