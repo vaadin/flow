@@ -1030,7 +1030,7 @@ public class BootstrapHandlerTest {
                         + "var firstScript=document.head.querySelector('script');\n"
                         + "document.head.insertBefore(customStyle,firstScript);\n"
                         + "}\n"
-                        + "_inlineHeader('custom-style','<style include=\"lumo-typography\"></style>');\n"
+                        + "_inlineHeader('custom-style','<style include=\"lumo-typography\">  </style>');\n"
                         + "document.head.removeChild(document.getElementById('_theme-header-injection'));\n"
                         + "</script>",
                 allElements.get(14).toString());
@@ -1065,7 +1065,7 @@ public class BootstrapHandlerTest {
                         + "var firstScript=document.head.querySelector('script');\n"
                         + "document.head.insertBefore(customStyle,firstScript);\n"
                         + "}\n"
-                        + "_inlineHeader('custom-style','<style include=\"lumo-typography\"></style>');\n"
+                        + "_inlineHeader('custom-style','<style include=\"lumo-typography\">  </style>');\n"
                         + "document.head.removeChild(document.getElementById('_theme-header-injection'));\n"
                         + "</script>",
                 allElements.get(14).toString());
@@ -1111,7 +1111,7 @@ public class BootstrapHandlerTest {
                         + "var firstScript=document.head.querySelector('script');\n"
                         + "document.head.insertBefore(customStyle,firstScript);\n"
                         + "}\n"
-                        + "_inlineHeader('custom-style','<style include=\"lumo-typography\"></style>');\n"
+                        + "_inlineHeader('custom-style','<style include=\"lumo-typography\">  </style>');\n"
                         + "document.head.removeChild(document.getElementById('_theme-header-injection'));\n"
                         + "</script>",
                 allElements.get(14).toString());
