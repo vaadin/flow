@@ -1,6 +1,7 @@
 package com.vaadin.viteapp;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.flow.testutil.DevModeGizmoElement;
 import com.vaadin.testbench.TestBenchElement;
 
 import org.junit.Assert;
@@ -27,14 +28,12 @@ public class BasicsIT extends ChromeBrowserTest {
     }
 
     @Test
-    @Ignore("Doesn't work from Maven for some reason")
     public void debugWindowShown() {
         getDriver().get(getRootURL());
         waitForDevServer();
-        Assert.assertTrue($("vaadin-devmode-gizmo").exists());
 
-        TestBenchElement gizmo = $("vaadin-devmode-gizmo").first();
-        gizmo.click();
+        DevModeGizmoElement gizmo = $(DevModeGizmoElement.class).first();
+        gizmo.expand();
         Assert.assertNotNull(gizmo.$("div").attributeContains("class", "window")
                 .attributeContains("class", "visible").waitForFirst());
     }
