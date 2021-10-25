@@ -715,13 +715,13 @@ export class VaadinDevmodeGizmo extends LitElement {
         .gizmo,
         .window,
         .notification-tray .message {
-            backdrop-filter: blur(8px);
+          backdrop-filter: blur(8px);
         }
         .gizmo:hover,
         .gizmo.active,
         .window,
         .notification-tray .message {
-            background-color: var(--gizmo-background-color-active-blurred);
+          background-color: var(--gizmo-background-color-active-blurred);
         }
       }
     `;
