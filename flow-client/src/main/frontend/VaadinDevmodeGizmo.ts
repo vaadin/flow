@@ -32,7 +32,6 @@ export class VaadinDevmodeGizmo extends LitElement {
   static YELLOW_HSL = css`38, 98%, 64%`;
   static RED_HSL = css`355, 100%, 68%`;
   static MAX_LOG_ROWS = 1000;
-  static copyO = svg`<svg style="width: 16px; height: 16px"><g id="copy-o"><path d="M13 3h-3l-3-3h-7v13h6v3h10v-10l-3-3zM7 1l2 2h-2v-2zM1 12v-11h5v3h3v8h-8zM15 15h-8v-2h3v-9h2v3h3v8zM13 6v-2l2 2h-2z"></path></g></svg>`;
 
   static get styles() {
     return css`
