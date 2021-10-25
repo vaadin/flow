@@ -8,6 +8,11 @@ import com.vaadin.testbench.ElementQuery;
 import com.vaadin.testbench.TestBenchElement;
 import com.vaadin.testbench.elementsbase.Element;
 
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
+
+import elemental.html.ButtonElement;
+
 @Element("vaadin-devmode-gizmo")
 public class DevModeGizmoElement extends TestBenchElement {
 
@@ -79,6 +84,19 @@ public class DevModeGizmoElement extends TestBenchElement {
 
     public int getNumberOfErrorLogRows() {
         return getLogDivsQuery(true).all().size();
+    }
+
+    public void setLiveReload(boolean enabled) {
+        expand();
+        showTab("info");
+        TestBenchElement toggle = $("input").id("toggle");
+        if (toggle.getPropertyBoolean("checked") != enabled) {
+            toggle.click();
+        }
+    }
+
+    private void showTab(String id) {
+        $("button").attributeContains("class", "tab").id(id).click();
     }
 
 }
