@@ -213,8 +213,8 @@ public final class WebpackHandler extends AbstractDevServerRunner {
                         "");
         if (!customParameters.isEmpty()) {
             command.addAll(Arrays.asList(customParameters.split(" +")));
-            getLogger().info("Starting " + getServerName() + " using: "
-                    + String.join(" ", command));
+            getLogger().info("Starting {} using: {}", getServerName(),
+                    String.join(" ", command));
         } else {
             command.add("--devtool=eval-source-map");
             command.add("--mode=development");
