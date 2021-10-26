@@ -21,10 +21,13 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.component.ComponentTest.TestComponent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JsonCodec;
+import com.vaadin.flow.internal.MessageDigestUtil;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.shared.Registration;
 
@@ -84,6 +87,11 @@ public class ComponentEventBusTest {
             return eventHandlerCalled.get() == o.eventHandlerCalled.get()
                     && eventObject.equals(o.eventObject);
         }
+    }
+
+    @Tag("button")
+    private class TestButton extends Component implements ClickNotifier {
+
     }
 
     private void fireDomEvent(Component component, String domEvent,
@@ -481,5 +489,20 @@ public class ComponentEventBusTest {
         });
         c.fireEvent(new ServerEvent(c, new BigDecimal(0)));
         storedEvent.get().unregisterListener();
+    }
+
+    @Test // #7826
+    public void addListener_eventDataExpressionsPresent_constantPoolKeyNotCreatedAfterEachExpression() {
+        final TestButton button = new TestButton();
+        try (MockedStatic<MessageDigestUtil> util = Mockito
+                .mockStatic(MessageDigestUtil.class)) {
+            util.when(() -> MessageDigestUtil.sha256(Mockito.anyString()))
+                    .thenReturn(
+                            new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, });
+            button.addClickListener(event -> {
+            });
+            util.verifyNoInteractions();
+        }
+
     }
 }
