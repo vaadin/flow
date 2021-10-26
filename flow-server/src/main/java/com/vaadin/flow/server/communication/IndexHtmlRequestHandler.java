@@ -165,7 +165,10 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 "const location=source+':'+lineno+':'+colno;" + //
                 "window.Vaadin.ConsoleErrors.push([message, '('+location+')']);"
                 + //
-                "};" //
+                "};" + //
+                "window.addEventListener('unhandledrejection', e => {" + //
+                "    window.Vaadin.ConsoleErrors.push([e.reason]);" + //
+                "});" //
         ));
         indexDocument.head().insertChildren(0, elm);
     }
