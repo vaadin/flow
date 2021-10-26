@@ -1521,23 +1521,50 @@ public class DataCommunicatorTest {
     }
 
     @Test
-    public void setRequestedRange_defaultPageSize_tooMuchItemsRequested_throws() {
-        IllegalStateException exception = Assert.assertThrows(
-                "DataCommunicator shouldn't allow too much items requested",
-                IllegalStateException.class,
-                () -> dataCommunicator.setRequestedRange(0, 501));
+    public void setRequestedRange_defaultPageSize_tooMuchItemsRequested_maxItemsAllowedRequested() {
+        DataProvider<Item, Object> dataProvider = Mockito
+                .spy(createDataProvider(1000));
+        dataCommunicator.setDataProvider(dataProvider, null);
+        // Paging is disabled for easier check of requested amount of items
+        dataCommunicator.setPagingEnabled(false);
+        // More than allowed (500) items requested
+        dataCommunicator.setRequestedRange(0, 501);
+        fakeClientCommunication();
+
+        ArgumentCaptor<Query> queryCaptor = ArgumentCaptor
+                .forClass(Query.class);
+        Mockito.verify(dataProvider, Mockito.times(1))
+                .fetch(queryCaptor.capture());
+
         Assert.assertEquals(
-                "Attempted to fetch more items from server than "
-                        + "allowed in one go: number of items requested "
-                        + "'501', maximum items allowed '500'",
-                exception.getMessage());
+                "Expected the requested items count to be limited"
+                        + " to allowed threshold",
+                500, queryCaptor.getValue().getLimit());
     }
 
     @Test
-    public void setRequestedRange_customPageSize_maxAllowedItemsIncreased() {
+    public void setRequestedRange_customPageSize_customPageSizeConsidered_itemsRequested() {
         int newPageSize = 300;
         dataCommunicator.setPageSize(newPageSize);
+
+        DataProvider<Item, Object> dataProvider = Mockito
+                .spy(createDataProvider(1000));
+        dataCommunicator.setDataProvider(dataProvider, null);
+        // Paging is disabled for easier check of requested amount of items
+        dataCommunicator.setPagingEnabled(false);
         dataCommunicator.setRequestedRange(0, newPageSize * 2);
+        fakeClientCommunication();
+
+        ArgumentCaptor<Query> queryCaptor = ArgumentCaptor
+                .forClass(Query.class);
+
+        Mockito.verify(dataProvider, Mockito.times(1))
+                .fetch(queryCaptor.capture());
+
+        Assert.assertEquals(
+                "Expected two pages with page size = 300 to be "
+                        + "requested and not limited",
+                600, queryCaptor.getValue().getLimit());
     }
 
     @Tag("test-component")

@@ -44,6 +44,8 @@ import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.Range;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.Registration;
+
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import elemental.json.Json;
@@ -65,7 +67,7 @@ public class DataCommunicator<T> implements Serializable {
     public static final int DEFAULT_PAGE_INCREASE_COUNT = 4;
 
     private static final int DEFAULT_PAGE_SIZE = 50;
-    private static final int MAXIMUM_ALLOWED_ITEMS_FACTOR = 10;
+    private static final int MAXIMUM_ALLOWED_PAGES = 10;
 
     private final DataGenerator<T> dataGenerator;
     private final ArrayUpdater arrayUpdater;
@@ -320,13 +322,14 @@ public class DataCommunicator<T> implements Serializable {
     public void setRequestedRange(int start, int length) {
         final int maximumAllowedItems = getMaximumAllowedItems();
         if (length > maximumAllowedItems) {
-            throw new IllegalStateException(String.format(
+            getLogger().warn(String.format(
                     "Attempted to fetch more items from server than allowed "
                             + "in one go: number of items requested '%d', maximum "
-                            + "items allowed '%d'",
+                            + "items allowed '%d'.",
                     length, maximumAllowedItems));
         }
-        requestedRange = Range.withLength(start, length);
+        requestedRange = Range.withLength(start,
+                Math.min(length, maximumAllowedItems));
 
         requestFlush();
     }
@@ -977,10 +980,9 @@ public class DataCommunicator<T> implements Serializable {
         }
 
         if (stream.isParallel()) {
-            LoggerFactory.getLogger(DataCommunicator.class)
-                    .debug("Data provider {} has returned "
-                            + "parallel stream on 'fetch' call",
-                            getDataProvider().getClass());
+            getLogger().debug(
+                    "Data provider {} has returned parallel stream on 'fetch' call",
+                    getDataProvider().getClass());
             stream = stream.collect(Collectors.toList()).stream();
             assert !stream.isParallel();
         }
@@ -1373,7 +1375,7 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     private int getMaximumAllowedItems() {
-        return MAXIMUM_ALLOWED_ITEMS_FACTOR * pageSize;
+        return MAXIMUM_ALLOWED_PAGES * pageSize;
     }
 
     private static class Activation implements Serializable {
@@ -1396,6 +1398,10 @@ public class DataCommunicator<T> implements Serializable {
         public static Activation empty() {
             return new Activation(Collections.emptyList(), false);
         }
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(DataCommunicator.class);
     }
 
 }
