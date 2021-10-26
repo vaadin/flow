@@ -6,7 +6,7 @@ import settings from './target/vaadin-dev-server-settings.json';
 
 const frontendFolder = path.resolve(__dirname, settings.frontendFolder);
 const themeFolder = path.resolve(frontendFolder, settings.themeFolder);
-const buildFolder = path.resolve(__dirname, 'target', 'classes', 'META-INF', 'VAADIN', 'webapp');
+const buildFolder = path.resolve(__dirname, settings.frontendBundleOutput);
 
 const projectStaticAssetsFolders = [
   path.resolve(__dirname, 'src', 'main', 'resources', 'META-INF', 'resources'),

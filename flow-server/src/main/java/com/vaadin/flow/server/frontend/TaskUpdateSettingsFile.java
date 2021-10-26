@@ -65,18 +65,20 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
         settings.put("themeFolder", "themes");
         settings.put("themeResourceFolder",
                 FrontendUtils.getUnixPath(generatedFolder.toPath()));
-        String output;
+        String webappResources;
         if (webappResourcesDirectory == null) {
-            output = combinePath(buildDirectory, "classes",
-                    VAADIN_WEBAPP_RESOURCES, VAADIN_STATIC_FILES_PATH);
+            webappResources = combinePath(buildDirectory, "classes",
+                    VAADIN_WEBAPP_RESOURCES);
         } else {
-            output = combinePath(webappResourcesDirectory.getPath(),
-                    VAADIN_STATIC_FILES_PATH);
+            webappResources = webappResourcesDirectory.getPath();
         }
+        String staticOutput = combinePath(webappResources,
+                VAADIN_STATIC_FILES_PATH);
 
         settings.put("staticOutput",
-                FrontendUtils.getUnixPath(new File(output).toPath()));
+                FrontendUtils.getUnixPath(new File(staticOutput).toPath()));
         settings.put("generatedFolder", "generated");
+        settings.put("frontendBundleOutput", webappResources);
 
         File settingsFile = new File(npmFolder,
                 buildDirectory + "/" + DEV_SETTINGS_FILE);
