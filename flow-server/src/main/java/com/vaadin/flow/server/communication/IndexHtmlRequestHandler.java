@@ -66,6 +66,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
+    private static final String SCRIPT = "script";
     private static final String SCRIPT_INITIAL = "initial";
 
     @Override
@@ -147,7 +148,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     }
 
     private void catchErrorsInDevMode(Document indexDocument) {
-        Element elm = new Element("script");
+        Element elm = new Element(SCRIPT);
         elm.attr(SCRIPT_INITIAL, "");
         elm.appendChild(new DataNode("" + //
                 "window.Vaadin = window.Vaadin || {};" + //
@@ -208,7 +209,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             VaadinRequest request) {
         SpringCsrfTokenUtil.addTokenAsMetaTagsToHeadIfPresentInRequest(
                 indexDocument.head(), request);
-        Element elm = new Element("script");
+        Element elm = new Element(SCRIPT);
         elm.attr(SCRIPT_INITIAL, "");
         elm.appendChild(new DataNode("window.Vaadin = window.Vaadin || {};" + //
                 "window.Vaadin.TypeScript= " + JsonUtil.stringify(initialJson)
@@ -293,7 +294,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 .getDevModeHandler(service);
         if (devModeHandler.isPresent()) {
             indexHtmlDocument.head()
-                    .appendChild(new Element("script").attr("type", "module")
+                    .appendChild(new Element(SCRIPT).attr("type", "module")
                             .attr("src", Constants.VAADIN_MAPPING
                                     + FrontendUtils.GENERATED
                                     + FrontendUtils.BOOTSTRAP_FILE_NAME));
