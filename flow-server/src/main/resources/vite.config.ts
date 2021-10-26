@@ -46,16 +46,14 @@ export default defineConfig(({ command, mode }) => ({
   build: {
     outDir: buildFolder,
     assetsDir: 'VAADIN/build',
-    chunkSizeWarningLimit: 100000000,
     rollupOptions: {
       input: {
         main: path.resolve(frontendFolder, 'index.html'),
         generated: path.resolve(frontendFolder, 'generated/vaadin.ts')
       },
       output: {
-        manualChunks: () => {
-          return "everything.js";
-        },
+        // Produce only one chunk that gets imported into index.html
+        manualChunks: () => 'everything.js'
       },
     },
   },
