@@ -39,12 +39,10 @@ public class ThemeReloadIT extends ChromeBrowserTest {
                     stylesContent + "\nh2 { color: rgba(255, 0, 0, 1); }",
                     StandardCharsets.UTF_8.name());
 
-            waitUntil(webDriver -> {
-                System.out.println(webDriver.findElement(By.tagName("h2"))
-                        .getCssValue("color"));
-                return webDriver.findElement(By.tagName("h2"))
-                        .getCssValue("color").equals("rgba(255, 0, 0, 1)");
-            }, 30);
+            waitUntil(
+                    webDriver -> webDriver.findElement(By.tagName("h2"))
+                            .getCssValue("color").equals("rgba(255, 0, 0, 1)"),
+                    30);
             header = $("h2").first();
             Assert.assertEquals("rgba(255, 0, 0, 1)",
                     header.getCssValue("color"));
