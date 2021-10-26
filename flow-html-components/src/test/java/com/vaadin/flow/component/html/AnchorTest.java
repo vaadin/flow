@@ -129,4 +129,9 @@ public class AnchorTest extends ComponentTest {
         addOptionalStringProperty("target");
     }
 
+    @Test
+    @Override
+    public void testHasAriaLabelIsImplemented() {
+        super.testHasAriaLabelIsImplemented();
+    }
 }

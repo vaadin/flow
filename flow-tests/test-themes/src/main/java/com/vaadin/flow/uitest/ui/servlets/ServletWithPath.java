@@ -17,17 +17,9 @@ package com.vaadin.flow.uitest.ui.servlets;
 
 import javax.servlet.annotation.WebServlet;
 
-import java.io.PrintWriter;
-import java.util.function.Consumer;
-
 import com.vaadin.flow.server.VaadinServlet;
 
-/**
- * This is a temporary workaround until #5740 is fixed.
- *
- * @since 2.0
- */
 @WebServlet("/path/*")
-public class WorkaroundServlet extends VaadinServlet {
+public class ServletWithPath extends VaadinServlet {
 
 }

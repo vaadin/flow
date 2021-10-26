@@ -31,4 +31,11 @@ public class AsideTest extends ComponentTest {
         super.testHasOrderedComponents();
     }
 
+    @Test
+    @Override
+    public void testHasAriaLabelIsNotImplemented() {
+        // There is mixed support for aria-label or aria-labelledby on <aside>.
+        // Source: https://www.w3.org/TR/using-aria/#label-support
+        super.testHasAriaLabelIsNotImplemented();
+    }
 }

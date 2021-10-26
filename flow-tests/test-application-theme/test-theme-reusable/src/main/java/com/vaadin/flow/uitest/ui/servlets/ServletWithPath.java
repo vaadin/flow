@@ -19,12 +19,7 @@ import javax.servlet.annotation.WebServlet;
 
 import com.vaadin.flow.server.VaadinServlet;
 
-/**
- * This is a temporary workaround until #5740 is fixed.
- *
- * @since 2.0
- */
 @WebServlet("/path/*")
-public class WorkaroundServlet extends VaadinServlet {
+public class ServletWithPath extends VaadinServlet {
 
 }

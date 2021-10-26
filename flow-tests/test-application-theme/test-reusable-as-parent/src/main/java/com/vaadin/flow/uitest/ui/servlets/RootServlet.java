@@ -19,12 +19,8 @@ import javax.servlet.annotation.WebServlet;
 
 import com.vaadin.flow.server.VaadinServlet;
 
-/**
- * This is a temporary workaround until #5740 is fixed.
- *
- * @since 2.0
- */
+// This overrides the servlet mapping of some test dependency
 @WebServlet("/*")
-public class WorkaroundServlet extends VaadinServlet {
+public class RootServlet extends VaadinServlet {
 
 }

@@ -17,6 +17,8 @@ package com.vaadin.flow.uitest.ui;
 
 import java.util.List;
 
+import com.vaadin.flow.testutil.DevModeGizmoElement;
+
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Test;
@@ -87,16 +89,9 @@ public class JavaLiveReloadIT extends AbstractLiveReloadIT {
         open();
 
         // given: live reload is deactivated
-        waitForElementPresent(By.tagName("vaadin-devmode-gizmo"));
-        WebElement liveReload = findElement(By.tagName("vaadin-devmode-gizmo"));
+        DevModeGizmoElement gizmo = $(DevModeGizmoElement.class).first();
 
-        WebElement liveReloadIcon = findInShadowRoot(liveReload,
-                By.className("gizmo")).get(0);
-        liveReloadIcon.click();
-
-        WebElement deactivateCheckbox = findInShadowRoot(liveReload,
-                By.id("toggle")).get(0);
-        deactivateCheckbox.click();
+        gizmo.setLiveReload(false);
 
         // when: live reload is triggered
         WebElement liveReloadTrigger = findElement(

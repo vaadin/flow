@@ -187,9 +187,9 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
                 reuseExistingPort(port);
                 return;
             } else {
-                getLogger().warn(
+                getLogger().warn(String.format(
                         "%s port '%d' is defined but it's not working properly. Using a new free port...",
-                        getServerName(), port);
+                        getServerName(), port));
                 port = 0;
             }
         }
