@@ -79,10 +79,10 @@ public class StateNode implements Serializable {
                     .filter(type -> !reportableFeatureTypes.contains(type))
                     .collect(Collectors.toSet());
 
-            assert !nonReportableFeatures.removeAll(
-                    reportedFeatures) : "No reportable feature should also be non-reportable";
-            assert !reportedFeatures.removeAll(
-                    nonReportableFeatures) : "No non-reportable feature should also be reportable";
+            assert !nonReportableFeatures.removeAll(reportedFeatures)
+                    : "No reportable feature should also be non-reportable";
+            assert !reportedFeatures.removeAll(nonReportableFeatures)
+                    : "No non-reportable feature should also be reportable";
         }
 
         @Override
@@ -256,8 +256,8 @@ public class StateNode implements Serializable {
         boolean attachedAfter = false;
 
         if (parent != null) {
-            assert this.parent == null : "Node is already attached to a parent: "
-                    + this.parent;
+            assert this.parent == null
+                    : "Node is already attached to a parent: " + this.parent;
             assert parent.hasChildAssert(this);
 
             if (isAncestorOf(parent)) {
@@ -979,7 +979,8 @@ public class StateNode implements Serializable {
      */
     private UI getUI() {
         assert isAttached();
-        assert getOwner() instanceof StateTree : "Attach should only be called when the node has been attached to the tree, not to a null owner";
+        assert getOwner() instanceof StateTree
+                : "Attach should only be called when the node has been attached to the tree, not to a null owner";
         return ((StateTree) getOwner()).getUI();
     }
 

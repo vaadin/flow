@@ -82,7 +82,8 @@ public class PopStateHandler {
         final String path = Browser.getWindow().getLocation().getPathname();
         final String query = Browser.getWindow().getLocation().getSearch();
 
-        assert pathAfterPreviousResponse != null : "Initial response has not ended before pop state event was triggered";
+        assert pathAfterPreviousResponse != null
+                : "Initial response has not ended before pop state event was triggered";
 
         // don't visit server on pop state events caused by fragment change
         boolean requiresServerSideRoundtrip = !(Objects.equals(path,

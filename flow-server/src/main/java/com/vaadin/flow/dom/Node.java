@@ -272,7 +272,8 @@ public abstract class Node<N extends Node<N>> implements Serializable {
                     index, getChildCount()));
         }
 
-        for (int i = 0, insertIndex = index; i < children.length; i++, insertIndex++) {
+        for (int i = 0,
+                insertIndex = index; i < children.length; i++, insertIndex++) {
             Element child = children[i];
             if (child == null) {
                 throw new IllegalArgumentException(

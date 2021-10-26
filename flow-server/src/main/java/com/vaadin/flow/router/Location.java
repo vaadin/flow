@@ -189,8 +189,8 @@ public class Location implements Serializable {
      */
     public String getPathWithQueryParameters() {
         String basePath = getPath();
-        assert !basePath.contains(
-                QUERY_SEPARATOR) : "Base path can not contain query separator="
+        assert !basePath.contains(QUERY_SEPARATOR)
+                : "Base path can not contain query separator="
                         + QUERY_SEPARATOR;
         assert !basePath.contains("#") : "Base path can not contain fragment #";
 
