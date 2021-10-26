@@ -384,13 +384,13 @@ public class BuildFrontendUtil {
             String toolName, String executable, String... params)
             throws TimeoutException, URISyntaxException {
 
-        File webpackExecutable = new File(adapter.npmFolder(),
+        File buildExecutable = new File(adapter.npmFolder(),
                 NODE_MODULES + executable);
-        if (!webpackExecutable.isFile()) {
+        if (!buildExecutable.isFile()) {
             throw new IllegalStateException(String.format(
                     "Unable to locate webpack executable by path '%s'. Double"
                             + " check that the plugin is executed correctly",
-                    webpackExecutable.getAbsolutePath()));
+                    buildExecutable.getAbsolutePath()));
         }
 
         String nodePath;
@@ -404,7 +404,7 @@ public class BuildFrontendUtil {
 
         List<String> command = new ArrayList<>();
         command.add(nodePath);
-        command.add(webpackExecutable.getAbsolutePath());
+        command.add(buildExecutable.getAbsolutePath());
         command.addAll(Arrays.asList(params));
 
         ProcessBuilder builder = FrontendUtils.createProcessBuilder(command);
