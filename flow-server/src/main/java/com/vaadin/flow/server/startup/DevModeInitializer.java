@@ -89,6 +89,7 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
@@ -287,10 +288,11 @@ public class DevModeInitializer
 
         File generatedPackages = new File(builder.generatedFolder,
                 PACKAGE_JSON);
-
+        File target = new File(baseDir, "target");
         // Always update to auto-generated webpack configuration
-        builder.withWebpack(builder.npmFolder, FrontendUtils.WEBPACK_CONFIG,
-                FrontendUtils.WEBPACK_GENERATED);
+        builder.withWebpack(
+                new File(target, "classes/" + VAADIN_SERVLET_RESOURCES),
+                FrontendUtils.WEBPACK_CONFIG, FrontendUtils.WEBPACK_GENERATED);
 
         // If we are missing either the base or generated package json files
         // generate those

@@ -23,6 +23,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import net.jcip.annotations.NotThreadSafe;
 
@@ -240,6 +242,33 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
             Assert.assertEquals("Hello world", IOUtils.toString(generatedWebpackFile.toURI(),StandardCharsets.UTF_8));
             process();
             Assert.assertNotEquals("Hello world", IOUtils.toString(generatedWebpackFile.toURI(),StandardCharsets.UTF_8));
+        } finally {
+            generatedWebpackFile.delete();
+        }
+    }
+
+    @Test
+    public void generated_output_should_be_in_target_classes()
+            throws Exception {
+        File generatedWebpackFile = new File(webpackFile.getParentFile(),
+                FrontendUtils.WEBPACK_GENERATED);
+        try (FileWriter writer = new FileWriter(generatedWebpackFile)) {
+            process();
+
+            final String generated = IOUtils.toString(
+                    generatedWebpackFile.toURI(), StandardCharsets.UTF_8);
+
+            final Pattern compile = Pattern.compile(
+                    "projectStaticAssetsOutputFolder.* '(.*)'");
+            final Matcher matcher = compile.matcher(generated);
+            matcher.find();
+
+            Assert.assertTrue(
+                    "Generated webpack configuration contained faulty path ´"
+                            + matcher.group(1)
+                            + "' instead of 'target/classes/META-INF/VAADIN/static'",
+                    generated.contains(
+                            "const projectStaticAssetsOutputFolder = require('path').resolve(__dirname, 'target/classes/META-INF/VAADIN/static');"));
         } finally {
             generatedWebpackFile.delete();
         }
