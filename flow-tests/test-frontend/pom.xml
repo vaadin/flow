@@ -15,4 +15,12 @@
         <module>vite-basics</module>
     </modules>
 
+    <dependencies>
+        <dependency>
+            <groupId>io.github.bonigarcia</groupId>
+            <artifactId>webdrivermanager</artifactId>
+            <version>5.0.3</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 </project>

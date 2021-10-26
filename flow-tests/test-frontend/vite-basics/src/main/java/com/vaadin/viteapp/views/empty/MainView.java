@@ -1,5 +1,6 @@
 package com.vaadin.viteapp.views.empty;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Image;
@@ -24,6 +25,11 @@ public class MainView extends Div {
         add(button);
         setSizeFull();
         getStyle().set("text-align", "center");
+
+        final Paragraph viteStatus = new Paragraph(
+                "Vite feature is " + FeatureFlags.isEnabled(FeatureFlags.VITE));
+        viteStatus.setId("status");
+        add(viteStatus);
     }
 
 }

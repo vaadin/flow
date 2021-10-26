@@ -73,6 +73,14 @@ public class FeatureFlags implements Serializable {
     }
 
     static void loadProperties() {
+        InputStream stream = FeatureFlags.class.getClassLoader()
+                .getResourceAsStream(PROPERTIES_FILENAME);
+        if (stream != null) {
+            getLogger().debug("Properties loaded from classpath.");
+            loadProperties(stream);
+            return;
+        }
+
         File featureFlagFile = getFeatureFlagFile();
         if (featureFlagFile == null || !featureFlagFile.exists()) {
             return;
@@ -80,6 +88,8 @@ public class FeatureFlags implements Serializable {
 
         try (FileInputStream propertiesStream = new FileInputStream(
                 featureFlagFile)) {
+            getLogger().debug("Loading properties from file '{}'",
+                    featureFlagFile);
             loadProperties(propertiesStream);
         } catch (IOException e) {
             getLogger().error("Unable to read properties using classloader", e);
