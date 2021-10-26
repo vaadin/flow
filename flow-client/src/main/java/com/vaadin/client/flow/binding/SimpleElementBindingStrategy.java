@@ -199,13 +199,6 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         if (boundNodes.has(stateNode)) {
             return;
         }
-
-        stateNode.addDomNodeSetListener(node -> {
-            if (node.getDomNode() == null) {
-                boundNodes.delete(node);
-            }
-            return true;
-        });
         boundNodes.set(stateNode, true);
 
         BindingContext context = new BindingContext(stateNode, htmlNode,
