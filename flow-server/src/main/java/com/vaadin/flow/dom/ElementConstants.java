@@ -55,6 +55,10 @@ public class ElementConstants {
      * The label property.
      */
     public static final String LABEL_PROPERTY_NAME = "label";
+    /**
+     * The aria-label property.
+     */
+    public static final String ARIA_LABEL_PROPERTY_NAME = "aria-label";
 
     private ElementConstants() {
         // Constants only

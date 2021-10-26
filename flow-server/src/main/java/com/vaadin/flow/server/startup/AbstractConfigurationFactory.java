@@ -26,6 +26,7 @@ import java.util.function.Function;
 
 import org.apache.commons.io.FileUtils;
 
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
@@ -140,6 +141,10 @@ public class AbstractConfigurationFactory implements Serializable {
         if (buildInfo.hasKey(CONNECT_JAVA_SOURCE_FOLDER_TOKEN)) {
             params.put(CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
                     buildInfo.getString(CONNECT_JAVA_SOURCE_FOLDER_TOKEN));
+        }
+        if (buildInfo.hasKey(Constants.JAVA_RESOURCE_FOLDER_TOKEN)) {
+            params.put(Constants.JAVA_RESOURCE_FOLDER_TOKEN,
+                    buildInfo.getString(Constants.JAVA_RESOURCE_FOLDER_TOKEN));
         }
         if (buildInfo.hasKey(CONNECT_OPEN_API_FILE_TOKEN)) {
             params.put(CONNECT_OPEN_API_FILE_TOKEN,
