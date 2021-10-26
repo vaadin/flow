@@ -20,6 +20,7 @@ import java.util.Optional;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Focusable;
+import com.vaadin.flow.component.HasAriaLabel;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
@@ -34,7 +35,8 @@ import com.vaadin.flow.server.StreamResource;
  * @since 1.0
  */
 @Tag(Tag.A)
-public class Anchor extends HtmlContainer implements Focusable<Anchor> {
+public class Anchor extends HtmlContainer
+        implements Focusable<Anchor>, HasAriaLabel {
 
     private static final PropertyDescriptor<String, String> hrefDescriptor = PropertyDescriptors
             .attributeWithDefault("href", "", false);

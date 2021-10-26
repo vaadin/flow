@@ -31,4 +31,9 @@ public class MainTest extends ComponentTest {
         super.testHasOrderedComponents();
     }
 
+    @Test
+    @Override
+    public void testHasAriaLabelIsImplemented() {
+        super.testHasAriaLabelIsImplemented();
+    }
 }

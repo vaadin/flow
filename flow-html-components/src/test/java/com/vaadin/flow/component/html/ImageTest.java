@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component.html;
 
+import org.junit.Test;
+
 public class ImageTest extends ComponentTest {
 
     // Actual test methods in super class
@@ -25,4 +27,9 @@ public class ImageTest extends ComponentTest {
         addStringProperty("src", "");
     }
 
+    @Test
+    @Override
+    public void testHasAriaLabelIsImplemented() {
+        super.testHasAriaLabelIsImplemented();
+    }
 }

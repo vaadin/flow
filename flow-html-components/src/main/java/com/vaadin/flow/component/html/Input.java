@@ -19,6 +19,7 @@ import java.util.Optional;
 
 import com.vaadin.flow.component.AbstractSinglePropertyField;
 import com.vaadin.flow.component.Focusable;
+import com.vaadin.flow.component.HasAriaLabel;
 import com.vaadin.flow.component.HasSize;
 import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.PropertyDescriptor;
@@ -34,8 +35,8 @@ import com.vaadin.flow.data.value.ValueChangeMode;
  * @since 1.0
  */
 @Tag(Tag.INPUT)
-public class Input extends AbstractSinglePropertyField<Input, String>
-        implements Focusable<Input>, HasSize, HasStyle, HasValueChangeMode {
+public class Input extends AbstractSinglePropertyField<Input, String> implements
+        Focusable<Input>, HasSize, HasStyle, HasValueChangeMode, HasAriaLabel {
 
     private static final PropertyDescriptor<String, Optional<String>> placeholderDescriptor = PropertyDescriptors
             .optionalAttributeWithDefault("placeholder", "");
