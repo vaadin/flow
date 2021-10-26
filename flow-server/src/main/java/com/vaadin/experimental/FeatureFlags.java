@@ -50,7 +50,7 @@ public class FeatureFlags implements Serializable {
             "exampleFeatureFlag", "https://github.com/vaadin/flow/pull/12004",
             false);
     public static final Feature VITE = new Feature(
-            "Use Vite for the frontend build", "viteForFrontendBuild",
+            "Use Vite for faster front-end builds", "viteForFrontendBuild",
             "https://github.com/vaadin/platform/issues/2448", true);
 
     private static List<Feature> features = new ArrayList<>();
