@@ -68,9 +68,9 @@ public class ConstantPoolKey implements Serializable {
     }
 
     /**
-     * Exports this key into a JSON object to send to the client. This
-     * method should be called only by the {@link ConstantPool} instance that
-     * manages this value. It may be called multiple times.
+     * Exports this key into a JSON object to send to the client. This method
+     * should be called only by the {@link ConstantPool} instance that manages
+     * this value. It may be called multiple times.
      *
      * @param clientConstantPoolUpdate
      *            the constant pool update that is to be sent to the client, not

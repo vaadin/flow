@@ -494,8 +494,11 @@ public class ComponentEventBusTest {
     @Test // #7826
     public void addListener_eventDataExpressionsPresent_constantPoolKeyNotCreatedAfterEachExpression() {
         final TestButton button = new TestButton();
-        try (MockedStatic<MessageDigestUtil> util = Mockito.mockStatic(MessageDigestUtil.class)){
-            util.when(() -> MessageDigestUtil.sha256(Mockito.anyString())).thenReturn(new byte[]{1,1,1,1,1,1,1,1,1,1,1,});
+        try (MockedStatic<MessageDigestUtil> util = Mockito
+                .mockStatic(MessageDigestUtil.class)) {
+            util.when(() -> MessageDigestUtil.sha256(Mockito.anyString()))
+                    .thenReturn(
+                            new byte[] { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, });
             button.addClickListener(event -> {
             });
             util.verifyNoInteractions();
