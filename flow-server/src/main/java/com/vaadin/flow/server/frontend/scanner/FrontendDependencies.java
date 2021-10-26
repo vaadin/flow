@@ -406,12 +406,8 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      * available.
      *
      * @param clazz
-     *            the exporter endpoint class <<<<<<< HEAD
+     *            the exporter endpoint class
      *
-     * @throws ClassNotFoundException
-     *             if unable to load a class by class name ======= >>>>>>>
-     *             86c496df43 (refactor: Use maven vaadin plugin classloader as
-     *             a parent for URLClassloader in ClassFinder (#12050) (#12151))
      * @throws IOException
      *             if unable to scan the class byte code
      */
