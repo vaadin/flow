@@ -40,15 +40,20 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
  */
 public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
 
+    static final String DEVMODE_GIZMO_IMPORT = String
+            .format("import '@vaadin/flow-frontend/VaadinDevmodeGizmo.js';%n");
     private final FrontendDependenciesScanner frontDeps;
     private final File connectClientTsApiFolder;
     private final File frontendDirectory;
     private final String buildDirectory;
+    private boolean productionMode;
 
     TaskGenerateBootstrap(FrontendDependenciesScanner frontDeps,
-            File frontendDirectory, String buildDirectory) {
+            File frontendDirectory, String buildDirectory,
+            boolean productionMode) {
         this.frontDeps = frontDeps;
         this.frontendDirectory = frontendDirectory;
+        this.productionMode = productionMode;
         this.connectClientTsApiFolder = new File(frontendDirectory, GENERATED);
         this.buildDirectory = buildDirectory;
     }
@@ -57,6 +62,9 @@ public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
     protected String getFileContent() {
         List<String> lines = new ArrayList<>();
         lines.add(String.format("import '%s';%n", getIndexTsEntryPath()));
+        if (!productionMode) {
+            lines.add(DEVMODE_GIZMO_IMPORT);
+        }
         lines.addAll(getThemeLines());
 
         return String.join(System.lineSeparator(), lines);

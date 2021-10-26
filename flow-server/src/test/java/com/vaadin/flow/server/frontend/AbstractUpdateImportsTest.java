@@ -92,8 +92,9 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
         UpdateImports(ClassFinder classFinder,
                 FrontendDependenciesScanner scanner, File npmDirectory,
-                File tokenFile) {
-            super(frontendDirectory, npmDirectory, generatedPath, tokenFile);
+                File tokenFile, boolean productionMode) {
+            super(frontendDirectory, npmDirectory, generatedPath, tokenFile,
+                    productionMode);
             this.scanner = scanner;
             finder = classFinder;
         }
@@ -169,7 +170,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
         ClassFinder classFinder = getClassFinder();
         updater = new UpdateImports(classFinder, getScanner(classFinder),
-                tmpRoot, tokenFile);
+                tmpRoot, tokenFile, true);
         assertTrue(nodeModulesPath.mkdirs());
         createExpectedImports(frontendDirectory, nodeModulesPath);
         assertTrue(new File(nodeModulesPath,
@@ -228,7 +229,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
             throws Exception {
         ClassFinder classFinder = getClassFinder();
         updater = new UpdateImports(classFinder, getScanner(classFinder),
-                tmpRoot, null);
+                tmpRoot, null, true);
 
         Files.move(frontendDirectory.toPath(),
                 new File(tmpRoot, "_frontend").toPath());
@@ -432,7 +433,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         ClassFinder classFinder = getClassFinder(testClasses);
 
         updater = new UpdateImports(classFinder, getScanner(classFinder),
-                tmpRoot, new File(tmpRoot, TOKEN_FILE));
+                tmpRoot, new File(tmpRoot, TOKEN_FILE), true);
         updater.run();
 
         // Imports are collected as

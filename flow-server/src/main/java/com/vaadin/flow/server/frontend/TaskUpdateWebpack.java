@@ -208,10 +208,6 @@ public class TaskUpdateWebpack implements FallibleCommand {
                         "'./" + INDEX_HTML + "'"),
                 new Pair<>("const clientSideIndexEntryPoint",
                         getClientEntryPoint()),
-                new Pair<>("const devmodeGizmoJS",
-                        formatPathResolve(getEscapedRelativeWebpackPath(
-                                flowResourcesFolder
-                                        .resolve("VaadinDevmodeGizmo.js")))),
                 new Pair<>("const pwaEnabled",
                         Boolean.toString(pwaConfiguration.isEnabled())),
                 new Pair<>("const offlinePathEnabled",

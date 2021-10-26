@@ -64,7 +64,7 @@ public class NodeTasks implements FallibleCommand {
 
         private final File frontendDirectory;
 
-        private File webpackOutputDirectory = null;
+        private File webappResourcesDirectory = null;
 
         private File resourceOutputDirectory = null;
 
@@ -146,6 +146,12 @@ public class NodeTasks implements FallibleCommand {
         private Lookup lookup;
 
         /**
+         * Default is true here so we do not accidentally include development
+         * stuff into production.
+         */
+        private boolean productionMode = true;
+
+        /**
          * Create a builder instance given an specific npm folder.
          *
          * @param lookup
@@ -222,7 +228,7 @@ public class NodeTasks implements FallibleCommand {
         /**
          * Sets the webpack related properties.
          *
-         * @param webpackOutputDirectory
+         * @param webappResourcesDirectory
          *            the directory to set for webpack to output its build
          *            results, meant for serving from context root.
          * @param resourceOutputDirectory
@@ -237,10 +243,10 @@ public class NodeTasks implements FallibleCommand {
          *            creating the <code>webpack.generated.js</code> file.
          * @return this builder
          */
-        public Builder withWebpack(File webpackOutputDirectory,
+        public Builder withWebpack(File webappResourcesDirectory,
                 File resourceOutputDirectory, String webpackTemplate,
                 String webpackGeneratedTemplate) {
-            this.webpackOutputDirectory = webpackOutputDirectory;
+            this.webappResourcesDirectory = webappResourcesDirectory;
             this.resourceOutputDirectory = resourceOutputDirectory;
             this.webpackTemplate = webpackTemplate;
             this.webpackGeneratedTemplate = webpackGeneratedTemplate;
@@ -545,6 +551,19 @@ public class NodeTasks implements FallibleCommand {
         }
 
         /**
+         * Sets the production mode.
+         *
+         * @param productionMode
+         *            <code>true</code> to enable production mode, otherwise
+         *            <code>false</code>
+         * @return this builder
+         */
+        public Builder withProductionMode(boolean productionMode) {
+            this.productionMode = productionMode;
+            return this;
+        }
+
+        /**
          * Sets whether it is fine to automatically update the alternate node
          * installation if installed version is older than the current default.
          *
@@ -574,6 +593,36 @@ public class NodeTasks implements FallibleCommand {
         public File getGeneratedFolder() {
             return generatedFolder;
         }
+
+        /**
+         * Get the output directory for webpack output.
+         * 
+         * @return webpackOutputDirectory
+         */
+        public File getWebappResourcesDirectory() {
+            return webappResourcesDirectory;
+        }
+
+        /**
+         * Get the defined frontend directory.
+         * 
+         * @return frontendDirectory
+         */
+        public File getFrontendDirectory() {
+            return frontendDirectory;
+        }
+
+        /**
+         * Get the name of the used build directory.
+         * <p>
+         * By default this will be {@code target} for maven and {@code build}
+         * for gradle.
+         *
+         * @return buildDirectory
+         */
+        public String getBuildDirectory() {
+            return buildDirectory;
+        }
     }
 
     // @formatter:off
@@ -595,6 +644,7 @@ public class NodeTasks implements FallibleCommand {
             TaskRunNpmInstall.class,
             TaskCopyFrontendFiles.class,
             TaskCopyLocalFrontendFiles.class,
+            TaskUpdateSettingsFile.class,
             TaskUpdateWebpack.class,
             TaskUpdateVite.class,
             TaskUpdateImports.class,
@@ -673,7 +723,8 @@ public class NodeTasks implements FallibleCommand {
             }
 
             commands.add(new TaskGenerateBootstrap(frontendDependencies,
-                    builder.frontendDirectory, builder.buildDirectory));
+                    builder.frontendDirectory, builder.buildDirectory,
+                    builder.productionMode));
         }
 
         if (builder.jarFiles != null && builder.flowResourcesFolder != null) {
@@ -688,12 +739,14 @@ public class NodeTasks implements FallibleCommand {
         }
 
         if (FeatureFlags.isEnabled(FeatureFlags.VITE)) {
-            commands.add(new TaskUpdateVite(builder.npmFolder));
+            commands.add(new TaskUpdateSettingsFile(builder));
+            commands.add(new TaskUpdateVite(builder.npmFolder,
+                    builder.buildDirectory));
         } else if (enableWebpackConfigUpdate) {
             PwaConfiguration pwaConfiguration = frontendDependencies
                     .getPwaConfiguration();
             commands.add(new TaskUpdateWebpack(builder.frontendDirectory,
-                    builder.npmFolder, builder.webpackOutputDirectory,
+                    builder.npmFolder, builder.webappResourcesDirectory,
                     builder.resourceOutputDirectory, builder.webpackTemplate,
                     builder.webpackGeneratedTemplate,
                     new File(builder.generatedFolder, IMPORTS_NAME),
@@ -709,7 +762,7 @@ public class NodeTasks implements FallibleCommand {
                             builder.npmFolder, builder.generatedFolder,
                             builder.frontendDirectory, builder.tokenFile,
                             builder.tokenFileData, builder.enablePnpm,
-                            builder.buildDirectory));
+                            builder.buildDirectory, builder.productionMode));
 
             commands.add(new TaskUpdateThemeImport(builder.npmFolder,
                     frontendDependencies.getThemeDefinition(),

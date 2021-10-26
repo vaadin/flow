@@ -74,6 +74,7 @@ public class TaskUpdateImports extends NodeUpdater {
     private final JsonObject tokenFileData;
 
     private final boolean disablePnpm;
+    private boolean productionMode;
 
     private class UpdateMainImportsFile extends AbstractUpdateImports {
         private static final String EXPORT_MODULES_DEF = "export declare const addCssBlock: (block: string, before?: boolean) => void;";
@@ -85,9 +86,9 @@ public class TaskUpdateImports extends NodeUpdater {
 
         UpdateMainImportsFile(ClassFinder classFinder, File frontendDirectory,
                 File npmDirectory, File generatedDirectory,
-                File fallBackImports, File tokenFile) {
+                File fallBackImports, File tokenFile, boolean productionMode) {
             super(frontendDirectory, npmDirectory, generatedDirectory,
-                    tokenFile);
+                    tokenFile, productionMode);
             generatedFlowImports = new File(generatedDirectory, IMPORTS_NAME);
             generatedFlowDefinitions = new File(generatedDirectory,
                     IMPORTS_D_TS_NAME);
@@ -223,9 +224,10 @@ public class TaskUpdateImports extends NodeUpdater {
 
         UpdateFallBackImportsFile(ClassFinder classFinder,
                 File frontendDirectory, File npmDirectory,
-                File generatedDirectory, File tokenFile) {
+                File generatedDirectory, File tokenFile,
+                boolean productionMode) {
             super(frontendDirectory, npmDirectory, generatedDirectory,
-                    tokenFile);
+                    tokenFile, productionMode);
             generatedFallBack = new File(generatedDirectory,
                     FrontendUtils.FALLBACK_IMPORTS_NAME);
             finder = classFinder;
@@ -341,7 +343,7 @@ public class TaskUpdateImports extends NodeUpdater {
             SerializableFunction<ClassFinder, FrontendDependenciesScanner> fallBackScannerProvider,
             File npmFolder, File generatedPath, File frontendDirectory,
             File tokenFile, JsonObject tokenFileData, boolean disablePnpm,
-            String buildDir) {
+            String buildDir, boolean productionMode) {
         super(finder, frontendDepScanner, npmFolder, generatedPath, null,
                 buildDir);
         this.frontendDirectory = frontendDirectory;
@@ -349,6 +351,7 @@ public class TaskUpdateImports extends NodeUpdater {
         this.tokenFile = tokenFile;
         this.tokenFileData = tokenFileData;
         this.disablePnpm = disablePnpm;
+        this.productionMode = productionMode;
     }
 
     @Override
@@ -357,7 +360,7 @@ public class TaskUpdateImports extends NodeUpdater {
         if (fallbackScanner != null) {
             UpdateFallBackImportsFile fallBackUpdate = new UpdateFallBackImportsFile(
                     finder, frontendDirectory, npmFolder, generatedFolder,
-                    tokenFile);
+                    tokenFile, productionMode);
             fallBackUpdate.run();
             fallBack = fallBackUpdate.getGeneratedFallbackFile();
             updateBuildFile(fallBackUpdate);
@@ -365,7 +368,7 @@ public class TaskUpdateImports extends NodeUpdater {
 
         UpdateMainImportsFile mainUpdate = new UpdateMainImportsFile(finder,
                 frontendDirectory, npmFolder, generatedFolder, fallBack,
-                tokenFile);
+                tokenFile, productionMode);
         mainUpdate.run();
     }
 

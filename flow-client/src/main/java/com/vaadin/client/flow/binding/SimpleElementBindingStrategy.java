@@ -22,7 +22,6 @@ import jsinterop.annotations.JsFunction;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
-
 import com.vaadin.client.ApplicationConfiguration;
 import com.vaadin.client.Command;
 import com.vaadin.client.Console;
@@ -201,13 +200,6 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         if (boundNodes.has(stateNode)) {
             return;
         }
-
-        stateNode.addDomNodeSetListener(node -> {
-            if (node.getDomNode() == null) {
-                boundNodes.delete(node);
-            }
-            return true;
-        });
         boundNodes.set(stateNode, true);
 
         BindingContext context = new BindingContext(stateNode, htmlNode,
