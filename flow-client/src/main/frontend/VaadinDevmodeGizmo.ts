@@ -1,5 +1,5 @@
-import { css, html, LitElement, nothing, svg } from 'lit';
-import { property, state } from 'lit/decorators.js';
+import { css, html, LitElement, nothing } from 'lit';
+import { property, query, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 // @ts-ignore
 import { copy } from './copy-to-clipboard.js';
@@ -23,6 +23,7 @@ interface Tab {
   id: 'log' | 'info' | 'features';
   title: string;
   render: () => unknown;
+  activate?: () => void;
 }
 export class VaadinDevmodeGizmo extends LitElement {
   static BLUE_HSL = css`206, 100%, 70%`;
@@ -31,7 +32,6 @@ export class VaadinDevmodeGizmo extends LitElement {
   static YELLOW_HSL = css`38, 98%, 64%`;
   static RED_HSL = css`355, 100%, 68%`;
   static MAX_LOG_ROWS = 1000;
-  static copyO = svg`<svg style="width: 16px; height: 16px"><g id="copy-o"><path d="M13 3h-3l-3-3h-7v13h6v3h10v-10l-3-3zM7 1l2 2h-2v-2zM1 12v-11h5v3h3v8h-8zM15 15h-8v-2h3v-9h2v3h3v8zM13 6v-2l2 2h-2z"></path></g></svg>`;
 
   static get styles() {
     return css`
@@ -42,17 +42,19 @@ export class VaadinDevmodeGizmo extends LitElement {
           monospace;
 
         --gizmo-font-size: 0.8125rem;
+        --gizmo-font-size-small: 0.75rem;
 
-        --gizmo-text-color: rgba(255, 255, 255, 0.85);
+        --gizmo-text-color: rgba(255, 255, 255, 0.8);
         --gizmo-text-color-secondary: rgba(255, 255, 255, 0.65);
-        --gizmo-text-color-emphasis: rgba(255, 255, 255, 1);
+        --gizmo-text-color-emphasis: rgba(255, 255, 255, 0.95);
         --gizmo-text-color-active: rgba(255, 255, 255, 1);
 
-        --gizmo-background-color-inactive: rgba(50, 50, 50, 0.15);
-        --gizmo-background-color-active: rgba(50, 50, 50, 0.98);
+        --gizmo-background-color-inactive: rgba(45, 45, 45, 0.25);
+        --gizmo-background-color-active: rgba(45, 45, 45, 0.98);
+        --gizmo-background-color-active-blurred: rgba(45, 45, 45, 0.85);
 
         --gizmo-border-radius: 0.5rem;
-        --gizmo-box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.4);
+        --gizmo-box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05), 0 4px 12px -2px rgba(0, 0, 0, 0.4);
 
         --gizmo-blue-hsl: ${this.BLUE_HSL};
         --gizmo-blue-color: hsl(var(--gizmo-blue-hsl));
@@ -66,11 +68,13 @@ export class VaadinDevmodeGizmo extends LitElement {
         --gizmo-red-color: hsl(var(--gizmo-red-hsl));
 
         /* Needs to be in ms, used in JavaScript as well */
-        --gizmo-transition-duration: 200ms;
+        --gizmo-transition-duration: 180ms;
+
+        all: initial;
 
         direction: ltr;
         cursor: default;
-        font: normal 500 var(--gizmo-font-size) / 1.125rem var(--gizmo-font-family);
+        font: normal 400 var(--gizmo-font-size) / 1.125rem var(--gizmo-font-family);
         color: var(--gizmo-text-color);
         -webkit-user-select: none;
         -moz-user-select: none;
@@ -94,27 +98,33 @@ export class VaadinDevmodeGizmo extends LitElement {
         align-items: center;
         position: fixed;
         z-index: inherit;
-        right: 0.25rem;
-        bottom: 0.25rem;
+        right: 0.5rem;
+        bottom: 0.5rem;
+        min-width: 1.75rem;
+        height: 1.75rem;
         max-width: 1.75rem;
-        border-radius: 1rem;
+        border-radius: 0.5rem;
         padding: 0.375rem;
         box-sizing: border-box;
         background-color: var(--gizmo-background-color-inactive);
+        box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05);
         color: var(--gizmo-text-color);
-        transition: var(--gizmo-transition-duration) ease-in;
+        transition: var(--gizmo-transition-duration);
         white-space: nowrap;
         line-height: 1rem;
       }
 
       .gizmo:hover,
       .gizmo.active {
-        max-width: calc(100% - 1rem);
         background-color: var(--gizmo-background-color-active);
         box-shadow: var(--gizmo-box-shadow);
       }
 
-      .gizmo .vaadin-logo {
+      .gizmo.active {
+        max-width: calc(100% - 1rem);
+      }
+
+      .gizmo .gizmo-icon {
         flex: none;
         pointer-events: none;
         display: inline-block;
@@ -122,60 +132,50 @@ export class VaadinDevmodeGizmo extends LitElement {
         height: 1rem;
         fill: #fff;
         transition: var(--gizmo-transition-duration);
-        transition-delay: var(--gizmo-transition-duration);
         margin: 0;
       }
 
-      .gizmo:hover .vaadin-logo,
-      .gizmo.active .vaadin-logo {
+      .gizmo.active .gizmo-icon {
         opacity: 0;
-        width: 0;
+        position: absolute;
+        transform: scale(0.5);
       }
 
       .gizmo .status-blip {
         flex: none;
         display: block;
-        width: 1rem;
-        height: 1rem;
+        width: 6px;
+        height: 6px;
         border-radius: 50%;
         z-index: 20001;
-        background-color: var(--gizmo-grey-color);
-        transform: translate(-0.5rem, -0.5rem) scale(0.375);
-        transition: var(--gizmo-transition-duration);
-        transition-delay: var(--gizmo-transition-duration);
-      }
-
-      .gizmo:hover .status-blip,
-      .gizmo.active .status-blip {
-        transform: translate(0, 0) scale(1);
-      }
-
-      .gizmo.active .vaadin-logo,
-      .gizmo.active .status-blip {
-        transition-delay: 0s;
+        background: var(--gizmo-grey-color);
+        position: absolute;
+        top: -1px;
+        right: -1px;
       }
 
       .gizmo .status-description {
         overflow: hidden;
         text-overflow: ellipsis;
+        padding: 0 0.25rem;
       }
 
-      .gizmo > * {
-        margin-right: 0.5rem;
+      .gizmo.error {
+        background-color: hsla(var(--gizmo-red-hsl), 0.15);
+        animation: bounce 0.5s;
+        animation-iteration-count: 2;
       }
 
       .switch {
         display: inline-flex;
         align-items: center;
-        margin-left: auto;
-        flex-shrink: 1;
-        min-width: 28px;
       }
 
       .switch input {
         opacity: 0;
         width: 0;
         height: 0;
+        position: absolute;
       }
 
       .switch .slider {
@@ -186,11 +186,17 @@ export class VaadinDevmodeGizmo extends LitElement {
         border-radius: 9px;
         background-color: rgba(255, 255, 255, 0.3);
         transition: var(--gizmo-transition-duration);
+        margin-right: 0.5rem;
       }
 
+      .switch:focus-within .slider,
       .switch .slider:hover {
         background-color: rgba(255, 255, 255, 0.35);
         transition: none;
+      }
+
+      .switch input:focus-visible ~ .slider {
+        box-shadow: 0 0 0 2px var(--gizmo-background-color-active), 0 0 0 4px var(--gizmo-blue-color);
       }
 
       .switch .slider::before {
@@ -216,14 +222,6 @@ export class VaadinDevmodeGizmo extends LitElement {
         background-color: var(--gizmo-grey-color);
       }
 
-      .live-reload-text {
-        font-weight: 600;
-        margin-left: 0.5em;
-        flex: 1;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-
       .window.hidden {
         opacity: 0;
         transform: scale(0);
@@ -241,18 +239,7 @@ export class VaadinDevmodeGizmo extends LitElement {
         pointer-events: none;
       }
 
-      .window.hidden ~ .gizmo {
-        opacity: 1;
-        transition-delay: 0;
-      }
-
-      .window.hidden ~ .gizmo:hover,
-      .window.hidden ~ .gizmo:hover .vaadin-logo,
-      .window.hidden ~ .gizmo:hover .status-blip {
-        transition-delay: var(--gizmo-transition-duration);
-      }
-
-      .window.visible ~ .gizmo .vaadin-logo,
+      .window.visible ~ .gizmo .gizmo-icon,
       .window.visible ~ .gizmo .status-blip {
         transition: none;
         opacity: 0;
@@ -263,10 +250,9 @@ export class VaadinDevmodeGizmo extends LitElement {
         overflow: hidden;
         margin: 0.5rem;
         width: 30rem;
-        min-height: 10rem;
         max-width: calc(100% - 1rem);
-        max-height: calc(50vh - 1rem);
-        flex-shrink: 0;
+        max-height: calc(100vh - 1rem);
+        flex-shrink: 1;
         background-color: var(--gizmo-background-color-active);
         color: var(--gizmo-text-color);
         transition: var(--gizmo-transition-duration);
@@ -274,34 +260,77 @@ export class VaadinDevmodeGizmo extends LitElement {
         display: flex;
         flex-direction: column;
         box-shadow: var(--gizmo-box-shadow);
+        outline: none;
       }
 
       .window-toolbar {
         display: flex;
         flex: none;
         align-items: center;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.14);
-        padding: 0.25rem 0.75rem;
+        padding: 0.375rem;
         white-space: nowrap;
+        order: 1;
+        background-color: rgba(0, 0, 0, 0.2);
+        gap: 0.5rem;
       }
 
       .tab {
         color: var(--gizmo-text-color-secondary);
-        font-weight: 600;
-        padding-inline-end: 0.5rem;
+        font: inherit;
+        font-size: var(--gizmo-font-size-small);
+        font-weight: 500;
+        line-height: 1;
+        padding: 0.25rem 0.375rem;
         background: none;
         border: none;
+        margin: 0;
+        border-radius: 0.25rem;
+        transition: var(--gizmo-transition-duration);
       }
+
+      .tab:hover,
       .tab.active {
         color: var(--gizmo-text-color-active);
       }
 
+      .tab.active {
+        background-color: rgba(255, 255, 255, 0.12);
+      }
+
+      .tab.unreadErrors::after {
+        content: '•';
+        color: hsl(var(--gizmo-red-hsl));
+        font-size: 1.5rem;
+        position: absolute;
+        transform: translate(0, -50%);
+      }
+
       .ahreflike {
-        font-weight: 600;
+        font-weight: 500;
         color: var(--gizmo-text-color-secondary);
+        text-decoration: underline;
+        cursor: pointer;
       }
 
       .ahreflike:hover {
+        color: var(--gizmo-text-color-emphasis);
+      }
+
+      .button {
+        all: initial;
+        font-family: inherit;
+        font-size: var(--gizmo-font-size-small);
+        line-height: 1;
+        white-space: nowrap;
+        background-color: rgba(0, 0, 0, 0.2);
+        color: inherit;
+        font-weight: 600;
+        padding: 0.25rem 0.375rem;
+        border-radius: 0.25rem;
+      }
+
+      .button:focus,
+      .button:hover {
         color: var(--gizmo-text-color-emphasis);
       }
 
@@ -313,9 +342,8 @@ export class VaadinDevmodeGizmo extends LitElement {
         background-color: transparent;
         border: 0;
         padding: 0;
-        margin: 0 -0.375rem 0 1rem;
+        margin: 0 0 0 auto;
         opacity: 0.8;
-        outline: none;
       }
 
       .minimize-button:hover {
@@ -330,8 +358,7 @@ export class VaadinDevmodeGizmo extends LitElement {
         --gizmo-notification-color: var(--gizmo-blue-color);
       }
 
-      .message.warning,
-      .experimental-warning {
+      .message.warning {
         --gizmo-notification-color: var(--gizmo-yellow-color);
       }
 
@@ -341,7 +368,7 @@ export class VaadinDevmodeGizmo extends LitElement {
 
       .message {
         display: flex;
-        padding: 0.125rem 0.75rem 0.125rem 2rem;
+        padding: 0.1875rem 0.75rem 0.1875rem 2rem;
         background-clip: padding-box;
       }
 
@@ -363,7 +390,16 @@ export class VaadinDevmodeGizmo extends LitElement {
         margin: 0.125rem 0;
       }
 
+      .message.log {
+        color: var(--gizmo-text-color-secondary);
+      }
+
+      .message:not(.log) .message-heading {
+        font-weight: 500;
+      }
+
       .message.has-details .message-heading {
+        color: var(--gizmo-text-color-emphasis);
         font-weight: 600;
       }
 
@@ -375,8 +411,8 @@ export class VaadinDevmodeGizmo extends LitElement {
         font-size: 0.875em;
         font-weight: 600;
         line-height: calc(1.25em - 2px);
-        width: 1rem;
-        height: 1rem;
+        width: 14px;
+        height: 14px;
         box-sizing: border-box;
         border: 1px solid transparent;
         border-radius: 50%;
@@ -389,27 +425,31 @@ export class VaadinDevmodeGizmo extends LitElement {
       }
 
       .message.warning .message-heading::before,
-      .message.error .message-heading::before,
-      .experimental-warning.message-heading::before {
+      .message.error .message-heading::before {
         content: '!';
         color: var(--gizmo-background-color-active);
         background-color: var(--gizmo-notification-color);
       }
 
       .features-tray {
-        padding-left: 0.5rem;
-        padding-top: 0.5rem;
+        padding: 0.75rem;
+        flex: auto;
+        overflow: auto;
+        animation: fade-in var(--gizmo-transition-duration) ease-in;
+        user-select: text;
       }
-      .feature-toggle {
-        position: absolute;
+
+      .features-tray p {
+        margin-top: 0;
+        color: var(--gizmo-text-color-secondary);
       }
-      .feature-title {
-        padding-left: 1.7rem;
-        display: block;
+
+      .features-tray .feature {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
       }
-      .experimental-warning {
-        padding-left: 1.7rem;
-      }
+
       .message .message-details {
         font-weight: 400;
         color: var(--gizmo-text-color-secondary);
@@ -425,18 +465,6 @@ export class VaadinDevmodeGizmo extends LitElement {
         margin: 0;
         margin-right: 0.375em;
         word-break: break-word;
-      }
-
-      .message .ahreflike {
-        color: var(--gizmo-notification-color, var(--gizmo-text-color));
-        text-decoration: none;
-        opacity: 0.9;
-        font-weight: 500;
-      }
-
-      .message .ahreflike:hover {
-        color: var(--gizmo-notification-color, var(--gizmo-text-color-emphasis));
-        opacity: 1;
       }
 
       .message .persist {
@@ -498,6 +526,7 @@ export class VaadinDevmodeGizmo extends LitElement {
         flex-direction: column-reverse;
         align-items: flex-end;
         margin: 0.5rem;
+        flex: none;
       }
 
       .window.hidden + .notification-tray {
@@ -532,10 +561,12 @@ export class VaadinDevmodeGizmo extends LitElement {
       .message-tray {
         flex: auto;
         overflow: auto;
+        max-height: 20rem;
+        user-select: text;
       }
 
       .message-tray .message {
-        animation: appendList var(--gizmo-transition-duration) ease-in;
+        animation: fade-in var(--gizmo-transition-duration) ease-in;
         padding-left: 2.25rem;
       }
 
@@ -547,12 +578,16 @@ export class VaadinDevmodeGizmo extends LitElement {
         background-color: hsla(var(--gizmo-red-hsl), 0.09);
       }
 
-      .message-tray .message + .message {
-        border-top: 1px solid rgba(255, 255, 255, 0.07);
+      .message-tray .message.error .message-heading {
+        color: hsl(var(--gizmo-red-hsl));
       }
 
-      .message-tray .message:last-child {
-        padding-bottom: 0.375rem;
+      .message-tray .message.warning .message-heading {
+        color: hsl(var(--gizmo-yellow-hsl));
+      }
+
+      .message-tray .message + .message {
+        border-top: 1px solid rgba(255, 255, 255, 0.07);
       }
 
       .message-tray .dismiss-message,
@@ -561,20 +596,69 @@ export class VaadinDevmodeGizmo extends LitElement {
       }
 
       .info-tray {
+        padding: 0.75rem;
         position: relative;
-      }
-      .info-message {
-        display: flex;
-        padding: 0.125rem 0.75rem 0.125rem 0.5rem;
-        background-clip: padding-box;
+        flex: auto;
+        overflow: auto;
+        animation: fade-in var(--gizmo-transition-duration) ease-in;
         user-select: text;
       }
-      .copy {
-        position: absolute;
-        fill: white;
-        top: 0.125rem;
-        right: 0.75rem;
+
+      .info-tray dl {
+        margin: 0;
+        display: grid;
+        grid-template-columns: max-content 1fr;
+        column-gap: 0.75rem;
+        position: relative;
       }
+
+      .info-tray dt {
+        grid-column: 1;
+        color: var(--gizmo-text-color-emphasis);
+      }
+
+      .info-tray dt:not(:first-child)::before {
+        content: '';
+        width: 100%;
+        position: absolute;
+        height: 1px;
+        background-color: rgba(255, 255, 255, 0.1);
+        margin-top: -0.375rem;
+      }
+
+      .info-tray dd {
+        grid-column: 2;
+        margin: 0;
+      }
+
+      .info-tray :is(dt, dd):not(:last-child) {
+        margin-bottom: 0.75rem;
+      }
+
+      .info-tray dd + dd {
+        margin-top: -0.5rem;
+      }
+
+      .info-tray .live-reload-status::before {
+        content: '•';
+        color: var(--status-color);
+        width: 0.75rem;
+        display: inline-block;
+        font-size: 1rem;
+        line-height: 0.5rem;
+      }
+
+      .info-tray .copy {
+        position: fixed;
+        z-index: 1;
+        top: 0.5rem;
+        right: 0.5rem;
+      }
+
+      .info-tray .switch {
+        vertical-align: -4px;
+      }
+
       @keyframes slideIn {
         from {
           transform: translateX(100%);
@@ -597,17 +681,36 @@ export class VaadinDevmodeGizmo extends LitElement {
         }
       }
 
-      @keyframes appendList {
+      @keyframes fade-in {
         0% {
-          font-size: 0;
           opacity: 0;
+        }
+      }
+
+      @keyframes bounce {
+        0% {
+          transform: scale(0.8);
         }
         50% {
-          font-size: 1em;
-          opacity: 0;
+          transform: scale(1.5);
+          background-color: hsla(var(--gizmo-red-hsl), 1);
         }
         100% {
-          opacity: 1;
+          transform: scale(1);
+        }
+      }
+
+      @supports (backdrop-filter: blur(1px)) {
+        .gizmo,
+        .window,
+        .notification-tray .message {
+          backdrop-filter: blur(8px);
+        }
+        .gizmo:hover,
+        .gizmo.active,
+        .window,
+        .notification-tray .message {
+          background-color: var(--gizmo-background-color-active-blurred);
         }
       }
     `;
@@ -671,10 +774,11 @@ export class VaadinDevmodeGizmo extends LitElement {
 
   @state()
   private tabs: readonly Tab[] = [
-    { id: 'log', title: 'Log', render: this.renderLog },
+    { id: 'log', title: 'Log', render: this.renderLog, activate: this.activateLog },
     { id: 'info', title: 'Info', render: this.renderInfo },
-    { id: 'features', title: 'Features', render: this.renderFeatures }
+    { id: 'features', title: 'Experimental Features', render: this.renderFeatures }
   ];
+
   @state()
   private activeTab: string = 'log';
 
@@ -683,6 +787,12 @@ export class VaadinDevmodeGizmo extends LitElement {
 
   @state()
   private features: Feature[] = [];
+
+  @state()
+  private unreadErrors = false;
+
+  @query('.window')
+  private root!: HTMLElement;
 
   private javaConnection?: Connection;
   private frontendConnection?: Connection;
@@ -733,7 +843,7 @@ export class VaadinDevmodeGizmo extends LitElement {
         this.features = message.data.features as Feature[];
       } else {
         // eslint-disable-next-line no-console
-        console.error('Unknown message from frontend connection:', JSON.stringify(message));
+        console.error('Unknown message from front-end connection:', JSON.stringify(message));
       }
     };
     this.frontendConnection = frontendConnection;
@@ -825,12 +935,11 @@ export class VaadinDevmodeGizmo extends LitElement {
 
     const lastReload = window.sessionStorage.getItem(VaadinDevmodeGizmo.TRIGGERED_KEY_IN_SESSION_STORAGE);
     if (lastReload) {
-      const count = window.sessionStorage.getItem(VaadinDevmodeGizmo.TRIGGERED_COUNT_KEY_IN_SESSION_STORAGE);
       const now = new Date();
       const reloaded = `${`0${now.getHours()}`.slice(-2)}:${`0${now.getMinutes()}`.slice(
         -2
       )}:${`0${now.getSeconds()}`.slice(-2)}`;
-      this.showSplashMessage(`Automatic reload #${count} finished at ${reloaded}`);
+      this.showSplashMessage(`Page reloaded at ${reloaded}`);
       window.sessionStorage.removeItem(VaadinDevmodeGizmo.TRIGGERED_KEY_IN_SESSION_STORAGE);
     }
 
@@ -873,6 +982,9 @@ export class VaadinDevmodeGizmo extends LitElement {
   toggleExpanded() {
     this.notifications.slice().forEach((notification) => this.dismissNotification(notification.id));
     this.expanded = !this.expanded;
+    if (this.expanded) {
+      this.root.focus();
+    }
   }
 
   showSplashMessage(msg: string | undefined) {
@@ -914,15 +1026,13 @@ export class VaadinDevmodeGizmo extends LitElement {
     this.requestUpdate();
     this.updateComplete.then(() => {
       // Scroll into view
-      setTimeout(() => {
-        const messageTray = this.shadowRoot!.querySelector('.message-tray .message:last-child');
-        if (messageTray) {
-          messageTray.scrollIntoView({ behavior: 'smooth' });
-          if (type === MessageType.ERROR) {
-            this.expanded = true;
-          }
-        }
-      }, this.transitionDuration);
+      const lastMessage = this.renderRoot.querySelector('.message-tray .message:last-child');
+      if (this.expanded && lastMessage) {
+        setTimeout(() => lastMessage.scrollIntoView({ behavior: 'smooth' }), this.transitionDuration);
+        this.unreadErrors = false;
+      } else if (type === MessageType.ERROR) {
+        this.unreadErrors = true;
+      }
     });
   }
 
@@ -1046,7 +1156,7 @@ export class VaadinDevmodeGizmo extends LitElement {
           <div class="message-details" ?hidden="${!messageObject.details && !messageObject.link}">
             ${messageObject.details ? html`<p>${messageObject.details}</p>` : ''}
             ${messageObject.link
-              ? html`<a class="ahreflike" href="${messageObject.link}" target="_blank">Read more</a>`
+              ? html`<a class="ahreflike" href="${messageObject.link}" target="_blank">Learn more</a>`
               : ''}
           </div>
           ${messageObject.persistentId
@@ -1065,18 +1175,129 @@ export class VaadinDevmodeGizmo extends LitElement {
 
   /* eslint-disable lit/no-template-map */
   render() {
-    return html` <div class="window ${this.expanded ? 'visible' : 'hidden'}">
+    return html` <div
+        class="window ${this.expanded ? 'visible' : 'hidden'}"
+        tabindex="0"
+        @keydown=${(e: KeyboardEvent) => e.key === 'Escape' && this.toggleExpanded()}
+      >
         <div class="window-toolbar">
           ${this.tabs.map(
             (tab) =>
               html`<button
-                class=${classMap({ tab: true, active: this.activeTab === tab.id })}
+                class=${classMap({
+                  tab: true,
+                  active: this.activeTab === tab.id,
+                  unreadErrors: tab.id === 'log' && this.unreadErrors
+                })}
                 id="${tab.id}"
-                @click=${() => (this.activeTab = tab.id)}
+                @click=${() => {
+                  this.activeTab = tab.id;
+                  if (tab.activate) tab.activate.call(this);
+                }}
               >
                 ${tab.title}
               </button> `
           )}
+          <button class="minimize-button" title="Minimize" @click=${() => this.toggleExpanded()}>
+            <svg fill="none" height="16" viewBox="0 0 16 16" width="16" xmlns="http://www.w3.org/2000/svg">
+              <g fill="#fff" opacity=".8">
+                <path
+                  d="m7.25 1.75c0-.41421.33579-.75.75-.75h3.25c2.0711 0 3.75 1.67893 3.75 3.75v6.5c0 2.0711-1.6789 3.75-3.75 3.75h-6.5c-2.07107 0-3.75-1.6789-3.75-3.75v-3.25c0-.41421.33579-.75.75-.75s.75.33579.75.75v3.25c0 1.2426 1.00736 2.25 2.25 2.25h6.5c1.2426 0 2.25-1.0074 2.25-2.25v-6.5c0-1.24264-1.0074-2.25-2.25-2.25h-3.25c-.41421 0-.75-.33579-.75-.75z"
+                />
+                <path
+                  d="m2.96967 2.96967c.29289-.29289.76777-.29289 1.06066 0l5.46967 5.46967v-2.68934c0-.41421.33579-.75.75-.75.4142 0 .75.33579.75.75v4.5c0 .4142-.3358.75-.75.75h-4.5c-.41421 0-.75-.3358-.75-.75 0-.41421.33579-.75.75-.75h2.68934l-5.46967-5.46967c-.29289-.29289-.29289-.76777 0-1.06066z"
+                />
+              </g>
+            </svg>
+          </button>
+        </div>
+        ${this.tabs.map((tab) => (this.activeTab === tab.id ? tab.render.call(this) : nothing))}
+      </div>
+
+      <div class="notification-tray">${this.notifications.map((msg) => this.renderMessage(msg))}</div>
+      <div
+        class="gizmo ${this.splashMessage ? 'active' : ''}${this.unreadErrors ? ' error' : ''}"
+        @click=${() => this.toggleExpanded()}
+      >
+        ${this.unreadErrors
+          ? html`<svg
+              fill="none"
+              height="16"
+              viewBox="0 0 16 16"
+              width="16"
+              xmlns="http://www.w3.org/2000/svg"
+              xmlns:xlink="http://www.w3.org/1999/xlink"
+              class="gizmo-icon error"
+            >
+              <clipPath id="a"><path d="m0 0h16v16h-16z" /></clipPath>
+              <g clip-path="url(#a)">
+                <path
+                  d="m6.25685 2.09894c.76461-1.359306 2.72169-1.359308 3.4863 0l5.58035 9.92056c.7499 1.3332-.2135 2.9805-1.7432 2.9805h-11.1606c-1.529658 0-2.4930857-1.6473-1.743156-2.9805z"
+                  fill="#ff5c69"
+                />
+                <path
+                  d="m7.99699 4c-.45693 0-.82368.37726-.81077.834l.09533 3.37352c.01094.38726.32803.69551.71544.69551.38741 0 .70449-.30825.71544-.69551l.09533-3.37352c.0129-.45674-.35384-.834-.81077-.834zm.00301 8c.60843 0 1-.3879 1-.979 0-.5972-.39157-.9851-1-.9851s-1 .3879-1 .9851c0 .5911.39157.979 1 .979z"
+                  fill="#fff"
+                />
+              </g>
+            </svg>`
+          : html`<svg
+              fill="none"
+              height="17"
+              viewBox="0 0 16 17"
+              width="16"
+              xmlns="http://www.w3.org/2000/svg"
+              class="gizmo-icon logo"
+            >
+              <g fill="#fff">
+                <path
+                  d="m8.88273 5.97926c0 .04401-.0032.08898-.00801.12913-.02467.42848-.37813.76767-.8117.76767-.43358 0-.78704-.34112-.81171-.76928-.00481-.04015-.00801-.08351-.00801-.12752 0-.42784-.10255-.87656-1.14434-.87656h-3.48364c-1.57118 0-2.315271-.72849-2.315271-2.21758v-1.26683c0-.42431.324618-.768314.748261-.768314.42331 0 .74441.344004.74441.768314v.42784c0 .47924.39576.81265 1.11293.81265h3.41538c1.5542 0 1.67373 1.156 1.725 1.7679h.03429c.05095-.6119.17048-1.7679 1.72468-1.7679h3.4154c.7172 0 1.0145-.32924 1.0145-.80847l-.0067-.43202c0-.42431.3227-.768314.7463-.768314.4234 0 .7255.344004.7255.768314v1.26683c0 1.48909-.6181 2.21758-2.1893 2.21758h-3.4836c-1.04182 0-1.14437.44872-1.14437.87656z"
+                />
+                <path
+                  d="m8.82577 15.1648c-.14311.3144-.4588.5335-.82635.5335-.37268 0-.69252-.2249-.83244-.5466-.00206-.0037-.00412-.0073-.00617-.0108-.00275-.0047-.00549-.0094-.00824-.0145l-3.16998-5.87318c-.08773-.15366-.13383-.32816-.13383-.50395 0-.56168.45592-1.01879 1.01621-1.01879.45048 0 .75656.22069.96595.6993l2.16882 4.05042 2.17166-4.05524c.2069-.47379.513-.69448.9634-.69448.5603 0 1.0166.45711 1.0166 1.01879 0 .17579-.0465.35029-.1348.50523l-3.1697 5.8725c-.00503.0096-.01006.0184-.01509.0272-.00201.0036-.00402.0071-.00604.0106z"
+                />
+              </g>
+            </svg>`}
+
+        <span
+          class="status-blip"
+          style="background: linear-gradient(to right, ${this.getStatusColor(
+            this.frontendStatus
+          )} 50%, ${this.getStatusColor(this.javaStatus)} 50%)"
+        ></span>
+        ${this.splashMessage ? html`<span class="status-description">${this.splashMessage}</span></div>` : nothing}
+      </div>`;
+  }
+
+  renderLog() {
+    return html`<div class="message-tray">${this.messages.map((msg) => this.renderMessage(msg))}</div>`;
+  }
+  activateLog() {
+    this.unreadErrors = false;
+    this.updateComplete.then(() => {
+      const lastMessage = this.renderRoot.querySelector('.message-tray .message:last-child');
+      if (lastMessage) {
+        lastMessage.scrollIntoView();
+      }
+    });
+  }
+
+  renderInfo() {
+    return html`<div class="info-tray">
+      <button class="button copy" @click=${this.copyInfoToClipboard}>Copy</button>
+      <dl>
+        <dt>Vaadin</dt>
+        <dd>${this.serverInfo.vaadinVersion}</dd>
+        <dt>Flow</dt>
+        <dd>${this.serverInfo.flowVersion}</dd>
+        <dt>Java</dt>
+        <dd>${this.serverInfo.javaVersion}</dd>
+        <dt>OS</dt>
+        <dd>${this.serverInfo.osVersion}</dd>
+        <dt>Browser</dt>
+        <dd>${navigator.userAgent}</dd>
+        <dt>
+          Live reload
           <label class="switch">
             <input
               id="toggle"
@@ -1087,108 +1308,72 @@ export class VaadinDevmodeGizmo extends LitElement {
                 (this.javaStatus === ConnectionStatus.UNAVAILABLE || this.javaStatus === ConnectionStatus.ERROR))}
               ?checked="${this.frontendStatus === ConnectionStatus.ACTIVE ||
               this.javaStatus === ConnectionStatus.ACTIVE}"
-              @change=${(e: any) => this.setActive(e.target.checked)}
+              @change=${(e: InputEvent) => this.setActive((e.target as HTMLInputElement).checked)}
             />
             <span class="slider"></span>
-            <span class="live-reload-text">Live reload</span>
           </label>
-          <button class="minimize-button" title="Minimize" @click=${() => this.toggleExpanded()}>
-            <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" fill="currentColor">
-              <path
-                d="M7.25 0.75C7.25 0.335786 7.58579 0 8 0H12.25C14.3211 0 16 1.67893 16 3.75V12.25C16 14.3211 14.3211 16 12.25 16H3.75C1.67893 16 0 14.3211 0 12.25V8C0 7.58579 0.335786 7.25 0.75 7.25C1.16421 7.25 1.5 7.58579 1.5 8V12.25C1.5 13.4926 2.50736 14.5 3.75 14.5H12.25C13.4926 14.5 14.5 13.4926 14.5 12.25V3.75C14.5 2.50736 13.4926 1.5 12.25 1.5H8C7.58579 1.5 7.25 1.16421 7.25 0.75Z"
-              />
-              <path
-                d="M2.96967 2.96967C3.26256 2.67678 3.73744 2.67678 4.03033 2.96967L9.5 8.43934V5.75C9.5 5.33579 9.83579 5 10.25 5C10.6642 5 11 5.33579 11 5.75V10.25C11 10.6642 10.6642 11 10.25 11H5.75C5.33579 11 5 10.6642 5 10.25C5 9.83579 5.33579 9.5 5.75 9.5H8.43934L2.96967 4.03033C2.67678 3.73744 2.67678 3.26256 2.96967 2.96967Z"
-              />
-            </svg>
-          </button>
-        </div>
-        ${this.tabs.map((tab) => (this.activeTab === tab.id ? tab.render.call(this) : nothing))}
-      </div>
-
-      <div class="notification-tray">${this.notifications.map((msg) => this.renderMessage(msg))}</div>
-
-      <div class="gizmo ${this.splashMessage ? 'active' : ''}" @click=${() => this.toggleExpanded()}>
-        <svg viewBox="0 0 16 16" preserveAspectRatio="xMidYMid meet" focusable="false" class="vaadin-logo">
-          <path
-            d="M15.21 0.35c-0.436 0-0.79 0.354-0.79 0.79v0 0.46c0 0.5-0.32 0.85-1.070 0.85h-3.55c-1.61 0-1.73 1.19-1.8 1.83v0c-0.060-0.64-0.18-1.83-1.79-1.83h-3.57c-0.75 0-1.090-0.37-1.090-0.86v-0.45c0-0.006 0-0.013 0-0.020 0-0.425-0.345-0.77-0.77-0.77-0 0-0 0-0 0h0c-0 0-0 0-0 0-0.431 0-0.78 0.349-0.78 0.78 0 0.004 0 0.007 0 0.011v-0.001 1.32c0 1.54 0.7 2.31 2.34 2.31h3.66c1.090 0 1.19 0.46 1.19 0.9 0 0 0 0.090 0 0.13 0.048 0.428 0.408 0.758 0.845 0.758s0.797-0.33 0.845-0.754l0-0.004s0-0.080 0-0.13c0-0.44 0.1-0.9 1.19-0.9h3.61c1.61 0 2.32-0.77 2.32-2.31v-1.32c0-0.436-0.354-0.79-0.79-0.79v0z"
-          ></path>
-          <path
-            d="M11.21 7.38c-0.012-0-0.026-0.001-0.040-0.001-0.453 0-0.835 0.301-0.958 0.714l-0.002 0.007-2.21 4.21-2.3-4.2c-0.122-0.425-0.507-0.731-0.963-0.731-0.013 0-0.026 0-0.039 0.001l0.002-0c-0.012-0-0.025-0.001-0.039-0.001-0.58 0-1.050 0.47-1.050 1.050 0 0.212 0.063 0.41 0.171 0.575l-0.002-0.004 3.29 6.1c0.15 0.333 0.478 0.561 0.86 0.561s0.71-0.228 0.858-0.555l0.002-0.006 3.34-6.1c0.090-0.152 0.144-0.335 0.144-0.53 0-0.58-0.47-1.050-1.050-1.050-0.005 0-0.010 0-0.014 0h0.001z"
-          ></path>
-        </svg>
-        <span
-          class="status-blip"
-          style="background: linear-gradient(to right, ${this.getStatusColor(
-            this.frontendStatus
-          )} 0.5rem, ${this.getStatusColor(this.javaStatus)} 0.5rem)"
-        ></span>
-        ${this.splashMessage
-          ? html`<span class="status-description">${this.splashMessage}</span></div>`
-          : html`<span class="status-description">Live reload (JS: ${this.frontendStatus}, Java: ${this.javaStatus}) </span><span class="ahreflike">Details</span></div>`}
-      </div>`;
-  }
-
-  renderLog() {
-    return html`<div class="message-tray">${this.messages.map((msg) => this.renderMessage(msg))}</div>`;
-  }
-  renderInfo() {
-    return html`<div class="info-tray">
-      <span class="copy" @click=${this.copyInfoToClipboard}>${VaadinDevmodeGizmo.copyO}</span>
-      <div class="info-message">Vaadin version: ${this.serverInfo.vaadinVersion}</div>
-      <div class="info-message">Flow version: ${this.serverInfo.flowVersion}</div>
-      <div class="info-message">Java version: ${this.serverInfo.javaVersion}</div>
-      <div class="info-message">Operating system: ${this.serverInfo.osVersion}</div>
-      <div class="info-message">Browser: ${navigator.userAgent}</div>
+        </dt>
+        <dd class="live-reload-status" style="--status-color: ${this.getStatusColor(this.javaStatus)}">
+          Java ${this.javaStatus} ${this.backend ? `(${VaadinDevmodeGizmo.BACKEND_DISPLAY_NAME[this.backend]})` : ''}
+        </dd>
+        <dd class="live-reload-status" style="--status-color: ${this.getStatusColor(this.frontendStatus)}">
+          Front end ${this.frontendStatus}
+        </dd>
+      </dl>
     </div>`;
   }
 
   private renderFeatures() {
     return html`<div class="features-tray">
-              <p class="message-heading experimental-warning">Experimental features ahead!</p>
-              <p>
-                These features are work in progress and the implementation, API, look and feel is not yet finished.
-              </p>
-
-                ${this.features.map(
-                  (feature) => html`<div class="feature">
-                    <input
-                      class="feature-toggle"
-                      id="feature-toggle-${feature.id}"
-                      type="checkbox"
-                      ?checked=${feature.enabled}
-                      @change=${(e: Event) => this.toggleFeatureFlag(e, feature)}
-                    />
-
-                    <label for="feature-toggle-${feature.id}" class="feature-title"
-                      >${feature.title}
-                      <span class="feature-link">
-                        <a class="ahreflike" href="${feature.moreInfoLink}" target="_blank">More info</a>
-                      </span></label
-                    >
-                  </div>`
-                )}
-              </p>
-            </div>`;
+      <p>
+        These features are work in progress. The behavior, API, look and feel can still change significantly before (and
+        if) they become part of a stable release.
+      </p>
+      ${this.features.map(
+        (feature) => html`<div class="feature">
+          <label class="switch">
+            <input
+              class="feature-toggle"
+              id="feature-toggle-${feature.id}"
+              type="checkbox"
+              ?checked=${feature.enabled}
+              @change=${(e: InputEvent) => this.toggleFeatureFlag(e, feature)}
+            />
+            <span class="slider"></span>
+            ${feature.title}
+          </label>
+          <a class="ahreflike" href="${feature.moreInfoLink}" target="_blank">Learn more</a>
+        </div>`
+      )}
+    </div>`;
   }
 
-  copyInfoToClipboard(): void {
-    const messages = this.renderRoot.querySelectorAll('.info-message');
-    const text = Array.from(messages)
-      .map((message) => message.textContent)
+  copyInfoToClipboard() {
+    const items = this.renderRoot.querySelectorAll('.info-tray dt, .info-tray dd');
+    const text = Array.from(items)
+      .map((message) => (message.localName === 'dd' ? '\t' : '') + message.textContent!.trim())
       .join('\n');
     copy(text);
-    this.showNotification(MessageType.INFORMATION, 'Version information copied to clipboard');
+    this.showNotification(
+      MessageType.INFORMATION,
+      'Environment information copied to clipboard',
+      undefined,
+      undefined,
+      'versionInfoCopied'
+    );
   }
 
   toggleFeatureFlag(e: Event, feature: Feature) {
     const enabled = (e.target! as HTMLInputElement).checked;
     if (this.frontendConnection) {
       this.frontendConnection.setFeature(feature.id, enabled);
-      this.log(MessageType.INFORMATION, `Feature '${feature.title}' ${enabled ? 'enabled' : 'disabled'}`);
-      if (feature.requiresServerRestart) {
-        this.showNotification(MessageType.INFORMATION, 'You need to restart the server to enable this feature');
-      }
+      this.showNotification(
+        MessageType.INFORMATION,
+        `“${feature.title}” ${enabled ? 'enabled' : 'disabled'}`,
+        feature.requiresServerRestart ? 'This feature requires a server restart' : undefined,
+        undefined,
+        `feature${feature.id}${enabled ? 'Enabled' : 'Disabled'}`
+      );
     } else {
       this.log(MessageType.ERROR, `Unable to toggle feature ${feature.title}: No server connection available`);
     }
