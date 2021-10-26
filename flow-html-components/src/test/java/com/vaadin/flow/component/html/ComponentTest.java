@@ -162,10 +162,10 @@ public abstract class ComponentTest {
         }
 
         HasAriaLabel component = (HasAriaLabel) this.component;
-        Assert.assertNull(component.getAriaLabel());
+        Assert.assertFalse(component.getAriaLabel().isPresent());
 
         component.setAriaLabel("new AriaLabel");
-        Assert.assertEquals("new AriaLabel", component.getAriaLabel());
+        Assert.assertEquals("new AriaLabel", component.getAriaLabel().get());
     }
 
     @Test

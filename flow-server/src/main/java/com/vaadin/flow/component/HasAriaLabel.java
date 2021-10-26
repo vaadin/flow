@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component;
 
+import java.util.Optional;
+
 import com.vaadin.flow.dom.ElementConstants;
 
 /**
@@ -56,11 +58,11 @@ public interface HasAriaLabel extends HasElement {
     /**
      * Gets the aria-label of the component.
      *
-     * @return the aria-label of the component or {@code null} if aria-label has
-     *         not been set
+     * @return an optional aria-label of the component if no aria-label has been
+     *         set
      */
-    default String getAriaLabel() {
-        return getElement()
-                .getProperty(ElementConstants.ARIA_LABEL_PROPERTY_NAME, null);
+    default Optional<String> getAriaLabel() {
+        return Optional.ofNullable(getElement()
+                .getProperty(ElementConstants.ARIA_LABEL_PROPERTY_NAME, null));
     }
 }

@@ -16,7 +16,7 @@
 package com.vaadin.flow.component;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertFalse;
 
 import org.junit.Test;
 
@@ -29,24 +29,24 @@ public class HasAriaLabelTest {
     }
 
     @Test
-    public void withoutAriaLabelComponent_getAriaLabelReturnsNull() {
+    public void withoutAriaLabelComponent_getAriaLabelReturnsEmptyOptional() {
         TestComponent component = new TestComponent();
 
-        assertNull(component.getAriaLabel());
+        assertFalse(component.getAriaLabel().isPresent());
     }
 
     @Test
-    public void withNullAriaLabel_getAriaLabelReturnsNull() {
+    public void withNullAriaLabel_getAriaLabelReturnsEmptyOptional() {
         TestComponent component = new TestComponent();
         component.setAriaLabel(null);
-        assertNull(component.getAriaLabel());
+        assertFalse(component.getAriaLabel().isPresent());
     }
 
     @Test
     public void withEmptyAriaLabel_getAriaLabelReturnsEmptyString() {
         TestComponent component = new TestComponent();
         component.setAriaLabel("");
-        assertEquals("", component.getAriaLabel());
+        assertEquals("", component.getAriaLabel().get());
     }
 
     @Test
@@ -55,7 +55,7 @@ public class HasAriaLabelTest {
         component.setAriaLabel("test AriaLabel");
 
         component.setAriaLabel(null);
-        assertNull(component.getAriaLabel());
+        assertFalse(component.getAriaLabel().isPresent());
     }
 
     @Test
@@ -63,6 +63,6 @@ public class HasAriaLabelTest {
         TestComponent component = new TestComponent();
         component.setAriaLabel("test AriaLabel");
 
-        assertEquals("test AriaLabel", component.getAriaLabel());
+        assertEquals("test AriaLabel", component.getAriaLabel().get());
     }
 }
