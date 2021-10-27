@@ -78,7 +78,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
     private static final String FAILED_MSG = "\n------------------ Frontend compilation failed. ------------------\n\n";
     private static final String SUCCEED_MSG = "\n----------------- Frontend compiled successfully. -----------------\n\n";
     private static final String START = "\n------------------ Starting Frontend compilation. ------------------\n";
-    private static final String LOG_START = "Running Server to compile frontend resources. This may take a moment, please stand by...";
+    private static final String LOG_START = "Running {} to compile frontend resources. This may take a moment, please stand by...";
 
     /**
      * If after this time in millisecs, the pattern was not found, we unlock the
@@ -365,7 +365,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
                     process.getInputStream(), getServerSuccessPattern(),
                     getServerFailurePattern(), this::onDevServerCompilation);
             finder.find();
-            getLogger().info(LOG_START);
+            getLogger().info(LOG_START, getServerName());
 
             int timeout = Integer.parseInt(config.getStringProperty(
                     InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT,
@@ -395,7 +395,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
             FrontendUtils.console(FrontendUtils.RED, FAILED_MSG);
             failedOutput = result.getOutput();
         }
-    };
+    }
 
     @Override
     public String getFailedOutput() {
@@ -683,7 +683,11 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
             requestFilename = "/VAADIN/static" + requestFilename;
         }
 
-        HttpURLConnection connection = prepareConnection(requestFilename,
+        String devServerRequestPath = requestFilename;
+        if (request.getQueryString() != null) {
+            devServerRequestPath += "?" + request.getQueryString();
+        }
+        HttpURLConnection connection = prepareConnection(devServerRequestPath,
                 request.getMethod());
 
         // Copies all the headers from the original request
@@ -702,14 +706,14 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         int responseCode = connection.getResponseCode();
         if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
             getLogger().debug("Resource not served by {} {}", getServerName(),
-                    requestFilename);
+                    devServerRequestPath);
             // the dev server cannot access the resource, return false so Flow
             // can
             // handle it
             return false;
         }
         getLogger().debug("Served resource by {}: {} {}", getServerName(),
-                responseCode, requestFilename);
+                responseCode, devServerRequestPath);
 
         // Copies response headers
         connection.getHeaderFields().forEach((header, values) -> {

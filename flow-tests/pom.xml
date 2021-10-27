@@ -293,7 +293,6 @@
         <module>test-resources</module>
         <module>test-common</module>
         <module>test-lumo</module>
-        <module>test-frontend</module>
     </modules>
 
     <profiles>
@@ -351,6 +350,7 @@
                 <!-- test impacts startup test-->
                 <module>test-application-theme</module>
                 <module>test-theme-no-polymer</module>
+                <module>test-frontend</module>
             </modules>
         </profile>
         <profile>

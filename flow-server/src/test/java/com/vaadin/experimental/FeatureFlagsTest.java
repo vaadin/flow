@@ -91,6 +91,24 @@ public class FeatureFlagsTest {
     }
 
     @Test
+    public void setPropertiesLocationWithNoFileDisablesFeatures()
+            throws Exception {
+        // given an enabled feature
+        File folder = createTempFeatureFlagsFile(
+                "com.vaadin.experimental.exampleFeatureFlag=true\n");
+        FeatureFlags.setPropertiesLocation(folder);
+
+        // when a directory containing no vaadin-featureflags.properties is set
+        File emptyFolder = Files.createTempDirectory("test-folder").toFile();
+        emptyFolder.deleteOnExit();
+        FeatureFlags.setPropertiesLocation(emptyFolder);
+
+        // then the feature should be disabled
+        Assert.assertFalse("Feature should have been disabled",
+                FeatureFlags.isEnabled(FeatureFlags.EXAMPLE));
+    }
+
+    @Test
     public void enableDisableFeature() throws IOException {
         createTempFeatureFlagsFile(
                 "com.vaadin.experimental.exampleFeatureFlag=false\n");

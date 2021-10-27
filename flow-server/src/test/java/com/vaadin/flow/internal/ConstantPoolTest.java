@@ -74,4 +74,13 @@ public class ConstantPoolTest {
         Assert.assertNotEquals(constantId, otherId);
         Assert.assertTrue(constantPool.hasNewConstants());
     }
+
+    @Test
+    public void constantPoolKey_exportedDirectly_idCreated() {
+        final ConstantPoolKey constantPoolKey = new ConstantPoolKey(
+                Json.createObject());
+        final JsonObject message = Json.createObject();
+        constantPoolKey.export(message);
+        Assert.assertTrue(message.hasKey(constantPoolKey.getId()));
+    }
 }

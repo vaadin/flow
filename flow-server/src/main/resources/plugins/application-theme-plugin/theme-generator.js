@@ -105,7 +105,7 @@ function generateThemeFile(themeFolder, themeName, themeProperties, productionMo
   let themeFile = headerImport;
 
   if (componentsFiles.length > 0) {
-    themeFile += 'import { css, unsafeCSS, registerStyles } from \'@vaadin/vaadin-themable-mixin/register-styles\';\n';
+    themeFile += 'import { unsafeCSS, registerStyles } from \'@vaadin/vaadin-themable-mixin/register-styles\';\n';
   }
 
   if (themeProperties.parent) {
@@ -202,9 +202,7 @@ function generateThemeFile(themeFolder, themeName, themeProperties, productionMo
 // Don't format as the generated file formatting will get wonky!
     const componentString = `registerStyles(
       '${tag}',
-      css\`
-        \${unsafeCSS(${variable}.toString())}
-      \`
+      unsafeCSS(${variable}.toString())
     );
     `;
     componentCssCode.push(componentString);

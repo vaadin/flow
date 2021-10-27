@@ -15,6 +15,7 @@
  */
 package com.vaadin.base.devserver;
 
+import java.io.Serializable;
 import java.util.List;
 
 import com.vaadin.experimental.Feature;
@@ -22,7 +23,7 @@ import com.vaadin.experimental.Feature;
 /**
  * Message with feature flags sent to the debug window.
  */
-public class FeatureFlagMessage {
+public class FeatureFlagMessage implements Serializable {
     private List<Feature> features;
 
     /**

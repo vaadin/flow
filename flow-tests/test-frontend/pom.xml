@@ -13,6 +13,7 @@
 
     <modules>
         <module>vite-basics</module>
+        <module>vite-production</module>
     </modules>
 
     <dependencies>

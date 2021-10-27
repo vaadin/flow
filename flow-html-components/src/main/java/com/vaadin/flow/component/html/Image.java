@@ -18,6 +18,7 @@ package com.vaadin.flow.component.html;
 import java.util.Optional;
 
 import com.vaadin.flow.component.ClickNotifier;
+import com.vaadin.flow.component.HasAriaLabel;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
@@ -32,7 +33,8 @@ import com.vaadin.flow.server.StreamResource;
  * @since 1.0
  */
 @Tag(Tag.IMG)
-public class Image extends HtmlContainer implements ClickNotifier<Image> {
+public class Image extends HtmlContainer
+        implements ClickNotifier<Image>, HasAriaLabel {
 
     private static final PropertyDescriptor<String, String> srcDescriptor = PropertyDescriptors
             .attributeWithDefault("src", "");

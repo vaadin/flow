@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component.html;
 
+import org.junit.Test;
+
 public class NativeButtonTest extends ComponentTest {
 
     // Actual test methods in super class
@@ -24,4 +26,9 @@ public class NativeButtonTest extends ComponentTest {
         // Component defines no new properties
     }
 
+    @Test
+    @Override
+    public void testHasAriaLabelIsImplemented() {
+        super.testHasAriaLabelIsImplemented();
+    }
 }

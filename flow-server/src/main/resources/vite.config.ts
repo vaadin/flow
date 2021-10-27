@@ -6,6 +6,7 @@ import settings from './target/vaadin-dev-server-settings.json';
 
 const frontendFolder = path.resolve(__dirname, settings.frontendFolder);
 const themeFolder = path.resolve(frontendFolder, settings.themeFolder);
+const buildFolder = path.resolve(__dirname, settings.frontendBundleOutput);
 
 const projectStaticAssetsFolders = [
   path.resolve(__dirname, 'src', 'main', 'resources', 'META-INF', 'resources'),
@@ -33,9 +34,9 @@ console.trace = () => {};
 console.debug =() => {};
 
 // https://vitejs.dev/config/
-export default defineConfig({
+export default defineConfig(({ command, mode }) => ({
   root: 'frontend',
-  base: '/VAADIN/',
+  base: mode === 'production' ? '' : '/VAADIN/',
   resolve: {
     alias: {
       themes: themeFolder,
@@ -43,8 +44,17 @@ export default defineConfig({
     },
   },
   build: {
+    outDir: buildFolder,
+    assetsDir: 'VAADIN/build',
     rollupOptions: {
-      external: /^lit-element/,
+      input: {
+        main: path.resolve(frontendFolder, 'index.html'),
+        generated: path.resolve(frontendFolder, 'generated/vaadin.ts')
+      },
+      output: {
+        // Produce only one chunk that gets imported into index.html
+        manualChunks: () => 'everything.js'
+      },
     },
   },
   plugins: [
@@ -55,4 +65,4 @@ export default defineConfig({
       }
     }
   ]
-});
+}));

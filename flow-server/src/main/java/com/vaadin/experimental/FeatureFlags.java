@@ -151,6 +151,10 @@ public class FeatureFlags implements Serializable {
 
         File featureFlagFile = getFeatureFlagFile();
         if (featureFlagFile == null || !featureFlagFile.exists()) {
+            // Disable all features if no file exists
+            for (Feature f : features) {
+                f.setEnabled(false);
+            }
             return;
         }
 
