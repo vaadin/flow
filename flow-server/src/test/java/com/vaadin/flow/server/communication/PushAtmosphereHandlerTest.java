@@ -31,6 +31,8 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
+import com.vaadin.flow.server.MockVaadinContext;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
@@ -55,10 +57,12 @@ public class PushAtmosphereHandlerTest {
         Mockito.when(resource.getRequest()).thenReturn(request);
         Mockito.when(resource.getResponse()).thenReturn(response);
 
+        VaadinContext context = new MockVaadinContext();
         ApplicationConfiguration config = Mockito
                 .mock(ApplicationConfiguration.class);
         Mockito.when(config.getPropertyNames())
                 .thenReturn(Collections.emptyEnumeration());
+        Mockito.when(config.getContext()).thenReturn(context);
         VaadinServletService service = new VaadinServletService(null,
                 new DefaultDeploymentConfiguration(config, getClass(),
                         new Properties()));

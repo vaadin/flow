@@ -12,6 +12,8 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.MockVaadinContext;
+import com.vaadin.flow.server.VaadinContext;
 
 import static com.vaadin.flow.server.Constants.TARGET;
 
@@ -28,7 +30,6 @@ public class NodeTasksExecutionTest {
 
     @Before
     public void init() throws Exception {
-
         // Make a builder that doesn't add any commands.
         NodeTasks.Builder builder = new NodeTasks.Builder(
                 Mockito.mock(Lookup.class), null, TARGET);

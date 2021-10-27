@@ -754,7 +754,7 @@ public class NodeTasks implements FallibleCommand {
                     builder.flowResourcesFolder, builder.localResourcesFolder));
         }
 
-        if (FeatureFlags.getInstance(builder.context)
+        if (builder.context != null && FeatureFlags.getInstance(builder.context)
                 .isEnabled(FeatureFlags.VITE)) {
             commands.add(new TaskUpdateSettingsFile(builder));
             commands.add(new TaskUpdateVite(builder.npmFolder,

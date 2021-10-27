@@ -62,11 +62,13 @@ public class CustomUIClassLoaderTest extends TestCase {
     private static DeploymentConfiguration createConfigurationMock() {
         Properties properties = new Properties();
         properties.put(InitParameters.UI_PARAMETER, MyUI.class.getName());
+        VaadinContext context = new MockVaadinContext();
         ApplicationConfiguration config = Mockito
                 .mock(ApplicationConfiguration.class);
         Mockito.when(config.getPropertyNames())
                 .thenReturn(Collections.emptyEnumeration());
         Mockito.when(config.getBuildFolder()).thenReturn(".");
+        Mockito.when(config.getContext()).thenReturn(context);
         return new DefaultDeploymentConfiguration(config,
                 CustomUIClassLoaderTest.class, properties);
     }

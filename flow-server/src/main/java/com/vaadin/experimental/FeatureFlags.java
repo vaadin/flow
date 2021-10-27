@@ -132,17 +132,21 @@ public class FeatureFlags implements Serializable {
 
     void loadProperties() {
         final Lookup lookup = context.getAttribute(Lookup.class);
-        final URL applicationResource = lookup.lookup(ResourceProvider.class)
-                .getApplicationResource(PROPERTIES_FILENAME);
-        if (applicationResource != null) {
-            getLogger().debug("Properties loaded from classpath.");
-            try {
-                loadProperties(applicationResource.openStream());
-            } catch (IOException e) {
-                getLogger().error("Unable to read properties from classpath",
-                        e);
+        final ResourceProvider resourceProvider = lookup
+                .lookup(ResourceProvider.class);
+        if (resourceProvider != null) {
+            final URL applicationResource = resourceProvider
+                    .getApplicationResource(PROPERTIES_FILENAME);
+            if (applicationResource != null) {
+                getLogger().debug("Properties loaded from classpath.");
+                try {
+                    loadProperties(applicationResource.openStream());
+                    return;
+                } catch (IOException e) {
+                    getLogger().error(
+                            "Unable to read properties from classpath", e);
+                }
             }
-            return;
         }
 
         File featureFlagFile = getFeatureFlagFile();

@@ -33,6 +33,8 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.MockVaadinContext;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.frontend.NodeTasks.Builder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
@@ -59,6 +61,7 @@ public class NodeTasksTest {
     private static String globalGeneratedDirValue;
 
     private String userDir;
+    private VaadinContext context;
 
     @Before
     public void setup() {
@@ -66,6 +69,7 @@ public class NodeTasksTest {
         System.setProperty(USER_DIR, userDir);
         System.clearProperty(PARAM_FRONTEND_DIR);
         System.clearProperty(PARAM_GENERATED_DIR);
+        context = new MockVaadinContext();
     }
 
     @BeforeClass
@@ -90,7 +94,8 @@ public class NodeTasksTest {
                 .when(mockedLookup).lookup(ClassFinder.class);
         Builder builder = new Builder(mockedLookup, new File(userDir), TARGET)
                 .enablePackagesUpdate(false).enableImportsUpdate(true)
-                .runNpmInstall(false).withEmbeddableWebComponents(false);
+                .runNpmInstall(false).withEmbeddableWebComponents(false)
+                .withContext(context);
 
         Assert.assertEquals(
                 new File(userDir, DEFAULT_FRONTEND_DIR).getAbsolutePath(),
@@ -116,7 +121,8 @@ public class NodeTasksTest {
                 .when(mockedLookup).lookup(ClassFinder.class);
         Builder builder = new Builder(mockedLookup, new File(userDir), TARGET)
                 .enablePackagesUpdate(false).enableImportsUpdate(true)
-                .runNpmInstall(false).withEmbeddableWebComponents(false);
+                .runNpmInstall(false).withEmbeddableWebComponents(false)
+                .withContext(context);
 
         Assert.assertEquals(
                 new File(userDir, DEFAULT_FRONTEND_DIR).getAbsolutePath(),
@@ -145,7 +151,8 @@ public class NodeTasksTest {
                 .when(mockedLookup).lookup(ClassFinder.class);
         Builder builder = new Builder(mockedLookup, new File(userDir), TARGET)
                 .enablePackagesUpdate(false).enableImportsUpdate(true)
-                .runNpmInstall(false).withEmbeddableWebComponents(false);
+                .runNpmInstall(false).withEmbeddableWebComponents(false)
+                .withContext(context);
 
         Assert.assertEquals(
                 new File(userDir, "my_custom_sources_folder").getAbsolutePath(),
@@ -180,7 +187,8 @@ public class NodeTasksTest {
                 .withFlowResourcesFolder(
                         new File(userDir, TARGET + "flow-frontend"))
                 .withFusionClientAPIFolder(new File(userDir,
-                        DEFAULT_PROJECT_FRONTEND_GENERATED_DIR));
+                        DEFAULT_PROJECT_FRONTEND_GENERATED_DIR))
+                .withContext(context);
         builder.build().execute();
         String webpackGeneratedContent = Files
                 .lines(new File(userDir, WEBPACK_GENERATED).toPath())
@@ -193,7 +201,7 @@ public class NodeTasksTest {
 
     @Test
     public void should_GenerateTsConfigAndTsDefinitions_When_Vaadin14BootstrapMode()
-            throws ExecutionFailedException, IOException {
+            throws ExecutionFailedException {
         Lookup mockedLookup = Mockito.mock(Lookup.class);
         Mockito.doReturn(
                 new DefaultClassFinder(this.getClass().getClassLoader()))
@@ -201,7 +209,8 @@ public class NodeTasksTest {
         Builder builder = new Builder(mockedLookup, new File(userDir), TARGET)
                 .enablePackagesUpdate(false).useV14Bootstrap(true)
                 .enableImportsUpdate(true).runNpmInstall(false)
-                .withEmbeddableWebComponents(false).useV14Bootstrap(false);
+                .withEmbeddableWebComponents(false).useV14Bootstrap(false)
+                .withContext(context);
         builder.build().execute();
 
         Assert.assertTrue(new File(userDir, "tsconfig.json").exists());
