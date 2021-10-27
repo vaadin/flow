@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 import path from 'path';
 
-import { processThemeResources, extractThemeName } from '@vaadin/application-theme-plugin/theme-handle.js';
+import { processThemeResources } from '@vaadin/application-theme-plugin/theme-handle.js';
 import settings from './target/vaadin-dev-server-settings.json';
 
 const frontendFolder = path.resolve(__dirname, settings.frontendFolder);
@@ -39,8 +39,7 @@ function updateTheme(contextPath: string) {
 
     console.debug("Theme file changed", changed);
 
-    const themeName = extractThemeName(themeOptions.frontendGeneratedFolder);
-    if(changed.startsWith(themeName)) {
+    if(changed.startsWith(settings.themeName)) {
       processThemeResources(themeOptions, console);
     }
   }
