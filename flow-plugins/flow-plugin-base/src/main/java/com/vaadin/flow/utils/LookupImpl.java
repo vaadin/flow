@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
@@ -43,6 +44,9 @@ public class LookupImpl implements Lookup {
 
     @Override
     public <T> T lookup(Class<T> serviceClass) {
+        if(ResourceProvider.class.isInstance(serviceClass)) {
+            return serviceClass.cast(new ResourceProviderImpl());
+        }
         return lookupAll(serviceClass).stream().findFirst().orElse(null);
     }
 

@@ -25,14 +25,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeoutException;
-import java.util.function.Supplier;
 
 import org.apache.commons.io.FileUtils;
 import org.zeroturnaround.exec.InvalidExitValueException;
@@ -40,11 +35,9 @@ import org.zeroturnaround.exec.ProcessExecutor;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
-import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendToolsSettings;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -52,7 +45,6 @@ import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.scanner.ReflectionsClassFinder;
 import com.vaadin.flow.utils.FlowFileUtils;
-import com.vaadin.flow.utils.ResourceProviderImpl;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -146,9 +138,7 @@ public class BuildFrontendUtil {
                 Paths.get(adapter.buildFolder(), DEFAULT_FLOW_RESOURCES_FOLDER)
                         .toString());
         ClassFinder classFinder = adapter.getClassFinder();
-        Lookup lookup = Lookup.compose(
-                Lookup.of(new ResourceProviderImpl(), ResourceProvider.class),
-                adapter.createLookup(classFinder));
+        Lookup lookup = adapter.createLookup(classFinder);
 
         NodeTasks.Builder builder = new NodeTasks.Builder(lookup,
                 adapter.npmFolder(), adapter.generatedFolder(),
@@ -293,9 +283,7 @@ public class BuildFrontendUtil {
 
         ClassFinder classFinder = adapter.getClassFinder();
 
-        Lookup lookup = Lookup.compose(
-                Lookup.of(new ResourceProviderImpl(), ResourceProvider.class),
-                adapter.createLookup(classFinder));
+        Lookup lookup = adapter.createLookup(classFinder);
 
         try {
             new NodeTasks.Builder(lookup, adapter.npmFolder(),
@@ -350,9 +338,7 @@ public class BuildFrontendUtil {
             throws TimeoutException, URISyntaxException {
         ClassFinder classFinder = adapter.getClassFinder();
 
-        Lookup lookup = Lookup.compose(
-                Lookup.of(new ResourceProviderImpl(), ResourceProvider.class),
-                adapter.createLookup(classFinder));
+        Lookup lookup = adapter.createLookup(classFinder);
 
         if (new FeatureFlags(lookup).isEnabled(FeatureFlags.VITE)) {
             BuildFrontendUtil.runVite(adapter);

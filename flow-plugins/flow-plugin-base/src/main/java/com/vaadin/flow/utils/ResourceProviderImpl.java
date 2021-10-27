@@ -29,7 +29,7 @@ import com.vaadin.flow.di.ResourceProvider;
  * @author Vaadin Ltd
  * @since
  */
-public class ResourceProviderImpl implements ResourceProvider {
+class ResourceProviderImpl implements ResourceProvider {
 
     /**
      * Creates a new instance.
