@@ -72,8 +72,8 @@ public final class ViteHandler extends AbstractDevServerRunner {
     protected boolean checkConnection() {
         try {
             getLogger().debug("Checking vite connection");
-            HttpURLConnection connection = prepareConnection("/@vite/client",
-                    "GET");
+            HttpURLConnection connection = prepareConnection(
+                    "/VAADIN/@vite/client", "GET");
             int responseCode = connection.getResponseCode();
             return (responseCode == HTTP_OK);
         } catch (IOException e) {
