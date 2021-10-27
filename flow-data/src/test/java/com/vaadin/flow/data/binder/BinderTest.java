@@ -1971,9 +1971,9 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     // See: https://github.com/vaadin/framework/issues/9581
     @Test
     public void withConverter_hasChangesFalse() {
-        TextField nameField = new TextField();
+        TestTextField nameField = new TestTextField();
         nameField.setValue("");
-        TextField rentField = new TextField();
+        TestTextField rentField = new TestTextField();
         rentField.setValue("");
         rentField.addValueChangeListener(event -> {
             nameField.setValue("Name");
