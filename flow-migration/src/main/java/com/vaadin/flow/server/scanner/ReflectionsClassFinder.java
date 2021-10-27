@@ -46,7 +46,8 @@ public class ReflectionsClassFinder implements ClassFinder {
      *            the list of urls for finding classes.
      */
     public ReflectionsClassFinder(URL... urls) {
-        classLoader = new URLClassLoader(urls, null); // NOSONAR
+        classLoader = new URLClassLoader(urls,
+                ReflectionsClassFinder.class.getClassLoader()); // NOSONAR
         ConfigurationBuilder configurationBuilder = new ConfigurationBuilder()
                 .addClassLoader(classLoader).setExpandSuperTypes(false)
                 .addUrls(urls);
