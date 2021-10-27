@@ -34,7 +34,7 @@ public class BasicsIT extends ChromeBrowserTest {
 
     @Test
     public void debugWindowShown() {
-        DevModeGizmoElement gizmo = $(DevModeGizmoElement.class).first();
+        DevModeGizmoElement gizmo = $(DevModeGizmoElement.class).waitForFirst();
         gizmo.expand();
         Assert.assertNotNull(gizmo.$("div").attributeContains("class", "window")
                 .attributeContains("class", "visible").waitForFirst());
