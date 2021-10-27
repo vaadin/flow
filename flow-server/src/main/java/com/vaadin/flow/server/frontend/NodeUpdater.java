@@ -362,35 +362,40 @@ public abstract class NodeUpdater implements FallibleCommand {
     static Map<String, String> getDefaultDevDependencies() {
         Map<String, String> defaults = new HashMap<>();
 
-        defaults.put("html-webpack-plugin", "4.5.1");
         defaults.put("typescript", "4.4.3");
-        defaults.put("esbuild-loader", "2.15.1");
-        defaults.put("fork-ts-checker-webpack-plugin", "6.2.1");
+
+        final String WORKBOX_VERSION = "6.2.0";
 
         if (FeatureFlags.isEnabled(FeatureFlags.VITE)) {
             defaults.put("vite", "2.6.10");
+            defaults.put("mkdirp", "1.0.4"); // for application-theme-plugin
+        } else {
+            // Webpack plugins and helpers
+            defaults.put("esbuild-loader", "2.15.1");
+            defaults.put("html-webpack-plugin", "4.5.1");
+            defaults.put("fork-ts-checker-webpack-plugin", "6.2.1");
+            defaults.put("webpack", "4.46.0");
+            defaults.put("webpack-cli", "4.9.0");
+            defaults.put("webpack-dev-server", "4.1.1");
+            defaults.put("compression-webpack-plugin", "4.0.1");
+            defaults.put("extra-watch-webpack-plugin", "1.0.3");
+            defaults.put("webpack-merge", "4.2.2");
+            defaults.put("css-loader", "4.2.1");
+            defaults.put("extract-loader", "5.1.0");
+            defaults.put("lit-css-loader", "0.1.0");
+            defaults.put("file-loader", "6.2.0");
+            defaults.put("loader-utils", "2.0.0");
+            defaults.put("workbox-webpack-plugin", WORKBOX_VERSION);
+            defaults.put("webpack-manifest-plugin", "3.0.0");
+
+            // Forcing chokidar version for now until new babel version is
+            // available
+            // check out https://github.com/babel/babel/issues/11488
+            defaults.put("chokidar", "^3.5.0");
         }
-        defaults.put("webpack", "4.46.0");
-        defaults.put("webpack-cli", "4.9.0");
-        defaults.put("webpack-dev-server", "4.1.1");
-        defaults.put("compression-webpack-plugin", "4.0.1");
-        defaults.put("extra-watch-webpack-plugin", "1.0.3");
-        defaults.put("webpack-merge", "4.2.2");
-        defaults.put("css-loader", "4.2.1");
-        defaults.put("extract-loader", "5.1.0");
-        defaults.put("lit-css-loader", "0.1.0");
-        defaults.put("file-loader", "6.2.0");
-        defaults.put("loader-utils", "2.0.0");
-        final String WORKBOX_VERSION = "6.2.0";
-        defaults.put("workbox-webpack-plugin", WORKBOX_VERSION);
         defaults.put("workbox-core", WORKBOX_VERSION);
         defaults.put("workbox-precaching", WORKBOX_VERSION);
         defaults.put("glob", "7.1.6");
-        defaults.put("webpack-manifest-plugin", "3.0.0");
-
-        // Forcing chokidar version for now until new babel version is available
-        // check out https://github.com/babel/babel/issues/11488
-        defaults.put("chokidar", "^3.5.0");
 
         return defaults;
     }
