@@ -368,6 +368,7 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         if (FeatureFlags.isEnabled(FeatureFlags.VITE)) {
             defaults.put("vite", "2.6.10");
+            defaults.put("mkdirp", "1.0.4"); // for application-theme-plugin
         } else {
             // Webpack plugins and helpers
             defaults.put("esbuild-loader", "2.15.1");
@@ -395,7 +396,6 @@ public abstract class NodeUpdater implements FallibleCommand {
         defaults.put("workbox-core", WORKBOX_VERSION);
         defaults.put("workbox-precaching", WORKBOX_VERSION);
         defaults.put("glob", "7.1.6");
-        defaults.put("mkdirp", "0.5.5");
 
         return defaults;
     }
