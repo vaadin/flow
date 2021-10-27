@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -490,7 +491,7 @@ public class TaskUpdatePackagesNpmTest {
                 .thenReturn(applicationDependencies);
         return new TaskUpdatePackages(finder, frontendDependenciesScanner,
                 npmFolder, generatedPath, null, false, enablePnpm, TARGET,
-                new MockVaadinContext()) {
+                Collections.emptyList()) {
         };
     }
 

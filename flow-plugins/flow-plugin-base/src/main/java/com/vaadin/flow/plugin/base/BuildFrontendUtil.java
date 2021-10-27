@@ -86,8 +86,6 @@ public class BuildFrontendUtil {
 
     }
 
-    private static VaadinContext context = new PluginContext();
-
     /**
      * creates a {@link ClassFinder} from a List of classpathElements.
      *
@@ -113,17 +111,6 @@ public class BuildFrontendUtil {
     public static File getTokenFile(PluginAdapterBase adapter) {
 
         return new File(adapter.servletResourceOutputDirectory(), TOKEN_FILE);
-    }
-
-    /**
-     * Forwards the feature files location to the feature flags detector.
-     *
-     * @param adapter
-     *            - the PluginAdapterBase.
-     */
-    public static void updateFeatureFlagsLocation(PluginAdapterBase adapter) {
-        FeatureFlags.getInstance(context)
-                .setPropertiesLocation(adapter.javaResourceFolder());
     }
 
     /**
@@ -163,12 +150,9 @@ public class BuildFrontendUtil {
                 Lookup.of(new ResourceProviderImpl(), ResourceProvider.class),
                 adapter.createLookup(classFinder));
 
-        context.setAttribute(Lookup.class, lookup);
-
         NodeTasks.Builder builder = new NodeTasks.Builder(lookup,
                 adapter.npmFolder(), adapter.generatedFolder(),
                 adapter.frontendDirectory(), adapter.buildFolder())
-                        .withContext(context)
                         .useV14Bootstrap(
                                 adapter.isUseDeprecatedV14Bootstrapping())
                         .withFlowResourcesFolder(flowResourcesFolder)
@@ -312,14 +296,12 @@ public class BuildFrontendUtil {
         Lookup lookup = Lookup.compose(
                 Lookup.of(new ResourceProviderImpl(), ResourceProvider.class),
                 adapter.createLookup(classFinder));
-        context.setAttribute(Lookup.class, lookup);
 
         try {
             new NodeTasks.Builder(lookup, adapter.npmFolder(),
                     adapter.generatedFolder(), adapter.frontendDirectory(),
                     adapter.buildFolder())
                             .runNpmInstall(adapter.runNpmInstall())
-                            .withContext(context)
                             .withWebpack(adapter.webpackOutputDirectory(),
                                     adapter.servletResourceOutputDirectory(),
                                     adapter.webpackTemplate(),
@@ -364,6 +346,22 @@ public class BuildFrontendUtil {
         }
     }
 
+    public static void runFrontendBuild(PluginAdapterBase adapter)
+            throws TimeoutException, URISyntaxException {
+        ClassFinder classFinder = adapter.getClassFinder();
+
+        Lookup lookup = Lookup.compose(
+                Lookup.of(new ResourceProviderImpl(), ResourceProvider.class),
+                adapter.createLookup(classFinder));
+
+        if (new FeatureFlags(lookup).isEnabled(FeatureFlags.VITE)) {
+            BuildFrontendUtil.runVite(adapter);
+        } else {
+            BuildFrontendUtil.runWebpack(adapter);
+        }
+
+    }
+
     /**
      * Runs the Webpack build
      *
@@ -378,8 +376,8 @@ public class BuildFrontendUtil {
      * @throws URISyntaxException
      *             - while parsing nodeDownloadRoot()) to URI
      */
-    public static void runWebpack(PluginAdapterBase adapter) throws IOException,
-            InterruptedException, TimeoutException, URISyntaxException {
+    public static void runWebpack(PluginAdapterBase adapter)
+            throws TimeoutException, URISyntaxException {
         runFrontendBuildTool(adapter, "Webpack", "webpack/bin/webpack.js");
     }
 
@@ -397,8 +395,8 @@ public class BuildFrontendUtil {
      * @throws URISyntaxException
      *             - while parsing nodeDownloadRoot()) to URI
      */
-    public static void runVite(PluginAdapterBase adapter) throws IOException,
-            InterruptedException, TimeoutException, URISyntaxException {
+    public static void runVite(PluginAdapterBase adapter)
+            throws TimeoutException, URISyntaxException {
         runFrontendBuildTool(adapter, "Vite", "vite/bin/vite.js", "build");
     }
 
@@ -494,42 +492,6 @@ public class BuildFrontendUtil {
                     StandardCharsets.UTF_8.name());
         } catch (IOException e) {
             adapter.logWarn("Unable to read token file", e);
-        }
-    }
-
-    public static class PluginContext implements VaadinContext {
-
-        Map<String, Object> attributes = new HashMap<>();
-
-        @Override
-        public <T> T getAttribute(Class<T> type,
-                Supplier<T> defaultValueSupplier) {
-            Object result = attributes.get(type.getName());
-            if (result == null && defaultValueSupplier != null) {
-                result = defaultValueSupplier.get();
-                attributes.put(type.getName(), result);
-            }
-            return type.cast(result);
-        }
-
-        @Override
-        public <T> void setAttribute(Class<T> clazz, T value) {
-            attributes.put(clazz.getName(), value);
-        }
-
-        @Override
-        public void removeAttribute(Class<?> clazz) {
-            attributes.remove(clazz.getName());
-        }
-
-        @Override
-        public Enumeration<String> getContextParameterNames() {
-            return Collections.enumeration(Collections.emptyList());
-        }
-
-        @Override
-        public String getContextParameter(String name) {
-            return null;
         }
     }
 }

@@ -42,7 +42,7 @@ public class BasicsIT extends ChromeBrowserTest {
     }
 
     @Test
-    pubslic void debugWindowShown() {
+    public void debugWindowShown() {
         DevModeGizmoElement gizmo = $(DevModeGizmoElement.class).first();
         gizmo.expand();
         Assert.assertNotNull(gizmo.$("div").attributeContains("class", "window")

@@ -20,6 +20,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.io.UncheckedIOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -60,10 +61,20 @@ public class FeatureFlags implements Serializable {
 
     File propertiesFolder = null;
 
-    private final VaadinContext context;
+    private VaadinContext context;
+    private Lookup lookup;
+
+    public FeatureFlags(Lookup lookup) {
+        this.lookup = lookup;
+        this.context = null;
+        features.add(new Feature(EXAMPLE));
+        features.add(new Feature(VITE));
+        loadProperties();
+    }
 
     protected FeatureFlags(VaadinContext context) {
         this.context = context;
+        this.lookup = context.getAttribute(Lookup.class);
         features.add(new Feature(EXAMPLE));
         features.add(new Feature(VITE));
         loadProperties();
@@ -131,7 +142,6 @@ public class FeatureFlags implements Serializable {
     }
 
     void loadProperties() {
-        final Lookup lookup = context.getAttribute(Lookup.class);
         final ResourceProvider resourceProvider = lookup
                 .lookup(ResourceProvider.class);
         if (resourceProvider != null) {
@@ -143,8 +153,8 @@ public class FeatureFlags implements Serializable {
                     loadProperties(applicationResource.openStream());
                     return;
                 } catch (IOException e) {
-                    getLogger().error(
-                            "Unable to read properties from classpath", e);
+                    throw new UncheckedIOException(
+                            "Failed to read properties file from classpath", e);
                 }
             }
         }
@@ -164,7 +174,8 @@ public class FeatureFlags implements Serializable {
                     featureFlagFile);
             loadProperties(propertiesStream);
         } catch (IOException e) {
-            getLogger().error("Unable to read properties from file", e);
+            throw new UncheckedIOException(
+                    "Failed to read properties file from filesystem", e);
         }
     }
 
@@ -302,6 +313,9 @@ public class FeatureFlags implements Serializable {
     }
 
     private ApplicationConfiguration getApplicationConfiguration() {
+        if (context == null) {
+            return lookup.lookup(ApplicationConfiguration.class);
+        }
         return ApplicationConfiguration.get(context);
     }
 

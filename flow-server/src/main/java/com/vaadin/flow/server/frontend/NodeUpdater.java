@@ -38,6 +38,7 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.experimental.Feature;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinContext;
@@ -129,7 +130,7 @@ public abstract class NodeUpdater implements FallibleCommand {
 
     boolean modified;
 
-    VaadinContext context;
+    List<Feature> features;
 
     /**
      * Constructor.
@@ -150,7 +151,7 @@ public abstract class NodeUpdater implements FallibleCommand {
     protected NodeUpdater(ClassFinder finder,
             FrontendDependenciesScanner frontendDependencies, File npmFolder,
             File generatedPath, File flowResourcesPath, String buildDir,
-            VaadinContext context) {
+            List<Feature> features) {
         this.frontDeps = frontendDependencies;
         this.finder = finder;
         this.npmFolder = npmFolder;
@@ -158,7 +159,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         this.generatedFolder = generatedPath;
         this.flowResourcesFolder = flowResourcesPath;
         this.buildDir = buildDir;
-        this.context = context;
+        this.features = features;
     }
 
     private File getPackageJsonFile() {
@@ -372,7 +373,10 @@ public abstract class NodeUpdater implements FallibleCommand {
         defaults.put("esbuild-loader", "2.15.1");
         defaults.put("fork-ts-checker-webpack-plugin", "6.2.1");
 
-        if (FeatureFlags.getInstance(context).isEnabled(FeatureFlags.VITE)) {
+        if (features.stream()
+                .filter(feature -> feature.getId()
+                        .equals(FeatureFlags.VITE.getId()))
+                .findFirst().map(Feature::isEnabled).orElse(false)) {
             defaults.put("vite", "2.6.10");
         }
         defaults.put("webpack", "4.46.0");

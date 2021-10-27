@@ -678,6 +678,8 @@ public class NodeTasks implements FallibleCommand {
         boolean enableWebpackConfigUpdate = builder.webpackTemplate != null
                 && !builder.webpackTemplate.isEmpty();
 
+        final FeatureFlags featureFlags = new FeatureFlags(builder.lookup);
+
         if (builder.enablePackagesUpdate || builder.enableImportsUpdate
                 || enableWebpackConfigUpdate) {
             frontendDependencies = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
@@ -699,7 +701,7 @@ public class NodeTasks implements FallibleCommand {
                         frontendDependencies, builder.npmFolder,
                         builder.generatedFolder, builder.flowResourcesFolder,
                         builder.cleanNpmFiles, builder.enablePnpm,
-                        builder.buildDirectory, builder.context);
+                        builder.buildDirectory, featureFlags.getFeatures());
                 commands.add(packageUpdater);
 
             }
@@ -719,7 +721,7 @@ public class NodeTasks implements FallibleCommand {
             TaskGeneratePackageJson packageCreator = new TaskGeneratePackageJson(
                     builder.npmFolder, builder.generatedFolder,
                     builder.flowResourcesFolder, builder.buildDirectory,
-                    builder.context);
+                    featureFlags.getFeatures());
             commands.add(packageCreator);
         }
 
@@ -754,8 +756,7 @@ public class NodeTasks implements FallibleCommand {
                     builder.flowResourcesFolder, builder.localResourcesFolder));
         }
 
-        if (builder.context != null && FeatureFlags.getInstance(builder.context)
-                .isEnabled(FeatureFlags.VITE)) {
+        if (featureFlags.isEnabled(FeatureFlags.VITE)) {
             commands.add(new TaskUpdateSettingsFile(builder));
             commands.add(new TaskUpdateVite(builder.npmFolder,
                     builder.buildDirectory));
@@ -780,7 +781,7 @@ public class NodeTasks implements FallibleCommand {
                             builder.frontendDirectory, builder.tokenFile,
                             builder.tokenFileData, builder.enablePnpm,
                             builder.buildDirectory, builder.productionMode,
-                            builder.context));
+                            featureFlags.getFeatures()));
 
             commands.add(new TaskUpdateThemeImport(builder.npmFolder,
                     frontendDependencies.getThemeDefinition(),
@@ -854,7 +855,8 @@ public class NodeTasks implements FallibleCommand {
         // donel, as the JS in generated-flow-imports.js does not work with
         // Vite.
         // https://github.com/vaadin/flow/issues/12170
-        boolean usingWebpack = !FeatureFlags.isEnabled(FeatureFlags.VITE);
+        boolean usingWebpack = !new FeatureFlags(builder.lookup)
+                .isEnabled(FeatureFlags.VITE);
         if (usingWebpack && builder.useByteCodeScanner) {
             return new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
                     .createScanner(true, finder,

@@ -18,6 +18,7 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.util.Collections;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
@@ -79,7 +80,7 @@ public class TaskRunNpmInstallTest {
         finder = Mockito.mock(ClassFinder.class);
         nodeUpdater = new NodeUpdater(finder,
                 Mockito.mock(FrontendDependencies.class), npmFolder,
-                generatedPath, null, TARGET, new MockVaadinContext()) {
+                generatedPath, null, TARGET, Collections.emptyList()) {
 
             @Override
             public void execute() {

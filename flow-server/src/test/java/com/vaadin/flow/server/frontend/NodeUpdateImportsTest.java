@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.net.URLClassLoader;
 import java.nio.charset.Charset;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -119,7 +120,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 finder -> new FrontendDependenciesScannerFactory()
                         .createScanner(true, finder, true),
                 tmpRoot, generatedPath, frontendDirectory, tokenFile,
-                fallBackData, false, TARGET, true, new MockVaadinContext()) {
+                fallBackData, false, TARGET, true, Collections.emptyList()) {
             @Override
             Logger log() {
                 return logger;
@@ -257,7 +258,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 finder -> new FrontendDependenciesScannerFactory()
                         .createScanner(true, finder, true),
                 tmpRoot, generatedPath, frontendDirectory, tokenFile, null,
-                false, TARGET, true, new MockVaadinContext()) {
+                false, TARGET, true, Collections.emptyList()) {
             @Override
             Logger log() {
                 return logger;
@@ -326,7 +327,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 new FrontendDependenciesScannerFactory().createScanner(false,
                         classFinder, true),
                 finder -> null, tmpRoot, generatedPath, frontendDirectory,
-                tokenFile, null, false, TARGET, true, new MockVaadinContext()) {
+                tokenFile, null, false, TARGET, true, Collections.emptyList()) {
             @Override
             Logger log() {
                 return logger;
@@ -371,7 +372,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 new FrontendDependenciesScannerFactory().createScanner(false,
                         classFinder, true),
                 finder -> null, tmpRoot, generatedPath, frontendDirectory,
-                tokenFile, null, false, TARGET, true, new MockVaadinContext()) {
+                tokenFile, null, false, TARGET, true, Collections.emptyList()) {
             @Override
             Logger log() {
                 return logger;

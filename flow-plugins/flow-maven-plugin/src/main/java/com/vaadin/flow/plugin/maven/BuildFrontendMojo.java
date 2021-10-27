@@ -113,7 +113,6 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         BuildFrontendUtil.updateBuildFile(this);
-        BuildFrontendUtil.updateFeatureFlagsLocation(this);
 
         long start = System.nanoTime();
 
@@ -126,13 +125,8 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
 
         if (generateBundle()) {
             try {
-                if (FeatureFlags.isEnabled(FeatureFlags.VITE)) {
-                    BuildFrontendUtil.runVite(this);
-                } else {
-                    BuildFrontendUtil.runWebpack(this);
-                }
-            } catch (URISyntaxException | IOException | InterruptedException
-                    | TimeoutException exception) {
+                BuildFrontendUtil.runFrontendBuild(this);
+            } catch (URISyntaxException | TimeoutException exception) {
                 throw new MojoExecutionException(exception.getMessage(),
                         exception);
             }

@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -100,7 +101,7 @@ public class TaskInstallWebpackPluginsTest {
         NodeUpdater nodeUpdater = new NodeUpdater(finder,
                 Mockito.mock(FrontendDependencies.class), rootFolder,
                 new File(""), resourceFolder, BUILD_DIRECTORY,
-                new MockVaadinContext()) {
+                Collections.emptyList()) {
 
             @Override
             public void execute() {

@@ -33,6 +33,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 
+import com.vaadin.experimental.Feature;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.server.VaadinContext;
@@ -344,9 +345,9 @@ public class TaskUpdateImports extends NodeUpdater {
             SerializableFunction<ClassFinder, FrontendDependenciesScanner> fallBackScannerProvider,
             File npmFolder, File generatedPath, File frontendDirectory,
             File tokenFile, JsonObject tokenFileData, boolean disablePnpm,
-            String buildDir, boolean productionMode, VaadinContext context) {
+            String buildDir, boolean productionMode, List<Feature> features) {
         super(finder, frontendDepScanner, npmFolder, generatedPath, null,
-                buildDir, context);
+                buildDir, features);
         this.frontendDirectory = frontendDirectory;
         fallbackScanner = fallBackScannerProvider.apply(finder);
         this.tokenFile = tokenFile;
