@@ -33,6 +33,19 @@ const themeOptions = {
 console.trace = () => {};
 console.debug =() => {};
 
+function updateTheme(contextPath: string) {
+  const themePath = path.resolve(themeFolder);
+  if(contextPath.startsWith(themePath)) {
+    const changed = path.relative(themePath, contextPath);
+
+    console.debug("Theme file changed", changed);
+
+    if(changed.startsWith(settings.themeName)) {
+      processThemeResources(themeOptions, console);
+    }
+  }
+}
+
 // https://vitejs.dev/config/
 export default defineConfig(({ command, mode }) => ({
   root: 'frontend',
@@ -62,6 +75,9 @@ export default defineConfig(({ command, mode }) => ({
       name: 'custom-theme',
       config() {
         processThemeResources(themeOptions, console);
+      },
+      handleHotUpdate(context) {
+        updateTheme(path.resolve(context.file));
       }
     }
   ]
