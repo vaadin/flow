@@ -133,7 +133,7 @@ public class VaadinAppShellInitializer
                     if (registry.isShell(clz)) {
                         registry.setShell(
                                 (Class<? extends AppShellConfigurator>) clz);
-                        getLogger().info(
+                        getLogger().debug(
                                 "Using {} class for configuring `index.html` response",
                                 clz.getName());
                     } else {
