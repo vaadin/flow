@@ -430,8 +430,8 @@ public class Element extends Node<Element> {
     public Stream<String> getAttributeNames() {
         assert getStateProvider().getAttributeNames(getNode())
                 .map(CustomAttribute::get).filter(Optional::isPresent)
-                .filter(attr -> attr.get().hasAttribute(this))
-                .count() == 0 : "Overlap between stored attributes and existing custom attributes";
+                .filter(attr -> attr.get().hasAttribute(this)).count() == 0
+                : "Overlap between stored attributes and existing custom attributes";
 
         Stream<String> regularNames = getStateProvider()
                 .getAttributeNames(getNode());
@@ -1379,8 +1379,8 @@ public class Element extends Node<Element> {
     public PendingJavaScriptResult callJsFunction(String functionName,
             Serializable... arguments) {
         assert functionName != null;
-        assert !functionName
-                .startsWith(".") : "Function name should not start with a dot";
+        assert !functionName.startsWith(".")
+                : "Function name should not start with a dot";
 
         // "$1,$2,$3,..."
         String paramPlaceholderString = IntStream.range(1, arguments.length + 1)

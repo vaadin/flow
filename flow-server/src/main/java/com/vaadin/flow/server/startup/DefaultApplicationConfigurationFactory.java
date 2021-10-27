@@ -206,8 +206,8 @@ public class DefaultApplicationConfigurationFactory
         ResourceProvider resourceProvider = lookup
                 .lookup(ResourceProvider.class);
 
-        assert !resources
-                .isEmpty() : "Possible jar resource requires resources to be available.";
+        assert !resources.isEmpty()
+                : "Possible jar resource requires resources to be available.";
 
         URL webpackGenerated = resourceProvider
                 .getApplicationResource(FrontendUtils.WEBPACK_GENERATED);

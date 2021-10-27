@@ -202,7 +202,8 @@ public abstract class Component
      */
     @Override
     public Element getElement() {
-        assert element != null : "getElement() must not be called before the element has been set";
+        assert element != null
+                : "getElement() must not be called before the element has been set";
         return element;
     }
 

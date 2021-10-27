@@ -874,7 +874,8 @@ public class DataCommunicator<T> implements Serializable {
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public int getDataProviderSize() {
-        assert definedSize : "This method should never be called when using undefined size";
+        assert definedSize
+                : "This method should never be called when using undefined size";
         if (countCallback != null) {
             return countCallback.count(new Query(getFilter()));
         } else {
@@ -883,7 +884,8 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     private void updateUndefinedSize() {
-        assert !definedSize : "This method should never be called when using defined size";
+        assert !definedSize
+                : "This method should never be called when using defined size";
         if (resendEntireRange || sizeReset) {
             // things have reset
             assumedSize = getItemCountEstimate();

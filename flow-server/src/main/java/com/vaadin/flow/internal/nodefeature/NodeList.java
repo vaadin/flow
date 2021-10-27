@@ -320,7 +320,8 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
                 index = 0;
                 allChanges.add(change);
             } else {
-                assert false : "AbstractListChange has only three subtypes: add, remove and clear";
+                assert false
+                        : "AbstractListChange has only three subtypes: add, remove and clear";
             }
             index++;
         }

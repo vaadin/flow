@@ -57,8 +57,8 @@ public class NavigationStateRenderer extends AbstractNavigationStateRenderer {
     protected List<Class<? extends RouterLayout>> getRouterLayoutTypes(
             Class<? extends Component> targetType, Router router) {
         NavigationState navigationState = getNavigationState();
-        assert targetType == navigationState
-                .getNavigationTarget() : "Trying to get layouts for wrong route target";
+        assert targetType == navigationState.getNavigationTarget()
+                : "Trying to get layouts for wrong route target";
 
         return router.getRegistry()
                 .getRouteLayouts(navigationState.getResolvedPath(), targetType);
