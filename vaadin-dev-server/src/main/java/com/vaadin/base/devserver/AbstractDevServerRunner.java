@@ -683,7 +683,11 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
             requestFilename = "/VAADIN/static" + requestFilename;
         }
 
-        HttpURLConnection connection = prepareConnection(requestFilename,
+        String devServerRequestPath = requestFilename;
+        if (request.getQueryString() != null) {
+            devServerRequestPath += "?" + request.getQueryString();
+        }
+        HttpURLConnection connection = prepareConnection(devServerRequestPath,
                 request.getMethod());
 
         // Copies all the headers from the original request
@@ -702,14 +706,14 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         int responseCode = connection.getResponseCode();
         if (responseCode == HttpURLConnection.HTTP_NOT_FOUND) {
             getLogger().debug("Resource not served by {} {}", getServerName(),
-                    requestFilename);
+                    devServerRequestPath);
             // the dev server cannot access the resource, return false so Flow
             // can
             // handle it
             return false;
         }
         getLogger().debug("Served resource by {}: {} {}", getServerName(),
-                responseCode, requestFilename);
+                responseCode, devServerRequestPath);
 
         // Copies response headers
         connection.getHeaderFields().forEach((header, values) -> {
