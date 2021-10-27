@@ -1979,7 +1979,8 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
             nameField.setValue("Name");
         });
         item.setRent(BigDecimal.valueOf(10));
-        binder.forField(nameField).bind(Person::getFirstName, Person::setFirstName);
+        binder.forField(nameField).bind(Person::getFirstName,
+                Person::setFirstName);
         binder.forField(rentField).withConverter(new EuroConverter(""))
                 .withNullRepresentation(BigDecimal.valueOf(0d))
                 .bind(Person::getRent, Person::setRent);
