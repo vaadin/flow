@@ -13,12 +13,12 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "experimentalDecorators": true,
-    "outDir": "target/classes/META-INF/resources/frontend",
+    "outDir": "target/classes/META-INF/frontend",
     "declaration": true,
     "skipLibCheck": true
   },
   "include": [
-    "src/main/resources/META-INF/resources/frontend/**/*.ts"
+    "src/main/resources/META-INF/frontend/**/*.ts"
   ],
   "exclude": []
 }
