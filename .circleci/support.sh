@@ -5,7 +5,7 @@ case $1 in
   install-tools)
     echo ">>>>>>>>>>> Installing Tools ..."
     
-    test -n "$TB_LICENSE"
+    [ -z "$TB_LICENSE" ] && echo "ERROR You must define TB_LICENSE" && exit 1
     mkdir -p ~/.vaadin/
     echo '{"username":"'`echo $TB_LICENSE | cut -d / -f1`'","proKey":"'`echo $TB_LICENSE | cut -d / -f2`'"}' > ~/.vaadin/proKey
 
@@ -25,6 +25,7 @@ case $1 in
         | grep -v flow-jandex \
         | sed -e 's, *<string>\(.*\)</string>,\1,g' \
         | sort`
+
     echo ">>>>>>>>>>> Flow Modules:" >&2
     echo "$H" >&2
     echo "$H"
