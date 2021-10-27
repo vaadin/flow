@@ -30,9 +30,11 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.dnd.internal.DnDUtilHelper;
 import com.vaadin.flow.component.internal.DependencyList;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinSession;
@@ -51,6 +53,12 @@ public abstract class AbstractDnDUnitTest {
         Mockito.when(appConfig.getPropertyNames())
                 .thenReturn(Collections.emptyEnumeration());
         Mockito.when(appConfig.getBuildFolder()).thenReturn(".");
+        VaadinContext context = Mockito.mock(VaadinContext.class);
+        Mockito.when(appConfig.getContext()).thenReturn(context);
+
+        Lookup lookup = Mockito.mock(Lookup.class);
+        Mockito.when(context.getAttribute(Lookup.class)).thenReturn(lookup);
+
         DefaultDeploymentConfiguration configuration = new DefaultDeploymentConfiguration(
                 appConfig, VaadinServlet.class, new Properties());
 
