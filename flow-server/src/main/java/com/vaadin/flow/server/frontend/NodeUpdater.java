@@ -387,7 +387,8 @@ public abstract class NodeUpdater implements FallibleCommand {
             defaults.put("workbox-webpack-plugin", WORKBOX_VERSION);
             defaults.put("webpack-manifest-plugin", "3.0.0");
 
-            // Forcing chokidar version for now until new babel version is available
+            // Forcing chokidar version for now until new babel version is
+            // available
             // check out https://github.com/babel/babel/issues/11488
             defaults.put("chokidar", "^3.5.0");
         }
