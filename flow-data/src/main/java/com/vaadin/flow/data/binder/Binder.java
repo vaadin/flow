@@ -1377,7 +1377,7 @@ public class Binder<BEAN> implements Serializable {
                 ValueChangeEvent<FIELDVALUE> event) {
             // Don't handle change events when setting initial value
             if (valueInit || convertedBack) {
-                convertedBackBack = false;
+                convertedBack = false;
                 return;
             }
 
