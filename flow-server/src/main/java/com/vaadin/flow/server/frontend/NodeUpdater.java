@@ -395,7 +395,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         defaults.put("workbox-core", WORKBOX_VERSION);
         defaults.put("workbox-precaching", WORKBOX_VERSION);
         defaults.put("glob", "7.1.6");
-        defaults.put("mkdirp", "1.0.4");
+        defaults.put("mkdirp", "0.5.5");
 
         return defaults;
     }
