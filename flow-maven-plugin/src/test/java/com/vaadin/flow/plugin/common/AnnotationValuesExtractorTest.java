@@ -65,14 +65,6 @@ public class AnnotationValuesExtractorTest {
                 Collections.singletonMap(HtmlImport.class, "doomed to fail"));
     }
 
-    @Test
-    public void extractAnnotationValues_annotationNotInClassLoader() {
-        expectedException.expect(IllegalStateException.class);
-        expectedException.expectMessage("");
-
-        extractor.extractAnnotationValues(
-                Collections.singletonMap(Mojo.class, "whatever"));
-    }
 
     @Test
     public void extractAnnotationValues_missingAnnotation() {

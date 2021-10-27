@@ -53,8 +53,6 @@ import com.vaadin.flow.theme.ThemeDefinition;
  */
 class FullDependenciesScanner extends AbstractDependenciesScanner {
 
-    private static final String VALUE = "value";
-
     private ThemeDefinition themeDefinition;
     private AbstractTheme themeInstance;
     private Set<String> classes = new HashSet<>();
