@@ -70,6 +70,7 @@ import static org.junit.Assert.assertTrue;
 public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
     private Map<HasValue<?, ?>, String> componentErrors = new HashMap<>();
+    private int count;
 
     @Rule
     /*
@@ -1749,11 +1750,11 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         count = 0;
         item.setSalaryDouble(100d);
         binder.forField(salaryField)
-            .withConverter(new StringToDoubleConverter(""))
-            .bind(Person::getSalaryDouble, Person::setSalaryDouble);
+                .withConverter(new StringToDoubleConverter(""))
+                .bind(Person::getSalaryDouble, Person::setSalaryDouble);
         binder.setBean(item);
         binder.addValueChangeListener(event -> {
-        	count++;
+            count++;
         });
 
         salaryField.setValue("1000");
