@@ -1,6 +1,7 @@
 package com.vaadin.viteapp;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.flow.testutil.DevModeGizmoElement;
 import com.vaadin.testbench.TestBenchElement;
 import com.vaadin.viteapp.views.empty.MainView;
 
@@ -33,10 +34,8 @@ public class BasicsIT extends ChromeBrowserTest {
 
     @Test
     public void debugWindowShown() {
-        Assert.assertTrue($("vaadin-devmode-gizmo").exists());
-
-        TestBenchElement gizmo = $("vaadin-devmode-gizmo").first();
-        gizmo.click();
+        DevModeGizmoElement gizmo = $(DevModeGizmoElement.class).first();
+        gizmo.expand();
         Assert.assertNotNull(gizmo.$("div").attributeContains("class", "window")
                 .attributeContains("class", "visible").waitForFirst());
     }
