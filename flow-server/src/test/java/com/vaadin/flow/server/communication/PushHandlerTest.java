@@ -42,6 +42,7 @@ import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
@@ -219,6 +220,38 @@ public class PushHandlerTest {
         }
     }
 
+    @Test
+    public void debugWindowConnection_productionMode_mustNeverBeConnected()
+            throws Exception {
+        ApplicationConfiguration applicationConfiguration = Mockito
+                .mock(ApplicationConfiguration.class);
+        Mockito.when(applicationConfiguration.isProductionMode())
+                .thenReturn(true);
+
+        MockVaadinServletService service = Mockito
+                .spy(MockVaadinServletService.class);
+        VaadinContext context = service.getContext();
+        context.setAttribute(ApplicationConfiguration.class,
+                applicationConfiguration);
+
+        runTest(service, (handler, resource) -> {
+            Mockito.when(resource.transport()).thenReturn(TRANSPORT.WEBSOCKET);
+            Mockito.when(resource.getRequest()
+                    .getParameter(ApplicationConstants.DEBUG_WINDOW_CONNECTION))
+                    .thenReturn("");
+            Mockito.doNothing().when(handler).callWithService(Mockito.any(),
+                    Mockito.any());
+
+            handler.onConnect(resource);
+
+            Mockito.verify(handler, Mockito.never())
+                    .callWithService(Mockito.any(), Mockito.any());
+            Mockito.verify(handler, Mockito.never()).callWithUi(Mockito.any(),
+                    Mockito.any());
+        });
+
+    }
+
     private void mockConnectionLost(VaadinSession session, boolean setSession) {
         AtomicBoolean sessionIsSet = new AtomicBoolean();
         MockVaadinServletService service = new MockVaadinServletService() {
@@ -257,7 +290,7 @@ public class PushHandlerTest {
     private VaadinServletService runTest(VaadinServletService service,
             BiConsumer<PushHandler, AtmosphereResource> testExec)
             throws ServiceException {
-        PushHandler handler = new PushHandler(service);
+        PushHandler handler = Mockito.spy(new PushHandler(service));
 
         AtmosphereResource resource = Mockito.mock(AtmosphereResource.class);
         AtmosphereRequest request = Mockito.mock(AtmosphereRequest.class);
