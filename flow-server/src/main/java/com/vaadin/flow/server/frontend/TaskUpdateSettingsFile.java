@@ -45,13 +45,15 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
     File generatedFolder;
     File webappResourcesDirectory;
     String buildDirectory;
+    String themeName;
 
-    TaskUpdateSettingsFile(NodeTasks.Builder builder) {
+    TaskUpdateSettingsFile(NodeTasks.Builder builder, String themeName) {
         this.npmFolder = builder.getNpmFolder();
         this.frontendDirectory = builder.getFrontendDirectory();
         this.generatedFolder = builder.getGeneratedFolder();
         this.webappResourcesDirectory = builder.getWebappResourcesDirectory();
         this.buildDirectory = builder.getBuildDirectory();
+        this.themeName = themeName;
     }
 
     @Override
@@ -79,6 +81,8 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
                 FrontendUtils.getUnixPath(new File(staticOutput).toPath()));
         settings.put("generatedFolder", "generated");
         settings.put("frontendBundleOutput", webappResources);
+
+        settings.put("themeName", themeName);
 
         File settingsFile = new File(npmFolder,
                 buildDirectory + "/" + DEV_SETTINGS_FILE);

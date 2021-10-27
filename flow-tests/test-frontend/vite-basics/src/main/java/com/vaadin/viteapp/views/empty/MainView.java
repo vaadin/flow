@@ -18,7 +18,8 @@ public class MainView extends Div {
     public static final String JSON_CONTAINER = "jsonContainer";
 
     public MainView() {
-        Image img = new Image("images/plant.png", "placeholder plant");
+        Image img = new Image("themes/vite-basics/images/plant.png",
+                "placeholder plant");
         img.setWidth("200px");
         add(img);
 

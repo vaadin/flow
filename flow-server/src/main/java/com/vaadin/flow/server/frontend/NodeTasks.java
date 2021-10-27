@@ -757,7 +757,11 @@ public class NodeTasks implements FallibleCommand {
         }
 
         if (featureFlags.isEnabled(FeatureFlags.VITE)) {
-            commands.add(new TaskUpdateSettingsFile(builder));
+            String themeName = "";
+            if (frontendDependencies != null) {
+                themeName = frontendDependencies.getThemeDefinition().getName();
+            }
+            commands.add(new TaskUpdateSettingsFile(builder, themeName));
             commands.add(new TaskUpdateVite(builder.npmFolder,
                     builder.buildDirectory));
         } else if (enableWebpackConfigUpdate) {
