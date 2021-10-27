@@ -19,6 +19,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 
+import com.vaadin.flow.server.VaadinContext;
+
 import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
@@ -47,9 +49,9 @@ public class TaskGeneratePackageJson extends NodeUpdater {
      *            the used build directory
      */
     TaskGeneratePackageJson(File npmFolder, File generatedPath,
-            File flowResourcesPath, String buildDir) {
-        super(null, null, npmFolder, generatedPath, flowResourcesPath,
-                buildDir);
+            File flowResourcesPath, String buildDir, VaadinContext context) {
+        super(null, null, npmFolder, generatedPath, flowResourcesPath, buildDir,
+                context);
     }
 
     @Override

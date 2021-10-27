@@ -33,6 +33,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 
@@ -98,7 +99,8 @@ public class TaskInstallWebpackPluginsTest {
         ClassFinder finder = Mockito.mock(ClassFinder.class);
         NodeUpdater nodeUpdater = new NodeUpdater(finder,
                 Mockito.mock(FrontendDependencies.class), rootFolder,
-                new File(""), resourceFolder, BUILD_DIRECTORY) {
+                new File(""), resourceFolder, BUILD_DIRECTORY,
+                new MockVaadinContext()) {
 
             @Override
             public void execute() {

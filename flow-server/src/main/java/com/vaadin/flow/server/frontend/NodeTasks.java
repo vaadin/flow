@@ -32,6 +32,7 @@ import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.PwaConfiguration;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
@@ -150,6 +151,8 @@ public class NodeTasks implements FallibleCommand {
          * stuff into production.
          */
         private boolean productionMode = true;
+
+        private VaadinContext context;
 
         /**
          * Create a builder instance given an specific npm folder.
@@ -577,6 +580,18 @@ public class NodeTasks implements FallibleCommand {
         }
 
         /**
+         * Set the VaadinContext used for running the builder.
+         *
+         * @param context
+         *            VaadinContext used for building
+         * @return the builder
+         */
+        public Builder withContext(VaadinContext context) {
+            this.context = context;
+            return this;
+        }
+
+        /**
          * Get the npm folder used for this build.
          *
          * @return npmFolder
@@ -684,7 +699,7 @@ public class NodeTasks implements FallibleCommand {
                         frontendDependencies, builder.npmFolder,
                         builder.generatedFolder, builder.flowResourcesFolder,
                         builder.cleanNpmFiles, builder.enablePnpm,
-                        builder.buildDirectory);
+                        builder.buildDirectory, builder.context);
                 commands.add(packageUpdater);
 
             }
@@ -703,7 +718,8 @@ public class NodeTasks implements FallibleCommand {
         if (builder.createMissingPackageJson) {
             TaskGeneratePackageJson packageCreator = new TaskGeneratePackageJson(
                     builder.npmFolder, builder.generatedFolder,
-                    builder.flowResourcesFolder, builder.buildDirectory);
+                    builder.flowResourcesFolder, builder.buildDirectory,
+                    builder.context);
             commands.add(packageCreator);
         }
 
@@ -738,7 +754,8 @@ public class NodeTasks implements FallibleCommand {
                     builder.flowResourcesFolder, builder.localResourcesFolder));
         }
 
-        if (FeatureFlags.isEnabled(FeatureFlags.VITE)) {
+        if (FeatureFlags.getInstance(builder.context)
+                .isEnabled(FeatureFlags.VITE)) {
             commands.add(new TaskUpdateSettingsFile(builder));
             commands.add(new TaskUpdateVite(builder.npmFolder,
                     builder.buildDirectory));
@@ -762,7 +779,8 @@ public class NodeTasks implements FallibleCommand {
                             builder.npmFolder, builder.generatedFolder,
                             builder.frontendDirectory, builder.tokenFile,
                             builder.tokenFileData, builder.enablePnpm,
-                            builder.buildDirectory, builder.productionMode));
+                            builder.buildDirectory, builder.productionMode,
+                            builder.context));
 
             commands.add(new TaskUpdateThemeImport(builder.npmFolder,
                     frontendDependencies.getThemeDefinition(),

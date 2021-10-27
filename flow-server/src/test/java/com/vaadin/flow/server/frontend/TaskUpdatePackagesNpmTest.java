@@ -40,6 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 
@@ -488,7 +489,8 @@ public class TaskUpdatePackagesNpmTest {
         Mockito.when(frontendDependenciesScanner.getPackages())
                 .thenReturn(applicationDependencies);
         return new TaskUpdatePackages(finder, frontendDependenciesScanner,
-                npmFolder, generatedPath, null, false, enablePnpm, TARGET) {
+                npmFolder, generatedPath, null, false, enablePnpm, TARGET,
+                new MockVaadinContext()) {
         };
     }
 

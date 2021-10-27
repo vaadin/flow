@@ -30,6 +30,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.testutil.TestUtils;
 
 import elemental.json.JsonObject;
@@ -71,7 +72,8 @@ public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
     @Test
     public void should_createPackageJson() throws IOException {
         TaskGeneratePackageJson task = new TaskGeneratePackageJson(npmFolder,
-                generatedFolder, frontendDepsFolder, TARGET);
+                generatedFolder, frontendDepsFolder, TARGET,
+                new MockVaadinContext());
         task.execute();
         Assert.assertTrue(new File(npmFolder, PACKAGE_JSON).exists());
         Assert.assertFalse(new File(generatedFolder, PACKAGE_JSON).exists());

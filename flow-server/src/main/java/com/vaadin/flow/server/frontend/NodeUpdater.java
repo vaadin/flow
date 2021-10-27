@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
@@ -128,6 +129,8 @@ public abstract class NodeUpdater implements FallibleCommand {
 
     boolean modified;
 
+    VaadinContext context;
+
     /**
      * Constructor.
      *
@@ -146,7 +149,8 @@ public abstract class NodeUpdater implements FallibleCommand {
      */
     protected NodeUpdater(ClassFinder finder,
             FrontendDependenciesScanner frontendDependencies, File npmFolder,
-            File generatedPath, File flowResourcesPath, String buildDir) {
+            File generatedPath, File flowResourcesPath, String buildDir,
+            VaadinContext context) {
         this.frontDeps = frontendDependencies;
         this.finder = finder;
         this.npmFolder = npmFolder;
@@ -154,6 +158,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         this.generatedFolder = generatedPath;
         this.flowResourcesFolder = flowResourcesPath;
         this.buildDir = buildDir;
+        this.context = context;
     }
 
     private File getPackageJsonFile() {
@@ -314,7 +319,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         return jsonContent;
     }
 
-    static void addVaadinDefaultsToJson(JsonObject json) {
+    void addVaadinDefaultsToJson(JsonObject json) {
         JsonObject vaadinPackages = computeIfAbsent(json, VAADIN_DEP_KEY,
                 Json::createObject);
 
@@ -341,7 +346,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         return result;
     }
 
-    static Map<String, String> getDefaultDependencies() {
+    Map<String, String> getDefaultDependencies() {
         Map<String, String> defaults = new HashMap<>();
 
         defaults.put("@vaadin/router", ROUTER_VERSION);
@@ -359,7 +364,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         return defaults;
     }
 
-    static Map<String, String> getDefaultDevDependencies() {
+    Map<String, String> getDefaultDevDependencies() {
         Map<String, String> defaults = new HashMap<>();
 
         defaults.put("html-webpack-plugin", "4.5.1");
@@ -367,7 +372,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         defaults.put("esbuild-loader", "2.15.1");
         defaults.put("fork-ts-checker-webpack-plugin", "6.2.1");
 
-        if (FeatureFlags.isEnabled(FeatureFlags.VITE)) {
+        if (FeatureFlags.getInstance(context).isEnabled(FeatureFlags.VITE)) {
             defaults.put("vite", "2.6.10");
         }
         defaults.put("webpack", "4.46.0");

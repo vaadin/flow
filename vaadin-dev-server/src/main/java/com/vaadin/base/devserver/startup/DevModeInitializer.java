@@ -198,7 +198,8 @@ public class DevModeInitializer implements Serializable {
         }
         // This needs to be set as there is no "current service" available in
         // this call
-        FeatureFlags.setPropertiesLocation(config.getJavaResourceFolder());
+        FeatureFlags.getInstance(context)
+                .setPropertiesLocation(config.getJavaResourceFolder());
 
         String baseDir = config.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
                 null);
@@ -309,7 +310,7 @@ public class DevModeInitializer implements Serializable {
 
         JsonObject tokenFileData = Json.createObject();
         NodeTasks tasks = builder.enablePackagesUpdate(true)
-                .useByteCodeScanner(useByteCodeScanner)
+                .withContext(context).useByteCodeScanner(useByteCodeScanner)
                 .withFlowResourcesFolder(flowResourcesFolder)
                 .withFusionClientAPIFolder(new File(fusionClientAPIFolder))
                 .copyResources(frontendLocations)
@@ -329,7 +330,7 @@ public class DevModeInitializer implements Serializable {
 
         Lookup devServerLookup = Lookup.compose(lookup,
                 Lookup.of(config, ApplicationConfiguration.class));
-        if (FeatureFlags.isEnabled(FeatureFlags.VITE)) {
+        if (FeatureFlags.getInstance(context).isEnabled(FeatureFlags.VITE)) {
             return new ViteHandler(devServerLookup, 0, builder.getNpmFolder(),
                     nodeTasksFuture);
         } else {

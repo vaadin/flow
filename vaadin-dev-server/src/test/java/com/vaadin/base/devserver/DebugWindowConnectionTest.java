@@ -27,7 +27,8 @@ import com.vaadin.flow.server.VaadinService;
 
 public class DebugWindowConnectionTest {
 
-    private DebugWindowConnection reload = new DebugWindowConnection();
+    private DebugWindowConnection reload = new DebugWindowConnection(
+            new MockVaadinContext());
 
     @Test
     public void onConnect_suspend_sayHello() {
@@ -107,7 +108,7 @@ public class DebugWindowConnectionTest {
                             throw new ClassNotFoundException();
                         }
                     }
-                });
+                }, new MockVaadinContext());
         Assert.assertEquals(BrowserLiveReload.Backend.JREBEL,
                 reload.getBackend());
     }
@@ -128,7 +129,7 @@ public class DebugWindowConnectionTest {
                             throw new ClassNotFoundException();
                         }
                     }
-                });
+                }, new MockVaadinContext());
         Assert.assertEquals(BrowserLiveReload.Backend.HOTSWAP_AGENT,
                 reload.getBackend());
     }
@@ -153,7 +154,7 @@ public class DebugWindowConnectionTest {
                             throw new ClassNotFoundException();
                         }
                     }
-                });
+                }, new MockVaadinContext());
         Assert.assertEquals(BrowserLiveReload.Backend.SPRING_BOOT_DEVTOOLS,
                 reload.getBackend());
     }

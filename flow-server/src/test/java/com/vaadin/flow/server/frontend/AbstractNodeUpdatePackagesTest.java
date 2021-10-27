@@ -35,6 +35,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
@@ -91,12 +92,12 @@ public abstract class AbstractNodeUpdatePackagesTest
         FrontendStubs.createStubNode(true, true, baseDir.getAbsolutePath());
 
         packageCreator = new TaskGeneratePackageJson(baseDir, generatedDir,
-                resourcesDir, TARGET);
+                resourcesDir, TARGET, new MockVaadinContext());
 
         classFinder = getClassFinder();
         packageUpdater = new TaskUpdatePackages(classFinder,
                 getScanner(classFinder), baseDir, generatedDir, resourcesDir,
-                false, false, TARGET);
+                false, false, TARGET, new MockVaadinContext());
         packageJson = new File(baseDir, PACKAGE_JSON);
 
         mainNodeModules = new File(baseDir, FrontendUtils.NODE_MODULES);
@@ -178,7 +179,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         // use package updater with disabled PNPM
         packageUpdater = new TaskUpdatePackages(classFinder,
                 getScanner(classFinder), baseDir, generatedDir, resourcesDir,
-                false, false, TARGET);
+                false, false, TARGET, new MockVaadinContext());
         // Generate package json in a proper format first
         packageCreator.execute();
         packageUpdater.execute();
@@ -193,7 +194,7 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         packageUpdater = new TaskUpdatePackages(classFinder,
                 getScanner(classFinder), baseDir, generatedDir, resourcesDir,
-                false, true, TARGET);
+                false, true, TARGET, new MockVaadinContext());
         packageUpdater.execute();
 
         assertPackageJsonFlowDeps();
@@ -205,7 +206,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         // use package updater with disabled PNPM
         packageUpdater = new TaskUpdatePackages(classFinder,
                 getScanner(classFinder), baseDir, generatedDir, resourcesDir,
-                false, false, TARGET);
+                false, false, TARGET, new MockVaadinContext());
         // Generate package json in a proper format first
         packageCreator.execute();
         packageUpdater.execute();
@@ -214,7 +215,7 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         packageUpdater = new TaskUpdatePackages(classFinder,
                 getScanner(classFinder), baseDir, generatedDir, resourcesDir,
-                false, true, TARGET);
+                false, true, TARGET, new MockVaadinContext());
         packageUpdater.execute();
         Assert.assertFalse(packageLock.exists());
     }
@@ -224,7 +225,7 @@ public abstract class AbstractNodeUpdatePackagesTest
             throws IOException {
         packageUpdater = new TaskUpdatePackages(classFinder,
                 getScanner(classFinder), baseDir, generatedDir, resourcesDir,
-                false, true, TARGET);
+                false, true, TARGET, new MockVaadinContext());
         packageCreator.execute();
         File pnpmLock = new File(baseDir, "pnpm-lock.yaml");
         pnpmLock.createNewFile();
@@ -410,7 +411,7 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         packageUpdater = new TaskUpdatePackages(classFinder,
                 frontendDependencies, baseDir, generatedDir, resourcesDir,
-                false, false, TARGET);
+                false, false, TARGET, new MockVaadinContext());
 
         // Generate package json in a proper format first
         packageCreator.execute();
@@ -440,7 +441,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         // create a new package updater, with forced clean up enabled
         packageUpdater = new TaskUpdatePackages(classFinder,
                 getScanner(classFinder), baseDir, generatedDir, resourcesDir,
-                true, false, TARGET);
+                true, false, TARGET, new MockVaadinContext());
         packageUpdater.execute();
 
         // clean up happened
@@ -463,7 +464,7 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         packageUpdater = new TaskUpdatePackages(classFinder,
                 frontendDependencies, baseDir, generatedDir, resourcesDir,
-                false, false, TARGET);
+                false, false, TARGET, new MockVaadinContext());
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -494,7 +495,7 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         packageUpdater = new TaskUpdatePackages(classFinder,
                 frontendDependencies, baseDir, generatedDir, resourcesDir,
-                false, false, TARGET);
+                false, false, TARGET, new MockVaadinContext());
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -540,7 +541,7 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         packageUpdater = new TaskUpdatePackages(classFinder,
                 frontendDependencies, baseDir, generatedDir, resourcesDir,
-                false, false, TARGET);
+                false, false, TARGET, new MockVaadinContext());
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -572,7 +573,7 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         packageUpdater = new TaskUpdatePackages(classFinder,
                 frontendDependencies, baseDir, generatedDir, resourcesDir,
-                false, false, TARGET);
+                false, false, TARGET, new MockVaadinContext());
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -596,7 +597,7 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         packageUpdater = new TaskUpdatePackages(classFinder,
                 frontendDependencies, baseDir, generatedDir, resourcesDir,
-                false, false, TARGET);
+                false, false, TARGET, new MockVaadinContext());
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -623,7 +624,7 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         packageUpdater = new TaskUpdatePackages(classFinder,
                 frontendDependencies, baseDir, generatedDir, resourcesDir,
-                false, false, TARGET);
+                false, false, TARGET, new MockVaadinContext());
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -652,7 +653,7 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         packageUpdater = new TaskUpdatePackages(classFinder,
                 frontendDependencies, baseDir, generatedDir, resourcesDir,
-                false, false, TARGET);
+                false, false, TARGET, new MockVaadinContext());
 
         packageCreator.execute();
         JsonObject json = getPackageJson(packageJson);
@@ -678,7 +679,7 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         packageUpdater = new TaskUpdatePackages(classFinder,
                 getScanner(classFinder), baseDir, generatedDir, resourcesDir,
-                false, true, TARGET);
+                false, true, TARGET, new MockVaadinContext());
         packageUpdater.execute();
 
         assertPackageJsonFlowDeps();
@@ -693,7 +694,7 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         packageUpdater = new TaskUpdatePackages(classFinder,
                 getScanner(classFinder), baseDir, generatedDir, resourcesDir,
-                false, false, TARGET);
+                false, false, TARGET, new MockVaadinContext());
         packageUpdater.execute();
 
         assertPackageJsonFlowDeps();
@@ -716,7 +717,7 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         packageUpdater = new TaskUpdatePackages(classFinder,
                 frontendDependencies, baseDir, generatedDir, resourcesDir,
-                false, false, TARGET);
+                false, false, TARGET, new MockVaadinContext());
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -763,7 +764,7 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         packageUpdater = new TaskUpdatePackages(classFinder,
                 frontendDependencies, baseDir, generatedDir, resourcesDir,
-                false, false, TARGET);
+                false, false, TARGET, new MockVaadinContext());
 
         packageCreator.execute();
         packageUpdater.execute();
@@ -848,14 +849,14 @@ public abstract class AbstractNodeUpdatePackagesTest
         Assert.assertTrue(json.hasKey("license"));
 
         JsonObject dependencies = json.getObject(DEPENDENCIES);
-        for (Map.Entry<String, String> entry : NodeUpdater
+        for (Map.Entry<String, String> entry : packageUpdater
                 .getDefaultDependencies().entrySet()) {
             Assert.assertTrue("Missing '" + entry.getKey() + "' package",
                     dependencies.hasKey(entry.getKey()));
         }
 
         JsonObject devDependencies = json.getObject(DEV_DEPENDENCIES);
-        for (Map.Entry<String, String> entry : NodeUpdater
+        for (Map.Entry<String, String> entry : packageUpdater
                 .getDefaultDevDependencies().entrySet()) {
             Assert.assertTrue("Missing '" + entry.getKey() + "' package",
                     devDependencies.hasKey(entry.getKey()));
@@ -903,7 +904,7 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         packageUpdater = new TaskUpdatePackages(classFinder,
                 frontendDependencies, baseDir, generatedDir, resourcesDir,
-                false, isPnpm, TARGET);
+                false, isPnpm, TARGET, new MockVaadinContext());
 
         // Generate package json in a proper format first
         packageCreator.execute();

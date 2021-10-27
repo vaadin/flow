@@ -24,9 +24,14 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Supplier;
 
 import org.apache.commons.io.FileUtils;
 import org.zeroturnaround.exec.InvalidExitValueException;
@@ -34,9 +39,11 @@ import org.zeroturnaround.exec.ProcessExecutor;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendToolsSettings;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -44,6 +51,7 @@ import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.scanner.ReflectionsClassFinder;
 import com.vaadin.flow.utils.FlowFileUtils;
+import com.vaadin.flow.utils.ResourceProviderImpl;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -76,6 +84,8 @@ public class BuildFrontendUtil {
     private BuildFrontendUtil() {
 
     }
+
+    private static VaadinContext context = new PluginContext();
 
     /**
      * creates a {@link ClassFinder} from a List of classpathElements.
@@ -111,7 +121,8 @@ public class BuildFrontendUtil {
      *            - the PluginAdapterBase.
      */
     public static void updateFeatureFlagsLocation(PluginAdapterBase adapter) {
-        FeatureFlags.setPropertiesLocation(adapter.javaResourceFolder());
+        FeatureFlags.getInstance(context)
+                .setPropertiesLocation(adapter.javaResourceFolder());
     }
 
     /**
@@ -147,10 +158,16 @@ public class BuildFrontendUtil {
                 Paths.get(adapter.buildFolder(), DEFAULT_FLOW_RESOURCES_FOLDER)
                         .toString());
         ClassFinder classFinder = adapter.getClassFinder();
-        Lookup lookup = adapter.createLookup(classFinder);
+        Lookup lookup = Lookup.compose(
+                Lookup.of(new ResourceProviderImpl(), ResourceProvider.class),
+                adapter.createLookup(classFinder));
+
+        context.setAttribute(Lookup.class, lookup);
+
         NodeTasks.Builder builder = new NodeTasks.Builder(lookup,
                 adapter.npmFolder(), adapter.generatedFolder(),
                 adapter.frontendDirectory(), adapter.buildFolder())
+                        .withContext(context)
                         .useV14Bootstrap(
                                 adapter.isUseDeprecatedV14Bootstrapping())
                         .withFlowResourcesFolder(flowResourcesFolder)
@@ -290,13 +307,18 @@ public class BuildFrontendUtil {
         nodeDownloadRootURI = adapter.nodeDownloadRoot();
 
         ClassFinder classFinder = adapter.getClassFinder();
-        Lookup lookup = adapter.createLookup(classFinder);
+
+        Lookup lookup = Lookup.compose(
+                Lookup.of(new ResourceProviderImpl(), ResourceProvider.class),
+                adapter.createLookup(classFinder));
+        context.setAttribute(Lookup.class, lookup);
 
         try {
             new NodeTasks.Builder(lookup, adapter.npmFolder(),
                     adapter.generatedFolder(), adapter.frontendDirectory(),
                     adapter.buildFolder())
                             .runNpmInstall(adapter.runNpmInstall())
+                            .withContext(context)
                             .withWebpack(adapter.webpackOutputDirectory(),
                                     adapter.servletResourceOutputDirectory(),
                                     adapter.webpackTemplate(),
@@ -447,4 +469,39 @@ public class BuildFrontendUtil {
         }
     }
 
+    public static class PluginContext implements VaadinContext {
+
+        Map<String, Object> attributes = new HashMap<>();
+
+        @Override
+        public <T> T getAttribute(Class<T> type,
+                Supplier<T> defaultValueSupplier) {
+            Object result = attributes.get(type.getName());
+            if (result == null && defaultValueSupplier != null) {
+                result = defaultValueSupplier.get();
+                attributes.put(type.getName(), result);
+            }
+            return type.cast(result);
+        }
+
+        @Override
+        public <T> void setAttribute(Class<T> clazz, T value) {
+            attributes.put(clazz.getName(), value);
+        }
+
+        @Override
+        public void removeAttribute(Class<?> clazz) {
+            attributes.remove(clazz.getName());
+        }
+
+        @Override
+        public Enumeration<String> getContextParameterNames() {
+            return Collections.enumeration(Collections.emptyList());
+        }
+
+        @Override
+        public String getContextParameter(String name) {
+            return null;
+        }
+    }
 }

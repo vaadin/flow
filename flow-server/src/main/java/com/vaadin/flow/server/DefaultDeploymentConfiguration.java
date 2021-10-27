@@ -318,8 +318,10 @@ public class DefaultDeploymentConfiguration
      * Log information about enabled feature flags.
      */
     private void checkFeatureFlags() {
-        List<Feature> enabledFeatures = FeatureFlags.getFeatures().stream()
-                .filter(f -> f.isEnabled()).collect(Collectors.toList());
+        List<Feature> enabledFeatures = FeatureFlags
+                .getInstance(getParentConfiguration().getContext())
+                .getFeatures().stream().filter(f -> f.isEnabled())
+                .collect(Collectors.toList());
         if (!enabledFeatures.isEmpty()) {
             info.add("\nThe following EXPERIMENTAL features are enabled:");
             enabledFeatures.forEach(feature -> {

@@ -32,8 +32,7 @@ public class BasicsIT extends ChromeBrowserTest {
         getDriver().get(getRootURL());
         waitForDevServer();
         TestBenchElement viteStatus = $(ParagraphElement.class).id("status");
-        Assert.assertEquals("Vite feature is true",
-                viteStatus.getText());
+        Assert.assertEquals("Vite feature is true", viteStatus.getText());
     }
 
     @Test

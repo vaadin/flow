@@ -28,6 +28,8 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.server.MockVaadinContext;
+
 import elemental.json.JsonObject;
 
 public class TaskGeneratePackageJsonTest {
@@ -44,7 +46,7 @@ public class TaskGeneratePackageJsonTest {
         flowResourcesFolder = temporaryFolder.newFolder();
 
         task = Mockito.spy(new TaskGeneratePackageJson(npmFolder, null,
-                flowResourcesFolder, TARGET));
+                flowResourcesFolder, TARGET, new MockVaadinContext()));
 
         Mockito.doReturn(null).when(task).getPackageJson();
         Mockito.doReturn(false).when(task)
