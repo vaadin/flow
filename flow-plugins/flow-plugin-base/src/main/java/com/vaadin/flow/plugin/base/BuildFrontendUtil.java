@@ -23,6 +23,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -342,7 +343,7 @@ public class BuildFrontendUtil {
     }
 
     /**
-     * runs the Webpack
+     * Runs the Webpack build
      *
      * @param adapter
      *            - the PluginAdapterBase.
@@ -357,15 +358,39 @@ public class BuildFrontendUtil {
      */
     public static void runWebpack(PluginAdapterBase adapter) throws IOException,
             InterruptedException, TimeoutException, URISyntaxException {
+        runFrontendBuildTool(adapter, "Webpack", "webpack/bin/webpack.js");
+    }
 
-        String webpackCommand = "webpack/bin/webpack.js";
-        File webpackExecutable = new File(adapter.npmFolder(),
-                NODE_MODULES + webpackCommand);
-        if (!webpackExecutable.isFile()) {
+    /**
+     * Runs the Vite build
+     *
+     * @param adapter
+     *            - the PluginAdapterBase.
+     * @throws TimeoutException
+     *             - while run webpack
+     * @throws InterruptedException
+     *             - while run webpack
+     * @throws IOException
+     *             - while run webpack
+     * @throws URISyntaxException
+     *             - while parsing nodeDownloadRoot()) to URI
+     */
+    public static void runVite(PluginAdapterBase adapter) throws IOException,
+            InterruptedException, TimeoutException, URISyntaxException {
+        runFrontendBuildTool(adapter, "Vite", "vite/bin/vite.js", "build");
+    }
+
+    private static void runFrontendBuildTool(PluginAdapterBase adapter,
+            String toolName, String executable, String... params)
+            throws TimeoutException, URISyntaxException {
+
+        File buildExecutable = new File(adapter.npmFolder(),
+                NODE_MODULES + executable);
+        if (!buildExecutable.isFile()) {
             throw new IllegalStateException(String.format(
                     "Unable to locate webpack executable by path '%s'. Double"
                             + " check that the plugin is executed correctly",
-                    webpackExecutable.getAbsolutePath()));
+                    buildExecutable.getAbsolutePath()));
         }
 
         String nodePath;
@@ -377,15 +402,18 @@ public class BuildFrontendUtil {
             nodePath = tools.getNodeExecutable();
         }
 
-        List<String> command = Arrays.asList(nodePath,
-                webpackExecutable.getAbsolutePath());
+        List<String> command = new ArrayList<>();
+        command.add(nodePath);
+        command.add(buildExecutable.getAbsolutePath());
+        command.addAll(Arrays.asList(params));
+
         ProcessBuilder builder = FrontendUtils.createProcessBuilder(command);
 
         ProcessExecutor processExecutor = new ProcessExecutor()
                 .command(builder.command()).environment(builder.environment())
                 .directory(adapter.projectBaseDirectory().toFile());
 
-        adapter.logInfo("Running webpack ...");
+        adapter.logInfo("Running " + toolName + " ...");
         if (adapter.isDebugEnabled()) {
             adapter.logDebug(FrontendUtils.commandToString(
                     adapter.npmFolder().getAbsolutePath(), command));
@@ -395,8 +423,8 @@ public class BuildFrontendUtil {
                     .execute();
         } catch (InvalidExitValueException e) {
             throw new IllegalStateException(String.format(
-                    "Webpack process exited with non-zero exit code.%nStderr: '%s'",
-                    e.getResult().outputUTF8()), e);
+                    "%s process exited with non-zero exit code.%nStderr: '%s'",
+                    toolName, e.getResult().outputUTF8()), e);
         } catch (IOException | InterruptedException e) {
             throw new IllegalStateException(
                     "Failed to run webpack due to an error", e);
