@@ -22,13 +22,17 @@ import org.atmosphere.cpr.Broadcaster;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
+
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.BrowserLiveReload;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 public class DebugWindowConnectionTest {
 
     private DebugWindowConnection reload = new DebugWindowConnection(
-            new MockVaadinContext());
+            getMockContext());
 
     @Test
     public void onConnect_suspend_sayHello() {
@@ -108,7 +112,7 @@ public class DebugWindowConnectionTest {
                             throw new ClassNotFoundException();
                         }
                     }
-                }, new MockVaadinContext());
+                }, getMockContext());
         Assert.assertEquals(BrowserLiveReload.Backend.JREBEL,
                 reload.getBackend());
     }
@@ -129,7 +133,7 @@ public class DebugWindowConnectionTest {
                             throw new ClassNotFoundException();
                         }
                     }
-                }, new MockVaadinContext());
+                }, getMockContext());
         Assert.assertEquals(BrowserLiveReload.Backend.HOTSWAP_AGENT,
                 reload.getBackend());
     }
@@ -154,7 +158,7 @@ public class DebugWindowConnectionTest {
                             throw new ClassNotFoundException();
                         }
                     }
-                }, new MockVaadinContext());
+                }, getMockContext());
         Assert.assertEquals(BrowserLiveReload.Backend.SPRING_BOOT_DEVTOOLS,
                 reload.getBackend());
     }
@@ -178,6 +182,14 @@ public class DebugWindowConnectionTest {
                     + " required on classpath for JRebel / HotswapAgent live reload integration, must be instantiable and have method "
                     + methodName + " accepting a VaadinService");
         }
+    }
+
+    private VaadinContext getMockContext() {
+        VaadinContext context = new MockVaadinContext();
+        context.setAttribute(Lookup.class,
+                Lookup.of(Mockito.mock(ApplicationConfiguration.class),
+                        ApplicationConfiguration.class));
+        return context;
     }
 
 }

@@ -31,7 +31,6 @@ import java.util.Properties;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import org.apache.commons.io.FileUtils;
@@ -61,20 +60,10 @@ public class FeatureFlags implements Serializable {
 
     File propertiesFolder = null;
 
-    private VaadinContext context;
-    private Lookup lookup;
+    private final Lookup lookup;
 
     public FeatureFlags(Lookup lookup) {
         this.lookup = lookup;
-        this.context = null;
-        features.add(new Feature(EXAMPLE));
-        features.add(new Feature(VITE));
-        loadProperties();
-    }
-
-    protected FeatureFlags(VaadinContext context) {
-        this.context = context;
-        this.lookup = context.getAttribute(Lookup.class);
         features.add(new Feature(EXAMPLE));
         features.add(new Feature(VITE));
         loadProperties();
@@ -124,7 +113,8 @@ public class FeatureFlags implements Serializable {
             attribute = context.getAttribute(FeatureFlagsWrapper.class);
 
             if (attribute == null) {
-                attribute = new FeatureFlagsWrapper(new FeatureFlags(context));
+                attribute = new FeatureFlagsWrapper(
+                        new FeatureFlags(context.getAttribute(Lookup.class)));
                 context.setAttribute(attribute);
             }
         }
@@ -313,10 +303,7 @@ public class FeatureFlags implements Serializable {
     }
 
     private ApplicationConfiguration getApplicationConfiguration() {
-        if (context == null) {
-            return lookup.lookup(ApplicationConfiguration.class);
-        }
-        return ApplicationConfiguration.get(context);
+        return lookup.lookup(ApplicationConfiguration.class);
     }
 
     private Logger getLogger() {
