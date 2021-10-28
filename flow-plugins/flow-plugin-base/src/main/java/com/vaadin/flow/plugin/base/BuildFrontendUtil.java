@@ -364,10 +364,6 @@ public class BuildFrontendUtil {
      *            - the PluginAdapterBase.
      * @throws TimeoutException
      *             - while run webpack
-     * @throws InterruptedException
-     *             - while run webpack
-     * @throws IOException
-     *             - while run webpack
      * @throws URISyntaxException
      *             - while parsing nodeDownloadRoot()) to URI
      */
@@ -382,10 +378,6 @@ public class BuildFrontendUtil {
      * @param adapter
      *            - the PluginAdapterBase.
      * @throws TimeoutException
-     *             - while running vite
-     * @throws InterruptedException
-     *             - while running vite
-     * @throws IOException
      *             - while running vite
      * @throws URISyntaxException
      *             - while parsing nodeDownloadRoot()) to URI
