@@ -23,6 +23,7 @@ public class BasicsIT extends ChromeBrowserTest {
     public void openView() {
         getDriver().get(getRootURL());
         waitForDevServer();
+        getCommandExecutor().waitForVaadin();
     }
 
     @Test
