@@ -90,7 +90,8 @@ public class PrepareFrontendMojoTest {
         project = Mockito.mock(MavenProject.class);
 
         List<String> packages = Arrays
-                .stream(System.getProperty("java.class.path").split(";"))
+                .stream(System.getProperty("java.class.path")
+                        .split(File.pathSeparatorChar + ""))
                 .collect(Collectors.toList());
         Mockito.when(project.getRuntimeClasspathElements())
                 .thenReturn(packages);
