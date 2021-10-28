@@ -114,6 +114,14 @@ public class BuildFrontendMojoTest {
         Mockito.when(project.getRuntimeClasspathElements())
                 .thenReturn(getClassPath());
 
+        List<String> packages = Arrays
+                .stream(System.getProperty("java.class.path").split(";"))
+                .collect(Collectors.toList());
+        Mockito.when(project.getRuntimeClasspathElements())
+                .thenReturn(packages);
+        Mockito.when(project.getCompileClasspathElements())
+                .thenReturn(Collections.emptyList());
+
         projectBase = temporaryFolder.getRoot();
 
         tokenFile = new File(temporaryFolder.getRoot(),

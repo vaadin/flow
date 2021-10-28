@@ -20,6 +20,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -84,6 +88,14 @@ public class PrepareFrontendMojoTest {
                 VAADIN_SERVLET_RESOURCES + TOKEN_FILE);
 
         project = Mockito.mock(MavenProject.class);
+
+        List<String> packages = Arrays
+                .stream(System.getProperty("java.class.path").split(";"))
+                .collect(Collectors.toList());
+        Mockito.when(project.getRuntimeClasspathElements())
+                .thenReturn(packages);
+        Mockito.when(project.getCompileClasspathElements())
+                .thenReturn(Collections.emptyList());
         Mockito.when(project.getBasedir()).thenReturn(projectBase);
 
         flowResourcesFolder = new File(projectBase,
