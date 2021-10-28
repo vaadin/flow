@@ -198,7 +198,7 @@ public class DevModeInitializer implements Serializable {
         }
         // This needs to be set as there is no "current service" available in
         // this call
-        FeatureFlags.getInstance(context)
+        FeatureFlags.get(context)
                 .setPropertiesLocation(config.getJavaResourceFolder());
 
         String baseDir = config.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
@@ -330,7 +330,7 @@ public class DevModeInitializer implements Serializable {
 
         Lookup devServerLookup = Lookup.compose(lookup,
                 Lookup.of(config, ApplicationConfiguration.class));
-        if (FeatureFlags.getInstance(context).isEnabled(FeatureFlags.VITE)) {
+        if (FeatureFlags.get(context).isEnabled(FeatureFlags.VITE)) {
             return new ViteHandler(devServerLookup, 0, builder.getNpmFolder(),
                     nodeTasksFuture);
         } else {

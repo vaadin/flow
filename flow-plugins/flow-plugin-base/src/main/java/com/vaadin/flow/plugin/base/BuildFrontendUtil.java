@@ -321,7 +321,8 @@ public class BuildFrontendUtil {
                                     adapter.requireHomeNodeExec())
                             .withNodeVersion(adapter.nodeVersion())
                             .withNodeDownloadRoot(nodeDownloadRootURI)
-                            .setNodeAutoUpdate(adapter.nodeAutoUpdate()).build()
+                            .setNodeAutoUpdate(adapter.nodeAutoUpdate())
+                            .setJavaResourceFolder(adapter.javaResourceFolder()).build()
                             .execute();
         } catch (ExecutionFailedException exception) {
             throw exception;
@@ -350,7 +351,9 @@ public class BuildFrontendUtil {
 
         Lookup lookup = adapter.createLookup(classFinder);
 
-        if (new FeatureFlags(lookup).isEnabled(FeatureFlags.VITE)) {
+        final FeatureFlags featureFlags = new FeatureFlags(lookup,
+                adapter.javaResourceFolder());
+        if (featureFlags.isEnabled(FeatureFlags.VITE)) {
             BuildFrontendUtil.runVite(adapter);
         } else {
             BuildFrontendUtil.runWebpack(adapter);

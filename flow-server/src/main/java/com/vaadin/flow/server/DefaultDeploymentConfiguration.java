@@ -319,8 +319,8 @@ public class DefaultDeploymentConfiguration
      */
     private void checkFeatureFlags() {
         List<Feature> enabledFeatures = FeatureFlags
-                .getInstance(getParentConfiguration().getContext())
-                .getFeatures().stream().filter(f -> f.isEnabled())
+                .get(getParentConfiguration().getContext()).getFeatures()
+                .stream().filter(f -> f.isEnabled())
                 .collect(Collectors.toList());
         if (!enabledFeatures.isEmpty()) {
             info.add("\nThe following EXPERIMENTAL features are enabled:");

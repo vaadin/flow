@@ -22,9 +22,7 @@ import java.nio.file.Files;
 import java.util.Enumeration;
 
 import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.UsageStatistics;
-import com.vaadin.flow.router.RoutePathProvider;
 import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
@@ -32,7 +30,6 @@ import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -40,9 +37,6 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
-import net.jcip.annotations.NotThreadSafe;
-
-@NotThreadSafe
 public class FeatureFlagsTest {
 
     @Rule
@@ -57,9 +51,9 @@ public class FeatureFlagsTest {
         propertiesDir = temporaryFolder.newFolder();
 
         context = new MockVaadinContext();
-        featureFlags = FeatureFlags.getInstance(context);
+        featureFlags = FeatureFlags.get(context);
         featureFlags.setPropertiesLocation(propertiesDir);
-        setApplicationConfiguration(false);
+        setProductionMode(false);
 
         mockResourcesLocation();
     }
@@ -142,7 +136,7 @@ public class FeatureFlagsTest {
 
     @Test(expected = IllegalStateException.class)
     public void setEnabledOnlyInDevelopmentMode() throws IOException {
-        setApplicationConfiguration(true);
+        setProductionMode(true);
         createTempFeatureFlagsFile(
                 "com.vaadin.experimental.exampleFeatureFlag=true\n");
         ApplicationConfiguration conf = ApplicationConfiguration
@@ -223,55 +217,13 @@ public class FeatureFlagsTest {
                 StandardCharsets.UTF_8);
     }
 
-    private void setApplicationConfiguration(boolean productionMode) {
-        ApplicationConfiguration appConfig = new TestAppConfig(productionMode);
+    private void setProductionMode(boolean productionMode) {
+        ApplicationConfiguration appConfig = Mockito
+                .mock(ApplicationConfiguration.class);
+        Mockito.when(appConfig.isProductionMode()).thenReturn(productionMode);
 
         Lookup lookup = context.getAttribute(Lookup.class);
         Mockito.when(lookup.lookup(ApplicationConfiguration.class))
                 .thenReturn(appConfig);
-    }
-
-    public static class TestAppConfig implements ApplicationConfiguration {
-
-        boolean productionMode;
-
-        public TestAppConfig(boolean productionMode) {
-            this.productionMode = productionMode;
-        }
-
-        @Override
-        public boolean isProductionMode() {
-            return productionMode;
-        }
-
-        @Override
-        public String getStringProperty(String name, String defaultValue) {
-            return defaultValue;
-        }
-
-        @Override
-        public boolean getBooleanProperty(String name, boolean defaultValue) {
-            return defaultValue;
-        }
-
-        @Override
-        public Enumeration<String> getPropertyNames() {
-            return null;
-        }
-
-        @Override
-        public VaadinContext getContext() {
-            return null;
-        }
-
-        @Override
-        public FallbackChunk getFallbackChunk() {
-            return null;
-        }
-
-        @Override
-        public boolean isDevModeSessionSerializationEnabled() {
-            return false;
-        }
     }
 }

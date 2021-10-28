@@ -76,6 +76,20 @@ public class FeatureFlags implements Serializable {
     }
 
     /**
+     * Generate FeatureFlags with given properties folder.
+     *
+     * @param lookup
+     *            lookup to use
+     * @param propertiesFolder
+     *            propertiesfolder to read feature flag file from
+     */
+    public FeatureFlags(Lookup lookup, File propertiesFolder) {
+        this(lookup);
+        this.propertiesFolder = propertiesFolder;
+        loadProperties();
+    }
+
+    /**
      * FeatureFlags wrapper class for storing the FeatureFlags object.
      */
     protected static class FeatureFlagsWrapper implements Serializable {
@@ -112,7 +126,7 @@ public class FeatureFlags implements Serializable {
      * @return a feature flags instance for the given context, not
      *         <code>null</code>
      */
-    public static FeatureFlags getInstance(VaadinContext context) {
+    public static FeatureFlags get(VaadinContext context) {
         assert context != null;
 
         FeatureFlagsWrapper attribute;

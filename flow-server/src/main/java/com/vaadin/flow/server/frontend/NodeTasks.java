@@ -152,6 +152,11 @@ public class NodeTasks implements FallibleCommand {
         private boolean productionMode = true;
 
         /**
+         * The resource folder for java resources.
+         */
+        private File javaResourceFolder;
+
+        /**
          * Create a builder instance given an specific npm folder.
          *
          * @param lookup
@@ -623,6 +628,27 @@ public class NodeTasks implements FallibleCommand {
         public String getBuildDirectory() {
             return buildDirectory;
         }
+
+        /**
+         * Set the java resources folder to be checked for feature file.
+         * <p>
+         * Needed for plugin execution.
+         *
+         * @param javaResourceFolder
+         *            java resources folder
+         * @return this builder
+         */
+        public Builder setJavaResourceFolder(File javaResourceFolder) {
+            this.javaResourceFolder = javaResourceFolder;
+            return this;
+        }
+
+        protected FeatureFlags getFeatureFlags() {
+            if (javaResourceFolder != null) {
+                return new FeatureFlags(lookup, javaResourceFolder);
+            }
+            return new FeatureFlags(lookup);
+        }
     }
 
     // @formatter:off
@@ -663,7 +689,7 @@ public class NodeTasks implements FallibleCommand {
         boolean enableWebpackConfigUpdate = builder.webpackTemplate != null
                 && !builder.webpackTemplate.isEmpty();
 
-        final FeatureFlags featureFlags = new FeatureFlags(builder.lookup);
+        final FeatureFlags featureFlags = builder.getFeatureFlags();
 
         if (builder.enablePackagesUpdate || builder.enableImportsUpdate
                 || enableWebpackConfigUpdate) {

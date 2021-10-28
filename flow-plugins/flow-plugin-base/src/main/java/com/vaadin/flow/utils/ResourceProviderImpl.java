@@ -24,7 +24,7 @@ import java.util.List;
 import com.vaadin.flow.di.ResourceProvider;
 
 /**
- * Default implementation of {@link ResourceProvider}.
+ * {@link ResourceProvider} for use with plugin execution.
  *
  * @author Vaadin Ltd
  * @since

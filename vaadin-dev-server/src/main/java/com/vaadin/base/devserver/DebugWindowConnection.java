@@ -119,7 +119,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
         send(resource, "serverInfo", new ServerInfo());
         send(resource, "featureFlags",
-                new FeatureFlagMessage(FeatureFlags.getInstance(context)
+                new FeatureFlagMessage(FeatureFlags.get(context)
                         .getFeatures().stream()
                         .filter(feature -> feature != FeatureFlags.EXAMPLE)
                         .collect(Collectors.toList())));
@@ -172,7 +172,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
         JsonObject json = Json.parse(message);
         if ("setFeature".equals(json.getString("command"))) {
             JsonObject data = json.getObject("data");
-            FeatureFlags.getInstance(context).setEnabled(
+            FeatureFlags.get(context).setEnabled(
                     data.getString("featureId"), data.getBoolean("enabled"));
         }
     }
