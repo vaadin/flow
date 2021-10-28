@@ -18,7 +18,6 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -33,8 +32,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.MockVaadinContext;
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 
@@ -70,7 +68,8 @@ public class NodeUpdaterTest {
         finder = Mockito.mock(ClassFinder.class);
         nodeUpdater = new NodeUpdater(finder,
                 Mockito.mock(FrontendDependencies.class), npmFolder,
-                new File(""), resourceFolder, TARGET, Collections.emptyList()) {
+                new File(""), resourceFolder, TARGET,
+                Mockito.mock(FeatureFlags.class)) {
 
             @Override
             public void execute() {

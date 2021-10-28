@@ -19,14 +19,12 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.Enumeration;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import org.apache.commons.io.FileUtils;
@@ -63,7 +61,7 @@ public class FeatureFlagsTest {
         Assert.assertFalse("Feature should be initially disabled",
                 featureFlags.isEnabled(FeatureFlags.EXAMPLE));
 
-        createTempFeatureFlagsFile(
+        createFeatureFlagsFile(
                 "com.vaadin.experimental.exampleFeatureFlag=true\n");
 
         // This is done automatically but from a static block which we cannot
@@ -77,7 +75,7 @@ public class FeatureFlagsTest {
     @Test
     public void setPropertiesLocation() throws Exception {
         // Set location and ensure flags are loaded from there
-        createTempFeatureFlagsFile(
+        createFeatureFlagsFile(
                 "com.vaadin.experimental.exampleFeatureFlag=true\n");
         Assert.assertFalse("Feature should be initially disabled",
                 featureFlags.isEnabled(FeatureFlags.EXAMPLE));
@@ -90,7 +88,7 @@ public class FeatureFlagsTest {
     public void setPropertiesLocationWithNoFileDisablesFeatures()
             throws Exception {
         // given an enabled feature
-        createTempFeatureFlagsFile(
+        createFeatureFlagsFile(
                 "com.vaadin.experimental.exampleFeatureFlag=true\n");
         featureFlags.setPropertiesLocation(propertiesDir);
 
@@ -106,7 +104,7 @@ public class FeatureFlagsTest {
 
     @Test
     public void enableDisableFeature() throws IOException {
-        createTempFeatureFlagsFile(
+        createFeatureFlagsFile(
                 "com.vaadin.experimental.exampleFeatureFlag=false\n");
         featureFlags.loadProperties();
         Assert.assertFalse(
@@ -137,7 +135,7 @@ public class FeatureFlagsTest {
     @Test(expected = IllegalStateException.class)
     public void setEnabledOnlyInDevelopmentMode() throws IOException {
         setProductionMode(true);
-        createTempFeatureFlagsFile(
+        createFeatureFlagsFile(
                 "com.vaadin.experimental.exampleFeatureFlag=true\n");
         ApplicationConfiguration conf = ApplicationConfiguration
                 .get(VaadinService.getCurrent().getContext());
@@ -149,7 +147,7 @@ public class FeatureFlagsTest {
     public void disabledFeatureFlagsNotMarkedInStatsWhenLoading()
             throws IOException {
         UsageStatistics.clearEntries();
-        createTempFeatureFlagsFile("");
+        createFeatureFlagsFile("");
         featureFlags.loadProperties();
         Assert.assertFalse(
                 hasUsageStatsEntry("flow/featureflags/exampleFeatureFlag"));
@@ -158,7 +156,7 @@ public class FeatureFlagsTest {
     @Test
     public void enabledFeatureFlagsMarkedInStatsWhenLoading()
             throws IOException {
-        createTempFeatureFlagsFile(
+        createFeatureFlagsFile(
                 "com.vaadin.experimental.exampleFeatureFlag=true\n");
         featureFlags.loadProperties();
         Assert.assertTrue(
@@ -168,7 +166,7 @@ public class FeatureFlagsTest {
     @Test
     public void disabledFeatureFlagsNotMarkedInStatsWhenToggled()
             throws IOException {
-        createTempFeatureFlagsFile(
+        createFeatureFlagsFile(
                 "com.vaadin.experimental.exampleFeatureFlag=true\n");
         UsageStatistics.clearEntries();
         featureFlags.setEnabled(FeatureFlags.EXAMPLE.getId(), false);
@@ -180,7 +178,7 @@ public class FeatureFlagsTest {
     @Test
     public void enabledFeatureFlagsMarkedInStatsWhenToggled()
             throws IOException {
-        createTempFeatureFlagsFile(
+        createFeatureFlagsFile(
                 "com.vaadin.experimental.exampleFeatureFlag=false\n");
         UsageStatistics.clearEntries();
         featureFlags.setEnabled(FeatureFlags.EXAMPLE.getId(), true);
@@ -211,7 +209,7 @@ public class FeatureFlagsTest {
 
     }
 
-    private void createTempFeatureFlagsFile(String data) throws IOException {
+    private void createFeatureFlagsFile(String data) throws IOException {
         FileUtils.write(
                 new File(propertiesDir, FeatureFlags.PROPERTIES_FILENAME), data,
                 StandardCharsets.UTF_8);

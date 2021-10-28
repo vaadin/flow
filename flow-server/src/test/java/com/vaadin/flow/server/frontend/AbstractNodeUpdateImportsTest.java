@@ -27,7 +27,6 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -39,9 +38,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.Mockito;
 import org.slf4j.Logger;
 
-import com.vaadin.flow.server.MockVaadinContext;
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
@@ -85,7 +85,7 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
         ClassFinder classFinder = getClassFinder();
         updater = new TaskUpdateImports(classFinder, getScanner(classFinder),
                 finder -> null, tmpRoot, generatedPath, frontendDirectory, null,
-                null, false, TARGET, true, Collections.emptyList()) {
+                null, false, TARGET, true, Mockito.mock(FeatureFlags.class)) {
             @Override
             Logger log() {
                 return logger;

@@ -19,7 +19,6 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -30,8 +29,9 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.Mockito;
 
-import com.vaadin.flow.server.MockVaadinContext;
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.testutil.TestUtils;
 
 import elemental.json.JsonObject;
@@ -74,7 +74,7 @@ public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
     public void should_createPackageJson() throws IOException {
         TaskGeneratePackageJson task = new TaskGeneratePackageJson(npmFolder,
                 generatedFolder, frontendDepsFolder, TARGET,
-                Collections.emptyList());
+                Mockito.mock(FeatureFlags.class));
         task.execute();
         Assert.assertTrue(new File(npmFolder, PACKAGE_JSON).exists());
         Assert.assertFalse(new File(generatedFolder, PACKAGE_JSON).exists());

@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -34,7 +33,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.server.MockVaadinContext;
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 
@@ -101,7 +100,7 @@ public class TaskInstallWebpackPluginsTest {
         NodeUpdater nodeUpdater = new NodeUpdater(finder,
                 Mockito.mock(FrontendDependencies.class), rootFolder,
                 new File(""), resourceFolder, BUILD_DIRECTORY,
-                Collections.emptyList()) {
+                Mockito.mock(FeatureFlags.class)) {
 
             @Override
             public void execute() {

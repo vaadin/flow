@@ -32,7 +32,7 @@ import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 
-import com.vaadin.experimental.Feature;
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
@@ -87,9 +87,9 @@ public class TaskUpdatePackages extends NodeUpdater {
     TaskUpdatePackages(ClassFinder finder,
             FrontendDependenciesScanner frontendDependencies, File npmFolder,
             File generatedPath, File flowResourcesPath, boolean forceCleanUp,
-            boolean enablePnpm, String buildDir, List<Feature> features) {
+            boolean enablePnpm, String buildDir, FeatureFlags featureFlags) {
         super(finder, frontendDependencies, npmFolder, generatedPath,
-                flowResourcesPath, buildDir, features);
+                flowResourcesPath, buildDir, featureFlags);
         this.forceCleanUp = forceCleanUp;
         this.enablePnpm = enablePnpm;
     }

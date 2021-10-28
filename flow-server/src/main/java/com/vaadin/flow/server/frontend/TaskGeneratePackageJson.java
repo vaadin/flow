@@ -18,9 +18,8 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-import java.util.List;
 
-import com.vaadin.experimental.Feature;
+import com.vaadin.experimental.FeatureFlags;
 
 import elemental.json.JsonObject;
 
@@ -50,9 +49,10 @@ public class TaskGeneratePackageJson extends NodeUpdater {
      *            the used build directory
      */
     TaskGeneratePackageJson(File npmFolder, File generatedPath,
-            File flowResourcesPath, String buildDir, List<Feature> features) {
+            File flowResourcesPath, String buildDir,
+            FeatureFlags featureFlags) {
         super(null, null, npmFolder, generatedPath, flowResourcesPath, buildDir,
-                features);
+                featureFlags);
     }
 
     @Override

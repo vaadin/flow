@@ -20,7 +20,6 @@ import static org.mockito.Mockito.verify;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
 
 import org.junit.After;
 import org.junit.Before;
@@ -29,7 +28,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.server.MockVaadinContext;
+import com.vaadin.experimental.FeatureFlags;
 
 import elemental.json.JsonObject;
 
@@ -47,7 +46,7 @@ public class TaskGeneratePackageJsonTest {
         flowResourcesFolder = temporaryFolder.newFolder();
 
         task = Mockito.spy(new TaskGeneratePackageJson(npmFolder, null,
-                flowResourcesFolder, TARGET, Collections.emptyList()));
+                flowResourcesFolder, TARGET, Mockito.mock(FeatureFlags.class)));
 
         Mockito.doReturn(null).when(task).getPackageJson();
         Mockito.doReturn(false).when(task)

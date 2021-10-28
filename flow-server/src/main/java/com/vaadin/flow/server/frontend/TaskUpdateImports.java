@@ -33,7 +33,7 @@ import java.util.regex.Pattern;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 
-import com.vaadin.experimental.Feature;
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -101,23 +101,30 @@ public class TaskUpdateImports extends NodeUpdater {
         protected void writeImportLines(List<String> lines) {
             if (fallBackImports != null) { // @formatter:off
                 lines.add("let thisScript;");
-                lines.add("const elements = document.getElementsByTagName('script');");
+                lines.add(
+                        "const elements = document.getElementsByTagName('script');");
                 lines.add("for (let i = 0; i < elements.length; i++) {");
                 lines.add(" const script = elements[i];");
-                lines.add(" if (script.getAttribute('type')=='module' && script.getAttribute('data-app-id') && !script['vaadin-bundle']) {");
+                lines.add(
+                        " if (script.getAttribute('type')=='module' && script.getAttribute('data-app-id') && !script['vaadin-bundle']) {");
                 lines.add("  thisScript = script;");
                 lines.add("  break;");
                 lines.add(" }");
                 lines.add("}");
                 lines.add("if (!thisScript) {");
-                lines.add(" throw new Error('Could not find the bundle script to identify the application id');");
+                lines.add(
+                        " throw new Error('Could not find the bundle script to identify the application id');");
                 lines.add("}");
                 lines.add("thisScript['vaadin-bundle'] = true;");
-                lines.add("if (!window.Vaadin.Flow.fallbacks) { window.Vaadin.Flow.fallbacks={}; }");
+                lines.add(
+                        "if (!window.Vaadin.Flow.fallbacks) { window.Vaadin.Flow.fallbacks={}; }");
                 lines.add("const fallbacks = window.Vaadin.Flow.fallbacks;");
-                lines.add("fallbacks[thisScript.getAttribute('data-app-id')] = {}");
-                lines.add("fallbacks[thisScript.getAttribute('data-app-id')].loadFallback = function loadFallback() {");
-                lines.add(" return import('./" + fallBackImports.getName() + "');");
+                lines.add(
+                        "fallbacks[thisScript.getAttribute('data-app-id')] = {}");
+                lines.add(
+                        "fallbacks[thisScript.getAttribute('data-app-id')].loadFallback = function loadFallback() {");
+                lines.add(" return import('./" + fallBackImports.getName()
+                        + "');");
                 lines.add("}");
             } // @formatter:on
             try {
@@ -344,9 +351,10 @@ public class TaskUpdateImports extends NodeUpdater {
             SerializableFunction<ClassFinder, FrontendDependenciesScanner> fallBackScannerProvider,
             File npmFolder, File generatedPath, File frontendDirectory,
             File tokenFile, JsonObject tokenFileData, boolean disablePnpm,
-            String buildDir, boolean productionMode, List<Feature> features) {
+            String buildDir, boolean productionMode,
+            FeatureFlags featureFlags) {
         super(finder, frontendDepScanner, npmFolder, generatedPath, null,
-                buildDir, features);
+                buildDir, featureFlags);
         this.frontendDirectory = frontendDirectory;
         fallbackScanner = fallBackScannerProvider.apply(finder);
         this.tokenFile = tokenFile;

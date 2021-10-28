@@ -712,7 +712,7 @@ public class NodeTasks implements FallibleCommand {
                         frontendDependencies, builder.npmFolder,
                         builder.generatedFolder, builder.flowResourcesFolder,
                         builder.cleanNpmFiles, builder.enablePnpm,
-                        builder.buildDirectory, featureFlags.getFeatures());
+                        builder.buildDirectory, featureFlags);
                 commands.add(packageUpdater);
 
             }
@@ -732,7 +732,7 @@ public class NodeTasks implements FallibleCommand {
             TaskGeneratePackageJson packageCreator = new TaskGeneratePackageJson(
                     builder.npmFolder, builder.generatedFolder,
                     builder.flowResourcesFolder, builder.buildDirectory,
-                    featureFlags.getFeatures());
+                    featureFlags);
             commands.add(packageCreator);
         }
 
@@ -796,7 +796,7 @@ public class NodeTasks implements FallibleCommand {
                             builder.frontendDirectory, builder.tokenFile,
                             builder.tokenFileData, builder.enablePnpm,
                             builder.buildDirectory, builder.productionMode,
-                            featureFlags.getFeatures()));
+                            featureFlags));
 
             commands.add(new TaskUpdateThemeImport(builder.npmFolder,
                     frontendDependencies.getThemeDefinition(),
