@@ -23,6 +23,7 @@ public class ThemeReloadIT extends ChromeBrowserTest {
     }
 
     @Test
+    @Ignore
     public void updateStyle_changeIsReloaded() throws IOException {
         getDriver().get(getRootURL());
         waitForDevServer();
