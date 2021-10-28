@@ -21,8 +21,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Enumeration;
 
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.UsageStatistics;
+import com.vaadin.flow.router.RoutePathProvider;
 import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
@@ -222,13 +224,16 @@ public class FeatureFlagsTest {
     }
 
     private void setApplicationConfiguration(boolean productionMode) {
-        context.setAttribute(ApplicationConfiguration.class,
-                new TestAppConfig(productionMode));
+        ApplicationConfiguration appConfig = new TestAppConfig(productionMode);
+
+        Lookup lookup = context.getAttribute(Lookup.class);
+        Mockito.when(lookup.lookup(ApplicationConfiguration.class))
+                .thenReturn(appConfig);
     }
 
     public static class TestAppConfig implements ApplicationConfiguration {
 
-        boolean productionMode = false;
+        boolean productionMode;
 
         public TestAppConfig(boolean productionMode) {
             this.productionMode = productionMode;
