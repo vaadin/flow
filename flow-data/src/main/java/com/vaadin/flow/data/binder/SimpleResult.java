@@ -47,8 +47,8 @@ class SimpleResult<R> implements Result<R> {
      */
     SimpleResult(R value, String message) {
         // value != null => message == null
-        assert value == null
-                || message == null : "Message must be null if value is provided";
+        assert value == null || message == null
+                : "Message must be null if value is provided";
         this.value = value;
         this.message = message;
     }

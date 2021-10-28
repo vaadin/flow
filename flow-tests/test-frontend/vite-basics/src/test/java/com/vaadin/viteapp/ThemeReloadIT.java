@@ -23,9 +23,11 @@ public class ThemeReloadIT extends ChromeBrowserTest {
     }
 
     @Test
+    @Ignore
     public void updateStyle_changeIsReloaded() throws IOException {
         getDriver().get(getRootURL());
         waitForDevServer();
+        getCommandExecutor().waitForVaadin();
         TestBenchElement header = $("h2").first();
         Assert.assertEquals("rgba(0, 0, 255, 1)", header.getCssValue("color"));
 

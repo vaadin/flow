@@ -303,7 +303,8 @@ public class TaskUpdatePackages extends NodeUpdater {
 
     private int updateNpmLocalDependency(JsonObject dependenciesObject,
             String packageName, File folder) {
-        assert dependenciesObject != null : "dependency object should not be null in package.json";
+        assert dependenciesObject != null
+                : "dependency object should not be null in package.json";
         if (folder != null) {
             String depsPkg = "./" + FrontendUtils.getUnixRelativePath(
                     npmFolder.getAbsoluteFile().toPath(),

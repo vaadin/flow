@@ -145,7 +145,8 @@ public final class PolymerUtils {
                         node.getMap(NodeFeatures.BASIC_TYPE_VALUE)
                                 .getProperty(NodeProperties.VALUE));
             }
-            assert feature != null : "Don't know how to convert node without map or list features";
+            assert feature != null
+                    : "Don't know how to convert node without map or list features";
 
             JsonValue convert = feature.convert(PolymerUtils::createModelTree);
             if (convert instanceof JsonObject
@@ -175,20 +176,22 @@ public final class PolymerUtils {
 
         JsArray<EventRemover> registrations = JsCollections.array();
         if (node.hasFeature(NodeFeatures.ELEMENT_PROPERTIES)) {
-            assert feature instanceof NodeMap : "Received an inconsistent NodeFeature for a node that has a ELEMENT_PROPERTIES feature. It should be NodeMap, but it is: "
-                    + feature;
+            assert feature instanceof NodeMap
+                    : "Received an inconsistent NodeFeature for a node that has a ELEMENT_PROPERTIES feature. It should be NodeMap, but it is: "
+                            + feature;
             NodeMap map = (NodeMap) feature;
             registerPropertyChangeHandlers(value, registrations, map);
             registerPropertyAddHandler(value, registrations, map);
         } else if (node.hasFeature(NodeFeatures.TEMPLATE_MODELLIST)) {
-            assert feature instanceof NodeList : "Received an inconsistent NodeFeature for a node that has a TEMPLATE_MODELLIST feature. It should be NodeList, but it is: "
-                    + feature;
+            assert feature instanceof NodeList
+                    : "Received an inconsistent NodeFeature for a node that has a TEMPLATE_MODELLIST feature. It should be NodeList, but it is: "
+                            + feature;
             NodeList list = (NodeList) feature;
             registrations.push(list.addSpliceListener(
                     event -> handleListChange(event, value)));
         }
-        assert !registrations
-                .isEmpty() : "Node should have ELEMENT_PROPERTIES or TEMPLATE_MODELLIST feature";
+        assert !registrations.isEmpty()
+                : "Node should have ELEMENT_PROPERTIES or TEMPLATE_MODELLIST feature";
 
         registrations.push(node.addUnregisterListener(
                 event -> registrations.forEach(EventRemover::remove)));
@@ -615,9 +618,10 @@ public final class PolymerUtils {
         int filteredIndex = -1;
         for (int i = 0; i < children.getLength(); i++) {
             Node next = children.item(i);
-            assert next instanceof Element : "Unexpected element type in the collection of children. "
-                    + "DomElement::getChildren is supposed to return Element chidren only, but got "
-                    + next.getClass();
+            assert next instanceof Element
+                    : "Unexpected element type in the collection of children. "
+                            + "DomElement::getChildren is supposed to return Element chidren only, but got "
+                            + next.getClass();
             Element element = (Element) next;
             if (!"style".equalsIgnoreCase(element.getTagName())) {
                 filteredIndex++;

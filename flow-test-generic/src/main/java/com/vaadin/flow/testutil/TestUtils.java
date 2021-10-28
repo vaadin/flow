@@ -99,8 +99,8 @@ public final class TestUtils {
      * @return list of paths, relative to the directory specified
      */
     public static List<String> listFilesRecursively(File directory) {
-        assert directory != null && directory
-                .isDirectory() : "This method expects valid directory as input, but got: "
+        assert directory != null && directory.isDirectory()
+                : "This method expects valid directory as input, but got: "
                         + directory;
 
         try {

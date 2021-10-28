@@ -206,8 +206,8 @@ public class FrontendStubs {
 
         private ToolStubInfo(boolean stubbed, String script) {
             this.stubbed = stubbed;
-            assert !stubbed || (script != null && !script
-                    .isEmpty()) : "Script may not be empty for stubbed tool";
+            assert !stubbed || (script != null && !script.isEmpty())
+                    : "Script may not be empty for stubbed tool";
             this.script = script;
         }
 

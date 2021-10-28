@@ -93,8 +93,8 @@ public class ElementPropertyMap extends AbstractPropertyMap {
     @Override
     public void setProperty(String name, Serializable value,
             boolean emitChange) {
-        assert !forbiddenProperties.contains(name) : "Forbidden property name: "
-                + name;
+        assert !forbiddenProperties.contains(name)
+                : "Forbidden property name: " + name;
 
         super.setProperty(name, value, emitChange);
     }
@@ -241,8 +241,8 @@ public class ElementPropertyMap extends AbstractPropertyMap {
             if (!AllowUpdate.NO_EXPLICIT_STATUS.equals(allowed)) {
                 // This condition means there is a filter which explicitly
                 // allows or disallows the property
-                assert AllowUpdate.EXPLICITLY_DISALLOW.equals(
-                        allowed) : "Implementation error. If update for a property is allowed before the "
+                assert AllowUpdate.EXPLICITLY_DISALLOW.equals(allowed)
+                        : "Implementation error. If update for a property is allowed before the "
                                 + "filter it's expected that the filter disallow it";
                 return true;
             }

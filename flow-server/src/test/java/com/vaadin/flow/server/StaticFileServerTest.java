@@ -222,15 +222,16 @@ public class StaticFileServerTest implements Serializable {
     private void setupRequestURI(String encodedContextPath, String servletPath,
             String pathInfo) {
         assert !encodedContextPath.equals("/") : "root context is always \"\"";
-        assert encodedContextPath.equals("") || encodedContextPath
-                .startsWith("/") : "context always starts with /";
-        assert !encodedContextPath.endsWith(
-                "/") : "context path should start with / but not end with /";
+        assert encodedContextPath.equals("")
+                || encodedContextPath.startsWith("/")
+                : "context always starts with /";
+        assert !encodedContextPath.endsWith("/")
+                : "context path should start with / but not end with /";
         assert !servletPath.equals("/") : "a /* mapped servlet has path \"\"";
-        assert servletPath.equals("") || servletPath
-                .startsWith("/") : "servlet path always starts with /";
-        assert !servletPath.endsWith(
-                "/") : "servlet path should start with / but not end with /";
+        assert servletPath.equals("") || servletPath.startsWith("/")
+                : "servlet path always starts with /";
+        assert !servletPath.endsWith("/")
+                : "servlet path should start with / but not end with /";
         assert pathInfo == null || pathInfo.startsWith("/");
 
         String requestURI = "";
