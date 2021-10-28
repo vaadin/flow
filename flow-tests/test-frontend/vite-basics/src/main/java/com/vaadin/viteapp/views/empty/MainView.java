@@ -47,8 +47,8 @@ public class MainView extends Div {
         final Paragraph viteStatus = new Paragraph(
                 "Vite feature is "
                         + FeatureFlags
-                                .get(UI.getCurrent().getSession()
-                                        .getService().getContext())
+                                .get(UI.getCurrent().getSession().getService()
+                                        .getContext())
                                 .isEnabled(FeatureFlags.VITE));
         viteStatus.setId("status");
         add(viteStatus);

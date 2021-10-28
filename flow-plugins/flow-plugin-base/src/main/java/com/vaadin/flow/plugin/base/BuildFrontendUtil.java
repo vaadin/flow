@@ -322,8 +322,8 @@ public class BuildFrontendUtil {
                             .withNodeVersion(adapter.nodeVersion())
                             .withNodeDownloadRoot(nodeDownloadRootURI)
                             .setNodeAutoUpdate(adapter.nodeAutoUpdate())
-                            .setJavaResourceFolder(adapter.javaResourceFolder()).build()
-                            .execute();
+                            .setJavaResourceFolder(adapter.javaResourceFolder())
+                            .build().execute();
         } catch (ExecutionFailedException exception) {
             throw exception;
         } catch (Throwable throwable) { // NOSONAR Intentionally throwable
