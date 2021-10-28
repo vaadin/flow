@@ -101,7 +101,15 @@ public class PushHandlerTest {
         deploymentConfiguration.setDevModeLiveReloadEnabled(true);
         deploymentConfiguration.setDevModeGizmoEnabled(true);
 
+        ApplicationConfiguration applicationConfiguration = Mockito
+                .mock(ApplicationConfiguration.class);
+        Mockito.when(applicationConfiguration.isProductionMode())
+                .thenReturn(false);
+
         VaadinContext context = service.getContext();
+        context.setAttribute(ApplicationConfiguration.class,
+                applicationConfiguration);
+
         BrowserLiveReload liveReload = mockBrowserLiveReloadImpl(context);
 
         AtomicReference<AtmosphereResource> res = new AtomicReference<>();
@@ -131,7 +139,7 @@ public class PushHandlerTest {
         deploymentConfiguration.setDevModeGizmoEnabled(true);
 
         VaadinContext context = service.getContext();
-        BrowserLiveReload liveReload = mockBrowserLiveReloadImpl(context);
+        mockBrowserLiveReloadImpl(context);
 
         AtomicReference<AtmosphereResource> res = new AtomicReference<>();
         runTest(service, (handler, resource) -> {
