@@ -21,7 +21,6 @@ import java.io.UncheckedIOException;
 import java.util.List;
 
 import com.vaadin.experimental.Feature;
-import com.vaadin.flow.server.VaadinContext;
 
 import elemental.json.JsonObject;
 

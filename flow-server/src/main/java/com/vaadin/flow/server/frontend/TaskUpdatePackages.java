@@ -34,7 +34,6 @@ import org.apache.commons.io.FileUtils;
 
 import com.vaadin.experimental.Feature;
 import com.vaadin.flow.component.dependency.NpmPackage;
-import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 

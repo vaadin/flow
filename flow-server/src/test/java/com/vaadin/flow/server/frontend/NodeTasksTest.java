@@ -94,8 +94,7 @@ public class NodeTasksTest {
                 .when(mockedLookup).lookup(ClassFinder.class);
         Builder builder = new Builder(mockedLookup, new File(userDir), TARGET)
                 .enablePackagesUpdate(false).enableImportsUpdate(true)
-                .runNpmInstall(false).withEmbeddableWebComponents(false)
-                .withContext(context);
+                .runNpmInstall(false).withEmbeddableWebComponents(false);
 
         Assert.assertEquals(
                 new File(userDir, DEFAULT_FRONTEND_DIR).getAbsolutePath(),
@@ -121,8 +120,7 @@ public class NodeTasksTest {
                 .when(mockedLookup).lookup(ClassFinder.class);
         Builder builder = new Builder(mockedLookup, new File(userDir), TARGET)
                 .enablePackagesUpdate(false).enableImportsUpdate(true)
-                .runNpmInstall(false).withEmbeddableWebComponents(false)
-                .withContext(context);
+                .runNpmInstall(false).withEmbeddableWebComponents(false);
 
         Assert.assertEquals(
                 new File(userDir, DEFAULT_FRONTEND_DIR).getAbsolutePath(),
@@ -151,8 +149,7 @@ public class NodeTasksTest {
                 .when(mockedLookup).lookup(ClassFinder.class);
         Builder builder = new Builder(mockedLookup, new File(userDir), TARGET)
                 .enablePackagesUpdate(false).enableImportsUpdate(true)
-                .runNpmInstall(false).withEmbeddableWebComponents(false)
-                .withContext(context);
+                .runNpmInstall(false).withEmbeddableWebComponents(false);
 
         Assert.assertEquals(
                 new File(userDir, "my_custom_sources_folder").getAbsolutePath(),
@@ -187,8 +184,7 @@ public class NodeTasksTest {
                 .withFlowResourcesFolder(
                         new File(userDir, TARGET + "flow-frontend"))
                 .withFusionClientAPIFolder(new File(userDir,
-                        DEFAULT_PROJECT_FRONTEND_GENERATED_DIR))
-                .withContext(context);
+                        DEFAULT_PROJECT_FRONTEND_GENERATED_DIR));
         builder.build().execute();
         String webpackGeneratedContent = Files
                 .lines(new File(userDir, WEBPACK_GENERATED).toPath())
@@ -209,8 +205,7 @@ public class NodeTasksTest {
         Builder builder = new Builder(mockedLookup, new File(userDir), TARGET)
                 .enablePackagesUpdate(false).useV14Bootstrap(true)
                 .enableImportsUpdate(true).runNpmInstall(false)
-                .withEmbeddableWebComponents(false).useV14Bootstrap(false)
-                .withContext(context);
+                .withEmbeddableWebComponents(false).useV14Bootstrap(false);
         builder.build().execute();
 
         Assert.assertTrue(new File(userDir, "tsconfig.json").exists());

@@ -62,6 +62,12 @@ public class FeatureFlags implements Serializable {
 
     private final Lookup lookup;
 
+    /**
+     * Generate FeatureFlags with given lookup data.
+     *
+     * @param lookup
+     *            lookup to use
+     */
     public FeatureFlags(Lookup lookup) {
         this.lookup = lookup;
         features.add(new Feature(EXAMPLE));
@@ -73,37 +79,38 @@ public class FeatureFlags implements Serializable {
      * FeatureFlags wrapper class for storing the FeatureFlags object.
      */
     protected static class FeatureFlagsWrapper implements Serializable {
-        private final FeatureFlags feature;
+        private final FeatureFlags featureFlags;
 
         /**
-         * Create a application route registry wrapper.
+         * Create a feature flags wrapper.
          *
-         * @param registry
-         *            application route registry to wrap
+         * @param featureFlags
+         *            featureFlags to wrap
          */
-        public FeatureFlagsWrapper(FeatureFlags registry) {
-            this.feature = registry;
+        public FeatureFlagsWrapper(FeatureFlags featureFlags) {
+            this.featureFlags = featureFlags;
         }
 
         /**
-         * Get the application route registry.
+         * Get the featureFlags.
          *
-         * @return wrapped application route registry
+         * @return wrapped FeatureFlags
          */
         public FeatureFlags getFeatureFlags() {
-            return feature;
+            return featureFlags;
         }
     }
 
     /**
-     * Gets the route registry for the given Vaadin context. If the Vaadin
-     * context has no route registry, a new instance is created and assigned to
-     * the context.
+     * Gets the FeatureFlags for the given Vaadin context. If the Vaadin context
+     * has no FeatureFlags, a new instance is created and assigned to the
+     * context.
      *
      * @param context
-     *            the vaadin context for which to get a route registry, not
+     *            the vaadin context for which to get FeatureFlags from, not
      *            <code>null</code>
-     * @return a registry instance for the given context, not <code>null</code>
+     * @return a feature flags instance for the given context, not
+     *         <code>null</code>
      */
     public static FeatureFlags getInstance(VaadinContext context) {
         assert context != null;

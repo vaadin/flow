@@ -36,7 +36,6 @@ import org.slf4j.Logger;
 import com.vaadin.experimental.Feature;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.function.SerializableFunction;
-import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.CssData;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;

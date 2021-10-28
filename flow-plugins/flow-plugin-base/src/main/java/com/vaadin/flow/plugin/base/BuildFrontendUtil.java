@@ -334,6 +334,16 @@ public class BuildFrontendUtil {
         }
     }
 
+    /**
+     * Execute the frontend build with the wanted build system.
+     *
+     * @param adapter
+     *            - the PluginAdapterBase.
+     * @throws TimeoutException
+     *             - while running build system
+     * @throws URISyntaxException
+     *             - while parsing nodeDownloadRoot()) to URI
+     */
     public static void runFrontendBuild(PluginAdapterBase adapter)
             throws TimeoutException, URISyntaxException {
         ClassFinder classFinder = adapter.getClassFinder();
@@ -345,7 +355,6 @@ public class BuildFrontendUtil {
         } else {
             BuildFrontendUtil.runWebpack(adapter);
         }
-
     }
 
     /**
@@ -373,11 +382,11 @@ public class BuildFrontendUtil {
      * @param adapter
      *            - the PluginAdapterBase.
      * @throws TimeoutException
-     *             - while run webpack
+     *             - while running vite
      * @throws InterruptedException
-     *             - while run webpack
+     *             - while running vite
      * @throws IOException
-     *             - while run webpack
+     *             - while running vite
      * @throws URISyntaxException
      *             - while parsing nodeDownloadRoot()) to URI
      */

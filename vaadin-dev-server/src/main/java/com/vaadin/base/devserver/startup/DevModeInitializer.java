@@ -310,7 +310,7 @@ public class DevModeInitializer implements Serializable {
 
         JsonObject tokenFileData = Json.createObject();
         NodeTasks tasks = builder.enablePackagesUpdate(true)
-                .withContext(context).useByteCodeScanner(useByteCodeScanner)
+                .useByteCodeScanner(useByteCodeScanner)
                 .withFlowResourcesFolder(flowResourcesFolder)
                 .withFusionClientAPIFolder(new File(fusionClientAPIFolder))
                 .copyResources(frontendLocations)

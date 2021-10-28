@@ -31,12 +31,6 @@ import com.vaadin.flow.di.ResourceProvider;
  */
 class ResourceProviderImpl implements ResourceProvider {
 
-    /**
-     * Creates a new instance.
-     */
-    public ResourceProviderImpl() {
-    }
-
     @Override
     public URL getApplicationResource(String path) {
         return ResourceProviderImpl.class.getClassLoader().getResource(path);

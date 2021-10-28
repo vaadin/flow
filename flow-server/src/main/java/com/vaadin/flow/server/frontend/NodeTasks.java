@@ -152,8 +152,6 @@ public class NodeTasks implements FallibleCommand {
          */
         private boolean productionMode = true;
 
-        private VaadinContext context;
-
         /**
          * Create a builder instance given an specific npm folder.
          *
@@ -576,18 +574,6 @@ public class NodeTasks implements FallibleCommand {
          */
         public Builder setNodeAutoUpdate(boolean update) {
             this.nodeAutoUpdate = update;
-            return this;
-        }
-
-        /**
-         * Set the VaadinContext used for running the builder.
-         *
-         * @param context
-         *            VaadinContext used for building
-         * @return the builder
-         */
-        public Builder withContext(VaadinContext context) {
-            this.context = context;
             return this;
         }
 

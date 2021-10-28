@@ -41,7 +41,6 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.experimental.Feature;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
