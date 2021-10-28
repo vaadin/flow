@@ -73,6 +73,17 @@ public class PushHandler {
      * corresponding UI properly locked.
      */
     interface PushEventCallback {
+
+        /**
+         * The callback method.
+         * 
+         * @param resource
+         *            the Atmosphere resource
+         * @param ui
+         *            the UI instance
+         * @throws IOException
+         *             thrown if something goes wrong
+         */
         void run(AtmosphereResource resource, UI ui) throws IOException;
     }
 
@@ -538,10 +549,9 @@ public class PushHandler {
      */
     void onConnect(AtmosphereResource resource) {
         if (isDebugWindowConnection(resource)) {
-            VaadinContext context = service.getContext();
-            ApplicationConfiguration conf = ApplicationConfiguration
-                    .get(context);
-            if (conf.isProductionMode()) {
+            if (isProductionMode()) {
+                getLogger().debug(
+                        "Debug window connection request denied while in production mode");
                 // No debug info must ever leak out in production
                 return;
             }
@@ -551,6 +561,12 @@ public class PushHandler {
         } else {
             callWithUi(resource, establishCallback);
         }
+    }
+
+    private boolean isProductionMode() {
+        VaadinContext context = service.getContext();
+        ApplicationConfiguration conf = ApplicationConfiguration.get(context);
+        return conf.isProductionMode();
     }
 
     /**
