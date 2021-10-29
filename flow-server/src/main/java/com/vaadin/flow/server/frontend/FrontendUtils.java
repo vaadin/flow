@@ -122,6 +122,11 @@ public class FrontendUtils {
     public static final String VITE_CONFIG = "vite.config.ts";
 
     /**
+     * The name of the generated vite configuration file.
+     */
+    public static final String VITE_GENERATED_CONFIG = "vite.generated.ts";
+
+    /**
      * The name of the webpack generated configuration file.
      */
     public static final String WEBPACK_GENERATED = "webpack.generated.js";
