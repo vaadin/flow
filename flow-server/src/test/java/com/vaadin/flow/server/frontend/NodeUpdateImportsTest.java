@@ -37,6 +37,7 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner.FrontendDependenciesScannerFactory;
@@ -118,7 +119,8 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 finder -> new FrontendDependenciesScannerFactory()
                         .createScanner(true, finder, true),
                 tmpRoot, generatedPath, frontendDirectory, tokenFile,
-                fallBackData, false, TARGET, true) {
+                fallBackData, false, TARGET, true,
+                Mockito.mock(FeatureFlags.class)) {
             @Override
             Logger log() {
                 return logger;
@@ -256,7 +258,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 finder -> new FrontendDependenciesScannerFactory()
                         .createScanner(true, finder, true),
                 tmpRoot, generatedPath, frontendDirectory, tokenFile, null,
-                false, TARGET, true) {
+                false, TARGET, true, Mockito.mock(FeatureFlags.class)) {
             @Override
             Logger log() {
                 return logger;
@@ -325,7 +327,8 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 new FrontendDependenciesScannerFactory().createScanner(false,
                         classFinder, true),
                 finder -> null, tmpRoot, generatedPath, frontendDirectory,
-                tokenFile, null, false, TARGET, true) {
+                tokenFile, null, false, TARGET, true,
+                Mockito.mock(FeatureFlags.class)) {
             @Override
             Logger log() {
                 return logger;
@@ -370,7 +373,8 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 new FrontendDependenciesScannerFactory().createScanner(false,
                         classFinder, true),
                 finder -> null, tmpRoot, generatedPath, frontendDirectory,
-                tokenFile, null, false, TARGET, true) {
+                tokenFile, null, false, TARGET, true,
+                Mockito.mock(FeatureFlags.class)) {
             @Override
             Logger log() {
                 return logger;

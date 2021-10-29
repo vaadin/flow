@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.internal.BrowserLiveReload;
+import com.vaadin.flow.server.VaadinContext;
 
 import org.atmosphere.cpr.AtmosphereResource;
 import org.slf4j.Logger;
@@ -46,6 +47,7 @@ import elemental.json.JsonObject;
 public class DebugWindowConnection implements BrowserLiveReload {
 
     private final ClassLoader classLoader;
+    private VaadinContext context;
 
     private final ConcurrentLinkedQueue<WeakReference<AtmosphereResource>> atmosphereResources = new ConcurrentLinkedQueue<>();
 
@@ -66,12 +68,13 @@ public class DebugWindowConnection implements BrowserLiveReload {
                 "org.springframework.boot.devtools.livereload.LiveReloadServer"));
     }
 
-    DebugWindowConnection() {
-        this(DebugWindowConnection.class.getClassLoader());
+    DebugWindowConnection(VaadinContext context) {
+        this(DebugWindowConnection.class.getClassLoader(), context);
     }
 
-    DebugWindowConnection(ClassLoader classLoader) {
+    DebugWindowConnection(ClassLoader classLoader, VaadinContext context) {
         this.classLoader = classLoader;
+        this.context = context;
     }
 
     @Override
@@ -116,7 +119,8 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
         send(resource, "serverInfo", new ServerInfo());
         send(resource, "featureFlags",
-                new FeatureFlagMessage(FeatureFlags.getFeatures().stream()
+                new FeatureFlagMessage(FeatureFlags.get(context).getFeatures()
+                        .stream()
                         .filter(feature -> feature != FeatureFlags.EXAMPLE)
                         .collect(Collectors.toList())));
     }
@@ -168,7 +172,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
         JsonObject json = Json.parse(message);
         if ("setFeature".equals(json.getString("command"))) {
             JsonObject data = json.getObject("data");
-            FeatureFlags.setEnabled(data.getString("featureId"),
+            FeatureFlags.get(context).setEnabled(data.getString("featureId"),
                     data.getBoolean("enabled"));
         }
     }

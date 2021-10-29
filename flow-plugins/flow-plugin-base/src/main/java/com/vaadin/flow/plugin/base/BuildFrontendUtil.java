@@ -106,16 +106,6 @@ public class BuildFrontendUtil {
     }
 
     /**
-     * Forwards the feature files location to the feature flags detector.
-     *
-     * @param adapter
-     *            - the PluginAdapterBase.
-     */
-    public static void updateFeatureFlagsLocation(PluginAdapterBase adapter) {
-        FeatureFlags.setPropertiesLocation(adapter.javaResourceFolder());
-    }
-
-    /**
      * Prepares the Frontend
      *
      * @param adapter
@@ -149,6 +139,7 @@ public class BuildFrontendUtil {
                         .toString());
         ClassFinder classFinder = adapter.getClassFinder();
         Lookup lookup = adapter.createLookup(classFinder);
+
         NodeTasks.Builder builder = new NodeTasks.Builder(lookup,
                 adapter.npmFolder(), adapter.generatedFolder(),
                 adapter.frontendDirectory(), adapter.buildFolder())
@@ -162,6 +153,7 @@ public class BuildFrontendUtil {
                         .withNodeDownloadRoot(nodeDownloadRootURI)
                         .setNodeAutoUpdate(adapter.nodeAutoUpdate())
                         .withHomeNodeExecRequired(adapter.requireHomeNodeExec())
+                        .setJavaResourceFolder(adapter.javaResourceFolder())
                         .withProductionMode(adapter.productionMode());
         // If building a jar project copy jar artifact contents now as we
         // might not be able to read files from jar path.
@@ -291,6 +283,7 @@ public class BuildFrontendUtil {
         nodeDownloadRootURI = adapter.nodeDownloadRoot();
 
         ClassFinder classFinder = adapter.getClassFinder();
+
         Lookup lookup = adapter.createLookup(classFinder);
 
         try {
@@ -329,8 +322,9 @@ public class BuildFrontendUtil {
                                     adapter.requireHomeNodeExec())
                             .withNodeVersion(adapter.nodeVersion())
                             .withNodeDownloadRoot(nodeDownloadRootURI)
-                            .setNodeAutoUpdate(adapter.nodeAutoUpdate()).build()
-                            .execute();
+                            .setNodeAutoUpdate(adapter.nodeAutoUpdate())
+                            .setJavaResourceFolder(adapter.javaResourceFolder())
+                            .build().execute();
         } catch (ExecutionFailedException exception) {
             throw exception;
         } catch (Throwable throwable) { // NOSONAR Intentionally throwable
@@ -343,21 +337,42 @@ public class BuildFrontendUtil {
     }
 
     /**
+     * Execute the frontend build with the wanted build system.
+     *
+     * @param adapter
+     *            - the PluginAdapterBase.
+     * @throws TimeoutException
+     *             - while running build system
+     * @throws URISyntaxException
+     *             - while parsing nodeDownloadRoot()) to URI
+     */
+    public static void runFrontendBuild(PluginAdapterBase adapter)
+            throws TimeoutException, URISyntaxException {
+        ClassFinder classFinder = adapter.getClassFinder();
+
+        Lookup lookup = adapter.createLookup(classFinder);
+
+        final FeatureFlags featureFlags = new FeatureFlags(lookup,
+                adapter.javaResourceFolder());
+        if (featureFlags.isEnabled(FeatureFlags.VITE)) {
+            BuildFrontendUtil.runVite(adapter);
+        } else {
+            BuildFrontendUtil.runWebpack(adapter);
+        }
+    }
+
+    /**
      * Runs the Webpack build
      *
      * @param adapter
      *            - the PluginAdapterBase.
      * @throws TimeoutException
      *             - while run webpack
-     * @throws InterruptedException
-     *             - while run webpack
-     * @throws IOException
-     *             - while run webpack
      * @throws URISyntaxException
      *             - while parsing nodeDownloadRoot()) to URI
      */
-    public static void runWebpack(PluginAdapterBase adapter) throws IOException,
-            InterruptedException, TimeoutException, URISyntaxException {
+    public static void runWebpack(PluginAdapterBase adapter)
+            throws TimeoutException, URISyntaxException {
         runFrontendBuildTool(adapter, "Webpack", "webpack/bin/webpack.js");
     }
 
@@ -367,16 +382,12 @@ public class BuildFrontendUtil {
      * @param adapter
      *            - the PluginAdapterBase.
      * @throws TimeoutException
-     *             - while run webpack
-     * @throws InterruptedException
-     *             - while run webpack
-     * @throws IOException
-     *             - while run webpack
+     *             - while running vite
      * @throws URISyntaxException
      *             - while parsing nodeDownloadRoot()) to URI
      */
-    public static void runVite(PluginAdapterBase adapter) throws IOException,
-            InterruptedException, TimeoutException, URISyntaxException {
+    public static void runVite(PluginAdapterBase adapter)
+            throws TimeoutException, URISyntaxException {
         runFrontendBuildTool(adapter, "Vite", "vite/bin/vite.js", "build");
     }
 
@@ -474,5 +485,4 @@ public class BuildFrontendUtil {
             adapter.logWarn("Unable to read token file", e);
         }
     }
-
 }

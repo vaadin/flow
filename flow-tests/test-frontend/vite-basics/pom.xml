@@ -31,6 +31,10 @@
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
+            <artifactId>flow-html-components-testbench</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
             <artifactId>flow-test-lumo</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -84,6 +88,5 @@
                 </plugins>
             </build>
         </profile>
-
     </profiles>
 </project>

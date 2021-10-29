@@ -28,7 +28,6 @@ public class NodeTasksExecutionTest {
 
     @Before
     public void init() throws Exception {
-
         // Make a builder that doesn't add any commands.
         NodeTasks.Builder builder = new NodeTasks.Builder(
                 Mockito.mock(Lookup.class), null, TARGET);

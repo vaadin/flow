@@ -32,7 +32,7 @@ public class BrowserLiveReloadAccessorImpl
     @Override
     public BrowserLiveReload getLiveReload(VaadinContext context) {
         return context.getAttribute(BrowserLiveReload.class,
-                DebugWindowConnection::new);
+                () -> new DebugWindowConnection(context));
     }
 
     @Override

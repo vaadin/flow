@@ -20,14 +20,17 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.io.UncheckedIOException;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import org.apache.commons.io.FileUtils;
@@ -53,26 +56,120 @@ public class FeatureFlags implements Serializable {
             "Use Vite for faster front-end builds", "viteForFrontendBuild",
             "https://github.com/vaadin/platform/issues/2448", true);
 
-    private static List<Feature> features = new ArrayList<>();
+    private List<Feature> features = new ArrayList<>();
 
-    static File propertiesFolder = null;
+    File propertiesFolder = null;
 
-    static {
-        features.add(EXAMPLE);
-        features.add(VITE);
+    private final Lookup lookup;
+
+    /**
+     * Generate FeatureFlags with given lookup data.
+     *
+     * @param lookup
+     *            lookup to use
+     */
+    public FeatureFlags(Lookup lookup) {
+        this.lookup = lookup;
+        features.add(new Feature(EXAMPLE));
+        features.add(new Feature(VITE));
         loadProperties();
+    }
+
+    /**
+     * Generate FeatureFlags with given properties folder.
+     *
+     * @param lookup
+     *            lookup to use
+     * @param propertiesFolder
+     *            propertiesfolder to read feature flag file from
+     */
+    public FeatureFlags(Lookup lookup, File propertiesFolder) {
+        this(lookup);
+        this.propertiesFolder = propertiesFolder;
+        loadProperties();
+    }
+
+    /**
+     * FeatureFlags wrapper class for storing the FeatureFlags object.
+     */
+    protected static class FeatureFlagsWrapper implements Serializable {
+        private final FeatureFlags featureFlags;
+
+        /**
+         * Create a feature flags wrapper.
+         *
+         * @param featureFlags
+         *            featureFlags to wrap
+         */
+        public FeatureFlagsWrapper(FeatureFlags featureFlags) {
+            this.featureFlags = featureFlags;
+        }
+
+        /**
+         * Get the featureFlags.
+         *
+         * @return wrapped FeatureFlags
+         */
+        public FeatureFlags getFeatureFlags() {
+            return featureFlags;
+        }
+    }
+
+    /**
+     * Gets the FeatureFlags for the given Vaadin context. If the Vaadin context
+     * has no FeatureFlags, a new instance is created and assigned to the
+     * context.
+     *
+     * @param context
+     *            the vaadin context for which to get FeatureFlags from, not
+     *            <code>null</code>
+     * @return a feature flags instance for the given context, not
+     *         <code>null</code>
+     */
+    public static FeatureFlags get(final VaadinContext context) {
+        assert context != null;
+
+        FeatureFlagsWrapper attribute;
+        synchronized (context) {
+            attribute = context.getAttribute(FeatureFlagsWrapper.class);
+
+            if (attribute == null) {
+                attribute = new FeatureFlagsWrapper(
+                        new FeatureFlags(context.getAttribute(Lookup.class)));
+                context.setAttribute(attribute);
+            }
+        }
+
+        return attribute.getFeatureFlags();
     }
 
     /**
      * Set by the Maven / Gradle plugin when running through that so the feature
      * flags will be correctly detected.
      */
-    public static void setPropertiesLocation(File propertiesFolder) {
-        FeatureFlags.propertiesFolder = propertiesFolder;
+    public void setPropertiesLocation(File propertiesFolder) {
+        this.propertiesFolder = propertiesFolder;
         loadProperties();
     }
 
-    static void loadProperties() {
+    void loadProperties() {
+        final ResourceProvider resourceProvider = lookup
+                .lookup(ResourceProvider.class);
+        if (resourceProvider != null) {
+            final URL applicationResource = resourceProvider
+                    .getApplicationResource(PROPERTIES_FILENAME);
+            if (applicationResource != null) {
+                getLogger().debug("Properties loaded from classpath.");
+                try {
+                    loadProperties(applicationResource.openStream());
+                    return;
+                } catch (IOException e) {
+                    throw new UncheckedIOException(
+                            "Failed to read properties file from classpath", e);
+                }
+            }
+        }
+
         File featureFlagFile = getFeatureFlagFile();
         if (featureFlagFile == null || !featureFlagFile.exists()) {
             // Disable all features if no file exists
@@ -84,13 +181,16 @@ public class FeatureFlags implements Serializable {
 
         try (FileInputStream propertiesStream = new FileInputStream(
                 featureFlagFile)) {
+            getLogger().debug("Loading properties from file '{}'",
+                    featureFlagFile);
             loadProperties(propertiesStream);
         } catch (IOException e) {
-            getLogger().error("Unable to read properties using classloader", e);
+            throw new UncheckedIOException(
+                    "Failed to read properties file from filesystem", e);
         }
     }
 
-    static void loadProperties(InputStream propertiesStream) {
+    void loadProperties(InputStream propertiesStream) {
         try {
             Properties props = new Properties();
 
@@ -108,7 +208,7 @@ public class FeatureFlags implements Serializable {
         }
     }
 
-    private static void saveProperties() {
+    private void saveProperties() {
         File featureFlagFile = getFeatureFlagFile();
         if (featureFlagFile == null) {
             throw new IllegalStateException(
@@ -139,7 +239,7 @@ public class FeatureFlags implements Serializable {
      * 
      * @return a list of all features
      */
-    public static List<Feature> getFeatures() {
+    public List<Feature> getFeatures() {
         return features;
     }
 
@@ -150,8 +250,11 @@ public class FeatureFlags implements Serializable {
      *            the feature to check
      * @return <code>true</code> if enabled, <code>false</code> otherwise
      */
-    public static boolean isEnabled(Feature feature) {
-        return feature.isEnabled();
+    public boolean isEnabled(Feature feature) {
+        return getFeature(feature.getId())
+                .orElseThrow(
+                        () -> new UnknownFeatureException(feature.getTitle()))
+                .isEnabled();
     }
 
     /**
@@ -161,17 +264,17 @@ public class FeatureFlags implements Serializable {
      *            the feature to check
      * @return <code>true</code> if enabled, <code>false</code> otherwise
      */
-    public static boolean isEnabled(String featureId) {
+    public boolean isEnabled(String featureId) {
         return getFeature(featureId).map(Feature::isEnabled).orElse(false);
     }
 
-    private static Optional<Feature> getFeature(String featureId) {
+    private Optional<Feature> getFeature(String featureId) {
         return features.stream()
                 .filter(feature -> feature.getId().equals(featureId))
                 .findFirst();
     }
 
-    private static String getPropertyName(String featureId) {
+    private String getPropertyName(String featureId) {
         return "com.vaadin.experimental." + featureId;
     }
 
@@ -183,7 +286,7 @@ public class FeatureFlags implements Serializable {
      * @param enabled
      *            <code>true</code> to enable, <code>false</code> to disable
      */
-    public static void setEnabled(String featureId, boolean enabled) {
+    public void setEnabled(String featureId, boolean enabled) {
         if (!isDevelopmentMode()) {
             throw new IllegalStateException(
                     "Feature flags can only be toggled when in development mode");
@@ -203,7 +306,7 @@ public class FeatureFlags implements Serializable {
         getLogger().info("Set feature {} to {}", featureId, enabled);
     }
 
-    private static File getFeatureFlagFile() {
+    private File getFeatureFlagFile() {
         if (propertiesFolder == null) {
             ApplicationConfiguration config = getApplicationConfiguration();
             if (config == null) {
@@ -215,24 +318,16 @@ public class FeatureFlags implements Serializable {
         return new File(propertiesFolder, PROPERTIES_FILENAME);
     }
 
-    private static boolean isDevelopmentMode() {
+    private boolean isDevelopmentMode() {
         ApplicationConfiguration config = getApplicationConfiguration();
         return config != null && !config.isProductionMode();
     }
 
-    private static ApplicationConfiguration getApplicationConfiguration() {
-        VaadinService service = VaadinService.getCurrent();
-        if (service == null) {
-            return null;
-        }
-        VaadinContext context = service.getContext();
-        if (context == null) {
-            return null;
-        }
-        return ApplicationConfiguration.get(context);
+    private ApplicationConfiguration getApplicationConfiguration() {
+        return lookup.lookup(ApplicationConfiguration.class);
     }
 
-    private static Logger getLogger() {
+    private Logger getLogger() {
         return LoggerFactory.getLogger(FeatureFlags.class);
     }
 }

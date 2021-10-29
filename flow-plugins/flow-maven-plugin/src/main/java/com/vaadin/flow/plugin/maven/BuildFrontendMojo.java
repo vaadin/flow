@@ -16,7 +16,6 @@
 package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.concurrent.TimeoutException;
 
@@ -27,7 +26,6 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
@@ -113,7 +111,6 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         BuildFrontendUtil.updateBuildFile(this);
-        BuildFrontendUtil.updateFeatureFlagsLocation(this);
 
         long start = System.nanoTime();
 
@@ -126,13 +123,8 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
 
         if (generateBundle()) {
             try {
-                if (FeatureFlags.isEnabled(FeatureFlags.VITE)) {
-                    BuildFrontendUtil.runVite(this);
-                } else {
-                    BuildFrontendUtil.runWebpack(this);
-                }
-            } catch (URISyntaxException | IOException | InterruptedException
-                    | TimeoutException exception) {
+                BuildFrontendUtil.runFrontendBuild(this);
+            } catch (URISyntaxException | TimeoutException exception) {
                 throw new MojoExecutionException(exception.getMessage(),
                         exception);
             }

@@ -1,5 +1,7 @@
 package com.vaadin.viteapp.views.empty;
 
+import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
@@ -41,6 +43,15 @@ public class MainView extends Div {
         add(button, loadAndShowJson, jsonContainer);
         setSizeFull();
         getStyle().set("text-align", "center");
+
+        final Paragraph viteStatus = new Paragraph(
+                "Vite feature is "
+                        + FeatureFlags
+                                .get(UI.getCurrent().getSession().getService()
+                                        .getContext())
+                                .isEnabled(FeatureFlags.VITE));
+        viteStatus.setId("status");
+        add(viteStatus);
     }
 
 }

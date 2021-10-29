@@ -1,5 +1,6 @@
 package com.vaadin.viteapp;
 
+import com.vaadin.flow.component.html.testbench.ParagraphElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.flow.testutil.DevModeGizmoElement;
 import com.vaadin.testbench.TestBenchElement;
@@ -31,6 +32,14 @@ public class BasicsIT extends ChromeBrowserTest {
         TestBenchElement header = $("h2").first();
         Assert.assertEquals("This place intentionally left empty",
                 header.getText());
+    }
+
+    @Test
+    public void applicationUsesVite() {
+        getDriver().get(getRootURL());
+        waitForDevServer();
+        TestBenchElement viteStatus = $(ParagraphElement.class).id("status");
+        Assert.assertEquals("Vite feature is true", viteStatus.getText());
     }
 
     @Test

@@ -96,11 +96,6 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
 
     }
 
-    public abstract static class TestAppConfig
-            implements ApplicationConfiguration {
-
-    }
-
     @Override
     public void setup() throws Exception {
         super.setup();

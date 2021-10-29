@@ -31,6 +31,8 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
+import com.vaadin.flow.server.MockVaadinContext;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
@@ -75,6 +77,8 @@ public class UidlRequestHandlerTest {
         Mockito.when(config.getPropertyNames())
                 .thenReturn(Collections.emptyEnumeration());
         Mockito.when(config.getBuildFolder()).thenReturn(".");
+        VaadinContext context = new MockVaadinContext();
+        Mockito.when(config.getContext()).thenReturn(context);
         VaadinService service = new VaadinServletService(null,
                 new DefaultDeploymentConfiguration(config, getClass(),
                         new Properties()));

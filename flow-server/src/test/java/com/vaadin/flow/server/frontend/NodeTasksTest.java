@@ -33,6 +33,8 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.MockVaadinContext;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.frontend.NodeTasks.Builder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
@@ -59,6 +61,7 @@ public class NodeTasksTest {
     private static String globalGeneratedDirValue;
 
     private String userDir;
+    private VaadinContext context;
 
     @Before
     public void setup() {
@@ -66,6 +69,7 @@ public class NodeTasksTest {
         System.setProperty(USER_DIR, userDir);
         System.clearProperty(PARAM_FRONTEND_DIR);
         System.clearProperty(PARAM_GENERATED_DIR);
+        context = new MockVaadinContext();
     }
 
     @BeforeClass
@@ -193,7 +197,7 @@ public class NodeTasksTest {
 
     @Test
     public void should_GenerateTsConfigAndTsDefinitions_When_Vaadin14BootstrapMode()
-            throws ExecutionFailedException, IOException {
+            throws ExecutionFailedException {
         Lookup mockedLookup = Mockito.mock(Lookup.class);
         Mockito.doReturn(
                 new DefaultClassFinder(this.getClass().getClassLoader()))

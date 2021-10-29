@@ -50,6 +50,19 @@ public class Feature implements Serializable {
         this.requiresServerRestart = requiresServerRestart;
     }
 
+    /**
+     * Create a copy of the given feature.
+     *
+     * @param feature
+     *            feature to create a copy of
+     */
+    public Feature(Feature feature) {
+        this.title = feature.getTitle();
+        this.id = feature.getId();
+        this.moreInfoLink = feature.getMoreInfoLink();
+        this.requiresServerRestart = feature.isRequiresServerRestart();
+    }
+
     public String getTitle() {
         return title;
     }

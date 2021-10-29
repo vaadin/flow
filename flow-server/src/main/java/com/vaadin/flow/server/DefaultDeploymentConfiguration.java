@@ -170,10 +170,8 @@ public class DefaultDeploymentConfiguration
             if (logger.isWarnEnabled()) {
                 logger.warn(String.join("\n", warnings));
             }
-        } else if (!info.isEmpty()) {
-            if (logger.isInfoEnabled()) {
-                logger.info(String.join("\n", info));
-            }
+        } else if (!info.isEmpty() && logger.isInfoEnabled()) {
+            logger.info(String.join("\n", info));
         }
     }
 
@@ -318,8 +316,10 @@ public class DefaultDeploymentConfiguration
      * Log information about enabled feature flags.
      */
     private void checkFeatureFlags() {
-        List<Feature> enabledFeatures = FeatureFlags.getFeatures().stream()
-                .filter(f -> f.isEnabled()).collect(Collectors.toList());
+        List<Feature> enabledFeatures = FeatureFlags
+                .get(getParentConfiguration().getContext()).getFeatures()
+                .stream().filter(f -> f.isEnabled())
+                .collect(Collectors.toList());
         if (!enabledFeatures.isEmpty()) {
             info.add("\nThe following EXPERIMENTAL features are enabled:");
             enabledFeatures.forEach(feature -> {
