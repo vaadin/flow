@@ -29,6 +29,7 @@ public class DebugWindowErrorHandlingView extends Div {
     static final String EXEC_JS_EXCEPTION_ID = "execJsException";
     static final String CLIENT_SIDE_EXCEPTION_ID = "clientSideException";
     static final String CLIENT_SIDE_ERROR_ID = "clientSideError";
+    static final String CLIENT_SIDE_PROMISE_REJECTION_ID = "clientSidePromiseRejection";
     static final String NUMBER_OF_ERRORS_ID = "numberOfErrors";
     static final String CAUSE_ERRORS_ID = "causeErrors";
 
@@ -53,6 +54,13 @@ public class DebugWindowErrorHandlingView extends Div {
                 });
         clientSideErrorLog.setId(CLIENT_SIDE_ERROR_ID);
 
+        NativeButton clientSidePromiseRejection = new NativeButton(
+                "Client side promise rejection", e -> {
+                    getUI().get().getPage().executeJs(
+                            "import('./this-file-does-not-exist.js')");
+                });
+        clientSidePromiseRejection.setId(CLIENT_SIDE_PROMISE_REJECTION_ID);
+
         /*
          * Used for manually testing that the name of an offending external
          * function is actually reported in the browser.
@@ -72,6 +80,7 @@ public class DebugWindowErrorHandlingView extends Div {
         });
         causeErrors.setId(CAUSE_ERRORS_ID);
         add(execJsException, clientSideException, clientSideErrorLog,
-                causeExternalException, numberOfErrors, causeErrors);
+                clientSidePromiseRejection, causeExternalException,
+                numberOfErrors, causeErrors);
     }
 }
