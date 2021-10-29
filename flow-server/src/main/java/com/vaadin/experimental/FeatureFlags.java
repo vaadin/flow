@@ -25,6 +25,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 
@@ -62,29 +63,25 @@ public class FeatureFlags implements Serializable {
 
     private final Lookup lookup;
 
-    /**
-     * Generate FeatureFlags with given lookup data.
-     *
-     * @param lookup
-     *            lookup to use
-     */
-    public FeatureFlags(Lookup lookup) {
-        this.lookup = lookup;
-        features.add(new Feature(EXAMPLE));
-        features.add(new Feature(VITE));
-        loadProperties();
-    }
+    private final VaadinContext context;
 
     /**
-     * Generate FeatureFlags with given properties folder.
-     *
+     * Generate FeatureFlags with given lookup data or context.
+     * 
      * @param lookup
-     *            lookup to use
+     *            lookup to use, never {@code null}
+     * @param context
+     *            context to use or {@code null} if no context is available
      * @param propertiesFolder
-     *            propertiesfolder to read feature flag file from
+     *            propertiesfolder to read feature flag file from or
+     *            {@code null} to use the default
      */
-    public FeatureFlags(Lookup lookup, File propertiesFolder) {
-        this(lookup);
+    public FeatureFlags(Lookup lookup, VaadinContext context,
+            File propertiesFolder) {
+        this.lookup = Objects.requireNonNull(lookup);
+        this.context = context;
+        features.add(new Feature(EXAMPLE));
+        features.add(new Feature(VITE));
         this.propertiesFolder = propertiesFolder;
         loadProperties();
     }
@@ -135,7 +132,7 @@ public class FeatureFlags implements Serializable {
 
             if (attribute == null) {
                 attribute = new FeatureFlagsWrapper(
-                        new FeatureFlags(context.getAttribute(Lookup.class)));
+                        new FeatureFlags(null, context, null));
                 context.setAttribute(attribute);
             }
         }
@@ -324,7 +321,10 @@ public class FeatureFlags implements Serializable {
     }
 
     private ApplicationConfiguration getApplicationConfiguration() {
-        return lookup.lookup(ApplicationConfiguration.class);
+        if (context == null) {
+            return null;
+        }
+        return ApplicationConfiguration.get(context);
     }
 
     private Logger getLogger() {

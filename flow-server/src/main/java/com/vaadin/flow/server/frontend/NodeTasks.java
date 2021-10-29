@@ -644,10 +644,7 @@ public class NodeTasks implements FallibleCommand {
         }
 
         protected FeatureFlags getFeatureFlags() {
-            if (javaResourceFolder != null) {
-                return new FeatureFlags(lookup, javaResourceFolder);
-            }
-            return new FeatureFlags(lookup);
+            return new FeatureFlags(lookup, null, javaResourceFolder);
         }
     }
 
@@ -870,7 +867,7 @@ public class NodeTasks implements FallibleCommand {
         // donel, as the JS in generated-flow-imports.js does not work with
         // Vite.
         // https://github.com/vaadin/flow/issues/12170
-        boolean usingWebpack = !new FeatureFlags(builder.lookup)
+        boolean usingWebpack = !new FeatureFlags(builder.lookup, null, null)
                 .isEnabled(FeatureFlags.VITE);
         if (usingWebpack && builder.useByteCodeScanner) {
             return new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
