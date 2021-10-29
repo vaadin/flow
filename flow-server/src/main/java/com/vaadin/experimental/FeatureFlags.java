@@ -126,7 +126,7 @@ public class FeatureFlags implements Serializable {
      * @return a feature flags instance for the given context, not
      *         <code>null</code>
      */
-    public static FeatureFlags get(VaadinContext context) {
+    public static FeatureFlags get(final VaadinContext context) {
         assert context != null;
 
         FeatureFlagsWrapper attribute;

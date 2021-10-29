@@ -170,10 +170,8 @@ public class DefaultDeploymentConfiguration
             if (logger.isWarnEnabled()) {
                 logger.warn(String.join("\n", warnings));
             }
-        } else if (!info.isEmpty()) {
-            if (logger.isInfoEnabled()) {
-                logger.info(String.join("\n", info));
-            }
+        } else if (!info.isEmpty() && logger.isInfoEnabled()) {
+            logger.info(String.join("\n", info));
         }
     }
 

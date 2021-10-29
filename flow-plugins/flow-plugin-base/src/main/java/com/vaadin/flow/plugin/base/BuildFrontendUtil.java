@@ -153,6 +153,7 @@ public class BuildFrontendUtil {
                         .withNodeDownloadRoot(nodeDownloadRootURI)
                         .setNodeAutoUpdate(adapter.nodeAutoUpdate())
                         .withHomeNodeExecRequired(adapter.requireHomeNodeExec())
+                        .setJavaResourceFolder(adapter.javaResourceFolder())
                         .withProductionMode(adapter.productionMode());
         // If building a jar project copy jar artifact contents now as we
         // might not be able to read files from jar path.
