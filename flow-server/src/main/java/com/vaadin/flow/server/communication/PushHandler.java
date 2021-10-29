@@ -41,12 +41,14 @@ import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.SessionExpiredException;
 import com.vaadin.flow.server.SystemMessages;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.ServerRpcHandler.InvalidUIDLSecurityKeyException;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.communication.PushMode;
@@ -70,7 +72,18 @@ public class PushHandler {
      * Callback interface used internally to process an event with the
      * corresponding UI properly locked.
      */
-    private interface PushEventCallback {
+    interface PushEventCallback {
+
+        /**
+         * The callback method.
+         * 
+         * @param resource
+         *            the Atmosphere resource
+         * @param ui
+         *            the UI instance
+         * @throws IOException
+         *             thrown if something goes wrong
+         */
         void run(AtmosphereResource resource, UI ui) throws IOException;
     }
 
@@ -187,7 +200,7 @@ public class PushHandler {
      * @param command
      *            the command to run
      */
-    private void callWithService(final AtmosphereResource resource,
+    void callWithService(final AtmosphereResource resource,
             final Consumer<AtmosphereRequest> command) {
         AtmosphereRequest req = resource.getRequest();
         VaadinServletRequest vaadinRequest = new VaadinServletRequest(req,
@@ -208,7 +221,7 @@ public class PushHandler {
      * @param callback
      *            the push callback to call when a UI is found and locked
      */
-    private void callWithUi(final AtmosphereResource resource,
+    void callWithUi(final AtmosphereResource resource,
             final PushEventCallback callback) {
         AtmosphereRequest req = resource.getRequest();
         VaadinServletRequest vaadinRequest = new VaadinServletRequest(req,
@@ -536,12 +549,24 @@ public class PushHandler {
      */
     void onConnect(AtmosphereResource resource) {
         if (isDebugWindowConnection(resource)) {
+            if (isProductionMode()) {
+                getLogger().debug(
+                        "Debug window connection request denied while in production mode");
+                // No debug info must ever leak out in production
+                return;
+            }
             callWithService(resource, request -> BrowserLiveReloadAccessor
                     .getLiveReloadFromService(service)
                     .ifPresent(liveReload -> liveReload.onConnect(resource)));
         } else {
             callWithUi(resource, establishCallback);
         }
+    }
+
+    private boolean isProductionMode() {
+        VaadinContext context = service.getContext();
+        ApplicationConfiguration conf = ApplicationConfiguration.get(context);
+        return conf.isProductionMode();
     }
 
     /**
