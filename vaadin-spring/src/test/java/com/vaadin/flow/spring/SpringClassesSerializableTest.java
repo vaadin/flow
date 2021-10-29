@@ -93,6 +93,8 @@ public class SpringClassesSerializableTest extends ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.spring\\.security\\.SerializedJwtSplitCookieRepository",
                 "com\\.vaadin\\.flow\\.spring\\.security\\.VaadinAwareSecurityContextHolderStrategy",
                 "com\\.vaadin\\.flow\\.spring\\.security\\.VaadinWebSecurityConfigurerAdapter",
+                "com\\.vaadin\\.flow\\.spring\\.security\\.VaadinWebSecurityConfigurerAdapter",
+                "com\\.vaadin\\.flow\\.spring\\.security\\.VaadinWebSecurityConfigurerAdapter\\$Http401UnauthorizedAccessDeniedHandler",
                 "com\\.vaadin\\.flow\\.spring\\.security\\.VaadinDefaultRequestCache",
                 "com\\.vaadin\\.flow\\.spring\\.security\\.VaadinSavedRequestAwareAuthenticationSuccessHandler",
                 "com\\.vaadin\\.flow\\.spring\\.security\\.VaadinSavedRequestAwareAuthenticationSuccessHandler\\$RedirectStrategy",
