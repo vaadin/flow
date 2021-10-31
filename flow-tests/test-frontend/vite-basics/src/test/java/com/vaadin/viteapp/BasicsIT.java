@@ -1,11 +1,14 @@
 package com.vaadin.viteapp;
 
+import java.util.logging.Level;
+
 import com.vaadin.flow.component.html.testbench.ParagraphElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.flow.testutil.DevModeGizmoElement;
 import com.vaadin.testbench.TestBenchElement;
 import com.vaadin.viteapp.views.empty.MainView;
 
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -18,6 +21,14 @@ public class BasicsIT extends ChromeBrowserTest {
     @BeforeClass
     public static void driver() {
         WebDriverManager.chromedriver().setup();
+    }
+
+    @After
+    public void showBrowserLogAfter() {
+        getLogEntries(Level.ALL).forEach(logEntry -> {
+            System.err
+                    .println("Brower log after test: " + logEntry.getMessage());
+        });
     }
 
     @Before
