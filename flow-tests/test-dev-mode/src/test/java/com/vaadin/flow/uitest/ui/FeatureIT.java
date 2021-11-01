@@ -15,10 +15,8 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
-import org.openqa.selenium.By;
 
 import com.vaadin.flow.component.html.testbench.H2Element;
 import com.vaadin.flow.component.html.testbench.NativeButtonElement;
@@ -27,11 +25,6 @@ import com.vaadin.flow.testutil.DevModeGizmoElement;
 import com.vaadin.testbench.TestBenchElement;
 
 public class FeatureIT extends ChromeBrowserTest {
-
-    @After
-    public void cleanup() {
-
-    }
 
     @Test
     public void enableAndDisableFeature() {
