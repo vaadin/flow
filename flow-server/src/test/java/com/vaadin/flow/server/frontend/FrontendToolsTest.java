@@ -43,7 +43,6 @@ import org.apache.commons.io.FilenameUtils;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -122,7 +121,8 @@ public class FrontendToolsTest {
         npmVersionCommand.add("--version");
         FrontendVersion npm = FrontendUtils.getVersion("npm",
                 npmVersionCommand);
-        Assert.assertEquals("7.24.0", npm.getFullVersion());
+        Assert.assertEquals(FrontendTools.DEFAULT_NPM_VERSION,
+                npm.getFullVersion());
     }
 
     @Test
