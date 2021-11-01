@@ -62,6 +62,8 @@ public class FeatureFlags implements Serializable {
 
     private final Lookup lookup;
 
+    private ApplicationConfiguration configuration;
+
     /**
      * Generate FeatureFlags with given lookup data.
      *
@@ -72,20 +74,6 @@ public class FeatureFlags implements Serializable {
         this.lookup = lookup;
         features.add(new Feature(EXAMPLE));
         features.add(new Feature(VITE));
-        loadProperties();
-    }
-
-    /**
-     * Generate FeatureFlags with given properties folder.
-     *
-     * @param lookup
-     *            lookup to use
-     * @param propertiesFolder
-     *            propertiesfolder to read feature flag file from
-     */
-    public FeatureFlags(Lookup lookup, File propertiesFolder) {
-        this(lookup);
-        this.propertiesFolder = propertiesFolder;
         loadProperties();
     }
 
@@ -134,8 +122,11 @@ public class FeatureFlags implements Serializable {
             attribute = context.getAttribute(FeatureFlagsWrapper.class);
 
             if (attribute == null) {
-                attribute = new FeatureFlagsWrapper(
-                        new FeatureFlags(context.getAttribute(Lookup.class)));
+                final FeatureFlags featureFlags = new FeatureFlags(
+                        context.getAttribute(Lookup.class));
+                featureFlags.configuration = ApplicationConfiguration
+                        .get(context);
+                attribute = new FeatureFlagsWrapper(featureFlags);
                 context.setAttribute(attribute);
             }
         }
@@ -308,23 +299,17 @@ public class FeatureFlags implements Serializable {
 
     private File getFeatureFlagFile() {
         if (propertiesFolder == null) {
-            ApplicationConfiguration config = getApplicationConfiguration();
-            if (config == null) {
+            if (configuration == null) {
                 return null;
             }
-            propertiesFolder = config.getJavaResourceFolder();
+            propertiesFolder = configuration.getJavaResourceFolder();
 
         }
         return new File(propertiesFolder, PROPERTIES_FILENAME);
     }
 
     private boolean isDevelopmentMode() {
-        ApplicationConfiguration config = getApplicationConfiguration();
-        return config != null && !config.isProductionMode();
-    }
-
-    private ApplicationConfiguration getApplicationConfiguration() {
-        return lookup.lookup(ApplicationConfiguration.class);
+        return configuration != null && !configuration.isProductionMode();
     }
 
     private Logger getLogger() {

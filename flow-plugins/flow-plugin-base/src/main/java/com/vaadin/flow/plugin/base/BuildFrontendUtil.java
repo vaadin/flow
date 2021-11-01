@@ -352,8 +352,8 @@ public class BuildFrontendUtil {
 
         Lookup lookup = adapter.createLookup(classFinder);
 
-        final FeatureFlags featureFlags = new FeatureFlags(lookup,
-                adapter.javaResourceFolder());
+        final FeatureFlags featureFlags = new FeatureFlags(lookup);
+        featureFlags.setPropertiesLocation(adapter.javaResourceFolder());
         if (featureFlags.isEnabled(FeatureFlags.VITE)) {
             BuildFrontendUtil.runVite(adapter);
         } else {
