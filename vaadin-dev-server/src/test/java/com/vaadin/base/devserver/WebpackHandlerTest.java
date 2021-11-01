@@ -192,22 +192,6 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
     }
 
     @Test
-    public void shouldNot_CreateInstance_When_ProductionMode()
-            throws Exception {
-        Mockito.when(appConfig.isProductionMode()).thenReturn(true);
-        handler = startWebpack();
-        assertNull(handler);
-    }
-
-    @Test
-    public void enableDevServerFalse_shouldNotCreateInstance()
-            throws Exception {
-        Mockito.when(appConfig.enableDevServer()).thenReturn(false);
-        handler = startWebpack();
-        assertNull(handler);
-    }
-
-    @Test
     public void shouldNot_RunWebpack_When_WebpackRunning() throws Exception {
         final String manifestJsonResponse = "{}";
         int port = prepareHttpServer(0, HTTP_OK, manifestJsonResponse);
