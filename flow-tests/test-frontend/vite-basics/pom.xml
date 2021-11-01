@@ -61,6 +61,13 @@
                     <webAppConfig>
                         <containerIncludeJarPattern>.*</containerIncludeJarPattern>
                     </webAppConfig>
+                    <systemProperties>
+                        <!-- Allow test clients not on localhost to connect to Vite-->
+                        <systemProperty>
+                            <name>vaadin.devmode.vite.options</name>
+                            <value>--host</value>
+                        </systemProperty>
+                    </systemProperties>
                 </configuration>
             </plugin>
         </plugins>
