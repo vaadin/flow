@@ -194,10 +194,21 @@ public final class WebComponentModulesWriter implements Serializable {
              * bootstrap classloader - otherwise we'd have no way of ensuring
              * that the class loaders share parentage.
              */
+            ClassLoader writerClassLoader = WebComponentModulesWriter.class
+                    .getClassLoader();
             for (Class<?> exporterClass : exporterClasses) {
+                ClassLoader exporterClassLoader = exporterClass
+                        .getClassLoader();
                 if (!ReflectTools.findClosestCommonClassLoaderAncestor(
-                        WebComponentModulesWriter.class.getClassLoader(),
-                        exporterClass.getClassLoader()).isPresent()) {
+                        writerClassLoader, exporterClassLoader).isPresent()) {
+                    String writerClassLoaderName = writerClassLoader == null
+                            ? "null"
+                            : writerClassLoader.getClass().getName();
+
+                    String exporterClassLoaderName = exporterClassLoader == null
+                            ? "null"
+                            : exporterClassLoader.getClass().getName();
+
                     throw new IllegalArgumentException(String.format(
                             "Supplied writer '%s' and "
                                     + "supplied exporter '%s' have different "
@@ -205,11 +216,8 @@ public final class WebComponentModulesWriter implements Serializable {
                                     + "respectively. Writer and exporters "
                                     + "must share a class loader.",
                             WebComponentModulesWriter.class.getName(),
-                            exporterClass.getName(),
-                            WebComponentModulesWriter.class.getClassLoader()
-                                    .getClass().getName(),
-                            exporterClass.getClassLoader().getClass()
-                                    .getName()));
+                            exporterClass.getName(), writerClassLoaderName,
+                            exporterClassLoaderName));
                 }
             }
 
