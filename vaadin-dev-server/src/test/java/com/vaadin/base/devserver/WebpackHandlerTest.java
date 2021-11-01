@@ -46,8 +46,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
-import java.util.concurrent.atomic.AtomicReference;
-
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
@@ -56,8 +54,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.sun.net.httpserver.HttpServer;
 import com.vaadin.base.devserver.startup.AbstractDevModeTest;
-import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinRequest;
@@ -66,8 +62,6 @@ import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.startup.ApplicationConfiguration;
-
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
@@ -719,11 +713,8 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
 
     private int prepareHttpServer(int port, int status, String response)
             throws Exception {
-        if (port == 0) {
-            port = WebpackHandler.getFreePort();
-        }
         httpServer = createStubWebpackTcpListener(port, status, response);
-        return port;
+        return httpServer.getAddress().getPort();
     }
 
     public static HttpServer createStubWebpackTcpListener(int port, int status,
