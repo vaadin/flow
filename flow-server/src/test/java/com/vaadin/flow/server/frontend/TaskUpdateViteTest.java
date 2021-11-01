@@ -32,7 +32,7 @@ public class TaskUpdateViteTest {
         task.execute();
 
         File configFile = new File(temporaryFolder.getRoot(),
-                FrontendUtils.VITE_CONFIG);
+                FrontendUtils.VITE_GENERATED_CONFIG);
 
         String template = IOUtils.toString(configFile.toURI(),
                 StandardCharsets.UTF_8);
@@ -42,12 +42,10 @@ public class TaskUpdateViteTest {
     }
 
     @Test
-    public void templateExists_correctSettingsPath_fileNotWritten()
-            throws IOException {
+    public void configFileExists_fileNotOverwritten() throws IOException {
         File configFile = new File(temporaryFolder.getRoot(),
                 FrontendUtils.VITE_CONFIG);
-        final String importString = "import settings from './build/"
-                + DEV_SETTINGS_FILE + "';";
+        final String importString = "Hello Fake configuration";
         FileUtils.write(configFile, importString, StandardCharsets.UTF_8);
 
         new TaskUpdateVite(temporaryFolder.getRoot(), "build").execute();
@@ -60,22 +58,21 @@ public class TaskUpdateViteTest {
     }
 
     @Test
-    public void templateExists_faultySettingsPath_onlyPathUpdated()
+    public void generatedConfigFileExists_alwaysOverwritten()
             throws IOException {
-        File configFile = new File(temporaryFolder.getRoot(),
-                FrontendUtils.VITE_CONFIG);
-        final String importString = "import settings from './target/"
-                + DEV_SETTINGS_FILE + "';";
-        FileUtils.write(configFile, importString, StandardCharsets.UTF_8);
+        File generatedConfigFile = new File(temporaryFolder.getRoot(),
+                FrontendUtils.VITE_GENERATED_CONFIG);
+        final String importString = "Hello Fake generated configuration";
+        FileUtils.write(generatedConfigFile, importString,
+                StandardCharsets.UTF_8);
 
         new TaskUpdateVite(temporaryFolder.getRoot(), "build").execute();
 
-        String template = IOUtils.toString(configFile.toURI(),
+        String template = IOUtils.toString(generatedConfigFile.toURI(),
                 StandardCharsets.UTF_8);
 
-        Assert.assertEquals("Settings file content was added.",
-                "import settings from './build/" + DEV_SETTINGS_FILE + "';",
-                template);
+        Assert.assertNotEquals("Generated file should have been overwritten",
+                importString, template);
     }
 
     @Test
@@ -85,10 +82,10 @@ public class TaskUpdateViteTest {
                 "build");
         task.execute();
 
-        File configFile = new File(temporaryFolder.getRoot(),
-                FrontendUtils.VITE_CONFIG);
+        File generatedConfigFile = new File(temporaryFolder.getRoot(),
+                FrontendUtils.VITE_GENERATED_CONFIG);
 
-        String template = IOUtils.toString(configFile.toURI(),
+        String template = IOUtils.toString(generatedConfigFile.toURI(),
                 StandardCharsets.UTF_8);
         NodeTasks.Builder builder = new NodeTasks.Builder(
                 Mockito.mock(Lookup.class), temporaryFolder.getRoot(),
