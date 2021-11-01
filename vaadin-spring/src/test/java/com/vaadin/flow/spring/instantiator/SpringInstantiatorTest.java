@@ -51,6 +51,7 @@ import com.vaadin.flow.server.StaticFileHandlerFactory;
 import com.vaadin.flow.server.StaticFileServer;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServiceInitListener;
+import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.spring.SpringInstantiator;
@@ -192,6 +193,8 @@ public class SpringInstantiatorTest {
                 .mock(ApplicationConfiguration.class);
         Mockito.when(appConfig.getPropertyNames())
                 .thenReturn(Collections.emptyEnumeration());
+        Mockito.when(appConfig.getContext())
+                .thenReturn(new VaadinServletContext(servletContext));
         Mockito.when(servletContext
                 .getAttribute(ApplicationConfiguration.class.getName()))
                 .thenReturn(appConfig);

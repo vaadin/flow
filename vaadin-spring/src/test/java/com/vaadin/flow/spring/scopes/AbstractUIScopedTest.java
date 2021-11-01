@@ -27,6 +27,7 @@ import org.junit.Before;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.VaadinService;
@@ -66,10 +67,6 @@ public abstract class AbstractUIScopedTest extends AbstractScopeTest {
                 .mock(ApplicationConfiguration.class);
         Mockito.when(appConfig.getPropertyNames())
                 .thenReturn(Collections.emptyEnumeration());
-        DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
-                appConfig, getClass(), initParameters);
-        when(service.getDeploymentConfiguration()).thenReturn(config);
-
         when(service.getMainDivId(Mockito.any(), Mockito.any()))
                 .thenReturn(" - ");
 
@@ -86,6 +83,13 @@ public abstract class AbstractUIScopedTest extends AbstractScopeTest {
 
         VaadinServletContext context = new VaadinServletContext(servletContext);
         Mockito.when(service.getContext()).thenReturn(context);
+        Lookup lookup = Mockito.mock(Lookup.class);
+        Mockito.when(context.getAttribute(Lookup.class)).thenReturn(lookup);
+
+        Mockito.when(appConfig.getContext()).thenReturn(context);
+        DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
+                appConfig, getClass(), initParameters);
+        when(service.getDeploymentConfiguration()).thenReturn(config);
 
         ui = new UI();
         ui.getInternals().setSession(session);

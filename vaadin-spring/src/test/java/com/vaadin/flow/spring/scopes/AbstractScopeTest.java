@@ -26,7 +26,9 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.config.Scope;
 
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.VaadinSessionState;
@@ -148,6 +150,10 @@ public abstract class AbstractScopeTest {
                 .mock(ApplicationConfiguration.class);
         Mockito.when(appConfig.getPropertyNames())
                 .thenReturn(Collections.emptyEnumeration());
+        VaadinContext context = Mockito.mock(VaadinContext.class);
+        Lookup lookup = Mockito.mock(Lookup.class);
+        Mockito.when(context.getAttribute(Lookup.class)).thenReturn(lookup);
+        Mockito.when(appConfig.getContext()).thenReturn(context);
         DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
                 appConfig, getClass(), initParameters);
         when(session.getConfiguration()).thenReturn(config);

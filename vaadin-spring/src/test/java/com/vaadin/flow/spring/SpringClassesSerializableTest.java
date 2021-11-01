@@ -25,6 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
@@ -152,6 +153,9 @@ public class SpringClassesSerializableTest extends ClassesSerializableTest {
         Mockito.when(context.getAttribute(
                 Mockito.eq(ApplicationConfiguration.class), Mockito.any()))
                 .thenReturn(appConfig);
+        Mockito.when(appConfig.getContext()).thenReturn(context);
+        Lookup lookup = Mockito.mock(Lookup.class);
+        Mockito.when(context.getAttribute(Lookup.class)).thenReturn(lookup);
         VaadinService service = new VaadinServletService(new VaadinServlet(),
                 new DefaultDeploymentConfiguration(appConfig, getClass(),
                         initParameters)) {
