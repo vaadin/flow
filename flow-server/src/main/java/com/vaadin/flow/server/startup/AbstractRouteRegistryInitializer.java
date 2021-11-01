@@ -33,7 +33,6 @@ import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.router.internal.RouteAliasObject;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.PWA;
@@ -123,9 +122,10 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
         /* Validate PageConfigurator usage */
         validateRouteImplementation(context, route, PageConfigurator.class);
 
-        RouteUtil.getAliasObjects(route)
-                .forEach(alias -> validateRouteAliasImplementation(context,
-                        route, alias, PageConfigurator.class));
+        for (RouteAlias alias : route.getAnnotationsByType(RouteAlias.class)) {
+            validateRouteAliasImplementation(context, route, alias,
+                    PageConfigurator.class);
+        }
     }
 
     private Stream<Class<?>> getValidationAnnotations() {
@@ -164,21 +164,21 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
     }
 
     private void validateRouteAliasImplementation(VaadinContext context,
-            Class<?> route, RouteAliasObject alias, Class<?> implementation) {
-        if (!UI.class.equals(alias.getLayout())) {
+            Class<?> route, RouteAlias alias, Class<?> implementation) {
+        if (!UI.class.equals(alias.layout())) {
             if (PageConfigurator.class.isAssignableFrom(route)) {
                 throw new InvalidRouteLayoutConfigurationException(String
                         .format("%s needs to be the top parent layout '%s' not '%s'",
                                 implementation.getSimpleName(),
                                 RouteUtil.getTopParentLayout(context, route,
-                                        alias.getAlias()).getName(),
+                                        alias.value()).getName(),
                                 route.getName()));
             }
 
             List<Class<? extends RouterLayout>> parentLayouts = RouteUtil
-                    .getParentLayouts(context, route, alias.getAlias());
+                    .getParentLayouts(context, route, alias.value());
             Class<? extends RouterLayout> topParentLayout = RouteUtil
-                    .getTopParentLayout(context, route, alias.getAlias());
+                    .getTopParentLayout(context, route, alias.value());
 
             validateParentImplementation(parentLayouts, topParentLayout,
                     implementation);

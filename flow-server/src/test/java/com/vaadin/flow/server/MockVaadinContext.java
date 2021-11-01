@@ -32,7 +32,7 @@ public class MockVaadinContext extends VaadinServletContext {
         @Override
         public String getRoutePath(Class<?> navigationTarget) {
             Route route = navigationTarget.getAnnotation(Route.class);
-            return route.value()[0];
+            return route.value();
         }
 
     }

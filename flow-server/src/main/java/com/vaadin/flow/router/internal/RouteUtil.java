@@ -72,17 +72,19 @@ public class RouteUtil {
 
         Optional<Route> route = AnnotationReader.getAnnotationFor(component,
                 Route.class);
-
+        List<RouteAlias> routeAliases = AnnotationReader
+                .getAnnotationsFor(component, RouteAlias.class);
         if (route.isPresent()
                 && path.equals(getRoutePath(component, route.get()))
                 && !route.get().layout().equals(UI.class)) {
             list.addAll(collectRouteParentLayouts(route.get().layout()));
         } else {
-            Optional<RouteAliasObject> matchingRoute = getMatchingRouteAlias(
-                    component, path, getAliasObjects(component));
+
+            Optional<RouteAlias> matchingRoute = getMatchingRouteAlias(
+                    component, path, routeAliases);
             if (matchingRoute.isPresent()) {
                 list.addAll(collectRouteParentLayouts(
-                        matchingRoute.get().getLayout()));
+                        matchingRoute.get().layout()));
             }
         }
 
@@ -108,15 +110,18 @@ public class RouteUtil {
 
         Optional<Route> route = AnnotationReader.getAnnotationFor(component,
                 Route.class);
+        List<RouteAlias> routeAliases = AnnotationReader
+                .getAnnotationsFor(component, RouteAlias.class);
+
         if (route.isPresent() && path.equals(getRoutePath(context, component))
                 && !route.get().layout().equals(UI.class)) {
             list.addAll(collectRouteParentLayouts(route.get().layout()));
         } else {
-            Optional<RouteAliasObject> matchingRoute = getMatchingRouteAlias(
-                    component, path, RouteUtil.getAliasObjects(component));
+            Optional<RouteAlias> matchingRoute = getMatchingRouteAlias(
+                    component, path, routeAliases);
             if (matchingRoute.isPresent()) {
                 list.addAll(collectRouteParentLayouts(
-                        matchingRoute.get().getLayout()));
+                        matchingRoute.get().layout()));
             }
         }
 
@@ -177,26 +182,11 @@ public class RouteUtil {
      */
     public static String getRouteAliasPath(Class<?> component,
             RouteAlias alias) {
-        return getRouteAliasPath(component, new RouteAliasObject(alias));
-    }
-
-    /**
-     * Get the actual route path including all parent layout
-     * {@link RoutePrefix}.
-     *
-     * @param component
-     *            navigation target component to get route path for
-     * @param alias
-     *            route alias data
-     * @return actual path for given route alias target
-     */
-    public static String getRouteAliasPath(Class<?> component,
-            RouteAliasObject alias) {
-        if (alias.isAbsolute()) {
-            return alias.getAlias();
+        if (alias.absolute()) {
+            return alias.value();
         }
         List<String> parentRoutePrefixes = getRoutePrefixes(component,
-                alias.getLayout(), alias.getAlias());
+                alias.layout(), alias.value());
         return parentRoutePrefixes.stream().collect(Collectors.joining("/"));
     }
 
@@ -239,11 +229,11 @@ public class RouteUtil {
         return list;
     }
 
-    static Optional<RouteAliasObject> getMatchingRouteAlias(Class<?> component,
-            String path, Stream<RouteAliasObject> routeAliases) {
-        return routeAliases.filter(
+    static Optional<RouteAlias> getMatchingRouteAlias(Class<?> component,
+            String path, List<RouteAlias> routeAliases) {
+        return routeAliases.stream().filter(
                 alias -> path.equals(getRouteAliasPath(component, alias))
-                        && !alias.getLayout().equals(UI.class))
+                        && !alias.layout().equals(UI.class))
                 .findFirst();
     }
 
@@ -312,15 +302,17 @@ public class RouteUtil {
 
         Optional<Route> route = AnnotationReader.getAnnotationFor(component,
                 Route.class);
+        List<RouteAlias> routeAliases = AnnotationReader
+                .getAnnotationsFor(component, RouteAlias.class);
         if (route.isPresent()
                 && path.equals(getRoutePath(component, route.get()))
                 && !route.get().layout().equals(UI.class)) {
             return recurseToTopLayout(route.get().layout());
         } else {
-            Optional<RouteAliasObject> matchingRoute = getMatchingRouteAlias(
-                    component, path, getAliasObjects(component));
+            Optional<RouteAlias> matchingRoute = getMatchingRouteAlias(
+                    component, path, routeAliases);
             if (matchingRoute.isPresent()) {
-                return recurseToTopLayout(matchingRoute.get().getLayout());
+                return recurseToTopLayout(matchingRoute.get().layout());
             }
         }
 
@@ -354,14 +346,16 @@ public class RouteUtil {
 
         Optional<Route> route = AnnotationReader.getAnnotationFor(component,
                 Route.class);
+        List<RouteAlias> routeAliases = AnnotationReader
+                .getAnnotationsFor(component, RouteAlias.class);
         if (route.isPresent() && path.equals(getRoutePath(context, component))
                 && !route.get().layout().equals(UI.class)) {
             return recurseToTopLayout(route.get().layout());
         } else {
-            Optional<RouteAliasObject> matchingRoute = getMatchingRouteAlias(
-                    component, path, RouteUtil.getAliasObjects(component));
+            Optional<RouteAlias> matchingRoute = getMatchingRouteAlias(
+                    component, path, routeAliases);
             if (matchingRoute.isPresent()) {
-                return recurseToTopLayout(matchingRoute.get().getLayout());
+                return recurseToTopLayout(matchingRoute.get().layout());
             }
         }
 
@@ -393,7 +387,7 @@ public class RouteUtil {
      */
     @Deprecated
     public static String resolve(Class<?> component, Route route) {
-        if (route.value().length == 0) {
+        if (route.value().equals(Route.NAMING_CONVENTION)) {
             String simpleName = component.getSimpleName();
             if ("MainView".equals(simpleName) || "Main".equals(simpleName)) {
                 return "";
@@ -405,7 +399,7 @@ public class RouteUtil {
             }
             return simpleName.toLowerCase();
         }
-        return route.value()[0];
+        return route.value();
     }
 
     /**
@@ -471,36 +465,5 @@ public class RouteUtil {
                         routeConf.setAnnotatedRoute(componentClass);
                     });
         });
-    }
-
-    /**
-     * Gets a stream {@link RouteAliasObject} of for the
-     * {@code navigationTarget}.
-     * <p>
-     * Uses {@link Route} and {@link RouteAlias} annotations of the
-     * {@code navigationTarget} class and returns all alias data collected using
-     * these annotations.
-     * 
-     * @param navigationTarget
-     *            a navigation target class to collect alias data
-     * @return a stream of route alias objects
-     */
-    public static Stream<RouteAliasObject> getAliasObjects(
-            Class<?> navigationTarget) {
-        Route routeAnnotation = navigationTarget.getAnnotation(Route.class);
-        if (routeAnnotation == null) {
-            return Stream
-                    .of(navigationTarget.getAnnotationsByType(RouteAlias.class))
-                    .map(RouteAliasObject::new);
-        } else {
-            Stream<RouteAliasObject> aliases = Stream
-                    .of(routeAnnotation.value()).skip(1)
-                    .map(path -> new RouteAliasObject(path,
-                            routeAnnotation.layout(),
-                            routeAnnotation.absolute()));
-            return Stream.concat(aliases, Stream
-                    .of(navigationTarget.getAnnotationsByType(RouteAlias.class))
-                    .map(RouteAliasObject::new));
-        }
     }
 }

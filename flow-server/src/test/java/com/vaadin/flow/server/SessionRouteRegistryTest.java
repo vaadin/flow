@@ -1099,7 +1099,7 @@ public class SessionRouteRegistryTest {
     }
 
     @Tag("div")
-    @Route({ "foo", "bar" })
+    @Route("foo")
     @RouteAlias("")
     private static class RouteWithRootAlias extends Component {
 
