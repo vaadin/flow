@@ -644,10 +644,11 @@ public class NodeTasks implements FallibleCommand {
         }
 
         protected FeatureFlags getFeatureFlags() {
+            final FeatureFlags featureFlags = new FeatureFlags(lookup);
             if (javaResourceFolder != null) {
-                return new FeatureFlags(lookup, javaResourceFolder);
+                featureFlags.setPropertiesLocation(javaResourceFolder);
             }
-            return new FeatureFlags(lookup);
+            return featureFlags;
         }
     }
 

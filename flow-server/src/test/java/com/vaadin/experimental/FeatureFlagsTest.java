@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
-import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.VaadinContext;
@@ -43,15 +42,20 @@ public class FeatureFlagsTest {
     private VaadinContext context;
     private FeatureFlags featureFlags;
     private File propertiesDir;
+    private ApplicationConfiguration configuration;
 
     @Before
     public void before() throws IOException {
         propertiesDir = temporaryFolder.newFolder();
 
         context = new MockVaadinContext();
+        configuration = Mockito.mock(ApplicationConfiguration.class);
+        Mockito.when(configuration.isProductionMode()).thenReturn(false);
+
+        context.setAttribute(ApplicationConfiguration.class, configuration);
+
         featureFlags = FeatureFlags.get(context);
         featureFlags.setPropertiesLocation(propertiesDir);
-        setProductionMode(false);
 
         mockResourcesLocation();
     }
@@ -134,7 +138,8 @@ public class FeatureFlagsTest {
 
     @Test(expected = IllegalStateException.class)
     public void setEnabledOnlyInDevelopmentMode() throws IOException {
-        setProductionMode(true);
+        Mockito.when(configuration.isProductionMode()).thenReturn(true);
+
         createFeatureFlagsFile(
                 "com.vaadin.experimental.exampleFeatureFlag=true\n");
         ApplicationConfiguration conf = ApplicationConfiguration
@@ -213,15 +218,5 @@ public class FeatureFlagsTest {
         FileUtils.write(
                 new File(propertiesDir, FeatureFlags.PROPERTIES_FILENAME), data,
                 StandardCharsets.UTF_8);
-    }
-
-    private void setProductionMode(boolean productionMode) {
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
-        Mockito.when(appConfig.isProductionMode()).thenReturn(productionMode);
-
-        Lookup lookup = context.getAttribute(Lookup.class);
-        Mockito.when(lookup.lookup(ApplicationConfiguration.class))
-                .thenReturn(appConfig);
     }
 }
