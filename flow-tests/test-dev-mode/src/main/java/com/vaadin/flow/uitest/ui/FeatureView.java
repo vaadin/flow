@@ -89,8 +89,8 @@ public class FeatureView extends Div {
     private File getFeatureFile() {
         final VaadinContext context = VaadinSession.getCurrent().getService()
                 .getContext();
-        final ApplicationConfiguration configuration = ApplicationConfiguration.get(
-                context);
+        final ApplicationConfiguration configuration = ApplicationConfiguration
+                .get(context);
         final File file = new File(configuration.getJavaResourceFolder(),
                 FeatureFlags.PROPERTIES_FILENAME);
         return file;
