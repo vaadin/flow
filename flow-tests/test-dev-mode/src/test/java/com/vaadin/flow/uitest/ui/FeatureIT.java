@@ -24,6 +24,7 @@ import com.vaadin.flow.component.html.testbench.H2Element;
 import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.flow.testutil.DevModeGizmoElement;
+import com.vaadin.testbench.TestBenchElement;
 
 public class FeatureIT extends ChromeBrowserTest {
 
@@ -40,8 +41,10 @@ public class FeatureIT extends ChromeBrowserTest {
         DevModeGizmoElement gizmo = $(DevModeGizmoElement.class).waitForFirst();
 
         gizmo.expand();
-        gizmo.findElement(By.id("features")).click();
-        gizmo.findElement(By.id("feature-toggle-viteForFrontendBuild")).click();
+
+        gizmo.$(NativeButtonElement.class).id("features").click();
+        gizmo.$(TestBenchElement.class)
+                .id("feature-toggle-viteForFrontendBuild").click();
 
         try {
             $(NativeButtonElement.class).id("check").click();
