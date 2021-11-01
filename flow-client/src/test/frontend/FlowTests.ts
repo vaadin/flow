@@ -5,7 +5,11 @@ const { assert } = intern.getPlugin('chai');
 const { sinon } = intern.getPlugin('sinon') as { sinon: SinonStatic };
 
 // API to test
-import { Flow, NavigationParameters } from '../../main/frontend/Flow';
+import {
+  Flow,
+  NavigationParameters,
+  PreventAndRedirectCommands
+} from '../../main/frontend/Flow';
 import { ConnectionState, ConnectionStateStore } from '@vaadin/common-frontend';
 // Intern does not serve webpack chunks, adding deps here in order to
 // produce one chunk, because dynamic imports in Flow.ts  will not work.
@@ -762,6 +766,43 @@ suite('Flow', () => {
     assert.equal($wnd.Vaadin.connectionState.state, ConnectionState.CONNECTION_LOST);
     $wnd.dispatchEvent(new Event('online')); // caught by DefaultConnectionStateHandler
     assert.equal($wnd.Vaadin.connectionState.state, ConnectionState.RECONNECTING);
+  });
+
+  test("should pre-attach container element on every navigation", async () => {
+    stubServerRemoteFunction('foobar-12345');
+    mockInitResponse('foobar-12345');
+
+    const flow = new Flow();
+    const route = flow.serverSideRoutes[0];
+
+    const flowRouteParams = {pathname: 'Foo', search: ''};
+    const otherRouteParams = {pathname: 'Lorem', search: ''};
+
+    // Initial navigation
+    const container = await route.action(flowRouteParams);
+    assert.isTrue(container.isConnected);
+    assert.equal(container.style.display, 'none');
+
+    // @ts-ignore
+    await container.onBeforeEnter(flowRouteParams, {});
+    assert.isTrue(container.isConnected);
+    assert.equal(container.style.display, '');
+
+    // Leave
+
+    // @ts-ignore
+    await container.onBeforeLeave(otherRouteParams, {});
+    // The router detaches the container, possibly because it renders a client-side view
+    container.parentNode!.removeChild(container);
+
+    await route.action(flowRouteParams);
+    assert.isTrue(container.isConnected);
+    assert.equal(container.style.display, 'none');
+
+    // @ts-ignore
+    await container.onBeforeEnter(flowRouteParams, {});
+    assert.isTrue(container.isConnected);
+    assert.equal(container.style.display, '');
   });
 });
 

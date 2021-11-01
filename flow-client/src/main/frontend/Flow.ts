@@ -275,16 +275,18 @@ export class Flow {
         const tag = `flow-container-${appId.toLowerCase()}`;
         this.container = flowRoot.$[appId] = document.createElement(tag);
         this.container.id = appId;
-
-        // It might be that components created from server expect that their content has been rendered.
-        // Appending eagerly the container we avoid these kind of errors.
-        // Note that the client router will move this container to the outlet if the navigation succeed
-        this.container.style.display = 'none';
-        document.body.appendChild(this.container);
       }
 
       // hide flow progress indicator
       this.loadingFinished();
+    }
+
+    // It might be that components created from server expect that their content has been rendered.
+    // Appending eagerly the container we avoid these kind of errors.
+    // Note that the client router will move this container to the outlet if the navigation succeed
+    if (this.container && !this.container.isConnected) {
+      this.container.style.display = 'none';
+      document.body.appendChild(this.container);
     }
     return this.response!;
   }
