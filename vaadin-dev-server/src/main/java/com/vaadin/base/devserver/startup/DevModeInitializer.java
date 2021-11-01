@@ -334,8 +334,8 @@ public class DevModeInitializer implements Serializable {
             return new ViteHandler(devServerLookup, 0, builder.getNpmFolder(),
                     nodeTasksFuture);
         } else {
-            return WebpackHandler.start(devServerLookup, builder.getNpmFolder(),
-                    nodeTasksFuture);
+            return new WebpackHandler(devServerLookup, 0,
+                    builder.getNpmFolder(), nodeTasksFuture);
         }
     }
 
