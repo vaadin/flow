@@ -715,6 +715,7 @@ public class FrontendUtils {
      * @throws IOException
      *             if an I/O error occurs while creating the input stream.
      */
+    // Ignore, used only in V14 bootstrap mode
     public static String getStatsAssetsByChunkName(VaadinService service)
             throws IOException {
         DeploymentConfiguration config = service.getDeploymentConfiguration();

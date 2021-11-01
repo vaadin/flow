@@ -19,6 +19,7 @@ import static java.net.HttpURLConnection.HTTP_OK;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -110,6 +111,13 @@ public final class WebpackHandler extends AbstractDevServerRunner {
             String pathInfo = request.getPathInfo();
             return manifestPaths.contains(pathInfo);
         }
+    }
+
+    @Override
+    public InputStream getFileContents(String url) throws IOException {
+        // Webpack does not provide access to sources by URL, stats.json file
+        // is used instead.
+        return null;
     }
 
     /**

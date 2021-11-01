@@ -1,0 +1,90 @@
+/*
+ * Copyright 2000-2021 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package com.vaadin.flow.server.frontend;
+
+import java.io.File;
+import java.io.IOException;
+
+import java.util.HashSet;
+import java.util.Set;
+
+import org.apache.commons.io.FileUtils;
+import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+
+/**
+ * Copies template files to the target folder so as to be available for parsing
+ * when in production mode. Only required for Vite builds; with Webpack, sources
+ * are parsed from stats.json.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
+ */
+public class TaskCopyTemplateFiles implements FallibleCommand {
+
+    private final ClassFinder classFinder;
+    private final File projectDirectory;
+    private final File frontendDirectory;
+    private final File resourceOutputDirectory;
+
+    TaskCopyTemplateFiles(ClassFinder classFinder, File projectDirectory,
+            File frontendDirectory, File resourceOutputDirectory) {
+        this.classFinder = classFinder;
+        this.projectDirectory = projectDirectory;
+        this.frontendDirectory = frontendDirectory;
+        this.resourceOutputDirectory = resourceOutputDirectory;
+    }
+
+    @Override
+    public void execute() throws ExecutionFailedException {
+        Set<Class<?>> classes = new HashSet<>();
+        try {
+            classes.addAll(classFinder.getSubTypesOf(
+                    "com.vaadin.flow.component.littemplate.LitTemplate"));
+            classes.addAll(classFinder.getSubTypesOf(
+                    "com.vaadin.flow.component.polymertemplate.PolymerTemplate"));
+        } catch (ClassNotFoundException e) {
+            throw new ExecutionFailedException(e);
+        }
+        for (Class<?> clazz : classes) {
+            for (JsModule jsmAnnotation : clazz
+                    .getAnnotationsByType(JsModule.class)) {
+                String filePath = jsmAnnotation.value();
+                File source;
+                if (filePath.startsWith("./")) {
+                    // path is relative to "frontend"
+                    source = new File(frontendDirectory, filePath);
+                } else {
+                    // path is relative to "node_modules"
+                    File nodeModulesDir = new File(projectDirectory,
+                            FrontendUtils.NODE_MODULES);
+                    source = new File(nodeModulesDir, filePath);
+                }
+                File templateDirectory = new File(resourceOutputDirectory,
+                        Constants.TEMPLATE_DIRECTORY);
+                File target = new File(templateDirectory, filePath)
+                        .getParentFile();
+                target.mkdirs();
+                try {
+                    FileUtils.copyFileToDirectory(source, target);
+                } catch (IOException e) {
+                    throw new ExecutionFailedException(e);
+                }
+            }
+        }
+    }
+}

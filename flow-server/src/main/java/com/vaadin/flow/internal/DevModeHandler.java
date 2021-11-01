@@ -18,6 +18,7 @@ package com.vaadin.flow.internal;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 
 import com.vaadin.flow.server.RequestHandler;
@@ -72,4 +73,16 @@ public interface DevModeHandler extends RequestHandler {
      * Stop the dev-server.
      */
     void stop();
+
+    /**
+     * Retrieve the contents of a frontend file, if the implementation supports
+     * this, otherwise <code>null</code>.
+     *
+     * @param url
+     *            the path to the source file
+     * @return the source, or <code>null</code>
+     * @throws IOException
+     *             on connection error
+     */
+    InputStream getFileContents(String url) throws IOException;
 }

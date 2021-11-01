@@ -675,7 +675,8 @@ public class NodeTasks implements FallibleCommand {
             TaskUpdateWebpack.class,
             TaskUpdateVite.class,
             TaskUpdateImports.class,
-            TaskUpdateThemeImport.class
+            TaskUpdateThemeImport.class,
+            TaskCopyTemplateFiles.class
         ));
     // @formatter:on
 
@@ -802,6 +803,13 @@ public class NodeTasks implements FallibleCommand {
             commands.add(new TaskUpdateThemeImport(builder.npmFolder,
                     frontendDependencies.getThemeDefinition(),
                     builder.frontendDirectory, builder.fusionClientAPIFolder));
+        }
+
+        if (builder.productionMode
+                && featureFlags.isEnabled(FeatureFlags.VITE)) {
+            commands.add(new TaskCopyTemplateFiles(classFinder,
+                    builder.npmFolder, builder.frontendDirectory,
+                    builder.resourceOutputDirectory));
         }
     }
 

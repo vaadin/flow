@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
@@ -36,7 +37,10 @@ import com.vaadin.flow.component.littemplate.LitTemplate;
 import com.vaadin.flow.component.littemplate.LitTemplateParser;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.internal.DevModeHandler;
+import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.Pair;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DependencyFilter;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -107,13 +111,14 @@ public class LitTemplateParserImpl implements LitTemplateParser {
             }
 
             String url = dependency.getUrl();
-            String source = getSourcesFromTemplate(tag, url);
-            if (source == null) {
-                try {
+            String source;
+            try {
+                source = getSourcesFromTemplate(service, tag, url);
+                if (source == null) {
                     source = getSourcesFromStats(service, url);
-                } catch (IOException e) {
-                    throw new UncheckedIOException(e);
                 }
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
             }
             if (source == null) {
                 continue;
@@ -173,6 +178,8 @@ public class LitTemplateParserImpl implements LitTemplateParser {
     /**
      * Finds the JavaScript sources for given tag.
      *
+     * @param service
+     *            the Vaadin service
      * @param tag
      *            the value of the {@link com.vaadin.flow.component.Tag}
      *            annotation, e.g. `my-component`
@@ -184,9 +191,28 @@ public class LitTemplateParserImpl implements LitTemplateParser {
      * @return the .js source which declares given custom element, or null if no
      *         such source can be found.
      */
-    protected String getSourcesFromTemplate(String tag, String url) {
+    protected String getSourcesFromTemplate(VaadinService service, String tag,
+            String url) throws IOException {
         InputStream content = getClass().getClassLoader()
                 .getResourceAsStream(url);
+        if (content == null) {
+            // With Vite production build, template sources are stored in
+            // META-INF/VAADIN/config/templates
+            String vaadinDirectory = Constants.VAADIN_SERVLET_RESOURCES
+                    + Constants.TEMPLATE_DIRECTORY;
+            String resourceUrl = vaadinDirectory
+                    + url.replaceFirst("^\\./", "");
+            content = getClass().getClassLoader()
+                    .getResourceAsStream(resourceUrl);
+        }
+        if (content == null) {
+            // Attempt to get the sources from the running dev server
+            Optional<DevModeHandler> devModeHandler = DevModeHandlerManager
+                    .getDevModeHandler(service);
+            if (devModeHandler.isPresent()) {
+                content = devModeHandler.get().getFileContents(url);
+            }
+        }
         if (content != null) {
             getLogger().debug(
                     "Found sources from the tag '{}' in the template '{}'", tag,

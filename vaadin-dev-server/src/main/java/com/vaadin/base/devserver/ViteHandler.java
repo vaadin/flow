@@ -19,6 +19,7 @@ import static java.net.HttpURLConnection.HTTP_OK;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,6 +28,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
 
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
@@ -65,6 +67,13 @@ public final class ViteHandler extends AbstractDevServerRunner {
     public ViteHandler(Lookup lookup, int runningPort, File npmFolder,
             CompletableFuture<Void> waitFor) {
         super(lookup, runningPort, npmFolder, waitFor);
+    }
+
+    @Override
+    public InputStream getFileContents(String url) throws IOException {
+        String relativeUrl = url.replaceFirst("^\\./", "");
+        return prepareConnection("/" + Constants.VAADIN_MAPPING + relativeUrl,
+                "GET").getInputStream();
     }
 
     @Override
