@@ -742,7 +742,7 @@ public class AbstractRouteRegistryTest {
         registry.setRoute("optional", OptionalRoute.class, null);
         registry.setRoute("wild", WildcardRoute.class, null);
         registry.setRoute(
-                ParameterView.class.getAnnotation(Route.class).value()[0],
+                ParameterView.class.getAnnotation(Route.class).value(),
                 ParameterView.class, null);
 
         Assert.assertEquals("All routes should be registered.", 5,
