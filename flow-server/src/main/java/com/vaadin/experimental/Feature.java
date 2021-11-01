@@ -23,7 +23,7 @@ import com.vaadin.flow.internal.UsageStatistics;
 /**
  * Information about a feature available behind a flag.
  */
-public class Feature implements Serializable {
+public final class Feature implements Serializable {
 
     private String title;
     private String id;
