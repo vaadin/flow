@@ -45,8 +45,8 @@
                         </goals>
                     </execution>
                 </executions>
-                 <configuration>
-                     <productionMode>true</productionMode>
+                <configuration>
+                    <productionMode>true</productionMode>
                 </configuration>
             </plugin>
             <plugin>

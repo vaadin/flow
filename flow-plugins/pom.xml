@@ -32,15 +32,15 @@
 			</plugin>
 		</plugins>
 	</build>
-        <profiles>
-                <profile>
-                        <id>gradle</id>
-                        <activation>
-                                <jdk>(,17]</jdk>
-                        </activation>
-                        <modules>
-                                <module>flow-gradle-plugin</module>
-                        </modules>
-               </profile>
-        </profiles>
+	<profiles>
+		<profile>
+			<id>gradle</id>
+			<activation>
+				<jdk>(,17]</jdk>
+			</activation>
+			<modules>
+				<module>flow-gradle-plugin</module>
+			</modules>
+		</profile>
+	</profiles>
 </project>

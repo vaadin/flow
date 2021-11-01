@@ -86,7 +86,7 @@
                         </goals>
                     </execution>
                 </executions>
-                 <configuration>
+                <configuration>
                     <productionMode>true</productionMode>
                 </configuration>
             </plugin>
