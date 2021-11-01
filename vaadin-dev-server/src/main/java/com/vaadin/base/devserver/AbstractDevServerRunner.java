@@ -42,6 +42,7 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.internal.DevModeHandler;
+import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.HandlerHelper;
@@ -683,7 +684,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
             requestFilename = "/VAADIN/static" + requestFilename;
         }
 
-        String devServerRequestPath = requestFilename;
+        String devServerRequestPath = UrlUtil.encodeURI(requestFilename);
         if (request.getQueryString() != null) {
             devServerRequestPath += "?" + request.getQueryString();
         }
