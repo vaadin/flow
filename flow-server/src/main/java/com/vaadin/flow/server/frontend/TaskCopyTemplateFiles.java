@@ -22,6 +22,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
@@ -52,13 +54,19 @@ public class TaskCopyTemplateFiles implements FallibleCommand {
     @Override
     public void execute() throws ExecutionFailedException {
         Set<Class<?>> classes = new HashSet<>();
+        String LIT_TEMPLATE_CLASS = "com.vaadin.flow.component.littemplate.LitTemplate";
         try {
-            classes.addAll(classFinder.getSubTypesOf(
-                    "com.vaadin.flow.component.littemplate.LitTemplate"));
-            classes.addAll(classFinder.getSubTypesOf(
-                    "com.vaadin.flow.component.polymertemplate.PolymerTemplate"));
+            classes.addAll(classFinder.getSubTypesOf(LIT_TEMPLATE_CLASS));
         } catch (ClassNotFoundException e) {
-            throw new ExecutionFailedException(e);
+            log().debug(LIT_TEMPLATE_CLASS
+                    + " not on classpath, skipping copying of Lit template");
+        }
+        String POLYMER_TEMPLATE_CLASS = "com.vaadin.flow.component.littemplate.LitTemplate";
+        try {
+            classes.addAll(classFinder.getSubTypesOf(POLYMER_TEMPLATE_CLASS));
+        } catch (ClassNotFoundException e) {
+            log().debug(POLYMER_TEMPLATE_CLASS
+                    + " not on classpath, skipping copying of Polymer templates");
         }
         for (Class<?> clazz : classes) {
             for (JsModule jsmAnnotation : clazz
@@ -86,5 +94,9 @@ public class TaskCopyTemplateFiles implements FallibleCommand {
                 }
             }
         }
+    }
+
+    Logger log() {
+        return LoggerFactory.getLogger(getClass());
     }
 }

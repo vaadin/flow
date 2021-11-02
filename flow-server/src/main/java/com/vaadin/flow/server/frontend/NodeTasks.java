@@ -805,8 +805,7 @@ public class NodeTasks implements FallibleCommand {
                     builder.frontendDirectory, builder.fusionClientAPIFolder));
         }
 
-        if (builder.productionMode
-                && featureFlags.isEnabled(FeatureFlags.VITE)) {
+        if (builder.productionMode) {
             commands.add(new TaskCopyTemplateFiles(classFinder,
                     builder.npmFolder, builder.frontendDirectory,
                     builder.resourceOutputDirectory));

@@ -31,6 +31,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import com.vaadin.base.devserver.DevServerOutputFinder.Result;
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
@@ -111,13 +112,6 @@ public final class WebpackHandler extends AbstractDevServerRunner {
             String pathInfo = request.getPathInfo();
             return manifestPaths.contains(pathInfo);
         }
-    }
-
-    @Override
-    public InputStream getFileContents(String url) throws IOException {
-        // Webpack does not provide access to sources by URL, stats.json file
-        // is used instead.
-        return null;
     }
 
     /**

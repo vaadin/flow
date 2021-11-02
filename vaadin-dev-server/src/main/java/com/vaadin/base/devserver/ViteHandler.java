@@ -140,6 +140,11 @@ public final class ViteHandler extends AbstractDevServerRunner {
         return Pattern.compile("ready in .*ms");
     }
 
+    @Override
+    protected String getFrontendFilePathPrefix() {
+        return Constants.VAADIN_MAPPING;
+    }
+
     private static Logger getLogger() {
         return LoggerFactory.getLogger(ViteHandler.class);
     }

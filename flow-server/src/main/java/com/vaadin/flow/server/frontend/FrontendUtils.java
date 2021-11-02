@@ -439,52 +439,6 @@ public class FrontendUtils {
     }
 
     /**
-     * Gets the content of the <code>stats.json</code> file produced by webpack.
-     *
-     * Note: Caches the <code>stats.json</code> when external stats is enabled
-     * or <code>stats.json</code> is provided from the class path. To clear the
-     * cache use {@link #clearCachedStatsContent(VaadinService)}.
-     *
-     * @param service
-     *            the vaadin service.
-     * @return the content of the file as a string, null if not found.
-     * @throws IOException
-     *             on error reading stats file.
-     */
-    public static String getStatsContent(VaadinService service)
-            throws IOException {
-        DeploymentConfiguration config = service.getDeploymentConfiguration();
-        InputStream content = null;
-
-        try {
-            if (!config.isProductionMode() && config.enableDevServer()) {
-                Optional<DevModeHandler> devModeHandler = DevModeHandlerManager
-                        .getDevModeHandler(service);
-                if (!devModeHandler.isPresent()) {
-                    throw new WebpackConnectionException(
-                            "DevModeHandlerManager implementation missing. Include the "
-                                    + "com.vaadin:vaadin-dev-server dependency.");
-                }
-                content = getStatsFromWebpack(devModeHandler.get());
-            }
-
-            if (config.isStatsExternal()) {
-                content = getStatsFromExternalUrl(config.getExternalStatsUrl(),
-                        service.getContext());
-            }
-
-            if (content == null) {
-                content = getStatsFromClassPath(service);
-            }
-            return content != null
-                    ? IOUtils.toString(content, StandardCharsets.UTF_8)
-                    : null;
-        } finally {
-            IOUtils.closeQuietly(content);
-        }
-    }
-
-    /**
      * Clears the <code>stats.json</code> cache within this
      * {@link VaadinContext}.
      *
@@ -715,7 +669,6 @@ public class FrontendUtils {
      * @throws IOException
      *             if an I/O error occurs while creating the input stream.
      */
-    // Ignore, used only in V14 bootstrap mode
     public static String getStatsAssetsByChunkName(VaadinService service)
             throws IOException {
         DeploymentConfiguration config = service.getDeploymentConfiguration();
