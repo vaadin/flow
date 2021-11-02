@@ -9,11 +9,8 @@ import com.vaadin.flow.templatemodel.TemplateModel;
 
 @Tag(PolymerComponent.TAG)
 @JsModule("./templates/PolymerComponent.ts")
-public class PolymerComponent extends PolymerTemplate<PolymerComponent.Model> {
+public class PolymerComponent extends PolymerTemplate<TemplateModel> {
     public static final String TAG = "polymer-component";
-
-    public interface Model extends TemplateModel {
-    };
 
     @Id("label")
     private Span label;

@@ -75,14 +75,13 @@ public interface DevModeHandler extends RequestHandler {
     void stop();
 
     /**
-     * Retrieve the contents of a frontend file, if the implementation supports
-     * this, otherwise <code>null</code>.
+     * Retrieve the contents of a frontend file.
      *
-     * @param url
+     * @param path
      *            the path to the source file
      * @return the source, or <code>null</code>
      * @throws IOException
      *             on connection error
      */
-    InputStream getFileContents(String url) throws IOException;
+    InputStream getFileContents(String path) throws IOException;
 }

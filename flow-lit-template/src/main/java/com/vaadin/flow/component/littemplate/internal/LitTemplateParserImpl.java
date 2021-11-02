@@ -183,12 +183,14 @@ public class LitTemplateParserImpl implements LitTemplateParser {
             String url) throws IOException {
         InputStream content = getClass().getClassLoader()
                 .getResourceAsStream(url);
+        String pathWithoutPrefix = url.replaceFirst("^\\./", "");
         if (content == null) {
             // Attempt to get the sources from the running dev server
             Optional<DevModeHandler> devModeHandler = DevModeHandlerManager
                     .getDevModeHandler(service);
             if (devModeHandler.isPresent()) {
-                content = devModeHandler.get().getFileContents(url);
+                content = devModeHandler.get()
+                        .getFileContents(pathWithoutPrefix);
             }
         }
         if (content == null) {
@@ -196,8 +198,7 @@ public class LitTemplateParserImpl implements LitTemplateParser {
             // META-INF/VAADIN/config/templates
             String vaadinDirectory = Constants.VAADIN_SERVLET_RESOURCES
                     + Constants.TEMPLATE_DIRECTORY;
-            String resourceUrl = vaadinDirectory
-                    + url.replaceFirst("^\\./", "");
+            String resourceUrl = vaadinDirectory + pathWithoutPrefix;
             content = getClass().getClassLoader()
                     .getResourceAsStream(resourceUrl);
         }

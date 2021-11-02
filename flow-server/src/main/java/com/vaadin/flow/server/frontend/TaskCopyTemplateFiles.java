@@ -54,18 +54,19 @@ public class TaskCopyTemplateFiles implements FallibleCommand {
     @Override
     public void execute() throws ExecutionFailedException {
         Set<Class<?>> classes = new HashSet<>();
-        String LIT_TEMPLATE_CLASS = "com.vaadin.flow.component.littemplate.LitTemplate";
+        String litTemplateClass = "com.vaadin.flow.component.littemplate.LitTemplate";
         try {
-            classes.addAll(classFinder.getSubTypesOf(LIT_TEMPLATE_CLASS));
-        } catch (ClassNotFoundException e) {
-            log().debug(LIT_TEMPLATE_CLASS
+            classes.addAll(classFinder.getSubTypesOf(litTemplateClass));
+        } catch (ClassNotFoundException ignore) { // NOSONAR
+            log().debug(litTemplateClass
                     + " not on classpath, skipping copying of Lit template");
         }
-        String POLYMER_TEMPLATE_CLASS = "com.vaadin.flow.component.littemplate.LitTemplate";
+        String polymerTemplateClass = "com.vaadin.flow.component.polymertemplate.PolymerTemplate";
+
         try {
-            classes.addAll(classFinder.getSubTypesOf(POLYMER_TEMPLATE_CLASS));
-        } catch (ClassNotFoundException e) {
-            log().debug(POLYMER_TEMPLATE_CLASS
+            classes.addAll(classFinder.getSubTypesOf(polymerTemplateClass));
+        } catch (ClassNotFoundException ignore) { // NOSONAR
+            log().debug(polymerTemplateClass
                     + " not on classpath, skipping copying of Polymer templates");
         }
         for (Class<?> clazz : classes) {
