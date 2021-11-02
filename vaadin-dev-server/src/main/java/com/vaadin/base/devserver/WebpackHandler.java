@@ -205,8 +205,7 @@ public final class WebpackHandler extends AbstractDevServerRunner {
         command.add(String.valueOf(getPort()));
         command.add("--watch-options-stdin"); // Tell wds to stop even if
                                               // watchDog fail
-        command.add("--env");
-        command.add("watchDogPort=" + getWatchDog().getWatchDogPort());
+
         String customParameters = getApplicationConfiguration()
                 .getStringProperty(
                         InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS,
