@@ -41,6 +41,12 @@ public class UrlUtilTest {
     }
 
     @Test
+    public void plusAndSpaceHandledCorrectly() {
+        Assert.assertEquals("Plus%2BSpa%20%2B%20ce",
+                UrlUtil.encodeURI("Plus+Spa + ce"));
+    }
+
+    @Test
     public void encodeURI_shouldNotBeEscaped() {
         Assert.assertEquals(shouldNotBeEscaped,
                 UrlUtil.encodeURI(shouldNotBeEscaped));
