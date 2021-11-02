@@ -63,7 +63,7 @@ public class UrlUtil {
     public static String encodeURI(String path) {
         try {
             return URLEncoder.encode(path, StandardCharsets.UTF_8.name())
-                    .replace("+", "%20");
+                    .replace("+", "%20").replace("%2F", "/");
         } catch (UnsupportedEncodingException e) {
             // Runtime exception as this doesn't really happen
             throw new RuntimeException("Encoding the URI failed", e); // NOSONAR
