@@ -35,7 +35,7 @@
         <module>flow-bom</module>
         <module>fusion-endpoint</module>
         <module>build-tools</module>
-		<module>vaadin-dev-server</module>
+        <module>vaadin-dev-server</module>
         <module>flow-jandex</module>
     </modules>
 
@@ -477,8 +477,7 @@
                             </goals>
                             <configuration>
                                 <rules>
-                                    <restrictImports
-                                        implementation="de.skuzzle.enforcer.restrictimports.rule.RestrictImports">
+                                    <restrictImports implementation="de.skuzzle.enforcer.restrictimports.rule.RestrictImports">
                                         <reason>Use SLF4j for logging</reason>
                                         <bannedImport>java.util.logging.**
                                         </bannedImport>

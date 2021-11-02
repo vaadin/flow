@@ -23,7 +23,7 @@
     <build>
         <pluginManagement>
             <plugins>
-              <!-- Generic cargo plugin configuration. Define container to use in submodule. -->
+                <!-- Generic cargo plugin configuration. Define container to use in submodule. -->
                 <plugin>
                     <groupId>org.codehaus.cargo</groupId>
                     <artifactId>cargo-maven3-plugin</artifactId>
