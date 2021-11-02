@@ -18,6 +18,7 @@ package com.vaadin.flow.router;
 import javax.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -86,10 +87,9 @@ public class RouteNotFoundError extends Component
     }
 
     private static String readHtmlFile(String templateName) {
-        try {
-            return IOUtils.toString(
-                    RouteNotFoundError.class.getResourceAsStream(templateName),
-                    StandardCharsets.UTF_8);
+        try (InputStream stream = RouteNotFoundError.class
+                .getResourceAsStream(templateName)) {
+            return IOUtils.toString(stream, StandardCharsets.UTF_8);
         } catch (IOException e) {
             LoggerFactory.getLogger(RouteNotFoundError.class)
                     .error("Unable to read " + templateName, e);
