@@ -26,6 +26,7 @@ import org.apache.commons.io.IOUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import org.jsoup.safety.Whitelist;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
@@ -48,10 +49,12 @@ public class RouteNotFoundError extends Component
     @Override
     public int setErrorParameter(BeforeEnterEvent event,
             ErrorParameter<NotFoundException> parameter) {
-        LoggerFactory.getLogger(RouteNotFoundError.class)
-                .debug(parameter.hasCustomMessage()
-                        ? parameter.getCustomMessage()
-                        : "Route is not found", parameter.getCaughtException());
+        if (getLogger().isDebugEnabled()) {
+            getLogger().debug(
+                    parameter.hasCustomMessage() ? parameter.getCustomMessage()
+                            : "Route is not found",
+                    parameter.getCaughtException());
+        }
         String path = event.getLocation().getPath();
         String additionalInfo = "";
         if (parameter.hasCustomMessage()) {
@@ -77,6 +80,10 @@ public class RouteNotFoundError extends Component
         return HttpServletResponse.SC_NOT_FOUND;
     }
 
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(RouteNotFoundError.class);
+    }
+
     private static String getErrorHtml(boolean productionMode) {
         if (productionMode) {
             return LazyInit.PRODUCTION_MODE_TEMPLATE;
@@ -91,8 +98,7 @@ public class RouteNotFoundError extends Component
                     RouteNotFoundError.class.getResourceAsStream(templateName),
                     StandardCharsets.UTF_8);
         } catch (IOException e) {
-            LoggerFactory.getLogger(RouteNotFoundError.class)
-                    .error("Unable to read " + templateName, e);
+            getLogger().error("Unable to read " + templateName, e);
             // Use a very simple error page if the real one could not be found
             return "Could not navigate to '{{path}}'";
         }
