@@ -118,11 +118,10 @@ public class DebugWindowConnection implements BrowserLiveReload {
                 resource);
 
         send(resource, "serverInfo", new ServerInfo());
-        send(resource, "featureFlags",
-                new FeatureFlagMessage(FeatureFlags.get(context).getFeatures()
-                        .stream()
-                        .filter(feature -> feature != FeatureFlags.EXAMPLE)
-                        .collect(Collectors.toList())));
+        send(resource, "featureFlags", new FeatureFlagMessage(FeatureFlags
+                .get(context).getFeatures().stream()
+                .filter(feature -> !feature.equals(FeatureFlags.EXAMPLE))
+                .collect(Collectors.toList())));
     }
 
     private void send(AtmosphereResource resource, String command,

@@ -16,13 +16,14 @@
 package com.vaadin.experimental;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 import com.vaadin.flow.internal.UsageStatistics;
 
 /**
  * Information about a feature available behind a flag.
  */
-public class Feature implements Serializable {
+public final class Feature implements Serializable {
 
     private String title;
     private String id;
@@ -44,8 +45,8 @@ public class Feature implements Serializable {
      */
     public Feature(String title, String id, String moreInfoLink,
             boolean requiresServerRestart) {
-        this.title = title;
-        this.id = id;
+        this.title = Objects.requireNonNull(title);
+        this.id = Objects.requireNonNull(id);
         this.moreInfoLink = moreInfoLink;
         this.requiresServerRestart = requiresServerRestart;
     }
@@ -90,4 +91,25 @@ public class Feature implements Serializable {
 
         this.enabled = enabled;
     }
+
+    @Override
+    public int hashCode() {
+        return id.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        Feature other = (Feature) obj;
+        return (id.equals(other.id));
+    }
+
 }

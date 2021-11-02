@@ -99,4 +99,13 @@ public class DevModeGizmoElement extends TestBenchElement {
         $("button").attributeContains("class", "tab").id(id).click();
     }
 
+    public void showExperimentalFeatures() {
+        showTab("features");
+    }
+
+    public List<String> listExperimentalFeatures() {
+        return (List<String>) executeScript(
+                "return Array.from(arguments[0].shadowRoot.querySelectorAll('.features-tray .feature label')).map(e => e.textContent.trim())",
+                this);
+    }
 }
