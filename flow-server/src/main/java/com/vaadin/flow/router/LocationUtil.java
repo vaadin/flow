@@ -159,13 +159,13 @@ public class LocationUtil {
     private static boolean hasIncorrectParentSegments(String path) {
         // the actual part that we do not support is '../' so this
         // shouldn't catch 'el..ement' nor '..element'
-        if (path.startsWith("..%2F")) {
+        if (path.startsWith("../")) {
             return true;
         }
-        if (path.contains("%2F..%2F")) {
+        if (path.contains("/../")) {
             return true;
         }
-        if (path.endsWith("%2F..")) {
+        if (path.endsWith("/..")) {
             return true;
         }
         if (path.equals("..")) {
