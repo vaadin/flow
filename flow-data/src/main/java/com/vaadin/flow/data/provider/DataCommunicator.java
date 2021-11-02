@@ -29,8 +29,6 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.slf4j.LoggerFactory;
-
 import com.vaadin.flow.data.provider.ArrayUpdater.Update;
 import com.vaadin.flow.data.provider.DataChangeEvent.DataRefreshEvent;
 import com.vaadin.flow.function.SerializableComparator;
@@ -165,11 +163,11 @@ public class DataCommunicator<T> implements Serializable {
      */
     public void setRequestedRange(int start, int length) {
         if (length > MAXIMUM_ALLOWED_ITEMS) {
-            getLogger().warn(String.format(
+            getLogger().warn(
                     "Attempted to fetch more items from server than allowed "
-                            + "in one go: number of items requested '%d', maximum "
-                            + "items allowed '%d'.",
-                    length, MAXIMUM_ALLOWED_ITEMS));
+                            + "in one go: number of items requested '{}', maximum "
+                            + "items allowed '{}'.",
+                    length, MAXIMUM_ALLOWED_ITEMS);
         }
         requestedRange = Range.withLength(start,
                 Math.min(length, MAXIMUM_ALLOWED_ITEMS));
