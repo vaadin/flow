@@ -98,7 +98,7 @@ public final class ViteHandler extends AbstractDevServerRunner {
         if (!customParameters.isEmpty()) {
             command.addAll(Arrays.asList(customParameters.split(" +")));
             getLogger().info("Starting {} using: {}", getServerName(),
-                    String.join(" ", command));
+                    String.join(" ", command)); // NOSONAR
         }
 
         return command;
