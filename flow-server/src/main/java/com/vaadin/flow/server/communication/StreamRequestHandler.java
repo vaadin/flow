@@ -15,20 +15,15 @@
  */
 package com.vaadin.flow.server.communication;
 
-import javax.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.RequestHandler;
 import com.vaadin.flow.server.StreamReceiver;
@@ -36,6 +31,9 @@ import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Handles {@link StreamResource} and {@link StreamReceiver} instances
@@ -148,21 +146,10 @@ public class StreamRequestHandler implements RequestHandler {
     public static String generateURI(String name, String id) {
         StringBuilder builder = new StringBuilder(DYN_RES_PREFIX);
 
-        try {
-            builder.append(UI.getCurrent().getUIId()).append(PATH_SEPARATOR);
-            builder.append(id).append(PATH_SEPARATOR);
-            builder.append(encodeString(name));
-        } catch (UnsupportedEncodingException e) {
-            // UTF8 has to be supported
-            throw new RuntimeException(e);
-        }
+        builder.append(UI.getCurrent().getUIId()).append(PATH_SEPARATOR);
+        builder.append(id).append(PATH_SEPARATOR);
+        builder.append(UrlUtil.encodeURI(name));
         return builder.toString();
-    }
-
-    private static String encodeString(String name)
-            throws UnsupportedEncodingException {
-        return URLEncoder.encode(name, StandardCharsets.UTF_8.name())
-                .replace("+", "%20");
     }
 
     private static Optional<URI> getPathUri(String path) {
@@ -175,11 +162,8 @@ public class StreamRequestHandler implements RequestHandler {
         String prefix = path.substring(0, index + 1);
         String name = path.substring(prefix.length());
         try {
-            URI uri = new URI(prefix + encodeString(name));
+            URI uri = new URI(prefix + UrlUtil.encodeURI(name));
             return Optional.of(uri);
-        } catch (UnsupportedEncodingException e) {
-            // UTF8 has to be supported
-            throw new RuntimeException(e);
         } catch (URISyntaxException e) {
             getLogger().info(
                     "Path '{}' is not correct URI (it violates RFC 2396)", path,

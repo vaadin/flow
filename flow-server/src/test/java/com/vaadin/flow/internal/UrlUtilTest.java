@@ -20,6 +20,8 @@ import org.junit.Test;
 
 public class UrlUtilTest {
 
+    private String shouldNotBeEscaped = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/_-.*";
+
     @Test
     public void isExternal_URLStartsWithTwoSlashes_returnsTrue() {
         Assert.assertTrue(UrlUtil.isExternal("//foo"));
@@ -36,5 +38,28 @@ public class UrlUtilTest {
     @Test
     public void isExternal_URLDoesnotContainSchema_returnsFalse() {
         Assert.assertFalse(UrlUtil.isExternal("foo"));
+    }
+
+    @Test
+    public void plusAndSpaceHandledCorrectly() {
+        Assert.assertEquals("Plus%2BSpa%20%2B%20ce",
+                UrlUtil.encodeURI("Plus+Spa + ce"));
+    }
+
+    @Test
+    public void encodeURI_shouldNotBeEscaped() {
+        Assert.assertEquals(shouldNotBeEscaped,
+                UrlUtil.encodeURI(shouldNotBeEscaped));
+    }
+
+    @Test
+    public void encodeURI_mustBeEscaped() {
+        for (char c = 0; c < 255; c++) {
+            String s = String.valueOf(c);
+            if (shouldNotBeEscaped.contains(s)) {
+                continue;
+            }
+            Assert.assertNotEquals(UrlUtil.encodeURI(s), s);
+        }
     }
 }

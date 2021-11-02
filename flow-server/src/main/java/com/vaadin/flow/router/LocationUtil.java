@@ -16,15 +16,13 @@
 
 package com.vaadin.flow.router;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
+import com.vaadin.flow.internal.UrlUtil;
 
 /**
  * Utility class exposing reusable utility methods for location.
@@ -53,7 +51,7 @@ public class LocationUtil {
             // Ignore forbidden chars supported in route definitions
             String strippedPath = path.replaceAll("[{}*]", "");
 
-            URI uri = new URI(URLEncoder.encode(strippedPath, UTF_8.name()));
+            URI uri = new URI(UrlUtil.encodeURI(strippedPath));
             if (uri.isAbsolute()) {
                 // "A URI is absolute if, and only if, it has a scheme
                 // component"
@@ -66,7 +64,7 @@ public class LocationUtil {
                 throw new InvalidLocationException(
                         "Relative path cannot contain .. segments");
             }
-        } catch (URISyntaxException | UnsupportedEncodingException e) {
+        } catch (URISyntaxException e) {
             throw new InvalidLocationException("Cannot parse path: " + path, e);
         }
 
@@ -161,13 +159,13 @@ public class LocationUtil {
     private static boolean hasIncorrectParentSegments(String path) {
         // the actual part that we do not support is '../' so this
         // shouldn't catch 'el..ement' nor '..element'
-        if (path.startsWith("..%2F")) {
+        if (path.startsWith("../")) {
             return true;
         }
-        if (path.contains("%2F..%2F")) {
+        if (path.contains("/../")) {
             return true;
         }
-        if (path.endsWith("%2F..")) {
+        if (path.endsWith("/..")) {
             return true;
         }
         if (path.equals("..")) {
