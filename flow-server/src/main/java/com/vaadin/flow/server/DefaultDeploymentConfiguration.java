@@ -16,8 +16,6 @@
 
 package com.vaadin.flow.server;
 
-import java.io.File;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -32,12 +30,6 @@ import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.communication.PushMode;
-
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_JS;
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
-import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
 
 /**
  * The default implementation of {@link DeploymentConfiguration} based on a base
@@ -60,10 +52,6 @@ public class DefaultDeploymentConfiguration
             + "Client-side views written in TypeScript are not supported. Vaadin 15+ enables client-side and server-side views.\n"
             + "See https://vaadin.com/docs/v15/flow/typescript/starting-the-app.html for more information.";
 
-    // not a warning anymore, but keeping variable name to avoid breaking
-    // anything
-    public static final String WARNING_V15_BOOTSTRAP = "Using Vaadin 15+ bootstrap mode.%n %s%n %s";
-
     private static final String DEPLOYMENT_WARNINGS = "Following issues were discovered with deployment configuration:";
 
     public static final String WARNING_XSRF_PROTECTION_DISABLED = "WARNING: Cross-site request forgery protection is disabled!";
@@ -74,10 +62,6 @@ public class DefaultDeploymentConfiguration
     public static final String WARNING_PUSH_MODE_NOT_RECOGNIZED = "WARNING: pushMode has been set to an unrecognized value.\n"
             + "The permitted values are \"disabled\", \"manual\",\n"
             + "and \"automatic\". The default of \"disabled\" will be used.";
-
-    private static final String INDEX_NOT_FOUND = "'%s' is not found from '%s'.%n"
-            + "Generating a default one in '%s'. "
-            + "Move it to the '%s' folder if you want to customize it.";
 
     /**
      * Default value for {@link #getHeartbeatInterval()} = {@value} .
@@ -143,7 +127,7 @@ public class DefaultDeploymentConfiguration
 
         checkProductionMode(log);
         checkFeatureFlags();
-        checkV14Bootsrapping(log);
+        checkV14Bootstrapping(log);
         checkRequestTiming();
         checkXsrfProtection(log);
         checkHeartbeatInterval();
@@ -333,7 +317,7 @@ public class DefaultDeploymentConfiguration
     /**
      * Log a message about the bootstrapping being used.
      */
-    private void checkV14Bootsrapping(boolean log) {
+    private void checkV14Bootstrapping(boolean log) {
         if (isOwnProperty(InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP)) {
             useDeprecatedV14Bootstrapping = getBooleanProperty(
                     InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP, false);
@@ -344,52 +328,8 @@ public class DefaultDeploymentConfiguration
         if (log) {
             if (useDeprecatedV14Bootstrapping) {
                 warnings.add(WARNING_V14_BOOTSTRAP);
-            } else if (!productionMode) {
-                String frontendDir = getStringProperty(PARAM_FRONTEND_DIR,
-                        System.getProperty(PARAM_FRONTEND_DIR,
-                                DEFAULT_FRONTEND_DIR));
-                String indexHTMLMessage = getIndexHTMLMessage(frontendDir);
-                String entryPointMessage = getEntryPointMessage(frontendDir);
-                info.add(String.format(WARNING_V15_BOOTSTRAP, indexHTMLMessage,
-                        entryPointMessage));
             }
         }
-    }
-
-    private String getEntryPointMessage(String frontendDir) {
-        File indexEntry = new File(frontendDir, INDEX_JS);
-        File indexEntryTs = new File(frontendDir, INDEX_TS);
-        String entryPointMessage;
-        if (!indexEntry.exists() && !indexEntryTs.exists()) {
-            entryPointMessage = String.format(INDEX_NOT_FOUND,
-                    indexEntryTs.getName(), indexEntryTs.getPath(),
-                    Paths.get(getBuildFolder(), indexEntryTs.getName())
-                            .toString(),
-                    indexEntryTs.getParentFile().getPath());
-        } else {
-            String fileName = indexEntry.exists() ? "index.js" : "index.ts";
-            String filePath = indexEntry.exists() ? indexEntry.getPath()
-                    : indexEntryTs.getPath();
-            entryPointMessage = String.format("Using '%s' from '%s'", fileName,
-                    filePath);
-        }
-        return entryPointMessage;
-    }
-
-    private String getIndexHTMLMessage(String frontendDir) {
-        File indexHTML = new File(frontendDir, INDEX_HTML);
-
-        String indexHTMLMessage;
-        if (!indexHTML.exists()) {
-            indexHTMLMessage = String.format(INDEX_NOT_FOUND,
-                    indexHTML.getName(), indexHTML.getPath(),
-                    Paths.get(getBuildFolder(), indexHTML.getName()).toString(),
-                    indexHTML.getParentFile().getPath());
-        } else {
-            indexHTMLMessage = String.format("Using 'index.html' from '%s'",
-                    indexHTML.getPath());
-        }
-        return indexHTMLMessage;
     }
 
     /**
