@@ -55,11 +55,10 @@ function updateTheme(contextPath: string) {
 }
 
 function runWatchDog(watchDogPort) {
-  console.log("Starting on port:", watchDogPort);
   const client = net.Socket();
   client.setEncoding('utf8');
   client.on('error', function () {
-    console.log("Watchdog connection error. Terminating webpack process...");
+    console.log("Watchdog connection error. Terminating vite process...");
     client.destroy();
     process.exit(0);
   });
@@ -72,9 +71,9 @@ function runWatchDog(watchDogPort) {
 }
 
 export const vaadinConfig:UserConfigFn = (env) => {
-  console.log("Executing in", env.mode);
-  console.log("watchdogport", process.env.watchDogPort);
   if (env.mode === 'development' && process.env.watchDogPort) {
+    // Open a connection with the Java dev-mode handler in order to finish
+    // vite when it exits or crashes.
     runWatchDog(process.env.watchDogPort);
   }
   return ({
