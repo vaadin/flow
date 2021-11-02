@@ -19,17 +19,13 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 
@@ -154,7 +150,6 @@ public final class WebComponentModulesWriter implements Serializable {
      * by a different class loader than the code using the writer.
      */
     public static final class DirectoryWriter implements Serializable {
-        private static final String WRITE_MODULES_METHOD = "writeWebComponentsToDirectory";
 
         /**
          * Calls
@@ -162,8 +157,6 @@ public final class WebComponentModulesWriter implements Serializable {
          * via reflection on the supplied {@code writer}. The {@code writer} and
          * {@code exporterClasses} must be loaded with the same class loader.
          *
-         * @param writerClass
-         *            {@code WebComponentModulesWriter} class
          * @param exporterClasses
          *            set of
          *            {@link WebComponentExporter}/{@link WebComponentExporterFactory}
@@ -180,30 +173,17 @@ public final class WebComponentModulesWriter implements Serializable {
          *            not defined
          * @return generated files
          * @throws java.lang.NullPointerException
-         *             if {@code writerClassSupplier},
-         *             {@code exporterClassSupplier}, or {@code
+         *             if {@code exporterClassSupplier}, or {@code
          *             outputDirectory} is {@code null}
          * @throws java.lang.IllegalArgumentException
-         *             if {@code writer} is not
-         *             {@code WebComponentModulesWriter} class
-         * @throws java.lang.IllegalArgumentException
-         *             if {@code writerClass} and {@code exporterClasses} do not
-         *             share a class loader
-         * @throws java.lang.IllegalStateException
-         *             if the received {@code writer} does not have method
-         *             {@link #writeWebComponentsToDirectory(java.util.Set, java.io.File, boolean, java.lang.String)}
-         * @throws java.lang.RuntimeException
-         *             if reflective method invocation fails
+         *             if {@link WebComponentModulesWriter} and
+         *             {@code exporterClasses} do not share a class loader
          * @see #writeWebComponentsToDirectory(java.util.Set, java.io.File,
          *      boolean, java.lang.String)
          */
-        @SuppressWarnings("unchecked")
         public static Set<File> generateWebComponentsToDirectory(
-                Class<?> writerClass, Set<Class<?>> exporterClasses,
-                File outputDirectory, boolean compatibilityMode,
-                String themeName) {
-            Objects.requireNonNull(writerClass,
-                    "Parameter 'writerClassSupplier' must not null");
+                Set<Class<?>> exporterClasses, File outputDirectory,
+                boolean compatibilityMode, String themeName) {
             Objects.requireNonNull(exporterClasses,
                     "Parameter 'exporterClasses' must not be null");
             Objects.requireNonNull(outputDirectory,
@@ -214,62 +194,37 @@ public final class WebComponentModulesWriter implements Serializable {
              * bootstrap classloader - otherwise we'd have no way of ensuring
              * that the class loaders share parentage.
              */
+            ClassLoader writerClassLoader = WebComponentModulesWriter.class
+                    .getClassLoader();
             for (Class<?> exporterClass : exporterClasses) {
+                ClassLoader exporterClassLoader = exporterClass
+                        .getClassLoader();
                 if (!ReflectTools.findClosestCommonClassLoaderAncestor(
-                        writerClass.getClassLoader(),
-                        exporterClass.getClassLoader()).isPresent()) {
+                        writerClassLoader, exporterClassLoader).isPresent()) {
+                    String writerClassLoaderName = writerClassLoader == null
+                            ? "null"
+                            : writerClassLoader.getClass().getName();
+
+                    String exporterClassLoaderName = exporterClassLoader == null
+                            ? "null"
+                            : exporterClassLoader.getClass().getName();
+
                     throw new IllegalArgumentException(String.format(
                             "Supplied writer '%s' and "
                                     + "supplied exporter '%s' have different "
                                     + "class loaders, '%s' and '%s', "
                                     + "respectively. Writer and exporters "
                                     + "must share a class loader.",
-                            writerClass.getName(), exporterClass.getName(),
-                            writerClass.getClassLoader().getClass().getName(),
-                            exporterClass.getClassLoader().getClass()
-                                    .getName()));
+                            WebComponentModulesWriter.class.getName(),
+                            exporterClass.getName(), writerClassLoaderName,
+                            exporterClassLoaderName));
                 }
             }
 
-            if (!WebComponentModulesWriter.class.getName()
-                    .equals(writerClass.getName())) { // NOSONAR
-                throw new IllegalArgumentException(
-                        "Argument 'writer' should be a class of '"
-                                + WebComponentModulesWriter.class.getName()
-                                + "' but it is '" + writerClass.getName()
-                                + "'");
-            }
-            Method writeMethod = getMethod(writerClass, WRITE_MODULES_METHOD)
-                    .orElseThrow(() -> new IllegalStateException(String.format(
-                            "Could not locate locate method '%s' on the "
-                                    + "received writer '%s'.",
-                            WRITE_MODULES_METHOD, writerClass.getName())));
-            try {
-                final boolean accessible = writeMethod.isAccessible();
-                writeMethod.setAccessible(true);
-                Set<File> files = ((Set<File>) writeMethod.invoke(null,
-                        exporterClasses, outputDirectory, compatibilityMode,
-                        themeName));
-                writeMethod.setAccessible(accessible);
-                return files;
-            } catch (IllegalAccessException exception) {
-                throw new RuntimeException("Failed to call '"
-                        + WRITE_MODULES_METHOD
-                        + "' via reflection because Java language access control doesn't allow to call it",
-                        exception);
-            } catch (InvocationTargetException exception) {
-                throw new RuntimeException(
-                        "Could not write exported web component module because of exception: "
-                                + exception.getCause().getMessage(),
-                        exception.getCause());
-            }
+            return WebComponentModulesWriter.writeWebComponentsToDirectory(
+                    exporterClasses, outputDirectory, compatibilityMode,
+                    themeName);
         }
 
-        private static Optional<Method> getMethod(Class<?> writerClass,
-                String methodName) {
-            return Stream.of(writerClass.getDeclaredMethods())
-                    .filter(method -> method.getName().equals(methodName))
-                    .findFirst();
-        }
     }
 }
