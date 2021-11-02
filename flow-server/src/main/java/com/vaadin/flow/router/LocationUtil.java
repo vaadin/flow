@@ -16,17 +16,13 @@
 
 package com.vaadin.flow.router;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import com.vaadin.flow.internal.UrlUtil;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Utility class exposing reusable utility methods for location.

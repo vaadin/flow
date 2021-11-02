@@ -66,7 +66,7 @@ public class UrlUtil {
                     .replace("+", "%20");
         } catch (UnsupportedEncodingException e) {
             // Runtime exception as this doesn't really happen
-            throw new RuntimeException("Encoding the URI failed", e);
+            throw new RuntimeException("Encoding the URI failed", e); // NOSONAR
         }
     }
 }
