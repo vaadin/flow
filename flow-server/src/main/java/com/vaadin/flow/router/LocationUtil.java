@@ -24,6 +24,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import com.vaadin.flow.internal.UrlUtil;
+
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -53,7 +55,7 @@ public class LocationUtil {
             // Ignore forbidden chars supported in route definitions
             String strippedPath = path.replaceAll("[{}*]", "");
 
-            URI uri = new URI(URLEncoder.encode(strippedPath, UTF_8.name()));
+            URI uri = new URI(UrlUtil.encodeURI(strippedPath));
             if (uri.isAbsolute()) {
                 // "A URI is absolute if, and only if, it has a scheme
                 // component"
@@ -66,7 +68,7 @@ public class LocationUtil {
                 throw new InvalidLocationException(
                         "Relative path cannot contain .. segments");
             }
-        } catch (URISyntaxException | UnsupportedEncodingException e) {
+        } catch (URISyntaxException e) {
             throw new InvalidLocationException("Cannot parse path: " + path, e);
         }
 
