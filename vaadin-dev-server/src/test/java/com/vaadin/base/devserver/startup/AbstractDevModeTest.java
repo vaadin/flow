@@ -12,6 +12,7 @@ import javax.servlet.ServletContext;
 import com.vaadin.base.devserver.AbstractDevServerRunner;
 import com.vaadin.base.devserver.DevModeHandlerManagerImpl;
 import com.vaadin.base.devserver.MockDeploymentConfiguration;
+import com.vaadin.base.devserver.WebpackHandler;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
