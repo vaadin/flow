@@ -5,6 +5,7 @@
  * This file will be overwritten on every run. Any custom changes should be made to vite.config.ts
  */
 import path from 'path';
+import * as net from 'net';
 
 import { processThemeResources } from '@vaadin/application-theme-plugin/theme-handle.js';
 import settings from '#settingsImport#';
@@ -53,7 +54,29 @@ function updateTheme(contextPath: string) {
   }
 }
 
-export const vaadinConfig:UserConfigFn = (env) => ({
+function runWatchDog(watchDogPort) {
+  const client = net.Socket();
+  client.setEncoding('utf8');
+  client.on('error', function () {
+    console.log("Watchdog connection error. Terminating vite process...");
+    client.destroy();
+    process.exit(0);
+  });
+  client.on('close', function () {
+    client.destroy();
+    runWatchDog(watchDogPort);
+  });
+
+  client.connect(watchDogPort, 'localhost');
+}
+
+export const vaadinConfig:UserConfigFn = (env) => {
+  if (env.mode === 'development' && process.env.watchDogPort) {
+    // Open a connection with the Java dev-mode handler in order to finish
+    // vite when it exits or crashes.
+    runWatchDog(process.env.watchDogPort);
+  }
+  return ({
     root: 'frontend',
     base: env.mode === 'production' ? '' : '/VAADIN/',
     resolve: {
@@ -87,7 +110,8 @@ export const vaadinConfig:UserConfigFn = (env) => ({
         }
       }
     ]
-  });
+  })
+};
 
 
 export const overrideVaadinConfig = (customConfig:UserConfigFn) => {

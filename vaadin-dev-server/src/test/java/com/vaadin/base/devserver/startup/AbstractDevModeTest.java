@@ -12,7 +12,6 @@ import javax.servlet.ServletContext;
 import com.vaadin.base.devserver.AbstractDevServerRunner;
 import com.vaadin.base.devserver.DevModeHandlerManagerImpl;
 import com.vaadin.base.devserver.MockDeploymentConfiguration;
-import com.vaadin.base.devserver.WebpackHandler;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -137,7 +136,7 @@ public abstract class AbstractDevModeTest {
     }
 
     protected int getDevServerPort() {
-        return ((WebpackHandler) handler).getPort();
+        return ((AbstractDevServerRunner) handler).getPort();
     }
 
     protected void waitForDevServer() {
@@ -155,7 +154,7 @@ public abstract class AbstractDevModeTest {
 
     protected static void waitForDevServer(DevModeHandler devModeHandler) {
         Assert.assertNotNull(devModeHandler);
-        ((WebpackHandler) (devModeHandler)).waitForDevServer();
+        ((AbstractDevServerRunner) (devModeHandler)).waitForDevServer();
     }
 
     protected static boolean hasDevServerProcess(

@@ -342,6 +342,8 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         }
 
         processBuilder.command(command);
+        processBuilder.environment().put("watchDogPort",
+                Integer.toString(getWatchDog().getWatchDogPort()));
 
         try {
             Process process = processBuilder.redirectErrorStream(true).start();
