@@ -96,7 +96,7 @@ public class AbstractDevServerRunnerTest extends AbstractDevModeTest {
                     return Mockito.mock(HttpURLConnection.class);
                 });
         devServer.serveDevModeRequest(request, response);
-        Assert.assertEquals("/foo%20bar", requestedPath.get());
+        Assert.assertEquals("foo%20bar", requestedPath.get());
 
     }
 }
