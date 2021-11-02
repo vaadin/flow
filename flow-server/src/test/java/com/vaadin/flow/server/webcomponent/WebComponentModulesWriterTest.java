@@ -50,7 +50,6 @@ public class WebComponentModulesWriterTest {
     public void directoryWriter_generateWebComponentsToDirectory_canCallMethodReflectively_js() {
         Set<File> files = WebComponentModulesWriter.DirectoryWriter
                 .generateWebComponentsToDirectory(
-                        WebComponentModulesWriter.class,
                         Collections.singleton(MyExporter.class),
                         outputDirectory, false, null);
 
@@ -63,7 +62,6 @@ public class WebComponentModulesWriterTest {
     public void directoryWriter_generateWebComponentsToDirectoryUsingFactory_canCallMethodReflectively_js() {
         Set<File> files = WebComponentModulesWriter.DirectoryWriter
                 .generateWebComponentsToDirectory(
-                        WebComponentModulesWriter.class,
                         Collections.singleton(ExporterFactory.class),
                         outputDirectory, false, null);
 
@@ -76,7 +74,6 @@ public class WebComponentModulesWriterTest {
     public void directoryWriter_generateWebComponentsToDirectory_canCallMethodReflectively_html() {
         Set<File> files = WebComponentModulesWriter.DirectoryWriter
                 .generateWebComponentsToDirectory(
-                        WebComponentModulesWriter.class,
                         Collections.singleton(MyExporter.class),
                         outputDirectory, true, null);
 
@@ -89,7 +86,6 @@ public class WebComponentModulesWriterTest {
     public void directoryWriter_generateWebComponentsToDirectoryUsingFactory_canCallMethodReflectively_html() {
         Set<File> files = WebComponentModulesWriter.DirectoryWriter
                 .generateWebComponentsToDirectory(
-                        WebComponentModulesWriter.class,
                         Collections.singleton(ExporterFactory.class),
                         outputDirectory, true, null);
 
@@ -101,45 +97,24 @@ public class WebComponentModulesWriterTest {
     @Test
     public void directoryWriter_generateWebComponentsToDirectory_zeroExportersCreatesZeroFiles() {
         Set<File> files = WebComponentModulesWriter.DirectoryWriter
-                .generateWebComponentsToDirectory(
-                        WebComponentModulesWriter.class, new HashSet<>(),
+                .generateWebComponentsToDirectory(new HashSet<>(),
                         outputDirectory, false, null);
 
         Assert.assertEquals("No files were created", 0, files.size());
     }
 
-    @Test(expected = IllegalArgumentException.class)
-    public void directoryWriter_generateWebComponentsToDirectory_nonWriterClassThrows() {
-        exception.expect(IllegalArgumentException.class);
-        // end of the exception
-        exception.expectMessage(
-                "but it is '" + MyComponent.class.getName() + "'");
-        Set<File> files = WebComponentModulesWriter.DirectoryWriter
-                .generateWebComponentsToDirectory(MyComponent.class,
-                        new HashSet<>(), outputDirectory, false, null);
-    }
-
-    @Test(expected = NullPointerException.class)
-    public void directoryWriter_generateWebComponentsToDirectory_nullWriterThrows() {
-        Set<File> files = WebComponentModulesWriter.DirectoryWriter
-                .generateWebComponentsToDirectory(null, new HashSet<>(),
-                        outputDirectory, false, null);
-    }
-
     @Test(expected = NullPointerException.class)
     public void directoryWriter_generateWebComponentsToDirectory_nullExporterSetThrows() {
         Set<File> files = WebComponentModulesWriter.DirectoryWriter
-                .generateWebComponentsToDirectory(
-                        WebComponentModulesWriter.class, null, outputDirectory,
-                        false, null);
+                .generateWebComponentsToDirectory(null, outputDirectory, false,
+                        null);
     }
 
     @Test(expected = NullPointerException.class)
     public void directoryWriter_generateWebComponentsToDirectory_nullOutputDirectoryThrows() {
         Set<File> files = WebComponentModulesWriter.DirectoryWriter
-                .generateWebComponentsToDirectory(
-                        WebComponentModulesWriter.class, new HashSet<>(), null,
-                        false, null);
+                .generateWebComponentsToDirectory(new HashSet<>(), null, false,
+                        null);
     }
 
     /*
