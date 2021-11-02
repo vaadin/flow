@@ -4,6 +4,7 @@ import java.io.File;
 import java.lang.reflect.Field;
 import java.nio.file.Paths;
 import java.util.Collections;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.servlet.ServletContext;
@@ -141,6 +142,15 @@ public abstract class AbstractDevModeTest {
 
     protected void waitForDevServer() {
         waitForDevServer(handler);
+    }
+
+    protected WebpackHandler startWebpack() {
+        return startWebpack(0);
+    }
+
+    protected WebpackHandler startWebpack(int port) {
+        return new WebpackHandler(lookup, port, npmFolder,
+                CompletableFuture.completedFuture(null));
     }
 
     protected static void waitForDevServer(DevModeHandler devModeHandler) {

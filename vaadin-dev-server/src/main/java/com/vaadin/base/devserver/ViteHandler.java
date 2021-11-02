@@ -62,7 +62,6 @@ public final class ViteHandler extends AbstractDevServerRunner {
      *            a completable future whose execution result needs to be
      *            available to start the dev server
      */
-
     public ViteHandler(Lookup lookup, int runningPort, File npmFolder,
             CompletableFuture<Void> waitFor) {
         super(lookup, runningPort, npmFolder, waitFor);

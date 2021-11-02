@@ -15,7 +15,6 @@
  */
 package com.vaadin.base.devserver;
 
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS;
 import static java.net.HttpURLConnection.HTTP_OK;
 
 import java.io.File;
@@ -33,7 +32,6 @@ import com.vaadin.base.devserver.DevServerOutputFinder.Result;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,53 +67,23 @@ public final class WebpackHandler extends AbstractDevServerRunner {
      */
     private volatile List<String> manifestPaths = new ArrayList<>();
 
-    private WebpackHandler(Lookup lookup, int runningPort, File npmFolder,
+    /**
+     * Creates and starts the dev mode handler if none has been started yet.
+     *
+     * @param lookup
+     *            the provided lookup to get required data
+     * @param runningPort
+     *            a port on which webpack is already running or 0 to start a new
+     *            process
+     * @param npmFolder
+     *            folder with npm configuration files
+     * @param waitFor
+     *            a completable future whose execution result needs to be
+     *            available to start the dev server
+     */
+    public WebpackHandler(Lookup lookup, int runningPort, File npmFolder,
             CompletableFuture<Void> waitFor) {
         super(lookup, runningPort, npmFolder, waitFor);
-    }
-
-    /**
-     * Start the dev mode handler if none has been started yet.
-     *
-     * @param lookup
-     *            the provided lookup to get required data
-     * @param npmFolder
-     *            folder with npm configuration files
-     * @param waitFor
-     *            a completable future whose execution result needs to be
-     *            available to start the webpack dev server
-     *
-     * @return the instance in case everything is alright, null otherwise
-     */
-    public static WebpackHandler start(Lookup lookup, File npmFolder,
-            CompletableFuture<Void> waitFor) {
-        return start(0, lookup, npmFolder, waitFor);
-    }
-
-    /**
-     * Start the dev mode handler if none has been started yet.
-     *
-     * @param runningPort
-     *            port on which Webpack is listening.
-     * @param lookup
-     *            the provided lookup to get required data
-     * @param npmFolder
-     *            folder with npm configuration files
-     * @param waitFor
-     *            a completable future whose execution result needs to be
-     *            available to start the webpack dev server
-     *
-     * @return the instance in case everything is alright, null otherwise
-     */
-    public static WebpackHandler start(int runningPort, Lookup lookup,
-            File npmFolder, CompletableFuture<Void> waitFor) {
-        ApplicationConfiguration configuration = lookup
-                .lookup(ApplicationConfiguration.class);
-        if (configuration.isProductionMode()
-                || !configuration.enableDevServer()) {
-            return null;
-        }
-        return new WebpackHandler(lookup, runningPort, npmFolder, waitFor);
     }
 
     @Override
