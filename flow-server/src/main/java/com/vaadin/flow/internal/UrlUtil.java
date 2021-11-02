@@ -17,6 +17,9 @@
 package com.vaadin.flow.internal;
 
 import com.vaadin.flow.shared.ApplicationConstants;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Internal utility class for URL handling.
@@ -45,5 +48,27 @@ public class UrlUtil {
         }
         return url.contains("://") && !url
                 .startsWith(ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
+    }
+
+    /**
+     * Encode a path of a URL.
+     * <p>
+     * The path can contain {@code /} characters and these will interpreted as
+     * path segment separators and not be encoded.
+     * <p>
+     * Note that ? and # are not encoded so you should not pass a URL path that
+     * includes a query string or a fragment
+     * 
+     * @param path
+     *            the path to encode
+     */
+    public static String encodeURI(String path) {
+        try {
+            return URLEncoder.encode(path, StandardCharsets.UTF_8.name())
+                    .replace("+", "%20").replace("%2F", "/");
+        } catch (UnsupportedEncodingException e) {
+            // Runtime exception as this doesn't really happen
+            throw new RuntimeException("Encoding the URI failed", e); // NOSONAR
+        }
     }
 }
