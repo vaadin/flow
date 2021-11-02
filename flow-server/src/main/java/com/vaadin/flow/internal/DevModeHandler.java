@@ -78,7 +78,8 @@ public interface DevModeHandler extends RequestHandler {
      * Retrieve the contents of a frontend file.
      *
      * @param path
-     *            the path to the source file
+     *            the path to the source file relative to the
+     *            <code>frontend</code> folder.
      * @return the source, or <code>null</code>
      * @throws IOException
      *             on connection error
