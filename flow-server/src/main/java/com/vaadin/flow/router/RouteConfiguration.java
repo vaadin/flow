@@ -229,19 +229,19 @@ public class RouteConfiguration implements Serializable {
                     navigationTarget.getName());
             throw new InvalidRouteConfigurationException(message);
         }
-
         String route = RouteUtil.getRoutePath(handledRegistry.getContext(),
                 navigationTarget);
         handledRegistry.setRoute(route, navigationTarget,
                 RouteUtil.getParentLayouts(handledRegistry.getContext(),
                         navigationTarget, route));
 
-        RouteUtil.getAliasObjects(navigationTarget).forEach(alias -> {
+        for (RouteAlias alias : navigationTarget
+                .getAnnotationsByType(RouteAlias.class)) {
             String path = RouteUtil.getRouteAliasPath(navigationTarget, alias);
             handledRegistry.setRoute(path, navigationTarget,
                     RouteUtil.getParentLayouts(handledRegistry.getContext(),
                             navigationTarget, path));
-        });
+        }
     }
 
     /**

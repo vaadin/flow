@@ -23,7 +23,6 @@ import static org.junit.Assert.assertNull;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URL;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 
 import com.sun.net.httpserver.HttpServer;
@@ -76,8 +75,7 @@ public class WebpackHandlerStopTest extends AbstractDevModeTest {
 
         startTestServer(port, HTTP_OK, "{}");
 
-        handler = WebpackHandler.start(port, lookup, npmFolder,
-                CompletableFuture.completedFuture(null));
+        handler = startWebpack(port);
         waitForDevServer();
         assertEquals(port, ((WebpackHandler) handler).getPort());
         assertNotNull(requestWebpackServer(port, "/bar"));
@@ -97,13 +95,11 @@ public class WebpackHandlerStopTest extends AbstractDevModeTest {
 
         startTestServer(port, HTTP_OK, "{}");
 
-        handler = WebpackHandler.start(port, lookup, npmFolder,
-                CompletableFuture.completedFuture(null));
+        handler = startWebpack(port);
         waitForDevServer();
 
         simulateServerRestart();
-        handler = WebpackHandler.start(lookup, npmFolder,
-                CompletableFuture.completedFuture(null));
+        handler = startWebpack(port);
         waitForDevServer();
 
         Assert.assertTrue(((WebpackHandler) handler).isRunning());

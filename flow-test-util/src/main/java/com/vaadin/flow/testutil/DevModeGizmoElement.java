@@ -8,8 +8,17 @@ import com.vaadin.testbench.ElementQuery;
 import com.vaadin.testbench.TestBenchElement;
 import com.vaadin.testbench.elementsbase.Element;
 
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
+
+import elemental.html.ButtonElement;
+
 @Element("vaadin-devmode-gizmo")
 public class DevModeGizmoElement extends TestBenchElement {
+
+    private TestBenchElement getIcon() {
+        return $("*").attributeContains("class", "gizmo").first();
+    }
 
     private List<TestBenchElement> getLogDivs(boolean onlyError) {
         ElementQuery<TestBenchElement> divs = getLogDivsQuery(onlyError);
@@ -44,16 +53,25 @@ public class DevModeGizmoElement extends TestBenchElement {
     }
 
     public void waitForErrorMessage(Predicate<String> matcher) {
+        expand();
         waitUntil(driver -> {
             return getErrorLogRows().stream().anyMatch(matcher);
         });
     }
 
     public void waitForLastErrorMessageToMatch(Predicate<String> matcher) {
+        expand();
         waitUntil(driver -> {
             return matcher.test(getLastErrorLogRow());
         });
 
+    }
+
+    public void expand() {
+        if (isExpanded()) {
+            return;
+        }
+        getIcon().click();
     }
 
     public boolean isExpanded() {
@@ -68,4 +86,26 @@ public class DevModeGizmoElement extends TestBenchElement {
         return getLogDivsQuery(true).all().size();
     }
 
+    public void setLiveReload(boolean enabled) {
+        expand();
+        showTab("info");
+        TestBenchElement toggle = $("input").id("toggle");
+        if (toggle.getPropertyBoolean("checked") != enabled) {
+            toggle.click();
+        }
+    }
+
+    private void showTab(String id) {
+        $("button").attributeContains("class", "tab").id(id).click();
+    }
+
+    public void showExperimentalFeatures() {
+        showTab("features");
+    }
+
+    public List<String> listExperimentalFeatures() {
+        return (List<String>) executeScript(
+                "return Array.from(arguments[0].shadowRoot.querySelectorAll('.features-tray .feature label')).map(e => e.textContent.trim())",
+                this);
+    }
 }

@@ -21,6 +21,7 @@ import java.util.Arrays;
 import java.util.EventObject;
 import java.util.List;
 
+import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
@@ -35,7 +36,6 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.VaadinService;
 
@@ -47,7 +47,6 @@ public class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
     private DeploymentConfiguration configuration = Mockito
             .mock(DeploymentConfiguration.class);
 
-    @Override
     @Before
     public void init() throws NoSuchFieldException, IllegalAccessException {
         super.init();
@@ -271,12 +270,12 @@ public class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
 
         Assert.assertEquals("Returned url didn't match Wildcard parameter",
                 RouteWithMultipleParameters.class.getAnnotation(Route.class)
-                        .value()[0],
+                        .value(),
                 url);
         url = routeConfiguration.getUrl(OptionalParameter.class);
 
         Assert.assertEquals("Returned url didn't match Optional parameter",
-                OptionalParameter.class.getAnnotation(Route.class).value()[0],
+                OptionalParameter.class.getAnnotation(Route.class).value(),
                 url);
     }
 
@@ -288,20 +287,20 @@ public class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
                 FooNavigationTarget.class);
 
         Assert.assertEquals("Required parameter didn't match url base.",
-                RouteWithParameter.class.getAnnotation(Route.class).value()[0],
+                RouteWithParameter.class.getAnnotation(Route.class).value(),
                 routeConfiguration.getUrlBase(RouteWithParameter.class)
                         .orElse(null));
         Assert.assertEquals("Wildcard parameter didn't match url base.",
                 RouteWithMultipleParameters.class.getAnnotation(Route.class)
-                        .value()[0],
+                        .value(),
                 routeConfiguration.getUrlBase(RouteWithMultipleParameters.class)
                         .orElse(null));
         Assert.assertEquals("Optional parameter didn't match url base.",
-                OptionalParameter.class.getAnnotation(Route.class).value()[0],
+                OptionalParameter.class.getAnnotation(Route.class).value(),
                 routeConfiguration.getUrlBase(OptionalParameter.class)
                         .orElse(null));
         Assert.assertEquals("Non parameterized url didn't match url base.",
-                FooNavigationTarget.class.getAnnotation(Route.class).value()[0],
+                FooNavigationTarget.class.getAnnotation(Route.class).value(),
                 routeConfiguration.getUrlBase(FooNavigationTarget.class)
                         .orElse(null));
     }

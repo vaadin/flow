@@ -4,6 +4,7 @@ import java.io.File;
 import java.lang.reflect.Field;
 import java.nio.file.Paths;
 import java.util.Collections;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.servlet.ServletContext;
@@ -54,7 +55,6 @@ public abstract class AbstractDevModeTest {
 
         Boolean enablePnpm = Boolean.TRUE;
         appConfig = Mockito.mock(ApplicationConfiguration.class);
-        mockApplicationConfiguration(appConfig, enablePnpm);
 
         servletContext = Mockito.mock(ServletContext.class);
         Mockito.when(servletContext
@@ -62,6 +62,10 @@ public abstract class AbstractDevModeTest {
                 .thenReturn(appConfig);
         Mockito.when(servletContext.getClassLoader())
                 .thenReturn(servletContext.getClass().getClassLoader());
+
+        vaadinContext = new VaadinServletContext(servletContext);
+
+        mockApplicationConfiguration(appConfig, enablePnpm);
 
         lookup = Mockito.mock(Lookup.class);
         Mockito.when(servletContext.getAttribute(Lookup.class.getName()))
@@ -85,7 +89,6 @@ public abstract class AbstractDevModeTest {
 
         vaadinService = Mockito.mock(VaadinService.class);
 
-        vaadinContext = new VaadinServletContext(servletContext);
         Mockito.when(vaadinService.getContext()).thenReturn(vaadinContext);
         Mockito.when(vaadinService.getDeploymentConfiguration())
                 .thenReturn(configuration);
@@ -124,7 +127,7 @@ public abstract class AbstractDevModeTest {
                         .toString());
         Mockito.when(appConfig.getPropertyNames())
                 .thenReturn(Collections.enumeration(Collections.emptyList()));
-
+        Mockito.when(appConfig.getContext()).thenReturn(vaadinContext);
     }
 
     protected DevModeHandler getDevModeHandler() {
@@ -139,6 +142,15 @@ public abstract class AbstractDevModeTest {
 
     protected void waitForDevServer() {
         waitForDevServer(handler);
+    }
+
+    protected WebpackHandler startWebpack() {
+        return startWebpack(0);
+    }
+
+    protected WebpackHandler startWebpack(int port) {
+        return new WebpackHandler(lookup, port, npmFolder,
+                CompletableFuture.completedFuture(null));
     }
 
     protected static void waitForDevServer(DevModeHandler devModeHandler) {

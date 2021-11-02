@@ -70,8 +70,10 @@ public class StateTree {
      * @see #isUpdateInProgress()
      */
     public void setUpdateInProgress(boolean updateInProgress) {
-        assert this.updateInProgress != updateInProgress : "Inconsistent state tree updating status, expected "
-                + (updateInProgress ? "no " : "") + " updates in progress.";
+        assert this.updateInProgress != updateInProgress
+                : "Inconsistent state tree updating status, expected "
+                        + (updateInProgress ? "no " : "")
+                        + " updates in progress.";
         this.updateInProgress = updateInProgress;
 
         getRegistry().getInitialPropertiesHandler().flushPropertyUpdates();
@@ -178,8 +180,8 @@ public class StateTree {
     private boolean assertValidNode(StateNode node) {
         assert node != null : "Node is null";
         assert node.getTree() == this : "Node is not created for this tree";
-        assert node == getNode(
-                node.getId()) : "Node id is not registered with this tree";
+        assert node == getNode(node.getId())
+                : "Node id is not registered with this tree";
 
         return true;
     }

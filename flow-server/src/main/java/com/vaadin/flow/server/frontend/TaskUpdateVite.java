@@ -22,18 +22,14 @@ import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.vaadin.flow.server.frontend.TaskUpdateSettingsFile.DEV_SETTINGS_FILE;
-
 /**
- * Updates the Vite config file according with current project settings.
+ * Updates the Vite configuration files according with current project settings.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
@@ -41,9 +37,6 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
 
     private File configFolder;
     private String buildFolder;
-
-    Pattern frontendFilePattern = Pattern
-            .compile("import settings from '(.*)';");
 
     TaskUpdateVite(File configFolder, String buildFolder) {
         this.configFolder = configFolder;
@@ -54,49 +47,40 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
     public void execute() {
         try {
             createConfig();
+            createGeneratedConfig();
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
     }
 
     private void createConfig() throws IOException {
+        // Only create it if it does not exist
         File configFile = new File(configFolder, FrontendUtils.VITE_CONFIG);
-
-        if (!configFile.exists()) {
-            URL resource = this.getClass().getClassLoader()
-                    .getResource(FrontendUtils.VITE_CONFIG);
-            String template = IOUtils.toString(resource,
-                    StandardCharsets.UTF_8);
-
-            template = updateSettings(template);
-            FileUtils.write(configFile, template, StandardCharsets.UTF_8);
-            log().debug("Created vite configuration file: '{}'", configFile);
-        } else {
-            String template = IOUtils.toString(configFile.toURI(),
-                    StandardCharsets.UTF_8);
-
-            String updatedTemplate = updateSettings(template);
-
-            if (!template.equals(updatedTemplate)) {
-                FileUtils.write(configFile, updatedTemplate,
-                        StandardCharsets.UTF_8);
-                log().debug("Updated vite configuration settings path: '{}'",
-                        configFile);
-            }
-
+        if (configFile.exists()) {
+            return;
         }
+
+        URL resource = this.getClass().getClassLoader()
+                .getResource(FrontendUtils.VITE_CONFIG);
+        String template = IOUtils.toString(resource, StandardCharsets.UTF_8);
+        FileUtils.write(configFile, template, StandardCharsets.UTF_8);
+        log().debug("Created vite configuration file: '{}'", configFile);
+
     }
 
-    private String updateSettings(String template) {
-        final Matcher matcher = frontendFilePattern.matcher(template);
-        if (matcher.find() && !matcher.group(1)
-                .equals("./" + buildFolder + "/" + DEV_SETTINGS_FILE)) {
-            template = template.replace(
-                    "import settings from '" + matcher.group(1) + "';",
-                    "import settings from './" + buildFolder + "/"
-                            + DEV_SETTINGS_FILE + "';");
-        }
-        return template;
+    private void createGeneratedConfig() throws IOException {
+        // Always overwrite this
+        File generatedConfigFile = new File(configFolder,
+                FrontendUtils.VITE_GENERATED_CONFIG);
+        URL resource = this.getClass().getClassLoader()
+                .getResource(FrontendUtils.VITE_GENERATED_CONFIG);
+        String template = IOUtils.toString(resource, StandardCharsets.UTF_8);
+
+        template = template.replace("#settingsImport#", "./" + buildFolder + "/"
+                + TaskUpdateSettingsFile.DEV_SETTINGS_FILE);
+        FileUtils.write(generatedConfigFile, template, StandardCharsets.UTF_8);
+        log().debug("Created vite generated configuration file: '{}'",
+                generatedConfigFile);
     }
 
     private Logger log() {

@@ -45,13 +45,15 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
     File generatedFolder;
     File webappResourcesDirectory;
     String buildDirectory;
+    String themeName;
 
-    TaskUpdateSettingsFile(NodeTasks.Builder builder) {
+    TaskUpdateSettingsFile(NodeTasks.Builder builder, String themeName) {
         this.npmFolder = builder.getNpmFolder();
         this.frontendDirectory = builder.getFrontendDirectory();
         this.generatedFolder = builder.getGeneratedFolder();
         this.webappResourcesDirectory = builder.getWebappResourcesDirectory();
         this.buildDirectory = builder.getBuildDirectory();
+        this.themeName = themeName;
     }
 
     @Override
@@ -65,18 +67,22 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
         settings.put("themeFolder", "themes");
         settings.put("themeResourceFolder",
                 FrontendUtils.getUnixPath(generatedFolder.toPath()));
-        String output;
+        String webappResources;
         if (webappResourcesDirectory == null) {
-            output = combinePath(buildDirectory, "classes",
-                    VAADIN_WEBAPP_RESOURCES, VAADIN_STATIC_FILES_PATH);
+            webappResources = combinePath(buildDirectory, "classes",
+                    VAADIN_WEBAPP_RESOURCES);
         } else {
-            output = combinePath(webappResourcesDirectory.getPath(),
-                    VAADIN_STATIC_FILES_PATH);
+            webappResources = webappResourcesDirectory.getPath();
         }
+        String staticOutput = combinePath(webappResources,
+                VAADIN_STATIC_FILES_PATH);
 
         settings.put("staticOutput",
-                FrontendUtils.getUnixPath(new File(output).toPath()));
+                FrontendUtils.getUnixPath(new File(staticOutput).toPath()));
         settings.put("generatedFolder", "generated");
+        settings.put("frontendBundleOutput", webappResources);
+
+        settings.put("themeName", themeName);
 
         File settingsFile = new File(npmFolder,
                 buildDirectory + "/" + DEV_SETTINGS_FILE);

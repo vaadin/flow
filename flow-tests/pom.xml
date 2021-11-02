@@ -60,12 +60,6 @@
             <artifactId>javax.servlet-api</artifactId>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>io.github.bonigarcia</groupId>
-            <artifactId>webdrivermanager</artifactId>
-            <version>5.0.3</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -299,7 +293,6 @@
         <module>test-resources</module>
         <module>test-common</module>
         <module>test-lumo</module>
-        <module>test-frontend</module>
     </modules>
 
     <profiles>
@@ -357,6 +350,7 @@
                 <!-- test impacts startup test-->
                 <module>test-application-theme</module>
                 <module>test-theme-no-polymer</module>
+                <module>test-frontend</module>
             </modules>
         </profile>
         <profile>

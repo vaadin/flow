@@ -43,7 +43,15 @@ public class DebugWindowErrorHandlingIT extends ChromeBrowserTest {
         DevModeGizmoElement gizmo = $(DevModeGizmoElement.class).first();
         gizmo.waitForErrorMessage(text -> text.matches(
                 "Uncaught TypeError: Cannot read properties of null \\(reading 'foo'\\).*"));
-        Assert.assertTrue(gizmo.isExpanded());
+    }
+
+    @Test
+    public void clientSidePromiseRejectionReported() {
+        open();
+        clientSidePromiseRejection();
+        DevModeGizmoElement gizmo = $(DevModeGizmoElement.class).first();
+        gizmo.waitForErrorMessage(text -> text.matches(
+                "TypeError: Failed to fetch dynamically imported module: .*this-file-does-not-exist.js"));
     }
 
     @Test
@@ -57,15 +65,14 @@ public class DebugWindowErrorHandlingIT extends ChromeBrowserTest {
                 .equals("The error has occurred in the JS code: 'null.foo'"));
         gizmo.waitForErrorMessage(text -> text.matches(
                 "Uncaught TypeError: Cannot read properties of null \\(reading 'foo'\\).*"));
-        Assert.assertTrue(gizmo.isExpanded());
-
     }
 
     @Test
     public void numberOfLogRowsLimited() {
         open();
-        causeErrors("1001");
         DevModeGizmoElement gizmo = $(DevModeGizmoElement.class).first();
+        gizmo.expand();
+        causeErrors("1001");
         gizmo.waitForLastErrorMessageToMatch(msg -> msg.equals("Error 1001"));
 
         Assert.assertEquals("Error 2", gizmo.getFirstErrorLogRow());
@@ -92,6 +99,12 @@ public class DebugWindowErrorHandlingIT extends ChromeBrowserTest {
     private void clientSideException() {
         findElement(
                 By.id(DebugWindowErrorHandlingView.CLIENT_SIDE_EXCEPTION_ID))
+                        .click();
+    }
+
+    private void clientSidePromiseRejection() {
+        findElement(By.id(
+                DebugWindowErrorHandlingView.CLIENT_SIDE_PROMISE_REJECTION_ID))
                         .click();
     }
 

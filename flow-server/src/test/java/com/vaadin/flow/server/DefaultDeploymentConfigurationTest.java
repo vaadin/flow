@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.Properties;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -38,6 +39,13 @@ import static org.junit.Assert.assertTrue;
  */
 public class DefaultDeploymentConfigurationTest {
 
+    VaadinContext context;
+
+    @Before
+    public void setup() {
+        context = new MockVaadinContext();
+    }
+
     @Test
     public void testGetSystemPropertyForDefaultPackage()
             throws ClassNotFoundException {
@@ -46,8 +54,7 @@ public class DefaultDeploymentConfigurationTest {
         String prop = "prop";
         System.setProperty(prop, value);
         Properties initParameters = new Properties();
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration appConfig = setupAppConfig();
         Mockito.when(appConfig.getPropertyNames())
                 .thenReturn(Collections.emptyEnumeration());
         DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
@@ -56,7 +63,7 @@ public class DefaultDeploymentConfigurationTest {
     }
 
     @Test
-    public void testGetSystemProperty() throws ClassNotFoundException {
+    public void testGetSystemProperty() {
         String value = "value";
         String prop = "prop";
         System.setProperty(
@@ -64,8 +71,7 @@ public class DefaultDeploymentConfigurationTest {
                         + '.' + prop,
                 value);
         Properties initParameters = new Properties();
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration appConfig = setupAppConfig();
         Mockito.when(appConfig.getPropertyNames())
                 .thenReturn(Collections.emptyEnumeration());
         DefaultDeploymentConfiguration config = new DefaultDeploymentConfiguration(
@@ -169,8 +175,7 @@ public class DefaultDeploymentConfigurationTest {
 
     @Test
     public void isProductionMode_productionModeIsSetViaParentOnly_productionModeIsTakenFromParent() {
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration appConfig = setupAppConfig();
         Mockito.when(appConfig.isProductionMode()).thenReturn(true);
 
         // Note: application configuration doesn't contain production mode
@@ -186,8 +191,7 @@ public class DefaultDeploymentConfigurationTest {
 
     @Test
     public void isProductionMode_productionModeIsSetViaPropertiesAndViaParent_productionModeIsTakenFromProperties() {
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration appConfig = setupAppConfig();
         Mockito.when(appConfig.isProductionMode()).thenReturn(false);
 
         Properties initParameters = new Properties();
@@ -203,8 +207,7 @@ public class DefaultDeploymentConfigurationTest {
 
     @Test
     public void useV14Bootstrap_v14ModeIsSetViaParentOnly_v14ModeIsTakenFromParent() {
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration appConfig = setupAppConfig();
         Mockito.when(appConfig.useV14Bootstrap()).thenReturn(true);
 
         // Note: application configuration doesn't contain production mode
@@ -220,8 +223,7 @@ public class DefaultDeploymentConfigurationTest {
 
     @Test
     public void useV14Bootstrap_v14ModeIsSetViaParentOnlyAndViaParent_v14ModeIsTakenFromParent() {
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration appConfig = setupAppConfig();
         Mockito.when(appConfig.useV14Bootstrap()).thenReturn(true);
 
         Properties initParameters = new Properties();
@@ -238,8 +240,7 @@ public class DefaultDeploymentConfigurationTest {
 
     @Test
     public void isXsrfProtectionEnabled_valueIsSetViaParentOnly_valueIsTakenFromParent() {
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration appConfig = setupAppConfig();
         Mockito.when(appConfig.isXsrfProtectionEnabled()).thenReturn(true);
 
         // Note: application configuration doesn't contain production mode
@@ -256,8 +257,7 @@ public class DefaultDeploymentConfigurationTest {
 
     @Test
     public void isXsrfProtectionEnabled_valueIsSetViaParentOnlyAndViaParent_valueIsTakenFromParent() {
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration appConfig = setupAppConfig();
         Mockito.when(appConfig.isXsrfProtectionEnabled()).thenReturn(false);
 
         Properties initParameters = new Properties();
@@ -274,8 +274,7 @@ public class DefaultDeploymentConfigurationTest {
 
     private DefaultDeploymentConfiguration createDeploymentConfig(
             Properties initParameters) {
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
+        ApplicationConfiguration appConfig = setupAppConfig();
         return createDeploymentConfig(appConfig, initParameters);
     }
 
@@ -284,7 +283,15 @@ public class DefaultDeploymentConfigurationTest {
         Mockito.when(appConfig.getPropertyNames())
                 .thenReturn(Collections.emptyEnumeration());
         Mockito.when(appConfig.getBuildFolder()).thenReturn(".");
+        Mockito.when(appConfig.getContext()).thenReturn(context);
         return new DefaultDeploymentConfiguration(appConfig,
                 DefaultDeploymentConfigurationTest.class, initParameters);
+    }
+
+    private ApplicationConfiguration setupAppConfig() {
+        ApplicationConfiguration appConfig = Mockito
+                .mock(ApplicationConfiguration.class);
+        Mockito.when(appConfig.getContext()).thenReturn(context);
+        return appConfig;
     }
 }

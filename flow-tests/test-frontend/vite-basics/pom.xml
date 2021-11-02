@@ -31,6 +31,10 @@
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
+            <artifactId>flow-html-components-testbench</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
             <artifactId>flow-test-lumo</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -54,10 +58,13 @@
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
                 <configuration>
-                    <scanIntervalSeconds>1</scanIntervalSeconds>
-                    <webAppConfig>
-                        <containerIncludeJarPattern>.*</containerIncludeJarPattern>
-                    </webAppConfig>
+                    <systemProperties>
+                        <!-- Allow test clients not on localhost to connect to Vite-->
+                        <systemProperty>
+                            <name>vaadin.devmode.vite.options</name>
+                            <value>--host</value>
+                        </systemProperty>
+                    </systemProperties>
                 </configuration>
             </plugin>
         </plugins>
@@ -85,6 +92,5 @@
                 </plugins>
             </build>
         </profile>
-
     </profiles>
 </project>

@@ -678,11 +678,13 @@ public class DeploymentConfigurationFactoryTest {
     }
 
     private ApplicationConfiguration mockApplicationConfiguration() {
+        VaadinContext context = new MockVaadinContext();
         ApplicationConfiguration configuration = mock(
                 ApplicationConfiguration.class);
         expect(configuration.enableDevServer()).andReturn(true).anyTimes();
         expect(configuration.isProductionMode()).andReturn(true).anyTimes();
         expect(configuration.useV14Bootstrap()).andReturn(false).anyTimes();
+        expect(configuration.getContext()).andReturn(context).anyTimes();
         expect(configuration.getStringProperty(EasyMock.anyString(),
                 EasyMock.anyString())).andReturn(null).anyTimes();
         expect(configuration.isXsrfProtectionEnabled()).andReturn(false)

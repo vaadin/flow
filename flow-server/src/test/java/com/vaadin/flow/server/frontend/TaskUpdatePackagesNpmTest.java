@@ -39,6 +39,7 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
@@ -282,16 +283,14 @@ public class TaskUpdatePackagesNpmTest {
             throws IOException {
         final String expectedElementMixinVersion = "21.0.0-alpha2";
         String versionJsonString = //@formatter:off
-                "{ \"core\": {"
-                        + "\"vaadin-element-mixin\": {\n"
-                        + "    \"jsVersion\": \""+expectedElementMixinVersion+"\",\n"
-                        + "    \"npmName\": \""+VAADIN_ELEMENT_MIXIN+"\"\n"
-                        + "},\n"
-                        + "\"vaadin-core\": {\n"
-                        + "    \"jsVersion\": \"21.0.0.alpha1\",\n" // broken for npm
-                        + "    \"npmName\": \""+VAADIN_CORE_NPM_PACKAGE+"\"\n"
-                        + "},\n"
-                        +"}}},\n";//@formatter:on
+                "{ \"core\": {" + "\"vaadin-element-mixin\": {\n"
+                        + "    \"jsVersion\": \"" + expectedElementMixinVersion
+                        + "\",\n" + "    \"npmName\": \"" + VAADIN_ELEMENT_MIXIN
+                        + "\"\n" + "},\n" + "\"vaadin-core\": {\n"
+                        + "    \"jsVersion\": \"21.0.0.alpha1\",\n"
+                        // broken for npm
+                        + "    \"npmName\": \"" + VAADIN_CORE_NPM_PACKAGE
+                        + "\"\n" + "},\n" + "}}},\n";//@formatter:on
         FileUtils.write(versionJsonFile, versionJsonString,
                 StandardCharsets.UTF_8);
 
@@ -413,13 +412,10 @@ public class TaskUpdatePackagesNpmTest {
     public void npmIsInUse_versionsJsonContainsSameVersions_nothingIsModified()
             throws IOException {
         String versionJsonString = //@formatter:off
-                "{ \"core\": {"
-                        + "\"vaadin-element-mixin\": {\n"
-                        + "    \"jsVersion\": \"" + PLATFORM_DIALOG_VERSION + "\",\n"
-                        + "    \"npmName\": \"" + VAADIN_DIALOG
-                        + "\"\n"
-                        + "},\n"
-                + "}}},\n";//@formatter:on
+                "{ \"core\": {" + "\"vaadin-element-mixin\": {\n"
+                        + "    \"jsVersion\": \"" + PLATFORM_DIALOG_VERSION
+                        + "\",\n" + "    \"npmName\": \"" + VAADIN_DIALOG
+                        + "\"\n" + "},\n" + "}}},\n";//@formatter:on
         FileUtils.write(versionJsonFile, versionJsonString,
                 StandardCharsets.UTF_8);
 
@@ -445,22 +441,19 @@ public class TaskUpdatePackagesNpmTest {
             String elementMixinVersion, String overlayVersion) {
         // testing with exact versions json content instead of mocking parsing
         String versionJsonString = //@formatter:off
-                "{ \"core\": {"
-                        + "\"vaadin-dialog\": {\n"
+                "{ \"core\": {" + "\"vaadin-dialog\": {\n"
                         + "   \"component\": true,\n"
                         + "   \"javaVersion\": \"{{version}}\",\n"
-                        + "    \"jsVersion\": \""+dialogVersion+"\",\n"
-                        + "    \"npmName\": \""+VAADIN_DIALOG+"\"\n"
-                        + "},\n"
-                        + "\"vaadin-element-mixin\": {\n"
-                        + "    \"jsVersion\": \""+elementMixinVersion+"\",\n"
-                        + "    \"npmName\": \""+VAADIN_ELEMENT_MIXIN+"\"\n"
-                        + "},\n"
-                        + "\"vaadin-overlay\": {\n"
-                        + "    \"jsVersion\": \""+overlayVersion+"\",\n"
-                        + "    \"npmName\": \""+VAADIN_OVERLAY+"\",\n"
+                        + "    \"jsVersion\": \"" + dialogVersion + "\",\n"
+                        + "    \"npmName\": \"" + VAADIN_DIALOG + "\"\n"
+                        + "},\n" + "\"vaadin-element-mixin\": {\n"
+                        + "    \"jsVersion\": \"" + elementMixinVersion
+                        + "\",\n" + "    \"npmName\": \"" + VAADIN_ELEMENT_MIXIN
+                        + "\"\n" + "},\n" + "\"vaadin-overlay\": {\n"
+                        + "    \"jsVersion\": \"" + overlayVersion + "\",\n"
+                        + "    \"npmName\": \"" + VAADIN_OVERLAY + "\",\n"
                         + "    \"releasenotes\": true\n"
-                        +"}}},\n";//@formatter:on
+                        + "}}},\n";//@formatter:on
         try {
             FileUtils.write(versionJsonFile, versionJsonString,
                     StandardCharsets.UTF_8);
@@ -488,7 +481,8 @@ public class TaskUpdatePackagesNpmTest {
         Mockito.when(frontendDependenciesScanner.getPackages())
                 .thenReturn(applicationDependencies);
         return new TaskUpdatePackages(finder, frontendDependenciesScanner,
-                npmFolder, generatedPath, null, false, enablePnpm, TARGET) {
+                npmFolder, generatedPath, null, false, enablePnpm, TARGET,
+                Mockito.mock(FeatureFlags.class)) {
         };
     }
 

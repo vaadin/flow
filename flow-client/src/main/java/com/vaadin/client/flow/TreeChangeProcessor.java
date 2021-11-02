@@ -51,8 +51,8 @@ public class TreeChangeProcessor {
      */
     public static JsSet<StateNode> processChanges(StateTree tree,
             JsonArray changes) {
-        assert !tree
-                .isUpdateInProgress() : "Previous tree change processing has not completed";
+        assert !tree.isUpdateInProgress()
+                : "Previous tree change processing has not completed";
         try {
             tree.setUpdateInProgress(true);
 
@@ -145,8 +145,8 @@ public class TreeChangeProcessor {
     }
 
     private static void populateFeature(JsonObject change, StateNode node) {
-        assert change.hasKey(
-                JsonConstants.CHANGE_FEATURE_TYPE) : "Change doesn't contain feature type. Don't know how to populate feature";
+        assert change.hasKey(JsonConstants.CHANGE_FEATURE_TYPE)
+                : "Change doesn't contain feature type. Don't know how to populate feature";
         int featureId = (int) change.getNumber(JsonConstants.CHANGE_FEATURE);
         if (change.getBoolean(JsonConstants.CHANGE_FEATURE_TYPE)) {
             // list feature
@@ -172,8 +172,9 @@ public class TreeChangeProcessor {
 
             property.setValue(child);
         } else {
-            assert false : "Change should have either value or nodeValue property: "
-                    + WidgetUtil.stringify(change);
+            assert false
+                    : "Change should have either value or nodeValue property: "
+                            + WidgetUtil.stringify(change);
         }
     }
 

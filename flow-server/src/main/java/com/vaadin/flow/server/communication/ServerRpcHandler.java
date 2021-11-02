@@ -303,15 +303,15 @@ public class ServerRpcHandler implements Serializable {
                  * implementing the resync that would thus hide most symptoms of
                  * the actual root cause bugs.
                  */
-                String messageStart = changeMessage;
-                if (messageStart.length() > 1000) {
-                    messageStart = messageStart.substring(0, 1000);
-                }
+                String messageDetails = getMessageDetails(rpcRequest);
+                getLogger().debug("Unexpected message id from the client."
+                        + " Expected sync id: " + expectedId + ", got "
+                        + requestId + ". Message start: " + messageDetails);
                 throw new UnsupportedOperationException(
                         "Unexpected message id from the client."
                                 + " Expected sync id: " + expectedId + ", got "
-                                + requestId + ". Message start: "
-                                + messageStart);
+                                + requestId
+                                + ". more details logged on DEBUG level.");
             }
         } else {
             // Message id ok, process RPCs
@@ -339,6 +339,32 @@ public class ServerRpcHandler implements Serializable {
             // Signal by exception instead of return value to keep the method
             // signature for source and binary compatibility
             throw new ResynchronizationRequiredException();
+        }
+    }
+
+    private String getMessageDetails(RpcRequest rpcRequest) {
+        StringBuilder messageDetails = new StringBuilder();
+        JsonArray rpcArray = rpcRequest.getRpcInvocationsData();
+        if (rpcArray == null) {
+            return "{ no data }";
+        }
+
+        for (int i = 0; i < rpcArray.length(); i++) {
+            JsonObject json = rpcArray.get(i);
+            String type = json.hasKey("type") ? json.getString("type") : "";
+            Double node = json.hasKey("node") ? json.getNumber("node") : null;
+            Double feature = json.hasKey("feature") ? json.getNumber("feature")
+                    : null;
+            appendAll(messageDetails, "{ type: ", type, " node: ",
+                    String.valueOf(node), " feature: ", String.valueOf(feature),
+                    " } ");
+        }
+        return messageDetails.toString();
+    }
+
+    private static void appendAll(StringBuilder builder, String... strings) {
+        for (String string : strings) {
+            builder.append(string);
         }
     }
 
@@ -410,9 +436,9 @@ public class ServerRpcHandler implements Serializable {
         }
         try {
             Optional<Runnable> handle = handler.handle(ui, invocationJson);
-            assert !handle.isPresent() : "RPC handler "
-                    + handler.getClass().getName()
-                    + " returned a Runnable even though it shouldn't";
+            assert !handle.isPresent()
+                    : "RPC handler " + handler.getClass().getName()
+                            + " returned a Runnable even though it shouldn't";
         } catch (Throwable throwable) {
             ui.getSession().getErrorHandler().error(new ErrorEvent(throwable));
         }

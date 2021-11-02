@@ -31,4 +31,9 @@ public class NavTest extends ComponentTest {
         super.testHasOrderedComponents();
     }
 
+    @Test
+    @Override
+    public void testHasAriaLabelIsImplemented() {
+        super.testHasAriaLabelIsImplemented();
+    }
 }

@@ -1324,8 +1324,7 @@ public class Binder<BEAN> implements Serializable {
 
         /**
          * Sets the field value by invoking the getter function on the given
-         * bean. The default listener attached to the field will be removed for
-         * the duration of this update.
+         * bean.
          *
          * @param bean
          *            the bean to fetch the property value from
@@ -1337,7 +1336,6 @@ public class Binder<BEAN> implements Serializable {
          */
         private void initFieldValue(BEAN bean, boolean writeBackChangedValues) {
             assert bean != null;
-            assert onValueChange != null;
             valueInit = true;
             try {
                 execute(() -> {

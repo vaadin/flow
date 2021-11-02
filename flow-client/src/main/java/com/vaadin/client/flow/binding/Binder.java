@@ -102,8 +102,8 @@ public final class Binder {
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     public static void bind(StateNode stateNode, Node domNode) {
-        assert !stateNode.getTree()
-                .isUpdateInProgress() : "Binding state node while processing state tree changes";
+        assert !stateNode.getTree().isUpdateInProgress()
+                : "Binding state node while processing state tree changes";
 
         BindingStrategy applicable = getApplicableStrategy(stateNode);
         applicable.bind(stateNode, domNode, CONTEXT);
@@ -114,8 +114,10 @@ public final class Binder {
         for (int i = 0; i < STRATEGIES.length(); i++) {
             BindingStrategy<?> strategy = STRATEGIES.get(i);
             if (strategy.isApplicable(node)) {
-                assert applicable == null : "Found two strategies for the node : "
-                        + applicable.getClass() + ", " + strategy.getClass();
+                assert applicable == null
+                        : "Found two strategies for the node : "
+                                + applicable.getClass() + ", "
+                                + strategy.getClass();
                 applicable = strategy;
             }
         }

@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
@@ -43,37 +44,27 @@ public class LookupImpl implements Lookup {
 
     @Override
     public <T> T lookup(Class<T> serviceClass) {
+        if (ResourceProvider.class.isAssignableFrom(serviceClass)) {
+            return serviceClass.cast(new ResourceProviderImpl());
+        }
         return lookupAll(serviceClass).stream().findFirst().orElse(null);
     }
 
     @Override
     public <T> List<T> lookupAll(Class<T> serviceClass) {
-        Set<?> subTypes = classFinder
-                .getSubTypesOf(loadClassFromClassFindler(serviceClass));
+        // only services declared in flow-server may be used here
+        assert serviceClass.getClassLoader()
+                .equals(LookupImpl.class.getClassLoader());
+        Set<Class<? extends T>> subTypes = classFinder
+                .getSubTypesOf(serviceClass);
         List<T> result = new ArrayList<>(subTypes.size());
-        try {
-            for (Object clazz : subTypes) {
-                if (!ReflectTools.isInstantiableService((Class<?>) clazz)) {
-                    continue;
-                }
-                Class<?> serviceType = serviceClass.getClassLoader()
-                        .loadClass(((Class<?>) clazz).getName());
-                result.add(serviceClass
-                        .cast(ReflectTools.createInstance(serviceType)));
+        for (Class<? extends T> clazz : subTypes) {
+            if (!ReflectTools.isInstantiableService(clazz)) {
+                continue;
             }
-        } catch (ClassNotFoundException e) {
-            throw new IllegalStateException("Could not find service class", e);
+            result.add(serviceClass.cast(ReflectTools.createInstance(clazz)));
         }
         return result;
-    }
-
-    private Class<?> loadClassFromClassFindler(Class<?> clz) {
-        try {
-            return classFinder.loadClass(clz.getName());
-        } catch (ClassNotFoundException e) {
-            throw new IllegalStateException(
-                    "Could not load " + clz.getName() + " class", e);
-        }
     }
 
 }

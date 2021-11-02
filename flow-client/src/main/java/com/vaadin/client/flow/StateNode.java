@@ -192,8 +192,8 @@ public class StateNode {
      * @see #addUnregisterListener(NodeUnregisterListener)
      */
     public void unregister() {
-        assert tree.getNode(
-                id) == null : "Node should no longer be findable from the tree";
+        assert tree.getNode(id) == null
+                : "Node should no longer be findable from the tree";
 
         assert !unregistered : "Node is already unregistered";
 
@@ -238,8 +238,8 @@ public class StateNode {
      *            the associated DOM node
      */
     public void setDomNode(Node node) {
-        assert domNode == null
-                || node == null : "StateNode already has a DOM node";
+        assert domNode == null || node == null
+                : "StateNode already has a DOM node";
 
         domNode = node;
         JsSet<Function<StateNode, Boolean>> copy = JsCollections

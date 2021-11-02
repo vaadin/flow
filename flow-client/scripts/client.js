@@ -20,7 +20,7 @@ const fromDir = "target/classes/META-INF/resources/VAADIN/static/client/";
 const fromFileRegex = /^client-.*\.cache\.js$/;
 
 const sourceDir = "src/main/frontend/";
-const targetDir = "target/classes/META-INF/resources/frontend/";
+const targetDir = "target/classes/META-INF/frontend/";
 const toFile  = "FlowClient.js";
 
 const fromFileName = fs.readdirSync(fromDir)

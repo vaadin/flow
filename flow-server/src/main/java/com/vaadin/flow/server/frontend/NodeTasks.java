@@ -152,6 +152,11 @@ public class NodeTasks implements FallibleCommand {
         private boolean productionMode = true;
 
         /**
+         * The resource folder for java resources.
+         */
+        private File javaResourceFolder;
+
+        /**
          * Create a builder instance given an specific npm folder.
          *
          * @param lookup
@@ -623,6 +628,28 @@ public class NodeTasks implements FallibleCommand {
         public String getBuildDirectory() {
             return buildDirectory;
         }
+
+        /**
+         * Set the java resources folder to be checked for feature file.
+         * <p>
+         * Needed for plugin execution.
+         *
+         * @param javaResourceFolder
+         *            java resources folder
+         * @return this builder
+         */
+        public Builder setJavaResourceFolder(File javaResourceFolder) {
+            this.javaResourceFolder = javaResourceFolder;
+            return this;
+        }
+
+        protected FeatureFlags getFeatureFlags() {
+            final FeatureFlags featureFlags = new FeatureFlags(lookup);
+            if (javaResourceFolder != null) {
+                featureFlags.setPropertiesLocation(javaResourceFolder);
+            }
+            return featureFlags;
+        }
     }
 
     // @formatter:off
@@ -663,6 +690,8 @@ public class NodeTasks implements FallibleCommand {
         boolean enableWebpackConfigUpdate = builder.webpackTemplate != null
                 && !builder.webpackTemplate.isEmpty();
 
+        final FeatureFlags featureFlags = builder.getFeatureFlags();
+
         if (builder.enablePackagesUpdate || builder.enableImportsUpdate
                 || enableWebpackConfigUpdate) {
             frontendDependencies = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
@@ -684,7 +713,7 @@ public class NodeTasks implements FallibleCommand {
                         frontendDependencies, builder.npmFolder,
                         builder.generatedFolder, builder.flowResourcesFolder,
                         builder.cleanNpmFiles, builder.enablePnpm,
-                        builder.buildDirectory);
+                        builder.buildDirectory, featureFlags);
                 commands.add(packageUpdater);
 
             }
@@ -703,7 +732,8 @@ public class NodeTasks implements FallibleCommand {
         if (builder.createMissingPackageJson) {
             TaskGeneratePackageJson packageCreator = new TaskGeneratePackageJson(
                     builder.npmFolder, builder.generatedFolder,
-                    builder.flowResourcesFolder, builder.buildDirectory);
+                    builder.flowResourcesFolder, builder.buildDirectory,
+                    featureFlags);
             commands.add(packageCreator);
         }
 
@@ -738,8 +768,12 @@ public class NodeTasks implements FallibleCommand {
                     builder.flowResourcesFolder, builder.localResourcesFolder));
         }
 
-        if (FeatureFlags.isEnabled(FeatureFlags.VITE)) {
-            commands.add(new TaskUpdateSettingsFile(builder));
+        if (featureFlags.isEnabled(FeatureFlags.VITE)) {
+            String themeName = "";
+            if (frontendDependencies != null) {
+                themeName = frontendDependencies.getThemeDefinition().getName();
+            }
+            commands.add(new TaskUpdateSettingsFile(builder, themeName));
             commands.add(new TaskUpdateVite(builder.npmFolder,
                     builder.buildDirectory));
         } else if (enableWebpackConfigUpdate) {
@@ -762,7 +796,8 @@ public class NodeTasks implements FallibleCommand {
                             builder.npmFolder, builder.generatedFolder,
                             builder.frontendDirectory, builder.tokenFile,
                             builder.tokenFileData, builder.enablePnpm,
-                            builder.buildDirectory, builder.productionMode));
+                            builder.buildDirectory, builder.productionMode,
+                            featureFlags));
 
             commands.add(new TaskUpdateThemeImport(builder.npmFolder,
                     frontendDependencies.getThemeDefinition(),
@@ -832,7 +867,13 @@ public class NodeTasks implements FallibleCommand {
 
     private FrontendDependenciesScanner getFallbackScanner(Builder builder,
             ClassFinder finder) {
-        if (builder.useByteCodeScanner) {
+        // Only create fallback chunk with Webpack until the below ticket is
+        // donel, as the JS in generated-flow-imports.js does not work with
+        // Vite.
+        // https://github.com/vaadin/flow/issues/12170
+        boolean usingWebpack = !new FeatureFlags(builder.lookup)
+                .isEnabled(FeatureFlags.VITE);
+        if (usingWebpack && builder.useByteCodeScanner) {
             return new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
                     .createScanner(true, finder,
                             builder.generateEmbeddableWebComponents,

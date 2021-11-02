@@ -16,6 +16,7 @@
 package com.vaadin.base.devserver;
 
 import java.io.InputStream;
+import java.io.Serializable;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -27,7 +28,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Data for a info message to the debug window.
  */
-public class ServerInfo {
+public class ServerInfo implements Serializable {
 
     private final String flowVersion;
     private final String vaadinVersion;

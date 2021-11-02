@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.component.html;
 
-import com.vaadin.flow.component.HasOrderedComponents;
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
@@ -35,6 +34,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasAriaLabel;
+import com.vaadin.flow.component.HasOrderedComponents;
 import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.dom.Element;
 
@@ -136,6 +137,35 @@ public abstract class ComponentTest {
         Assert.assertEquals(newFirstChildren, component.getComponentAt(0));
 
         Assert.assertEquals(1, component.indexOf(firstChildren));
+    }
+
+    protected void testHasAriaLabelIsImplemented() {
+        if (!(component instanceof HasAriaLabel)) {
+            Assert.fail("Component " + component.getClass()
+                    + " did not implement HasAriaLabel anymore.");
+        }
+    }
+
+    protected void testHasAriaLabelIsNotImplemented() {
+        if (component instanceof HasAriaLabel) {
+            Assert.fail("Component " + component.getClass()
+                    + " implemented HasAriaLabel. This is not valid."
+                    + " See test case for more information.");
+        }
+    }
+
+    @Test
+    public void setAriaLabel() {
+        if (!(component instanceof HasAriaLabel)) {
+            return; // test should only run for components that implement
+                    // HasAriaLabel
+        }
+
+        HasAriaLabel component = (HasAriaLabel) this.component;
+        Assert.assertFalse(component.getAriaLabel().isPresent());
+
+        component.setAriaLabel("new AriaLabel");
+        Assert.assertEquals("new AriaLabel", component.getAriaLabel().get());
     }
 
     @Test
