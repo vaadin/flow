@@ -7,8 +7,6 @@ import org.openqa.selenium.By;
 
 import net.jcip.annotations.NotThreadSafe;
 
-import static org.junit.Assert.assertTrue;
-
 @NotThreadSafe
 public class IFrameIT extends ChromeBrowserTest {
 
