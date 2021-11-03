@@ -25,14 +25,14 @@ import com.vaadin.flow.server.RequestHandler;
 public interface DevModeHandler extends RequestHandler {
 
     /**
-     * Return webpack console output when a compilation error happened.
+     * Return the dev server console output when a compilation error happened.
      *
      * @return console output if error or null otherwise.
      */
     String getFailedOutput();
 
     /**
-     * Prepare a HTTP connection against webpack-dev-server.
+     * Prepare a HTTP connection against the dev server.
      *
      * @param path
      *            the file to request, needs to be safe
@@ -46,22 +46,22 @@ public interface DevModeHandler extends RequestHandler {
             throws IOException;
 
     /**
-     * Returns true if it's a request that should be handled by webpack.
+     * Returns true if it's a request that should be handled by the dev server.
      *
      * @param request
      *            the servlet request
-     * @return true if the request should be forwarded to webpack
+     * @return true if the request should be forwarded to the dev server
      */
     boolean isDevModeRequest(HttpServletRequest request);
 
     /**
-     * Serve a file by proxying to webpack.
+     * Serve a file by proxying to the dev server.
      *
      * @param request
      *            the servlet request
      * @param response
      *            the servlet response
-     * @return false if webpack returned a not found, true otherwise
+     * @return false if the dev server returned a not found, true otherwise
      * @throws IOException
      *             in the case something went wrong like connection refused
      */

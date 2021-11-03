@@ -36,12 +36,15 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.DevModeHandler;
+import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.ResponseWriter;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
@@ -73,6 +76,7 @@ public class StaticFileServer implements StaticFileHandler {
     private final VaadinService vaadinService;
     private DeploymentConfiguration deploymentConfiguration;
     private final List<String> manifestPaths;
+    private Optional<DevModeHandler> devModeHandler;
 
     // Matcher to match string starting with '/themes/[theme-name]/'
     public static final Pattern APP_THEME_PATTERN = Pattern
@@ -93,6 +97,9 @@ public class StaticFileServer implements StaticFileHandler {
         deploymentConfiguration = vaadinService.getDeploymentConfiguration();
         responseWriter = new ResponseWriter(deploymentConfiguration);
         manifestPaths = getManifestPathsFromJson();
+
+        this.devModeHandler = DevModeHandlerManager
+                .getDevModeHandler(vaadinService);
     }
 
     @Override
@@ -105,6 +112,11 @@ public class StaticFileServer implements StaticFileHandler {
             // servletContext.getResource will return a URL for them, at
             // least with Jetty
             return false;
+        }
+
+        if (devModeHandler.isPresent()
+                && devModeHandler.get().isDevModeRequest(request)) {
+            return true;
         }
 
         if (APP_THEME_PATTERN.matcher(requestFilename).find()
@@ -270,6 +282,11 @@ public class StaticFileServer implements StaticFileHandler {
             getLogger().info(HandlerHelper.UNSAFE_PATH_ERROR_MESSAGE_PATTERN,
                     filenameWithPath);
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            return true;
+        }
+
+        if (devModeHandler.isPresent() && devModeHandler.get()
+                .serveDevModeRequest(request, response)) {
             return true;
         }
 

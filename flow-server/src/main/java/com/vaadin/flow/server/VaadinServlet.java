@@ -331,15 +331,6 @@ public class VaadinServlet extends HttpServlet {
     protected boolean serveStaticOrWebJarRequest(HttpServletRequest request,
             HttpServletResponse response) throws IOException {
 
-        Optional<DevModeHandler> devModeHandler = DevModeHandlerManager
-                .getDevModeHandler(getService());
-        if (devModeHandler.isPresent()
-                && devModeHandler.get().isDevModeRequest(request)
-                && devModeHandler.get().serveDevModeRequest(request,
-                        response)) {
-            return true;
-        }
-
         if (staticFileHandler.isStaticResourceRequest(request)) {
             staticFileHandler.serveStaticResource(request, response);
             return true;
