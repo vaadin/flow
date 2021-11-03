@@ -751,7 +751,6 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         if (mapProperty.hasValue()) {
             String value = (String) mapProperty.getValue();
             boolean styleIsSet = false;
-            styleElement.setProperty(name, value);
             if (value.contains("!important")) {
                 Element temp = Browser.getDocument()
                         .createElement(element.getTagName());
