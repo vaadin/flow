@@ -75,14 +75,10 @@ public interface DevModeHandler extends RequestHandler {
     void stop();
 
     /**
-     * Retrieve the contents of a frontend file.
+     * Returns the prefix to be prepended when retrieving a file directly from
+     * the dev server
      *
-     * @param path
-     *            the path to the source file relative to the
-     *            <code>frontend</code> folder.
-     * @return the source, or <code>null</code>
-     * @throws IOException
-     *             on connection error
+     * @return the prefix
      */
-    InputStream getFileContents(String path) throws IOException;
+    String getFrontendFilePathPrefix();
 }

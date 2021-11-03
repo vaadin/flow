@@ -20,11 +20,9 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FilenameUtils;
-import org.jsoup.UncheckedIOException;
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,8 +32,6 @@ import com.vaadin.flow.component.littemplate.BundleLitParser;
 import com.vaadin.flow.component.littemplate.LitTemplate;
 import com.vaadin.flow.component.littemplate.LitTemplateParser;
 import com.vaadin.flow.internal.AnnotationReader;
-import com.vaadin.flow.internal.DevModeHandler;
-import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DependencyFilter;
@@ -102,12 +98,7 @@ public class LitTemplateParserImpl implements LitTemplateParser {
             }
 
             String url = dependency.getUrl();
-            String source;
-            try {
-                source = getSourcesFromTemplate(service, tag, url);
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
+            String source = getSourcesFromTemplate(service, tag, url);
             if (source == null) {
                 continue;
             }
@@ -180,22 +171,22 @@ public class LitTemplateParserImpl implements LitTemplateParser {
      *         such source can be found.
      */
     protected String getSourcesFromTemplate(VaadinService service, String tag,
-            String url) throws IOException {
+            String url) {
         InputStream content = getClass().getClassLoader()
                 .getResourceAsStream(url);
         String pathWithoutPrefix = url.replaceFirst("^\\./", "");
         if (content == null) {
-            // Attempt to get the sources from the running dev server
-            Optional<DevModeHandler> devModeHandler = DevModeHandlerManager
-                    .getDevModeHandler(service);
-            if (devModeHandler.isPresent()) {
-                content = devModeHandler.get()
-                        .getFileContents(pathWithoutPrefix);
+            // Attempt to get the sources from dev server, if available
+            try {
+                content = FrontendUtils.getFrontendFileFromDevModeHandler(
+                        service, pathWithoutPrefix);
+            } catch (IOException e) {
+                getLogger().warn("Exception reading " + pathWithoutPrefix
+                        + " from dev server", e);
             }
         }
         if (content == null) {
-            // With Vite production build, template sources are stored in
-            // META-INF/VAADIN/config/templates
+            // Template sources are stored in META-INF/VAADIN/config/templates
             String vaadinDirectory = Constants.VAADIN_SERVLET_RESOURCES
                     + Constants.TEMPLATE_DIRECTORY;
             String resourceUrl = vaadinDirectory + pathWithoutPrefix;

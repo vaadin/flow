@@ -746,19 +746,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
     }
 
     @Override
-    public InputStream getFileContents(String path) throws IOException {
-        String relativePath = path.replaceFirst("^\\./", "");
-        String filePath = getFrontendFilePathPrefix() + relativePath;
-        filePath = filePath.startsWith("/") ? filePath : "/" + filePath;
-        return prepareConnection(filePath, "GET").getInputStream();
-    }
-
-    /**
-     * Returns the prefix to be prepended to a frontend file path access.
-     *
-     * @return the prefix
-     */
-    protected String getFrontendFilePathPrefix() {
+    public String getFrontendFilePathPrefix() {
         return "";
     }
 

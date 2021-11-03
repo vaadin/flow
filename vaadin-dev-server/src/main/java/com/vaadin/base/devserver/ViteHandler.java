@@ -70,13 +70,6 @@ public final class ViteHandler extends AbstractDevServerRunner {
     }
 
     @Override
-    public InputStream getFileContents(String url) throws IOException {
-        String relativeUrl = url.replaceFirst("^\\./", "");
-        return prepareConnection("/" + Constants.VAADIN_MAPPING + relativeUrl,
-                "GET").getInputStream();
-    }
-
-    @Override
     protected boolean checkConnection() {
         try {
             getLogger().debug("Checking vite connection");
@@ -141,7 +134,7 @@ public final class ViteHandler extends AbstractDevServerRunner {
     }
 
     @Override
-    protected String getFrontendFilePathPrefix() {
+    public String getFrontendFilePathPrefix() {
         return Constants.VAADIN_MAPPING;
     }
 

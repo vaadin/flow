@@ -503,44 +503,6 @@ public class FrontendUtils {
         return stream;
     }
 
-    /**
-     * Get the latest hash for the stats file in development mode. This is
-     * requested from the webpack-dev-server.
-     * <p>
-     * In production mode and disabled dev server mode an empty string is
-     * returned.
-     *
-     * @param service
-     *            the Vaadin service.
-     * @return hash string for the stats.json file, empty string if none found
-     * @throws IOException
-     *             if an I/O error occurs while creating the input stream.
-     */
-    public static String getStatsHash(VaadinService service)
-            throws IOException {
-        Optional<DevModeHandler> devModeHandler = DevModeHandlerManager
-                .getDevModeHandler(service);
-        if (devModeHandler.isPresent()) {
-            HttpURLConnection statsConnection = devModeHandler.get()
-                    .prepareConnection("/stats.hash", "GET");
-            if (statsConnection
-                    .getResponseCode() != HttpURLConnection.HTTP_OK) {
-                throw new WebpackConnectionException(String.format(
-                        NO_CONNECTION, "getting the stats content hash."));
-            }
-            return streamToString(statsConnection.getInputStream())
-                    .replaceAll("\"", "");
-        }
-
-        return "";
-    }
-
-    private static InputStream getStatsFromWebpack(
-            DevModeHandler devModeHandler) throws IOException {
-        return getResourceFromWebpack(devModeHandler, "/stats.json",
-                "downloading stats.json");
-    }
-
     private static InputStream getResourceFromWebpack(
             DevModeHandler devModeHandler, String resource,
             String exceptionMessage) throws IOException {
@@ -651,6 +613,31 @@ public class FrontendUtils {
             DevModeHandler devModeHandler, String filePath) throws IOException {
         return devModeHandler.prepareConnection("/" + filePath, "GET")
                 .getInputStream();
+    }
+
+    /**
+     * Get the contents of a frontend file from the running dev server.
+     *
+     * @param service
+     *            the Vaadin service.
+     * @param path
+     *            the file path.
+     * @return an input stream for reading the file contents; null if there is
+     *         no such file or the dev server is not running.
+     * @throws IOException
+     *             if an I/O error occurs while creating the input stream.
+     */
+    public static InputStream getFrontendFileFromDevModeHandler(
+            VaadinService service, String path) throws IOException {
+        Optional<DevModeHandler> devModeHandler = DevModeHandlerManager
+                .getDevModeHandler(service);
+        if (devModeHandler.isPresent()) {
+            String filePath = devModeHandler.get().getFrontendFilePathPrefix()
+                    + path;
+            filePath = filePath.replace("^/", "");
+            return getFileFromDevModeHandler(devModeHandler.get(), filePath);
+        }
+        return null;
     }
 
     /**
