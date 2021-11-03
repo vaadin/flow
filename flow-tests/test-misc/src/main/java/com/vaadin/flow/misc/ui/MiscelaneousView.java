@@ -20,12 +20,8 @@ import java.util.List;
 
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.page.AppShellConfigurator;
-import com.vaadin.flow.misc.ui.MiscelaneousView.MyTheme;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.theme.AbstractTheme;
-import com.vaadin.flow.theme.Theme;
 
 @Route(value = "")
 

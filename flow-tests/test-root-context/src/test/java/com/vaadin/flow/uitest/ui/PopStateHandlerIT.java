@@ -5,7 +5,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
-import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.router.internal.PathUtil;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 

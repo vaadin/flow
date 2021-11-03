@@ -16,17 +16,11 @@
 
 package com.vaadin.flow.uitest.ui;
 
-import java.util.function.Function;
-import java.util.function.Predicate;
-
 import com.vaadin.flow.component.Direction;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import org.junit.Assert;
 import org.junit.Test;
-import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.support.ui.WebDriverWait;
 
 public class DirectionChangeIT extends ChromeBrowserTest {
 

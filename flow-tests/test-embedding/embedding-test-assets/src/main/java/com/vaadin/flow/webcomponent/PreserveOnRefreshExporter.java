@@ -17,11 +17,8 @@
 package com.vaadin.flow.webcomponent;
 
 import com.vaadin.flow.component.WebComponentExporter;
-import com.vaadin.flow.component.webcomponent.PropertyConfiguration;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.router.PreserveOnRefresh;
-
-import elemental.json.JsonValue;
 
 @PreserveOnRefresh
 public class PreserveOnRefreshExporter

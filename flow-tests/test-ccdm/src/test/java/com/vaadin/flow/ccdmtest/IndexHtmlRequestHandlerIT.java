@@ -18,11 +18,9 @@ package com.vaadin.flow.ccdmtest;
 import java.util.Optional;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.JavascriptExecutor;
 
 public class IndexHtmlRequestHandlerIT extends CCDMTest {
 

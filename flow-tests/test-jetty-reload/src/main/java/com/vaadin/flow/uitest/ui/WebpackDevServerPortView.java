@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.UUID;
 
-import com.vaadin.base.devserver.DevModeHandlerManagerImpl;
 import com.vaadin.base.devserver.WebpackHandler;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
