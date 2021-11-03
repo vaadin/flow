@@ -74,11 +74,9 @@ public class TaskCopyTemplateFiles implements FallibleCommand {
                     .getAnnotationsByType(JsModule.class)) {
                 String filePath = jsmAnnotation.value();
                 File source;
-                if (filePath.startsWith("./")) {
-                    // path is relative to "frontend"
-                    source = new File(frontendDirectory, filePath);
-                } else {
-                    // path is relative to "node_modules"
+                source = new File(frontendDirectory, filePath);
+                if (!filePath.startsWith("./") && !source.exists()) {
+                    // check "node_modules"
                     File nodeModulesDir = new File(projectDirectory,
                             FrontendUtils.NODE_MODULES);
                     source = new File(nodeModulesDir, filePath);
