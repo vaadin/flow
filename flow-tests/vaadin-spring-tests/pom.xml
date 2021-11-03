@@ -29,6 +29,7 @@
         </driver.binary.downloader.maven.plugin.version>
         <maven.war.plugin.version>3.1.0</maven.war.plugin.version>
         <vaadin.version>22.0-SNAPSHOT</vaadin.version>
+        <testbench.version>7.0.2</testbench.version>
     </properties>
 
     <dependencyManagement>
@@ -44,7 +45,7 @@
                 <artifactId>vaadin-testbench-bom</artifactId>
                 <type>pom</type>
                 <scope>import</scope>
-                <version>7.0.1</version>
+                <version>${testbench.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.vaadin</groupId>
