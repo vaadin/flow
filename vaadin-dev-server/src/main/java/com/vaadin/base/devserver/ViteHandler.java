@@ -19,7 +19,6 @@ import static java.net.HttpURLConnection.HTTP_OK;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;

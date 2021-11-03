@@ -17,6 +17,7 @@ package com.vaadin.flow.component.littemplate.internal;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -31,6 +32,8 @@ import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.littemplate.BundleLitParser;
 import com.vaadin.flow.component.littemplate.LitTemplate;
 import com.vaadin.flow.component.littemplate.LitTemplateParser;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.Constants;
@@ -172,8 +175,7 @@ public class LitTemplateParserImpl implements LitTemplateParser {
      */
     protected String getSourcesFromTemplate(VaadinService service, String tag,
             String url) {
-        InputStream content = getClass().getClassLoader()
-                .getResourceAsStream(url);
+        InputStream content = getResourceStream(service, url);
         String pathWithoutPrefix = url.replaceFirst("^\\./", "");
         if (content == null) {
             // Attempt to get the sources from dev server, if available
@@ -186,18 +188,33 @@ public class LitTemplateParserImpl implements LitTemplateParser {
             }
         }
         if (content == null) {
-            // Template sources are stored in META-INF/VAADIN/config/templates
+            // In production builds, template sources are stored in
+            // META-INF/VAADIN/config/templates
             String vaadinDirectory = Constants.VAADIN_SERVLET_RESOURCES
                     + Constants.TEMPLATE_DIRECTORY;
             String resourceUrl = vaadinDirectory + pathWithoutPrefix;
-            content = getClass().getClassLoader()
-                    .getResourceAsStream(resourceUrl);
+            content = getResourceStream(service, resourceUrl);
         }
         if (content != null) {
             getLogger().debug(
                     "Found sources from the tag '{}' in the template '{}'", tag,
                     url);
             return FrontendUtils.streamToString(content);
+        }
+        return null;
+    }
+
+    private InputStream getResourceStream(VaadinService service, String url) {
+        ResourceProvider resourceProvider = service.getContext()
+                .getAttribute(Lookup.class).lookup(ResourceProvider.class);
+        URL resourceUrl = resourceProvider.getApplicationResource(url);
+        if (resourceUrl != null) {
+            try {
+                return resourceUrl.openStream();
+            } catch (IOException e) {
+                getLogger().warn("Exception accessing resource " + resourceUrl,
+                        e);
+            }
         }
         return null;
     }

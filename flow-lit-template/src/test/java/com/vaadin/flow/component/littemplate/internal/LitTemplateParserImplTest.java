@@ -73,6 +73,10 @@ public class LitTemplateParserImplTest {
 
         ResourceProvider resourceProvider = service.getContext()
                 .getAttribute(Lookup.class).lookup(ResourceProvider.class);
+        Mockito.when(
+                resourceProvider.getApplicationResource(Mockito.anyString()))
+                .thenAnswer(invoc -> LitTemplateParserImpl.class
+                        .getClassLoader().getResource(invoc.getArgument(0)));
     }
 
     @Test

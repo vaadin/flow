@@ -179,17 +179,7 @@ public class NpmTemplateParser implements TemplateParser {
      */
     protected String getSourcesFromTemplate(VaadinService service, String tag,
             String url) {
-        Lookup lookup = service.getContext().getAttribute(Lookup.class);
-        ResourceProvider resourceProvider = lookup
-                .lookup(ResourceProvider.class);
-        InputStream content = null;
-        try {
-            URL appResource = resourceProvider.getApplicationResource(url);
-            content = appResource == null ? null : appResource.openStream();
-        } catch (IOException exception) {
-            getLogger().warn("Couldn't get resource for the template '{}'", url,
-                    exception);
-        }
+        InputStream content = getResourceStream(service, url);
         String pathWithoutPrefix = url.replaceFirst("^\\./", "");
         if (content == null) {
             // Attempt to get the sources from dev server, if available
@@ -202,18 +192,33 @@ public class NpmTemplateParser implements TemplateParser {
             }
         }
         if (content == null) {
-            // Template sources are stored in META-INF/VAADIN/config/templates
+            // In production builds, template sources are stored in
+            // META-INF/VAADIN/config/templates
             String vaadinDirectory = Constants.VAADIN_SERVLET_RESOURCES
                     + Constants.TEMPLATE_DIRECTORY;
             String resourceUrl = vaadinDirectory + pathWithoutPrefix;
-            content = getClass().getClassLoader()
-                    .getResourceAsStream(resourceUrl);
+            content = getResourceStream(service, resourceUrl);
         }
         if (content != null) {
             getLogger().debug(
                     "Found sources from the tag '{}' in the template '{}'", tag,
                     url);
             return FrontendUtils.streamToString(content);
+        }
+        return null;
+    }
+
+    private InputStream getResourceStream(VaadinService service, String url) {
+        ResourceProvider resourceProvider = service.getContext()
+                .getAttribute(Lookup.class).lookup(ResourceProvider.class);
+        URL resourceUrl = resourceProvider.getApplicationResource(url);
+        if (resourceUrl != null) {
+            try {
+                return resourceUrl.openStream();
+            } catch (IOException e) {
+                getLogger().warn("Exception accessing resource " + resourceUrl,
+                        e);
+            }
         }
         return null;
     }

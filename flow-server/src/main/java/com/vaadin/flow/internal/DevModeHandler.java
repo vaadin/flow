@@ -18,7 +18,6 @@ package com.vaadin.flow.internal;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.HttpURLConnection;
 
 import com.vaadin.flow.server.RequestHandler;
@@ -76,7 +75,7 @@ public interface DevModeHandler extends RequestHandler {
 
     /**
      * Returns the prefix to be prepended when retrieving a file directly from
-     * the dev server
+     * the dev server.
      *
      * @return the prefix
      */
