@@ -11,8 +11,6 @@ import com.vaadin.testbench.elementsbase.Element;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-import elemental.html.ButtonElement;
-
 @Element("vaadin-devmode-gizmo")
 public class DevModeGizmoElement extends TestBenchElement {
 
