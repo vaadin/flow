@@ -61,6 +61,11 @@ public class VaadinConfigurationProperties {
      */
     private List<String> whitelistedPackages = new ArrayList<>();
 
+    /**
+     * Whether a browser should be launched on startup when in development mode.
+     */
+    private boolean launchBrowser = true;
+
     public static class Pnpm {
         private boolean enable;
 
@@ -153,6 +158,30 @@ public class VaadinConfigurationProperties {
      */
     public void setLoadOnStartup(boolean loadOnStartup) {
         this.loadOnStartup = loadOnStartup;
+    }
+
+    /**
+     * Returns if a browser should be launched on startup when in development
+     * mode.
+     * <p>
+     *
+     * @return if a browser should be launched on startup when in development
+     *         mode
+     */
+    public boolean isLaunchBrowser() {
+        return launchBrowser;
+    }
+
+    /**
+     * Sets whether a browser should be launched on startup when in development
+     * mode.
+     * 
+     * @param launchBrowser
+     *            {@code true} to launch a browser on startup when in
+     *            development mode, {@code false} otherwise
+     */
+    public void setLaunchBrowser(boolean launchBrowser) {
+        this.launchBrowser = launchBrowser;
     }
 
     /**
