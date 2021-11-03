@@ -23,6 +23,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 
+import org.atmosphere.cpr.AtmosphereRequest;
+
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.RequestHandler;
@@ -30,6 +32,7 @@ import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.PushRequestHandler;
@@ -65,6 +68,18 @@ public class PushFallbackServlet extends VaadinServlet {
             List<RequestHandler> requestHandlers = super.createRequestHandlers();
             requestHandlers.add(new PushFallbackRequestHandler(this));
             return requestHandlers;
+        }
+
+        @Override
+        public void requestStart(VaadinRequest request, VaadinResponse response) {
+            final VaadinServletRequest vaadinServletRequest =
+                    (VaadinServletRequest) request;
+            super.requestStart(request, response);
+            if (vaadinServletRequest.getRequest() instanceof AtmosphereRequest) {
+                // simulate failure in websocket connection
+                throw new RuntimeException(
+                        "Failed to establish websocket connection");
+            }
         }
 
         private static class PushFallbackRequestHandler extends PushRequestHandler {
