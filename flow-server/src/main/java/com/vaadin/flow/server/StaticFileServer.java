@@ -102,51 +102,6 @@ public class StaticFileServer implements StaticFileHandler {
                 .getDevModeHandler(vaadinService);
     }
 
-    @Override
-    public boolean isStaticResourceRequest(HttpServletRequest request) {
-        URL resource;
-
-        String requestFilename = getRequestFilename(request);
-        if (requestFilename.endsWith("/")) {
-            // Directories are not static resources although
-            // servletContext.getResource will return a URL for them, at
-            // least with Jetty
-            return false;
-        }
-
-        if (devModeHandler.isPresent()
-                && devModeHandler.get().isDevModeRequest(request)) {
-            return true;
-        }
-
-        if (APP_THEME_PATTERN.matcher(requestFilename).find()
-                || requestFilename.startsWith("/" + VAADIN_STATIC_FILES_PATH)
-                || requestFilename.startsWith("/" + VAADIN_BUILD_FILES_PATH)) {
-            // The path is reserved for internal resources only
-            // We rather serve 404 than let it fall through
-            return true;
-        }
-
-        if (manifestPaths.contains(requestFilename)) {
-            // The path is on the webpack manifest list, so it is a static
-            // resource as well.
-            return true;
-        }
-        resource = getStaticResource(requestFilename);
-
-        if (resource != null && resourceIsDirectory(resource)) {
-            return false;
-        }
-
-        if (resource == null && shouldFixIncorrectWebjarPaths()
-                && isIncorrectWebjarPath(requestFilename)) {
-            // Flow issue #4601
-            return true;
-        }
-
-        return resource != null;
-    }
-
     private boolean resourceIsDirectory(URL resource) {
         if (resource.getPath().endsWith("/")) {
             return true;
@@ -287,6 +242,8 @@ public class StaticFileServer implements StaticFileHandler {
 
         if (devModeHandler.isPresent() && devModeHandler.get()
                 .serveDevModeRequest(request, response)) {
+            // We don't know what the dev server can serve, but if it served
+            // something we are happy.
             return true;
         }
 
@@ -304,6 +261,7 @@ public class StaticFileServer implements StaticFileHandler {
                                 + filenameWithPath.replaceFirst("^/", ""));
             }
         }
+
         if (resourceUrl == null) {
             resourceUrl = getStaticResource(filenameWithPath);
         }
@@ -314,10 +272,16 @@ public class StaticFileServer implements StaticFileHandler {
                     fixIncorrectWebjarPath(filenameWithPath));
         }
 
+        if (resourceIsDirectory(resourceUrl)) {
+            // Directories are not static resources although
+            // servletContext.getResource will return a URL for them, at
+            // least with Jetty
+            return false;
+        }
+
         if (resourceUrl == null) {
             // Not found in webcontent or in META-INF/resources in some JAR
-            response.sendError(HttpServletResponse.SC_NOT_FOUND);
-            return true;
+            return false;
         }
 
         // There is a resource!
@@ -335,6 +299,7 @@ public class StaticFileServer implements StaticFileHandler {
         }
         responseWriter.writeResponseContents(filenameWithPath, resourceUrl,
                 request, response);
+
         return true;
     }
 

@@ -40,7 +40,14 @@ public interface StaticFileHandler extends Serializable {
      * @return <code>true</code> if a static resource exists and can be sent as
      *         a response to this request, <code>false</code> otherwise
      */
-    boolean isStaticResourceRequest(HttpServletRequest request);
+    @Deprecated
+    default boolean isStaticResourceRequest(HttpServletRequest request) {
+        try {
+            return serveStaticResource(request, new DummyHttpServletResponse());
+        } catch (IOException e) {
+            return false;
+        }
+    }
 
     /**
      * Serves a static resource for the requested path if a resource can be
