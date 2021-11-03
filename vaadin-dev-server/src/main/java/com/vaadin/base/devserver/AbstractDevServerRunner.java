@@ -695,6 +695,10 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
             requestFilename = "/VAADIN/static" + requestFilename;
         }
 
+        if (requestFilename.equals("") || requestFilename.equals("/")) {
+            // Index file must be handled by IndexHtmlRequestHandler
+            return false;
+        }
         String devServerRequestPath = UrlUtil.encodeURI(requestFilename);
         if (request.getQueryString() != null) {
             devServerRequestPath += "?" + request.getQueryString();

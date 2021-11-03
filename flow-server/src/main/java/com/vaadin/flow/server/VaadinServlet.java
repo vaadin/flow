@@ -328,8 +328,7 @@ public class VaadinServlet extends HttpServlet {
     protected boolean serveStaticOrWebJarRequest(HttpServletRequest request,
             HttpServletResponse response) throws IOException {
 
-        if (staticFileHandler.isStaticResourceRequest(request)) {
-            staticFileHandler.serveStaticResource(request, response);
+        if (staticFileHandler.serveStaticResource(request, response)) {
             return true;
         }
 
