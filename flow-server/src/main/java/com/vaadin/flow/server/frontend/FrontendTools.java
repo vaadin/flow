@@ -504,6 +504,15 @@ public class FrontendTools {
                         String.format(LOCAL_NODE_NOT_FOUND, dir, dir,
                                 file.getAbsolutePath()));
             }
+            String vaadinHomeAbsolutePath =
+                    FrontendUtils.getVaadinHomeDirectory().getAbsolutePath();
+
+            // do not auto update the Node if the alternative directory isn't
+            // vaadin home (let devs to update it by them-self and not make
+            // surprises)
+            if (vaadinHomeAbsolutePath.equals(dir)) {
+                file = updateAlternateIfNeeded(file);
+            }
             return file.getAbsolutePath();
         } else {
             getLogger().info("Node not found in {}. Installing node {}.", dir,
