@@ -60,7 +60,6 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.CoreMatchers;
@@ -188,8 +187,8 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
 
     @Test
     public void shouldNot_RunWebpack_When_WebpackRunning() throws Exception {
-        final String manifestJsonResponse = "{}";
-        int port = prepareHttpServer(0, HTTP_OK, manifestJsonResponse);
+        final String globalResponse = "{}";
+        int port = prepareHttpServer(0, HTTP_OK, globalResponse);
         handler = startWebpack(port);
         waitForDevServer();
         assertFalse(new File(baseDir,
@@ -229,75 +228,6 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
         waitForDevServer();
     }
 
-    @Test
-    public void should_HandleJavaScriptRequests() {
-        HttpServletRequest request = prepareRequest("/VAADIN/foo.js");
-        handler = startWebpack();
-        assertTrue(handler.isDevModeRequest(request));
-    }
-
-    @Test
-    public void shouldNot_HandleNonVaadinRequests() {
-        HttpServletRequest request = prepareRequest("/foo.js");
-        handler = startWebpack();
-        assertFalse(handler.isDevModeRequest(request));
-    }
-
-    @Test
-    public void shouldNot_HandleOtherRequests() {
-        HttpServletRequest request = prepareRequest("/foo/VAADIN//foo.bar");
-        handler = startWebpack();
-        waitForDevServer();
-        assertFalse(handler.isDevModeRequest(request));
-    }
-
-    @Test
-    public void isDevModeRequest_dynamicResourcesAreNotDevModeRequest() {
-        HttpServletRequest request = prepareRequest(
-                "/" + StreamRequestHandler.DYN_RES_PREFIX + "foo");
-        handler = startWebpack();
-        waitForDevServer();
-        assertFalse(handler.isDevModeRequest(request));
-    }
-
-    @Test
-    public void should_HandleAnyAssetInVaadin() {
-        HttpServletRequest request = prepareRequest("/VAADIN/foo.bar");
-        handler = startWebpack();
-        waitForDevServer();
-        assertTrue(handler.isDevModeRequest(request));
-    }
-
-    @Test
-    public void should_HandleAnyAssetInManifestPaths() throws Exception {
-        final String manifestJsonResponse = "{ \"sw.js\": "
-                + "\"sw.js\", \"index.html\": \"index.html\" }";
-        int port = prepareHttpServer(0, HTTP_OK, manifestJsonResponse);
-
-        handler = startWebpack(port);
-        waitForDevServer();
-
-        Method m = WebpackHandler.class.getDeclaredMethod("readManifestPaths");
-        m.setAccessible(true);
-        m.invoke(handler);
-
-        HttpServletRequest request = prepareRequest("/sw.js");
-        assertTrue(handler.isDevModeRequest(request));
-    }
-
-    @Test
-    public void shouldNot_Handle_IndexHtmlInManifestPaths() throws Exception {
-        final String manifestJsonResponse = "{ \"sw.js\": "
-                + "\"sw.js\", \"index.html\": \"index.html\" }";
-        int port = prepareHttpServer(0, HTTP_OK, manifestJsonResponse);
-
-        handler = startWebpack(port);
-        waitForDevServer();
-
-        HttpServletRequest request = prepareRequest("/index.html");
-        assertFalse(handler.isDevModeRequest(request));
-    }
-
     @Test(expected = ConnectException.class)
     public void should_ThrowAnException_When_WebpackNotListening()
             throws IOException {
@@ -313,9 +243,9 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
             throws Exception {
         HttpServletRequest request = prepareRequest("/VAADIN//foo.js");
         HttpServletResponse response = prepareResponse();
-        final String manifestJsonResponse = "{ \"VAADIN//foo.js\": "
+        final String globalResponse = "{ \"VAADIN//foo.js\": "
                 + "\"VAADIN//foo.js\" }";
-        int port = prepareHttpServer(0, HTTP_OK, manifestJsonResponse);
+        int port = prepareHttpServer(0, HTTP_OK, globalResponse);
 
         handler = startWebpack(port);
         waitForDevServer();
@@ -342,9 +272,9 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
             throws Exception {
         HttpServletRequest request = prepareRequest("/VAADIN/foo.js");
         HttpServletResponse response = prepareResponse();
-        final String manifestJsonResponse = "{ \"VAADIN/foo.js\": "
+        final String globalResponse = "{ \"VAADIN/foo.js\": "
                 + "\"VAADIN/foo.js\" }";
-        int port = prepareHttpServer(0, HTTP_OK, manifestJsonResponse);
+        int port = prepareHttpServer(0, HTTP_OK, globalResponse);
 
         VaadinServlet servlet = prepareServlet(port);
         servlet.service(request, response);
@@ -375,8 +305,8 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
 
     @Test
     public void should_reuseWebpackPort_AfterRestart() throws Exception {
-        final String manifestJsonContents = "{}";
-        int port = prepareHttpServer(0, HTTP_OK, manifestJsonContents);
+        final String globalResponse = "{}";
+        int port = prepareHttpServer(0, HTTP_OK, globalResponse);
 
         handler = startWebpack(port);
         devModeHandlerManager.setDevModeHandler(handler);
@@ -421,8 +351,8 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
             throws Exception {
         CompletableFuture<Void> throwFuture = new CompletableFuture<>();
         throwFuture.completeExceptionally(new CustomRuntimeException());
-        final String manifestJsonResponse = "{}";
-        int port = prepareHttpServer(0, HTTP_OK, manifestJsonResponse);
+        final String globalResponse = "{}";
+        int port = prepareHttpServer(0, HTTP_OK, globalResponse);
         handler = new WebpackHandler(lookup, port, npmFolder, throwFuture);
         try {
             waitForDevServer();
@@ -522,9 +452,9 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
                 "/VAADIN/build/vaadin-devmodeGizmo-f679dbf313191ec3d018.cache.js");
         HttpServletResponse response = prepareResponse();
 
-        final String manifestJsonResponse = "{ \"sw.js\": "
+        final String globalResponse = "{ \"sw.js\": "
                 + "\"sw.js\", \"index.html\": \"index.html\" }";
-        int port = prepareHttpServer(0, HTTP_OK, manifestJsonResponse);
+        int port = prepareHttpServer(0, HTTP_OK, globalResponse);
 
         handler = startWebpack(port);
         waitForDevServer();
@@ -540,9 +470,9 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
                 "/VAADIN/build/vaadin-devmodeGizmo-f679dbf313191ec3d018.cache%3f%22onload=%22alert(1)");
         HttpServletResponse response = prepareResponse();
 
-        final String manifestJsonResponse = "{ \"sw.js\": "
+        final String globalResponse = "{ \"sw.js\": "
                 + "\"sw.js\", \"index.html\": \"index.html\" }";
-        int port = prepareHttpServer(0, HTTP_OK, manifestJsonResponse);
+        int port = prepareHttpServer(0, HTTP_OK, globalResponse);
 
         handler = startWebpack(port);
         waitForDevServer();

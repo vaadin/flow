@@ -666,41 +666,6 @@ public class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void manifestPath_isResourceRequest() throws IOException {
-        setupRequestURI("", "", "/sw.js");
-        Mockito.when(servletService.getStaticResource("/sw.js"))
-                .thenReturn(null);
-        Assert.assertTrue(fileServer.serveStaticResource(request, response));
-    }
-
-    @Test
-    public void manifestPath_isResourceRequest_withContextPath()
-            throws IOException {
-        setupRequestURI("/foo", "", "/sw.js");
-        Mockito.when(servletService.getStaticResource("/sw.js"))
-                .thenReturn(null);
-        Assert.assertTrue(fileServer.serveStaticResource(request, response));
-    }
-
-    @Test
-    public void manifestPath_indexHtml_isNotResourceRequest()
-            throws IOException {
-        setupRequestURI("", "", "/index.html");
-        Mockito.when(servletService.getStaticResource("/index.html"))
-                .thenReturn(null);
-        Assert.assertFalse(fileServer.serveStaticResource(request, response));
-    }
-
-    @Test
-    public void manifestPath_indexHtml_isNotResourceRequest_withContextPath()
-            throws IOException {
-        setupRequestURI("/foo", "", "/index.html");
-        Mockito.when(servletService.getStaticResource("/index.html"))
-                .thenReturn(null);
-        Assert.assertFalse(fileServer.serveStaticResource(request, response));
-    }
-
-    @Test
     public void writeModificationTimestampBrowserHasLatest()
             throws MalformedURLException {
         fileServer.overrideBrowserHasNewestVersion = true;

@@ -29,12 +29,10 @@ import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Scanner;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
@@ -53,7 +51,6 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
 
-import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
@@ -1168,24 +1165,6 @@ public class FrontendUtils {
         retval.append(curLine.toString());
         retval.append("\n");
         return retval.toString();
-    }
-
-    /**
-     * Parse "manifest.json" file contents obtained from webpack and extract the
-     * list of request paths to handle as static resources.
-     *
-     * @param manifestJson
-     *            "manifest.json" file contents
-     * @return list of paths, each starting with "/"
-     */
-    public static List<String> parseManifestPaths(String manifestJson) {
-        JsonObject manifest = Json.parse(manifestJson);
-        return Arrays.stream(manifest.keys())
-                // Skip "index.html", as it should go through
-                // IndexHtmlRequestHandler
-                .filter(key -> !INDEX_HTML.equals(key))
-                .map(key -> "/" + manifest.getString(key))
-                .collect(Collectors.toList());
     }
 
     /**
