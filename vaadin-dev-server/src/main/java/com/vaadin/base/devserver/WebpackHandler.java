@@ -86,17 +86,6 @@ public final class WebpackHandler extends AbstractDevServerRunner {
         super(lookup, runningPort, npmFolder, waitFor);
     }
 
-    @Override
-    protected boolean checkConnection() {
-        try {
-            return readManifestPaths();
-        } catch (IOException e) {
-            getLogger().debug("Error checking webpack dev server connection",
-                    e);
-        }
-        return false;
-    }
-
     private static Logger getLogger() {
         return LoggerFactory.getLogger(WebpackHandler.class);
     }
