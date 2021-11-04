@@ -504,7 +504,7 @@ public class FrontendTools {
                         String.format(LOCAL_NODE_NOT_FOUND, dir, dir,
                                 file.getAbsolutePath()));
             }
-            return file.getAbsolutePath();
+            return updateAlternateIfNeeded(file).getAbsolutePath();
         } else {
             getLogger().info("Node not found in {}. Installing node {}.", dir,
                     nodeVersion);
