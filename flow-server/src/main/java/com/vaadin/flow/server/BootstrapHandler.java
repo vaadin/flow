@@ -881,6 +881,14 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 BootstrapContext context) throws IOException {
             if (FeatureFlags.get(service.getContext())
                     .isEnabled(FeatureFlags.VITE)) {
+
+                if (!service.getDeploymentConfiguration().isProductionMode()) {
+                    Element script = createJavaScriptElement(
+                            "VAADIN/@vite/client", false);
+                    head.appendChild(script.attr("type", "module"));
+                    return;
+                }
+
                 // Get the index.html to get vite generated bundles
                 String index = FrontendUtils.getIndexHtmlContent(service);
 
