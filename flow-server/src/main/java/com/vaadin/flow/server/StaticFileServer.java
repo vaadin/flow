@@ -239,8 +239,8 @@ public class StaticFileServer implements StaticFileHandler {
             return true;
         }
 
-        if (devModeHandler != null && devModeHandler
-                .serveDevModeRequest(request, response)) {
+        if (devModeHandler != null
+                && devModeHandler.serveDevModeRequest(request, response)) {
             // We don't know what the dev server can serve, but if it served
             // something we are happy.
             return true;
