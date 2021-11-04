@@ -17,6 +17,7 @@ package com.vaadin.flow.server.frontend.scanner;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.ArrayList;
@@ -215,26 +216,30 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      * At the same time when the root level view is visited, compute the theme
      * to use and create its instance.
      *
+     * @throws ClassNotFoundException
+     * @throws IOException
      */
-    private void computeEndpoints() throws IOException {
+    private void computeEndpoints() throws ClassNotFoundException, IOException {
         // Because of different classLoaders we need compare against class
         // references loaded by the specific class finder loader
-        for (Class<?> route : getFinder().getAnnotatedClasses(Route.class)) {
+        Class<? extends Annotation> routeClass = getFinder()
+                .loadClass(Route.class.getName());
+        for (Class<?> route : getFinder().getAnnotatedClasses(routeClass)) {
             collectEndpoints(route);
         }
 
-        for (Class<?> initListener : getFinder()
-                .getSubTypesOf(UIInitListener.class)) {
+        for (Class<?> initListener : getFinder().getSubTypesOf(
+                getFinder().loadClass(UIInitListener.class.getName()))) {
             collectEndpoints(initListener);
         }
 
-        for (Class<?> initListener : getFinder()
-                .getSubTypesOf(VaadinServiceInitListener.class)) {
+        for (Class<?> initListener : getFinder().getSubTypesOf(getFinder()
+                .loadClass(VaadinServiceInitListener.class.getName()))) {
             collectEndpoints(initListener);
         }
 
-        for (Class<?> errorParameters : getFinder()
-                .getSubTypesOf(HasErrorParameter.class)) {
+        for (Class<?> errorParameters : getFinder().getSubTypesOf(
+                getFinder().loadClass(HasErrorParameter.class.getName()))) {
             collectEndpoints(errorParameters);
         }
     }
@@ -270,9 +275,8 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
 
         Set<ThemeData> themes = endPoints.values().stream()
                 // consider only endPoints with theme information
-                .filter(data -> data.getTheme().getThemeClass() != null
-                        || (data.getTheme().getThemeName() != null
-                                && !data.getTheme().getThemeName().isEmpty())
+                .filter(data -> data.getTheme().getThemeClass() != null ||
+                    (data.getTheme().getThemeName() != null && !data.getTheme().getThemeName().isEmpty())
                         || data.getTheme().isNotheme())
                 .map(EndPointData::getTheme)
                 // Remove duplicates by returning a set
@@ -280,8 +284,8 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
 
         if (themes.size() > 1) {
             String names = endPoints.values().stream()
-                    .filter(data -> data.getTheme().getThemeClass() != null
-                            || data.getTheme().getThemeName() != null
+                    .filter(data -> data.getTheme().getThemeClass() != null ||
+                        data.getTheme().getThemeName() != null
                             || data.getTheme().isNotheme())
                     .map(data -> "found '"
                             + (data.getTheme().isNotheme()
@@ -304,14 +308,13 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             ThemeData themeData = themes.iterator().next();
             if (!themeData.isNotheme()) {
                 String themeClass = themeData.getThemeClass();
-                if (!themeData.getThemeName().isEmpty()
-                        && (themeClass != null && getDefaultTheme() != null
-                                && !getDefaultTheme().isAssignableFrom(
-                                        getFinder().loadClass(themeClass)))) {
+                if (!themeData.getThemeName().isEmpty() && (themeClass != null
+                    && getDefaultTheme() != null && !getDefaultTheme()
+                    .isAssignableFrom(getFinder().loadClass(themeClass)))) {
                     throw new IllegalStateException(
-                            "Theme name and theme class can not both be specified. "
-                                    + "Theme name uses Lumo and can not be used in combination "
-                                    + "with custom theme class that doesn't extend Lumo.");
+                        "Theme name and theme class can not both be specified. "
+                            + "Theme name uses Lumo and can not be used in combination "
+                            + "with custom theme class that doesn't extend Lumo.");
                 }
                 variant = themeData.getVariant();
                 if (themeClass != null) {
@@ -320,7 +323,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                     theme = getDefaultTheme();
                     if (theme == null) {
                         throw new IllegalStateException(
-                                "Lumo dependency needs to be available on the classpath when using a theme name.");
+                            "Lumo dependency needs to be available on the classpath when using a theme name.");
                     }
                 }
                 themeName = themeData.getThemeName();
@@ -361,13 +364,16 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     /**
      * Visit all classes annotated with {@link NpmPackage} and update the list
      * of dependencies and their versions.
+     *
+     * @throws ClassNotFoundException
+     * @throws IOException
      */
-    private void computePackages() {
+    private void computePackages() throws ClassNotFoundException, IOException {
         FrontendAnnotatedClassVisitor npmPackageVisitor = new FrontendAnnotatedClassVisitor(
                 getFinder(), NpmPackage.class.getName());
 
         for (Class<?> component : getFinder()
-                .getAnnotatedClasses(NpmPackage.class)) {
+                .getAnnotatedClasses(NpmPackage.class.getName())) {
             npmPackageVisitor.visitClass(component.getName());
         }
 
@@ -408,14 +414,21 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      * @param clazz
      *            the exporter endpoint class
      *
+     * @throws ClassNotFoundException
+     *             if unable to load a class by class name
      * @throws IOException
      *             if unable to scan the class byte code
      */
-    private void computeExporterEndpoints(Class<?> clazz) throws IOException {
+    @SuppressWarnings("unchecked")
+    private void computeExporterEndpoints(Class<?> clazz)
+            throws ClassNotFoundException, IOException {
         // Because of different classLoaders we need compare against class
         // references loaded by the specific class finder loader
+        Class<? extends Annotation> routeClass = getFinder()
+                .loadClass(Route.class.getName());
+        Class<?> exporterClass = getFinder().loadClass(clazz.getName());
         Set<? extends Class<?>> exporterClasses = getFinder()
-                .getSubTypesOf(clazz);
+                .getSubTypesOf(exporterClass);
 
         // if no exporters in the project, return
         if (exporterClasses.isEmpty()) {
@@ -432,9 +445,9 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
 
             if (!Modifier.isAbstract(exporter.getModifiers())) {
                 Class<? extends Component> componentClass = (Class<? extends Component>) ReflectTools
-                        .getGenericInterfaceType(exporter, clazz);
+                        .getGenericInterfaceType(exporter, exporterClass);
                 if (componentClass != null
-                        && !componentClass.isAnnotationPresent(Route.class)) {
+                        && !componentClass.isAnnotationPresent(routeClass)) {
                     String componentClassName = componentClass.getName();
                     EndPointData configurationData = new EndPointData(
                             componentClass);
