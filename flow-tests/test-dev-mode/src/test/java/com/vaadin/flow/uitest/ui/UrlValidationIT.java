@@ -38,7 +38,7 @@ public class UrlValidationIT extends ChromeBrowserTest {
         open();
         waitUntil(input -> $(LabelElement.class).id("elementId").isDisplayed());
         // check the forbidden url
-        sendRequestAndValidateResponseStatusForbidden(
+        sendRequestAndValidateResponseStatusBadRequest(
                 "/VAADIN/build/%252E%252E");
     }
 
@@ -49,11 +49,11 @@ public class UrlValidationIT extends ChromeBrowserTest {
         open();
         waitUntil(input -> $(LabelElement.class).id("elementId").isDisplayed());
         // check the forbidden url
-        sendRequestAndValidateResponseStatusForbidden(
+        sendRequestAndValidateResponseStatusBadRequest(
                 "/VAADIN/build/%252E%252E/some-resource.css");
     }
 
-    private void sendRequestAndValidateResponseStatusForbidden(
+    private void sendRequestAndValidateResponseStatusBadRequest(
             String pathToResource) throws Exception {
         final String urlString = getRootURL() + "/view" + pathToResource;
         URL url = new URL(urlString);
@@ -62,8 +62,8 @@ public class UrlValidationIT extends ChromeBrowserTest {
         connection.setRequestMethod("GET");
         int responseCode = connection.getResponseCode();
         Assert.assertEquals(
-                "HTTP 403 Forbidden expected for urls with "
+                "HTTP 400 Bad request expected for urls with "
                         + "directory change",
-                HttpURLConnection.HTTP_FORBIDDEN, responseCode);
+                HttpURLConnection.HTTP_BAD_REQUEST, responseCode);
     }
 }

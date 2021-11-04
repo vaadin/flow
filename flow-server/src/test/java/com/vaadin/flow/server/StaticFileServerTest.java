@@ -950,61 +950,61 @@ public class StaticFileServerTest implements Serializable {
 
         Assert.assertTrue(fileServer.serveStaticResource(request, response));
         Assert.assertEquals(0, out.getOutput().length);
-        Assert.assertEquals(HttpServletResponse.SC_FORBIDDEN,
+        Assert.assertEquals(HttpServletResponse.SC_BAD_REQUEST,
                 responseCode.get());
     }
 
     @Test
-    public void serveStaticResource_uriWithDirectoryChangeWithSlash_returnsImmediatelyAndSetsForbiddenStatus()
+    public void serveStaticResource_uriWithDirectoryChangeWithSlash_returnsImmediatelyAndSetsBadRequestStatus()
             throws IOException {
         staticBuildResourceWithDirectoryChange_nothingServed(
                 "/VAADIN/build/../vaadin-bundle-1234.cache.js");
     }
 
     @Test
-    public void serveStaticResource_uriWithDirectoryChangeWithBackslash_returnsImmediatelyAndSetsForbiddenStatus()
+    public void serveStaticResource_uriWithDirectoryChangeWithBackslash_returnsImmediatelyAndSetsBadRequestStatus()
             throws IOException {
         staticBuildResourceWithDirectoryChange_nothingServed(
                 "/VAADIN/build/something\\..\\vaadin-bundle-1234.cache.js");
     }
 
     @Test
-    public void serveStaticResource_uriWithDirectoryChangeWithEncodedBackslashUpperCase_returnsImmediatelyAndSetsForbiddenStatus()
+    public void serveStaticResource_uriWithDirectoryChangeWithEncodedBackslashUpperCase_returnsImmediatelyAndSetsBadRequestStatus()
             throws IOException {
         staticBuildResourceWithDirectoryChange_nothingServed(
                 "/VAADIN/build/something%5C..%5Cvaadin-bundle-1234.cache.js");
     }
 
     @Test
-    public void serveStaticResource_uriWithDirectoryChangeWithEncodedBackslashLowerCase_returnsImmediatelyAndSetsForbiddenStatus()
+    public void serveStaticResource_uriWithDirectoryChangeWithEncodedBackslashLowerCase_returnsImmediatelyAndSetsBadRequestStatus()
             throws IOException {
         staticBuildResourceWithDirectoryChange_nothingServed(
                 "/VAADIN/build/something%5c..%5cvaadin-bundle-1234.cache.js");
     }
 
     @Test
-    public void serveStaticResource_uriWithDirectoryChangeInTheEndWithSlash_returnsImmediatelyAndSetsForbiddenStatus()
+    public void serveStaticResource_uriWithDirectoryChangeInTheEndWithSlash_returnsImmediatelyAndSetsBadRequestStatus()
             throws IOException {
         staticBuildResourceWithDirectoryChange_nothingServed(
                 "/VAADIN/build/..");
     }
 
     @Test
-    public void serveStaticResource_uriWithDirectoryChangeInTheEndWithBackslash_returnsImmediatelyAndSetsForbiddenStatus()
+    public void serveStaticResource_uriWithDirectoryChangeInTheEndWithBackslash_returnsImmediatelyAndSetsBadRequestStatus()
             throws IOException {
         staticBuildResourceWithDirectoryChange_nothingServed(
                 "/VAADIN/build/something\\..");
     }
 
     @Test
-    public void serveStaticResource_uriWithDirectoryChangeInTheEndWithEncodedBackslashUpperCase_returnsImmediatelyAndSetsForbiddenStatus()
+    public void serveStaticResource_uriWithDirectoryChangeInTheEndWithEncodedBackslashUpperCase_returnsImmediatelyAndSetsBadRequestStatus()
             throws IOException {
         staticBuildResourceWithDirectoryChange_nothingServed(
                 "/VAADIN/build/something%5C..");
     }
 
     @Test
-    public void serveStaticResource_uriWithDirectoryChangeInTheEndWithEncodedBackslashLowerCase_returnsImmediatelyAndSetsForbiddenStatus()
+    public void serveStaticResource_uriWithDirectoryChangeInTheEndWithEncodedBackslashLowerCase_returnsImmediatelyAndSetsBadRequestStatus()
             throws IOException {
         staticBuildResourceWithDirectoryChange_nothingServed(
                 "/VAADIN/build/something%5c..");
