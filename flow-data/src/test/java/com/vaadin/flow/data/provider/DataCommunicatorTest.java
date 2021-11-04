@@ -29,6 +29,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -353,7 +354,7 @@ public class DataCommunicatorTest {
         TestComponent componentWithDataProvider = new TestComponent();
         dataCommunicator = new DataCommunicator<Item>(dataGenerator,
                 arrayUpdater, data -> {
-        }, componentWithDataProvider.getElement().getNode()) {
+                }, componentWithDataProvider.getElement().getNode()) {
             @Override
             public void reset() {
                 listenerInvocationCounter.incrementAndGet();
@@ -369,7 +370,7 @@ public class DataCommunicatorTest {
 
         Assert.assertEquals(
                 "Expected two DataCommunicator::reset() invocations: upon "
-                + "setting the data provider and component attaching",
+                        + "setting the data provider and component attaching",
                 2, listenerInvocationCounter.get());
 
         // when
@@ -381,8 +382,28 @@ public class DataCommunicatorTest {
         // then
         Assert.assertEquals(
                 "Expected only one reset() invocation, because the old "
-                + "listener was removed and then only one listener is stored",
+                        + "listener was removed and then only one listener is stored",
                 3, listenerInvocationCounter.get());
+    }
+
+    @Test
+    public void setRequestedRange_tooMuchItemsRequested_maxItemsAllowedRequested() {
+        DataProvider<Item, Object> dataProvider = Mockito
+                .spy(createDataProvider(2000));
+        dataCommunicator.setDataProvider(dataProvider, null);
+        // More than allowed (1000) items requested
+        dataCommunicator.setRequestedRange(0, 1001);
+        fakeClientCommunication();
+
+        ArgumentCaptor<Query> queryCaptor = ArgumentCaptor
+                .forClass(Query.class);
+        Mockito.verify(dataProvider, Mockito.times(1))
+                .fetch(queryCaptor.capture());
+
+        Assert.assertEquals(
+                "Expected the requested items count to be limited"
+                        + " to allowed threshold",
+                1000, queryCaptor.getValue().getLimit());
     }
 
     private void fakeClientCommunication() {
@@ -423,6 +444,10 @@ public class DataCommunicatorTest {
     }
 
     private AbstractDataProvider<Item, Object> createDataProvider() {
+        return createDataProvider(100);
+    }
+
+    private AbstractDataProvider<Item, Object> createDataProvider(int items) {
         return new AbstractDataProvider<Item, Object>() {
             @Override
             public boolean isInMemory() {
@@ -431,7 +456,7 @@ public class DataCommunicatorTest {
 
             @Override
             public int size(Query<Item, Object> query) {
-                return 100;
+                return items;
             }
 
             @Override
