@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -28,6 +28,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -342,6 +343,26 @@ public class DataCommunicatorTest {
         Mockito.verify(dataProvider, Mockito.times(1)).fetch(Mockito.any());
     }
 
+    @Test
+    public void setRequestedRange_tooMuchItemsRequested_maxItemsAllowedRequested() {
+        DataProvider<Item, Object> dataProvider = Mockito
+                .spy(createDataProvider(2000));
+        dataCommunicator.setDataProvider(dataProvider, null);
+        // More than allowed (1000) items requested
+        dataCommunicator.setRequestedRange(0, 1001);
+        fakeClientCommunication();
+
+        ArgumentCaptor<Query> queryCaptor = ArgumentCaptor
+                .forClass(Query.class);
+        Mockito.verify(dataProvider, Mockito.times(1))
+                .fetch(queryCaptor.capture());
+
+        Assert.assertEquals(
+                "Expected the requested items count to be limited"
+                        + " to allowed threshold",
+                1000, queryCaptor.getValue().getLimit());
+    }
+
     private void fakeClientCommunication() {
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
         ui.getInternals().getStateTree().collectChanges(ignore -> {
@@ -380,6 +401,10 @@ public class DataCommunicatorTest {
     }
 
     private AbstractDataProvider<Item, Object> createDataProvider() {
+        return createDataProvider(100);
+    }
+
+    private AbstractDataProvider<Item, Object> createDataProvider(int items) {
         return new AbstractDataProvider<Item, Object>() {
             @Override
             public boolean isInMemory() {
@@ -388,7 +413,7 @@ public class DataCommunicatorTest {
 
             @Override
             public int size(Query<Item, Object> query) {
-                return 100;
+                return items;
             }
 
             @Override
