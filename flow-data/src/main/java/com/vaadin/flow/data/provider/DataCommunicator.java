@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2018 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -29,8 +29,6 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.slf4j.LoggerFactory;
-
 import com.vaadin.flow.data.provider.ArrayUpdater.Update;
 import com.vaadin.flow.data.provider.DataChangeEvent.DataRefreshEvent;
 import com.vaadin.flow.function.SerializableComparator;
@@ -40,6 +38,9 @@ import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.Range;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.Registration;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -57,6 +58,8 @@ import elemental.json.JsonValue;
  * @since 1.0
  */
 public class DataCommunicator<T> implements Serializable {
+    private static final int MAXIMUM_ALLOWED_ITEMS = 1000;
+
     private final DataGenerator<T> dataGenerator;
     private final ArrayUpdater arrayUpdater;
     private final SerializableConsumer<JsonArray> dataUpdater;
@@ -159,7 +162,15 @@ public class DataCommunicator<T> implements Serializable {
      *            the end of the requested range
      */
     public void setRequestedRange(int start, int length) {
-        requestedRange = Range.withLength(start, length);
+        if (length > MAXIMUM_ALLOWED_ITEMS) {
+            getLogger().warn(
+                    "Attempted to fetch more items from server than allowed "
+                            + "in one go: number of items requested '{}', maximum "
+                            + "items allowed '{}'.",
+                    length, MAXIMUM_ALLOWED_ITEMS);
+        }
+        requestedRange = Range.withLength(start,
+                Math.min(length, MAXIMUM_ALLOWED_ITEMS));
 
         requestFlush();
     }
@@ -349,10 +360,9 @@ public class DataCommunicator<T> implements Serializable {
                 inMemorySorting, filter);
         Stream<T> stream = getDataProvider().fetch(query);
         if (stream.isParallel()) {
-            LoggerFactory.getLogger(DataCommunicator.class)
-                    .debug("Data provider {} has returned "
-                            + "parallel stream on 'fetch' call",
-                            getDataProvider().getClass());
+            getLogger().debug(
+                    "Data provider {} has returned parallel stream on 'fetch' call",
+                    getDataProvider().getClass());
             stream = stream.collect(Collectors.toList()).stream();
             assert !stream.isParallel();
         }
@@ -371,10 +381,12 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     private String getInvalidContractMessage(String method) {
-        return String.format("The data provider hasn't ever called %s() "
-                + "method on the provided query. "
-                + "It means that the the data provider breaks the contract "
-                + "and the returned stream contains unxpected data.", method);
+        return String.format(
+                "The data provider hasn't ever called %s() "
+                        + "method on the provided query. "
+                        + "It means that the the data provider breaks the contract "
+                        + "and the returned stream contains unxpected data.",
+                method);
     }
 
     private void handleAttach() {
@@ -666,4 +678,9 @@ public class DataCommunicator<T> implements Serializable {
             return new Activation(Collections.emptyList(), false);
         }
     }
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(DataCommunicator.class);
+    }
+
 }
