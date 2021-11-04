@@ -235,8 +235,8 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         // Skip checks if we have a dev server already running
         File binary = getServerBinary();
         File config = getServerConfig();
-        if (!getNpmFolder().exists()) {
-            getLogger().warn("No project folder '{}' exists", getNpmFolder());
+        if (!getProjectRoot().exists()) {
+            getLogger().warn("No project folder '{}' exists", getProjectRoot());
             throw new ExecutionFailedException(START_FAILURE
                     + " the target execution folder doesn't exist.");
         }
@@ -308,7 +308,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
     protected Process doStartDevServer() {
         ApplicationConfiguration config = getApplicationConfiguration();
         ProcessBuilder processBuilder = new ProcessBuilder()
-                .directory(getNpmFolder());
+                .directory(getProjectRoot());
 
         boolean useHomeNodeExec = config.getBooleanProperty(
                 InitParameters.REQUIRE_HOME_NODE_EXECUTABLE, false);
@@ -318,7 +318,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
                 InitParameters.SERVLET_PARAMETER_GLOBAL_PNPM, false);
 
         FrontendToolsSettings settings = new FrontendToolsSettings(
-                getNpmFolder().getAbsolutePath(),
+                getProjectRoot().getAbsolutePath(),
                 () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
         settings.setForceAlternativeNode(useHomeNodeExec);
         settings.setAutoUpdate(nodeAutoUpdate);
@@ -339,7 +339,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         FrontendUtils.console(FrontendUtils.GREEN, START);
         if (getLogger().isDebugEnabled()) {
             getLogger().debug(FrontendUtils.commandToString(
-                    getNpmFolder().getAbsolutePath(), command));
+                    getProjectRoot().getAbsolutePath(), command));
         }
 
         processBuilder.command(command);
@@ -421,12 +421,8 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         }
     }
 
-    /**
-     * Gets the project root folder.
-     * 
-     * @return the project root folder
-     */
-    protected File getNpmFolder() {
+    @Override
+    public File getProjectRoot() {
         return npmFolder;
     }
 
@@ -743,11 +739,6 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         response.getOutputStream().close();
 
         return true;
-    }
-
-    @Override
-    public String getFrontendFilePathPrefix() {
-        return "";
     }
 
     private RuntimeException getCause(Throwable exception) {

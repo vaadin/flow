@@ -40,14 +40,12 @@ public class TaskCopyTemplateFiles implements FallibleCommand {
 
     private final ClassFinder classFinder;
     private final File projectDirectory;
-    private final File frontendDirectory;
     private final File resourceOutputDirectory;
 
     TaskCopyTemplateFiles(ClassFinder classFinder, File projectDirectory,
-            File frontendDirectory, File resourceOutputDirectory) {
+            File resourceOutputDirectory) {
         this.classFinder = classFinder;
         this.projectDirectory = projectDirectory;
-        this.frontendDirectory = frontendDirectory;
         this.resourceOutputDirectory = resourceOutputDirectory;
     }
 
@@ -72,19 +70,16 @@ public class TaskCopyTemplateFiles implements FallibleCommand {
         for (Class<?> clazz : classes) {
             for (JsModule jsmAnnotation : clazz
                     .getAnnotationsByType(JsModule.class)) {
-                String filePath = jsmAnnotation.value();
-                File source;
-                source = new File(frontendDirectory, filePath);
-                if (!filePath.startsWith("./") && !source.exists()) {
-                    // check "node_modules"
-                    File nodeModulesDir = new File(projectDirectory,
-                            FrontendUtils.NODE_MODULES);
-                    source = new File(nodeModulesDir, filePath);
+                String path = jsmAnnotation.value();
+                File source = FrontendUtils
+                        .resolveFrontendPath(projectDirectory, path);
+                if (source == null) {
+                    throw new ExecutionFailedException(
+                            "Unable to locate file " + path);
                 }
                 File templateDirectory = new File(resourceOutputDirectory,
                         Constants.TEMPLATE_DIRECTORY);
-                File target = new File(templateDirectory, filePath)
-                        .getParentFile();
+                File target = new File(templateDirectory, path).getParentFile();
                 target.mkdirs();
                 try {
                     FileUtils.copyFileToDirectory(source, target);

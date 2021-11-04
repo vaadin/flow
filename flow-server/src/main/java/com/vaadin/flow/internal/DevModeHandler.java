@@ -17,6 +17,7 @@ package com.vaadin.flow.internal;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 
@@ -74,10 +75,9 @@ public interface DevModeHandler extends RequestHandler {
     void stop();
 
     /**
-     * Returns the prefix to be prepended when retrieving a file directly from
-     * the dev server.
+     * Gets the project root folder.
      *
-     * @return the prefix
+     * @return the project root folder
      */
-    String getFrontendFilePathPrefix();
+    File getProjectRoot();
 }

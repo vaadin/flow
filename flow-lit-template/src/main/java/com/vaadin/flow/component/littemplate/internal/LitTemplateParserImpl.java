@@ -176,20 +176,15 @@ public class LitTemplateParserImpl implements LitTemplateParser {
     protected String getSourcesFromTemplate(VaadinService service, String tag,
             String url) {
         InputStream content = getResourceStream(service, url);
-        String pathWithoutPrefix = url.replaceFirst("^\\./", "");
         if (content == null) {
             // Attempt to get the sources from dev server, if available
-            try {
-                content = FrontendUtils.getFrontendFileFromDevModeHandler(
-                        service, pathWithoutPrefix);
-            } catch (IOException e) {
-                getLogger().warn("Exception reading " + pathWithoutPrefix
-                        + " from dev server", e);
-            }
+            content = FrontendUtils.getFrontendFileFromDevModeHandler(service,
+                    url);
         }
         if (content == null) {
             // In production builds, template sources are stored in
             // META-INF/VAADIN/config/templates
+            String pathWithoutPrefix = url.replaceFirst("^\\./", "");
             String vaadinDirectory = Constants.VAADIN_SERVLET_RESOURCES
                     + Constants.TEMPLATE_DIRECTORY;
             String resourceUrl = vaadinDirectory + pathWithoutPrefix;

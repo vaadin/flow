@@ -27,7 +27,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
 
 import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
@@ -112,12 +111,12 @@ public final class ViteHandler extends AbstractDevServerRunner {
 
     @Override
     protected File getServerBinary() {
-        return new File(getNpmFolder(), VITE_SERVER);
+        return new File(getProjectRoot(), VITE_SERVER);
     }
 
     @Override
     protected File getServerConfig() {
-        return new File(getNpmFolder(), FrontendUtils.VITE_CONFIG);
+        return new File(getProjectRoot(), FrontendUtils.VITE_CONFIG);
     }
 
     @Override
@@ -130,11 +129,6 @@ public final class ViteHandler extends AbstractDevServerRunner {
     @Override
     protected Pattern getServerSuccessPattern() {
         return Pattern.compile("ready in .*ms");
-    }
-
-    @Override
-    public String getFrontendFilePathPrefix() {
-        return Constants.VAADIN_MAPPING;
     }
 
     private static Logger getLogger() {

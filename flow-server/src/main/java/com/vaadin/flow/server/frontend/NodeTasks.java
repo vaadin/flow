@@ -807,8 +807,7 @@ public class NodeTasks implements FallibleCommand {
 
         if (builder.productionMode) {
             commands.add(new TaskCopyTemplateFiles(classFinder,
-                    builder.npmFolder, builder.frontendDirectory,
-                    builder.resourceOutputDirectory));
+                    builder.npmFolder, builder.resourceOutputDirectory));
         }
     }
 

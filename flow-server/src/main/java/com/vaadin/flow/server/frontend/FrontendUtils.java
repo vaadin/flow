@@ -17,6 +17,7 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -624,20 +625,45 @@ public class FrontendUtils {
      *            the file path.
      * @return an input stream for reading the file contents; null if there is
      *         no such file or the dev server is not running.
-     * @throws IOException
-     *             if an I/O error occurs while creating the input stream.
      */
     public static InputStream getFrontendFileFromDevModeHandler(
-            VaadinService service, String path) throws IOException {
+            VaadinService service, String path) {
         Optional<DevModeHandler> devModeHandler = DevModeHandlerManager
                 .getDevModeHandler(service);
         if (devModeHandler.isPresent()) {
-            String filePath = devModeHandler.get().getFrontendFilePathPrefix()
-                    + path;
-            filePath = filePath.replace("^/", "");
-            return getFileFromDevModeHandler(devModeHandler.get(), filePath);
+            try {
+                File frontendFile = resolveFrontendPath(
+                        devModeHandler.get().getProjectRoot(), path);
+                return frontendFile == null ? null
+                        : new FileInputStream(frontendFile);
+            } catch (IOException e) {
+                throw new UncheckedIOException("Error reading file " + path, e);
+            }
         }
         return null;
+    }
+
+    /**
+     * Looks up the front file at the given path. If the path starts with
+     * {@code ./}, first look in {@code projectRoot/frontend}, then in
+     * {@code projectRoot/node_modules/@vaadin/flow-frontend}. If the path does
+     * not start with {@code ./}, look in {@code node_modules} instead.
+     *
+     * @param projectRoot
+     *            the project root folder.
+     * @param path
+     *            the file path.
+     * @return an existing {@link File} , or null if the file doesn't exist.
+     */
+    public static File resolveFrontendPath(File projectRoot, String path) {
+        List<File> candidateParents = path.startsWith("./")
+                ? Arrays.asList(new File(projectRoot, FrontendUtils.FRONTEND),
+                        new File(projectRoot,
+                                NODE_MODULES + "@vaadin/"
+                                        + DEFAULT_FLOW_RESOURCES_FOLDER))
+                : Arrays.asList(new File(projectRoot, NODE_MODULES));
+        return candidateParents.stream().map(parent -> new File(parent, path))
+                .filter(File::exists).findFirst().orElse(null);
     }
 
     /**
