@@ -15,11 +15,8 @@
  */
 package com.vaadin.base.devserver;
 
-import static java.net.HttpURLConnection.HTTP_OK;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -65,20 +62,6 @@ public final class ViteHandler extends AbstractDevServerRunner {
     public ViteHandler(Lookup lookup, int runningPort, File npmFolder,
             CompletableFuture<Void> waitFor) {
         super(lookup, runningPort, npmFolder, waitFor);
-    }
-
-    @Override
-    protected boolean checkConnection() {
-        try {
-            getLogger().debug("Checking vite connection");
-            HttpURLConnection connection = prepareConnection(
-                    "/VAADIN/@vite/client", "GET");
-            int responseCode = connection.getResponseCode();
-            return (responseCode == HTTP_OK);
-        } catch (IOException e) {
-            getLogger().debug("Error checking vite connection", e);
-        }
-        return false;
     }
 
     @Override

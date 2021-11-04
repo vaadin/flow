@@ -445,7 +445,16 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
      * @return {@code true} if the dev server is responding correctly,
      *         {@code false} otherwise
      */
-    protected abstract boolean checkConnection();
+    protected boolean checkConnection() {
+        try {
+            HttpURLConnection connection = prepareConnection("/index.html",
+                    "GET");
+            return connection.getResponseCode() == HttpURLConnection.HTTP_OK;
+        } catch (IOException e) {
+            getLogger().debug("Error checking dev server connection", e);
+        }
+        return false;
+    }
 
     private static int getRunningDevServerPort(File npmFolder) {
         int port = 0;
