@@ -1351,8 +1351,9 @@ export class VaadinDevmodeGizmo extends LitElement {
   copyInfoToClipboard() {
     const items = this.renderRoot.querySelectorAll('.info-tray dt, .info-tray dd');
     const text = Array.from(items)
-      .map((message) => (message.localName === 'dd' ? '\t' : '') + message.textContent!.trim())
-      .join('\n');
+      .map((message) => (message.localName === 'dd' ? ': ' : '\n') + message.textContent!.trim())
+      .join('')
+      .replace(/^\n/, '');
     copy(text);
     this.showNotification(
       MessageType.INFORMATION,
