@@ -64,7 +64,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.mockito.Matchers;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.WarURLStreamHandlerFactory;
@@ -130,7 +130,7 @@ public class StaticFileServerTest implements Serializable {
         request = Mockito.mock(HttpServletRequest.class);
         response = Mockito.mock(HttpServletResponse.class);
         // No header == getDateHeader returns -1 (Mockito default is 0)
-        Mockito.when(request.getDateHeader(Matchers.anyString()))
+        Mockito.when(request.getDateHeader(ArgumentMatchers.anyString()))
                 .thenReturn(-1L);
 
         responseCode = new AtomicInteger(-1);
@@ -142,25 +142,26 @@ public class StaticFileServerTest implements Serializable {
             headers.put((String) invocation.getArguments()[0],
                     (String) invocation.getArguments()[1]);
             return null;
-        }).when(response).setHeader(Matchers.anyString(), Matchers.anyString());
+        }).when(response).setHeader(ArgumentMatchers.anyString(),
+                ArgumentMatchers.anyString());
         Mockito.doAnswer(invocation -> {
             dateHeaders.put((String) invocation.getArguments()[0],
                     (Long) invocation.getArguments()[1]);
             return null;
-        }).when(response).setDateHeader(Matchers.anyString(),
-                Matchers.anyLong());
+        }).when(response).setDateHeader(ArgumentMatchers.anyString(),
+                ArgumentMatchers.anyLong());
         Mockito.doAnswer(invocation -> {
             responseCode.set((int) invocation.getArguments()[0]);
             return null;
-        }).when(response).setStatus(Matchers.anyInt());
+        }).when(response).setStatus(ArgumentMatchers.anyInt());
         Mockito.doAnswer(invocation -> {
             responseCode.set((int) invocation.getArguments()[0]);
             return null;
-        }).when(response).sendError(Matchers.anyInt());
+        }).when(response).sendError(ArgumentMatchers.anyInt());
         Mockito.doAnswer(invocation -> {
             responseContentLength.set((long) invocation.getArguments()[0]);
             return null;
-        }).when(response).setContentLengthLong(Matchers.anyLong());
+        }).when(response).setContentLengthLong(ArgumentMatchers.anyLong());
 
         configuration = Mockito.mock(DeploymentConfiguration.class);
         Mockito.when(configuration.isProductionMode()).thenReturn(true);

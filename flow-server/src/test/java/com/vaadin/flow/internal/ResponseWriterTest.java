@@ -46,7 +46,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Matchers;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -157,7 +157,7 @@ public class ResponseWriterTest {
         request = Mockito.mock(HttpServletRequest.class);
         Mockito.when(request.getServletContext()).thenReturn(servletContext);
         // No header == getDateHeader returns -1 (Mockito default is 0)
-        Mockito.when(request.getDateHeader(Matchers.anyString()))
+        Mockito.when(request.getDateHeader(ArgumentMatchers.anyString()))
                 .thenReturn(-1L);
 
         response = Mockito.mock(HttpServletResponse.class);
@@ -165,7 +165,7 @@ public class ResponseWriterTest {
         Mockito.doAnswer(invocation -> {
             responseContentLength.set((long) invocation.getArguments()[0]);
             return null;
-        }).when(response).setContentLengthLong(Matchers.anyLong());
+        }).when(response).setContentLengthLong(ArgumentMatchers.anyLong());
 
         Assert.assertNull(VaadinService.getCurrent());
     }
@@ -181,7 +181,7 @@ public class ResponseWriterTest {
         Mockito.doAnswer(invocation -> {
             contentType.set((String) invocation.getArguments()[0]);
             return null;
-        }).when(response).setContentType(Matchers.anyString());
+        }).when(response).setContentType(ArgumentMatchers.anyString());
 
         Mockito.when(servletContext.getMimeType("/file.png"))
                 .thenReturn("image/png");
@@ -197,7 +197,7 @@ public class ResponseWriterTest {
         Mockito.doAnswer(invocation -> {
             contentType.set((String) invocation.getArguments()[0]);
             return null;
-        }).when(response).setContentType(Matchers.anyString());
+        }).when(response).setContentType(ArgumentMatchers.anyString());
 
         Mockito.when(servletContext.getMimeType("/file")).thenReturn(null);
 
@@ -565,7 +565,7 @@ public class ResponseWriterTest {
         Mockito.doAnswer(invocation -> {
             contentType.set((String) invocation.getArguments()[0]);
             return null;
-        }).when(response).setContentType(Matchers.anyString());
+        }).when(response).setContentType(ArgumentMatchers.anyString());
 
         responseWriter.writeResponseContents(path, pathToUrl.get(path), request,
                 response);
