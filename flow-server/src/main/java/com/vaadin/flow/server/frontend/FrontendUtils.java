@@ -656,12 +656,15 @@ public class FrontendUtils {
      * @return an existing {@link File} , or null if the file doesn't exist.
      */
     public static File resolveFrontendPath(File projectRoot, String path) {
+        File localFrontendFolder = new File(projectRoot,
+                FrontendUtils.FRONTEND);
+        File nodeModulesFolder = new File(projectRoot, NODE_MODULES);
+        File flowFrontendFolder = new File(nodeModulesFolder,
+                "@vaadin/" + DEFAULT_FLOW_RESOURCES_FOLDER);
         List<File> candidateParents = path.startsWith("./")
-                ? Arrays.asList(new File(projectRoot, FrontendUtils.FRONTEND),
-                        new File(projectRoot,
-                                NODE_MODULES + "@vaadin/"
-                                        + DEFAULT_FLOW_RESOURCES_FOLDER))
-                : Arrays.asList(new File(projectRoot, NODE_MODULES));
+                ? Arrays.asList(localFrontendFolder, flowFrontendFolder)
+                : Arrays.asList(nodeModulesFolder, localFrontendFolder,
+                        flowFrontendFolder);
         return candidateParents.stream().map(parent -> new File(parent, path))
                 .filter(File::exists).findFirst().orElse(null);
     }
