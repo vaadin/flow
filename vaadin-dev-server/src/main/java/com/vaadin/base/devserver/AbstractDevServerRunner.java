@@ -695,10 +695,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
             requestFilename = "/VAADIN/static" + requestFilename;
         }
 
-        // Dev server request can have an absolute system path making
-        // it required to not encode ':'
-        String devServerRequestPath = UrlUtil.encodeURI(requestFilename)
-                            .replace("%3A", ":");
+        String devServerRequestPath = UrlUtil.encodeURI(requestFilename);
         if (request.getQueryString() != null) {
             devServerRequestPath += "?" + request.getQueryString();
         }
