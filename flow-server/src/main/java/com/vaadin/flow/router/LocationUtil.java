@@ -16,15 +16,11 @@
 
 package com.vaadin.flow.router;
 
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Utility class exposing reusable utility methods for location.
@@ -53,7 +49,7 @@ public class LocationUtil {
             // Ignore forbidden chars supported in route definitions
             String strippedPath = path.replaceAll("[{}*]", "");
 
-            URI uri = new URI(URLEncoder.encode(strippedPath, UTF_8.name()));
+            URI uri = new URI(null, null, strippedPath, null);
             if (uri.isAbsolute()) {
                 // "A URI is absolute if, and only if, it has a scheme
                 // component"
@@ -66,7 +62,7 @@ public class LocationUtil {
                 throw new InvalidLocationException(
                         "Relative path cannot contain .. segments");
             }
-        } catch (URISyntaxException | UnsupportedEncodingException e) {
+        } catch (URISyntaxException e) {
             throw new InvalidLocationException("Cannot parse path: " + path, e);
         }
 
