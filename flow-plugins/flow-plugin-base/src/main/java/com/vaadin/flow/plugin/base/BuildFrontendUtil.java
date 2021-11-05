@@ -156,8 +156,7 @@ public class BuildFrontendUtil {
                         .setJavaResourceFolder(adapter.javaResourceFolder())
                         .withProductionMode(adapter.productionMode());
 
-        // If building a jar project copy jar artifact contents now as we
-        // might not be able to read files from jar path.
+        // Copy jar artifact contents in TaskCopyFrontendFiles
         builder.copyResources(adapter.getJarFiles());
 
         try {
