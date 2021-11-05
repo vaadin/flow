@@ -33,6 +33,9 @@ import static com.vaadin.flow.uitest.ui.theme.ReusableThemeView.SNOWFLAKE_ID;
 import static com.vaadin.flow.uitest.ui.theme.ReusableThemeView.OCTOPUSS_ID;
 import static com.vaadin.flow.uitest.ui.theme.ReusableThemeView.SUB_COMPONENT_ID;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class ReusableThemeIT extends ChromeBrowserTest {
 
     @Test
