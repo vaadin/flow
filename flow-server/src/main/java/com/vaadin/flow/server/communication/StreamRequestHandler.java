@@ -148,7 +148,7 @@ public class StreamRequestHandler implements RequestHandler {
 
         builder.append(UI.getCurrent().getUIId()).append(PATH_SEPARATOR);
         builder.append(id).append(PATH_SEPARATOR);
-        builder.append(UrlUtil.encodeURI(name));
+        builder.append(UrlUtil.encodeURIComponent(name));
         return builder.toString();
     }
 
@@ -162,7 +162,7 @@ public class StreamRequestHandler implements RequestHandler {
         String prefix = path.substring(0, index + 1);
         String name = path.substring(prefix.length());
         try {
-            URI uri = new URI(prefix + UrlUtil.encodeURI(name));
+            URI uri = new URI(prefix + UrlUtil.encodeURIComponent(name));
             return Optional.of(uri);
         } catch (URISyntaxException e) {
             getLogger().info(
