@@ -56,9 +56,6 @@ public class UrlUtil {
      * <p>
      * Note that ? and # are not encoded so you should not pass a URL path that
      * includes a query string or a fragment
-     * <p>
-     * Note that : is not encoded as for windows environments file paths start
-     * with the drive e.g. C:
      * 
      * @param path
      *            the path to encode
@@ -66,8 +63,8 @@ public class UrlUtil {
     public static String encodeURI(String path) {
         try {
             return URLEncoder.encode(path, StandardCharsets.UTF_8.name())
-                    .replace("+", "%20").replace("%2F", "/").replace("%40", "@")
-                    .replace("%3A", ":");
+                    .replace("+", "%20").replace("%2F", "/")
+                    .replace("%40", "@");
         } catch (UnsupportedEncodingException e) {
             // Runtime exception as this doesn't really happen
             throw new RuntimeException("Encoding the URI failed", e); // NOSONAR

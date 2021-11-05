@@ -20,7 +20,7 @@ import org.junit.Test;
 
 public class UrlUtilTest {
 
-    private String shouldNotBeEscaped = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/_-.*@:";
+    private String shouldNotBeEscaped = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/_-.*@";
 
     @Test
     public void isExternal_URLStartsWithTwoSlashes_returnsTrue() {
