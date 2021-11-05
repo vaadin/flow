@@ -42,9 +42,11 @@ public class ReusableThemeIT extends ChromeBrowserTest {
         Assert.assertFalse("reusable-theme static files should be copied",
                 driver.getPageSource().contains("HTTP ERROR 404 Not Found"));
 
-        getDriver().get(getRootURL() + "/path/themes/no-copy/no-copy.txt");
-        Assert.assertTrue("no-copy theme should not be handled",
-                driver.getPageSource().contains("HTTP ERROR 404 Not Found"));
+        String source = driver.getPageSource();
+        Matcher m = Pattern.compile(
+                ".*Could not navigate to.*themes/no-copy/no-copy.txt.*",
+                Pattern.DOTALL).matcher(source);
+        Assert.assertTrue("no-copy theme should not be handled", m.matches());
     }
 
     @Test
