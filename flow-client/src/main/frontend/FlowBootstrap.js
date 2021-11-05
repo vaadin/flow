@@ -6,7 +6,7 @@
    - It reuses `Vaadin.Flow.clients` if exists.
    - Fixed lint errors.
  */
-const init = function(appInitResponse) {
+const init = function (appInitResponse) {
   window.Vaadin = window.Vaadin || {};
   window.Vaadin.Flow = window.Vaadin.Flow || {};
 
@@ -16,10 +16,10 @@ const init = function(appInitResponse) {
   var log;
   if (typeof window.console === undefined || !window.location.search.match(/[&?]debug(&|$)/)) {
     /* If no console.log present, just use a no-op */
-    log = function() {};
+    log = function () {};
   } else if (typeof window.console.log === 'function') {
     /* If it's a function, use it with apply */
-    log = function() {
+    log = function () {
       window.console.log.apply(window.console, arguments);
     };
   } else {
@@ -28,7 +28,7 @@ const init = function(appInitResponse) {
     log = window.console.log;
   }
 
-  var isInitializedInDom = function(appId) {
+  var isInitializedInDom = function (appId) {
     var appDiv = document.getElementById(appId);
     if (!appDiv) {
       return false;
@@ -57,8 +57,8 @@ const init = function(appInitResponse) {
   /*
    * Needed for wrapping custom javascript functionality in the components (i.e. connectors)
    */
-  window.Vaadin.Flow.tryCatchWrapper = function(originalFunction, component) {
-    return function() {
+  window.Vaadin.Flow.tryCatchWrapper = function (originalFunction, component) {
+    return function () {
       try {
         // eslint-disable-next-line
         const result = originalFunction.apply(this, arguments);
@@ -74,18 +74,19 @@ Please submit an issue to https://github.com/vaadin/flow-components/issues/new/c
   };
 
   if (!window.Vaadin.Flow.initApplication) {
-
     window.Vaadin.Flow.clients = window.Vaadin.Flow.clients || {};
 
-    window.Vaadin.Flow.initApplication = function(appId, config) {
+    window.Vaadin.Flow.initApplication = function (appId, config) {
       var testbenchId = appId.replace(/-\d+$/, '');
 
       if (apps[appId]) {
-        if (window.Vaadin
-            && window.Vaadin.Flow
-            && window.Vaadin.Flow.clients
-            && window.Vaadin.Flow.clients[testbenchId]
-            && window.Vaadin.Flow.clients[testbenchId].initializing) {
+        if (
+          window.Vaadin &&
+          window.Vaadin.Flow &&
+          window.Vaadin.Flow.clients &&
+          window.Vaadin.Flow.clients[testbenchId] &&
+          window.Vaadin.Flow.clients[testbenchId].initializing
+        ) {
           throw new Error('Application ' + appId + ' is already being initialized');
         }
         if (isInitializedInDom(appId)) {
@@ -96,14 +97,14 @@ Please submit an issue to https://github.com/vaadin/flow-components/issues/new/c
       log('init application', appId, config);
 
       window.Vaadin.Flow.clients[testbenchId] = {
-        isActive: function() {
+        isActive: function () {
           return true;
         },
         initializing: true,
         productionMode: mode
       };
 
-      var getConfig = function(name) {
+      var getConfig = function (name) {
         var value = config[name];
         return value;
       };
@@ -132,7 +133,7 @@ Please submit an issue to https://github.com/vaadin/flow-components/issues/new/c
 
       return app;
     };
-    window.Vaadin.Flow.getAppIds = function() {
+    window.Vaadin.Flow.getAppIds = function () {
       var ids = [];
       for (var id in apps) {
         if (apps.hasOwnProperty(id)) {
@@ -141,10 +142,10 @@ Please submit an issue to https://github.com/vaadin/flow-components/issues/new/c
       }
       return ids;
     };
-    window.Vaadin.Flow.getApp = function(appId) {
+    window.Vaadin.Flow.getApp = function (appId) {
       return apps[appId];
     };
-    window.Vaadin.Flow.registerWidgetset = function(widgetset, callback) {
+    window.Vaadin.Flow.registerWidgetset = function (widgetset, callback) {
       log('Widgetset registered', widgetset);
       var ws = widgetsets[widgetset];
       if (ws && ws.pendingApps) {
@@ -157,7 +158,7 @@ Please submit an issue to https://github.com/vaadin/flow-components/issues/new/c
         ws.pendingApps = null;
       }
     };
-    window.Vaadin.Flow.getBrowserDetailsParameters = function() {
+    window.Vaadin.Flow.getBrowserDetailsParameters = function () {
       var params = {};
 
       /* Screen height and width */
@@ -186,8 +187,8 @@ Please submit an issue to https://github.com/vaadin/flow-components/issues/new/c
         date.setUTCMonth(m);
         var tzo2 = date.getTimezoneOffset();
         if (tzo1 != tzo2) {
-          dstDiff = (tzo1 > tzo2 ? tzo1 - tzo2 : tzo2 - tzo1);
-          rawTzo = (tzo1 > tzo2 ? tzo1 : tzo2);
+          dstDiff = tzo1 > tzo2 ? tzo1 - tzo2 : tzo2 - tzo1;
+          rawTzo = tzo1 > tzo2 ? tzo1 : tzo2;
           break;
         }
       }
@@ -202,7 +203,7 @@ Please submit an issue to https://github.com/vaadin/flow-components/issues/new/c
       params['v-rtzo'] = rawTzo;
 
       /* DST in effect? */
-      params['v-dston'] = (tzo1 != rawTzo);
+      params['v-dston'] = tzo1 != rawTzo;
 
       /* Time zone id (if available) */
       try {
@@ -223,8 +224,7 @@ Please submit an issue to https://github.com/vaadin/flow-components/issues/new/c
         supportsTouch = true;
       } catch (e) {
         /* Chrome and IE10 touch detection */
-        supportsTouch = 'ontouchstart' in window
-          || (typeof navigator.msMaxTouchPoints !== 'undefined');
+        supportsTouch = 'ontouchstart' in window || typeof navigator.msMaxTouchPoints !== 'undefined';
       }
       params['v-td'] = supportsTouch;
 
@@ -236,7 +236,7 @@ Please submit an issue to https://github.com/vaadin/flow-components/issues/new/c
       }
 
       /* Stringify each value (they are parsed on the server side) */
-      Object.keys(params).forEach(function(key) {
+      Object.keys(params).forEach(function (key) {
         var value = params[key];
         if (typeof value !== 'undefined') {
           params[key] = value.toString();
@@ -249,7 +249,7 @@ Please submit an issue to https://github.com/vaadin/flow-components/issues/new/c
   log('Flow bootstrap loaded');
   if (appInitResponse.appConfig.productionMode && typeof window.__gwtStatsEvent != 'function') {
     window.Vaadin.Flow.gwtStatsEvents = [];
-    window.__gwtStatsEvent = function(event) {
+    window.__gwtStatsEvent = function (event) {
       window.Vaadin.Flow.gwtStatsEvents.push(event);
       return true;
     };
@@ -259,5 +259,4 @@ Please submit an issue to https://github.com/vaadin/flow-components/issues/new/c
   window.Vaadin.Flow.initApplication(config.appId, config);
 };
 
-export {init};
-
+export { init };
