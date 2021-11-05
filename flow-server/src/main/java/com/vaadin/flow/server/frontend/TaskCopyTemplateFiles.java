@@ -31,8 +31,7 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 /**
  * Copies template files to the target folder so as to be available for parsing
- * when in production mode. Only required for Vite builds; with Webpack, sources
- * are parsed from stats.json.
+ * at runtime in production mode.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
