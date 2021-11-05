@@ -5,6 +5,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.vaadin.example.addon.AddonLitComponent;
 import com.vaadin.flow.component.html.testbench.InputTextElement;
 import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.component.html.testbench.SpanElement;
@@ -33,9 +34,14 @@ public class TemplateIT extends ChromeBrowserTest {
         SpanElement litSpan = $(LitComponent.TAG).first().$(SpanElement.class)
                 .first();
         Assert.assertEquals(initialValue, litSpan.getText());
+
         SpanElement polymerSpan = $(PolymerComponent.TAG).first()
                 .$(SpanElement.class).first();
         Assert.assertEquals(initialValue, polymerSpan.getText());
+
+        SpanElement addonLitSpan = $(AddonLitComponent.TAG).first()
+                .$(SpanElement.class).first();
+        Assert.assertEquals(initialValue, addonLitSpan.getText());
 
         final String newLabel = "New label";
         $(InputTextElement.class).first().setValue(newLabel);
@@ -43,5 +49,6 @@ public class TemplateIT extends ChromeBrowserTest {
 
         Assert.assertEquals(newLabel, litSpan.getText());
         Assert.assertEquals(newLabel, polymerSpan.getText());
+        Assert.assertEquals(newLabel, addonLitSpan.getText());
     }
 }

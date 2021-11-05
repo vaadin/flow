@@ -1,5 +1,6 @@
 package com.vaadin.viteapp.views.template;
 
+import org.vaadin.example.addon.AddonLitComponent;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
@@ -17,6 +18,9 @@ public class TemplateView extends Div {
         PolymerComponent polymerComponent = new PolymerComponent();
         add(polymerComponent);
 
+        AddonLitComponent addonLitComponent = new AddonLitComponent();
+        add(addonLitComponent);
+
         Input setLabelInput = new Input();
         add(setLabelInput);
 
@@ -25,6 +29,7 @@ public class TemplateView extends Div {
             String newLabel = setLabelInput.getValue();
             litComponent.setLabel(newLabel);
             polymerComponent.setLabel(newLabel);
+            addonLitComponent.setLabel(newLabel);
         });
         add(setLabelButton);
     }

@@ -2,7 +2,10 @@ import { html, LitElement } from 'lit';
 
 class LitComponent extends LitElement {
   render() {
-    return html`<span id="label">Default</span>`;
+    return html`<div>
+        <p>Local Lit component</p>
+        <span id="label">Default</span>
+    </div>`;
   }
 }
 

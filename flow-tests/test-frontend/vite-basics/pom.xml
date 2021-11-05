@@ -46,6 +46,11 @@
             <groupId>com.vaadin</groupId>
             <artifactId>flow-polymer-template</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>addon-with-templates</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
