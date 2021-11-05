@@ -39,7 +39,7 @@ public class UrlValidationIT extends ChromeBrowserTest {
         waitUntil(input -> $(LabelElement.class).id("elementId").isDisplayed());
         // check the forbidden url
         sendRequestAndValidateResponseStatusForbidden(
-                "/VAADIN/build/%252E%252E/");
+                "/VAADIN/build/%252E%252E");
     }
 
     @Test
