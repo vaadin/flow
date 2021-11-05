@@ -10,14 +10,13 @@
  *     - `index.js` is also supported if you don't want to use TypeScript.
  ******************************************************************************/
 
-
 // import Vaadin client-router to handle client-side and server-side navigation
-import {Router} from '@vaadin/router';
+import { Router } from '@vaadin/router';
 
 // import Flow module to enable navigation to Vaadin server-side views
-import {Flow} from '@vaadin/flow-frontend/Flow';
+import { Flow } from '@vaadin/flow-frontend/Flow';
 
-const {serverSideRoutes} = new Flow({
+const { serverSideRoutes } = new Flow({
   imports: () => import('[to-be-generated-by-flow]')
 });
 

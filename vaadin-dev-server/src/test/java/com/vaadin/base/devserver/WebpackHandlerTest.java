@@ -34,6 +34,7 @@ import static org.mockito.Mockito.mock;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.net.BindException;
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
@@ -275,6 +276,10 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
 
         handler = startWebpack(port);
         waitForDevServer();
+
+        Method m = WebpackHandler.class.getDeclaredMethod("readManifestPaths");
+        m.setAccessible(true);
+        m.invoke(handler);
 
         HttpServletRequest request = prepareRequest("/sw.js");
         assertTrue(handler.isDevModeRequest(request));

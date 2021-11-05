@@ -47,6 +47,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.frontend.installer.ProxyConfig;
 import com.vaadin.flow.testutil.FrontendStubs;
@@ -126,66 +127,90 @@ public class FrontendToolsTest {
     }
 
     @Test
-    public void updateTooOldNode_NodeInstalledToTargetDirectoryIsUpdated()
+    public void nodeIsBeingLocated_updateTooOldNode_NodeInstalledToTargetDirectoryIsUpdated()
             throws FrontendUtils.UnknownVersionException {
-        settings.setForceAlternativeNode(true);
-        tools = new FrontendTools(settings);
+        FrontendVersion updatedNodeVersion = getUpdatedAlternativeNodeVersion(
+                "7.7.3", () -> tools.getNodeExecutable());
 
-        String nodeExecutable = tools.installNode("v7.7.3", null);
-        Assert.assertNotNull(nodeExecutable);
-
-        List<String> nodeVersionCommand = new ArrayList<>();
-        nodeVersionCommand.add(nodeExecutable);
-        nodeVersionCommand.add("--version");
-        FrontendVersion node = FrontendUtils.getVersion("node",
-                nodeVersionCommand);
-        Assert.assertEquals("Wrong node version installed", "7.7.3",
-                node.getFullVersion());
-
-        nodeExecutable = tools.getNodeExecutable();
-        nodeVersionCommand = new ArrayList<>();
-        nodeVersionCommand.add(nodeExecutable);
-        nodeVersionCommand.add("--version");
-        node = FrontendUtils.getVersion("node", nodeVersionCommand);
-        Assert.assertEquals("Node version update failed.",
-                new FrontendVersion(FrontendTools.DEFAULT_NODE_VERSION)
-                        .getFullVersion(),
-                node.getFullVersion());
-    }
-
-    @Test
-    public void supportedNodeInstalled_autoUpdateFalse_NodeNotUpdated()
-            throws FrontendUtils.UnknownVersionException {
-        settings.setForceAlternativeNode(true);
-        tools = new FrontendTools(settings);
-        String nodeExecutable = tools.installNode("v10.14.2", null);
-        Assert.assertNotNull(nodeExecutable);
-
-        List<String> nodeVersionCommand = new ArrayList<>();
-        nodeVersionCommand.add(nodeExecutable);
-        nodeVersionCommand.add("--version");
-        FrontendVersion node = FrontendUtils.getVersion("node",
-                nodeVersionCommand);
-        Assert.assertEquals("Wrong node version installed", "10.14.2",
-                node.getFullVersion());
-
-        nodeExecutable = tools.getNodeExecutable();
-        nodeVersionCommand = new ArrayList<>();
-        nodeVersionCommand.add(nodeExecutable);
-        nodeVersionCommand.add("--version");
-        node = FrontendUtils.getVersion("node", nodeVersionCommand);
         Assert.assertEquals(
-                "Node version updated even if it should not have been touched.",
-                "10.14.2", node.getFullVersion());
+                "Failed to update the old Node version when being located",
+                new FrontendVersion(FrontendTools.DEFAULT_NODE_VERSION)
+                        .getFullVersion(),
+                updatedNodeVersion.getFullVersion());
     }
 
     @Test
-    public void supportedNodeInstalled_autoUpdateTrue_NodeUpdated()
+    public void nodeIsBeingLocated_supportedNodeInstalled_autoUpdateFalse_NodeNotUpdated()
+            throws FrontendUtils.UnknownVersionException {
+        FrontendVersion updatedNodeVersion = getUpdatedAlternativeNodeVersion(
+                "10.14.2", () -> tools.getNodeExecutable());
+
+        Assert.assertEquals(
+                "Locate Node version: Node version updated even if it should not have been touched.",
+                "10.14.2", updatedNodeVersion.getFullVersion());
+    }
+
+    @Test
+    public void nodeIsBeingLocated_supportedNodeInstalled_autoUpdateTrue_NodeUpdated()
+            throws FrontendUtils.UnknownVersionException {
+        settings.setAutoUpdate(true);
+        FrontendVersion updatedNodeVersion = getUpdatedAlternativeNodeVersion(
+                "10.14.2", () -> tools.getNodeExecutable());
+
+        Assert.assertEquals(
+                "Locate Node version: Node version was not auto updated.",
+                new FrontendVersion(FrontendTools.DEFAULT_NODE_VERSION)
+                        .getFullVersion(),
+                updatedNodeVersion.getFullVersion());
+    }
+
+    @Test
+    public void forceAlternativeDirectory_updateTooOldNode_NodeInstalledToTargetDirectoryIsUpdated()
+            throws FrontendUtils.UnknownVersionException {
+        FrontendVersion updatedNodeVersion = getUpdatedAlternativeNodeVersion(
+                "7.7.3", () -> tools.forceAlternativeNodeExecutable());
+
+        Assert.assertEquals(
+                "Failed to update the old Node version when alternative directory forced",
+                new FrontendVersion(FrontendTools.DEFAULT_NODE_VERSION)
+                        .getFullVersion(),
+                updatedNodeVersion.getFullVersion());
+    }
+
+    @Test
+    public void forceAlternativeDirectory_supportedNodeInstalled_autoUpdateFalse_NodeNotUpdated()
+            throws FrontendUtils.UnknownVersionException {
+        FrontendVersion updatedNodeVersion = getUpdatedAlternativeNodeVersion(
+                "10.14.2", () -> tools.forceAlternativeNodeExecutable());
+
+        Assert.assertEquals(
+                "Force alternative directory: Node version updated even if it should not have been touched.",
+                "10.14.2", updatedNodeVersion.getFullVersion());
+    }
+
+    @Test
+    public void forceAlternativeDirectory_supportedNodeInstalled_autoUpdateTrue_NodeUpdated()
+            throws FrontendUtils.UnknownVersionException {
+        settings.setAutoUpdate(true);
+        FrontendVersion updatedNodeVersion = getUpdatedAlternativeNodeVersion(
+                "10.14.2", () -> tools.forceAlternativeNodeExecutable());
+
+        Assert.assertEquals(
+                "Force alternative directory: Node version was not auto updated.",
+                new FrontendVersion(FrontendTools.DEFAULT_NODE_VERSION)
+                        .getFullVersion(),
+                updatedNodeVersion.getFullVersion());
+    }
+
+    private FrontendVersion getUpdatedAlternativeNodeVersion(
+            String oldNodeVersion,
+            SerializableSupplier<String> nodeUpdateCommand)
             throws FrontendUtils.UnknownVersionException {
         settings.setForceAlternativeNode(true);
-        settings.setAutoUpdate(true);
         tools = new FrontendTools(settings);
-        String nodeExecutable = tools.installNode("v10.14.2", null);
+
+        String toBeInstalled = "v" + oldNodeVersion;
+        String nodeExecutable = tools.installNode(toBeInstalled, null);
         Assert.assertNotNull(nodeExecutable);
 
         List<String> nodeVersionCommand = new ArrayList<>();
@@ -193,18 +218,14 @@ public class FrontendToolsTest {
         nodeVersionCommand.add("--version");
         FrontendVersion node = FrontendUtils.getVersion("node",
                 nodeVersionCommand);
-        Assert.assertEquals("Wrong node version installed", "10.14.2",
+        Assert.assertEquals("Wrong node version installed", oldNodeVersion,
                 node.getFullVersion());
 
-        nodeExecutable = tools.getNodeExecutable();
+        nodeExecutable = nodeUpdateCommand.get();
         nodeVersionCommand = new ArrayList<>();
         nodeVersionCommand.add(nodeExecutable);
         nodeVersionCommand.add("--version");
-        node = FrontendUtils.getVersion("node", nodeVersionCommand);
-        Assert.assertEquals("Node version was not auto updated.",
-                new FrontendVersion(FrontendTools.DEFAULT_NODE_VERSION)
-                        .getFullVersion(),
-                node.getFullVersion());
+        return FrontendUtils.getVersion("node", nodeVersionCommand);
     }
 
     private void prepareNodeDownloadableZipAt(String baseDir, String version)

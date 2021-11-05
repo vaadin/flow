@@ -18,27 +18,28 @@
  * This plugin handles communicates to Java dev-mode handler status of compilation
  */
 class BuildStatusPlugin {
-
   constructor(options = {}) {
     this.options = options;
   }
 
   apply(compiler) {
-    const logger = compiler.getInfrastructureLogger("build-status");
+    const logger = compiler.getInfrastructureLogger('build-status');
 
-    compiler.hooks.done.tap("done", (stats) => {
+    compiler.hooks.done.tap('done', (stats) => {
       // Defer notification and let the webpack-dev-server finish
       setTimeout(() => {
         const errors = stats.compilation.errors;
         const warnings = stats.compilation.warnings;
         if (errors.length > 0) {
-          logger.info(`${humanReadable(errors.length, "error")} and ${humanReadable(warnings.length, "warning")} were reported.`);
-          logger.info(": Failed to compile.");
+          logger.info(
+            `${humanReadable(errors.length, 'error')} and ${humanReadable(warnings.length, 'warning')} were reported.`
+          );
+          logger.info(': Failed to compile.');
         } else {
           if (warnings.length > 0) {
-            logger.info(`${humanReadable(warnings.length, "warning")} were reported.`);
+            logger.info(`${humanReadable(warnings.length, 'warning')} were reported.`);
           }
-          logger.info(": Compiled.");
+          logger.info(': Compiled.');
         }
       }, 0);
     });

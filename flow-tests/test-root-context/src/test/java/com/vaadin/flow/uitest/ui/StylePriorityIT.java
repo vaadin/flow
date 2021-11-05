@@ -13,27 +13,23 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.webcomponent;
+package com.vaadin.flow.uitest.ui;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import com.vaadin.testbench.TestBenchElement;
 
-public class ThemedVariantComponentIT extends ChromeBrowserTest {
-
-    @Override
-    protected String getTestPath() {
-        return "/index.html";
-    }
+public class StylePriorityIT extends ChromeBrowserTest {
 
     @Test
-    public void servletPageGetsWebComponent_attributeIsReflectedToServer() {
+    public void noParameters() {
         open();
+        WebElement div = findElement(By.id("priority-style"));
 
-        TestBenchElement webComponent = $("themed-variant-web-component")
-                .first();
-        Assert.assertEquals("dark", webComponent.getAttribute("theme"));
+        Assert.assertEquals("display: block !important;",
+                div.getAttribute("style"));
     }
 }

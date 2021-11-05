@@ -21,7 +21,6 @@ import javax.servlet.WriteListener;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -93,23 +92,25 @@ public class StaticFileServerTest implements Serializable {
     private ServletContext servletContext;
 
     private static final String WEBAPP_RESOURCE_PREFIX = "META-INF/VAADIN/webapp";
+    private CapturingServletOutputStream out;
 
-    private static URL createFileURLWithDataAndLength(String name, byte[] data)
+    private static URL createFileURLWithDataAndLength(String name, String data)
             throws MalformedURLException {
         return createFileURLWithDataAndLength(name, data, -1);
     }
 
-    private static URL createFileURLWithDataAndLength(String name, byte[] data,
+    private static URL createFileURLWithDataAndLength(String name, String data,
             long lastModificationTime) throws MalformedURLException {
         return new URL("file", "", -1, name, new URLStreamHandler() {
 
             @Override
             protected URLConnection openConnection(URL u) throws IOException {
+                byte[] bytes = data.getBytes(StandardCharsets.UTF_8);
                 URLConnection connection = Mockito.mock(URLConnection.class);
                 Mockito.when(connection.getInputStream())
-                        .thenReturn(new ByteArrayInputStream(data));
+                        .thenReturn(new ByteArrayInputStream(bytes));
                 Mockito.when(connection.getContentLengthLong())
-                        .thenReturn((long) data.length);
+                        .thenReturn((long) bytes.length);
                 Mockito.when(connection.getLastModified())
                         .thenReturn(lastModificationTime);
                 return connection;
@@ -177,6 +178,9 @@ public class StaticFileServerTest implements Serializable {
         // Required by the ResponseWriter
         servletContext = Mockito.mock(ServletContext.class);
         Mockito.when(request.getServletContext()).thenReturn(servletContext);
+
+        out = new CapturingServletOutputStream();
+        Mockito.when(response.getOutputStream()).thenReturn(out);
     }
 
     @After
@@ -249,12 +253,6 @@ public class StaticFileServerTest implements Serializable {
         Mockito.when(request.getServletPath()).thenReturn(servletPath);
         Mockito.when(request.getPathInfo()).thenReturn(pathInfo);
         Mockito.when(request.getRequestURI()).thenReturn(requestURI);
-    }
-
-    private void mockWebappResource(ClassLoader mockLoader, String pathInfo,
-            URL resourceUrl) {
-        Mockito.when(mockLoader.getResource(WEBAPP_RESOURCE_PREFIX + pathInfo))
-                .thenReturn(resourceUrl);
     }
 
     @Test
@@ -829,16 +827,14 @@ public class StaticFileServerTest implements Serializable {
     @Test
     public void serveStaticResource() throws IOException {
         setupRequestURI("", "/some", "/file.js");
-        byte[] fileData = "function() {eval('foo');};"
-                .getBytes(StandardCharsets.UTF_8);
+        String fileData = "function() {eval('foo');};";
+
         Mockito.when(servletService.getStaticResource("/some/file.js"))
                 .thenReturn(createFileURLWithDataAndLength("/some/file.js",
                         fileData));
-        CapturingServletOutputStream out = new CapturingServletOutputStream();
-        Mockito.when(response.getOutputStream()).thenReturn(out);
 
         Assert.assertTrue(fileServer.serveStaticResource(request, response));
-        Assert.assertArrayEquals(fileData, out.getOutput());
+        Assert.assertEquals(fileData, out.getOutputString());
     }
 
     @Test
@@ -902,37 +898,31 @@ public class StaticFileServerTest implements Serializable {
     }
 
     public void assertBundleBuildResource(String pathInfo) throws IOException {
-        byte[] fileData = "function() {eval('foo');};"
-                .getBytes(StandardCharsets.UTF_8);
+        String fileData = "function() {eval('foo');};";
         ClassLoader mockLoader = Mockito.mock(ClassLoader.class);
         Mockito.when(servletService.getClassLoader()).thenReturn(mockLoader);
 
         Mockito.when(mockLoader.getResource(WEBAPP_RESOURCE_PREFIX + pathInfo))
                 .thenReturn(createFileURLWithDataAndLength(
-                        WEBAPP_RESOURCE_PREFIX + pathInfo, fileData));
+                        "/" + WEBAPP_RESOURCE_PREFIX + pathInfo, fileData));
 
         mockStatsBundles(mockLoader);
         mockConfigurationPolyfills();
 
-        CapturingServletOutputStream out = new CapturingServletOutputStream();
-
-        Mockito.when(response.getOutputStream()).thenReturn(out);
-
         Assert.assertTrue(fileServer.serveStaticResource(request, response));
-        Assert.assertArrayEquals(fileData, out.getOutput());
+        Assert.assertEquals(fileData, out.getOutputString());
     }
 
     private void staticBuildResourceWithDirectoryChange_nothingServed(
             String pathInfo) throws IOException {
         setupRequestURI("/context", "/servlet", pathInfo);
-        byte[] fileData = "function() {eval('foo');};"
-                .getBytes(StandardCharsets.UTF_8);
+        String fileData = "function() {eval('foo');};";
         ClassLoader mockLoader = Mockito.mock(ClassLoader.class);
         Mockito.when(servletService.getClassLoader()).thenReturn(mockLoader);
 
         Mockito.when(mockLoader.getResource(WEBAPP_RESOURCE_PREFIX + pathInfo))
                 .thenReturn(createFileURLWithDataAndLength(
-                        WEBAPP_RESOURCE_PREFIX + pathInfo, fileData));
+                        "/" + WEBAPP_RESOURCE_PREFIX + pathInfo, fileData));
 
         // have data available for /VAADIN/vaadin-bundle-1234.cache.js
         Mockito.when(mockLoader.getResource(
@@ -945,10 +935,6 @@ public class StaticFileServerTest implements Serializable {
 
         mockStatsBundles(mockLoader);
         mockConfigurationPolyfills();
-
-        CapturingServletOutputStream out = new CapturingServletOutputStream();
-
-        Mockito.when(response.getOutputStream()).thenReturn(out);
 
         Assert.assertTrue(fileServer.serveStaticResource(request, response));
         Assert.assertEquals(0, out.getOutput().length);
@@ -1016,24 +1002,19 @@ public class StaticFileServerTest implements Serializable {
     public void customStaticBuildResource_isServed() throws IOException {
         String pathInfo = "/VAADIN/build/my-text.txt";
         setupRequestURI("", "", pathInfo);
-        byte[] fileData = "function() {eval('foo');};"
-                .getBytes(StandardCharsets.UTF_8);
+        String fileData = "function() {eval('foo');};";
         ClassLoader mockLoader = Mockito.mock(ClassLoader.class);
         Mockito.when(servletService.getClassLoader()).thenReturn(mockLoader);
 
         Mockito.when(mockLoader.getResource(WEBAPP_RESOURCE_PREFIX + pathInfo))
                 .thenReturn(createFileURLWithDataAndLength(
-                        WEBAPP_RESOURCE_PREFIX + pathInfo, fileData));
+                        "/" + WEBAPP_RESOURCE_PREFIX + pathInfo, fileData));
 
         mockStatsBundles(mockLoader);
         mockConfigurationPolyfills();
 
-        CapturingServletOutputStream out = new CapturingServletOutputStream();
-
-        Mockito.when(response.getOutputStream()).thenReturn(out);
-
         Assert.assertTrue(fileServer.serveStaticResource(request, response));
-        Assert.assertArrayEquals(fileData, out.getOutput());
+        Assert.assertEquals(fileData, out.getOutputString());
     }
 
     @Test
@@ -1041,17 +1022,11 @@ public class StaticFileServerTest implements Serializable {
             throws IOException {
         String pathInfo = "/VAADIN/build/my-text.txt";
         setupRequestURI("", "", pathInfo);
-        byte[] fileData = "function() {eval('foo');};"
-                .getBytes(StandardCharsets.UTF_8);
         ClassLoader mockLoader = Mockito.mock(ClassLoader.class);
         Mockito.when(servletService.getClassLoader()).thenReturn(mockLoader);
 
         mockStatsBundles(mockLoader);
         mockConfigurationPolyfills();
-
-        CapturingServletOutputStream out = new CapturingServletOutputStream();
-
-        Mockito.when(response.getOutputStream()).thenReturn(out);
 
         Assert.assertTrue(fileServer.serveStaticResource(request, response));
         Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND,
@@ -1062,21 +1037,16 @@ public class StaticFileServerTest implements Serializable {
     public void staticManifestPathResource_isServed() throws IOException {
         String pathInfo = "/sw.js";
         setupRequestURI("", "", pathInfo);
-        byte[] fileData = "function() {eval('foo');};"
-                .getBytes(StandardCharsets.UTF_8);
+        String fileData = "function() {eval('foo');};";
         ClassLoader mockLoader = Mockito.mock(ClassLoader.class);
         Mockito.when(servletService.getClassLoader()).thenReturn(mockLoader);
 
         Mockito.when(mockLoader.getResource(WEBAPP_RESOURCE_PREFIX + pathInfo))
                 .thenReturn(createFileURLWithDataAndLength(
-                        WEBAPP_RESOURCE_PREFIX + pathInfo, fileData));
-
-        CapturingServletOutputStream out = new CapturingServletOutputStream();
-
-        Mockito.when(response.getOutputStream()).thenReturn(out);
+                        "/" + WEBAPP_RESOURCE_PREFIX + pathInfo, fileData));
 
         Assert.assertTrue(fileServer.serveStaticResource(request, response));
-        Assert.assertArrayEquals(fileData, out.getOutput());
+        Assert.assertEquals(fileData, out.getOutputString());
     }
 
     @Test
@@ -1084,18 +1054,13 @@ public class StaticFileServerTest implements Serializable {
             throws IOException {
         String pathInfo = "/index.html";
         setupRequestURI("", "", pathInfo);
-        byte[] fileData = "function() {eval('foo');};"
-                .getBytes(StandardCharsets.UTF_8);
+        String fileData = "function() {eval('foo');};";
         ClassLoader mockLoader = Mockito.mock(ClassLoader.class);
         Mockito.when(servletService.getClassLoader()).thenReturn(mockLoader);
 
         Mockito.when(mockLoader.getResource(WEBAPP_RESOURCE_PREFIX + pathInfo))
                 .thenReturn(createFileURLWithDataAndLength(
-                        WEBAPP_RESOURCE_PREFIX + pathInfo, fileData));
-
-        CapturingServletOutputStream out = new CapturingServletOutputStream();
-
-        Mockito.when(response.getOutputStream()).thenReturn(out);
+                        "/" + WEBAPP_RESOURCE_PREFIX + pathInfo, fileData));
 
         Assert.assertTrue(fileServer.serveStaticResource(request, response));
         Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND,
@@ -1104,11 +1069,9 @@ public class StaticFileServerTest implements Serializable {
 
     @Test
     public void customStatsJson_isServedFromServlet() throws IOException {
-
         String pathInfo = "/VAADIN/build/stats.json";
         setupRequestURI("", "/servlet", pathInfo);
-        byte[] fileData = "function() {eval('foo');};"
-                .getBytes(StandardCharsets.UTF_8);
+        String fileData = "function() {eval('foo');};";
 
         ClassLoader mockLoader = Mockito.mock(ClassLoader.class);
         Mockito.when(servletService.getClassLoader()).thenReturn(mockLoader);
@@ -1118,12 +1081,8 @@ public class StaticFileServerTest implements Serializable {
         Mockito.when(servletService.getStaticResource(pathInfo))
                 .thenReturn(createFileURLWithDataAndLength(pathInfo, fileData));
 
-        CapturingServletOutputStream out = new CapturingServletOutputStream();
-
-        Mockito.when(response.getOutputStream()).thenReturn(out);
-
         Assert.assertTrue(fileServer.serveStaticResource(request, response));
-        Assert.assertArrayEquals(fileData, out.getOutput());
+        Assert.assertEquals(fileData, out.getOutputString());
     }
 
     public void mockConfigurationPolyfills() {
@@ -1161,14 +1120,10 @@ public class StaticFileServerTest implements Serializable {
         Mockito.when(request.getDateHeader("If-Modified-Since"))
                 .thenReturn(browserLatest);
 
-        byte[] fileData = "function() {eval('foo');};"
-                .getBytes(StandardCharsets.UTF_8);
+        String fileData = "function() {eval('foo');};";
         Mockito.when(servletService.getStaticResource("/some/file.js"))
                 .thenReturn(createFileURLWithDataAndLength("/some/file.js",
                         fileData, fileModified));
-
-        CapturingServletOutputStream out = new CapturingServletOutputStream();
-        Mockito.when(response.getOutputStream()).thenReturn(out);
 
         Assert.assertTrue(fileServer.serveStaticResource(request, response));
         Assert.assertEquals(0, out.getOutput().length);
@@ -1182,21 +1137,16 @@ public class StaticFileServerTest implements Serializable {
         Mockito.when(configuration.getBooleanProperty(
                 StaticFileServer.PROPERTY_FIX_INCORRECT_WEBJAR_PATHS, false))
                 .thenReturn(true);
-
-        byte[] fileData = "function() {eval('foo');};"
-                .getBytes(StandardCharsets.UTF_8);
+        String fileData = "function() {eval('foo');};";
         Mockito.when(servletService.getStaticResource("/webjars/foo/bar.js"))
                 .thenReturn(createFileURLWithDataAndLength(
                         "/webjars/foo/bar.js", fileData));
-
-        CapturingServletOutputStream out = new CapturingServletOutputStream();
-        Mockito.when(response.getOutputStream()).thenReturn(out);
 
         setupRequestURI("", "", "/frontend/src/webjars/foo/bar.js");
 
         Assert.assertTrue(fileServer.isStaticResourceRequest(request));
         Assert.assertTrue(fileServer.serveStaticResource(request, response));
-        Assert.assertArrayEquals(fileData, out.getOutput());
+        Assert.assertEquals(fileData, out.getOutputString());
     }
 
     @Test
@@ -1249,6 +1199,10 @@ public class StaticFileServerTest implements Serializable {
 
         public byte[] getOutput() {
             return baos.toByteArray();
+        }
+
+        public String getOutputString() {
+            return new String(getOutput(), StandardCharsets.UTF_8);
         }
     }
 

@@ -5,7 +5,6 @@ import com.vaadin.testbench.TestBenchElement;
 
 import org.junit.Assert;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import io.github.bonigarcia.wdm.WebDriverManager;

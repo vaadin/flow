@@ -21,6 +21,7 @@ import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.StaticFileHandler;
 import com.vaadin.flow.server.StaticFileHandlerFactory;
+import com.vaadin.flow.server.StaticFileServer;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -85,7 +86,7 @@ public abstract class AbstractDevModeTest {
         Mockito.when(lookup.lookup(ApplicationConfiguration.class))
                 .thenReturn(appConfig);
         Mockito.when(lookup.lookup(StaticFileHandlerFactory.class))
-                .thenReturn(service -> Mockito.mock(StaticFileHandler.class));
+                .thenReturn(service -> new StaticFileServer(service));
 
         vaadinService = Mockito.mock(VaadinService.class);
 

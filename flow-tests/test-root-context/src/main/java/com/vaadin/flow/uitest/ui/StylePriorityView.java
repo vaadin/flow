@@ -13,24 +13,20 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
+package com.vaadin.flow.uitest.ui;
 
-package com.vaadin.flow.webcomponent;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.router.Route;
 
-import com.vaadin.flow.component.WebComponentExporter;
-import com.vaadin.flow.component.webcomponent.WebComponent;
-import com.vaadin.flow.router.PreserveOnRefresh;
+@Route("com.vaadin.flow.uitest.ui.StylePriorityView")
+public class StylePriorityView extends Div {
 
-@PreserveOnRefresh
-public class PreserveOnRefreshExporter
-        extends WebComponentExporter<PreserveOnRefreshComponent> {
-
-    public PreserveOnRefreshExporter() {
-        super("preserve-on-refresh");
+    public StylePriorityView() {
+        Div div = new Div();
+        div.getElement().getStyle().set("display", "block !important");
+        div.setText("Priority style");
+        div.setId("priority-style");
+        add(div);
     }
 
-    @Override
-    public void configureInstance(
-            WebComponent<PreserveOnRefreshComponent> webComponent,
-            PreserveOnRefreshComponent component) {
-    }
 }
