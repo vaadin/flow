@@ -23,9 +23,7 @@ const projectStaticAssetsFolders = [
 ];
 
 // Folders in the project which can contain application themes
-const themeProjectFolders = projectStaticAssetsFolders.map((folder) =>
-    path.resolve(folder, settings.themeFolder)
-);
+const themeProjectFolders = projectStaticAssetsFolders.map((folder) => path.resolve(folder, settings.themeFolder));
 
 const themeOptions = {
   devMode: false,
@@ -39,16 +37,16 @@ const themeOptions = {
 
 // Block debug and trace logs.
 console.trace = () => {};
-console.debug =() => {};
+console.debug = () => {};
 
 function updateTheme(contextPath: string) {
   const themePath = path.resolve(themeFolder);
-  if(contextPath.startsWith(themePath)) {
+  if (contextPath.startsWith(themePath)) {
     const changed = path.relative(themePath, contextPath);
 
-    console.debug("Theme file changed", changed);
+    console.debug('Theme file changed', changed);
 
-    if(changed.startsWith(settings.themeName)) {
+    if (changed.startsWith(settings.themeName)) {
       processThemeResources(themeOptions, console);
     }
   }
@@ -58,7 +56,7 @@ function runWatchDog(watchDogPort) {
   const client = net.Socket();
   client.setEncoding('utf8');
   client.on('error', function () {
-    console.log("Watchdog connection error. Terminating vite process...");
+    console.log('Watchdog connection error. Terminating vite process...');
     client.destroy();
     process.exit(0);
   });
@@ -70,20 +68,20 @@ function runWatchDog(watchDogPort) {
   client.connect(watchDogPort, 'localhost');
 }
 
-export const vaadinConfig:UserConfigFn = (env) => {
+export const vaadinConfig: UserConfigFn = (env) => {
   if (env.mode === 'development' && process.env.watchDogPort) {
     // Open a connection with the Java dev-mode handler in order to finish
     // vite when it exits or crashes.
     runWatchDog(process.env.watchDogPort);
   }
-  return ({
+  return {
     root: 'frontend',
     base: env.mode === 'production' ? '' : '/VAADIN/',
     resolve: {
       alias: {
         themes: themeFolder,
         Frontend: frontendFolder
-      },
+      }
     },
     build: {
       outDir: buildFolder,
@@ -96,8 +94,8 @@ export const vaadinConfig:UserConfigFn = (env) => {
         output: {
           // Produce only one chunk that gets imported into index.html
           manualChunks: () => 'everything.js'
-        },
-      },
+        }
+      }
     },
     plugins: [
       {
@@ -110,14 +108,12 @@ export const vaadinConfig:UserConfigFn = (env) => {
         }
       }
     ]
-  })
+  };
 };
 
-
-export const overrideVaadinConfig = (customConfig:UserConfigFn) => {
+export const overrideVaadinConfig = (customConfig: UserConfigFn) => {
   return defineConfig((env) => ({
     ...vaadinConfig(env),
     ...customConfig(env)
   }));
-
-}
+};

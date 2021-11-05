@@ -1,17 +1,15 @@
-$0.init = function() {
+$0.init = function () {
   var firstSizeReported = false;
 
   function isCSS1Compat() {
-    return document.compatMode == "CSS1Compat";
+    return document.compatMode == 'CSS1Compat';
   }
 
   function onResize() {
     if (isCSS1Compat()) {
-      $0.$server.windowResized(document.documentElement.clientWidth,
-              document.documentElement.clientHeight);
+      $0.$server.windowResized(document.documentElement.clientWidth, document.documentElement.clientHeight);
     } else {
-      $0.$server.windowResized(document.body.clientWidth,
-              document.body.clientHeight);
+      $0.$server.windowResized(document.body.clientWidth, document.body.clientHeight);
     }
   }
 
@@ -20,9 +18,9 @@ $0.init = function() {
   function resizeThrottler() {
     if (firstSizeReported) {
       if (!resizeTimeout) {
-        resizeTimeout = setTimeout(function() {
-            resizeTimeout = null;
-            onResize();
+        resizeTimeout = setTimeout(function () {
+          resizeTimeout = null;
+          onResize();
         }, 100);
       }
     } else {
@@ -33,7 +31,7 @@ $0.init = function() {
 
   window.addEventListener('resize', resizeThrottler);
 
-  $0.resizeRemove = function() {
+  $0.resizeRemove = function () {
     window.removeEventListener('resize', resizeThrottler);
   };
 };
