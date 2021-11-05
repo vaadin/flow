@@ -12,6 +12,7 @@
     <packaging>pom</packaging>
 
     <modules>
+        <module>addon-with-templates</module>
         <module>vite-basics</module>
         <module>vite-production</module>
     </modules>
