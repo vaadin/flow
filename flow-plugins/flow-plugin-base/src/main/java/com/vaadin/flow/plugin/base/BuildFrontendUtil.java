@@ -155,12 +155,10 @@ public class BuildFrontendUtil {
                         .withHomeNodeExecRequired(adapter.requireHomeNodeExec())
                         .setJavaResourceFolder(adapter.javaResourceFolder())
                         .withProductionMode(adapter.productionMode());
+
         // If building a jar project copy jar artifact contents now as we
         // might not be able to read files from jar path.
-        if (adapter.isJarProject()) {
-
-            builder.copyResources(adapter.getJarFiles());
-        }
+        builder.copyResources(adapter.getJarFiles());
 
         try {
             builder.build().execute();
