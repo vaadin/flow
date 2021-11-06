@@ -26,6 +26,7 @@ import com.vaadin.flow.component.littemplate.LitTemplateParser.LitTemplateParser
 import com.vaadin.flow.component.template.Id;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.IsTemplate;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.VaadinService;
 
@@ -55,7 +56,8 @@ import com.vaadin.flow.server.VaadinService;
  * @author Vaadin Ltd
  * @since
  */
-public abstract class LitTemplate extends Component implements HasStyle {
+public abstract class LitTemplate extends Component
+        implements HasStyle, IsTemplate {
 
     static {
         UsageStatistics.markAsUsed("flow/LitTemplate", null);

@@ -24,6 +24,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.template.Id;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.IsTemplate;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.templatemodel.TemplateModel;
@@ -55,7 +56,7 @@ import com.vaadin.flow.templatemodel.TemplateModel;
  */
 @Deprecated
 public abstract class PolymerTemplate<M extends TemplateModel>
-        extends AbstractTemplate<M> {
+        extends AbstractTemplate<M> implements IsTemplate {
 
     static {
         UsageStatistics.markAsUsed("flow/PolymerTemplate", null);

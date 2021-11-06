@@ -25,6 +25,7 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.internal.IsTemplate;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -51,21 +52,7 @@ public class TaskCopyTemplateFiles implements FallibleCommand {
     @Override
     public void execute() throws ExecutionFailedException {
         Set<Class<?>> classes = new HashSet<>();
-        String litTemplateClass = "com.vaadin.flow.component.littemplate.LitTemplate";
-        try {
-            classes.addAll(classFinder.getSubTypesOf(litTemplateClass));
-        } catch (ClassNotFoundException ignore) { // NOSONAR
-            log().debug(litTemplateClass
-                    + " not on classpath, skipping copying of Lit template");
-        }
-        String polymerTemplateClass = "com.vaadin.flow.component.polymertemplate.PolymerTemplate";
-
-        try {
-            classes.addAll(classFinder.getSubTypesOf(polymerTemplateClass));
-        } catch (ClassNotFoundException ignore) { // NOSONAR
-            log().debug(polymerTemplateClass
-                    + " not on classpath, skipping copying of Polymer templates");
-        }
+        classes.addAll(classFinder.getSubTypesOf(IsTemplate.class));
         for (Class<?> clazz : classes) {
             for (JsModule jsmAnnotation : clazz
                     .getAnnotationsByType(JsModule.class)) {
