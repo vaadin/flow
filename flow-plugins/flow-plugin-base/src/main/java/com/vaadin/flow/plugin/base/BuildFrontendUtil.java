@@ -297,7 +297,7 @@ public class BuildFrontendUtil {
                             .enablePackagesUpdate(true)
                             .useByteCodeScanner(adapter.optimizeBundle())
                             .withFlowResourcesFolder(flowResourcesFolder)
-                            .copyResources(jarFiles)
+                            .copyResources(jarFiles).copyTemplates(true)
                             .copyLocalResources(
                                     adapter.frontendResourcesDirectory())
                             .enableImportsUpdate(true)

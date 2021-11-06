@@ -110,6 +110,8 @@ public class NodeTasks implements FallibleCommand {
 
         private boolean requireHomeNodeExec;
 
+        private boolean copyTemplates = false;
+
         /**
          * Directory for npm and folders and files.
          */
@@ -345,6 +347,20 @@ public class NodeTasks implements FallibleCommand {
         public Builder copyResources(Set<File> jars) {
             Objects.requireNonNull(jars, "Parameter 'jars' must not be null!");
             this.jarFiles = jars;
+            return this;
+        }
+
+        /**
+         * Sets whether copy templates to
+         * {@code META-INF/VAADIN/config/templates}
+         *
+         * @param copyTemplates
+         *            whether to copy templates
+         *
+         * @return the builder
+         */
+        public Builder copyTemplates(boolean copyTemplates) {
+            this.copyTemplates = copyTemplates;
             return this;
         }
 
@@ -805,7 +821,7 @@ public class NodeTasks implements FallibleCommand {
                     builder.frontendDirectory, builder.fusionClientAPIFolder));
         }
 
-        if (builder.productionMode) {
+        if (builder.copyTemplates) {
             commands.add(new TaskCopyTemplateFiles(classFinder,
                     builder.npmFolder, builder.resourceOutputDirectory));
         }
