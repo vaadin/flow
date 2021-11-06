@@ -59,6 +59,7 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
+import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_STATISTICS_JSON;
@@ -659,8 +660,8 @@ public class FrontendUtils {
         File localFrontendFolder = new File(projectRoot,
                 FrontendUtils.FRONTEND);
         File nodeModulesFolder = new File(projectRoot, NODE_MODULES);
-        File flowFrontendFolder = new File(nodeModulesFolder,
-                "@vaadin/" + DEFAULT_FLOW_RESOURCES_FOLDER);
+        File flowFrontendFolder = new File(projectRoot,
+                TARGET + "/" + DEFAULT_FLOW_RESOURCES_FOLDER);
         List<File> candidateParents = path.startsWith("./")
                 ? Arrays.asList(localFrontendFolder, flowFrontendFolder)
                 : Arrays.asList(nodeModulesFolder, localFrontendFolder,
