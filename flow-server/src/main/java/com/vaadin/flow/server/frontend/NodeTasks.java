@@ -352,7 +352,7 @@ public class NodeTasks implements FallibleCommand {
 
         /**
          * Sets whether copy templates to
-         * {@code META-INF/VAADIN/config/templates}
+         * {@code META-INF/VAADIN/config/templates}.
          *
          * @param copyTemplates
          *            whether to copy templates
