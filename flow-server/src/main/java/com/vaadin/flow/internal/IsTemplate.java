@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.internal;
 
+import java.io.Serializable;
+
 /**
  * Marker interface for (Lit and Polymer) templates. All frontend files linked
  * by implementors (with {@link com.vaadin.flow.component.dependency.JsModule})
@@ -22,5 +24,5 @@ package com.vaadin.flow.internal;
  *
  * @author Vaadin Ltd
  */
-public interface IsTemplate {
+public interface IsTemplate extends Serializable {
 }
