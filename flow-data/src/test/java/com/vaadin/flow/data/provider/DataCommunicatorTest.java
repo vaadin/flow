@@ -1101,7 +1101,7 @@ public class DataCommunicatorTest {
         fakeClientCommunication();
 
         // Verify that requestFlush has been invoked
-        Mockito.verify(stateNode).runWhenAttached(Mockito.anyObject());
+        Mockito.verify(stateNode).runWhenAttached(Mockito.any());
 
         // Verify the estimated count is now 100 + 4 * pageSize = 300
         Assert.assertEquals(300, dataCommunicator.getItemCount());

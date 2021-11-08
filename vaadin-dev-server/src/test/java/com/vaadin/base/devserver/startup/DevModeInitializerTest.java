@@ -426,7 +426,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
             servletContextAttributes.putIfAbsent(key, value);
             return null;
         }).when(servletContext).setAttribute(Mockito.anyString(),
-                Mockito.anyObject());
+                Mockito.any());
         Mockito.when(servletContext.getAttribute(Mockito.anyString()))
                 .thenAnswer(answer -> {
                     return servletContextAttributes.get(answer.getArgument(0));
