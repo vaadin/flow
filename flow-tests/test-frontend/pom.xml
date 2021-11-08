@@ -13,8 +13,8 @@
 
     <modules>
         <!-- shared assets -->
-        <module>embedding-test-assets</module>
         <module>addon-with-templates</module>
+        <module>vite-test-assets</module>
 
         <!-- test modules -->
         <module>vite-basics</module>
