@@ -1,19 +1,21 @@
 package com.vaadin.flow.server;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-
-import junit.framework.TestCase;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 
-public class CustomUIClassLoaderTest extends TestCase {
+import org.junit.Test;
+import org.mockito.Mockito;
+
+public class CustomUIClassLoaderTest {
 
     /**
      * Stub root
@@ -48,6 +50,7 @@ public class CustomUIClassLoaderTest extends TestCase {
      * @throws Exception
      *             if thrown
      */
+    @Test
     public void testWithDefaultClassLoader() throws Exception {
         VaadinSession application = createStubApplication();
         application.setConfiguration(createConfigurationMock());
@@ -75,8 +78,9 @@ public class CustomUIClassLoaderTest extends TestCase {
     private static VaadinRequest createRequestMock(ClassLoader classloader) {
         // Mock a VaadinService to give the passed classloader
         VaadinService configurationMock = Mockito.mock(VaadinService.class);
+        DeploymentConfiguration deploymentConfiguration = createConfigurationMock();
         Mockito.when(configurationMock.getDeploymentConfiguration())
-                .thenReturn(createConfigurationMock());
+                .thenReturn(deploymentConfiguration);
         Mockito.when(configurationMock.getClassLoader())
                 .thenReturn(classloader);
 
@@ -96,6 +100,7 @@ public class CustomUIClassLoaderTest extends TestCase {
      * @throws Exception
      *             if thrown
      */
+    @Test
     public void testWithClassLoader() throws Exception {
         LoggingClassLoader loggingClassLoader = new LoggingClassLoader();
 
