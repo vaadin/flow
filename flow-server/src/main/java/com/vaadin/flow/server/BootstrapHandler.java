@@ -910,7 +910,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                         .compile("href=\\\"VAADIN\\/build\\/(.*.css)\\\"")
                         .matcher(index);
                 while (cssMatcher.find()) {
-                    Element link = createStylesheetElement(cssMatcher.group(1));
+                    Element link = createStylesheetElement(
+                            "VAADIN/build/" + cssMatcher.group(1));
                     head.appendChild(link);
                 }
                 return;

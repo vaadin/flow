@@ -1698,7 +1698,13 @@ public class BootstrapHandlerTest {
                 bootstrapPage.head().toString()
                         .contains("VAADIN/@vite/client"));
         Assert.assertTrue(
-                bootstrapPage.head().toString().contains("VAADIN/build/"));
+                "Bundle should be gotten from index and added to bootstrap page",
+                bootstrapPage.head().toString()
+                        .contains("src=\"VAADIN/build/main.d253dd35.js\""));
+        Assert.assertTrue(
+                "Bundled css should be gotten from index and added to bootstrap page",
+                bootstrapPage.head().toString()
+                        .contains("href=\"VAADIN/build/main.688a5538.css\""));
     }
 
     private void enableViteFeature(boolean productionMode) throws IOException {
@@ -1728,7 +1734,8 @@ public class BootstrapHandlerTest {
         Mockito.when(configuration.getJavaResourceFolder())
                 .thenReturn(tmpDir.getRoot());
 
-        Mockito.when(lookup.lookup(ApplicationConfiguration.class)).thenReturn(configuration);
+        Mockito.when(lookup.lookup(ApplicationConfiguration.class))
+                .thenReturn(configuration);
         Mockito.when(vaadinContext.getAttribute(ApplicationConfiguration.class))
                 .thenReturn(configuration);
         Mockito.when(vaadinContext.getAttribute(
