@@ -33,16 +33,6 @@ import java.io.Serializable;
 public interface StaticFileHandler extends Serializable {
 
     /**
-     * Checks if a static resource can be found for the requested path.
-     *
-     * @param request
-     *            the request to check
-     * @return <code>true</code> if a static resource exists and can be sent as
-     *         a response to this request, <code>false</code> otherwise
-     */
-    boolean isStaticResourceRequest(HttpServletRequest request);
-
-    /**
      * Serves a static resource for the requested path if a resource can be
      * found.
      *

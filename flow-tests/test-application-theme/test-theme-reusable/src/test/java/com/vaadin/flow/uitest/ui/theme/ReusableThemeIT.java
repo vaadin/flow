@@ -33,6 +33,9 @@ import static com.vaadin.flow.uitest.ui.theme.ReusableThemeView.SNOWFLAKE_ID;
 import static com.vaadin.flow.uitest.ui.theme.ReusableThemeView.OCTOPUSS_ID;
 import static com.vaadin.flow.uitest.ui.theme.ReusableThemeView.SUB_COMPONENT_ID;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 public class ReusableThemeIT extends ChromeBrowserTest {
 
     @Test
@@ -43,8 +46,11 @@ public class ReusableThemeIT extends ChromeBrowserTest {
                 driver.getPageSource().contains("HTTP ERROR 404 Not Found"));
 
         getDriver().get(getRootURL() + "/path/themes/no-copy/no-copy.txt");
-        Assert.assertTrue("no-copy theme should not be handled",
-                driver.getPageSource().contains("HTTP ERROR 404 Not Found"));
+        String source = driver.getPageSource();
+        Matcher m = Pattern.compile(
+                ".*Could not navigate to.*themes/no-copy/no-copy.txt.*",
+                Pattern.DOTALL).matcher(source);
+        Assert.assertTrue("no-copy theme should not be handled", m.matches());
     }
 
     @Test
