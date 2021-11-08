@@ -1,9 +1,0 @@
-{
- "hash": "a60ab8b9c567ee11738c",
-  "modules": [
-        {
-           "name": "./ParentTemplate.js",
-           "source": "import { PolymerElement } from '@polymer/polymer/polymer-element.js';\nimport { html } from '@polymer/polymer/lib/utils/html-tag.js';\nimport './ChildTemplate.js';\n\nclass ParentTemplate extends PolymerElement {\n  static get is() {\n    return 'parent-template';\n  }\n\n  static get template() {\n    return html`\n           <div>Parent Template</div>\n            <div>\n            <div>Placeholder</div>\n            \n            <child-template id=\"child\"></child-template>\n            \n            </div>\n            <style>\n    \n                parent-template {\n                    width: 100%;\n                }\n            </style>\n    `;\n  }\n\n}\n\ncustomElements.define(ParentTemplate.is, ParentTemplate);"
-        }
-      ]
-}

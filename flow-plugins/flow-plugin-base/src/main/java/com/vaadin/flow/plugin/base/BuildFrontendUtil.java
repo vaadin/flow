@@ -155,12 +155,9 @@ public class BuildFrontendUtil {
                         .withHomeNodeExecRequired(adapter.requireHomeNodeExec())
                         .setJavaResourceFolder(adapter.javaResourceFolder())
                         .withProductionMode(adapter.productionMode());
-        // If building a jar project copy jar artifact contents now as we
-        // might not be able to read files from jar path.
-        if (adapter.isJarProject()) {
 
-            builder.copyResources(adapter.getJarFiles());
-        }
+        // Copy jar artifact contents in TaskCopyFrontendFiles
+        builder.copyResources(adapter.getJarFiles());
 
         try {
             builder.build().execute();
@@ -300,7 +297,7 @@ public class BuildFrontendUtil {
                             .enablePackagesUpdate(true)
                             .useByteCodeScanner(adapter.optimizeBundle())
                             .withFlowResourcesFolder(flowResourcesFolder)
-                            .copyResources(jarFiles)
+                            .copyResources(jarFiles).copyTemplates(true)
                             .copyLocalResources(
                                     adapter.frontendResourcesDirectory())
                             .enableImportsUpdate(true)

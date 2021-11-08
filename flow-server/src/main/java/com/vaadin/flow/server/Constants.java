@@ -226,6 +226,13 @@ public final class Constants implements Serializable {
             + "stats.json";
 
     /**
+     * Default resource directory to place template sources in. This is used
+     * used for Vite production mode instead of a stats.json file.
+     */
+    public static final String TEMPLATE_DIRECTORY = Constants.VAADIN_CONFIGURATION
+            + "templates/";
+
+    /**
      * Name of the <code>npm</code> main file.
      */
     public static final String PACKAGE_JSON = "package.json";
