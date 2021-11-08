@@ -11,6 +11,8 @@ import { processThemeResources } from '@vaadin/application-theme-plugin/theme-ha
 import settings from '#settingsImport#';
 import { UserConfigFn, defineConfig, HtmlTagDescriptor, mergeConfig } from 'vite';
 
+import brotli from 'rollup-plugin-brotli';
+
 const frontendFolder = path.resolve(__dirname, settings.frontendFolder);
 const themeFolder = path.resolve(frontendFolder, settings.themeFolder);
 const buildFolder = path.resolve(__dirname, settings.frontendBundleOutput);
@@ -68,7 +70,9 @@ function runWatchDog(watchDogPort) {
 }
 
 export const vaadinConfig: UserConfigFn = (env) => {
-  if (env.mode === 'development' && process.env.watchDogPort) {
+  const devMode = env.mode === 'development';
+
+  if (devMode && process.env.watchDogPort) {
     // Open a connection with the Java dev-mode handler in order to finish
     // vite when it exits or crashes.
     runWatchDog(process.env.watchDogPort);
@@ -92,6 +96,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
       }
     },
     plugins: [
+      !devMode && brotli(),
       {
         name: 'custom-theme',
         config() {
