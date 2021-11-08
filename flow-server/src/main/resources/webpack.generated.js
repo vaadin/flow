@@ -239,12 +239,6 @@ module.exports = {
     // webpack-dev-server serves ./Frontend ,  webpack-generated,  and java webapp
     static: [outputFolder, path.resolve(__dirname, 'src', 'main', 'webapp')],
     onAfterSetupMiddleware: function (devServer) {
-      devServer.app.get(`/stats.json`, function (req, res) {
-        res.json(stats);
-      });
-      devServer.app.get(`/stats.hash`, function (req, res) {
-        res.json(stats.hash.toString());
-      });
       devServer.app.get(`/assetsByChunkName`, function (req, res) {
         res.json(stats.assetsByChunkName);
       });
