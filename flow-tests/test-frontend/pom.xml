@@ -12,7 +12,11 @@
     <packaging>pom</packaging>
 
     <modules>
+        <!-- shared assets -->
+        <module>embedding-test-assets</module>
         <module>addon-with-templates</module>
+
+        <!-- test modules -->
         <module>vite-basics</module>
         <module>vite-production</module>
     </modules>
