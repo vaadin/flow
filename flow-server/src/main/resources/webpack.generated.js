@@ -236,7 +236,7 @@ module.exports = {
   devServer: {
     hot: false, // disable HMR
     client: false, // disable wds client as we handle reloads and errors better
-    // webpack-dev-server serves ./Frontend ,  webpack-generated,  and java webapp
+    // webpack-dev-server serves ./, webpack-generated, and java webapp
     static: [outputFolder, path.resolve(__dirname, 'src', 'main', 'webapp')],
     onAfterSetupMiddleware: function (devServer) {
       devServer.app.get(`/assetsByChunkName`, function (req, res) {
