@@ -30,7 +30,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.easymock.EasyMock;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -151,8 +150,7 @@ public class VaadinServiceTest {
                 "'fireSessionDestroy' method doesn't call 'close' for the session",
                 1, vaadinSession.getCloseCount());
 
-        vaadinSession.valueUnbound(
-                EasyMock.createMock(HttpSessionBindingEvent.class));
+        vaadinSession.valueUnbound(Mockito.mock(HttpSessionBindingEvent.class));
 
         Assert.assertEquals(
                 "'fireSessionDestroy' method may not call 'close' "

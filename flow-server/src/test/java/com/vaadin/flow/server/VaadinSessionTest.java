@@ -38,7 +38,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.easymock.EasyMock;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -79,7 +78,7 @@ public class VaadinSessionTest {
         mockService = new MockVaadinServletService();
         mockServlet = mockService.getServlet();
 
-        mockHttpSession = EasyMock.createMock(HttpSession.class);
+        mockHttpSession = Mockito.mock(HttpSession.class);
         mockWrappedSession = new WrappedHttpSession(mockHttpSession) {
             final ReentrantLock lock = new ReentrantLock();
 
@@ -213,8 +212,7 @@ public class VaadinSessionTest {
             Assert.assertEquals(mockServlet, VaadinServlet.getCurrent());
         });
 
-        session.valueUnbound(
-                EasyMock.createMock(HttpSessionBindingEvent.class));
+        session.valueUnbound(Mockito.mock(HttpSessionBindingEvent.class));
         mockService.runPendingAccessTasks(session); // as soon as we changed
                                                     // session.accessSynchronously
                                                     // to session.access in
@@ -251,14 +249,12 @@ public class VaadinSessionTest {
     public void testValueUnbound() {
         MockVaadinSession vaadinSession = new MockVaadinSession(mockService);
 
-        vaadinSession.valueUnbound(
-                EasyMock.createMock(HttpSessionBindingEvent.class));
+        vaadinSession.valueUnbound(Mockito.mock(HttpSessionBindingEvent.class));
         org.junit.Assert.assertEquals(
                 "'valueUnbound' method doesn't call 'close' for the session", 1,
                 vaadinSession.getCloseCount());
 
-        vaadinSession.valueUnbound(
-                EasyMock.createMock(HttpSessionBindingEvent.class));
+        vaadinSession.valueUnbound(Mockito.mock(HttpSessionBindingEvent.class));
 
         org.junit.Assert.assertEquals(
                 "'valueUnbound' method may not call 'close' "

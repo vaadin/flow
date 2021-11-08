@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Properties;
 
 import junit.framework.TestCase;
-import org.easymock.EasyMock;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
@@ -75,20 +74,18 @@ public class CustomUIClassLoaderTest extends TestCase {
 
     private static VaadinRequest createRequestMock(ClassLoader classloader) {
         // Mock a VaadinService to give the passed classloader
-        VaadinService configurationMock = EasyMock
-                .createMock(VaadinService.class);
-        EasyMock.expect(configurationMock.getDeploymentConfiguration())
-                .andReturn(createConfigurationMock());
-        EasyMock.expect(configurationMock.getClassLoader())
-                .andReturn(classloader);
+        VaadinService configurationMock = Mockito.mock(VaadinService.class);
+        Mockito.when(configurationMock.getDeploymentConfiguration())
+                .thenReturn(createConfigurationMock());
+        Mockito.when(configurationMock.getClassLoader())
+                .thenReturn(classloader);
 
         // Mock a VaadinRequest to give the mocked vaadin service
-        VaadinRequest requestMock = EasyMock.createMock(VaadinRequest.class);
-        EasyMock.expect(requestMock.getService()).andReturn(configurationMock);
-        EasyMock.expect(requestMock.getService()).andReturn(configurationMock);
-        EasyMock.expect(requestMock.getService()).andReturn(configurationMock);
+        VaadinRequest requestMock = Mockito.mock(VaadinRequest.class);
+        Mockito.when(requestMock.getService()).thenReturn(configurationMock);
+        Mockito.when(requestMock.getService()).thenReturn(configurationMock);
+        Mockito.when(requestMock.getService()).thenReturn(configurationMock);
 
-        EasyMock.replay(configurationMock, requestMock);
         return requestMock;
     }
 

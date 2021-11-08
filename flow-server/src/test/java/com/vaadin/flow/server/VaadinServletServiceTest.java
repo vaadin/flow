@@ -19,10 +19,6 @@ import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
 import com.vaadin.flow.theme.AbstractTheme;
 
-import static org.easymock.EasyMock.createMock;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.replay;
-
 /**
  * Test class for testing es6 resolution by browser capability. This is valid
  * only for bower mode where we need to decide ourselves.
@@ -165,8 +161,6 @@ public class VaadinServletServiceTest {
 
         HttpServletRequest request = createNonIncludeRequest(base, contextPath,
                 servletPath, pathInfo);
-        // Set request into replay mode
-        replay(request);
 
         VaadinServletService service = Mockito.mock(VaadinServletService.class);
         Mockito.doCallRealMethod().when(service)
@@ -181,10 +175,10 @@ public class VaadinServletServiceTest {
             throws Exception {
         HttpServletRequest request = createRequest(base, realContextPath,
                 realServletPath, pathInfo);
-        expect(request.getAttribute("javax.servlet.include.context_path"))
-                .andReturn(null).anyTimes();
-        expect(request.getAttribute("javax.servlet.include.servlet_path"))
-                .andReturn(null).anyTimes();
+        Mockito.when(request.getAttribute("javax.servlet.include.context_path"))
+                .thenReturn(null);
+        Mockito.when(request.getAttribute("javax.servlet.include.servlet_path"))
+                .thenReturn(null);
 
         return request;
     }
@@ -208,17 +202,15 @@ public class VaadinServletServiceTest {
     private HttpServletRequest createRequest(String base, String contextPath,
             String servletPath, String pathInfo) throws MalformedURLException {
         URL url = new URL(base + contextPath + pathInfo);
-        HttpServletRequest request = createMock(HttpServletRequest.class);
-        expect(request.isSecure())
-                .andReturn(url.getProtocol().equalsIgnoreCase("https"))
-                .anyTimes();
-        expect(request.getServerName()).andReturn(url.getHost()).anyTimes();
-        expect(request.getServerPort()).andReturn(url.getPort()).anyTimes();
-        expect(request.getRequestURI()).andReturn(url.getPath()).anyTimes();
-        expect(request.getContextPath()).andReturn(contextPath).anyTimes();
-        expect(request.getPathInfo()).andReturn(pathInfo).anyTimes();
-        expect(request.getServletPath()).andReturn(servletPath).anyTimes();
-        mocks.getSession().getSession();
+        HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+        Mockito.when(request.isSecure())
+                .thenReturn(url.getProtocol().equalsIgnoreCase("https"));
+        Mockito.when(request.getServerName()).thenReturn(url.getHost());
+        Mockito.when(request.getServerPort()).thenReturn(url.getPort());
+        Mockito.when(request.getRequestURI()).thenReturn(url.getPath());
+        Mockito.when(request.getContextPath()).thenReturn(contextPath);
+        Mockito.when(request.getPathInfo()).thenReturn(pathInfo);
+        Mockito.when(request.getServletPath()).thenReturn(servletPath);
 
         return request;
     }

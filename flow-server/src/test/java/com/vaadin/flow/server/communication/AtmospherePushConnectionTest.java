@@ -20,14 +20,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.server.communication.AtmospherePushConnection.State;
+
 import org.atmosphere.cpr.AtmosphereResource;
-import org.easymock.EasyMock;
 import org.junit.Assert;
 import org.junit.Test;
-
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.server.communication.AtmospherePushConnection;
-import com.vaadin.flow.server.communication.AtmospherePushConnection.State;
+import org.mockito.Mockito;
 
 /**
  * @author Vaadin Ltd
@@ -37,9 +36,8 @@ public class AtmospherePushConnectionTest {
     @Test
     public void testSerialization() throws Exception {
 
-        UI ui = EasyMock.createNiceMock(UI.class);
-        AtmosphereResource resource = EasyMock
-                .createNiceMock(AtmosphereResource.class);
+        UI ui = Mockito.mock(UI.class);
+        AtmosphereResource resource = Mockito.mock(AtmosphereResource.class);
 
         AtmospherePushConnection connection = new AtmospherePushConnection(ui);
         connection.connect(resource);
