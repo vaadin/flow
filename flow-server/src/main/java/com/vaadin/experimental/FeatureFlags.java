@@ -126,6 +126,7 @@ public class FeatureFlags implements Serializable {
                         context.getAttribute(Lookup.class));
                 featureFlags.configuration = ApplicationConfiguration
                         .get(context);
+                featureFlags.loadProperties();
                 attribute = new FeatureFlagsWrapper(featureFlags);
                 context.setAttribute(attribute);
             }

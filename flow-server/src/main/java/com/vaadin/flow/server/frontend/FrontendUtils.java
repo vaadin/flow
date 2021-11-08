@@ -540,13 +540,19 @@ public class FrontendUtils {
 
     private static InputStream getFileFromClassPath(VaadinService service,
             String filePath) {
-        InputStream stream = service.getClassLoader()
-                .getResourceAsStream(VAADIN_WEBAPP_RESOURCES + filePath);
-        if (stream == null) {
+        final URL resource = service.getContext().getAttribute(Lookup.class)
+                .lookup(ResourceProvider.class)
+                .getApplicationResource(VAADIN_WEBAPP_RESOURCES + filePath);
+        if (resource == null) {
             getLogger().error("Cannot get the '{}' from the classpath",
                     filePath);
+            return null;
         }
-        return stream;
+        try {
+            return resource.openStream();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     /**

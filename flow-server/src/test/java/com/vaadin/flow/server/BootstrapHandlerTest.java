@@ -1,19 +1,25 @@
 package com.vaadin.flow.server;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Supplier;
 
 import org.apache.commons.io.IOUtils;
 import org.hamcrest.CoreMatchers;
@@ -28,6 +34,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.Tag;
@@ -54,6 +61,9 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.TestRouteRegistry;
 import com.vaadin.flow.server.BootstrapHandler.BootstrapContext;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
+import com.vaadin.flow.server.startup.DefaultApplicationConfigurationFactory;
+import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.VaadinUriResolver;
 import com.vaadin.flow.shared.communication.PushMode;
@@ -62,9 +72,12 @@ import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
+import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
 
 public class BootstrapHandlerTest {
 
@@ -1638,6 +1651,99 @@ public class BootstrapHandlerTest {
         // status code 200 is set later and tested elsewhere
         Assert.assertEquals("Invalid status code reported", 0,
                 response.getErrorCode());
+    }
+
+    @Test
+    public void runViteFeatureDevMode_viteClientAddedToHead()
+            throws IOException {
+        initUI(testUI);
+
+        enableViteFeature(false);
+
+        final Document bootstrapPage = pageBuilder.getBootstrapPage(context);
+        Assert.assertTrue("@vite/client should be added to head.", bootstrapPage
+                .head().toString().contains("VAADIN/@vite/client"));
+    }
+
+    @Test
+    public void runViteFeatureProdMode_bundleAddedToHead() throws IOException {
+        initUI(testUI);
+
+        enableViteFeature(true);
+
+        deploymentConfiguration.setProductionMode(true);
+
+        final Lookup lookup = service.getContext().getAttribute(Lookup.class);
+        ResourceProvider resourceProvider = lookup
+                .lookup(ResourceProvider.class);
+
+        URL resource = Mockito.mock(URL.class);
+        Mockito.when(resourceProvider
+                .getApplicationResource(VAADIN_WEBAPP_RESOURCES + INDEX_HTML))
+                .thenReturn(resource);
+
+        when(resource.openStream())
+                .thenReturn(new ByteArrayInputStream(("<html lang=\"en\">\n"
+                        + "<head>\n" + "  <meta charset=\"UTF-8\" />\n"
+                        + "  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n"
+                        + "  <style>\n" + "    body, #outlet {\n"
+                        + "      height: 100vh;\n" + "      width: 100%;\n"
+                        + "      margin: 0;\n" + "    }\n" + "  </style>\n"
+                        + "  <script async type=\"module\" crossorigin src=\"VAADIN/build/main.d253dd35.js\"></script>\n"
+                        + "  <link rel=\"stylesheet\" href=\"VAADIN/build/main.688a5538.css\">\n"
+                        + "</head>").getBytes()));
+
+        final Document bootstrapPage = pageBuilder.getBootstrapPage(context);
+        Assert.assertFalse("@vite/client should not be added in productionMode",
+                bootstrapPage.head().toString()
+                        .contains("VAADIN/@vite/client"));
+        Assert.assertTrue(
+                bootstrapPage.head().toString().contains("VAADIN/build/"));
+    }
+
+    private void enableViteFeature(boolean productionMode) throws IOException {
+        VaadinContext vaadinContext = Mockito.mock(VaadinContext.class);
+
+        final Lookup lookup = Mockito.mock(Lookup.class);
+        ResourceProvider resourceProvider = Mockito
+                .mock(ResourceProvider.class);
+        Mockito.when(lookup.lookup(ResourceProvider.class))
+                .thenReturn(resourceProvider);
+
+        Mockito.when(resourceProvider.getClientResourceAsStream(
+                "META-INF/resources/" + ApplicationConstants.CLIENT_ENGINE_PATH
+                        + "/compile.properties"))
+                .thenReturn(getClass().getClassLoader()
+                        .getResourceAsStream("META-INF/resources/"
+                                + ApplicationConstants.CLIENT_ENGINE_PATH
+                                + "/compile.properties"));
+
+        Mockito.when(vaadinContext.getAttribute(Lookup.class))
+                .thenReturn(lookup);
+        service.setContext(vaadinContext);
+
+        ApplicationConfiguration configuration = Mockito
+                .mock(ApplicationConfiguration.class);
+        Mockito.when(configuration.isProductionMode()).thenReturn(false);
+        Mockito.when(configuration.getJavaResourceFolder())
+                .thenReturn(tmpDir.getRoot());
+
+        Mockito.when(lookup.lookup(ApplicationConfiguration.class)).thenReturn(configuration);
+        Mockito.when(vaadinContext.getAttribute(ApplicationConfiguration.class))
+                .thenReturn(configuration);
+        Mockito.when(vaadinContext.getAttribute(
+                Mockito.eq(ApplicationConfiguration.class), Mockito.any()))
+                .thenReturn(configuration);
+
+        final FeatureFlags featureFlags = FeatureFlags
+                .get(testUI.getSession().getService().getContext());
+        Mockito.when(vaadinContext.getAttribute(FeatureFlags.class))
+                .thenReturn(featureFlags);
+
+        featureFlags.setEnabled(FeatureFlags.VITE.getId(), true);
+
+        Mockito.when(configuration.isProductionMode())
+                .thenReturn(productionMode);
     }
 
     public static Location requestToLocation(VaadinRequest request) {

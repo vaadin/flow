@@ -17,9 +17,11 @@ package com.vaadin.flow.server.communication;
 
 import javax.servlet.http.HttpServletRequest;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -40,11 +42,13 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.UsageStatistics;
@@ -70,9 +74,12 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 
 import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
+import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class IndexHtmlRequestHandlerTest {
     private static final String SPRING_CSRF_ATTRIBUTE_IN_SESSION = "org.springframework.security.web.csrf.CsrfToken";
@@ -127,14 +134,23 @@ public class IndexHtmlRequestHandlerTest {
     @Test
     public void serveNotFoundIndexHtml_requestWithRootPath_failsWithIOException()
             throws IOException {
-        ClassLoader mockLoader = Mockito.mock(ClassLoader.class);
         VaadinServletService vaadinService = Mockito
                 .mock(VaadinServletService.class);
         Mockito.when(vaadinService.getDeploymentConfiguration())
                 .thenReturn(deploymentConfiguration);
-        Mockito.when(vaadinService.getClassLoader()).thenReturn(mockLoader);
-        Mockito.when(mockLoader.getResourceAsStream(Mockito.anyString()))
-                .thenReturn(null);
+
+        Mockito.when(vaadinService.getContext()).thenReturn(context);
+        final Lookup lookup = Mockito.mock(Lookup.class);
+        ResourceProvider resourceProvider = Mockito
+                .mock(ResourceProvider.class);
+        Mockito.when(context.getAttribute(Lookup.class)).thenReturn(lookup);
+        Mockito.when(lookup.lookup(ResourceProvider.class))
+                .thenReturn(resourceProvider);
+        URL resource = Mockito.mock(URL.class);
+        Mockito.when(resourceProvider
+                .getApplicationResource(VAADIN_WEBAPP_RESOURCES + INDEX_HTML))
+                .thenReturn(resource);
+        when(resource.openStream()).thenReturn(null);
 
         VaadinServletRequest vaadinRequest = Mockito
                 .mock(VaadinServletRequest.class);
@@ -507,13 +523,23 @@ public class IndexHtmlRequestHandlerTest {
             }
 
         };
-        Lookup lookup = Lookup.of(devModeHandlerManager,
-                DevModeHandlerManager.class);
+        ResourceProvider resourceProvider = Mockito
+                .mock(ResourceProvider.class);
+        Lookup lookup = Lookup.compose(
+                Lookup.of(devModeHandlerManager, DevModeHandlerManager.class),
+                Lookup.of(resourceProvider, ResourceProvider.class));
         Mockito.when(context.getAttribute(Lookup.class)).thenReturn(lookup);
 
         ApplicationConfiguration appConfig = Mockito
                 .mock(ApplicationConfiguration.class);
         mockApplicationConfiguration(appConfig);
+
+        URL resource = Mockito.mock(URL.class);
+        Mockito.when(resourceProvider
+                .getApplicationResource(VAADIN_WEBAPP_RESOURCES + INDEX_HTML))
+                .thenReturn(resource);
+        when(resource.openStream()).thenReturn(new ByteArrayInputStream(
+                "<html><head></head></html>".getBytes()));
 
         // Send the request
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
