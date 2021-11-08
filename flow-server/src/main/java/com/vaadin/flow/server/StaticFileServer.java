@@ -232,6 +232,13 @@ public class StaticFileServer implements StaticFileHandler {
             HttpServletResponse response) throws IOException {
 
         String filenameWithPath = getRequestFilename(request);
+        if (filenameWithPath.endsWith("/")) {
+            // Directories are not static resources although
+            // servletContext.getResource will return a URL for them, at
+            // least with Jetty
+            return false;
+        }
+
         if (HandlerHelper.isPathUnsafe(filenameWithPath)) {
             getLogger().info(HandlerHelper.UNSAFE_PATH_ERROR_MESSAGE_PATTERN,
                     filenameWithPath);
