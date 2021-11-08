@@ -40,7 +40,7 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;
 import static org.easymock.EasyMock.anyBoolean;
-import static org.easymock.EasyMock.anyObject;
+import static org.easymock.EasyMock.any;
 import static org.easymock.EasyMock.anyString;
 import static org.easymock.EasyMock.capture;
 import static org.easymock.EasyMock.expect;
@@ -231,7 +231,7 @@ public class ServletDeployerTest {
 
         ResourceProvider resourceProvider = mock(ResourceProvider.class);
 
-        expect(resourceProvider.getApplicationResources(anyObject()))
+        expect(resourceProvider.getApplicationResources(any()))
                 .andReturn(Collections.emptyList()).anyTimes();
 
         replay(resourceProvider);
@@ -265,8 +265,7 @@ public class ServletDeployerTest {
         expect(contextMock.getClassLoader())
                 .andReturn(this.getClass().getClassLoader()).anyTimes();
         expect(contextMock.addServlet(EasyMock.capture(servletNames),
-                anyObject(Class.class))).andAnswer(() -> dynamicMock)
-                        .anyTimes();
+                any(Class.class))).andAnswer(() -> dynamicMock).anyTimes();
 
         expect(contextMock.getResource(EasyMock.anyString())).andReturn(null)
                 .anyTimes();
@@ -281,8 +280,8 @@ public class ServletDeployerTest {
 
         expect(contextMock.getAttribute(anyString())).andReturn(null)
                 .anyTimes();
-        contextMock.setAttribute(anyObject(), anyObject());
-        contextMock.setAttribute(anyObject(), anyObject());
+        contextMock.setAttribute(any(), any());
+        contextMock.setAttribute(any(), any());
         EasyMock.expectLastCall();
 
         File token = tempFolder.newFile();
