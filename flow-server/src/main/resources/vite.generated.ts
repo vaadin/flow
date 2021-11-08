@@ -9,7 +9,7 @@ import * as net from 'net';
 
 import { processThemeResources } from '@vaadin/application-theme-plugin/theme-handle.js';
 import settings from '#settingsImport#';
-import { UserConfigFn, defineConfig, HtmlTagDescriptor } from 'vite';
+import { UserConfigFn, defineConfig, HtmlTagDescriptor, mergeConfig } from 'vite';
 
 const frontendFolder = path.resolve(__dirname, settings.frontendFolder);
 const themeFolder = path.resolve(frontendFolder, settings.themeFolder);
@@ -120,8 +120,5 @@ export const vaadinConfig: UserConfigFn = (env) => {
 };
 
 export const overrideVaadinConfig = (customConfig: UserConfigFn) => {
-  return defineConfig((env) => ({
-    ...vaadinConfig(env),
-    ...customConfig(env)
-  }));
+  return defineConfig((env) => mergeConfig(vaadinConfig(env), customConfig(env)));
 };
