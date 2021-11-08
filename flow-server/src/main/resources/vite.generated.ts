@@ -105,7 +105,10 @@ export const vaadinConfig: UserConfigFn = (env) => {
         name: 'inject-entrypoint-script',
         transformIndexHtml: {
           enforce: 'pre',
-          transform() {
+          transform(_html, context) {
+            if (context.path !== '/index.html') {
+              return;
+            }
             const vaadinScript: HtmlTagDescriptor = {
               tag: 'script',
               attrs: { type: 'module', src: './generated/vaadin.ts' },
