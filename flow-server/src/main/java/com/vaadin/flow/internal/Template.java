@@ -24,5 +24,5 @@ import java.io.Serializable;
  *
  * @author Vaadin Ltd
  */
-public interface IsTemplate extends Serializable {
+public interface Template extends Serializable {
 }
