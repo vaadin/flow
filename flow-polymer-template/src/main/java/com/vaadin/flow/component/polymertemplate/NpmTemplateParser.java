@@ -145,8 +145,7 @@ public class NpmTemplateParser implements TemplateParser {
                 + "template files in your WAR file or provide alternative "
                 + "implementation of the method getTemplateContent() which "
                 + "should return an element representing the content of the "
-                + "template file", tag,
-                JsModule.class.getSimpleName()));
+                + "template file", tag, JsModule.class.getSimpleName()));
     }
 
     /**
