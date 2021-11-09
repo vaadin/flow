@@ -16,10 +16,12 @@ public class MainView extends Div {
 
     public static final String LOAD_AND_SHOW_JSON = "loadAndShowJson";
     public static final String JSON_CONTAINER = "jsonContainer";
+    public static final String PLANT = "plant";
 
     public MainView() {
         Image img = new Image("themes/vite-basics/images/plant.png",
                 "placeholder plant");
+        img.setId(PLANT);
         img.setWidth("200px");
         add(img);
 

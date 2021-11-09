@@ -10,9 +10,12 @@ import com.vaadin.flow.router.Route;
 @Route("")
 public class MainView extends Div {
 
+    public static final String PLANT = "plant";
+
     public MainView() {
         Image img = new Image("themes/vite-production/images/plant.png",
                 "placeholder plant");
+        img.setId(PLANT);
         img.setWidth("200px");
         add(img);
 

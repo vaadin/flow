@@ -2,13 +2,14 @@ package com.vaadin.viteapp;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
+import com.vaadin.viteapp.views.empty.MainView;
 
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.openqa.selenium.Dimension;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
-import org.openqa.selenium.Dimension;
 
 public class ProductionBasicsIT extends ChromeBrowserTest {
 
@@ -26,6 +27,20 @@ public class ProductionBasicsIT extends ChromeBrowserTest {
                 header.getText());
         Assert.assertFalse((Boolean) getCommandExecutor()
                 .executeScript("return Vaadin.developmentMode"));
+    }
+
+    @Test
+    public void imageFromThemeShown() {
+        getDriver().get(getRootURL());
+        waitForDevServer();
+        TestBenchElement img = $("img").id(MainView.PLANT);
+        waitUntil(driver -> {
+            String heightString = (String) executeScript(
+                    "return getComputedStyle(arguments[0]).height.replace('px','')",
+                    img);
+            float height = Float.parseFloat(heightString);
+            return (height > 150);
+        });
     }
 
     @Test
