@@ -35,7 +35,7 @@ import org.slf4j.LoggerFactory;
  * <p>
  * Triggers an event whenever a success or failure pattern is found on a row.
  */
-public class DevServerOutputFinder {
+public class DevServerOutputTracker {
 
     private static class Finder implements Runnable {
 
@@ -158,7 +158,7 @@ public class DevServerOutputFinder {
      * @param onMatch
      *            callback triggered when either success or failure is found
      */
-    public DevServerOutputFinder(InputStream inputStream, Pattern success,
+    public DevServerOutputTracker(InputStream inputStream, Pattern success,
             Pattern failure, Consumer<Result> onMatch) {
         monitor = new CountDownLatch(1);
         finder = new Finder(inputStream, success, failure, result -> {

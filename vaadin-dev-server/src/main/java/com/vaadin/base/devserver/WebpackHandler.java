@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
 
-import com.vaadin.base.devserver.DevServerOutputFinder.Result;
+import com.vaadin.base.devserver.DevServerOutputTracker.Result;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.FrontendUtils;

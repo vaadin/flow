@@ -37,7 +37,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.vaadin.base.devserver.DevServerOutputFinder.Result;
+import com.vaadin.base.devserver.DevServerOutputTracker.Result;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
@@ -362,7 +362,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
              */
             Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
 
-            DevServerOutputFinder finder = new DevServerOutputFinder(
+            DevServerOutputTracker finder = new DevServerOutputTracker(
                     process.getInputStream(), getServerSuccessPattern(),
                     getServerFailurePattern(), this::onDevServerCompilation);
             finder.find();
