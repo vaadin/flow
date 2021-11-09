@@ -9,8 +9,7 @@ import * as net from 'net';
 
 import { processThemeResources } from '@vaadin/application-theme-plugin/theme-handle.js';
 import settings from '#settingsImport#';
-import { UserConfigFn } from 'vite';
-import { defineConfig } from 'vite';
+import { UserConfigFn, defineConfig, HtmlTagDescriptor } from 'vite';
 
 const frontendFolder = path.resolve(__dirname, settings.frontendFolder);
 const themeFolder = path.resolve(frontendFolder, settings.themeFolder);
@@ -88,12 +87,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
       assetsDir: 'VAADIN/build',
       rollupOptions: {
         input: {
-          main: path.resolve(frontendFolder, 'index.html'),
-          generated: path.resolve(frontendFolder, 'generated/vaadin.ts')
-        },
-        output: {
-          // Produce only one chunk that gets imported into index.html
-          manualChunks: () => 'everything.js'
+          indexhtml: path.resolve(frontendFolder, 'index.html')
         }
       }
     },
@@ -105,6 +99,20 @@ export const vaadinConfig: UserConfigFn = (env) => {
         },
         handleHotUpdate(context) {
           updateTheme(path.resolve(context.file));
+        }
+      },
+      {
+        name: 'inject-entrypoint-script',
+        transformIndexHtml: {
+          enforce: 'pre',
+          transform() {
+            const vaadinScript: HtmlTagDescriptor = {
+              tag: 'script',
+              attrs: { type: 'module', src: './generated/vaadin.ts' },
+              injectTo: 'head'
+            };
+            return [vaadinScript];
+          }
         }
       }
     ]

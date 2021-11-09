@@ -45,7 +45,7 @@ import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 
-import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 
@@ -75,7 +75,7 @@ public class WebComponentConfigurationRegistryTest {
                 context.getAttribute(WebComponentConfigurationRegistry.class))
                 .thenReturn(instance);
         Mockito.when(context.getAttribute(
-                eq(WebComponentConfigurationRegistry.class), anyObject()))
+                eq(WebComponentConfigurationRegistry.class), any()))
                 .thenReturn(instance);
         registry = WebComponentConfigurationRegistry.getInstance(context);
     }

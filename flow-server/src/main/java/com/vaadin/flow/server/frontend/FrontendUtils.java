@@ -17,6 +17,7 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -436,52 +437,6 @@ public class FrontendUtils {
     }
 
     /**
-     * Gets the content of the <code>stats.json</code> file produced by webpack.
-     *
-     * Note: Caches the <code>stats.json</code> when external stats is enabled
-     * or <code>stats.json</code> is provided from the class path. To clear the
-     * cache use {@link #clearCachedStatsContent(VaadinService)}.
-     *
-     * @param service
-     *            the vaadin service.
-     * @return the content of the file as a string, null if not found.
-     * @throws IOException
-     *             on error reading stats file.
-     */
-    public static String getStatsContent(VaadinService service)
-            throws IOException {
-        DeploymentConfiguration config = service.getDeploymentConfiguration();
-        InputStream content = null;
-
-        try {
-            if (!config.isProductionMode() && config.enableDevServer()) {
-                Optional<DevModeHandler> devModeHandler = DevModeHandlerManager
-                        .getDevModeHandler(service);
-                if (!devModeHandler.isPresent()) {
-                    throw new WebpackConnectionException(
-                            "DevModeHandlerManager implementation missing. Include the "
-                                    + "com.vaadin:vaadin-dev-server dependency.");
-                }
-                content = getStatsFromWebpack(devModeHandler.get());
-            }
-
-            if (config.isStatsExternal()) {
-                content = getStatsFromExternalUrl(config.getExternalStatsUrl(),
-                        service.getContext());
-            }
-
-            if (content == null) {
-                content = getStatsFromClassPath(service);
-            }
-            return content != null
-                    ? IOUtils.toString(content, StandardCharsets.UTF_8)
-                    : null;
-        } finally {
-            IOUtils.closeQuietly(content);
-        }
-    }
-
-    /**
      * Clears the <code>stats.json</code> cache within this
      * {@link VaadinContext}.
      *
@@ -544,44 +499,6 @@ public class FrontendUtils {
                     filePath);
         }
         return stream;
-    }
-
-    /**
-     * Get the latest hash for the stats file in development mode. This is
-     * requested from the webpack-dev-server.
-     * <p>
-     * In production mode and disabled dev server mode an empty string is
-     * returned.
-     *
-     * @param service
-     *            the Vaadin service.
-     * @return hash string for the stats.json file, empty string if none found
-     * @throws IOException
-     *             if an I/O error occurs while creating the input stream.
-     */
-    public static String getStatsHash(VaadinService service)
-            throws IOException {
-        Optional<DevModeHandler> devModeHandler = DevModeHandlerManager
-                .getDevModeHandler(service);
-        if (devModeHandler.isPresent()) {
-            HttpURLConnection statsConnection = devModeHandler.get()
-                    .prepareConnection("/stats.hash", "GET");
-            if (statsConnection
-                    .getResponseCode() != HttpURLConnection.HTTP_OK) {
-                throw new WebpackConnectionException(String.format(
-                        NO_CONNECTION, "getting the stats content hash."));
-            }
-            return streamToString(statsConnection.getInputStream())
-                    .replaceAll("\"", "");
-        }
-
-        return "";
-    }
-
-    private static InputStream getStatsFromWebpack(
-            DevModeHandler devModeHandler) throws IOException {
-        return getResourceFromWebpack(devModeHandler, "/stats.json",
-                "downloading stats.json");
     }
 
     private static InputStream getResourceFromWebpack(
@@ -694,6 +611,59 @@ public class FrontendUtils {
             DevModeHandler devModeHandler, String filePath) throws IOException {
         return devModeHandler.prepareConnection("/" + filePath, "GET")
                 .getInputStream();
+    }
+
+    /**
+     * Get the contents of a frontend file from the running dev server.
+     *
+     * @param service
+     *            the Vaadin service.
+     * @param path
+     *            the file path.
+     * @return an input stream for reading the file contents; null if there is
+     *         no such file or the dev server is not running.
+     */
+    public static InputStream getFrontendFileFromDevModeHandler(
+            VaadinService service, String path) {
+        Optional<DevModeHandler> devModeHandler = DevModeHandlerManager
+                .getDevModeHandler(service);
+        if (devModeHandler.isPresent()) {
+            try {
+                File frontendFile = resolveFrontendPath(
+                        devModeHandler.get().getProjectRoot(), path);
+                return frontendFile == null ? null
+                        : new FileInputStream(frontendFile);
+            } catch (IOException e) {
+                throw new UncheckedIOException("Error reading file " + path, e);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Looks up the front file at the given path. If the path starts with
+     * {@code ./}, first look in {@code projectRoot/frontend}, then in
+     * {@code projectRoot/node_modules/@vaadin/flow-frontend}. If the path does
+     * not start with {@code ./}, look in {@code node_modules} instead.
+     *
+     * @param projectRoot
+     *            the project root folder.
+     * @param path
+     *            the file path.
+     * @return an existing {@link File} , or null if the file doesn't exist.
+     */
+    public static File resolveFrontendPath(File projectRoot, String path) {
+        File localFrontendFolder = new File(projectRoot,
+                FrontendUtils.FRONTEND);
+        File nodeModulesFolder = new File(projectRoot, NODE_MODULES);
+        File flowFrontendFolder = new File(nodeModulesFolder,
+                "@vaadin/" + DEFAULT_FLOW_RESOURCES_FOLDER);
+        List<File> candidateParents = path.startsWith("./")
+                ? Arrays.asList(localFrontendFolder, flowFrontendFolder)
+                : Arrays.asList(nodeModulesFolder, localFrontendFolder,
+                        flowFrontendFolder);
+        return candidateParents.stream().map(parent -> new File(parent, path))
+                .filter(File::exists).findFirst().orElse(null);
     }
 
     /**

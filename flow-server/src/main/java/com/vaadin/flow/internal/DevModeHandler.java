@@ -17,6 +17,7 @@ package com.vaadin.flow.internal;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 
@@ -63,4 +64,11 @@ public interface DevModeHandler extends RequestHandler {
      * Stop the dev-server.
      */
     void stop();
+
+    /**
+     * Gets the project root folder.
+     *
+     * @return the project root folder
+     */
+    File getProjectRoot();
 }

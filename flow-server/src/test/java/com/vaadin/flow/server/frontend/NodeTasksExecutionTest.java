@@ -32,6 +32,7 @@ public class NodeTasksExecutionTest {
         NodeTasks.Builder builder = new NodeTasks.Builder(
                 Mockito.mock(Lookup.class), null, TARGET);
         builder.useV14Bootstrap(true);
+        builder.withProductionMode(false);
 
         nodeTasks = builder.build();
 

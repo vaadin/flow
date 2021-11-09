@@ -273,40 +273,6 @@ public class FrontendUtilsTest {
     }
 
     @Test
-    public void getStatsContent_getStatsFromClassPath_delegateToGetApplicationResource()
-            throws IOException {
-        VaadinServletService service = mockServletService();
-
-        ResourceProvider provider = mockResourceProvider(service);
-
-        FrontendUtils.getStatsContent(service);
-
-        Mockito.verify(provider).getApplicationResource("foo");
-    }
-
-    @Test
-    public void getStatsContent_getStatsFromDevServerWithNoImplementation_throwsException() {
-        VaadinServletService service = mockServletService();
-
-        DeploymentConfiguration config = Mockito
-                .mock(DeploymentConfiguration.class);
-
-        Mockito.when(service.getDeploymentConfiguration()).thenReturn(config);
-
-        Mockito.when(config.isProductionMode()).thenReturn(false);
-        Mockito.when(config.enableDevServer()).thenReturn(true);
-
-        WebpackConnectionException exception = Assert.assertThrows(
-                WebpackConnectionException.class,
-                () -> FrontendUtils.getStatsContent(service));
-
-        Assert.assertEquals(
-                "DevModeHandlerManager implementation missing. Include "
-                        + "the com.vaadin:vaadin-dev-server dependency.",
-                exception.getMessage());
-    }
-
-    @Test
     public void getStatsAssetsByChunkName_getStatsFromClassPath_delegateToGetApplicationResource()
             throws IOException {
         VaadinServletService service = mockServletService();
@@ -316,54 +282,6 @@ public class FrontendUtilsTest {
         FrontendUtils.getStatsAssetsByChunkName(service);
 
         Mockito.verify(provider).getApplicationResource("foo");
-    }
-
-    @Test
-    public void getStatsContent_getStatsFromClassPath_populatesStatsCache()
-            throws IOException, ServiceException {
-        VaadinService service = setupStatsAssetMocks("ValidStats.json");
-
-        assertNull("Stats cache should not be present",
-                service.getContext().getAttribute(CACHE_KEY));
-
-        // Populates cache
-        FrontendUtils.getStatsContent(service);
-
-        assertNotNull("Stats cache should be created",
-                service.getContext().getAttribute(CACHE_KEY));
-    }
-
-    @Test // #10893
-    public void newLineCharacterInJsonStats_readStreamIsJsonParsable()
-            throws IOException, ServiceException {
-        VaadinService service = setupStatsAssetMocks(
-                "specialCharacterValue.json");
-
-        assertNull("Stats cache should not be present",
-                service.getContext().getAttribute(CACHE_KEY));
-
-        // Load file from classpath and populate cache
-        String statsContent = FrontendUtils.getStatsContent(service);
-
-        try {
-            // Json parsing should not throw for loaded stats.
-            Json.parse(statsContent);
-        } catch (JsonException jsonException) {
-            Assert.fail("Json loaded from class path was not parsable json");
-        }
-
-        assertNotNull("Stats cache should be created",
-                service.getContext().getAttribute(CACHE_KEY));
-
-        // Load cached stats.
-        statsContent = FrontendUtils.getStatsContent(service);
-
-        try {
-            // Json parsing should not throw for cached stats.
-            Json.parse(statsContent);
-        } catch (JsonException jsonException) {
-            Assert.fail("Json loaded from cache was not parsable json");
-        }
     }
 
     @Test
@@ -392,7 +310,7 @@ public class FrontendUtilsTest {
         FrontendUtils.clearCachedStatsContent(service);
 
         // Populates cache
-        FrontendUtils.getStatsContent(service);
+        FrontendUtils.getStatsAssetsByChunkName(service);
 
         // Clears cache
         FrontendUtils.clearCachedStatsContent(service);

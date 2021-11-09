@@ -123,12 +123,12 @@ public final class WebpackHandler extends AbstractDevServerRunner {
 
     @Override
     protected File getServerBinary() {
-        return new File(getNpmFolder(), WEBPACK_SERVER);
+        return new File(getProjectRoot(), WEBPACK_SERVER);
     }
 
     @Override
     protected File getServerConfig() {
-        return new File(getNpmFolder(), FrontendUtils.WEBPACK_CONFIG);
+        return new File(getProjectRoot(), FrontendUtils.WEBPACK_CONFIG);
     }
 
     @Override
