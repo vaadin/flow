@@ -334,20 +334,18 @@ module.exports = {
       : []),
 
     function (compiler) {
-      if (!useClientSideIndexFileForBootstrapping) {
-        // In V14 mode we need the bundles for inclusion into the bootstrap page
-        compiler.hooks.afterEmit.tapAsync("FlowStatsHelper", (compilation, done) => {
-          let miniStats = {
-            assetsByChunkName: compilation.getStats().toJson().assetsByChunkName
-          };
-          if (!devMode) {
-            fs.writeFile(statsFile, JSON.stringify(miniStats, null, 1), done);
-          } else {
-            stats = miniStats;
-            done();
-          }
-        });
-      }
+      // V14 bootstrapping needs the bundle names
+      compiler.hooks.afterEmit.tapAsync("FlowStatsHelper", (compilation, done) => {
+        let miniStats = {
+          assetsByChunkName: compilation.getStats().toJson().assetsByChunkName
+        };
+        if (!devMode) {
+          fs.writeFile(statsFile, JSON.stringify(miniStats, null, 1), done);
+        } else {
+          stats = miniStats;
+          done();
+        }
+      });
     },
 
     // Includes JS output bundles into "index.html"
