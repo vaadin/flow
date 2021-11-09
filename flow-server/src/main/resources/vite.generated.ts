@@ -10,9 +10,11 @@ import * as net from 'net';
 import { processThemeResources } from '@vaadin/application-theme-plugin/theme-handle.js';
 import settings from '#settingsImport#';
 import { UserConfigFn, defineConfig, HtmlTagDescriptor, mergeConfig } from 'vite';
+import { injectManifest } from 'workbox-build';
 
 import brotli from 'rollup-plugin-brotli';
 import checker from 'vite-plugin-checker'
+
 
 const frontendFolder = path.resolve(__dirname, settings.frontendFolder);
 const themeFolder = path.resolve(frontendFolder, settings.themeFolder);
@@ -70,6 +72,7 @@ function runWatchDog(watchDogPort) {
   client.connect(watchDogPort, 'localhost');
 }
 
+
 export const vaadinConfig: UserConfigFn = (env) => {
   const devMode = env.mode === 'development';
   const basePath = env.mode === 'production' ? '' : '/VAADIN/';
@@ -99,6 +102,26 @@ export const vaadinConfig: UserConfigFn = (env) => {
     },
     plugins: [
       !devMode && brotli(),
+      settings.pwaEnabled &&
+      {
+        name: 'pwa',
+        enforce: 'post',
+        apply: 'build',
+        transformIndexHtml: {
+          enforce: 'post',
+          transform(html) {
+            return html.replace('</head>', '<link rel="manifest" href="manifest.webmanifest"></head>');
+          }
+        },
+        async buildStart() {
+          await injectManifest({
+            swSrc: path.resolve(settings.clientServiceWorkerSourceDir, settings.serviceWorkerSource),
+            swDest: path.resolve(buildFolder, 'sw.js'),
+            globDirectory: buildFolder,
+            injectionPoint: 'self.__WB_MANIFEST',
+          });
+        }
+      },
       {
         name: 'custom-theme',
         config() {

@@ -20,6 +20,8 @@ import java.io.IOException;
 
 import org.apache.commons.io.IOUtils;
 
+import com.vaadin.experimental.FeatureFlags;
+
 import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC;
 import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC_JS;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -35,6 +37,7 @@ public class TaskGenerateServiceWorker extends AbstractTaskClientGenerator {
 
     private File frontendDirectory;
     private File outputDirectory;
+    private FeatureFlags featureFlags;
 
     /**
      * Create a task to generate <code>sw.ts</code> if necessary.
@@ -45,13 +48,19 @@ public class TaskGenerateServiceWorker extends AbstractTaskClientGenerator {
      * @param outputDirectory
      *            the output directory of the generated file
      */
-    TaskGenerateServiceWorker(File frontendDirectory, File outputDirectory) {
+    TaskGenerateServiceWorker(File frontendDirectory, File outputDirectory,
+            FeatureFlags featureFlags) {
         this.frontendDirectory = frontendDirectory;
         this.outputDirectory = outputDirectory;
+        this.featureFlags = featureFlags;
     }
 
     @Override
     protected String getFileContent() throws IOException {
+        if (featureFlags.isEnabled(FeatureFlags.VITE)) {
+            return IOUtils.toString(
+                    getClass().getResourceAsStream("sw-vite.ts"), UTF_8);
+        }
         return IOUtils.toString(
                 getClass().getResourceAsStream(SERVICE_WORKER_SRC), UTF_8);
     }

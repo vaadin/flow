@@ -756,7 +756,7 @@ public class NodeTasks implements FallibleCommand {
 
         if (frontendDependencies != null) {
             addGenerateServiceWorkerTask(builder,
-                    frontendDependencies.getPwaConfiguration());
+                    frontendDependencies.getPwaConfiguration(), featureFlags);
             addGenerateTsConfigTask(builder);
         }
 
@@ -787,10 +787,17 @@ public class NodeTasks implements FallibleCommand {
 
         if (featureFlags.isEnabled(FeatureFlags.VITE)) {
             String themeName = "";
+            PwaConfiguration pwa;
             if (frontendDependencies != null) {
-                themeName = frontendDependencies.getThemeDefinition().getName();
+                if (frontendDependencies.getThemeDefinition() != null) {
+                    themeName = frontendDependencies.getThemeDefinition()
+                            .getName();
+                }
+                pwa = frontendDependencies.getPwaConfiguration();
+            } else {
+                pwa = new PwaConfiguration();
             }
-            commands.add(new TaskUpdateSettingsFile(builder, themeName));
+            commands.add(new TaskUpdateSettingsFile(builder, themeName, pwa));
             commands.add(new TaskUpdateVite(builder.npmFolder,
                     builder.buildDirectory));
         } else if (enableWebpackConfigUpdate) {
@@ -852,12 +859,12 @@ public class NodeTasks implements FallibleCommand {
     }
 
     private void addGenerateServiceWorkerTask(Builder builder,
-            PwaConfiguration pwaConfiguration) {
+            PwaConfiguration pwaConfiguration, FeatureFlags featureFlags) {
         File outputDirectory = new File(builder.npmFolder,
                 builder.buildDirectory);
         if (pwaConfiguration.isEnabled()) {
             commands.add(new TaskGenerateServiceWorker(
-                    builder.frontendDirectory, outputDirectory));
+                    builder.frontendDirectory, outputDirectory, featureFlags));
         }
     }
 
