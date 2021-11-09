@@ -29,7 +29,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Matchers;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
@@ -302,8 +302,9 @@ public class UITest {
 
         ui.navigate(route, params);
 
-        Mockito.verify(router).navigate(Matchers.eq(ui), location.capture(),
-                Matchers.eq(NavigationTrigger.UI_NAVIGATE));
+        Mockito.verify(router).navigate(ArgumentMatchers.eq(ui),
+                location.capture(),
+                ArgumentMatchers.eq(NavigationTrigger.UI_NAVIGATE));
 
         Location value = location.getValue();
         Assert.assertEquals(route, value.getPath());
