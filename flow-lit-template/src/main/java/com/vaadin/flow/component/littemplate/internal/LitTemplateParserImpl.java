@@ -133,11 +133,14 @@ public class LitTemplateParserImpl implements LitTemplateParser {
         getLogger().info("Couldn't find the "
                 + "definition of the element with tag '{}' "
                 + "in any lit template file declared using '@{}' annotations. "
-                + "Check the availability of the template files in your WAR "
-                + "file or provide alternative implementation of the "
-                + "method LitTemplateParser.getTemplateContent() which should return an element "
-                + "representing the content of the template file", tag,
-                JsModule.class.getSimpleName());
+                + "In a Spring Boot project, please ensure that the template's "
+                + "groupId is added to the vaadin.whitelisted-packages "
+                + "property. Otherwise, please Check the availability of the "
+                + "template files in your WAR file or provide alternative "
+                + "implementation of the method "
+                + "LitTemplateParser.getTemplateContent() which should return "
+                + "an element representing the content of the template file",
+                tag, JsModule.class.getSimpleName());
 
         return null;
     }

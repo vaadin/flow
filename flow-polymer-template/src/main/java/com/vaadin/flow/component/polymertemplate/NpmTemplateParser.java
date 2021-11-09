@@ -139,10 +139,13 @@ public class NpmTemplateParser implements TemplateParser {
         throw new IllegalStateException(String.format("Couldn't find the "
                 + "definition of the element with tag '%s' "
                 + "in any template file declared using '@%s' annotations. "
-                + "Check the availability of the template files in your WAR "
-                + "file or provide alternative implementation of the "
-                + "method getTemplateContent() which should return an element "
-                + "representing the content of the template file", tag,
+                + "In a Spring Boot project, please ensure that the template's "
+                + "groupId is added to the vaadin.whitelisted-packages "
+                + "property. Otherwise, please Check the availability of the "
+                + "template files in your WAR file or provide alternative "
+                + "implementation of the method getTemplateContent() which "
+                + "should return an element representing the content of the "
+                + "template file", tag,
                 JsModule.class.getSimpleName()));
     }
 
