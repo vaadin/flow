@@ -49,7 +49,7 @@ public class ReflectionsClassFinder implements ClassFinder {
         classLoader = new URLClassLoader(urls,
                 ReflectionsClassFinder.class.getClassLoader()); // NOSONAR
         ConfigurationBuilder configurationBuilder = new ConfigurationBuilder()
-                .addClassLoader(classLoader).setExpandSuperTypes(false)
+                .addClassLoaders(classLoader).setExpandSuperTypes(false)
                 .addUrls(urls);
 
         configurationBuilder

@@ -250,14 +250,14 @@ public class PwaTestIT extends ChromeDeviceTest {
         // with the actual served file
         String expectedMimeType = URLConnection.guessContentTypeFromName(url);
         String script = "const mimeType = arguments[0];"
-                + "const resolve = arguments[1];" + "fetch('" + url
-                + "', {method: 'GET'})"
-                + ".then(response => resolve(response.status===200"
-                + "      && !response.redirected"
-                + "      && (mimeType===null || response.headers.get('Content-Type')===mimeType)))"
+                + "const resolve = arguments[2];" //
+                + "fetch(arguments[1], {method: 'GET'})" //
+                + ".then(response => resolve(response.status===200" //
+                + "      && !response.redirected" //
+                + "      && (mimeType===null || response.headers.get('Content-Type').replace(';charset=utf-8','')===mimeType)))" //
                 + ".catch(err => resolve(false));";
         return (boolean) ((JavascriptExecutor) getDriver())
-                .executeAsyncScript(script, expectedMimeType);
+                .executeAsyncScript(script, expectedMimeType, url);
     }
 
     private static String readStringFromUrl(String url) throws IOException {

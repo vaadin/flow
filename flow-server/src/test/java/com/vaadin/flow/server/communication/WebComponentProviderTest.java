@@ -59,7 +59,6 @@ import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.communication.PushMode;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyObject;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.times;
 
@@ -95,7 +94,7 @@ public class WebComponentProviderTest {
                 context.getAttribute(WebComponentConfigurationRegistry.class))
                 .then(invocationOnMock -> registry);
         Mockito.when(context.getAttribute(
-                eq(WebComponentConfigurationRegistry.class), anyObject()))
+                eq(WebComponentConfigurationRegistry.class), any()))
                 .then(invocationOnMock -> registry);
         Mockito.doAnswer(
                 invocationOnMock -> registry = (WebComponentConfigurationRegistry) invocationOnMock

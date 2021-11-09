@@ -39,9 +39,6 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
-import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
-import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
-
 public class LitTemplateParserImplTest {
 
     private MockVaadinServletService service;
@@ -76,10 +73,10 @@ public class LitTemplateParserImplTest {
 
         ResourceProvider resourceProvider = service.getContext()
                 .getAttribute(Lookup.class).lookup(ResourceProvider.class);
-        Mockito.when(resourceProvider.getApplicationResource(
-                VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT))
-                .thenReturn(LitTemplateParserImplTest.class.getResource(
-                        "/" + VAADIN_SERVLET_RESOURCES + "config/stats.json"));
+        Mockito.when(
+                resourceProvider.getApplicationResource(Mockito.anyString()))
+                .thenAnswer(invoc -> LitTemplateParserImpl.class
+                        .getClassLoader().getResource(invoc.getArgument(0)));
     }
 
     @Test
@@ -180,9 +177,6 @@ public class LitTemplateParserImplTest {
     public void getTemplateContent_sourceFileWithFaultyTemplateGetter_returnsNull() {
         // If the template getter can not be found it should result in no
         // template element children
-        Mockito.when(configuration.getStringProperty(Mockito.anyString(),
-                Mockito.anyString()))
-                .thenReturn(VAADIN_SERVLET_RESOURCES + "config/stats.json");
         LitTemplateParser.TemplateData templateContent = LitTemplateParserImpl
                 .getInstance()
                 .getTemplateContent(MyFaulty.class, "my-element", service);
@@ -194,9 +188,6 @@ public class LitTemplateParserImplTest {
     public void getTemplateContent_renderIsDefinedInSuperClass_returnsNull() {
         // If the template getter can not be found it should result in no
         // template element children
-        Mockito.when(configuration.getStringProperty(Mockito.anyString(),
-                Mockito.anyString()))
-                .thenReturn(VAADIN_SERVLET_RESOURCES + "config/stats.json");
         LitTemplateParser.TemplateData templateContent = LitTemplateParserImpl
                 .getInstance().getTemplateContent(MyFaulty.class,
                         "my-super-lit-element", service);
@@ -206,9 +197,6 @@ public class LitTemplateParserImplTest {
 
     @Test
     public void getTemplateContent_nonLocalTemplate_rootElementParsed() {
-        Mockito.when(configuration.getStringProperty(Mockito.anyString(),
-                Mockito.anyString()))
-                .thenReturn(VAADIN_SERVLET_RESOURCES + "config/stats.json");
         LitTemplateParser.TemplateData templateContent = LitTemplateParserImpl
                 .getInstance().getTemplateContent(HelloWorld.class,
                         HelloWorld.class.getAnnotation(Tag.class).value(),
@@ -223,9 +211,6 @@ public class LitTemplateParserImplTest {
 
     @Test
     public void getTemplateContent_nonLocalTemplateInTargetFolder_rootElementParsed() {
-        Mockito.when(configuration.getStringProperty(Mockito.anyString(),
-                Mockito.anyString()))
-                .thenReturn(VAADIN_SERVLET_RESOURCES + "config/stats.json");
         LitTemplateParser.TemplateData templateContent = LitTemplateParserImpl
                 .getInstance().getTemplateContent(HelloWorld2.class,
                         HelloWorld2.class.getAnnotation(Tag.class).value(),
@@ -240,10 +225,6 @@ public class LitTemplateParserImplTest {
 
     @Test
     public void severalJsModuleAnnotations_theFirstFileDoesNotExist_fileWithContentIsChosen() {
-        Mockito.when(configuration.getStringProperty(Mockito.anyString(),
-                Mockito.anyString()))
-                .thenReturn(VAADIN_SERVLET_RESOURCES + "config/stats.json");
-
         LitTemplateParser instance = LitTemplateParserImpl.getInstance();
         LitTemplateParser.TemplateData templateContent = instance
                 .getTemplateContent(BrokenJsModuleAnnotation.class,
@@ -256,10 +237,6 @@ public class LitTemplateParserImplTest {
 
     @Test
     public void severalJsModuleAnnotations_parserSelectsByName() {
-        Mockito.when(configuration.getStringProperty(Mockito.anyString(),
-                Mockito.anyString()))
-                .thenReturn(VAADIN_SERVLET_RESOURCES + "config/stats.json");
-
         LitTemplateParser instance = LitTemplateParserImpl.getInstance();
         LitTemplateParser.TemplateData templateContent = instance
                 .getTemplateContent(SeveralJsModuleAnnotations.class,
@@ -320,7 +297,7 @@ public class LitTemplateParserImplTest {
     }
 
     @Tag("my-lit-element-view")
-    @JsModule("./frontend/non-existant.js")
+    @JsModule("./frontend/non-existent.js")
     @JsModule("./frontend/my-lit-element-view.js")
     public class BrokenJsModuleAnnotation extends LitTemplate {
     }

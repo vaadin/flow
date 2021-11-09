@@ -1968,6 +1968,29 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
                 (field, exception) -> Optional.of(bindingException));
     }
 
+    // See: https://github.com/vaadin/framework/issues/9581
+    @Test
+    public void withConverter_hasChangesFalse() {
+        TestTextField nameField = new TestTextField();
+        nameField.setValue("");
+        TestTextField rentField = new TestTextField();
+        rentField.setValue("");
+        rentField.addValueChangeListener(event -> {
+            nameField.setValue("Name");
+        });
+        item.setRent(BigDecimal.valueOf(10));
+        binder.forField(nameField).bind(Person::getFirstName,
+                Person::setFirstName);
+        binder.forField(rentField).withConverter(new EuroConverter(""))
+                .withNullRepresentation(BigDecimal.valueOf(0d))
+                .bind(Person::getRent, Person::setRent);
+        binder.readBean(item);
+
+        assertFalse(binder.hasChanges());
+        assertEquals("€ 10.00", rentField.getValue());
+        assertEquals("Name", nameField.getValue());
+    }
+
     private TestTextField createNullRejectingFieldWithEmptyValue(
             String emptyValue) {
         return new TestTextField() {

@@ -35,8 +35,6 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
-import com.vaadin.flow.internal.DevModeHandler;
-import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.UsageStatisticsExporter;
 import com.vaadin.flow.internal.springcsrf.SpringCsrfTokenUtil;
 import com.vaadin.flow.server.AppShellRegistry;
@@ -270,7 +268,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             Document indexHtmlDocument = Jsoup.parse(index);
             if (FeatureFlags.get(service.getContext())
                     .isEnabled(FeatureFlags.VITE)) {
-                modifyIndexHtmlForVite(service, indexHtmlDocument);
+                modifyIndexHtmlForVite(indexHtmlDocument);
             }
             return indexHtmlDocument;
         }
@@ -292,22 +290,10 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         throw new IOException(message);
     }
 
-    private static void modifyIndexHtmlForVite(VaadinService service,
-            Document indexHtmlDocument) {
-        Optional<DevModeHandler> devModeHandler = DevModeHandlerManager
-                .getDevModeHandler(service);
-        if (devModeHandler.isPresent()) {
-            indexHtmlDocument.head()
-                    .appendChild(new Element(SCRIPT).attr("type", "module")
-                            .attr("src", Constants.VAADIN_MAPPING
-                                    + FrontendUtils.GENERATED
-                                    + FrontendUtils.BOOTSTRAP_FILE_NAME));
-
-            // Workaround for https://github.com/vitejs/vite/issues/5142
-            indexHtmlDocument.head().prepend(
-                    "<script type='text/javascript'>window.JSCompiler_renameProperty = function(a) { return a;}</script>");
-
-        }
+    private static void modifyIndexHtmlForVite(Document indexHtmlDocument) {
+        // Workaround for https://github.com/vitejs/vite/issues/5142
+        indexHtmlDocument.head().prepend(
+                "<script type='text/javascript'>window.JSCompiler_renameProperty = function(a) { return a;}</script>");
     }
 
     // Holds parsed index.html to avoid re-parsing on every request in

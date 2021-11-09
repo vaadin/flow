@@ -17,15 +17,13 @@ package com.vaadin.flow.component.littemplate.internal;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FilenameUtils;
-import org.jsoup.UncheckedIOException;
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,16 +32,16 @@ import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.littemplate.BundleLitParser;
 import com.vaadin.flow.component.littemplate.LitTemplate;
 import com.vaadin.flow.component.littemplate.LitTemplateParser;
-import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.Pair;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DependencyFilter;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
-
-import elemental.json.JsonObject;
 
 /**
  * Lit template parser implementation.
@@ -66,10 +64,6 @@ import elemental.json.JsonObject;
 public class LitTemplateParserImpl implements LitTemplateParser {
 
     private static final LitTemplateParser INSTANCE = new LitTemplateParserImpl();
-
-    private final HashMap<String, String> cache = new HashMap<>();
-    private final ReentrantLock templateSourceslock = new ReentrantLock();
-    private JsonObject jsonStats;
 
     /**
      * The default constructor. Protected in order to prevent direct
@@ -107,14 +101,7 @@ public class LitTemplateParserImpl implements LitTemplateParser {
             }
 
             String url = dependency.getUrl();
-            String source = getSourcesFromTemplate(tag, url);
-            if (source == null) {
-                try {
-                    source = getSourcesFromStats(service, url);
-                } catch (IOException e) {
-                    throw new UncheckedIOException(e);
-                }
-            }
+            String source = getSourcesFromTemplate(service, tag, url);
             if (source == null) {
                 continue;
             }
@@ -173,6 +160,8 @@ public class LitTemplateParserImpl implements LitTemplateParser {
     /**
      * Finds the JavaScript sources for given tag.
      *
+     * @param service
+     *            the Vaadin service
      * @param tag
      *            the value of the {@link com.vaadin.flow.component.Tag}
      *            annotation, e.g. `my-component`
@@ -184,9 +173,23 @@ public class LitTemplateParserImpl implements LitTemplateParser {
      * @return the .js source which declares given custom element, or null if no
      *         such source can be found.
      */
-    protected String getSourcesFromTemplate(String tag, String url) {
-        InputStream content = getClass().getClassLoader()
-                .getResourceAsStream(url);
+    protected String getSourcesFromTemplate(VaadinService service, String tag,
+            String url) {
+        InputStream content = getResourceStream(service, url);
+        if (content == null) {
+            // Attempt to get the sources from dev server, if available
+            content = FrontendUtils.getFrontendFileFromDevModeHandler(service,
+                    url);
+        }
+        if (content == null) {
+            // In production builds, template sources are stored in
+            // META-INF/VAADIN/config/templates
+            String pathWithoutPrefix = url.replaceFirst("^\\./", "");
+            String vaadinDirectory = Constants.VAADIN_SERVLET_RESOURCES
+                    + Constants.TEMPLATE_DIRECTORY;
+            String resourceUrl = vaadinDirectory + pathWithoutPrefix;
+            content = getResourceStream(service, resourceUrl);
+        }
         if (content != null) {
             getLogger().debug(
                     "Found sources from the tag '{}' in the template '{}'", tag,
@@ -196,67 +199,19 @@ public class LitTemplateParserImpl implements LitTemplateParser {
         return null;
     }
 
-    private String getSourcesFromStats(VaadinService service, String url)
-            throws IOException {
-        templateSourceslock.lock();
-        try {
-            if (isStatsFileReadNeeded(service)) {
-                String content = FrontendUtils.getStatsContent(service);
-                if (content != null) {
-                    resetCache(content);
-                }
+    private InputStream getResourceStream(VaadinService service, String url) {
+        ResourceProvider resourceProvider = service.getContext()
+                .getAttribute(Lookup.class).lookup(ResourceProvider.class);
+        URL resourceUrl = resourceProvider.getApplicationResource(url);
+        if (resourceUrl != null) {
+            try {
+                return resourceUrl.openStream();
+            } catch (IOException e) {
+                getLogger().warn("Exception accessing resource " + resourceUrl,
+                        e);
             }
-            if (!cache.containsKey(url) && jsonStats != null) {
-                cache.put(url, BundleLitParser.getSourceFromStatistics(url,
-                        jsonStats, service));
-            }
-            return cache.get(url);
-        } finally {
-            templateSourceslock.unlock();
         }
-    }
-
-    /**
-     * Check status to see if stats.json needs to be loaded and parsed.
-     * <p>
-     * Always load if jsonStats is null, never load again when we have a bundle
-     * as it never changes, always load a new stats if the hash has changed and
-     * we do not have a bundle.
-     *
-     * @param service
-     *            the Vaadin service.
-     * @return {@code true} if we need to re-load and parse stats.json, else
-     *         {@code false}
-     */
-    private boolean isStatsFileReadNeeded(VaadinService service)
-            throws IOException {
-        assert templateSourceslock.isHeldByCurrentThread();
-        DeploymentConfiguration config = service.getDeploymentConfiguration();
-        if (jsonStats == null) {
-            return true;
-        } else if (usesBundleFile(config)) {
-            return false;
-        }
-        return !jsonStats.get("hash").asString()
-                .equals(FrontendUtils.getStatsHash(service));
-    }
-
-    /**
-     * Check if we are running in a mode without dev server and using a pre-made
-     * bundle file.
-     *
-     * @param config
-     *            deployment configuration
-     * @return true if production mode or disabled dev server
-     */
-    private boolean usesBundleFile(DeploymentConfiguration config) {
-        return config.isProductionMode() && !config.enableDevServer();
-    }
-
-    private void resetCache(String fileContents) {
-        assert templateSourceslock.isHeldByCurrentThread();
-        cache.clear();
-        jsonStats = BundleLitParser.parseJsonStatistics(fileContents);
+        return null;
     }
 
     private Logger getLogger() {

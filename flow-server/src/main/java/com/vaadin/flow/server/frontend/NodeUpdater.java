@@ -373,7 +373,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         final String WORKBOX_VERSION = "6.2.0";
 
         if (featureFlags.isEnabled(FeatureFlags.VITE)) {
-            defaults.put("vite", "v2.7.0-beta.1");
+            defaults.put("vite", "v2.7.0-beta.3");
             defaults.put("mkdirp", "1.0.4"); // for application-theme-plugin
         } else {
             // Webpack plugins and helpers

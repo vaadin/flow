@@ -26,6 +26,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -70,6 +71,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.WarURLStreamHandlerFactory;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.ResponseWriter;
 
 import static com.vaadin.flow.server.Constants.POLYFILLS_DEFAULT_VALUE;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
@@ -174,7 +176,8 @@ public class StaticFileServerTest implements Serializable {
                 invocationOnMock -> servletService.getClass().getClassLoader())
                 .when(servletService).getClassLoader();
 
-        fileServer = new OverrideableStaticFileServer(servletService);
+        fileServer = new OverrideableStaticFileServer(servletService,
+                configuration);
 
         // Required by the ResponseWriter
         servletContext = Mockito.mock(ServletContext.class);
@@ -258,29 +261,32 @@ public class StaticFileServerTest implements Serializable {
 
     @Test
     public void isResourceRequest() throws Exception {
+        fileServer.writeResponse = false;
         setupRequestURI("", "/static", "/file.png");
         Mockito.when(servletService.getStaticResource("/static/file.png"))
                 .thenReturn(new URL("file:///static/file.png"));
-        Assert.assertTrue(fileServer.isStaticResourceRequest(request));
+        Assert.assertTrue(fileServer.serveStaticResource(request, response));
     }
 
     @Test
     public void isResourceRequestWithContextPath() throws Exception {
+        fileServer.writeResponse = false;
         setupRequestURI("/foo", "/static", "/file.png");
         Mockito.when(servletService.getStaticResource("/static/file.png"))
                 .thenReturn(new URL("file:///static/file.png"));
-        Assert.assertTrue(fileServer.isStaticResourceRequest(request));
+        Assert.assertTrue(fileServer.serveStaticResource(request, response));
     }
 
     @Test
     public void isNotResourceRequest() throws Exception {
         setupRequestURI("", "", null);
         Mockito.when(servletContext.getResource("/")).thenReturn(null);
-        Assert.assertFalse(fileServer.isStaticResourceRequest(request));
+        Assert.assertFalse(fileServer.serveStaticResource(request, response));
     }
 
     @Test
     public void directoryIsNotResourceRequest() throws Exception {
+        fileServer.writeResponse = false;
         final TemporaryFolder folder = TemporaryFolder.builder().build();
         folder.create();
 
@@ -298,7 +304,7 @@ public class StaticFileServerTest implements Serializable {
         Mockito.when(servletService.getStaticResource("/frontend"))
                 .thenReturn(folderPath);
         Assert.assertFalse("Folder on disk should not be a static resource.",
-                fileServer.isStaticResourceRequest(request));
+                fileServer.serveStaticResource(request, response));
 
         // Test any path ending with / to be seen as a directory
         setupRequestURI("", "", "/fake");
@@ -306,7 +312,7 @@ public class StaticFileServerTest implements Serializable {
                 .thenReturn(new URL("file:///fake/"));
         Assert.assertFalse(
                 "Fake should not check the file system nor be a static resource.",
-                fileServer.isStaticResourceRequest(request));
+                fileServer.serveStaticResource(request, response));
 
         Path tempArchive = generateZipArchive(folder);
 
@@ -317,7 +323,7 @@ public class StaticFileServerTest implements Serializable {
                         + "!/frontend"));
         Assert.assertFalse(
                 "Folder 'frontend' in jar should not be a static resource.",
-                fileServer.isStaticResourceRequest(request));
+                fileServer.serveStaticResource(request, response));
         setupRequestURI("", "", "/file.txt");
         Mockito.when(servletService.getStaticResource("/file.txt"))
                 .thenReturn(new URL("jar:file:///"
@@ -325,7 +331,7 @@ public class StaticFileServerTest implements Serializable {
                         + "!/file.txt"));
         Assert.assertTrue(
                 "File 'file.txt' inside jar should be a static resource.",
-                fileServer.isStaticResourceRequest(request));
+                fileServer.serveStaticResource(request, response));
 
         folder.delete();
     }
@@ -333,6 +339,7 @@ public class StaticFileServerTest implements Serializable {
     @Test
     public void isStaticResource_jarWarFileScheme_detectsAsStaticResources()
             throws IOException {
+        fileServer.writeResponse = false;
         Assert.assertTrue("Can not run concurrently with other test",
                 StaticFileServer.openFileSystems.isEmpty());
 
@@ -361,7 +368,7 @@ public class StaticFileServerTest implements Serializable {
 
         Assert.assertTrue(
                 "Request should return as static request as we can not determine non file resources in jar files.",
-                fileServer.isStaticResourceRequest(request));
+                fileServer.serveStaticResource(request, response));
 
         folder.delete();
     }
@@ -369,6 +376,7 @@ public class StaticFileServerTest implements Serializable {
     @Test
     public void isStaticResource_jarInAJar_detectsAsStaticResources()
             throws IOException {
+        fileServer.writeResponse = false;
         Assert.assertTrue("Can not run concurrently with other test",
                 StaticFileServer.openFileSystems.isEmpty());
 
@@ -391,14 +399,14 @@ public class StaticFileServerTest implements Serializable {
                         + archiveFile.getName() + "!/frontend"));
         Assert.assertTrue(
                 "Request should return as static request as we can not determine non file resources in jar files.",
-                fileServer.isStaticResourceRequest(request));
+                fileServer.serveStaticResource(request, response));
         setupRequestURI("", "", "/file.txt");
         Mockito.when(servletService.getStaticResource("/file.txt"))
                 .thenReturn(new URL("jar:" + warFile.toURI().toURL() + "!/"
                         + archiveFile.getName() + "!/file.txt"));
         Assert.assertTrue(
                 "Request should return as static request as we can not determine non file resources in jar files.",
-                fileServer.isStaticResourceRequest(request));
+                fileServer.serveStaticResource(request, response));
 
         folder.delete();
     }
@@ -517,6 +525,7 @@ public class StaticFileServerTest implements Serializable {
     public void concurrentRequestsToJarResources_checksAreCorrect()
             throws IOException, InterruptedException, ExecutionException,
             URISyntaxException {
+        fileServer.writeResponse = false;
         Assert.assertTrue("Can not run concurrently with other test",
                 StaticFileServer.openFileSystems.isEmpty());
 
@@ -538,7 +547,8 @@ public class StaticFileServerTest implements Serializable {
                 .mapToObj(i -> {
                     Callable<Result> callable = () -> {
                         try {
-                            if (fileServer.isStaticResourceRequest(request)) {
+                            if (fileServer.serveStaticResource(request,
+                                    response)) {
                                 throw new IllegalArgumentException(
                                         "Folder 'frontend' in jar should not be a static resource.");
                             }
@@ -587,7 +597,8 @@ public class StaticFileServerTest implements Serializable {
                 .mapToObj(i -> {
                     Callable<Result> callable = () -> {
                         try {
-                            if (!fileServer.isStaticResourceRequest(request)) {
+                            if (!fileServer.serveStaticResource(request,
+                                    response)) {
                                 throw new IllegalArgumentException(
                                         "File 'file.txt' inside jar should be a static resource.");
                             }
@@ -652,39 +663,42 @@ public class StaticFileServerTest implements Serializable {
                     }
                 }));
 
-        Assert.assertFalse(fileServer.isStaticResourceRequest(request));
+        Assert.assertFalse(fileServer.serveStaticResource(request, response));
     }
 
     @Test
-    public void manifestPath_isResourceRequest() {
+    public void manifestPath_isResourceRequest() throws IOException {
         setupRequestURI("", "", "/sw.js");
         Mockito.when(servletService.getStaticResource("/sw.js"))
                 .thenReturn(null);
-        Assert.assertTrue(fileServer.isStaticResourceRequest(request));
+        Assert.assertTrue(fileServer.serveStaticResource(request, response));
     }
 
     @Test
-    public void manifestPath_isResourceRequest_withContextPath() {
+    public void manifestPath_isResourceRequest_withContextPath()
+            throws IOException {
         setupRequestURI("/foo", "", "/sw.js");
         Mockito.when(servletService.getStaticResource("/sw.js"))
                 .thenReturn(null);
-        Assert.assertTrue(fileServer.isStaticResourceRequest(request));
+        Assert.assertTrue(fileServer.serveStaticResource(request, response));
     }
 
     @Test
-    public void manifestPath_indexHtml_isNotResourceRequest() {
+    public void manifestPath_indexHtml_isNotResourceRequest()
+            throws IOException {
         setupRequestURI("", "", "/index.html");
         Mockito.when(servletService.getStaticResource("/index.html"))
                 .thenReturn(null);
-        Assert.assertFalse(fileServer.isStaticResourceRequest(request));
+        Assert.assertFalse(fileServer.serveStaticResource(request, response));
     }
 
     @Test
-    public void manifestPath_indexHtml_isNotResourceRequest_withContextPath() {
+    public void manifestPath_indexHtml_isNotResourceRequest_withContextPath()
+            throws IOException {
         setupRequestURI("/foo", "", "/index.html");
         Mockito.when(servletService.getStaticResource("/index.html"))
                 .thenReturn(null);
-        Assert.assertFalse(fileServer.isStaticResourceRequest(request));
+        Assert.assertFalse(fileServer.serveStaticResource(request, response));
     }
 
     @Test
@@ -820,9 +834,7 @@ public class StaticFileServerTest implements Serializable {
     public void serveNonExistingStaticResource() throws IOException {
         setupRequestURI("", "", "/nonexisting/file.js");
 
-        fileServer.serveStaticResource(request, response);
-        Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND,
-                responseCode.get());
+        Assert.assertFalse(fileServer.serveStaticResource(request, response));
     }
 
     @Test
@@ -939,61 +951,61 @@ public class StaticFileServerTest implements Serializable {
 
         Assert.assertTrue(fileServer.serveStaticResource(request, response));
         Assert.assertEquals(0, out.getOutput().length);
-        Assert.assertEquals(HttpServletResponse.SC_FORBIDDEN,
+        Assert.assertEquals(HttpServletResponse.SC_BAD_REQUEST,
                 responseCode.get());
     }
 
     @Test
-    public void serveStaticResource_uriWithDirectoryChangeWithSlash_returnsImmediatelyAndSetsForbiddenStatus()
+    public void serveStaticResource_uriWithDirectoryChangeWithSlash_returnsImmediatelyAndSetsBadRequestStatus()
             throws IOException {
         staticBuildResourceWithDirectoryChange_nothingServed(
                 "/VAADIN/build/../vaadin-bundle-1234.cache.js");
     }
 
     @Test
-    public void serveStaticResource_uriWithDirectoryChangeWithBackslash_returnsImmediatelyAndSetsForbiddenStatus()
+    public void serveStaticResource_uriWithDirectoryChangeWithBackslash_returnsImmediatelyAndSetsBadRequestStatus()
             throws IOException {
         staticBuildResourceWithDirectoryChange_nothingServed(
                 "/VAADIN/build/something\\..\\vaadin-bundle-1234.cache.js");
     }
 
     @Test
-    public void serveStaticResource_uriWithDirectoryChangeWithEncodedBackslashUpperCase_returnsImmediatelyAndSetsForbiddenStatus()
+    public void serveStaticResource_uriWithDirectoryChangeWithEncodedBackslashUpperCase_returnsImmediatelyAndSetsBadRequestStatus()
             throws IOException {
         staticBuildResourceWithDirectoryChange_nothingServed(
                 "/VAADIN/build/something%5C..%5Cvaadin-bundle-1234.cache.js");
     }
 
     @Test
-    public void serveStaticResource_uriWithDirectoryChangeWithEncodedBackslashLowerCase_returnsImmediatelyAndSetsForbiddenStatus()
+    public void serveStaticResource_uriWithDirectoryChangeWithEncodedBackslashLowerCase_returnsImmediatelyAndSetsBadRequestStatus()
             throws IOException {
         staticBuildResourceWithDirectoryChange_nothingServed(
                 "/VAADIN/build/something%5c..%5cvaadin-bundle-1234.cache.js");
     }
 
     @Test
-    public void serveStaticResource_uriWithDirectoryChangeInTheEndWithSlash_returnsImmediatelyAndSetsForbiddenStatus()
+    public void serveStaticResource_uriWithDirectoryChangeInTheEndWithSlash_returnsImmediatelyAndSetsBadRequestStatus()
             throws IOException {
         staticBuildResourceWithDirectoryChange_nothingServed(
                 "/VAADIN/build/..");
     }
 
     @Test
-    public void serveStaticResource_uriWithDirectoryChangeInTheEndWithBackslash_returnsImmediatelyAndSetsForbiddenStatus()
+    public void serveStaticResource_uriWithDirectoryChangeInTheEndWithBackslash_returnsImmediatelyAndSetsBadRequestStatus()
             throws IOException {
         staticBuildResourceWithDirectoryChange_nothingServed(
                 "/VAADIN/build/something\\..");
     }
 
     @Test
-    public void serveStaticResource_uriWithDirectoryChangeInTheEndWithEncodedBackslashUpperCase_returnsImmediatelyAndSetsForbiddenStatus()
+    public void serveStaticResource_uriWithDirectoryChangeInTheEndWithEncodedBackslashUpperCase_returnsImmediatelyAndSetsBadRequestStatus()
             throws IOException {
         staticBuildResourceWithDirectoryChange_nothingServed(
                 "/VAADIN/build/something%5C..");
     }
 
     @Test
-    public void serveStaticResource_uriWithDirectoryChangeInTheEndWithEncodedBackslashLowerCase_returnsImmediatelyAndSetsForbiddenStatus()
+    public void serveStaticResource_uriWithDirectoryChangeInTheEndWithEncodedBackslashLowerCase_returnsImmediatelyAndSetsBadRequestStatus()
             throws IOException {
         staticBuildResourceWithDirectoryChange_nothingServed(
                 "/VAADIN/build/something%5c..");
@@ -1019,8 +1031,7 @@ public class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void nonexistingStaticBuildResource_returnsNotFound()
-            throws IOException {
+    public void nonexistingStaticBuildResource_notServed() throws IOException {
         String pathInfo = "/VAADIN/build/my-text.txt";
         setupRequestURI("", "", pathInfo);
         ClassLoader mockLoader = Mockito.mock(ClassLoader.class);
@@ -1029,9 +1040,7 @@ public class StaticFileServerTest implements Serializable {
         mockStatsBundles(mockLoader);
         mockConfigurationPolyfills();
 
-        Assert.assertTrue(fileServer.serveStaticResource(request, response));
-        Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND,
-                responseCode.get());
+        Assert.assertFalse(fileServer.serveStaticResource(request, response));
     }
 
     @Test
@@ -1051,7 +1060,7 @@ public class StaticFileServerTest implements Serializable {
     }
 
     @Test
-    public void staticManifestPathIndexHtmlResource_returnsNotFound()
+    public void staticManifestPathIndexHtmlResource_notServed()
             throws IOException {
         String pathInfo = "/index.html";
         setupRequestURI("", "", pathInfo);
@@ -1063,9 +1072,7 @@ public class StaticFileServerTest implements Serializable {
                 .thenReturn(createFileURLWithDataAndLength(
                         "/" + WEBAPP_RESOURCE_PREFIX + pathInfo, fileData));
 
-        Assert.assertTrue(fileServer.serveStaticResource(request, response));
-        Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND,
-                responseCode.get());
+        Assert.assertFalse(fileServer.serveStaticResource(request, response));
     }
 
     @Test
@@ -1145,7 +1152,6 @@ public class StaticFileServerTest implements Serializable {
 
         setupRequestURI("", "", "/frontend/src/webjars/foo/bar.js");
 
-        Assert.assertTrue(fileServer.isStaticResourceRequest(request));
         Assert.assertTrue(fileServer.serveStaticResource(request, response));
         Assert.assertEquals(fileData, out.getOutputString());
     }
@@ -1163,10 +1169,7 @@ public class StaticFileServerTest implements Serializable {
 
         setupRequestURI("", "", "/frontend/src/webjars/foo/bar.js");
 
-        Assert.assertFalse(fileServer.isStaticResourceRequest(request));
-        Assert.assertTrue(fileServer.serveStaticResource(request, response));
-        Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND,
-                responseCode.get());
+        Assert.assertFalse(fileServer.serveStaticResource(request, response));
     }
 
     @Test
@@ -1208,11 +1211,15 @@ public class StaticFileServerTest implements Serializable {
     }
 
     private static class OverrideableStaticFileServer extends StaticFileServer {
+        public boolean writeResponse = true;
         private Boolean overrideBrowserHasNewestVersion;
         private Integer overrideCacheTime;
+        private DeploymentConfiguration configuration;
 
-        OverrideableStaticFileServer(VaadinServletService servletService) {
+        OverrideableStaticFileServer(VaadinServletService servletService,
+                DeploymentConfiguration configuration) {
             super(servletService);
+            this.configuration = configuration;
         }
 
         @Override
@@ -1233,5 +1240,35 @@ public class StaticFileServerTest implements Serializable {
             }
             return super.getCacheTime(filenameWithPath);
         }
+
+        @Override
+        public boolean serveStaticResource(HttpServletRequest request,
+                HttpServletResponse response) throws IOException {
+            if (!writeResponse)
+                try {
+                    {
+                        ResponseWriter fakeWriter = new ResponseWriter(
+                                configuration) {
+                            @Override
+                            public void writeResponseContents(
+                                    String filenameWithPath, URL resourceUrl,
+                                    HttpServletRequest request,
+                                    HttpServletResponse response)
+                                    throws IOException {
+                                return;
+                            }
+                        };
+                        Field f = StaticFileServer.class
+                                .getDeclaredField("responseWriter");
+                        f.setAccessible(true);
+                        f.set(this, fakeWriter);
+                    }
+                } catch (IllegalArgumentException | IllegalAccessException
+                        | NoSuchFieldException | SecurityException e) {
+                    throw new RuntimeException(e);
+                }
+            return super.serveStaticResource(request, response);
+        }
+
     }
 }

@@ -1,7 +1,6 @@
 window.Vaadin = window.Vaadin || {};
 window.Vaadin.Flow = window.Vaadin.Flow || {};
 window.Vaadin.Flow.dndConnector = {
-
   __ondragenterListener: function (event) {
     // TODO filter by data type
     // TODO prevent dropping on itself (by default)
@@ -17,10 +16,10 @@ window.Vaadin.Flow.dndConnector = {
          * moves on top of another children, or back on top of the drop target element.
          * Thus need to "cancel" the following ondragleave, to not remove class name.
          * Drop event will happen even when dropped to a child element. */
-        if (event.currentTarget.classList.contains("v-drag-over-target")) {
+        if (event.currentTarget.classList.contains('v-drag-over-target')) {
           event.currentTarget['__skip-leave'] = true;
         } else {
-          event.currentTarget.classList.add("v-drag-over-target");
+          event.currentTarget.classList.add('v-drag-over-target');
         }
         // enables browser specific pseudo classes (at least FF)
         event.preventDefault();
@@ -47,7 +46,7 @@ window.Vaadin.Flow.dndConnector = {
     if (event.currentTarget['__skip-leave']) {
       event.currentTarget['__skip-leave'] = false;
     } else {
-      event.currentTarget.classList.remove("v-drag-over-target");
+      event.currentTarget.classList.remove('v-drag-over-target');
     }
     // #7109 need to stop or any parent drop target might not get highlighted,
     // as ondragenter for it is fired before the child gets dragleave.
@@ -59,13 +58,13 @@ window.Vaadin.Flow.dndConnector = {
     if (effect) {
       event.dataTransfer.dropEffect = effect;
     }
-    event.currentTarget.classList.remove("v-drag-over-target");
+    event.currentTarget.classList.remove('v-drag-over-target');
     // prevent browser handling && don't let parents know
     event.preventDefault();
     event.stopPropagation();
   },
 
-  updateDropTarget : function(element) {
+  updateDropTarget: function (element) {
     if (element['__active']) {
       element.addEventListener('dragenter', this.__ondragenterListener, false);
       element.addEventListener('dragover', this.__ondragoverListener, false);
@@ -76,7 +75,7 @@ window.Vaadin.Flow.dndConnector = {
       element.removeEventListener('dragover', this.__ondragoverListener, false);
       element.removeEventListener('dragleave', this.__ondragleaveListener, false);
       element.removeEventListener('drop', this.__ondropListener, false);
-      element.classList.remove("v-drag-over-target");
+      element.classList.remove('v-drag-over-target');
     }
   },
 
@@ -84,14 +83,14 @@ window.Vaadin.Flow.dndConnector = {
 
   __dragstartListener: function (event) {
     event.stopPropagation();
-    event.dataTransfer.setData("text/plain", "");
+    event.dataTransfer.setData('text/plain', '');
     if (event.currentTarget.hasAttribute('disabled')) {
-        event.preventDefault();
+      event.preventDefault();
     } else {
       if (event.currentTarget['__effectAllowed']) {
         event.dataTransfer.effectAllowed = event.currentTarget['__effectAllowed'];
-       }
-       event.currentTarget.classList.add('v-dragged');
+      }
+      event.currentTarget.classList.add('v-dragged');
     }
   },
 

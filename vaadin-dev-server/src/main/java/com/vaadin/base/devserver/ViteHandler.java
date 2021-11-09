@@ -93,12 +93,12 @@ public final class ViteHandler extends AbstractDevServerRunner {
 
     @Override
     protected File getServerBinary() {
-        return new File(getNpmFolder(), VITE_SERVER);
+        return new File(getProjectRoot(), VITE_SERVER);
     }
 
     @Override
     protected File getServerConfig() {
-        return new File(getNpmFolder(), FrontendUtils.VITE_CONFIG);
+        return new File(getProjectRoot(), FrontendUtils.VITE_CONFIG);
     }
 
     @Override

@@ -49,25 +49,57 @@ public class UrlUtil {
     }
 
     /**
-     * Encode a path of a URL.
+     * Encodes a full URI.
      * <p>
-     * The path can contain {@code /} characters and these will interpreted as
-     * path segment separators and not be encoded.
+     * Corresponds to encodeURI in JavaScript
+     * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURI
      * <p>
-     * Note that ? and # are not encoded so you should not pass a URL path that
-     * includes a query string or a fragment
+     * The path can contain {@code /} and other special URL characters as these
+     * will not be encoded. See {@link #encodeURIComponent(String)} if you want
+     * to encode all special characters.
+     * <p>
+     * The following characters are not escaped:
+     * {@literal A-Za-z0-9;,/?:@&=+$-_.!~*'()#}
      * 
-     * @param path
-     *            the path to encode
+     * @param uri
+     *            the uri to encode
      */
-    public static String encodeURI(String path) {
+    public static String encodeURI(String uri) {
         try {
-            return URLEncoder.encode(path, StandardCharsets.UTF_8.name())
-                    .replace("+", "%20").replace("%2F", "/")
-                    .replace("%40", "@");
+            return URLEncoder.encode(uri, StandardCharsets.UTF_8.name())
+                    .replace("+", "%20").replace("%2F", "/").replace("%40", "@")
+                    .replace("%3B", ";").replace("%2C", ",").replace("%3F", "?")
+                    .replace("%3A", ":").replace("%26", "&").replace("%3D", "=")
+                    .replace("%2B", "+").replace("%24", "$").replace("%21", "!")
+                    .replace("%7E", "~").replace("%27", "'").replace("%28", "(")
+                    .replace("%29", ")").replace("%23", "#");
         } catch (UnsupportedEncodingException e) {
             // Runtime exception as this doesn't really happen
             throw new RuntimeException("Encoding the URI failed", e); // NOSONAR
         }
     }
+
+    /**
+     * Encodes a path segment of a URI.
+     * <p>
+     * Corresponds to encodeURIComponent in JavaScript
+     * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent
+     * <p>
+     * The following characters are not escaped: {@literal A-Za-z0-9-_.!~*'()}
+     * 
+     * @param path
+     *            the path to encode
+     */
+    public static String encodeURIComponent(String path) {
+        try {
+            return URLEncoder.encode(path, StandardCharsets.UTF_8.name())
+                    .replace("+", "%20").replace("%21", "!").replace("%7E", "~")
+                    .replace("%27", "'").replace("%28", "(")
+                    .replace("%29", ")");
+        } catch (UnsupportedEncodingException e) {
+            // Runtime exception as this doesn't really happen
+            throw new RuntimeException("Encoding the URI failed", e); // NOSONAR
+        }
+    }
+
 }

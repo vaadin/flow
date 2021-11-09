@@ -99,13 +99,13 @@ function generateThemeFile(themeFolder, themeName, themeProperties, productionMo
   const document = path.resolve(themeFolder, documentCssFile);
   const componentsFiles = glob.sync('*.css', {
     cwd: path.resolve(themeFolder, themeComponentsFolder),
-    nodir: true,
+    nodir: true
   });
 
   let themeFile = headerImport;
 
   if (componentsFiles.length > 0) {
-    themeFile += 'import { unsafeCSS, registerStyles } from \'@vaadin/vaadin-themable-mixin/register-styles\';\n';
+    themeFile += "import { unsafeCSS, registerStyles } from '@vaadin/vaadin-themable-mixin/register-styles';\n";
   }
 
   if (themeProperties.parent) {
@@ -130,7 +130,11 @@ function generateThemeFile(themeFolder, themeName, themeProperties, productionMo
     if (productionMode) {
       throw new Error(`styles.css file is missing and is needed for '${themeName}' in folder '${themeFolder}'`);
     }
-    fs.writeFileSync(styles, "/* Import your application global css files here or add the styles directly to this file */", "utf8");
+    fs.writeFileSync(
+      styles,
+      '/* Import your application global css files here or add the styles directly to this file */',
+      'utf8'
+    );
   }
 
   // styles.css will always be available as we write one if it doesn't exist.
@@ -138,7 +142,7 @@ function generateThemeFile(themeFolder, themeName, themeProperties, productionMo
   let variable = camelCase(filename);
   imports.push(`import ${variable} from 'themes/${themeName}/${filename}';\n`);
   /* Lumo must be first so that custom styles override Lumo styles */
-  const lumoImports = themeProperties.lumoImports || ["color", "typography"];
+  const lumoImports = themeProperties.lumoImports || ['color', 'typography'];
   if (lumoImports && lumoImports.length > 0) {
     lumoImports.forEach((lumoImport) => {
       imports.push(`import { ${lumoImport} } from '@vaadin/vaadin-lumo-styles';\n`);
@@ -161,10 +165,12 @@ function generateThemeFile(themeFolder, themeName, themeProperties, productionMo
   if (themeProperties.documentCss) {
     const missingModules = checkModules(themeProperties.documentCss);
     if (missingModules.length > 0) {
-      throw Error("Missing npm modules or files '" + missingModules.join("', '")
-        + "' for documentCss marked in 'theme.json'.\n" +
-        "Install or update package(s) by adding a @NpmPackage annotation or install it using 'npm/pnpm i'");
-
+      throw Error(
+        "Missing npm modules or files '" +
+          missingModules.join("', '") +
+          "' for documentCss marked in 'theme.json'.\n" +
+          "Install or update package(s) by adding a @NpmPackage annotation or install it using 'npm/pnpm i'"
+      );
     }
     themeProperties.documentCss.forEach((cssImport) => {
       const variable = 'module' + i++;
@@ -180,10 +186,12 @@ function generateThemeFile(themeFolder, themeName, themeProperties, productionMo
   if (themeProperties.importCss) {
     const missingModules = checkModules(themeProperties.importCss);
     if (missingModules.length > 0) {
-      throw Error("Missing npm modules or files '" + missingModules.join("', '")
-        + "' for importCss marked in 'theme.json'.\n" +
-        "Install or update package(s) by adding a @NpmPackage annotation or install it using 'npm/pnpm i'");
-
+      throw Error(
+        "Missing npm modules or files '" +
+          missingModules.join("', '") +
+          "' for importCss marked in 'theme.json'.\n" +
+          "Install or update package(s) by adding a @NpmPackage annotation or install it using 'npm/pnpm i'"
+      );
     }
     themeProperties.importCss.forEach((cssPath) => {
       const variable = 'module' + i++;
@@ -196,10 +204,8 @@ function generateThemeFile(themeFolder, themeName, themeProperties, productionMo
     const filename = path.basename(componentCss);
     const tag = filename.replace('.css', '');
     const variable = camelCase(filename);
-    imports.push(
-      `import ${variable} from 'themes/${themeName}/${themeComponentsFolder}/${filename}';\n`
-    );
-// Don't format as the generated file formatting will get wonky!
+    imports.push(`import ${variable} from 'themes/${themeName}/${themeComponentsFolder}/${filename}';\n`);
+    // Don't format as the generated file formatting will get wonky!
     const componentString = `registerStyles(
       '${tag}',
       unsafeCSS(${variable}.toString())
@@ -248,8 +254,8 @@ function getHash(input) {
 }
 `;
 
-// Don't format as the generated file formatting will get wonky!
-// If targets check that we only register the style parts once, checks exist for global css and component css
+  // Don't format as the generated file formatting will get wonky!
+  // If targets check that we only register the style parts once, checks exist for global css and component css
   const themeFileApply = `export const applyTheme = (target) => {
   ${parentTheme}
   ${globalCssCode.join('')}
@@ -265,7 +271,7 @@ function getHash(input) {
   themeFile += themeFileApply;
 
   return themeFile;
-};
+}
 
 /**
  * Make given string into camelCase.
@@ -274,9 +280,12 @@ function getHash(input) {
  * @returns {string} camelCased version
  */
 function camelCase(str) {
-  return str.replace(/(?:^\w|[A-Z]|\b\w)/g, function (word, index) {
-    return index === 0 ? word.toLowerCase() : word.toUpperCase();
-  }).replace(/\s+/g, '').replace(/\.|\-/g, '');
+  return str
+    .replace(/(?:^\w|[A-Z]|\b\w)/g, function (word, index) {
+      return index === 0 ? word.toLowerCase() : word.toUpperCase();
+    })
+    .replace(/\s+/g, '')
+    .replace(/\.|\-/g, '');
 }
 
 module.exports = generateThemeFile;

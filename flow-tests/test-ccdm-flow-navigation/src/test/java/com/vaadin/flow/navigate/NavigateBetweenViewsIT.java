@@ -21,8 +21,11 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 
 import com.vaadin.flow.component.html.testbench.NativeButtonElement;
+import com.vaadin.flow.component.html.testbench.SpanElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
+import static com.vaadin.flow.navigate.HelloWorldView.IS_CONNECTED_ON_ATTACH;
+import static com.vaadin.flow.navigate.HelloWorldView.IS_CONNECTED_ON_INIT;
 import static com.vaadin.flow.navigate.HelloWorldView.NAVIGATE_ABOUT;
 
 public class NavigateBetweenViewsIT extends ChromeBrowserTest {
@@ -70,8 +73,55 @@ public class NavigateBetweenViewsIT extends ChromeBrowserTest {
                 $(NativeButtonElement.class).id(NAVIGATE_ABOUT).isDisplayed());
     }
 
+    @Test
+    public void openFlowView_isConnectedOnAttach() {
+        getDriver().get(getRootURL() + "/hello");
+        waitForDevServer();
+
+        Assert.assertThat(getDriver().getCurrentUrl(),
+                CoreMatchers.endsWith("/hello"));
+
+        assertIsConnected();
+
+        // Navigate away and back
+        $(NativeButtonElement.class).id(NAVIGATE_ABOUT).click();
+        waitUntil(input -> $("about-view").first().$("a").id("navigate-hello")
+                .isDisplayed());
+
+        getInShadowRoot(findElement(By.tagName("about-view")),
+                By.id("navigate-hello")).click();
+
+        assertIsConnected();
+    }
+
+    @Test
+    public void openTsView_navigateToFlowView_isConnectedOnAttach() {
+        getDriver().get(getRootURL() + "/");
+        waitForDevServer();
+
+        waitUntil(input -> $("about-view").first().$("a").id("navigate-hello")
+                .isDisplayed());
+
+        getInShadowRoot(findElement(By.tagName("about-view")),
+                By.id("navigate-hello")).click();
+
+        getCommandExecutor().waitForVaadin();
+
+        assertIsConnected();
+    }
+
     @Override
     protected String getRootURL() {
         return super.getRootURL() + "/context-path";
+    }
+
+    private void assertIsConnected() {
+        assertIsConnectedById(IS_CONNECTED_ON_INIT);
+        assertIsConnectedById(IS_CONNECTED_ON_ATTACH);
+    }
+
+    private void assertIsConnectedById(String id) {
+        Assert.assertTrue(Boolean.parseBoolean(
+                waitUntil(driver -> $(SpanElement.class).id(id)).getText()));
     }
 }

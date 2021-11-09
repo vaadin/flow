@@ -1,9 +1,0 @@
-{
- "hash": "e251827e9f087691baf2",
- "modules": [
-        {
-           "name": "./my-component.js?babel-target=es6",
-           "source": "import { PolymerElement } from '@polymer/polymer/polymer-element.js';\nimport { html } from '@polymer/polymer/lib/utils/html-tag.js';\n\nclass MyComponentElement extends PolymerElement {\n  static get template() {\n    return html`\n        <button id=\"button\">Click</button>\n        <div id=\"content\"></div>\n`;\n  }\n\n  static get is() {\n    return 'my-component';\n  }\n\n}\n\ncustomElements.define(MyComponentElement.is, MyComponentElement);"
-        }
-       ]
-}   

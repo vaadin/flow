@@ -33,27 +33,24 @@ class ApplicationThemePlugin {
     this.options = options;
 
     if (!this.options.themeResourceFolder) {
-      throw new Error("Missing themeResourceFolder path");
+      throw new Error('Missing themeResourceFolder path');
     }
     if (!this.options.projectStaticAssetsOutputFolder) {
-      throw new Error("Missing projectStaticAssetsOutputFolder path");
+      throw new Error('Missing projectStaticAssetsOutputFolder path');
     }
     if (!this.options.themeProjectFolders) {
-      throw new Error("Missing themeProjectFolders path array");
+      throw new Error('Missing themeProjectFolders path array');
     }
     if (!this.options.frontendGeneratedFolder) {
-      throw new Error("Missing frontendGeneratedFolder path");
+      throw new Error('Missing frontendGeneratedFolder path');
     }
   }
 
   apply(compiler) {
-    const logger = compiler.getInfrastructureLogger("ApplicationThemePlugin");
+    const logger = compiler.getInfrastructureLogger('ApplicationThemePlugin');
 
-    compiler.hooks.afterEnvironment.tap("ApplicationThemePlugin",
-        () => processThemeResources(this.options, logger));
+    compiler.hooks.afterEnvironment.tap('ApplicationThemePlugin', () => processThemeResources(this.options, logger));
   }
-
 }
 
 module.exports = { ApplicationThemePlugin, processThemeResources, extractThemeName, findParentThemes };
-

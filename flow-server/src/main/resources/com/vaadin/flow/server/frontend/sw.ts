@@ -1,19 +1,15 @@
 /// <reference lib="webworker" />
 
 importScripts('sw-runtime-resources-precache.js');
-import {
-  clientsClaim,
-  RouteHandlerCallbackOptions,
-  skipWaiting
-} from 'workbox-core';
-import {matchPrecache, precacheAndRoute} from 'workbox-precaching';
-import {NavigationRoute, registerRoute} from 'workbox-routing';
-import {PrecacheEntry} from 'workbox-precaching/_types';
-import {NetworkOnly} from 'workbox-strategies';
+import { clientsClaim, RouteHandlerCallbackOptions, skipWaiting } from 'workbox-core';
+import { matchPrecache, precacheAndRoute } from 'workbox-precaching';
+import { NavigationRoute, registerRoute } from 'workbox-routing';
+import { PrecacheEntry } from 'workbox-precaching/_types';
+import { NetworkOnly } from 'workbox-strategies';
 
 declare var self: ServiceWorkerGlobalScope & {
-  __WB_MANIFEST: Array<PrecacheEntry>,
-  additionalManifestEntries?: Array<PrecacheEntry>
+  __WB_MANIFEST: Array<PrecacheEntry>;
+  additionalManifestEntries?: Array<PrecacheEntry>;
 };
 
 skipWaiting();
@@ -31,13 +27,7 @@ declare var OFFLINE_PATH: string; // defined by webpack.generated.js
  */
 const rewriteBaseHref = async (response: Response) => {
   const html = await response.text();
-  return new Response(
-    html.replace(
-      /<base\s+href=[^>]*>/,
-      `<base href="${self.registration.scope}">`
-    ),
-    response
-  );
+  return new Response(html.replace(/<base\s+href=[^>]*>/, `<base href="${self.registration.scope}">`), response);
 };
 
 const appShellPath = '.';
@@ -46,14 +36,13 @@ const networkOnly = new NetworkOnly();
 let connectionLost = false;
 
 const navigationFallback = new NavigationRoute(async (context: RouteHandlerCallbackOptions) => {
-
   const serveResourceFromCache = async () => {
     // serve any file in the manifest directly from cache
     const path = context.url.pathname;
     const scopePath = new URL(self.registration.scope).pathname;
     if (path.startsWith(scopePath)) {
       const pathRelativeToScope = path.substr(scopePath.length);
-      if (manifestEntries.some(({url}) => url === pathRelativeToScope)) {
+      if (manifestEntries.some(({ url }) => url === pathRelativeToScope)) {
         return await matchPrecache(pathRelativeToScope);
       }
     }
@@ -94,13 +83,13 @@ if (self.additionalManifestEntries && self.additionalManifestEntries.length) {
 
 precacheAndRoute(manifestEntries);
 
-self.addEventListener('message', event => {
+self.addEventListener('message', (event) => {
   if (typeof event.data !== 'object' || !('method' in event.data)) {
     return;
   }
 
   // JSON-RPC request handler for ConnectionStateStore
   if (event.data.method === 'Vaadin.ServiceWorker.isConnectionLost' && 'id' in event.data) {
-    event.source?.postMessage({id: event.data.id, result: connectionLost}, []);
+    event.source?.postMessage({ id: event.data.id, result: connectionLost }, []);
   }
 });

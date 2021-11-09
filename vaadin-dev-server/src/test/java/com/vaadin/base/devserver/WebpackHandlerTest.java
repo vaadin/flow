@@ -370,7 +370,7 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
         waitForDevServer();
 
         assertEquals(statsContent,
-                FrontendUtils.getStatsContent(vaadinService));
+                FrontendUtils.getStatsAssetsByChunkName(vaadinService));
     }
 
     @Test

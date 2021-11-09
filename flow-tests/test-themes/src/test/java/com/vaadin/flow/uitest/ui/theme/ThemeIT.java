@@ -16,6 +16,8 @@
 package com.vaadin.flow.uitest.ui.theme;
 
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
@@ -94,8 +96,11 @@ public class ThemeIT extends ChromeBrowserTest {
                 driver.getPageSource().contains("HTTP ERROR 404 Not Found"));
 
         getDriver().get(getRootURL() + "/path/themes/no-copy/no-copy.txt");
-        Assert.assertTrue("no-copy theme should not be handled",
-                driver.getPageSource().contains("HTTP ERROR 404 Not Found"));
+        String source = driver.getPageSource();
+        Matcher m = Pattern.compile(
+                ".*Could not navigate to.*themes/no-copy/no-copy.txt.*",
+                Pattern.DOTALL).matcher(source);
+        Assert.assertTrue("no-copy theme should not be handled", m.matches());
     }
 
     @Test

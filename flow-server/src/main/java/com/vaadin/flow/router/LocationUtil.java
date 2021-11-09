@@ -51,7 +51,9 @@ public class LocationUtil {
             // Ignore forbidden chars supported in route definitions
             String strippedPath = path.replaceAll("[{}*]", "");
 
-            URI uri = new URI(UrlUtil.encodeURI(strippedPath));
+            // : is completely valid in a path but URI will think that defines a
+            // protocol so skip it for the check
+            URI uri = new URI(UrlUtil.encodeURI(strippedPath).replace(":", ""));
             if (uri.isAbsolute()) {
                 // "A URI is absolute if, and only if, it has a scheme
                 // component"

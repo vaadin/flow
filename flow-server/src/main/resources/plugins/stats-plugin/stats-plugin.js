@@ -25,19 +25,20 @@ const path = require('path');
  * the webpack callback function.
  */
 class StatsPlugin {
-
   constructor(options = {}) {
     this.options = options;
   }
 
   apply(compiler) {
-    const logger = compiler.getInfrastructureLogger("FlowIdPlugin");
+    const logger = compiler.getInfrastructureLogger('FlowIdPlugin');
 
-    compiler.hooks.afterEmit.tapAsync("FlowIdPlugin", (compilation, done) => {
+    compiler.hooks.afterEmit.tapAsync('FlowIdPlugin', (compilation, done) => {
       let statsJson = compilation.getStats().toJson();
       // Get bundles as accepted keys
-      let acceptedKeys = statsJson.assets.filter(asset => asset.chunks.length > 0)
-        .map(asset => asset.chunks).reduce((acc, val) => acc.concat(val), []);
+      let acceptedKeys = statsJson.assets
+        .filter((asset) => asset.chunks.length > 0)
+        .map((asset) => asset.chunks)
+        .reduce((acc, val) => acc.concat(val), []);
 
       // Collect all modules for the given keys
       const modules = collectModules(statsJson, acceptedKeys);
@@ -54,7 +55,7 @@ class StatsPlugin {
 
       if (!this.options.devMode) {
         // eslint-disable-next-line no-console
-        logger.info("Emitted " + this.options.statsFile);
+        logger.info('Emitted ' + this.options.statsFile);
         mkdirp(path.dirname(this.options.statsFile));
         fs.writeFile(this.options.statsFile, JSON.stringify(customStats, null, 1), done);
       } else {
@@ -102,7 +103,7 @@ function collectChunks(statsJson, acceptedChunks) {
           files: chunk.files,
           hash: chunk.hash,
           modules: modules
-        }
+        };
         chunks.push(slimChunk);
       }
     });
@@ -122,8 +123,11 @@ function collectModules(statsJson, acceptedChunks) {
   if (statsJson.modules) {
     statsJson.modules.forEach(function (module) {
       // Add module if module chunks contain an accepted chunk and the module is generated-flow-imports.js module
-      if (module.chunks.filter(key => acceptedChunks.includes(key)).length > 0 &&
-        (module.name.includes("generated-flow-imports.js") || module.name.includes("generated-flow-imports-fallback.js"))) {
+      if (
+        module.chunks.filter((key) => acceptedChunks.includes(key)).length > 0 &&
+        (module.name.includes('generated-flow-imports.js') ||
+          module.name.includes('generated-flow-imports-fallback.js'))
+      ) {
         const slimModule = {
           id: module.id,
           name: module.name,
@@ -150,7 +154,7 @@ function collectSubModules(module) {
     if (submodule.source) {
       const slimModule = {
         name: submodule.name,
-        source: submodule.source,
+        source: submodule.source
       };
       if (submodule.id) {
         slimModule.id = submodule.id;
