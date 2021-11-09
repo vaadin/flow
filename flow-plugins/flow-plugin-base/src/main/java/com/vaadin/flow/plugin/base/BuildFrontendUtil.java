@@ -385,8 +385,7 @@ public class BuildFrontendUtil {
      */
     public static void runVite(PluginAdapterBase adapter)
             throws TimeoutException, URISyntaxException {
-        runFrontendBuildTool(adapter, "Vite", "vite/bin/vite.js", "build",
-                "--emptyOutDir");
+        runFrontendBuildTool(adapter, "Vite", "vite/bin/vite.js", "build");
     }
 
     private static void runFrontendBuildTool(PluginAdapterBase adapter,
