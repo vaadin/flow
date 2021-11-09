@@ -31,10 +31,8 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
@@ -45,12 +43,9 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.ResponseWriter;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 
-import static com.vaadin.flow.server.Constants.VAADIN_BUILD_FILES_PATH;
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
-import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_STATIC_FILES_PATH;
 
 /**
  * Handles sending of resources from the WAR root (web content) or
@@ -74,7 +69,6 @@ public class StaticFileServer implements StaticFileHandler {
     private final ResponseWriter responseWriter;
     private final VaadinService vaadinService;
     private DeploymentConfiguration deploymentConfiguration;
-    private final List<String> manifestPaths;
     private DevModeHandler devModeHandler;
 
     // Matcher to match string starting with '/themes/[theme-name]/'
@@ -95,7 +89,6 @@ public class StaticFileServer implements StaticFileHandler {
         this.vaadinService = vaadinService;
         deploymentConfiguration = vaadinService.getDeploymentConfiguration();
         responseWriter = new ResponseWriter(deploymentConfiguration);
-        manifestPaths = getManifestPathsFromJson();
 
         this.devModeHandler = DevModeHandlerManager
                 .getDevModeHandler(vaadinService).orElse(null);
@@ -254,19 +247,18 @@ public class StaticFileServer implements StaticFileHandler {
         }
 
         URL resourceUrl = null;
-        if (isAllowedVAADINBuildOrStaticUrl(filenameWithPath)
-                || manifestPaths.contains(filenameWithPath)) {
-            if (APP_THEME_PATTERN.matcher(filenameWithPath).find()) {
-                resourceUrl = vaadinService.getClassLoader()
-                        .getResource(VAADIN_WEBAPP_RESOURCES + "VAADIN/static/"
-                                + filenameWithPath.replaceFirst("^/", ""));
+        if (APP_THEME_PATTERN.matcher(filenameWithPath).find()) {
+            resourceUrl = vaadinService.getClassLoader()
+                    .getResource(VAADIN_WEBAPP_RESOURCES + "VAADIN/static/"
+                            + filenameWithPath.replaceFirst("^/", ""));
 
-            } else {
-                resourceUrl = vaadinService.getClassLoader()
-                        .getResource(VAADIN_WEBAPP_RESOURCES
-                                + filenameWithPath.replaceFirst("^/", ""));
-            }
+        } else if (!"/index.html".equals(filenameWithPath)) {
+            // index.html needs to be handled by IndexHtmlRequestHandler
+            resourceUrl = vaadinService.getClassLoader()
+                    .getResource(VAADIN_WEBAPP_RESOURCES
+                            + filenameWithPath.replaceFirst("^/", ""));
         }
+
         if (resourceUrl == null) {
             resourceUrl = getStaticResource(filenameWithPath);
         }
@@ -361,23 +353,6 @@ public class StaticFileServer implements StaticFileHandler {
     private String fixIncorrectWebjarPath(String requestFilename) {
         return INCORRECT_WEBJAR_PATH_REGEX.matcher(requestFilename)
                 .replaceAll("/webjars/");
-    }
-
-    /**
-     * Check if it is ok to serve the requested file from the classpath.
-     * <p>
-     * ClassLoader is applicable for use when we are in NPM mode and are serving
-     * from the VAADIN/build folder with no folder changes in path.
-     *
-     * @param filenameWithPath
-     *            requested filename containing path
-     * @return true if we are ok to try serving the file
-     */
-    private boolean isAllowedVAADINBuildOrStaticUrl(String filenameWithPath) {
-        // Check that we target VAADIN/build | VAADIN/static | themes/theme-name
-        return filenameWithPath.startsWith("/" + VAADIN_BUILD_FILES_PATH)
-                || filenameWithPath.startsWith("/" + VAADIN_STATIC_FILES_PATH)
-                || APP_THEME_PATTERN.matcher(filenameWithPath).find();
     }
 
     /**
@@ -550,26 +525,6 @@ public class StaticFileServer implements StaticFileHandler {
             getLogger().trace("Unable to parse If-Modified-Since", e);
         }
         return false;
-    }
-
-    /**
-     * Load manifest.json, if exists, and extract manifest paths.
-     *
-     * In development mode, this resource does not exist, an empty list is
-     * returned in that case.
-     *
-     * @return list of paths mapped to static webapp resources, or empty list
-     */
-    private List<String> getManifestPathsFromJson() {
-        InputStream stream = vaadinService.getClassLoader()
-                .getResourceAsStream(VAADIN_WEBAPP_RESOURCES + "manifest.json");
-        if (stream == null) {
-            // manifest.json resource does not exist, probably dev mode
-            return new ArrayList<>();
-        }
-
-        return FrontendUtils
-                .parseManifestPaths(FrontendUtils.streamToString(stream));
     }
 
     private static Logger getLogger() {

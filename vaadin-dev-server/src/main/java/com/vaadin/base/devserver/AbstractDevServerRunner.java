@@ -43,7 +43,6 @@ import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.UrlUtil;
-import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.InitParameters;
@@ -51,7 +50,6 @@ import com.vaadin.flow.server.StaticFileServer;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendToolsSettings;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -631,20 +629,6 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
             response.setHeader("X-DevModePending", "true");
             return true;
         }
-    }
-
-    @Override
-    public boolean isDevModeRequest(HttpServletRequest request) {
-        String pathInfo = request.getPathInfo();
-        if (pathInfo != null
-                && (pathInfo.startsWith("/" + Constants.VAADIN_MAPPING)
-                        || StaticFileServer.APP_THEME_PATTERN.matcher(pathInfo)
-                                .find())
-                && !pathInfo.startsWith(
-                        "/" + StreamRequestHandler.DYN_RES_PREFIX)) {
-            return true;
-        }
-        return false;
     }
 
     /**

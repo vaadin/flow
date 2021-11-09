@@ -47,15 +47,6 @@ public interface DevModeHandler extends RequestHandler {
             throws IOException;
 
     /**
-     * Returns true if it's a request that should be handled by the dev server.
-     *
-     * @param request
-     *            the servlet request
-     * @return true if the request should be forwarded to the dev server
-     */
-    boolean isDevModeRequest(HttpServletRequest request);
-
-    /**
      * Serve a file by proxying to the dev server.
      *
      * @param request

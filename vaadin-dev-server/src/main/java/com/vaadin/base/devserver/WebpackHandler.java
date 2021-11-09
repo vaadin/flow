@@ -15,18 +15,12 @@
  */
 package com.vaadin.base.devserver;
 
-import static java.net.HttpURLConnection.HTTP_OK;
-
 import java.io.File;
-import java.io.IOException;
-import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
-
-import javax.servlet.http.HttpServletRequest;
 
 import com.vaadin.base.devserver.DevServerOutputFinder.Result;
 import com.vaadin.flow.di.Lookup;
@@ -63,11 +57,6 @@ public final class WebpackHandler extends AbstractDevServerRunner {
     public static final String WEBPACK_SERVER = "node_modules/webpack-dev-server/bin/webpack-dev-server.js";
 
     /**
-     * The list of static resource paths from webpack manifest.
-     */
-    private volatile List<String> manifestPaths = new ArrayList<>();
-
-    /**
      * Creates and starts the dev mode handler if none has been started yet.
      *
      * @param lookup
@@ -91,60 +80,8 @@ public final class WebpackHandler extends AbstractDevServerRunner {
     }
 
     @Override
-    public boolean isDevModeRequest(HttpServletRequest request) {
-        boolean devmodeRequest = super.isDevModeRequest(request);
-        if (devmodeRequest) {
-            return true;
-        } else {
-            String pathInfo = request.getPathInfo();
-            return manifestPaths.contains(pathInfo);
-        }
-    }
-
-    /**
-     * Get and parse /manifest.json from webpack-dev-server, extracting paths to
-     * all resources in the webpack output.
-     *
-     * Those paths do not necessarily start with /VAADIN, as some resources must
-     * be served from the root directory, e. g., service worker JS.
-     *
-     * @return true if reading succeeded, false otherwise
-     * @throws IOException
-     */
-    private boolean readManifestPaths() throws IOException {
-        getLogger().debug("Reading manifest.json from webpack");
-        HttpURLConnection connection = prepareConnection("/manifest.json",
-                "GET");
-        int responseCode = connection.getResponseCode();
-        if (responseCode != HTTP_OK) {
-            getLogger().error(
-                    "Unable to get manifest.json from "
-                            + "webpack-dev-server, got {} {}",
-                    responseCode, connection.getResponseMessage());
-            return false;
-        }
-
-        String manifestJson = FrontendUtils
-                .streamToString(connection.getInputStream());
-        manifestPaths = FrontendUtils.parseManifestPaths(manifestJson);
-        if (getLogger().isDebugEnabled()) {
-            getLogger().debug(
-                    "Got asset paths from webpack manifest.json: \n    {}",
-                    String.join("\n    ", manifestPaths));
-        }
-        return true;
-    }
-
-    @Override
     protected void onDevServerCompilation(Result result) {
         super.onDevServerCompilation(result);
-        try {
-            readManifestPaths();
-        } catch (IOException e) {
-            getLogger().error(
-                    "Error when reading manifest.json from " + getServerName(),
-                    e);
-        }
 
         // trigger a live-reload since webpack has recompiled the bundle
         // if failure, ensures the webpack error is shown in the browser
