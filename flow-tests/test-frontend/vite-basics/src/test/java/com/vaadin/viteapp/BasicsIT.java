@@ -35,6 +35,20 @@ public class BasicsIT extends ChromeBrowserTest {
     }
 
     @Test
+    public void imageFromThemeShown() {
+        getDriver().get(getRootURL());
+        waitForDevServer();
+        TestBenchElement img = $("img").id(MainView.PLANT);
+        waitUntil(driver -> {
+            String heightString = (String) executeScript(
+                    "return getComputedStyle(arguments[0]).height.replace('px','')",
+                    img);
+            float height = Float.parseFloat(heightString);
+            return (height > 150);
+        });
+    }
+
+    @Test
     public void applicationUsesVite() {
         getDriver().get(getRootURL());
         waitForDevServer();
