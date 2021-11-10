@@ -235,7 +235,7 @@ public class StateTreeTest {
     public void registerNode_updateIsNotInProgress_noPropertyHandlerCalls() {
         tree.registerNode(node);
 
-        Mockito.verifyZeroInteractions(propertyHandler);
+        Mockito.verifyNoInteractions(propertyHandler);
     }
 
     @Test

@@ -43,8 +43,6 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
 public class StreamReceiverHandlerTest {
@@ -343,7 +341,7 @@ public class StreamReceiverHandlerTest {
         handler.handleRequest(session, request, response, streamReceiver,
                 String.valueOf(uiId), expectedSecurityKey);
 
-        verify(responseOutput).close();
+        Mockito.verify(responseOutput).close();
     }
 
     @Test
@@ -353,7 +351,7 @@ public class StreamReceiverHandlerTest {
         handler.handleRequest(session, request, response, streamReceiver,
                 String.valueOf(uiId), expectedSecurityKey);
 
-        verifyZeroInteractions(responseOutput);
+        Mockito.verifyNoInteractions(responseOutput);
     }
 
     @Test
@@ -363,7 +361,7 @@ public class StreamReceiverHandlerTest {
         handler.handleRequest(session, request, response, streamReceiver,
                 String.valueOf(uiId), expectedSecurityKey);
 
-        verifyZeroInteractions(responseOutput);
+        Mockito.verifyNoInteractions(responseOutput);
     }
 
     @Test // Vaadin Spring #381
@@ -387,10 +385,10 @@ public class StreamReceiverHandlerTest {
         handler.handleRequest(session, request, response, streamReceiver,
                 String.valueOf(uiId), expectedSecurityKey);
 
-        verify(responseOutput).close();
+        Mockito.verify(responseOutput).close();
         ArgumentCaptor<StreamVariable.StreamingEndEvent> endEventArgumentCaptor = ArgumentCaptor
                 .forClass(StreamVariable.StreamingEndEvent.class);
-        verify(streamVariable)
+        Mockito.verify(streamVariable)
                 .streamingFinished(endEventArgumentCaptor.capture());
         Assert.assertEquals("foobar", new String(
                 ((ByteArrayOutputStream) outputStream).toByteArray()));
@@ -417,8 +415,8 @@ public class StreamReceiverHandlerTest {
         handler.handleFileUploadValidationAndData(session, inputStream,
                 streamReceiver, null, null, 0, stateNode);
 
-        verifyZeroInteractions(errorHandler);
-        verify(streamVariable).streamingFailed(Mockito.any());
+        Mockito.verifyNoInteractions(errorHandler);
+        Mockito.verify(streamVariable).streamingFailed(Mockito.any());
     }
 
     @Test
@@ -428,7 +426,7 @@ public class StreamReceiverHandlerTest {
         Mockito.doThrow(IOException.class).when(request).getParts();
         handler.doHandleMultipartFileUpload(session, request, response,
                 streamReceiver, stateNode);
-        verifyZeroInteractions(errorHandler);
+        Mockito.verifyNoInteractions(errorHandler);
     }
 
 }
