@@ -77,7 +77,7 @@ public class DebugWindowConnectionTest {
 
         reload.reload();
 
-        Mockito.verifyZeroInteractions(broadcaster);
+        Mockito.verifyNoInteractions(broadcaster);
     }
 
     @Test
@@ -93,7 +93,7 @@ public class DebugWindowConnectionTest {
 
         reload.reload();
 
-        Mockito.verifyZeroInteractions(broadcaster);
+        Mockito.verifyNoInteractions(broadcaster);
     }
 
     @Test
