@@ -340,7 +340,8 @@ module.exports = {
           assetsByChunkName: compilation.getStats().toJson().assetsByChunkName
         };
         if (!devMode) {
-          fs.writeFile(statsFile, JSON.stringify(miniStats, null, 1), done);
+          fs.writeFile(statsFile, JSON.stringify(miniStats, null, 1),
+            () => done());
         } else {
           stats = miniStats;
           done();
