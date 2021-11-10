@@ -43,6 +43,11 @@
             <classifier>tests</classifier>
             <type>test-jar</type>
         </dependency>
+        <dependency>
+            <groupId>org.brotli</groupId>
+            <artifactId>dec</artifactId>
+            <version>0.1.2</version>
+        </dependency>
     </dependencies>
 
     <build>
