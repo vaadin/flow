@@ -259,11 +259,6 @@
                 <artifactId>hamcrest-all</artifactId>
                 <version>1.3</version>
             </dependency>
-            <dependency>
-                <groupId>org.easymock</groupId>
-                <artifactId>easymock</artifactId>
-                <version>4.3</version>
-            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -271,11 +266,6 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.easymock</groupId>
-            <artifactId>easymock</artifactId>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -626,8 +616,6 @@
             </activation>
             <properties>
                 <maven.compiler.release>8</maven.compiler.release>
-                <!-- needed for running easymock in JDK11+ (easymock#235) -->
-                <surefire.argLine>--add-opens java.base/java.lang=ALL-UNNAMED</surefire.argLine>
             </properties>
             <build>
                 <pluginManagement>

@@ -22,9 +22,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import net.jcip.annotations.NotThreadSafe;
-import org.easymock.EasyMock;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.Tag;
@@ -1393,15 +1393,13 @@ public class ElementTest extends AbstractNodeTest {
     @Test(expected = IllegalArgumentException.class)
     public void setResourceAttribute_classAttribute() {
         Element element = ElementFactory.createDiv();
-        element.setAttribute("class",
-                (StreamResource) EasyMock.createMock(StreamResource.class));
+        element.setAttribute("class", Mockito.mock(StreamResource.class));
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void setResourceAttribute_nullAttribute() {
         Element element = ElementFactory.createDiv();
-        element.setAttribute(null,
-                (StreamResource) EasyMock.createMock(StreamResource.class));
+        element.setAttribute(null, Mockito.mock(StreamResource.class));
     }
 
     @Test
@@ -1782,7 +1780,7 @@ public class ElementTest extends AbstractNodeTest {
     @Test(expected = UnsupportedOperationException.class)
     public void setResourceAttribute_elementIsText_operationIsNotSupported() {
         Element.createText("").setAttribute("foo",
-                (StreamResource) EasyMock.createMock(StreamResource.class));
+                Mockito.mock(StreamResource.class));
     }
 
     @Test

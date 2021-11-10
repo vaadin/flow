@@ -22,8 +22,6 @@ import java.util.Set;
 import java.util.ArrayList;
 
 import org.apache.commons.io.FileUtils;
-import org.easymock.Capture;
-import org.easymock.EasyMock;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -50,10 +48,6 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_TOKEN_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 import static com.vaadin.flow.server.startup.AbstractConfigurationFactory.DEV_FOLDER_MISSING_MESSAGE;
 import static java.util.Collections.emptyMap;
-import static org.easymock.EasyMock.capture;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.mock;
-import static org.easymock.EasyMock.replay;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -92,7 +86,7 @@ public class DeploymentConfigurationFactoryTest {
                 VAADIN_SERVLET_RESOURCES + TOKEN_FILE);
         FileUtils.writeLines(tokenFile, Arrays.asList("{", "}"));
         appConfiguration = mockApplicationConfiguration();
-        contextMock = mock(ServletContext.class);
+        contextMock = Mockito.mock(ServletContext.class);
 
         defaultServletParams.put(PARAM_TOKEN_FILE, tokenFile.getPath());
     }
@@ -361,7 +355,8 @@ public class DeploymentConfigurationFactoryTest {
         List<String> allParamsList = mockParamsFromFields(initParamFields,
                 config, stringParams);
         allParamsList.add(FrontendUtils.PARAM_TOKEN_FILE);
-        // let's not set production mode to see if token setting still works
+        // let's not set production mode to see if token setting still
+        // works
         allParamsList.removeIf(paramString -> paramString
                 .equals(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE));
         Mockito.when(config.getConfigParameterNames())
@@ -528,11 +523,13 @@ public class DeploymentConfigurationFactoryTest {
     @Test
     public void externalStatsFileTrue_predefinedValuesAreNotOverridden()
             throws Exception {
-        // note that this situation shouldn't happen that the other settings
+        // note that this situation shouldn't happen that the other
+        // settings
         // would be against the external usage.
         FileUtils.writeLines(tokenFile,
                 Arrays.asList("{", "\"enableDevServer\": true,",
-                        // production mode can be altered even when external
+                        // production mode can be
+                        // altered even when external
                         // stats
                         // are used
                         "\"productionMode\": true,",
@@ -679,25 +676,23 @@ public class DeploymentConfigurationFactoryTest {
 
     private ApplicationConfiguration mockApplicationConfiguration() {
         VaadinContext context = new MockVaadinContext();
-        ApplicationConfiguration configuration = mock(
-                ApplicationConfiguration.class);
-        expect(configuration.enableDevServer()).andReturn(true).anyTimes();
-        expect(configuration.isProductionMode()).andReturn(true).anyTimes();
-        expect(configuration.useV14Bootstrap()).andReturn(false).anyTimes();
-        expect(configuration.getContext()).andReturn(context).anyTimes();
-        expect(configuration.getStringProperty(EasyMock.anyString(),
-                EasyMock.anyString())).andReturn(null).anyTimes();
-        expect(configuration.isXsrfProtectionEnabled()).andReturn(false)
-                .anyTimes();
+        ApplicationConfiguration configuration = Mockito
+                .mock(ApplicationConfiguration.class);
+        Mockito.when(configuration.enableDevServer()).thenReturn(true);
+        Mockito.when(configuration.isProductionMode()).thenReturn(true);
+        Mockito.when(configuration.useV14Bootstrap()).thenReturn(false);
+        Mockito.when(configuration.getContext()).thenReturn(context);
+        Mockito.when(configuration.getStringProperty(Mockito.anyString(),
+                Mockito.anyString())).thenReturn(null);
+        Mockito.when(configuration.isXsrfProtectionEnabled()).thenReturn(false);
 
-        expect(configuration.getPropertyNames())
-                .andReturn(Collections.emptyEnumeration()).anyTimes();
+        Mockito.when(configuration.getPropertyNames())
+                .thenReturn(Collections.emptyEnumeration());
 
-        fallbackChunk = mock(FallbackChunk.class);
+        fallbackChunk = Mockito.mock(FallbackChunk.class);
 
-        expect(configuration.getFallbackChunk()).andReturn(fallbackChunk)
-                .anyTimes();
-        replay(configuration);
+        Mockito.when(configuration.getFallbackChunk())
+                .thenReturn(fallbackChunk);
         return configuration;
 
     }
@@ -709,22 +704,21 @@ public class DeploymentConfigurationFactoryTest {
         URLClassLoader classLoader = new URLClassLoader(
                 new URL[] { temporaryFolder.getRoot().toURI().toURL() });
 
-        expect(contextMock
+        Mockito.when(contextMock
                 .getAttribute(ApplicationConfiguration.class.getName()))
-                        .andReturn(appConfiguration).anyTimes();
+                .thenReturn(appConfiguration);
 
-        expect(contextMock.getInitParameterNames())
-                .andAnswer(() -> Collections
-                        .enumeration(servletContextParameters.keySet()))
-                .anyTimes();
-        expect(contextMock.getClassLoader()).andReturn(classLoader).anyTimes();
-        Capture<String> initParameterNameCapture = EasyMock.newCapture();
-        expect(contextMock.getInitParameter(capture(initParameterNameCapture)))
-                .andAnswer(() -> servletContextParameters
-                        .get(initParameterNameCapture.getValue()))
-                .anyTimes();
+        Mockito.when(contextMock.getInitParameterNames()).thenReturn(
+                Collections.enumeration(servletContextParameters.keySet()));
+        Mockito.when(contextMock.getClassLoader()).thenReturn(classLoader);
 
-        ResourceProvider provider = EasyMock.mock(ResourceProvider.class);
+        Mockito.when(contextMock.getInitParameter(Mockito.anyString()))
+                .thenAnswer(answer -> {
+                    String name = answer.getArgument(0);
+                    return servletContextParameters.get(name);
+                });
+
+        ResourceProvider provider = Mockito.mock(ResourceProvider.class);
 
         Lookup lookup = new Lookup() {
 
@@ -742,19 +736,12 @@ public class DeploymentConfigurationFactoryTest {
             }
         };
 
-        expect(provider
+        Mockito.when(provider
                 .getApplicationResources(VAADIN_SERVLET_RESOURCES + TOKEN_FILE))
-                        .andAnswer(() -> Collections.emptyList()).anyTimes();
+                .thenReturn(Collections.emptyList());
 
-        replay(provider);
-
-        expect(contextMock.getAttribute(Lookup.class.getName()))
-                .andAnswer(() -> lookup).anyTimes();
-
-        Capture<String> resourceCapture = EasyMock.newCapture();
-        expect(contextMock.getResource(capture(resourceCapture)))
-                .andReturn(null).anyTimes();
-        replay(contextMock);
+        Mockito.when(contextMock.getAttribute(Lookup.class.getName()))
+                .thenReturn(lookup);
 
         return new ServletConfig() {
             @Override
