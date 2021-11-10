@@ -1,6 +1,7 @@
 package com.vaadin.viteapp.views.template;
 
 import org.vaadin.example.addon.AddonLitComponent;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
@@ -32,5 +33,14 @@ public class TemplateView extends Div {
             addonLitComponent.setLabel(newLabel);
         });
         add(setLabelButton);
+
+        // Add component by reflection to excercise fallback chunk
+        try {
+            Class<?> clazz = Class.forName(
+                    "com.vaadin.viteapp.views.template.ReflectivelyReferencedComponent");
+            add((Component) clazz.newInstance());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
