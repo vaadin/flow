@@ -362,16 +362,16 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
              */
             Runtime.getRuntime().addShutdownHook(new Thread(this::stop));
 
-            DevServerOutputTracker finder = new DevServerOutputTracker(
+            DevServerOutputTracker outputTracker = new DevServerOutputTracker(
                     process.getInputStream(), getServerSuccessPattern(),
                     getServerFailurePattern(), this::onDevServerCompilation);
-            finder.find();
+            outputTracker.find();
             getLogger().info(LOG_START, getServerName());
 
             int timeout = Integer.parseInt(config.getStringProperty(
                     InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT,
                     DEFAULT_TIMEOUT_FOR_PATTERN));
-            finder.awaitFirstMatch(timeout);
+            outputTracker.awaitFirstMatch(timeout);
 
             return process;
         } catch (IOException e) {
