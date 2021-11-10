@@ -68,7 +68,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 ".*\\.demo\\..*", "com\\.vaadin\\..*Util(s)?(\\$\\w+)?$",
                 "com\\.vaadin\\.flow\\.osgi\\.support\\..*",
                 "com\\.vaadin\\.flow\\.server\\.osgi\\..*",
-                "com\\.vaadin\\.base\\.devserver\\.DevServerOutputFinder.*",
+                "com\\.vaadin\\.base\\.devserver\\.DevServerOutputTracker.*",
                 "com\\.vaadin\\.flow\\.internal\\.VaadinContextInitializer",
                 "com\\.vaadin\\.flow\\.internal\\.ApplicationClassLoaderAccess",
                 "com\\.vaadin\\.base\\.devserver\\.BrowserLiveReloadAccessorImpl",

@@ -24,8 +24,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
-import com.vaadin.flow.server.frontend.FrontendUtils;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,7 +33,7 @@ import org.slf4j.LoggerFactory;
  * <p>
  * Triggers an event whenever a success or failure pattern is found on a row.
  */
-public class DevServerOutputFinder {
+public class DevServerOutputTracker {
 
     private static class Finder implements Runnable {
 
@@ -74,7 +72,6 @@ public class DevServerOutputFinder {
             StringBuilder line = new StringBuilder();
             for (int i; (i = reader.read()) >= 0;) {
                 char ch = (char) i;
-                FrontendUtils.console("%c", ch);
                 line.append(ch);
                 if (ch == '\n') {
                     processLine(line.toString());
@@ -88,10 +85,19 @@ public class DevServerOutputFinder {
             if (line.contains("\b")) {
                 return;
             }
-
-            // remove color escape codes for console
+            // remove color escape codes
             String cleanLine = line.replaceAll("(\u001b\\[[;\\d]*m|[\b\r]+)",
                     "");
+
+            // Remove newline and timestamp as logger will add it
+            String logLine = cleanLine;
+            logLine = logLine.replaceAll("\n$", "");
+
+            // Vite preprends a timestamp
+            logLine = logLine.replaceAll("[0-9]+:[0-9]+:[0-9]+ [AP]M ", "");
+            // Webpack often prepends with <i>
+            logLine = logLine.replaceAll("^<i> ", "");
+            getLogger().info(logLine);
 
             boolean succeed = success != null && success.matcher(line).find();
             boolean failed = failure != null && failure.matcher(line).find();
@@ -108,10 +114,6 @@ public class DevServerOutputFinder {
                         new Result(succeed, cumulativeOutput.toString()));
                 cumulativeOutput = new StringBuilder();
             }
-        }
-
-        private static Logger getLogger() {
-            return LoggerFactory.getLogger(Finder.class);
         }
 
     }
@@ -158,7 +160,7 @@ public class DevServerOutputFinder {
      * @param onMatch
      *            callback triggered when either success or failure is found
      */
-    public DevServerOutputFinder(InputStream inputStream, Pattern success,
+    public DevServerOutputTracker(InputStream inputStream, Pattern success,
             Pattern failure, Consumer<Result> onMatch) {
         monitor = new CountDownLatch(1);
         finder = new Finder(inputStream, success, failure, result -> {
@@ -176,7 +178,7 @@ public class DevServerOutputFinder {
     public void find() {
         Thread finderThread = new Thread(finder);
         finderThread.setDaemon(true);
-        finderThread.setName("dev-server-output-reader");
+        finderThread.setName("dev-server-output");
         finderThread.start();
     }
 
@@ -193,6 +195,10 @@ public class DevServerOutputFinder {
     public boolean awaitFirstMatch(int timeoutInSeconds)
             throws InterruptedException {
         return monitor.await(timeoutInSeconds, TimeUnit.SECONDS);
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(DevServerOutputTracker.class);
     }
 
 }
