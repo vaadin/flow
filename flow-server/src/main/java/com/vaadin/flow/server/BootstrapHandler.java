@@ -894,7 +894,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
                 // Get and add all javascriptbundles
                 Matcher scriptMatcher = Pattern
-                        .compile("src=\\\"VAADIN\\/build\\/(.*.js)\\\"")
+                        .compile("src=\\\"VAADIN\\/build\\/(.*\\.js)\\\"")
                         .matcher(index);
                 while (scriptMatcher.find()) {
                     Element script = createJavaScriptElement(
@@ -907,7 +907,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
                 // Get and add all css bundle links
                 Matcher cssMatcher = Pattern
-                        .compile("href=\\\"VAADIN\\/build\\/(.*.css)\\\"")
+                        .compile("href=\\\"VAADIN\\/build\\/(.*\\.css)\\\"")
                         .matcher(index);
                 while (cssMatcher.find()) {
                     Element link = createStylesheetElement(
