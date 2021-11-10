@@ -51,20 +51,6 @@ public class StatsContentTest {
     }
 
     @Test
-    public void generatedStats_containsFlowImportsTemplates()
-            throws IOException {
-        final File flowImports = new File(generatedFrontend, IMPORTS_NAME);
-        final String flowImportsString = IOUtils.toString(flowImports.toURI(),
-                StandardCharsets.UTF_8);
-
-        final String statsJson = loadStatsJson();
-
-        for (String importString : collectImports(flowImportsString)) {
-            assertImportInStats(statsJson, importString);
-        }
-    }
-
-    @Test
     public void generatedStats_containsFlowFallbackImportsTemplates()
             throws IOException {
         final File flowImports = new File(generatedFrontend,

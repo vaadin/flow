@@ -13,7 +13,6 @@ const ExtraWatchWebpackPlugin = require('extra-watch-webpack-plugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 
 // Flow plugins
-const StatsPlugin = require('@vaadin/stats-plugin');
 const BuildStatusPlugin = require('@vaadin/build-status-plugin');
 const ThemeLiveReloadPlugin = require('@vaadin/theme-live-reload-plugin');
 const {
@@ -334,13 +333,21 @@ module.exports = {
         ]
       : []),
 
-    new StatsPlugin({
-      devMode: devMode,
-      statsFile: statsFile,
-      setResults: function (statsFile) {
-        stats = statsFile;
-      }
-    }),
+    function (compiler) {
+      // V14 bootstrapping needs the bundle names
+      compiler.hooks.afterEmit.tapAsync("FlowStatsHelper", (compilation, done) => {
+        let miniStats = {
+          assetsByChunkName: compilation.getStats().toJson().assetsByChunkName
+        };
+        if (!devMode) {
+          fs.writeFile(statsFile, JSON.stringify(miniStats, null, 1),
+            () => done());
+        } else {
+          stats = miniStats;
+          done();
+        }
+      });
+    },
 
     // Includes JS output bundles into "index.html"
     useClientSideIndexFileForBootstrapping &&
