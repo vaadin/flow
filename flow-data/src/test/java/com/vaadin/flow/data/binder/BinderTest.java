@@ -1745,7 +1745,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
     @Test
     public void validationShouldNotRunTwice() {
-        TextField salaryField = new TextField();
+        TestTextField  salaryField = new TestTextField ();
         AtomicInteger count = new AtomicInteger(0);
         item.setSalaryDouble(100d);
         binder.forField(salaryField)
