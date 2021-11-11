@@ -283,13 +283,28 @@ public abstract class NodeUpdater implements FallibleCommand {
             packageJson.put(DEV_DEPENDENCIES, devDependencies);
         }
 
+        String atVaadinPrefix = "@vaadin/";
+        String pluginTargetPrefix = "./"
+                + (npmFolder.toPath().relativize(targetFolder) + "/")
+                        .replace('\\', '/');
         plugins.stream().filter(plugin -> targetFolder.toFile().exists())
                 .forEach(plugin -> {
-                    String pluginTarget = "./" + (npmFolder.toPath()
-                            .relativize(targetFolder).toString() + "/" + plugin)
-                                    .replace('\\', '/');
-                    devDependencies.put("@vaadin/" + plugin, pluginTarget);
+                    String pluginTarget = pluginTargetPrefix + plugin;
+                    devDependencies.put(atVaadinPrefix + plugin, pluginTarget);
                 });
+
+        // Remove plugins previously installed but no longer needed
+        for (String depKey : devDependencies.keys()) {
+            String depVersion = devDependencies.getString(depKey);
+            if (depKey.startsWith(atVaadinPrefix)
+                    && depVersion.startsWith(pluginTargetPrefix)) {
+                final String pluginName = depKey
+                        .substring(atVaadinPrefix.length());
+                if (!plugins.contains(pluginName)) {
+                    devDependencies.remove(depKey);
+                }
+            }
+        }
     }
 
     JsonObject getResourcesPackageJson() throws IOException {
