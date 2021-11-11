@@ -235,11 +235,16 @@ public class NodeUpdaterTest {
     @Test public void removedDisusedPlugins() throws IOException {
         File packageJson = new File(npmFolder, "package.json");
         FileWriter packageJsonWriter = new FileWriter(packageJson);
-        packageJsonWriter.write(
-                "{\"devDependencies\": {\"@vaadin/some-old-plugin\": \"./target/plugins/some-old-plugin\"}}");
+        packageJsonWriter.write("{\"devDependencies\": {"
+                + "\"@vaadin/some-old-plugin\": \"./target/plugins/some-old-plugin\","
+                + "\"@vaadin/application-theme-plugin\": \"./target/plugins/application-theme-plugin\"}"
+                + "}");
         packageJsonWriter.close();
-        JsonObject actualDevDeps = nodeUpdater.getPackageJson();
+        JsonObject actualDevDeps = nodeUpdater.getPackageJson()
+                .getObject(NodeUpdater.DEV_DEPENDENCIES);
         Assert.assertFalse(actualDevDeps.hasKey("some-old-plugin"));
+        Assert.assertTrue(
+                actualDevDeps.hasKey("@vaadin/application-theme-plugin"));
     }
 
     private String getPolymerVersion(JsonObject object) {
