@@ -227,7 +227,7 @@ public interface DeploymentConfiguration
      */
     default boolean isBrotli() {
         return getBooleanProperty(InitParameters.SERVLET_PARAMETER_BROTLI,
-                false);
+                true);
     }
 
     default String getCompiledWebComponentsPath() {
