@@ -16,6 +16,7 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.Set;
@@ -229,6 +230,16 @@ public class NodeUpdaterTest {
                 StringContains.containsString("Cannot parse package file "));
         MatcherAssert.assertThat(exception.getMessage(),
                 StringContains.containsString("broken-package.json"));
+    }
+
+    @Test public void removedDisusedPlugins() throws IOException {
+        File packageJson = new File(npmFolder, "package.json");
+        FileWriter packageJsonWriter = new FileWriter(packageJson);
+        packageJsonWriter.write(
+                "{\"devDependencies\": {\"@vaadin/some-old-plugin\": \"./target/plugins/some-old-plugin\"}}");
+        packageJsonWriter.close();
+        JsonObject actualDevDeps = nodeUpdater.getPackageJson();
+        Assert.assertFalse(actualDevDeps.hasKey("some-old-plugin"));
     }
 
     private String getPolymerVersion(JsonObject object) {
