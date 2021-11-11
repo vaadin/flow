@@ -831,7 +831,7 @@ public abstract class VaadinService implements Serializable {
      * method.
      * <p>
      * Note: The method and its signature has been changed to get lock instance
-     * as parameter in Vaadin X.X.0. If you have overriden this method, you need
+     * as parameter in Flow 2.7.4. If you have overriden this method, you need
      * to update your implementation.
      * <p>
      * Note: Overriding this method is not recommended, for custom lock storage
