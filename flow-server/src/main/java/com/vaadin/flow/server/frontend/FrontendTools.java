@@ -547,11 +547,7 @@ public class FrontendTools {
             return;
         }
         try {
-            List<String> nodeVersionCommand = new ArrayList<>();
-            nodeVersionCommand.add(doGetNodeExecutable());
-            nodeVersionCommand.add("--version"); // NOSONAR
-            FrontendVersion foundNodeVersion = FrontendUtils.getVersion("node",
-                    nodeVersionCommand);
+            FrontendVersion foundNodeVersion = getNodeVersion();
             FrontendUtils.validateToolVersion("node", foundNodeVersion,
                     SUPPORTED_NODE_VERSION, SHOULD_WORK_NODE_VERSION);
         } catch (UnknownVersionException e) {
@@ -567,6 +563,16 @@ public class FrontendTools {
             getLogger().warn("Error checking if npm is new enough", e);
         }
 
+    }
+
+    /**
+     * Gets the version of the node executable.
+     */
+    public FrontendVersion getNodeVersion() throws UnknownVersionException {
+        List<String> nodeVersionCommand = new ArrayList<>();
+        nodeVersionCommand.add(doGetNodeExecutable());
+        nodeVersionCommand.add("--version"); // NOSONAR
+        return FrontendUtils.getVersion("node", nodeVersionCommand);
     }
 
     /**

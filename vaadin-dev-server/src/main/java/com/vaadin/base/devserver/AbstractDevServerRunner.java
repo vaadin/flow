@@ -25,6 +25,7 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -53,6 +54,8 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendToolsSettings;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.frontend.FrontendVersion;
+import com.vaadin.flow.server.frontend.FrontendUtils.UnknownVersionException;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import org.apache.commons.io.FileUtils;
@@ -287,6 +290,19 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
     protected abstract List<String> getServerStartupCommand(String nodeExec);
 
     /**
+     * Defines the environment variables to use when starting the dev server.
+     * 
+     * @param environment
+     *            the environment variables to use
+     */
+    protected void updateServerStartupEnvironment(FrontendVersion nodeVersion,
+            Map<String, String> environment) {
+        environment.put("watchDogPort",
+                Integer.toString(getWatchDog().getWatchDogPort()));
+
+    }
+
+    /**
      * Gets a pattern to match with the output to determine that the server has
      * started successfully.
      */
@@ -341,8 +357,17 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         }
 
         processBuilder.command(command);
-        processBuilder.environment().put("watchDogPort",
-                Integer.toString(getWatchDog().getWatchDogPort()));
+
+        Map<String, String> environment = processBuilder.environment();
+        FrontendVersion nodeVersion;
+        try {
+            nodeVersion = tools.getNodeVersion();
+        } catch (UnknownVersionException e) {
+            getLogger().error("Unable to determine node version", e);
+            // Need to assume something..
+            nodeVersion = new FrontendVersion(16, 0, 0);
+        }
+        updateServerStartupEnvironment(nodeVersion, environment);
 
         try {
             Process process = processBuilder.redirectErrorStream(true).start();
