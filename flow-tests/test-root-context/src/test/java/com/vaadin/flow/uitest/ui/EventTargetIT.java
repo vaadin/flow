@@ -22,44 +22,36 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.component.html.testbench.DivElement;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-public class EventTargetIT extends ChromeBrowserTest {
+public class EventTargetIT extends AbstractEventDataIT {
 
     @Test
     public void clickOnChildElement_reportsChildAsEventTarget() {
         open();
-        clickAndVerify("Child-0");
-        clickAndVerify("Grandchild-00");
-        clickAndVerify("Grandchild-09");
-        clickAndVerify("Child-1");
-        clickAndVerify("Grandchild-19");
-        clickAndVerify("Grandchild-15");
-        clickAndVerify("Grandchild-55");
-        clickAndVerify("Child-5");
+        clickAndVerifyTarget("Child-0");
+        clickAndVerifyTarget("Grandchild-00");
+        clickAndVerifyTarget("Grandchild-09");
+        clickAndVerifyTarget("Child-1");
+        clickAndVerifyTarget("Grandchild-19");
+        clickAndVerifyTarget("Grandchild-15");
+        clickAndVerifyTarget("Grandchild-55");
+        clickAndVerifyTarget("Child-5");
         final WebElement h3 = findElement(By.tagName("h3"));
         h3.click();
         verifyEventTargetString(h3.getText());
 
-        clickAndVerify("Child-6");
-        clickAndVerify("Child-5");
-        clickAndVerify("Grandchild-99");
-        clickAndVerify("Grandchild-98");
-        clickAndVerify("Grandchild-98");
-        clickAndVerify("Child-9");
+        clickAndVerifyTarget("Child-6");
+        clickAndVerifyTarget("Child-5");
+        clickAndVerifyTarget("Grandchild-99");
+        clickAndVerifyTarget("Grandchild-98");
+        clickAndVerifyTarget("Grandchild-98");
+        clickAndVerifyTarget("Child-9");
 
         // click on source of the listener reports itself too
-        clickAndVerify("container");
+        clickAndVerifyTarget("container");
     }
 
-    private void clickAndVerify(String id) {
-        final WebElement element = findElement(By.id(id));
-        element.click();
-
-        verifyEventTargetString(id);
-    }
-
-    private void verifyEventTargetString(String text) {
+    protected void verifyEventTargetString(String text) {
         Assert.assertEquals("Invalid event.target element reported", text,
                 $(DivElement.class).id(EventTargetView.TARGET_ID).getText());
     }

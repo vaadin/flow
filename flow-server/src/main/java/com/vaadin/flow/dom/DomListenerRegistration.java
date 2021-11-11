@@ -270,6 +270,34 @@ public interface DomListenerRegistration extends Registration {
      * @since 9.0
      */
     default DomListenerRegistration mapEventTargetElement() {
-        return addEventData(JsonConstants.MAP_EVENT_TARGET);
+        return addEventData(JsonConstants.MAP_STATE_NODE_EVENT_DATA);
+    }
+
+    /**
+     * Add a JavaScript expression for extracting an element as event data. When
+     * an event is fired in the browser, the expression is evaluated and if it
+     * returns an element from DOM, the server side element or closest parent
+     * element is sent to server side. The expression is evaluated in a context
+     * where <code>element</code> refers to this element and <code>event</code>
+     * refers to the fired event. If multiple expressions are defined for the
+     * same event, their order of execution is undefined.
+     * <p>
+     * The result of the evaluation is available in
+     * {@link DomEvent#getEventDataElement(String)} with the expression as the
+     * key in the JSON object.
+     * <p>
+     * In case you want to get the {@code event.target} element to the server
+     * side, use the {@link #mapEventTargetElement()} method to get it mapped
+     * and the {@link DomEvent#getEventTarget()} to fetch the element.
+     *
+     * @param eventData
+     *            definition for element that should be passed back to the
+     *            server together with the event, not <code>null</code>
+     * @return this registration, for chaining
+     * @since 9.0
+     */
+    default DomListenerRegistration addEventDataElement(String eventData) {
+        return addEventData(
+                JsonConstants.MAP_STATE_NODE_EVENT_DATA + eventData);
     }
 }

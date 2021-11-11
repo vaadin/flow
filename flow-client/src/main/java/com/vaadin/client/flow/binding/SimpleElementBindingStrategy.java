@@ -22,7 +22,6 @@ import jsinterop.annotations.JsFunction;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
-
 import com.vaadin.client.ApplicationConfiguration;
 import com.vaadin.client.Command;
 import com.vaadin.client.Console;
@@ -1256,27 +1255,41 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             eventData = null;
         } else {
             eventData = Json.createObject();
+        }
+        for (String expressionString : expressions) {
+            if (expressionString
+                    .startsWith(JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN)) {
+                String property = expressionString.substring(
+                        JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN.length());
+                synchronizeProperties.add(property);
+            } else if (expressionString
+                    .equals(JsonConstants.MAP_STATE_NODE_EVENT_DATA)) {
+                // map event.target to the closest state node
+                int targetNodeId = getClosestStateNodeIdToTarget(node,
+                        event.getTarget(), "event.target");
+                eventData.put(JsonConstants.MAP_STATE_NODE_EVENT_DATA,
+                        targetNodeId);
+            } else if (expressionString
+                    .startsWith(JsonConstants.MAP_STATE_NODE_EVENT_DATA)) {
+                // map element returned by JS to the closest state node
+                String jsEvaluation = expressionString.substring(
+                        JsonConstants.MAP_STATE_NODE_EVENT_DATA.length());
+                EventExpression expression = getOrCreateExpression(
+                        jsEvaluation);
+                JsonValue expressionValue = expression.evaluate(event,
+                        (Element) element);
+                // find the closest state node matching the expression value
+                int targetNodeId = getClosestStateNodeIdToDomNode(
+                        node.getTree(), expressionValue, jsEvaluation);
+                eventData.put(expressionString, targetNodeId);
+            } else {
+                EventExpression expression = getOrCreateExpression(
+                        expressionString);
 
-            for (String expressionString : expressions) {
-                if (expressionString
-                        .startsWith(JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN)) {
-                    String property = expressionString.substring(
-                            JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN.length());
-                    synchronizeProperties.add(property);
-                } else if (expressionString
-                        .equals(JsonConstants.MAP_EVENT_TARGET)) {
-                    int targetNodeId = getClosestStateNodeToTarget(node,
-                            event.getTarget());
-                    eventData.put(JsonConstants.MAP_EVENT_TARGET, targetNodeId);
-                } else {
-                    EventExpression expression = getOrCreateExpression(
-                            expressionString);
+                JsonValue expressionValue = expression.evaluate(event,
+                        (Element) element);
 
-                    JsonValue expressionValue = expression.evaluate(event,
-                            (Element) element);
-
-                    eventData.put(expressionString, expressionValue);
-                }
+                eventData.put(expressionString, expressionValue);
             }
         }
 
@@ -1466,27 +1479,31 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     }
 
     // This method could be moved somewhere to be reusable
-    private int getClosestStateNodeToTarget(StateNode topNode,
-            EventTarget target) {
+    private int getClosestStateNodeIdToTarget(StateNode topNode,
+            EventTarget target, String eventDataExpression) {
+        if (target == null) {
+            return -1;
+        }
         try {
             DomNode targetNode = DomApi.wrap(WidgetUtil.crazyJsCast(target));
-
-            // collect children and test eagerly for direct match
             JsArray<StateNode> stack = JsCollections.array();
             stack.push(topNode);
+
+            // collect children and test eagerly for direct match
             for (int i = 0; i < stack.length(); i++) {
                 final StateNode stateNode = stack.get(i);
                 if (targetNode.isSameNode(stateNode.getDomNode())) {
                     return stateNode.getId();
                 }
+                // NOTE: for now not looking at virtual children on purpose.
+                // If needed (?), those can be included here to the search stack
                 stateNode.getList(NodeFeatures.ELEMENT_CHILDREN)
                         .forEach(child -> stack.push((StateNode) child));
             }
             // no direct match, all child element state nodes collected.
             // bottom-up search elements until matching state node found
             targetNode = DomApi.wrap(targetNode.getParentNode());
-            while (targetNode != null
-                    && !targetNode.isSameNode(topNode.getDomNode())) {
+            while (targetNode != null) {
                 for (int i = stack.length() - 1; i > -1; i--) {
                     final StateNode stateNode = stack.get(i);
                     if (targetNode.isSameNode(stateNode.getDomNode())) {
@@ -1495,13 +1512,47 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 }
                 targetNode = DomApi.wrap(targetNode.getParentNode());
             }
+            //
         } catch (Exception e) {
             // not going to let event handling fail; just report nothing found
             Console.debug(
-                    "Flow could not detect state node matching event.target");
+                    "An error occurred when Flow tried to find a state node matching the element "
+                            + target + ", returned by an event data expression "
+                            + eventDataExpression + ". Error: "
+                            + e.getMessage());
         }
-        // no match / error; not considering topNode as it is reported as
-        // event.currentTarget
+        // no match / error;
         return -1;
     }
+
+    private int getClosestStateNodeIdToDomNode(StateTree stateTree,
+            Object domNodeReference, String eventDataExpression) {
+        if (domNodeReference == null) {
+            return -1;
+        }
+        try {
+            DomNode targetNode = DomApi
+                    .wrap(WidgetUtil.crazyJsCast(domNodeReference));
+            StateNode stateNodeForDomNode = null;
+            do {
+                stateNodeForDomNode = stateTree
+                        .getStateNodeForDomNode(targetNode);
+                targetNode = DomApi.wrap(targetNode.getParentNode());
+            } while (stateNodeForDomNode == null && targetNode != null);
+            if (stateNodeForDomNode != null) {
+                return stateNodeForDomNode.getId();
+            }
+        } catch (Exception e) {
+            // not going to let event handling fail; just report nothing found
+            Console.debug(
+                    "An error occurred when Flow tried to find a state node matching the element "
+                            + domNodeReference
+                            + ", returned by an event data expression "
+                            + eventDataExpression + ". Error: "
+                            + e.getMessage());
+        }
+        // no match / error;
+        return -1;
+    }
+
 }

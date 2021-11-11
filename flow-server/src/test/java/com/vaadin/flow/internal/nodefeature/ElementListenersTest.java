@@ -353,47 +353,95 @@ public class ElementListenersTest
         parent.appendChild(child.appendChild(grandChild));
         new StateTree(new UI().getInternals(), ElementChildrenList.class)
                 .getUI().getElement().appendChild(parent);
+        final String eventType = "click";
 
         AtomicReference<Element> capturedTarget = new AtomicReference<>();
         final DomListenerRegistration registration = parent
-                .addEventListener("click", e -> {
+                .addEventListener(eventType, e -> {
                     capturedTarget.set(e.getEventTarget().orElse(null));
                 });
         final ElementListenerMap listenerMap = parent.getNode()
                 .getFeature(ElementListenerMap.class);
-        Set<String> expressions = getExpressions(listenerMap, "click");
+        Set<String> expressions = getExpressions(listenerMap, eventType);
         Assert.assertEquals(0, expressions.size());
 
         registration.mapEventTargetElement();
-        expressions = getExpressions(listenerMap, "click");
+        expressions = getExpressions(listenerMap, eventType);
 
         Assert.assertEquals(1, expressions.size());
-        Assert.assertEquals(JsonConstants.MAP_EVENT_TARGET,
+        Assert.assertEquals(JsonConstants.MAP_STATE_NODE_EVENT_DATA,
                 expressions.iterator().next());
 
         // child
         final JsonObject eventData = Json.createObject();
-        eventData.put(JsonConstants.MAP_EVENT_TARGET, child.getNode().getId());
-        listenerMap.fireEvent(new DomEvent(parent, "click", eventData));
+        eventData.put(JsonConstants.MAP_STATE_NODE_EVENT_DATA,
+                child.getNode().getId());
+        listenerMap.fireEvent(new DomEvent(parent, eventType, eventData));
         Assert.assertEquals(child, capturedTarget.get());
 
         // nothing reported -> empty optional
-        listenerMap
-                .fireEvent(new DomEvent(parent, "click", Json.createObject()));
+        listenerMap.fireEvent(
+                new DomEvent(parent, eventType, Json.createObject()));
         Assert.assertNull("no element should be reported",
                 capturedTarget.get());
 
         // grandchild
-        eventData.put(JsonConstants.MAP_EVENT_TARGET,
+        eventData.put(JsonConstants.MAP_STATE_NODE_EVENT_DATA,
                 grandChild.getNode().getId());
-        listenerMap.fireEvent(new DomEvent(parent, "click", eventData));
+        listenerMap.fireEvent(new DomEvent(parent, eventType, eventData));
         Assert.assertEquals(grandChild, capturedTarget.get());
 
         // -1 -> empty optional
-        eventData.put(JsonConstants.MAP_EVENT_TARGET, -1);
-        listenerMap.fireEvent(new DomEvent(parent, "click", eventData));
+        eventData.put(JsonConstants.MAP_STATE_NODE_EVENT_DATA, -1);
+        listenerMap.fireEvent(new DomEvent(parent, eventType, eventData));
         Assert.assertNull("no element should be reported",
                 capturedTarget.get());
+    }
+
+    @Test
+    public void addEventDataElement_targetNodeInJsonData_elementMapped() {
+        Element parent = new Element("parent");
+        Element child = new Element("child");
+        Element sibling = new Element("sibling");
+        parent.appendChild(child);
+        new StateTree(new UI().getInternals(), ElementChildrenList.class)
+                .getUI().getElement().appendChild(parent, sibling);
+        final String eventType = "click";
+        final String expression = "expression";
+        final String key = JsonConstants.MAP_STATE_NODE_EVENT_DATA + expression;
+
+        AtomicReference<DomEvent> capturedTarget = new AtomicReference<>();
+        final DomListenerRegistration registration = parent
+                .addEventListener(eventType, capturedTarget::set);
+        final ElementListenerMap listenerMap = parent.getNode()
+                .getFeature(ElementListenerMap.class);
+
+        Set<String> expressions = getExpressions(listenerMap, eventType);
+        Assert.assertEquals(0, expressions.size());
+
+        registration.addEventDataElement(expression);
+        expressions = getExpressions(listenerMap, eventType);
+
+        Assert.assertEquals(1, expressions.size());
+        Assert.assertEquals(key, expressions.iterator().next());
+
+        final JsonObject eventData = Json.createObject();
+        eventData.put(key, child.getNode().getId());
+        listenerMap.fireEvent(new DomEvent(parent, eventType, eventData));
+        Assert.assertEquals(child,
+                capturedTarget.get().getEventDataElement(expression).get());
+
+        // nothing reported -> empty optional
+        listenerMap.fireEvent(
+                new DomEvent(parent, eventType, Json.createObject()));
+        Assert.assertFalse("no element should be reported", capturedTarget.get()
+                .getEventDataElement(expression).isPresent());
+
+        // sibling
+        eventData.put(key, sibling.getNode().getId());
+        listenerMap.fireEvent(new DomEvent(parent, eventType, eventData));
+        Assert.assertEquals(sibling,
+                capturedTarget.get().getEventDataElement(expression).get());
     }
 
     // Helper for accessing package private API from other tests
