@@ -232,7 +232,8 @@ public class NodeUpdaterTest {
                 StringContains.containsString("broken-package.json"));
     }
 
-    @Test public void removedDisusedPlugins() throws IOException {
+    @Test
+    public void removedDisusedPlugins() throws IOException {
         File packageJson = new File(npmFolder, "package.json");
         FileWriter packageJsonWriter = new FileWriter(packageJson);
         packageJsonWriter.write("{\"devDependencies\": {"
