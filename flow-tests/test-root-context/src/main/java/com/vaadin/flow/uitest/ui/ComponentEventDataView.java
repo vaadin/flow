@@ -56,14 +56,14 @@ public class ComponentEventDataView extends AbstractEventDataView {
 
         addListener(LayoutClickEvent.class, event -> {
             childComponent.setText(event.getChildComponent()
-                    .flatMap(Component::getId).orElse("EMPTY"));
+                    .flatMap(Component::getId).orElse(EMPTY_VALUE));
             clickedComponent.setText(event.getClickedComponent()
-                    .flatMap(Component::getId).orElse("EMPTY"));
+                    .flatMap(Component::getId).orElse(EMPTY_VALUE));
             firstChild.setText(event.getFirstChild()
                     .map(element -> element.getAttribute("id"))
-                    .orElse("EMPTY"));
-            headerClicked.setText(
-                    event.header == null ? "EMPTY" : event.header.getText());
+                    .orElse(EMPTY_VALUE));
+            headerClicked.setText(event.header == null ? EMPTY_VALUE
+                    : event.header.getText());
         });
 
         createComponents();

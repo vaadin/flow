@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.dom;
 
+import java.util.Objects;
 import java.util.Set;
 
 import com.vaadin.flow.function.SerializableRunnable;
@@ -54,6 +55,9 @@ public interface DomListenerRegistration extends Registration {
      *            definition for data that should be passed back to the server
      *            together with the event, not <code>null</code>
      * @return this registration, for chaining
+     * @see #addEventDataElement(String) for mapping an element
+     * @see #mapEventTargetElement() to map the {@code event.target} to an
+     *      element
      */
     DomListenerRegistration addEventData(String eventData);
 
@@ -295,9 +299,17 @@ public interface DomListenerRegistration extends Registration {
      *            server together with the event, not <code>null</code>
      * @return this registration, for chaining
      * @since 9.0
+     * @see #mapEventTargetElement() to map the {@code event.target} to an
+     *      element
      */
     default DomListenerRegistration addEventDataElement(String eventData) {
-        return addEventData(
-                JsonConstants.MAP_STATE_NODE_EVENT_DATA + eventData);
+        Objects.requireNonNull(eventData);
+        // optimizing this case as it is quite trivial
+        if (Objects.equals(eventData, "event.target")) {
+            return mapEventTargetElement();
+        } else {
+            return addEventData(
+                    JsonConstants.MAP_STATE_NODE_EVENT_DATA + eventData);
+        }
     }
 }

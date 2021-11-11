@@ -22,11 +22,14 @@ import com.vaadin.flow.component.html.H3;
 
 public class AbstractEventDataView extends AbstractDivView {
 
+    public static final String EMPTY_VALUE = "EMPTY";
     public static final String TARGET_ID = "target";
+    public static final String VIEW_CONTAINER = "View-container";
+    public static final String HEADER = "Header";
 
     public AbstractEventDataView() {
-        add(new Text("View container"), new H3("Header"));
-        setId("container");
+        add(new Text(VIEW_CONTAINER), new H3(HEADER));
+        setId(VIEW_CONTAINER);
     }
 
     protected void createComponents() {

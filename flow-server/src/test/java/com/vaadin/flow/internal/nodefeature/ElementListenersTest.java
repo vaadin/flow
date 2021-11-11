@@ -444,6 +444,37 @@ public class ElementListenersTest
                 capturedTarget.get().getEventDataElement(expression).get());
     }
 
+    @Test
+    public void addEventDataElement_eventTarget_usesMapEventTargetInstead() {
+        Element parent = new Element("parent");
+        Element child = new Element("child");
+        parent.appendChild(child);
+        new StateTree(new UI().getInternals(), ElementChildrenList.class)
+                .getUI().getElement().appendChild(parent);
+
+        final String eventType = "click";
+        AtomicReference<DomEvent> capturedTarget = new AtomicReference<>();
+        final DomListenerRegistration registration = parent
+                .addEventListener(eventType, capturedTarget::set);
+        final ElementListenerMap listenerMap = parent.getNode()
+                .getFeature(ElementListenerMap.class);
+
+        registration.addEventDataElement("event.target");
+        Set<String> expressions = getExpressions(listenerMap, eventType);
+
+        Assert.assertEquals(1, expressions.size());
+        Assert.assertEquals(JsonConstants.MAP_STATE_NODE_EVENT_DATA,
+                expressions.iterator().next());
+
+        final JsonObject eventData = Json.createObject();
+        eventData.put(JsonConstants.MAP_STATE_NODE_EVENT_DATA,
+                child.getNode().getId());
+        listenerMap.fireEvent(new DomEvent(parent, eventType, eventData));
+        Assert.assertEquals(child, capturedTarget.get().getEventTarget().get());
+        Assert.assertEquals(child,
+                capturedTarget.get().getEventDataElement("event.target").get());
+    }
+
     // Helper for accessing package private API from other tests
     public static Set<String> getExpressions(
             ElementListenerMap elementListenerMap, String eventName) {

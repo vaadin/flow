@@ -34,7 +34,7 @@ public class EventTargetView extends AbstractEventDataView {
 
         getElement().addEventListener("click", event -> {
             eventTarget.setText(event.getEventTarget()
-                    .map(element -> element.getText()).orElse("No target"));
+                    .map(element -> element.getText()).orElse(EMPTY_VALUE));
         }).mapEventTargetElement();
 
         createComponents();

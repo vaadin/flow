@@ -23,6 +23,8 @@ import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.component.html.testbench.DivElement;
 
+import static com.vaadin.flow.uitest.ui.AbstractEventDataView.EMPTY_VALUE;
+
 public class ComponentEventDataIT extends AbstractEventDataIT {
 
     @Test
@@ -32,22 +34,22 @@ public class ComponentEventDataIT extends AbstractEventDataIT {
         clickAndVerifyTarget("Child-0");
         verifyDirectChild("Child-0");
         verifyTargetFirstChild("Grandchild-00");
-        verifyHeader("EMPTY");
+        verifyHeader(EMPTY_VALUE);
 
         clickAndVerifyTarget("Grandchild-00");
         verifyDirectChild("Child-0");
-        verifyTargetFirstChild("EMPTY");
-        verifyHeader("EMPTY");
+        verifyTargetFirstChild(EMPTY_VALUE);
+        verifyHeader(EMPTY_VALUE);
 
         clickAndVerifyTarget("Grandchild-99");
         verifyDirectChild("Child-9");
-        verifyTargetFirstChild("EMPTY");
-        verifyHeader("EMPTY");
+        verifyTargetFirstChild(EMPTY_VALUE);
+        verifyHeader(EMPTY_VALUE);
 
         clickAndVerifyTarget("Child-9");
         verifyDirectChild("Child-9");
         verifyTargetFirstChild("Grandchild-90");
-        verifyHeader("EMPTY");
+        verifyHeader(EMPTY_VALUE);
     }
 
     @Test
@@ -57,9 +59,9 @@ public class ComponentEventDataIT extends AbstractEventDataIT {
         final WebElement h3 = findElement(By.tagName("h3"));
         h3.click();
         verifyEventTargetString(h3.getText());
-        verifyDirectChild("EMPTY"); // this is how the test code works
-        verifyTargetFirstChild("EMPTY");
-        verifyHeader("Header");
+        verifyDirectChild(EMPTY_VALUE); // this is how the test code works
+        verifyTargetFirstChild(EMPTY_VALUE);
+        verifyHeader(AbstractEventDataView.HEADER);
     }
 
     private void verifyHeader(String text) {

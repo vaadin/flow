@@ -21,7 +21,6 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.NodeOwner;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
@@ -205,16 +204,22 @@ public class DomEvent extends EventObject {
      * In case you want the {@code event.target} element, use
      * {@link #getEventTarget()} instead.
      * 
-     * @param expression
+     * @param eventDataExpression
      *            the expression that was executed on the client to retrieve the
      *            element, not <code>null</code>
      * @return the element that corresponds to the given expression or an empty
      *         optional
      * @since 9.0
      */
-    public Optional<Element> getEventDataElement(String expression) {
-        Objects.requireNonNull(expression);
-        return Optional.ofNullable(extractElement(eventData, getSource(),
-                JsonConstants.MAP_STATE_NODE_EVENT_DATA + expression, true));
+    public Optional<Element> getEventDataElement(String eventDataExpression) {
+        Objects.requireNonNull(eventDataExpression);
+        if (Objects.equals(eventDataExpression, "event.target")) {
+            return getEventTarget();
+        } else {
+            return Optional.ofNullable(extractElement(eventData, getSource(),
+                    JsonConstants.MAP_STATE_NODE_EVENT_DATA
+                            + eventDataExpression,
+                    true));
+        }
     }
 }

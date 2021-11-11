@@ -48,7 +48,7 @@ public class EventTargetIT extends AbstractEventDataIT {
         clickAndVerifyTarget("Child-9");
 
         // click on source of the listener reports itself too
-        clickAndVerifyTarget("container");
+        clickAndVerifyTarget(AbstractEventDataView.VIEW_CONTAINER);
     }
 
     protected void verifyEventTargetString(String text) {
