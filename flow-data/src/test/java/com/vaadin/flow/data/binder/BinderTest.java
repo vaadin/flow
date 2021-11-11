@@ -70,7 +70,6 @@ import static org.junit.Assert.assertTrue;
 public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
     private Map<HasValue<?, ?>, String> componentErrors = new HashMap<>();
-    private int count;
 
     @Rule
     /*
@@ -1746,27 +1745,29 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
     @Test
     public void validationShouldNotRunTwice() {
-        TestTextField salaryField = new TestTextField();
-        count = 0;
+        TextField salaryField = new TextField();
+        AtomicInteger count = new AtomicInteger(0);
         item.setSalaryDouble(100d);
         binder.forField(salaryField)
                 .withConverter(new StringToDoubleConverter(""))
                 .bind(Person::getSalaryDouble, Person::setSalaryDouble);
         binder.setBean(item);
         binder.addValueChangeListener(event -> {
-            count++;
+            count.incrementAndGet();
         });
 
         salaryField.setValue("1000");
         assertTrue(binder.isValid());
+        assertEquals(1, count.get());
 
         salaryField.setValue("salary");
         assertFalse(binder.isValid());
+        assertEquals(2, count.get());
 
         salaryField.setValue("2000");
 
         // Without fix for #12356 count will be 5
-        assertEquals(3, count);
+        assertEquals(3, count.get());
 
         assertEquals(new Double(2000), item.getSalaryDouble());
     }
