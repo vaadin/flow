@@ -39,6 +39,8 @@ import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -53,6 +55,7 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.Inline;
@@ -876,6 +879,43 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         private void appendNpmBundle(Element head, VaadinService service,
                 BootstrapContext context) throws IOException {
+            if (FeatureFlags.get(service.getContext())
+                    .isEnabled(FeatureFlags.VITE)) {
+
+                if (!service.getDeploymentConfiguration().isProductionMode()) {
+                    Element script = createJavaScriptElement(
+                            "VAADIN/@vite/client", false);
+                    head.appendChild(script.attr("type", "module"));
+                    return;
+                }
+
+                // Get the index.html to get vite generated bundles
+                String index = FrontendUtils.getIndexHtmlContent(service);
+
+                // Get and add all javascriptbundles
+                Matcher scriptMatcher = Pattern
+                        .compile("src=\\\"VAADIN\\/build\\/(.*\\.js)\\\"")
+                        .matcher(index);
+                while (scriptMatcher.find()) {
+                    Element script = createJavaScriptElement(
+                            "VAADIN/build/" + scriptMatcher.group(1), false);
+                    head.appendChild(
+                            script.attr("type", "module").attr("async", true)
+                                    // Fixes basic auth in Safari #6560
+                                    .attr("crossorigin", true));
+                }
+
+                // Get and add all css bundle links
+                Matcher cssMatcher = Pattern
+                        .compile("href=\\\"VAADIN\\/build\\/(.*\\.css)\\\"")
+                        .matcher(index);
+                while (cssMatcher.find()) {
+                    Element link = createStylesheetElement(
+                            "VAADIN/build/" + cssMatcher.group(1));
+                    head.appendChild(link);
+                }
+                return;
+            }
             String content = FrontendUtils.getStatsAssetsByChunkName(service);
             if (content == null) {
                 StringBuilder message = new StringBuilder(
