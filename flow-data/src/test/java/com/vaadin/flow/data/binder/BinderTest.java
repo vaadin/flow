@@ -46,6 +46,7 @@ import com.vaadin.flow.data.binder.Binder.BindingBuilder;
 import com.vaadin.flow.data.binder.testcomponents.TestTextField;
 import com.vaadin.flow.data.converter.Converter;
 import com.vaadin.flow.data.converter.StringToBigDecimalConverter;
+import com.vaadin.flow.data.converter.StringToDoubleConverter;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.data.validator.IntegerRangeValidator;
 import com.vaadin.flow.data.validator.NotEmptyValidator;
@@ -1681,6 +1682,35 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         field.setValue("baz");
         // mostly self control, the main check is: not exception is thrown
         Assert.assertTrue(validatorIsExecuted.get());
+    }
+
+    @Test
+    public void validationShouldNotRunTwice() {
+        TestTextField salaryField = new TestTextField();
+        AtomicInteger count = new AtomicInteger(0);
+        item.setSalaryDouble(100d);
+        binder.forField(salaryField)
+                .withConverter(new StringToDoubleConverter(""))
+                .bind(Person::getSalaryDouble, Person::setSalaryDouble);
+        binder.setBean(item);
+        binder.addValueChangeListener(event -> {
+            count.incrementAndGet();
+        });
+
+        salaryField.setValue("1000");
+        assertTrue(binder.isValid());
+        assertEquals(1, count.get());
+
+        salaryField.setValue("salary");
+        assertFalse(binder.isValid());
+        assertEquals(2, count.get());
+
+        salaryField.setValue("2000");
+
+        // Without fix for #12356 count will be 5
+        assertEquals(3, count.get());
+
+        assertEquals(new Double(2000), item.getSalaryDouble());
     }
 
     @Test
