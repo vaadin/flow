@@ -15,23 +15,9 @@
 		<module>flow-plugin-base</module>
 		<module>flow-maven-plugin</module>
 	</modules>
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<configuration>
-					<archive>
-						<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
-						<index>false</index>
-						<manifest>
-							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-						</manifest>
-					</archive>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
+	<properties>
+		<bnd.skip>true</bnd.skip>
+	</properties>
 	<profiles>
 		<profile>
 			<id>gradle</id>
