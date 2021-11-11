@@ -889,13 +889,7 @@ public class NodeTasks implements FallibleCommand {
 
     private FrontendDependenciesScanner getFallbackScanner(Builder builder,
             ClassFinder finder) {
-        // Only create fallback chunk with Webpack until the below ticket is
-        // donel, as the JS in generated-flow-imports.js does not work with
-        // Vite.
-        // https://github.com/vaadin/flow/issues/12170
-        boolean usingWebpack = !new FeatureFlags(builder.lookup)
-                .isEnabled(FeatureFlags.VITE);
-        if (usingWebpack && builder.useByteCodeScanner) {
+        if (builder.useByteCodeScanner) {
             return new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
                     .createScanner(true, finder,
                             builder.generateEmbeddableWebComponents,
