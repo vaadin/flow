@@ -5,6 +5,12 @@ on: [push]
 jobs:
   unit-test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        modules:
+          - 'flow-server'
+          - 'flow-client'
+          - 'build-tools,flow,flow-bom,flow-component-demo-helpers,flow-data,flow-dnd,flow-html-components,flow-html-components-testbench,flow-lit-template,flow-plugins,flow-polymer-template,flow-push,flow-server-production-mode,flow-test-generic,flow-test-util,fusion-endpoint,vaadin-dev-server'
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-java@v2
@@ -23,7 +29,7 @@ jobs:
       - name: Unit Test
         run: |
           mvn -B -q -DnewVersion=999.99-SNAPSHOT versions:set  -T 1C
-          mvn -B -am -pl flow-client test
+          mvn -B -am test -pl ${{ matrix.modules }}
   install:
     if: ${{ false }}
     runs-on: ubuntu-latest
