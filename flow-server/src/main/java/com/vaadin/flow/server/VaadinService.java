@@ -817,8 +817,8 @@ public abstract class VaadinService implements Serializable {
      * method.
      * <p>
      * Note: The method and its signature has been changed to get lock instance
-     * as parameter in Vaadin 8.0.5. If you have overridden this method, you need
-     * to update your implementation.
+     * as parameter in Vaadin 8.0.5. If you have overridden this method, you
+     * need to update your implementation.
      * <p>
      * Note: Overriding this method is not recommended, for custom lock storage
      * strategy override {@link #getSessionLock(WrappedSession)} and
