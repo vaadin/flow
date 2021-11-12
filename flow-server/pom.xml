@@ -223,8 +223,29 @@
                     <classpathDependencyExcludes>
                         <classpathDependencyExclude>org.osgi:org.osgi.core</classpathDependencyExclude>
                     </classpathDependencyExcludes>
+                    <parallel>classes</parallel>
+                    <threadCount>4</threadCount>
+                    <failIfNoTests>false</failIfNoTests>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>                
+                <configuration>
+                    <forkCount>4</forkCount>
+                    <threadCount>8</threadCount>
+                    <reuseForks>true</reuseForks>
+                    <parallel>methods</parallel>
+                </configuration>
+            </plugin>            
 
 
             <plugin>

@@ -12,16 +12,21 @@ jobs:
           java-version: '11'
           distribution: 'adopt'
       - uses: stCarolas/setup-maven@v4.2
+        with:
+          maven-version: 3.8.3      
       - name: Show Tool Versions
         run: |
           java -version
           mvn -version
           echo "Node "`node --version`
           echo "Npm "`npm -version`
-      - name: Build with Maven
+      - name: Unit Test
         run: |
-          mvn -B -q -am -pl flow-server test
+          mvn -B -q -DnewVersion=999.99-SNAPSHOT versions:set  -T 1C
+          mvn -B -q install -DskipTests -T 1C
+          mvn -B -am -pl flow-server test
   install:
+    if: ${{ false }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2

@@ -51,7 +51,7 @@ import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 @NotThreadSafe
-public class TaskRunNpmInstallTest {
+public class TaskRunNpmInstallIT {
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();

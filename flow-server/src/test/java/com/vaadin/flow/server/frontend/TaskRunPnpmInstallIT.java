@@ -40,7 +40,7 @@ import elemental.json.JsonObject;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
 
-public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
+public class TaskRunPnpmInstallIT extends TaskRunNpmInstallIT {
 
     private static final String PINNED_VERSION = "3.2.17";
 
