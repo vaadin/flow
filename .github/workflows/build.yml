@@ -3,7 +3,8 @@ name: Java CI
 on: [push]
 
 jobs:
-  unit-test:
+  matrix-unit-test:
+    if: always()
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -27,9 +28,43 @@ jobs:
           echo "Node "`node --version`
           echo "Npm "`npm -version`
       - name: Unit Test
+        if: always()
         run: |
           mvn -B -q -DnewVersion=999.99-SNAPSHOT versions:set  -T 1C
-          mvn -B -am test -pl ${{ matrix.modules }}
+          mvn -B -q -DskipTests install -T 2C
+          mvn -B test -fae -pl ${{ matrix.modules }}
+      - name: Publish Unit Test Results
+        if: always()
+        uses: EnricoMi/publish-unit-test-result-action/composite@v1
+        with:
+          files: "**/target/*-reports/*.xml"          
+  unit-test:
+    if: ${{ false }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+      - uses: stCarolas/setup-maven@v4.2
+        with:
+          maven-version: 3.8.3      
+      - name: Show Tool Versions
+        run: |
+          java -version
+          mvn -version
+          echo "Node "`node --version`
+          echo "Npm "`npm -version`
+      - name: Unit Test
+        run: |
+          mvn -B -q -DnewVersion=999.99-SNAPSHOT versions:set  -T 1C
+          mvn -B -am -q -pl flow-server test
+      - name: Publish Unit Test Results
+        if: always()
+        uses: EnricoMi/publish-unit-test-result-action/composite@v1
+        with:
+          files: "**/target/*-reports/*.xml"
   install:
     if: ${{ false }}
     runs-on: ubuntu-latest
@@ -61,9 +96,22 @@ jobs:
           pwd
           ls -al
       - name: Build with Maven
+        if: always()
         run: |
           mvn -B -q -DnewVersion=999.99-SNAPSHOT versions:set  -T 1C
           mvn -B -q -DskipTests install -T 2C
+
+  # publish-test-results:
+  #   if: success() || failure()
+  #   needs: unit-test
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: See test-results
+  #       run: ls -l flow-server/target/surefire-reports/*.xml 
+  #     - name: Publish Unit Test Results
+  #       uses: EnricoMi/publish-unit-test-result-action/composite@v1
+  #       with:
+  #         files: flow-server/target/surefire-reports/*.xml
 
 # - uses: nanasess/setup-chromedriver@master
 #   with:
