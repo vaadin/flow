@@ -64,7 +64,7 @@ public class VaadinConfigurationProperties {
     /**
      * Whether a browser should be launched on startup when in development mode.
      */
-    private boolean launchBrowser = true;
+    private boolean launchBrowser = false;
 
     public static class Pnpm {
         private boolean enable;
