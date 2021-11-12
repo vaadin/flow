@@ -765,7 +765,7 @@ public abstract class VaadinService implements Serializable {
      * call {@link VaadinSession#lock()} instead of this method.
      * <p>
      * Note: The method and its signature has been changed to return lock
-     * instance in Vaadin X.X.X. If you have overriden this method, you need to
+     * instance in Flow 8.0.5. If you have overridden this method, you need to
      * update your implementation.
      * <p>
      * Note: Overriding this method is not recommended, for custom lock storage
@@ -817,7 +817,7 @@ public abstract class VaadinService implements Serializable {
      * method.
      * <p>
      * Note: The method and its signature has been changed to get lock instance
-     * as parameter in Vaadin X.X.0. If you have overriden this method, you need
+     * as parameter in Vaadin 8.0.5. If you have overridden this method, you need
      * to update your implementation.
      * <p>
      * Note: Overriding this method is not recommended, for custom lock storage
