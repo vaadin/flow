@@ -567,7 +567,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             // #9443 Use error code 400 for bad location and don't create UI
             LocationUtil.verifyRelativePath(
                     LocationUtil.ensureRelativeNonNull(request.getPathInfo()));
-        } catch (InvalidLocationException invalidLocationException) {
+        } catch (InvalidLocationException invalidLocationException) { // NOSONAR
             response.sendError(400, "Invalid location: "
                     + invalidLocationException.getMessage());
             return true;
@@ -883,9 +883,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     .isEnabled(FeatureFlags.VITE)) {
 
                 if (!service.getDeploymentConfiguration().isProductionMode()) {
-                    Element script = createJavaScriptElement(
+                    Element script = createJavaScriptModuleElement(
                             "VAADIN/@vite/client", false);
-                    head.appendChild(script.attr("type", "module"));
+                    head.appendChild(script);
                     return;
                 }
 
@@ -897,12 +897,11 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                         .compile("src=\\\"VAADIN\\/build\\/(.*\\.js)\\\"")
                         .matcher(index);
                 while (scriptMatcher.find()) {
-                    Element script = createJavaScriptElement(
+                    Element script = createJavaScriptModuleElement(
                             "VAADIN/build/" + scriptMatcher.group(1), false);
-                    head.appendChild(
-                            script.attr("type", "module").attr("async", true)
-                                    // Fixes basic auth in Safari #6560
-                                    .attr("crossorigin", true));
+                    head.appendChild(script.attr("async", true)
+                            // Fixes basic auth in Safari #6560
+                            .attr("crossorigin", true));
                 }
 
                 // Get and add all css bundle links
@@ -951,9 +950,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 } else {
                     chunkName = chunks.getString(key);
                 }
-                Element script = createJavaScriptElement("./" + chunkName,
+                Element script = createJavaScriptModuleElement("./" + chunkName,
                         false);
-                head.appendChild(script.attr("type", "module")
+                head.appendChild(script
                         .attr("data-app-id",
                                 context.getUI().getInternals().getAppId())
                         // Fixes basic auth in Safari #6560
@@ -1106,6 +1105,11 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return createJavaScriptElement(sourceUrl, defer, "text/javascript");
         }
 
+        private static Element createJavaScriptModuleElement(String sourceUrl,
+                boolean defer) {
+            return createJavaScriptElement(sourceUrl, defer, "module");
+        }
+
         private static Element createJavaScriptElement(String sourceUrl,
                 boolean defer, String type) {
             Element jsElement = new Element(Tag.valueOf(SCRIPT_TAG), "")
@@ -1139,8 +1143,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                         !inlineElement);
                 break;
             case JS_MODULE:
-                dependencyElement = createJavaScriptElement(url, false,
-                        "module");
+                dependencyElement = createJavaScriptModuleElement(url, false);
                 break;
             default:
                 throw new IllegalStateException(
