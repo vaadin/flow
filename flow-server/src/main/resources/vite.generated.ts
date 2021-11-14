@@ -71,6 +71,7 @@ function runWatchDog(watchDogPort) {
 
 export const vaadinConfig: UserConfigFn = (env) => {
   const devMode = env.mode === 'development';
+  const basePath = env.mode === 'production' ? '' : '/VAADIN/';
 
   if (devMode && process.env.watchDogPort) {
     // Open a connection with the Java dev-mode handler in order to finish
@@ -79,7 +80,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
   }
   return {
     root: 'frontend',
-    base: env.mode === 'production' ? '' : '/VAADIN/',
+    base: basePath,
     resolve: {
       alias: {
         themes: themeFolder,
@@ -116,7 +117,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
             }
             const vaadinScript: HtmlTagDescriptor = {
               tag: 'script',
-              attrs: { type: 'module', src: './generated/vaadin.ts' },
+              attrs: { type: 'module', src: devMode ? '/VAADIN/generated/vaadin.ts' : './generated/vaadin.ts' },
               injectTo: 'head'
             };
             return [vaadinScript];
