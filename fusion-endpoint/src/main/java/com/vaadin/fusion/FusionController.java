@@ -103,7 +103,7 @@ public class FusionController {
      * A qualifier to override the request and response default json mapper.
      *
      * @see #FusionController(ObjectMapper, ExplicitNullableTypeChecker,
-     *      ApplicationContext, EndpointRegistry)
+     *      ApplicationContext, EndpointRegistry, CsrfChecker)
      */
     public static final String VAADIN_ENDPOINT_MAPPER_BEAN_QUALIFIER = "vaadinEndpointMapper";
 
