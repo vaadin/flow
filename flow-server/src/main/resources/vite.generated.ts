@@ -76,6 +76,7 @@ function runWatchDog(watchDogPort) {
 export const vaadinConfig: UserConfigFn = (env) => {
   const devMode = env.mode === 'development';
   const basePath = env.mode === 'production' ? '' : '/VAADIN/';
+  let pwaConfig;
 
   if (devMode && process.env.watchDogPort) {
     // Open a connection with the Java dev-mode handler in order to finish
@@ -107,9 +108,42 @@ export const vaadinConfig: UserConfigFn = (env) => {
         name: 'pwa',
         enforce: 'post',
         apply: 'build',
+        async configResolved(config) {
+          pwaConfig = config;
+        },
         async buildStart() {
+          // eslint-disable-next-line @typescript-eslint/no-var-requires
+          const rollup = require('rollup') as typeof Rollup
+          const includedPluginNames = [
+            'alias',
+            'vite:resolve',
+            'vite:esbuild',
+            'replace',
+            'vite:define',
+            'rollup-plugin-dynamic-import-variables',
+            'vite:esbuild-transpile',
+            'vite:terser',
+          ]
+          const plugins = pwaConfig.plugins.filter(p => includedPluginNames.includes(p.name)) as Plugin[]
+          const bundle = await rollup.rollup({
+            input: path.resolve(settings.clientServiceWorkerSourceDir, settings.serviceWorkerSource),
+            plugins,
+          })
+          try {
+            await bundle.write({
+              format: 'es',
+              exports: 'none',
+              inlineDynamicImports: true,
+              file: path.resolve(buildFolder, 'sw.js'),
+
+            })
+          }
+          finally {
+            await bundle.close()
+          }
+
           await injectManifest({
-            swSrc: path.resolve(settings.clientServiceWorkerSourceDir, settings.serviceWorkerSource),
+            swSrc: path.resolve(buildFolder, 'sw.js'),
             swDest: path.resolve(buildFolder, 'sw.js'),
             globDirectory: buildFolder,
             injectionPoint: 'self.__WB_MANIFEST',

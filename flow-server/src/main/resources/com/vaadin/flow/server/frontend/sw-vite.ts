@@ -1,6 +1,10 @@
-importScripts("https://storage.googleapis.com/workbox-cdn/releases/3.6.3/workbox-sw.js");
+import { precacheAndRoute } from 'workbox-precaching'
 
-workbox.precaching.suppressWarnings();
+declare let self: ServiceWorkerGlobalScope
 
-// self. _ _ WB_MANIFEST is default injection point
-workbox.precaching.precacheAndRoute(self.__WB_MANIFEST)
+self.addEventListener('message', (event) => {
+    if (event.data && event.data.type === 'SKIP_WAITING')
+        self.skipWaiting()
+})
+// self.__WB_MANIFEST is default injection point
+precacheAndRoute(self.__WB_MANIFEST)
