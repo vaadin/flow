@@ -16,6 +16,8 @@
 
 package com.vaadin.base.devserver.stats;
 
+import java.io.Serializable;
+
 /**
  * Constants for development mode statistics.
  *
