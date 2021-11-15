@@ -29,6 +29,7 @@ public class ReusableThemeView extends Div {
     public static final String SNOWFLAKE_ID = "fortawesome";
     public static final String BUTTERFLY_ID = "butterfly";
     public static final String OCTOPUSS_ID = "octopuss";
+    public static final String ROBOTO_ID = "roboto";
     public static final String FONTAWESOME_ID = "font-awesome";
     public static final String SUB_COMPONENT_ID = "sub-component";
 
@@ -45,6 +46,9 @@ public class ReusableThemeView extends Div {
         Span octopuss = new Span();
         octopuss.setId(OCTOPUSS_ID);
 
+        Span robotoFontFamily = new Span("This text is in Roboto");
+        robotoFontFamily.setId(ROBOTO_ID);
+
         Span faText = new Span("This test is FontAwesome.");
         faText.setClassName("fas fa-coffee");
         faText.setId(FONTAWESOME_ID);
@@ -55,7 +59,7 @@ public class ReusableThemeView extends Div {
         snowFlake.setHeight("1em");
         snowFlake.setId(SNOWFLAKE_ID);
 
-        add(textSpan, snowFlake, subCss, butterfly, octopuss, faText);
+        add(textSpan, snowFlake, subCss, butterfly, octopuss, robotoFontFamily, faText);
 
         add(new Div());
         add(new MyComponent().withId(MY_COMPONENT_ID));

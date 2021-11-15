@@ -5,6 +5,15 @@
     src: url("./font/ostrich-sans-regular.ttf") format("TrueType");
 }
 
+/* Font URL with whitespace character & query parameters */
+@font-face {
+    font-family: 'Roboto';
+    font-style: normal;
+    font-weight: 400;
+    src: local(''),
+    url('./font/roboto v29-latin-ext_latin-regular.woff2?v=1.12') format('woff2')
+}
+
 body {
     background-image: url("./img/bg.jpg");
     font-family: "Ostrich";
@@ -24,3 +33,8 @@ body {
     height: 224px;
     display: block;
 }
+
+#roboto {
+    font-family: Roboto
+}
+

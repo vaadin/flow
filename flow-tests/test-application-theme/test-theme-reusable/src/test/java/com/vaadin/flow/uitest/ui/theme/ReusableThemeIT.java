@@ -29,6 +29,7 @@ import com.vaadin.testbench.TestBenchElement;
 import static com.vaadin.flow.uitest.ui.theme.ReusableThemeView.BUTTERFLY_ID;
 import static com.vaadin.flow.uitest.ui.theme.ReusableThemeView.FONTAWESOME_ID;
 import static com.vaadin.flow.uitest.ui.theme.ReusableThemeView.MY_COMPONENT_ID;
+import static com.vaadin.flow.uitest.ui.theme.ReusableThemeView.ROBOTO_ID;
 import static com.vaadin.flow.uitest.ui.theme.ReusableThemeView.SNOWFLAKE_ID;
 import static com.vaadin.flow.uitest.ui.theme.ReusableThemeView.OCTOPUSS_ID;
 import static com.vaadin.flow.uitest.ui.theme.ReusableThemeView.SUB_COMPONENT_ID;
@@ -159,6 +160,16 @@ public class ReusableThemeIT extends ChromeBrowserTest {
         getDriver().get(getRootURL() + "/octopuss.jpg");
         Assert.assertFalse("root resource should be served",
                 driver.getPageSource().contains("HTTP ERROR 404 Not Found"));
+    }
+
+    @Test
+    public void cssUrlWithWhiteSpaceAndQueryParameters_urlIsRewrittenAndWorks() {
+        open();
+        checkLogsForErrors();
+
+        Assert.assertEquals("Font-face declaration with whitespace and request parameters should work.",
+                "Roboto", $(SpanElement.class)
+                        .id(ROBOTO_ID).getCssValue("font-family"));
     }
 
     @Override
