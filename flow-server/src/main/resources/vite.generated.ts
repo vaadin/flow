@@ -107,12 +107,6 @@ export const vaadinConfig: UserConfigFn = (env) => {
         name: 'pwa',
         enforce: 'post',
         apply: 'build',
-        transformIndexHtml: {
-          enforce: 'post',
-          transform(html) {
-            return html.replace('</head>', '<link rel="manifest" href="manifest.webmanifest"></head>');
-          }
-        },
         async buildStart() {
           await injectManifest({
             swSrc: path.resolve(settings.clientServiceWorkerSourceDir, settings.serviceWorkerSource),
