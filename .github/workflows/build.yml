@@ -27,17 +27,20 @@ jobs:
           mvn -version
           echo "Node "`node --version`
           echo "Npm "`npm -version`
-      - name: Unit Test
+      - name: Compile Modules
         if: always()
         run: |
           mvn -B -q -DnewVersion=999.99-SNAPSHOT versions:set  -T 1C
           mvn -B -q -DskipTests install -T 2C
-          mvn -B test -fae -pl ${{ matrix.modules }}
-      - name: Publish Unit Test Results
+      - name: Unit Test
         if: always()
-        uses: EnricoMi/publish-unit-test-result-action/composite@v1
+        run: |
+          mvn -B test -fae -pl ${{ matrix.modules }}
+      - uses: actions/upload-artifact@v2
+        if: always()
         with:
-          files: "**/target/*-reports/*.xml"          
+          name: test-reports
+          path: "**/target/*-reports/*"
   unit-test:
     if: ${{ false }}
     runs-on: ubuntu-latest
@@ -101,17 +104,22 @@ jobs:
           mvn -B -q -DnewVersion=999.99-SNAPSHOT versions:set  -T 1C
           mvn -B -q -DskipTests install -T 2C
 
-  # publish-test-results:
-  #   if: success() || failure()
-  #   needs: unit-test
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: See test-results
-  #       run: ls -l flow-server/target/surefire-reports/*.xml 
-  #     - name: Publish Unit Test Results
-  #       uses: EnricoMi/publish-unit-test-result-action/composite@v1
-  #       with:
-  #         files: flow-server/target/surefire-reports/*.xml
+  publish-test-results:
+    if: always()
+    needs: matrix-unit-test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: test-reports
+      - name: Display structure of downloaded files
+        run: ls -R
+      - name: Publish Unit Test Results
+        if: always()
+        uses: EnricoMi/publish-unit-test-result-action/composite@v1
+        with:
+          files: "**/target/*-reports/*.xml"          
+
 
 # - uses: nanasess/setup-chromedriver@master
 #   with:
