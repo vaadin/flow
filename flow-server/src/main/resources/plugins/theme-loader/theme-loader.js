@@ -4,7 +4,7 @@ const path = require('path');
 
 // Collect groups [url(] [ |'|"]optional './|../', file part and end of url
 // takes into account that whitespace in file name and query parameters are valid
-const urlMatcher = /(url\()(['"])?(\.\/|\.\.\/)([^\?|\2)]+)((\?\S*)?\2\))/g;
+const urlMatcher = /(url\()(['"])?(\.\/|\.\.\/)([^?'")]+)((\?\S*)?\2\))/g;
 
 /**
  * This custom loader handles rewriting urls for the application theme css files.
