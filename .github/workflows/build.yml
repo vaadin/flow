@@ -11,7 +11,9 @@ jobs:
         modules:
           - 'flow-server'
           - 'flow-client'
-          - 'build-tools,flow,flow-bom,flow-component-demo-helpers,flow-data,flow-dnd,flow-html-components,flow-html-components-testbench,flow-lit-template,flow-plugins,flow-polymer-template,flow-push,flow-server-production-mode,flow-test-generic,flow-test-util,fusion-endpoint,vaadin-dev-server'
+          - 'flow-data'
+          - 'vaadin-dev-server'
+          - 'build-tools,flow,flow-bom,flow-component-demo-helpers,flow-dnd,flow-html-components,flow-html-components-testbench,flow-lit-template,flow-plugins,flow-polymer-template,flow-push,flow-server-production-mode,flow-test-generic,flow-test-util,fusion-endpoint'
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-java@v2
