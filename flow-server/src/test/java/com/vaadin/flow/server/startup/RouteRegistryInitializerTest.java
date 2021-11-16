@@ -83,12 +83,13 @@ public class RouteRegistryInitializerTest {
         registry = new TestRouteRegistry();
         servletContext = Mockito.mock(ServletContext.class);
         vaadinContext = new VaadinServletContext(servletContext);
-        registry = ApplicationRouteRegistry
-                .getInstance(vaadinContext);
+        registry = ApplicationRouteRegistry.getInstance(vaadinContext);
 
         Mockito.when(vaadinContext.getAttribute(
                 ApplicationRouteRegistry.ApplicationRouteRegistryWrapper.class))
-                .thenReturn(new ApplicationRouteRegistry.ApplicationRouteRegistryWrapper(registry));
+                .thenReturn(
+                        new ApplicationRouteRegistry.ApplicationRouteRegistryWrapper(
+                                registry));
     }
 
     @Rule

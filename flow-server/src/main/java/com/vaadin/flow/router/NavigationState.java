@@ -64,7 +64,8 @@ public class NavigationState implements Serializable {
      * @param navigationTarget
      *            navigation target
      */
-    public void setNavigationTarget(Class<? extends Component> navigationTarget) {
+    public void setNavigationTarget(
+            Class<? extends Component> navigationTarget) {
         Objects.requireNonNull(navigationTarget,
                 "navigationTarget cannot be null");
         this.navigationTarget = navigationTarget;
@@ -77,8 +78,7 @@ public class NavigationState implements Serializable {
      *            the route target to set, not null.
      */
     void setRouteTarget(RouteTarget routeTarget) {
-        Objects.requireNonNull(routeTarget,
-                "routeTarget cannot be null");
+        Objects.requireNonNull(routeTarget, "routeTarget cannot be null");
         this.routeTarget = routeTarget;
     }
 
@@ -151,8 +151,8 @@ public class NavigationState implements Serializable {
      * @return the url parameters of this navigation state
      */
     public Optional<List<String>> getUrlParameters() {
-        return Optional.of(HasUrlParameterFormat
-                .getParameterValues(getRouteParameters()));
+        return Optional.of(
+                HasUrlParameterFormat.getParameterValues(getRouteParameters()));
     }
 
     /**

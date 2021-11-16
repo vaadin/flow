@@ -34,8 +34,8 @@ public class WebComponentConfigurationFactoryTest {
 
     @Test
     public void create_constructsValidConfiguration() {
-        WebComponentConfiguration<? extends Component> config1 = factory.create(
-                new DefaultWebComponentExporterFactory<WebComponentExporterTest.MyComponent>(
+        WebComponentConfiguration<? extends Component> config1 = factory
+                .create(new DefaultWebComponentExporterFactory<WebComponentExporterTest.MyComponent>(
                         MyComponentExporter.class).create());
 
         WebComponentConfiguration<? extends Component> config2 = factory
@@ -82,8 +82,9 @@ public class WebComponentConfigurationFactoryTest {
                         + "properties should not have same hashCodes",
                 similarConfig1.hashCode(), similarConfig2.hashCode());
 
-        Assert.assertEquals("Configurations with same tag and same properties "
-                + "but different defaults should have the same hashCode",
+        Assert.assertEquals(
+                "Configurations with same tag and same properties "
+                        + "but different defaults should have the same hashCode",
                 similarConfig2.hashCode(), similarConfig3.hashCode());
     }
 

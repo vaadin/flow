@@ -117,8 +117,8 @@ public abstract class AbstractListenerMethodsTestBase extends TestCase {
 
     private void removeListener(Object c, Object listener,
             Class<?> listenerClass) throws IllegalArgumentException,
-                    IllegalAccessException, InvocationTargetException,
-                    SecurityException, NoSuchMethodException {
+            IllegalAccessException, InvocationTargetException,
+            SecurityException, NoSuchMethodException {
         Method method = getRemoveListenerMethod(c.getClass(), listenerClass);
         method.invoke(c, listener);
 
@@ -166,8 +166,8 @@ public abstract class AbstractListenerMethodsTestBase extends TestCase {
 
     private void verifyListeners(Object c, Class<?> eventClass,
             Object... expectedListeners) throws IllegalArgumentException,
-                    SecurityException, IllegalAccessException,
-                    InvocationTargetException, NoSuchMethodException {
+            SecurityException, IllegalAccessException,
+            InvocationTargetException, NoSuchMethodException {
         Collection<?> registeredListeners = getListeners(c, eventClass);
         assertEquals("Number of listeners", expectedListeners.length,
                 registeredListeners.size());

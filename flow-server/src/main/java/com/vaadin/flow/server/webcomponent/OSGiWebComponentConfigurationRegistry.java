@@ -27,10 +27,12 @@ import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
  * @author Vaadin Ltd.
  * @since 2.0
  */
-public class OSGiWebComponentConfigurationRegistry extends WebComponentConfigurationRegistry {
+public class OSGiWebComponentConfigurationRegistry
+        extends WebComponentConfigurationRegistry {
 
     @Override
-    public boolean setConfigurations(Set<WebComponentConfiguration<? extends Component>> configurations) {
+    public boolean setConfigurations(
+            Set<WebComponentConfiguration<? extends Component>> configurations) {
 
         updateRegistry(configurations);
         return true;

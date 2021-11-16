@@ -112,13 +112,17 @@ public class PolymerServerEventHandlers
     }
 
     private String[] getParameters(Method method) {
-        return Stream.of(method.getParameters()).flatMap(parameter -> Stream.of(
-                Optional.ofNullable(parameter.getAnnotation(EventData.class))
-                        .map(EventData::value),
-                Optional.ofNullable(parameter.getAnnotation(RepeatIndex.class))
-                        .map(annotation -> REPEAT_INDEX_VALUE),
-                Optional.ofNullable(parameter.getAnnotation(ModelItem.class))
-                        .map(ModelItem::value)))
+        return Stream.of(method.getParameters()).flatMap(
+                parameter -> Stream.of(
+                        Optional.ofNullable(
+                                parameter.getAnnotation(EventData.class))
+                                .map(EventData::value),
+                        Optional.ofNullable(
+                                parameter.getAnnotation(RepeatIndex.class))
+                                .map(annotation -> REPEAT_INDEX_VALUE),
+                        Optional.ofNullable(
+                                parameter.getAnnotation(ModelItem.class))
+                                .map(ModelItem::value)))
                 .filter(Optional::isPresent).map(Optional::get)
                 .toArray(String[]::new);
     }

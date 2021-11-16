@@ -84,16 +84,13 @@ public final class OSGiAccess {
     private static final OSGiAccess INSTANCE = new OSGiAccess();
 
     private final ServletContext context = LazyOSGiDetector.IS_IN_OSGI
-            ? createOSGiServletContext()
-            : null;
+            ? createOSGiServletContext() : null;
 
     private final AtomicReference<Collection<Class<? extends ServletContainerInitializer>>> initializerClasses = LazyOSGiDetector.IS_IN_OSGI
-            ? new AtomicReference<>()
-            : null;
+            ? new AtomicReference<>() : null;
 
     private final Map<Long, Collection<Class<?>>> cachedClasses = LazyOSGiDetector.IS_IN_OSGI
-            ? new ConcurrentHashMap<>()
-            : null;
+            ? new ConcurrentHashMap<>() : null;
 
     private static final ResourceProvider RESOURCE_PROVIDER = new OSGiResourceProvider();
 
@@ -478,8 +475,8 @@ public final class OSGiAccess {
             } catch (Throwable throwable) {
                 // just eat it so that any failure in the version detection
                 // doesn't break OSGi usage
-                LoggerFactory.getLogger(OSGiAccess.class).info(
-                        "Unable to detect used OSGi framework version due to "
+                LoggerFactory.getLogger(OSGiAccess.class)
+                        .info("Unable to detect used OSGi framework version due to "
                                 + throwable.getMessage());
             }
             return null;

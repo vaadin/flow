@@ -367,14 +367,16 @@ abstract class AbstractUpdateImports implements Runnable {
                 suffix = "Unable to locate frontend resources and missing token file. "
                         + "Please run the `prepare-frontend` Vaadin plugin goal before deploying the application";
             } else {
-                suffix = String.format("%n  Locations searched were:"
-                        + "%n      - `%s` in this project"
-                        + "%n      - `%s` in included JARs"
-                        + "%n      - `%s` in included JARs"
-                        + "%n%n  Please, double check that those files exist. If you use a custom directory "
-                        + "for your resource files instead of default "
-                        + "`frontend` folder then make sure you it's correctly configured "
-                        + "(e.g. set '%s' property)", frontendDir.getPath(),
+                suffix = String.format(
+                        "%n  Locations searched were:"
+                                + "%n      - `%s` in this project"
+                                + "%n      - `%s` in included JARs"
+                                + "%n      - `%s` in included JARs"
+                                + "%n%n  Please, double check that those files exist. If you use a custom directory "
+                                + "for your resource files instead of default "
+                                + "`frontend` folder then make sure you it's correctly configured "
+                                + "(e.g. set '%s' property)",
+                        frontendDir.getPath(),
                         Constants.RESOURCES_FRONTEND_DEFAULT,
                         COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT,
                         FrontendUtils.PARAM_FRONTEND_DIR);
@@ -472,8 +474,7 @@ abstract class AbstractUpdateImports implements Runnable {
         boolean found = importedFileExists(cssFile);
         String cssImport = toValidBrowserImport(cssFile);
         String include = cssData.getInclude() != null
-                ? " include=\"" + cssData.getInclude() + "\""
-                : "";
+                ? " include=\"" + cssData.getInclude() + "\"" : "";
 
         if (cssData.getThemefor() != null) {
             addLines(lines, String.format(CSS_THEME_FOR_TPL, i, cssImport,
@@ -519,16 +520,16 @@ abstract class AbstractUpdateImports implements Runnable {
             Set<String> visitedImports) throws IOException {
 
         String content = null;
-        try (final Stream<String> contentStream = Files
-                .lines(filePath, StandardCharsets.UTF_8)) {
+        try (final Stream<String> contentStream = Files.lines(filePath,
+                StandardCharsets.UTF_8)) {
             content = contentStream.collect(Collectors.joining("\n"));
         } catch (UncheckedIOException ioe) {
             if (ioe.getCause() instanceof MalformedInputException) {
-                getLogger()
-                        .trace("Failed to read file '{}' found from Es6 import statements. "
-                                        + "This is probably due to it being a binary file, "
-                                        + "in which case it doesn't matter as imports are only in js/ts files.",
-                                filePath.toString(), ioe);
+                getLogger().trace(
+                        "Failed to read file '{}' found from Es6 import statements. "
+                                + "This is probably due to it being a binary file, "
+                                + "in which case it doesn't matter as imports are only in js/ts files.",
+                        filePath.toString(), ioe);
                 return;
             }
             throw ioe;
@@ -550,7 +551,7 @@ abstract class AbstractUpdateImports implements Runnable {
                 // don't do anything if such file doesn't exist at all
                 continue;
             }
-            resolvedPath  = normalizePath(resolvedPath);
+            resolvedPath = normalizePath(resolvedPath);
             if (resolvedPath.contains(theme.getBaseUrl())) {
                 String translatedPath = theme.translateUrl(resolvedPath);
                 if (!visitedImports.contains(translatedPath)

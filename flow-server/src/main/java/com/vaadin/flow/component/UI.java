@@ -756,8 +756,7 @@ public class UI extends Component
      */
     public void setDirection(Direction direction) {
         Objects.requireNonNull(direction, "Direction cannot be null");
-        getPage().executeJs("document.dir = $0",
-                direction.getClientName());
+        getPage().executeJs("document.dir = $0", direction.getClientName());
     }
 
     /**
@@ -912,7 +911,7 @@ public class UI extends Component
                 .forRegistry(getInternals().getRouter().getRegistry());
         navigate(configuration.getUrl(navigationTarget, parameters));
     }
-    
+
     /**
      * Updates this UI to show the view corresponding to the given location. The
      * location must be a relative path without any ".." segments.
@@ -953,7 +952,8 @@ public class UI extends Component
      */
     public void navigate(String location, QueryParameters queryParameters) {
         Objects.requireNonNull(location, "Location must not be null");
-        Objects.requireNonNull(queryParameters, "Query parameters must not be null");
+        Objects.requireNonNull(queryParameters,
+                "Query parameters must not be null");
 
         Location navigationLocation = new Location(location, queryParameters);
         getInternals().getRouter().navigate(this, navigationLocation,

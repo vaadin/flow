@@ -45,7 +45,8 @@ class BrowserLiveReloadImpl implements BrowserLiveReload {
 
     private Backend backend = null;
 
-    private static final EnumMap<Backend, List<String>> IDENTIFIER_CLASSES = new EnumMap<>(Backend.class);
+    private static final EnumMap<Backend, List<String>> IDENTIFIER_CLASSES = new EnumMap<>(
+            Backend.class);
 
     static {
         IDENTIFIER_CLASSES.put(Backend.JREBEL, Collections.singletonList(
@@ -102,7 +103,6 @@ class BrowserLiveReloadImpl implements BrowserLiveReload {
         assert (backend != null);
         this.backend = backend;
     }
-
 
     @Override
     public void onConnect(AtmosphereResource resource) {

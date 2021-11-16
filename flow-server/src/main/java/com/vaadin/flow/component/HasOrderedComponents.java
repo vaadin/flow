@@ -86,8 +86,7 @@ public interface HasOrderedComponents<T extends Component>
             throw new IllegalArgumentException(
                     "The 'component' parameter cannot be null");
         }
-        Iterator<Component> it = this.getChildren().sequential()
-                .iterator();
+        Iterator<Component> it = this.getChildren().sequential().iterator();
         int index = 0;
         while (it.hasNext()) {
             Component next = it.next();
@@ -139,6 +138,6 @@ public interface HasOrderedComponents<T extends Component>
      *
      * @return the child components of this component
      */
-     Stream<Component> getChildren();
+    Stream<Component> getChildren();
 
 }

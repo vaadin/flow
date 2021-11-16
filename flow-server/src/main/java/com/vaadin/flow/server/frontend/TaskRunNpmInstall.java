@@ -131,20 +131,21 @@ public class TaskRunNpmInstall implements FallibleCommand {
     public void execute() throws ExecutionFailedException {
         String toolName = enablePnpm ? "pnpm" : "npm";
         if (packageUpdater.modified || shouldRunNpmInstall()) {
-            packageUpdater.log().info("Running `" + toolName + " install` to "
-                    + "resolve and optionally download frontend dependencies. "
-                    + "This may take a moment, please stand by...");
+            packageUpdater.log()
+                    .info("Running `" + toolName + " install` to "
+                            + "resolve and optionally download frontend dependencies. "
+                            + "This may take a moment, please stand by...");
             runNpmInstall();
 
             updateLocalHash();
         } else {
-            packageUpdater.log().info(
-                    "Skipping `{} install` because the frontend packages are already "
+            packageUpdater.log()
+                    .info("Skipping `{} install` because the frontend packages are already "
                             + "installed in the folder '{}' and the hash in the file '{}' is the same as in '{}'",
-                    toolName,
-                    packageUpdater.nodeModulesFolder.getAbsolutePath(),
-                    getLocalHashFile().getAbsolutePath(),
-                    Constants.PACKAGE_JSON);
+                            toolName,
+                            packageUpdater.nodeModulesFolder.getAbsolutePath(),
+                            getLocalHashFile().getAbsolutePath(),
+                            Constants.PACKAGE_JSON);
 
         }
     }
@@ -388,10 +389,11 @@ public class TaskRunNpmInstall implements FallibleCommand {
                 // Echo the stdout from pnpm/npm to error level log
                 packageUpdater.log().error("Command `{}` failed:\n{}",
                         commandString, toolOutput);
-                packageUpdater.log().error(
-                        ">>> Dependency ERROR. Check that all required dependencies are "
-                                + "deployed in {} repositories.",
-                        toolName);
+                packageUpdater
+                        .log().error(
+                                ">>> Dependency ERROR. Check that all required dependencies are "
+                                        + "deployed in {} repositories.",
+                                toolName);
                 throw new ExecutionFailedException(
                         SharedUtil.capitalize(toolName)
                                 + " install has exited with non zero status. "

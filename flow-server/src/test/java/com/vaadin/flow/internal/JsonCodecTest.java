@@ -217,8 +217,7 @@ public class JsonCodecTest {
         Assert.assertTrue(JsonCodec.decodeAs(json, Double.class).isNaN());
         Assert.assertTrue(JsonCodec.decodeAs(json, double.class).isNaN());
         Assert.assertEquals(0.0d,
-                JsonCodec.decodeAs(Json.createNull(), double.class),
-                0.0001d);
+                JsonCodec.decodeAs(Json.createNull(), double.class), 0.0001d);
     }
 
     @Test(expected = ClassCastException.class)
@@ -230,7 +229,6 @@ public class JsonCodecTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void decodeAs_unsupportedType() {
-        Assert.assertNull(
-                JsonCodec.decodeAs(Json.create("foo"), float.class));
+        Assert.assertNull(JsonCodec.decodeAs(Json.create("foo"), float.class));
     }
 }

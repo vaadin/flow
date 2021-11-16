@@ -21,7 +21,8 @@ import org.junit.Test;
 public class HasHelperTest {
 
     @Tag("div")
-    public static class HasHelperComponent extends Component implements HasHelper {
+    public static class HasHelperComponent extends Component
+            implements HasHelper {
     }
 
     @Test

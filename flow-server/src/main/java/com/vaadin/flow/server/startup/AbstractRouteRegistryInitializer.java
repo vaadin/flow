@@ -139,7 +139,8 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
             if (implementation.isAssignableFrom(route)) {
                 throw new InvalidRouteLayoutConfigurationException(String
                         .format("%s needs to be the top parent layout '%s' not '%s'",
-                                implementation.getSimpleName(),
+                                implementation
+                                        .getSimpleName(),
                                 RouteUtil.getTopParentLayout(route,
                                         RouteUtil.resolve(route, annotation))
                                         .getName(),
@@ -202,11 +203,11 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
         Supplier<Stream<Class<? extends RouterLayout>>> streamSupplier = () -> parentLayouts
                 .stream().filter(implementation::isAssignableFrom);
         if (streamSupplier.get().count() > 1) {
-            throw new InvalidRouteLayoutConfigurationException("Only one "
-                    + implementation.getSimpleName()
-                    + " implementation is supported for navigation chain and should be on the top most level. Offending classes in chain: "
-                    + streamSupplier.get().map(Class::getName)
-                            .collect(Collectors.joining(", ")));
+            throw new InvalidRouteLayoutConfigurationException(
+                    "Only one " + implementation.getSimpleName()
+                            + " implementation is supported for navigation chain and should be on the top most level. Offending classes in chain: "
+                            + streamSupplier.get().map(Class::getName)
+                                    .collect(Collectors.joining(", ")));
         }
 
         streamSupplier.get().findFirst().ifPresent(layout -> {
@@ -280,11 +281,11 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
                 .stream()
                 .filter(layout -> layout.isAnnotationPresent(annotation));
         if (streamSupplier.get().count() > 1) {
-            throw new InvalidRouteLayoutConfigurationException("Only one "
-                    + annotation.getSimpleName()
-                    + " annotation is supported for navigation chain and should be on the top most level. Offending classes in chain: "
-                    + streamSupplier.get().map(Class::getName)
-                            .collect(Collectors.joining(", ")));
+            throw new InvalidRouteLayoutConfigurationException(
+                    "Only one " + annotation.getSimpleName()
+                            + " annotation is supported for navigation chain and should be on the top most level. Offending classes in chain: "
+                            + streamSupplier.get().map(Class::getName)
+                                    .collect(Collectors.joining(", ")));
         }
 
         streamSupplier.get().findFirst().ifPresent(layout -> {

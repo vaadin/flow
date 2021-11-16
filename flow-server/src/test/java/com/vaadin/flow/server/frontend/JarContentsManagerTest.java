@@ -228,9 +228,10 @@ public class JarContentsManagerTest {
                 String.format("Expect '%s' WebJar to contain two '%s' files",
                         resourceName, searchName),
                 2, bowerJsons.size());
-        assertTrue(String.format(
-                "Expect all found paths to end with the file name searched for: '%s'",
-                searchName),
+        assertTrue(
+                String.format(
+                        "Expect all found paths to end with the file name searched for: '%s'",
+                        searchName),
                 bowerJsons.stream()
                         .allMatch(path -> path.endsWith('/' + searchName)));
     }
@@ -244,9 +245,11 @@ public class JarContentsManagerTest {
         List<String> bowerJson = jarContentsManager.findFiles(
                 TestUtils.getTestJar(resourceName), testPath, searchName);
 
-        assertEquals(String.format(
-                "Expect '%s' WebJar to contain one '%s' file in directory '%s'",
-                resourceName, searchName, testPath), 1, bowerJson.size());
+        assertEquals(
+                String.format(
+                        "Expect '%s' WebJar to contain one '%s' file in directory '%s'",
+                        resourceName, searchName, testPath),
+                1, bowerJson.size());
     }
 
     @Test
@@ -439,14 +442,16 @@ public class JarContentsManagerTest {
         Set<String> copiedFiles = new HashSet<>(
                 TestUtils.listFilesRecursively(outputDirectory));
 
-        assertEquals(String.format(
-                "Number of files in jar '%s' in jar directory '%s' and number of copied files should match.",
-                testJar, jarDirectory), originalFiles.size(),
-                copiedFiles.size());
+        assertEquals(
+                String.format(
+                        "Number of files in jar '%s' in jar directory '%s' and number of copied files should match.",
+                        testJar, jarDirectory),
+                originalFiles.size(), copiedFiles.size());
 
-        copiedFiles.forEach(copiedFile -> assertTrue(String.format(
-                "Failed to find copied file '%s' in files '%s' from jar '%s'",
-                copiedFile, originalFiles, testJar),
+        copiedFiles.forEach(copiedFile -> assertTrue(
+                String.format(
+                        "Failed to find copied file '%s' in files '%s' from jar '%s'",
+                        copiedFile, originalFiles, testJar),
                 originalFiles.stream()
                         .anyMatch(file -> file.endsWith(copiedFile))));
     }

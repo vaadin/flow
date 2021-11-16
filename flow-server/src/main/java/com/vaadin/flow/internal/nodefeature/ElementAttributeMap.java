@@ -231,18 +231,20 @@ public class ElementAttributeMap extends NodeMap {
         if (handle != null) {
             handle.remove();
         }
-        pendingRegistrations.put(attribute, getNode().addDetachListener(
-                // This explicit class instantiation is the workaround
-                // which fixes a JVM optimization+serialization bug.
-                // Do not convert to lambda
-                // Detected under Win7_64 /JDK 1.8.0_152, 1.8.0_172
-                // see ElementAttributeMap#deferRegistration
-                new Command() {
-                    @Override
-                    public void execute() {
-                        ElementAttributeMap.this.unsetResource(attribute);
-                    }
-                }));
+        pendingRegistrations.put(attribute,
+                getNode().addDetachListener(
+                        // This explicit class instantiation is the workaround
+                        // which fixes a JVM optimization+serialization bug.
+                        // Do not convert to lambda
+                        // Detected under Win7_64 /JDK 1.8.0_152, 1.8.0_172
+                        // see ElementAttributeMap#deferRegistration
+                        new Command() {
+                            @Override
+                            public void execute() {
+                                ElementAttributeMap.this
+                                        .unsetResource(attribute);
+                            }
+                        }));
     }
 
     private void doSet(String attribute, Serializable value) {

@@ -327,7 +327,7 @@ public class PushHandler {
                 return null;
             }
         }
-        
+
         VaadinServletRequest vaadinRequest = new VaadinServletRequest(
                 resource.getRequest(), service);
 
@@ -370,8 +370,8 @@ public class PushHandler {
                                     + " see http://dev.vaadin.com/ticket/14251.");
                     return session;
                 } else {
-                    getLogger().info(
-                            "No UI was found based on data in the request,"
+                    getLogger()
+                            .info("No UI was found based on data in the request,"
                                     + " but a slower lookup based on the AtmosphereResource succeeded."
                                     + " See http://dev.vaadin.com/ticket/14251 for more details.");
                 }

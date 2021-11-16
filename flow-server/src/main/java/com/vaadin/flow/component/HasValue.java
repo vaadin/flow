@@ -35,7 +35,8 @@ import com.vaadin.flow.shared.Registration;
  * @author Vaadin Ltd
  * @since 1.0.
  */
-public interface HasValue<E extends ValueChangeEvent<V>, V> extends Serializable {
+public interface HasValue<E extends ValueChangeEvent<V>, V>
+        extends Serializable {
 
     /**
      * An event fired when the value of a {@code HasValue} changes.

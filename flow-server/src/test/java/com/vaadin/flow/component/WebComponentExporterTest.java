@@ -169,8 +169,8 @@ public class WebComponentExporterTest {
                 binding.getComponent());
         Assert.assertTrue("configureInstance() should have set 'flip' to true",
                 binding.getComponent().getFlip());
-        Assert.assertEquals("value should be set to 1 by default",
-                1, binding.getComponent().value);
+        Assert.assertEquals("value should be set to 1 by default", 1,
+                binding.getComponent().value);
     }
 
     @Test
@@ -186,8 +186,8 @@ public class WebComponentExporterTest {
                 .createWebComponentBinding(new MockInstantiator(),
                         mock(Element.class), Json.parse("{\"value\":2}"));
 
-        Assert.assertEquals("attribute should have set default value to two",
-                2, binding.getComponent().value);
+        Assert.assertEquals("attribute should have set default value to two", 2,
+                binding.getComponent().value);
     }
 
     @Test

@@ -143,8 +143,9 @@ public abstract class NodeUpdater implements FallibleCommand {
     JsonObject getPlatformPinnedDependencies() throws IOException {
         URL resource = finder.getResource(Constants.VAADIN_VERSIONS_JSON);
         if (resource == null) {
-            log().info("Couldn't find {} file to pin dependency versions."
-                    + " Transitive dependencies won't be pinned for pnpm.",
+            log().info(
+                    "Couldn't find {} file to pin dependency versions."
+                            + " Transitive dependencies won't be pinned for pnpm.",
                     Constants.VAADIN_VERSIONS_JSON);
         }
 

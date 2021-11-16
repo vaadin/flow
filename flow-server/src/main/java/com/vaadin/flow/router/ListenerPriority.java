@@ -47,9 +47,9 @@ import java.lang.annotation.Target;
  * @author Bernd Hopp
  * @since 1.0
  */
- @Retention(RetentionPolicy.RUNTIME)
- @Target(ElementType.TYPE)
- public @interface ListenerPriority {
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+public @interface ListenerPriority {
     /**
      * The priority of the annotated listener, can be any integer. Larger numbers
      * indicate higher priority.

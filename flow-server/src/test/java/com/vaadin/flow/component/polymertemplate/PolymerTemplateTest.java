@@ -843,11 +843,11 @@ public class PolymerTemplateTest extends HasCurrentService {
         DisabledElementTemplate template = new DisabledElementTemplate();
 
         Assert.assertTrue("Element is missing id",
-            template.label.hasAttribute("id"));
+                template.label.hasAttribute("id"));
         Assert.assertTrue("Server side element should be enabled",
-            template.label.isEnabled());
+                template.label.isEnabled());
         Assert.assertTrue("Element should contain 'disabled' property",
-            template.label.hasProperty("disabled"));
+                template.label.hasProperty("disabled"));
     }
 
     @Test

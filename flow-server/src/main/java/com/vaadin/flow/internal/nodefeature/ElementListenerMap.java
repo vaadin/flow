@@ -60,8 +60,8 @@ public class ElementListenerMap extends NodeMap {
      */
     public static final String ALWAYS_TRUE_FILTER = "1";
 
-    private static final EnumSet<DebouncePhase> NO_TIMEOUT_PHASES
-            = EnumSet.of(DebouncePhase.LEADING);
+    private static final EnumSet<DebouncePhase> NO_TIMEOUT_PHASES = EnumSet
+            .of(DebouncePhase.LEADING);
 
     // Server-side only data
     private Map<String, List<DomEventListenerWrapper>> listeners;
@@ -377,15 +377,15 @@ public class ElementListenerMap extends NodeMap {
     }
 
     private void updateEventSettings(String eventType) {
-            Map<String, ExpressionSettings> eventSettings = collectEventExpressions(
-                    eventType);
-            JsonObject eventSettingsJson = JsonUtils.createObject(eventSettings,
-                    ExpressionSettings::toJson);
+        Map<String, ExpressionSettings> eventSettings = collectEventExpressions(
+                eventType);
+        JsonObject eventSettingsJson = JsonUtils.createObject(eventSettings,
+                ExpressionSettings::toJson);
 
-            ConstantPoolKey constantPoolKey = new ConstantPoolKey(
-                    eventSettingsJson);
+        ConstantPoolKey constantPoolKey = new ConstantPoolKey(
+                eventSettingsJson);
 
-            put(eventType, constantPoolKey);
+        put(eventType, constantPoolKey);
     }
 
     private void removeListener(String eventType,

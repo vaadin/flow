@@ -197,11 +197,12 @@ public class UidlWriterTest {
         JsonArray json = UidlWriter
                 .encodeExecuteJavaScriptList(executeJavaScriptList);
 
-        JsonArray expectedJson = JsonUtils.createArray(JsonUtils.createArray(
-                // Null since element is not attached
-                Json.createNull(), Json.create("$0.focus()")), JsonUtils
-                .createArray(Json.create("Lives remaining:"), Json.create(3),
-                        Json.create("console.log($0, $1)")));
+        JsonArray expectedJson = JsonUtils.createArray(
+                JsonUtils.createArray(
+                        // Null since element is not attached
+                        Json.createNull(), Json.create("$0.focus()")),
+                JsonUtils.createArray(Json.create("Lives remaining:"),
+                        Json.create(3), Json.create("console.log($0, $1)")));
 
         assertTrue(JsonUtils.jsonEquals(expectedJson, json));
     }
@@ -255,15 +256,15 @@ public class UidlWriterTest {
         Map<LoadMode, List<JsonObject>> dependenciesMap = Stream
                 .of(LoadMode.values())
                 .map(mode -> response.getArray(mode.name()))
-                .flatMap(JsonUtils::<JsonObject>stream).collect(Collectors
-                        .toMap(jsonObject -> LoadMode.valueOf(
+                .flatMap(JsonUtils::<JsonObject> stream)
+                .collect(Collectors.toMap(
+                        jsonObject -> LoadMode.valueOf(
                                 jsonObject.getString(Dependency.KEY_LOAD_MODE)),
-                                Collections::singletonList, (list1, list2) -> {
-                                    List<JsonObject> result = new ArrayList<>(
-                                            list1);
-                                    result.addAll(list2);
-                                    return result;
-                                }));
+                        Collections::singletonList, (list1, list2) -> {
+                            List<JsonObject> result = new ArrayList<>(list1);
+                            result.addAll(list2);
+                            return result;
+                        }));
 
         assertThat(
                 "Dependencies with all types of load mode should be present in this response",
@@ -276,22 +277,28 @@ public class UidlWriterTest {
         assertThat("Eager dependencies should not have inline contents",
                 eagerDependencies.stream()
                         .filter(json -> json.hasKey(Dependency.KEY_CONTENTS))
-                        .collect(Collectors.toList()), hasSize(0));
+                        .collect(Collectors.toList()),
+                hasSize(0));
 
         JsonObject eagerDependency = eagerDependencies.get(0);
-        assertEquals("eager.css", eagerDependency.getString(Dependency.KEY_URL).substring(
-            ApplicationConstants.FRONTEND_PROTOCOL_PREFIX.length()));
-        assertEquals(Dependency.Type.STYLESHEET,
-            Dependency.Type.valueOf(eagerDependency.getString(Dependency.KEY_TYPE)));
+        assertEquals("eager.css",
+                eagerDependency.getString(Dependency.KEY_URL)
+                        .substring(ApplicationConstants.FRONTEND_PROTOCOL_PREFIX
+                                .length()));
+        assertEquals(Dependency.Type.STYLESHEET, Dependency.Type
+                .valueOf(eagerDependency.getString(Dependency.KEY_TYPE)));
 
         List<JsonObject> lazyDependencies = dependenciesMap.get(LoadMode.LAZY);
         JsonObject lazyDependency = lazyDependencies.get(0);
-        assertEquals("lazy.css", lazyDependency.getString(Dependency.KEY_URL).substring(
-            ApplicationConstants.FRONTEND_PROTOCOL_PREFIX.length()));
-        assertEquals(Dependency.Type.STYLESHEET,
-            Dependency.Type.valueOf(lazyDependency.getString(Dependency.KEY_TYPE)));
+        assertEquals("lazy.css",
+                lazyDependency.getString(Dependency.KEY_URL)
+                        .substring(ApplicationConstants.FRONTEND_PROTOCOL_PREFIX
+                                .length()));
+        assertEquals(Dependency.Type.STYLESHEET, Dependency.Type
+                .valueOf(lazyDependency.getString(Dependency.KEY_TYPE)));
 
-        List<JsonObject> inlineDependencies = dependenciesMap.get(LoadMode.INLINE);
+        List<JsonObject> inlineDependencies = dependenciesMap
+                .get(LoadMode.INLINE);
         assertInlineDependencies(inlineDependencies, "/frontend/");
     }
 
@@ -304,8 +311,8 @@ public class UidlWriterTest {
 
         ui.add(new ComponentWithFrontendProtocol());
         JsonObject response = uidlWriter.createUidl(ui, false);
-        List<JsonObject> inlineDependencies = JsonUtils.<JsonObject>stream(
-                response.getArray(LoadMode.INLINE.name()))
+        List<JsonObject> inlineDependencies = JsonUtils
+                .<JsonObject> stream(response.getArray(LoadMode.INLINE.name()))
                 .collect(Collectors.toList());
 
         assertInlineDependencies(inlineDependencies, "/frontend/");
@@ -332,9 +339,8 @@ public class UidlWriterTest {
                 "Expected to have exactly 3 eager dependencies in uidl, actual: %d",
                 eagerDependencies.length(), 3);
 
-        List<Class<?>> expectedClassOrder = Arrays
-                .asList(SuperParentClass.class, ParentClass.class,
-                        BaseClass.class);
+        List<Class<?>> expectedClassOrder = Arrays.asList(
+                SuperParentClass.class, ParentClass.class, BaseClass.class);
 
         for (int i = 0; i < expectedClassOrder.size(); i++) {
             Class<?> expectedClass = expectedClassOrder.get(i);
@@ -362,7 +368,7 @@ public class UidlWriterTest {
         assertTrue("Response contains resynchronize field",
                 response.hasKey(ApplicationConstants.RESYNCHRONIZE_ID));
         assertTrue("Response resynchronize field is set to true",
-               response.getBoolean(ApplicationConstants.RESYNCHRONIZE_ID));
+                response.getBoolean(ApplicationConstants.RESYNCHRONIZE_ID));
     }
 
     private void assertInlineDependencies(List<JsonObject> inlineDependencies,
@@ -372,18 +378,20 @@ public class UidlWriterTest {
         assertThat("Eager dependencies should not have urls",
                 inlineDependencies.stream()
                         .filter(json -> json.hasKey(Dependency.KEY_URL))
-                        .collect(Collectors.toList()), hasSize(0));
+                        .collect(Collectors.toList()),
+                hasSize(0));
 
         JsonObject inlineDependency = inlineDependencies.get(0);
 
         String url = inlineDependency.getString(Dependency.KEY_CONTENTS);
-            if (!url.startsWith(expectedPrefix)) {
-                throw new AssertionError(url + " should have the prefix " + expectedPrefix);
-            }
-            String normalizedUrl = url.substring(expectedPrefix.length());
-            assertEquals("inline.css", normalizedUrl);
-        assertEquals(Dependency.Type.STYLESHEET,
-            Dependency.Type.valueOf(inlineDependency.getString(Dependency.KEY_TYPE)));
+        if (!url.startsWith(expectedPrefix)) {
+            throw new AssertionError(
+                    url + " should have the prefix " + expectedPrefix);
+        }
+        String normalizedUrl = url.substring(expectedPrefix.length());
+        assertEquals("inline.css", normalizedUrl);
+        assertEquals(Dependency.Type.STYLESHEET, Dependency.Type
+                .valueOf(inlineDependency.getString(Dependency.KEY_TYPE)));
     }
 
     private UI initializeUIForDependenciesTest(UI ui) throws Exception {
@@ -401,9 +409,8 @@ public class UidlWriterTest {
         });
 
         for (String type : new String[] { "html", "js", "css" }) {
-            mocks.getServlet()
-                    .addServletContextResource("/frontend/inline." + type,
-                            "/frontend/inline." + type);
+            mocks.getServlet().addServletContextResource(
+                    "/frontend/inline." + type, "/frontend/inline." + type);
         }
 
         HttpServletRequest servletRequestMock = mock(HttpServletRequest.class);
@@ -445,10 +452,10 @@ public class UidlWriterTest {
     private Map<String, JsonObject> getDependenciesMap(JsonObject response) {
         return Stream.of(LoadMode.values())
                 .map(mode -> response.getArray(mode.name()))
-                .flatMap(JsonUtils::<JsonObject>stream).collect(Collectors
-                        .toMap(jsonObject -> jsonObject
-                                        .getString(Dependency.KEY_URL),
-                                Function.identity()));
+                .flatMap(JsonUtils::<JsonObject> stream)
+                .collect(Collectors.toMap(
+                        jsonObject -> jsonObject.getString(Dependency.KEY_URL),
+                        Function.identity()));
     }
 
     private void assertDependency(String url, String type,

@@ -43,6 +43,7 @@ public class UrlUtil {
         if (url.startsWith("//")) {
             return true;
         }
-        return url.contains("://") && !url.startsWith(ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
+        return url.contains("://") && !url
+                .startsWith(ApplicationConstants.FRONTEND_PROTOCOL_PREFIX);
     }
 }

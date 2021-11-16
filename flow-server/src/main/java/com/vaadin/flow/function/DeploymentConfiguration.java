@@ -370,7 +370,8 @@ public interface DeploymentConfiguration extends Serializable {
      *         <code>false</code> to not serve Brotli files.
      */
     default boolean isBrotli() {
-        return getBooleanProperty(InitParameters.SERVLET_PARAMETER_BROTLI, false);
+        return getBooleanProperty(InitParameters.SERVLET_PARAMETER_BROTLI,
+                false);
     }
 
     default String getCompiledWebComponentsPath() {
@@ -398,8 +399,8 @@ public interface DeploymentConfiguration extends Serializable {
      * @return true if dev server should be used
      */
     default boolean enableDevServer() {
-        return getBooleanProperty(InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER,
-                true);
+        return getBooleanProperty(
+                InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER, true);
     }
 
     /**
@@ -410,8 +411,8 @@ public interface DeploymentConfiguration extends Serializable {
      * @return true if dev server should be reused
      */
     default boolean reuseDevServer() {
-        return getBooleanProperty(InitParameters.SERVLET_PARAMETER_REUSE_DEV_SERVER,
-                true);
+        return getBooleanProperty(
+                InitParameters.SERVLET_PARAMETER_REUSE_DEV_SERVER, true);
     }
 
     /**

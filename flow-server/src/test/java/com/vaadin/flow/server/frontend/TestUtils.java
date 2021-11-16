@@ -68,7 +68,7 @@ public final class TestUtils {
      */
     public static File getTestFolder(String name) {
         File folder = new File(getTestResource(name).getFile());
-        assert(folder.isDirectory());
+        assert (folder.isDirectory());
         return folder;
     }
 
@@ -109,8 +109,7 @@ public final class TestUtils {
                     .map(Path::toString)
                     .map(path -> path.replace(directory.getAbsolutePath(), ""))
                     .map(path -> path.startsWith(File.separator)
-                            ? path.substring(1)
-                            : path)
+                            ? path.substring(1) : path)
                     .collect(Collectors.toList());
         } catch (IOException e) {
             throw new AssertionError(String.format(

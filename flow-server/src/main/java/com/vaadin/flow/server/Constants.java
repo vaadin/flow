@@ -303,7 +303,8 @@ public final class Constants implements Serializable {
     /**
      * Location for the theme resources in jar files.
      */
-    public static final String RESOURCES_THEME_JAR_DEFAULT = RESOURCES_JAR_DEFAULT + APPLICATION_THEME_ROOT + "/";
+    public static final String RESOURCES_THEME_JAR_DEFAULT = RESOURCES_JAR_DEFAULT
+            + APPLICATION_THEME_ROOT + "/";
 
     /**
      * @deprecated Use

@@ -117,10 +117,10 @@ public class VaadinSessionTest {
                     Thread.sleep(100); // for deadlock testing
                     org.junit.Assert.assertTrue("Deadlock detected",
                             httpSessionLock.tryLock(5, TimeUnit.SECONDS)); // simulates
-                                                                           // servlet
-                                                                           // container's
-                                                                           // session
-                                                                           // locking
+                                                                                                                    // servlet
+                                                                                                                            // container's
+                                                                                                                            // session
+                                                                                                                            // locking
                     String lockAttribute = mockService.getServiceName()
                             + ".lock";
                     if (lockAttribute.equals(name)) {

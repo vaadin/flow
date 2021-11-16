@@ -400,14 +400,13 @@ public class DevModeInitializer
                         || path.resolve("build.gradle").toFile().exists())) {
             return path.toString();
         } else {
-            throw new IllegalStateException(String.format(
-                    "Failed to determine project directory for dev mode. "
+            throw new IllegalStateException(String
+                    .format("Failed to determine project directory for dev mode. "
                             + "Directory '%s' does not look like a Maven or "
                             + "Gradle project. Ensure that you have run the "
                             + "prepare-frontend Maven goal, which generates "
                             + "'flow-build-info.json', prior to deploying your "
-                            + "application",
-                    path.toString()));
+                            + "application", path.toString()));
         }
     }
 

@@ -19,7 +19,6 @@ package com.vaadin.flow.component;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.shared.Registration;
 
-
 /**
  * Collections of methods for configuring more complex Shortcut interactions.
  * <p>
@@ -74,8 +73,8 @@ public final class Shortcuts {
             Component lifecycleOwner, Command command, Key key,
             KeyModifier... keyModifiers) {
         if (lifecycleOwner == null) {
-            throw new IllegalArgumentException(String.format(NULL,
-                    "lifecycleOwner"));
+            throw new IllegalArgumentException(
+                    String.format(NULL, "lifecycleOwner"));
         }
         if (command == null) {
             throw new IllegalArgumentException(String.format(NULL, "command"));
@@ -83,7 +82,8 @@ public final class Shortcuts {
         if (key == null) {
             throw new IllegalArgumentException(String.format(NULL, "key"));
         }
-        return new ShortcutRegistration(lifecycleOwner, () -> new Component[] { lifecycleOwner.getUI().get() },
+        return new ShortcutRegistration(lifecycleOwner,
+                () -> new Component[] { lifecycleOwner.getUI().get() },
                 event -> command.execute(), key).withModifiers(keyModifiers);
     }
 
@@ -117,17 +117,17 @@ public final class Shortcuts {
             KeyModifier... keyModifiers) {
 
         if (lifecycleOwner == null) {
-            throw new IllegalArgumentException(String.format(NULL,
-                    "lifecycleOwner"));
+            throw new IllegalArgumentException(
+                    String.format(NULL, "lifecycleOwner"));
         }
         if (listener == null) {
-            throw new IllegalArgumentException(String.format(NULL,
-                    "listener"));
+            throw new IllegalArgumentException(String.format(NULL, "listener"));
         }
         if (key == null) {
             throw new IllegalArgumentException(String.format(NULL, "key"));
         }
-        return new ShortcutRegistration(lifecycleOwner, () -> new Component[] { lifecycleOwner.getUI().get() },
+        return new ShortcutRegistration(lifecycleOwner,
+                () -> new Component[] { lifecycleOwner.getUI().get() },
                 listener, key).withModifiers(keyModifiers);
     }
 

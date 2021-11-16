@@ -298,8 +298,7 @@ public class DefaultDeploymentConfiguration
      */
     private void checkCompatibilityMode(boolean loggWarning) {
         boolean explicitlySet = false;
-        if (getStringProperty(
-                InitParameters.SERVLET_PARAMETER_BOWER_MODE,
+        if (getStringProperty(InitParameters.SERVLET_PARAMETER_BOWER_MODE,
                 null) != null) {
             compatibilityMode = getBooleanProperty(
                     InitParameters.SERVLET_PARAMETER_BOWER_MODE, false);
@@ -333,7 +332,8 @@ public class DefaultDeploymentConfiguration
      */
     private void checkRequestTiming() {
         requestTiming = getBooleanProperty(
-                InitParameters.SERVLET_PARAMETER_REQUEST_TIMING, !productionMode);
+                InitParameters.SERVLET_PARAMETER_REQUEST_TIMING,
+                !productionMode);
     }
 
     /**
@@ -341,7 +341,8 @@ public class DefaultDeploymentConfiguration
      */
     private void checkXsrfProtection(boolean loggWarning) {
         xsrfProtectionEnabled = !getBooleanProperty(
-                InitParameters.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION, false);
+                InitParameters.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION,
+                false);
         if (!xsrfProtectionEnabled && loggWarning) {
             warnings.add(WARNING_XSRF_PROTECTION_DISABLED);
         }
@@ -393,9 +394,9 @@ public class DefaultDeploymentConfiguration
     private void checkPushMode() {
         try {
             pushMode = getApplicationOrSystemProperty(
-                    InitParameters.SERVLET_PARAMETER_PUSH_MODE, PushMode.DISABLED,
-                    stringMode -> Enum.valueOf(PushMode.class,
-                            stringMode.toUpperCase()));
+                    InitParameters.SERVLET_PARAMETER_PUSH_MODE,
+                    PushMode.DISABLED, stringMode -> Enum
+                            .valueOf(PushMode.class, stringMode.toUpperCase()));
         } catch (IllegalArgumentException e) {
             warnings.add(WARNING_PUSH_MODE_NOT_RECOGNIZED);
             pushMode = PushMode.DISABLED;
@@ -403,7 +404,8 @@ public class DefaultDeploymentConfiguration
     }
 
     private void checkPushURL() {
-        pushURL = getStringProperty(InitParameters.SERVLET_PARAMETER_PUSH_URL, "");
+        pushURL = getStringProperty(InitParameters.SERVLET_PARAMETER_PUSH_URL,
+                "");
     }
 
     private void checkSyncIdCheck() {

@@ -99,9 +99,8 @@ public class RoutesChangedEvent extends EventObject {
     }
 
     private boolean checkIfRouteIsPresent(List<RouteBaseData<?>> routes,
-                                          Class<? extends Component> clazz) {
-        return routes.stream()
-                .map(RouteBaseData::getNavigationTarget)
+            Class<? extends Component> clazz) {
+        return routes.stream().map(RouteBaseData::getNavigationTarget)
                 .anyMatch(navigationTarget -> navigationTarget.equals(clazz));
     }
 
@@ -133,9 +132,9 @@ public class RoutesChangedEvent extends EventObject {
      * @return immutable list of all added navigation targets
      */
     public List<Class<? extends Component>> getAddedNavigationTargets() {
-        return Collections.unmodifiableList(added.stream()
-                .map(RouteBaseData::getNavigationTarget)
-                .collect(Collectors.toList()));
+        return Collections.unmodifiableList(
+                added.stream().map(RouteBaseData::getNavigationTarget)
+                        .collect(Collectors.toList()));
     }
 
     /**
@@ -144,9 +143,9 @@ public class RoutesChangedEvent extends EventObject {
      * @return immutable list of all removed navigation targets
      */
     public List<Class<? extends Component>> getRemovedNavigationTargets() {
-        return Collections.unmodifiableList(removed.stream()
-                .map(RouteBaseData::getNavigationTarget)
-                .collect(Collectors.toList()));
+        return Collections.unmodifiableList(
+                removed.stream().map(RouteBaseData::getNavigationTarget)
+                        .collect(Collectors.toList()));
     }
 
     /**
@@ -170,9 +169,8 @@ public class RoutesChangedEvent extends EventObject {
     }
 
     private boolean checkIfRouteIsPresent(List<RouteBaseData<?>> routes,
-                                          String path) {
-        return routes.stream()
-                .map(RouteBaseData::getTemplate)
+            String path) {
+        return routes.stream().map(RouteBaseData::getTemplate)
                 .anyMatch(url -> url.equals(path));
     }
 

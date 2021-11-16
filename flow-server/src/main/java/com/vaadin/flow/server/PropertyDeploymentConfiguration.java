@@ -158,8 +158,8 @@ public class PropertyDeploymentConfiguration
     public boolean isCompatibilityMode() {
         String bower = getStringProperty(SERVLET_PARAMETER_BOWER_MODE, null);
         if (bower == null) {
-            return getBooleanProperty(
-                    SERVLET_PARAMETER_COMPATIBILITY_MODE, false);
+            return getBooleanProperty(SERVLET_PARAMETER_COMPATIBILITY_MODE,
+                    false);
         }
         return isBowerMode();
     }

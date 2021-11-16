@@ -85,7 +85,8 @@ class DevServerWatchDog {
             return LoggerFactory.getLogger(WatchDogServer.class);
         }
 
-        private void enterReloadMessageReadLoop(Socket accept) throws IOException{
+        private void enterReloadMessageReadLoop(Socket accept)
+                throws IOException {
             BufferedReader in = new BufferedReader(new InputStreamReader(
                     accept.getInputStream(), StandardCharsets.UTF_8));
             String line;

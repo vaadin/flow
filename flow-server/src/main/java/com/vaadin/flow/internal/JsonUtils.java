@@ -50,7 +50,7 @@ public final class JsonUtils {
      * Collects a stream of JSON values to a JSON array.
      *
      * @author Vaadin Ltd
- * @since 1.0
+    * @since 1.0
      */
     private static final class JsonArrayCollector
             implements Collector<JsonValue, JsonArray, JsonArray> {

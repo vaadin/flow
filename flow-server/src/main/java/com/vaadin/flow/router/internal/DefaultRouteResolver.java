@@ -44,7 +44,7 @@ public class DefaultRouteResolver implements RouteResolver {
         if (!navigationResult.hasTarget()) {
             return null;
         }
-        
+
         NavigationStateBuilder builder = new NavigationStateBuilder(
                 request.getRouter());
         try {

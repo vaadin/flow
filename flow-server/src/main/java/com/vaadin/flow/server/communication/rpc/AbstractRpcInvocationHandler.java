@@ -57,10 +57,10 @@ public abstract class AbstractRpcInvocationHandler
         if (node.isInactive()) {
             // ignore RPC requests from the client side for the nodes that are
             // invisible or disabled
-            LoggerFactory.getLogger(AbstractRpcInvocationHandler.class).trace(
-                    "RPC request for invocation handler '{}' is recieved from "
+            LoggerFactory.getLogger(AbstractRpcInvocationHandler.class)
+                    .trace("RPC request for invocation handler '{}' is recieved from "
                             + "the client side for inactive node id='{}'",
-                    getClass().getName(), node.getId());
+                            getClass().getName(), node.getId());
             return Optional.empty();
         } else {
             return handleNode(node, invocationJson);

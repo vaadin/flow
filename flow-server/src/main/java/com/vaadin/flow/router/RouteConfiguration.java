@@ -130,11 +130,11 @@ public class RouteConfiguration implements Serializable {
             return ((AbstractRouteRegistry) handledRegistry).getConfiguration()
                     .hasTemplate(path);
         }
-        return getAvailableRoutes().stream().anyMatch(
-                routeData -> routeData.getTemplate().equals(path)
+        return getAvailableRoutes().stream()
+                .anyMatch(routeData -> routeData.getTemplate().equals(path)
                         || routeData.getRouteAliases().stream()
-                        .anyMatch(routeAliasData -> routeAliasData
-                                .getTemplate().equals(path)));
+                                .anyMatch(routeAliasData -> routeAliasData
+                                        .getTemplate().equals(path)));
     }
 
     /**
@@ -224,9 +224,9 @@ public class RouteConfiguration implements Serializable {
      */
     public void setAnnotatedRoute(Class<? extends Component> navigationTarget) {
         if (!navigationTarget.isAnnotationPresent(Route.class)) {
-            String message = String
-                    .format("Given navigationTarget %s is missing the '@Route' annotation.",
-                            navigationTarget.getName());
+            String message = String.format(
+                    "Given navigationTarget %s is missing the '@Route' annotation.",
+                    navigationTarget.getName());
             throw new InvalidRouteConfigurationException(message);
         }
         String route = RouteUtil.getRoutePath(navigationTarget,
@@ -322,8 +322,8 @@ public class RouteConfiguration implements Serializable {
             Class<? extends Component> navigationTarget,
             Class<? extends RouterLayout>... parentChain) {
         // This method is unchecked for the type due to varargs
-        handledRegistry
-                .setRoute(path, navigationTarget, Arrays.asList(parentChain));
+        handledRegistry.setRoute(path, navigationTarget,
+                Arrays.asList(parentChain));
     }
 
     /**
@@ -533,8 +533,8 @@ public class RouteConfiguration implements Serializable {
             Class<? extends Component> navigationTarget,
             Class<? extends Annotation>... parameterAnnotations) {
         for (Class<? extends Annotation> annotation : parameterAnnotations) {
-            if (ParameterDeserializer
-                    .isAnnotatedParameter(navigationTarget, annotation)) {
+            if (ParameterDeserializer.isAnnotatedParameter(navigationTarget,
+                    annotation)) {
                 return true;
             }
         }

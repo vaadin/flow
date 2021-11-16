@@ -512,11 +512,9 @@ public class UIInternals implements Serializable {
                     .getAnnotation(ListenerPriority.class);
 
             final int priority1 = listenerPriority1 != null
-                    ? listenerPriority1.value()
-                    : 0;
+                    ? listenerPriority1.value() : 0;
             final int priority2 = listenerPriority2 != null
-                    ? listenerPriority2.value()
-                    : 0;
+                    ? listenerPriority2.value() : 0;
 
             // we want to have a descending order
             return Integer.compare(priority2, priority1);
@@ -1081,8 +1079,7 @@ public class UIInternals implements Serializable {
      */
     public Router getRouter() {
         return ui.isNavigationSupported()
-                ? getSession().getService().getRouter()
-                : null;
+                ? getSession().getService().getRouter() : null;
     }
 
     /**

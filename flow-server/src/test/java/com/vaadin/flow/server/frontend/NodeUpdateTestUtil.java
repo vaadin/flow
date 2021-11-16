@@ -49,7 +49,8 @@ public class NodeUpdateTestUtil {
                 NodeTestComponents.class.getDeclaredClasses());
     }
 
-    static ClassFinder getClassFinder(Class<?>... classes) throws MalformedURLException {
+    static ClassFinder getClassFinder(Class<?>... classes)
+            throws MalformedURLException {
         return new DefaultClassFinder(new URLClassLoader(getClassPath()),
                 classes);
     }
@@ -93,7 +94,7 @@ public class NodeUpdateTestUtil {
      *             when a file operation fails
      */
     public static void createStubNode(ToolStubInfo stubNode,
-                                      ToolStubInfo stubNpm, String baseDir) throws IOException {
+            ToolStubInfo stubNpm, String baseDir) throws IOException {
 
         Objects.requireNonNull(stubNode);
         Objects.requireNonNull(stubNpm);
@@ -144,7 +145,7 @@ public class NodeUpdateTestUtil {
      *             when a file operation fails
      */
     public static void createStubNode(boolean stubNode, boolean stubNpm,
-                                      String baseDir) throws IOException {
+            String baseDir) throws IOException {
         final File defaultNpmCacheDirStub = new File(
                 new File(baseDir, NPM_BIN_PATH), NPM_CACHE_PATH_STUB);
         FileUtils.forceMkdir(defaultNpmCacheDirStub);
@@ -348,14 +349,14 @@ public class NodeUpdateTestUtil {
             final StringBuilder scriptBuilder = new StringBuilder();
 
             switch (tool) {
-                case NPM:
-                    script = generateNpmScript(scriptBuilder);
-                    break;
-                case NODE:
-                    script = generateNodeScript(scriptBuilder);
-                    break;
-                default:
-                    throw new IllegalStateException("Unknown build tool");
+            case NPM:
+                script = generateNpmScript(scriptBuilder);
+                break;
+            case NODE:
+                script = generateNodeScript(scriptBuilder);
+                break;
+            default:
+                throw new IllegalStateException("Unknown build tool");
             }
             return new ToolStubInfo(true, script);
         }
@@ -364,8 +365,8 @@ public class NodeUpdateTestUtil {
             String script;
             // default version used in tests
             version = version == null ? DEFAULT_NODE_VERSION : version;
-            scriptBuilder.append(
-                    "  if [ \"$arg\" = \"--version\" ] || [ \"$arg\" = \"-v\" ]; then\n")
+            scriptBuilder
+                    .append("  if [ \"$arg\" = \"--version\" ] || [ \"$arg\" = \"-v\" ]; then\n")
                     .append("    echo ").append(version).append("\n")
                     .append("    break\n").append("  fi\n");
             if (cacheDir != null) {
@@ -389,12 +390,12 @@ public class NodeUpdateTestUtil {
             String script;
             // default version used in tests
             version = version == null ? DEFAULT_NPM_VERSION : version;
-            scriptBuilder.append(
-                    "process.argv.includes('--version') && console.log('")
+            scriptBuilder
+                    .append("process.argv.includes('--version') && console.log('")
                     .append(version).append("');\n");
             if (cacheDir != null) {
-                scriptBuilder.append(
-                        "process.argv.includes('cache') && console.log('")
+                scriptBuilder
+                        .append("process.argv.includes('cache') && console.log('")
                         .append(cacheDir).append("');\n");
             }
             script = scriptBuilder.toString();

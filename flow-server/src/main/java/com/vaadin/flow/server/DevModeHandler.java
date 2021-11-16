@@ -292,9 +292,11 @@ public final class DevModeHandler implements RequestHandler {
      */
     public boolean isDevModeRequest(HttpServletRequest request) {
         String pathInfo = request.getPathInfo();
-        return pathInfo != null && (pathInfo.startsWith("/" + VAADIN_MAPPING)
-            || APP_THEME_PATTERN.matcher(pathInfo).find()) && !pathInfo
-            .startsWith("/" + StreamRequestHandler.DYN_RES_PREFIX);
+        return pathInfo != null
+                && (pathInfo.startsWith("/" + VAADIN_MAPPING)
+                        || APP_THEME_PATTERN.matcher(pathInfo).find())
+                && !pathInfo
+                        .startsWith("/" + StreamRequestHandler.DYN_RES_PREFIX);
     }
 
     /**
@@ -335,7 +337,7 @@ public final class DevModeHandler implements RequestHandler {
         }
 
         // Redirect theme source request
-        if(APP_THEME_PATTERN.matcher(requestFilename).find()) {
+        if (APP_THEME_PATTERN.matcher(requestFilename).find()) {
             requestFilename = "/VAADIN/static" + requestFilename;
         }
 
@@ -682,8 +684,8 @@ public final class DevModeHandler implements RequestHandler {
 
             if (!webpackProcess.get().isAlive()) {
                 getLogger().error(
-                    String.format("Webpack failed with the exception:%n%s",
-                        cumulativeOutput.toString()));
+                        String.format("Webpack failed with the exception:%n%s",
+                                cumulativeOutput.toString()));
                 throw new IllegalStateException("Webpack exited prematurely");
             }
 

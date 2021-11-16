@@ -70,9 +70,9 @@ public class ComponentEventBusUtilTest {
         try {
             ComponentEventBusUtil.getEventConstructor(InnerClass.class);
         } catch (IllegalArgumentException exception) {
-            Assert.assertEquals("Cannot instantiate '"
-                    + InnerClass.class.getName() + "'. "
-                    + "Make sure the class is static if it is an inner class.",
+            Assert.assertEquals(
+                    "Cannot instantiate '" + InnerClass.class.getName() + "'. "
+                            + "Make sure the class is static if it is an inner class.",
                     exception.getMessage());
         }
     }

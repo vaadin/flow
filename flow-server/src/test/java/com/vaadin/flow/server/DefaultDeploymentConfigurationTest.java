@@ -73,7 +73,8 @@ public class DefaultDeploymentConfigurationTest {
     public void booleanValueReadIgnoreTheCase_true() {
         Properties initParameters = new Properties(DEFAULT_PARAMS);
         initParameters.setProperty(
-                InitParameters.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS, "tRUe");
+                InitParameters.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
+                "tRUe");
 
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 initParameters);
@@ -86,7 +87,8 @@ public class DefaultDeploymentConfigurationTest {
     public void booleanValueReadIgnoreTheCase_false() {
         Properties initParameters = new Properties(DEFAULT_PARAMS);
         initParameters.setProperty(
-                InitParameters.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS, "FaLsE");
+                InitParameters.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
+                "FaLsE");
 
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 initParameters);
@@ -132,14 +134,16 @@ public class DefaultDeploymentConfigurationTest {
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 initParameters);
         String developmentPrefix = Constants.FRONTEND_URL_DEV_DEFAULT;
-        assertThat(String.format(
-                "In development mode, both es5 and es6 prefixes should be equal to '%s'",
-                developmentPrefix), config.getEs5FrontendPrefix(),
-                is(developmentPrefix));
-        assertThat(String.format(
-                "In development mode, both es5 and es6 prefixes should be equal to '%s'",
-                developmentPrefix), config.getEs6FrontendPrefix(),
-                is(developmentPrefix));
+        assertThat(
+                String.format(
+                        "In development mode, both es5 and es6 prefixes should be equal to '%s'",
+                        developmentPrefix),
+                config.getEs5FrontendPrefix(), is(developmentPrefix));
+        assertThat(
+                String.format(
+                        "In development mode, both es5 and es6 prefixes should be equal to '%s'",
+                        developmentPrefix),
+                config.getEs6FrontendPrefix(), is(developmentPrefix));
     }
 
     @Test
@@ -156,14 +160,16 @@ public class DefaultDeploymentConfigurationTest {
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 initParameters);
 
-        assertThat(String.format(
-                "In production mode, es5 prefix should be equal to '%s' parameter value",
-                Constants.FRONTEND_URL_ES5), config.getEs5FrontendPrefix(),
-                is(es5Prefix));
-        assertThat(String.format(
-                "In production mode, es6 prefix should be equal to '%s' parameter value",
-                Constants.FRONTEND_URL_ES6), config.getEs6FrontendPrefix(),
-                is(es6Prefix));
+        assertThat(
+                String.format(
+                        "In production mode, es5 prefix should be equal to '%s' parameter value",
+                        Constants.FRONTEND_URL_ES5),
+                config.getEs5FrontendPrefix(), is(es5Prefix));
+        assertThat(
+                String.format(
+                        "In production mode, es6 prefix should be equal to '%s' parameter value",
+                        Constants.FRONTEND_URL_ES6),
+                config.getEs6FrontendPrefix(), is(es6Prefix));
     }
 
     private DefaultDeploymentConfiguration createDeploymentConfig(
@@ -183,7 +189,8 @@ public class DefaultDeploymentConfigurationTest {
     @Test
     public void pushUrl() {
         Properties initParameters = new Properties(DEFAULT_PARAMS);
-        initParameters.setProperty(InitParameters.SERVLET_PARAMETER_PUSH_URL, "foo");
+        initParameters.setProperty(InitParameters.SERVLET_PARAMETER_PUSH_URL,
+                "foo");
 
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 initParameters);
@@ -205,8 +212,8 @@ public class DefaultDeploymentConfigurationTest {
         Properties initParameters = new Properties(DEFAULT_PARAMS);
         initParameters.setProperty(Constants.SERVLET_PARAMETER_PRODUCTION_MODE,
                 "true");
-        initParameters.setProperty(InitParameters.USE_ORIGINAL_FRONTEND_RESOURCES,
-                "true");
+        initParameters.setProperty(
+                InitParameters.USE_ORIGINAL_FRONTEND_RESOURCES, "true");
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 initParameters);
         Assert.assertFalse(config.useCompiledFrontendResources());
@@ -226,7 +233,8 @@ public class DefaultDeploymentConfigurationTest {
     public void maxMessageSuspendTimeout_invalidValue_defaultValue() {
         Properties initParameters = new Properties();
         initParameters.setProperty(
-                InitParameters.SERVLET_PARAMETER_MAX_MESSAGE_SUSPEND_TIMEOUT, "kk");
+                InitParameters.SERVLET_PARAMETER_MAX_MESSAGE_SUSPEND_TIMEOUT,
+                "kk");
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 initParameters);
         assertEquals(5000, config.getMaxMessageSuspendTimeout());

@@ -85,9 +85,8 @@ public final class DefaultArchiveExtractor implements ArchiveExtractor {
             Enumeration<? extends ZipEntry> entries = zipFile.entries();
             while (entries.hasMoreElements()) {
                 ZipEntry entry = entries.nextElement();
-                final File destPath = new File(
-                        destinationDirectory + File.separator + entry
-                                .getName());
+                final File destPath = new File(destinationDirectory
+                        + File.separator + entry.getName());
                 prepDestination(destPath, entry.isDirectory());
 
                 copyZipFileContents(zipFile, entry, destPath);
@@ -114,9 +113,8 @@ public final class DefaultArchiveExtractor implements ArchiveExtractor {
         if (entry.isDirectory()) {
             return;
         }
-        try (InputStream in = zipFile
-                .getInputStream(entry); OutputStream out = new FileOutputStream(
-                destinationFile)) {
+        try (InputStream in = zipFile.getInputStream(entry);
+                OutputStream out = new FileOutputStream(destinationFile)) {
             IOUtils.copy(in, out);
         }
     }
@@ -127,17 +125,17 @@ public final class DefaultArchiveExtractor implements ArchiveExtractor {
         // we ever need to extract regular '.tar' files.
 
         try (FileInputStream fis = new FileInputStream(archive);
-             GzipCompressorInputStream gis = new GzipCompressorInputStream(fis);
-             TarArchiveInputStream tarIn = new TarArchiveInputStream(gis)) {
+                GzipCompressorInputStream gis = new GzipCompressorInputStream(
+                        fis);
+                TarArchiveInputStream tarIn = new TarArchiveInputStream(gis)) {
 
             TarArchiveEntry tarEntry = tarIn.getNextTarEntry();
             String canonicalDestinationDirectory = destinationDirectory
                     .getCanonicalPath();
             while (tarEntry != null) {
                 // Create a file for this tarEntry
-                final File destPath = new File(
-                        destinationDirectory + File.separator + tarEntry
-                                .getName());
+                final File destPath = new File(destinationDirectory
+                        + File.separator + tarEntry.getName());
                 prepDestination(destPath, tarEntry.isDirectory());
 
                 if (!startsWithPath(destPath.getCanonicalPath(),
@@ -213,8 +211,8 @@ public final class DefaultArchiveExtractor implements ArchiveExtractor {
         } else if (destDir.length() > destPath.length()) {
             return false;
         } else {
-            if (new File(destPath).exists() && !(new File(
-                    destPath.toLowerCase()).exists())) {
+            if (new File(destPath).exists()
+                    && !(new File(destPath.toLowerCase()).exists())) {
                 return false;
             }
 

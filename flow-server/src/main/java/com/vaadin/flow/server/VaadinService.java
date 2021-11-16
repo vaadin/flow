@@ -1406,8 +1406,7 @@ public abstract class VaadinService implements Serializable {
      */
     private int getUidlRequestTimeout(VaadinSession session) {
         return getDeploymentConfiguration().isCloseIdleSessions()
-                ? session.getSession().getMaxInactiveInterval()
-                : -1;
+                ? session.getSession().getMaxInactiveInterval() : -1;
     }
 
     /**
@@ -2416,8 +2415,7 @@ public abstract class VaadinService implements Serializable {
 
     private void doSetClassLoader() {
         final String classLoaderName = getDeploymentConfiguration() == null
-                ? null
-                : getDeploymentConfiguration().getClassLoaderName();
+                ? null : getDeploymentConfiguration().getClassLoaderName();
         if (classLoaderName != null) {
             try {
                 final Class<?> classLoaderClass = getClass().getClassLoader()

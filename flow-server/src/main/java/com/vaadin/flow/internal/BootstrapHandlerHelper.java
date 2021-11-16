@@ -67,7 +67,7 @@ public final class BootstrapHandlerHelper implements Serializable {
      * @return the relative push URL
      */
     public static String getPushURL(VaadinSession vaadinSession,
-                                    VaadinRequest vaadinRequest) {
+            VaadinRequest vaadinRequest) {
         String serviceUrl = getServiceUrl(vaadinRequest);
 
         String pushURL = vaadinSession.getConfiguration().getPushURL();

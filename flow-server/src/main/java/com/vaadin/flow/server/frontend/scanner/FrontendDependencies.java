@@ -275,8 +275,9 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
 
         Set<ThemeData> themes = endPoints.values().stream()
                 // consider only endPoints with theme information
-                .filter(data -> data.getTheme().getThemeClass() != null ||
-                    (data.getTheme().getThemeName() != null && !data.getTheme().getThemeName().isEmpty())
+                .filter(data -> data.getTheme().getThemeClass() != null
+                        || (data.getTheme().getThemeName() != null
+                                && !data.getTheme().getThemeName().isEmpty())
                         || data.getTheme().isNotheme())
                 .map(EndPointData::getTheme)
                 // Remove duplicates by returning a set
@@ -284,8 +285,8 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
 
         if (themes.size() > 1) {
             String names = endPoints.values().stream()
-                    .filter(data -> data.getTheme().getThemeClass() != null ||
-                        data.getTheme().getThemeName() != null
+                    .filter(data -> data.getTheme().getThemeClass() != null
+                            || data.getTheme().getThemeName() != null
                             || data.getTheme().isNotheme())
                     .map(data -> "found '"
                             + (data.getTheme().isNotheme()
@@ -308,13 +309,14 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             ThemeData themeData = themes.iterator().next();
             if (!themeData.isNotheme()) {
                 String themeClass = themeData.getThemeClass();
-                if (!themeData.getThemeName().isEmpty() && (themeClass != null
-                    && getDefaultTheme() != null && !getDefaultTheme()
-                    .isAssignableFrom(getFinder().loadClass(themeClass)))) {
+                if (!themeData.getThemeName().isEmpty()
+                        && (themeClass != null && getDefaultTheme() != null
+                                && !getDefaultTheme().isAssignableFrom(
+                                        getFinder().loadClass(themeClass)))) {
                     throw new IllegalStateException(
-                        "Theme name and theme class can not both be specified. "
-                            + "Theme name uses Lumo and can not be used in combination "
-                            + "with custom theme class that doesn't extend Lumo.");
+                            "Theme name and theme class can not both be specified. "
+                                    + "Theme name uses Lumo and can not be used in combination "
+                                    + "with custom theme class that doesn't extend Lumo.");
                 }
                 variant = themeData.getVariant();
                 if (themeClass != null) {
@@ -323,7 +325,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                     theme = getDefaultTheme();
                     if (theme == null) {
                         throw new IllegalStateException(
-                            "Lumo dependency needs to be available on the classpath when using a theme name.");
+                                "Lumo dependency needs to be available on the classpath when using a theme name.");
                     }
                 }
                 themeName = themeData.getThemeName();

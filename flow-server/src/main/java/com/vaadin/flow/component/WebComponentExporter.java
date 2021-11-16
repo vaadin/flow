@@ -117,9 +117,9 @@ public abstract class WebComponentExporter<C extends Component>
         }
         this.tag = tag;
         if (getComponentClass() == null) {
-            throw new IllegalStateException(String.format("Failed to "
-                    + "determine component type for '%s'. Please "
-                    + "provide a valid type for %s as a type parameter.",
+            throw new IllegalStateException(String.format(
+                    "Failed to " + "determine component type for '%s'. Please "
+                            + "provide a valid type for %s as a type parameter.",
                     getClass().getName(),
                     WebComponentExporter.class.getSimpleName()));
         }

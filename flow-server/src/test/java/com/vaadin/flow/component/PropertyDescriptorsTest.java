@@ -195,10 +195,10 @@ public class PropertyDescriptorsTest {
         integerPropertyDefaultOne.set(component, null);
     }
 
-
     @Test
     public void doublePropertyDefaultZero_initial() {
-        Assert.assertEquals(ZERO_DOUBLE, doublePropertyDefaultZero.get(component));
+        Assert.assertEquals(ZERO_DOUBLE,
+                doublePropertyDefaultZero.get(component));
         Assert.assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
         Assert.assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
     }
@@ -207,9 +207,9 @@ public class PropertyDescriptorsTest {
     public void doublePropertyDefaultZero_setNonDefault() {
         doublePropertyDefaultZero.set(component, SOME_DOUBLE_VALUE);
         Assert.assertEquals(SOME_DOUBLE_VALUE,
-            doublePropertyDefaultZero.get(component));
+                doublePropertyDefaultZero.get(component));
         Assert.assertEquals(SOME_DOUBLE_VALUE, Double.valueOf(
-            component.getElement().getProperty(TEST_PROPERTY, -1.0)));
+                component.getElement().getProperty(TEST_PROPERTY, -1.0)));
         Assert.assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
     }
 
@@ -217,7 +217,8 @@ public class PropertyDescriptorsTest {
     public void doublePropertyDefaultZero_resetToDefault() {
         doublePropertyDefaultZero.set(component, SOME_DOUBLE_VALUE);
         doublePropertyDefaultZero.set(component, ZERO_DOUBLE);
-        Assert.assertEquals(ZERO_DOUBLE, doublePropertyDefaultZero.get(component));
+        Assert.assertEquals(ZERO_DOUBLE,
+                doublePropertyDefaultZero.get(component));
         Assert.assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
         Assert.assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
     }
@@ -229,7 +230,8 @@ public class PropertyDescriptorsTest {
 
     @Test
     public void doublePropertyDefaultOne_initial() {
-        Assert.assertEquals(ONE_DOUBLE, doublePropertyDefaultOne.get(component));
+        Assert.assertEquals(ONE_DOUBLE,
+                doublePropertyDefaultOne.get(component));
         Assert.assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
         Assert.assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
     }
@@ -238,9 +240,9 @@ public class PropertyDescriptorsTest {
     public void doublePropertyDefaultOne_setNonDefault() {
         doublePropertyDefaultOne.set(component, SOME_DOUBLE_VALUE);
         Assert.assertEquals(SOME_DOUBLE_VALUE,
-            doublePropertyDefaultOne.get(component));
+                doublePropertyDefaultOne.get(component));
         Assert.assertEquals(SOME_DOUBLE_VALUE, Double.valueOf(
-            component.getElement().getProperty(TEST_PROPERTY, -1.0)));
+                component.getElement().getProperty(TEST_PROPERTY, -1.0)));
         Assert.assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
     }
 
@@ -248,7 +250,8 @@ public class PropertyDescriptorsTest {
     public void doublePropertyDefaultOne_resetToDefault() {
         doublePropertyDefaultOne.set(component, SOME_DOUBLE_VALUE);
         doublePropertyDefaultOne.set(component, ONE_DOUBLE);
-        Assert.assertEquals(ONE_DOUBLE, doublePropertyDefaultOne.get(component));
+        Assert.assertEquals(ONE_DOUBLE,
+                doublePropertyDefaultOne.get(component));
         Assert.assertFalse(component.getElement().hasProperty(TEST_PROPERTY));
         Assert.assertFalse(component.getElement().hasAttribute(TEST_PROPERTY));
     }

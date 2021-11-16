@@ -280,8 +280,8 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
             setupTheme(theme, data.getVariant(), data.getThemeName());
         } catch (ClassNotFoundException exception) {
             throw new IllegalStateException(
-                "Could not load theme class " + data.getThemeClass(),
-                exception);
+                    "Could not load theme class " + data.getThemeClass(),
+                    exception);
         }
     }
 
@@ -312,7 +312,8 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                             ((Class<?>) invokeAnnotationMethod(theme, VALUE))
                                     .getName(),
                             invokeAnnotationMethodAsString(theme, "variant"),
-                            invokeAnnotationMethodAsString(theme, "themeFolder")))
+                            invokeAnnotationMethodAsString(theme,
+                                    "themeFolder")))
                     .collect(Collectors.toSet());
 
             Class<? extends Annotation> loadedNoThemeAnnotation = getFinder()
@@ -328,11 +329,11 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                                 + getThemesList(themes));
             }
             if (!themes.isEmpty() && !notThemeClasses.isEmpty()) {
-                throw new IllegalStateException("@"
-                        + Theme.class.getSimpleName() + " ("
-                        + getThemesList(themes) + ") and @"
-                        + NoTheme.class.getSimpleName()
-                        + " annotations can't be used simultaneously.");
+                throw new IllegalStateException(
+                        "@" + Theme.class.getSimpleName() + " ("
+                                + getThemesList(themes) + ") and @"
+                                + NoTheme.class.getSimpleName()
+                                + " annotations can't be used simultaneously.");
             }
             if (!notThemeClasses.isEmpty()) {
                 return ThemeData.createNoTheme();

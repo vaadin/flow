@@ -87,8 +87,9 @@ public final class WebComponentModulesWriter implements Serializable {
                 "Parameter 'outputDirectory' must not be null");
 
         if (!outputDirectory.isDirectory()) {
-            throw new IllegalArgumentException(String.format("Path provided "
-                    + "by parameter 'outputDirectory' (%s) is not a directory",
+            throw new IllegalArgumentException(String.format(
+                    "Path provided "
+                            + "by parameter 'outputDirectory' (%s) is not a directory",
                     outputDirectory.getPath()));
         }
 
@@ -120,8 +121,8 @@ public final class WebComponentModulesWriter implements Serializable {
         try {
             FileUtils.forceMkdir(generatedFile.getParent().toFile());
             Files.write(generatedFile,
-                    Collections.singletonList(
-                            generateModule(factory, compatibilityMode, themeName)),
+                    Collections.singletonList(generateModule(factory,
+                            compatibilityMode, themeName)),
                     StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new UncheckedIOException(String.format(
@@ -197,7 +198,8 @@ public final class WebComponentModulesWriter implements Serializable {
         @SuppressWarnings("unchecked")
         public static Set<File> generateWebComponentsToDirectory(
                 Class<?> writerClass, Set<Class<?>> exporterClasses,
-                File outputDirectory, boolean compatibilityMode, String themeName) {
+                File outputDirectory, boolean compatibilityMode,
+                String themeName) {
             Objects.requireNonNull(writerClass,
                     "Parameter 'writerClassSupplier' must not null");
             Objects.requireNonNull(exporterClasses,
@@ -244,7 +246,8 @@ public final class WebComponentModulesWriter implements Serializable {
                 final boolean accessible = writeMethod.isAccessible();
                 writeMethod.setAccessible(true);
                 Set<File> files = ((Set<File>) writeMethod.invoke(null,
-                        exporterClasses, outputDirectory, compatibilityMode, themeName));
+                        exporterClasses, outputDirectory, compatibilityMode,
+                        themeName));
                 writeMethod.setAccessible(accessible);
                 return files;
             } catch (IllegalAccessException | InvocationTargetException

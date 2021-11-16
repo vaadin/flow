@@ -46,4 +46,3 @@ interface FileDownloader {
     void download(URI downloadTarget, File destination, String userName,
             String password) throws DownloadException;
 }
-

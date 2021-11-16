@@ -41,7 +41,7 @@ public class HasStyleTest {
         assertClasses(component, "foo");
         component.addClassName("bar");
         assertClasses(component, "foo", "bar");
-        
+
         // use ClassList
 
         component.getClassNames().add("baz");
@@ -155,10 +155,9 @@ public class HasStyleTest {
 
         component.removeClassNames("foo bar");
         assertClasses(component);
-        
+
         component.addClassNames("foo bar");
         assertClasses(component, "foo", "bar");
-       
 
         component.addClassNames("baz1", "baz2");
         assertClasses(component, "foo", "bar", "baz1", "baz2");
@@ -230,8 +229,7 @@ public class HasStyleTest {
 
     private void assertClasses(HasStyleComponent c, String... expectedClasses) {
         Set<String> actual = c.getClassNames();
-        Set<String> expected = new HashSet<>(
-                Arrays.asList(expectedClasses));
+        Set<String> expected = new HashSet<>(Arrays.asList(expectedClasses));
         Assert.assertEquals(expected, actual);
     }
 }

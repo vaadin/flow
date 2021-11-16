@@ -41,5 +41,3 @@ interface ArchiveExtractor {
     void extract(File archive, File destinationDirectory)
             throws ArchiveExtractionException;
 }
-
-

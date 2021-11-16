@@ -110,18 +110,16 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
         }
 
         if (componentInfo.isHTML() && !compatibilityMode) {
-            LoggerFactory.getLogger(WebComponentProvider.class).info(
-                    "Received web-component request for html component in npm"
-                            + " mode with request path {}",
-                    pathInfo);
+            LoggerFactory.getLogger(WebComponentProvider.class)
+                    .info("Received web-component request for html component in npm"
+                            + " mode with request path {}", pathInfo);
             return false;
         }
 
         if (componentInfo.isJS() && compatibilityMode) {
-            LoggerFactory.getLogger(WebComponentProvider.class).info(
-                    "Received web-component request for js component in compatibility"
-                            + " mode with request path {}",
-                    pathInfo);
+            LoggerFactory.getLogger(WebComponentProvider.class)
+                    .info("Received web-component request for js component in compatibility"
+                            + " mode with request path {}", pathInfo);
             return false;
         }
 
@@ -138,14 +136,12 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
             String generated;
             Supplier<String> responder;
             if (compatibilityMode) {
-                responder = () ->
-                        generateBowerResponse(webComponentConfiguration,
-                                session, request, response);
+                responder = () -> generateBowerResponse(
+                        webComponentConfiguration, session, request, response);
             } else {
                 response.setContentType(CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8);
-                responder = () ->
-                        generateNPMResponse(webComponentConfiguration.getTag(),
-                                request, response);
+                responder = () -> generateNPMResponse(
+                        webComponentConfiguration.getTag(), request, response);
             }
             if (cache == null) {
                 generated = responder.get();

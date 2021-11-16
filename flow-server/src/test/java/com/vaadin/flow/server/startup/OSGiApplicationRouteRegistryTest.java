@@ -30,8 +30,10 @@ public class OSGiApplicationRouteRegistryTest
     @After
     public void cleanUp() {
         if (OSGiAccess.getInstance().getOsgiServletContext() != null) {
-            ApplicationRouteRegistry.getInstance(new VaadinServletContext(
-                    OSGiAccess.getInstance().getOsgiServletContext())).clean();
+            ApplicationRouteRegistry
+                    .getInstance(new VaadinServletContext(
+                            OSGiAccess.getInstance().getOsgiServletContext()))
+                    .clean();
         }
     }
 

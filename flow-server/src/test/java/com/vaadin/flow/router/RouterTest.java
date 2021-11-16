@@ -2800,7 +2800,8 @@ public class RouterTest extends RoutingTestBase {
                 .filter(js -> js.getInvocation().getExpression()
                         .startsWith("window.history.pushState"))
                 .count();
-        assertEquals("Invalid number of window.history.pushState calls", 1, historyInvocations);
+        assertEquals("Invalid number of window.history.pushState calls", 1,
+                historyInvocations);
 
         Assert.assertNull("Last handled location should have been cleared",
                 ui.getInternals().getLastHandledLocation());

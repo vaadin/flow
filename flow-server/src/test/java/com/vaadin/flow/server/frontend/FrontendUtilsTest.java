@@ -246,8 +246,9 @@ public class FrontendUtilsTest {
                 "/somewhere/not/disclosable/node_modules/webpack-dev-server/bin/webpack-dev-server.js");
         String wrappedCommand = FrontendUtils
                 .commandToString("/somewhere/not/disclosable", command);
-        Assert.assertEquals("\n" + "./node/node \\ \n"
-                + "    ./node_modules/webpack-dev-server/bin/webpack-dev-server.js \n",
+        Assert.assertEquals(
+                "\n" + "./node/node \\ \n"
+                        + "    ./node_modules/webpack-dev-server/bin/webpack-dev-server.js \n",
                 wrappedCommand);
     }
 

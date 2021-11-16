@@ -149,7 +149,8 @@ public abstract class AbstractNavigationStateRenderer
         final RouteTarget routeTarget = navigationState.getRouteTarget();
 
         routeLayoutTypes = routeTarget != null ? routeTarget.getParentLayouts()
-                : getRouterLayoutTypes(routeTargetType, ui.getInternals().getRouter());
+                : getRouterLayoutTypes(routeTargetType,
+                        ui.getInternals().getRouter());
 
         assert routeTargetType != null;
         assert routeLayoutTypes != null;
@@ -273,10 +274,11 @@ public abstract class AbstractNavigationStateRenderer
             ErrorNavigationEvent errorEvent = (ErrorNavigationEvent) event;
             if (isRouterLinkNotFoundNavigationError(errorEvent)) {
                 // #8544
-                event.getState().ifPresent(s -> ui.getPage().executeJs(
-                        "this.scrollPositionHandlerAfterServerNavigation($0);",
-                        s));
-            } 
+                event.getState()
+                        .ifPresent(s -> ui.getPage().executeJs(
+                                "this.scrollPositionHandlerAfterServerNavigation($0);",
+                                s));
+            }
         } else if (NavigationTrigger.ROUTER_LINK.equals(event.getTrigger())) {
             /*
              * When the event trigger is a RouterLink, pushing history state
@@ -304,13 +306,12 @@ public abstract class AbstractNavigationStateRenderer
         }
     }
 
-
     private boolean isRouterLinkNotFoundNavigationError(
             ErrorNavigationEvent event) {
         return NavigationTrigger.ROUTER_LINK.equals(event.getTrigger())
                 && event.getErrorParameter() != null
                 && event.getErrorParameter()
-                .getCaughtException() instanceof NotFoundException;
+                        .getCaughtException() instanceof NotFoundException;
     }
 
     private void pushHistoryState(NavigationEvent event) {
@@ -691,7 +692,7 @@ public abstract class AbstractNavigationStateRenderer
             BeforeEvent beforeEvent) {
         if (beforeEvent.hasForwardTarget()
                 && !isSameNavigationState(beforeEvent.getForwardTargetType(),
-                beforeEvent.getForwardTargetRouteParameters())) {
+                        beforeEvent.getForwardTargetRouteParameters())) {
             return Optional.of(TransitionOutcome.FORWARDED);
         }
 
@@ -705,12 +706,12 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     private boolean isSameNavigationState(Class<? extends Component> targetType,
-                                          RouteParameters targetParameters) {
+            RouteParameters targetParameters) {
         final boolean sameTarget = navigationState.getNavigationTarget()
                 .equals(targetType);
 
-        final boolean sameParameters = targetParameters.equals(navigationState
-                .getRouteParameters());
+        final boolean sameParameters = targetParameters
+                .equals(navigationState.getRouteParameters());
 
         return sameTarget && sameParameters;
     }
@@ -762,11 +763,13 @@ public abstract class AbstractNavigationStateRenderer
             if (isForward) {
                 redirectType = "forward";
                 redirectTarget = beforeNavigation.getForwardTargetType();
-                redirectParameters = beforeNavigation.getForwardTargetRouteParameters();
+                redirectParameters = beforeNavigation
+                        .getForwardTargetRouteParameters();
             } else {
                 redirectType = "reroute";
                 redirectTarget = beforeNavigation.getRerouteTargetType();
-                redirectParameters = beforeNavigation.getRerouteTargetRouteParameters();
+                redirectParameters = beforeNavigation
+                        .getRerouteTargetRouteParameters();
             }
 
             throw new IllegalStateException(String.format(

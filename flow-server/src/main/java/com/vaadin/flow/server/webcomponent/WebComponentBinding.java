@@ -197,14 +197,16 @@ public final class WebComponentBinding<C extends Component>
         final SerializableBiConsumer<C, Serializable> consumer = propertyConfiguration
                 .getOnChangeHandler();
 
-        final Serializable selectedStartingValue = !overrideDefault ?
-                propertyConfiguration.getPropertyData().getDefaultValue() :
-                jsonValueToConcreteType(startingValue,
+        final Serializable selectedStartingValue = !overrideDefault
+                ? propertyConfiguration.getPropertyData().getDefaultValue()
+                : jsonValueToConcreteType(startingValue,
                         propertyConfiguration.getPropertyData().getType());
 
         final PropertyBinding<? extends Serializable> binding = new PropertyBinding<>(
-                propertyConfiguration.getPropertyData(), consumer == null ? null
-                        : value -> consumer.accept(component, value), selectedStartingValue);
+                propertyConfiguration.getPropertyData(),
+                consumer == null ? null
+                        : value -> consumer.accept(component, value),
+                selectedStartingValue);
 
         properties.put(propertyConfiguration.getPropertyData().getName(),
                 binding);
@@ -221,9 +223,9 @@ public final class WebComponentBinding<C extends Component>
             }
             return value;
         } else {
-            throw new IllegalArgumentException(String.format(
-                    "Received '%s' was not convertible to '%s'",
-                    JsonValue.class.getName(), type.getName()));
+            throw new IllegalArgumentException(
+                    String.format("Received '%s' was not convertible to '%s'",
+                            JsonValue.class.getName(), type.getName()));
         }
     }
 
@@ -233,8 +235,8 @@ public final class WebComponentBinding<C extends Component>
         private SerializableConsumer<P> listener;
         private P value;
 
-        PropertyBinding(PropertyData<P> data,
-                        SerializableConsumer<P> listener, Serializable startingValue) {
+        PropertyBinding(PropertyData<P> data, SerializableConsumer<P> listener,
+                Serializable startingValue) {
             Objects.requireNonNull(data, "Parameter 'data' must not be null!");
             this.data = data;
             this.listener = listener;
@@ -245,18 +247,22 @@ public final class WebComponentBinding<C extends Component>
         void updateValue(Serializable newValue) {
             if (isReadOnly()) {
                 LoggerFactory.getLogger(getClass())
-                        .warn(String.format("An attempt was made to write to "
-                                + "a read-only property '%s' owned by exported "
-                                + "component %s", getName(),
-                                getType().getCanonicalName()));
+                        .warn(String.format(
+                                "An attempt was made to write to "
+                                        + "a read-only property '%s' owned by exported "
+                                        + "component %s",
+                                getName(), getType().getCanonicalName()));
                 return;
             }
 
-            if (newValue != null && !getType().isAssignableFrom(newValue.getClass())) {
-                throw new IllegalArgumentException(String.format("Parameter "
-                        + "'newValue' is of the wrong type: onChangeHandler"
-                        + " of the property expected to receive %s but "
-                        + "found %s instead.", getType().getCanonicalName(),
+            if (newValue != null
+                    && !getType().isAssignableFrom(newValue.getClass())) {
+                throw new IllegalArgumentException(String.format(
+                        "Parameter "
+                                + "'newValue' is of the wrong type: onChangeHandler"
+                                + " of the property expected to receive %s but "
+                                + "found %s instead.",
+                        getType().getCanonicalName(),
                         newValue.getClass().getCanonicalName()));
             }
 

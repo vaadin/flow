@@ -35,7 +35,8 @@ public class VaadinServletConfig implements VaadinConfig {
      *         servlet configuration object, not <code>null</code>
      */
     public VaadinServletConfig(ServletConfig config) {
-        Objects.requireNonNull(config, "VaadinServletConfig requires the ServletConfig object");
+        Objects.requireNonNull(config,
+                "VaadinServletConfig requires the ServletConfig object");
         this.config = config;
     }
 
@@ -43,8 +44,8 @@ public class VaadinServletConfig implements VaadinConfig {
      * Ensures there is a valid instance of {@link ServletConfig}.
      */
     private void ensureServletConfig() {
-        if (config == null && VaadinService
-                .getCurrent() instanceof VaadinServletService) {
+        if (config == null
+                && VaadinService.getCurrent() instanceof VaadinServletService) {
             config = ((VaadinServletService) VaadinService.getCurrent())
                     .getServlet().getServletConfig();
         } else if (config == null) {

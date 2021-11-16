@@ -323,9 +323,10 @@ public class ServletDeployer implements ServletContextListener {
             String contextPath = servletContext.getContextPath();
             contextPath = contextPath.isEmpty() ? "/" : contextPath;
 
-            FrontendUtils.console(FrontendUtils.BRIGHT_BLUE, String.format(
-                    "Vaadin application has been deployed and started to the context path \"%s\".%n",
-                    contextPath));
+            FrontendUtils.console(FrontendUtils.BRIGHT_BLUE,
+                    String.format(
+                            "Vaadin application has been deployed and started to the context path \"%s\".%n",
+                            contextPath));
         } else {
             // if the user has mapped their own servlet, they will know where to
             // find it

@@ -308,10 +308,11 @@ class BootstrapUtils {
                 .getResourceAsStream(file);
 
         if (stream == null) {
-            throw new IllegalStateException(String.format(
-                    "File '%s' for inline resource is not available through "
-                            + "the servlet context class loader.",
-                    file));
+            throw new IllegalStateException(
+                    String.format(
+                            "File '%s' for inline resource is not available through "
+                                    + "the servlet context class loader.",
+                            file));
         }
         return stream;
     }
@@ -359,12 +360,13 @@ class BootstrapUtils {
             builder.insert(0, inlineContent.toString());
         }
 
-        builder.insert(0, "function _inlineHeader(tag, content){\n"
-                + "var customStyle = document.createElement(tag);\n"
-                + "customStyle.innerHTML= content;\n"
-                + "var firstScript=document.head.querySelector('script');\n"
-                + "document.head.insertBefore(customStyle,firstScript);\n"
-                + "}\n");
+        builder.insert(0,
+                "function _inlineHeader(tag, content){\n"
+                        + "var customStyle = document.createElement(tag);\n"
+                        + "customStyle.innerHTML= content;\n"
+                        + "var firstScript=document.head.querySelector('script');\n"
+                        + "document.head.insertBefore(customStyle,firstScript);\n"
+                        + "}\n");
         builder.insert(0, "<script id='_theme-header-injection'>\n");
         builder.append(
                 "var script = document.getElementById('_theme-header-injection');"

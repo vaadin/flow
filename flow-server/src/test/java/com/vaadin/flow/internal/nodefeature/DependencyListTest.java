@@ -131,7 +131,7 @@ public class DependencyListTest {
         validateDependency(URL, Type.HTML_IMPORT, LoadMode.INLINE);
     }
 
-    @Test (expected = UnsupportedOperationException.class)
+    @Test(expected = UnsupportedOperationException.class)
     public void addHtmlDependency_throwsInNpmMode() {
         // given
         UI ui = MockUI.createNpmModeUI();
@@ -151,10 +151,12 @@ public class DependencyListTest {
 
         assertEquals("Expected to receive exactly one dependency", 1,
                 deps.getPendingSendToClient().size());
-        assertTrue(String.format(
-                "Dependencies' json representations are different, expected = \n'%s'\n, actual = \n'%s'",
-                expectedJson.toJson(),
-                deps.getPendingSendToClient().iterator().next().toJson()),
+        assertTrue(
+                String.format(
+                        "Dependencies' json representations are different, expected = \n'%s'\n, actual = \n'%s'",
+                        expectedJson.toJson(),
+                        deps.getPendingSendToClient().iterator().next()
+                                .toJson()),
                 JsonUtils.jsonEquals(expectedJson, deps.getPendingSendToClient()
                         .iterator().next().toJson()));
     }
@@ -257,8 +259,8 @@ public class DependencyListTest {
                 .getPendingSendToClient();
         assertEquals("Expected to have only one dependency", 1,
                 pendingSendToClient.size());
-        assertEquals("Wrong load mode resolved", pendingSendToClient.iterator().next().getLoadMode(),
-                expected);
+        assertEquals("Wrong load mode resolved",
+                pendingSendToClient.iterator().next().getLoadMode(), expected);
     }
 
     @Test

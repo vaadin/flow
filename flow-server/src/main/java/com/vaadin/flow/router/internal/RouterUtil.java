@@ -98,7 +98,7 @@ public final class RouterUtil extends RouteUtil {
      * @param routeTarget     the currently visible component
      */
     public static void updatePageTitle(NavigationEvent navigationEvent,
-                                       Component routeTarget) {
+            Component routeTarget) {
 
         String title;
 
@@ -145,7 +145,7 @@ public final class RouterUtil extends RouteUtil {
      * @return new LocationChangeEvent
      */
     public static LocationChangeEvent createEvent(NavigationEvent event,
-                                                  List<HasElement> routeTargetChain) {
+            List<HasElement> routeTargetChain) {
         return new LocationChangeEvent(event.getSource(), event.getUI(),
                 event.getTrigger(), event.getLocation(), routeTargetChain);
     }
