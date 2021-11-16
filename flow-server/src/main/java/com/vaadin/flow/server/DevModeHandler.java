@@ -54,6 +54,8 @@ import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.frontend.FrontendVersion;
+import com.vaadin.flow.server.frontend.FrontendUtils.UnknownVersionException;
 
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN;
@@ -626,6 +628,19 @@ public final class DevModeHandler implements RequestHandler {
                 () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath(),
                 useHomeNodeExec);
         tools.validateNodeAndNpmVersion();
+        FrontendVersion nodeVersion;
+        try {
+            nodeVersion = tools.getNodeVersion();
+        } catch (UnknownVersionException e) {
+            getLogger().error("Unable to determine node version", e);
+            // Need to assume something..
+            nodeVersion = new FrontendVersion(16, 0, 0);
+        }
+
+        if (!nodeVersion.isOlderThan(new FrontendVersion(17, 0, 0))) {
+            processBuilder.environment().put("NODE_OPTIONS",
+                    "--openssl-legacy-provider");
+        }
 
         String nodeExec = null;
         if (useHomeNodeExec) {
@@ -644,6 +659,7 @@ public final class DevModeHandler implements RequestHandler {
         }
 
         long start = System.nanoTime();
+
         processBuilder.command(command);
         try {
             webpackProcess.set(
