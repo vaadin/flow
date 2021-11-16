@@ -84,8 +84,8 @@ public class AbstractDevServerRunnerTest extends AbstractDevModeTest {
         Mockito.when(response.getOutputStream())
                 .thenReturn(Mockito.mock(ServletOutputStream.class));
         HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
-        Mockito.when(request.getRequestURI()).thenReturn("/foo%20bar");
-        Mockito.when(request.getPathInfo()).thenReturn("foo bar");
+        Mockito.when(request.getRequestURI()).thenReturn("/VAADIN/foo%20bar");
+        Mockito.when(request.getPathInfo()).thenReturn("/VAADIN/foo bar");
         Mockito.when(request.getHeaderNames())
                 .thenReturn(Collections.emptyEnumeration());
 
@@ -96,7 +96,6 @@ public class AbstractDevServerRunnerTest extends AbstractDevModeTest {
                     return Mockito.mock(HttpURLConnection.class);
                 });
         devServer.serveDevModeRequest(request, response);
-        Assert.assertEquals("foo%20bar", requestedPath.get());
-
+        Assert.assertEquals("/VAADIN/foo%20bar", requestedPath.get());
     }
 }
