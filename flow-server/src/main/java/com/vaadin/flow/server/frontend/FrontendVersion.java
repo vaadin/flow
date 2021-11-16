@@ -284,6 +284,13 @@ public class FrontendVersion
     }
 
     @Override
+    public String toString() {
+        return "FrontendVersion [" + "majorVersion=" + majorVersion
+                + ", minorVersion=" + minorVersion + ", revision=" + revision
+                + ", buildIdentifier=" + buildIdentifier + "]";
+    }
+
+    @Override
     public int hashCode() {
         return (majorVersion + "." + minorVersion + "." + revision + "."
                 + buildIdentifier).hashCode();

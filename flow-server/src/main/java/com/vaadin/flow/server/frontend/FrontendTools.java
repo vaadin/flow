@@ -378,11 +378,12 @@ public class FrontendTools {
             return;
         }
         try {
-            List<String> nodeVersionCommand = new ArrayList<>();
-            nodeVersionCommand.add(doGetNodeExecutable());
-            nodeVersionCommand.add("--version"); // NOSONAR
-            FrontendVersion foundNodeVersion = FrontendUtils.getVersion("node",
-                    nodeVersionCommand);
+            FrontendVersion foundNodeVersion = getNodeVersion();
+            if (foundNodeVersion.getMajorVersion() == 17
+                    && foundNodeVersion.getMinorVersion() == 0) {
+                throw new IllegalStateException(
+                        "Node version 17.0 is incompatible with webpack 4. Please upgrade to Node 17.1 or newer, or downgrade to Node 16.");
+            }
             FrontendUtils.validateToolVersion("node", foundNodeVersion,
                     SUPPORTED_NODE_VERSION, SHOULD_WORK_NODE_VERSION);
         } catch (UnknownVersionException e) {
@@ -402,6 +403,16 @@ public class FrontendTools {
             getLogger().warn("Error checking if npm is new enough", e);
         }
 
+    }
+
+    /**
+     * Gets the version of the node executable.
+     */
+    public FrontendVersion getNodeVersion() throws UnknownVersionException {
+        List<String> nodeVersionCommand = new ArrayList<>();
+        nodeVersionCommand.add(doGetNodeExecutable());
+        nodeVersionCommand.add("--version"); // NOSONAR
+        return FrontendUtils.getVersion("node", nodeVersionCommand);
     }
 
     /**
