@@ -1,7 +1,5 @@
-name: Java CI
-
+name: Flow Validation
 on: [push]
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -14,28 +12,45 @@ jobs:
       - uses: stCarolas/setup-maven@v4.2
         with:
           maven-version: 3.8.3
-      - name: mvn install
+      - name: Set flow version and Generate module lists
         run: |
-          mvn -B -q -DnewVersion=999.99-SNAPSHOT versions:set  -T 1C
+          mvn -B -q -DnewVersion=999.99-SNAPSHOT versions:set -T 1C &
+          P1=$!
+          mvn help:evaluate -Dexpression=project.modules -DskipTests -Prun-tests \
+            | grep "<\/string>" \
+            | grep -v flow-tests \
+            | sed -e 's, *<string>\(.*\)</string>,\1,g' \
+            | sort > flow.modules &
+          P2=$!
+          mvn help:evaluate -B -Dexpression=project.modules -pl flow-tests -DskipTests -Prun-tests 2>/dev/null \
+            | grep "<\/string>" \
+            | grep -v test-root-ui-context \
+            | grep -v test-root-context \
+            | sed -e 's, *<string>\(.*\)</string>,flow-tests/\1,g' \
+            | sort > it.modules &
+          P3=$!
+          wait $P1 $P2 $P3        
+      - name: Compile and Install Flow
+        run: |
           mvn install -B -q -am -DskipTests -T 2C
       - name: Save workspace
         run: |
           mv ~/.m2/ .
-          tar cf workspace.tar .m2 `find . -d -name target`
+          tar cf workspace.tar .m2 *.modules `find . -d -name target`
       - uses: actions/upload-artifact@v2
         with:
           name: saved-workspace
           path: workspace.tar
-  unit-test:
-    runs-on: ubuntu-latest
+  unit-tests:
     needs: build
     strategy:
       matrix:
         modules:
           - 'flow-server'
-          - 'flow-client,vaadin-dev-server'
+          - 'flow-client,vaadin-dev-server,flow-jandex'
           - 'flow-data'
           - 'build-tools,flow,flow-bom,flow-component-demo-helpers,flow-dnd,flow-html-components,flow-html-components-testbench,flow-lit-template,flow-plugins,flow-polymer-template,flow-push,flow-server-production-mode,flow-test-generic,flow-test-util,fusion-endpoint'
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-java@v2
@@ -52,27 +67,25 @@ jobs:
         run: |
           tar xf workspace.tar
           rm -rf ~/.m2 && mv -f .m2 ~/
+      - name: Set Flow Version
+        run: mvn -B -q -DnewVersion=999.99-SNAPSHOT versions:set -T 1C
       - name: Unit Test
-        if: always()
         run: |
-          mvn -B -q -DnewVersion=999.99-SNAPSHOT versions:set  -T 1C
-          mvn -B test -fae -pl ${{ matrix.modules }}
+          mvn -B verify -fae -Dsurefire.rerunFailingTestsCount=2 -pl ${{ matrix.modules }}
       - uses: actions/upload-artifact@v2
         if: always()
         with:
           name: test-reports
           path: "**/target/*-reports/*"
-  install:
-    if: ${{ false }}
+  it-tests:
+    needs: build
+    strategy:
+      matrix:
+        current: [0, 1, 2, 3, 4, 5, 6]
+        parallelism: [7]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Install Chrome
-        run: |
-          sudo apt-get update
-          wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-          sudo apt-get install -y -f ./google-chrome-stable_current_amd64.deb
-      - uses: nanasess/setup-chromedriver@master
       - name: Set up JDK 11
         uses: actions/setup-java@v2
         with:
@@ -82,23 +95,60 @@ jobs:
         uses: stCarolas/setup-maven@v4.2
         with:
           maven-version: 3.8.3
-      - name: Show Tool Versions
+      - name: Install Chrome
         run: |
-          java -version
-          mvn -version
-          echo "Node "`node --version`
-          echo "Npm "`npm -version`
-          google-chrome --version
-          chromedriver --version
-          pwd
-          ls -al
-      - name: Build with Maven
+          sudo apt-get update
+          wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+          sudo apt-get install -y -f ./google-chrome-stable_current_amd64.deb
+      - uses: nanasess/setup-chromedriver@master
+      - uses: actions/download-artifact@v2
+        with:
+          name: saved-workspace
+      - name: Restore Workspace
+        run: |
+          tar xf workspace.tar
+          rm -rf ~/.m2 && mv -f .m2 ~/
+      - name: Set Flow Version
+        run: mvn -B -q -DnewVersion=999.99-SNAPSHOT versions:set -T 1C
+      - name: Set TB License
+        run: |
+          TB_LICENSE=${{secrets.TB_LICENSE}}
+          mkdir -p ~/.vaadin/
+          echo '{"username":"'`echo $TB_LICENSE | cut -d / -f1`'","proKey":"'`echo $TB_LICENSE | cut -d / -f2`'"}' > ~/.vaadin/proKey
+      - name: Compute Modules
+        run: |
+          P="${{matrix.parallelism}}"
+          C="${{matrix.current}}"
+          M=`cat it.modules | wc -l`
+          I=`echo "($M / $P + 1) * $C + 1" | bc`
+          H=`cat it.modules`
+          T=`echo "$H" | tail +$I | head -$P`
+          echo "$T" | tee selected.modules
+      - name: Install required modules    
+        run: |
+          if grep -q test-fusion-csrf-context selected.modules; then
+            mvn -B -q install -DskipITs -pl flow-tests/test-fusion-csrf
+          fi
+      - name: Run ITs
+        run: |
+          M=`cat selected.modules | grep ... | tr '\n' ','`
+          if [ -n "$M" ]; then
+            mvn verify -fae -V -B -e \
+              -Dcom.vaadin.testbench.Parameters.testsInParallel=5 \
+              -pl $M
+          fi
+      - uses: actions/upload-artifact@v2
         if: always()
-        run: |
-          mvn -B -q -DnewVersion=999.99-SNAPSHOT versions:set  -T 1C
-          mvn -B -q -DskipTests install -T 2C
-  publish-test-results:
-    needs: unit-test
+        with:
+          name: test-reports
+          path: |
+            **/target/*-reports/*
+            **/error-screenshots/*.png
+  test-results:
+    if: always()
+    needs:
+      - unit-tests
+      - it-tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v2
@@ -108,4 +158,18 @@ jobs:
         if: always()
         uses: EnricoMi/publish-unit-test-result-action/composite@v1
         with:
-          files: "**/target/*-reports/*.xml"
+          files: "**/target/*-reports/TEST*.xml"
+      - uses: geekyeggo/delete-artifact@v1
+        with:
+          name: saved-workspace          
+
+
+    # continue-on-error: true
+      # - name: Install dependencies
+      #   id: composer-run
+      #   continue-on-error: true
+      #   run: composer update --${{ matrix.dependency-version }} --prefer-dist --no-interaction --no-suggest
+
+      # - name: Execute tests
+      #   if: steps.composer-run.outcome == 'success' && steps.composer-run.conclusion == 'success'
+      #   run: vendor/bin/phpunit
