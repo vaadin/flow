@@ -55,8 +55,9 @@ public class TaskUpdateThemeImport implements FallibleCommand {
 
     TaskUpdateThemeImport(File npmFolder, ThemeDefinition theme,
             File frontendDirectory) {
-        File generatedDir = new File(new File(npmFolder.getAbsolutePath(),
-                System.getProperty(PARAM_FRONTEND_DIR, DEFAULT_FRONTEND_DIR)),
+        File generatedDir = new File(
+                new File(npmFolder.getAbsolutePath(), System
+                        .getProperty(PARAM_FRONTEND_DIR, DEFAULT_FRONTEND_DIR)),
                 "generated");
         this.themeImportFile = new File(generatedDir, "theme.js");
         this.theme = theme;
@@ -76,17 +77,19 @@ public class TaskUpdateThemeImport implements FallibleCommand {
         verifyThemeDirectoryExistence();
 
         if (!themeImportFile.getParentFile().mkdirs()) {
-            LoggerFactory.getLogger(getClass()).debug(
-                    "Didn't create folders as they probably already exist. "
+            LoggerFactory.getLogger(getClass())
+                    .debug("Didn't create folders as they probably already exist. "
                             + "If there is a problem check access rights for folder {}",
-                    themeImportFile.getParentFile().getAbsolutePath());
+                            themeImportFile.getParentFile().getAbsolutePath());
         }
 
         try {
-            FileUtils.write(themeImportFile, String.format(
-                    "import {applyTheme as _applyTheme} from 'generated/theme-%s.generated.js';%n"
-                            + "export const applyTheme = _applyTheme;%n",
-                    theme.getName()), StandardCharsets.UTF_8);
+            FileUtils.write(themeImportFile,
+                    String.format(
+                            "import {applyTheme as _applyTheme} from 'generated/theme-%s.generated.js';%n"
+                                    + "export const applyTheme = _applyTheme;%n",
+                            theme.getName()),
+                    StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new ExecutionFailedException(
                     "Unable to write theme import file", e);
@@ -168,4 +171,3 @@ public class TaskUpdateThemeImport implements FallibleCommand {
                 themePathInStaticResources, themePathInClassPathResources);
     }
 }
-

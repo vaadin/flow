@@ -221,7 +221,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void getModuleLines_oneFrontendDependencyAndFrontendDirectoryDontExist_throwExceptionAdvisingUserToRunPrepareFrontend() throws Exception {
+    public void getModuleLines_oneFrontendDependencyAndFrontendDirectoryDontExist_throwExceptionAdvisingUserToRunPrepareFrontend()
+            throws Exception {
         ClassFinder classFinder = getClassFinder();
         updater = new UpdateImports(classFinder, getScanner(classFinder),
                 tmpRoot, null);
@@ -231,7 +232,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
         try {
             updater.run();
-            Assert.fail("Execute should have failed with advice to run `prepare-frontend`");
+            Assert.fail(
+                    "Execute should have failed with advice to run `prepare-frontend`");
         } catch (IllegalStateException e) {
             assertThat(e.getMessage(), CoreMatchers.containsString(
                     "Unable to locate frontend resources and missing token file. "
@@ -259,9 +261,10 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     private void assertFileRemoved(String fileName, File directory) {
-        assertTrue(String.format(
-                "File `%s` was not removed from, or does not exist in, `%s`",
-                fileName, directory),
+        assertTrue(
+                String.format(
+                        "File `%s` was not removed from, or does not exist in, `%s`",
+                        fileName, directory),
                 resolveImportFile(directory, directory, fileName).delete());
     }
 
@@ -269,18 +272,20 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
             Set<String> resourcesNotFound) {
         String prefix = "Failed to find the following files: ";
 
-        String suffix = String.format("%n  Locations searched were:"
-                + "%n      - `%s` in this project"
-                + "%n      - `%s` in included JARs"
-                + "%n      - `%s` in included JARs"
-                + "%n%n  Please, double check that those files exist. If you use a custom directory "
-                + "for your resource files instead of default "
-                + "`frontend` folder then make sure you it's correctly configured "
-                + "(e.g. set '%s' property)", frontendDirectory.getPath(),
+        String suffix = String.format(
+                "%n  Locations searched were:"
+                        + "%n      - `%s` in this project"
+                        + "%n      - `%s` in included JARs"
+                        + "%n      - `%s` in included JARs"
+                        + "%n%n  Please, double check that those files exist. If you use a custom directory "
+                        + "for your resource files instead of default "
+                        + "`frontend` folder then make sure you it's correctly configured "
+                        + "(e.g. set '%s' property)",
+                frontendDirectory.getPath(),
                 Constants.RESOURCES_FRONTEND_DEFAULT,
                 Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT,
                 FrontendUtils.PARAM_FRONTEND_DIR);
-         
+
         return String.format("%n%n  %s%n      - %s%n  %s%n%n", prefix,
                 String.join("\n      - ", resourcesNotFound), suffix);
     }
@@ -403,8 +408,9 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         // fail the import visitor and should be ignored
         File newFile = resolveImportFile(frontendDirectory, nodeModulesPath,
                 "./common-js-file.js");
-        Files.copy(Paths.get(
-                getClass().getClassLoader().getResource("dice.jpg").toURI()),
+        Files.copy(
+                Paths.get(getClass().getClassLoader().getResource("dice.jpg")
+                        .toURI()),
                 new File(newFile.getParentFile(), "dice.jpg").toPath());
         Files.write(newFile.toPath(),
                 Collections.singleton("import './dice.jpg'"));

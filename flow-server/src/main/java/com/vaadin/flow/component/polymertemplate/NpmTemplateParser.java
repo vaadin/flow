@@ -148,14 +148,15 @@ public class NpmTemplateParser implements TemplateParser {
                     templateElement);
         }
 
-        throw new IllegalStateException(String.format("Couldn't find the "
-                + "definition of the element with tag '%s' "
-                + "in any template file declared using '@%s' annotations. "
-                + "Check the availability of the template files in your WAR "
-                + "file or provide alternative implementation of the "
-                + "method getTemplateContent() which should return an element "
-                + "representing the content of the template file", tag,
-                JsModule.class.getSimpleName()));
+        throw new IllegalStateException(String.format(
+                "Couldn't find the "
+                        + "definition of the element with tag '%s' "
+                        + "in any template file declared using '@%s' annotations. "
+                        + "Check the availability of the template files in your WAR "
+                        + "file or provide alternative implementation of the "
+                        + "method getTemplateContent() which should return an element "
+                        + "representing the content of the template file",
+                tag, JsModule.class.getSimpleName()));
     }
 
     /**

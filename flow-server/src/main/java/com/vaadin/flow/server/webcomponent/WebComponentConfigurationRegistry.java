@@ -50,7 +50,7 @@ import com.vaadin.flow.theme.Theme;
  * @author Vaadin Ltd.
  * @since 2.0
  */
-@EmbeddedApplicationAnnotations({Theme.class, Push.class})
+@EmbeddedApplicationAnnotations({ Theme.class, Push.class })
 public class WebComponentConfigurationRegistry implements Serializable {
 
     /**
@@ -61,8 +61,7 @@ public class WebComponentConfigurationRegistry implements Serializable {
     private final ReentrantLock configurationLock = new ReentrantLock(true);
 
     private boolean configurationsSet = false;
-    private HashMap<String, WebComponentConfiguration<? extends Component>> configurationMap =
-            new HashMap<>();
+    private HashMap<String, WebComponentConfiguration<? extends Component>> configurationMap = new HashMap<>();
 
     private HashMap<Class<? extends Annotation>, Annotation> embeddedAppAnnotations;
     private ArrayList<Element> bootstrapElements;
@@ -107,10 +106,12 @@ public class WebComponentConfigurationRegistry implements Serializable {
             Class<T> componentClass) {
         lock();
         try {
-            return Collections.unmodifiableSet(configurationMap.values().stream()
-                    .filter(config -> componentClass.equals(config.getComponentClass()))
-                    .map(b -> (WebComponentConfiguration<T>) b)
-                    .collect(Collectors.toSet()));
+            return Collections
+                    .unmodifiableSet(configurationMap.values().stream()
+                            .filter(config -> componentClass
+                                    .equals(config.getComponentClass()))
+                            .map(b -> (WebComponentConfiguration<T>) b)
+                            .collect(Collectors.toSet()));
         } finally {
             unlock();
         }
@@ -128,11 +129,9 @@ public class WebComponentConfigurationRegistry implements Serializable {
         try {
             updateConfiguration(configurations);
 
-            configurationMap =
-                    new HashMap<>(configurations.stream().collect(
-                            Collectors.toMap(
-                                    WebComponentConfiguration::getTag,
-                                    config -> config)));
+            configurationMap = new HashMap<>(configurations.stream()
+                    .collect(Collectors.toMap(WebComponentConfiguration::getTag,
+                            config -> config)));
         } finally {
             unlock();
         }
@@ -272,18 +271,21 @@ public class WebComponentConfigurationRegistry implements Serializable {
             VaadinContext context) {
         assert context != null;
 
-        WebComponentConfigurationRegistry attribute =
-            context.getAttribute(WebComponentConfigurationRegistry.class, WebComponentConfigurationRegistry::createRegistry);
+        WebComponentConfigurationRegistry attribute = context.getAttribute(
+                WebComponentConfigurationRegistry.class,
+                WebComponentConfigurationRegistry::createRegistry);
 
         if (attribute == null) {
             throw new IllegalStateException(
-                    "Null WebComponentConfigurationRegistry obtained from VaadinContext of type " + context.getClass().getName());
+                    "Null WebComponentConfigurationRegistry obtained from VaadinContext of type "
+                            + context.getClass().getName());
         }
 
         return attribute;
     }
 
-    private void updateConfiguration(Set<WebComponentConfiguration<? extends Component>> webComponentConfigurations) {
+    private void updateConfiguration(
+            Set<WebComponentConfiguration<? extends Component>> webComponentConfigurations) {
         assertLockHeld();
 
         Optional<Class<? extends Annotation>[]> annotationTypes = AnnotationReader
@@ -293,9 +295,9 @@ public class WebComponentConfigurationRegistry implements Serializable {
 
         HashMap<Class<? extends Annotation>, Annotation> map = new HashMap<>();
 
-        webComponentConfigurations.forEach(config ->
-                addEmbeddedApplicationAnnotation(config, annotationTypes.get(),
-                        map));
+        webComponentConfigurations
+                .forEach(config -> addEmbeddedApplicationAnnotation(config,
+                        annotationTypes.get(), map));
 
         embeddedAppAnnotations = map;
     }
@@ -306,8 +308,8 @@ public class WebComponentConfigurationRegistry implements Serializable {
             Map<Class<? extends Annotation>, Annotation> map) {
         for (Class<? extends Annotation> type : types) {
             Annotation annotation = map.get(type);
-            Annotation configAnnotation =
-                    configuration.getExporterClass().getAnnotation(type);
+            Annotation configAnnotation = configuration.getExporterClass()
+                    .getAnnotation(type);
             if (configAnnotation == null) {
                 continue;
             }
@@ -379,8 +381,8 @@ public class WebComponentConfigurationRegistry implements Serializable {
 
         StateNode copyNode = new StateNode(rootElement.getNode());
         // copy ElementData
-        ElementData originalData =
-                rootElement.getNode().getFeature(ElementData.class);
+        ElementData originalData = rootElement.getNode()
+                .getFeature(ElementData.class);
         ElementData copyData = copyNode.getFeature(ElementData.class);
         copyData.setTag(originalData.getTag());
         copyData.setPayload(originalData.getPayload());

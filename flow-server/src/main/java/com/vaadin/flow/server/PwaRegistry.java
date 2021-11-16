@@ -344,10 +344,8 @@ public class PwaRegistry implements Serializable {
         return offlinePage.replace("%%%PROJECT_NAME%%%", config.getAppName())
                 .replace("%%%BACKGROUND_COLOR%%%", config.getBackgroundColor())
                 .replace("%%%LOGO_PATH%%%",
-                        largest != null
-                                ? pwaConfiguration.getRootUrl()
-                                        + largest.getHref()
-                                : "")
+                        largest != null ? pwaConfiguration.getRootUrl()
+                                + largest.getHref() : "")
                 .replace("%%%META_ICONS%%%", iconHead);
 
     }

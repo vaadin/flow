@@ -183,8 +183,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         // Be aware that not initialized session doesn't have the
         // correct/expected state: it has no lock, service, session, etc.
         if (!isInitialized()) {
-            getLogger().warn(
-                    "A VaadinSession instance not associated to any service is getting unbound. "
+            getLogger()
+                    .warn("A VaadinSession instance not associated to any service is getting unbound. "
                             + "Session destroy events will not be fired and UIs in the session will not get detached. "
                             + "This might happen if a session is deserialized but never used before it expires.");
             return;

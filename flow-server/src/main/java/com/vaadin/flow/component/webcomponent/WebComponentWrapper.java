@@ -92,7 +92,6 @@ public class WebComponentWrapper extends Component {
         getElement().getShadowRoot().ifPresent(shadow -> shadow
                 .appendChild(bootstrapElements.toArray(new Element[0])));
     }
-    
 
     /**
      * Synchronize method for client side to send property value updates to the
@@ -108,7 +107,8 @@ public class WebComponentWrapper extends Component {
         try {
             webComponentBinding.updateProperty(property, newValue);
         } catch (IllegalArgumentException e) {
-            LoggerFactory.getLogger(webComponentBinding.getComponent().getClass())
+            LoggerFactory
+                    .getLogger(webComponentBinding.getComponent().getClass())
                     .error("Failed to synchronise property '{}'", property, e);
         }
     }

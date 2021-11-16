@@ -48,12 +48,12 @@ public class ShortcutEvent extends EventObject implements Serializable {
      *          set of {@link KeyModifier KeyModifiers} of the shortcut
      */
     public ShortcutEvent(Component source, Component lifecycleOwner, Key key,
-                         Set<KeyModifier> keyModifiers) {
+            Set<KeyModifier> keyModifiers) {
         super(source);
         this.lifecycleOwner = lifecycleOwner;
         this.key = key;
-        this.keyModifiers = keyModifiers == null ? Collections.emptySet() :
-                Collections.unmodifiableSet(keyModifiers);
+        this.keyModifiers = keyModifiers == null ? Collections.emptySet()
+                : Collections.unmodifiableSet(keyModifiers);
     }
 
     /**
@@ -113,8 +113,8 @@ public class ShortcutEvent extends EventObject implements Serializable {
         }
         List<String> keyStrings = Stream.of(keyModifiers)
                 .map(k -> k.getKeys().get(0)).collect(Collectors.toList());
-        return key.matches(this.key.getKeys().get(0)) && this.keyModifiers
-                .stream().allMatch(k -> keyStrings.stream()
-                        .anyMatch(k::matches));
+        return key.matches(this.key.getKeys().get(0))
+                && this.keyModifiers.stream().allMatch(
+                        k -> keyStrings.stream().anyMatch(k::matches));
     }
 }

@@ -103,11 +103,11 @@ public final class ThemeUtil {
 
         if (themeAnnotation.isPresent()) {
             final ThemeDefinition themeDefinition = new ThemeDefinition(
-                themeAnnotation.get());
+                    themeAnnotation.get());
             if (ui.getSession().getConfiguration().isCompatibilityMode()
-                && !themeDefinition.getName().isEmpty()) {
+                    && !themeDefinition.getName().isEmpty()) {
                 throw new IllegalStateException(
-                    "Improved theme support is not available in compatibility mode.");
+                        "Improved theme support is not available in compatibility mode.");
             }
             return themeDefinition;
         }

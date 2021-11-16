@@ -92,8 +92,9 @@ public class FrontendWebComponentGenerator implements Serializable {
                     .forEach(exporterRelatedClasses::add);
             final String themeName = theme == null ? "" : theme.getName();
             return WebComponentModulesWriter.DirectoryWriter
-                .generateWebComponentsToDirectory(writerClass,
-                    exporterRelatedClasses, outputDirectory, false, themeName);
+                    .generateWebComponentsToDirectory(writerClass,
+                            exporterRelatedClasses, outputDirectory, false,
+                            themeName);
         } catch (ClassNotFoundException e) {
             throw new IllegalStateException(
                     "Unable to locate a required class using custom class "

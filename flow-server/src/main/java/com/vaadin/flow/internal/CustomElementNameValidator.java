@@ -31,7 +31,8 @@ import java.util.stream.Stream;
  * @since 1.0
  */
 public final class CustomElementNameValidator {
-    private static final Pattern STARTS_WITH_A_DIGIT = Pattern.compile("^\\d.*");
+    private static final Pattern STARTS_WITH_A_DIGIT = Pattern
+            .compile("^\\d.*");
 
     private static final Set<String> RESERVED_NAMES = Stream
             .of("annotation-xml", "color-profile", "font-face", "font-face-src",

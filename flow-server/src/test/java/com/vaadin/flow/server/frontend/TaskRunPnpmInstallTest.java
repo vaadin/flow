@@ -563,8 +563,8 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         // given
         File npmCacheFolder = temporaryFolder.newFolder("Foo Bar");
         ToolStubInfo nodeStub = ToolStubInfo.none();
-        ToolStubInfo npmStub = ToolStubInfo
-                .builder(Tool.NPM).withVersion("6.0.0")
+        ToolStubInfo npmStub = ToolStubInfo.builder(Tool.NPM)
+                .withVersion("6.0.0")
                 .withCacheDir(npmCacheFolder.getAbsolutePath()).build();
         createStubNode(nodeStub, npmStub,
                 getNodeUpdater().npmFolder.getAbsolutePath());

@@ -72,7 +72,8 @@ public class PushAtmosphereHandlerTest {
         writeSessionExpiredAsync("POST");
     }
 
-    private void writeSessionExpiredAsync(String httpMethod) throws IOException {
+    private void writeSessionExpiredAsync(String httpMethod)
+            throws IOException {
         Mockito.when(request.getMethod()).thenReturn(httpMethod);
 
         atmosphereHandler.onRequest(resource);

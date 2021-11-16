@@ -180,8 +180,8 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
     }
 
     @Override
-    public Optional<Class<? extends Component>> getNavigationTarget(
-            String url, List<String> segments) {
+    public Optional<Class<? extends Component>> getNavigationTarget(String url,
+            List<String> segments) {
         Objects.requireNonNull(url, "url must not be null.");
         final Optional<Class<? extends Component>> target = getConfiguration()
                 .getTarget(PathUtil.getPath(url, segments));

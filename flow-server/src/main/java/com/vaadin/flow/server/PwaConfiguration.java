@@ -57,8 +57,7 @@ public class PwaConfiguration implements Serializable {
 
     protected PwaConfiguration(PWA pwa, ServletContext servletContext) {
         rootUrl = hasContextPath(servletContext)
-                ? servletContext.getContextPath() + "/"
-                : "/";
+                ? servletContext.getContextPath() + "/" : "/";
         if (pwa != null) {
             appName = pwa.name();
             shortName = pwa.shortName().substring(0,

@@ -202,8 +202,7 @@ public interface RouteRegistry extends Serializable {
      * @return {@link Optional} navigation target template string or
      *         {@link Optional#empty()} if navigation target was not found
      */
-    Optional<String> getTemplate(
-            Class<? extends Component> navigationTarget);
+    Optional<String> getTemplate(Class<? extends Component> navigationTarget);
 
     /**
      * Get the layout chain for given navigation target on the targeted path.

@@ -53,10 +53,10 @@ import static com.vaadin.flow.server.Constants.VAADIN_BUILD_FILES_PATH;
 public class ResponseWriter implements Serializable {
     private static final int DEFAULT_BUFFER_SIZE = 32 * 1024;
 
-    private static final Pattern RANGE_HEADER_PATTERN = Pattern.compile(
-            "^bytes=((\\d*-\\d*\\s*,\\s*)*\\d*-\\d*\\s*)$");
-    private static final Pattern BYTE_RANGE_PATTERN = Pattern.compile(
-            "(\\d*)-(\\d*)");
+    private static final Pattern RANGE_HEADER_PATTERN = Pattern
+            .compile("^bytes=((\\d*-\\d*\\s*,\\s*)*\\d*-\\d*\\s*)$");
+    private static final Pattern BYTE_RANGE_PATTERN = Pattern
+            .compile("(\\d*)-(\\d*)");
 
     /**
      * Maximum number of ranges accepted in a single Range header. Remaining ranges will be ignored.
@@ -107,10 +107,12 @@ public class ResponseWriter implements Serializable {
      *            the deployment configuration to use, not <code>null</code>
      */
     public ResponseWriter(DeploymentConfiguration deploymentConfiguration) {
-        this(DEFAULT_BUFFER_SIZE, deploymentConfiguration.isBrotli(), deploymentConfiguration.isCompatibilityMode());
+        this(DEFAULT_BUFFER_SIZE, deploymentConfiguration.isBrotli(),
+                deploymentConfiguration.isCompatibilityMode());
     }
 
-    private ResponseWriter(int bufferSize, boolean brotliEnabled, boolean compatibilityMode) {
+    private ResponseWriter(int bufferSize, boolean brotliEnabled,
+            boolean compatibilityMode) {
         this.brotliEnabled = brotliEnabled;
         this.bufferSize = bufferSize;
         this.compatibilityMode = compatibilityMode;
@@ -207,7 +209,7 @@ public class ResponseWriter implements Serializable {
         } catch (IOException e) {
             getLogger().debug("Error writing static file to user", e);
         } finally {
-            if (dataStream !=null ) {
+            if (dataStream != null) {
                 closeStream(dataStream);
             }
         }
@@ -254,7 +256,8 @@ public class ResponseWriter implements Serializable {
             if (startGroup.isEmpty() && endGroup.isEmpty()) {
                 response.setContentLengthLong(0L);
                 response.setStatus(416); // Range Not Satisfiable
-                getLogger().info("received a malformed range: '{}'", rangeMatcher.group());
+                getLogger().info("received a malformed range: '{}'",
+                        rangeMatcher.group());
                 return;
             }
             long start = startGroup.isEmpty() ? 0L : Long.parseLong(startGroup);
@@ -263,7 +266,8 @@ public class ResponseWriter implements Serializable {
             if (end < start
                     || (resourceLength >= 0 && start >= resourceLength)) {
                 // illegal range -> 416
-                getLogger().info("received an illegal range '{}' for resource '{}'",
+                getLogger().info(
+                        "received an illegal range '{}' for resource '{}'",
                         rangeMatcher.group(), resourceURL);
                 response.setContentLengthLong(0L);
                 response.setStatus(416);
@@ -273,7 +277,8 @@ public class ResponseWriter implements Serializable {
 
             if (!verifyRangeLimits(ranges)) {
                 ranges.pop();
-                getLogger().info("serving only {} ranges for resource '{}' even though more were requested",
+                getLogger().info(
+                        "serving only {} ranges for resource '{}' even though more were requested",
                         ranges.size(), resourceURL);
                 break;
             }
@@ -297,7 +302,7 @@ public class ResponseWriter implements Serializable {
             final InputStream dataStream = connection.getInputStream();
             try {
                 long skipped = dataStream.skip(start);
-                assert(skipped == start);
+                assert (skipped == start);
                 writeStream(outputStream, dataStream, end - start + 1);
             } finally {
                 closeStream(dataStream);
@@ -336,11 +341,13 @@ public class ResponseWriter implements Serializable {
                             String.format("Content-Type: %s\r\n", mimeType)
                                     .getBytes());
                 }
-                outputStream.write(String
-                        .format("Content-Range: %s\r\n\r\n",
-                                createContentRangeHeader(start, end,
-                                        connection.getContentLengthLong()))
-                        .getBytes());
+                outputStream
+                        .write(String
+                                .format("Content-Range: %s\r\n\r\n",
+                                        createContentRangeHeader(start, end,
+                                                connection
+                                                        .getContentLengthLong()))
+                                .getBytes());
 
                 if (position > start) {
                     // out-of-sequence range -> open new stream to the file
@@ -351,7 +358,7 @@ public class ResponseWriter implements Serializable {
                     position = 0L;
                 }
                 long skipped = dataStream.skip(start - position);
-                assert(skipped == start - position);
+                assert (skipped == start - position);
                 writeStream(outputStream, dataStream, end - start + 1);
                 position = end + 1;
             }
@@ -360,12 +367,12 @@ public class ResponseWriter implements Serializable {
         }
         outputStream.write(String.format("\r\n--%s", partBoundary).getBytes());
     }
-    
+
     private String createContentRangeHeader(long start, long end, long size) {
         String lengthString = size >= 0 ? Long.toString(size) : "*";
         return String.format("bytes %d-%d/%s", start, end, lengthString);
     }
-    
+
     private void setContentLength(HttpServletResponse response,
             long contentLength) {
         try {
@@ -389,13 +396,15 @@ public class ResponseWriter implements Serializable {
         for (int i = 0; i < ranges.size(); i++) {
             for (int j = i + 1; j < ranges.size(); j++) {
                 if (ranges.get(i).getFirst() <= ranges.get(j).getSecond()
-                        && ranges.get(j).getFirst() <= ranges.get(i).getSecond()) {
+                        && ranges.get(j).getFirst() <= ranges.get(i)
+                                .getSecond()) {
                     count++;
                 }
             }
         }
         if (count > MAX_OVERLAPPING_RANGE_COUNT) {
-            getLogger().info("more than {} overlapping ranges requested", MAX_OVERLAPPING_RANGE_COUNT);
+            getLogger().info("more than {} overlapping ranges requested",
+                    MAX_OVERLAPPING_RANGE_COUNT);
             return false;
         }
         return true;
@@ -403,8 +412,7 @@ public class ResponseWriter implements Serializable {
 
     private URL getResource(HttpServletRequest request, String resource)
             throws MalformedURLException {
-        URL url = request.getServletContext()
-                .getResource(resource);
+        URL url = request.getServletContext().getResource(resource);
         if (url != null) {
             return url;
         } else if (resource.startsWith("/" + VAADIN_BUILD_FILES_PATH)
@@ -414,6 +422,7 @@ public class ResponseWriter implements Serializable {
         }
         return url;
     }
+
     /**
      * Check if it is ok to serve the requested file from the classpath.
      * <p>
@@ -425,7 +434,8 @@ public class ResponseWriter implements Serializable {
      */
     private boolean isAllowedVAADINBuildUrl(String filenameWithPath) {
         if (compatibilityMode) {
-            getLogger().trace("Serving from the classpath in legacy "
+            getLogger().trace(
+                    "Serving from the classpath in legacy "
                             + "mode is not accepted. "
                             + "Letting request for '{}' go to servlet context.",
                     filenameWithPath);
@@ -449,7 +459,7 @@ public class ResponseWriter implements Serializable {
         long bytesTotal = 0L;
         int bytes;
         while (bytesTotal < count && (bytes = dataStream.read(buffer, 0,
-                (int)Long.min(bufferSize, count - bytesTotal))) >= 0) {
+                (int) Long.min(bufferSize, count - bytesTotal))) >= 0) {
             outputStream.write(buffer, 0, bytes);
             bytesTotal += bytes;
         }
@@ -519,6 +529,7 @@ public class ResponseWriter implements Serializable {
             response.setContentType(mimetype);
         }
     }
+
     /**
      * Check the quality value of the encoding. If the value is zero the
      * encoding is disabled and not accepted.
@@ -529,7 +540,8 @@ public class ResponseWriter implements Serializable {
      *         encoding to check
      * @return true if quality value is Zero
      */
-    private static boolean isQualityValueZero(String acceptEncoding, String encoding) {
+    private static boolean isQualityValueZero(String acceptEncoding,
+            String encoding) {
         String qPrefix = encoding + ";q=";
         int qValueIndex = acceptEncoding.indexOf(qPrefix);
         if (qValueIndex == -1) {

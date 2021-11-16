@@ -57,7 +57,7 @@ public class PropertyFilter implements Predicate<String> {
      *            a predicate matching property names in the inner scope
      */
     public PropertyFilter(PropertyFilter outerFilter, String scopeName,
-                          Predicate<String> predicate) {
+            Predicate<String> predicate) {
         this(composePrefix(outerFilter, scopeName),
                 predicate.and(composeFilter(outerFilter, scopeName)));
     }

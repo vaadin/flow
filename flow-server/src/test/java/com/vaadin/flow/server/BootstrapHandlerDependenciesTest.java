@@ -543,9 +543,11 @@ public class BootstrapHandlerDependenciesTest {
                     }
                 }
 
-                assertThat(String.format(
-                        "All javascript dependencies should be loaded without 'async' attribute. Dependency with url %s has this attribute",
-                        element.attr("src")), element.attr("async"), is(""));
+                assertThat(
+                        String.format(
+                                "All javascript dependencies should be loaded without 'async' attribute. Dependency with url %s has this attribute",
+                                element.attr("src")),
+                        element.attr("async"), is(""));
             }
 
             assertThat(
@@ -751,9 +753,10 @@ public class BootstrapHandlerDependenciesTest {
         assertNotEquals(String.format("Could not find url %s in uidl",
                 secondDependencyUrl), -1, secondPosition);
 
-        assertTrue(String.format(
-                "Expected url %s to be contained before url %s in the uidl, because it is expected to be first to be imported",
-                firstDependencyUrl, secondDependencyUrl),
+        assertTrue(
+                String.format(
+                        "Expected url %s to be contained before url %s in the uidl, because it is expected to be first to be imported",
+                        firstDependencyUrl, secondDependencyUrl),
                 firstPosition < secondPosition);
     }
 }

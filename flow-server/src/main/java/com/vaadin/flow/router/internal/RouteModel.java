@@ -255,8 +255,7 @@ class RouteModel implements Serializable {
 
     private void throwIfImmutable() {
         if (!mutable) {
-            throw new IllegalStateException(
-                    "Tried to mutate immutable model.");
+            throw new IllegalStateException("Tried to mutate immutable model.");
         }
     }
 

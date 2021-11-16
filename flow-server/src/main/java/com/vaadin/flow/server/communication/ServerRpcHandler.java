@@ -288,8 +288,8 @@ public class ServerRpcHandler implements Serializable {
                  * situation is most likely triggered by a timeout or such
                  * causing a message to be resent.
                  */
-                getLogger().info(
-                        "Ignoring old duplicate message from the client. Expected: "
+                getLogger()
+                        .info("Ignoring old duplicate message from the client. Expected: "
                                 + expectedId + ", got: " + requestId);
             } else {
                 /*

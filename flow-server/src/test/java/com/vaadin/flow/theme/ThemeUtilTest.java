@@ -30,7 +30,7 @@ public class ThemeUtilTest {
     }
 
     public static class ThemeSingleNavigationTargetSubclass
-        extends ThemeSingleNavigationTarget {
+            extends ThemeSingleNavigationTarget {
     }
 
     @Route("single")
@@ -63,21 +63,20 @@ public class ThemeUtilTest {
         UI ui = mockUI(true);
 
         Assert.assertThrows(
-            "themeFolder value in compatibilityMode should throw.",
-            IllegalStateException.class, () -> ThemeUtil
-                .findThemeForNavigationTarget(ui, ImprovedThemeSupport.class,
-                    ""));
+                "themeFolder value in compatibilityMode should throw.",
+                IllegalStateException.class,
+                () -> ThemeUtil.findThemeForNavigationTarget(ui,
+                        ImprovedThemeSupport.class, ""));
     }
 
     @Test
     public void navigationTargetWithImprovedThemeInNpmMode_getsTheme() {
         UI ui = mockUI(false);
 
-        ThemeDefinition theme = ThemeUtil
-            .findThemeForNavigationTarget(ui, ImprovedThemeSupport.class, "");
+        ThemeDefinition theme = ThemeUtil.findThemeForNavigationTarget(ui,
+                ImprovedThemeSupport.class, "");
 
-        Assert.assertNotNull(
-            "Theme should be gotten in npm mode", theme);
+        Assert.assertNotNull("Theme should be gotten in npm mode", theme);
     }
 
     private UI mockUI(final boolean compatibilityMode) {
@@ -94,10 +93,10 @@ public class ThemeUtilTest {
         Mockito.when(ui.getSession()).thenReturn(session);
 
         DeploymentConfiguration configuration = Mockito
-            .mock(DeploymentConfiguration.class);
+                .mock(DeploymentConfiguration.class);
         Mockito.when(session.getConfiguration()).thenReturn(configuration);
         Mockito.when(configuration.isCompatibilityMode())
-            .thenReturn(compatibilityMode);
+                .thenReturn(compatibilityMode);
 
         return ui;
     }

@@ -79,19 +79,19 @@ public class TaskUpdateThemeImportTest {
         File faultyFrontendDirectory = new File(projectRoot,
                 DEFAULT_FRONTEND_DIR);
 
-        TaskUpdateThemeImport taskUpdateThemeImportWithNonExistentThemeFolder =
-                new TaskUpdateThemeImport(npmFolder, customTheme,
-                        faultyFrontendDirectory);
+        TaskUpdateThemeImport taskUpdateThemeImportWithNonExistentThemeFolder = new TaskUpdateThemeImport(
+                npmFolder, customTheme, faultyFrontendDirectory);
 
         ExecutionFailedException e = Assert.assertThrows(
                 ExecutionFailedException.class,
                 taskUpdateThemeImportWithNonExistentThemeFolder::execute);
 
-        Assert.assertTrue(e.getMessage().contains(String.format(
-                "Discovered @Theme annotation with theme name '%s', "
-                        + "but could not find the theme directory in the "
-                        + "project or available as a jar dependency.",
-                CUSTOM_THEME_NAME)));
+        Assert.assertTrue(e.getMessage()
+                .contains(String.format(
+                        "Discovered @Theme annotation with theme name '%s', "
+                                + "but could not find the theme directory in the "
+                                + "project or available as a jar dependency.",
+                        CUSTOM_THEME_NAME)));
     }
 
     @Test
@@ -103,10 +103,12 @@ public class TaskUpdateThemeImportTest {
 
         boolean customThemeDirCreatedSuccessfully = aCustomThemeDir.mkdirs();
 
-        Assert.assertTrue(String.format(
-                "%s directory should be created at '%s%s/%s' but failed.",
-                CUSTOM_THEME_NAME, DEFAULT_FRONTEND_DIR, APPLICATION_THEME_ROOT,
-                CUSTOM_THEME_NAME), customThemeDirCreatedSuccessfully);
+        Assert.assertTrue(
+                String.format(
+                        "%s directory should be created at '%s%s/%s' but failed.",
+                        CUSTOM_THEME_NAME, DEFAULT_FRONTEND_DIR,
+                        APPLICATION_THEME_ROOT, CUSTOM_THEME_NAME),
+                customThemeDirCreatedSuccessfully);
 
         Assert.assertFalse(
                 "\"theme.js\" should not exist before"
@@ -133,10 +135,11 @@ public class TaskUpdateThemeImportTest {
 
         boolean customThemeDirCreatedSuccessfully = aCustomThemeDir.mkdirs();
 
-        Assert.assertTrue(String.format(
-                "%s directory should be created at '%s/%s/%s' but failed.",
-                CUSTOM_THEME_NAME, APPLICATION_META_INF_RESOURCES,
-                APPLICATION_THEME_ROOT, CUSTOM_THEME_NAME),
+        Assert.assertTrue(
+                String.format(
+                        "%s directory should be created at '%s/%s/%s' but failed.",
+                        CUSTOM_THEME_NAME, APPLICATION_META_INF_RESOURCES,
+                        APPLICATION_THEME_ROOT, CUSTOM_THEME_NAME),
                 customThemeDirCreatedSuccessfully);
 
         Assert.assertFalse(
@@ -164,10 +167,11 @@ public class TaskUpdateThemeImportTest {
 
         boolean customThemeDirCreatedSuccessfully = aCustomThemeDir.mkdirs();
 
-        Assert.assertTrue(String.format(
-                "%s directory should be created at '%s/%s/%s' but failed.",
-                CUSTOM_THEME_NAME, APPLICATION_STATIC_RESOURCES,
-                APPLICATION_THEME_ROOT, CUSTOM_THEME_NAME),
+        Assert.assertTrue(
+                String.format(
+                        "%s directory should be created at '%s/%s/%s' but failed.",
+                        CUSTOM_THEME_NAME, APPLICATION_STATIC_RESOURCES,
+                        APPLICATION_THEME_ROOT, CUSTOM_THEME_NAME),
                 customThemeDirCreatedSuccessfully);
 
         Assert.assertFalse(
@@ -193,10 +197,11 @@ public class TaskUpdateThemeImportTest {
 
         boolean customThemeDirCreatedSuccessfully = aCustomThemeDir.mkdirs();
 
-        Assert.assertTrue(String.format(
-                "%s directory should be created at '%s%s/%s' but failed.",
-                CUSTOM_THEME_NAME, DEFAULT_GENERATED_DIR,
-                APPLICATION_THEME_ROOT, CUSTOM_THEME_NAME),
+        Assert.assertTrue(
+                String.format(
+                        "%s directory should be created at '%s%s/%s' but failed.",
+                        CUSTOM_THEME_NAME, DEFAULT_GENERATED_DIR,
+                        APPLICATION_THEME_ROOT, CUSTOM_THEME_NAME),
                 customThemeDirCreatedSuccessfully);
 
         Assert.assertFalse(
@@ -214,34 +219,41 @@ public class TaskUpdateThemeImportTest {
 
     @Test
     public void runTaskWithTheme_createsThemeFile_afterRunWithoutTheme_removesThemeFile()
-        throws Exception {
+            throws Exception {
 
         File themesDir = new File(frontendDirectory, APPLICATION_THEME_ROOT);
         File aCustomThemeDir = new File(themesDir, CUSTOM_THEME_NAME);
 
         boolean customThemeDirCreatedSuccessfully = aCustomThemeDir.mkdirs();
 
-        Assert.assertTrue(String
-            .format("%s directory should be created at '%s%s/%s' but failed.",
-                CUSTOM_THEME_NAME, DEFAULT_FRONTEND_DIR, APPLICATION_THEME_ROOT,
-                CUSTOM_THEME_NAME), customThemeDirCreatedSuccessfully);
+        Assert.assertTrue(
+                String.format(
+                        "%s directory should be created at '%s%s/%s' but failed.",
+                        CUSTOM_THEME_NAME, DEFAULT_FRONTEND_DIR,
+                        APPLICATION_THEME_ROOT, CUSTOM_THEME_NAME),
+                customThemeDirCreatedSuccessfully);
 
-        Assert.assertFalse("\"theme.js\" should not exist before"
-            + " executing TaskUpdateThemeImport.", themeImportFile.exists());
+        Assert.assertFalse(
+                "\"theme.js\" should not exist before"
+                        + " executing TaskUpdateThemeImport.",
+                themeImportFile.exists());
 
         taskUpdateThemeImport.execute();
 
-        Assert.assertTrue("\"theme.js\" should be created as the "
-                + "result of executing TaskUpdateThemeImport.",
-            themeImportFile.exists());
+        Assert.assertTrue(
+                "\"theme.js\" should be created as the "
+                        + "result of executing TaskUpdateThemeImport.",
+                themeImportFile.exists());
 
         taskUpdateThemeImport = new TaskUpdateThemeImport(npmFolder, null,
-            frontendDirectory);
+                frontendDirectory);
 
         taskUpdateThemeImport.execute();
 
-        Assert.assertFalse("\"theme.js\" should not exist before"
-            + " executing TaskUpdateThemeImport.", themeImportFile.exists());
+        Assert.assertFalse(
+                "\"theme.js\" should not exist before"
+                        + " executing TaskUpdateThemeImport.",
+                themeImportFile.exists());
     }
 
     @Test
@@ -250,19 +262,19 @@ public class TaskUpdateThemeImportTest {
         File themeDir = new File(frontendDirectory, CUSTOM_THEME_PATH);
         Assert.assertTrue(themeDir.mkdirs());
 
-        String jsrThemePath = DEFAULT_GENERATED_DIR
-                + CUSTOM_THEME_PATH;
+        String jsrThemePath = DEFAULT_GENERATED_DIR + CUSTOM_THEME_PATH;
         File classPathThemeDir = new File(projectRoot, jsrThemePath);
         Assert.assertTrue(classPathThemeDir.mkdirs());
 
         ExecutionFailedException e = Assert.assertThrows(
                 ExecutionFailedException.class, taskUpdateThemeImport::execute);
 
-        Assert.assertTrue(e.getMessage() + " did not match expected", e.getMessage()
-                .contains(String.format(
-                        "Theme '%s' should not exist inside a "
-                                + "jar and in the project at the same time.",
-                        CUSTOM_THEME_NAME)));
+        Assert.assertTrue(e.getMessage() + " did not match expected",
+                e.getMessage()
+                        .contains(String.format(
+                                "Theme '%s' should not exist inside a "
+                                        + "jar and in the project at the same time.",
+                                CUSTOM_THEME_NAME)));
     }
 
     @Test
@@ -273,19 +285,19 @@ public class TaskUpdateThemeImportTest {
         File themeDir = new File(projectRoot, metaInfResources);
         Assert.assertTrue(themeDir.mkdirs());
 
-        String jsrThemePath = DEFAULT_GENERATED_DIR
-                + CUSTOM_THEME_PATH;
+        String jsrThemePath = DEFAULT_GENERATED_DIR + CUSTOM_THEME_PATH;
         File classPathThemeDir = new File(projectRoot, jsrThemePath);
         Assert.assertTrue(classPathThemeDir.mkdirs());
 
         ExecutionFailedException e = Assert.assertThrows(
                 ExecutionFailedException.class, taskUpdateThemeImport::execute);
 
-        Assert.assertTrue(e.getMessage() + " did not match expected", e.getMessage()
-                .contains(String.format(
-                        "Theme '%s' should not exist inside a "
-                                + "jar and in the project at the same time.",
-                        CUSTOM_THEME_NAME)));
+        Assert.assertTrue(e.getMessage() + " did not match expected",
+                e.getMessage()
+                        .contains(String.format(
+                                "Theme '%s' should not exist inside a "
+                                        + "jar and in the project at the same time.",
+                                CUSTOM_THEME_NAME)));
     }
 
     @Test
@@ -296,19 +308,19 @@ public class TaskUpdateThemeImportTest {
         File themeDir = new File(projectRoot, staticResources);
         Assert.assertTrue(themeDir.mkdirs());
 
-        String classPathThemePath = DEFAULT_GENERATED_DIR
-                + CUSTOM_THEME_PATH;
+        String classPathThemePath = DEFAULT_GENERATED_DIR + CUSTOM_THEME_PATH;
         File classPathThemeDir = new File(projectRoot, classPathThemePath);
         Assert.assertTrue(classPathThemeDir.mkdirs());
 
         ExecutionFailedException e = Assert.assertThrows(
                 ExecutionFailedException.class, taskUpdateThemeImport::execute);
 
-        Assert.assertTrue(e.getMessage() + " did not match expected", e.getMessage()
-                .contains(String.format(
-                        "Theme '%s' should not exist inside a "
-                                + "jar and in the project at the same time.",
-                        CUSTOM_THEME_NAME)));
+        Assert.assertTrue(e.getMessage() + " did not match expected",
+                e.getMessage()
+                        .contains(String.format(
+                                "Theme '%s' should not exist inside a "
+                                        + "jar and in the project at the same time.",
+                                CUSTOM_THEME_NAME)));
     }
 
     @Test
@@ -327,12 +339,14 @@ public class TaskUpdateThemeImportTest {
         ExecutionFailedException e = Assert.assertThrows(
                 ExecutionFailedException.class, taskUpdateThemeImport::execute);
 
-        Assert.assertTrue(e.getMessage() + " did not match expected", e.getMessage().contains(String.format(
-                "Discovered Theme folder for theme '%s' "
-                        + "in more than one place in the project. Please "
-                        + "make sure there is only one theme folder with name '%s' "
-                        + "exists in the your project. ",
-                CUSTOM_THEME_NAME, CUSTOM_THEME_NAME)));
+        Assert.assertTrue(e.getMessage() + " did not match expected",
+                e.getMessage()
+                        .contains(String.format(
+                                "Discovered Theme folder for theme '%s' "
+                                        + "in more than one place in the project. Please "
+                                        + "make sure there is only one theme folder with name '%s' "
+                                        + "exists in the your project. ",
+                                CUSTOM_THEME_NAME, CUSTOM_THEME_NAME)));
     }
 
     @Test
@@ -349,12 +363,14 @@ public class TaskUpdateThemeImportTest {
         ExecutionFailedException e = Assert.assertThrows(
                 ExecutionFailedException.class, taskUpdateThemeImport::execute);
 
-        Assert.assertTrue(e.getMessage() + " did not match expected", e.getMessage().contains(String.format(
-            "Discovered Theme folder for theme '%s' "
-                    + "in more than one place in the project. Please "
-                    + "make sure there is only one theme folder with name '%s' "
-                    + "exists in the your project. ",
-            CUSTOM_THEME_NAME, CUSTOM_THEME_NAME)));
+        Assert.assertTrue(e.getMessage() + " did not match expected",
+                e.getMessage()
+                        .contains(String.format(
+                                "Discovered Theme folder for theme '%s' "
+                                        + "in more than one place in the project. Please "
+                                        + "make sure there is only one theme folder with name '%s' "
+                                        + "exists in the your project. ",
+                                CUSTOM_THEME_NAME, CUSTOM_THEME_NAME)));
     }
 
     @Test
@@ -371,12 +387,14 @@ public class TaskUpdateThemeImportTest {
         ExecutionFailedException e = Assert.assertThrows(
                 ExecutionFailedException.class, taskUpdateThemeImport::execute);
 
-        Assert.assertTrue(e.getMessage() + " did not match expected", e.getMessage().contains(String.format(
-            "Discovered Theme folder for theme '%s' "
-                    + "in more than one place in the project. Please "
-                    + "make sure there is only one theme folder with name '%s' "
-                    + "exists in the your project. ",
-            CUSTOM_THEME_NAME, CUSTOM_THEME_NAME)));
+        Assert.assertTrue(e.getMessage() + " did not match expected",
+                e.getMessage()
+                        .contains(String.format(
+                                "Discovered Theme folder for theme '%s' "
+                                        + "in more than one place in the project. Please "
+                                        + "make sure there is only one theme folder with name '%s' "
+                                        + "exists in the your project. ",
+                                CUSTOM_THEME_NAME, CUSTOM_THEME_NAME)));
     }
 
     @Test
@@ -398,19 +416,20 @@ public class TaskUpdateThemeImportTest {
         ExecutionFailedException e = Assert.assertThrows(
                 ExecutionFailedException.class, taskUpdateThemeImport::execute);
 
-        Assert.assertTrue(e.getMessage() + " did not match expected", e.getMessage().contains(String.format(
-            "Discovered Theme folder for theme '%s' "
-                    + "in more than one place in the project. Please "
-                    + "make sure there is only one theme folder with name '%s' "
-                    + "exists in the your project. ",
-            CUSTOM_THEME_NAME, CUSTOM_THEME_NAME)));
+        Assert.assertTrue(e.getMessage() + " did not match expected",
+                e.getMessage()
+                        .contains(String.format(
+                                "Discovered Theme folder for theme '%s' "
+                                        + "in more than one place in the project. Please "
+                                        + "make sure there is only one theme folder with name '%s' "
+                                        + "exists in the your project. ",
+                                CUSTOM_THEME_NAME, CUSTOM_THEME_NAME)));
     }
 
     @Test
     public void taskExecuted_customThemeFolderExistsInClassPathAndStaticAndMetaInfResources_throwsException() {
 
-        String classPathThemePath = DEFAULT_GENERATED_DIR
-                + CUSTOM_THEME_PATH;
+        String classPathThemePath = DEFAULT_GENERATED_DIR + CUSTOM_THEME_PATH;
         File classPathThemeDir = new File(projectRoot, classPathThemePath);
         Assert.assertTrue(classPathThemeDir.mkdirs());
 
@@ -427,10 +446,11 @@ public class TaskUpdateThemeImportTest {
         ExecutionFailedException e = Assert.assertThrows(
                 ExecutionFailedException.class, taskUpdateThemeImport::execute);
 
-        Assert.assertTrue(e.getMessage() + " did not match expected", e.getMessage()
-                .contains(String.format(
-                        "Theme '%s' should not exist inside a "
-                                + "jar and in the project at the same time.",
-                        CUSTOM_THEME_NAME)));
+        Assert.assertTrue(e.getMessage() + " did not match expected",
+                e.getMessage()
+                        .contains(String.format(
+                                "Theme '%s' should not exist inside a "
+                                        + "jar and in the project at the same time.",
+                                CUSTOM_THEME_NAME)));
     }
 }

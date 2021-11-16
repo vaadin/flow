@@ -205,8 +205,7 @@ public class NodeUpdaterTest {
                 () -> NodeUpdater.getJsonFileContent(brokenPackageJsonFile));
 
         MatcherAssert.assertThat(exception.getMessage(),
-                StringContains.containsString(
-                        "Cannot parse package file "));
+                StringContains.containsString("Cannot parse package file "));
         MatcherAssert.assertThat(exception.getMessage(),
                 StringContains.containsString("broken-package.json"));
     }

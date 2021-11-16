@@ -130,8 +130,8 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     public void loadingJars_useResourcesThemesFolder_allFilesExist()
             throws IOException, ServletException {
         loadingJarsWithProtocol_allFilesExist(RESOURCES_THEME_JAR_DEFAULT,
-            "src/test/resources/jar-with-themes-resources.jar!/META-INF/resources/themes",
-            this::jarUrlBuilder);
+                "src/test/resources/jar-with-themes-resources.jar!/META-INF/resources/themes",
+                this::jarUrlBuilder);
     }
 
     @Test
@@ -235,13 +235,16 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
 
     @Test
     public void should_Always_Update_Generated_Webpack_Conf() throws Exception {
-        File generatedWebpackFile = new File(webpackFile.getParentFile(), FrontendUtils.WEBPACK_GENERATED);
+        File generatedWebpackFile = new File(webpackFile.getParentFile(),
+                FrontendUtils.WEBPACK_GENERATED);
         try (FileWriter writer = new FileWriter(generatedWebpackFile)) {
             IOUtils.write("Hello world", writer);
             writer.flush();
-            Assert.assertEquals("Hello world", IOUtils.toString(generatedWebpackFile.toURI(),StandardCharsets.UTF_8));
+            Assert.assertEquals("Hello world", IOUtils.toString(
+                    generatedWebpackFile.toURI(), StandardCharsets.UTF_8));
             process();
-            Assert.assertNotEquals("Hello world", IOUtils.toString(generatedWebpackFile.toURI(),StandardCharsets.UTF_8));
+            Assert.assertNotEquals("Hello world", IOUtils.toString(
+                    generatedWebpackFile.toURI(), StandardCharsets.UTF_8));
         } finally {
             generatedWebpackFile.delete();
         }
@@ -258,8 +261,8 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
             final String generated = IOUtils.toString(
                     generatedWebpackFile.toURI(), StandardCharsets.UTF_8);
 
-            final Pattern compile = Pattern.compile(
-                    "projectStaticAssetsOutputFolder.* '(.*)'");
+            final Pattern compile = Pattern
+                    .compile("projectStaticAssetsOutputFolder.* '(.*)'");
             final Matcher matcher = compile.matcher(generated);
             matcher.find();
 
@@ -452,7 +455,8 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
 
     private void loadingJars_allFilesExist(String resourcesFolder)
             throws IOException, ServletException {
-        loadingJarsWithProtocol_allFilesExist(resourcesFolder, this::jarUrlBuilder);
+        loadingJarsWithProtocol_allFilesExist(resourcesFolder,
+                this::jarUrlBuilder);
     }
 
     private URL jarUrlBuilder(String url) {
@@ -491,13 +495,12 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
                 urlBuilder);
     }
 
-    private void loadingJarsWithProtocol_allFilesExist(String resourcesFolder, String jarContent,
-                                                       Function<String, URL> urlBuilder)
-        throws IOException, ServletException {
+    private void loadingJarsWithProtocol_allFilesExist(String resourcesFolder,
+            String jarContent, Function<String, URL> urlBuilder)
+            throws IOException, ServletException {
         // Create jar urls with the given urlBuilder for test
         String urlPath = this.getClass().getResource("/").toString()
-            .replace("target/test-classes/", "")
-            + jarContent;
+                .replace("target/test-classes/", "") + jarContent;
         URL jar = urlBuilder.apply(urlPath);
         List<URL> urls = new ArrayList<>();
         urls.add(jar);
@@ -505,19 +508,19 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         // Create mock loader with the single jar to be found
         ClassLoader classLoader = Mockito.mock(ClassLoader.class);
         Mockito.when(classLoader.getResources(resourcesFolder))
-            .thenReturn(Collections.enumeration(urls));
+                .thenReturn(Collections.enumeration(urls));
 
         // load jars from classloader
         List<File> jarFilesFromClassloader = new ArrayList<>(DevModeInitializer
-            .getFrontendLocationsFromClassloader(classLoader));
+                .getFrontendLocationsFromClassloader(classLoader));
 
         // Assert that jar was found and accepted
         assertEquals("One jar should have been found and added as a File", 1,
-            jarFilesFromClassloader.size());
+                jarFilesFromClassloader.size());
         // Assert that the file can be found from the filesystem by the given
         // path.
         assertTrue("File in path 'with space' doesn't load from given path",
-            jarFilesFromClassloader.get(0).exists());
+                jarFilesFromClassloader.get(0).exists());
     }
 
     private void loadingFsResources_allFilesExist(String resourcesRoot,

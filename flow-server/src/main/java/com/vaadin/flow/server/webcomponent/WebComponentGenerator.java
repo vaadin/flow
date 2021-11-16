@@ -105,7 +105,8 @@ public class WebComponentGenerator {
         WebComponentConfiguration<? extends Component> config = new WebComponentExporter.WebComponentConfigurationFactory()
                 .create(factory.create());
 
-        return generateModule(config, frontendURI, false, compatibilityMode, themeName);
+        return generateModule(config, frontendURI, false, compatibilityMode,
+                themeName);
     }
 
     /**
@@ -161,7 +162,7 @@ public class WebComponentGenerator {
 
         if (themeName != null && !themeName.isEmpty()) {
             replacements.put("ThemeImport",
-                "import {applyTheme} from 'generated/theme.js';\n\n");
+                    "import {applyTheme} from 'generated/theme.js';\n\n");
             replacements.put("ApplyTheme", "applyTheme(shadow);\n    ");
         } else {
             replacements.put("ThemeImport", "");
@@ -182,10 +183,8 @@ public class WebComponentGenerator {
 
         replacements.put("frontend_resources", frontendURI);
 
-        replacements.put("ui_import",
-                generateUiImport
-                        ? "<link rel='import' href='web-component-ui.html'>"
-                        : "");
+        replacements.put("ui_import", generateUiImport
+                ? "<link rel='import' href='web-component-ui.html'>" : "");
 
         return replacements;
     }

@@ -127,7 +127,8 @@ public class InjectablePolymerElementInitializerTest {
                 Collections.singletonMap("disabled", Boolean.TRUE.toString()));
 
         Assert.assertTrue("Element should stay enabled", element.isEnabled());
-        Assert.assertTrue("Disabled should show as a property", element.hasProperty("disabled"));
+        Assert.assertTrue("Disabled should show as a property",
+                element.hasProperty("disabled"));
     }
 
     public void initializeElement_setText_textIsSet() {

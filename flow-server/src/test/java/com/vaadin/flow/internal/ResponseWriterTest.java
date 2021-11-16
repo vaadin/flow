@@ -83,12 +83,12 @@ public class ResponseWriterTest {
                 createFileURLWithDataAndLength(PATH_BR, fileJsBrotliContents));
         pathToUrl.put(CLASS_PATH_JS,
                 createFileURLWithDataAndLength(CLASS_PATH_JS, fileJsContents));
-        pathToUrl.put(CLASS_PATH_GZ,
-                createFileURLWithDataAndLength(CLASS_PATH_GZ, fileJsGzippedContents));
-        pathToUrl.put(FAULTY_CLASS_PATH_JS,
-                createFileURLWithDataAndLength(FAULTY_CLASS_PATH_JS, fileJsContents));
-        pathToUrl.put(FAULTY_CLASS_PATH_GZ,
-                createFileURLWithDataAndLength(FAULTY_CLASS_PATH_GZ, fileJsGzippedContents));
+        pathToUrl.put(CLASS_PATH_GZ, createFileURLWithDataAndLength(
+                CLASS_PATH_GZ, fileJsGzippedContents));
+        pathToUrl.put(FAULTY_CLASS_PATH_JS, createFileURLWithDataAndLength(
+                FAULTY_CLASS_PATH_JS, fileJsContents));
+        pathToUrl.put(FAULTY_CLASS_PATH_GZ, createFileURLWithDataAndLength(
+                FAULTY_CLASS_PATH_GZ, fileJsGzippedContents));
     }
 
     private ServletContext servletContext;
@@ -274,7 +274,8 @@ public class ResponseWriterTest {
     }
 
     @Test
-    public void writeDataNotGzippedClassPathNotAcceptedPath() throws IOException {
+    public void writeDataNotGzippedClassPathNotAcceptedPath()
+            throws IOException {
         responseWriter.overrideAcceptsGzippedResource = true;
 
         makePathsAvailable(FAULTY_CLASS_PATH_JS);
@@ -353,10 +354,8 @@ public class ResponseWriterTest {
         mockRequestHeaders(new Pair<>("Range", "bytes=0-1"));
 
         assertResponse(Arrays.copyOfRange(fileJsContents, 0, 2));
-        assertResponseHeaders(
-                new Pair<>("Accept-Ranges", "bytes"),
-                new Pair<>("Content-Range",
-                        "bytes 0-1/" + fileJsContents.length));
+        assertResponseHeaders(new Pair<>("Accept-Ranges", "bytes"), new Pair<>(
+                "Content-Range", "bytes 0-1/" + fileJsContents.length));
         Assert.assertEquals(2L, responseContentLength.get());
         assertStatus(206);
     }
@@ -366,10 +365,8 @@ public class ResponseWriterTest {
         makePathsAvailable(PATH_JS);
         mockRequestHeaders(new Pair<>("Range", "bytes=10-11"));
         assertResponse(Arrays.copyOfRange(fileJsContents, 10, 12));
-        assertResponseHeaders(
-                new Pair<>("Accept-Ranges", "bytes"),
-                new Pair<>("Content-Range",
-                        "bytes 10-11/" + fileJsContents.length));
+        assertResponseHeaders(new Pair<>("Accept-Ranges", "bytes"), new Pair<>(
+                "Content-Range", "bytes 10-11/" + fileJsContents.length));
         Assert.assertEquals(2L, responseContentLength.get());
         assertStatus(206);
     }
@@ -378,12 +375,9 @@ public class ResponseWriterTest {
     public void writeByteRangeStartOmitted() throws IOException {
         makePathsAvailable(PATH_JS);
         mockRequestHeaders(new Pair<>("Range", "bytes=-10"));
-        assertResponse(
-                Arrays.copyOfRange(fileJsContents, 0, 11));
-        assertResponseHeaders(
-                new Pair<>("Accept-Ranges", "bytes"),
-                new Pair<>("Content-Range",
-                        "bytes 0-10/" + fileJsContents.length));
+        assertResponse(Arrays.copyOfRange(fileJsContents, 0, 11));
+        assertResponseHeaders(new Pair<>("Accept-Ranges", "bytes"), new Pair<>(
+                "Content-Range", "bytes 0-10/" + fileJsContents.length));
         Assert.assertEquals(11L, responseContentLength.get());
         assertStatus(206);
     }
@@ -394,10 +388,8 @@ public class ResponseWriterTest {
         mockRequestHeaders(new Pair<>("Range", "bytes=10-"));
         assertResponse(
                 Arrays.copyOfRange(fileJsContents, 10, fileJsContents.length));
-        assertResponseHeaders(
-                new Pair<>("Accept-Ranges", "bytes"),
-                new Pair<>("Content-Range",
-                        "bytes 10-15/" + fileJsContents.length));
+        assertResponseHeaders(new Pair<>("Accept-Ranges", "bytes"), new Pair<>(
+                "Content-Range", "bytes 10-15/" + fileJsContents.length));
         Assert.assertEquals(6L, responseContentLength.get());
         assertStatus(206);
     }
@@ -408,10 +400,8 @@ public class ResponseWriterTest {
         mockRequestHeaders(new Pair<>("Range", "bytes=10-100000"));
         assertResponse(
                 Arrays.copyOfRange(fileJsContents, 10, fileJsContents.length));
-        assertResponseHeaders(
-                new Pair<>("Accept-Ranges", "bytes"),
-                new Pair<>("Content-Range",
-                        "bytes 10-15/" + fileJsContents.length));
+        assertResponseHeaders(new Pair<>("Accept-Ranges", "bytes"), new Pair<>(
+                "Content-Range", "bytes 10-15/" + fileJsContents.length));
         Assert.assertEquals(6L, responseContentLength.get());
         assertStatus(206);
     }
@@ -447,11 +437,11 @@ public class ResponseWriterTest {
         // "File.js contents"
         // ^0123456789ABCDEF^
         assertMultipartResponse(PATH_JS, Arrays.asList(
-                new Pair<>(new String[] {"Content-Range: bytes 1-4/16"},
+                new Pair<>(new String[] { "Content-Range: bytes 1-4/16" },
                         "ile.".getBytes()),
-                new Pair<>(new String[] {"Content-Range: bytes 5-6/16"},
+                new Pair<>(new String[] { "Content-Range: bytes 5-6/16" },
                         "js".getBytes()),
-                new Pair<>(new String[] {"Content-Range: bytes 10-12/16"},
+                new Pair<>(new String[] { "Content-Range: bytes 10-12/16" },
                         "nte".getBytes())));
         assertStatus(206);
     }
@@ -462,13 +452,18 @@ public class ResponseWriterTest {
         mockRequestHeaders(new Pair<>("Range", "bytes=10-12, 1-4, 5-6"));
         // "File.js contents"
         // ^0123456789ABCDEF^
-        assertMultipartResponse(PATH_JS, Arrays.asList(
-                new Pair<>(new String[] {"Content-Range: bytes 10-12/16"},
-                        "nte".getBytes()),
-                new Pair<>(new String[] {"Content-Range: bytes 1-4/16"},
-                        "ile.".getBytes()),
-                new Pair<>(new String[] {"Content-Range: bytes 5-6/16"},
-                        "js".getBytes())));
+        assertMultipartResponse(PATH_JS,
+                Arrays.asList(
+                        new Pair<>(
+                                new String[] {
+                                        "Content-Range: bytes 10-12/16" },
+                                "nte".getBytes()),
+                        new Pair<>(
+                                new String[] { "Content-Range: bytes 1-4/16" },
+                                "ile.".getBytes()),
+                        new Pair<>(
+                                new String[] { "Content-Range: bytes 5-6/16" },
+                                "js".getBytes())));
         assertStatus(206);
     }
 
@@ -479,9 +474,9 @@ public class ResponseWriterTest {
         // "File.js contents"
         // ^0123456789ABCDEF^
         assertMultipartResponse(PATH_JS, Arrays.asList(
-                new Pair<>(new String[] {"Content-Range: bytes 0-15/16"},
+                new Pair<>(new String[] { "Content-Range: bytes 0-15/16" },
                         "File.js contents".getBytes()),
-                new Pair<>(new String[] {"Content-Range: bytes 1-4/16"},
+                new Pair<>(new String[] { "Content-Range: bytes 1-4/16" },
                         "ile.".getBytes())));
         assertStatus(206);
     }
@@ -489,38 +484,58 @@ public class ResponseWriterTest {
     @Test
     public void writeByteRangeMultiPartTooManyRequested() throws IOException {
         makePathsAvailable(PATH_JS);
-        mockRequestHeaders(new Pair<>("Range", "bytes=0-0, 0-0, 1-1, 2-2, 3-3, 4-4, 5-5, 6-6, 7-7, 8-8, 9-9, 10-10, 11-11, 12-12, 13-13, 14-14, 15-15, 16-16"));
+        mockRequestHeaders(new Pair<>("Range",
+                "bytes=0-0, 0-0, 1-1, 2-2, 3-3, 4-4, 5-5, 6-6, 7-7, 8-8, 9-9, 10-10, 11-11, 12-12, 13-13, 14-14, 15-15, 16-16"));
         // "File.js contents"
         // ^0123456789ABCDEF^
         assertMultipartResponse(PATH_JS, Arrays.asList(
-                new Pair<>(new String[]{"Content-Range: bytes 0-0/16"}, "F".getBytes()),
-                new Pair<>(new String[]{"Content-Range: bytes 0-0/16"}, "F".getBytes()),
-                new Pair<>(new String[]{"Content-Range: bytes 1-1/16"}, "i".getBytes()),
-                new Pair<>(new String[]{"Content-Range: bytes 2-2/16"}, "l".getBytes()),
-                new Pair<>(new String[]{"Content-Range: bytes 3-3/16"}, "e".getBytes()),
-                new Pair<>(new String[]{"Content-Range: bytes 4-4/16"}, ".".getBytes()),
-                new Pair<>(new String[]{"Content-Range: bytes 5-5/16"}, "j".getBytes()),
-                new Pair<>(new String[]{"Content-Range: bytes 6-6/16"}, "s".getBytes()),
-                new Pair<>(new String[]{"Content-Range: bytes 7-7/16"}, " ".getBytes()),
-                new Pair<>(new String[]{"Content-Range: bytes 8-8/16"}, "c".getBytes()),
-                new Pair<>(new String[]{"Content-Range: bytes 9-9/16"}, "o".getBytes()),
-                new Pair<>(new String[]{"Content-Range: bytes 10-10/16"}, "n".getBytes()),
-                new Pair<>(new String[]{"Content-Range: bytes 11-11/16"}, "t".getBytes()),
-                new Pair<>(new String[]{"Content-Range: bytes 12-12/16"}, "e".getBytes()),
-                new Pair<>(new String[]{"Content-Range: bytes 13-13/16"}, "n".getBytes()),
-                new Pair<>(new String[]{"Content-Range: bytes 14-14/16"}, "t".getBytes())));
+                new Pair<>(new String[] { "Content-Range: bytes 0-0/16" },
+                        "F".getBytes()),
+                new Pair<>(new String[] { "Content-Range: bytes 0-0/16" },
+                        "F".getBytes()),
+                new Pair<>(new String[] { "Content-Range: bytes 1-1/16" },
+                        "i".getBytes()),
+                new Pair<>(new String[] { "Content-Range: bytes 2-2/16" },
+                        "l".getBytes()),
+                new Pair<>(new String[] { "Content-Range: bytes 3-3/16" },
+                        "e".getBytes()),
+                new Pair<>(new String[] { "Content-Range: bytes 4-4/16" },
+                        ".".getBytes()),
+                new Pair<>(new String[] { "Content-Range: bytes 5-5/16" },
+                        "j".getBytes()),
+                new Pair<>(new String[] { "Content-Range: bytes 6-6/16" },
+                        "s".getBytes()),
+                new Pair<>(new String[] { "Content-Range: bytes 7-7/16" },
+                        " ".getBytes()),
+                new Pair<>(new String[] { "Content-Range: bytes 8-8/16" },
+                        "c".getBytes()),
+                new Pair<>(new String[] { "Content-Range: bytes 9-9/16" },
+                        "o".getBytes()),
+                new Pair<>(new String[] { "Content-Range: bytes 10-10/16" },
+                        "n".getBytes()),
+                new Pair<>(new String[] { "Content-Range: bytes 11-11/16" },
+                        "t".getBytes()),
+                new Pair<>(new String[] { "Content-Range: bytes 12-12/16" },
+                        "e".getBytes()),
+                new Pair<>(new String[] { "Content-Range: bytes 13-13/16" },
+                        "n".getBytes()),
+                new Pair<>(new String[] { "Content-Range: bytes 14-14/16" },
+                        "t".getBytes())));
         assertStatus(206);
     }
 
     @Test
-    public void writeByteRangeMultiPartTooManyOverlappingRequested() throws IOException {
+    public void writeByteRangeMultiPartTooManyOverlappingRequested()
+            throws IOException {
         makePathsAvailable(PATH_JS);
         mockRequestHeaders(new Pair<>("Range", "bytes=2-4, 0-4, 3-14"));
         // "File.js contents"
         // ^0123456789ABCDEF^
         assertMultipartResponse(PATH_JS, Arrays.asList(
-                new Pair<>(new String[]{"Content-Range: bytes 2-4/16"}, "le.".getBytes()),
-                new Pair<>(new String[]{"Content-Range: bytes 0-4/16"}, "File.".getBytes())));
+                new Pair<>(new String[] { "Content-Range: bytes 2-4/16" },
+                        "le.".getBytes()),
+                new Pair<>(new String[] { "Content-Range: bytes 0-4/16" },
+                        "File.".getBytes())));
         assertStatus(206);
     }
 
@@ -528,11 +543,12 @@ public class ResponseWriterTest {
         assertResponse(PATH_JS, expectedResponse);
     }
 
-    private void assertResponse(String path, byte[] expectedResponse) throws IOException {
+    private void assertResponse(String path, byte[] expectedResponse)
+            throws IOException {
         CapturingServletOutputStream out = new CapturingServletOutputStream();
         Mockito.when(response.getOutputStream()).thenReturn(out);
-        responseWriter.writeResponseContents(path, pathToUrl.get(path),
-                request, response);
+        responseWriter.writeResponseContents(path, pathToUrl.get(path), request,
+                response);
 
         Assert.assertArrayEquals(expectedResponse, out.getOutput());
         Assert.assertEquals(expectedResponse.length,
@@ -551,8 +567,8 @@ public class ResponseWriterTest {
             return null;
         }).when(response).setContentType(Matchers.anyString());
 
-        responseWriter.writeResponseContents(path, pathToUrl.get(path),
-                request, response);
+        responseWriter.writeResponseContents(path, pathToUrl.get(path), request,
+                response);
         final byte[] output = out.getOutput();
 
         Assert.assertNotNull(contentType.get());
@@ -607,6 +623,7 @@ public class ResponseWriterTest {
             Mockito.when(servletContext.getResource(path)).thenReturn(url);
         }
     }
+
     private void makeClassPathAvailable(String... paths) {
         for (String path : paths) {
             URL url = pathToUrl.get(path);
@@ -614,8 +631,10 @@ public class ResponseWriterTest {
                 throw new IllegalArgumentException("Unsupported path: " + path);
             }
             ClassLoader classLoader = Mockito.mock(ClassLoader.class);
-            Mockito.when(servletContext.getClassLoader()).thenReturn(classLoader);
-            Mockito.when(classLoader.getResource("META-INF" + path)).thenReturn(url);
+            Mockito.when(servletContext.getClassLoader())
+                    .thenReturn(classLoader);
+            Mockito.when(classLoader.getResource("META-INF" + path))
+                    .thenReturn(url);
         }
     }
 

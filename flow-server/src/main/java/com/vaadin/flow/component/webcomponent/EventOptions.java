@@ -70,8 +70,7 @@ public class EventOptions implements Serializable {
      * @see com.vaadin.flow.component.WebComponentExporter for exporting web
      *         components
      */
-    public EventOptions(boolean bubbles, boolean cancelable,
-                        boolean composed) {
+    public EventOptions(boolean bubbles, boolean cancelable, boolean composed) {
         this.bubbles = bubbles;
         this.cancelable = cancelable;
         this.composed = composed;

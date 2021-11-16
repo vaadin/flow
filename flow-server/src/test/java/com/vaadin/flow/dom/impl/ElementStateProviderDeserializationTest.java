@@ -37,16 +37,19 @@ import com.vaadin.flow.dom.Element;
 public class ElementStateProviderDeserializationTest {
 
     @Test
-    public void shouldRemoveChildComponentFromDeserializedParent() throws Exception {
+    public void shouldRemoveChildComponentFromDeserializedParent()
+            throws Exception {
 
         TestParentComponent parent = (TestParentComponent) deserialize(
                 serialize(new TestParentComponent(new TestChildComponent())));
 
-        Component child = parent.getChildren().findFirst().orElseThrow(IllegalStateException::new);
+        Component child = parent.getChildren().findFirst()
+                .orElseThrow(IllegalStateException::new);
 
         parent.remove(child);
 
-        Assert.assertEquals("Child component should have been removed.", 0, parent.getChildren().count());
+        Assert.assertEquals("Child component should have been removed.", 0,
+                parent.getChildren().count());
     }
 
     private byte[] serialize(Object object) throws IOException {
@@ -58,14 +61,16 @@ public class ElementStateProviderDeserializationTest {
         }
     }
 
-    private Object deserialize(byte[] bytes) throws IOException, ClassNotFoundException {
+    private Object deserialize(byte[] bytes)
+            throws IOException, ClassNotFoundException {
         try (ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
                 ObjectInputStream ois = new ObjectInputStream(bais)) {
             return ois.readObject();
         }
     }
 
-    private static class TestParentComponent extends Component implements HasComponents {
+    private static class TestParentComponent extends Component
+            implements HasComponents {
 
         private static final long serialVersionUID = 1L;
 

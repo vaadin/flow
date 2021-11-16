@@ -402,10 +402,9 @@ public final class DeploymentConfigurationFactory implements Serializable {
                     firstResource.getPath(), resources.size());
             logger.warn(warningMessage);
         } else {
-            String debugMessage = String.format(
-                    "Unable to fully determine correct flow-build-info.%n"
-                            + "Accepting file '%s'",
-                    firstResource.getPath());
+            String debugMessage = String
+                    .format("Unable to fully determine correct flow-build-info.%n"
+                            + "Accepting file '%s'", firstResource.getPath());
             logger.debug(debugMessage);
         }
         return FrontendUtils.streamToString(firstResource.openStream());

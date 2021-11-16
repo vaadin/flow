@@ -78,7 +78,7 @@ public interface ClickNotifier<T extends Component> extends Serializable {
      *          removing
      */
     default ShortcutRegistration addClickShortcut(Key key,
-                                                  KeyModifier... keyModifiers) {
+            KeyModifier... keyModifiers) {
         if (!(this instanceof Component)) {
             throw new IllegalStateException(String.format(
                     "The class '%s' doesn't extend '%s'. "
@@ -94,10 +94,10 @@ public interface ClickNotifier<T extends Component> extends Serializable {
 
         final Component thisComponent = (Component) this;
 
-        return new ShortcutRegistration(thisComponent, () -> new Component[] { thisComponent.getUI().get() },
+        return new ShortcutRegistration(thisComponent,
+                () -> new Component[] { thisComponent.getUI().get() },
                 event -> ComponentUtil.fireEvent(thisComponent,
                         new ClickEvent<>(thisComponent)),
-                key).withModifiers(keyModifiers)
-                .allowBrowserDefault();
+                key).withModifiers(keyModifiers).allowBrowserDefault();
     }
 }

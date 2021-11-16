@@ -80,7 +80,7 @@ public class UnsupportedBrowserHandler extends SynchronizedRequestHandler {
 
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
-                                             VaadinRequest request, VaadinResponse response) throws IOException {
+            VaadinRequest request, VaadinResponse response) throws IOException {
 
         // bypass checks if cookie set
         final String cookie = request.getHeader("Cookie");
@@ -124,7 +124,7 @@ public class UnsupportedBrowserHandler extends SynchronizedRequestHandler {
      * @throws IOException if an IO error occurred
      */
     protected void writeBrowserTooOldPage(VaadinRequest request,
-                                          VaadinResponse response) throws IOException {
+            VaadinResponse response) throws IOException {
         Writer page = response.getWriter();
         WebBrowser browser = VaadinSession.getCurrent().getBrowser();
 
@@ -165,7 +165,8 @@ public class UnsupportedBrowserHandler extends SynchronizedRequestHandler {
      * @param response the response object to write response to
      * @throws IOException if an IO error occurred
      */
-    private void writeIE11InDevelopmentModePage(VaadinResponse response) throws IOException {
+    private void writeIE11InDevelopmentModePage(VaadinResponse response)
+            throws IOException {
         Writer page = response.getWriter();
 
         // @formatter:off
@@ -199,7 +200,8 @@ public class UnsupportedBrowserHandler extends SynchronizedRequestHandler {
      * @param response the response object to write response to
      * @throws IOException if an IO error occurred
      */
-    private void writeES5TranspilationRequiredInDevelopmentModePage(VaadinResponse response) throws IOException {
+    private void writeES5TranspilationRequiredInDevelopmentModePage(
+            VaadinResponse response) throws IOException {
         Writer page = response.getWriter();
 
         // @formatter:off

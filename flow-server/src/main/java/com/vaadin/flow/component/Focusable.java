@@ -162,7 +162,8 @@ public interface Focusable<T extends Component>
 
         final Component thisComponent = (Component) this;
 
-        return new ShortcutRegistration((Component) this, () -> new Component[] {thisComponent.getUI().get()},
+        return new ShortcutRegistration((Component) this,
+                () -> new Component[] { thisComponent.getUI().get() },
                 event -> this.focus(), key).withModifiers(keyModifiers);
     }
 }

@@ -65,7 +65,7 @@ public class VaadinClasses {
 
     private static <T> List<Class<? extends T>> findClassesNoTests(
             Class<T> baseClass, String basePackage, String[] ignoredPackages)
-                    throws IOException {
+            throws IOException {
         List<Class<? extends T>> classes = findClasses(baseClass, basePackage,
                 ignoredPackages);
         List<Class<? extends T>> classesNoTests = new ArrayList<>();

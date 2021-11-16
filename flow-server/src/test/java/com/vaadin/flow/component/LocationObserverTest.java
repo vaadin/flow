@@ -97,7 +97,8 @@ public class LocationObserverTest {
         router = new Router(new TestRouteRegistry());
         ui = new RouterTestMockUI(router);
 
-        RouteConfiguration.forRegistry(router.getRegistry()).setAnnotatedRoute(Translations.class);
+        RouteConfiguration.forRegistry(router.getRegistry())
+                .setAnnotatedRoute(Translations.class);
 
         ui.navigate("");
 

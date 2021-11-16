@@ -242,8 +242,8 @@ public class ShadowRootStateProvider extends AbstractNodeStateProvider {
     public boolean isVisible(StateNode node) {
         throw new UnsupportedOperationException();
     }
-    
+
     protected Object readResolve() throws ObjectStreamException {
         return INSTANCE;
-    }    
+    }
 }

@@ -58,8 +58,7 @@ import static org.junit.Assert.assertThat;
 public class FrontendToolsTest {
 
     public static final String DEFAULT_NODE = FrontendUtils.isWindows()
-            ? "node\\node.exe"
-            : "node/node";
+            ? "node\\node.exe" : "node/node";
 
     public static final String NPM_CLI_STRING = Stream
             .of("node", "node_modules", "npm", "bin", "npm-cli.js")
@@ -112,7 +111,8 @@ public class FrontendToolsTest {
 
     }
 
-    private void prepareNodeDownloadableZipAt(String baseDir, String version) throws IOException {
+    private void prepareNodeDownloadableZipAt(String baseDir, String version)
+            throws IOException {
         Platform platform = Platform.guess();
         String nodeExec = platform.isWindows() ? "node.exe" : "node";
         String prefix = "node-" + version + "-"
@@ -179,13 +179,13 @@ public class FrontendToolsTest {
 
     @Test
     public void installNodeFromFileSystem_ForceAlternativeNodeExecutableInstallsToTargetDirectory()
-            throws Exception{
+            throws Exception {
         Assert.assertFalse("npm should not yet be present",
                 new File(vaadinHomeDir, "node/node_modules/npm/bin/npm")
                         .exists());
 
-        tools = new FrontendTools(baseDir, () -> vaadinHomeDir,
-                "v12.10.0", new File(baseDir).toURI());
+        tools = new FrontendTools(baseDir, () -> vaadinHomeDir, "v12.10.0",
+                new File(baseDir).toURI());
         prepareNodeDownloadableZipAt(baseDir, "v12.10.0");
         tools.forceAlternativeNodeExecutable();
 
@@ -465,7 +465,8 @@ public class FrontendToolsTest {
     }
 
     @Test
-    public void getSuitablePnpm_incompatibleDefaultVersionInstalled_rejected() throws Exception {
+    public void getSuitablePnpm_incompatibleDefaultVersionInstalled_rejected()
+            throws Exception {
         createStubNode(false, true, baseDir);
         createFakePnpm("4.5.0");
         List<String> pnpmCommand = tools.getSuitablePnpm();
@@ -473,8 +474,10 @@ public class FrontendToolsTest {
                 "pnpm@" + FrontendTools.DEFAULT_PNPM_VERSION,
                 pnpmCommand.get(pnpmCommand.size() - 1));
     }
+
     @Test
-    public void getSuitablePnpm_compatibleVersionInstalled_accepted() throws Exception {
+    public void getSuitablePnpm_compatibleVersionInstalled_accepted()
+            throws Exception {
         createStubNode(false, true, baseDir);
         createFakePnpm("5.15.1");
         List<String> pnpmCommand = tools.getSuitablePnpm();
@@ -508,8 +511,8 @@ public class FrontendToolsTest {
 
         ToolStubInfo nodeStub = ToolStubInfo.none();
         // Old npm version
-        ToolStubInfo npmStub = ToolStubInfo
-                .builder(Tool.NPM).withVersion("6.0.0").build();
+        ToolStubInfo npmStub = ToolStubInfo.builder(Tool.NPM)
+                .withVersion("6.0.0").build();
         createStubNode(nodeStub, npmStub, baseDir);
 
         // when
@@ -534,8 +537,8 @@ public class FrontendToolsTest {
 
         ToolStubInfo nodeStub = ToolStubInfo.none();
         // Old npm version
-        ToolStubInfo npmStub = ToolStubInfo
-                .builder(Tool.NPM).withVersion("6.0.0").build();
+        ToolStubInfo npmStub = ToolStubInfo.builder(Tool.NPM)
+                .withVersion("6.0.0").build();
         createStubNode(nodeStub, npmStub, baseDir);
 
         // when
@@ -558,8 +561,8 @@ public class FrontendToolsTest {
 
         ToolStubInfo nodeStub = ToolStubInfo.none();
         // Old npm version
-        ToolStubInfo npmStub = ToolStubInfo
-                .builder(Tool.NPM).withVersion("6.0.0").build();
+        ToolStubInfo npmStub = ToolStubInfo.builder(Tool.NPM)
+                .withVersion("6.0.0").build();
         createStubNode(nodeStub, npmStub, baseDir);
 
         // when
@@ -582,8 +585,8 @@ public class FrontendToolsTest {
 
         ToolStubInfo nodeStub = ToolStubInfo.none();
         // Acceptable npm version
-        ToolStubInfo npmStub = ToolStubInfo
-                .builder(Tool.NPM).withVersion("7.0.0").build();
+        ToolStubInfo npmStub = ToolStubInfo.builder(Tool.NPM)
+                .withVersion("7.0.0").build();
         createStubNode(nodeStub, npmStub, baseDir);
 
         // when
@@ -597,9 +600,8 @@ public class FrontendToolsTest {
     public void getNpmCacheDir_returnsCorrectPath() throws IOException,
             InterruptedException, FrontendUtils.CommandExecutionException {
         ToolStubInfo nodeStub = ToolStubInfo.none();
-        ToolStubInfo npmStub = ToolStubInfo
-                .builder(Tool.NPM).withCacheDir("/foo/bar")
-                .build();
+        ToolStubInfo npmStub = ToolStubInfo.builder(Tool.NPM)
+                .withCacheDir("/foo/bar").build();
         createStubNode(nodeStub, npmStub, baseDir);
 
         File npmCacheDir = tools.getNpmCacheDir();
@@ -661,8 +663,7 @@ public class FrontendToolsTest {
                     .write("pnpmVersion = process.argv.filter(a=>a.startsWith('pnpm')).map(a=>a.substring(5))[0] || '"
                             + defaultPnpmVersion + "'\n"
                             + "if (process.argv.includes('--version') || process.argv.includes('-v')) {\n"
-                            + "    console.log(pnpmVersion);\n"
-                            + "}\n");
+                            + "    console.log(pnpmVersion);\n" + "}\n");
         } finally {
             fileWriter.close();
         }

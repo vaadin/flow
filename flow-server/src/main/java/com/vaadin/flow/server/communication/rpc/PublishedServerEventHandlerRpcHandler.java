@@ -142,8 +142,9 @@ public class PublishedServerEventHandlerRpcHandler
             invokeMethod(compositeContent, compositeContent.getClass(),
                     methodName, args, promiseId);
         } else {
-            String msg = String.format("Neither class '%s' "
-                    + "nor its super classes declare event handler method '%s'",
+            String msg = String.format(
+                    "Neither class '%s' "
+                            + "nor its super classes declare event handler method '%s'",
                     instance.getClass().getName(), methodName);
             throw new IllegalStateException(msg);
         }
@@ -157,8 +158,9 @@ public class PublishedServerEventHandlerRpcHandler
                         || method.isAnnotationPresent(ClientCallable.class))
                 .collect(Collectors.toList());
         if (methods.size() > 1) {
-            String msg = String.format("Class '%s' contains "
-                    + "several event handler method with the same name '%s'",
+            String msg = String.format(
+                    "Class '%s' contains "
+                            + "several event handler method with the same name '%s'",
                     instance.getClass().getName(), methodName);
             throw new IllegalStateException(msg);
         } else if (methods.size() == 1) {
@@ -187,8 +189,7 @@ public class PublishedServerEventHandlerRpcHandler
             } catch (RuntimeException e) {
                 instance.getElement().executeJs("this.$server['"
                         + JsonConstants.RPC_PROMISE_CALLBACK_NAME
-                        + "']($0, false)",
-                        Integer.valueOf(promiseId));
+                        + "']($0, false)", Integer.valueOf(promiseId));
 
                 throw e;
             }

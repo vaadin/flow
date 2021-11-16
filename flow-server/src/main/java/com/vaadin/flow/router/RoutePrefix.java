@@ -39,7 +39,7 @@ public @interface RoutePrefix {
      * <p>
      * This value accepts also parameter template segments which can be defined
      * using following format: <code>:parameterName[?|*][(regex)]</code>.
-
+    
      * @return route prefix to add
      */
     String value();

@@ -60,9 +60,9 @@ public interface HasSize extends HasElement {
         if (unit == null) {
             throw new IllegalArgumentException("Unit can not be null");
         }
-        setWidth(getCssSize(width,unit));
+        setWidth(getCssSize(width, unit));
     }
-    
+
     /**
      * Sets the min-width of the component.
      * <p>
@@ -92,7 +92,7 @@ public interface HasSize extends HasElement {
         if (unit == null) {
             throw new IllegalArgumentException("Unit can not be null");
         }
-        setMinWidth(getCssSize(minWidth,unit));
+        setMinWidth(getCssSize(minWidth, unit));
     }
 
     /**
@@ -124,7 +124,7 @@ public interface HasSize extends HasElement {
         if (unit == null) {
             throw new IllegalArgumentException("Unit can not be null");
         }
-        setMaxWidth(getCssSize(maxWidth,unit));
+        setMaxWidth(getCssSize(maxWidth, unit));
     }
 
     /**
@@ -205,7 +205,7 @@ public interface HasSize extends HasElement {
         if (unit == null) {
             throw new IllegalArgumentException("Unit can not be null");
         }
-        setHeight(getCssSize(height,unit));
+        setHeight(getCssSize(height, unit));
     }
 
     /**
@@ -221,7 +221,8 @@ public interface HasSize extends HasElement {
      *            the min-height value (if <code>null</code>, the property will be removed)
      */
     default void setMinHeight(String minHeight) {
-        getElement().getStyle().set(ElementConstants.STYLE_MIN_HEIGHT, minHeight);
+        getElement().getStyle().set(ElementConstants.STYLE_MIN_HEIGHT,
+                minHeight);
     }
 
     /**
@@ -237,7 +238,7 @@ public interface HasSize extends HasElement {
         if (unit == null) {
             throw new IllegalArgumentException("Unit can not be null");
         }
-        setMinHeight(getCssSize(minHeight,unit));
+        setMinHeight(getCssSize(minHeight, unit));
     }
 
     /**
@@ -253,7 +254,8 @@ public interface HasSize extends HasElement {
      *            the max-height value (if <code>null</code>, the property will be removed)
      */
     default void setMaxHeight(String maxHeight) {
-        getElement().getStyle().set(ElementConstants.STYLE_MAX_HEIGHT, maxHeight);
+        getElement().getStyle().set(ElementConstants.STYLE_MAX_HEIGHT,
+                maxHeight);
     }
 
     /**
@@ -269,7 +271,7 @@ public interface HasSize extends HasElement {
         if (unit == null) {
             throw new IllegalArgumentException("Unit can not be null");
         }
-        setMaxHeight(getCssSize(maxHeight,unit));
+        setMaxHeight(getCssSize(maxHeight, unit));
     }
 
     /**

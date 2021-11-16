@@ -80,13 +80,13 @@ public abstract class PolymerTemplate<M extends TemplateModel>
      */
     protected PolymerTemplate(TemplateParser parser, VaadinService service) {
         if (service == null) {
-            throw new IllegalStateException(VaadinService.class.getSimpleName()
-                    + " instance is null. "
-                    + "It means that you are trying to create "
-                    + "a component instance outside of servlet request thread "
-                    + "which is not thread safe. Any component "
-                    + "instantiation logic should be protected by a session lock."
-                    + "Call your logic inside the UI::access method.");
+            throw new IllegalStateException(
+                    VaadinService.class.getSimpleName() + " instance is null. "
+                            + "It means that you are trying to create "
+                            + "a component instance outside of servlet request thread "
+                            + "which is not thread safe. Any component "
+                            + "instantiation logic should be protected by a session lock."
+                            + "Call your logic inside the UI::access method.");
         }
         TemplateInitializer templateInitializer = new TemplateInitializer(this,
                 parser, service);
@@ -104,8 +104,10 @@ public abstract class PolymerTemplate<M extends TemplateModel>
      */
     public PolymerTemplate() {
         this(VaadinService.getCurrent().getDeploymentConfiguration()
-                .isCompatibilityMode() ? DefaultTemplateParser.getInstance()
-                        : VaadinService.getCurrent().getInstantiator().getTemplateParser(),
+                .isCompatibilityMode()
+                        ? DefaultTemplateParser.getInstance()
+                        : VaadinService.getCurrent().getInstantiator()
+                                .getTemplateParser(),
                 VaadinService.getCurrent());
     }
 

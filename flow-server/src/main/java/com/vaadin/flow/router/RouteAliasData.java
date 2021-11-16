@@ -93,7 +93,7 @@ public class RouteAliasData extends RouteBaseData<RouteAliasData> {
 
     @Override
     public int hashCode() {
-        return Objects
-                .hash(getParentLayouts(), getTemplate(), getNavigationTarget());
+        return Objects.hash(getParentLayouts(), getTemplate(),
+                getNavigationTarget());
     }
 }

@@ -321,7 +321,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                     && element.attr("src").contains("webcomponents-loader.js");
         }
     }
-    
+
     private static Optional<com.vaadin.flow.dom.Element> getElementForShadowDom(
             Element element) {
         if ("style".equals(element.tagName())) {

@@ -126,8 +126,8 @@ public class BeforeLeaveEvent extends BeforeEvent {
      *            navigation layout chain, not <code>null</code>
      */
     public BeforeLeaveEvent(NavigationEvent event, Class<?> navigationTarget,
-                            RouteParameters parameters,
-                            List<Class<? extends RouterLayout>> layouts) {
+            RouteParameters parameters,
+            List<Class<? extends RouterLayout>> layouts) {
         super(event, navigationTarget, parameters, layouts);
     }
 
@@ -200,9 +200,9 @@ public class BeforeLeaveEvent extends BeforeEvent {
      *            <code>null</code>
      */
     public BeforeLeaveEvent(Router router, NavigationTrigger trigger,
-                            Location location, Class<?> navigationTarget,
-                            RouteParameters parameters, UI ui,
-                            List<Class<? extends RouterLayout>> layouts) {
+            Location location, Class<?> navigationTarget,
+            RouteParameters parameters, UI ui,
+            List<Class<? extends RouterLayout>> layouts) {
         super(router, trigger, location, navigationTarget, parameters, ui,
                 layouts);
     }

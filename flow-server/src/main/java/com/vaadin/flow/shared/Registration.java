@@ -101,8 +101,7 @@ public interface Registration extends Serializable {
      *         <code>null</code>
      * @since
      */
-    static <T> Registration addAndRemove(Collection<T> collection,
-            T item) {
+    static <T> Registration addAndRemove(Collection<T> collection, T item) {
         collection.add(item);
         return () -> collection.remove(item);
     }

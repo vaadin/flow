@@ -117,10 +117,9 @@ public class HasUrlParameterFormat implements Serializable {
             Class<? extends Component> navigationTarget) {
         if (hasUrlParameter(navigationTarget)) {
             if (!hasUrlParameterTemplate(urlTemplate)) {
-                throw new IllegalArgumentException(String.format(
-                        "Cannot exclude the url parameter template from the url "
-                                + "without template: %s",
-                        urlTemplate));
+                throw new IllegalArgumentException(String
+                        .format("Cannot exclude the url parameter template from the url "
+                                + "without template: %s", urlTemplate));
             }
             urlTemplate = urlTemplate.substring(0,
                     urlTemplate.indexOf("/" + PARAMETER));

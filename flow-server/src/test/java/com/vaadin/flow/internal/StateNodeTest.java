@@ -1512,8 +1512,7 @@ public class StateNodeTest {
                     .equals(change.getFeature()) ? change
                             : (MapPutChange) changes.get(1);
             propertyChange = change.equals(visibilityChange)
-                    ? (MapPutChange) changes.get(1)
-                    : change;
+                    ? (MapPutChange) changes.get(1) : change;
         } else {
             propertyChange = change;
         }

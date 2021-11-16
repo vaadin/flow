@@ -121,17 +121,20 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry
                     .forRegistry(this);
             Exception caught = null;
             for (RouteBaseData<?> data : event.getRemovedRoutes()) {
-                caught = modifyRoute(() -> routeConfiguration.removeRoute(
-                        HasUrlParameterFormat.excludeTemplate(
-                                data.getTemplate(), data.getNavigationTarget()),
-                        data.getNavigationTarget()), caught != null);
+                caught = modifyRoute(
+                        () -> routeConfiguration.removeRoute(
+                                HasUrlParameterFormat.excludeTemplate(
+                                        data.getTemplate(),
+                                        data.getNavigationTarget()),
+                                data.getNavigationTarget()),
+                        caught != null);
             }
             for (RouteBaseData<?> data : event.getAddedRoutes()) {
                 caught = modifyRoute(
                         () -> routeConfiguration.setRoute(
-                                HasUrlParameterFormat
-                                        .excludeTemplate(data.getTemplate(),
-                                                data.getNavigationTarget()),
+                                HasUrlParameterFormat.excludeTemplate(
+                                        data.getTemplate(),
+                                        data.getNavigationTarget()),
                                 data.getNavigationTarget(),
                                 data.getParentLayouts()),
                         caught != null);
@@ -142,11 +145,10 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry
         private void setRoutes(List<RouteData> routes) {
             Exception caught = null;
             for (RouteData data : routes) {
-                caught = modifyRoute(
-                        () -> setRoute(HasUrlParameterFormat.excludeTemplate(
+                caught = modifyRoute(() -> setRoute(
+                        HasUrlParameterFormat.excludeTemplate(
                                 data.getTemplate(), data.getNavigationTarget()),
-                                data.getNavigationTarget(),
-                                data.getParentLayouts()),
+                        data.getNavigationTarget(), data.getParentLayouts()),
                         caught != null);
                 for (RouteAliasData alias : data.getRouteAliases()) {
                     caught = modifyRoute(() -> setRoute(

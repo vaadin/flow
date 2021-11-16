@@ -91,7 +91,7 @@ public class TaskUpdatePackagesNpmTest {
     public void oldDefaultDependenciesInPackageJson_devAndNormalAreCleaned()
             throws IOException {
         createBasicVaadinVersionsJson();
-        
+
         TaskUpdatePackages task = createTask(Collections.emptyMap());
         JsonObject packageJson = task.getPackageJson();
         // Add default dependency
@@ -459,8 +459,9 @@ public class TaskUpdatePackagesNpmTest {
                 dependencies.hasKey(VAADIN_CORE_NPM_PACKAGE));
         final JsonObject vaadinDependencies = packageJson
                 .getObject(VAADIN_DEP_KEY).getObject(DEPENDENCIES);
-        Assert.assertFalse(VAADIN_CORE_NPM_PACKAGE
-                + " version should not be written to vaadin dependencies in package.json",
+        Assert.assertFalse(
+                VAADIN_CORE_NPM_PACKAGE
+                        + " version should not be written to vaadin dependencies in package.json",
                 vaadinDependencies.hasKey(VAADIN_CORE_NPM_PACKAGE));
     }
 
@@ -479,16 +480,17 @@ public class TaskUpdatePackagesNpmTest {
         FileUtils.write(versionJsonFile, versionJsonString,
                 StandardCharsets.UTF_8);
 
-        TaskUpdatePackages task = createTask(
-                createApplicationDependencies());
+        TaskUpdatePackages task = createTask(createApplicationDependencies());
         task.execute();
-        Assert.assertTrue("Creation of package.json should be marked with modified", task.modified);
+        Assert.assertTrue(
+                "Creation of package.json should be marked with modified",
+                task.modified);
 
         // Rewriting with the same packages should not mark as modified
-        task = createTask(
-                createApplicationDependencies());
+        task = createTask(createApplicationDependencies());
         task.execute();
-        Assert.assertFalse("PackageJson modified without changes.", task.modified);
+        Assert.assertFalse("PackageJson modified without changes.",
+                task.modified);
     }
 
     private void createBasicVaadinVersionsJson() {

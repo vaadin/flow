@@ -129,13 +129,16 @@ public class DeploymentConfigurationFactoryTest {
                                         tokenFile.getPath())));
 
         Class<?> customUiClass = servlet.getEnclosingClass();
-        assertTrue(String.format(
-                "Servlet '%s' should have its enclosing class to be UI subclass, but got: '%s'",
-                customUiClass, servlet),
+        assertTrue(
+                String.format(
+                        "Servlet '%s' should have its enclosing class to be UI subclass, but got: '%s'",
+                        customUiClass, servlet),
                 UI.class.isAssignableFrom(customUiClass));
-        assertEquals(String.format(
-                "Expected DeploymentConfiguration for servlet '%s' to have its enclosing UI class",
-                servlet), customUiClass.getName(), config.getUIClassName());
+        assertEquals(
+                String.format(
+                        "Expected DeploymentConfiguration for servlet '%s' to have its enclosing UI class",
+                        servlet),
+                customUiClass.getName(), config.getUIClassName());
     }
 
     @Test
@@ -151,9 +154,11 @@ public class DeploymentConfigurationFactoryTest {
                         servletConfigParams, emptyMap()));
 
         Class<?> notUiClass = servlet.getEnclosingClass();
-        assertFalse(String.format(
-                "Servlet '%s' should not have its enclosing class to be UI subclass, but got: '%s'",
-                notUiClass, servlet), UI.class.isAssignableFrom(notUiClass));
+        assertFalse(
+                String.format(
+                        "Servlet '%s' should not have its enclosing class to be UI subclass, but got: '%s'",
+                        notUiClass, servlet),
+                UI.class.isAssignableFrom(notUiClass));
         assertEquals(String.format(
                 "Expected DeploymentConfiguration for servlet '%s' to have its enclosing UI class",
                 servlet), UI.class.getName(), config.getUIClassName());
@@ -464,9 +469,10 @@ public class DeploymentConfigurationFactoryTest {
 
     @Test
     public void externalStatsUrlGiven_predefinedContext() throws Exception {
-        FileUtils.writeLines(tokenFile, Arrays.asList("{",
-                "\"externalStatsUrl\": \"http://my.server/static/stats.json\"",
-                "}"));
+        FileUtils.writeLines(tokenFile,
+                Arrays.asList("{",
+                        "\"externalStatsUrl\": \"http://my.server/static/stats.json\"",
+                        "}"));
 
         DeploymentConfiguration config = createConfig(Collections
                 .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));

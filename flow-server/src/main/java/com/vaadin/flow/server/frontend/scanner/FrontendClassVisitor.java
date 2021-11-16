@@ -105,7 +105,9 @@ final class FrontendClassVisitor extends ClassVisitor {
         // are interested in the case Supplier<Component> s = MyComponent::new;
         // flow #6524
         @Override
-        public void visitInvokeDynamicInsn(String name, String descriptor, Handle bootstrapMethodHandle, Object... bootstrapMethodArguments) {
+        public void visitInvokeDynamicInsn(String name, String descriptor,
+                Handle bootstrapMethodHandle,
+                Object... bootstrapMethodArguments) {
             addSignatureToClasses(children, descriptor);
             addSignatureToClasses(children, bootstrapMethodHandle.getOwner());
             addSignatureToClasses(children, bootstrapMethodHandle.getDesc());
@@ -163,7 +165,7 @@ final class FrontendClassVisitor extends ClassVisitor {
             @Override
             public void visit(String name, Object value) {
                 if (THEME_FOLDER.equals(name)) {
-                    endPoint.theme.themeName = (String)value;
+                    endPoint.theme.themeName = (String) value;
                 } else if (VALUE.equals(name)) {
                     endPoint.theme.themeClass = ((Type) value).getClassName();
                     children.add(endPoint.theme.themeClass);
@@ -178,7 +180,8 @@ final class FrontendClassVisitor extends ClassVisitor {
             public void visit(String name, Object value) {
                 if (THEME_FOLDER.equals(name)) {
                     themeRouteVisitor.visit(name, value);
-                } else if (VALUE.equals(name) && endPoint.theme.themeClass == null) {
+                } else if (VALUE.equals(name)
+                        && endPoint.theme.themeClass == null) {
                     themeRouteVisitor.visit(name, value);
                 } else if (VARIANT.equals(name)
                         && endPoint.theme.variant.isEmpty()) {
@@ -234,7 +237,6 @@ final class FrontendClassVisitor extends ClassVisitor {
         addSignatureToClasses(children, descriptor);
         return methodVisitor;
     }
-
 
     // Executed for each annotation in the class.
     @Override

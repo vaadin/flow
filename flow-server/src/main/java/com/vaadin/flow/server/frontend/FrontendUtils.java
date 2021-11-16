@@ -398,8 +398,7 @@ public class FrontendUtils {
                 content = getStatsFromClassPath(service);
             }
             return content != null
-                    ? IOUtils.toString(content, StandardCharsets.UTF_8)
-                    : null;
+                    ? IOUtils.toString(content, StandardCharsets.UTF_8) : null;
         } finally {
             IOUtils.closeQuietly(content);
         }
@@ -484,8 +483,8 @@ public class FrontendUtils {
                                 DateTimeFormatter.RFC_1123_DATE_TIME)
                         .toLocalDateTime();
                 Stats statistics = context.getAttribute(Stats.class);
-                if (statistics == null
-                  || modified.isAfter(statistics.getLastModified().orElse(LocalDateTime.MIN))) {
+                if (statistics == null || modified.isAfter(statistics
+                        .getLastModified().orElse(LocalDateTime.MIN))) {
                     byte[] buffer = IOUtils
                             .toByteArray(connection.getInputStream());
                     statistics = new Stats(buffer, lastModified);
@@ -1049,7 +1048,7 @@ public class FrontendUtils {
     }
 
     /**
-
+    
     /**
      * Intentionally send to console instead to log, useful when executing
      * external processes.

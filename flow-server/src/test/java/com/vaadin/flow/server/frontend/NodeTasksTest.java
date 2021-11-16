@@ -22,7 +22,6 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
 
 public class NodeTasksTest {
 
-
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
@@ -57,23 +56,26 @@ public class NodeTasksTest {
     }
 
     @Test
-    public void should_UseDefaultFolders()throws Exception {
+    public void should_UseDefaultFolders() throws Exception {
         Builder builder = new Builder(
                 new DefaultClassFinder(this.getClass().getClassLoader()),
-                new File(userDir))
-            .enablePackagesUpdate(false)
-            .enableImportsUpdate(true)
-            .runNpmInstall(false)
-            .withEmbeddableWebComponents(false);
+                new File(userDir)).enablePackagesUpdate(false)
+                        .enableImportsUpdate(true).runNpmInstall(false)
+                        .withEmbeddableWebComponents(false);
 
-
-        Assert.assertEquals(new File(userDir, DEFAULT_FRONTEND_DIR).getAbsolutePath(),
-                ((File)getFieldValue(builder, "frontendDirectory")).getAbsolutePath());
-        Assert.assertEquals(new File(userDir, DEFAULT_GENERATED_DIR).getAbsolutePath(),
-                ((File)getFieldValue(builder, "generatedFolder")).getAbsolutePath());
+        Assert.assertEquals(
+                new File(userDir, DEFAULT_FRONTEND_DIR).getAbsolutePath(),
+                ((File) getFieldValue(builder, "frontendDirectory"))
+                        .getAbsolutePath());
+        Assert.assertEquals(
+                new File(userDir, DEFAULT_GENERATED_DIR).getAbsolutePath(),
+                ((File) getFieldValue(builder, "generatedFolder"))
+                        .getAbsolutePath());
 
         builder.build().execute();
-        Assert.assertTrue(new File(userDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME).exists());
+        Assert.assertTrue(
+                new File(userDir, DEFAULT_GENERATED_DIR + IMPORTS_NAME)
+                        .exists());
     }
 
     @Test
@@ -83,19 +85,24 @@ public class NodeTasksTest {
 
         Builder builder = new Builder(
                 new DefaultClassFinder(this.getClass().getClassLoader()),
-                new File(userDir))
-            .enablePackagesUpdate(false)
-            .enableImportsUpdate(true)
-            .runNpmInstall(false)
-            .withEmbeddableWebComponents(false);
+                new File(userDir)).enablePackagesUpdate(false)
+                        .enableImportsUpdate(true).runNpmInstall(false)
+                        .withEmbeddableWebComponents(false);
 
-        Assert.assertEquals(new File(userDir, "my_custom_sources_folder").getAbsolutePath(),
-                ((File)getFieldValue(builder, "frontendDirectory")).getAbsolutePath());
-        Assert.assertEquals(new File(userDir, "my/custom/generated/folder").getAbsolutePath(),
-                ((File)getFieldValue(builder, "generatedFolder")).getAbsolutePath());
+        Assert.assertEquals(
+                new File(userDir, "my_custom_sources_folder").getAbsolutePath(),
+                ((File) getFieldValue(builder, "frontendDirectory"))
+                        .getAbsolutePath());
+        Assert.assertEquals(
+                new File(userDir, "my/custom/generated/folder")
+                        .getAbsolutePath(),
+                ((File) getFieldValue(builder, "generatedFolder"))
+                        .getAbsolutePath());
 
         builder.build().execute();
-        Assert.assertTrue(new File(userDir, "my/custom/generated/folder/" + IMPORTS_NAME).exists());
+        Assert.assertTrue(
+                new File(userDir, "my/custom/generated/folder/" + IMPORTS_NAME)
+                        .exists());
     }
 
     private static void setPropertyIfPresent(String key, String value) {

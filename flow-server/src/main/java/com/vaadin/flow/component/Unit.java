@@ -139,8 +139,8 @@ public enum Unit {
                 .orElseThrow(() -> new IllegalArgumentException(String.format(
                         "The parameter string '%s' does not contain valid unit",
                         cssSize)));
-        String size = cssSize
-                .substring(0, cssSize.length() - unit.toString().length());
+        String size = cssSize.substring(0,
+                cssSize.length() - unit.toString().length());
         if (size.isEmpty()) {
             size = "0";
         }

@@ -785,9 +785,9 @@ public class Element extends Node<Element> {
         verifySetPropertyName(name);
 
         if ("innerHTML".equals(name)) {
-            Serializable oldValue = getStateProvider()
-                    .getProperty(getNode(), name);
-            if(!Objects.equals(value, oldValue)) {
+            Serializable oldValue = getStateProvider().getProperty(getNode(),
+                    name);
+            if (!Objects.equals(value, oldValue)) {
                 // Only remove all children for value change
                 removeAllChildren();
             }

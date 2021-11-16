@@ -47,8 +47,8 @@ public class BundleDependencyFilterTest {
 
     @Before
     public void init() {
-        dependencyFilter = new BundleDependencyFilter(
-                FakeBrowser.getEs6(), NON_HASHED_BUNDLE_NAME, createTestMapping());
+        dependencyFilter = new BundleDependencyFilter(FakeBrowser.getEs6(),
+                NON_HASHED_BUNDLE_NAME, createTestMapping());
         filterContext = new FilterContext(null, FakeBrowser.getEs6());
     }
 
@@ -57,7 +57,8 @@ public class BundleDependencyFilterTest {
         expectedException.expect(NullPointerException.class);
         expectedException.expectMessage("bundle mapping");
 
-        new BundleDependencyFilter(FakeBrowser.getEs6(), NON_HASHED_BUNDLE_NAME, null);
+        new BundleDependencyFilter(FakeBrowser.getEs6(), NON_HASHED_BUNDLE_NAME,
+                null);
     }
 
     @Test
@@ -65,7 +66,8 @@ public class BundleDependencyFilterTest {
         expectedException.expect(NullPointerException.class);
         expectedException.expectMessage("Main bundle name");
 
-        new BundleDependencyFilter(FakeBrowser.getEs6(), null, Collections.emptyMap());
+        new BundleDependencyFilter(FakeBrowser.getEs6(), null,
+                Collections.emptyMap());
     }
 
     @Test

@@ -179,8 +179,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
 
     private String getEscapedRelativeWebpackPath(Path path) {
         Path relativePath = path.isAbsolute()
-                ? webpackConfigPath.relativize(path)
-                : path;
+                ? webpackConfigPath.relativize(path) : path;
         return relativePath.toString().replaceAll("\\\\", "/");
     }
 

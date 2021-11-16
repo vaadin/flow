@@ -60,8 +60,8 @@ public class RouterLink extends Component implements HasText, HasComponents,
      * Creates a new empty router link.
      */
     public RouterLink() {
-        getElement()
-                .setAttribute(ApplicationConstants.ROUTER_LINK_ATTRIBUTE, "");
+        getElement().setAttribute(ApplicationConstants.ROUTER_LINK_ATTRIBUTE,
+                "");
     }
 
     /**
@@ -207,7 +207,8 @@ public class RouterLink extends Component implements HasText, HasComponents,
      */
     public <T, C extends Component & HasUrlParameter<T>> void setRoute(
             Router router, Class<? extends C> navigationTarget, T parameter) {
-        setRoute(router, navigationTarget, HasUrlParameterFormat.getParameters(parameter));
+        setRoute(router, navigationTarget,
+                HasUrlParameterFormat.getParameters(parameter));
     }
 
     /**
@@ -265,7 +266,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      *            route parameters for navigation target
      */
     public void setRoute(Class<? extends Component> navigationTarget,
-                         RouteParameters parameters) {
+            RouteParameters parameters) {
         setRoute(getRouter(), navigationTarget, parameters);
     }
 

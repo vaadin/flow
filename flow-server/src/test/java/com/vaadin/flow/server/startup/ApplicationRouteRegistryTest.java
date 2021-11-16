@@ -58,9 +58,8 @@ public class ApplicationRouteRegistryTest extends RouteRegistryTestBase {
                 getTestedRegistry().getRegisteredRoutes().size());
 
         Assert.assertEquals("Expected url param template to be added",
-                "has-url-parameter/:___url_parameter",
-                getTestedRegistry().getRegisteredRoutes().iterator().next()
-                        .getTemplate());
+                "has-url-parameter/:___url_parameter", getTestedRegistry()
+                        .getRegisteredRoutes().iterator().next().getTemplate());
     }
 
     @Test
@@ -388,7 +387,8 @@ public class ApplicationRouteRegistryTest extends RouteRegistryTestBase {
         Assert.assertTrue("Error navigation target was not registered",
                 errorNavigationTarget.isPresent());
         Assert.assertEquals("Wrong errorNavigationTarget was registered",
-                ErrorView.class, errorNavigationTarget.get().getNavigationTarget());
+                ErrorView.class,
+                errorNavigationTarget.get().getNavigationTarget());
     }
 
     @Override

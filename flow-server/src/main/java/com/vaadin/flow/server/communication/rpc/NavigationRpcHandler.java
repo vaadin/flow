@@ -60,8 +60,7 @@ public class NavigationRpcHandler implements RpcInvocationHandler {
             boolean triggeredByLink = invocationJson
                     .hasKey(JsonConstants.RPC_NAVIGATION_ROUTERLINK);
             NavigationTrigger trigger = triggeredByLink
-                    ? NavigationTrigger.ROUTER_LINK
-                    : NavigationTrigger.HISTORY;
+                    ? NavigationTrigger.ROUTER_LINK : NavigationTrigger.HISTORY;
 
             HistoryStateChangeEvent event = new HistoryStateChangeEvent(history,
                     state, new Location(location), trigger);

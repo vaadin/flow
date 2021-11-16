@@ -118,13 +118,15 @@ public class IdCollector {
     }
 
     private Optional<String> getId(Field field) {
-        final Optional<Id> polymerId = AnnotationReader
-            .getAnnotationFor(field, Id.class);
+        final Optional<Id> polymerId = AnnotationReader.getAnnotationFor(field,
+                Id.class);
         if (polymerId.isPresent()) {
             return polymerId.map(Id::value);
         }
-        return AnnotationReader.getAnnotationFor(field, com.vaadin.flow.component.template.Id.class)
-            .map(com.vaadin.flow.component.template.Id::value);
+        return AnnotationReader
+                .getAnnotationFor(field,
+                        com.vaadin.flow.component.template.Id.class)
+                .map(com.vaadin.flow.component.template.Id::value);
     }
 
     /**

@@ -207,9 +207,8 @@ public class RouteModelTest {
                         EnumSet.of(RouteParameterFormatOption.NAME,
                                 RouteParameterFormatOption.MODIFIER)));
 
-        Assert.assertEquals("trunk/branch/:integer/:long",
-                root.formatTemplate(template,
-                        EnumSet.of(RouteParameterFormatOption.REGEX_NAME)));
+        Assert.assertEquals("trunk/branch/:integer/:long", root.formatTemplate(
+                template, EnumSet.of(RouteParameterFormatOption.REGEX_NAME)));
     }
 
     @Test
@@ -275,8 +274,8 @@ public class RouteModelTest {
         }
     }
 
-    private void assertUrl(RouteModel root, String expectedUrl,
-            String template, RouteParameters parameters) {
+    private void assertUrl(RouteModel root, String expectedUrl, String template,
+            RouteParameters parameters) {
         final String modelUrl = root.getUrl(template, parameters);
         Assert.assertEquals(expectedUrl, modelUrl);
     }

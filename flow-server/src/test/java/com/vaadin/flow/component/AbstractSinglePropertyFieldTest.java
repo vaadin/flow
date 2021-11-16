@@ -120,12 +120,15 @@ public class AbstractSinglePropertyFieldTest {
     @Test
     public void synchronizedEvent_redefined() {
         StringField stringField = new StringField();
-        DomListenerRegistration origReg = stringField.getSynchronizationRegistration();
-        SerializableRunnable unregisterListener = Mockito.mock(SerializableRunnable.class);
+        DomListenerRegistration origReg = stringField
+                .getSynchronizationRegistration();
+        SerializableRunnable unregisterListener = Mockito
+                .mock(SerializableRunnable.class);
         origReg.onUnregister(unregisterListener);
 
         stringField.setSynchronizedEvent("blur");
-        DomListenerRegistration recentReg = stringField.getSynchronizationRegistration();
+        DomListenerRegistration recentReg = stringField
+                .getSynchronizationRegistration();
         Mockito.verify(unregisterListener).run();
         Assert.assertNotSame(origReg, recentReg);
         Assert.assertEquals("blur", recentReg.getEventType());
@@ -134,8 +137,10 @@ public class AbstractSinglePropertyFieldTest {
     @Test
     public void synchronizedEvent_null_noSynchronization() {
         StringField stringField = new StringField();
-        SerializableRunnable unregisterListener = Mockito.mock(SerializableRunnable.class);
-        stringField.getSynchronizationRegistration().onUnregister(unregisterListener);
+        SerializableRunnable unregisterListener = Mockito
+                .mock(SerializableRunnable.class);
+        stringField.getSynchronizationRegistration()
+                .onUnregister(unregisterListener);
 
         stringField.setSynchronizedEvent(null);
         Assert.assertNull(stringField.getSynchronizationRegistration());

@@ -697,13 +697,15 @@ public class Page implements Serializable {
      *            to be notified when the url is resolved.
      */
     public void fetchCurrentURL(SerializableConsumer<URL> callback) {
-        Objects.requireNonNull(callback, "Url consumer callback should not be null.");
+        Objects.requireNonNull(callback,
+                "Url consumer callback should not be null.");
         final String js = "return window.location.href";
         executeJs(js).then(String.class, urlString -> {
             try {
                 callback.accept(new URL(urlString));
             } catch (MalformedURLException e) {
-                throw new IllegalStateException("Error while encoding the URL from client", e);
+                throw new IllegalStateException(
+                        "Error while encoding the URL from client", e);
             }
         });
     }

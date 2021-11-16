@@ -270,7 +270,7 @@ public class ShortcutRegistration implements Registration, Serializable {
         setLifecycleOwner(component);
         return this;
     }
-    
+
     /**
      * Fluently define the component to listen for shortcuts on. Calling this
      * method will remove any previous listeners.
@@ -284,7 +284,7 @@ public class ShortcutRegistration implements Registration, Serializable {
      * @return this <code>ShortcutRegistration</code>
      */
     public ShortcutRegistration listenOn(Component listenOnComponent) {
-        return listenOn(new Component[]{listenOnComponent});
+        return listenOn(new Component[] { listenOnComponent });
     }
 
     /**
@@ -860,8 +860,7 @@ public class ShortcutRegistration implements Registration, Serializable {
                 Arrays.toString(modifiers.stream().map(k -> k.getKeys().get(0))
                         .toArray()),
                 lifecycleOwner != null
-                        ? lifecycleOwner.getClass().getSimpleName()
-                        : "null",
+                        ? lifecycleOwner.getClass().getSimpleName() : "null",
                 builder.toString(), allowDefaultBehavior,
                 allowEventPropagation);
     }

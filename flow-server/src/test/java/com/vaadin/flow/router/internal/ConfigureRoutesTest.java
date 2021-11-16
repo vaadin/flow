@@ -14,7 +14,6 @@ import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.server.AmbiguousRouteConfigurationException;
 
-
 public class ConfigureRoutesTest {
 
     @Tag("div")
@@ -35,7 +34,7 @@ public class ConfigureRoutesTest {
 
         @Override
         public int setErrorParameter(BeforeEnterEvent event,
-                                     ErrorParameter<IndexOutOfBoundsException> parameter) {
+                ErrorParameter<IndexOutOfBoundsException> parameter) {
             return 0;
         }
     }
@@ -52,8 +51,7 @@ public class ConfigureRoutesTest {
         Assert.assertTrue("Configuration should have \"\" route registered",
                 mutable.hasTemplate(""));
         Assert.assertEquals("Configuration should have registered base target.",
-                BaseTarget.class,
-                mutable.getTarget("").get());
+                BaseTarget.class, mutable.getTarget("").get());
     }
 
     @Test
@@ -95,8 +93,8 @@ public class ConfigureRoutesTest {
 
         mutable.clear();
 
-        Assert.assertEquals("ErrorRoute shouldn't be cleared.",
-                BaseError.class, mutable.getExceptionHandlerByClass(
+        Assert.assertEquals("ErrorRoute shouldn't be cleared.", BaseError.class,
+                mutable.getExceptionHandlerByClass(
                         IndexOutOfBoundsException.class));
     }
 
@@ -145,8 +143,7 @@ public class ConfigureRoutesTest {
         Assert.assertTrue("Configuration should have \"\" route registered",
                 immutable.hasTemplate(""));
         Assert.assertEquals("Configuration should have registered base target.",
-                BaseTarget.class,
-                immutable.getTarget("").get());
+                BaseTarget.class, immutable.getTarget("").get());
 
         Assert.assertTrue("", immutable.hasRouteTarget(BaseTarget.class));
         Assert.assertEquals("Configuration should have registered base target.",

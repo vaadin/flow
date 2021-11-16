@@ -657,8 +657,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     Element errorElement = document.createElement("div");
                     errorElement.setBaseUri("");
                     errorElement.attr("class", "v-system-error");
-                    errorElement.html(
-                            "<h3 style=\"display:inline;\">Webpack Error</h3>"
+                    errorElement
+                            .html("<h3 style=\"display:inline;\">Webpack Error</h3>"
                                     + "<h6 style=\"display:inline; padding-left:10px;\""
                                     + "onclick=\"this.parentElement.parentElement.removeChild(this.parentElement)\">Close</h6>"
                                     + "<pre>" + errorMsg + "</pre>");
@@ -692,8 +692,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             if (!entries.isEmpty()) {
                 // Registers the entries in a way that is picked up as a Vaadin
                 // WebComponent by the usage stats gatherer
-                document.body().appendElement(SCRIPT_TAG).text(
-                        "window.Vaadin.registrations = window.Vaadin.registrations || [];\n"
+                document.body().appendElement(SCRIPT_TAG)
+                        .text("window.Vaadin.registrations = window.Vaadin.registrations || [];\n"
                                 + "window.Vaadin.registrations.push(" + entries
                                 + ");");
             }
@@ -1076,8 +1076,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     return ApplicationConstants.CLIENT_ENGINE_PATH + "/"
                             + properties.getProperty("jsFile");
                 } else {
-                    getLogger().warn(
-                            "No compile.properties available on initialization, "
+                    getLogger()
+                            .warn("No compile.properties available on initialization, "
                                     + "could not read client engine file name.");
                 }
             } catch (IOException e) {
@@ -1116,8 +1116,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
             // Basic reconnect and system error dialog styles just to make them
             // visible and outside of normal flow
-            styles.appendText(
-                    ".v-reconnect-dialog, .v-system-error {" // @formatter:off
+            styles.appendText(".v-reconnect-dialog, .v-system-error {" // @formatter:off
                     +   "position: absolute;"
                     +   "color: black;"
                     +   "background: white;"
@@ -1153,8 +1152,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
             BootstrapUtils.getMetaTargets(context)
                     .forEach((name, content) -> head.appendElement(META_TAG)
-                            .attr("name", name)
-                            .attr(CONTENT_ATTRIBUTE, content));
+                            .attr("name", name).attr(CONTENT_ATTRIBUTE,
+                                    content));
 
             resolvePageTitle(context).ifPresent(title -> {
                 if (!title.isEmpty()) {
@@ -1282,9 +1281,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 LoadMode loadMode, JsonObject dependency,
                 Dependency.Type type) {
             boolean inlineElement = loadMode == LoadMode.INLINE;
-            String url = dependency.hasKey(Dependency.KEY_URL)
-                    ? resolver.resolveVaadinUri(
-                            dependency.getString(Dependency.KEY_URL))
+            String url = dependency.hasKey(Dependency.KEY_URL) ? resolver
+                    .resolveVaadinUri(dependency.getString(Dependency.KEY_URL))
                     : null;
 
             final Element dependencyElement;
@@ -1480,8 +1478,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                         .getInstantiator()
                         .getOrCreate(BrowserLiveReloadAccess.class);
                 BrowserLiveReload liveReload = liveReloadAccess != null
-                        ? liveReloadAccess.getLiveReload(service)
-                        : null;
+                        ? liveReloadAccess.getLiveReload(service) : null;
 
                 if (liveReload != null) {
                     appConfig.put("liveReloadUrl", BootstrapHandlerHelper

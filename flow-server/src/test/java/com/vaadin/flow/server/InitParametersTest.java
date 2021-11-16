@@ -28,14 +28,13 @@ public class InitParametersTest {
             int modifiers = field.getModifiers();
             if (Modifier.isPublic(modifiers)) {
                 Assert.assertEquals(
-                        String.format("field '%s' expected String", field.getName()),
+                        String.format("field '%s' expected String",
+                                field.getName()),
                         String.class, field.getType());
-                Assert.assertTrue(
-                        String.format("field '%s' expected static", field.getName()),
-                        Modifier.isStatic(modifiers));
-                Assert.assertTrue(
-                        String.format("field '%s' expected final", field.getName()),
-                        Modifier.isFinal(modifiers));
+                Assert.assertTrue(String.format("field '%s' expected static",
+                        field.getName()), Modifier.isStatic(modifiers));
+                Assert.assertTrue(String.format("field '%s' expected final",
+                        field.getName()), Modifier.isFinal(modifiers));
             }
         }
     }

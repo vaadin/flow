@@ -230,8 +230,7 @@ public class ServletDeployerTest {
         params.put(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE, "false");
         params.put(InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE,
                 "false");
-        deployer.contextInitialized(getContextEvent(
-                true, true,
+        deployer.contextInitialized(getContextEvent(true, true,
                 getServletRegistration("testServlet1", TestVaadinServlet.class,
                         singletonList("/test1/*"),
                         singletonMap(
@@ -308,15 +307,17 @@ public class ServletDeployerTest {
     }
 
     private void assertMappingsCount(int numServlets, int numMappings) {
-        assertEquals(String.format(
-                "Expected to have exactly '%d' servlets, but got '%d': '%s'",
-                numServlets, servletNames.getValues().size(),
-                servletNames.getValues()), servletNames.getValues().size(),
-                numServlets);
-        assertEquals(String.format(
-                "Expected to have exactly '%d' mappings, but got '%d': '%s'",
-                numMappings, servletMappings.getValues().size(),
-                servletMappings.getValues()),
+        assertEquals(
+                String.format(
+                        "Expected to have exactly '%d' servlets, but got '%d': '%s'",
+                        numServlets, servletNames.getValues().size(),
+                        servletNames.getValues()),
+                servletNames.getValues().size(), numServlets);
+        assertEquals(
+                String.format(
+                        "Expected to have exactly '%d' mappings, but got '%d': '%s'",
+                        numMappings, servletMappings.getValues().size(),
+                        servletMappings.getValues()),
                 servletMappings.getValues().size(), numMappings);
     }
 
@@ -324,9 +325,11 @@ public class ServletDeployerTest {
             String mappedPath) {
         int servletNameIndex = servletNames.getValues().indexOf(servletName);
         int pathIndex = servletMappings.getValues().indexOf(mappedPath);
-        assertTrue(String.format(
-                "Did not find servlet name '%s' among added servlet names: '%s'",
-                servletName, servletNames.getValues()), servletNameIndex >= 0);
+        assertTrue(
+                String.format(
+                        "Did not find servlet name '%s' among added servlet names: '%s'",
+                        servletName, servletNames.getValues()),
+                servletNameIndex >= 0);
         assertTrue(
                 String.format(
                         "Did not find mapped path '%s' among added paths: '%s'",
