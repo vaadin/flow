@@ -3,17 +3,18 @@ const fs = require('fs');
 const path = require('path');
 
 /* Collect a relative url(..) to groups so that the url can be prefixed properly.
- e.g. url('./fonts/Roboto/roboto-v29-latin-ext_latin-regular.woff?v=1.12')
+ e.g. "url('./fonts/Roboto/roboto-v29-latin-ext_lat2)in-regular.woff?v=1.12') format('woff2')"
  gets split into groups of
  1: url(
  2: '
  3: ./
- 4: fonts/Roboto/roboto-v29-latin-ext_latin-regular.woff
+ 4: fonts/Roboto/roboto-v29-latin-ext_lat2)in-regular.woff
  5: ?v=1.12')
- Inside the url whitespace, query parameters and single are supported.
- The url might be wrapped with (), ('') or ("").
+ Inside the url whitespace e.g. query parameters and single quotation marks are supported.
+ The url might be wrapped with (''), ("") or nothing.
+ To test the regex, try https://regexr.com/69jqg or c/p the regex from below.
  */
-const urlMatcher = /(url\()(['"])?(\.\/|\.\.\/)([^?\2)]+)((?:\?\S*)?\2\))/g;
+const urlMatcher = /(url\()(['"])?(\.\/|\.\.\/)(.+?(?=\??\S*\2\)))((?:\?\S*)?\2\))/g;
 
 /**
  * This custom loader handles rewriting urls for the application theme css files.

@@ -12,7 +12,7 @@
     font-style: normal;
     font-weight: 400;
     src: local(''),
-    url("./font/roboto v29-latin-'ext'_latin-regular.woff?v=1.12") format('woff')
+    url("font/roboto v29-latin-'ext'_latin)-regular.woff?v=1.12") format('woff')
 }
 
 body {
