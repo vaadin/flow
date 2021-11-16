@@ -19,6 +19,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
 
@@ -26,6 +27,7 @@ import com.vaadin.base.devserver.DevServerOutputTracker.Result;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.frontend.FrontendVersion;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -114,6 +116,15 @@ public final class WebpackHandler extends AbstractDevServerRunner {
         }
 
         return command;
+    }
+
+    @Override
+    protected void updateServerStartupEnvironment(FrontendVersion nodeVersion,
+            Map<String, String> environment) {
+        super.updateServerStartupEnvironment(nodeVersion, environment);
+        if (!nodeVersion.isOlderThan(new FrontendVersion(17, 0, 0))) {
+            environment.put("NODE_OPTIONS", "--openssl-legacy-provider");
+        }
     }
 
     @Override
