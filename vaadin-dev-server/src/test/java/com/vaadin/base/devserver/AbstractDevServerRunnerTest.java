@@ -98,4 +98,37 @@ public class AbstractDevServerRunnerTest extends AbstractDevModeTest {
         devServer.serveDevModeRequest(request, response);
         Assert.assertEquals("/VAADIN/foo%20bar", requestedPath.get());
     }
+
+    @Test
+    public void shouldNotServeNonVaadin() throws Exception {
+        handler = new DummyRunner();
+        DevModeHandler devServer = Mockito.spy(handler);
+
+        HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
+        HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+        Mockito.when(request.getPathInfo()).thenReturn("/foo");
+        Mockito.when(request.getHeaderNames())
+                .thenReturn(Collections.emptyEnumeration());
+
+        Assert.assertFalse(devServer.serveDevModeRequest(request, response));
+    }
+
+    @Test
+    public void shouldServeServiceWorker() throws Exception {
+        handler = new DummyRunner();
+        DevModeHandler devServer = Mockito.spy(handler);
+
+        HttpServletResponse response = Mockito.mock(HttpServletResponse.class);
+        Mockito.when(response.getOutputStream())
+                .thenReturn(Mockito.mock(ServletOutputStream.class));
+        HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+        Mockito.when(request.getPathInfo()).thenReturn("/sw.js");
+        Mockito.when(request.getHeaderNames())
+                .thenReturn(Collections.emptyEnumeration());
+
+        Mockito.when(devServer.prepareConnection(Mockito.any(), Mockito.any()))
+                .thenReturn(Mockito.mock(HttpURLConnection.class));
+
+        Assert.assertTrue(devServer.serveDevModeRequest(request, response));
+    }
 }
