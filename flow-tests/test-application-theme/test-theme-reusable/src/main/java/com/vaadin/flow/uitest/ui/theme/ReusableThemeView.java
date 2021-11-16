@@ -59,7 +59,8 @@ public class ReusableThemeView extends Div {
         snowFlake.setHeight("1em");
         snowFlake.setId(SNOWFLAKE_ID);
 
-        add(textSpan, snowFlake, subCss, butterfly, octopuss, robotoFontFamily, faText);
+        add(textSpan, snowFlake, subCss, butterfly, octopuss, robotoFontFamily,
+                faText);
 
         add(new Div());
         add(new MyComponent().withId(MY_COMPONENT_ID));

@@ -2,9 +2,18 @@ const loaderUtils = require('loader-utils');
 const fs = require('fs');
 const path = require('path');
 
-// Collect groups [url(] [ |'|"]optional './|../', file part and end of url
-// takes into account that whitespace in file name and query parameters are valid
-const urlMatcher = /(url\()(['"])?(\.\/|\.\.\/)([^?'")]+)((\?\S*)?\2\))/g;
+/* Collect a relative url(..) to a group so that the url can be prefixed properly.
+ e.g. url('./fonts/Roboto/roboto-v29-latin-ext_latin-regular.woff?v=1.12')
+ gets into groups of
+ 1: url(
+ 2: '
+ 3: ./
+ 4: fonts/Roboto/roboto-v29-latin-ext_latin-regular.woff
+ 5: ?v=1.12')
+ Inside the url whitespace, query parameters and single are supported.
+ The url might be wrapped with (), ('') or ("").
+ */
+const urlMatcher = /(url\()(['"])?(\.\/|\.\.\/)([^?\2)]+)((?:\?\S*)?\2\))/g;
 
 /**
  * This custom loader handles rewriting urls for the application theme css files.

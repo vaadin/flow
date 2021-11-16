@@ -167,9 +167,10 @@ public class ReusableThemeIT extends ChromeBrowserTest {
         open();
         checkLogsForErrors();
 
-        Assert.assertEquals("Font-face declaration with whitespace and request parameters should work.",
-                "Roboto", $(SpanElement.class)
-                        .id(ROBOTO_ID).getCssValue("font-family"));
+        Assert.assertEquals(
+                "Font-face declaration with whitespace and request parameters should work.",
+                "Roboto",
+                $(SpanElement.class).id(ROBOTO_ID).getCssValue("font-family"));
     }
 
     @Override
