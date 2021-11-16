@@ -51,10 +51,10 @@ module.exports = function (source, map) {
       const skipLoader = fs.existsSync(absolutePath) && absolutePath.startsWith(themeFolder) ? '' : './';
       const frontendThemeFolder = skipLoader + 'themes/' + path.basename(themeFolder);
       logger.debug(
-        'Updating url for file',
-        "'" + replace + fileUrl + "'",
-        'to use',
-        "'" + frontendThemeFolder + '/' + fileUrl + "'"
+        'Updating url for file '
+        + quoteMark + replace + fileUrl + endString,
+        ' to use '
+        + quoteMark + frontendThemeFolder + '/' + fileUrl + endString
       );
       const pathResolved = absolutePath.substring(themeFolder.length).replace(/\\/g, '/');
 
