@@ -46,6 +46,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.server.frontend.installer.Platform;
@@ -368,6 +369,18 @@ public class FrontendToolsTest {
         tools.validateNodeAndNpmVersion();
 
         Assert.assertTrue(file.exists());
+    }
+
+    @Test
+    public void validateNodeAndNpmVersion_brokenNode17() throws Exception {
+        settings.setIgnoreVersionChecks(false);
+        tools = Mockito.spy(new FrontendTools(settings));
+
+        Mockito.when(tools.getNodeVersion())
+                .thenReturn(new FrontendVersion(17, 0));
+        Assert.assertThrows(IllegalStateException.class, () -> {
+            tools.validateNodeAndNpmVersion();
+        });
     }
 
     @Test(expected = IllegalStateException.class)
