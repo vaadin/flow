@@ -6,7 +6,7 @@
     src: url(./font/ostrich-sans-regular.ttf) format("TrueType");
 }
 
-/* Font URL with whitespace character & query parameters & ticks */
+/* Font URL with whitespace character & query parameter & single quotation marks */
 @font-face {
     font-family: 'Roboto';
     font-style: normal;

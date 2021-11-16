@@ -2,9 +2,9 @@ const loaderUtils = require('loader-utils');
 const fs = require('fs');
 const path = require('path');
 
-/* Collect a relative url(..) to a group so that the url can be prefixed properly.
+/* Collect a relative url(..) to groups so that the url can be prefixed properly.
  e.g. url('./fonts/Roboto/roboto-v29-latin-ext_latin-regular.woff?v=1.12')
- gets into groups of
+ gets split into groups of
  1: url(
  2: '
  3: ./
