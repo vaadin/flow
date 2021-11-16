@@ -392,7 +392,7 @@ public abstract class NodeUpdater implements FallibleCommand {
             defaults.put("rollup-plugin-brotli", "3.1.0");
             defaults.put("vite-plugin-checker", "0.3.4");
             defaults.put("mkdirp", "1.0.4"); // for application-theme-plugin
-            defaults.put("workbox-precaching", "6.2.0");
+            defaults.put("workbox-build", "6.4.1");
         } else {
             // Webpack plugins and helpers
             defaults.put("esbuild-loader", "2.15.1");
