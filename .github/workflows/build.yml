@@ -3,16 +3,38 @@ name: Java CI
 on: [push]
 
 jobs:
-  matrix-unit-test:
-    if: always()
+  build:
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+      - uses: stCarolas/setup-maven@v4.2
+        with:
+          maven-version: 3.8.3
+      - name: mvn install
+        run: |
+          mvn -B -q -DnewVersion=999.99-SNAPSHOT versions:set  -T 1C
+          mvn install -B -q -am -DskipTests -T 2C
+      - name: Save workspace
+        run: |
+          mv ~/.m2/ .
+          tar cf workspace.tar .m2 `find . -d -name target`
+      - uses: actions/upload-artifact@v2
+        with:
+          name: saved-workspace
+          path: workspace.tar
+  unit-test:
+    runs-on: ubuntu-latest
+    needs: build
     strategy:
       matrix:
         modules:
           - 'flow-server'
-          - 'flow-client'
+          - 'flow-client,vaadin-dev-server'
           - 'flow-data'
-          - 'vaadin-dev-server'
           - 'build-tools,flow,flow-bom,flow-component-demo-helpers,flow-dnd,flow-html-components,flow-html-components-testbench,flow-lit-template,flow-plugins,flow-polymer-template,flow-push,flow-server-production-mode,flow-test-generic,flow-test-util,fusion-endpoint'
     steps:
       - uses: actions/checkout@v2
@@ -22,54 +44,24 @@ jobs:
           distribution: 'adopt'
       - uses: stCarolas/setup-maven@v4.2
         with:
-          maven-version: 3.8.3      
-      - name: Show Tool Versions
+          maven-version: 3.8.3
+      - uses: actions/download-artifact@v2
+        with:
+          name: saved-workspace
+      - name: Restore Workspace
         run: |
-          java -version
-          mvn -version
-          echo "Node "`node --version`
-          echo "Npm "`npm -version`
-      - name: Compile Modules
-        if: always()
-        run: |
-          mvn -B -q -DnewVersion=999.99-SNAPSHOT versions:set  -T 1C
-          mvn -B -q -DskipTests install -T 2C
+          tar xf workspace.tar
+          rm -rf ~/.m2 && mv -f .m2 ~/
       - name: Unit Test
         if: always()
         run: |
+          mvn -B -q -DnewVersion=999.99-SNAPSHOT versions:set  -T 1C
           mvn -B test -fae -pl ${{ matrix.modules }}
       - uses: actions/upload-artifact@v2
         if: always()
         with:
           name: test-reports
           path: "**/target/*-reports/*"
-  unit-test:
-    if: ${{ false }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-java@v2
-        with:
-          java-version: '11'
-          distribution: 'adopt'
-      - uses: stCarolas/setup-maven@v4.2
-        with:
-          maven-version: 3.8.3      
-      - name: Show Tool Versions
-        run: |
-          java -version
-          mvn -version
-          echo "Node "`node --version`
-          echo "Npm "`npm -version`
-      - name: Unit Test
-        run: |
-          mvn -B -q -DnewVersion=999.99-SNAPSHOT versions:set  -T 1C
-          mvn -B -am -q -pl flow-server test
-      - name: Publish Unit Test Results
-        if: always()
-        uses: EnricoMi/publish-unit-test-result-action/composite@v1
-        with:
-          files: "**/target/*-reports/*.xml"
   install:
     if: ${{ false }}
     runs-on: ubuntu-latest
@@ -105,29 +97,15 @@ jobs:
         run: |
           mvn -B -q -DnewVersion=999.99-SNAPSHOT versions:set  -T 1C
           mvn -B -q -DskipTests install -T 2C
-
   publish-test-results:
-    if: always()
-    needs: matrix-unit-test
+    needs: unit-test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v2
         with:
           name: test-reports
-      - name: Display structure of downloaded files
-        run: ls -R
       - name: Publish Unit Test Results
         if: always()
         uses: EnricoMi/publish-unit-test-result-action/composite@v1
         with:
-          files: "**/target/*-reports/*.xml"          
-
-
-# - uses: nanasess/setup-chromedriver@master
-#   with:
-#     # Optional: do not specify to match Chrome's version
-#     chromedriver-version: '88.0.4324.96'
-# - run: |
-#     export DISPLAY=:99
-#     chromedriver --url-base=/wd/hub &
-#     sudo Xvfb -ac :99 -screen 0 1280x1024x24 > /dev/null 2>&1 & # optional
+          files: "**/target/*-reports/*.xml"
