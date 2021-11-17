@@ -82,7 +82,7 @@ public class FrontendToolsTest {
     public void setup() throws IOException {
         baseDir = tmpDir.newFolder().getAbsolutePath();
         vaadinHomeDir = tmpDir.newFolder().getAbsolutePath();
-        tools = new FrontendTools(baseDir, () -> vaadinHomeDir);
+        tools = Mockito.spy(new FrontendTools(baseDir, () -> vaadinHomeDir));
     }
 
     @Test
@@ -257,9 +257,6 @@ public class FrontendToolsTest {
 
     @Test
     public void validateNodeAndNpmVersion_brokenNode17() throws Exception {
-        settings.setIgnoreVersionChecks(false);
-        tools = Mockito.spy(new FrontendTools(settings));
-
         Mockito.when(tools.getNodeVersion())
                 .thenReturn(new FrontendVersion(17, 0));
         Assert.assertThrows(IllegalStateException.class, () -> {
