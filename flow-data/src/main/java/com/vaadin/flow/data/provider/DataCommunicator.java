@@ -24,11 +24,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.data.provider.ArrayUpdater.Update;
 import com.vaadin.flow.data.provider.DataChangeEvent.DataRefreshEvent;
 import com.vaadin.flow.function.SerializableComparator;
@@ -104,6 +108,11 @@ public class DataCommunicator<T> implements Serializable {
     private SerializableConsumer<ExecutionContext> flushRequest;
     private SerializableConsumer<ExecutionContext> flushUpdatedDataRequest;
 
+    ExecutorService executor = Executors.newCachedThreadPool();
+    private CompletableFuture<Activation> future;
+    private UI ui;
+    private boolean asyncDataUpdates;
+
     private static class SizeVerifier<T> implements Consumer<T>, Serializable {
 
         private int size;
@@ -174,6 +183,20 @@ public class DataCommunicator<T> implements Serializable {
 
         requestFlush();
     }
+
+    /**
+     * Control whether DataCommunicator should push data updates to the
+     * component asynchronously or not.
+     * <p>
+     * Note: This works only with Grid component. If set to true, Push needs to
+     * be enabled in order this to work.
+     * 
+     * @param async
+     *            True for async mode.
+     */
+    public void setAsyncDataUpdates(boolean async) {
+        this.asyncDataUpdates = async;
+    }    
 
     /**
      * Resets all the data.
@@ -402,6 +425,7 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     private void handleAttach() {
+        ui = UI.getCurrent();
         if (dataProviderUpdateRegistration != null) {
             dataProviderUpdateRegistration.remove();
         }
@@ -424,6 +448,7 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     private void handleDetach() {
+        ui = null;
         dataGenerator.destroyAllData();
         if (dataProviderUpdateRegistration != null) {
             dataProviderUpdateRegistration.remove();
@@ -438,7 +463,7 @@ public class DataCommunicator<T> implements Serializable {
                     reset();
                     arrayUpdater.initialize();
                 }
-                flush();
+                flush(asyncDataUpdates);
                 flushRequest = null;
             };
             stateNode.runWhenAttached(ui -> ui.getInternals().getStateTree()
@@ -457,10 +482,9 @@ public class DataCommunicator<T> implements Serializable {
         }
     }
 
-    private void flush() {
+    private void flush(boolean async) {
         Set<String> oldActive = new HashSet<>(activeKeyOrder);
 
-        Range effectiveRequested;
         final Range previousActive = Range.withLength(activeStart,
                 activeKeyOrder.size());
 
@@ -468,30 +492,58 @@ public class DataCommunicator<T> implements Serializable {
         if (resendEntireRange) {
             assumedSize = getDataProviderSize();
         }
-        effectiveRequested = requestedRange
+        final Range effectiveRequested = requestedRange
                 .restrictTo(Range.withLength(0, assumedSize));
 
         resendEntireRange |= !(previousActive.intersects(effectiveRequested)
                 || (previousActive.isEmpty() && effectiveRequested.isEmpty()));
 
-        Activation activation = collectKeysToFlush(previousActive,
-                effectiveRequested);
+        if (async) {
+            if (future != null) {
+                future.cancel(true);
+            }
+            future = CompletableFuture
+                    .supplyAsync(() -> collectKeysToFlush(previousActive,
+                            effectiveRequested), executor);
+            future.thenAccept(activation -> {
+                if (ui == null) {
+                    return;
+                }
+                ui.access(() -> {
+                    performUpdate(oldActive, previousActive, effectiveRequested,
+                            activation);
+                });
+            });
+        } else {
+            Activation activation = collectKeysToFlush(previousActive,
+                    effectiveRequested);
 
-        // If the returned stream from the DataProvider is smaller than it
+            performUpdate(oldActive, previousActive, effectiveRequested,
+                    activation);
+        }
+    }
+
+    private void performUpdate(Set<String> oldActive,
+            final Range previousActive, final Range effectiveRequested,
+            Activation activation) {
+        Range effRequested = effectiveRequested;
+
+        // If the returned stream from the DataProvider is smaller
+        // than it
         // should, a new query for the actual size needs to be done
         if (activation.isSizeRecheckNeeded()) {
             assumedSize = getDataProviderSize();
-            effectiveRequested = requestedRange
+            effRequested = requestedRange
                     .restrictTo(Range.withLength(0, assumedSize));
         }
 
         activeKeyOrder = activation.getActiveKeys();
-        activeStart = effectiveRequested.getStart();
+        activeStart = effRequested.getStart();
 
         // Phase 2: Collect changes to send
         Update update = arrayUpdater.startUpdate(assumedSize);
-        boolean updated = collectChangesToSend(previousActive,
-                effectiveRequested, update);
+        boolean updated = collectChangesToSend(previousActive, effRequested,
+                update);
 
         resendEntireRange = false;
         assumeEmptyClient = false;
