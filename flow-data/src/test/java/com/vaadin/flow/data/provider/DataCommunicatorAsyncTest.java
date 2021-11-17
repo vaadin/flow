@@ -124,7 +124,7 @@ public class DataCommunictorAsyncTest {
     public void asyncRequestedRangeHappensLater() {
         latch = new CountDownLatch(1);
         dataCommunicator.setDataProvider(createDataProvider(), null);
-        dataCommunicator.setAsyncDataUpdates(executor);
+        dataCommunicator.setExecutorForAsyncUpdates(executor);
         dataCommunicator.setRequestedRange(0, 50);
         fakeClientCommunication();
 
