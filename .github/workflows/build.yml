@@ -22,9 +22,10 @@ jobs:
             | sed -e 's, *<string>\(.*\)</string>,\1,g' \
             | sort > flow.modules &
           P2=$!
+          # com.vaadin.flow.uitest.ui.WebpackDevServerPortIT.webpackDevServerPortShouldBeReusedOnReload
           mvn help:evaluate -B -Dexpression=project.modules -pl flow-tests -DskipTests -Prun-tests 2>/dev/null \
             | grep "<\/string>" \
-            | grep -v test-root-ui-context \
+            | grep -v test-jetty-reload \
             | grep -v test-root-context \
             | sed -e 's, *<string>\(.*\)</string>,flow-tests/\1,g' \
             | sort > it.modules &
