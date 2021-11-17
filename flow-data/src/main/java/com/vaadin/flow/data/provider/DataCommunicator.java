@@ -355,7 +355,7 @@ public class DataCommunicator<T> implements Serializable {
      */
     public void setAsyncDataUpdates(boolean async) {
         this.asyncDataUpdates = async;
-    }    
+    }
 
     /**
      * Resets all the data.
@@ -1049,7 +1049,7 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     private void handleAttach() {
-        ui = UI.getCurrent();        
+        ui = UI.getCurrent();
         if (dataProviderUpdateRegistration != null) {
             dataProviderUpdateRegistration.remove();
         }
