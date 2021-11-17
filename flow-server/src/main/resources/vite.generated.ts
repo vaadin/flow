@@ -12,6 +12,7 @@ import settings from '#settingsImport#';
 import { UserConfigFn, defineConfig, HtmlTagDescriptor, mergeConfig } from 'vite';
 
 import brotli from 'rollup-plugin-brotli';
+import checker from 'vite-plugin-checker'
 
 const frontendFolder = path.resolve(__dirname, settings.frontendFolder);
 const themeFolder = path.resolve(frontendFolder, settings.themeFolder);
@@ -123,7 +124,10 @@ export const vaadinConfig: UserConfigFn = (env) => {
             return [vaadinScript];
           }
         }
-      }
+      },
+      checker({
+        typescript: true
+      })
     ]
   };
 };
