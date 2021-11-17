@@ -23,8 +23,7 @@ import org.apache.commons.io.IOUtils;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
- * Generate <code>tsconfig.json</code> if it is missing in project folder and
- * <code>index.ts</code> exists in frontend folder.
+ * Generate <code>tsconfig.json</code> if it is missing in project folder.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *

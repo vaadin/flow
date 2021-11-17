@@ -770,8 +770,7 @@ public class NodeTasks implements FallibleCommand {
             }
 
             commands.add(new TaskGenerateBootstrap(frontendDependencies,
-                    builder.frontendDirectory, builder.buildDirectory,
-                    builder.productionMode));
+                    builder.frontendDirectory, builder.productionMode));
         }
 
         if (builder.jarFiles != null && builder.flowResourcesFolder != null) {
@@ -831,12 +830,12 @@ public class NodeTasks implements FallibleCommand {
         TaskGenerateIndexHtml taskGenerateIndexHtml = new TaskGenerateIndexHtml(
                 builder.frontendDirectory);
         commands.add(taskGenerateIndexHtml);
-        File outputDirectory = new File(builder.npmFolder,
+        File buildDirectory = new File(builder.npmFolder,
                 builder.buildDirectory);
         TaskGenerateIndexTs taskGenerateIndexTs = new TaskGenerateIndexTs(
                 builder.frontendDirectory,
                 new File(builder.generatedFolder, IMPORTS_NAME),
-                outputDirectory);
+                buildDirectory);
         commands.add(taskGenerateIndexTs);
     }
 
