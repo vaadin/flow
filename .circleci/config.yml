@@ -33,7 +33,7 @@ jobs:
       - store_test_results:
           path: test-results
   run-it-tests:
-    parallelism: 12
+    parallelism: 6
     docker:
       - image: cimg/openjdk:11.0
     steps:
