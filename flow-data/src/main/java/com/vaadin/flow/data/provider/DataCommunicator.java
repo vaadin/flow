@@ -108,10 +108,9 @@ public class DataCommunicator<T> implements Serializable {
     private SerializableConsumer<ExecutionContext> flushRequest;
     private SerializableConsumer<ExecutionContext> flushUpdatedDataRequest;
 
-    ExecutorService executor = Executors.newCachedThreadPool();
+    ExecutorService executor = null;
     private CompletableFuture<Activation> future;
     private UI ui;
-    private boolean asyncDataUpdates;
 
     private static class SizeVerifier<T> implements Consumer<T>, Serializable {
 
@@ -186,16 +185,17 @@ public class DataCommunicator<T> implements Serializable {
 
     /**
      * Control whether DataCommunicator should push data updates to the
-     * component asynchronously or not.
+     * component asynchronously or not. By default the executor service is not
+     * defined and updates are done synchronously.
      * <p>
      * Note: This works only with Grid component. If set to true, Push needs to
      * be enabled in order this to work.
      * 
-     * @param async
-     *            True for async mode.
+     * @param executor
+     *            The ExecutorService used for async updates.
      */
-    public void setAsyncDataUpdates(boolean async) {
-        this.asyncDataUpdates = async;
+    public void setExecutorForAsyncUpdates(ExecutorService executor) {
+        this.executor = executor;
     }
 
     /**
@@ -463,7 +463,7 @@ public class DataCommunicator<T> implements Serializable {
                     reset();
                     arrayUpdater.initialize();
                 }
-                flush(asyncDataUpdates);
+                flush();
                 flushRequest = null;
             };
             stateNode.runWhenAttached(ui -> ui.getInternals().getStateTree()
@@ -482,7 +482,7 @@ public class DataCommunicator<T> implements Serializable {
         }
     }
 
-    private void flush(boolean async) {
+    private void flush() {
         Set<String> oldActive = new HashSet<>(activeKeyOrder);
 
         final Range previousActive = Range.withLength(activeStart,
@@ -498,7 +498,7 @@ public class DataCommunicator<T> implements Serializable {
         resendEntireRange |= !(previousActive.intersects(effectiveRequested)
                 || (previousActive.isEmpty() && effectiveRequested.isEmpty()));
 
-        if (async) {
+        if (executor != null) {
             if (future != null) {
                 future.cancel(true);
             }
