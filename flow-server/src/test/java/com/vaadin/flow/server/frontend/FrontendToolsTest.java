@@ -43,6 +43,7 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.frontend.installer.ProxyConfig;
@@ -80,7 +81,7 @@ public class FrontendToolsTest {
     public void setup() throws IOException {
         baseDir = tmpDir.newFolder().getAbsolutePath();
         vaadinHomeDir = tmpDir.newFolder().getAbsolutePath();
-        tools = new FrontendTools(baseDir, () -> vaadinHomeDir);
+        tools = Mockito.spy(new FrontendTools(baseDir, () -> vaadinHomeDir));
     }
 
     @Test
@@ -252,6 +253,15 @@ public class FrontendToolsTest {
         tools.validateNodeAndNpmVersion();
 
         Assert.assertTrue(file.exists());
+    }
+
+    @Test
+    public void validateNodeAndNpmVersion_brokenNode17() throws Exception {
+        Mockito.when(tools.getNodeVersion())
+                .thenReturn(new FrontendVersion(17, 0));
+        Assert.assertThrows(IllegalStateException.class, () -> {
+            tools.validateNodeAndNpmVersion();
+        });
     }
 
     @Test(expected = IllegalStateException.class)
