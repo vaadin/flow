@@ -676,6 +676,7 @@ public class NodeTasks implements FallibleCommand {
             TaskGeneratePackageJson.class,
             TaskGenerateIndexHtml.class,
             TaskGenerateIndexTs.class,
+            TaskGenerateViteDevMode.class,
             TaskGenerateTsConfig.class,
             TaskGenerateTsDefinitions.class,
             TaskGenerateServiceWorker.class,
@@ -837,6 +838,11 @@ public class NodeTasks implements FallibleCommand {
                 new File(builder.generatedFolder, IMPORTS_NAME),
                 buildDirectory);
         commands.add(taskGenerateIndexTs);
+        if (builder.getFeatureFlags().isEnabled(FeatureFlags.VITE)
+                && !builder.productionMode) {
+            commands.add(
+                    new TaskGenerateViteDevMode(builder.frontendDirectory));
+        }
     }
 
     private void addGenerateTsConfigTask(Builder builder) {

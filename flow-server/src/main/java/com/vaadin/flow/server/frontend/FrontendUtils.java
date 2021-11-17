@@ -213,6 +213,11 @@ public class FrontendUtils {
     public static final String INDEX_JS = "index.js";
 
     /**
+     * File name of Vite helper used in development mode.
+     */
+    public static final String VITE_DEVMODE_TS = "vite-devmode.ts";
+
+    /**
      * Default Java source folder for OpenAPI generator.
      */
     public static final String DEFAULT_CONNECT_JAVA_SOURCE_FOLDER = "src/main/java";
