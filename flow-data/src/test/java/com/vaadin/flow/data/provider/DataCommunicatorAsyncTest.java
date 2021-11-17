@@ -25,7 +25,7 @@ import com.vaadin.flow.server.VaadinSession;
 
 import elemental.json.JsonValue;
 
-public class DataCommunictorAsyncTest {
+public class DataCommunicatorAsyncTest {
 
     /**
      * Test item that uses id for identity.
