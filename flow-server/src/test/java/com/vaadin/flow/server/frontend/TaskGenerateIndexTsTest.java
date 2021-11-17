@@ -126,7 +126,7 @@ public class TaskGenerateIndexTsTest {
             throws Exception {
         String content = taskGenerateIndexTs.getFileContent();
         Assert.assertTrue(content.contains(
-                "import('../target/frontend/flow-generated-imports'"));
+                "import('../../target/frontend/flow-generated-imports'"));
     }
 
     @Test
