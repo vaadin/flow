@@ -196,7 +196,7 @@ public class DataCommunicator<T> implements Serializable {
      */
     public void setAsyncDataUpdates(boolean async) {
         this.asyncDataUpdates = async;
-    }    
+    }
 
     /**
      * Resets all the data.
