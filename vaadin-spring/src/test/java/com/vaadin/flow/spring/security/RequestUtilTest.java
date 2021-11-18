@@ -24,6 +24,7 @@ import com.vaadin.flow.spring.SpringVaadinServletService;
 import com.vaadin.flow.spring.VaadinConfigurationProperties;
 import com.vaadin.fusion.FusionControllerConfiguration;
 import com.vaadin.fusion.FusionEndpointProperties;
+import com.vaadin.fusion.auth.CsrfChecker;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -52,6 +53,9 @@ public class RequestUtilTest {
 
     @MockBean
     private ServletRegistrationBean<SpringServlet> springServletRegistration;
+
+    @MockBean
+    private CsrfChecker csrfChecker;
 
     @Test
     public void testRootRequest_init_standardMapping() {

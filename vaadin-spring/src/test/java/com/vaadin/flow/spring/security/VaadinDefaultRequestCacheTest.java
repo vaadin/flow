@@ -11,6 +11,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.savedrequest.SavedRequest;
@@ -24,6 +25,7 @@ import com.vaadin.fusion.Endpoint;
 import com.vaadin.fusion.EndpointRegistry;
 import com.vaadin.fusion.FusionControllerConfiguration;
 import com.vaadin.fusion.FusionEndpointProperties;
+import com.vaadin.fusion.auth.CsrfChecker;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { FusionEndpointProperties.class })
@@ -38,6 +40,8 @@ public class VaadinDefaultRequestCacheTest {
     EndpointRegistry endpointRegistry;
     @Autowired
     RequestUtil requestUtil;
+    @MockBean
+    private CsrfChecker csrfChecker;
 
     @Test
     public void normalRouteRequestSaved() {
