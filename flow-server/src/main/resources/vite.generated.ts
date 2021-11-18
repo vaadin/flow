@@ -92,6 +92,10 @@ export const vaadinConfig: UserConfigFn = (env) => {
         Frontend: frontendFolder
       }
     },
+    define: {
+      // should be settings.offlinePath after manifests are fixed
+      OFFLINE_PATH: "'.'"
+    },
     build: {
       outDir: buildFolder,
       assetsDir: 'VAADIN/build',
