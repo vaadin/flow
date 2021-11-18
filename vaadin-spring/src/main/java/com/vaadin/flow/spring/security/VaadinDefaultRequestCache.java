@@ -28,7 +28,14 @@ import org.springframework.stereotype.Component;
 /**
  * A default request cache implementation which aims to ignore requests that are
  * not for routes.
- *
+ * <p>
+ * For the requests that are not ignored, delegates the actual saving to the
+ * other {@link RequestCache} instance. Uses an internal
+ * {@link HttpSessionRequestCache} for delegating to, unless a custom delegate
+ * is set using the
+ * {@link VaadinDefaultRequestCache#setDelegateRequestCache(RequestCache)}
+ * method.
+ * <p>
  * Using this class helps with redirecting the user to the correct route after
  * login instead of redirecting to some internal URL like a service worker or
  * some data the service worker has fetched.
@@ -89,7 +96,14 @@ public class VaadinDefaultRequestCache implements RequestCache {
         return referer != null && referer.endsWith("sw.js");
     }
 
-    void setDelegateRequestCache(RequestCache delegateRequestCache) {
+    /**
+     * Sets the cache implementation that is used for the actual saving of the
+     * requests that are not ignored.
+     *
+     * @param delegateRequestCache
+     *            the delegate request cache
+     */
+    public void setDelegateRequestCache(RequestCache delegateRequestCache) {
         this.delegateRequestCache = delegateRequestCache;
     }
 }

@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.spring.security;
+package com.vaadin.flow.spring.security.stateless;
 
 import javax.crypto.SecretKey;
 
@@ -38,7 +38,36 @@ import org.springframework.security.web.csrf.LazyCsrfTokenRepository;
 import org.springframework.security.web.savedrequest.CookieRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
 
-class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuilder<H>>
+import com.vaadin.flow.spring.security.VaadinDefaultRequestCache;
+
+/**
+ * Enables authentication that relies on JWT instead of sessions.
+ *
+ * <h2>Shared Objects Created</h2>
+ *
+ * The following shared objects are populated:
+ *
+ * <ul>
+ * <li>{@link SecurityContextRepository} is populated with a
+ * {@link JwtSecurityContextRepository}</li>
+ * <li>{@link CsrfConfigurer#csrfTokenRepository(CsrfTokenRepository)} is used
+ * to set {@link LazyCsrfTokenRepository} that delegates to
+ * {@link CookieCsrfTokenRepository}</li>
+ * </ul>
+ *
+ * <h2>Shared Objects Used</h2>
+ *
+ * The following shared objects are used:
+ *
+ * <ul>
+ * <li>{@link VaadinDefaultRequestCache} - if present, this uses
+ * {@link VaadinDefaultRequestCache#setDelegateRequestCache(RequestCache)} to
+ * delegate saving requests to {@link CookieRequestCache}</li>
+ * </ul>
+ *
+ * @param <H>
+ */
+public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuilder<H>>
         extends
         AbstractHttpConfigurer<VaadinStatelessSecurityConfigurer<H>, H> {
     private long expiresIn = 1800L;
@@ -50,7 +79,8 @@ class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuilder<H>>
     @Override
     @SuppressWarnings("unchecked")
     public void init(H http) {
-        JwtSecurityContextRepository jwtSecurityContextRepository = new JwtSecurityContextRepository();
+        JwtSecurityContextRepository jwtSecurityContextRepository = new JwtSecurityContextRepository(
+                new SerializedJwtSplitCookieRepository());
         SecurityContextConfigurer<H> securityContext = http
                 .getConfigurer(SecurityContextConfigurer.class);
         if (securityContext != null) {
@@ -102,16 +132,37 @@ class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuilder<H>>
         }
     }
 
+    /**
+     * Sets the lifetime of the JWT. The default is 1800 seconds.
+     *
+     * @param expiresIn
+     *            the lifetime in seconds
+     * @return the {@link VaadinStatelessSecurityConfigurer} for further
+     *         customization
+     */
     public VaadinStatelessSecurityConfigurer<H> expiresIn(long expiresIn) {
         this.expiresIn = expiresIn;
         return this;
     }
 
+    /**
+     * Sets the issuer claim to use when issuing and verifying the JWT.
+     *
+     * @param issuer
+     *            string identifier or URL of the issuer
+     * @return the {@link VaadinStatelessSecurityConfigurer} for further
+     *         customization
+     */
     public VaadinStatelessSecurityConfigurer<H> issuer(String issuer) {
         this.issuer = issuer;
         return this;
     }
 
+    /**
+     * Specifies using a secret key for signing and verification.
+     *
+     * @return the {@link SecretKeyConfigurer}
+     */
     public SecretKeyConfigurer withSecretKey() {
         if (this.secretKeyConfigurer == null) {
             this.secretKeyConfigurer = new SecretKeyConfigurer();
@@ -119,15 +170,28 @@ class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuilder<H>>
         return this.secretKeyConfigurer;
     }
 
-    public SecretKeyConfigurer withSecretKey(
+    /**
+     * Specifies using a secret key for signing and verification.
+     *
+     * @param customizer
+     *            the {@link Customizer} to provide configuration for the
+     *            {@link SecretKeyConfigurer}
+     * @return the {@link VaadinStatelessSecurityConfigurer} for further
+     *         customization
+     */
+    public VaadinStatelessSecurityConfigurer<H> withSecretKey(
             Customizer<SecretKeyConfigurer> customizer) {
         if (this.secretKeyConfigurer == null) {
             this.secretKeyConfigurer = new SecretKeyConfigurer();
         }
         customizer.customize(secretKeyConfigurer);
-        return this.secretKeyConfigurer;
+        return this;
     }
 
+    /**
+     * Enables configuring the secret key and the algorithm for the JWT signing
+     * and verification when using {@link VaadinStatelessSecurityConfigurer}.
+     */
     public class SecretKeyConfigurer {
         private SecretKey secretKey;
 
@@ -136,6 +200,13 @@ class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuilder<H>>
         private SecretKeyConfigurer() {
         }
 
+        /**
+         * Sets the secret key.
+         *
+         * @param secretKey
+         *            the secret key
+         * @return the {@link SecretKeyConfigurer} for further customization
+         */
         public SecretKeyConfigurer secretKey(SecretKey secretKey) {
             this.secretKey = secretKey;
             if (this.jwsAlgorithm == null) {
@@ -144,11 +215,25 @@ class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuilder<H>>
             return this;
         }
 
+        /**
+         * Sets the signature algorithm.
+         *
+         * @param algorithm
+         *            the algorithm
+         * @return the {@link SecretKeyConfigurer} for further customization
+         */
         public SecretKeyConfigurer algorithm(MacAlgorithm algorithm) {
             this.jwsAlgorithm = algorithm;
             return this;
         }
 
+        /**
+         * Return to the {@link VaadinStatelessSecurityConfigurer} when done
+         * using the {@link SecretKeyConfigurer} for method chaining.
+         *
+         * @return the {@link VaadinStatelessSecurityConfigurer} for further
+         *         customization
+         */
         public VaadinStatelessSecurityConfigurer<H> and() {
             return VaadinStatelessSecurityConfigurer.this;
         }

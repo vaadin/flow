@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.spring.security;
+package com.vaadin.flow.spring.security.stateless;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -45,6 +45,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtException;
 import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
@@ -55,13 +56,13 @@ import org.springframework.security.web.context.SecurityContextRepository;
 
 /**
  * A {@link SecurityContextRepository} implementation that stores the
- * authentication using a signed JWT persisted in cookies.
+ * authentication using a JWT persisted in cookies.
  */
 class JwtSecurityContextRepository implements SecurityContextRepository {
     private static final String ROLES_CLAIM = "roles";
     private static final String ROLE_AUTHORITY_PREFIX = "ROLE_";
     private final Log logger = LogFactory.getLog(this.getClass());
-    private final SerializedJwtSplitCookieRepository serializedJwtSplitCookieRepository = new SerializedJwtSplitCookieRepository();
+    private final SerializedJwtSplitCookieRepository serializedJwtSplitCookieRepository;
     private final JwtAuthenticationConverter jwtAuthenticationConverter;
     private String issuer;
     private long expiresIn = 1800L;
@@ -70,7 +71,9 @@ class JwtSecurityContextRepository implements SecurityContextRepository {
     private JwtDecoder jwtDecoder;
     private AuthenticationTrustResolver trustResolver = new AuthenticationTrustResolverImpl();
 
-    JwtSecurityContextRepository() {
+    JwtSecurityContextRepository(
+            SerializedJwtSplitCookieRepository serializedJwtSplitCookieRepository) {
+        this.serializedJwtSplitCookieRepository = serializedJwtSplitCookieRepository;
         JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
         grantedAuthoritiesConverter.setAuthorityPrefix(ROLE_AUTHORITY_PREFIX);
         grantedAuthoritiesConverter.setAuthoritiesClaimName(ROLES_CLAIM);
@@ -98,7 +101,7 @@ class JwtSecurityContextRepository implements SecurityContextRepository {
         this.issuer = issuer;
     }
 
-    public void setTrustResolver(AuthenticationTrustResolver trustResolver) {
+    void setTrustResolver(AuthenticationTrustResolver trustResolver) {
         this.trustResolver = trustResolver;
     }
 
@@ -165,7 +168,15 @@ class JwtSecurityContextRepository implements SecurityContextRepository {
             return null;
         }
 
-        return getJwtDecoder().decode(serializedJwt);
+        try {
+            return getJwtDecoder().decode(serializedJwt);
+        } catch (JwtException e) {
+            if (this.logger.isTraceEnabled()) {
+                this.logger.trace(
+                        "Cannot decode JWT when loading SecurityContext", e);
+            }
+            return null;
+        }
     }
 
     @Override
@@ -174,6 +185,7 @@ class JwtSecurityContextRepository implements SecurityContextRepository {
         SecurityContext context = SecurityContextHolder.createEmptyContext();
 
         HttpServletRequest request = requestResponseHolder.getRequest();
+
         Jwt jwt = decodeJwt(request);
         if (jwt != null) {
             Authentication authentication = jwtAuthenticationConverter
@@ -189,15 +201,15 @@ class JwtSecurityContextRepository implements SecurityContextRepository {
     @Override
     public void saveContext(SecurityContext context, HttpServletRequest request,
             HttpServletResponse response) {
-        String serializedJwt;
+        String serializedJwt = null;
         try {
             serializedJwt = encodeJwt(context.getAuthentication());
         } catch (JOSEException e) {
             logger.warn("Cannot serialize SecurityContext as JWT", e);
-            serializedJwt = null;
+        } finally {
+            serializedJwtSplitCookieRepository.saveSerializedJwt(serializedJwt,
+                    request, response);
         }
-        serializedJwtSplitCookieRepository.saveSerializedJwt(serializedJwt,
-                request, response);
     }
 
     @Override
