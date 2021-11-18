@@ -80,7 +80,6 @@
             <plugin>
                 <artifactId>maven-clean-plugin</artifactId>
                 <!-- This is because we run multiple modes on the same module -->
-                    <!--
                 <executions>
                     <execution>
                         <id>auto-clean</id>
@@ -90,7 +89,6 @@
                         </goals>
                     </execution>
                 </executions>
-                -->
             </plugin>
             <!-- Clean lib before running jetty -->
             <plugin>

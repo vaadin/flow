@@ -33,7 +33,6 @@ import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.JsonCodec;
-import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
 
 import elemental.json.Json;
@@ -359,7 +358,7 @@ public class ComponentEventBus implements Serializable {
                                     + " was mapped to an element with tag '%s' and "
                                     + "node-id '%s', but it is mapped to a "
                                     + "component of type '%s' instead of the "
-                                    + "expected type of %s.\n"
+                                    + "expected type of %s.%n"
                                     + "Either the event data expression returns the"
                                     + " wrong element, or the type for the "
                                     + "'@EventType(\"%s\")' should be changed from "
@@ -380,7 +379,7 @@ public class ComponentEventBus implements Serializable {
                                 + "in component %s from browser: the event data expression '%s'"
                                 + " was mapped to an element with tag '%s' and "
                                 + "node-id '%s', but it doesn't have a "
-                                + "component instance mapped to it.\n"
+                                + "component instance mapped to it.%n"
                                 + "Either the event data expression returns the"
                                 + " wrong element, or the type for the "
                                 + "'@EventType(\"%s\")' should be changed from "

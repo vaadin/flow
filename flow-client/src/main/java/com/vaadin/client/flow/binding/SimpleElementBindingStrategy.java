@@ -1265,8 +1265,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             } else if (expressionString
                     .equals(JsonConstants.MAP_STATE_NODE_EVENT_DATA)) {
                 // map event.target to the closest state node
-                int targetNodeId = getClosestStateNodeIdToTarget(node,
-                        event.getTarget(), "event.target");
+                int targetNodeId = getClosestStateNodeIdToEventTarget(node,
+                        event.getTarget());
                 eventData.put(JsonConstants.MAP_STATE_NODE_EVENT_DATA,
                         targetNodeId);
             } else if (expressionString
@@ -1479,8 +1479,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
     }
 
     // This method could be moved somewhere to be reusable
-    private int getClosestStateNodeIdToTarget(StateNode topNode,
-            EventTarget target, String eventDataExpression) {
+    private int getClosestStateNodeIdToEventTarget(StateNode topNode,
+                                                   EventTarget target) {
         if (target == null) {
             return -1;
         }
@@ -1503,25 +1503,27 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             // no direct match, all child element state nodes collected.
             // bottom-up search elements until matching state node found
             targetNode = DomApi.wrap(targetNode.getParentNode());
-            while (targetNode != null) {
-                for (int i = stack.length() - 1; i > -1; i--) {
-                    final StateNode stateNode = stack.get(i);
-                    if (targetNode.isSameNode(stateNode.getDomNode())) {
-                        return stateNode.getId();
-                    }
-                }
-                targetNode = DomApi.wrap(targetNode.getParentNode());
-            }
-            //
+            return getStateNodeForElement(stack, targetNode);
         } catch (Exception e) {
             // not going to let event handling fail; just report nothing found
             Console.debug(
                     "An error occurred when Flow tried to find a state node matching the element "
-                            + target + ", returned by an event data expression "
-                            + eventDataExpression + ". Error: "
+                            + target + ", which was the event.target. Error: "
                             + e.getMessage());
         }
-        // no match / error;
+        return -1; // no match / error;
+    }
+
+    private static int getStateNodeForElement(JsArray<StateNode> searchStack, DomNode targetNode) {
+        while (targetNode != null) {
+            for (int i = searchStack.length() - 1; i > -1; i--) {
+                final StateNode stateNode = searchStack.get(i);
+                if (targetNode.isSameNode(stateNode.getDomNode())) {
+                    return stateNode.getId();
+                }
+            }
+            targetNode = DomApi.wrap(targetNode.getParentNode());
+        }
         return -1;
     }
 
@@ -1533,14 +1535,13 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         try {
             DomNode targetNode = DomApi
                     .wrap(WidgetUtil.crazyJsCast(domNodeReference));
-            StateNode stateNodeForDomNode = null;
-            do {
-                stateNodeForDomNode = stateTree
+            while (targetNode != null) {
+                StateNode stateNodeForDomNode = stateTree
                         .getStateNodeForDomNode(targetNode);
+                if (stateNodeForDomNode != null) {
+                    return stateNodeForDomNode.getId();
+                }
                 targetNode = DomApi.wrap(targetNode.getParentNode());
-            } while (stateNodeForDomNode == null && targetNode != null);
-            if (stateNodeForDomNode != null) {
-                return stateNodeForDomNode.getId();
             }
         } catch (Exception e) {
             // not going to let event handling fail; just report nothing found
@@ -1551,8 +1552,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                             + eventDataExpression + ". Error: "
                             + e.getMessage());
         }
-        // no match / error;
-        return -1;
+        return -1; // no match / error;
     }
 
 }
