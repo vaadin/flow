@@ -114,7 +114,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
         transformIndexHtml: {
           enforce: 'pre',
           transform(_html, context) {
-            if (!spaMiddlewareForceRemoved) {
+            if (context.server && !spaMiddlewareForceRemoved) {
               context.server.middlewares.stack = context.server.middlewares.stack.filter((mw) => {
                 const handleName = '' + mw.handle;
                 return !handleName.includes('viteSpaFallbackMiddleware');
