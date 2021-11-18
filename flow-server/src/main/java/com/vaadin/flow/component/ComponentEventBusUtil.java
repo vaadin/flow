@@ -171,10 +171,12 @@ public class ComponentEventBusUtil {
                     eventDataConstructor = c;
                 } else {
                     throw new IllegalArgumentException(
-                            "Multiple DOM event constructors annotated with @"
+                            "More than one DOM event constructors annotated with @"
                                     + EventData.class.getSimpleName()
-                                    + " found for " + eventType.getName() + ". "
-                                    + EVENT_CONSTRUCTOR_DEFINITION);
+                                    + " found for " + eventType.getName()
+                                    + ". There can be only one constructor with @"
+                                    + EventData.class.getSimpleName()
+                                    + " annotations present.");
                 }
             }
         }
