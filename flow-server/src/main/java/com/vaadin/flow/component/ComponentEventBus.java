@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 import com.vaadin.flow.dom.DebouncePhase;
@@ -269,7 +270,15 @@ public class ComponentEventBus implements Serializable {
 
         LinkedHashMap<String, Class<?>> eventDataExpressions = ComponentEventBusUtil
                 .getEventDataExpressions(eventType);
-        eventDataExpressions.keySet().forEach(registration::addEventData);
+
+        eventDataExpressions.forEach((expression, type) -> {
+            if (Component.class.isAssignableFrom(type)
+                    || type == Element.class) {
+                registration.addEventDataElement(expression);
+            } else {
+                registration.addEventData(expression);
+            }
+        });
 
         if (!"".equals(filter)) {
             registration.setFilter(filter);
@@ -291,7 +300,8 @@ public class ComponentEventBus implements Serializable {
 
     /**
      * Creates a list of data objects which can be passed to the constructor
-     * returned by {@link #getEventConstructor(Class)} as parameters 3+.
+     * returned by {@link ComponentEventBusUtil#getEventConstructor(Class)} as
+     * parameters 3+.
      *
      * @param domEvent
      *            the DOM event containing the data
@@ -307,14 +317,79 @@ public class ComponentEventBus implements Serializable {
         LinkedHashMap<String, Class<?>> expressions = ComponentEventBusUtil
                 .getEventDataExpressions(eventType);
         expressions.forEach((expression, type) -> {
-            JsonValue jsonValue = domEvent.getEventData().get(expression);
-            if (jsonValue == null) {
-                jsonValue = Json.createNull();
+            if (Component.class.isAssignableFrom(type)
+                    || type == Element.class) {
+                eventDataObjects.add(parseStateNodeIdToComponentReference(
+                        domEvent, type, expression));
+            } else {
+                JsonValue jsonValue = domEvent.getEventData().get(expression);
+                if (jsonValue == null) {
+                    jsonValue = Json.createNull();
+                }
+                Object value = JsonCodec.decodeAs(jsonValue, type);
+                eventDataObjects.add(value);
             }
-            Object value = JsonCodec.decodeAs(jsonValue, type);
-            eventDataObjects.add(value);
         });
         return eventDataObjects;
+    }
+
+    private Object parseStateNodeIdToComponentReference(DomEvent event,
+            Class<?> expectedEventDataType, String eventDataExpression) {
+        assert Component.class.isAssignableFrom(expectedEventDataType)
+                || Element.class == expectedEventDataType;
+
+        final Element mappedElement = event
+                .getEventDataElement(eventDataExpression).orElse(null);
+
+        if (expectedEventDataType == Element.class || mappedElement == null) {
+            return mappedElement;
+        } else {
+            final Optional<Component> componentMaybe = mappedElement
+                    .getComponent();
+            if (componentMaybe.isPresent()) {
+                final Component mappedComponent = componentMaybe.get();
+                if (expectedEventDataType
+                        .isAssignableFrom(mappedComponent.getClass())) {
+                    return mappedComponent;
+                } else {
+                    throw new IllegalStateException(String.format(
+                            "Error when trying to map event data for event '%s' "
+                                    + "in component %s from browser: the event data expression '%s'"
+                                    + " was mapped to an element with tag '%s' and "
+                                    + "node-id '%s', but it is mapped to a "
+                                    + "component of type '%s' instead of the "
+                                    + "expected type of %s.%n"
+                                    + "Either the event data expression returns the"
+                                    + " wrong element, or the type for the "
+                                    + "'@EventType(\"%s\")' should be changed from "
+                                    + "%s to %s",
+                            event.getType(),
+                            component.getClass().getSimpleName(),
+                            eventDataExpression, mappedElement.getTag(),
+                            mappedElement.getNode().getId(),
+                            mappedComponent.getClass().getSimpleName(),
+                            expectedEventDataType.getSimpleName(),
+                            eventDataExpression,
+                            mappedComponent.getClass().getSimpleName(),
+                            expectedEventDataType.getSimpleName()));
+                }
+            } else {
+                throw new IllegalStateException(String.format(
+                        "Error when trying to map event data for event '%s' "
+                                + "in component %s from browser: the event data expression '%s'"
+                                + " was mapped to an element with tag '%s' and "
+                                + "node-id '%s', but it doesn't have a "
+                                + "component instance mapped to it.%n"
+                                + "Either the event data expression returns the"
+                                + " wrong element, or the type for the "
+                                + "'@EventType(\"%s\")' should be changed from "
+                                + "%s to Element",
+                        event.getType(), component.getClass().getSimpleName(),
+                        eventDataExpression, mappedElement.getTag(),
+                        mappedElement.getNode().getId(), eventDataExpression,
+                        expectedEventDataType));
+            }
+        }
     }
 
     /**
