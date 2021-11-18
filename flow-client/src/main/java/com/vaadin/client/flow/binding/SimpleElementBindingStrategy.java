@@ -1480,7 +1480,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
     // This method could be moved somewhere to be reusable
     private int getClosestStateNodeIdToEventTarget(StateNode topNode,
-                                                   EventTarget target) {
+            EventTarget target) {
         if (target == null) {
             return -1;
         }
@@ -1514,7 +1514,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         return -1; // no match / error;
     }
 
-    private static int getStateNodeForElement(JsArray<StateNode> searchStack, DomNode targetNode) {
+    private static int getStateNodeForElement(JsArray<StateNode> searchStack,
+            DomNode targetNode) {
         while (targetNode != null) {
             for (int i = searchStack.length() - 1; i > -1; i--) {
                 final StateNode stateNode = searchStack.get(i);
