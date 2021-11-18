@@ -70,6 +70,8 @@ function runWatchDog(watchDogPort) {
   client.connect(watchDogPort, 'localhost');
 }
 
+let spaMiddlewareForceRemoved = false;
+
 export const vaadinConfig: UserConfigFn = (env) => {
   const devMode = env.mode === 'development';
   const basePath = env.mode === 'production' ? '' : '/VAADIN/';
@@ -113,6 +115,14 @@ export const vaadinConfig: UserConfigFn = (env) => {
         transformIndexHtml: {
           enforce: 'pre',
           transform(_html, context) {
+            if (context.server && !spaMiddlewareForceRemoved) {
+              context.server.middlewares.stack = context.server.middlewares.stack.filter((mw) => {
+                const handleName = '' + mw.handle;
+                return !handleName.includes('viteSpaFallbackMiddleware');
+              });
+              spaMiddlewareForceRemoved = true;
+            }
+
             if (context.path !== '/index.html') {
               return;
             }
