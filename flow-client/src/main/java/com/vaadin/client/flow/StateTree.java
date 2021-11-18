@@ -22,6 +22,7 @@ import com.vaadin.client.flow.binding.ServerEventObject;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsMap;
+import com.vaadin.client.flow.dom.DomNode;
 import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.nodefeature.NodeList;
 import com.vaadin.client.flow.nodefeature.NodeMap;
@@ -157,6 +158,28 @@ public class StateTree {
                 }
             }
         });
+    }
+
+    /**
+     * Returns the state node in the tree for the given dom node or {@code null}
+     * if none found.
+     * <p>
+     * Comparison is done with Node.isSameNode() method which is same as
+     * {@code ===} comparison.
+     *
+     * @param domNode
+     *            the dom node to find state node for
+     * @return the state node or null
+     */
+    public StateNode getStateNodeForDomNode(DomNode domNode) {
+        final JsArray<StateNode> stateNodes = idToNode.mapValues();
+        for (int i = 0; i < stateNodes.length(); i++) {
+            StateNode stateNode = stateNodes.get(i);
+            if (domNode.isSameNode(stateNode.getDomNode())) {
+                return stateNode;
+            }
+        }
+        return null;
     }
 
     /**
