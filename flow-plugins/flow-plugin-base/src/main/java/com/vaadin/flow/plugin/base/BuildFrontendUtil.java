@@ -164,7 +164,7 @@ public class BuildFrontendUtil {
             throw new ExecutionFailedException(
                     "Error occured during goal execution: "
                             + throwable.getMessage()
-                            + "Please run Maven with the -e switch (or Gradle with the --stacktrace switch), to learn the full stack trace.",
+                            + "\n\nPlease run Maven with the -e switch (or Gradle with the --stacktrace switch), to learn the full stack trace.",
                     throwable);
         }
 
