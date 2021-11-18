@@ -1,17 +1,20 @@
 package com.vaadin.viteapp;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
+import org.checkerframework.checker.units.qual.s;
 import org.junit.Assert;
 import org.junit.Test;
 
 public class FileAccessIT {
 
     @Test
-    public void expectedFoldersAccessible() throws IOException {
+    public void expectedFoldersAccessible() throws Exception {
+        waitForDevServer();
         /*
          * This just tests a few sample folders to see that there is not a
          * fundamental problem
@@ -28,7 +31,8 @@ public class FileAccessIT {
     }
 
     @Test
-    public void mostFoldersNotAccessible() throws IOException {
+    public void mostFoldersNotAccessible() throws Exception {
+        waitForDevServer();
         /*
          * This just tests a few sample folders to see that there is not a
          * fundamental problem
@@ -38,10 +42,24 @@ public class FileAccessIT {
         assertDenied("../pom.xml");
     }
 
+    private void waitForDevServer()
+            throws MalformedURLException, IOException, InterruptedException {
+        for (int i = 0; i < 50; i++) {
+            String indexPage = IOUtils.toString(
+                    new URL("http://localhost:8888"), StandardCharsets.UTF_8);
+            if (indexPage.contains("<div id=\"outlet\"></div>")) {
+                return;
+            }
+            Thread.sleep(500);
+        }
+        throw new IllegalStateException("Dev server never started");
+    }
+
     private void assertDenied(String fileInProject) {
         try {
-            IOUtils.toString(getFsUrl(fileInProject), StandardCharsets.UTF_8);
-            Assert.fail("Request for " + fileInProject + " should not succeed");
+            URL url = getFsUrl(fileInProject);
+            IOUtils.toString(url, StandardCharsets.UTF_8);
+            Assert.fail("Request for " + url + " should not succeed");
         } catch (IOException e) {
             Assert.assertTrue(
                     "Request for " + fileInProject + " should have failed",
