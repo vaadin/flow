@@ -617,16 +617,16 @@ public class BrowserDetails implements Serializable {
             }
             return true;
         }
-        // Firefox 43+ for now
-        if (isFirefox() && getBrowserMajorVersion() < 43) {
+        // Firefox 65+ for now
+        if (isFirefox() && getBrowserMajorVersion() < 65) {
             return true;
         }
-        // Opera 34+ for now
-        if (isOpera() && getBrowserMajorVersion() < 34) {
+        // Opera 58+ for now
+        if (isOpera() && getBrowserMajorVersion() < 58) {
             return true;
         }
-        // Chrome 47+ for now
-        if (isChrome() && getBrowserMajorVersion() < 47) {
+        // Chrome 71+ for now
+        if (isChrome() && getBrowserMajorVersion() < 71) {
             return true;
         }
         return false;
