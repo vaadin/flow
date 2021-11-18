@@ -558,7 +558,8 @@ public class VaadinServletContextInitializer
             neverScan = Collections.emptyList();
         } else {
             neverScan = Arrays.stream(neverScanProperty.split(","))
-                    .map(String::trim).collect(Collectors.toList());
+                    .map(pkg -> pkg.replace('.', '/').trim())
+                    .collect(Collectors.toList());
         }
 
         String onlyScanProperty = appContext.getEnvironment()
