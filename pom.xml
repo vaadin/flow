@@ -133,6 +133,8 @@
         <!-- This property is needed to allow some Win-specific unit tests -->
         <!-- to be disabled via system property in CI until they got fixed -->
         <exclude.windows.failed.tests></exclude.windows.failed.tests>
+
+        <testListener>com.vaadin.flow.testutil.CurrentInstanceCleaner</testListener>
     </properties>
 
     <repositories>
@@ -508,7 +510,7 @@
                         <properties>
                             <property>
                                 <name>listener</name>
-                                <value>com.vaadin.flow.testutil.CurrentInstanceCleaner</value>
+                                <value>${testListener}</value>
                             </property>
                         </properties>
                     </configuration>
