@@ -676,6 +676,7 @@ public class NodeTasks implements FallibleCommand {
             TaskGeneratePackageJson.class,
             TaskGenerateIndexHtml.class,
             TaskGenerateIndexTs.class,
+            TaskGenerateViteDevMode.class,
             TaskGenerateTsConfig.class,
             TaskGenerateTsDefinitions.class,
             TaskGenerateServiceWorker.class,
@@ -770,8 +771,7 @@ public class NodeTasks implements FallibleCommand {
             }
 
             commands.add(new TaskGenerateBootstrap(frontendDependencies,
-                    builder.frontendDirectory, builder.buildDirectory,
-                    builder.productionMode));
+                    builder.frontendDirectory, builder.productionMode));
         }
 
         if (builder.jarFiles != null && builder.flowResourcesFolder != null) {
@@ -838,13 +838,18 @@ public class NodeTasks implements FallibleCommand {
         TaskGenerateIndexHtml taskGenerateIndexHtml = new TaskGenerateIndexHtml(
                 builder.frontendDirectory);
         commands.add(taskGenerateIndexHtml);
-        File outputDirectory = new File(builder.npmFolder,
+        File buildDirectory = new File(builder.npmFolder,
                 builder.buildDirectory);
         TaskGenerateIndexTs taskGenerateIndexTs = new TaskGenerateIndexTs(
                 builder.frontendDirectory,
                 new File(builder.generatedFolder, IMPORTS_NAME),
-                outputDirectory);
+                buildDirectory);
         commands.add(taskGenerateIndexTs);
+        if (builder.getFeatureFlags().isEnabled(FeatureFlags.VITE)
+                && !builder.productionMode) {
+            commands.add(
+                    new TaskGenerateViteDevMode(builder.frontendDirectory));
+        }
     }
 
     private void addGenerateTsConfigTask(Builder builder) {

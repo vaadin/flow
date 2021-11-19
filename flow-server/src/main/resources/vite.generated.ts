@@ -72,6 +72,7 @@ function runWatchDog(watchDogPort) {
   client.connect(watchDogPort, 'localhost');
 }
 
+let spaMiddlewareForceRemoved = false;
 
 export const vaadinConfig: UserConfigFn = (env) => {
   const devMode = env.mode === 'development';
@@ -168,6 +169,14 @@ export const vaadinConfig: UserConfigFn = (env) => {
         transformIndexHtml: {
           enforce: 'pre',
           transform(_html, context) {
+            if (context.server && !spaMiddlewareForceRemoved) {
+              context.server.middlewares.stack = context.server.middlewares.stack.filter((mw) => {
+                const handleName = '' + mw.handle;
+                return !handleName.includes('viteSpaFallbackMiddleware');
+              });
+              spaMiddlewareForceRemoved = true;
+            }
+
             if (context.path !== '/index.html') {
               return;
             }
@@ -176,7 +185,18 @@ export const vaadinConfig: UserConfigFn = (env) => {
               attrs: { type: 'module', src: devMode ? '/VAADIN/generated/vaadin.ts' : './generated/vaadin.ts' },
               injectTo: 'head'
             };
-            return [vaadinScript];
+
+            let scripts = [vaadinScript];
+
+            if (devMode) {
+              const viteDevModeScript: HtmlTagDescriptor = {
+                tag: 'script',
+                attrs: { type: 'module', src: '/VAADIN/generated/vite-devmode.ts' },
+                injectTo: 'head'
+              };
+              scripts.push(viteDevModeScript);
+            }
+            return scripts;
           }
         }
       },
