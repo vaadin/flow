@@ -61,8 +61,8 @@ public class FileAccessIT {
     private void assertDenied(String fileInProject) {
         try {
             URL url = getFsUrl(fileInProject);
-            IOUtils.toString(url, StandardCharsets.UTF_8);
-            Assert.fail("Request for " + url + " should not succeed");
+            String result = IOUtils.toString(url, StandardCharsets.UTF_8);
+            Assert.fail("Request for " + url + " should not succeed but returned "+result;
         } catch (IOException e) {
             Assert.assertTrue(
                     "Request for " + fileInProject + " should have failed",
