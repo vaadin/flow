@@ -51,11 +51,9 @@ public class InternalServerError extends Component
         String exceptionText;
         String errorTextStem =
                 "There was an exception while trying to navigate to '%s'";
-        boolean isRootCauseAvailable = false;
         String rootCause = getRootCause(parameter);
-
-        if (rootCause != null && !rootCause.isEmpty()) {
-            isRootCauseAvailable = true;
+        boolean isRootCauseAvailable = rootCause != null && !rootCause.isEmpty();
+        if (isRootCauseAvailable) {
             exceptionText = String.format(errorTextStem
                             + " with the root cause '%s'",
                     event.getLocation().getPath(), rootCause);
