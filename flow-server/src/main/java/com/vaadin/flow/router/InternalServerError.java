@@ -49,7 +49,17 @@ public class InternalServerError extends Component
     public int setErrorParameter(BeforeEnterEvent event,
             ErrorParameter<Exception> parameter) {
         String exceptionText;
-        if (parameter.hasCustomMessage()) {
+        boolean isRootCauseAvailable = false;
+        String rootCause = getRootCause(parameter);
+
+        if (rootCause != null && !rootCause.isEmpty()) {
+            isRootCauseAvailable = true;
+            exceptionText = String.format(
+                    "There was an exception while trying to navigate to '%s'"
+                            + " with the root cause '%s'",
+                    event.getLocation().getPath(),
+                    rootCause);
+        } else if (parameter.hasCustomMessage()) {
             exceptionText = String.format(
                     "There was an exception while trying to navigate to '%s'"
                             + " with the exception message '%s'",
@@ -58,13 +68,13 @@ public class InternalServerError extends Component
         } else {
             exceptionText = String.format(
                     "There was an exception while trying to navigate to '%s'",
-                    event.getLocation().getPath());
+                    event.getLocation().getPath(), isRootCauseAvailable);
         }
 
         Exception exception = parameter.getException();
         if (exception != null) {
             reportException(exception, event.getLocation().getPath(),
-                    exceptionText);
+                    exceptionText, isRootCauseAvailable);
         } else {
             getElement().setText(exceptionText);
         }
@@ -83,8 +93,13 @@ public class InternalServerError extends Component
     }
 
     private void reportException(Exception exception, String path,
-            String exceptionText) {
-        getElement().appendChild(Element.createText(exceptionText));
+                                 String exceptionText,
+                                 boolean isRootCauseAvailable) {
+        if (isRootCauseAvailable) {
+            getElement().appendChild(ElementFactory.createHeading3(exceptionText));
+        } else {
+            getElement().appendChild(Element.createText(exceptionText));
+        }
 
         VaadinService vaadinService = VaadinService.getCurrent();
         // Check that we have a vaadinService as else we will fail on a NPE and
@@ -134,6 +149,29 @@ public class InternalServerError extends Component
             logInfo.appendChild(ElementFactory.createAnchor(
                     "https://www.slf4j.org/manual.html#swapping", "here"));
             getElement().appendChild(logInfo);
+        }
+    }
+
+    private String getRootCause(ErrorParameter<Exception> parameter) {
+        if (parameter == null || parameter.getException() == null
+                || parameter.getException().getCause() == null) {
+            return null;
+        } else {
+            int availableRecursiveLevels = 10;
+            return doGetRootCause(parameter.getException().getCause(),
+                    availableRecursiveLevels);
+        }
+    }
+
+    private String doGetRootCause(Throwable cause,
+                                  int availableRecursiveLevels) {
+        if (cause.getCause() == null) {
+            return cause.toString();
+        } else {
+            if (availableRecursiveLevels < 1) {
+                return null;
+            }
+            return doGetRootCause(cause.getCause(), --availableRecursiveLevels);
         }
     }
 
