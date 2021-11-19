@@ -49,17 +49,17 @@ public class InternalServerError extends Component
     public int setErrorParameter(BeforeEnterEvent event,
             ErrorParameter<Exception> parameter) {
         String exceptionText;
-        String errorTextStem =
-                "There was an exception while trying to navigate to '%s'";
+        String errorTextStem = "There was an exception while trying to navigate to '%s'";
         String rootCause = getRootCause(parameter);
-        boolean isRootCauseAvailable = rootCause != null && !rootCause.isEmpty();
+        boolean isRootCauseAvailable = rootCause != null
+                && !rootCause.isEmpty();
         if (isRootCauseAvailable) {
-            exceptionText = String.format(errorTextStem
-                            + " with the root cause '%s'",
+            exceptionText = String.format(
+                    errorTextStem + " with the root cause '%s'",
                     event.getLocation().getPath(), rootCause);
         } else if (parameter!= null && parameter.hasCustomMessage()) {
-            exceptionText = String.format(errorTextStem
-                            + " with the exception message '%s'",
+            exceptionText = String.format(
+                    errorTextStem + " with the exception message '%s'",
                     event.getLocation().getPath(),
                     parameter.getCustomMessage());
         } else {
@@ -89,8 +89,7 @@ public class InternalServerError extends Component
     }
 
     private void reportException(Exception exception, String path,
-                                 String exceptionText,
-                                 boolean isRootCauseAvailable) {
+            String exceptionText, boolean isRootCauseAvailable) {
         if (isRootCauseAvailable) {
             getElement()
                     .appendChild(ElementFactory.createHeading3(exceptionText));
