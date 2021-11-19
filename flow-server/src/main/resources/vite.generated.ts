@@ -12,11 +12,12 @@ import settings from '#settingsImport#';
 import { UserConfigFn, defineConfig, HtmlTagDescriptor, mergeConfig } from 'vite';
 
 import brotli from 'rollup-plugin-brotli';
-import checker from 'vite-plugin-checker'
+import checker from 'vite-plugin-checker';
 
 const frontendFolder = path.resolve(__dirname, settings.frontendFolder);
 const themeFolder = path.resolve(frontendFolder, settings.themeFolder);
-const buildFolder = path.resolve(__dirname, settings.frontendBundleOutput);
+const frontendBundleFolder = path.resolve(__dirname, settings.frontendBundleOutput);
+const addonFrontendFolder = path.resolve(__dirname, settings.addonFrontendFolder);
 
 const projectStaticAssetsFolders = [
   path.resolve(__dirname, 'src', 'main', 'resources', 'META-INF', 'resources'),
@@ -72,6 +73,13 @@ function runWatchDog(watchDogPort) {
 
 let spaMiddlewareForceRemoved = false;
 
+const allowedFrontendFolders = [
+  frontendFolder,
+  addonFrontendFolder,
+  path.resolve(addonFrontendFolder, '..', 'frontend'), // Contains only generated-flow-imports
+  path.resolve(frontendFolder, '../node_modules')
+];
+
 export const vaadinConfig: UserConfigFn = (env) => {
   const devMode = env.mode === 'development';
   const basePath = env.mode === 'production' ? '' : '/VAADIN/';
@@ -90,8 +98,13 @@ export const vaadinConfig: UserConfigFn = (env) => {
         Frontend: frontendFolder
       }
     },
+    server: {
+      fs: {
+        allow: allowedFrontendFolders,
+      }
+    },
     build: {
-      outDir: buildFolder,
+      outDir: frontendBundleFolder,
       assetsDir: 'VAADIN/build',
       rollupOptions: {
         input: {
