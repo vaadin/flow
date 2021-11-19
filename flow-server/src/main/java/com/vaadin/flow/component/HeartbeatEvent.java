@@ -13,14 +13,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.internal;
+package com.vaadin.flow.component;
 
 import java.util.EventObject;
 
-import com.vaadin.flow.component.UI;
-
 /**
- * Event created for a application heartbeat from the client.
+ * Event created for an application heartbeat from the client.
  *
  * @since 2.0
  */

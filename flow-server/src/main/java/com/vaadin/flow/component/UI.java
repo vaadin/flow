@@ -1178,6 +1178,26 @@ public class UI extends Component
     }
 
     /**
+     * Add a listener that will be informed when this UI received a heartbeat
+     * from the client-side.
+     * <p>
+     * Heartbeat requests are periodically sent by the client-side to inform the
+     * server that the UI sending the heartbeat is still alive (the browser
+     * window is open, the connection is up) even when there are no UIDL
+     * requests for a prolonged period of time. UIs that do not receive either
+     * heartbeat or UIDL requests are eventually removed from the session and
+     * garbage collected.
+     *
+     * @param listener
+     *            the heartbeat listener
+     * @return handler to remove the heartbeat listener
+     */
+    public Registration addHeartbeatListener(HeartbeatListener listener) {
+        Objects.requireNonNull(listener, NULL_LISTENER);
+        return internals.addHeartbeatListener(listener);
+    }
+
+    /**
      * Gets the drag source of an active HTML5 drag event.
      * <p>
      * <em>NOTE: the generic drag and drop feature for Flow is available in
