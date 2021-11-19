@@ -62,7 +62,8 @@ public class FileAccessIT {
         try {
             URL url = getFsUrl(fileInProject);
             String result = IOUtils.toString(url, StandardCharsets.UTF_8);
-            Assert.fail("Request for " + url + " should not succeed but returned "+result;
+            Assert.fail("Request for " + url
+                    + " should not succeed but returned " + result);
         } catch (IOException e) {
             Assert.assertTrue(
                     "Request for " + fileInProject + " should have failed",
