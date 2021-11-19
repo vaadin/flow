@@ -13,19 +13,7 @@ import org.junit.Test;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
 
-public class BasicsIT extends ChromeBrowserTest {
-
-    @BeforeClass
-    public static void driver() {
-        WebDriverManager.chromedriver().setup();
-    }
-
-    @Before
-    public void openView() {
-        getDriver().get(getRootURL());
-        waitForDevServer();
-        getCommandExecutor().waitForVaadin();
-    }
+public class BasicsIT extends ViteDevModeIT {
 
     @Test
     public void applicationStarts() {

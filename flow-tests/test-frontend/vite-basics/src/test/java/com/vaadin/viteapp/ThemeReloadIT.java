@@ -15,12 +15,7 @@ import org.openqa.selenium.By;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
-public class ThemeReloadIT extends ChromeBrowserTest {
-
-    @BeforeClass
-    public static void driver() {
-        WebDriverManager.chromedriver().setup();
-    }
+public class ThemeReloadIT extends ViteDevModeIT {
 
     @Test
     @Ignore

@@ -1,34 +1,14 @@
 package com.vaadin.viteapp;
 
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class FileAccessIT {
-
-    @BeforeClass
-    public static void waitForDevServer()
-            throws MalformedURLException, IOException, InterruptedException {
-        for (int i = 0; i < 50; i++) {
-            // Wait for index.ts so Vite also has run processing on files and
-            // later checks
-            // hopefully won't fail
-            String indexPage = IOUtils.toString(
-                    new URL("http://localhost:8888/VAADIN/generated/index.ts"),
-                    StandardCharsets.UTF_8);
-            if (indexPage.contains("router.setRoutes(routes);")) {
-                return;
-            }
-            Thread.sleep(500);
-        }
-        throw new IllegalStateException("Dev server never started");
-    }
+public class FileAccessIT extends ViteDevModeIT {
 
     @Test
     public void expectedFoldersAccessible() throws Exception {
