@@ -18,6 +18,9 @@ package com.vaadin.flow.testutil;
 import org.junit.runner.Description;
 import org.junit.runner.notification.RunListener;
 
+/**
+ * Removes any CurrentInstance thread locals before running a test.
+ */
 public class CurrentInstanceCleaner extends RunListener {
     @Override
     public void testStarted(Description description) throws Exception {
