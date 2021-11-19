@@ -757,7 +757,7 @@ public class NodeTasks implements FallibleCommand {
 
         if (frontendDependencies != null) {
             addGenerateServiceWorkerTask(builder,
-                    frontendDependencies.getPwaConfiguration(), featureFlags);
+                    frontendDependencies.getPwaConfiguration());
             addGenerateTsConfigTask(builder);
         }
 
@@ -864,12 +864,12 @@ public class NodeTasks implements FallibleCommand {
     }
 
     private void addGenerateServiceWorkerTask(Builder builder,
-            PwaConfiguration pwaConfiguration, FeatureFlags featureFlags) {
+            PwaConfiguration pwaConfiguration) {
         File outputDirectory = new File(builder.npmFolder,
                 builder.buildDirectory);
         if (pwaConfiguration.isEnabled()) {
             commands.add(new TaskGenerateServiceWorker(
-                    builder.frontendDirectory, outputDirectory, featureFlags));
+                    builder.frontendDirectory, outputDirectory));
         }
     }
 

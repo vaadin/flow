@@ -117,6 +117,9 @@ export const vaadinConfig: UserConfigFn = (env) => {
           pwaConfig = config;
         },
         async buildStart() {
+          // Before inject manifest we need to resolve and transpile the sw.ts file
+          // This could probably be made another way which needs to be investigated
+
           // eslint-disable-next-line @typescript-eslint/no-var-requires
           const rollup = require('rollup') as typeof Rollup
           const includedPluginNames = [
@@ -131,7 +134,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
           ]
           const plugins = pwaConfig.plugins.filter(p => includedPluginNames.includes(p.name)) as Plugin[]
           const bundle = await rollup.rollup({
-            input: path.resolve(settings.clientServiceWorkerSourceDir, settings.serviceWorkerSource),
+            input: path.resolve(settings.clientServiceWorkerSource),
             plugins,
           })
           try {
@@ -146,6 +149,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
           finally {
             await bundle.close()
           }
+          // end of resolve and transpilation
 
           await injectManifest({
             swSrc: path.resolve(buildFolder, 'sw.js'),

@@ -46,10 +46,8 @@ public class TaskGenerateServicWorkerTest {
     public void setUp() throws IOException {
         frontendFolder = temporaryFolder.newFolder();
         outputFolder = temporaryFolder.newFolder();
-        FeatureFlags featureFlags = new FeatureFlags(
-                Mockito.mock(Lookup.class));
         taskGenerateServiceWorker = new TaskGenerateServiceWorker(
-                frontendFolder, outputFolder, featureFlags);
+                frontendFolder, outputFolder);
     }
 
     @Test

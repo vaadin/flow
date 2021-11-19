@@ -93,9 +93,7 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
 
         settings.put("themeName", themeName);
 
-        settings.put("clientServiceWorkerSourceDir",
-                getClientServiceWorkerDir());
-        settings.put("serviceWorkerSource", getServiceWorkerFile());
+        settings.put("clientServiceWorkerSource", getServiceWorkerFile());
 
         settings.put("pwaEnabled", pwaConfiguration.isEnabled());
 
@@ -123,35 +121,35 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
         return path.toString();
     }
 
-    private String getClientServiceWorkerDir() {
+    private String getServiceWorkerFile() {
         boolean exists = new File(frontendDirectory, SERVICE_WORKER_SRC)
                 .exists()
                 || new File(frontendDirectory, SERVICE_WORKER_SRC_JS).exists();
-        if (!exists) {
-            Path path = Paths.get(npmFolder.toString(), buildDirectory);
-            return path.toString();
-        } else {
-            return frontendDirectory.toString();
-        }
-    }
 
-    private String getServiceWorkerFile() {
         String serviceWorkerFile = SERVICE_WORKER_SRC;
         if (new File(frontendDirectory, SERVICE_WORKER_SRC_JS).exists()) {
             serviceWorkerFile = SERVICE_WORKER_SRC_JS;
         }
-        return serviceWorkerFile;
+
+        if (!exists) {
+            Path path = Paths.get(npmFolder.toString(), buildDirectory,
+                    serviceWorkerFile);
+            return path.toString();
+        } else {
+            return Paths.get(frontendDirectory.toString(), serviceWorkerFile)
+                    .toString();
+        }
     }
 
     private String getOfflinePath() {
         if (pwaConfiguration.isOfflinePathEnabled()) {
-            return getEscapedRelativeWebpackPath(
-                    Paths.get(pwaConfiguration.getOfflinePath()));
+            return "'" + getEscapedRelativePath(
+                    Paths.get(pwaConfiguration.getOfflinePath())) + "'";
         }
-        return ".";
+        return "'.'";
     }
 
-    private String getEscapedRelativeWebpackPath(Path path) {
+    private String getEscapedRelativePath(Path path) {
         if (path.isAbsolute()) {
             return FrontendUtils.getUnixRelativePath(npmFolder.toPath(), path);
         } else {

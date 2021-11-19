@@ -15,7 +15,6 @@ declare var self: ServiceWorkerGlobalScope & {
 skipWaiting();
 clientsClaim();
 
-declare var OFFLINE_PATH_ENABLED: boolean; // defined by webpack.generated.js
 declare var OFFLINE_PATH: string; // defined by webpack.generated.js
 
 /**
@@ -30,8 +29,7 @@ const rewriteBaseHref = async (response: Response) => {
   return new Response(html.replace(/<base\s+href=[^>]*>/, `<base href="${self.registration.scope}">`), response);
 };
 
-const appShellPath = '.';
-const offlinePath = OFFLINE_PATH_ENABLED ? OFFLINE_PATH : appShellPath;
+const offlinePath = OFFLINE_PATH;
 const networkOnly = new NetworkOnly();
 let connectionLost = false;
 
