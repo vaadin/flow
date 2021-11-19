@@ -153,23 +153,14 @@ public class InternalServerError extends Component
         if (parameter == null || parameter.getException() == null
                 || parameter.getException().getCause() == null) {
             return null;
-        } else {
-            int availableRecursiveLevels = 10;
-            return doGetRootCause(parameter.getException().getCause(),
-                    availableRecursiveLevels);
         }
-    }
-
-    private String doGetRootCause(Throwable cause,
-            int availableRecursiveLevels) {
-        if (cause.getCause() == null) {
-            return cause.toString();
-        } else {
-            if (availableRecursiveLevels < 1) {
-                return null;
-            }
-            return doGetRootCause(cause.getCause(), --availableRecursiveLevels);
+        Throwable rootCause = null;
+        Throwable cause = parameter.getException().getCause();
+        while (cause != null && cause != rootCause) {
+            rootCause = cause;
+            cause = cause.getCause();
         }
+        return rootCause.toString();
     }
 
     private static Logger getLogger() {
