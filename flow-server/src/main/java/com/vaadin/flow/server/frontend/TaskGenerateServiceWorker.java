@@ -20,8 +20,6 @@ import java.io.IOException;
 
 import org.apache.commons.io.IOUtils;
 
-import com.vaadin.experimental.FeatureFlags;
-
 import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC;
 import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC_JS;
 import static java.nio.charset.StandardCharsets.UTF_8;
