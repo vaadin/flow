@@ -6,15 +6,32 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
-import org.checkerframework.checker.units.qual.s;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class FileAccessIT {
 
+    @BeforeClass
+    public static void waitForDevServer()
+            throws MalformedURLException, IOException, InterruptedException {
+        for (int i = 0; i < 50; i++) {
+            // Wait for index.ts so Vite also has run processing on files and
+            // later checks
+            // hopefully won't fail
+            String indexPage = IOUtils.toString(
+                    new URL("http://localhost:8888/VAADIN/generated/index.ts"),
+                    StandardCharsets.UTF_8);
+            if (indexPage.contains("router.setRoutes(routes);")) {
+                return;
+            }
+            Thread.sleep(500);
+        }
+        throw new IllegalStateException("Dev server never started");
+    }
+
     @Test
     public void expectedFoldersAccessible() throws Exception {
-        waitForDevServer();
         /*
          * This just tests a few sample folders to see that there is not a
          * fundamental problem
@@ -32,7 +49,6 @@ public class FileAccessIT {
 
     @Test
     public void mostFoldersNotAccessible() throws Exception {
-        waitForDevServer();
         /*
          * This just tests a few sample folders to see that there is not a
          * fundamental problem
@@ -40,19 +56,6 @@ public class FileAccessIT {
         assertDenied("target/vaadin-dev-server-settings.json");
         assertDenied("pom.xml");
         assertDenied("../pom.xml");
-    }
-
-    private void waitForDevServer()
-            throws MalformedURLException, IOException, InterruptedException {
-        for (int i = 0; i < 50; i++) {
-            String indexPage = IOUtils.toString(
-                    new URL("http://localhost:8888"), StandardCharsets.UTF_8);
-            if (indexPage.contains("<div id=\"outlet\"></div>")) {
-                return;
-            }
-            Thread.sleep(500);
-        }
-        throw new IllegalStateException("Dev server never started");
     }
 
     private void assertDenied(String fileInProject) {
@@ -70,7 +73,14 @@ public class FileAccessIT {
     }
 
     private URL getFsUrl(String fileInProject) throws IOException {
-        String currentPath = new java.io.File(".").getCanonicalPath();
+        // For Windows, the URLs should be like
+        // http://localhost:8888/VAADIN/@fs/C:/Users/mikae/Code/flow/flow-tests/test-frontend/vite-basics/target/vaadin-dev-server-settings.json
+
+        String currentPath = new java.io.File(".").getCanonicalPath()
+                .replace("\\", "/");
+        if (!currentPath.startsWith("/")) {
+            currentPath = "/" + currentPath;
+        }
         return new URL("http://localhost:8888/VAADIN/@fs" + currentPath + "/"
                 + fileInProject);
     }
