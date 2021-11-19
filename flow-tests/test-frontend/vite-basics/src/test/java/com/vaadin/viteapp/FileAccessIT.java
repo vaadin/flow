@@ -74,7 +74,7 @@ public class FileAccessIT {
 
     private URL getFsUrl(String fileInProject) throws IOException {
         // For Windows, the URLs should be like
-        // http://localhost:8888/VAADIN/@fs/C:/Users/mikae/Code/flow/flow-tests/test-frontend/vite-basics/target/vaadin-dev-server-settings.json
+        // http://localhost:8888/VAADIN/@fs/C:/Code/flow/flow-tests/test-frontend/vite-basics/target/vaadin-dev-server-settings.json
 
         String currentPath = new java.io.File(".").getCanonicalPath()
                 .replace("\\", "/");
