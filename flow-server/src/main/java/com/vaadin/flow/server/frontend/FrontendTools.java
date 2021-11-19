@@ -711,7 +711,7 @@ public class FrontendTools {
      *
      * @return the version of npm.
      * @throws UnknownVersionException
-     *          if the npm command fails or returns unexpected output.
+     *             if the npm command fails or returns unexpected output.
      */
     public FrontendVersion getNpmVersion() throws UnknownVersionException {
         List<String> npmVersionCommand = new ArrayList<>(
