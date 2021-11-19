@@ -604,21 +604,6 @@ public class FrontendToolsTest {
     }
 
     @Test
-    public void getSuitablePnpm_useDefaultSupportedPnpmVersion_oldGlobalPnpmIgnored()
-            throws Exception {
-        createStubNode(false, true, baseDir);
-        createFakePnpm(OLD_PNPM_VERSION);
-        List<String> pnpmCommand = tools.getSuitablePnpm();
-        Assert.assertTrue(
-                "expected the default pnpm command to include '--ignore-existing' flag",
-                pnpmCommand.contains("--ignore-existing"));
-        Assert.assertEquals(
-                "expected old global pnpm version to be ignored and the default supported one is used",
-                "pnpm@" + FrontendTools.DEFAULT_PNPM_VERSION,
-                pnpmCommand.get(pnpmCommand.size() - 1));
-    }
-
-    @Test
     public void getSuitablePnpm_tooOldGlobalVersionInstalled_throws() {
         settings.setUseGlobalPnpm(true);
         tools = new FrontendTools(settings);
