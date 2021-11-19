@@ -90,6 +90,8 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
                 FrontendUtils.getUnixPath(new File(staticOutput).toPath()));
         settings.put("generatedFolder", "generated");
         settings.put("frontendBundleOutput", webappResources);
+        settings.put("addonFrontendFolder", combinePath(buildDirectory,
+                FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER));
 
         settings.put("themeName", themeName);
 

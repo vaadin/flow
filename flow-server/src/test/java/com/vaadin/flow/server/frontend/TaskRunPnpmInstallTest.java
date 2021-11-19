@@ -142,7 +142,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                 new TaskRunNpmInstall(getClassFinder(), getNodeUpdater(), true,
                         true, FrontendTools.DEFAULT_NODE_VERSION,
                         URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT),
-                        false, false));
+                        false, false, false));
     }
 
     @Test
@@ -645,14 +645,14 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         return new TaskRunNpmInstall(getClassFinder(), getNodeUpdater(), true,
                 false, FrontendTools.DEFAULT_NODE_VERSION,
                 URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false,
-                false);
+                false, false);
     }
 
     protected TaskRunNpmInstall createTask(String versionsContent) {
         return new TaskRunNpmInstall(getClassFinder(), getNodeUpdater(), true,
                 false, FrontendTools.DEFAULT_NODE_VERSION,
                 URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false,
-                false) {
+                false, false) {
             @Override
             protected String generateVersionsJson() {
                 try {
@@ -678,7 +678,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                 getNodeUpdater(), true, false,
                 FrontendTools.DEFAULT_NODE_VERSION,
                 URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false,
-                false);
+                false, false);
 
         String path = task.generateVersionsJson();
 
