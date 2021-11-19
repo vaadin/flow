@@ -364,10 +364,8 @@ public class TaskRunNpmInstall implements FallibleCommand {
             // version accepted as a peer dependency by vite-plugin-checker.
             // https://github.com/vaadin/flow/issues/12392
             if (!enablePnpm && npmLegacyPeerDeps) {
-                ArrayList<String> versionCommand = new ArrayList<>(executable);
-                versionCommand.add("--version");
-                if (FrontendUtils.getVersion("node", versionCommand)
-                        .getMajorVersion() >= 7) {
+                FrontendVersion npmVersion = tools.getNpmVersion();
+                if (npmVersion.getMajorVersion() >= 7) {
                     executable = new ArrayList<>(executable);
                     executable.add("--legacy-peer-deps");
                 }

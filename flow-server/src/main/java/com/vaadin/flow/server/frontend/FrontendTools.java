@@ -706,7 +706,14 @@ public class FrontendTools {
         return new File(output);
     }
 
-    private FrontendVersion getNpmVersion() throws UnknownVersionException {
+    /**
+     * Executes <code>npm --version</code> to and parses the result.
+     *
+     * @return the version of npm.
+     * @throws UnknownVersionException
+     *          if the npm command fails or returns unexpected output.
+     */
+    public FrontendVersion getNpmVersion() throws UnknownVersionException {
         List<String> npmVersionCommand = new ArrayList<>(
                 getNpmExecutable(false));
         npmVersionCommand.add("--version"); // NOSONAR
