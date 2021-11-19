@@ -49,26 +49,24 @@ public class InternalServerError extends Component
     public int setErrorParameter(BeforeEnterEvent event,
             ErrorParameter<Exception> parameter) {
         String exceptionText;
+        String errorTextStem =
+                "There was an exception while trying to navigate to '%s'";
         boolean isRootCauseAvailable = false;
         String rootCause = getRootCause(parameter);
 
         if (rootCause != null && !rootCause.isEmpty()) {
             isRootCauseAvailable = true;
-            exceptionText = String.format(
-                    "There was an exception while trying to navigate to '%s'"
+            exceptionText = String.format(errorTextStem
                             + " with the root cause '%s'",
-                    event.getLocation().getPath(),
-                    rootCause);
-        } else if (parameter.hasCustomMessage()) {
-            exceptionText = String.format(
-                    "There was an exception while trying to navigate to '%s'"
+                    event.getLocation().getPath(), rootCause);
+        } else if (parameter!= null && parameter.hasCustomMessage()) {
+            exceptionText = String.format(errorTextStem
                             + " with the exception message '%s'",
                     event.getLocation().getPath(),
                     parameter.getCustomMessage());
         } else {
-            exceptionText = String.format(
-                    "There was an exception while trying to navigate to '%s'",
-                    event.getLocation().getPath(), isRootCauseAvailable);
+            exceptionText = String.format(errorTextStem,
+                    event.getLocation().getPath());
         }
 
         Exception exception = parameter.getException();
@@ -96,7 +94,8 @@ public class InternalServerError extends Component
                                  String exceptionText,
                                  boolean isRootCauseAvailable) {
         if (isRootCauseAvailable) {
-            getElement().appendChild(ElementFactory.createHeading3(exceptionText));
+            getElement()
+                    .appendChild(ElementFactory.createHeading3(exceptionText));
         } else {
             getElement().appendChild(Element.createText(exceptionText));
         }
@@ -164,7 +163,7 @@ public class InternalServerError extends Component
     }
 
     private String doGetRootCause(Throwable cause,
-                                  int availableRecursiveLevels) {
+            int availableRecursiveLevels) {
         if (cause.getCause() == null) {
             return cause.toString();
         } else {
