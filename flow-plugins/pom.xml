@@ -17,6 +17,7 @@
 	</modules>
 	<properties>
 		<bnd.skip>true</bnd.skip>
+		<testListener></testListener>
 	</properties>
 	<profiles>
 		<profile>

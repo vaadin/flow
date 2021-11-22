@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>flow-project</artifactId>
@@ -134,6 +133,8 @@
         <!-- This property is needed to allow some Win-specific unit tests -->
         <!-- to be disabled via system property in CI until they got fixed -->
         <exclude.windows.failed.tests></exclude.windows.failed.tests>
+
+        <testListener>com.vaadin.flow.testutil.CurrentInstanceCleaner</testListener>
     </properties>
 
     <repositories>
@@ -506,6 +507,12 @@
                             <exclude>${exclude.windows.failed.tests}</exclude>
                         </excludes>
                         <argLine>${surefire.argLine}</argLine>
+                        <properties>
+                            <property>
+                                <name>listener</name>
+                                <value>${testListener}</value>
+                            </property>
+                        </properties>
                     </configuration>
                 </plugin>
                 <plugin>
