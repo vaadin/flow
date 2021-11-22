@@ -18,8 +18,10 @@ public class ThemeIT extends ViteDevModeIT {
                 "return Array.from(document.querySelectorAll('style')).map(style => style.textContent).filter(text => text.includes(arguments[0]))",
                 styleFromTheme);
 
-        Assert.assertEquals("Theme rule should have been added once using adoptedStyleSheets", 1,
-                adoptedStyleSheetsWithString.size());
-        Assert.assertEquals("Theme rule should not have been added to <head>", 0, styleTagsWithString.size());
+        Assert.assertEquals(
+                "Theme rule should have been added once using adoptedStyleSheets",
+                1, adoptedStyleSheetsWithString.size());
+        Assert.assertEquals("Theme rule should not have been added to <head>",
+                0, styleTagsWithString.size());
     }
 }
