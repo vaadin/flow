@@ -187,11 +187,6 @@ public class StaticFileServerTest implements Serializable {
         Mockito.when(response.getOutputStream()).thenReturn(out);
     }
 
-    @After
-    public void tearDown() {
-        Assert.assertNull(VaadinService.getCurrent());
-    }
-
     @Test
     public void getRequestFilename() {
         // Context path should not affect the filename in any way
