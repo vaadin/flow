@@ -4,25 +4,19 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import io.github.bonigarcia.wdm.WebDriverManager;
+import com.vaadin.testbench.TestBenchElement;
+
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
-
-import com.vaadin.flow.testutil.ChromeBrowserTest;
-import com.vaadin.testbench.TestBenchElement;
 
 public class ThemeReloadIT extends ViteDevModeIT {
 
     @Test
     @Ignore
     public void updateStyle_changeIsReloaded() throws IOException {
-        getDriver().get(getRootURL());
-        waitForDevServer();
-        getCommandExecutor().waitForVaadin();
         TestBenchElement header = $("h2").first();
         Assert.assertEquals("rgba(0, 0, 255, 1)", header.getCssValue("color"));
 

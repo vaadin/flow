@@ -1,17 +1,12 @@
 package com.vaadin.viteapp;
 
 import com.vaadin.flow.component.html.testbench.ParagraphElement;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.flow.testutil.DevModeGizmoElement;
 import com.vaadin.testbench.TestBenchElement;
 import com.vaadin.viteapp.views.empty.MainView;
 
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
-
-import io.github.bonigarcia.wdm.WebDriverManager;
 
 public class BasicsIT extends ViteDevModeIT {
 
@@ -24,8 +19,6 @@ public class BasicsIT extends ViteDevModeIT {
 
     @Test
     public void imageFromThemeShown() {
-        getDriver().get(getRootURL());
-        waitForDevServer();
         TestBenchElement img = $("img").id(MainView.PLANT);
         waitUntil(driver -> {
             String heightString = (String) executeScript(
@@ -38,8 +31,6 @@ public class BasicsIT extends ViteDevModeIT {
 
     @Test
     public void applicationUsesVite() {
-        getDriver().get(getRootURL());
-        waitForDevServer();
         TestBenchElement viteStatus = $(ParagraphElement.class).id("status");
         Assert.assertEquals("Vite feature is true", viteStatus.getText());
     }
