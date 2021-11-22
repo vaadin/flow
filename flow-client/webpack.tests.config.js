@@ -3,8 +3,7 @@ const path = require("path");
 module.exports = {
   mode: "development",
   entry: {
-    flow: "./src/test/frontend/FlowTests.ts",
-    gizmo: "./src/test/frontend/VaadinDevmodeGizmoTests.js",
+    flow: "./src/test/frontend/FlowTests.ts"
   },
   output: {
     filename: "[name].spec.js",

@@ -38,8 +38,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
  */
 public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
 
-    static final String DEVMODE_GIZMO_IMPORT = String
-            .format("import '@vaadin/flow-frontend/VaadinDevmodeGizmo.js';%n");
+    static final String DEVMODE_GIZMO_IMPORT = "import '@vaadin/common-frontend/devmode/VaadinDevmodeGizmo.js';";
     private final FrontendDependenciesScanner frontDeps;
     private final File frontendGeneratedDirectory;
     private final File frontendDirectory;

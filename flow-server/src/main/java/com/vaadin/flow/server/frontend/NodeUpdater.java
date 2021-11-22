@@ -375,7 +375,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         // polyfill needed for FireFox et.al. at the moment
         defaults.put("construct-style-sheets-polyfill", "3.0.4");
 
-        defaults.put("@vaadin/common-frontend", "0.0.17");
+        defaults.put("@vaadin/common-frontend", "0.0.18");
 
         return defaults;
     }

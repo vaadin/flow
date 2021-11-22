@@ -42,8 +42,6 @@ import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.getClassFinder;
 
 public class TaskGenerateBootstrapTest {
 
-    private static final String DEV_MODE_GIZMO_IMPORT = "import '@vaadin/flow-frontend/VaadinDevmodeGizmo.js';";
-
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
@@ -75,7 +73,8 @@ public class TaskGenerateBootstrapTest {
             throws ExecutionFailedException {
         taskGenerateBootstrap.execute();
         String content = taskGenerateBootstrap.getFileContent();
-        Assert.assertFalse(content.contains(DEV_MODE_GIZMO_IMPORT));
+        Assert.assertFalse(
+                content.contains(TaskGenerateBootstrap.DEVMODE_GIZMO_IMPORT));
     }
 
     @Test
@@ -85,7 +84,8 @@ public class TaskGenerateBootstrapTest {
                 frontendFolder, false);
         taskGenerateBootstrap.execute();
         String content = taskGenerateBootstrap.getFileContent();
-        Assert.assertTrue(content.contains(DEV_MODE_GIZMO_IMPORT));
+        Assert.assertTrue(
+                content.contains(TaskGenerateBootstrap.DEVMODE_GIZMO_IMPORT));
     }
 
     @Test
