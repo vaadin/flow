@@ -935,7 +935,7 @@ public class FrontendTools {
             // see https://pnpm.io/installation#compatibility
             final String pnpmSpecifier = "pnpm@" + DEFAULT_PNPM_VERSION;
             pnpmCommand = getNpmCliToolExecutable(BuildTool.NPX, "--yes",
-                    "--quiet", "--ignore-existing", pnpmSpecifier);
+                    "--quiet", pnpmSpecifier);
         }
         getLogger().info("using '{}' for frontend package installation",
                 String.join(" ", pnpmCommand));
