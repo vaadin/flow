@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -26,20 +29,20 @@ import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.flow.testcategory.SlowTests;
 import com.vaadin.flow.testutil.FrontendStubs;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
-import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
-
+@Category(SlowTests.class)
 public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
     private static final String PINNED_VERSION = "3.2.17";
