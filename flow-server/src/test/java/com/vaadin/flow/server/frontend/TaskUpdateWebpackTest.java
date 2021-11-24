@@ -215,16 +215,12 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void should_disableOfflinePath_when_defaultInPwa()
-            throws IOException {
+    public void should_useAppShellPath_when_defaultInPwa() throws IOException {
         webpackUpdater.execute();
         String webpackGeneratedContents = Files.lines(webpackGenerated.toPath())
                 .collect(Collectors.joining("\n"));
-        Assert.assertTrue("offlinePathEnabled should be false by default",
-                webpackGeneratedContents
-                        .contains("const offlinePathEnabled = false;"));
-        Assert.assertTrue("offlinePath should be empty by default",
-                webpackGeneratedContents.contains("const offlinePath = '';"));
+        Assert.assertTrue("offlinePath should be appShellPath '.' by default",
+                webpackGeneratedContents.contains("const offlinePath = '.';"));
     }
 
     @Test
@@ -238,9 +234,6 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
         String webpackGeneratedContents = Files.lines(webpackGenerated.toPath())
                 .collect(Collectors.joining("\n"));
 
-        Assert.assertTrue("offlinePathEnabled should be true",
-                webpackGeneratedContents
-                        .contains("const offlinePathEnabled = true;"));
         Assert.assertTrue("offlinePath should be customizable",
                 webpackGeneratedContents
                         .contains("const offlinePath = 'off.html';"));

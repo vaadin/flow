@@ -10,9 +10,11 @@ import * as net from 'net';
 import { processThemeResources } from '@vaadin/application-theme-plugin/theme-handle.js';
 import settings from '#settingsImport#';
 import { UserConfigFn, defineConfig, HtmlTagDescriptor, mergeConfig } from 'vite';
+import { injectManifest } from 'workbox-build';
 
 import brotli from 'rollup-plugin-brotli';
 import checker from 'vite-plugin-checker';
+
 
 const frontendFolder = path.resolve(__dirname, settings.frontendFolder);
 const themeFolder = path.resolve(frontendFolder, settings.themeFolder);
@@ -83,6 +85,7 @@ const allowedFrontendFolders = [
 export const vaadinConfig: UserConfigFn = (env) => {
   const devMode = env.mode === 'development';
   const basePath = env.mode === 'production' ? '' : '/VAADIN/';
+  let pwaConfig;
 
   if (devMode && process.env.watchDogPort) {
     // Open a connection with the Java dev-mode handler in order to finish
@@ -97,6 +100,10 @@ export const vaadinConfig: UserConfigFn = (env) => {
         themes: themeFolder,
         Frontend: frontendFolder
       }
+    },
+    define: {
+      // should be settings.offlinePath after manifests are fixed
+      OFFLINE_PATH: "'.'"
     },
     server: {
       fs: {
@@ -114,6 +121,57 @@ export const vaadinConfig: UserConfigFn = (env) => {
     },
     plugins: [
       !devMode && brotli(),
+      settings.pwaEnabled &&
+      {
+        name: 'pwa',
+        enforce: 'post',
+        apply: 'build',
+        async configResolved(config) {
+          pwaConfig = config;
+        },
+        async buildStart() {
+          // Before inject manifest we need to resolve and transpile the sw.ts file
+          // This could probably be made another way which needs to be investigated
+
+          // eslint-disable-next-line @typescript-eslint/no-var-requires
+          const rollup = require('rollup') as typeof Rollup
+          const includedPluginNames = [
+            'alias',
+            'vite:resolve',
+            'vite:esbuild',
+            'replace',
+            'vite:define',
+            'rollup-plugin-dynamic-import-variables',
+            'vite:esbuild-transpile',
+            'vite:terser',
+          ]
+          const plugins = pwaConfig.plugins.filter(p => includedPluginNames.includes(p.name)) as Plugin[]
+          const bundle = await rollup.rollup({
+            input: path.resolve(settings.clientServiceWorkerSource),
+            plugins,
+          })
+          try {
+            await bundle.write({
+              format: 'es',
+              exports: 'none',
+              inlineDynamicImports: true,
+              file: path.resolve(buildFolder, 'sw.js'),
+
+            })
+          }
+          finally {
+            await bundle.close()
+          }
+          // end of resolve and transpilation
+
+          await injectManifest({
+            swSrc: path.resolve(buildFolder, 'sw.js'),
+            swDest: path.resolve(buildFolder, 'sw.js'),
+            globDirectory: buildFolder,
+            injectionPoint: 'self.__WB_MANIFEST',
+          });
+        }
+      },
       {
         name: 'custom-theme',
         config() {
