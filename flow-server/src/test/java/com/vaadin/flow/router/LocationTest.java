@@ -111,6 +111,18 @@ public class LocationTest {
     }
 
     @Test
+    public void queryValue_decodedCorrectly() {
+        Location location = new Location("home?value+part");
+        Assert.assertEquals("'+' should not be decoded to space", "value+part",
+                location.getQueryParameters().getQueryString());
+
+        location = new Location("home?someValue1%2BsomeValue2");
+        Assert.assertEquals("'+' should not be double decoded",
+                "someValue1+someValue2",
+                location.getQueryParameters().getQueryString());
+    }
+
+    @Test
     public void subLocation() {
         Location location = new Location(Arrays.asList("one", "two", "three"));
 
