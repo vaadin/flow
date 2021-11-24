@@ -99,6 +99,8 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         new File(frontendDirectory, "extra-javascript.js").createNewFile();
         new File(frontendDirectory, "extra-css.css").createNewFile();
+        new File(frontendDirectory, "a-css.css").createNewFile();
+        new File(frontendDirectory, "b-css.css").createNewFile();
     }
 
     @Test
@@ -204,10 +206,10 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 "export const addCssBlock = function(block, before = false) {"));
 
         // Contains CSS import lines from CP not discovered by byte scanner
+        Assert.assertThat(fallBackContent, CoreMatchers
+                .containsString("import $css_0 from 'Frontend/b-css.css';"));
         Assert.assertThat(fallBackContent, CoreMatchers.containsString(
-                "import $css_0 from 'Frontend/extra-css.css';"));
-        Assert.assertThat(fallBackContent, CoreMatchers.containsString(
-                "addCssBlock(`<dom-module id=\"fallback_flow_css_mod_0\" theme-for=\"extra-foo\"><template><style include=\"extra-bar\">${$css_0}</style></template></dom-module>`);"));
+                "addCssBlock(`<dom-module id=\"fallback_flow_css_mod_2\" theme-for=\"extra-foo\"><template><style include=\"extra-bar\">${$css_2}</style></template></dom-module>`);"));
 
         // Does not contains JS module imports
         Assert.assertThat(fallBackContent, CoreMatchers.not(CoreMatchers
@@ -393,6 +395,45 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 .containsString(FrontendUtils.FALLBACK_IMPORTS_NAME)));
     }
 
+    @Test
+    public void tokenFileIsStable() throws Exception {
+        Stream<Class<?>> classes = Stream.concat(
+                Stream.of(ExtraNodeTestComponents.class.getDeclaredClasses()),
+                Stream.of(NodeTestComponents.class.getDeclaredClasses()));
+        ClassFinder classFinder = new DefaultClassFinder(
+                new URLClassLoader(getClassPath()),
+                classes.toArray(Class<?>[]::new));
+
+        JsonObject fallBackData = Json.createObject();
+
+        updater = new TaskUpdateImports(classFinder,
+                new FrontendDependenciesScannerFactory().createScanner(false,
+                        classFinder, true),
+                finder -> new FrontendDependenciesScannerFactory()
+                        .createScanner(true, finder, true),
+                tmpRoot, generatedPath, frontendDirectory, tokenFile,
+                fallBackData, false, TARGET, true,
+                Mockito.mock(FeatureFlags.class)) {
+            @Override
+            Logger log() {
+                return logger;
+            }
+        };
+
+        updater.execute();
+
+        JsonObject fallback = fallBackData.getObject("chunks")
+                .getObject("fallback");
+        JsonArray jsModules = fallback.getArray("jsModules");
+        JsonArray cssImports = fallback.getArray("cssImports");
+
+        String expectedJsModules = "[\"@polymer/e.js\",\"@polymer/D.js\",\"@polymer/c.js\",\"@polymer/b.js\",\"@polymer/a.js\",\"./extra-javascript.js\"]";
+        String expectedCssImports = "[{\"value\":\"./b-css.css\"},{\"include\":\"a-a\",\"value\":\"./a-css.css\"},{\"include\":\"extra-bar\",\"themeFor\":\"extra-foo\",\"value\":\"./extra-css.css\"}]";
+
+        Assert.assertEquals(expectedJsModules, jsModules.toJson());
+        Assert.assertEquals(expectedCssImports, cssImports.toJson());
+    }
+
     private void assertTokenFileWithFallBack(JsonObject object)
             throws IOException {
         JsonObject fallback = object.getObject("chunks").getObject("fallback");
@@ -406,8 +447,8 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         Assert.assertTrue(modulesSet.contains("./extra-javascript.js"));
 
         JsonArray css = fallback.getArray("cssImports");
-        Assert.assertEquals(1, css.length());
-        JsonObject cssImport = css.get(0);
+        Assert.assertEquals(3, css.length());
+        JsonObject cssImport = css.get(2);
         Assert.assertEquals("extra-bar", cssImport.getString("include"));
         Assert.assertEquals("extra-foo", cssImport.getString("themeFor"));
         Assert.assertEquals("./extra-css.css", cssImport.getString("value"));
