@@ -130,15 +130,15 @@
 
         <maven.test.skip>false</maven.test.skip>
 
-
-        <!-- Test in this category will not run unless -Pall-tests is used -->
-        <excludedGroups>com.vaadin.flow.testcategory.SlowTests</excludedGroups>
-
         <!-- This property is needed to allow some Win-specific unit tests -->
         <!-- to be disabled via system property in CI until they got fixed -->
         <exclude.windows.failed.tests></exclude.windows.failed.tests>
 
         <testListener>com.vaadin.flow.testutil.CurrentInstanceCleaner</testListener>
+
+        <!-- Skip these categories in validation, use -Pslow-tests to run them
+            and override slow-tests profile to add more categories -->
+        <excludedGroups>com.vaadin.flow.testcategory.SlowTests</excludedGroups>
     </properties>
 
     <repositories>

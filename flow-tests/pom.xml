@@ -28,7 +28,7 @@
         <exclude.windows.failed.it.tests></exclude.windows.failed.it.tests>
         <testListener></testListener>
 
-        <!-- Skip these categories in validation, use -Pall-tests to enable them -->
+        <!-- Skip these categories in validation, use -Pslow-tests to run them -->
         <excludedGroups>
             com.vaadin.flow.testcategory.SlowTests,
             com.vaadin.flow.testcategory.ScreenshotTests,
@@ -416,7 +416,7 @@
         <profile>
             <id>slow-tests</id>
             <properties>
-                <groups>com.vaadin.flow.testcategory.SlowTests</groups>
+                <groups>${excludedGroups}</groups>
                 <excludedGroups></excludedGroups>
             </properties>
         </profile>
