@@ -19,7 +19,6 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.StaticFileHandler;
 import com.vaadin.flow.server.StaticFileHandlerFactory;
 import com.vaadin.flow.server.StaticFileServer;
 import com.vaadin.flow.server.VaadinService;

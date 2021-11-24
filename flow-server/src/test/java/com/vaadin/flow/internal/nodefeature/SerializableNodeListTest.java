@@ -26,8 +26,6 @@ import org.junit.Test;
 
 import com.vaadin.flow.internal.change.ListRemoveChange;
 import com.vaadin.flow.internal.change.NodeChange;
-import com.vaadin.flow.internal.nodefeature.ElementClassList;
-import com.vaadin.flow.internal.nodefeature.NodeList;
 
 public class SerializableNodeListTest
         extends AbstractNodeFeatureTest<ElementClassList> {

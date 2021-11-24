@@ -18,8 +18,6 @@ package com.vaadin.flow.server.communication.rpc;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.server.communication.rpc.RpcDecodeException;
-import com.vaadin.flow.server.communication.rpc.StringToEnumDecoder;
 
 import elemental.json.Json;
 

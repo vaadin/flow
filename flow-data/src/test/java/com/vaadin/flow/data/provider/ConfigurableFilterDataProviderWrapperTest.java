@@ -18,8 +18,6 @@ package com.vaadin.flow.data.provider;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.data.provider.ConfigurableFilterDataProvider;
-import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.provider.BackendDataProviderTest.StrBeanBackEndDataProvider;
 import com.vaadin.flow.function.SerializablePredicate;
 

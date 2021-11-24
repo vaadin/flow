@@ -21,7 +21,6 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.shared.util.UniqueSerializable;
 
 public class UniqueSerializableTest implements Serializable {
 

@@ -21,7 +21,6 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.data.provider.CallbackDataProvider;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.DataView;
 import com.vaadin.flow.data.provider.HasDataView;

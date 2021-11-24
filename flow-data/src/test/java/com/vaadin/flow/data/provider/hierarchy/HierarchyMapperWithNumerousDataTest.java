@@ -23,9 +23,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.vaadin.flow.data.provider.hierarchy.HierarchyMapper;
-import com.vaadin.flow.data.provider.hierarchy.TreeData;
-import com.vaadin.flow.data.provider.hierarchy.TreeDataProvider;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.internal.Range;
 

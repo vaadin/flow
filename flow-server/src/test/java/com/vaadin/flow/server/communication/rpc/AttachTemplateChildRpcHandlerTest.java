@@ -23,7 +23,6 @@ import org.mockito.Mockito;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.nodefeature.ElementData;
-import com.vaadin.flow.server.communication.rpc.AttachTemplateChildRpcHandler;
 import com.vaadin.flow.shared.JsonConstants;
 
 import elemental.json.Json;

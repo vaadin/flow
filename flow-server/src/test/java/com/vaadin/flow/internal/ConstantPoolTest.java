@@ -18,8 +18,6 @@ package com.vaadin.flow.internal;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.internal.ConstantPool;
-import com.vaadin.flow.internal.ConstantPoolKey;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;

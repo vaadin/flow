@@ -15,9 +15,6 @@
  */
 package com.vaadin.flow.component;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentEvent;
-import com.vaadin.flow.component.DomEvent;
 
 @DomEvent("dom-event")
 public class InvalidMappedToDomEvent extends ComponentEvent<Component> {

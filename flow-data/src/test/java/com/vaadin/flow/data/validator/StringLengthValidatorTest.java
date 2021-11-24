@@ -20,7 +20,6 @@ import java.util.stream.Stream;
 
 import org.junit.Test;
 
-import com.vaadin.flow.data.validator.StringLengthValidator;
 
 public class StringLengthValidatorTest extends ValidatorTestBase {
 
