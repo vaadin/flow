@@ -101,7 +101,6 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
     }
 
     @Test
-    @Ignore("Flaky test: #10331")
     public void componentThemeIsApplied_forPolymerAndLit() {
         open();
 
