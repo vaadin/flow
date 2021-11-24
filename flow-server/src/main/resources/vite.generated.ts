@@ -155,7 +155,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
               format: 'es',
               exports: 'none',
               inlineDynamicImports: true,
-              file: path.resolve(buildFolder, 'sw.js'),
+              file: path.resolve(frontendBundleFolder, 'sw.js'),
 
             })
           }
@@ -165,9 +165,9 @@ export const vaadinConfig: UserConfigFn = (env) => {
           // end of resolve and transpilation
 
           await injectManifest({
-            swSrc: path.resolve(buildFolder, 'sw.js'),
-            swDest: path.resolve(buildFolder, 'sw.js'),
-            globDirectory: buildFolder,
+            swSrc: path.resolve(frontendBundleFolder, 'sw.js'),
+            swDest: path.resolve(frontendBundleFolder, 'sw.js'),
+            globDirectory: frontendBundleFolder,
             injectionPoint: 'self.__WB_MANIFEST',
           });
         }
