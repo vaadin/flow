@@ -22,9 +22,6 @@ import java.util.Set;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasStyle;
-import com.vaadin.flow.component.Tag;
 
 public class HasStyleTest {
 

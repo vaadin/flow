@@ -16,8 +16,6 @@
 package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.regex.Pattern;
 
 import net.jcip.annotations.NotThreadSafe;
@@ -40,7 +38,6 @@ import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletResponse;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServletContext;
-import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.communication.PushMode;
 

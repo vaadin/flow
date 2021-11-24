@@ -18,11 +18,9 @@ package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
-import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.FileUtils;
@@ -31,31 +29,22 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.plugin.TestUtils;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-import elemental.json.impl.JsonUtil;
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.assertContainsPackage;
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.getPackageJson;
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.setProject;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
 public class CleanFrontendMojoTest {
     @Rule

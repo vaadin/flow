@@ -2,7 +2,6 @@ package com.vaadin.flow.data.validator;
 
 import org.junit.Test;
 
-import com.vaadin.flow.data.validator.RegexpValidator;
 
 public class RegexpValidatorTest extends ValidatorTestBase {
 

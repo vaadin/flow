@@ -1,6 +1,5 @@
 package com.vaadin.base.devserver.startup;
 
-import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.URL;

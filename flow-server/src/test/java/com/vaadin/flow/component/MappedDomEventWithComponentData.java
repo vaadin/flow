@@ -16,7 +16,6 @@
 
 package com.vaadin.flow.component;
 
-import com.vaadin.flow.router.RouterLink;
 
 @DomEvent("dom-event")
 public class MappedDomEventWithComponentData extends ComponentEvent<Component> {
