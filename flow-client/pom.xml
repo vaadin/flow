@@ -17,6 +17,8 @@
         <gwt.module.output>${project.build.outputDirectory}/META-INF/resources/VAADIN/static/</gwt.module.output>
         <gwt.module.style>OBF</gwt.module.style>
         <gwt.sdm.bindAddress>0.0.0.0</gwt.sdm.bindAddress>
+        <gwt.test.pattern>**/Gwt*Test.java</gwt.test.pattern>
+        <skipTsTests>${skipTests}</skipTsTests>
         <org.eclipse.equinox.common.version>3.14.100</org.eclipse.equinox.common.version>
         <org.eclipse.core.runtime.version>3.20.100</org.eclipse.core.runtime.version>
     </properties>
@@ -229,6 +231,7 @@
                     <htmlunit>FF38</htmlunit>
                     <testTimeOut>300</testTimeOut>
                     <extraJvmArgs>-Xmx512m -Dvaadin.enableDevServer=false</extraJvmArgs>
+                    <includes>${gwt.test.pattern}</includes>
                 </configuration>
             </plugin>
 
@@ -296,7 +299,7 @@
                             <arguments>
                                 <argument>test</argument>
                             </arguments>
-                            <skip>${skipTests}</skip>
+                            <skip>${skipTsTests}</skip>
                         </configuration>
                     </execution>
                 </executions>
@@ -308,6 +311,20 @@
             <id>sdm</id>
             <properties>
                 <gwt.module>com.vaadin.ClientEngineXSI</gwt.module>
+            </properties>
+        </profile>
+        <profile>
+            <id>slow-tests</id>
+            <activation>
+                <property>
+                    <name>slowTests</name>
+                </property>
+            </activation>
+            <properties>
+                <!-- There are no slowTests in this module, these disable surefire, gwt and Ts -->
+                <groups>none</groups>
+                <gwt.test.pattern>none</gwt.test.pattern>
+                <skipTsTests>true</skipTsTests>
             </properties>
         </profile>
     </profiles>
