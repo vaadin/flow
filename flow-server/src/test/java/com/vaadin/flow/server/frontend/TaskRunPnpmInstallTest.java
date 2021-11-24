@@ -25,6 +25,7 @@ import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
@@ -165,7 +166,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         Assert.assertTrue(file.exists());
         String content = FileUtils.readFileToString(file,
                 StandardCharsets.UTF_8);
-        Assert.assertThat(content,
+        MatcherAssert.assertThat(content,
                 CoreMatchers.containsString("JSON.parse(fs.readFileSync"));
     }
 
@@ -180,7 +181,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         Assert.assertTrue(file.exists());
         String content = FileUtils.readFileToString(file,
                 StandardCharsets.UTF_8);
-        Assert.assertThat(content,
+        MatcherAssert.assertThat(content,
                 CoreMatchers.containsString("JSON.parse(fs.readFileSync"));
     }
 

@@ -33,6 +33,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -1347,18 +1348,19 @@ public class StateNodeTest {
 
         if (visibilityChanged) {
             Assert.assertEquals(1, tree.dirtyNodes.size());
-            Assert.assertThat(tree.dirtyNodes, CoreMatchers.hasItem(stateNode));
+            MatcherAssert.assertThat(tree.dirtyNodes,
+                    CoreMatchers.hasItem(stateNode));
         } else {
             // the target node should be marked as dirty because it's visible
             // but its parent is inactive
             Assert.assertEquals(2, tree.dirtyNodes.size());
-            stateNode.visitNodeTree(node -> Assert.assertThat(tree.dirtyNodes,
-                    CoreMatchers.hasItem(node)));
+            stateNode.visitNodeTree(node -> MatcherAssert
+                    .assertThat(tree.dirtyNodes, CoreMatchers.hasItem(node)));
         }
 
         Assert.assertEquals(visibilityChanged ? 3 : 2, changes.size());
         // node is attached event
-        Assert.assertThat(changes.get(0),
+        MatcherAssert.assertThat(changes.get(0),
                 CoreMatchers.instanceOf(NodeAttachChange.class));
         // tag update (ElementData is reported feature) and possible active
         // state update
@@ -1371,7 +1373,7 @@ public class StateNodeTest {
 
         MapPutChange change = (MapPutChange) changes.get(1);
         if (visibilityChanged) {
-            Assert.assertThat(changes.get(2),
+            MatcherAssert.assertThat(changes.get(2),
                     CoreMatchers.instanceOf(MapPutChange.class));
             change = tagChange.equals(change) ? (MapPutChange) changes.get(2)
                     : change;
@@ -1397,7 +1399,7 @@ public class StateNodeTest {
         Assert.assertEquals(visibilityChanged ? 3 : 2, changes.size());
         // node is attached event
         // property updates and possible visibility update
-        Assert.assertThat(changes.get(1),
+        MatcherAssert.assertThat(changes.get(1),
                 CoreMatchers.instanceOf(MapPutChange.class));
 
         Optional<MapPutChange> visibilityChange = changes.stream()
@@ -1445,10 +1447,10 @@ public class StateNodeTest {
 
         Assert.assertEquals(2, changes.size());
         // node is attached event
-        Assert.assertThat(changes.get(0),
+        MatcherAssert.assertThat(changes.get(0),
                 CoreMatchers.instanceOf(NodeAttachChange.class));
         // the property update event
-        Assert.assertThat(changes.get(1),
+        MatcherAssert.assertThat(changes.get(1),
                 CoreMatchers.instanceOf(MapPutChange.class));
 
         changes.clear();
@@ -1478,8 +1480,9 @@ public class StateNodeTest {
         MapPutChange change;
         if (visibilityChanged) {
             Assert.assertEquals(1, tree.dirtyNodes.size());
-            Assert.assertThat(tree.dirtyNodes, CoreMatchers.hasItem(stateNode));
-            Assert.assertThat(changes.get(0),
+            MatcherAssert.assertThat(tree.dirtyNodes,
+                    CoreMatchers.hasItem(stateNode));
+            MatcherAssert.assertThat(changes.get(0),
                     CoreMatchers.instanceOf(MapPutChange.class));
             change = (MapPutChange) changes.get(0);
             Assert.assertEquals(ElementData.class, change.getFeature());
@@ -1487,8 +1490,8 @@ public class StateNodeTest {
             // the target node should be marked as dirty because it's visible
             // but its parent is inactive
             Assert.assertEquals(2, tree.dirtyNodes.size());
-            stateNode.visitNodeTree(node -> Assert.assertThat(tree.dirtyNodes,
-                    CoreMatchers.hasItem(node)));
+            stateNode.visitNodeTree(node -> MatcherAssert
+                    .assertThat(tree.dirtyNodes, CoreMatchers.hasItem(node)));
         }
 
         changes.clear();
@@ -1501,7 +1504,7 @@ public class StateNodeTest {
         // Two possible changes: probable visibility value change and property
         // update change
         Assert.assertEquals(visibilityChanged ? 2 : 1, changes.size());
-        Assert.assertThat(changes.get(0),
+        MatcherAssert.assertThat(changes.get(0),
                 CoreMatchers.instanceOf(MapPutChange.class));
         change = (MapPutChange) changes.get(0);
 

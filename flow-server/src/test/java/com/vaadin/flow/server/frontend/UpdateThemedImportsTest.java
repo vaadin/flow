@@ -31,6 +31,7 @@ import java.util.stream.Stream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -158,7 +159,7 @@ public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
 
         String content = FileUtils.readFileToString(importsFile,
                 Charset.defaultCharset());
-        Assert.assertThat(content, CoreMatchers.allOf(
+        MatcherAssert.assertThat(content, CoreMatchers.allOf(
                 CoreMatchers.containsString(
                         "import 'Frontend/theme/myTheme/main-template.js';"),
                 CoreMatchers.containsString(

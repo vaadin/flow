@@ -30,6 +30,7 @@ import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -140,46 +141,46 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         // ============== check main generated imports file ============
         // Contains theme lines
-        Assert.assertThat(mainContent, CoreMatchers.containsString(
+        MatcherAssert.assertThat(mainContent, CoreMatchers.containsString(
                 "export const addCssBlock = function(block, before = false) {"));
 
-        Assert.assertThat(mainContent, CoreMatchers.containsString(
+        MatcherAssert.assertThat(mainContent, CoreMatchers.containsString(
                 "addCssBlock('<custom-style><style include=\"lumo-color lumo-typography\"></style></custom-style>', true);"));
 
         // Contains CSS import lines
-        Assert.assertThat(mainContent, CoreMatchers.containsString(
+        MatcherAssert.assertThat(mainContent, CoreMatchers.containsString(
                 "import $css_0 from '@vaadin/vaadin-mixed-component/bar.css';"));
-        Assert.assertThat(mainContent, CoreMatchers.containsString(
+        MatcherAssert.assertThat(mainContent, CoreMatchers.containsString(
                 "addCssBlock(`<custom-style><style>${$css_0}</style></custom-style>`);"));
 
-        Assert.assertThat(mainContent, CoreMatchers
+        MatcherAssert.assertThat(mainContent, CoreMatchers
                 .containsString("import $css_5 from 'Frontend/foo.css';"));
-        Assert.assertThat(mainContent, CoreMatchers.containsString(
+        MatcherAssert.assertThat(mainContent, CoreMatchers.containsString(
                 "addCssBlock(`<dom-module id=\"flow_css_mod_5\" theme-for=\"foo-bar\"><template><style>${$css_5}</style></template></dom-module>`);"));
 
         // Contains theme imports
-        Assert.assertThat(mainContent, CoreMatchers.containsString(
+        MatcherAssert.assertThat(mainContent, CoreMatchers.containsString(
                 "import '@vaadin/vaadin-lumo-styles/color.js';"));
-        Assert.assertThat(mainContent, CoreMatchers.containsString(
+        MatcherAssert.assertThat(mainContent, CoreMatchers.containsString(
                 "import '@vaadin/vaadin-lumo-styles/typography.js';"));
 
         // Contains JS module imports
-        Assert.assertThat(mainContent, CoreMatchers
+        MatcherAssert.assertThat(mainContent, CoreMatchers
                 .containsString("import '@polymer/iron-icon/iron-icon.js';"));
-        Assert.assertThat(mainContent,
+        MatcherAssert.assertThat(mainContent,
                 CoreMatchers.containsString("import '3rdparty/component.js';"));
 
         // Contains Javascript imports
-        Assert.assertThat(mainContent,
+        MatcherAssert.assertThat(mainContent,
                 CoreMatchers.containsString("import 'javascript/a.js';"));
-        Assert.assertThat(mainContent,
+        MatcherAssert.assertThat(mainContent,
                 CoreMatchers.containsString("import 'javascript/b.js';"));
 
         // fallback chunk load function is generated
-        Assert.assertThat(mainContent, CoreMatchers.containsString(
+        MatcherAssert.assertThat(mainContent, CoreMatchers.containsString(
                 "fallbacks[thisScript.getAttribute('data-app-id')].loadFallback = function loadFallback() {"));
 
-        Assert.assertThat(mainContent, CoreMatchers.containsString(
+        MatcherAssert.assertThat(mainContent, CoreMatchers.containsString(
                 "return import('./generated-flow-imports-fallback.js');"));
 
         assertTrue(fallBackImportsFile.exists());
@@ -190,43 +191,43 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 Charset.defaultCharset());
 
         // Does not Contains theme lines
-        Assert.assertThat(fallBackContent, CoreMatchers.not(CoreMatchers
+        MatcherAssert.assertThat(fallBackContent, CoreMatchers.not(CoreMatchers
                 .containsString("const div = document.createElement('div');")));
 
         // Does not contains theme imports
-        Assert.assertThat(fallBackContent,
+        MatcherAssert.assertThat(fallBackContent,
                 CoreMatchers.not(CoreMatchers.containsString(
                         "import '@vaadin/vaadin-lumo-styles/color.js';")));
 
         // Does not contains CSS import lines
-        Assert.assertThat(fallBackContent,
+        MatcherAssert.assertThat(fallBackContent,
                 CoreMatchers.not(CoreMatchers.containsString(
                         "import $css_0 from '@vaadin/vaadin-mixed-component/bar.css';")));
 
         // Contain lines to import exported modules from main file
-        Assert.assertThat(fallBackContent, CoreMatchers.containsString(
+        MatcherAssert.assertThat(fallBackContent, CoreMatchers.containsString(
                 "export const addCssBlock = function(block, before = false) {"));
 
         // Contains CSS import lines from CP not discovered by byte scanner
-        Assert.assertThat(fallBackContent, CoreMatchers
+        MatcherAssert.assertThat(fallBackContent, CoreMatchers
                 .containsString("import $css_0 from 'Frontend/b-css.css';"));
-        Assert.assertThat(fallBackContent, CoreMatchers.containsString(
+        MatcherAssert.assertThat(fallBackContent, CoreMatchers.containsString(
                 "addCssBlock(`<dom-module id=\"fallback_flow_css_mod_2\" theme-for=\"extra-foo\"><template><style include=\"extra-bar\">${$css_2}</style></template></dom-module>`);"));
 
         // Does not contains JS module imports
-        Assert.assertThat(fallBackContent, CoreMatchers.not(CoreMatchers
+        MatcherAssert.assertThat(fallBackContent, CoreMatchers.not(CoreMatchers
                 .containsString("import '@polymer/iron-icon/iron-icon.js';")));
 
         // Contains JS module imports
-        Assert.assertThat(fallBackContent,
+        MatcherAssert.assertThat(fallBackContent,
                 CoreMatchers.containsString("import '@polymer/a.js';"));
 
         // Does not contain Javascript imports
-        Assert.assertThat(fallBackContent, CoreMatchers
+        MatcherAssert.assertThat(fallBackContent, CoreMatchers
                 .not(CoreMatchers.containsString("import 'javascript/a.js';")));
 
         // Contains Javascript imports
-        Assert.assertThat(fallBackContent, CoreMatchers
+        MatcherAssert.assertThat(fallBackContent, CoreMatchers
                 .containsString("import 'Frontend/extra-javascript.js';"));
 
         // ============== check token file with fallback chunk data ============
@@ -245,7 +246,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         String definitionContent = FileUtils.readFileToString(
                 importsDefinitionFile, Charset.defaultCharset());
 
-        Assert.assertThat(definitionContent, CoreMatchers.containsString(
+        MatcherAssert.assertThat(definitionContent, CoreMatchers.containsString(
                 "export declare const addCssBlock: (block: string, before?: boolean) => void;"));
     }
 
@@ -279,17 +280,17 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         // ============== check main generated imports file ============
 
         // Contains theme lines
-        Assert.assertThat(mainContent, CoreMatchers.containsString(
+        MatcherAssert.assertThat(mainContent, CoreMatchers.containsString(
                 "export const addCssBlock = function(block, before = false) {"));
 
-        Assert.assertThat(mainContent, CoreMatchers.containsString(
+        MatcherAssert.assertThat(mainContent, CoreMatchers.containsString(
                 "addCssBlock('<custom-style>foo</custom-style>', true);"));
 
         // fallback chunk load function is generated
-        Assert.assertThat(mainContent, CoreMatchers.containsString(
+        MatcherAssert.assertThat(mainContent, CoreMatchers.containsString(
                 "fallbacks[thisScript.getAttribute('data-app-id')].loadFallback = function loadFallback() {"));
 
-        Assert.assertThat(mainContent, CoreMatchers.containsString(
+        MatcherAssert.assertThat(mainContent, CoreMatchers.containsString(
                 "return import('./generated-flow-imports-fallback.js');"));
 
         // ============== check fallback generated imports file ============
@@ -298,23 +299,24 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 Charset.defaultCharset());
 
         // Does not Contains theme lines
-        Assert.assertThat(fallBackContent, CoreMatchers.not(CoreMatchers
+        MatcherAssert.assertThat(fallBackContent, CoreMatchers.not(CoreMatchers
                 .containsString("const div = document.createElement('div');")));
 
-        // Contains CSS import lines from CP not discovered by byte scanner
-        Assert.assertThat(fallBackContent, CoreMatchers
+        // Contains CSS import lines from CP not discovered by byte
+        // scanner
+        MatcherAssert.assertThat(fallBackContent, CoreMatchers
                 .containsString("import $css_0 from 'Frontend/foo.css';"));
-        Assert.assertThat(fallBackContent, CoreMatchers.containsString(
+        MatcherAssert.assertThat(fallBackContent, CoreMatchers.containsString(
                 "addCssBlock(`<dom-module id=\"baz\"><template><style include=\"bar\">${$css_0}</style></template></dom-module>`);"));
 
         // Contains JS module imports
-        Assert.assertThat(fallBackContent, CoreMatchers.containsString(
+        MatcherAssert.assertThat(fallBackContent, CoreMatchers.containsString(
                 "import '@vaadin/vaadin-lumo-styles/icons.js';"));
-        Assert.assertThat(fallBackContent, CoreMatchers
+        MatcherAssert.assertThat(fallBackContent, CoreMatchers
                 .containsString("import 'Frontend/common-js-file.js';"));
 
         // Contains Javascript imports
-        Assert.assertThat(fallBackContent, CoreMatchers.containsString(
+        MatcherAssert.assertThat(fallBackContent, CoreMatchers.containsString(
                 "import '@vaadin/flow-frontend/ExampleConnector.js';"));
     }
 
@@ -347,7 +349,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 Charset.defaultCharset());
 
         // fallback chunk load function is not generated
-        Assert.assertThat(mainContent,
+        MatcherAssert.assertThat(mainContent,
                 CoreMatchers.not(CoreMatchers.containsString(
                         "window.Vaadin.Flow.loadFallback = function loadFallback(){")));
 
@@ -393,7 +395,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 Charset.defaultCharset());
 
         // fallback file is not imported in generated-flow-imports
-        Assert.assertThat(mainContent, CoreMatchers.not(CoreMatchers
+        MatcherAssert.assertThat(mainContent, CoreMatchers.not(CoreMatchers
                 .containsString(FrontendUtils.FALLBACK_IMPORTS_NAME)));
     }
 

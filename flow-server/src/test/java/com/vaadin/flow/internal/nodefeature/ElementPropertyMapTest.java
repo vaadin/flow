@@ -22,6 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -383,7 +384,7 @@ public class ElementPropertyMapTest {
         map.addPropertyChangeListener("foo", eventCapture::set);
 
         Runnable runnable = map.deferredUpdateFromClient("foo", "value");
-        Assert.assertThat(runnable.getClass().getName(),
+        MatcherAssert.assertThat(runnable.getClass().getName(),
                 CoreMatchers.not(CoreMatchers.equalTo(
                         ElementPropertyMap.class.getName() + "$PutResult")));
         runnable.run();
@@ -446,7 +447,7 @@ public class ElementPropertyMapTest {
     private Runnable assertDeferredUpdate_putResult(ElementPropertyMap map,
             String property) throws PropertyChangeDeniedException {
         Runnable runnable = map.deferredUpdateFromClient(property, "a");
-        Assert.assertThat(runnable.getClass().getName(), CoreMatchers
+        MatcherAssert.assertThat(runnable.getClass().getName(), CoreMatchers
                 .equalTo(ElementPropertyMap.class.getName() + "$PutResult"));
         return runnable;
     }
@@ -454,7 +455,7 @@ public class ElementPropertyMapTest {
     private void assertDeferredUpdate_noOp(ElementPropertyMap map,
             String property) throws PropertyChangeDeniedException {
         Runnable runnable = map.deferredUpdateFromClient(property, "a");
-        Assert.assertThat(runnable.getClass().getName(),
+        MatcherAssert.assertThat(runnable.getClass().getName(),
                 CoreMatchers.not(CoreMatchers.equalTo(
                         ElementPropertyMap.class.getName() + "$PutResult")));
     }
