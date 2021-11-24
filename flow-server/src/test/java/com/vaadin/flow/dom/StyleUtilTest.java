@@ -20,7 +20,6 @@ import java.util.Map;
 import org.junit.Assert;
 import org.junit.Test;
 
-
 public class StyleUtilTest {
     private static final Map<String, String> stylepPropertyToAttribute = new java.util.HashMap<>();
     static {

@@ -25,7 +25,6 @@ import java.util.stream.Stream;
 import org.junit.Assert;
 import org.junit.Test;
 
-
 public class ElementFactoryTest {
 
     private Map<String, String> methodToTag = new HashMap<>();

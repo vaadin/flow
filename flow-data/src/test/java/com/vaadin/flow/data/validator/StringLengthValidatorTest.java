@@ -20,7 +20,6 @@ import java.util.stream.Stream;
 
 import org.junit.Test;
 
-
 public class StringLengthValidatorTest extends ValidatorTestBase {
 
     private static final String LONG_STRING = Stream.generate(() -> "x")

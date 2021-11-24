@@ -18,7 +18,6 @@ package com.vaadin.flow.internal;
 import org.junit.Assert;
 import org.junit.Test;
 
-
 import elemental.json.Json;
 import elemental.json.JsonObject;
 

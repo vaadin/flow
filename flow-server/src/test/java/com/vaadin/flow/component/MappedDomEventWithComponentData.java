@@ -16,7 +16,6 @@
 
 package com.vaadin.flow.component;
 
-
 @DomEvent("dom-event")
 public class MappedDomEventWithComponentData extends ComponentEvent<Component> {
 
