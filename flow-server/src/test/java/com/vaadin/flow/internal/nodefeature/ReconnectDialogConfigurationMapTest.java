@@ -19,7 +19,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap;
 
 public class ReconnectDialogConfigurationMapTest
         extends AbstractMapFeatureTest<ReconnectDialogConfigurationMap> {

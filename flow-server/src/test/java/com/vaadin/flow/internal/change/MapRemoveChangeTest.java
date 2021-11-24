@@ -19,7 +19,6 @@ package com.vaadin.flow.internal.change;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.internal.change.MapRemoveChange;
 import com.vaadin.flow.internal.nodefeature.AbstractNodeFeatureTest;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.internal.nodefeature.NodeFeatureRegistry;

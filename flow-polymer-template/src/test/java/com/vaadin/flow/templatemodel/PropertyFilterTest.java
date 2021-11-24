@@ -18,7 +18,6 @@ package com.vaadin.flow.templatemodel;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.templatemodel.PropertyFilter;
 
 public class PropertyFilterTest {
 

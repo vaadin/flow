@@ -23,7 +23,6 @@ import org.junit.Test;
 
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateNodeTest;
-import com.vaadin.flow.internal.change.ListAddChange;
 import com.vaadin.flow.internal.nodefeature.AbstractNodeFeatureTest;
 import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
 import com.vaadin.flow.internal.nodefeature.NodeFeatureRegistry;

@@ -28,8 +28,6 @@ import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.change.EmptyChange;
 import com.vaadin.flow.internal.change.ListAddChange;
 import com.vaadin.flow.internal.change.NodeChange;
-import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
-import com.vaadin.flow.internal.nodefeature.NodeList;
 
 public class NodeListEmptyRequiredFeatureTest {
 

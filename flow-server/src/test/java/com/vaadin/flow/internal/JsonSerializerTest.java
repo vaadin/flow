@@ -26,7 +26,6 @@ import java.util.Set;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.internal.JsonSerializer;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonBoolean;

@@ -19,7 +19,6 @@ import java.time.LocalDate;
 
 import org.junit.Test;
 
-import com.vaadin.flow.data.validator.RangeValidator;
 
 public class RangeValidatorTest extends ValidatorTestBase {
 

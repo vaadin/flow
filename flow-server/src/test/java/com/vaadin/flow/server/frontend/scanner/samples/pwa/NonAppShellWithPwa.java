@@ -16,7 +16,6 @@
 
 package com.vaadin.flow.server.frontend.scanner.samples.pwa;
 
-import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.server.PWA;
 
 @PWA(name = "PWA Application", shortName = "PWA", description = "Testing PWA", display = "minimal-ui", backgroundColor = "#eee", themeColor = "#369", iconPath = "pwa.png", manifestPath = "appmanifest.json", offlinePath = "pwa.html", offlineResources = {

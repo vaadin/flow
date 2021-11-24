@@ -35,7 +35,6 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURC
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FALLBACK_IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 import static com.vaadin.flow.server.Constants.TARGET;
 
 public class StatsContentTest {

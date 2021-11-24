@@ -8,8 +8,6 @@ import com.vaadin.testbench.ElementQuery;
 import com.vaadin.testbench.TestBenchElement;
 import com.vaadin.testbench.elementsbase.Element;
 
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
 
 @Element("vaadin-devmode-gizmo")
 public class DevModeGizmoElement extends TestBenchElement {

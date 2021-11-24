@@ -20,8 +20,6 @@ import java.util.function.Supplier;
 
 import org.junit.Assert;
 
-import com.vaadin.flow.internal.nodefeature.NodeFeature;
-import com.vaadin.flow.internal.nodefeature.NodeMap;
 
 public abstract class AbstractMapFeatureTest<T extends NodeFeature>
         extends AbstractNodeFeatureTest<T> {
