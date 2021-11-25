@@ -16,8 +16,6 @@
 
 package com.vaadin.base.devserver.stats;
 
-import java.io.Serializable;
-
 /**
  * Constants for development mode statistics.
  *
@@ -82,8 +80,8 @@ public class StatisticsConstants {
      */
     static final String PROPERTY_USER_HOME = "user.home";
     static final String VAADIN_FOLDER_NAME = ".vaadin";
-    static final String PRO_KEY_FILE_NAME = "proKey";
-    static final String USER_KEY_FILE_NAME = "userKey";
+    static final String PRO_KEY_FILE_NAME = "proKey"; // NOSONAR
+    static final String USER_KEY_FILE_NAME = "userKey"; // NOSONAR
 
     /*
      * Avoid instantiation.

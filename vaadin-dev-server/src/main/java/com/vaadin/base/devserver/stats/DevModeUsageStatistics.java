@@ -65,6 +65,8 @@ public class DevModeUsageStatistics {
 
     /**
      * Gets the singleton instance.
+     * 
+     * @return the singleton instance
      */
     public static DevModeUsageStatistics get() {
         return instance;
@@ -80,6 +82,8 @@ public class DevModeUsageStatistics {
      *            the folder of the current project
      * @param storage
      *            the statistics storage to use
+     * 
+     * @return the created instance
      */
     public static DevModeUsageStatistics init(ApplicationConfiguration config,
             String projectFolder, StatisticsStorage storage) {
@@ -144,8 +148,8 @@ public class DevModeUsageStatistics {
     /**
      * Stores telemetry data received from the browser.
      * 
-     * @param browserData
-     *            the data
+     * @param data
+     *            the data from the browser
      */
     public void handleBrowserData(JsonObject data) {
         getLogger().debug("Received client usage statistics from the browser");

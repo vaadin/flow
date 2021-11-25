@@ -20,8 +20,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import com.vaadin.base.devserver.ServerInfo;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -173,58 +171,77 @@ class ProjectHelpers {
      */
     static String getProjectSource(String projectFolder) {
         Path projectPath = Paths.get(projectFolder);
-        File pomFile = projectPath.resolve("pom.xml").toFile();
 
-        // Try Maven project
         try {
-            if (pomFile.exists()) {
-                DocumentBuilderFactory dbf = DocumentBuilderFactory
-                        .newInstance();
-                dbf.setFeature(
-                        "http://xml.org/sax/features/external-general-entities",
-                        false);
-                dbf.setFeature(
-                        "http://xml.org/sax/features/external-parameter-entities",
-                        false);
-                DocumentBuilder db = dbf.newDocumentBuilder();
-                Document pom = db.parse(pomFile);
-                NodeList nodeList = pom.getDocumentElement().getChildNodes();
-                for (int i = 0; i < nodeList.getLength(); i++) {
-                    if (nodeList.item(i).getNodeType() == Node.COMMENT_NODE) {
-                        String comment = nodeList.item(i).getTextContent();
-                        if (comment.contains(
-                                StatisticsConstants.VAADIN_PROJECT_SOURCE_TEXT)) {
-                            return comment.substring(comment.indexOf(
-                                    StatisticsConstants.VAADIN_PROJECT_SOURCE_TEXT)
-                                    + StatisticsConstants.VAADIN_PROJECT_SOURCE_TEXT
-                                            .length())
-                                    .trim();
-                        }
-                    }
-                }
+            String projectSource = getMavenProjectSource(projectPath);
+            if (projectSource != null) {
+                return projectSource;
             }
-
-            // Try Gradle project
-            Path gradleFile = projectPath.resolve("settings.gradle");
-            if (gradleFile.toFile().exists()) {
-                try (Stream<String> stream = Files.lines(gradleFile)) {
-                    String projectName = stream.filter(line -> line.contains(
-                            StatisticsConstants.VAADIN_PROJECT_SOURCE_TEXT))
-                            .findFirst().orElse(null);
-                    if (projectName != null) {
-                        return projectName.substring(projectName.indexOf(
-                                StatisticsConstants.VAADIN_PROJECT_SOURCE_TEXT)
-                                + StatisticsConstants.VAADIN_PROJECT_SOURCE_TEXT
-                                        .length())
-                                .trim();
-                    }
-                }
+            projectSource = getGradleProjectSource(projectPath);
+            if (projectSource != null) {
+                return projectSource;
             }
         } catch (Exception e) {
             getLogger().debug("Failed to parse project id from "
                     + projectPath.toAbsolutePath(), e);
         }
         return StatisticsConstants.MISSING_DATA;
+    }
+
+    private static String getMavenProjectSource(Path projectPath)
+            throws ParserConfigurationException, SAXException, IOException {
+        File pomFile = projectPath.resolve("pom.xml").toFile();
+
+        if (!pomFile.exists()) {
+            return null;
+        }
+
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        dbf.setFeature("http://xml.org/sax/features/external-general-entities",
+                false);
+        dbf.setFeature(
+                "http://xml.org/sax/features/external-parameter-entities",
+                false);
+        DocumentBuilder db = dbf.newDocumentBuilder();
+        Document pom = db.parse(pomFile);
+        NodeList nodeList = pom.getDocumentElement().getChildNodes();
+        for (int i = 0; i < nodeList.getLength(); i++) {
+            if (nodeList.item(i).getNodeType() == Node.COMMENT_NODE) {
+                String comment = nodeList.item(i).getTextContent();
+                if (comment.contains(
+                        StatisticsConstants.VAADIN_PROJECT_SOURCE_TEXT)) {
+                    return comment.substring(comment.indexOf(
+                            StatisticsConstants.VAADIN_PROJECT_SOURCE_TEXT)
+                            + StatisticsConstants.VAADIN_PROJECT_SOURCE_TEXT
+                                    .length())
+                            .trim();
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static String getGradleProjectSource(Path projectPath)
+            throws IOException {
+        Path gradleFile = projectPath.resolve("settings.gradle");
+        if (gradleFile.toFile().exists()) {
+            try (Stream<String> stream = Files.lines(gradleFile)) {
+                String projectName = stream
+                        .filter(line -> line.contains(
+                                StatisticsConstants.VAADIN_PROJECT_SOURCE_TEXT))
+                        .findFirst().orElse(null);
+                if (projectName != null) {
+                    return projectName.substring(projectName.indexOf(
+                            StatisticsConstants.VAADIN_PROJECT_SOURCE_TEXT)
+                            + StatisticsConstants.VAADIN_PROJECT_SOURCE_TEXT
+                                    .length())
+                            .trim();
+                }
+            }
+        }
+        return null;
+
     }
 
     /**
