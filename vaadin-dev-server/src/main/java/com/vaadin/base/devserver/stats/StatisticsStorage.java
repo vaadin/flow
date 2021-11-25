@@ -18,11 +18,11 @@ package com.vaadin.base.devserver.stats;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicReference;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.client.HttpClient;
@@ -39,32 +39,17 @@ import org.slf4j.LoggerFactory;
  */
 public class StatisticsStorage {
 
-    /**
-     * Singleton pattern for statistics storage.
-     */
-    private static final AtomicReference<StatisticsStorage> instance = new AtomicReference<>();
     private String projectId;
     private ObjectNode json;
     private ObjectNode projectJson;
-    private boolean usageStatisticsEnabled;
-    private String reportingUrl;
+    private String usageReportingUrl;
     private File usageStatisticsFile;
 
-    private StatisticsStorage() {
-        // Avoid external creation of instances
-    }
-
     /**
-     * Get the instantiated StatisticsStorage.
-     *
-     * @return Instance of StatisticsStorage.
+     * Creates an instance.
      */
-    static StatisticsStorage get() {
-        if (instance.get() == null) {
-            StatisticsStorage newStats = new StatisticsStorage();
-            instance.compareAndSet(null, newStats);
-        }
-        return instance.get();
+    public StatisticsStorage() {
+        // Intentionally empty
     }
 
     /**
@@ -136,8 +121,7 @@ public class StatisticsStorage {
     }
 
     private static Logger getLogger() {
-        // Use the same logger that DevModeUsageStatistics uses
-        return LoggerFactory.getLogger(DevModeUsageStatistics.class.getName());
+        return LoggerFactory.getLogger(StatisticsStorage.class);
     }
 
     /**
@@ -160,33 +144,13 @@ public class StatisticsStorage {
     }
 
     /**
-     * Check if statistics are enabled for this project.
-     *
-     * @return true if statistics collection is enabled.
-     */
-    boolean isStatisticsEnabled() {
-        return this.usageStatisticsEnabled;
-    }
-
-    /**
-     * Enable or disable statistics collection and sending.
-     *
-     * @param enabled
-     *            true if statistics should be collected, false otherwise.
-     * @see DevModeUsageStatistics#isStatisticsEnabled()
-     */
-    void setStatisticsEnabled(boolean enabled) {
-        this.usageStatisticsEnabled = enabled;
-    }
-
-    /**
-     * Get the remote reporting URL. *
+     * Get the remote reporting URL.
      *
      * @return Returns {@link StatisticsConstants#USAGE_REPORT_URL} by default.
      */
     String getUsageReportingUrl() {
-        return reportingUrl == null ? StatisticsConstants.USAGE_REPORT_URL
-                : reportingUrl;
+        return usageReportingUrl == null ? StatisticsConstants.USAGE_REPORT_URL
+                : usageReportingUrl;
     }
 
     /**
@@ -198,7 +162,7 @@ public class StatisticsStorage {
      *            Set the reporting URL.
      */
     void setUsageReportingUrl(String reportingUrl) {
-        this.reportingUrl = reportingUrl;
+        this.usageReportingUrl = reportingUrl;
     }
 
     /**

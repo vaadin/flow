@@ -16,33 +16,34 @@
 
 package com.vaadin.base.devserver.stats;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.BufferedReader;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
 import com.sun.net.httpserver.HttpServer;
-import junit.framework.TestCase;
-import net.jcip.annotations.NotThreadSafe;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
-import org.junit.Test;
-import org.mockito.Mockito;
-
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.testutil.TestUtils;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+
+import elemental.json.Json;
+import elemental.json.JsonObject;
+import net.jcip.annotations.NotThreadSafe;
+
 @NotThreadSafe
-public class DevModeUsageStatisticsTests extends TestCase {
+public class DevModeUsageStatisticsTests {
 
     public static final String DEFAULT_SERVER_MESSAGE = "{\"reportInterval\":86400,\"serverMessage\":\"\"}";
     public static final String SERVER_MESSAGE_MESSAGE = "{\"reportInterval\":86400,\"serverMessage\":\"Hello\"}";
@@ -57,6 +58,8 @@ public class DevModeUsageStatisticsTests extends TestCase {
     private static final long SEC_48H = 60 * 60 * 48;
     private static final long SEC_30D = 60 * 60 * 24 * 30;
     private static final String DEFAULT_PROJECT_ID = "12b7fc85f50e8c82cb6f4b03e12f2335";
+    private ApplicationConfiguration configuration;
+    private StatisticsStorage storage;
 
     /**
      * Create a temporary file from given test resource.
@@ -75,257 +78,234 @@ public class DevModeUsageStatisticsTests extends TestCase {
         return result;
     }
 
+    @Before
+    public void setup() throws Exception {
+        configuration = mockAppConfig(true);
+
+        storage = new StatisticsStorage();
+        // Change the file storage and reporting parameters for testing
+        storage.setUsageReportingUrl(USAGE_REPORT_URL_LOCAL);
+        storage.setUsageStatisticsStore(
+                createTempStorage("stats-data/usage-statistics-1.json"));
+    }
+
     @Test
     public void testClientData() throws Exception {
-
-        // Create mock app configuration
-        ApplicationConfiguration configuration = mockAppConfig(true);
-
-        // Change the file storage and reporting parameters for testing
-        StatisticsStorage.get().setUsageReportingUrl(USAGE_REPORT_URL_LOCAL);
-        StatisticsStorage.get().setUsageStatisticsStore(
-                createTempStorage("stats-data/usage-statistics-1.json"));
-
         // Init using test project
         String mavenProjectFolder = TestUtils
                 .getTestFolder("stats-data/maven-project-folder1").toPath()
                 .toString();
-        DevModeUsageStatistics.init(configuration, mavenProjectFolder);
+        DevModeUsageStatistics stats = DevModeUsageStatistics
+                .init(configuration, mavenProjectFolder, storage);
 
         String data = IOUtils.toString(
                 TestUtils.getTestResource("stats-data/client-data-1.txt"),
                 StandardCharsets.UTF_8);
-        DevModeUsageStatistics.handleBrowserData(data);
+        stats.handleBrowserData(wrapStats(data));
     }
 
     @Test
     public void testAggregates() throws Exception {
-
-        // Create mock app configuration
-        ApplicationConfiguration configuration = mockAppConfig(true);
-
-        // Change the file storage and reporting parameters for testing
-        StatisticsStorage.get().setUsageReportingUrl(USAGE_REPORT_URL_LOCAL);
-        StatisticsStorage.get().setUsageStatisticsStore(
-                createTempStorage("stats-data/usage-statistics-1.json"));
-
         // Init using test project
         String mavenProjectFolder = TestUtils
                 .getTestFolder("stats-data/maven-project-folder1").toPath()
                 .toString();
-        DevModeUsageStatistics.init(configuration, mavenProjectFolder);
+        DevModeUsageStatistics stats = DevModeUsageStatistics
+                .init(configuration, mavenProjectFolder, storage);
 
         // Averate events
-        DevModeUsageStatistics.collectEvent("aggregate", 1);
-        StatisticsStorage statistics = StatisticsStorage.get();
+        stats.collectEvent("aggregate", 1);
         Assert.assertEquals("Min does not match", 1,
-                statistics.getFieldAsDouble("aggregate_min"), 0);
+                storage.getFieldAsDouble("aggregate_min"), 0);
         Assert.assertEquals("Max does not match", 1,
-                statistics.getFieldAsDouble("aggregate_max"), 0);
+                storage.getFieldAsDouble("aggregate_max"), 0);
         Assert.assertEquals("Average does not match", 1,
-                statistics.getFieldAsDouble("aggregate_avg"), 0);
+                storage.getFieldAsDouble("aggregate_avg"), 0);
         Assert.assertEquals("Count does not match", 1,
-                statistics.getFieldAsInt("aggregate_count"));
+                storage.getFieldAsInt("aggregate_count"));
 
-        DevModeUsageStatistics.collectEvent("aggregate", 2);
+        stats.collectEvent("aggregate", 2);
         Assert.assertEquals("Min does not match", 1,
-                statistics.getFieldAsDouble("aggregate_min"), 0);
+                storage.getFieldAsDouble("aggregate_min"), 0);
         Assert.assertEquals("Max does not match", 2,
-                statistics.getFieldAsDouble("aggregate_max"), 0);
+                storage.getFieldAsDouble("aggregate_max"), 0);
         Assert.assertEquals("Average does not match", 1.5,
-                statistics.getFieldAsDouble("aggregate_avg"), 0);
+                storage.getFieldAsDouble("aggregate_avg"), 0);
         Assert.assertEquals("Count does not match", 2,
-                statistics.getFieldAsInt("aggregate_count"));
+                storage.getFieldAsInt("aggregate_count"));
 
-        DevModeUsageStatistics.collectEvent("aggregate", 3);
+        stats.collectEvent("aggregate", 3);
         Assert.assertEquals("Min does not match", 1,
-                statistics.getFieldAsDouble("aggregate_min"), 0);
+                storage.getFieldAsDouble("aggregate_min"), 0);
         Assert.assertEquals("Max does not match", 3,
-                statistics.getFieldAsDouble("aggregate_max"), 0);
+                storage.getFieldAsDouble("aggregate_max"), 0);
         Assert.assertEquals("Average does not match", 2,
-                statistics.getFieldAsDouble("aggregate_avg"), 0);
+                storage.getFieldAsDouble("aggregate_avg"), 0);
         Assert.assertEquals("Count does not match", 3,
-                statistics.getFieldAsInt("aggregate_count"));
+                storage.getFieldAsInt("aggregate_count"));
 
         // Test count events
-        DevModeUsageStatistics.collectEvent("count");
+        stats.collectEvent("count");
         Assert.assertEquals("Increment does not match", 1,
-                statistics.getFieldAsInt("count"));
-        DevModeUsageStatistics.collectEvent("count");
+                storage.getFieldAsInt("count"));
+        stats.collectEvent("count");
         Assert.assertEquals("Increment does not match", 2,
-                statistics.getFieldAsInt("count"));
-        DevModeUsageStatistics.collectEvent("count");
+                storage.getFieldAsInt("count"));
+        stats.collectEvent("count");
         Assert.assertEquals("Increment does not match", 3,
-                statistics.getFieldAsInt("count"));
+                storage.getFieldAsInt("count"));
 
     }
 
     @Test
     public void testMultipleProjects() throws Exception {
-
-        // Create mock app configuration
-        ApplicationConfiguration configuration = mockAppConfig(true);
-
-        // Change the file storage and reporting parameters for testing
-        StatisticsStorage.get().setUsageReportingUrl(USAGE_REPORT_URL_LOCAL);
-        StatisticsStorage.get().setUsageStatisticsStore(
-                createTempStorage("stats-data/usage-statistics-1.json"));
-
         // Init using test project
         String mavenProjectFolder = TestUtils
                 .getTestFolder("stats-data/maven-project-folder1").toPath()
                 .toString();
-        DevModeUsageStatistics.init(configuration, mavenProjectFolder);
+        DevModeUsageStatistics.init(configuration, mavenProjectFolder, storage);
         // Data contains 5 previous starts for this project
         Assert.assertEquals("Expected to have 6 restarts", 6,
-                StatisticsStorage.get().getFieldAsInt("devModeStarts"));
+                storage.getFieldAsInt("devModeStarts"));
 
         // Switch project to track
         String mavenProjectFolder2 = TestUtils
                 .getTestFolder("stats-data/maven-project-folder2").toPath()
                 .toString();
-        DevModeUsageStatistics.init(configuration, mavenProjectFolder2);
+        DevModeUsageStatistics.init(configuration, mavenProjectFolder2,
+                storage);
         Assert.assertEquals("Expected to have one restarts", 1,
-                StatisticsStorage.get().getFieldAsInt("devModeStarts"));
+                storage.getFieldAsInt("devModeStarts"));
 
         // Switch project to track
         String gradleProjectFolder1 = TestUtils
                 .getTestFolder("stats-data/gradle-project-folder1").toPath()
                 .toString();
-        DevModeUsageStatistics.init(configuration, gradleProjectFolder1);
+        DevModeUsageStatistics.init(configuration, gradleProjectFolder1,
+                storage);
         Assert.assertEquals("Expected to have one restarts", 1,
-                StatisticsStorage.get().getFieldAsInt("devModeStarts"));
+                storage.getFieldAsInt("devModeStarts"));
 
         // Switch project to track
         String gradleProjectFolder2 = TestUtils
                 .getTestFolder("stats-data/gradle-project-folder2").toPath()
                 .toString();
-        DevModeUsageStatistics.init(configuration, gradleProjectFolder2);
-        DevModeUsageStatistics.init(configuration, gradleProjectFolder2); // Double
-                                                                          // init
-                                                                          // to
-                                                                          // check
-                                                                          // restart
-                                                                          // count
+
+        // Double init to check restart count
+        DevModeUsageStatistics.init(configuration, gradleProjectFolder2,
+                storage);
+        DevModeUsageStatistics.init(configuration, gradleProjectFolder2,
+                storage);
         Assert.assertEquals("Expected to have 2 restarts", 2,
-                StatisticsStorage.get().getFieldAsInt("devModeStarts"));
+                storage.getFieldAsInt("devModeStarts"));
 
         // Check that all project are stored correctly
         Assert.assertEquals("Expected to have 4 projects", 4,
-                StatisticsStorage.get().getNumberOfProjects());
+                storage.getNumberOfProjects());
 
     }
 
     @Test
     public void testSend() throws Exception {
 
-        // Create mock app configuration
-        ApplicationConfiguration configuration = mockAppConfig(true);
-
-        // Change the file storage and reporting parameters for testing
-        StatisticsStorage.get().setUsageReportingUrl(USAGE_REPORT_URL_LOCAL);
-        StatisticsStorage.get().setUsageStatisticsStore(
-                createTempStorage("stats-data/usage-statistics-1.json"));
-
         // Init using test project
         String mavenProjectFolder = TestUtils
                 .getTestFolder("stats-data/maven-project-folder1").toPath()
                 .toString();
-        DevModeUsageStatistics.init(configuration, mavenProjectFolder);
+        DevModeUsageStatistics stats = DevModeUsageStatistics
+                .init(configuration, mavenProjectFolder, storage);
 
         // Test with default server response
         try (TestHttpServer server = new TestHttpServer(200,
                 DEFAULT_SERVER_MESSAGE)) {
-            long lastSend = StatisticsStorage.get().getLastSendTime();
-            DevModeUsageStatistics.sendCurrentStatistics();
-            long newSend = StatisticsStorage.get().getLastSendTime();
+            long lastSend = storage.getLastSendTime();
+            stats.sendCurrentStatistics();
+            long newSend = storage.getLastSendTime();
             Assert.assertTrue("Send time should be updated",
                     newSend > lastSend);
-            Assert.assertTrue("Status should be 200", StatisticsStorage.get()
-                    .getLastSendStatus().contains("200"));
+            Assert.assertTrue("Status should be 200",
+                    storage.getLastSendStatus().contains("200"));
             Assert.assertEquals("Default interval should be 24H in seconds",
-                    SEC_24H, StatisticsStorage.get().getInterval());
+                    SEC_24H, storage.getInterval());
         }
 
         // Test with server response with too custom interval
         try (TestHttpServer server = new TestHttpServer(200,
                 SERVER_MESSAGE_48H)) {
-            long lastSend = StatisticsStorage.get().getLastSendTime();
-            StatisticsStorage.get().sendCurrentStatistics();
-            long newSend = StatisticsStorage.get().getLastSendTime();
+            long lastSend = storage.getLastSendTime();
+            storage.sendCurrentStatistics();
+            long newSend = storage.getLastSendTime();
             Assert.assertTrue("Send time should be updated",
                     newSend > lastSend);
-            Assert.assertTrue("Status should be 200", StatisticsStorage.get()
-                    .getLastSendStatus().contains("200"));
+            Assert.assertTrue("Status should be 200",
+                    storage.getLastSendStatus().contains("200"));
             Assert.assertEquals("Custom interval should be 48H in seconds",
-                    SEC_48H, StatisticsStorage.get().getInterval());
+                    SEC_48H, storage.getInterval());
         }
 
         // Test with server response with too short interval
         try (TestHttpServer server = new TestHttpServer(200,
                 SERVER_MESSAGE_3H)) {
-            long lastSend = StatisticsStorage.get().getLastSendTime();
-            StatisticsStorage.get().sendCurrentStatistics();
-            long newSend = StatisticsStorage.get().getLastSendTime();
+            long lastSend = storage.getLastSendTime();
+            storage.sendCurrentStatistics();
+            long newSend = storage.getLastSendTime();
             Assert.assertTrue("Send time should be updated",
                     newSend > lastSend);
-            Assert.assertTrue("Status should be 200", StatisticsStorage.get()
-                    .getLastSendStatus().contains("200"));
+            Assert.assertTrue("Status should be 200",
+                    storage.getLastSendStatus().contains("200"));
             Assert.assertEquals("Minimum interval should be 12H in seconds",
-                    SEC_12H, StatisticsStorage.get().getInterval());
+                    SEC_12H, storage.getInterval());
         }
 
         // Test with server response with too long interval
         try (TestHttpServer server = new TestHttpServer(200,
                 SERVER_MESSAGE_40D)) {
-            long lastSend = StatisticsStorage.get().getLastSendTime();
-            StatisticsStorage.get().sendCurrentStatistics();
-            long newSend = StatisticsStorage.get().getLastSendTime();
+            long lastSend = storage.getLastSendTime();
+            storage.sendCurrentStatistics();
+            long newSend = storage.getLastSendTime();
             Assert.assertTrue("Send time should be not be updated",
                     newSend > lastSend);
-            Assert.assertTrue("Status should be 200", StatisticsStorage.get()
-                    .getLastSendStatus().contains("200"));
+            Assert.assertTrue("Status should be 200",
+                    storage.getLastSendStatus().contains("200"));
             Assert.assertEquals("Maximum interval should be 30D in seconds",
-                    SEC_30D, StatisticsStorage.get().getInterval());
+                    SEC_30D, storage.getInterval());
         }
 
         // Test with server fail response
         try (TestHttpServer server = new TestHttpServer(500,
                 SERVER_MESSAGE_40D)) {
-            long lastSend = StatisticsStorage.get().getLastSendTime();
-            StatisticsStorage.get().sendCurrentStatistics();
-            long newSend = StatisticsStorage.get().getLastSendTime();
+            long lastSend = storage.getLastSendTime();
+            storage.sendCurrentStatistics();
+            long newSend = storage.getLastSendTime();
             Assert.assertTrue("Send time should be updated",
                     newSend > lastSend);
-            Assert.assertTrue("Status should be 500", StatisticsStorage.get()
-                    .getLastSendStatus().contains("500"));
+            Assert.assertTrue("Status should be 500",
+                    storage.getLastSendStatus().contains("500"));
             Assert.assertEquals(
                     "In case of errors we should use default interval", SEC_24H,
-                    StatisticsStorage.get().getInterval());
+                    storage.getInterval());
         }
 
         // Test with server returned message
         try (TestHttpServer server = new TestHttpServer(200,
                 SERVER_MESSAGE_MESSAGE)) {
-            long lastSend = StatisticsStorage.get().getLastSendTime();
-            StatisticsStorage.get().sendCurrentStatistics();
-            long newSend = StatisticsStorage.get().getLastSendTime();
+            long lastSend = storage.getLastSendTime();
+            storage.sendCurrentStatistics();
+            long newSend = storage.getLastSendTime();
             Assert.assertTrue("Send time should be updated",
                     newSend > lastSend);
-            Assert.assertTrue("Status should be 200", StatisticsStorage.get()
-                    .getLastSendStatus().contains("200"));
+            Assert.assertTrue("Status should be 200",
+                    storage.getLastSendStatus().contains("200"));
             Assert.assertEquals("Default interval should be 24H in seconds",
-                    SEC_24H, StatisticsStorage.get().getInterval());
+                    SEC_24H, storage.getInterval());
             Assert.assertEquals("Message should be returned", "Hello",
-                    StatisticsStorage.get().getLastServerMessage());
+                    storage.getLastServerMessage());
         }
 
         // Test with invalid material
-        StatisticsStorage.get()
-                .setUsageStatisticsStore(new File(TestUtils
-                        .getTestResource("stats-data/usage-statistics-2.json")
+        storage.setUsageStatisticsStore(new File(
+                TestUtils.getTestResource("stats-data/usage-statistics-2.json")
                         .getFile()));
-        // TODO:
     }
 
     @Test
@@ -395,13 +375,14 @@ public class DevModeUsageStatisticsTests extends TestCase {
         String id1 = ProjectHelpers.generateProjectId(mavenProjectFolder1);
         String id2 = ProjectHelpers.generateProjectId(mavenProjectFolder2);
         Assert.assertEquals(DEFAULT_PROJECT_ID, id1);
-        Assert.assertEquals(DEFAULT_PROJECT_ID, id2); // Should be the default
-                                                      // id in both cases
+        Assert.assertEquals(DEFAULT_PROJECT_ID, id2); // Should be the
+                                                      // default
+                                                      // id in both
+                                                      // cases
     }
 
     @Test
     public void testReadUserKey() throws IOException {
-        ApplicationConfiguration configuration = mockAppConfig(true);
         String mavenProjectFolder = TestUtils
                 .getTestFolder("stats-data/maven-project-folder1").toPath()
                 .toString();
@@ -410,7 +391,7 @@ public class DevModeUsageStatisticsTests extends TestCase {
                                                                             // the
                                                                             // home
                                                                             // location
-        DevModeUsageStatistics.init(configuration, mavenProjectFolder);
+        DevModeUsageStatistics.init(configuration, mavenProjectFolder, storage);
 
         // Read from file
         String keyString = "user-ab641d2c-test-test-file-223cf1fa628e";
@@ -425,7 +406,8 @@ public class DevModeUsageStatisticsTests extends TestCase {
         File vaadinHome = new File(tempDir, ".vaadin");
         vaadinHome.mkdir();
         System.setProperty("user.home", tempDir.getAbsolutePath()); // Change
-                                                                    // the home
+                                                                    // the
+                                                                    // home
                                                                     // location
         String newKey = ProjectHelpers.getUserKey();
         assertNotNull(newKey);
@@ -437,7 +419,6 @@ public class DevModeUsageStatisticsTests extends TestCase {
 
     @Test
     public void testReadProKey() {
-        ApplicationConfiguration configuration = mockAppConfig(true);
         String mavenProjectFolder = TestUtils
                 .getTestFolder("stats-data/maven-project-folder1").toPath()
                 .toString();
@@ -446,7 +427,7 @@ public class DevModeUsageStatisticsTests extends TestCase {
                                                                             // the
                                                                             // home
                                                                             // location
-        DevModeUsageStatistics.init(configuration, mavenProjectFolder);
+        DevModeUsageStatistics.init(configuration, mavenProjectFolder, storage);
 
         // File is used by default
         String keyStringFile = "test@vaadin.com/pro-536e1234-test-test-file-f7a1ef311234";
@@ -462,9 +443,6 @@ public class DevModeUsageStatisticsTests extends TestCase {
 
     @Test
     public void testLoadStatisticsDisabled() throws Exception {
-
-        // Make sure by default statistics are enabled
-        ApplicationConfiguration configuration = mockAppConfig(true);
         Assert.assertFalse(configuration.isProductionMode());
         Assert.assertTrue(configuration.isUsageStatisticsEnabled());
 
@@ -472,30 +450,33 @@ public class DevModeUsageStatisticsTests extends TestCase {
         String mavenProjectFolder = TestUtils
                 .getTestFolder("stats-data/maven-project-folder1").toPath()
                 .toString();
-        DevModeUsageStatistics.init(configuration, mavenProjectFolder);
+        DevModeUsageStatistics stats = DevModeUsageStatistics
+                .init(configuration, mavenProjectFolder, storage);
 
         // Make sure statistics are enabled
-        Assert.assertTrue(DevModeUsageStatistics.isStatisticsEnabled());
+        Assert.assertTrue(stats.isStatisticsEnabled());
 
         // Disable statistics in config
         Mockito.when(configuration.isUsageStatisticsEnabled())
                 .thenReturn(false);
 
         // Reinit
-        DevModeUsageStatistics.init(configuration, mavenProjectFolder);
+        stats = DevModeUsageStatistics.init(configuration, mavenProjectFolder,
+                storage);
 
         // Make sure statistics are disabled
-        Assert.assertFalse(DevModeUsageStatistics.isStatisticsEnabled());
+        Assert.assertFalse(stats.isStatisticsEnabled());
 
         // Enable statistics in config and enable production mode
         Mockito.when(configuration.isUsageStatisticsEnabled()).thenReturn(true);
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
 
         // Reinit
-        DevModeUsageStatistics.init(configuration, mavenProjectFolder);
+        stats = DevModeUsageStatistics.init(configuration, mavenProjectFolder,
+                storage);
 
         // Make sure statistics are disabled in production mode
-        Assert.assertFalse(DevModeUsageStatistics.isStatisticsEnabled());
+        Assert.assertFalse(stats.isStatisticsEnabled());
     }
 
     private ApplicationConfiguration mockAppConfig(boolean enabled) {
@@ -548,6 +529,12 @@ public class DevModeUsageStatisticsTests extends TestCase {
             }
         }
 
+    }
+
+    private static JsonObject wrapStats(String data) {
+        JsonObject wrapped = Json.createObject();
+        wrapped.put("browserData", data);
+        return wrapped;
     }
 
 }

@@ -222,7 +222,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
 
             long ms = (System.nanoTime() - start) / 1000000;
             getLogger().info("Started {}. Time: {}ms", getServerName(), ms);
-            DevModeUsageStatistics.collectEvent(
+            DevModeUsageStatistics.get().collectEvent(
                     StatisticsConstants.EVENT_DEV_SERVER_START_PREFIX
                             + getServerName(),
                     ms);
@@ -450,7 +450,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
     protected void triggerLiveReload() {
         if (liveReload != null) {
             liveReload.reload();
-            DevModeUsageStatistics.collectEvent(EVENT_LIVE_RELOAD);
+            DevModeUsageStatistics.get().collectEvent(EVENT_LIVE_RELOAD);
         }
     }
 

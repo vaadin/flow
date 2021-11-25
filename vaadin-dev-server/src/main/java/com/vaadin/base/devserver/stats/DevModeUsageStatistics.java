@@ -16,21 +16,16 @@
 
 package com.vaadin.base.devserver.stats;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.commons.io.IOUtils;
+import com.vaadin.flow.server.Version;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import elemental.json.JsonObject;
-
-import com.vaadin.flow.server.Version;
-import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 /**
  * Singleton for collecting development time usage metrics
@@ -42,63 +37,107 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
  */
 public class DevModeUsageStatistics {
 
+    private static DevModeUsageStatistics instance = null;
+
+    private final StatisticsStorage storage;
+
+    private final boolean statisticsEnabled;
+
+    private final String projectFolder;
+
+    /**
+     * Creates the instance.
+     * 
+     * @param projectFolder
+     *            the project root folder
+     * @param storage
+     *            the storage instance to use
+     * @param statisticsEnabled
+     *            {@code true} to enable stats, {@code false} otherwise
+     */
+    private DevModeUsageStatistics(String projectFolder,
+            StatisticsStorage storage, boolean statisticsEnabled) {
+        this.projectFolder = projectFolder;
+        this.storage = storage;
+        this.statisticsEnabled = statisticsEnabled;
+    }
+
+    /**
+     * Gets the singleton instance.
+     */
+    public static DevModeUsageStatistics get() {
+        return instance;
+    }
+
     /**
      * Initialize statistics module. This should be done on devmode startup.
      * First check if statistics collection is enabled.
      *
      * @param config
-     *            Application configuration parameters.
+     *            application configuration parameters
      * @param projectFolder
-     *            Folder of the working project.
+     *            the folder of the current project
+     * @param storage
+     *            the statistics storage to use
      */
-    public static void init(ApplicationConfiguration config,
-            String projectFolder) {
+    public static DevModeUsageStatistics init(ApplicationConfiguration config,
+            String projectFolder, StatisticsStorage storage) {
 
-        final StatisticsStorage stats = StatisticsStorage.get();
+        boolean enabled = (config != null && !config.isProductionMode()
+                && config.isUsageStatisticsEnabled());
+
+        getLogger().debug("Telemetry " + (enabled ? "enabled" : "disabled"));
 
         synchronized (DevModeUsageStatistics.class) { // Lock data for init
-            stats.setStatisticsEnabled(
-                    config != null && !config.isProductionMode()
-                            && config.isUsageStatisticsEnabled());
-            if (stats.isStatisticsEnabled()) {
-                getLogger().debug("VaadinUsageStatistics enabled");
-            } else {
-                getLogger().debug("VaadinUsageStatistics disabled");
-                return; // Do not go any further
+            if (instance != null) {
+                getLogger().warn("init should only be called once");
             }
 
-            // Read the current statistics data
-            stats.read();
-
-            // Make sure we are tracking the right project
-            stats.setProjectId(ProjectHelpers.generateProjectId(projectFolder));
-
-            // Update the machine / user / source level data
-            stats.setGlobalValue(StatisticsConstants.FIELD_OPERATING_SYSTEM,
-                    ProjectHelpers.getOperatingSystem());
-            stats.setGlobalValue(StatisticsConstants.FIELD_JVM,
-                    ProjectHelpers.getJVMVersion());
-            stats.setGlobalValue(StatisticsConstants.FIELD_PROKEY,
-                    ProjectHelpers.getProKey());
-            stats.setGlobalValue(StatisticsConstants.FIELD_USER_KEY,
-                    ProjectHelpers.getUserKey());
-
-            // Update basic project statistics and save
-            stats.setValue(StatisticsConstants.FIELD_FLOW_VERSION,
-                    Version.getFullVersion());
-            stats.setValue(StatisticsConstants.FIELD_SOURCE_ID,
-                    ProjectHelpers.getProjectSource(projectFolder));
-            stats.increment(StatisticsConstants.FIELD_PROJECT_DEVMODE_STARTS);
-
-            // Store the data immediately
-            stats.write();
+            instance = new DevModeUsageStatistics(projectFolder, storage,
+                    enabled);
+            if (enabled) {
+                instance.trackGlobalData();
+                // Send usage statistics asynchronously, if enough time has
+                // passed
+                if (storage.isIntervalElapsed()) {
+                    CompletableFuture.runAsync(instance::sendCurrentStatistics);
+                }
+            }
+            return instance;
         }
 
-        // Send usage statistics asynchronously, if enough time has passed
-        if (stats.isIntervalElapsed()) {
-            CompletableFuture
-                    .runAsync(DevModeUsageStatistics::sendCurrentStatistics);
+    }
+
+    private void trackGlobalData() {
+        if (!isStatisticsEnabled()) {
+            return;
         }
+        // Read the current statistics data
+        storage.read();
+
+        // Make sure we are tracking the right project
+        storage.setProjectId(ProjectHelpers.generateProjectId(projectFolder));
+
+        // Update the machine / user / source level data
+        storage.setGlobalValue(StatisticsConstants.FIELD_OPERATING_SYSTEM,
+                ProjectHelpers.getOperatingSystem());
+        storage.setGlobalValue(StatisticsConstants.FIELD_JVM,
+                ProjectHelpers.getJVMVersion());
+        storage.setGlobalValue(StatisticsConstants.FIELD_PROKEY,
+                ProjectHelpers.getProKey());
+        storage.setGlobalValue(StatisticsConstants.FIELD_USER_KEY,
+                ProjectHelpers.getUserKey());
+
+        // Update basic project statistics and save
+        storage.setValue(StatisticsConstants.FIELD_FLOW_VERSION,
+                Version.getFullVersion());
+        storage.setValue(StatisticsConstants.FIELD_SOURCE_ID,
+                ProjectHelpers.getProjectSource(projectFolder));
+        storage.increment(StatisticsConstants.FIELD_PROJECT_DEVMODE_STARTS);
+
+        // Store the data immediately
+        storage.write();
+
     }
 
     /**
@@ -107,9 +146,7 @@ public class DevModeUsageStatistics {
      * @param browserData
      *            the data
      */
-    public static void handleBrowserData(JsonObject data) {
-        // If not enabled we don't handle the request, but
-        // still consider the request handled.
+    public void handleBrowserData(JsonObject data) {
         if (!isStatisticsEnabled()) {
             return;
         }
@@ -119,13 +156,12 @@ public class DevModeUsageStatistics {
             // Update the stored data
             String json = data.get("browserData").toJson();
             JsonNode clientData = JsonHelpers.getJsonMapper().readTree(json);
-            StatisticsStorage stats = StatisticsStorage.get();
 
             // Lock data for update
             synchronized (DevModeUsageStatistics.class) {
-                stats.read();
-                stats.updateProjectTelemetryData(clientData);
-                stats.write();
+                storage.read();
+                storage.updateProjectTelemetryData(clientData);
+                storage.write();
             }
 
         } catch (Exception e) {
@@ -134,15 +170,13 @@ public class DevModeUsageStatistics {
     }
 
     /**
-     * Is usage statistic collection currently enabled.
-     * <p>
-     * This is configured init thought ApplicationConfiguration.
+     * Checks if usage statistic collection is currently enabled.
      *
-     * @return True if statistics are collected, false otherwise.
-     * @see #init(ApplicationConfiguration, String)
+     * @return {@code true} if statistics are collected, {@code false}
+     *         otherwise.
      */
-    public static boolean isStatisticsEnabled() {
-        return StatisticsStorage.get().isStatisticsEnabled();
+    public boolean isStatisticsEnabled() {
+        return statisticsEnabled;
     }
 
     /**
@@ -154,19 +188,18 @@ public class DevModeUsageStatistics {
      * @param name
      *            Name of the event.
      */
-    public static void collectEvent(String name) {
-        try {
-            // Do nothing if not enabled
-            if (!isStatisticsEnabled())
-                return;
-            StatisticsStorage stats = StatisticsStorage.get();
-            synchronized (DevModeUsageStatistics.class) { // Lock the storage
-                                                          // for update
-                stats.read();
-                stats.increment(name);
-                stats.write();
-            }
+    public void collectEvent(String name) {
+        if (!isStatisticsEnabled()) {
+            return;
+        }
 
+        try {
+            // Lock the storage for update
+            synchronized (DevModeUsageStatistics.class) {
+                storage.read();
+                storage.increment(name);
+                storage.write();
+            }
         } catch (Exception e) {
             getLogger().debug("Failed to log '" + name + "'", e);
         }
@@ -183,18 +216,17 @@ public class DevModeUsageStatistics {
      * @param value
      *            The new value to store.
      */
-    public static void collectEvent(String name, double value) {
+    public void collectEvent(String name, double value) {
         try {
             // Do nothing if not enabled
             if (!isStatisticsEnabled())
                 return;
 
-            StatisticsStorage stats = StatisticsStorage.get();
-            synchronized (DevModeUsageStatistics.class) { // Lock the storage
-                                                          // for update
-                stats.read();
-                stats.aggregate(name, value);
-                stats.write();
+            // Lock the storage for update
+            synchronized (DevModeUsageStatistics.class) {
+                storage.read();
+                storage.aggregate(name, value);
+                storage.write();
             }
         } catch (Exception e) {
             getLogger().debug("Failed to log average '" + name + "'", e);
@@ -210,17 +242,16 @@ public class DevModeUsageStatistics {
      * Updates <code>FIELD_LAST_SENT</code> and <code>FIELD_LAST_STATUS</code>
      * and <code>FIELD_SERVER_MESSAGE</code>
      */
-    static void sendCurrentStatistics() {
+    void sendCurrentStatistics() {
         try {
             // Do nothing if not enabled
             if (!isStatisticsEnabled())
                 return;
 
-            final StatisticsStorage stats = StatisticsStorage.get();
             synchronized (DevModeUsageStatistics.class) { // Lock data for send
-                stats.read();
-                String message = stats.sendCurrentStatistics();
-                stats.write();
+                storage.read();
+                String message = storage.sendCurrentStatistics();
+                storage.write();
 
                 // Show message on console, if present
                 if (message != null && !message.trim().isEmpty()) {
@@ -252,12 +283,11 @@ public class DevModeUsageStatistics {
             if (!isStatisticsEnabled())
                 return;
 
-            StatisticsStorage stats = StatisticsStorage.get();
-            synchronized (DevModeUsageStatistics.class) { // Lock the storage
-                                                          // for update
-                stats.read();
-                stats.setValue(name, value);
-                stats.write();
+            // Lock the storage for update
+            synchronized (DevModeUsageStatistics.class) {
+                storage.read();
+                storage.setValue(name, value);
+                storage.write();
             }
         } catch (Exception e) {
             getLogger().debug("Failed to set  '" + name + "'", e);
@@ -278,12 +308,11 @@ public class DevModeUsageStatistics {
             if (!isStatisticsEnabled())
                 return;
 
-            StatisticsStorage stats = StatisticsStorage.get();
-            synchronized (DevModeUsageStatistics.class) { // Lock the storage
-                                                          // for update
-                stats.read();
-                stats.setGlobalValue(name, value);
-                stats.write();
+            // Lock the storage for update
+            synchronized (DevModeUsageStatistics.class) {
+                storage.read();
+                storage.setGlobalValue(name, value);
+                storage.write();
             }
         } catch (Exception e) {
             getLogger().debug("Failed to set global '" + name + "'", e);
