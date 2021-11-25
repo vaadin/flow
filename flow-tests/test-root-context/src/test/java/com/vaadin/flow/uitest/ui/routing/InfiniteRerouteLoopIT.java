@@ -17,11 +17,14 @@ package com.vaadin.flow.uitest.ui.routing;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.flow.testcategory.SlowTests;
 
+@Category(SlowTests.class)
 public class InfiniteRerouteLoopIT extends ChromeBrowserTest {
 
     private static final String NAVIGATION_EXCEPTION = "navigation-exception";

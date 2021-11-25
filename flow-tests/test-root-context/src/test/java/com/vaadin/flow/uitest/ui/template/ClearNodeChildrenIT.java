@@ -21,11 +21,13 @@ import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
+import com.vaadin.flow.testcategory.SlowTests;
 
 /**
  * Tests for validating the {@code removeAll()} feature, that should clear all
@@ -35,6 +37,7 @@ import com.vaadin.testbench.TestBenchElement;
  * @author Vaadin Ltd
  * @since 1.0.
  */
+@Category(SlowTests.class)
 public class ClearNodeChildrenIT extends ChromeBrowserTest {
 
     private TestBenchElement root;

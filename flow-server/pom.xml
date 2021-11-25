@@ -21,7 +21,14 @@
             <version>${project.version}</version>
         </dependency>
 
-        <!-- DefaultApplicationConfigurationFactory is declared as an OSGi 
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-test-generic</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- DefaultApplicationConfigurationFactory is declared as an OSGi
             service -->
 
         <dependency>
@@ -69,7 +76,7 @@
             <groupId>commons-fileupload</groupId>
             <artifactId>commons-fileupload</artifactId>
             <version>1.3.3</version>
-            <!-- commons-fileupload:1.3.3 depends on commons-io:2.2, override 
+            <!-- commons-fileupload:1.3.3 depends on commons-io:2.2, override
                 it with Flow declaration -->
             <exclusions>
                 <exclusion>
@@ -215,19 +222,6 @@
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <excludedGroups>${test.excludegroup}</excludedGroups>
-                    <enableAssertions>true</enableAssertions>
-                    <classpathDependencyExcludes>
-                        <classpathDependencyExclude>org.osgi:org.osgi.core</classpathDependencyExclude>
-                    </classpathDependencyExcludes>
-                </configuration>
-            </plugin>
-
-
-            <plugin>
                 <groupId>org.apache.karaf.tooling</groupId>
                 <artifactId>karaf-maven-plugin</artifactId>
                 <configuration>
@@ -241,28 +235,5 @@
             </plugin>
         </plugins>
     </build>
-
-    <profiles>
-        <profile>
-            <id>default</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <properties>
-                <test.excludegroup>com.vaadin.flow.testcategory.ContainerTests,
-                    com.vaadin.flow.testcategory.SlowTests
-                </test.excludegroup>
-            </properties>
-        </profile>
-        <profile>
-            <id>all-tests</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <properties>
-                <test.excludegroup></test.excludegroup>
-            </properties>
-        </profile>
-    </profiles>
 
 </project>
