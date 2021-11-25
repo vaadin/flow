@@ -57,7 +57,7 @@ public class InternalServerError extends Component
             exceptionText = String.format(
                     errorTextStem + " with the root cause '%s'",
                     event.getLocation().getPath(), rootCause);
-        } else if (parameter!= null && parameter.hasCustomMessage()) {
+        } else if (parameter != null && parameter.hasCustomMessage()) {
             exceptionText = String.format(
                     errorTextStem + " with the exception message '%s'",
                     event.getLocation().getPath(),
