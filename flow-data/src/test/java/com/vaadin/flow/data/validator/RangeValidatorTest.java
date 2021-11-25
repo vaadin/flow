@@ -19,7 +19,6 @@ import java.time.LocalDate;
 
 import org.junit.Test;
 
-
 public class RangeValidatorTest extends ValidatorTestBase {
 
     @Test

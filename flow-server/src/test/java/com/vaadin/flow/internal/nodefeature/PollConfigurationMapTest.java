@@ -3,7 +3,6 @@ package com.vaadin.flow.internal.nodefeature;
 import org.junit.Assert;
 import org.junit.Test;
 
-
 public class PollConfigurationMapTest
         extends AbstractMapFeatureTest<PollConfigurationMap> {
 
