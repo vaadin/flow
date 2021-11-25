@@ -19,6 +19,9 @@ package com.vaadin.base.devserver.stats;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+
+import com.vaadin.base.devserver.ServerInfo;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -277,34 +280,7 @@ class ProjectHelpers {
     }
 
     /**
-     * Get operating system identifier from system.
-     *
-     * @return os.name system property or MISSING_DATA
-     */
-    static String getOperatingSystem() {
-        String os = System.getProperty("os.name");
-        return os == null ? StatisticsConstants.MISSING_DATA : os;
-    }
-
-    /**
-     * Get operating JVM version identifier from system.
-     *
-     * @return os.name system property or MISSING_DATA
-     */
-    static String getJVMVersion() {
-        String os = System.getProperty("java.vm.name");
-        String ver = System.getProperty("java.specification.version");
-
-        if (os == null && ver == null) {
-            return StatisticsConstants.MISSING_DATA;
-        }
-        os = (os == null ? StatisticsConstants.MISSING_DATA : os);
-        ver = (ver == null ? StatisticsConstants.MISSING_DATA : ver);
-        return os + " / " + ver;
-    }
-
-    /**
-     * Get Vaadin Pro key if available in the system, or generated id.
+     * Get Vaadin Pro key if available in the system.
      *
      * @return Vaadin Pro Key or null
      */
@@ -315,7 +291,9 @@ class ProjectHelpers {
     }
 
     /**
-     * Get generated user id.
+     * Gets the generated user id.
+     * <p>
+     * Generates one if it does not exist.
      *
      * @return Generated user id, or null if unable to load or generate one.
      */

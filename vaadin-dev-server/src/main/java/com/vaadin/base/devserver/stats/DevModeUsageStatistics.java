@@ -19,6 +19,7 @@ package com.vaadin.base.devserver.stats;
 import java.util.concurrent.CompletableFuture;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.vaadin.base.devserver.ServerInfo;
 import com.vaadin.flow.server.Version;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
@@ -118,11 +119,13 @@ public class DevModeUsageStatistics {
             storage.setProjectId(
                     ProjectHelpers.generateProjectId(projectFolder));
 
+            ServerInfo serverInfo = new ServerInfo();
+
             // Update the machine / user / source level data
             storage.setGlobalValue(StatisticsConstants.FIELD_OPERATING_SYSTEM,
-                    ProjectHelpers.getOperatingSystem());
+                    serverInfo.getOsVersion());
             storage.setGlobalValue(StatisticsConstants.FIELD_JVM,
-                    ProjectHelpers.getJVMVersion());
+                    serverInfo.getJavaVersion());
             storage.setGlobalValue(StatisticsConstants.FIELD_PROKEY,
                     ProjectHelpers.getProKey());
             storage.setGlobalValue(StatisticsConstants.FIELD_USER_KEY,
