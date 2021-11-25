@@ -339,10 +339,9 @@ public final class Constants implements Serializable {
     public static final boolean DEFAULT_REQUIRE_HOME_NODE_EXECUTABLE = false;
 
     /**
-     * Constant for whether usage statistics is default or not. Mojos need the
-     * value as string and constant, so need to use string instead of boolean.
+     * The default value for whether usage statistics is enabled.
      */
-    public static final String ENABLE_DEVMODE_STATS_DEFAULT_STRING = "true";
+    public static final boolean DEFAULT_DEVMODE_STATS = true;
 
     /**
      * @deprecated Use {@link InitParameters#REQUIRE_HOME_NODE_EXECUTABLE}

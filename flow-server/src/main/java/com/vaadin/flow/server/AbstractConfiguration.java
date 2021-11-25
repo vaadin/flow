@@ -135,7 +135,7 @@ public interface AbstractConfiguration extends Serializable {
     default boolean isUsageStatisticsEnabled() {
         return !isProductionMode() && getBooleanProperty(
                 InitParameters.SERVLET_PARAMETER_DEVMODE_STATISTICS,
-                Boolean.valueOf(Constants.ENABLE_DEVMODE_STATS_DEFAULT_STRING));
+                Constants.DEFAULT_DEVMODE_STATS);
     }
 
     /**
