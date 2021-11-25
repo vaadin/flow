@@ -40,6 +40,7 @@ import org.slf4j.LoggerFactory;
  */
 public class StatisticsStorage {
 
+    private static final String FAILED_TO_READ = "Failed to read ";
     private String projectId;
     private ObjectNode json;
     private ObjectNode projectJson;
@@ -408,7 +409,7 @@ public class StatisticsStorage {
         } catch (Exception e) {
             // Just return the default value
             getLogger().debug(
-                    "Failed to read " + StatisticsConstants.FIELD_SEND_INTERVAL,
+                    FAILED_TO_READ + StatisticsConstants.FIELD_SEND_INTERVAL,
                     e);
         }
         return StatisticsConstants.TIME_SEC_24H;
@@ -427,7 +428,7 @@ public class StatisticsStorage {
         } catch (Exception e) {
             // Use default value in case of any problems
             getLogger().debug(
-                    "Failed to read " + StatisticsConstants.FIELD_LAST_SENT, e);
+                    FAILED_TO_READ + StatisticsConstants.FIELD_LAST_SENT, e);
         }
         return -1; //
     }
@@ -445,8 +446,7 @@ public class StatisticsStorage {
         } catch (Exception e) {
             // Use default value in case of any problems
             getLogger().debug(
-                    "Failed to read " + StatisticsConstants.FIELD_LAST_STATUS,
-                    e);
+                    FAILED_TO_READ + StatisticsConstants.FIELD_LAST_STATUS, e);
         }
         return null; //
     }
