@@ -54,7 +54,6 @@ import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
-
 public class FrontendDependenciesTest {
 
     private ClassFinder classFinder = Mockito.mock(ClassFinder.class);

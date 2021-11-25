@@ -20,7 +20,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Assert;
 import org.junit.Test;
 
-
 import elemental.json.Json;
 
 public class StringToNumberDecoderTest {

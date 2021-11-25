@@ -21,7 +21,6 @@ import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
-
 public class UniqueSerializableTest implements Serializable {
 
     @Test

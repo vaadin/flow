@@ -20,7 +20,6 @@ import java.util.function.Supplier;
 
 import org.junit.Assert;
 
-
 public abstract class AbstractMapFeatureTest<T extends NodeFeature>
         extends AbstractNodeFeatureTest<T> {
 

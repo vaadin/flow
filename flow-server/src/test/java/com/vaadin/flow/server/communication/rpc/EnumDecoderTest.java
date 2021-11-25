@@ -18,7 +18,6 @@ package com.vaadin.flow.server.communication.rpc;
 import org.junit.Assert;
 import org.junit.Test;
 
-
 import elemental.json.Json;
 
 public class EnumDecoderTest {
