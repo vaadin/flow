@@ -43,7 +43,7 @@ import elemental.json.JsonObject;
 import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
-public class DevModeUsageStatisticsTests {
+public class DevModeUsageStatisticsTest {
 
     public static final String DEFAULT_SERVER_MESSAGE = "{\"reportInterval\":86400,\"serverMessage\":\"\"}";
     public static final String SERVER_MESSAGE_MESSAGE = "{\"reportInterval\":86400,\"serverMessage\":\"Hello\"}";
