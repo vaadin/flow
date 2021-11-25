@@ -198,8 +198,6 @@ public class StatisticsStorage {
      * <p>
      * Reads the current data and posts it to given URL. Updates or replaces the
      * local data according to the response.
-     * <p>
-     * Updates <code>FIELD_LAST_SENT</code> and <code>FIELD_LAST_STATUS</code>.
      *
      * @see #postData(String, JsonNode)
      */

@@ -25,7 +25,6 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import java.util.Collections;
 
 import com.sun.net.httpserver.HttpServer;
@@ -478,7 +477,7 @@ public class DevModeUsageStatisticsTest {
                 .init(configuration, mavenProjectFolder, storage);
 
         // Make sure statistics are enabled
-        Assert.assertTrue(stats.isStatisticsEnabled());
+        Assert.assertTrue(DevModeUsageStatistics.isStatisticsEnabled());
 
         // Disable statistics in config
         Mockito.when(configuration.isUsageStatisticsEnabled())
@@ -489,17 +488,6 @@ public class DevModeUsageStatisticsTest {
                 storage);
 
         // Make sure statistics are disabled
-        Assert.assertFalse(stats.isStatisticsEnabled());
-
-        // Enable statistics in config and enable production mode
-        Mockito.when(configuration.isUsageStatisticsEnabled()).thenReturn(true);
-        Mockito.when(configuration.isProductionMode()).thenReturn(true);
-
-        // Reinit
-        stats = DevModeUsageStatistics.init(configuration, mavenProjectFolder,
-                storage);
-
-        // Make sure statistics are disabled in production mode
         Assert.assertFalse(stats.isStatisticsEnabled());
     }
 

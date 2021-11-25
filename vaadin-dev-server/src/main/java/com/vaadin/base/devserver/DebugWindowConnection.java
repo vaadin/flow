@@ -177,7 +177,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
                     data.getBoolean("enabled"));
         } else if ("reportTelemetry".equals(command)) {
             JsonObject data = json.getObject("data");
-            DevModeUsageStatistics.get().handleBrowserData(data);
+            DevModeUsageStatistics.handleBrowserData(data);
         }
     }
 

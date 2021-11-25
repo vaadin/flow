@@ -42,7 +42,7 @@ public class DevModeUsageStatistics {
 
     private final StatisticsStorage storage;
 
-    private final boolean statisticsEnabled;
+    private static boolean statisticsEnabled;
 
     private final String projectFolder;
 
@@ -53,14 +53,11 @@ public class DevModeUsageStatistics {
      *            the project root folder
      * @param storage
      *            the storage instance to use
-     * @param statisticsEnabled
-     *            {@code true} to enable stats, {@code false} otherwise
      */
     private DevModeUsageStatistics(String projectFolder,
-            StatisticsStorage storage, boolean statisticsEnabled) {
+            StatisticsStorage storage) {
         this.projectFolder = projectFolder;
         this.storage = storage;
-        this.statisticsEnabled = statisticsEnabled;
     }
 
     /**
@@ -68,7 +65,7 @@ public class DevModeUsageStatistics {
      * 
      * @return the singleton instance
      */
-    public static DevModeUsageStatistics get() {
+    static DevModeUsageStatistics get() {
         return instance;
     }
 
@@ -83,30 +80,32 @@ public class DevModeUsageStatistics {
      * @param storage
      *            the statistics storage to use
      * 
-     * @return the created instance
+     * @return the created instance or {@code null} if telemetry is not used
      */
     public static DevModeUsageStatistics init(ApplicationConfiguration config,
             String projectFolder, StatisticsStorage storage) {
 
-        boolean enabled = (config != null && !config.isProductionMode()
+        statisticsEnabled = (config != null
                 && config.isUsageStatisticsEnabled());
 
-        getLogger().debug("Telemetry " + (enabled ? "enabled" : "disabled"));
+        if (!statisticsEnabled) {
+            return null;
+        }
+
+        getLogger().debug(
+                "Telemetry " + (statisticsEnabled ? "enabled" : "disabled"));
 
         synchronized (DevModeUsageStatistics.class) { // Lock data for init
             if (instance != null) {
                 getLogger().warn("init should only be called once");
             }
 
-            instance = new DevModeUsageStatistics(projectFolder, storage,
-                    enabled);
-            if (enabled) {
-                instance.trackGlobalData();
-                // Send usage statistics asynchronously, if enough time has
-                // passed
-                if (storage.isIntervalElapsed()) {
-                    CompletableFuture.runAsync(instance::sendCurrentStatistics);
-                }
+            instance = new DevModeUsageStatistics(projectFolder, storage);
+            instance.trackGlobalData();
+            // Send usage statistics asynchronously, if enough time has
+            // passed
+            if (storage.isIntervalElapsed()) {
+                CompletableFuture.runAsync(instance::sendCurrentStatistics);
             }
             return instance;
         }
@@ -151,7 +150,7 @@ public class DevModeUsageStatistics {
      * @param data
      *            the data from the browser
      */
-    public void handleBrowserData(JsonObject data) {
+    public static void handleBrowserData(JsonObject data) {
         getLogger().debug("Received client usage statistics from the browser");
 
         if (!isStatisticsEnabled()) {
@@ -163,7 +162,7 @@ public class DevModeUsageStatistics {
             String json = data.get("browserData").toJson();
             JsonNode clientData = JsonHelpers.getJsonMapper().readTree(json);
 
-            storage.update(
+            get().storage.update(
                     storage -> storage.updateProjectTelemetryData(clientData));
 
         } catch (Exception e) {
@@ -177,7 +176,7 @@ public class DevModeUsageStatistics {
      * @return {@code true} if statistics are collected, {@code false}
      *         otherwise.
      */
-    public boolean isStatisticsEnabled() {
+    static boolean isStatisticsEnabled() {
         return statisticsEnabled;
     }
 
@@ -190,13 +189,13 @@ public class DevModeUsageStatistics {
      * @param name
      *            Name of the event.
      */
-    public void collectEvent(String name) {
+    public static void collectEvent(String name) {
         if (!isStatisticsEnabled()) {
             return;
         }
 
         try {
-            storage.update(storage -> storage.increment(name));
+            get().storage.update(storage -> storage.increment(name));
         } catch (Exception e) {
             getLogger().debug("Failed to log '" + name + "'", e);
         }
@@ -213,12 +212,12 @@ public class DevModeUsageStatistics {
      * @param value
      *            The new value to store.
      */
-    public void collectEvent(String name, double value) {
+    public static void collectEvent(String name, double value) {
         if (!isStatisticsEnabled())
             return;
 
         try {
-            storage.update(storage -> storage.aggregate(name, value));
+            get().storage.update(storage -> storage.aggregate(name, value));
         } catch (Exception e) {
             getLogger().debug("Failed to collect event '" + name + "'", e);
         }
