@@ -144,6 +144,15 @@ public class StatisticsStorage {
                 StatisticsConstants.FIELD_PROJECT_ID, true);
     }
 
+    /*
+     * Gets the id for the active project.
+     * 
+     * All calls to stores data is stored using this project id.
+     */
+    String getProjectId() {
+        return projectId;
+    }
+
     /**
      * Get the remote reporting URL.
      *
@@ -255,6 +264,10 @@ public class StatisticsStorage {
      */
     void setValue(String name, String value) {
         projectJson.put(name, value);
+    }
+
+    String getValue(String name) {
+        return projectJson.get(name).asText();
     }
 
     /**
@@ -497,6 +510,7 @@ public class StatisticsStorage {
      */
     private void write() {
         try {
+            getUsageStatisticsStore().getParentFile().mkdirs();
             JsonHelpers.getJsonMapper().writeValue(getUsageStatisticsStore(),
                     json);
         } catch (IOException e) {

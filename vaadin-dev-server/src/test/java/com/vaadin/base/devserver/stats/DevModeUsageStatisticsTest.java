@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.Collections;
 
 import com.sun.net.httpserver.HttpServer;
@@ -90,7 +91,7 @@ public class DevModeUsageStatisticsTest {
     }
 
     @Test
-    public void testClientData() throws Exception {
+    public void clientData() throws Exception {
         // Init using test project
         String mavenProjectFolder = TestUtils
                 .getTestFolder("stats-data/maven-project-folder1").toPath()
@@ -105,7 +106,30 @@ public class DevModeUsageStatisticsTest {
     }
 
     @Test
-    public void testAggregates() throws Exception {
+    public void projectId() throws Exception {
+        String mavenProjectFolder = TestUtils
+                .getTestFolder("stats-data/maven-project-folder1").toPath()
+                .toString();
+        DevModeUsageStatistics.init(configuration, mavenProjectFolder, storage);
+
+        Assert.assertEquals(
+                "pom" + ProjectHelpers.createHash("com.exampledemo"),
+                storage.getProjectId());
+    }
+
+    @Test
+    public void sourceId() throws Exception {
+        String mavenProjectFolder = TestUtils
+                .getTestFolder("stats-data/maven-project-folder1").toPath()
+                .toString();
+        DevModeUsageStatistics.init(configuration, mavenProjectFolder, storage);
+
+        Assert.assertEquals("https://start.vaadin.com/test/1",
+                storage.getValue(StatisticsConstants.FIELD_SOURCE_ID));
+    }
+
+    @Test
+    public void aggregates() throws Exception {
         // Init using test project
         String mavenProjectFolder = TestUtils
                 .getTestFolder("stats-data/maven-project-folder1").toPath()
@@ -158,7 +182,7 @@ public class DevModeUsageStatisticsTest {
     }
 
     @Test
-    public void testMultipleProjects() throws Exception {
+    public void multipleProjects() throws Exception {
         // Init using test project
         String mavenProjectFolder = TestUtils
                 .getTestFolder("stats-data/maven-project-folder1").toPath()
@@ -206,7 +230,7 @@ public class DevModeUsageStatisticsTest {
     }
 
     @Test
-    public void testSend() throws Exception {
+    public void send() throws Exception {
 
         // Init using test project
         String mavenProjectFolder = TestUtils
@@ -309,7 +333,7 @@ public class DevModeUsageStatisticsTest {
     }
 
     @Test
-    public void testMavenProjectProjectId() {
+    public void mavenProjectProjectId() {
         String mavenProjectFolder1 = TestUtils
                 .getTestFolder("stats-data/maven-project-folder1").toPath()
                 .toString();
@@ -324,7 +348,7 @@ public class DevModeUsageStatisticsTest {
     }
 
     @Test
-    public void testMavenProjectSource() {
+    public void mavenProjectSource() {
         String mavenProjectFolder1 = TestUtils
                 .getTestFolder("stats-data/maven-project-folder1").toPath()
                 .toString();
@@ -338,7 +362,7 @@ public class DevModeUsageStatisticsTest {
     }
 
     @Test
-    public void testGradleProjectProjectId() {
+    public void gradleProjectProjectId() {
         String gradleProjectFolder1 = TestUtils
                 .getTestFolder("stats-data/gradle-project-folder1").toPath()
                 .toString();
@@ -353,7 +377,7 @@ public class DevModeUsageStatisticsTest {
     }
 
     @Test
-    public void testGradleProjectSource() {
+    public void gradleProjectSource() {
         String gradleProjectFolder1 = TestUtils
                 .getTestFolder("stats-data/gradle-project-folder1").toPath()
                 .toString();
@@ -367,7 +391,7 @@ public class DevModeUsageStatisticsTest {
     }
 
     @Test
-    public void testMissingProject() {
+    public void missingProject() {
         String mavenProjectFolder1 = TestUtils.getTestFolder("java").toPath()
                 .toString();
         String mavenProjectFolder2 = TestUtils.getTestFolder("stats-data/empty")
@@ -382,7 +406,7 @@ public class DevModeUsageStatisticsTest {
     }
 
     @Test
-    public void testReadUserKey() throws IOException {
+    public void readUserKey() throws IOException {
         String mavenProjectFolder = TestUtils
                 .getTestFolder("stats-data/maven-project-folder1").toPath()
                 .toString();
@@ -418,7 +442,7 @@ public class DevModeUsageStatisticsTest {
     }
 
     @Test
-    public void testReadProKey() {
+    public void readProKey() {
         String mavenProjectFolder = TestUtils
                 .getTestFolder("stats-data/maven-project-folder1").toPath()
                 .toString();
@@ -442,7 +466,7 @@ public class DevModeUsageStatisticsTest {
     }
 
     @Test
-    public void testLoadStatisticsDisabled() throws Exception {
+    public void loadStatisticsDisabled() throws Exception {
         Assert.assertFalse(configuration.isProductionMode());
         Assert.assertTrue(configuration.isUsageStatisticsEnabled());
 
