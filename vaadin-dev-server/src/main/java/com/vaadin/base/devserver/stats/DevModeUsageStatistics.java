@@ -113,30 +113,28 @@ public class DevModeUsageStatistics {
             return;
         }
         // Read the current statistics data
-        storage.read();
+        storage.update(storage -> {
+            // Make sure we are tracking the right project
+            storage.setProjectId(
+                    ProjectHelpers.generateProjectId(projectFolder));
 
-        // Make sure we are tracking the right project
-        storage.setProjectId(ProjectHelpers.generateProjectId(projectFolder));
+            // Update the machine / user / source level data
+            storage.setGlobalValue(StatisticsConstants.FIELD_OPERATING_SYSTEM,
+                    ProjectHelpers.getOperatingSystem());
+            storage.setGlobalValue(StatisticsConstants.FIELD_JVM,
+                    ProjectHelpers.getJVMVersion());
+            storage.setGlobalValue(StatisticsConstants.FIELD_PROKEY,
+                    ProjectHelpers.getProKey());
+            storage.setGlobalValue(StatisticsConstants.FIELD_USER_KEY,
+                    ProjectHelpers.getUserKey());
 
-        // Update the machine / user / source level data
-        storage.setGlobalValue(StatisticsConstants.FIELD_OPERATING_SYSTEM,
-                ProjectHelpers.getOperatingSystem());
-        storage.setGlobalValue(StatisticsConstants.FIELD_JVM,
-                ProjectHelpers.getJVMVersion());
-        storage.setGlobalValue(StatisticsConstants.FIELD_PROKEY,
-                ProjectHelpers.getProKey());
-        storage.setGlobalValue(StatisticsConstants.FIELD_USER_KEY,
-                ProjectHelpers.getUserKey());
-
-        // Update basic project statistics and save
-        storage.setValue(StatisticsConstants.FIELD_FLOW_VERSION,
-                Version.getFullVersion());
-        storage.setValue(StatisticsConstants.FIELD_SOURCE_ID,
-                ProjectHelpers.getProjectSource(projectFolder));
-        storage.increment(StatisticsConstants.FIELD_PROJECT_DEVMODE_STARTS);
-
-        // Store the data immediately
-        storage.write();
+            // Update basic project statistics and save
+            storage.setValue(StatisticsConstants.FIELD_FLOW_VERSION,
+                    Version.getFullVersion());
+            storage.setValue(StatisticsConstants.FIELD_SOURCE_ID,
+                    ProjectHelpers.getProjectSource(projectFolder));
+            storage.increment(StatisticsConstants.FIELD_PROJECT_DEVMODE_STARTS);
+        });
 
     }
 
@@ -147,22 +145,19 @@ public class DevModeUsageStatistics {
      *            the data
      */
     public void handleBrowserData(JsonObject data) {
+        getLogger().debug("Received client usage statistics from the browser");
+
         if (!isStatisticsEnabled()) {
             return;
         }
 
-        getLogger().debug("Received client usage statistics from the browser");
         try {
             // Update the stored data
             String json = data.get("browserData").toJson();
             JsonNode clientData = JsonHelpers.getJsonMapper().readTree(json);
 
-            // Lock data for update
-            synchronized (DevModeUsageStatistics.class) {
-                storage.read();
-                storage.updateProjectTelemetryData(clientData);
-                storage.write();
-            }
+            storage.update(
+                    storage -> storage.updateProjectTelemetryData(clientData));
 
         } catch (Exception e) {
             getLogger().debug("Error handling telemetry request", e);
@@ -194,12 +189,7 @@ public class DevModeUsageStatistics {
         }
 
         try {
-            // Lock the storage for update
-            synchronized (DevModeUsageStatistics.class) {
-                storage.read();
-                storage.increment(name);
-                storage.write();
-            }
+            storage.update(storage -> storage.increment(name));
         } catch (Exception e) {
             getLogger().debug("Failed to log '" + name + "'", e);
         }
@@ -217,19 +207,13 @@ public class DevModeUsageStatistics {
      *            The new value to store.
      */
     public void collectEvent(String name, double value) {
-        try {
-            // Do nothing if not enabled
-            if (!isStatisticsEnabled())
-                return;
+        if (!isStatisticsEnabled())
+            return;
 
-            // Lock the storage for update
-            synchronized (DevModeUsageStatistics.class) {
-                storage.read();
-                storage.aggregate(name, value);
-                storage.write();
-            }
+        try {
+            storage.update(storage -> storage.aggregate(name, value));
         } catch (Exception e) {
-            getLogger().debug("Failed to log average '" + name + "'", e);
+            getLogger().debug("Failed to collect event '" + name + "'", e);
         }
     }
 
@@ -243,30 +227,23 @@ public class DevModeUsageStatistics {
      * and <code>FIELD_SERVER_MESSAGE</code>
      */
     void sendCurrentStatistics() {
-        try {
-            // Do nothing if not enabled
-            if (!isStatisticsEnabled())
-                return;
+        if (!isStatisticsEnabled())
+            return;
 
-            synchronized (DevModeUsageStatistics.class) { // Lock data for send
-                storage.read();
+        try {
+            storage.update(storage -> {
                 String message = storage.sendCurrentStatistics();
-                storage.write();
 
                 // Show message on console, if present
                 if (message != null && !message.trim().isEmpty()) {
                     getLogger().info(message);
                 }
 
-            }
+            });
         } catch (Exception e) {
             getLogger().debug("Failed to send statistics", e);
         }
 
-    }
-
-    private static Logger getLogger() {
-        return LoggerFactory.getLogger(DevModeUsageStatistics.class.getName());
     }
 
     /**
@@ -278,17 +255,11 @@ public class DevModeUsageStatistics {
      *            the new string value to set.
      */
     public void set(String name, String value) {
-        try {
-            // Do nothing if not enabled
-            if (!isStatisticsEnabled())
-                return;
+        if (!isStatisticsEnabled())
+            return;
 
-            // Lock the storage for update
-            synchronized (DevModeUsageStatistics.class) {
-                storage.read();
-                storage.setValue(name, value);
-                storage.write();
-            }
+        try {
+            storage.update(storage -> storage.setValue(name, value));
         } catch (Exception e) {
             getLogger().debug("Failed to set  '" + name + "'", e);
         }
@@ -303,20 +274,18 @@ public class DevModeUsageStatistics {
      *            the new string value to set.
      */
     public void setGlobal(String name, String value) {
-        try {
-            // Do nothing if not enabled
-            if (!isStatisticsEnabled())
-                return;
+        if (!isStatisticsEnabled())
+            return;
 
-            // Lock the storage for update
-            synchronized (DevModeUsageStatistics.class) {
-                storage.read();
-                storage.setGlobalValue(name, value);
-                storage.write();
-            }
+        try {
+            storage.update(storage -> storage.setGlobalValue(name, value));
         } catch (Exception e) {
             getLogger().debug("Failed to set global '" + name + "'", e);
         }
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(DevModeUsageStatistics.class);
     }
 
 }

@@ -18,6 +18,7 @@ package com.vaadin.base.devserver.stats;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.function.Consumer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -438,11 +439,26 @@ public class StatisticsStorage {
     }
 
     /**
+     * Updates the store in a safe way.
+     * 
+     * @param updater
+     *            the update logic
+     */
+    void update(Consumer<StatisticsStorage> updater) {
+        // Lock data for update
+        synchronized (DevModeUsageStatistics.class) {
+            read();
+            updater.accept(this);
+            write();
+        }
+    }
+
+    /**
      * Read the data from local project statistics file.
      *
      * @see #getUsageStatisticsStore()
      */
-    void read() {
+    private void read() {
         File file = getUsageStatisticsStore();
         getLogger().debug("Reading statistics from {}", file.getAbsolutePath());
         try {
@@ -479,7 +495,7 @@ public class StatisticsStorage {
      *
      * @see #getUsageStatisticsStore()
      */
-    void write() {
+    private void write() {
         try {
             JsonHelpers.getJsonMapper().writeValue(getUsageStatisticsStore(),
                     json);
@@ -536,4 +552,5 @@ public class StatisticsStorage {
                 ? json.get(StatisticsConstants.FIELD_SERVER_MESSAGE).asText()
                 : null;
     }
+
 }
