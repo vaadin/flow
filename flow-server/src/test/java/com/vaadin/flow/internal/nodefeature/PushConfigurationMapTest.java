@@ -6,7 +6,6 @@ import java.util.Collection;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.internal.nodefeature.PushConfigurationMap;
 import com.vaadin.flow.shared.ui.Transport;
 
 public class PushConfigurationMapTest

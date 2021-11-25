@@ -28,8 +28,6 @@ import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.change.EmptyChange;
 import com.vaadin.flow.internal.change.MapPutChange;
 import com.vaadin.flow.internal.change.NodeChange;
-import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
-import com.vaadin.flow.internal.nodefeature.NodeMap;
 
 public class NodeMapEmptyRequiredFeatureTest {
 

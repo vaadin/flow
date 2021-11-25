@@ -18,10 +18,6 @@ package com.vaadin.flow.component;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasSize;
-import com.vaadin.flow.component.Tag;
-
 public class HasSizeTest {
 
     @Tag("div")

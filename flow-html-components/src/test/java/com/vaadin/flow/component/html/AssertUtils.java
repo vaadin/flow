@@ -1,9 +1,6 @@
 package com.vaadin.flow.component.html;
 
 import org.junit.Assert;
-import org.junit.ComparisonFailure;
-import org.junit.Test;
-import org.junit.internal.ArrayComparisonFailure;
 
 import java.util.Optional;
 

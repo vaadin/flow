@@ -124,7 +124,7 @@
         <osgi.bundle.version>
             ${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}
         </osgi.bundle.version>
-        <bnd.version>6.0.0</bnd.version>
+        <bnd.version>6.1.0</bnd.version>
         <osgi.core.version>7.0.0</osgi.core.version>
         <osgi.compendium.version>7.0.0</osgi.compendium.version>
 
@@ -296,20 +296,11 @@
                 <artifactId>formatter-maven-plugin</artifactId>
                 <version>2.16.0</version>
                 <configuration>
-                    <configFile>eclipse/VaadinJavaConventions.xml
-                    </configFile>
+                    <configFile>https://raw.githubusercontent.com/vaadin/flow/master/eclipse/VaadinJavaConventions.xml</configFile>
                     <!-- Provide a dummy JS config file to avoid errors -->
-                    <configJsFile>eclipse/VaadinJavaConventions.xml
-                    </configJsFile>
+                    <configJsFile>https://raw.githubusercontent.com/vaadin/flow/master/eclipse/VaadinJavaConventions.xml</configJsFile>
                     <lineEnding>LF</lineEnding>
                 </configuration>
-                <dependencies>
-                    <dependency>
-                        <groupId>${project.groupId}</groupId>
-                        <artifactId>flow-buildtools</artifactId>
-                        <version>${project.version}</version>
-                    </dependency>
-                </dependencies>
             </plugin>
 
             <plugin>

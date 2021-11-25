@@ -25,9 +25,6 @@ import java.util.stream.Stream;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.dom.ElementFactory;
-
 public class ElementFactoryTest {
 
     private Map<String, String> methodToTag = new HashMap<>();

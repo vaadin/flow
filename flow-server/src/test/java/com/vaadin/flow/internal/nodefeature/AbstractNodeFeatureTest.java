@@ -24,10 +24,6 @@ import org.junit.Assert;
 
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.change.NodeChange;
-import com.vaadin.flow.internal.nodefeature.NodeFeature;
-import com.vaadin.flow.internal.nodefeature.NodeFeatureRegistry;
-import com.vaadin.flow.internal.nodefeature.NodeList;
-import com.vaadin.flow.internal.nodefeature.NodeMap;
 
 public abstract class AbstractNodeFeatureTest<T extends NodeFeature> {
 
