@@ -29,9 +29,6 @@ import com.vaadin.flow.internal.StateNodeTest;
 import com.vaadin.flow.internal.change.ListAddChange;
 import com.vaadin.flow.internal.change.ListRemoveChange;
 import com.vaadin.flow.internal.change.NodeChange;
-import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
-import com.vaadin.flow.internal.nodefeature.ElementClassList;
-import com.vaadin.flow.internal.nodefeature.NodeList;
 
 public class StateNodeNodeListTest
         extends AbstractNodeFeatureTest<ElementChildrenList> {

@@ -26,8 +26,6 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.change.AbstractListChange;
-import com.vaadin.flow.internal.nodefeature.NodeList;
-import com.vaadin.flow.internal.nodefeature.SerializableNodeList;
 import com.vaadin.flow.internal.nodefeature.NodeList.SetView;
 
 public class ListFeatureSetViewTest {

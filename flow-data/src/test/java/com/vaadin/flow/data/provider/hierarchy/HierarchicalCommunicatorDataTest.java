@@ -32,7 +32,6 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 
 public class HierarchicalCommunicatorDataTest {

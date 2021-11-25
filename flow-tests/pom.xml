@@ -26,6 +26,7 @@
         <!-- This property is needed to allow some Win-specific IT tests -->
         <!-- to be disabled via system property in CI until they got fixed-->
         <exclude.windows.failed.it.tests></exclude.windows.failed.it.tests>
+        <testListener></testListener>
     </properties>
 
     <dependencies>
