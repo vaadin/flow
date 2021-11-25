@@ -296,9 +296,9 @@
                 <artifactId>formatter-maven-plugin</artifactId>
                 <version>2.16.0</version>
                 <configuration>
-                    <configFile>https://raw.githubusercontent.com/vaadin/flow/9.0/eclipse/VaadinJavaConventions.xml</configFile>
+                    <configFile>https://raw.githubusercontent.com/vaadin/flow/master/eclipse/VaadinJavaConventions.xml</configFile>
                     <!-- Provide a dummy JS config file to avoid errors -->
-                    <configJsFile>https://raw.githubusercontent.com/vaadin/flow/9.0/eclipse/VaadinJavaConventions.xml</configJsFile>
+                    <configJsFile>https://raw.githubusercontent.com/vaadin/flow/master/eclipse/VaadinJavaConventions.xml</configJsFile>
                     <lineEnding>LF</lineEnding>
                 </configuration>
             </plugin>
