@@ -27,6 +27,13 @@
         <!-- to be disabled via system property in CI until they got fixed-->
         <exclude.windows.failed.it.tests></exclude.windows.failed.it.tests>
         <testListener></testListener>
+
+        <!-- Skip these categories in validation, use -Pslow-tests to run them -->
+        <excludedGroups>
+            com.vaadin.flow.testcategory.SlowTests,
+            com.vaadin.flow.testcategory.ScreenshotTests,
+            com.vaadin.flow.testcategory.PushTests,
+        </excludedGroups>
     </properties>
 
     <dependencies>
@@ -97,28 +104,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>integration-test</goal>
-                            <goal>verify</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <!-- export test server port to integration tests -->
-                    <systemPropertyVariables>
-                        <serverPort>${server.port}</serverPort>
-                        <webdriver.chrome.driver>${webdriver.chrome.driver}
-                        </webdriver.chrome.driver>
-                    </systemPropertyVariables>
-                    <excludedGroups>${test.excludegroup}</excludedGroups>
-                    <excludes>
-                        <exclude>**/*$*</exclude>
-                        <exclude>${exclude.it.tests}</exclude>
-                        <exclude>${exclude.windows.failed.it.tests}</exclude>
-                    </excludes>
-                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -390,7 +375,7 @@
                             <httpConnector>
                                 <port>${server.port}</port>
                             </httpConnector>
-                            <stopPort>8889</stopPort>
+                            <stopPort>${server.stop.port}</stopPort>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -403,26 +388,6 @@
             </properties>
         </profile>
         <profile>
-            <id>default</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <properties>
-                <test.excludegroup>com.vaadin.flow.testcategory.ScreenshotTests,
-                    com.vaadin.flow.testcategory.PushTests
-                </test.excludegroup>
-            </properties>
-        </profile>
-        <profile>
-            <id>all-tests</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <properties>
-                <test.excludegroup></test.excludegroup>
-            </properties>
-        </profile>
-        <profile>
             <id>ie11</id>
             <activation>
                 <property>
@@ -432,9 +397,27 @@
                 </property>
             </activation>
             <properties>
-                <test.excludegroup>com.vaadin.flow.testcategory.IgnoreIE11,
-                    com.vaadin.flow.testcategory.PushTests
-                </test.excludegroup>
+                <groups></groups>
+                <excludedGroups>
+                    com.vaadin.flow.testcategory.SlowTests,
+                    com.vaadin.flow.testcategory.ScreenshotTests,
+                    com.vaadin.flow.testcategory.PushTests,
+                    com.vaadin.flow.testcategory.IgnoreIE11,
+                </excludedGroups>
+            </properties>
+        </profile>
+        <profile>
+            <id>all-tests</id>
+            <properties>
+                <groups></groups>
+                <excludedGroups></excludedGroups>
+            </properties>
+        </profile>
+        <profile>
+            <id>slow-tests</id>
+            <properties>
+                <groups>${excludedGroups}</groups>
+                <excludedGroups></excludedGroups>
             </properties>
         </profile>
         <profile>

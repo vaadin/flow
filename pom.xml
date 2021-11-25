@@ -135,10 +135,14 @@
         <exclude.windows.failed.tests></exclude.windows.failed.tests>
 
         <testListener>com.vaadin.flow.testutil.CurrentInstanceCleaner</testListener>
+
+        <!-- Skip these categories in validation, use -Pslow-tests to run them
+            and override slow-tests profile to add more categories -->
+        <excludedGroups>com.vaadin.flow.testcategory.SlowTests</excludedGroups>
     </properties>
 
     <repositories>
-        <!-- The order of definitions matters. Explicitly defining central 
+        <!-- The order of definitions matters. Explicitly defining central
             here to make sure it has the highest priority. -->
         <repository>
             <id>central</id>
@@ -164,7 +168,7 @@
     </repositories>
 
     <pluginRepositories>
-        <!-- The order of definitions matters. Explicitly defining central 
+        <!-- The order of definitions matters. Explicitly defining central
             here to make sure it has the highest priority. -->
         <pluginRepository>
             <id>central</id>
@@ -419,6 +423,28 @@
                     </execution>
                 </executions>
             </plugin>
+            <!-- Output surefire reports in html (useful when using GH actions) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-report-plugin</artifactId>
+                <version>3.0.0-M5</version>
+                <executions>
+                    <execution>
+                        <id>unit-tests-report</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report-only</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>integration-tests-report</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>failsafe-report-only</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
         <pluginManagement>
             <plugins>
@@ -504,20 +530,48 @@
                                 <value>${testListener}</value>
                             </property>
                         </properties>
+                        <enableAssertions>true</enableAssertions>
+                        <classpathDependencyExcludes>
+                            <classpathDependencyExclude>org.osgi:org.osgi.core</classpathDependencyExclude>
+                        </classpathDependencyExcludes>
+<!--
+                        <parallel>classes</parallel>
+                        <threadCount>4</threadCount>
+-->
+                        <failIfNoTests>false</failIfNoTests>
                     </configuration>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-failsafe-plugin</artifactId>
                     <version>${maven.failsafe.plugin.version}</version>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>integration-test</goal>
+                                <goal>verify</goal>
+                            </goals>
+                        </execution>
+                    </executions>
                     <configuration>
                         <trimStackTrace>false</trimStackTrace>
                         <enableAssertions>true</enableAssertions>
                         <parallel>all</parallel>
                         <threadCount>2</threadCount>
+                        <!-- export test server port to integration tests -->
+                        <systemPropertyVariables>
+                            <serverPort>${server.port}</serverPort>
+                            <webdriver.chrome.driver>${webdriver.chrome.driver}
+                            </webdriver.chrome.driver>
+                        </systemPropertyVariables>
+                        <excludes>
+                            <exclude>**/*$*</exclude>
+                            <exclude>${exclude.it.tests}</exclude>
+                            <exclude>${exclude.windows.failed.it.tests}</exclude>
+                        </excludes>
                     </configuration>
                 </plugin>
-                <!--This plugin's configuration is used to store Eclipse 
+                <!--This plugin's configuration is used to store Eclipse
                     m2e settings only. It has no influence on the Maven build itself. -->
                 <plugin>
                     <groupId>org.eclipse.m2e</groupId>
@@ -528,15 +582,10 @@
                             <pluginExecutions>
                                 <pluginExecution>
                                     <pluginExecutionFilter>
-                                        <groupId>
-                                            org.commonjava.maven.plugins
-                                        </groupId>
-                                        <artifactId>
-                                            directory-maven-plugin
+                                        <groupId>org.commonjava.maven.plugins</groupId>
+                                        <artifactId>directory-maven-plugin
                                         </artifactId>
-                                        <versionRange>
-                                            [0.1,)
-                                        </versionRange>
+                                        <versionRange>[0.1,)</versionRange>
                                         <goals>
                                             <goal>highest-basedir</goal>
                                         </goals>
@@ -547,15 +596,9 @@
                                 </pluginExecution>
                                 <pluginExecution>
                                     <pluginExecutionFilter>
-                                        <groupId>
-                                            org.apache.maven.plugins
-                                        </groupId>
-                                        <artifactId>
-                                            maven-plugin-plugin
-                                        </artifactId>
-                                        <versionRange>
-                                            [3.2,)
-                                        </versionRange>
+                                        <groupId>org.apache.maven.plugins</groupId>
+                                        <artifactId>maven-plugin-plugin</artifactId>
+                                        <versionRange>[3.2,)</versionRange>
                                         <goals>
                                             <goal>descriptor</goal>
                                         </goals>
@@ -566,15 +609,9 @@
                                 </pluginExecution>
                                 <pluginExecution>
                                     <pluginExecutionFilter>
-                                        <groupId>
-                                            org.apache.maven.plugins
-                                        </groupId>
-                                        <artifactId>
-                                            maven-antrun-plugin
-                                        </artifactId>
-                                        <versionRange>
-                                            [1.7,)
-                                        </versionRange>
+                                        <groupId>org.apache.maven.plugins</groupId>
+                                        <artifactId>maven-antrun-plugin</artifactId>
+                                        <versionRange>[1.7,)</versionRange>
                                         <goals>
                                             <goal>run</goal>
                                         </goals>
@@ -677,8 +714,31 @@
                         </plugin>
                     </plugins>
                 </pluginManagement>
-
             </build>
         </profile>
+        <profile>
+            <id>all-tests</id>
+            <properties>
+                <groups></groups>
+                <excludedGroups></excludedGroups>
+            </properties>
+        </profile>
+        <profile>
+            <id>slow-tests</id>
+            <properties>
+                <groups>com.vaadin.flow.testcategory.SlowTests</groups>
+                <excludedGroups></excludedGroups>
+            </properties>
+        </profile>
     </profiles>
+    <reporting>
+        <plugins>
+            <!-- Needed for surefire-report -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jxr-plugin</artifactId>
+                <version>2.3</version>
+            </plugin>
+        </plugins>
+    </reporting>
 </project>

@@ -15,16 +15,24 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.Constants.TARGET;
+import static com.vaadin.flow.server.frontend.NodeUpdater.DEPENDENCIES;
+import static com.vaadin.flow.server.frontend.NodeUpdater.DEV_DEPENDENCIES;
+import static com.vaadin.flow.server.frontend.NodeUpdater.HASH_KEY;
+import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.ArgumentCaptor;
@@ -38,19 +46,14 @@ import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
+import com.vaadin.flow.testcategory.SlowTests;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-
-import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.flow.server.frontend.NodeUpdater.DEPENDENCIES;
-import static com.vaadin.flow.server.frontend.NodeUpdater.DEV_DEPENDENCIES;
-import static com.vaadin.flow.server.frontend.NodeUpdater.HASH_KEY;
-import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
-import static java.nio.charset.StandardCharsets.UTF_8;
+import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
+@Category(SlowTests.class)
 public class TaskRunNpmInstallTest {
 
     @Rule
