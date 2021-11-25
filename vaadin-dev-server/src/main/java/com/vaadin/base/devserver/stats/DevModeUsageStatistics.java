@@ -27,6 +27,8 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import elemental.json.JsonObject;
+
 import com.vaadin.flow.server.Version;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
@@ -100,85 +102,35 @@ public class DevModeUsageStatistics {
     }
 
     /**
-     * Handles a client-side request to receive component telemetry data.
-     *
-     * @param request
-     *            the servlet request
-     * @param response
-     *            the servlet response
-     * @return <code>true</code> if request was handled, <code>false</code>
-     *         otherwise.
+     * Stores telemetry data received from the browser.
+     * 
+     * @param browserData
+     *            the data
      */
-    public static boolean handleClientUsageData(HttpServletRequest request,
-            HttpServletResponse response) {
-
-        // Do not handle requests that are not supposed to be handled.
-        if (!isClientUsageRequest(request)) {
-            return false;
-        }
-
+    public static void handleBrowserData(JsonObject data) {
         // If not enabled we don't handle the request, but
         // still consider the request handled.
         if (!isStatisticsEnabled()) {
-            return true;
+            return;
         }
 
-        getLogger().debug("Received client usage statistics POST from browser");
+        getLogger().debug("Received client usage statistics from the browser");
         try {
-            if (request
-                    .getContentLength() > StatisticsConstants.MAX_TELEMETRY_LENGTH) {
-                // Do not store meaningless amount of client usage data
-                getLogger().debug(
-                        "Received too much data. Not storing {} bytes",
-                        request.getContentLength());
-                ObjectNode clientData = JsonHelpers.getJsonMapper()
-                        .createObjectNode();
-                clientData.set("elements", clientData);
-                StatisticsStorage stats = StatisticsStorage.get();
-                synchronized (DevModeUsageStatistics.class) { // Lock data
-                                                              // for update
-                    stats.read();
-                    stats.updateProjectTelemetryData(clientData);
-                    stats.write();
-                }
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST);
-                return true;
-            } else {
-                // Compatible with client-only usage statistics format:
-                // The request contains an explanation and the json starts
-                // with the first "{"
-                String data = IOUtils.toString(request.getReader());
-                if (!data.contains("{")) {
-                    // Just skip bad requests
-                    response.sendError(HttpServletResponse.SC_BAD_REQUEST);
-                    return true;
-                }
-                String json = data.substring(data.indexOf("{"));
+            // Update the stored data
+            String json = data.get("browserData").toJson();
+            JsonNode clientData = JsonHelpers.getJsonMapper().readTree(json);
+            StatisticsStorage stats = StatisticsStorage.get();
 
-                // Update the stored data
-                JsonNode clientData = JsonHelpers.getJsonMapper()
-                        .readTree(json);
-                StatisticsStorage stats = StatisticsStorage.get();
-                synchronized (DevModeUsageStatistics.class) { // Lock data
-                                                              // for update
-                    stats.read();
-                    stats.updateProjectTelemetryData(clientData);
-                    stats.write();
-                }
+            // Lock data for update
+            synchronized (DevModeUsageStatistics.class) {
+                stats.read();
+                stats.updateProjectTelemetryData(clientData);
+                stats.write();
             }
 
         } catch (Exception e) {
-            getLogger().debug("Failed to handle client update request", e);
-        } finally {
-            try {
-                response.setStatus(HttpServletResponse.SC_OK);
-                response.getWriter().write("Thank you");
-            } catch (IOException e) {
-                getLogger().debug("Failed to write client response", e);
-            }
+            getLogger().debug("Error handling telemetry request", e);
         }
-        return true;
-
     }
 
     /**
@@ -284,26 +236,6 @@ public class DevModeUsageStatistics {
 
     private static Logger getLogger() {
         return LoggerFactory.getLogger(DevModeUsageStatistics.class.getName());
-    }
-
-    /**
-     * Check if a request is client-side data request and should be handled.
-     *
-     * This expects {@code CLIENT_USAGE_DATA} parameter to be present.
-     * Furthermore, we only handle {@code POST} requests with content of type
-     * {@code application/json}.
-     *
-     * @see #handleClientUsageData(HttpServletRequest, HttpServletResponse)
-     * @param request
-     *            Request to check
-     * @return {@code true} if request should be handled. {@code false}
-     *         otherwise.
-     */
-    public static boolean isClientUsageRequest(HttpServletRequest request) {
-        return request
-                .getParameter(StatisticsConstants.CLIENT_USAGE_DATA) != null
-                && request.getMethod().equals("POST")
-                && "application/json".equals(request.getContentType());
     }
 
     /**

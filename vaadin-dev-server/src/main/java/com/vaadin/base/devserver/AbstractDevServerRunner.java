@@ -64,8 +64,6 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.vaadin.base.devserver.ViteHandler.VITE;
-import static com.vaadin.base.devserver.stats.StatisticsConstants.CLIENT_USAGE_DATA;
 import static com.vaadin.base.devserver.stats.StatisticsConstants.EVENT_LIVE_RELOAD;
 import static com.vaadin.base.devserver.stats.StatisticsConstants.EVENT_VITE_START;
 import static com.vaadin.base.devserver.stats.StatisticsConstants.EVENT_WEBPACK_START;
@@ -693,11 +691,6 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         // Do not serve requests if dev server starting or failed to start.
         if (isDevServerFailedToStart.get() || !devServerStartFuture.isDone()) {
             return false;
-        }
-        // Handle Vaadin usage statistics collector
-        if (DevModeUsageStatistics.isClientUsageRequest(request)) {
-            DevModeUsageStatistics.handleClientUsageData(request, response);
-            return true;
         }
         // Since we have 'publicPath=/VAADIN/' in the dev server config,
         // a valid request for the dev server should start with '/VAADIN/'

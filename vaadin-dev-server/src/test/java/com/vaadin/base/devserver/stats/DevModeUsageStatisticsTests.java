@@ -26,6 +26,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
 import com.sun.net.httpserver.HttpServer;
@@ -90,26 +91,11 @@ public class DevModeUsageStatisticsTests extends TestCase {
                 .getTestFolder("stats-data/maven-project-folder1").toPath()
                 .toString();
         DevModeUsageStatistics.init(configuration, mavenProjectFolder);
-        HttpServletRequest req = Mockito.mock(HttpServletRequest.class);
-        Mockito.when(req.getParameter(StatisticsConstants.CLIENT_USAGE_DATA))
-                .thenReturn("");
-        Mockito.when(req.getMethod()).thenReturn("POST");
-        Mockito.when(req.getContentType()).thenReturn("application/json");
-        Mockito.when(req.getReader())
-                .thenReturn(new BufferedReader(new InputStreamReader(TestUtils
-                        .getTestResource("stats-data/client-data-1.txt")
-                        .openStream())));
 
-        HttpServletResponse res = Mockito.mock(HttpServletResponse.class);
-        StringWriter strWriter = new StringWriter();
-        Mockito.when(res.getWriter()).thenReturn(new PrintWriter(strWriter));
-
-        DevModeUsageStatistics.handleClientUsageData(req, res);
-
-        Mockito.verify(res).setStatus(200);
-        Assert.assertEquals("Should get response", "Thank you",
-                strWriter.toString());
-
+        String data = IOUtils.toString(
+                TestUtils.getTestResource("stats-data/client-data-1.txt"),
+                StandardCharsets.UTF_8);
+        DevModeUsageStatistics.handleBrowserData(data);
     }
 
     @Test

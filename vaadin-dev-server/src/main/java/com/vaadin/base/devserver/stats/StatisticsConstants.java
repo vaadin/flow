@@ -35,11 +35,6 @@ public class StatisticsConstants {
     public static final String EVENT_VITE_START = "viteStart";
 
     /*
-     * Client-side statistics parameter.
-     */
-    public static final String CLIENT_USAGE_DATA = "vaadin_telemetry_data";
-
-    /*
      * Name of the default JSON file containing all the statistics.
      */
     static final String STATISTICS_FILE_NAME = "usage-statistics.json";
