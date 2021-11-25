@@ -16,8 +16,6 @@
 
 package com.vaadin.base.devserver.stats;
 
-import java.util.concurrent.CompletableFuture;
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.vaadin.base.devserver.ServerInfo;
 import com.vaadin.flow.server.Version;
@@ -29,6 +27,9 @@ import elemental.json.JsonObject;
 
 /**
  * Singleton for collecting development time usage metrics
+ * <p>
+ * All statistics gathering methods in this class are static for easy caller
+ * code and they immediately update the stored JSON on disk.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -67,18 +68,21 @@ public class DevModeUsageStatistics {
     }
 
     /**
-     * Initialize statistics module. This should be done on devmode startup.
-     * First check if statistics collection is enabled.
+     * Initialize the statistics module.
+     * <p>
+     * This should only ever be called in development mode.
      *
      * @param projectFolder
      *            the folder of the current project
      * @param storage
      *            the statistics storage to use
+     * @param sender
+     *            the statistics sender to use
      * 
      * @return the created instance or {@code null} if telemetry is not used
      */
     public static DevModeUsageStatistics init(String projectFolder,
-            StatisticsStorage storage) {
+            StatisticsStorage storage, StatisticsSender sender) {
 
         getLogger().debug("Telemetry enabled");
 
@@ -92,11 +96,7 @@ public class DevModeUsageStatistics {
             String projectId = ProjectHelpers.generateProjectId(projectFolder);
             storage.setProjectId(projectId);
             instance.trackGlobalData();
-            // Send usage statistics asynchronously, if enough time has
-            // passed
-            if (storage.isIntervalElapsed(storage.internalRead())) {
-                CompletableFuture.runAsync(instance::sendCurrentStatistics);
-            }
+            sender.triggerSendIfNeeded(storage.read());
         });
 
         return instance;
@@ -207,36 +207,6 @@ public class DevModeUsageStatistics {
         } catch (Exception e) {
             getLogger().debug("Failed to collect event '" + name + "'", e);
         }
-    }
-
-    /**
-     * Send current statistics to given reporting URL.
-     * <p>
-     * Reads the current data and posts it to given URL. Updates or replaces the
-     * local data according to the response.
-     * <p>
-     * Updates <code>FIELD_LAST_SENT</code> and <code>FIELD_LAST_STATUS</code>
-     * and <code>FIELD_SERVER_MESSAGE</code>
-     */
-    void sendCurrentStatistics() {
-        if (!isStatisticsEnabled())
-            return;
-
-        try {
-            storage.access(() -> {
-                String message = storage
-                        .sendCurrentStatistics(storage.internalRead());
-
-                // Show message on console, if present
-                if (message != null && !message.trim().isEmpty()) {
-                    getLogger().info(message);
-                }
-
-            });
-        } catch (Exception e) {
-            getLogger().debug("Failed to send statistics", e);
-        }
-
     }
 
     /**

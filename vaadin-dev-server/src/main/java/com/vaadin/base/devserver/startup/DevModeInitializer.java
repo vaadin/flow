@@ -65,6 +65,7 @@ import javax.servlet.annotation.HandlesTypes;
 import com.vaadin.base.devserver.ViteHandler;
 import com.vaadin.base.devserver.WebpackHandler;
 import com.vaadin.base.devserver.stats.DevModeUsageStatistics;
+import com.vaadin.base.devserver.stats.StatisticsSender;
 import com.vaadin.base.devserver.stats.StatisticsStorage;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
@@ -214,7 +215,8 @@ public class DevModeInitializer implements Serializable {
                 && config.isUsageStatisticsEnabled());
         if (statisticsEnabled) {
             StatisticsStorage storage = new StatisticsStorage();
-            DevModeUsageStatistics.init(baseDir, storage);
+            DevModeUsageStatistics.init(baseDir, storage,
+                    new StatisticsSender(storage));
         }
 
         String generatedDir = System.getProperty(PARAM_GENERATED_DIR,
