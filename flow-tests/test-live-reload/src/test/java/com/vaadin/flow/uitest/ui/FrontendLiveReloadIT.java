@@ -19,10 +19,14 @@ import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.testcategory.SlowTests;
+
 @NotThreadSafe
+@Category(SlowTests.class)
 public class FrontendLiveReloadIT extends AbstractLiveReloadIT {
 
     @After
