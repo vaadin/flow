@@ -210,7 +210,12 @@ public class DevModeInitializer implements Serializable {
         }
 
         // Initialize the usage statistics if enabled
-        DevModeUsageStatistics.init(config, baseDir, new StatisticsStorage());
+        boolean statisticsEnabled = (config != null
+                && config.isUsageStatisticsEnabled());
+        if (statisticsEnabled) {
+            StatisticsStorage storage = new StatisticsStorage();
+            DevModeUsageStatistics.init(baseDir, storage);
+        }
 
         String generatedDir = System.getProperty(PARAM_GENERATED_DIR,
                 Paths.get(config.getBuildFolder(), DEFAULT_GENERATED_DIR)

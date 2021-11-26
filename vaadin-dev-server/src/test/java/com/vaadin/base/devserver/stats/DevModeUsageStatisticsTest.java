@@ -95,13 +95,12 @@ public class DevModeUsageStatisticsTest {
         String mavenProjectFolder = TestUtils
                 .getTestFolder("stats-data/maven-project-folder1").toPath()
                 .toString();
-        DevModeUsageStatistics stats = DevModeUsageStatistics
-                .init(configuration, mavenProjectFolder, storage);
+        DevModeUsageStatistics.init(mavenProjectFolder, storage);
 
         String data = IOUtils.toString(
                 TestUtils.getTestResource("stats-data/client-data-1.txt"),
                 StandardCharsets.UTF_8);
-        stats.handleBrowserData(wrapStats(data));
+        DevModeUsageStatistics.handleBrowserData(wrapStats(data));
     }
 
     @Test
@@ -109,7 +108,7 @@ public class DevModeUsageStatisticsTest {
         String mavenProjectFolder = TestUtils
                 .getTestFolder("stats-data/maven-project-folder1").toPath()
                 .toString();
-        DevModeUsageStatistics.init(configuration, mavenProjectFolder, storage);
+        DevModeUsageStatistics.init(mavenProjectFolder, storage);
 
         Assert.assertEquals(
                 "pom" + ProjectHelpers.createHash("com.exampledemo"),
@@ -121,7 +120,7 @@ public class DevModeUsageStatisticsTest {
         String mavenProjectFolder = TestUtils
                 .getTestFolder("stats-data/maven-project-folder1").toPath()
                 .toString();
-        DevModeUsageStatistics.init(configuration, mavenProjectFolder, storage);
+        DevModeUsageStatistics.init(mavenProjectFolder, storage);
 
         Assert.assertEquals("https://start.vaadin.com/test/1",
                 storage.getValue(StatisticsConstants.FIELD_SOURCE_ID));
@@ -134,10 +133,10 @@ public class DevModeUsageStatisticsTest {
                 .getTestFolder("stats-data/maven-project-folder1").toPath()
                 .toString();
         DevModeUsageStatistics stats = DevModeUsageStatistics
-                .init(configuration, mavenProjectFolder, storage);
+                .init(mavenProjectFolder, storage);
 
         // Averate events
-        stats.collectEvent("aggregate", 1);
+        DevModeUsageStatistics.collectEvent("aggregate", 1);
         Assert.assertEquals("Min does not match", 1,
                 storage.getFieldAsDouble("aggregate_min"), 0);
         Assert.assertEquals("Max does not match", 1,
@@ -147,7 +146,7 @@ public class DevModeUsageStatisticsTest {
         Assert.assertEquals("Count does not match", 1,
                 storage.getFieldAsInt("aggregate_count"));
 
-        stats.collectEvent("aggregate", 2);
+        DevModeUsageStatistics.collectEvent("aggregate", 2);
         Assert.assertEquals("Min does not match", 1,
                 storage.getFieldAsDouble("aggregate_min"), 0);
         Assert.assertEquals("Max does not match", 2,
@@ -157,7 +156,7 @@ public class DevModeUsageStatisticsTest {
         Assert.assertEquals("Count does not match", 2,
                 storage.getFieldAsInt("aggregate_count"));
 
-        stats.collectEvent("aggregate", 3);
+        DevModeUsageStatistics.collectEvent("aggregate", 3);
         Assert.assertEquals("Min does not match", 1,
                 storage.getFieldAsDouble("aggregate_min"), 0);
         Assert.assertEquals("Max does not match", 3,
@@ -168,13 +167,13 @@ public class DevModeUsageStatisticsTest {
                 storage.getFieldAsInt("aggregate_count"));
 
         // Test count events
-        stats.collectEvent("count");
+        DevModeUsageStatistics.collectEvent("count");
         Assert.assertEquals("Increment does not match", 1,
                 storage.getFieldAsInt("count"));
-        stats.collectEvent("count");
+        DevModeUsageStatistics.collectEvent("count");
         Assert.assertEquals("Increment does not match", 2,
                 storage.getFieldAsInt("count"));
-        stats.collectEvent("count");
+        DevModeUsageStatistics.collectEvent("count");
         Assert.assertEquals("Increment does not match", 3,
                 storage.getFieldAsInt("count"));
 
@@ -186,7 +185,7 @@ public class DevModeUsageStatisticsTest {
         String mavenProjectFolder = TestUtils
                 .getTestFolder("stats-data/maven-project-folder1").toPath()
                 .toString();
-        DevModeUsageStatistics.init(configuration, mavenProjectFolder, storage);
+        DevModeUsageStatistics.init(mavenProjectFolder, storage);
         // Data contains 5 previous starts for this project
         Assert.assertEquals("Expected to have 6 restarts", 6,
                 storage.getFieldAsInt("devModeStarts"));
@@ -195,8 +194,7 @@ public class DevModeUsageStatisticsTest {
         String mavenProjectFolder2 = TestUtils
                 .getTestFolder("stats-data/maven-project-folder2").toPath()
                 .toString();
-        DevModeUsageStatistics.init(configuration, mavenProjectFolder2,
-                storage);
+        DevModeUsageStatistics.init(mavenProjectFolder2, storage);
         Assert.assertEquals("Expected to have one restarts", 1,
                 storage.getFieldAsInt("devModeStarts"));
 
@@ -204,8 +202,7 @@ public class DevModeUsageStatisticsTest {
         String gradleProjectFolder1 = TestUtils
                 .getTestFolder("stats-data/gradle-project-folder1").toPath()
                 .toString();
-        DevModeUsageStatistics.init(configuration, gradleProjectFolder1,
-                storage);
+        DevModeUsageStatistics.init(gradleProjectFolder1, storage);
         Assert.assertEquals("Expected to have one restarts", 1,
                 storage.getFieldAsInt("devModeStarts"));
 
@@ -215,10 +212,8 @@ public class DevModeUsageStatisticsTest {
                 .toString();
 
         // Double init to check restart count
-        DevModeUsageStatistics.init(configuration, gradleProjectFolder2,
-                storage);
-        DevModeUsageStatistics.init(configuration, gradleProjectFolder2,
-                storage);
+        DevModeUsageStatistics.init(gradleProjectFolder2, storage);
+        DevModeUsageStatistics.init(gradleProjectFolder2, storage);
         Assert.assertEquals("Expected to have 2 restarts", 2,
                 storage.getFieldAsInt("devModeStarts"));
 
@@ -236,7 +231,7 @@ public class DevModeUsageStatisticsTest {
                 .getTestFolder("stats-data/maven-project-folder1").toPath()
                 .toString();
         DevModeUsageStatistics stats = DevModeUsageStatistics
-                .init(configuration, mavenProjectFolder, storage);
+                .init(mavenProjectFolder, storage);
 
         // Test with default server response
         try (TestHttpServer server = new TestHttpServer(200,
@@ -414,7 +409,7 @@ public class DevModeUsageStatisticsTest {
                                                                             // the
                                                                             // home
                                                                             // location
-        DevModeUsageStatistics.init(configuration, mavenProjectFolder, storage);
+        DevModeUsageStatistics.init(mavenProjectFolder, storage);
 
         // Read from file
         String keyString = "user-ab641d2c-test-test-file-223cf1fa628e";
@@ -450,7 +445,7 @@ public class DevModeUsageStatisticsTest {
                                                                             // the
                                                                             // home
                                                                             // location
-        DevModeUsageStatistics.init(configuration, mavenProjectFolder, storage);
+        DevModeUsageStatistics.init(mavenProjectFolder, storage);
 
         // File is used by default
         String keyStringFile = "test@vaadin.com/pro-536e1234-test-test-file-f7a1ef311234";
@@ -462,33 +457,6 @@ public class DevModeUsageStatisticsTest {
         System.setProperty("vaadin.proKey", keyStringProp);
         String keyProp = ProjectHelpers.getProKey();
         assertEquals(keyStringProp, "test@vaadin.com/" + keyProp);
-    }
-
-    @Test
-    public void loadStatisticsDisabled() throws Exception {
-        Assert.assertFalse(configuration.isProductionMode());
-        Assert.assertTrue(configuration.isUsageStatisticsEnabled());
-
-        // Initialize the statistics from Maven project
-        String mavenProjectFolder = TestUtils
-                .getTestFolder("stats-data/maven-project-folder1").toPath()
-                .toString();
-        DevModeUsageStatistics stats = DevModeUsageStatistics
-                .init(configuration, mavenProjectFolder, storage);
-
-        // Make sure statistics are enabled
-        Assert.assertTrue(DevModeUsageStatistics.isStatisticsEnabled());
-
-        // Disable statistics in config
-        Mockito.when(configuration.isUsageStatisticsEnabled())
-                .thenReturn(false);
-
-        // Reinit
-        stats = DevModeUsageStatistics.init(configuration, mavenProjectFolder,
-                storage);
-
-        // Make sure statistics are disabled
-        Assert.assertFalse(stats.isStatisticsEnabled());
     }
 
     private ApplicationConfiguration mockAppConfig(boolean enabled) {

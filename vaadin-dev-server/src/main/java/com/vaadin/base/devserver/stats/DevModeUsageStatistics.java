@@ -21,7 +21,6 @@ import java.util.concurrent.CompletableFuture;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.vaadin.base.devserver.ServerInfo;
 import com.vaadin.flow.server.Version;
-import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,8 +40,6 @@ public class DevModeUsageStatistics {
     private static DevModeUsageStatistics instance = null;
 
     private final StatisticsStorage storage;
-
-    private static boolean statisticsEnabled;
 
     private final String projectFolder;
 
@@ -73,8 +70,6 @@ public class DevModeUsageStatistics {
      * Initialize statistics module. This should be done on devmode startup.
      * First check if statistics collection is enabled.
      *
-     * @param config
-     *            application configuration parameters
      * @param projectFolder
      *            the folder of the current project
      * @param storage
@@ -82,18 +77,10 @@ public class DevModeUsageStatistics {
      * 
      * @return the created instance or {@code null} if telemetry is not used
      */
-    public static DevModeUsageStatistics init(ApplicationConfiguration config,
-            String projectFolder, StatisticsStorage storage) {
+    public static DevModeUsageStatistics init(String projectFolder,
+            StatisticsStorage storage) {
 
-        statisticsEnabled = (config != null
-                && config.isUsageStatisticsEnabled());
-
-        if (!statisticsEnabled) {
-            return null;
-        }
-
-        getLogger().debug(
-                "Telemetry " + (statisticsEnabled ? "enabled" : "disabled"));
+        getLogger().debug("Telemetry enabled");
 
         synchronized (DevModeUsageStatistics.class) { // Lock data for init
             if (instance != null) {
@@ -177,7 +164,7 @@ public class DevModeUsageStatistics {
      *         otherwise.
      */
     static boolean isStatisticsEnabled() {
-        return statisticsEnabled;
+        return instance != null;
     }
 
     /**
