@@ -20,6 +20,7 @@ import java.util.List;
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -27,6 +28,7 @@ import org.openqa.selenium.WebElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 @NotThreadSafe
+@Ignore("Fails in Containers")
 public class WebpackDevServerPortIT extends ChromeBrowserTest {
 
     @Test

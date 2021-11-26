@@ -16,6 +16,7 @@
 package com.vaadin.flow.mixedtest.ui;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.TimeoutException;
@@ -26,6 +27,7 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
+@Ignore("Fails in Containers")
 public class IdTestIT extends ChromeBrowserTest {
     @Override
     protected String getTestPath() {
