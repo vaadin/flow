@@ -85,11 +85,13 @@ public class StatisticsContainer {
      * Sets the value to the given field and updates related aggregate fields.
      * <p>
      * Updates the following fields:
+     * <ul>
      * <li><code>name</code> The new value</li>
      * <li><code>name_min</code> The minimum value</li>
      * <li><code>name_max</code> The maximum value</li>
      * <li><code>name_count</code> Number of values collected</li>
-     *
+     * </ul>
+     * 
      * @param name
      *            Name of the field to update.
      * @param newValue
