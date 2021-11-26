@@ -211,9 +211,7 @@ public class DevModeInitializer implements Serializable {
         }
 
         // Initialize the usage statistics if enabled
-        boolean statisticsEnabled = (config != null
-                && config.isUsageStatisticsEnabled());
-        if (statisticsEnabled) {
+        if (config.isUsageStatisticsEnabled()) {
             StatisticsStorage storage = new StatisticsStorage();
             DevModeUsageStatistics.init(baseDir, storage,
                     new StatisticsSender(storage));

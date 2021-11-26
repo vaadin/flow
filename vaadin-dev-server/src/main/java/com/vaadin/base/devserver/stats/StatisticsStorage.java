@@ -95,7 +95,6 @@ public class StatisticsStorage {
 
             updater.accept(new StatisticsContainer(fullJson),
                     new StatisticsContainer(projectJson));
-            // TODO Is fullJson updated automatically from projectJson or not?
             internalWrite(fullJson);
         });
     }
