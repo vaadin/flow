@@ -82,51 +82,47 @@ public class DevModeUsageStatistics {
 
         getLogger().debug("Telemetry enabled");
 
-        synchronized (DevModeUsageStatistics.class) { // Lock data for init
+        storage.access(() -> {
             if (instance != null) {
                 getLogger().warn("init should only be called once");
             }
 
             instance = new DevModeUsageStatistics(projectFolder, storage);
+            // Make sure we are tracking the right project
+            String projectId = ProjectHelpers.generateProjectId(projectFolder);
+            storage.setProjectId(projectId);
             instance.trackGlobalData();
             // Send usage statistics asynchronously, if enough time has
             // passed
-            if (storage.isIntervalElapsed()) {
+            if (storage.isIntervalElapsed(storage.internalRead())) {
                 CompletableFuture.runAsync(instance::sendCurrentStatistics);
             }
-            return instance;
-        }
+        });
 
+        return instance;
     }
 
     private void trackGlobalData() {
-        if (!isStatisticsEnabled()) {
-            return;
-        }
-        // Read the current statistics data
-        storage.update(storage -> {
-            // Make sure we are tracking the right project
-            storage.setProjectId(
-                    ProjectHelpers.generateProjectId(projectFolder));
-
+        storage.update((globalData, projectData) -> {
             ServerInfo serverInfo = new ServerInfo();
 
             // Update the machine / user / source level data
-            storage.setGlobalValue(StatisticsConstants.FIELD_OPERATING_SYSTEM,
+            globalData.setValue(StatisticsConstants.FIELD_OPERATING_SYSTEM,
                     serverInfo.getOsVersion());
-            storage.setGlobalValue(StatisticsConstants.FIELD_JVM,
+            globalData.setValue(StatisticsConstants.FIELD_JVM,
                     serverInfo.getJavaVersion());
-            storage.setGlobalValue(StatisticsConstants.FIELD_PROKEY,
+            globalData.setValue(StatisticsConstants.FIELD_PROKEY,
                     ProjectHelpers.getProKey());
-            storage.setGlobalValue(StatisticsConstants.FIELD_USER_KEY,
+            globalData.setValue(StatisticsConstants.FIELD_USER_KEY,
                     ProjectHelpers.getUserKey());
 
             // Update basic project statistics and save
-            storage.setValue(StatisticsConstants.FIELD_FLOW_VERSION,
+            projectData.setValue(StatisticsConstants.FIELD_FLOW_VERSION,
                     Version.getFullVersion());
-            storage.setValue(StatisticsConstants.FIELD_SOURCE_ID,
+            projectData.setValue(StatisticsConstants.FIELD_SOURCE_ID,
                     ProjectHelpers.getProjectSource(projectFolder));
-            storage.increment(StatisticsConstants.FIELD_PROJECT_DEVMODE_STARTS);
+            projectData.increment(
+                    StatisticsConstants.FIELD_PROJECT_DEVMODE_STARTS);
         });
 
     }
@@ -144,17 +140,20 @@ public class DevModeUsageStatistics {
             return;
         }
 
-        try {
-            // Update the stored data
-            String json = data.get("browserData").toJson();
-            JsonNode clientData = JsonHelpers.getJsonMapper().readTree(json);
+        get().storage.update((global, project) -> {
+            try {
+                String json = data.get("browserData").toJson();
+                JsonNode clientData = JsonHelpers.getJsonMapper()
+                        .readTree(json);
+                if (clientData != null && clientData.isObject()) {
+                    clientData.fields().forEachRemaining(
+                            e -> project.setValue(e.getKey(), e.getValue()));
+                }
+            } catch (Exception e) {
+                getLogger().debug("Failed to update client telemetry data", e);
+            }
+        });
 
-            get().storage.update(
-                    storage -> storage.updateProjectTelemetryData(clientData));
-
-        } catch (Exception e) {
-            getLogger().debug("Error handling telemetry request", e);
-        }
     }
 
     /**
@@ -168,8 +167,7 @@ public class DevModeUsageStatistics {
     }
 
     /**
-     * Checks if tracking is enabled and increments specified event count for
-     * the current project data.
+     * Increments specified event count in the current project data.
      * <p>
      * Good for logging statistics of recurring events.
      *
@@ -182,7 +180,7 @@ public class DevModeUsageStatistics {
         }
 
         try {
-            get().storage.update(storage -> storage.increment(name));
+            get().storage.update((global, project) -> project.increment(name));
         } catch (Exception e) {
             getLogger().debug("Failed to log '" + name + "'", e);
         }
@@ -204,7 +202,8 @@ public class DevModeUsageStatistics {
             return;
 
         try {
-            get().storage.update(storage -> storage.aggregate(name, value));
+            get().storage.update(
+                    (global, project) -> project.aggregate(name, value));
         } catch (Exception e) {
             getLogger().debug("Failed to collect event '" + name + "'", e);
         }
@@ -224,8 +223,9 @@ public class DevModeUsageStatistics {
             return;
 
         try {
-            storage.update(storage -> {
-                String message = storage.sendCurrentStatistics();
+            storage.access(() -> {
+                String message = storage
+                        .sendCurrentStatistics(storage.internalRead());
 
                 // Show message on console, if present
                 if (message != null && !message.trim().isEmpty()) {
@@ -252,7 +252,7 @@ public class DevModeUsageStatistics {
             return;
 
         try {
-            storage.update(storage -> storage.setValue(name, value));
+            storage.update((global, project) -> project.setValue(name, value));
         } catch (Exception e) {
             getLogger().debug("Failed to set  '" + name + "'", e);
         }
@@ -271,13 +271,13 @@ public class DevModeUsageStatistics {
             return;
 
         try {
-            storage.update(storage -> storage.setGlobalValue(name, value));
+            storage.update((global, project) -> global.setValue(name, value));
         } catch (Exception e) {
             getLogger().debug("Failed to set global '" + name + "'", e);
         }
     }
 
-    private static Logger getLogger() {
+    static Logger getLogger() {
         return LoggerFactory.getLogger(DevModeUsageStatistics.class);
     }
 

@@ -25,10 +25,9 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.net.httpserver.HttpServer;
-import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.testutil.TestUtils;
 
 import org.apache.commons.io.FileUtils;
@@ -36,7 +35,6 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -58,7 +56,6 @@ public class DevModeUsageStatisticsTest {
     private static final long SEC_48H = 60 * 60 * 48;
     private static final long SEC_30D = 60 * 60 * 24 * 30;
     private static final String DEFAULT_PROJECT_ID = "12b7fc85f50e8c82cb6f4b03e12f2335";
-    private ApplicationConfiguration configuration;
     private StatisticsStorage storage;
 
     /**
@@ -80,8 +77,6 @@ public class DevModeUsageStatisticsTest {
 
     @Before
     public void setup() throws Exception {
-        configuration = mockAppConfig(true);
-
         storage = new StatisticsStorage();
         // Change the file storage and reporting parameters for testing
         storage.setUsageReportingUrl(USAGE_REPORT_URL_LOCAL);
@@ -122,8 +117,9 @@ public class DevModeUsageStatisticsTest {
                 .toString();
         DevModeUsageStatistics.init(mavenProjectFolder, storage);
 
+        ObjectNode json = storage.readProject();
         Assert.assertEquals("https://start.vaadin.com/test/1",
-                storage.getValue(StatisticsConstants.FIELD_SOURCE_ID));
+                json.get(StatisticsConstants.FIELD_SOURCE_ID).asText());
     }
 
     @Test
@@ -132,50 +128,60 @@ public class DevModeUsageStatisticsTest {
         String mavenProjectFolder = TestUtils
                 .getTestFolder("stats-data/maven-project-folder1").toPath()
                 .toString();
-        DevModeUsageStatistics stats = DevModeUsageStatistics
-                .init(mavenProjectFolder, storage);
+        DevModeUsageStatistics.init(mavenProjectFolder, storage);
 
         // Averate events
         DevModeUsageStatistics.collectEvent("aggregate", 1);
+
+        StatisticsContainer projectData = new StatisticsContainer(
+                storage.readProject());
+
         Assert.assertEquals("Min does not match", 1,
-                storage.getFieldAsDouble("aggregate_min"), 0);
+                projectData.getValueAsDouble("aggregate_min"), 0);
         Assert.assertEquals("Max does not match", 1,
-                storage.getFieldAsDouble("aggregate_max"), 0);
+                projectData.getValueAsDouble("aggregate_max"), 0);
         Assert.assertEquals("Average does not match", 1,
-                storage.getFieldAsDouble("aggregate_avg"), 0);
+                projectData.getValueAsDouble("aggregate_avg"), 0);
         Assert.assertEquals("Count does not match", 1,
-                storage.getFieldAsInt("aggregate_count"));
+                projectData.getValueAsInt("aggregate_count"));
 
         DevModeUsageStatistics.collectEvent("aggregate", 2);
+        projectData = new StatisticsContainer(storage.readProject());
         Assert.assertEquals("Min does not match", 1,
-                storage.getFieldAsDouble("aggregate_min"), 0);
+                projectData.getValueAsDouble("aggregate_min"), 0);
         Assert.assertEquals("Max does not match", 2,
-                storage.getFieldAsDouble("aggregate_max"), 0);
+                projectData.getValueAsDouble("aggregate_max"), 0);
         Assert.assertEquals("Average does not match", 1.5,
-                storage.getFieldAsDouble("aggregate_avg"), 0);
+                projectData.getValueAsDouble("aggregate_avg"), 0);
         Assert.assertEquals("Count does not match", 2,
-                storage.getFieldAsInt("aggregate_count"));
+                projectData.getValueAsInt("aggregate_count"));
 
         DevModeUsageStatistics.collectEvent("aggregate", 3);
+        projectData = new StatisticsContainer(storage.readProject());
+
         Assert.assertEquals("Min does not match", 1,
-                storage.getFieldAsDouble("aggregate_min"), 0);
+                projectData.getValueAsDouble("aggregate_min"), 0);
         Assert.assertEquals("Max does not match", 3,
-                storage.getFieldAsDouble("aggregate_max"), 0);
+                projectData.getValueAsDouble("aggregate_max"), 0);
         Assert.assertEquals("Average does not match", 2,
-                storage.getFieldAsDouble("aggregate_avg"), 0);
+                projectData.getValueAsDouble("aggregate_avg"), 0);
         Assert.assertEquals("Count does not match", 3,
-                storage.getFieldAsInt("aggregate_count"));
+                projectData.getValueAsInt("aggregate_count"));
 
         // Test count events
         DevModeUsageStatistics.collectEvent("count");
+        projectData = new StatisticsContainer(storage.readProject());
+
         Assert.assertEquals("Increment does not match", 1,
-                storage.getFieldAsInt("count"));
+                projectData.getValueAsInt("count"));
         DevModeUsageStatistics.collectEvent("count");
+        projectData = new StatisticsContainer(storage.readProject());
         Assert.assertEquals("Increment does not match", 2,
-                storage.getFieldAsInt("count"));
+                projectData.getValueAsInt("count"));
         DevModeUsageStatistics.collectEvent("count");
+        projectData = new StatisticsContainer(storage.readProject());
         Assert.assertEquals("Increment does not match", 3,
-                storage.getFieldAsInt("count"));
+                projectData.getValueAsInt("count"));
 
     }
 
@@ -186,25 +192,29 @@ public class DevModeUsageStatisticsTest {
                 .getTestFolder("stats-data/maven-project-folder1").toPath()
                 .toString();
         DevModeUsageStatistics.init(mavenProjectFolder, storage);
+        StatisticsContainer projectData = new StatisticsContainer(
+                storage.readProject());
         // Data contains 5 previous starts for this project
         Assert.assertEquals("Expected to have 6 restarts", 6,
-                storage.getFieldAsInt("devModeStarts"));
+                projectData.getValueAsInt("devModeStarts"));
 
         // Switch project to track
         String mavenProjectFolder2 = TestUtils
                 .getTestFolder("stats-data/maven-project-folder2").toPath()
                 .toString();
         DevModeUsageStatistics.init(mavenProjectFolder2, storage);
+        projectData = new StatisticsContainer(storage.readProject());
         Assert.assertEquals("Expected to have one restarts", 1,
-                storage.getFieldAsInt("devModeStarts"));
+                projectData.getValueAsInt("devModeStarts"));
 
         // Switch project to track
         String gradleProjectFolder1 = TestUtils
                 .getTestFolder("stats-data/gradle-project-folder1").toPath()
                 .toString();
         DevModeUsageStatistics.init(gradleProjectFolder1, storage);
+        projectData = new StatisticsContainer(storage.readProject());
         Assert.assertEquals("Expected to have one restarts", 1,
-                storage.getFieldAsInt("devModeStarts"));
+                projectData.getValueAsInt("devModeStarts"));
 
         // Switch project to track
         String gradleProjectFolder2 = TestUtils
@@ -214,12 +224,14 @@ public class DevModeUsageStatisticsTest {
         // Double init to check restart count
         DevModeUsageStatistics.init(gradleProjectFolder2, storage);
         DevModeUsageStatistics.init(gradleProjectFolder2, storage);
+        projectData = new StatisticsContainer(storage.readProject());
         Assert.assertEquals("Expected to have 2 restarts", 2,
-                storage.getFieldAsInt("devModeStarts"));
+                projectData.getValueAsInt("devModeStarts"));
 
         // Check that all project are stored correctly
+        ObjectNode allData = storage.read();
         Assert.assertEquals("Expected to have 4 projects", 4,
-                storage.getNumberOfProjects());
+                getNumberOfProjects(allData));
 
     }
 
@@ -230,100 +242,110 @@ public class DevModeUsageStatisticsTest {
         String mavenProjectFolder = TestUtils
                 .getTestFolder("stats-data/maven-project-folder1").toPath()
                 .toString();
-        DevModeUsageStatistics stats = DevModeUsageStatistics
-                .init(mavenProjectFolder, storage);
+        DevModeUsageStatistics.init(mavenProjectFolder, storage);
 
         // Test with default server response
         try (TestHttpServer server = new TestHttpServer(200,
                 DEFAULT_SERVER_MESSAGE)) {
-            long lastSend = storage.getLastSendTime();
-            stats.sendCurrentStatistics();
-            long newSend = storage.getLastSendTime();
+            ObjectNode fullStats = storage.read();
+            long lastSend = storage.getLastSendTime(fullStats);
+            storage.sendCurrentStatistics(fullStats);
+
+            fullStats = storage.read();
+            long newSend = storage.getLastSendTime(fullStats);
             Assert.assertTrue("Send time should be updated",
                     newSend > lastSend);
             Assert.assertTrue("Status should be 200",
-                    storage.getLastSendStatus().contains("200"));
+                    storage.getLastSendStatus(fullStats).contains("200"));
             Assert.assertEquals("Default interval should be 24H in seconds",
-                    SEC_24H, storage.getInterval());
+                    SEC_24H, storage.getInterval(fullStats));
         }
 
         // Test with server response with too custom interval
         try (TestHttpServer server = new TestHttpServer(200,
                 SERVER_MESSAGE_48H)) {
-            long lastSend = storage.getLastSendTime();
-            storage.sendCurrentStatistics();
-            long newSend = storage.getLastSendTime();
+            ObjectNode fullStats = storage.read();
+            long lastSend = storage.getLastSendTime(fullStats);
+            storage.sendCurrentStatistics(fullStats);
+            fullStats = storage.read();
+            long newSend = storage.getLastSendTime(fullStats);
             Assert.assertTrue("Send time should be updated",
                     newSend > lastSend);
             Assert.assertTrue("Status should be 200",
-                    storage.getLastSendStatus().contains("200"));
+                    storage.getLastSendStatus(fullStats).contains("200"));
             Assert.assertEquals("Custom interval should be 48H in seconds",
-                    SEC_48H, storage.getInterval());
+                    SEC_48H, storage.getInterval(fullStats));
         }
 
         // Test with server response with too short interval
         try (TestHttpServer server = new TestHttpServer(200,
                 SERVER_MESSAGE_3H)) {
-            long lastSend = storage.getLastSendTime();
-            storage.sendCurrentStatistics();
-            long newSend = storage.getLastSendTime();
+            ObjectNode fullStats = storage.read();
+            long lastSend = storage.getLastSendTime(fullStats);
+            storage.sendCurrentStatistics(fullStats);
+            fullStats = storage.read();
+            long newSend = storage.getLastSendTime(fullStats);
             Assert.assertTrue("Send time should be updated",
                     newSend > lastSend);
             Assert.assertTrue("Status should be 200",
-                    storage.getLastSendStatus().contains("200"));
+                    storage.getLastSendStatus(fullStats).contains("200"));
             Assert.assertEquals("Minimum interval should be 12H in seconds",
-                    SEC_12H, storage.getInterval());
+                    SEC_12H, storage.getInterval(fullStats));
         }
 
         // Test with server response with too long interval
         try (TestHttpServer server = new TestHttpServer(200,
                 SERVER_MESSAGE_40D)) {
-            long lastSend = storage.getLastSendTime();
-            storage.sendCurrentStatistics();
-            long newSend = storage.getLastSendTime();
+            ObjectNode fullStats = storage.read();
+            long lastSend = storage.getLastSendTime(fullStats);
+            storage.sendCurrentStatistics(fullStats);
+            fullStats = storage.read();
+            long newSend = storage.getLastSendTime(fullStats);
             Assert.assertTrue("Send time should be not be updated",
                     newSend > lastSend);
             Assert.assertTrue("Status should be 200",
-                    storage.getLastSendStatus().contains("200"));
+                    storage.getLastSendStatus(fullStats).contains("200"));
             Assert.assertEquals("Maximum interval should be 30D in seconds",
-                    SEC_30D, storage.getInterval());
+                    SEC_30D, storage.getInterval(fullStats));
         }
 
         // Test with server fail response
         try (TestHttpServer server = new TestHttpServer(500,
                 SERVER_MESSAGE_40D)) {
-            long lastSend = storage.getLastSendTime();
-            storage.sendCurrentStatistics();
-            long newSend = storage.getLastSendTime();
+            ObjectNode fullStats = storage.read();
+            long lastSend = storage.getLastSendTime(fullStats);
+            storage.sendCurrentStatistics(fullStats);
+            fullStats = storage.read();
+
+            long newSend = storage.getLastSendTime(fullStats);
             Assert.assertTrue("Send time should be updated",
                     newSend > lastSend);
             Assert.assertTrue("Status should be 500",
-                    storage.getLastSendStatus().contains("500"));
+                    storage.getLastSendStatus(fullStats).contains("500"));
             Assert.assertEquals(
                     "In case of errors we should use default interval", SEC_24H,
-                    storage.getInterval());
+                    storage.getInterval(fullStats));
         }
 
         // Test with server returned message
         try (TestHttpServer server = new TestHttpServer(200,
                 SERVER_MESSAGE_MESSAGE)) {
-            long lastSend = storage.getLastSendTime();
-            storage.sendCurrentStatistics();
-            long newSend = storage.getLastSendTime();
+            ObjectNode fullStats = storage.read();
+
+            long lastSend = storage.getLastSendTime(fullStats);
+            storage.sendCurrentStatistics(fullStats);
+            fullStats = storage.read();
+            long newSend = storage.getLastSendTime(fullStats);
             Assert.assertTrue("Send time should be updated",
                     newSend > lastSend);
             Assert.assertTrue("Status should be 200",
-                    storage.getLastSendStatus().contains("200"));
+                    storage.getLastSendStatus(fullStats).contains("200"));
             Assert.assertEquals("Default interval should be 24H in seconds",
-                    SEC_24H, storage.getInterval());
+                    SEC_24H, storage.getInterval(fullStats));
             Assert.assertEquals("Message should be returned", "Hello",
-                    storage.getLastServerMessage());
+                    storage.getLastServerMessage(fullStats));
         }
 
-        // Test with invalid material
-        storage.setUsageStatisticsStore(new File(
-                TestUtils.getTestResource("stats-data/usage-statistics-2.json")
-                        .getFile()));
     }
 
     @Test
@@ -459,17 +481,6 @@ public class DevModeUsageStatisticsTest {
         assertEquals(keyStringProp, "test@vaadin.com/" + keyProp);
     }
 
-    private ApplicationConfiguration mockAppConfig(boolean enabled) {
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
-        Mockito.when(appConfig.getPropertyNames())
-                .thenReturn(Collections.emptyEnumeration());
-        Mockito.when(appConfig.isProductionMode()).thenReturn(false);
-        Mockito.when(appConfig.isUsageStatisticsEnabled()).thenReturn(enabled);
-
-        return appConfig;
-    }
-
     /**
      * Simple HttpServer for testing.
      */
@@ -515,6 +526,13 @@ public class DevModeUsageStatisticsTest {
         JsonObject wrapped = Json.createObject();
         wrapped.put("browserData", data);
         return wrapped;
+    }
+
+    private static int getNumberOfProjects(ObjectNode allData) {
+        if (allData.has(StatisticsConstants.FIELD_PROJECTS)) {
+            return allData.get(StatisticsConstants.FIELD_PROJECTS).size();
+        }
+        return 0;
     }
 
 }

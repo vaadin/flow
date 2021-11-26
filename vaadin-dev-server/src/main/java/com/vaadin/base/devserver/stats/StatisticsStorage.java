@@ -18,11 +18,13 @@ package com.vaadin.base.devserver.stats;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.function.Consumer;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.vaadin.flow.server.Command;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -42,8 +44,6 @@ public class StatisticsStorage {
 
     private static final String FAILED_TO_READ = "Failed to read ";
     private String projectId;
-    private ObjectNode json;
-    private ObjectNode projectJson;
     private String usageReportingUrl;
     private File usageStatisticsFile;
 
@@ -127,28 +127,22 @@ public class StatisticsStorage {
     }
 
     /**
-     * Set the project id. All subsequent calls to stores data is stored using
-     * this project id.
+     * Sets the active project id.
+     * <p>
+     * The project id should be unique enough to avoid collisions and data
+     * overwrites.
+     * <p>
+     * Used in {@link #update(BiConsumer)}.
      *
      * @param projectId
      *            The unique project id.
      */
     void setProjectId(String projectId) {
         this.projectId = projectId;
-        // Find the project we are working on
-        if (!json.has(StatisticsConstants.FIELD_PROJECTS)) {
-            json.set(StatisticsConstants.FIELD_PROJECTS,
-                    JsonHelpers.getJsonMapper().createArrayNode());
-        }
-        this.projectJson = JsonHelpers.getOrCreate(this.projectId,
-                this.json.get(StatisticsConstants.FIELD_PROJECTS),
-                StatisticsConstants.FIELD_PROJECT_ID, true);
     }
 
     /*
      * Gets the id for the active project.
-     * 
-     * All calls to stores data is stored using this project id.
      */
     String getProjectId() {
         return projectId;
@@ -185,8 +179,10 @@ public class StatisticsStorage {
     void updateProjectTelemetryData(JsonNode clientData) {
         try {
             if (clientData != null && clientData.isObject()) {
-                clientData.fields().forEachRemaining(
-                        e -> projectJson.set(e.getKey(), e.getValue()));
+                update((global, project) -> {
+                    clientData.fields().forEachRemaining(
+                            e -> project.setValue(e.getKey(), e.getValue()));
+                });
             }
         } catch (Exception e) {
             getLogger().debug("Failed to update client telemetry data", e);
@@ -201,178 +197,59 @@ public class StatisticsStorage {
      *
      * @see #postData(String, JsonNode)
      */
-    String sendCurrentStatistics() {
-
+    String sendCurrentStatistics(ObjectNode json) {
         // Post copy of the current data
-        String message = null;
+        AtomicReference<String> message = new AtomicReference<>(null);
         JsonNode response = postData(getUsageReportingUrl(), json.deepCopy());
 
         // Update the last sent time
         // If the last send was successful we clear the project data
         if (response.isObject()
                 && response.has(StatisticsConstants.FIELD_LAST_STATUS)) {
-            json.put(StatisticsConstants.FIELD_LAST_SENT,
-                    System.currentTimeMillis());
-            json.put(StatisticsConstants.FIELD_LAST_STATUS, response
-                    .get(StatisticsConstants.FIELD_LAST_STATUS).asText());
+            update((global, project) -> {
 
-            // Use different interval, if requested in response or default to
-            // 24H
-            if (response.has(StatisticsConstants.FIELD_SEND_INTERVAL)
-                    && response.get(StatisticsConstants.FIELD_SEND_INTERVAL)
-                            .isNumber()) {
-                json.put(StatisticsConstants.FIELD_SEND_INTERVAL,
-                        normalizeInterval(response
-                                .get(StatisticsConstants.FIELD_SEND_INTERVAL)
-                                .asLong()));
-            } else {
-                json.put(StatisticsConstants.FIELD_SEND_INTERVAL,
-                        StatisticsConstants.TIME_SEC_24H);
-            }
+                global.setValue(StatisticsConstants.FIELD_LAST_SENT,
+                        System.currentTimeMillis());
+                global.setValue(StatisticsConstants.FIELD_LAST_STATUS, response
+                        .get(StatisticsConstants.FIELD_LAST_STATUS).asText());
 
-            // Update the server message
-            if (response.has(StatisticsConstants.FIELD_SERVER_MESSAGE)
-                    && response.get(StatisticsConstants.FIELD_SERVER_MESSAGE)
-                            .isTextual()) {
-                message = response.get(StatisticsConstants.FIELD_SERVER_MESSAGE)
-                        .asText();
-                json.put(StatisticsConstants.FIELD_SERVER_MESSAGE, message);
-            }
+                // Use different interval, if requested in response or default
+                // to 24H
+                if (response.has(StatisticsConstants.FIELD_SEND_INTERVAL)
+                        && response.get(StatisticsConstants.FIELD_SEND_INTERVAL)
+                                .isNumber()) {
+                    global.setValue(StatisticsConstants.FIELD_SEND_INTERVAL,
+                            normalizeInterval(response.get(
+                                    StatisticsConstants.FIELD_SEND_INTERVAL)
+                                    .asLong()));
+                } else {
+                    global.setValue(StatisticsConstants.FIELD_SEND_INTERVAL,
+                            StatisticsConstants.TIME_SEC_24H);
+                }
 
-            // If data was sent ok, clear the existing project data
-            if (response.get(StatisticsConstants.FIELD_LAST_STATUS).asText()
-                    .startsWith("200:")) {
-                json.set(StatisticsConstants.FIELD_PROJECTS,
-                        JsonHelpers.getJsonMapper().createArrayNode());
-                projectJson = JsonHelpers.getOrCreate(projectId,
-                        json.get(StatisticsConstants.FIELD_PROJECTS),
-                        StatisticsConstants.FIELD_PROJECT_ID, true);
-            }
+                // Update the server message
+                if (response.has(StatisticsConstants.FIELD_SERVER_MESSAGE)
+                        && response
+                                .get(StatisticsConstants.FIELD_SERVER_MESSAGE)
+                                .isTextual()) {
+                    String msg = response
+                            .get(StatisticsConstants.FIELD_SERVER_MESSAGE)
+                            .asText();
+                    global.setValue(StatisticsConstants.FIELD_SERVER_MESSAGE,
+                            msg);
+                    message.set(msg);
+                }
+
+                // If data was sent ok, clear the existing project data
+                if (response.get(StatisticsConstants.FIELD_LAST_STATUS).asText()
+                        .startsWith("200:")) {
+                    global.setValue(StatisticsConstants.FIELD_PROJECTS,
+                            JsonHelpers.getJsonMapper().createArrayNode());
+                }
+            });
         }
 
-        return message;
-    }
-
-    /**
-     * Store a single string value in project statistics.
-     *
-     * @param name
-     *            Uniques name of the field in project data.
-     * @param value
-     *            Value to set.
-     */
-    void setValue(String name, String value) {
-        projectJson.put(name, value);
-    }
-
-    String getValue(String name) {
-        return projectJson.get(name).asText();
-    }
-
-    /**
-     * Update a single increment number value in current project data.
-     * <p>
-     * Stores the data to the disk automatically.
-     *
-     * @param name
-     *            N of the field to increment.
-     * @see JsonHelpers#incrementJsonValue(ObjectNode, String)
-     */
-    void increment(String name) {
-        JsonHelpers.incrementJsonValue(projectJson, name);
-    }
-
-    /**
-     * Update a field in current project data and calculate and update the
-     * aggregate fields.
-     * <p>
-     * Updates the following fields:
-     * <li></li><code>name</code> Set newValue.</li>
-     * <li><code>name_min</code> Minimum value</li>
-     * <li><code>name_max</code></li>
-     * <li><code>name_count</code> Count of values collected</li> Stores the
-     * data to the disk automatically.
-     *
-     * @param name
-     *            Name of the field to update.
-     * @param newValue
-     *            The new value to store.
-     */
-    void aggregate(String name, double newValue) {
-        // Update count
-        JsonHelpers.incrementJsonValue(projectJson, name + "_count");
-        double count = projectJson.get(name + "_count").asInt();
-
-        // Update min & max
-        double min = newValue;
-        if (projectJson.has(name + "_min")
-                && projectJson.get(name + "_min").isDouble()) {
-            min = projectJson.get(name + "_min").asDouble(newValue);
-        }
-        projectJson.put(name + "_min", Math.min(newValue, min));
-
-        double max = newValue;
-        if (projectJson.has(name + "_max")
-                && projectJson.get(name + "_max").isDouble()) {
-            max = projectJson.get(name + "_max").asDouble(newValue);
-        }
-        projectJson.put(name + "_max", Math.max(newValue, max));
-
-        // Update average
-        double avg = newValue;
-        if (projectJson.has(name + "_avg")
-                && projectJson.get(name + "_avg").isDouble()) {
-            // Calcalate new incremental average
-            avg = projectJson.get(name + "_avg").asDouble(newValue);
-            avg += (newValue - avg) / count;
-        }
-        projectJson.put(name + "_avg", avg);
-        projectJson.put(name, newValue);
-    }
-
-    /**
-     * Get a value of number value in current project data.
-     *
-     * @see #increment(String) (String)
-     * @param name
-     *            name of the field to get
-     * @return Value if this is integer field, 0 if missing
-     */
-    int getFieldAsInt(String name) {
-        if (projectJson != null && projectJson.has(name)
-                && projectJson.get(name).isInt()) {
-            return projectJson.get(name).asInt(0);
-        }
-        return 0;
-    }
-
-    /**
-     * Get a value of number value in current project data.
-     *
-     * @param name
-     *            name of the field to get
-     * @return Value if this is integer field, 0 if missing
-     */
-    double getFieldAsDouble(String name) {
-        if (projectJson != null && projectJson.has(name)
-                && projectJson.get(name).isDouble()) {
-            return projectJson.get(name).asDouble(0);
-        }
-        return 0;
-
-    }
-
-    /**
-     * Set a global value in storage.
-     *
-     * @param globalField
-     *            name of the field to get
-     * @param value
-     *            The new value to set
-     * @see #increment(String) (String)
-     */
-    void setGlobalValue(String globalField, String value) {
-        json.put(globalField, value);
+        return message.get();
     }
 
     /**
@@ -384,10 +261,10 @@ public class StatisticsStorage {
      * @see #getLastSendTime()
      * @see #getInterval()
      */
-    boolean isIntervalElapsed() {
+    boolean isIntervalElapsed(ObjectNode json) {
         long now = System.currentTimeMillis();
-        long lastSend = getLastSendTime();
-        long interval = getInterval();
+        long lastSend = getLastSendTime(json);
+        long interval = getInterval(json);
         return lastSend + interval * 1000 < now;
     }
 
@@ -399,7 +276,7 @@ public class StatisticsStorage {
      *         {@link StatisticsConstants#TIME_SEC_30D} as maximum.
      * @see StatisticsConstants#FIELD_SEND_INTERVAL
      */
-    long getInterval() {
+    long getInterval(ObjectNode json) {
         try {
             long interval = json.get(StatisticsConstants.FIELD_SEND_INTERVAL)
                     .asLong();
@@ -420,7 +297,7 @@ public class StatisticsStorage {
      * @return Unix timestamp or -1 if not present
      * @see StatisticsConstants#FIELD_LAST_SENT
      */
-    long getLastSendTime() {
+    long getLastSendTime(ObjectNode json) {
         try {
             return json.get(StatisticsConstants.FIELD_LAST_SENT).asLong();
         } catch (Exception e) {
@@ -438,7 +315,7 @@ public class StatisticsStorage {
      * @return Unix timestamp or -1 if not present
      * @see StatisticsConstants#FIELD_LAST_STATUS
      */
-    String getLastSendStatus() {
+    String getLastSendStatus(ObjectNode json) {
         try {
             return json.get(StatisticsConstants.FIELD_LAST_STATUS).asText();
         } catch (Exception e) {
@@ -450,38 +327,83 @@ public class StatisticsStorage {
     }
 
     /**
+     * Runs the given command with the store locked.
+     * 
+     * @param whenLocked
+     *            the command to run
+     */
+    public void access(Command whenLocked) {
+        synchronized (DevModeUsageStatistics.class) { // Lock data for init
+            whenLocked.execute();
+        }
+    }
+
+    /**
      * Updates the store in a safe way.
      * 
      * @param updater
      *            the update logic
      */
-    void update(Consumer<StatisticsStorage> updater) {
-        // Lock data for update
-        synchronized (DevModeUsageStatistics.class) {
-            read();
-            updater.accept(this);
-            write();
+    void update(BiConsumer<StatisticsContainer, StatisticsContainer> updater) {
+        access(() -> {
+            ObjectNode fullJson = internalRead();
+            ObjectNode projectJson = getProjectData(fullJson, projectId);
+            updater.accept(new StatisticsContainer(fullJson),
+                    new StatisticsContainer(projectJson));
+            // TODO Is fullJson updated automatically from projectJson or not?
+            internalWrite(fullJson);
+        });
+    }
+
+    private static ObjectNode getProjectData(ObjectNode fullJson,
+            String projectId) {
+        if (projectId == null) {
+            return null;
         }
+        return JsonHelpers.getOrCreate(projectId,
+                fullJson.get(StatisticsConstants.FIELD_PROJECTS),
+                StatisticsConstants.FIELD_PROJECT_ID, true);
+    }
+
+    /**
+     * Reads all data from the statistics file.
+     * 
+     * @return
+     *
+     * @see #getUsageStatisticsFile()
+     */
+    ObjectNode read() {
+        AtomicReference<ObjectNode> data = new AtomicReference<>(null);
+        access(() -> data.set(internalRead()));
+        return data.get();
+    }
+
+    /**
+     * Reads the active project data from the statistics file.
+     * 
+     * @return
+     *
+     * @see #getUsageStatisticsFile()
+     */
+    ObjectNode readProject() {
+        ObjectNode data = read();
+        return getProjectData(data, projectId);
     }
 
     /**
      * Read the data from local project statistics file.
+     * 
+     * @return
      *
-     * @see #getUsageStatisticsStore()
+     * @see #getUsageStatisticsFile()
      */
-    private void read() {
-        File file = getUsageStatisticsStore();
+    ObjectNode internalRead() {
+        File file = getUsageStatisticsFile();
         getLogger().debug("Reading statistics from {}", file.getAbsolutePath());
         try {
             if (file.exists()) {
                 // Read full data and make sure we track the right project
-                json = (ObjectNode) JsonHelpers.getJsonMapper().readTree(file);
-                if (this.projectId != null) {
-                    projectJson = JsonHelpers.getOrCreate(this.projectId,
-                            json.get(StatisticsConstants.FIELD_PROJECTS),
-                            StatisticsConstants.FIELD_PROJECT_ID, true);
-                }
-                return;
+                return (ObjectNode) JsonHelpers.getJsonMapper().readTree(file);
             }
         } catch (JsonProcessingException e) {
             getLogger().debug("Failed to parse json", e);
@@ -491,25 +413,21 @@ public class StatisticsStorage {
 
         // Empty node if nothing else is found and make sure we
         // track the right project
-        json = JsonHelpers.getJsonMapper().createObjectNode();
+        ObjectNode json = JsonHelpers.getJsonMapper().createObjectNode();
         json.set(StatisticsConstants.FIELD_PROJECTS,
                 JsonHelpers.getJsonMapper().createArrayNode());
-        if (this.projectId != null) {
-            projectJson = JsonHelpers.getOrCreate(this.projectId,
-                    json.get(StatisticsConstants.FIELD_PROJECTS),
-                    StatisticsConstants.FIELD_PROJECT_ID, true);
-        }
+        return json;
     }
 
     /**
      * Writes the data to local project statistics json file.
      *
-     * @see #getUsageStatisticsStore()
+     * @see #getUsageStatisticsFile()
      */
-    private void write() {
+    private void internalWrite(ObjectNode json) {
         try {
-            getUsageStatisticsStore().getParentFile().mkdirs();
-            JsonHelpers.getJsonMapper().writeValue(getUsageStatisticsStore(),
+            getUsageStatisticsFile().getParentFile().mkdirs();
+            JsonHelpers.getJsonMapper().writeValue(getUsageStatisticsFile(),
                     json);
         } catch (IOException e) {
             getLogger().debug("Failed to write json", e);
@@ -522,7 +440,7 @@ public class StatisticsStorage {
      * @return the location of statistics storage file.
      * @see ProjectHelpers#resolveStatisticsStore()
      */
-    File getUsageStatisticsStore() {
+    File getUsageStatisticsFile() {
         if (this.usageStatisticsFile == null) {
             this.usageStatisticsFile = ProjectHelpers.resolveStatisticsStore();
         }
@@ -542,24 +460,12 @@ public class StatisticsStorage {
     }
 
     /**
-     * Get number of projects.
-     *
-     * @return Number of projects or zero.
-     */
-    int getNumberOfProjects() {
-        if (json != null && json.has(StatisticsConstants.FIELD_PROJECTS)) {
-            return json.get(StatisticsConstants.FIELD_PROJECTS).size();
-        }
-        return 0;
-    }
-
-    /**
      * Get the last server message.
      *
      * @return The message string returned from server in last successful
      *         requests.
      */
-    String getLastServerMessage() {
+    String getLastServerMessage(ObjectNode json) {
         return json.has(StatisticsConstants.FIELD_SERVER_MESSAGE)
                 ? json.get(StatisticsConstants.FIELD_SERVER_MESSAGE).asText()
                 : null;
