@@ -16,80 +16,21 @@
 
 package com.vaadin.base.devserver.stats;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-
-import java.io.File;
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.sun.net.httpserver.HttpServer;
-import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.testutil.TestUtils;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
-public class DevModeUsageStatisticsTest {
-
-    public static final String DEFAULT_SERVER_MESSAGE = "{\"reportInterval\":86400,\"serverMessage\":\"\"}";
-    public static final String SERVER_MESSAGE_MESSAGE = "{\"reportInterval\":86400,\"serverMessage\":\"Hello\"}";
-    public static final String SERVER_MESSAGE_3H = "{\"reportInterval\":10800,\"serverMessage\":\"\"}";
-    public static final String SERVER_MESSAGE_48H = "{\"reportInterval\":172800,\"serverMessage\":\"\"}";
-    public static final String SERVER_MESSAGE_40D = "{\"reportInterval\":3456000,\"serverMessage\":\"\"}";
-    private static final int HTTP_PORT = 8089;
-    public static final String USAGE_REPORT_URL_LOCAL = "http://localhost:"
-            + HTTP_PORT + "/";
-    private static final long SEC_12H = 60 * 60 * 12;
-    private static final long SEC_24H = 60 * 60 * 24;
-    private static final long SEC_48H = 60 * 60 * 48;
-    private static final long SEC_30D = 60 * 60 * 24 * 30;
-    private static final String DEFAULT_PROJECT_ID = "12b7fc85f50e8c82cb6f4b03e12f2335";
-    private StatisticsStorage storage;
-    private StatisticsSender sender;
-    private VaadinContext context;
-
-    /**
-     * Create a temporary file from given test resource.
-     *
-     * @param testResourceName
-     *            Name of the test resource
-     * @return Temporary file
-     */
-    private static File createTempStorage(String testResourceName)
-            throws IOException {
-        File original = new File(
-                TestUtils.getTestResource(testResourceName).getFile());
-        File result = File.createTempFile("test", "json");
-        result.deleteOnExit();
-        FileUtils.copyFile(original, result);
-        return result;
-    }
-
-    @Before
-    public void setup() throws Exception {
-        storage = Mockito.spy(new StatisticsStorage());
-        sender = Mockito.spy(new StatisticsSender(storage));
-
-        // Change the file storage and reporting parameters for testing
-        Mockito.when(sender.getReportingUrl())
-                .thenReturn(USAGE_REPORT_URL_LOCAL);
-        Mockito.when(storage.getUsageStatisticsFile()).thenReturn(
-                createTempStorage("stats-data/usage-statistics-1.json"));
-    }
+public class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
 
     @Test
     public void clientData() throws Exception {
@@ -243,119 +184,6 @@ public class DevModeUsageStatisticsTest {
     }
 
     @Test
-    public void send() throws Exception {
-
-        // Init using test project
-        String mavenProjectFolder = TestUtils
-                .getTestFolder("stats-data/maven-project-folder1").toPath()
-                .toString();
-        DevModeUsageStatistics.init(mavenProjectFolder, storage, sender);
-
-        // Test with default server response
-        try (TestHttpServer server = new TestHttpServer(200,
-                DEFAULT_SERVER_MESSAGE)) {
-            ObjectNode fullStats = storage.read();
-            long lastSend = sender.getLastSendTime(fullStats);
-            sender.sendStatistics(fullStats);
-
-            fullStats = storage.read();
-            long newSend = sender.getLastSendTime(fullStats);
-            Assert.assertTrue("Send time should be updated",
-                    newSend > lastSend);
-            Assert.assertTrue("Status should be 200",
-                    sender.getLastSendStatus(fullStats).contains("200"));
-            Assert.assertEquals("Default interval should be 24H in seconds",
-                    SEC_24H, sender.getInterval(fullStats));
-        }
-
-        // Test with server response with too custom interval
-        try (TestHttpServer server = new TestHttpServer(200,
-                SERVER_MESSAGE_48H)) {
-            ObjectNode fullStats = storage.read();
-            long lastSend = sender.getLastSendTime(fullStats);
-            sender.sendStatistics(fullStats);
-            fullStats = storage.read();
-            long newSend = sender.getLastSendTime(fullStats);
-            Assert.assertTrue("Send time should be updated",
-                    newSend > lastSend);
-            Assert.assertTrue("Status should be 200",
-                    sender.getLastSendStatus(fullStats).contains("200"));
-            Assert.assertEquals("Custom interval should be 48H in seconds",
-                    SEC_48H, sender.getInterval(fullStats));
-        }
-
-        // Test with server response with too short interval
-        try (TestHttpServer server = new TestHttpServer(200,
-                SERVER_MESSAGE_3H)) {
-            ObjectNode fullStats = storage.read();
-            long lastSend = sender.getLastSendTime(fullStats);
-            sender.sendStatistics(fullStats);
-            fullStats = storage.read();
-            long newSend = sender.getLastSendTime(fullStats);
-            Assert.assertTrue("Send time should be updated",
-                    newSend > lastSend);
-            Assert.assertTrue("Status should be 200",
-                    sender.getLastSendStatus(fullStats).contains("200"));
-            Assert.assertEquals("Minimum interval should be 12H in seconds",
-                    SEC_12H, sender.getInterval(fullStats));
-        }
-
-        // Test with server response with too long interval
-        try (TestHttpServer server = new TestHttpServer(200,
-                SERVER_MESSAGE_40D)) {
-            ObjectNode fullStats = storage.read();
-            long lastSend = sender.getLastSendTime(fullStats);
-            sender.sendStatistics(fullStats);
-            fullStats = storage.read();
-            long newSend = sender.getLastSendTime(fullStats);
-            Assert.assertTrue("Send time should be not be updated",
-                    newSend > lastSend);
-            Assert.assertTrue("Status should be 200",
-                    sender.getLastSendStatus(fullStats).contains("200"));
-            Assert.assertEquals("Maximum interval should be 30D in seconds",
-                    SEC_30D, sender.getInterval(fullStats));
-        }
-
-        // Test with server fail response
-        try (TestHttpServer server = new TestHttpServer(500,
-                SERVER_MESSAGE_40D)) {
-            ObjectNode fullStats = storage.read();
-            long lastSend = sender.getLastSendTime(fullStats);
-            sender.sendStatistics(fullStats);
-            fullStats = storage.read();
-
-            long newSend = sender.getLastSendTime(fullStats);
-            Assert.assertTrue("Send time should be updated",
-                    newSend > lastSend);
-            Assert.assertTrue("Status should be 500",
-                    sender.getLastSendStatus(fullStats).contains("500"));
-            Assert.assertEquals(
-                    "In case of errors we should use default interval", SEC_24H,
-                    sender.getInterval(fullStats));
-        }
-
-        // Test with server returned message
-        try (TestHttpServer server = new TestHttpServer(200,
-                SERVER_MESSAGE_MESSAGE)) {
-            ObjectNode fullStats = storage.read();
-
-            long lastSend = sender.getLastSendTime(fullStats);
-            sender.sendStatistics(fullStats);
-            fullStats = storage.read();
-            long newSend = sender.getLastSendTime(fullStats);
-            Assert.assertTrue("Send time should be updated",
-                    newSend > lastSend);
-            Assert.assertTrue("Status should be 200",
-                    sender.getLastSendStatus(fullStats).contains("200"));
-            Assert.assertEquals("Default interval should be 24H in seconds",
-                    SEC_24H, sender.getInterval(fullStats));
-            Assert.assertEquals("Message should be returned", "Hello",
-                    sender.getLastServerMessage(fullStats));
-        }
-
-    }
-
-    @Test
     public void mavenProjectProjectId() {
         String mavenProjectFolder1 = TestUtils
                 .getTestFolder("stats-data/maven-project-folder1").toPath()
@@ -426,107 +254,6 @@ public class DevModeUsageStatisticsTest {
                                                       // default
                                                       // id in both
                                                       // cases
-    }
-
-    @Test
-    public void readUserKey() throws IOException {
-        String mavenProjectFolder = TestUtils
-                .getTestFolder("stats-data/maven-project-folder1").toPath()
-                .toString();
-        System.setProperty("user.home",
-                TestUtils.getTestFolder("stats-data").toPath().toString()); // Change
-                                                                            // the
-                                                                            // home
-                                                                            // location
-        DevModeUsageStatistics.init(mavenProjectFolder, storage, sender);
-
-        // Read from file
-        String keyString = "user-ab641d2c-test-test-file-223cf1fa628e";
-        String key = ProjectHelpers.getUserKey();
-        assertEquals(keyString, key);
-
-        // Try with non existent
-        File tempDir = File.createTempFile("user.home", "test");
-        tempDir.delete(); // Delete
-        tempDir.mkdir(); // Recreate as directory
-        tempDir.deleteOnExit();
-        File vaadinHome = new File(tempDir, ".vaadin");
-        vaadinHome.mkdir();
-        System.setProperty("user.home", tempDir.getAbsolutePath()); // Change
-                                                                    // the
-                                                                    // home
-                                                                    // location
-        String newKey = ProjectHelpers.getUserKey();
-        assertNotNull(newKey);
-        assertNotSame(keyString, newKey);
-        File userKeyFile = new File(vaadinHome, "userKey");
-        Assert.assertTrue("userKey should be created automatically",
-                userKeyFile.exists());
-    }
-
-    @Test
-    public void readProKey() {
-        String mavenProjectFolder = TestUtils
-                .getTestFolder("stats-data/maven-project-folder1").toPath()
-                .toString();
-        System.setProperty("user.home",
-                TestUtils.getTestFolder("stats-data").toPath().toString()); // Change
-                                                                            // the
-                                                                            // home
-                                                                            // location
-        DevModeUsageStatistics.init(mavenProjectFolder, storage, sender);
-
-        // File is used by default
-        String keyStringFile = "test@vaadin.com/pro-536e1234-test-test-file-f7a1ef311234";
-        String keyFile = ProjectHelpers.getProKey();
-        assertEquals(keyStringFile, "test@vaadin.com/" + keyFile);
-
-        // Check system property works
-        String keyStringProp = "test@vaadin.com/pro-536e1234-test-test-prop-f7a1ef311234";
-        System.setProperty("vaadin.proKey", keyStringProp);
-        String keyProp = ProjectHelpers.getProKey();
-        assertEquals(keyStringProp, "test@vaadin.com/" + keyProp);
-    }
-
-    /**
-     * Simple HttpServer for testing.
-     */
-    public static class TestHttpServer implements AutoCloseable {
-
-        private HttpServer httpServer;
-        private String lastRequestContent;
-
-        public TestHttpServer(int code, String response) throws Exception {
-            this.httpServer = createStubGatherServlet(HTTP_PORT, code,
-                    response);
-        }
-
-        private HttpServer createStubGatherServlet(int port, int status,
-                String response) throws Exception {
-            HttpServer httpServer = HttpServer
-                    .create(new InetSocketAddress(port), 0);
-            httpServer.createContext("/", exchange -> {
-                this.lastRequestContent = IOUtils.toString(
-                        exchange.getRequestBody(), Charset.defaultCharset());
-                exchange.sendResponseHeaders(status, response.length());
-                exchange.getResponseBody().write(response.getBytes());
-                exchange.close();
-            });
-            httpServer.start();
-            return httpServer;
-        }
-
-        public String getLastRequestContent() {
-            return lastRequestContent;
-        }
-
-        @Override
-        public void close() throws Exception {
-            if (httpServer != null) {
-                httpServer.stop(0);
-            }
-        }
-
     }
 
     private static JsonObject wrapStats(String data) {
