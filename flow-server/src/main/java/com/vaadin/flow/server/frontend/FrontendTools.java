@@ -419,7 +419,6 @@ public class FrontendTools {
         this.autoUpdate = autoUpdate;
     }
 
-
     private static FrontendToolsSettings createSettings(
             ApplicationConfiguration applicationConfiguration,
             File projectRoot) {
