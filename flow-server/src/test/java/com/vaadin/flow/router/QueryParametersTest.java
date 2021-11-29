@@ -32,9 +32,9 @@ import org.junit.Test;
 
 public class QueryParametersTest {
 
-    private String simpleInputQueryString = "one=1&two=2&three=3&four&five=4%2F5%266%2B7";
+    private String simpleInputQueryString = "one=1&two=2&three=3&four&five=4%2F5%266%2B7&six=val+ue";
 
-    private String complexInputQueryString = "one=1&one=11&two=2&two=22&three=3&four&five=4%2F5%266%2B7";
+    private String complexInputQueryString = "one=1&one=11&two=2&two=22&three=3&four&five=4%2F5%266%2B7&six=val+ue";
 
     private Map<String, String> getSimpleInputParameters() {
         Map<String, String> inputParameters = new HashMap<>();
@@ -106,6 +106,7 @@ public class QueryParametersTest {
         expectedFullParams.put("three", Collections.singletonList("3"));
         expectedFullParams.put("four", Collections.singletonList(""));
         expectedFullParams.put("five", Collections.singletonList("4/5&6+7"));
+        expectedFullParams.put("six", Collections.singletonList("val+ue"));
         assertEquals(expectedFullParams, simpleParams.getParameters());
     }
 
@@ -158,6 +159,7 @@ public class QueryParametersTest {
         expectedFullParams.put("three", Collections.singletonList("3"));
         expectedFullParams.put("four", Collections.singletonList(""));
         expectedFullParams.put("five", Collections.singletonList("4/5&6+7"));
+        expectedFullParams.put("six", Collections.singletonList("val+ue"));
         assertEquals(expectedFullParams, fullParams.getParameters());
     }
 
