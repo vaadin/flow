@@ -16,9 +16,8 @@
 
 package com.vaadin.fusion;
 
-import java.lang.reflect.Method;
-
 import javax.servlet.ServletContext;
+import java.lang.reflect.Method;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.web.servlet.WebMvcRegistrations;
@@ -97,14 +96,9 @@ public class FusionControllerConfiguration {
      */
     private RequestMappingInfo prependEndpointPrefixUrl(
             RequestMappingInfo mapping) {
-        PatternsRequestCondition connectEndpointPattern = new PatternsRequestCondition(
-                fusionEndpointProperties.getVaadinEndpointPrefix())
-                        .combine(mapping.getPatternsCondition());
-
-        return new RequestMappingInfo(mapping.getName(), connectEndpointPattern,
-                mapping.getMethodsCondition(), mapping.getParamsCondition(),
-                mapping.getHeadersCondition(), mapping.getConsumesCondition(),
-                mapping.getProducesCondition(), mapping.getCustomCondition());
+        return mapping.mutate()
+                .paths(fusionEndpointProperties.getVaadinEndpointPrefix())
+                .build().combine(mapping);
     }
 
     /**
