@@ -130,7 +130,7 @@ public class QueryParameters implements Serializable {
             return Collections.singletonList(paramAndValue);
         }
         String param = paramAndValue.substring(0, index);
-        String value = paramAndValue.substring(index + 1);
+        String value = paramAndValue.substring(index + 1).replace("+", "%2B");
         try {
             value = URLDecoder.decode(value, "utf-8");
         } catch (UnsupportedEncodingException e) {
