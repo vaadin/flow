@@ -1250,9 +1250,7 @@ public class UI extends Component
      * <p>
      * When the modal component is removed the UI and its other children are no
      * longer inert, unless there was another component added as modal before.
-     * 
-     * // TODO check that resize listener still works for UI even when it is
-     * inert
+     *
      * 
      * @param component
      *            the modal component to add
@@ -1272,6 +1270,10 @@ public class UI extends Component
      * @param modal
      *            {@code true} for modal, {@code false} for modeless
      */
+     /*
+      * TODO decide and document whether resize listener still works for UI even
+      *  when it is inert.
+      */
     public void setChildComponentModal(Component childComponent,
             boolean modal) {
         Objects.requireNonNull(childComponent,

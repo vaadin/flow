@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.Stack;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -209,7 +210,7 @@ public class UIInternals implements Serializable {
 
     private boolean isFallbackChunkLoaded;
 
-    private ArrayDeque<Component> modalComponentQueue;
+    private Stack<Component> modalComponentStack;
 
     /**
      * Creates a new instance for the given UI.
@@ -1112,23 +1113,23 @@ public class UIInternals implements Serializable {
      *            the child component to toggle modal
      */
     public void toggleChildModal(Component child) {
-        if (modalComponentQueue == null) {
-            modalComponentQueue = new ArrayDeque<>(1);
+        if (modalComponentStack == null) {
+            modalComponentStack = new Stack<>();
         } else if (isTopMostModal(child)) {
             return;
         }
         ElementUtil.setIgnoreParentInert(child.getElement(), true);
 
-        if (modalComponentQueue.isEmpty()) {
+        if (modalComponentStack.isEmpty()) {
             ElementUtil.setInert(ui.getElement(), true);
         } else {
             // disable previous top most modal component
             ElementUtil.setIgnoreParentInert(
-                    modalComponentQueue.getLast().getElement(), false);
+                    modalComponentStack.peek().getElement(), false);
         }
 
-        final boolean needsListener = !modalComponentQueue.remove(child);
-        modalComponentQueue.add(child);
+        final boolean needsListener = !modalComponentStack.remove(child);
+        modalComponentStack.add(child);
 
         if (needsListener) {
             /*
@@ -1155,19 +1156,19 @@ public class UIInternals implements Serializable {
      *            the child component to make modeless
      */
     public void toggleChildModeless(Component child) {
-        if (modalComponentQueue == null) {
+        if (modalComponentStack == null) {
             return;
         }
         boolean isTopmostModal = isTopMostModal(child);
-        if (modalComponentQueue.remove(child)) {
+        if (modalComponentStack.remove(child)) {
             if (isTopmostModal) {
                 // reset ignoring inert
                 ElementUtil.setIgnoreParentInert(child.getElement(), false);
-                if (modalComponentQueue.isEmpty()) { // make UI active
+                if (modalComponentStack.isEmpty()) { // make UI active
                     ElementUtil.setInert(ui.getElement(), false);
                 } else { // make top most modal component ignore inert
                     ElementUtil.setIgnoreParentInert(
-                            modalComponentQueue.getLast().getElement(), true);
+                            modalComponentStack.peek().getElement(), true);
                 }
             }
         }
@@ -1175,8 +1176,8 @@ public class UIInternals implements Serializable {
 
     private boolean isTopMostModal(Component child) {
         // null has been checked in calling code before this
-        return !modalComponentQueue.isEmpty()
-                && modalComponentQueue.getLast() == child;
+        return !modalComponentStack.isEmpty()
+                && modalComponentStack.peek() == child;
     }
 
     private void configurePush(HasElement root) {

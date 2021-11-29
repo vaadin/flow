@@ -52,7 +52,7 @@ public class NavigationRpcHandlerTest {
         invocation.put(JsonConstants.RPC_NAVIGATION_ROUTERLINK, true);
         rpcHandler.handle(ui, invocation);
 
-        Mockito.verifyZeroInteractions(historyStateChangeHandler);
+        Mockito.verifyNoInteractions(historyStateChangeHandler);
     }
 
     @Test

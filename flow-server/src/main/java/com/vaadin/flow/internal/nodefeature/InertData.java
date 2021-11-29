@@ -159,9 +159,13 @@ public class InertData extends ServerSideFeature {
                 StateNode node = stack.removeFirst();
 
                 if (node.hasFeature(InertData.class)) {
-                    node.getFeatureIfInitialized(InertData.class)
-                            .ifPresent(inertData -> inertData
-                                    .updateInertAndCascadeToChildren(newInert));
+                    final Optional<InertData> featureIfInitialized = node.getFeatureIfInitialized(InertData.class);
+                    if (featureIfInitialized.isPresent()) {
+                        featureIfInitialized.get()
+                                .updateInertAndCascadeToChildren(newInert);
+                    } else {
+                        node.forEachChild(stack::addFirst);
+                    }
                 } else {
                     node.forEachChild(stack::addFirst);
                 }

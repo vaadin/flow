@@ -82,4 +82,5 @@ public class ReturnChannelHandler extends AbstractRpcInvocationHandler {
     private static Logger getLogger() {
         return LoggerFactory.getLogger(ReturnChannelHandler.class.getName());
     }
+
 }
