@@ -207,43 +207,17 @@ public class FrontendTools {
     }
 
     /**
-     * Creates an instance of the class using the {@code baseDir} as a base
-     * directory to locate the tools and the directory returned by the
-     * {@code alternativeDirGetter} as a directory to install tools if they are
-     * not found and use it as an alternative tools location.
-     * <p>
-     * If {@code alternativeDir} is {@code null} tools won't be installed.
-     * <p>
-     * Note: settings for this object can not be changed through the settings
-     * object after creation.
+     * Creates an instance using the the given project directory and application
+     * configuration.
      * 
      * @param projectRoot
-     *
-     * @param settings
-     *            tooling settings to use
+     *            the project root directory
+     * @param applicationConfiguration
+     *            the configuration for the application
      */
     public FrontendTools(ApplicationConfiguration applicationConfiguration,
             File projectRoot) {
         this(createSettings(applicationConfiguration, projectRoot));
-    }
-
-    private static FrontendToolsSettings createSettings(
-            ApplicationConfiguration applicationConfiguration,
-            File projectRoot) {
-        boolean useHomeNodeExec = applicationConfiguration.getBooleanProperty(
-                InitParameters.REQUIRE_HOME_NODE_EXECUTABLE, false);
-        boolean nodeAutoUpdate = applicationConfiguration
-                .getBooleanProperty(InitParameters.NODE_AUTO_UPDATE, false);
-        boolean useGlobalPnpm = applicationConfiguration.getBooleanProperty(
-                InitParameters.SERVLET_PARAMETER_GLOBAL_PNPM, false);
-
-        FrontendToolsSettings settings = new FrontendToolsSettings(
-                projectRoot.getAbsolutePath(),
-                () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
-        settings.setForceAlternativeNode(useHomeNodeExec);
-        settings.setAutoUpdate(nodeAutoUpdate);
-        settings.setUseGlobalPnpm(useGlobalPnpm);
-        return settings;
     }
 
     /**
@@ -443,6 +417,26 @@ public class FrontendTools {
         this.forceAlternativeNode = forceAlternativeNode;
         this.useGlobalPnpm = useGlobalPnpm;
         this.autoUpdate = autoUpdate;
+    }
+
+
+    private static FrontendToolsSettings createSettings(
+            ApplicationConfiguration applicationConfiguration,
+            File projectRoot) {
+        boolean useHomeNodeExec = applicationConfiguration.getBooleanProperty(
+                InitParameters.REQUIRE_HOME_NODE_EXECUTABLE, false);
+        boolean nodeAutoUpdate = applicationConfiguration
+                .getBooleanProperty(InitParameters.NODE_AUTO_UPDATE, false);
+        boolean useGlobalPnpm = applicationConfiguration.getBooleanProperty(
+                InitParameters.SERVLET_PARAMETER_GLOBAL_PNPM, false);
+
+        FrontendToolsSettings settings = new FrontendToolsSettings(
+                projectRoot.getAbsolutePath(),
+                () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
+        settings.setForceAlternativeNode(useHomeNodeExec);
+        settings.setAutoUpdate(nodeAutoUpdate);
+        settings.setUseGlobalPnpm(useGlobalPnpm);
+        return settings;
     }
 
     /**
