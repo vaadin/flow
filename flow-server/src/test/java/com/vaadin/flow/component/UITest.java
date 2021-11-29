@@ -1303,7 +1303,6 @@ public class UITest {
         verifyInert(fixture.modalComponent, false);
     }
 
-
     @Test
     public void modalComponentPresent_toggleTopModalAgain_noChanges() {
         final TestFixture fixture = new TestFixture();

@@ -13,11 +13,11 @@ public class InertComponentView extends Div {
 
     public InertComponentView() {
         add(new Box(false));
-        //add(new RouterLink("Link to another view", ModalDialogView.class));
+        // add(new RouterLink("Link to another view", ModalDialogView.class));
         add(new NativeButton("New box",
                 event -> getUI().ifPresent(ui -> ui.add(new Box(false)))));
-        add(new NativeButton("New Inert Box", event -> getUI()
-                .ifPresent(ui -> ui.addModal(new Box(false)))));
+        add(new NativeButton("New Inert Box",
+                event -> getUI().ifPresent(ui -> ui.addModal(new Box(false)))));
     }
 
     private static class Box extends Div {

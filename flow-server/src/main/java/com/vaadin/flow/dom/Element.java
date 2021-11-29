@@ -788,9 +788,9 @@ public class Element extends Node<Element> {
      *
      * @since 1.3
      */
-        public DomListenerRegistration addPropertyChangeListener(
-                String propertyName, String domEventName,
-                PropertyChangeListener listener) {
+    public DomListenerRegistration addPropertyChangeListener(
+            String propertyName, String domEventName,
+            PropertyChangeListener listener) {
         Registration propertyListenerRegistration = addPropertyChangeListener(
                 propertyName, listener);
 

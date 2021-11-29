@@ -1270,10 +1270,10 @@ public class UI extends Component
      * @param modal
      *            {@code true} for modal, {@code false} for modeless
      */
-     /*
-      * TODO decide and document whether resize listener still works for UI even
-      *  when it is inert.
-      */
+    /*
+     * TODO decide and document whether resize listener still works for UI even
+     * when it is inert.
+     */
     public void setChildComponentModal(Component childComponent,
             boolean modal) {
         Objects.requireNonNull(childComponent,

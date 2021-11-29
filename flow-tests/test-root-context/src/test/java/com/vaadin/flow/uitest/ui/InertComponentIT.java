@@ -2,7 +2,6 @@ package com.vaadin.flow.uitest.ui;
 
 public class InertComponentIT {
 
-
     // TODO
     // IT where modal Component is working properly
     // IT where removing the inert Component doesnt make things work

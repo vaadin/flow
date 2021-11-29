@@ -302,8 +302,8 @@ public class ElementUtil {
     }
 
     /**
-     * Sets whether or not the element should inherit or not inherit its parent's
-     * inert state. Default value is {@code false}.
+     * Sets whether or not the element should inherit or not inherit its
+     * parent's inert state. Default value is {@code false}.
      * 
      * @param element
      *            the element to update
@@ -332,8 +332,10 @@ public class ElementUtil {
      * inert state is inherited to all child elements, unless those are ignoring
      * the inert state.
      *
-     * @param element the element to update
-     * @param inert {@code true} for inert
+     * @param element
+     *            the element to update
+     * @param inert
+     *            {@code true} for inert
      * @see #setIgnoreParentInert(Element, boolean)
      */
     public static void setInert(Element element, boolean inert) {
