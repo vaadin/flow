@@ -97,7 +97,6 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
                 handElement.getCssValue("color"));
     }
 
-    @Ignore("Flaky test: #10331")
     @Test
     public void componentThemeIsApplied_forPolymerAndLit() {
         open();
