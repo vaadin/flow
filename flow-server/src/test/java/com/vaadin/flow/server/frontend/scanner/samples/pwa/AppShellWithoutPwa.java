@@ -17,7 +17,6 @@
 package com.vaadin.flow.server.frontend.scanner.samples.pwa;
 
 import com.vaadin.flow.component.page.AppShellConfigurator;
-import com.vaadin.flow.server.PWA;
 
 public class AppShellWithoutPwa implements AppShellConfigurator {
 }

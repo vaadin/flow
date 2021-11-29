@@ -1353,6 +1353,7 @@ public class ElementTest extends AbstractNodeTest {
 
     @Test
     public void setResourceAttribute_elementIsNotAttachedAndHasAttribute_elementHasAttribute() {
+        UI.setCurrent(createUI());
         Element element = ElementFactory.createDiv();
         element.setAttribute("foo", "bar");
 

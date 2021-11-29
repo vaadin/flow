@@ -79,6 +79,7 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
 
@@ -406,6 +407,60 @@ public class UITest {
         ui.remove(text);
 
         ComponentTest.assertChildren(ui);
+    }
+
+    @Test
+    public void setLastHeartbeatTimestamp_heartbeatEventIsFired() {
+        UI ui = new UI();
+        initUI(ui, "", null);
+
+        long heartbeatTimestamp = System.currentTimeMillis();
+        List<HeartbeatEvent> events = new ArrayList<>();
+        ui.addHeartbeatListener(events::add);
+
+        ui.getInternals().setLastHeartbeatTimestamp(heartbeatTimestamp);
+
+        assertEquals(1, events.size());
+        assertEquals(ui, events.get(0).getSource());
+        assertEquals(heartbeatTimestamp, events.get(0).getHeartbeatTime());
+    }
+
+    @Test
+    public void setLastHeartbeatTimestamp_multipleHeartbeatListenerRegistered_eachHeartbeatListenerIsCalled() {
+        UI ui = new UI();
+        initUI(ui, "", null);
+
+        List<HeartbeatEvent> events = new ArrayList<>();
+        ui.addHeartbeatListener(events::add);
+        ui.addHeartbeatListener(events::add);
+
+        ui.getInternals().setLastHeartbeatTimestamp(System.currentTimeMillis());
+
+        assertEquals(2, events.size());
+    }
+
+    @Test
+    public void setLastHeartbeatTimestamp_heartbeatListenerRemoved_listenerNotRun() {
+        UI ui = new UI();
+        initUI(ui, "", null);
+
+        AtomicReference<Registration> reference = new AtomicReference<>();
+        AtomicInteger runCount = new AtomicInteger();
+
+        Registration registration = ui.addHeartbeatListener(event -> {
+            runCount.incrementAndGet();
+            reference.get().remove(); // removes the listener on the first
+                                      // invocation
+        });
+        reference.set(registration);
+
+        ui.getInternals().setLastHeartbeatTimestamp(System.currentTimeMillis());
+        assertEquals("Listener should have been run once", 1, runCount.get());
+
+        ui.getInternals().setLastHeartbeatTimestamp(System.currentTimeMillis());
+        assertEquals(
+                "Listener should not have been run again since it was removed",
+                1, runCount.get());
     }
 
     @Test

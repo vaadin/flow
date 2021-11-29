@@ -15,6 +15,7 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.server.PwaConfiguration;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -93,7 +94,7 @@ public class TaskUpdateViteTest {
                 temporaryFolder.newFolder("frontend"), "target");
 
         TaskUpdateSettingsFile updateSettings = new TaskUpdateSettingsFile(
-                builder, "theme");
+                builder, "theme", new PwaConfiguration());
         updateSettings.execute();
         File settings = new File(temporaryFolder.getRoot(),
                 "target/" + DEV_SETTINGS_FILE);

@@ -59,7 +59,6 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import net.jcip.annotations.NotThreadSafe;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -185,11 +184,6 @@ public class StaticFileServerTest implements Serializable {
 
         out = new CapturingServletOutputStream();
         Mockito.when(response.getOutputStream()).thenReturn(out);
-    }
-
-    @After
-    public void tearDown() {
-        Assert.assertNull(VaadinService.getCurrent());
     }
 
     @Test

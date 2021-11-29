@@ -15,6 +15,12 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
@@ -34,7 +40,6 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
@@ -45,21 +50,20 @@ import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.frontend.installer.ProxyConfig;
+import com.vaadin.flow.testcategory.SlowTests;
 import com.vaadin.flow.testutil.FrontendStubs;
 
-import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
+@Category(SlowTests.class)
 public class FrontendToolsTest {
 
     public static final String DEFAULT_NODE = FrontendUtils.isWindows()
@@ -601,21 +605,6 @@ public class FrontendToolsTest {
 
         createStubNode(true, true, vaadinHomeDir);
         assertNpmCommand(() -> vaadinHomeDir);
-    }
-
-    @Test
-    public void getSuitablePnpm_useDefaultSupportedPnpmVersion_oldGlobalPnpmIgnored()
-            throws Exception {
-        createStubNode(false, true, baseDir);
-        createFakePnpm(OLD_PNPM_VERSION);
-        List<String> pnpmCommand = tools.getSuitablePnpm();
-        Assert.assertTrue(
-                "expected the default pnpm command to include '--ignore-existing' flag",
-                pnpmCommand.contains("--ignore-existing"));
-        Assert.assertEquals(
-                "expected old global pnpm version to be ignored and the default supported one is used",
-                "pnpm@" + FrontendTools.DEFAULT_PNPM_VERSION,
-                pnpmCommand.get(pnpmCommand.size() - 1));
     }
 
     @Test

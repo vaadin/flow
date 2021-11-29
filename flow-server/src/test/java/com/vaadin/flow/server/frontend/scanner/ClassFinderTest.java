@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -12,6 +13,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import com.vaadin.flow.server.frontend.NodeTestComponents;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.Component1;
 
@@ -73,5 +75,20 @@ public class ClassFinderTest {
         Assert.assertEquals(2, subTypes.size());
         Assert.assertTrue(subTypes.contains(ArrayList.class));
         Assert.assertTrue(subTypes.contains(TestList.class));
+    }
+
+    @Test
+    public void orderIsDeterministic() {
+        Set<Class<?>> testClasses = new HashSet<>();
+        testClasses.add(NodeTestComponents.ExtraImport.class);
+        testClasses.add(NodeTestComponents.VaadinBowerComponent.class);
+        testClasses.add(NodeTestComponents.TranslatedImports.class);
+        Set<Class<?>> allClasses = new DefaultClassFinder(testClasses)
+                .getSubTypesOf(Object.class);
+        LinkedHashSet<Class<?>> expected = new LinkedHashSet<>();
+        expected.add(NodeTestComponents.ExtraImport.class);
+        expected.add(NodeTestComponents.TranslatedImports.class);
+        expected.add(NodeTestComponents.VaadinBowerComponent.class);
+        Assert.assertEquals(expected, allClasses);
     }
 }

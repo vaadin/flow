@@ -20,14 +20,20 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.server.PwaConfiguration;
+
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
+import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC;
+import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC_JS;
 import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_STATIC_FILES_PATH;
 import static elemental.json.impl.JsonUtil.stringify;
 
@@ -46,14 +52,17 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
     File webappResourcesDirectory;
     String buildDirectory;
     String themeName;
+    PwaConfiguration pwaConfiguration;
 
-    TaskUpdateSettingsFile(NodeTasks.Builder builder, String themeName) {
+    TaskUpdateSettingsFile(NodeTasks.Builder builder, String themeName,
+            PwaConfiguration pwaConfiguration) {
         this.npmFolder = builder.getNpmFolder();
         this.frontendDirectory = builder.getFrontendDirectory();
         this.generatedFolder = builder.getGeneratedFolder();
         this.webappResourcesDirectory = builder.getWebappResourcesDirectory();
         this.buildDirectory = builder.getBuildDirectory();
         this.themeName = themeName;
+        this.pwaConfiguration = pwaConfiguration;
     }
 
     @Override
@@ -86,6 +95,12 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
 
         settings.put("themeName", themeName);
 
+        settings.put("clientServiceWorkerSource", getServiceWorkerFile());
+
+        settings.put("pwaEnabled", pwaConfiguration.isEnabled());
+
+        settings.put("offlinePath", getOfflinePath());
+
         File settingsFile = new File(npmFolder,
                 buildDirectory + "/" + DEV_SETTINGS_FILE);
 
@@ -106,6 +121,42 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
             }
         }
         return path.toString();
+    }
+
+    private String getServiceWorkerFile() {
+        boolean exists = new File(frontendDirectory, SERVICE_WORKER_SRC)
+                .exists()
+                || new File(frontendDirectory, SERVICE_WORKER_SRC_JS).exists();
+
+        String serviceWorkerFile = SERVICE_WORKER_SRC;
+        if (new File(frontendDirectory, SERVICE_WORKER_SRC_JS).exists()) {
+            serviceWorkerFile = SERVICE_WORKER_SRC_JS;
+        }
+
+        if (!exists) {
+            Path path = Paths.get(npmFolder.toString(), buildDirectory,
+                    serviceWorkerFile);
+            return path.toString();
+        } else {
+            return Paths.get(frontendDirectory.toString(), serviceWorkerFile)
+                    .toString();
+        }
+    }
+
+    private String getOfflinePath() {
+        if (pwaConfiguration.isOfflinePathEnabled()) {
+            return "'" + getEscapedRelativePath(
+                    Paths.get(pwaConfiguration.getOfflinePath())) + "'";
+        }
+        return "'.'";
+    }
+
+    private String getEscapedRelativePath(Path path) {
+        if (path.isAbsolute()) {
+            return FrontendUtils.getUnixRelativePath(npmFolder.toPath(), path);
+        } else {
+            return FrontendUtils.getUnixPath(path);
+        }
     }
 
     private Logger log() {

@@ -6,7 +6,7 @@
     <parent>
         <artifactId>flow-tests</artifactId>
         <groupId>com.vaadin</groupId>
-        <version>9.0-SNAPSHOT</version>
+        <version>10.0-SNAPSHOT</version>
     </parent>
     <artifactId>flow-test-v14-bootstrap-prod</artifactId>
     <name>Flow tests for legacy V14 bootstrap mode (production mode)</name>

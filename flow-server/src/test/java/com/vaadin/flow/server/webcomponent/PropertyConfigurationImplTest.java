@@ -22,8 +22,6 @@ import org.junit.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.server.webcomponent.PropertyConfigurationImpl;
-import com.vaadin.flow.server.webcomponent.PropertyData;
 
 public class PropertyConfigurationImplTest {
 

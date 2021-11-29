@@ -13,24 +13,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.internal;
-
-import java.io.Serializable;
+package com.vaadin.flow.testcategory;
 
 /**
- * Listener for listening to the heartbeat of the application.
+ * Tests which take more than 0.5s to run should be annotated with @
+ * {@code @Category(SlowTests.class)} and will be excluded by default from the
+ * test suite.
  *
- * @since 2.0
+ * @author Vaadin Ltd
+ * @since 1.0
  */
-@FunctionalInterface
-public interface HeartbeatListener extends Serializable {
-
-    /**
-     * Notifies about a heartbeat received for UI.
-     *
-     * @param event
-     *            heartbeat event containing new value and receiving UI
-     */
-    void heartbeat(HeartbeatEvent event);
+public interface SlowTests {
 
 }

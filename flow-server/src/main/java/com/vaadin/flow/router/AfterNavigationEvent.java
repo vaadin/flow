@@ -22,7 +22,7 @@ import java.util.List;
 import com.vaadin.flow.component.HasElement;
 
 /**
- * Event created before navigation happens.
+ * Event created after navigation completed.
  *
  * @author Vaadin Ltd
  * @since 1.0

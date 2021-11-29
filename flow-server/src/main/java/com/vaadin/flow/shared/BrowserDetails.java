@@ -617,8 +617,8 @@ public class BrowserDetails implements Serializable {
             }
             return true;
         }
-        // Firefox 65+ for now
-        if (isFirefox() && getBrowserMajorVersion() < 65) {
+        // Firefox 78+ for now
+        if (isFirefox() && getBrowserMajorVersion() < 78) {
             return true;
         }
         // Opera 58+ for now

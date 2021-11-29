@@ -210,9 +210,6 @@ public class TaskUpdateWebpack implements FallibleCommand {
                         getClientEntryPoint()),
                 new Pair<>("const pwaEnabled",
                         Boolean.toString(pwaConfiguration.isEnabled())),
-                new Pair<>("const offlinePathEnabled",
-                        Boolean.toString(
-                                pwaConfiguration.isOfflinePathEnabled())),
                 new Pair<>("const offlinePath", getOfflinePath()),
                 new Pair<>("const clientServiceWorkerEntryPoint",
                         getClientServiceWorker()),
@@ -255,8 +252,11 @@ public class TaskUpdateWebpack implements FallibleCommand {
     }
 
     private String getOfflinePath() {
-        return "'" + getEscapedRelativeWebpackPath(
-                Paths.get(pwaConfiguration.getOfflinePath())) + "'";
+        if (pwaConfiguration.isOfflinePathEnabled()) {
+            return "'" + getEscapedRelativeWebpackPath(
+                    Paths.get(pwaConfiguration.getOfflinePath())) + "'";
+        }
+        return "'.'";
     }
 
     private String formatPathResolve(String path) {
