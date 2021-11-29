@@ -339,6 +339,11 @@ public final class Constants implements Serializable {
     public static final boolean DEFAULT_REQUIRE_HOME_NODE_EXECUTABLE = false;
 
     /**
+     * The default value for whether usage statistics is enabled.
+     */
+    public static final boolean DEFAULT_DEVMODE_STATS = true;
+
+    /**
      * @deprecated Use {@link InitParameters#REQUIRE_HOME_NODE_EXECUTABLE}
      *             instead.
      */
