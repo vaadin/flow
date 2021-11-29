@@ -435,35 +435,36 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         Assert.assertEquals(expectedJsModules, jsModules.toJson());
         Assert.assertEquals(expectedCssImports, cssImports.toJson());
 
-        String actual = FileUtils.readFileToString(tokenFile, StandardCharsets.UTF_8);
-        String expected = "{\n"+ //
-        "  \"chunks\": {\n"+ //
-        "    \"fallback\": {\n"+ //
-        "      \"jsModules\": [\n"+ //
-        "        \"@polymer/e.js\",\n"+ //
-        "        \"@polymer/D.js\",\n"+ //
-        "        \"@polymer/c.js\",\n"+ //
-        "        \"@polymer/b.js\",\n"+ //
-        "        \"@polymer/a.js\",\n"+ //
-        "        \"./extra-javascript.js\"\n"+ //
-        "      ],\n"+ //
-        "      \"cssImports\": [\n"+ //
-        "        {\n"+ //
-        "          \"value\": \"./b-css.css\"\n"+ //
-        "        },\n"+ //
-        "        {\n"+ //
-        "          \"include\": \"a-a\",\n"+ //
-        "          \"value\": \"./a-css.css\"\n"+ //
-        "        },\n"+ //
-        "        {\n"+ //
-        "          \"include\": \"extra-bar\",\n"+ //
-        "          \"themeFor\": \"extra-foo\",\n"+ //
-        "          \"value\": \"./extra-css.css\"\n"+ //
-        "        }\n"+ //
-        "      ]\n"+ //
-        "    }\n"+ //
-        "  }\n"+ //
-        "}";
+        String actual = FileUtils.readFileToString(tokenFile,
+                StandardCharsets.UTF_8);
+        String expected = "{\n" + //
+                "  \"chunks\": {\n" + //
+                "    \"fallback\": {\n" + //
+                "      \"jsModules\": [\n" + //
+                "        \"@polymer/e.js\",\n" + //
+                "        \"@polymer/D.js\",\n" + //
+                "        \"@polymer/c.js\",\n" + //
+                "        \"@polymer/b.js\",\n" + //
+                "        \"@polymer/a.js\",\n" + //
+                "        \"./extra-javascript.js\"\n" + //
+                "      ],\n" + //
+                "      \"cssImports\": [\n" + //
+                "        {\n" + //
+                "          \"value\": \"./b-css.css\"\n" + //
+                "        },\n" + //
+                "        {\n" + //
+                "          \"include\": \"a-a\",\n" + //
+                "          \"value\": \"./a-css.css\"\n" + //
+                "        },\n" + //
+                "        {\n" + //
+                "          \"include\": \"extra-bar\",\n" + //
+                "          \"themeFor\": \"extra-foo\",\n" + //
+                "          \"value\": \"./extra-css.css\"\n" + //
+                "        }\n" + //
+                "      ]\n" + //
+                "    }\n" + //
+                "  }\n" + //
+                "}";
         Assert.assertEquals(expected, actual);
 
     }
