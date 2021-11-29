@@ -39,6 +39,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.base.devserver.DevServerOutputTracker.Result;
+import com.vaadin.base.devserver.stats.DevModeUsageStatistics;
+import com.vaadin.base.devserver.stats.StatisticsConstants;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
@@ -62,6 +64,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static com.vaadin.base.devserver.stats.StatisticsConstants.EVENT_LIVE_RELOAD;
 
 /**
  * Deals with most details of starting a frontend development server or
@@ -218,6 +222,10 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
 
             long ms = (System.nanoTime() - start) / 1000000;
             getLogger().info("Started {}. Time: {}ms", getServerName(), ms);
+            DevModeUsageStatistics.collectEvent(
+                    StatisticsConstants.EVENT_DEV_SERVER_START_PREFIX
+                            + getServerName(),
+                    ms);
         } finally {
             if (devServerProcess.get() == null) {
                 removeRunningDevServerPort();
@@ -277,7 +285,8 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
     protected abstract File getServerConfig();
 
     /**
-     * Gets the name of the dev server for outputting to the user.
+     * Gets the name of the dev server for outputting to the user and
+     * statistics.
      */
     protected abstract String getServerName();
 
@@ -441,6 +450,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
     protected void triggerLiveReload() {
         if (liveReload != null) {
             liveReload.reload();
+            DevModeUsageStatistics.collectEvent(EVENT_LIVE_RELOAD);
         }
     }
 
