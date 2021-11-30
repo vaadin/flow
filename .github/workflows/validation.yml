@@ -45,6 +45,7 @@ jobs:
   unit-tests:
     needs: build
     strategy:
+      fail-fast: false
       matrix:
         modules:
           - 'flow-client,fusion-endpoint,flow-jandex'
@@ -79,6 +80,7 @@ jobs:
   it-tests:
     needs: build
     strategy:
+      fail-fast: false
       matrix:
         parallelism: [6]
         current: [0, 1, 2, 3, 4, 5,
