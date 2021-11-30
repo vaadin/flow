@@ -27,7 +27,7 @@ import net.bytebuddy.jar.asm.Opcodes;
  */
 abstract class RepeatedAnnotationVisitor extends AnnotationVisitor {
     RepeatedAnnotationVisitor() {
-        super(Opcodes.ASM8);
+        super(Opcodes.ASM9);
     }
 
     @Override
