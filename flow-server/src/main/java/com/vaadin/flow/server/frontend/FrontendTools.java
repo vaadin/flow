@@ -36,11 +36,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.internal.Pair;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.FrontendUtils.CommandExecutionException;
 import com.vaadin.flow.server.frontend.FrontendUtils.UnknownVersionException;
 import com.vaadin.flow.server.frontend.installer.InstallationException;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.installer.ProxyConfig;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 /**
  * Provides access to frontend tools (node.js and npm, pnpm) and optionally
@@ -202,6 +204,20 @@ public class FrontendTools {
         this.forceAlternativeNode = settings.isForceAlternativeNode();
         this.useGlobalPnpm = settings.isUseGlobalPnpm();
         this.autoUpdate = settings.isAutoUpdate();
+    }
+
+    /**
+     * Creates an instance using the the given project directory and application
+     * configuration.
+     * 
+     * @param projectRoot
+     *            the project root directory
+     * @param applicationConfiguration
+     *            the configuration for the application
+     */
+    public FrontendTools(ApplicationConfiguration applicationConfiguration,
+            File projectRoot) {
+        this(createSettings(applicationConfiguration, projectRoot));
     }
 
     /**
@@ -403,6 +419,25 @@ public class FrontendTools {
         this.autoUpdate = autoUpdate;
     }
 
+    private static FrontendToolsSettings createSettings(
+            ApplicationConfiguration applicationConfiguration,
+            File projectRoot) {
+        boolean useHomeNodeExec = applicationConfiguration.getBooleanProperty(
+                InitParameters.REQUIRE_HOME_NODE_EXECUTABLE, false);
+        boolean nodeAutoUpdate = applicationConfiguration
+                .getBooleanProperty(InitParameters.NODE_AUTO_UPDATE, false);
+        boolean useGlobalPnpm = applicationConfiguration.getBooleanProperty(
+                InitParameters.SERVLET_PARAMETER_GLOBAL_PNPM, false);
+
+        FrontendToolsSettings settings = new FrontendToolsSettings(
+                projectRoot.getAbsolutePath(),
+                () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
+        settings.setForceAlternativeNode(useHomeNodeExec);
+        settings.setAutoUpdate(nodeAutoUpdate);
+        settings.setUseGlobalPnpm(useGlobalPnpm);
+        return settings;
+    }
+
     /**
      * Locate <code>node</code> executable.
      *
@@ -575,7 +610,7 @@ public class FrontendTools {
      */
     public FrontendVersion getNodeVersion() throws UnknownVersionException {
         List<String> nodeVersionCommand = new ArrayList<>();
-        nodeVersionCommand.add(doGetNodeExecutable());
+        nodeVersionCommand.add(getNodeBinary());
         nodeVersionCommand.add("--version"); // NOSONAR
         return FrontendUtils.getVersion("node", nodeVersionCommand);
     }
@@ -908,7 +943,7 @@ public class FrontendTools {
         List<String> returnCommand = new ArrayList<>();
         if (file.canRead()) {
             // We return a two element list with node binary and npm-cli script
-            returnCommand.add(doGetNodeExecutable());
+            returnCommand.add(getNodeBinary());
             returnCommand.add(file.getAbsolutePath());
         }
         return returnCommand;
@@ -980,7 +1015,15 @@ public class FrontendTools {
         return alternativeDirGetter.get();
     }
 
-    private String doGetNodeExecutable() {
+    /**
+     * Gets a path to the used node binary.
+     * 
+     * The return value can be used when executing node commands, as the first
+     * part of a process builder command.
+     * 
+     * @return the path to the node binary
+     */
+    public String getNodeBinary() {
         if (forceAlternativeNode) {
             return forceAlternativeNodeExecutable();
         } else {

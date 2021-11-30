@@ -54,7 +54,6 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendTools;
-import com.vaadin.flow.server.frontend.FrontendToolsSettings;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.FrontendVersion;
 import com.vaadin.flow.server.frontend.FrontendUtils.UnknownVersionException;
@@ -332,32 +331,10 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         ApplicationConfiguration config = getApplicationConfiguration();
         ProcessBuilder processBuilder = new ProcessBuilder()
                 .directory(getProjectRoot());
-
-        boolean useHomeNodeExec = config.getBooleanProperty(
-                InitParameters.REQUIRE_HOME_NODE_EXECUTABLE, false);
-        boolean nodeAutoUpdate = config
-                .getBooleanProperty(InitParameters.NODE_AUTO_UPDATE, false);
-        boolean useGlobalPnpm = config.getBooleanProperty(
-                InitParameters.SERVLET_PARAMETER_GLOBAL_PNPM, false);
-
-        FrontendToolsSettings settings = new FrontendToolsSettings(
-                getProjectRoot().getAbsolutePath(),
-                () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
-        settings.setForceAlternativeNode(useHomeNodeExec);
-        settings.setAutoUpdate(nodeAutoUpdate);
-        settings.setUseGlobalPnpm(useGlobalPnpm);
-
-        FrontendTools tools = new FrontendTools(settings);
+        FrontendTools tools = new FrontendTools(config, getProjectRoot());
         tools.validateNodeAndNpmVersion();
 
-        String nodeExec = null;
-        if (useHomeNodeExec) {
-            nodeExec = tools.forceAlternativeNodeExecutable();
-        } else {
-            nodeExec = tools.getNodeExecutable();
-        }
-
-        List<String> command = getServerStartupCommand(nodeExec);
+        List<String> command = getServerStartupCommand(tools.getNodeBinary());
 
         FrontendUtils.console(FrontendUtils.GREEN, START);
         if (getLogger().isDebugEnabled()) {
