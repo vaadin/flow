@@ -77,7 +77,7 @@ public class RouteNotFoundError extends Component
         template = template.replace("{{additionalInfo}}", additionalInfo);
         template = template.replace("{{path}}", path);
 
-        getElement().appendChild(new Html(template).getElement());
+        getElement().setChild(0, new Html(template).getElement());
         return HttpServletResponse.SC_NOT_FOUND;
     }
 
