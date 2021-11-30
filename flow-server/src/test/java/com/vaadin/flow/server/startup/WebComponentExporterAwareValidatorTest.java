@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -118,7 +119,7 @@ public class WebComponentExporterAwareValidatorTest {
 
     private void assertHint(String msg,
             Class<? extends Annotation> anntationType) {
-        Assert.assertThat("Exception has hint.", msg,
+        MatcherAssert.assertThat("Exception has hint.", msg,
                 CoreMatchers.allOf(
                         CoreMatchers
                                 .containsString(anntationType.getSimpleName()),

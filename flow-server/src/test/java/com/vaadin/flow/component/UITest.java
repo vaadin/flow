@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
@@ -285,7 +286,7 @@ public class UITest {
         List<HasElement> chain = ui.getInternals()
                 .getActiveRouterTargetsChain();
         Assert.assertEquals(1, chain.size());
-        Assert.assertThat(chain.get(0),
+        MatcherAssert.assertThat(chain.get(0),
                 CoreMatchers.instanceOf(FooBarNavigationTarget.class));
     }
 
@@ -327,9 +328,9 @@ public class UITest {
         List<HasElement> chain = ui.getInternals()
                 .getActiveRouterTargetsChain();
         Assert.assertEquals(2, chain.size());
-        Assert.assertThat(chain.get(0),
+        MatcherAssert.assertThat(chain.get(0),
                 CoreMatchers.instanceOf(FooBarParamNavigationTarget.class));
-        Assert.assertThat(chain.get(1), CoreMatchers
+        MatcherAssert.assertThat(chain.get(1), CoreMatchers
                 .instanceOf(FooBarParamParentNavigationTarget.class));
     }
 
@@ -377,7 +378,7 @@ public class UITest {
 
         Assert.assertEquals(1, ui.getChildren().count());
         Optional<Component> errorComponent = ui.getChildren().findFirst();
-        Assert.assertThat(errorComponent.get(),
+        MatcherAssert.assertThat(errorComponent.get(),
                 CoreMatchers.instanceOf(RouteNotFoundError.class));
         assertEquals(Integer.valueOf(404), statusCodeCaptor.getValue());
     }

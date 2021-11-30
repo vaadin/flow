@@ -22,7 +22,7 @@ import org.junit.Test;
 import elemental.json.JsonObject;
 
 import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
  * @author Vaadin Ltd

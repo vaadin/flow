@@ -19,6 +19,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.io.IOUtils;
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -1422,7 +1423,7 @@ public class BootstrapHandlerTest {
 
     private void assertStringEquals(String message, String expected,
             String actual) {
-        Assert.assertThat(message,
+        MatcherAssert.assertThat(message,
                 actual.replaceAll(System.getProperty("line.separator"), "\n"),
                 CoreMatchers.equalTo(expected));
     }

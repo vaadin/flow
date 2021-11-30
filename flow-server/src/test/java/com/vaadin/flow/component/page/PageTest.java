@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -92,7 +93,7 @@ public class PageTest {
     public void addListener_executeInitJs() {
         page.addBrowserWindowResizeListener(listener);
 
-        Assert.assertThat(page.expression,
+        MatcherAssert.assertThat(page.expression,
                 CoreMatchers.allOf(CoreMatchers.containsString("init"),
                         CoreMatchers.containsString("resize")));
 
@@ -160,7 +161,7 @@ public class PageTest {
 
         Assert.assertEquals(3, page.count);
 
-        Assert.assertThat(page.expression,
+        MatcherAssert.assertThat(page.expression,
                 CoreMatchers.allOf(CoreMatchers.containsString("init"),
                         CoreMatchers.containsString("resize")));
 
@@ -446,7 +447,7 @@ public class PageTest {
         // self check
         Assert.assertEquals("_self", params.get(1));
 
-        Assert.assertThat(capture.get(), CoreMatchers
+        MatcherAssert.assertThat(capture.get(), CoreMatchers
                 .startsWith("if ($1 == '_self') this.stopApplication();"));
     }
 }

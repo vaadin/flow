@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -200,7 +201,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         assertTrue(atLeastOneRemoved);
         updater.run();
 
-        Assert.assertThat(logger.getLogs(),
+        MatcherAssert.assertThat(logger.getLogs(),
                 CoreMatchers.allOf(
                         CoreMatchers.containsString(
                                 "@vaadin/vaadin-lumo-styles/spacing.js"),
@@ -343,19 +344,20 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
         String output = logger.getLogs();
 
-        Assert.assertThat(output, CoreMatchers.containsString(
+        MatcherAssert.assertThat(output, CoreMatchers.containsString(
                 "Use the './' prefix for files in JAR files: 'ExampleConnector.js'"));
-        Assert.assertThat(output, CoreMatchers
+        MatcherAssert.assertThat(output, CoreMatchers
                 .containsString("Use the './' prefix for files in the '"
                         + frontendDirectory.getPath()
                         + "' folder: 'vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js'"));
 
         // Using regex match because of the ➜ character in TC
-        Assert.assertThat(output, CoreMatchers.containsString(
+        MatcherAssert.assertThat(output, CoreMatchers.containsString(
                 "Failed to find the following imports in the `node_modules` tree:\n      - unresolved/component"));
 
-        Assert.assertThat(output, CoreMatchers.not(CoreMatchers.containsString(
-                "changing 'frontend://foo-dir/javascript-lib.js' to './foo-dir/javascript-lib.js'")));
+        MatcherAssert.assertThat(output,
+                CoreMatchers.not(CoreMatchers.containsString(
+                        "changing 'frontend://foo-dir/javascript-lib.js' to './foo-dir/javascript-lib.js'")));
     }
 
     @Test

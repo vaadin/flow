@@ -32,6 +32,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import net.jcip.annotations.NotThreadSafe;
+
+import org.hamcrest.MatcherAssert;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -72,7 +74,6 @@ import static com.vaadin.flow.router.internal.RouteModelTest.varargs;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.startsWith;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 
 @NotThreadSafe
 public class RouterTest extends RoutingTestBase {
@@ -1701,8 +1702,8 @@ public class RouterTest extends RoutingTestBase {
                 new Location("navigation-target-with-dynamic-title"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        assertThat("Dynamic title is wrong", ui.getInternals().getTitle(),
-                is(DYNAMIC_TITLE));
+        MatcherAssert.assertThat("Dynamic title is wrong",
+                ui.getInternals().getTitle(), is(DYNAMIC_TITLE));
     }
 
     @Test
@@ -1713,8 +1714,8 @@ public class RouterTest extends RoutingTestBase {
         router.navigate(ui, new Location("url/hello"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        assertThat("Dynamic title is wrong", ui.getInternals().getTitle(),
-                is("hello"));
+        MatcherAssert.assertThat("Dynamic title is wrong",
+                ui.getInternals().getTitle(), is("hello"));
     }
 
     @Test
@@ -1726,8 +1727,8 @@ public class RouterTest extends RoutingTestBase {
         router.navigate(ui, new Location("url"),
                 NavigationTrigger.PROGRAMMATIC);
 
-        assertThat("Dynamic title is wrong", ui.getInternals().getTitle(),
-                is("ACTIVATING"));
+        MatcherAssert.assertThat("Dynamic title is wrong",
+                ui.getInternals().getTitle(), is("ACTIVATING"));
     }
 
     @Test

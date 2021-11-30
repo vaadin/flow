@@ -19,7 +19,6 @@ import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -61,6 +60,7 @@ import com.vaadin.flow.testcategory.SlowTests;
 import com.vaadin.flow.testutil.FrontendStubs;
 
 import net.jcip.annotations.NotThreadSafe;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 @NotThreadSafe
 @Category(SlowTests.class)
