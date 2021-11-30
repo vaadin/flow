@@ -1,0 +1,199 @@
+name: Flow Validation
+on: [pull_request]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-java@v2
+        with:
+          java-version: '8'
+          distribution: 'adopt'
+      - uses: stCarolas/setup-maven@v4.2
+        with:
+          maven-version: 3.8.3
+      - name: Set flow version and Generate module lists
+        run: |
+          mvn -B -q -DnewVersion=999.99-SNAPSHOT versions:set -T 1C &
+          P1=$!
+          mvn help:evaluate -Dexpression=project.modules -DskipTests -Prun-tests \
+            | grep "<\/string>" \
+            | grep -v flow-tests \
+            | sed -e 's, *<string>\(.*\)</string>,\1,g' \
+            | sort > flow.modules &
+          P2=$!
+          mvn help:evaluate -B -Dexpression=project.modules -pl flow-tests -DskipTests -Prun-tests 2>/dev/null \
+            | grep "<\/string>" \
+            | sed -e 's, *<string>\(.*\)</string>,flow-tests/\1,g' \
+            | grep -v "test-ccdm$" \
+            | grep -v "test-root-context" \
+            | grep -v "test-root-ui-context" \
+            | sort > it.modules &
+          P3=$!
+          wait $P1 $P2 $P3
+      - name: Compile and Install Flow
+        run: |
+          mvn install -B -am -DskipTests -T 2C
+      - name: Save workspace
+        run: |
+          mv ~/.m2/ .
+          tar cf workspace.tar .m2 *.modules `find . -name target -o -name "pom*.xml"`
+      - uses: actions/upload-artifact@v2
+        with:
+          name: saved-workspace
+          path: workspace.tar
+  unit-tests:
+    needs: build
+    strategy:
+      matrix:
+        modules:
+          - 'flow-client,fusion-endpoint,flow-jandex'
+          - 'flow-server,flow-data,flow,flow-bom,vaadin-dev-server,flow-component-demo-helpers,flow-dnd,flow-html-components,flow-html-components-testbench,flow-lit-template,flow-plugins,flow-polymer-template,flow-push,flow-server-production-mode,flow-test-generic,flow-test-util'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-java@v2
+        with:
+          java-version: '8'
+          distribution: 'adopt'
+      - uses: stCarolas/setup-maven@v4.2
+        with:
+          maven-version: 3.8.3
+      - uses: actions/download-artifact@v2
+        with:
+          name: saved-workspace
+      - name: Restore Workspace
+        run: |
+          tar xf workspace.tar
+          rm -rf ~/.m2 && mv -f .m2 ~/
+      - name: Unit Test
+        run: |
+          mvn -B verify -fae \
+            -Dsurefire.rerunFailingTestsCount=2 \
+            -pl ${{ matrix.modules }}
+      - uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: test-reports
+          path: "**/target/*-reports/*"
+  it-tests:
+    needs: build
+    strategy:
+      matrix:
+        parallelism: [6]
+        current: [0, 1, 2, 3, 4, 5,
+        'test-ccdm',
+        'test-root-ui-context',
+        'test-root-context:0',
+        'test-root-context:1',
+        'test-root-context:2'
+        ]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 8
+        uses: actions/setup-java@v2
+        with:
+          java-version: '8'
+          distribution: 'adopt'
+      - name: Set up Maven
+        uses: stCarolas/setup-maven@v4.2
+        with:
+          maven-version: 3.8.3
+      - name: Install Chrome
+        run: |
+          sudo apt-get update
+          wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+          sudo apt-get install -y -f ./google-chrome-stable_current_amd64.deb
+      - uses: nanasess/setup-chromedriver@master
+      - uses: actions/download-artifact@v2
+        with:
+          name: saved-workspace
+      - name: Restore Workspace
+        run: |
+          tar xf workspace.tar
+          rm -rf ~/.m2 && mv -f .m2 ~/
+      - name: Set TB License
+        run: |
+          TB_LICENSE=${{secrets.TB_LICENSE}}
+          mkdir -p ~/.vaadin/
+          echo '{"username":"'`echo $TB_LICENSE | cut -d / -f1`'","proKey":"'`echo $TB_LICENSE | cut -d / -f2`'"}' > ~/.vaadin/proKey
+      - name: Compute Modules
+        run: |
+          case "${{matrix.current}}" in
+            *:*)
+              MAX=3
+              M="flow-tests/"`echo "${{matrix.current}}" | cut -d : -f1`
+              N=`echo "${{matrix.current}}" | cut -d : -f2`
+              H=`find $M/src/test -name "*IT.java" | xargs basename -s .java`
+              C=`echo "$H" | wc -l`
+              J=`echo "$C / $MAX + 1" | bc`
+              I=`echo "$J * $N + 1" | bc`
+              T=`echo "$H" | tail +$I | head -$J`
+              A=`echo "$T" | grep ... | tr '\n' ',' | sed -e 's/,$//'`
+              A="-pl $M -Dit.test=$A -Dfailsafe.forkCount=4"
+              ;;
+            *test*)
+              M="flow-tests/${{matrix.current}}"
+              A="-pl $M -Dfailsafe.forkCount=4"
+              ;;
+            *)
+              P="${{matrix.parallelism}}"
+              N="${{matrix.current}}"
+              H=`cat it.modules`
+              C=`echo "$H" | wc -l`
+              J=`echo "$C / $P + 1" | bc`
+              I=`echo "$J * $N + 1" | bc`
+              M=`echo "$H" | tail +$I | head -$J`
+              A="-pl "`echo "$M" | grep ... | tr '\n' ',' | sed -e 's/,$//'`
+              ;;
+          esac
+          echo "MODULES:"
+          echo "$M"
+          echo "TESTS:"
+          echo "$T"
+          echo "ARGS:"
+          echo "$A"
+          echo "$A" > it.args
+      - name: Install required modules
+        run: |
+          if grep -q test-fusion-csrf-context it.args; then
+            mvn -B -q install -DskipITs -pl flow-tests/test-fusion-csrf
+          fi
+      - name: Run ITs
+        run: |
+          ARGS=`cat it.args`
+          echo "$ARGS"
+          if [ -n "$ARGS" ]; then
+            set -x
+            mvn verify -fae -V -B -e \
+              -Dcom.vaadin.testbench.Parameters.testsInParallel=5 \
+              -Dfailsafe.rerunFailingTestsCount=2 \
+              $ARGS
+          fi
+      - uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: test-reports
+          path: |
+            **/target/*-reports/*
+            **/error-screenshots/*.png
+            **/target/site/*-report.html
+  test-results:
+    if: always()
+    needs:
+      - unit-tests
+      - it-tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v2
+        with:
+          name: test-reports
+      - name: Publish Unit Test Results
+        if: always()
+        uses: EnricoMi/publish-unit-test-result-action/composite@v1
+        with:
+          files: "**/target/*-reports/TEST*.xml"
+      - uses: geekyeggo/delete-artifact@v1
+        with:
+          name: saved-workspace
