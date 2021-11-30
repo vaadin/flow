@@ -1,5 +1,5 @@
 name: Flow Validation
-on: [pull_request]
+on: [pull_request, workflow_dispatch]
 jobs:
   build:
     runs-on: ubuntu-latest
