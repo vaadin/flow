@@ -132,7 +132,7 @@ public final class EventUtil {
         return chain.stream()
                 .flatMap(chainRoot -> collectBeforeEnterObserversStream(
                         chainRoot.getElement(), childrenExclusionElements))
-                .collect(Collectors.toList());
+                .distinct().collect(Collectors.toList());
     }
 
     /**
