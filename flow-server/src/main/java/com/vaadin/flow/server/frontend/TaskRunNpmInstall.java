@@ -30,6 +30,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
 
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
@@ -307,6 +308,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
                     exception);
         }
 
+        Logger logger = packageUpdater.log();
         if (enablePnpm) {
             try {
                 createPnpmFile(generateVersionsJson());
@@ -321,7 +323,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
             try {
                 createNpmRcFile();
             } catch (IOException exception) {
-                packageUpdater.log().warn(".npmrc generation failed; pnpm "
+                logger.warn(".npmrc generation failed; pnpm "
                         + "package installation may require manaually passing "
                         + "the --shamefully-hoist flag", exception);
             }
@@ -356,8 +358,8 @@ public class TaskRunNpmInstall implements FallibleCommand {
         command.add("--ignore-scripts");
         command.add("install");
 
-        if (packageUpdater.log().isDebugEnabled()) {
-            packageUpdater.log().debug(commandToString(
+        if (logger.isDebugEnabled()) {
+            logger.debug(commandToString(
                     packageUpdater.npmFolder.getAbsolutePath(), command));
         }
 
@@ -370,14 +372,14 @@ public class TaskRunNpmInstall implements FallibleCommand {
         try {
             process = runNpmCommand(command, packageUpdater.npmFolder);
 
-            packageUpdater.log().debug("Output of `{}`:", commandString);
+            logger.debug("Output of `{}`:", commandString);
             StringBuilder toolOutput = new StringBuilder();
             try (BufferedReader reader = new BufferedReader(
                     new InputStreamReader(process.getInputStream(),
                             StandardCharsets.UTF_8))) {
                 String stdoutLine;
                 while ((stdoutLine = reader.readLine()) != null) {
-                    packageUpdater.log().debug(stdoutLine);
+                    logger.debug(stdoutLine);
                     toolOutput.append(stdoutLine)
                             .append(System.lineSeparator());
                 }
@@ -387,9 +389,9 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
             if (errorCode != 0) {
                 // Echo the stdout from pnpm/npm to error level log
-                packageUpdater.log().error("Command `{}` failed:\n{}",
-                        commandString, toolOutput);
-                packageUpdater.log().error(
+                logger.error("Command `{}` failed:\n{}", commandString,
+                        toolOutput);
+                logger.error(
                         ">>> Dependency ERROR. Check that all required dependencies are "
                                 + "deployed in {} repositories.",
                         toolName);
@@ -399,12 +401,10 @@ public class TaskRunNpmInstall implements FallibleCommand {
                                 + "Some dependencies are not installed. Check "
                                 + toolName + " command output");
             } else {
-                packageUpdater.log()
-                        .info("Frontend dependencies resolved successfully.");
+                logger.info("Frontend dependencies resolved successfully.");
             }
         } catch (InterruptedException | IOException e) {
-            packageUpdater.log().error("Error when running `{} install`",
-                    toolName, e);
+            logger.error("Error when running `{} install`", toolName, e);
             throw new ExecutionFailedException(
                     "Command '" + toolName + " install' failed to finish", e);
         } finally {
