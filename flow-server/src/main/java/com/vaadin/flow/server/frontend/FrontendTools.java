@@ -937,8 +937,6 @@ public class FrontendTools {
             pnpmCommand = getNpmCliToolExecutable(BuildTool.NPX, "--yes",
                     "--quiet", pnpmSpecifier);
         }
-        getLogger().info("using '{}' for frontend package installation",
-                String.join(" ", pnpmCommand));
         return pnpmCommand;
     }
 

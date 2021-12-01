@@ -321,6 +321,8 @@ public class BuildFrontendUtil {
                             .withNodeDownloadRoot(nodeDownloadRootURI)
                             .setNodeAutoUpdate(adapter.nodeAutoUpdate())
                             .setJavaResourceFolder(adapter.javaResourceFolder())
+                            .withPostinstallPackages(
+                                    adapter.postinstallPackages())
                             .build().execute();
         } catch (ExecutionFailedException exception) {
             throw exception;

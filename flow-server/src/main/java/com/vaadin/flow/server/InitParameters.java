@@ -211,4 +211,12 @@ public class InitParameters implements Serializable {
      * @since
      */
     public static final String BUILD_FOLDER = "build.folder";
+
+    /**
+     * Packages, in addition to the internally used ones, to run postinstall
+     * scripts for.
+     *
+     * @since
+     */
+    public static final String ADDITIONAL_POSTINSTALL_PACKAGES = "npm.postinstallPackages";
 }
