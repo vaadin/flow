@@ -95,6 +95,8 @@ public class TaskRunNpmInstall implements FallibleCommand {
     private final URI nodeDownloadRoot;
     private final boolean useGlobalPnpm;
 
+    private List<String> additionalPostinstallPackages;
+
     /**
      * Create an instance of the command.
      *
@@ -121,10 +123,13 @@ public class TaskRunNpmInstall implements FallibleCommand {
      *            {@link FrontendTools#DEFAULT_PNPM_VERSION})
      * @param autoUpdate
      *            {@code true} to automatically update to a new node version
+     * @param additionalPostinstallPackages
+     *            a list of packages to run postinstall for
      */
     TaskRunNpmInstall(NodeUpdater packageUpdater, boolean enablePnpm,
             boolean requireHomeNodeExec, String nodeVersion,
-            URI nodeDownloadRoot, boolean useGlobalPnpm, boolean autoUpdate) {
+            URI nodeDownloadRoot, boolean useGlobalPnpm, boolean autoUpdate,
+            List<String> additionalPostinstallPackages) {
         this.packageUpdater = packageUpdater;
         this.enablePnpm = enablePnpm;
         this.requireHomeNodeExec = requireHomeNodeExec;
@@ -132,6 +137,8 @@ public class TaskRunNpmInstall implements FallibleCommand {
         this.nodeDownloadRoot = Objects.requireNonNull(nodeDownloadRoot);
         this.useGlobalPnpm = useGlobalPnpm;
         this.autoUpdate = autoUpdate;
+        this.additionalPostinstallPackages = Objects
+                .requireNonNull(additionalPostinstallPackages);
     }
 
     @Override
@@ -329,7 +336,6 @@ public class TaskRunNpmInstall implements FallibleCommand {
             }
         }
 
-        List<String> executable;
         String baseDir = packageUpdater.npmFolder.getAbsolutePath();
 
         FrontendToolsSettings settings = new FrontendToolsSettings(baseDir,
@@ -340,37 +346,54 @@ public class TaskRunNpmInstall implements FallibleCommand {
         settings.setAutoUpdate(autoUpdate);
         settings.setNodeVersion(nodeVersion);
         FrontendTools tools = new FrontendTools(settings);
+        List<String> npmExecutable;
+        List<String> npmInstallCommand;
+        List<String> postinstallCommand;
+
         try {
             if (requireHomeNodeExec) {
                 tools.forceAlternativeNodeExecutable();
             }
             if (enablePnpm) {
                 validateInstalledNpm(tools);
-                executable = tools.getPnpmExecutable();
+                npmExecutable = tools.getPnpmExecutable();
             } else {
-                executable = tools.getNpmExecutable();
+                npmExecutable = tools.getNpmExecutable();
             }
+            npmInstallCommand = new ArrayList<>(npmExecutable);
+            postinstallCommand = new ArrayList<>(npmExecutable);
+            // This only works together with "install"
+            postinstallCommand.remove("--shamefully-hoist=true");
+
         } catch (IllegalStateException exception) {
             throw new ExecutionFailedException(exception.getMessage(),
                     exception);
         }
-        List<String> command = new ArrayList<>(executable);
-        command.add("--ignore-scripts");
-        command.add("install");
+
+        npmInstallCommand.add("--ignore-scripts");
+        npmInstallCommand.add("install");
+
+        postinstallCommand.add("run");
+        postinstallCommand.add("postinstall");
 
         if (logger.isDebugEnabled()) {
-            logger.debug(commandToString(
-                    packageUpdater.npmFolder.getAbsolutePath(), command));
+            logger.debug(
+                    commandToString(packageUpdater.npmFolder.getAbsolutePath(),
+                            npmInstallCommand));
         }
 
         String toolName = enablePnpm ? "pnpm" : "npm";
 
-        String commandString = command.stream()
+        String commandString = npmInstallCommand.stream()
                 .collect(Collectors.joining(" "));
+
+        logger.info("using '{}' for frontend package installation",
+                String.join(" ", npmInstallCommand));
 
         Process process = null;
         try {
-            process = runNpmCommand(command, packageUpdater.npmFolder);
+            process = runNpmCommand(npmInstallCommand,
+                    packageUpdater.npmFolder);
 
             logger.debug("Output of `{}`:", commandString);
             StringBuilder toolOutput = new StringBuilder();
@@ -410,6 +433,36 @@ public class TaskRunNpmInstall implements FallibleCommand {
         } finally {
             if (process != null) {
                 process.destroyForcibly();
+            }
+        }
+
+        List<String> postinstallPackages = new ArrayList<>();
+        postinstallPackages.add("esbuild");
+        postinstallPackages.add("@vaadin/vaadin-usage-statistics");
+        postinstallPackages.addAll(additionalPostinstallPackages);
+
+        for (String postinstallPackage : postinstallPackages) {
+            if (postinstallPackage.trim().equals("")) {
+                continue;
+            }
+
+            // Execute "npm run postinstall" in the desired folders in
+            // node_modules
+            File packageFolder = new File(packageUpdater.nodeModulesFolder,
+                    postinstallPackage);
+            if (!packageFolder.exists()) {
+                continue;
+            }
+
+            logger.debug("Running postinstall for '{}'", postinstallPackage);
+            try {
+                process = runNpmCommand(postinstallCommand, packageFolder);
+                process.waitFor();
+            } catch (IOException | InterruptedException e) {
+                throw new ExecutionFailedException(
+                        "Error when running postinstall script for '"
+                                + postinstallPackage + "'",
+                        e);
             }
         }
     }
