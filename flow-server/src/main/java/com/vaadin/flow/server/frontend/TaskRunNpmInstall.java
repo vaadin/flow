@@ -361,14 +361,6 @@ public class TaskRunNpmInstall implements FallibleCommand {
                     packageUpdater.npmFolder.getAbsolutePath(), command));
         }
 
-        ProcessBuilder builder = FrontendUtils.createProcessBuilder(command);
-        builder.environment().put("ADBLOCK", "1");
-        builder.environment().put("NO_UPDATE_NOTIFIER", "1");
-        builder.directory(packageUpdater.npmFolder);
-
-        builder.redirectInput(ProcessBuilder.Redirect.INHERIT);
-        builder.redirectError(ProcessBuilder.Redirect.INHERIT);
-
         String toolName = enablePnpm ? "pnpm" : "npm";
 
         String commandString = command.stream()
@@ -376,14 +368,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
         Process process = null;
         try {
-            process = builder.start();
-            Process finalProcess = process;
-
-            // This will allow to destroy the process which does IO regardless
-            // whether it's executed in the same thread or another (may be
-            // daemon) thread
-            Runtime.getRuntime()
-                    .addShutdownHook(new Thread(finalProcess::destroyForcibly));
+            process = runNpmCommand(command, packageUpdater.npmFolder);
 
             packageUpdater.log().debug("Output of `{}`:", commandString);
             StringBuilder toolOutput = new StringBuilder();
@@ -427,6 +412,26 @@ public class TaskRunNpmInstall implements FallibleCommand {
                 process.destroyForcibly();
             }
         }
+    }
+
+    private Process runNpmCommand(List<String> command, File workingDirectory)
+            throws IOException {
+        ProcessBuilder builder = FrontendUtils.createProcessBuilder(command);
+        builder.environment().put("ADBLOCK", "1");
+        builder.environment().put("NO_UPDATE_NOTIFIER", "1");
+        builder.directory(workingDirectory);
+        builder.redirectInput(ProcessBuilder.Redirect.INHERIT);
+        builder.redirectError(ProcessBuilder.Redirect.INHERIT);
+
+        Process process = builder.start();
+
+        // This will allow to destroy the process which does IO regardless
+        // whether it's executed in the same thread or another (may be
+        // daemon) thread
+        Runtime.getRuntime()
+                .addShutdownHook(new Thread(process::destroyForcibly));
+
+        return process;
     }
 
     /*
