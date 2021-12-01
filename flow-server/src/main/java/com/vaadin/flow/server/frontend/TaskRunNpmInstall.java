@@ -353,6 +353,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
                     exception);
         }
         List<String> command = new ArrayList<>(executable);
+        command.add("--ignore-scripts");
         command.add("install");
 
         if (packageUpdater.log().isDebugEnabled()) {
