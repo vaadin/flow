@@ -457,7 +457,7 @@ public class VaadinServletContextInitializer
                     .getProperty("vaadin.whitelisted-packages") == null) {
                 getLogger().info(
                         "Due to slow search it is recommended to use the whitelisted-packages feature to make scanning faster.\n\n"
-                                + "See 'Flow / Integrations / Using Vaadin with Spring / Vaadin Spring Configuration' topic 'Special configuration parameters' at https://vaadin.com/docs for more detailed information.");
+                                + "See the whitelisted-packages section in the docs at https://vaadin.com/docs/latest/flow/integrations/spring/configuration#special-configuration-parameters");
             }
 
             try {
