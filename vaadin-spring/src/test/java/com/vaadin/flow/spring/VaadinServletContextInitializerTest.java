@@ -29,6 +29,7 @@ import org.springframework.core.env.Environment;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.ErrorParameter;
@@ -87,6 +88,8 @@ public class VaadinServletContextInitializerTest {
             throws Exception {
         initDefaultMocks();
 
+        Mockito.when(devModeHandlerManager.getDevModeHandler())
+                .thenReturn(null);
         Mockito.when(devModeHandlerManager.getHandlesTypes())
                 .thenReturn(new Class<?>[0]);
 
@@ -102,6 +105,32 @@ public class VaadinServletContextInitializerTest {
         // should have been called exactly one time.
         Mockito.verify(devModeHandlerManager).initDevModeHandler(Mockito.any(),
                 Mockito.any(VaadinContext.class));
+    }
+
+    @Test
+    public void onStartup_devModeAlreadyInitialized_devModeInitializationSkipped()
+            throws Exception {
+        initDefaultMocks();
+
+        DevModeHandler devModeHandler = Mockito.mock(DevModeHandler.class);
+        Mockito.when(devModeHandlerManager.getDevModeHandler())
+                .thenReturn(devModeHandler);
+        Mockito.when(devModeHandlerManager.getHandlesTypes())
+                .thenReturn(new Class<?>[0]);
+
+        Mockito.when(appConfig.enableDevServer()).thenReturn(true);
+
+        VaadinServletContextInitializer vaadinServletContextInitializer = getStubbedVaadinServletContextInitializer();
+
+        // Simulate Spring context start only
+        vaadinServletContextInitializer.onStartup(servletContext);
+
+        // In our case, we want to check if Dev Mode has been started within
+        // onStartup() call, that means DevModeInitializer.initDevModeHandler()
+        // should not have been called.
+        Mockito.verify(devModeHandlerManager, Mockito.never())
+                .initDevModeHandler(Mockito.any(),
+                        Mockito.any(VaadinContext.class));
     }
 
     @Test

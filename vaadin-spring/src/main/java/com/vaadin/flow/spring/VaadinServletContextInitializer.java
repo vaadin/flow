@@ -63,13 +63,10 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.LookupInitializer;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
-import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.HasErrorParameter;
-import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteConfiguration;
-import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.server.AmbiguousRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.RouteRegistry;
@@ -428,6 +425,13 @@ public class VaadinServletContextInitializer
                                 + "setting vaadin.enableDevServer=false (and "
                                 + "run the build-frontend maven goal) or "
                                 + "include the vaadin-dev-server dependency");
+            }
+            if (devModeHandlerManager.getDevModeHandler() != null) {
+                /*
+                 * If a Spring Boot app is deployed as a war, the initializers
+                 * have already been run and should not be run again here
+                 */
+                return;
             }
 
             Set<String> basePackages;
