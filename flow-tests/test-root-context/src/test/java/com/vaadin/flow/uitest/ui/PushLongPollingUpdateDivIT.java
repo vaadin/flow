@@ -15,9 +15,14 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import com.vaadin.flow.testcategory.PushTests;
+
+import org.junit.experimental.categories.Category;
+
 /**
  * The tests are in the superclass.
  */
+@Category(PushTests.class)
 public class PushLongPollingUpdateDivIT extends AbstractUpdateDivIT {
 
 }
