@@ -19,6 +19,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
 import org.apache.commons.io.IOUtils;
 
@@ -63,9 +64,10 @@ public class TaskGenerateViteDevMode extends AbstractTaskClientGenerator {
 
     @Override
     protected String getFileContent() throws IOException {
-        return IOUtils.toString(
-                getClass().getResourceAsStream(FrontendUtils.VITE_DEVMODE_TS),
-                UTF_8);
+        try (InputStream devModeStream = getClass()
+                .getResourceAsStream(FrontendUtils.VITE_DEVMODE_TS)) {
+            return IOUtils.toString(devModeStream, UTF_8);
+        }
     }
 
 }

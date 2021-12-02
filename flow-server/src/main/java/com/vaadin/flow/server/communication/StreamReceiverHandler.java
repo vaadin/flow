@@ -284,8 +284,8 @@ public class StreamReceiverHandler implements Serializable {
             StreamReceiver streamReceiver, StateNode owner, long contentLength,
             FileItemStream item) throws IOException {
         String name = item.getName();
-        InputStream stream = item.openStream();
-        try {
+
+        try (InputStream stream = item.openStream()) {
             return handleFileUploadValidationAndData(session, stream,
                     streamReceiver, name, item.getContentType(), contentLength,
                     owner);
