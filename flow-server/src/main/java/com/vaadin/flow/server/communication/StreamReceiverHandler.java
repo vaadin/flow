@@ -26,6 +26,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Serializable;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Collection;
@@ -284,8 +285,8 @@ public class StreamReceiverHandler implements Serializable {
             StreamReceiver streamReceiver, StateNode owner, long contentLength,
             FileItemStream item) throws IOException {
         String name = item.getName();
-
-        try (InputStream stream = item.openStream()) {
+        InputStream stream = item.openStream();
+        try {
             return handleFileUploadValidationAndData(session, stream,
                     streamReceiver, name, item.getContentType(), contentLength,
                     owner);
@@ -395,6 +396,13 @@ public class StreamReceiverHandler implements Serializable {
                 session.getErrorHandler().error(new ErrorEvent(e));
             } finally {
                 session.unlock();
+            }
+        } finally {
+            try {
+                inputStream.close();
+            } catch (IOException ioe) {
+                throw new UncheckedIOException(
+                        "Closing content input stream failed.", ioe);
             }
         }
         return false;
