@@ -16,6 +16,7 @@
 package com.vaadin.flow.plugin.base;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URI;
@@ -26,6 +27,8 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeoutException;
 
@@ -58,10 +61,6 @@ import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
 import static com.vaadin.flow.server.Constants.GENERATED_TOKEN;
 import static com.vaadin.flow.server.Constants.NPM_TOKEN;
 import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_INITIAL_UIDL;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
@@ -70,6 +69,8 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
  * Util class provides all methods a Plugin will need.
  */
 public class BuildFrontendUtil {
+
+    private static Properties applicationPropertiesValues;
 
     /**
      * Hide public constructor.
@@ -143,8 +144,7 @@ public class BuildFrontendUtil {
         NodeTasks.Builder builder = new NodeTasks.Builder(lookup,
                 adapter.npmFolder(), adapter.generatedFolder(),
                 adapter.frontendDirectory(), adapter.buildFolder())
-                        .useV14Bootstrap(
-                                adapter.isUseDeprecatedV14Bootstrapping())
+                        .useV14Bootstrap(useDeprecatedV14Bootstrapping(adapter))
                         .withFlowResourcesFolder(flowResourcesFolder)
                         .createMissingPackageJson(true)
                         .enableImportsUpdate(false).enablePackagesUpdate(false)
@@ -152,7 +152,7 @@ public class BuildFrontendUtil {
                         .withNodeVersion(adapter.nodeVersion())
                         .withNodeDownloadRoot(nodeDownloadRootURI)
                         .setNodeAutoUpdate(adapter.nodeAutoUpdate())
-                        .withHomeNodeExecRequired(adapter.requireHomeNodeExec())
+                        .withHomeNodeExecRequired(requireHomeNodeExec(adapter))
                         .setJavaResourceFolder(adapter.javaResourceFolder())
                         .withProductionMode(adapter.productionMode());
 
@@ -182,7 +182,7 @@ public class BuildFrontendUtil {
         settings.setNodeVersion(adapter.nodeVersion());
         settings.setAutoUpdate(adapter.nodeAutoUpdate());
         settings.setUseGlobalPnpm(adapter.useGlobalPnpm());
-        settings.setForceAlternativeNode(adapter.requireHomeNodeExec());
+        settings.setForceAlternativeNode(requireHomeNodeExec(adapter));
 
         return settings;
     }
@@ -201,12 +201,12 @@ public class BuildFrontendUtil {
         File token = new File(adapter.servletResourceOutputDirectory(),
                 TOKEN_FILE);
         JsonObject buildInfo = Json.createObject();
-        buildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE,
+        buildInfo.put(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE,
                 adapter.productionMode());
-        buildInfo.put(SERVLET_PARAMETER_USE_V14_BOOTSTRAP,
-                adapter.isUseDeprecatedV14Bootstrapping());
-        buildInfo.put(SERVLET_PARAMETER_INITIAL_UIDL,
-                adapter.eagerServerLoad());
+        buildInfo.put(InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP,
+                useDeprecatedV14Bootstrapping(adapter));
+        buildInfo.put(InitParameters.SERVLET_PARAMETER_INITIAL_UIDL,
+                eagerServerLoad(adapter));
         buildInfo.put(NPM_TOKEN, adapter.npmFolder().getAbsolutePath());
         buildInfo.put(GENERATED_TOKEN,
                 adapter.generatedFolder().getAbsolutePath());
@@ -224,9 +224,9 @@ public class BuildFrontendUtil {
                 adapter.generatedTsFolder().getAbsolutePath());
 
         buildInfo.put(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM,
-                adapter.pnpmEnable());
+                pnpmEnable(adapter));
         buildInfo.put(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE,
-                adapter.requireHomeNodeExec());
+                requireHomeNodeExec(adapter));
 
         buildInfo.put(InitParameters.BUILD_FOLDER, adapter.buildFolder());
 
@@ -256,6 +256,30 @@ public class BuildFrontendUtil {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    private static Map<Object, Object> getApplicationProperties(
+            PluginAdapterBase adapter) {
+        if (applicationPropertiesValues != null) {
+            return applicationPropertiesValues;
+        }
+        Properties props = new Properties();
+
+        File applicationPropertiesFile = new File(adapter.javaResourceFolder(),
+                "application.properties");
+        if (applicationPropertiesFile.exists()) {
+            try (FileInputStream stream = new FileInputStream(
+                    applicationPropertiesFile)) {
+                props.load(stream);
+            } catch (IOException e) {
+                adapter.logError(
+                        "Unable to read "
+                                + applicationPropertiesFile.getAbsolutePath(),
+                        e);
+            }
+        }
+        applicationPropertiesValues = props;
+        return applicationPropertiesValues;
     }
 
     /**
@@ -293,7 +317,7 @@ public class BuildFrontendUtil {
                                     adapter.webpackTemplate(),
                                     adapter.webpackGeneratedTemplate())
                             .useV14Bootstrap(
-                                    adapter.isUseDeprecatedV14Bootstrapping())
+                                    useDeprecatedV14Bootstrapping(adapter))
                             .enablePackagesUpdate(true)
                             .useByteCodeScanner(adapter.optimizeBundle())
                             .withFlowResourcesFolder(flowResourcesFolder)
@@ -305,7 +329,7 @@ public class BuildFrontendUtil {
                                     adapter.generateEmbeddableWebComponents())
                             .withTokenFile(
                                     BuildFrontendUtil.getTokenFile(adapter))
-                            .enablePnpm(adapter.pnpmEnable())
+                            .enablePnpm(pnpmEnable(adapter))
                             .useGlobalPnpm(adapter.useGlobalPnpm())
                             .withFusionApplicationProperties(
                                     adapter.applicationProperties())
@@ -316,7 +340,7 @@ public class BuildFrontendUtil {
                             .withFusionClientAPIFolder(
                                     adapter.generatedTsFolder())
                             .withHomeNodeExecRequired(
-                                    adapter.requireHomeNodeExec())
+                                    requireHomeNodeExec(adapter))
                             .withNodeVersion(adapter.nodeVersion())
                             .withNodeDownloadRoot(nodeDownloadRootURI)
                             .setNodeAutoUpdate(adapter.nodeAutoUpdate())
@@ -331,6 +355,47 @@ public class BuildFrontendUtil {
                             + "Please run Maven with the -e switch (or Gradle with the --stacktrace switch), to learn the full stack trace.",
                     throwable);
         }
+    }
+
+    private static boolean pnpmEnable(PluginAdapterBase adapter) {
+        return getApplicationProperty(adapter,
+                InitParameters.SERVLET_PARAMETER_ENABLE_PNPM,
+                adapter.pnpmEnable());
+    }
+
+    private static boolean requireHomeNodeExec(PluginAdapterBase adapter) {
+        return getApplicationProperty(adapter,
+                InitParameters.REQUIRE_HOME_NODE_EXECUTABLE,
+                adapter.requireHomeNodeExec());
+    }
+
+    private static boolean useDeprecatedV14Bootstrapping(
+            PluginAdapterBase adapter) {
+        return getApplicationProperty(adapter,
+                InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP,
+                adapter.isUseDeprecatedV14Bootstrapping());
+    }
+
+    private static boolean eagerServerLoad(PluginAdapterBase adapter) {
+        return getApplicationProperty(adapter,
+                InitParameters.SERVLET_PARAMETER_INITIAL_UIDL,
+                adapter.eagerServerLoad());
+    }
+
+    private static boolean getApplicationProperty(PluginAdapterBase adapter,
+            String key, boolean defaultValue) {
+        Map<Object, Object> appProperties = getApplicationProperties(adapter);
+        String propKey = "vaadin." + key;
+        if (appProperties.containsKey(propKey)) {
+            Object value = appProperties.get(propKey);
+            if (value instanceof Boolean) {
+                return (Boolean) value;
+            } else {
+                return value.toString().equalsIgnoreCase("true");
+            }
+        }
+
+        return defaultValue;
     }
 
     /**
@@ -404,7 +469,7 @@ public class BuildFrontendUtil {
         String nodePath;
         FrontendToolsSettings settings = getFrontendToolsSettings(adapter);
         FrontendTools tools = new FrontendTools(settings);
-        if (adapter.requireHomeNodeExec()) {
+        if (requireHomeNodeExec(adapter)) {
             nodePath = tools.forceAlternativeNodeExecutable();
         } else {
             nodePath = tools.getNodeExecutable();
@@ -464,10 +529,10 @@ public class BuildFrontendUtil {
             buildInfo.remove(NPM_TOKEN);
             buildInfo.remove(GENERATED_TOKEN);
             buildInfo.remove(FRONTEND_TOKEN);
-            buildInfo.remove(Constants.SERVLET_PARAMETER_ENABLE_PNPM);
-            buildInfo.remove(Constants.REQUIRE_HOME_NODE_EXECUTABLE);
+            buildInfo.remove(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM);
+            buildInfo.remove(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE);
             buildInfo.remove(
-                    Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE);
+                    InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE);
             buildInfo.remove(Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN);
             buildInfo.remove(Constants.JAVA_RESOURCE_FOLDER_TOKEN);
             buildInfo.remove(Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN);
@@ -475,7 +540,8 @@ public class BuildFrontendUtil {
             buildInfo.remove(Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN);
             buildInfo.remove(InitParameters.BUILD_FOLDER);
 
-            buildInfo.put(SERVLET_PARAMETER_ENABLE_DEV_SERVER, false);
+            buildInfo.put(InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER,
+                    false);
             FileUtils.write(tokenFile, JsonUtil.stringify(buildInfo, 2) + "\n",
                     StandardCharsets.UTF_8.name());
         } catch (IOException e) {
