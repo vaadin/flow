@@ -60,7 +60,7 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
      *            The annotation class name to visit
      */
     FrontendAnnotatedClassVisitor(ClassFinder finder, String annotationName) {
-        super(Opcodes.ASM8);
+        super(Opcodes.ASM9);
         this.finder = finder;
         this.annotationName = annotationName;
         if (!annotationDefaults.containsKey(annotationName)) {
