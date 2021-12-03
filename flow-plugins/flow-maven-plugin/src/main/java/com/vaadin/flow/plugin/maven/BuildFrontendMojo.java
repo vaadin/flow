@@ -110,8 +110,6 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        BuildFrontendUtil.updateBuildFile(this);
-
         long start = System.nanoTime();
 
         try {
@@ -129,6 +127,8 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
                         exception);
             }
         }
+
+        BuildFrontendUtil.updateBuildFile(this);
 
         long ms = (System.nanoTime() - start) / 1000000;
         getLog().info("update-frontend took " + ms + "ms.");
