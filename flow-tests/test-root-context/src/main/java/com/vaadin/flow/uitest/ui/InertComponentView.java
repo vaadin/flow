@@ -11,6 +11,7 @@ import com.vaadin.flow.router.RouterLink;
 @Route(value = "com.vaadin.flow.uitest.ui.InertComponentView")
 public class InertComponentView extends Div {
 
+    static final String LINK = "link-to-another-view";
     static final String NEW_BOX = "new-box";
     static final String BOX = "box";
     static final String NEW_MODAL_BOX = "new-modal-box";
@@ -49,9 +50,8 @@ public class InertComponentView extends Div {
             add(withId(NEW_MODAL_BOX, new NativeButton("New Modal Box",
                     event -> getUI().ifPresent(
                             ui -> ui.addModal(new Box(true))))));
-            add(withId("link-to-another-view",
-                    new RouterLink("Link to another view",
-                            ModalDialogView.class)));
+            add(withId(LINK, new RouterLink("Link to another view",
+                    ModalDialogView.class)));
 
             getStyle().set("border", "1px solid pink");
             if (modal) {

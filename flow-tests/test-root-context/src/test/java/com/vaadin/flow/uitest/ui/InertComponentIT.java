@@ -9,6 +9,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.JavascriptExecutor;
 
+import com.vaadin.flow.component.html.testbench.AnchorElement;
 import com.vaadin.flow.component.html.testbench.DivElement;
 import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
@@ -29,9 +30,7 @@ public class InertComponentIT extends ChromeBrowserTest {
 
         final long initialBoxCount = getBoxCount();
 
-        Optional<NativeButtonElement> newModalBoxButton = getAll(
-                NativeButtonElement.class,
-                InertComponentView.NEW_MODAL_BOX).findFirst();
+        Optional<NativeButtonElement> newModalBoxButton = getNewModalBoxButton();
 
         newModalBoxButton.ifPresent(NativeButtonElement::click);
 
@@ -62,9 +61,7 @@ public class InertComponentIT extends ChromeBrowserTest {
 
         final long initialBoxCount = getBoxCount();
 
-        Optional<NativeButtonElement> newModalBoxButton = getAll(
-                NativeButtonElement.class,
-                InertComponentView.NEW_MODAL_BOX).findFirst();
+        Optional<NativeButtonElement> newModalBoxButton = getNewModalBoxButton();
 
         newModalBoxButton.ifPresent(NativeButtonElement::click);
 
@@ -84,6 +81,32 @@ public class InertComponentIT extends ChromeBrowserTest {
 
         validateBoxCount(initialBoxCount,
                 "Expected no new box as UI still inert.");
+    }
+
+    @Test
+    public void modalComponentAdded_routerLinkClicked_noNavigation() {
+        open();
+
+        final long initialBoxCount = getBoxCount();
+
+        Optional<AnchorElement> linkToAnotherPage = getAll(AnchorElement.class,
+                InertComponentView.LINK).findFirst();
+
+        Assert.assertTrue(linkToAnotherPage.isPresent());
+
+        getNewModalBoxButton().ifPresent(NativeButtonElement::click);
+
+        validateBoxCount(initialBoxCount + 1, "Expected a new modal box.");
+
+        linkToAnotherPage.get().click();
+
+        validateBoxCount(initialBoxCount + 1,
+                "Expected to stay on the same page.");
+    }
+
+    private Optional<NativeButtonElement> getNewModalBoxButton() {
+        return getAll(NativeButtonElement.class,
+                InertComponentView.NEW_MODAL_BOX).findFirst();
     }
 
     private long getBoxCount() {
