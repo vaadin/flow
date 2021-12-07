@@ -10,7 +10,7 @@
     "construct-style-sheets-polyfill": "3.0.4",
     "copy-to-clipboard": "^3.3.1",
     "lit": "2.0.0",
-    "package-outside-npm": "link:package-outside-npm",
+    "package-outside-npm": "file:package-outside-npm",
     "package2-outside-npm": "./package2-outside-npm"
   },
   "devDependencies": {
