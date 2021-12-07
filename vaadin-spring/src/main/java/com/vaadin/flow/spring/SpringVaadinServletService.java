@@ -47,7 +47,7 @@ public class SpringVaadinServletService extends VaadinServletService {
 
     private final Registration serviceDestroyRegistration;
 
-    private static final String SPRING_BOOT_RESOURCES_CLASS = "org.springframework.boot.autoconfigure.web.WebProperties$Resources";
+    private static final String SPRING_BOOT_WEBPROPROPERTIES_CLASS = "org.springframework.boot.autoconfigure.web.WebProperties";
 
     /**
      * Creates an instance connected to the given servlet and using the given
@@ -135,8 +135,8 @@ public class SpringVaadinServletService extends VaadinServletService {
             return null;
         }
         for (String prefix : context.getBean(
-                org.springframework.boot.autoconfigure.web.WebProperties.Resources.class)
-                .getStaticLocations()) {
+                org.springframework.boot.autoconfigure.web.WebProperties.class)
+                .getResources().getStaticLocations()) {
             Resource resource = context.getResource(getFullPath(path, prefix));
             if (resource != null) {
                 try {
@@ -161,7 +161,8 @@ public class SpringVaadinServletService extends VaadinServletService {
      * ClassNotFound or similar exceptions in plain Spring.
      */
     private boolean isSpringBootConfigured() {
-        Class<?> resourcesClass = resolveClass(SPRING_BOOT_RESOURCES_CLASS);
+        Class<?> resourcesClass = resolveClass(
+                SPRING_BOOT_WEBPROPROPERTIES_CLASS);
         if (resourcesClass != null) {
             return context.getBeanNamesForType(resourcesClass).length != 0;
         }
