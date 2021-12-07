@@ -1,4 +1,4 @@
-name: Flow Validation
+name: Flow Testing
 on: [pull_request, workflow_dispatch]
 jobs:
   build:
@@ -31,18 +31,35 @@ jobs:
             | sort > it.modules &
           P3=$!
           wait $P1 $P2 $P3
+      - name: Info
+        run: |
+          id
+          pwd
+          uname -a
+          echo $PATH
+          type mvn
+          type java
+          type npm
+          type node
+          set
+          ps -feawww
       - name: Compile and Install Flow
         run: |
           mvn install -B -am -DskipTests -T 2C
-      - name: Save workspace
+      - name: Compile and Install Flow
         run: |
-          mv ~/.m2/ .
-          tar cf workspace.tar .m2 *.modules `find . -name target -o -name "pom*.xml"`
-      - uses: actions/upload-artifact@v2
-        with:
-          name: saved-workspace
-          path: workspace.tar
+          mvn verify -B -pl flow-tests/test-mixed/pom-npm-production.xml
+
+      # - name: Save workspace
+      #   run: |
+      #     mv ~/.m2/ .
+      #     tar cf workspace.tar .m2 *.modules `find . -name target -o -name "pom*.xml"`
+      # - uses: actions/upload-artifact@v2
+      #   with:
+      #     name: saved-workspace
+      #     path: workspace.tar
   unit-tests:
+    if: ${{false}}
     needs: build
     strategy:
       fail-fast: false
@@ -78,6 +95,7 @@ jobs:
           name: test-reports
           path: "**/target/*-reports/*"
   it-tests:
+    if: ${{false}}
     needs: build
     strategy:
       fail-fast: false
@@ -182,7 +200,7 @@ jobs:
             **/error-screenshots/*.png
             **/target/site/*-report.html
   test-results:
-    if: always()
+    if: ${{false}}
     needs:
       - unit-tests
       - it-tests
