@@ -736,11 +736,10 @@ public class NodeTasks implements FallibleCommand {
 
             }
             if (packageUpdater != null && builder.runNpmInstall) {
-                commands.add(new TaskRunNpmInstall(classFinder, packageUpdater,
+                commands.add(new TaskRunNpmInstall(packageUpdater,
                         builder.enablePnpm, builder.requireHomeNodeExec,
                         builder.nodeVersion, builder.nodeDownloadRoot,
-                        builder.useGlobalPnpm, builder.nodeAutoUpdate,
-                        featureFlags.isEnabled(FeatureFlags.VITE)));
+                        builder.useGlobalPnpm, builder.nodeAutoUpdate));
 
                 commands.add(new TaskInstallWebpackPlugins(
                         new File(builder.npmFolder, builder.buildDirectory)));
