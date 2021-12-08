@@ -18,10 +18,6 @@
         central repo is done within platform final releases.
     </description>
 
-    <properties>
-        <gradle.executable>./gradlew</gradle.executable>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>com.vaadin</groupId>
@@ -55,34 +51,40 @@
                     </execution>
                 </executions>
             </plugin>
-
-            <!-- execute Gradle command -->
+            <!-- run gradle tasks -->
             <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>3.0.0</version>
+                <groupId>codes.rafael.gradlemavenplugin</groupId>
+                <artifactId>gradle-maven-plugin</artifactId>
+                <version>1.0.10</version>
+                <configuration>
+                    <gradleVersion>7.3</gradleVersion>
+                    <tasks>
+                        <task>clean</task>
+                        <task>build</task>
+                        <task>javadocJar</task>
+                    </tasks>
+                    <args>
+                        <arg>-x</arg>
+                        <arg>functionalTest</arg>
+                        <arg>-S</arg>
+                    </args>
+                </configuration>
                 <executions>
                     <execution>
-                        <id>gradle</id>
                         <phase>prepare-package</phase>
-                        <configuration>
-                            <executable>${gradle.executable}</executable>
-                            <arguments>
-                                <argument>clean</argument>
-                                <argument>build</argument>
-                                <argument>javadocJar</argument>
-                                <argument>-x</argument>
-                                <argument>functionalTest</argument>
-                                <argument>-S</argument>
-                            </arguments>
-                        </configuration>
                         <goals>
-                            <goal>exec</goal>
+                            <goal>invoke</goal>
                         </goals>
                     </execution>
                 </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.gradle</groupId>
+                        <artifactId>gradle-tooling-api</artifactId>
+                        <version>7.3-20210825160000+0000</version>
+                      </dependency>
+                </dependencies>
             </plugin>
-
             <!-- copy generated JARs -->
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
@@ -138,20 +140,7 @@
                     </execution>
                 </executions>
             </plugin>
+
         </plugins>
     </build>
-
-    <profiles>
-        <profile>
-            <id>windows_profile</id>
-            <activation>
-                <os>
-                    <family>Windows</family>
-                </os>
-            </activation>
-            <properties>
-                <gradle.executable>gradlew.bat</gradle.executable>
-            </properties>
-        </profile>
-    </profiles>
 </project>
