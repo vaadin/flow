@@ -67,7 +67,7 @@ final class FrontendClassVisitor extends ClassVisitor {
 
     private final class FrontendMethodVisitor extends MethodVisitor {
         public FrontendMethodVisitor() {
-            super(Opcodes.ASM8);
+            super(Opcodes.ASM9);
         }
 
         // We are interested in the new instances created inside the method
@@ -143,7 +143,7 @@ final class FrontendClassVisitor extends ClassVisitor {
      */
     FrontendClassVisitor(String className, EndPointData endPoint,
             boolean themeScope) { // NOSONAR
-        super(Opcodes.ASM8);
+        super(Opcodes.ASM9);
         this.className = className;
         this.endPoint = endPoint;
 

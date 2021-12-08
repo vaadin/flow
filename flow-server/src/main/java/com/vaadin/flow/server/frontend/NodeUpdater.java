@@ -388,7 +388,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         final String WORKBOX_VERSION = "6.4.2";
 
         if (featureFlags.isEnabled(FeatureFlags.VITE)) {
-            defaults.put("vite", "v2.7.0-beta.9");
+            defaults.put("vite", "v2.7.0");
             defaults.put("rollup-plugin-brotli", "3.1.0");
             defaults.put("vite-plugin-checker", "0.3.4");
             defaults.put("mkdirp", "1.0.4"); // for application-theme-plugin
@@ -502,19 +502,27 @@ public abstract class NodeUpdater implements FallibleCommand {
         boolean added = false;
         FrontendVersion vaadinVersion = toVersion(vaadinDeps, pkg);
         if (json.hasKey(pkg)) {
-            FrontendVersion packageVersion = toVersion(json, pkg);
-            FrontendVersion newVersion = new FrontendVersion(version);
-            // Vaadin and package.json versions are the same, but dependency
-            // updates (can be up or down)
-            if (vaadinVersion.isEqualTo(packageVersion)
-                    && !vaadinVersion.isEqualTo(newVersion)) {
-                json.put(pkg, version);
-                added = true;
-                // if vaadin and package not the same, but new version is newer
-                // update package version.
-            } else if (newVersion.isNewerThan(packageVersion)) {
-                json.put(pkg, version);
-                added = true;
+            try {
+                FrontendVersion packageVersion = toVersion(json, pkg);
+                FrontendVersion newVersion = new FrontendVersion(version);
+                // Vaadin and package.json versions are the same, but dependency
+                // updates (can be up or down)
+                if (vaadinVersion.isEqualTo(packageVersion)
+                        && !vaadinVersion.isEqualTo(newVersion)) {
+                    json.put(pkg, version);
+                    added = true;
+                    // if vaadin and package not the same, but new version is
+                    // newer
+                    // update package version.
+                } else if (newVersion.isNewerThan(packageVersion)) {
+                    json.put(pkg, version);
+                    added = true;
+                }
+            } catch (NumberFormatException e) { // NOSONAR
+                /*
+                 * If the current version is not parseable, it can refer to a
+                 * file and we should leave it alone
+                 */
             }
         } else {
             json.put(pkg, version);

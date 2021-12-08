@@ -12,11 +12,15 @@ import com.vaadin.flow.router.Route;
 
 @Route("")
 @JsModule("./jsonloader.js")
+@JsModule("package-outside-npm/index.js")
+@JsModule("package2-outside-npm/index.js")
 public class MainView extends Div {
 
     public static final String LOAD_AND_SHOW_JSON = "loadAndShowJson";
     public static final String JSON_CONTAINER = "jsonContainer";
     public static final String PLANT = "plant";
+    public static final String OUTSIDE = "outsideButton";
+    public static final String OUTSIDE_RESULT = "outsideResult";
 
     public MainView() {
         Image img = new Image("themes/vite-basics/images/plant.png",
@@ -54,6 +58,17 @@ public class MainView extends Div {
                                 .isEnabled(FeatureFlags.VITE));
         viteStatus.setId("status");
         add(viteStatus);
+
+        NativeButton checkOutsideJs = new NativeButton("Check outside JS",
+                e -> {
+                    getElement().executeJs(OUTSIDE_RESULT
+                            + ".innerText = window.packageOutsideNpm() + ' - ' + window.package2OutsideNpm();");
+                });
+        checkOutsideJs.setId(OUTSIDE);
+        add(checkOutsideJs);
+        Paragraph outsideStatus = new Paragraph();
+        outsideStatus.setId(OUTSIDE_RESULT);
+        add(outsideStatus);
     }
 
 }
