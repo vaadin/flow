@@ -139,7 +139,7 @@ jobs:
               N=`echo "${{matrix.current}}" | cut -d : -f2`
               H=`find $M/src/test -name "*IT.java" | xargs basename -s .java`
               C=`echo "$H" | wc -l`
-              J=`echo "$C / $MAX + 1" | bc`
+              J=`echo "$C / $MAX" | bc`
               I=`echo "$J * $N + 1" | bc`
               T=`echo "$H" | tail +$I | head -$J`
               A=`echo "$T" | grep ... | tr '\n' ',' | sed -e 's/,$//'`
@@ -210,10 +210,7 @@ jobs:
         with:
           name: saved-workspace
       - name: The Build has Failed
-        if: ${{ failure() }}
-        run: exit 1
-      - name: The Build has Cancelled
-        if: ${{ cancelled() }}
+        if: ${{ failure() || cancelled() }}
         run: exit 1
       - name: The Build has Succeeded
         if: ${{ success() }}
