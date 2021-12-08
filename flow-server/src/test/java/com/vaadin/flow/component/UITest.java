@@ -16,6 +16,9 @@
 
 package com.vaadin.flow.component;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -24,6 +27,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.commons.io.IOUtils;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.junit.After;
@@ -31,7 +35,11 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.impl.SimpleLogger;
 
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.page.History;
@@ -88,6 +96,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mockStatic;
 
 public class UITest {
 
@@ -514,7 +523,7 @@ public class UITest {
     }
 
     @Test
-    public void unserSession_datachEventIsFiredForElements() {
+    public void unsetSession_detachEventIsFiredForElements() {
         UI ui = createTestUI();
 
         List<ElementDetachEvent> events = new ArrayList<>();
@@ -534,6 +543,44 @@ public class UITest {
         assertEquals(2, events.size());
         assertEquals(childComponent.getElement(), events.get(0).getSource());
         assertEquals(ui.getElement(), events.get(1).getSource());
+    }
+
+    @Test
+    public void unsetSession_accessErrorHandlerStillWorks() throws IOException {
+        UI ui = createTestUI();
+
+        File output = File.createTempFile("logoutput", "uitest.log");
+        output.deleteOnExit();
+        System.setProperty("org.slf4j.simpleLogger.logFile",
+                output.getAbsolutePath());
+
+        try {
+
+            initUI(ui, "", null);
+
+            ui.getSession().access(() -> ui.getInternals().setSession(null));
+            ui.access(() -> {
+                Assert.fail(
+                        "We should never get here because the UI is detached");
+            });
+
+            // Unlock to run pending access tasks
+            ui.getSession().unlock();
+
+            String logOutput = IOUtils.toString(output.toURI(),
+                    StandardCharsets.UTF_8);
+            Assert.assertFalse(
+                    "No NullPointerException should be logged but got: "
+                            + logOutput,
+                    logOutput.contains("NullPointerException"));
+            // Assert.assertFalse(
+            // "No UIDetachedException should be logged but got: "
+            // + logOutput,
+            // logOutput.contains("UIDetachedException"));
+        } finally {
+            System.clearProperty("org.slf4j.simpleLogger.logFile");
+        }
+
     }
 
     @Test

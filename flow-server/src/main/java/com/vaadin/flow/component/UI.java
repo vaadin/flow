@@ -527,9 +527,11 @@ public class UI extends Component
                     if (command instanceof ErrorHandlingCommand) {
                         ErrorHandlingCommand errorHandlingCommand = (ErrorHandlingCommand) command;
                         errorHandlingCommand.handleError(exception);
-                    } else {
+                    } else if (getSession() != null) {
                         getSession().getErrorHandler()
                                 .error(new ErrorEvent(exception));
+                    } else {
+                        getLogger().error(exception.getMessage(), exception);
                     }
                 } catch (Exception e) {
                     getLogger().error(e.getMessage(), e);
