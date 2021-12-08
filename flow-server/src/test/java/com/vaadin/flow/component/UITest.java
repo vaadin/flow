@@ -573,10 +573,10 @@ public class UITest {
                     "No NullPointerException should be logged but got: "
                             + logOutput,
                     logOutput.contains("NullPointerException"));
-            // Assert.assertFalse(
-            // "No UIDetachedException should be logged but got: "
-            // + logOutput,
-            // logOutput.contains("UIDetachedException"));
+            Assert.assertFalse(
+                    "No UIDetachedException should be logged but got: "
+                            + logOutput,
+                    logOutput.contains("UIDetachedException"));
         } finally {
             System.clearProperty("org.slf4j.simpleLogger.logFile");
         }
