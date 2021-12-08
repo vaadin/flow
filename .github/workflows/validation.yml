@@ -5,15 +5,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '16.0'
       - uses: actions/setup-java@v2
         with:
           java-version: '8'
           distribution: 'adopt'
-      - uses: stCarolas/setup-maven@v4.2
-        with:
-          maven-version: 3.8.3
+      - name: Show Versions
+        run: |
+          uname -a
+          id
+          pwd
+          type java && java -version
+          type mvn && mvn -version
+          type node && node --version
+          type npm && npm --version
       - name: Set flow version and Generate module lists
         run: |
+          # run 3 maven process at the same time and wait for them, saves half minute
           mvn -B -q -DnewVersion=999.99-SNAPSHOT versions:set -T 1C &
           P1=$!
           mvn help:evaluate -Dexpression=project.modules -DskipTests -Prun-tests \
@@ -26,14 +36,20 @@ jobs:
             | grep "<\/string>" \
             | sed -e 's, *<string>\(.*\)</string>,flow-tests/\1,g' \
             | grep -v "test-ccdm$" \
+            | grep -v "test-pwa" \
             | grep -v "test-root-context" \
             | grep -v "test-root-ui-context" \
+            | grep -v "test-mixed/pom-pnpm-production" \
+            | grep -v "test-mixed/pom-npm-production" \
             | sort > it.modules &
           P3=$!
           wait $P1 $P2 $P3
       - name: Compile and Install Flow
         run: |
-          mvn install -B -am -DskipTests -T 2C
+          # exclude gradle plugin not needed until gradle tests
+          cmd="mvn install -B -DskipTests -pl \!flow-plugins/flow-gradle-plugin"
+          # run twice if fails, it might be multithread failure
+          eval $cmd -T 2C -q || eval $cmd
       - name: Save workspace
         run: |
           mv ~/.m2/ .
@@ -48,8 +64,8 @@ jobs:
       fail-fast: false
       matrix:
         modules:
-          - 'flow-client,fusion-endpoint,flow-jandex'
-          - 'flow-server,flow-data,flow,flow-bom,vaadin-dev-server,flow-component-demo-helpers,flow-dnd,flow-html-components,flow-html-components-testbench,flow-lit-template,flow-plugins,flow-polymer-template,flow-push,flow-server-production-mode,flow-test-generic,flow-test-util'
+          - 'flow-client,fusion-endpoint,flow-jandex,flow-plugins/flow-plugin-base,flow-plugins/flow-maven-plugin,flow-plugins/flow-gradle-plugin'
+          - 'flow-server,flow-data,flow,flow-bom,vaadin-dev-server,flow-component-demo-helpers,flow-dnd,flow-html-components,flow-html-components-testbench,flow-lit-template,flow-polymer-template,flow-push,flow-server-production-mode,flow-test-generic,flow-test-util'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -57,9 +73,6 @@ jobs:
         with:
           java-version: '8'
           distribution: 'adopt'
-      - uses: stCarolas/setup-maven@v4.2
-        with:
-          maven-version: 3.8.3
       - uses: actions/download-artifact@v2
         with:
           name: saved-workspace
@@ -69,7 +82,7 @@ jobs:
           rm -rf ~/.m2 && mv -f .m2 ~/
       - name: Unit Test
         run: |
-          mvn -B verify -fae \
+          mvn -B verify -fae -T 1C \
             -Dsurefire.rerunFailingTestsCount=2 \
             -pl ${{ matrix.modules }}
       - uses: actions/upload-artifact@v2
@@ -84,8 +97,8 @@ jobs:
       matrix:
         parallelism: [6]
         current: [0, 1, 2, 3, 4, 5,
-        'test-ccdm',
-        'test-root-ui-context',
+        'test-ccdm,test-mixed/pom-pnpm-production.xml,test-pwa',
+        'test-root-ui-context,test-mixed/pom-npm-production.xml,test-pwa/pom-production.xml',
         'test-root-context:0',
         'test-root-context:1',
         'test-root-context:2'
@@ -93,20 +106,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '16'
       - name: Set up JDK 8
         uses: actions/setup-java@v2
         with:
           java-version: '8'
           distribution: 'adopt'
-      - name: Set up Maven
-        uses: stCarolas/setup-maven@v4.2
+      - uses: browser-actions/setup-chrome@latest
         with:
-          maven-version: 3.8.3
-      - name: Install Chrome
-        run: |
-          sudo apt-get update
-          wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-          sudo apt-get install -y -f ./google-chrome-stable_current_amd64.deb
+          chrome-version: stable
       - uses: nanasess/setup-chromedriver@master
       - uses: actions/download-artifact@v2
         with:
@@ -129,14 +139,14 @@ jobs:
               N=`echo "${{matrix.current}}" | cut -d : -f2`
               H=`find $M/src/test -name "*IT.java" | xargs basename -s .java`
               C=`echo "$H" | wc -l`
-              J=`echo "$C / $MAX + 1" | bc`
+              J=`echo "$C / $MAX" | bc`
               I=`echo "$J * $N + 1" | bc`
               T=`echo "$H" | tail +$I | head -$J`
               A=`echo "$T" | grep ... | tr '\n' ',' | sed -e 's/,$//'`
               A="-pl $M -Dit.test=$A -Dfailsafe.forkCount=4"
               ;;
             *test*)
-              M="flow-tests/${{matrix.current}}"
+              M=`echo "flow-tests/${{matrix.current}}" | sed -e 's|,|,flow-tests/|g'`
               A="-pl $M -Dfailsafe.forkCount=4"
               ;;
             *)
@@ -144,10 +154,11 @@ jobs:
               N="${{matrix.current}}"
               H=`cat it.modules`
               C=`echo "$H" | wc -l`
-              J=`echo "$C / $P + 1" | bc`
+              J=`echo "$C / $P" | bc`
               I=`echo "$J * $N + 1" | bc`
               M=`echo "$H" | tail +$I | head -$J`
-              A="-pl "`echo "$M" | grep ... | tr '\n' ',' | sed -e 's/,$//'`
+              A=`echo "$M" | grep ... | tr '\n' ',' | sed -e 's/,$//'`
+              [ -n "$A" ] && A="-pl $A"
               ;;
           esac
           echo "MODULES:"
@@ -192,10 +203,15 @@ jobs:
         with:
           name: test-reports
       - name: Publish Unit Test Results
-        if: always()
         uses: EnricoMi/publish-unit-test-result-action/composite@v1
         with:
           files: "**/target/*-reports/TEST*.xml"
       - uses: geekyeggo/delete-artifact@v1
         with:
           name: saved-workspace
+      - name: The Build has Failed
+        if: ${{ failure() || cancelled() }}
+        run: exit 1
+      - name: The Build has Succeeded
+        if: ${{ success() }}
+        run: exit 0
