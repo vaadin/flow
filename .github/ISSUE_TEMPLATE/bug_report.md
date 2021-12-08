@@ -12,8 +12,9 @@ Please READ these instructions & USE the issue template below, Thank You!
 
 For general support from the community, use https://stackoverflow.com/questions/tagged/vaadin (or tag vaadin-flow) or Vaadin discord chat https://discord.gg/MYFq5RTbBn instead.
 
-NOTE: Issues concerning UI components (e.g. Button, Grid, TextField, ...) should go to the components repository https://github.com/vaadin/flow-components .
+NOTE: Issues concerning UI components (e.g. Button, Grid, TextField, ...) should go to the components repository https://github.com/vaadin/flow-components
 
+NOTE: Issues concerning Vaadin Fusion should go to the Fusion repository https://github.com/vaadin/fusion
 
 Good quality bug report increases the likelihood to get the bug fixed. A bad quality one will likely be just closed. Please use the following template to report bugs.
 -->
