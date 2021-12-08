@@ -18,6 +18,8 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -51,12 +53,20 @@ public class TaskCopyTemplateFiles implements FallibleCommand {
 
     @Override
     public void execute() throws ExecutionFailedException {
-        Set<Class<?>> classes = new HashSet<>();
-        classes.addAll(classFinder.getSubTypesOf(Template.class));
+        Set<Class<?>> classes = new HashSet<>(
+                classFinder.getSubTypesOf(Template.class));
+        Class<? extends Annotation> jsModuleAnnotationClass;
+        try {
+            jsModuleAnnotationClass = classFinder
+                    .loadClass(JsModule.class.getName());
+        } catch (ClassNotFoundException e) {
+            throw new ExecutionFailedException(e);
+        }
+
         for (Class<?> clazz : classes) {
-            for (JsModule jsmAnnotation : clazz
-                    .getAnnotationsByType(JsModule.class)) {
-                String path = jsmAnnotation.value();
+            for (Annotation jsmAnnotation : clazz
+                    .getAnnotationsByType(jsModuleAnnotationClass)) {
+                String path = getJsModuleAnnotationValue(jsmAnnotation);
                 File source = FrontendUtils
                         .resolveFrontendPath(projectDirectory, path);
                 if (source == null) {
@@ -73,6 +83,18 @@ public class TaskCopyTemplateFiles implements FallibleCommand {
                     throw new ExecutionFailedException(e);
                 }
             }
+        }
+    }
+
+    private String getJsModuleAnnotationValue(Annotation jsmAnnotation)
+            throws ExecutionFailedException {
+        try {
+            Object value = jsmAnnotation.getClass().getDeclaredMethod("value")
+                    .invoke(jsmAnnotation);
+            return (String) value;
+        } catch (IllegalAccessException | InvocationTargetException
+                | NoSuchMethodException e) {
+            throw new ExecutionFailedException(e);
         }
     }
 
