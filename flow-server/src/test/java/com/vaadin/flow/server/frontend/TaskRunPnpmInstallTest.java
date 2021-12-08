@@ -143,10 +143,10 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         exception.expectMessage(
                 "it's either not a file or not a 'node' executable.");
         assertRunNpmInstallThrows_vaadinHomeNodeIsAFolder(
-                new TaskRunNpmInstall(getClassFinder(), getNodeUpdater(), true,
-                        true, FrontendTools.DEFAULT_NODE_VERSION,
+                new TaskRunNpmInstall(getNodeUpdater(), true, true,
+                        FrontendTools.DEFAULT_NODE_VERSION,
                         URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT),
-                        false, false, false));
+                        false, false));
     }
 
     @Test
@@ -646,17 +646,17 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
     @Override
     protected TaskRunNpmInstall createTask() {
-        return new TaskRunNpmInstall(getClassFinder(), getNodeUpdater(), true,
-                false, FrontendTools.DEFAULT_NODE_VERSION,
+        return new TaskRunNpmInstall(getNodeUpdater(), true, false,
+                FrontendTools.DEFAULT_NODE_VERSION,
                 URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false,
-                false, false);
+                false);
     }
 
     protected TaskRunNpmInstall createTask(String versionsContent) {
-        return new TaskRunNpmInstall(getClassFinder(), getNodeUpdater(), true,
-                false, FrontendTools.DEFAULT_NODE_VERSION,
+        return new TaskRunNpmInstall(getNodeUpdater(), true, false,
+                FrontendTools.DEFAULT_NODE_VERSION,
                 URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false,
-                false, false) {
+                false) {
             @Override
             protected String generateVersionsJson() {
                 try {
@@ -678,11 +678,10 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         Mockito.when(classFinder.getResource(Constants.VAADIN_VERSIONS_JSON))
                 .thenReturn(versions.toURI().toURL());
 
-        TaskRunNpmInstall task = new TaskRunNpmInstall(getClassFinder(),
-                getNodeUpdater(), true, false,
-                FrontendTools.DEFAULT_NODE_VERSION,
+        TaskRunNpmInstall task = new TaskRunNpmInstall(getNodeUpdater(), true,
+                false, FrontendTools.DEFAULT_NODE_VERSION,
                 URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false,
-                false, false);
+                false);
 
         String path = task.generateVersionsJson();
 
