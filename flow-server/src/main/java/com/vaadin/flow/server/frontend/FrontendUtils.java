@@ -977,8 +977,16 @@ public class FrontendUtils {
             List<String> versionCommand) throws UnknownVersionException {
         try {
             String output = executeCommand(versionCommand);
-            return new FrontendVersion(parseVersionString(output));
-        } catch (IOException | CommandExecutionException e) {
+            try {
+                return new FrontendVersion(parseVersionString(output));
+            } catch (IOException e) {
+                throw new UnknownVersionException(tool,
+                        "Expected a version number as output but got '" + output
+                                + "'" + " when using command "
+                                + String.join(" ", versionCommand),
+                        e);
+            }
+        } catch (CommandExecutionException e) {
             throw new UnknownVersionException(tool,
                     "Using command " + String.join(" ", versionCommand), e);
         }
