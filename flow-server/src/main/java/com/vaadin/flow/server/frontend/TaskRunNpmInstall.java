@@ -34,7 +34,6 @@ import org.apache.commons.io.FileUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
-import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.shared.util.SharedUtil;
 
 import elemental.json.Json;
@@ -90,13 +89,10 @@ public class TaskRunNpmInstall implements FallibleCommand {
     private final boolean enablePnpm;
     private final boolean requireHomeNodeExec;
     private final boolean autoUpdate;
-    private final ClassFinder classFinder;
 
     private final String nodeVersion;
     private final URI nodeDownloadRoot;
     private final boolean useGlobalPnpm;
-
-    private final boolean npmLegacyPeerDeps;
 
     /**
      * Create an instance of the command.
@@ -124,15 +120,10 @@ public class TaskRunNpmInstall implements FallibleCommand {
      *            {@link FrontendTools#DEFAULT_PNPM_VERSION})
      * @param autoUpdate
      *            {@code true} to automatically update to a new node version
-     * @param npmLegacyPeerDeps
-     *            pass npm parameter --legacy-peer-deps for more lenient peer
-     *            dependency resolution if npm version >= 7
      */
-    TaskRunNpmInstall(ClassFinder classFinder, NodeUpdater packageUpdater,
-            boolean enablePnpm, boolean requireHomeNodeExec, String nodeVersion,
-            URI nodeDownloadRoot, boolean useGlobalPnpm, boolean autoUpdate,
-            boolean npmLegacyPeerDeps) {
-        this.classFinder = classFinder;
+    TaskRunNpmInstall(NodeUpdater packageUpdater, boolean enablePnpm,
+            boolean requireHomeNodeExec, String nodeVersion,
+            URI nodeDownloadRoot, boolean useGlobalPnpm, boolean autoUpdate) {
         this.packageUpdater = packageUpdater;
         this.enablePnpm = enablePnpm;
         this.requireHomeNodeExec = requireHomeNodeExec;
@@ -140,7 +131,6 @@ public class TaskRunNpmInstall implements FallibleCommand {
         this.nodeDownloadRoot = Objects.requireNonNull(nodeDownloadRoot);
         this.useGlobalPnpm = useGlobalPnpm;
         this.autoUpdate = autoUpdate;
-        this.npmLegacyPeerDeps = npmLegacyPeerDeps;
     }
 
     @Override
@@ -358,21 +348,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
             } else {
                 executable = tools.getNpmExecutable();
             }
-
-            // Remove the following conditional block (together with the
-            // npmLegacyPeerDeps parameter) when vite has been updated a
-            // version accepted as a peer dependency by vite-plugin-checker.
-            // https://github.com/vaadin/flow/issues/12392
-            if (!enablePnpm && npmLegacyPeerDeps) {
-                FrontendVersion npmVersion = tools.getNpmVersion();
-                if (npmVersion.getMajorVersion() >= 7) {
-                    executable = new ArrayList<>(executable);
-                    executable.add("--legacy-peer-deps");
-                }
-            }
-
-        } catch (IllegalStateException
-                | FrontendUtils.UnknownVersionException exception) {
+        } catch (IllegalStateException exception) {
             throw new ExecutionFailedException(exception.getMessage(),
                     exception);
         }
