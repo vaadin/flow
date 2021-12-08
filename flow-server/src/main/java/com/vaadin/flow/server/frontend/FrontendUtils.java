@@ -61,6 +61,7 @@ import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_STATISTICS_JSON;
+import static com.vaadin.flow.server.frontend.FrontendTools.INSTALL_NODE_LOCALLY;
 import static java.lang.String.format;
 
 /**
@@ -304,7 +305,6 @@ public class FrontendUtils {
      */
     public static final String PARAM_TOKEN_FILE = "vaadin.frontend.token.file";
 
-    public static final String INSTALL_NODE_LOCALLY = "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.7.6:install-node-and-npm -DnodeVersion=\"v12.14.0\" ";
     public static final String DISABLE_CHECK = "%nYou can disable the version check using -D%s=true";
 
     private static final String NO_CONNECTION = "Webpack-dev-server couldn't be reached for %s.%n"
