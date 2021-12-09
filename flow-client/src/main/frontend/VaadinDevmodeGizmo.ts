@@ -803,8 +803,24 @@ export class VaadinDevmodeGizmo extends LitElement {
 
   private transitionDuration: number = 0;
 
-  constructor() {
-    super();
+  elementTelemetry() {
+    let data = {};
+    try {
+      // localstorage data is collected by vaadin-usage-statistics.js
+      const localStorageStatsString = localStorage.getItem('vaadin.statistics.basket');
+      if (!localStorageStatsString) {
+        // Do not send empty data
+        return;
+      }
+      data = JSON.parse(localStorageStatsString);
+    } catch (e) {
+      // In case of parse errors don't send anything
+      return;
+    }
+
+    if (this.frontendConnection) {
+      this.frontendConnection.sendTelemetry(data);
+    }
   }
 
   openWebSocketConnection() {
@@ -830,6 +846,7 @@ export class VaadinDevmodeGizmo extends LitElement {
       if (!VaadinDevmodeGizmo.isActive) {
         frontendConnection.setActive(false);
       }
+      this.elementTelemetry();
     };
     frontendConnection.onConnectionError = onConnectionError;
     frontendConnection.onReload = onReload;
@@ -1483,6 +1500,9 @@ class Connection extends Object {
 
   setFeature(featureId: string, enabled: boolean) {
     this.send('setFeature', { featureId, enabled });
+  }
+  sendTelemetry(browserData: any) {
+    this.send('reportTelemetry', { browserData });
   }
 }
 
