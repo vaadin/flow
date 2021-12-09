@@ -1,5 +1,6 @@
 package com.vaadin.flow.component;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -15,6 +16,7 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
 
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.page.History;
@@ -61,6 +63,7 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
+import com.vaadin.flow.server.frontend.MockLogger;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
 
@@ -163,10 +166,16 @@ public class UITest {
     }
 
     private static UI createTestUI() {
+        MockLogger mockLogger = new MockLogger();
         UI ui = new UI() {
             @Override
             public void doInit(VaadinRequest request, int uiId) {
 
+            }
+
+            @Override
+            Logger getLogger() {
+                return mockLogger;
             }
         };
 
@@ -439,7 +448,7 @@ public class UITest {
     }
 
     @Test
-    public void unserSession_datachEventIsFiredForElements() {
+    public void unsetSession_detachEventIsFiredForElements() {
         UI ui = createTestUI();
 
         List<ElementDetachEvent> events = new ArrayList<>();
@@ -459,6 +468,32 @@ public class UITest {
         assertEquals(2, events.size());
         assertEquals(childComponent.getElement(), events.get(0).getSource());
         assertEquals(ui.getElement(), events.get(1).getSource());
+    }
+
+    @Test
+    public void unsetSession_accessErrorHandlerStillWorks() throws IOException {
+        UI ui = createTestUI();
+        initUI(ui, "", null);
+
+        ui.getSession().access(() -> ui.getInternals().setSession(null));
+        ui.access(() -> {
+            Assert.fail("We should never get here because the UI is detached");
+        });
+
+        // Unlock to run pending access tasks
+        ui.getSession().unlock();
+
+        String logOutput = ((MockLogger) ui.getLogger()).getLogs();
+        String logOutputNoDebug = logOutput.replaceAll("^\\[Debug\\].*", "");
+
+        Assert.assertFalse(
+                "No NullPointerException should be logged but got: "
+                        + logOutput,
+                logOutput.contains("NullPointerException"));
+        Assert.assertFalse(
+                "No UIDetachedException should be logged but got: "
+                        + logOutputNoDebug,
+                logOutputNoDebug.contains("UIDetachedException"));
     }
 
     @Test
