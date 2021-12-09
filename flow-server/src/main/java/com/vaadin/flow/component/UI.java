@@ -724,7 +724,7 @@ public class UI extends Component
         return getNode().getFeature(ReconnectDialogConfigurationMap.class);
     }
 
-    private static Logger getLogger() {
+    Logger getLogger() {
         return LoggerFactory.getLogger(UI.class.getName());
     }
 

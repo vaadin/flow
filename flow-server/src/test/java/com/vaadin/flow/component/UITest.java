@@ -88,6 +88,7 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
+import com.vaadin.flow.server.frontend.MockLogger;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
@@ -192,10 +193,16 @@ public class UITest {
     }
 
     private static UI createTestUI() {
+        MockLogger mockLogger = new MockLogger();
         UI ui = new UI() {
             @Override
             public void doInit(VaadinRequest request, int uiId) {
 
+            }
+
+            @Override
+            Logger getLogger() {
+                return mockLogger;
             }
         };
 
@@ -548,39 +555,27 @@ public class UITest {
     @Test
     public void unsetSession_accessErrorHandlerStillWorks() throws IOException {
         UI ui = createTestUI();
+        initUI(ui, "", null);
 
-        File output = File.createTempFile("logoutput", "uitest.log");
-        output.deleteOnExit();
-        System.setProperty("org.slf4j.simpleLogger.logFile",
-                output.getAbsolutePath());
+        ui.getSession().access(() -> ui.getInternals().setSession(null));
+        ui.access(() -> {
+            Assert.fail("We should never get here because the UI is detached");
+        });
 
-        try {
+        // Unlock to run pending access tasks
+        ui.getSession().unlock();
 
-            initUI(ui, "", null);
+        String logOutput = ((MockLogger) ui.getLogger()).getLogs();
+        String logOutputNoDebug = logOutput.replaceAll("^\\[Debug\\].*", "");
 
-            ui.getSession().access(() -> ui.getInternals().setSession(null));
-            ui.access(() -> {
-                Assert.fail(
-                        "We should never get here because the UI is detached");
-            });
-
-            // Unlock to run pending access tasks
-            ui.getSession().unlock();
-
-            String logOutput = IOUtils.toString(output.toURI(),
-                    StandardCharsets.UTF_8);
-            Assert.assertFalse(
-                    "No NullPointerException should be logged but got: "
-                            + logOutput,
-                    logOutput.contains("NullPointerException"));
-            Assert.assertFalse(
-                    "No UIDetachedException should be logged but got: "
-                            + logOutput,
-                    logOutput.contains("UIDetachedException"));
-        } finally {
-            System.clearProperty("org.slf4j.simpleLogger.logFile");
-        }
-
+        Assert.assertFalse(
+                "No NullPointerException should be logged but got: "
+                        + logOutput,
+                logOutput.contains("NullPointerException"));
+        Assert.assertFalse(
+                "No UIDetachedException should be logged but got: "
+                        + logOutputNoDebug,
+                logOutputNoDebug.contains("UIDetachedException"));
     }
 
     @Test
