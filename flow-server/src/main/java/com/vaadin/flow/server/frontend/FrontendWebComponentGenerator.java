@@ -89,7 +89,8 @@ public class FrontendWebComponentGenerator implements Serializable {
                 .forEach(exporterRelatedClasses::add);
         final String themeName = theme == null ? "" : theme.getName();
         return WebComponentModulesWriter.DirectoryWriter
-                .generateWebComponentsToDirectory(exporterRelatedClasses,
+                .generateWebComponentsToDirectory(
+                        WebComponentModulesWriter.class, exporterRelatedClasses,
                         outputDirectory, false, themeName);
     }
 }
