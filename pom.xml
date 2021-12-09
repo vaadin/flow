@@ -713,6 +713,17 @@
                                 </dependency>
                             </dependencies>
                         </plugin>
+                        <plugin>
+                            <groupId>com.github.siom79.japicmp</groupId>
+                            <artifactId>japicmp-maven-plugin</artifactId>
+                            <dependencies>
+                                <dependency>
+                                    <groupId>javax.activation</groupId>
+                                    <artifactId>javax.activation-api</artifactId>
+                                    <version>1.2.0</version>
+                                    </dependency>
+                            </dependencies>
+                        </plugin>
                     </plugins>
                 </pluginManagement>
             </build>
