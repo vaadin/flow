@@ -82,15 +82,24 @@ public class FrontendWebComponentGenerator implements Serializable {
      */
     public Set<File> generateWebComponents(File outputDirectory,
             ThemeDefinition theme) {
-        Set<Class<?>> exporterRelatedClasses = new HashSet<>();
-        finder.getSubTypesOf(WebComponentExporter.class)
-                .forEach(exporterRelatedClasses::add);
-        finder.getSubTypesOf(WebComponentExporterFactory.class)
-                .forEach(exporterRelatedClasses::add);
-        final String themeName = theme == null ? "" : theme.getName();
-        return WebComponentModulesWriter.DirectoryWriter
-                .generateWebComponentsToDirectory(
-                        WebComponentModulesWriter.class, exporterRelatedClasses,
-                        outputDirectory, false, themeName);
+        try {
+            final Class<?> writerClass = finder
+                    .loadClass(WebComponentModulesWriter.class.getName());
+            Set<Class<?>> exporterRelatedClasses = new HashSet<>();
+            finder.getSubTypesOf(WebComponentExporter.class.getName())
+                    .forEach(exporterRelatedClasses::add);
+            finder.getSubTypesOf(WebComponentExporterFactory.class.getName())
+                    .forEach(exporterRelatedClasses::add);
+            final String themeName = theme == null ? "" : theme.getName();
+            return WebComponentModulesWriter.DirectoryWriter
+                    .generateWebComponentsToDirectory(writerClass,
+                            exporterRelatedClasses, outputDirectory, false,
+                            themeName);
+        } catch (ClassNotFoundException e) {
+            throw new IllegalStateException(
+                    "Unable to locate a required class using custom class "
+                            + "loader",
+                    e);
+        }
     }
 }
