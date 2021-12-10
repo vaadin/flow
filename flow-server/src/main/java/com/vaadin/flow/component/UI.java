@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 
@@ -527,9 +528,24 @@ public class UI extends Component
                     if (command instanceof ErrorHandlingCommand) {
                         ErrorHandlingCommand errorHandlingCommand = (ErrorHandlingCommand) command;
                         errorHandlingCommand.handleError(exception);
-                    } else {
+                    } else if (getSession() != null) {
                         getSession().getErrorHandler()
                                 .error(new ErrorEvent(exception));
+                    } else {
+                        /*
+                         * The session has expired after `ui.access` was called.
+                         * It makes no sense to pollute the logs with a
+                         * UIDetachedException at this point.
+                         */
+                        if (exception instanceof ExecutionException
+                                && ((ExecutionException) exception)
+                                        .getCause() instanceof UIDetachedException) {
+                            getLogger().debug(exception.getMessage(),
+                                    exception);
+                        } else {
+                            getLogger().error(exception.getMessage(),
+                                    exception);
+                        }
                     }
                 } catch (Exception e) {
                     getLogger().error(e.getMessage(), e);
@@ -708,7 +724,7 @@ public class UI extends Component
         return getNode().getFeature(ReconnectDialogConfigurationMap.class);
     }
 
-    private static Logger getLogger() {
+    Logger getLogger() {
         return LoggerFactory.getLogger(UI.class.getName());
     }
 
