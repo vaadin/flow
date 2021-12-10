@@ -61,7 +61,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.PROJECT_BASEDIR;
 public class AbstractConfigurationFactory implements Serializable {
 
     public static final String DEV_FOLDER_MISSING_MESSAGE = "Running project in development mode with no access to folder '%s'.%n"
-            + "Build project in production mode instead, see https://vaadin.com/docs/v15/flow/production/tutorial-production-mode-basic.html";
+            + "Build project in production mode instead, see https://vaadin.com/docs/latest/flow/production/overview";
 
     /**
      * Returns the config parameters from the token file data {@code buildInfo}.
