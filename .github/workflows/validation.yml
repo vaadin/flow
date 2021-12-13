@@ -3,6 +3,9 @@ on: [pull_request, workflow_dispatch]
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      matrix-unit: ${{ steps.set-matrix.outputs.matrix-unit }}
+      matrix-it: ${{ steps.set-matrix.outputs.matrix-it }}
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
@@ -12,60 +15,34 @@ jobs:
         with:
           java-version: '11'
           distribution: 'adopt'
-      - name: Show Versions
+      - name: Set flow version to 999.99-SNAPSHOT
         run: |
-          uname -a
-          id
-          pwd
-          type java && java -version
-          type mvn && mvn -version
-          type node && node --version
-          type npm && npm --version
-      - name: Set flow version and Generate module lists
+          ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
+      - name: Generate matrices
+        id: set-matrix
         run: |
-          # run 3 maven process at the same time and wait for them, saves half minute
-          mvn -B -q -DnewVersion=999.99-SNAPSHOT versions:set -T 1C &
-          P1=$!
-          mvn help:evaluate -Dexpression=project.modules -DskipTests -Prun-tests \
-            | grep "<\/string>" \
-            | grep -v flow-tests \
-            | sed -e 's, *<string>\(.*\)</string>,\1,g' \
-            | sort > flow.modules &
-          P2=$!
-          mvn help:evaluate -B -Dexpression=project.modules -pl flow-tests -DskipTests -Prun-tests 2>/dev/null \
-            | grep "<\/string>" \
-            | sed -e 's, *<string>\(.*\)</string>,flow-tests/\1,g' \
-            | grep -v "test-ccdm$" \
-            | grep -v "test-pwa" \
-            | grep -v "test-root-context" \
-            | grep -v "test-root-ui-context" \
-            | grep -v "test-mixed/pom-pnpm-production" \
-            | grep -v "test-mixed/pom-npm-production" \
-            | sort > it.modules &
-          P3=$!
-          wait $P1 $P2 $P3
+          echo "::set-output name=matrix-unit::$(./scripts/computeMatrix.js unit-tests --parallel=2 current module args)"
+          echo "::set-output name=matrix-it::$(./scripts/computeMatrix.js it-tests --parallel=11 current module args)"
       - name: Compile and Install Flow
         run: |
-          # exclude gradle plugin not needed until gradle tests
           cmd="mvn install -B -DskipTests -pl \!flow-plugins/flow-gradle-plugin"
-          # run twice if fails, it might be multithread failure
+          # run twice if fails, it might be a multithread failure
           eval $cmd -T 2C -q || eval $cmd
       - name: Save workspace
         run: |
           mv ~/.m2/ .
-          tar cf workspace.tar .m2 *.modules `find . -name target -o -name "pom*.xml"`
+          tar cf workspace.tar .m2 `find . -name target -o -name "pom*.xml"`
       - uses: actions/upload-artifact@v2
         with:
           name: saved-workspace
           path: workspace.tar
   unit-tests:
     needs: build
+    outputs:
+      failure: ${{steps.set-failure.outputs.failure}}
     strategy:
       fail-fast: false
-      matrix:
-        modules:
-          - 'flow-client,fusion-endpoint,flow-jandex,flow-plugins/flow-plugin-base,flow-plugins/flow-maven-plugin,flow-plugins/flow-gradle-plugin'
-          - 'flow-server,flow-data,flow,flow-bom,vaadin-dev-server,flow-component-demo-helpers,flow-dnd,flow-html-components,flow-html-components-testbench,flow-lit-template,flow-polymer-template,flow-push,flow-server-production-mode,flow-test-generic,flow-test-util'
+      matrix: ${{fromJson(needs.build.outputs.matrix-unit)}}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -82,27 +59,29 @@ jobs:
           rm -rf ~/.m2 && mv -f .m2 ~/
       - name: Unit Test
         run: |
-          mvn -B verify -fae -T 1C \
-            -Dsurefire.rerunFailingTestsCount=2 \
-            -pl ${{ matrix.modules }}
+          echo Running TESTS: ${{ strategy.job-index }} ${{matrix.module}} ${{ matrix.args }}
+          [ -n "${{matrix.module}}" ] && \
+            ARGS="-pl ${{matrix.module}} -Dtest=${{matrix.args}}" || \
+            ARGS="-pl ${{matrix.args}}"
+          cmd="mvn -B -T 1C $ARGS"
+          set -x
+          $cmd -T 1C verify || $cmd -fae clean verify
+      - name: Set build status flag
+        id: set-failure
+        if: ${{ failure() }}
+        run: echo "::set-output name=failure::true"
       - uses: actions/upload-artifact@v2
-        if: always()
+        if: ${{ failure() || success() }}
         with:
           name: test-reports
           path: "**/target/*-reports/*"
   it-tests:
     needs: build
+    outputs:
+      failure: ${{steps.set-failure.outputs.failure}}
     strategy:
       fail-fast: false
-      matrix:
-        parallelism: [6]
-        current: [0, 1, 2, 3, 4, 5,
-        'test-ccdm,test-mixed/pom-pnpm-production.xml,test-pwa',
-        'test-root-ui-context,test-mixed/pom-npm-production.xml,test-pwa/pom-production.xml',
-        'test-root-context:0',
-        'test-root-context:1',
-        'test-root-context:2'
-        ]
+      matrix: ${{fromJson(needs.build.outputs.matrix-it)}}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -130,73 +109,34 @@ jobs:
           TB_LICENSE=${{secrets.TB_LICENSE}}
           mkdir -p ~/.vaadin/
           echo '{"username":"'`echo $TB_LICENSE | cut -d / -f1`'","proKey":"'`echo $TB_LICENSE | cut -d / -f2`'"}' > ~/.vaadin/proKey
-      - name: Compute Modules
-        run: |
-          case "${{matrix.current}}" in
-            *:*)
-              MAX=3
-              M="flow-tests/"`echo "${{matrix.current}}" | cut -d : -f1`
-              N=`echo "${{matrix.current}}" | cut -d : -f2`
-              H=`find $M/src/test -name "*IT.java" | xargs basename -s .java`
-              C=`echo "$H" | wc -l`
-              J=`echo "$C / $MAX" | bc`
-              I=`echo "$J * $N + 1" | bc`
-              T=`echo "$H" | tail +$I | head -$J`
-              A=`echo "$T" | grep ... | tr '\n' ',' | sed -e 's/,$//'`
-              A="-pl $M -Dit.test=$A -Dfailsafe.forkCount=4"
-              ;;
-            *test*)
-              M=`echo "flow-tests/${{matrix.current}}" | sed -e 's|,|,flow-tests/|g'`
-              A="-pl $M -Dfailsafe.forkCount=4"
-              ;;
-            *)
-              P="${{matrix.parallelism}}"
-              N="${{matrix.current}}"
-              H=`cat it.modules`
-              C=`echo "$H" | wc -l`
-              J=`echo "$C / $P" | bc`
-              I=`echo "$J * $N + 1" | bc`
-              M=`echo "$H" | tail +$I | head -$J`
-              A=`echo "$M" | grep ... | tr '\n' ',' | sed -e 's/,$//'`
-              [ -n "$A" ] && A="-pl $A"
-              ;;
-          esac
-          echo "MODULES:"
-          echo "$M"
-          echo "TESTS:"
-          echo "$T"
-          echo "ARGS:"
-          echo "$A"
-          echo "$A" > it.args
       - name: Install required modules
         run: |
-          if grep -q test-fusion-csrf-context it.args; then
+          if echo ${{matrix.args}} | grep -q test-fusion-csrf-context; then
             mvn -B -q install -DskipITs -pl flow-tests/test-fusion-csrf
           fi
       - name: Run ITs
         run: |
-          ARGS=`cat it.args`
-          echo "$ARGS"
-          if [ -n "$ARGS" ]; then
-            set -x
-            mvn verify -fae -V -B -e \
-              -Dcom.vaadin.testbench.Parameters.testsInParallel=5 \
-              -Dfailsafe.rerunFailingTestsCount=2 \
-              $ARGS
-          fi
+          echo TESTING: ${{ strategy.job-index }} ${{matrix.module}} ${{ matrix.args }}
+          [ -n "${{matrix.module}}" ] && \
+            ARGS="-Dfailsafe.forkCount=4 -pl ${{matrix.module}} -Dit.test=${{matrix.args}}" || \
+            ARGS="-pl ${{matrix.args}}"
+          cmd="mvn -V -B -e -Dcom.vaadin.testbench.Parameters.testsInParallel=5 $ARGS"
+          set -x
+          eval $cmd verify -fae -Dfailsafe.rerunFailingTestsCount=2 || eval $cmd clean verify
+      - name: Set build status flag
+        id: set-failure
+        if: ${{ failure() }}
+        run: echo "::set-output name=failure::true"
       - uses: actions/upload-artifact@v2
-        if: always()
+        if: ${{ failure() || success() }}
         with:
           name: test-reports
           path: |
             **/target/*-reports/*
             **/error-screenshots/*.png
-            **/target/site/*-report.html
   test-results:
-    if: always()
-    needs:
-      - unit-tests
-      - it-tests
+    if: ${{ failure() || success() }}
+    needs: [unit-tests, it-tests]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v2
@@ -209,9 +149,7 @@ jobs:
       - uses: geekyeggo/delete-artifact@v1
         with:
           name: saved-workspace
-      - name: The Build has Failed
-        if: ${{ failure() || cancelled() }}
-        run: exit 1
-      - name: The Build has Succeeded
-        if: ${{ success() }}
-        run: exit 0
+      - name: Check Failure Status
+        run: |
+          fail="${{ needs.unit-tests.outputs.failure }}${{ needs.it-tests.outputs.failure }}"
+          [ -n "$fail" ] && echo "!! THERE ARE TEST MODULES WITH FAILURES !!" >&2 && exit 1 || exit 0
