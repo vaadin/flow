@@ -21,10 +21,10 @@
         <module>vite-production</module>
 
         <!-- npm and pnpm dev mode and prod mode -->
-        <module>test-npm-pnpm</module>
-        <module>test-npm-pnpm/pom-npm.xml</module>
-        <module>test-npm-pnpm/pom-pnpm-production.xml</module>
-        <module>test-npm-pnpm/pom-npm-production.xml</module>
+        <module>test-npm</module>
+        <module>test-npm/pom-production.xml</module>
+        <module>test-pnpm</module>
+        <module>test-pnpm/pom-production.xml</module>
 
     </modules>
 
