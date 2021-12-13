@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.logging.Level;
@@ -29,10 +30,13 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.SearchContext;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.internal.WrapsElement;
 import org.openqa.selenium.logging.LogEntry;
 import org.openqa.selenium.logging.LogType;
+import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.remote.RemoteWebElement;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.slf4j.LoggerFactory;
@@ -422,11 +426,25 @@ public class TestBenchHelpers extends ParallelTest {
     private WebElement getShadowRoot(WebElement webComponent) {
         waitUntil(driver -> getCommandExecutor().executeScript(
                 "return arguments[0].shadowRoot", webComponent) != null);
-        WebElement shadowRoot = (WebElement) getCommandExecutor()
-                .executeScript("return arguments[0].shadowRoot", webComponent);
-        Assert.assertNotNull("Could not locate shadowRoot in the element",
-                shadowRoot);
-        return shadowRoot;
+        final Object shadowObject = getCommandExecutor().executeScript(
+                "return arguments[0].shadowRoot", webComponent);
+        if (shadowObject instanceof Map)  {
+            // ChromeDriver 96+
+            // Based on https://github.com/SeleniumHQ/selenium/issues/10050#issuecomment-974231601
+            Map<String, Object> shadowRootMap = (Map<String, Object>) shadowObject;
+            String shadowRootKey = (String) shadowRootMap.keySet().toArray()[0];
+            return (WebElement)  shadowRootMap.get(shadowRootKey);
+        } else if(shadowObject instanceof  WebElement) {
+            return (WebElement) shadowObject;
+        } else if(shadowObject instanceof SearchContext) {
+            // ChromeDriver 96+
+            SearchContext shadowRoot = (SearchContext) shadowObject;
+            Assert.assertNotNull("Could not locate shadowRoot in the element",
+                    shadowRoot);
+            return shadowRoot.findElement(By.cssSelector("#inside"));
+        }
+
+        return null;
     }
 
     /**
