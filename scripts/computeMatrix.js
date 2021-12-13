@@ -12,16 +12,28 @@ const moduleWeights = {
   'flow-server': {weight: 4},
   'vaadin-dev-server': {weight: 3},
   'fusion-end-point': {weight: 3},
-  'flow-tests/test-ccdm': {pos: 1},
   'flow-tests/test-mixed/pom-pnpm-production.xml': {pos: 1},
-  'flow-tests/test-pwa' : {pos: 1},
   'flow-tests/test-root-ui-context': {pos: 2},
   'flow-tests/test-mixed/pom-npm-production.xml': {pos: 2},
   'flow-tests/test-pwa/pom-production.xml': {pos: 2},
   'flow-tests/test-ccdm-flow-navigation': {pos: 2},
   'flow-tests/test-fusion-csrf-context': {pos: 3},
   'flow-tests/test-v14-bootstrap': {pos: 4},
-  'flow-tests/test-fusion-csrf': {pos: 5, weight: 20}
+  'flow-tests/test-fusion-csrf': {pos: 5, weight: 20},
+  'flow-tests/test-ccdm': {pos: 5},
+  'flow-tests/test-pwa' : {pos: 5},
+  'flow-tests/test-ccdm/pom-production.xml': {pos: 6},
+  
+  'RemoveRoutersLayoutContentIT': {weight: 2},
+  'BrowserWindowResizeIT': {weight: 2},
+  'FragmentLinkIT': {weight: 2},
+  'AttachListenerIT': {weight: 2},
+  'template.ChildOrderIT': {weight: 2},
+  'WaitForVaadinIT': {weight: 2},
+  'ErrorPageIT': {weight: 2},
+  'DomEventFilterIT': {weight: 2},
+  'ShortcutsIT': {weight: 2},
+  'JavaScriptReturnValueIT': {weight: 8},
 }
 // Set split number for modules with several tests
 const moduleSplits = {
