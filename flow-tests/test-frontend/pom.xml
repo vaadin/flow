@@ -19,6 +19,13 @@
         <!-- test modules -->
         <module>vite-basics</module>
         <module>vite-production</module>
+
+        <!-- npm and pnpm dev mode and prod mode -->
+        <module>test-npm-pnpm</module>
+        <module>test-npm-pnpm/pom-npm.xml</module>
+        <module>test-npm-pnpm/pom-pnpm-production.xml</module>
+        <module>test-npm-pnpm/pom-npm-production.xml</module>
+
     </modules>
 
     <dependencies>
