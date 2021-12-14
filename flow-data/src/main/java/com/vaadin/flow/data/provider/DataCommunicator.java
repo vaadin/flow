@@ -41,6 +41,7 @@ import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.Range;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.shared.communication.PushMode;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
