@@ -428,6 +428,8 @@ public class TestBenchHelpers extends ParallelTest {
                 "return arguments[0].shadowRoot", webComponent) != null);
         final Object shadowObject = getCommandExecutor().executeScript(
                 "return arguments[0].shadowRoot", webComponent);
+        Assert.assertNotNull("Could not locate shadowRoot in the element",
+                shadowObject);
         if (shadowObject instanceof Map)  {
             // ChromeDriver 96+
             // Based on https://github.com/SeleniumHQ/selenium/issues/10050#issuecomment-974231601
@@ -439,8 +441,6 @@ public class TestBenchHelpers extends ParallelTest {
         } else if(shadowObject instanceof SearchContext) {
             // ChromeDriver 96+
             SearchContext shadowRoot = (SearchContext) shadowObject;
-            Assert.assertNotNull("Could not locate shadowRoot in the element",
-                    shadowRoot);
             return shadowRoot.findElement(By.cssSelector("#inside"));
         }
 
