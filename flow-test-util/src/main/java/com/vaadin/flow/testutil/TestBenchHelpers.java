@@ -31,14 +31,19 @@ import org.junit.Assert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.SearchContext;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.internal.WrapsElement;
 import org.openqa.selenium.logging.LogEntry;
 import org.openqa.selenium.logging.LogType;
+import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.remote.RemoteWebElement;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.testbench.TestBenchDriverProxy;
+import com.vaadin.testbench.TestBenchElement;
 import com.vaadin.testbench.parallel.ParallelTest;
 
 /**
@@ -424,22 +429,35 @@ public class TestBenchHelpers extends ParallelTest {
     private WebElement getShadowRoot(WebElement webComponent) {
         waitUntil(driver -> getCommandExecutor().executeScript(
                 "return arguments[0].shadowRoot", webComponent) != null);
-        final Object shadowObject = getCommandExecutor().executeScript(
-                "return arguments[0].shadowRoot", webComponent);
-        if (shadowObject instanceof Map)  {
+        WebDriver webDriver = driver;
+        if (driver instanceof TestBenchDriverProxy) {
+            // The proxy driver is only a WebDriver, but the wrapped driver
+            // is can be a RemoteWebDriver.
+            webDriver = ((TestBenchDriverProxy) driver).getWrappedDriver();
+        }
+        final Object shadowObject = ((JavascriptExecutor) webDriver)
+                .executeScript("return arguments[0].shadowRoot", webComponent);
+        if (shadowObject instanceof Map
+                && webDriver instanceof RemoteWebDriver) {
             // ChromeDriver 96+
-            // Based on https://github.com/SeleniumHQ/selenium/issues/10050#issuecomment-974231601
+            // Based on
+            // https://github.com/SeleniumHQ/selenium/issues/10050#issuecomment-974231601
             Map<String, Object> shadowRootMap = (Map<String, Object>) shadowObject;
             String shadowRootKey = (String) shadowRootMap.keySet().toArray()[0];
-            return (WebElement)  shadowRootMap.get(shadowRootKey);
-        } else if(shadowObject instanceof  WebElement) {
+
+            RemoteWebElement remoteWebElement = new RemoteWebElement();
+            remoteWebElement.setParent((RemoteWebDriver) webDriver);
+            remoteWebElement.setId(shadowRootKey);
+            return remoteWebElement;
+        } else if (shadowObject instanceof WebElement) {
             return (WebElement) shadowObject;
-        } else if(shadowObject instanceof SearchContext) {
+        } else if (shadowObject instanceof SearchContext) {
             // ChromeDriver 96+
             SearchContext shadowRoot = (SearchContext) shadowObject;
             return shadowRoot.findElement(By.cssSelector("#inside"));
         }
-
+        Assert.fail("Could not locate shadowRoot in the element "
+                + webComponent.getTagName());
         return null;
     }
 
