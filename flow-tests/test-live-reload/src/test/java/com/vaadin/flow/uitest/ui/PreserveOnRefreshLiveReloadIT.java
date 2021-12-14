@@ -30,8 +30,8 @@ public class PreserveOnRefreshLiveReloadIT extends AbstractLiveReloadIT {
 
         WebElement liveReload = findElement(By.tagName("vaadin-devmode-gizmo"));
         Assert.assertNotNull(liveReload);
-        WebElement messageDetails = findInShadowRoot(liveReload,
-                By.className("warning")).get(0);
+        WebElement messageDetails = liveReload.$("*")
+                .attributeContains("class", "warning").first();
         Assert.assertTrue(
                 messageDetails.getText().contains("@PreserveOnRefresh"));
     }

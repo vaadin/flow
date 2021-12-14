@@ -59,8 +59,7 @@ public class FrontendLiveReloadIT extends AbstractLiveReloadIT {
         // then: the frontend changes are visible in the DOM
         WebElement customComponent = findElement(
                 By.id(FrontendLiveReloadView.CUSTOM_COMPONENT));
-        WebElement embeddedDiv = findInShadowRoot(customComponent,
-                By.id("custom-div")).get(0);
+        WebElement embeddedDiv = customComponent.$("*").id("custom-div");
         Assert.assertEquals("Updated component contents",
                 embeddedDiv.getText());
     }
