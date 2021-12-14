@@ -130,7 +130,7 @@ public class DataCommunicator<T> implements Serializable {
 
     private boolean fetchEnabled;
 
-    ExecutorService executor = null;
+    private ExecutorService executor = null;
     private CompletableFuture<Activation> future;
     private UI ui;
 
