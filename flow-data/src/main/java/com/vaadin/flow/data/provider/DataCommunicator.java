@@ -46,7 +46,7 @@ import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.Range;
 import com.vaadin.flow.internal.StateNode;
-mport com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
 
 import org.slf4j.Logger;
@@ -354,7 +354,7 @@ public class DataCommunicator<T> implements Serializable {
      *            The ExecutorService used for async updates.
      */
     public void setExecutorForAsyncUpdates(ExecutorService executor) {
-        if (ui.getPushConfiguration().getPushMode() != PushMode.AUTOMATIC) {
+        if (ui.getPushConfiguration().getPushMode() != PushMode.DISABLED) {
             throw new IllegalStateException(
                     "Asynchronous DataCommunicator updatres require Push to be enabled and PushMode.AUTOMATIC");
         }
