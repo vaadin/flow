@@ -203,7 +203,7 @@ public class PrepareFrontendMojoTest {
                 .readFileToString(tokenFile, StandardCharsets.UTF_8);
         JsonObject buildInfo = JsonUtil.parse(json);
 
-        Assert.assertTrue(
+        Assert.assertFalse(
                 InitParameters.SERVLET_PARAMETER_ENABLE_PNPM
                         + "should have been written",
                 buildInfo.getBoolean(
