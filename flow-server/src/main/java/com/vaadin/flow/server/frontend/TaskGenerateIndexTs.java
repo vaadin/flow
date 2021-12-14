@@ -17,6 +17,7 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
 import org.apache.commons.io.IOUtils;
 
@@ -76,8 +77,11 @@ public class TaskGenerateIndexTs extends AbstractTaskClientGenerator {
 
     @Override
     protected String getFileContent() throws IOException {
-        String indexTemplate = IOUtils
-                .toString(getClass().getResourceAsStream(INDEX_TS), UTF_8);
+        String indexTemplate;
+        try (InputStream indexTsStream = getClass()
+                .getResourceAsStream(INDEX_TS)) {
+            indexTemplate = IOUtils.toString(indexTsStream, UTF_8);
+        }
         String relativizedImport = ensureValidRelativePath(
                 FrontendUtils.getUnixRelativePath(buildDirectory.toPath(),
                         generatedImports.toPath()));

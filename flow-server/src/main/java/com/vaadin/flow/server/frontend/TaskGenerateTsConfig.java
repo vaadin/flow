@@ -17,6 +17,7 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
 import org.apache.commons.io.IOUtils;
 
@@ -46,8 +47,10 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
 
     @Override
     protected String getFileContent() throws IOException {
-        return IOUtils.toString(getClass().getResourceAsStream(TSCONFIG_JSON),
-                UTF_8);
+        try (InputStream tsConfStream = getClass()
+                .getResourceAsStream(TSCONFIG_JSON)) {
+            return IOUtils.toString(tsConfStream, UTF_8);
+        }
     }
 
     @Override

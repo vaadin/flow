@@ -152,8 +152,9 @@ public class FeatureFlags implements Serializable {
                     .getApplicationResource(PROPERTIES_FILENAME);
             if (applicationResource != null) {
                 getLogger().debug("Properties loaded from classpath.");
-                try {
-                    loadProperties(applicationResource.openStream());
+                try (InputStream propertiesStream = applicationResource
+                        .openStream()) {
+                    loadProperties(propertiesStream);
                     return;
                 } catch (IOException e) {
                     throw new UncheckedIOException(
