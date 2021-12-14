@@ -46,7 +46,9 @@ import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.Range;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.shared.communication.PushMode;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -353,6 +355,15 @@ public class DataCommunicator<T> implements Serializable {
      *            The ExecutorService used for async updates.
      */
     public void setExecutorForAsyncUpdates(ExecutorService executor) {
+        if (ui.getPushConfiguration().getPushMode() != PushMode.AUTOMATIC) {
+            throw new IllegalStateException(
+                    "Asynchronous DataCommunicator updatres require Push to be enabled and PushMode.AUTOMATIC");
+        }
+        if (this.executor != null) {
+            future.cancel(true);
+            future = null;
+            this.executor.shutdown();
+        }
         this.executor = executor;
     }
 
@@ -1048,7 +1059,7 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     private void handleAttach() {
-        ui = UI.getCurrent();
+        ui = ((StateTree) stateNode.getOwner()).getUI();
         if (dataProviderUpdateRegistration != null) {
             dataProviderUpdateRegistration.remove();
         }
@@ -1072,6 +1083,10 @@ public class DataCommunicator<T> implements Serializable {
 
     private void handleDetach() {
         ui = null;
+        if (future != null) {
+            future.cancel(true);
+            future = null;
+        }
         dataGenerator.destroyAllData();
         if (dataProviderUpdateRegistration != null) {
             dataProviderUpdateRegistration.remove();
