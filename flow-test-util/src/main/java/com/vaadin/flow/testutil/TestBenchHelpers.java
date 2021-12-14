@@ -35,8 +35,6 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.internal.WrapsElement;
 import org.openqa.selenium.logging.LogEntry;
 import org.openqa.selenium.logging.LogType;
-import org.openqa.selenium.remote.RemoteWebDriver;
-import org.openqa.selenium.remote.RemoteWebElement;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.slf4j.LoggerFactory;
@@ -428,8 +426,6 @@ public class TestBenchHelpers extends ParallelTest {
                 "return arguments[0].shadowRoot", webComponent) != null);
         final Object shadowObject = getCommandExecutor().executeScript(
                 "return arguments[0].shadowRoot", webComponent);
-        Assert.assertNotNull("Could not locate shadowRoot in the element",
-                shadowObject);
         if (shadowObject instanceof Map)  {
             // ChromeDriver 96+
             // Based on https://github.com/SeleniumHQ/selenium/issues/10050#issuecomment-974231601
