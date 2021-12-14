@@ -96,7 +96,7 @@ public class NodeTasks implements FallibleCommand {
 
         private File tokenFile;
 
-        private boolean enablePnpm;
+        private boolean enablePnpm = false;
 
         private boolean useGlobalPnpm = false;
 
