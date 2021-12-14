@@ -46,8 +46,7 @@ import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.Range;
 import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.internal.StateTree;
-import com.vaadin.flow.shared.Registration;
+mport com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
 
 import org.slf4j.Logger;
@@ -1059,7 +1058,7 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     private void handleAttach() {
-        ui = ((StateTree) stateNode.getOwner()).getUI();
+        ui = UI.getCurrent();
         if (dataProviderUpdateRegistration != null) {
             dataProviderUpdateRegistration.remove();
         }
