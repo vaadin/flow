@@ -495,6 +495,7 @@ public class DataCommunicator<T> implements Serializable {
         }
     }
 
+    @SuppressWarnings("FutureReturnValueIgnored")
     private void flush() {
         Set<String> oldActive = new HashSet<>(activeKeyOrder);
 
