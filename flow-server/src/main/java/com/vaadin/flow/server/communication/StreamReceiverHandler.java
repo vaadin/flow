@@ -379,11 +379,11 @@ public class StreamReceiverHandler implements Serializable {
         } finally {
             session.unlock();
         }
-        try {
+        try (InputStream handledStream = inputStream) {
             // Store ui reference so we can do cleanup even if node is
             // detached in some event handler
             Pair<Boolean, UploadStatus> result = streamToReceiver(session,
-                    inputStream, streamReceiver, filename, mimeType,
+                    handledStream, streamReceiver, filename, mimeType,
                     contentLength);
             if (result.getFirst()) {
                 cleanStreamVariable(session, streamReceiver);

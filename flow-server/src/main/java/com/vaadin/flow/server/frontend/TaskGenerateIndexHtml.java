@@ -17,6 +17,7 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
 import org.apache.commons.io.IOUtils;
 
@@ -49,8 +50,10 @@ public class TaskGenerateIndexHtml extends AbstractTaskClientGenerator {
 
     @Override
     protected String getFileContent() throws IOException {
-        return IOUtils.toString(getClass().getResourceAsStream(INDEX_HTML),
-                UTF_8);
+        try (InputStream indexStream = getClass()
+                .getResourceAsStream(INDEX_HTML)) {
+            return IOUtils.toString(indexStream, UTF_8);
+        }
     }
 
     @Override

@@ -17,6 +17,7 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
 import org.apache.commons.io.IOUtils;
 
@@ -52,8 +53,10 @@ public class TaskGenerateServiceWorker extends AbstractTaskClientGenerator {
 
     @Override
     protected String getFileContent() throws IOException {
-        return IOUtils.toString(
-                getClass().getResourceAsStream(SERVICE_WORKER_SRC), UTF_8);
+        try (InputStream swStream = getClass()
+                .getResourceAsStream(SERVICE_WORKER_SRC)) {
+            return IOUtils.toString(swStream, UTF_8);
+        }
     }
 
     @Override
