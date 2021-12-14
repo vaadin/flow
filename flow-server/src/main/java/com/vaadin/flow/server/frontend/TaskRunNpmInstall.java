@@ -86,7 +86,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
     private final List<String> ignoredNodeFolders = Arrays.asList(".bin",
             "pnpm", ".ignored_pnpm", ".pnpm", ".staging", ".vaadin",
             MODULES_YAML);
-    private final boolean enablePnpm = false;
+    private final boolean enablePnpm;
     private final boolean requireHomeNodeExec;
     private final boolean autoUpdate;
 

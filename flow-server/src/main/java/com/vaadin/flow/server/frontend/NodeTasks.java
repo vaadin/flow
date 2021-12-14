@@ -30,6 +30,7 @@ import java.util.stream.IntStream;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
@@ -96,7 +97,7 @@ public class NodeTasks implements FallibleCommand {
 
         private File tokenFile;
 
-        private boolean enablePnpm = false;
+        private boolean enablePnpm = Constants.ENABLE_PNPM_DEFAULT;
 
         private boolean useGlobalPnpm = false;
 
