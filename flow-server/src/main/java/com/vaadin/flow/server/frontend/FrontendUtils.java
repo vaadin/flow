@@ -307,8 +307,8 @@ public class FrontendUtils {
      */
     public static String streamToString(InputStream inputStream) {
         String ret = "";
-        try {
-            return IOUtils.toString(inputStream, StandardCharsets.UTF_8)
+        try (InputStream handledStream = inputStream) {
+            return IOUtils.toString(handledStream, StandardCharsets.UTF_8)
                     .replaceAll("\\R", System.lineSeparator());
         } catch (IOException exception) {
             // ignore exception on close()
@@ -532,22 +532,22 @@ public class FrontendUtils {
         URL statsUrl = resourceProvider
                 .getApplicationResource(service.getContext(), stats);
         InputStream stream = null;
-        try {
-            stream = statsUrl == null ? null : statsUrl.openStream();
-        } catch (IOException exception) {
-            getLogger().warn("Couldn't read content of stats file {}", stats,
-                    exception);
-            stream = null;
+        if (statsUrl != null) {
+            try (InputStream statsStream = statsUrl.openStream()) {
+                byte[] buffer = IOUtils.toByteArray(statsStream);
+                statistics = new Stats(buffer, null);
+                service.getContext().setAttribute(statistics);
+                stream = new ByteArrayInputStream(buffer);
+            } catch (IOException exception) {
+                getLogger().warn("Couldn't read content of stats file {}",
+                        stats, exception);
+                stream = null;
+            }
         }
         if (stream == null) {
             getLogger().error(
                     "Cannot get the 'stats.json' from the classpath '{}'",
                     stats);
-        } else {
-            byte[] buffer = IOUtils.toByteArray(stream);
-            statistics = new Stats(buffer, null);
-            service.getContext().setAttribute(statistics);
-            stream = new ByteArrayInputStream(buffer);
         }
         return stream;
     }
