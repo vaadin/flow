@@ -86,12 +86,12 @@ public class JavaLiveReloadIT extends AbstractLiveReloadIT {
         // given: live reload is deactivated
         TestBenchElement liveReload = $("vaadin-devmode-gizmo").waitForFirst();
 
-        WebElement liveReloadIcon = findInShadowRoot(liveReload,
-                By.className("gizmo")).get(0);
+        WebElement liveReloadIcon = liveReload.$("*")
+                .attributeContains("class", "gizmo").first();
         liveReloadIcon.click();
 
-        WebElement deactivateCheckbox = findInShadowRoot(liveReload,
-                By.id("toggle")).get(0);
+        WebElement deactivateCheckbox = liveReload.$("*")
+                .attribute("id", "toggle").first();
         deactivateCheckbox.click();
 
         // when: live reload is triggered
