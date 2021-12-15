@@ -190,52 +190,6 @@ public class TestBenchHelpers extends ParallelTest {
     }
 
     /**
-     * Returns <code>true</code> if a component can be found with given By
-     * selector in the shadow DOM of the {@code webComponent}.
-     *
-     * @param webComponent
-     *            the web component owning shadow DOM to start search from
-     * @param by
-     *            the selector used to find element
-     * @return <code>true</code> if the component can be found
-     */
-    protected boolean isPresentInShadowRoot(WebElement webComponent, By by) {
-        return !findInShadowRoot(webComponent, by).isEmpty();
-    }
-
-    /**
-     * Find the first {@link WebElement} using the given {@link By} selector.
-     *
-     * @param shadowRootOwner
-     *            the web component owning shadow DOM to start search from
-     * @param by
-     *            the selector used to find element
-     * @return an element from shadow root, if located
-     * @throws AssertionError
-     *             if shadow root is not present or element is not found in the
-     *             shadow root
-     */
-    protected WebElement getInShadowRoot(WebElement shadowRootOwner, By by) {
-        return getShadowRoot(shadowRootOwner).findElements(by).stream()
-                .findFirst().orElseThrow(() -> new AssertionError(
-                        "Could not find required element in the shadowRoot"));
-    }
-
-    /**
-     * Find all {@link WebElement}s using the given {@link By} selector.
-     *
-     * @param webComponent
-     *            the web component owning shadow DOM to start search from
-     * @param by
-     *            the selector used to find elements
-     * @return a list of found elements
-     */
-    protected List<WebElement> findInShadowRoot(WebElement webComponent,
-            By by) {
-        return getShadowRoot(webComponent).findElements(by);
-    }
-
-    /**
      * Executes the given JavaScript.
      * <p>
      * To send arguments to the script, you can use the <code>arguments</code>
@@ -417,16 +371,6 @@ public class TestBenchHelpers extends ParallelTest {
             result = getCommandExecutor().executeScript(
                     "return window.Vaadin && window.Vaadin.Flow && window.Vaadin.Flow.devServerIsNotLoaded;");
         } while (Boolean.TRUE.equals(result));
-    }
-
-    private WebElement getShadowRoot(WebElement webComponent) {
-        waitUntil(driver -> getCommandExecutor().executeScript(
-                "return arguments[0].shadowRoot", webComponent) != null);
-        WebElement shadowRoot = (WebElement) getCommandExecutor()
-                .executeScript("return arguments[0].shadowRoot", webComponent);
-        Assert.assertNotNull("Could not locate shadowRoot in the element",
-                shadowRoot);
-        return shadowRoot;
     }
 
     /**

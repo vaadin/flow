@@ -199,8 +199,7 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
         open();
         checkLogsForErrors();
         final TestBenchElement themedComponent = $("themed-component").first();
-        final List<WebElement> links = findInShadowRoot(themedComponent,
-                By.tagName("link"));
+        final List<TestBenchElement> links = themedComponent.$("link").all();
 
         List<String> linkUrls = links.stream()
                 .map(link -> link.getAttribute("href"))
