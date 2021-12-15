@@ -58,7 +58,8 @@ public class FrontendLiveReloadIT extends AbstractLiveReloadIT {
         waitForLiveReload();
 
         // then: the frontend changes are visible in the DOM
-        TestBenchElement customComponent = $("*").id(FrontendLiveReloadView.CUSTOM_COMPONENT);
+        TestBenchElement customComponent = $("*")
+                .id(FrontendLiveReloadView.CUSTOM_COMPONENT);
         TestBenchElement embeddedDiv = customComponent.$("*").id("custom-div");
         Assert.assertEquals("Updated component contents",
                 embeddedDiv.getText());
