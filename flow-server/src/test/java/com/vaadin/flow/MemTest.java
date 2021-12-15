@@ -16,6 +16,6 @@ public class MemTest {
             System.out.println("buffer[0] " + buffer[0]);
         }
         System.out.println("End");
-        System.exit(123);
+     
     }
 }
