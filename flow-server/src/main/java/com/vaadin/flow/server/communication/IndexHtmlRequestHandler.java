@@ -78,7 +78,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         dests.add("image");
         dests.add("manifest");
         dests.add("paintworklet");
-        dests.add("script");
+        dests.add("script"); // NOSONAR
         dests.add("serviceworker");
         dests.add("sharedworker");
         dests.add("style");
