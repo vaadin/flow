@@ -71,6 +71,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     private static final String SCRIPT_INITIAL = "initial";
     private static final Set<String> nonHtmlFetchDests;
     static {
+        // Full list at
+        // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-Fetch-Dest
         Set<String> dests = new HashSet<>();
         dests.add("audio");
         dests.add("audioworklet");
@@ -87,7 +89,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         dests.add("worker");
         dests.add("xslt");
 
-        // "empty" requests are used when service worker caches / so they need to be allowed
+        // "empty" requests are used when service worker caches / so they need
+        // to be allowed
         nonHtmlFetchDests = Collections.unmodifiableSet(dests);
     }
 
@@ -251,17 +254,20 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {
-        return isRequestForHtml(request) && !BootstrapHandler.isFrameworkInternalRequest(request) && request
-                .getService().getBootstrapUrlPredicate().isValidUrl(request);
+        return isRequestForHtml(request)
+                && !BootstrapHandler.isFrameworkInternalRequest(request)
+                && request.getService().getBootstrapUrlPredicate()
+                        .isValidUrl(request);
     }
 
     /**
      * Checks if the request is potentially a request for a HTML page.
      * 
-     * @param request the request to check
-     * @return {@code true} if the request is potentially for HTML, {@code false} if
-     *         it is certain that it is a request for a script, image or something
-     *         else
+     * @param request
+     *            the request to check
+     * @return {@code true} if the request is potentially for HTML,
+     *         {@code false} if it is certain that it is a request for a script,
+     *         image or something else
      */
     protected boolean isRequestForHtml(VaadinRequest request) {
         String fetchDest = request.getHeader("Sec-Fetch-Dest");
