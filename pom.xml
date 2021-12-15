@@ -734,7 +734,7 @@
         <profile>
             <id>sonar-cloud</id>
             <properties>
-                <sonar.java.source>11</sonar.java.source>
+                <sonar.java.source>${maven.compiler.source}</sonar.java.source>
                 <sonar.organization>vaadin</sonar.organization>
                 <sonar.host.url>https://sonarcloud.io</sonar.host.url>
                 <!-- override properties for legacy sonar instance -->
