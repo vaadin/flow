@@ -22,6 +22,7 @@ import org.openqa.selenium.By;
 
 import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 
 import static com.vaadin.flow.navigate.HelloWorldView.NAVIGATE_ABOUT;
 
@@ -44,8 +45,9 @@ public class NavigateBetweenViewsIT extends ChromeBrowserTest {
 
         Assert.assertThat(getDriver().getCurrentUrl(),
                 CoreMatchers.endsWith("/about"));
-        Assert.assertTrue(getInShadowRoot(findElement(By.tagName("about-view")),
-                By.id("navigate-hello")).isDisplayed());
+        TestBenchElement aboutView = $("about-view").first();
+
+        Assert.assertTrue(aboutView.$("*").id("navigate-hello").isDisplayed());
     }
 
     @Test
@@ -58,8 +60,8 @@ public class NavigateBetweenViewsIT extends ChromeBrowserTest {
         waitUntil(input -> $("about-view").first().$("a").id("navigate-hello")
                 .isDisplayed());
 
-        getInShadowRoot(findElement(By.tagName("about-view")),
-                By.id("navigate-hello")).click();
+        TestBenchElement aboutView = $("about-view").first();
+        aboutView.$("*").id("navigate-hello").click();
 
         getCommandExecutor().waitForVaadin();
 
