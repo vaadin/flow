@@ -24,6 +24,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testcategory.SlowTests;
+import com.vaadin.testbench.TestBenchElement;
 
 @NotThreadSafe
 @Category(SlowTests.class)
@@ -57,10 +58,9 @@ public class FrontendLiveReloadIT extends AbstractLiveReloadIT {
         waitForLiveReload();
 
         // then: the frontend changes are visible in the DOM
-        WebElement customComponent = findElement(
-                By.id(FrontendLiveReloadView.CUSTOM_COMPONENT));
-        WebElement embeddedDiv = findInShadowRoot(customComponent,
-                By.id("custom-div")).get(0);
+        TestBenchElement customComponent = $("*")
+                .id(FrontendLiveReloadView.CUSTOM_COMPONENT);
+        TestBenchElement embeddedDiv = customComponent.$("*").id("custom-div");
         Assert.assertEquals("Updated component contents",
                 embeddedDiv.getText());
     }
