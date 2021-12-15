@@ -48,7 +48,7 @@ public class DefaultDeploymentConfiguration
 
     public static final String NOT_PRODUCTION_MODE_WARNING = "\nWARNING: Vaadin is running in DEBUG MODE with debug features enabled, but with a prebuild frontend bundle (production ready).\n"
             + "When deploying application for production, disable debug features by enabling production mode!\n"
-            + "See more from https://vaadin.com/docs/v14/flow/production/tutorial-production-mode-basic.html";
+            + "See more from https://vaadin.com/docs/v14/flow/production/overview";
 
     private static final String DEPLOYMENT_WARNINGS = "Following issues were discovered with deployment configuration:";
 
