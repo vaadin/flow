@@ -9,7 +9,7 @@
         <version>10.0-SNAPSHOT</version>
     </parent>
     <artifactId>flow-test-multi-war2</artifactId>
-    <name>First war for multi war tests</name>
+    <name>Second war for multi war tests</name>
     <packaging>war</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>

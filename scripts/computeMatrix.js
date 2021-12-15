@@ -3,27 +3,79 @@ const exec = require('util').promisify(require('child_process').exec);
 const fs = require("fs");
 
 /****************** START CONFIG */
-const globalExclusions = ['flow-tests'];
+const globalExclusions = ['flow-tests', 'flow-tests/servlet-containers/tomcat9', 'flow-tests/servlet-containers/tomcat85'];
 // Set modules or tests weights and fixed slice position for better distribution
-//  weight: can be time in minutes, default 1
-//  pos:    from 1 to parallel (default fastest based in weigth)
+//  weight: it's time in half-minutes, default 1 = 30secs
+//  pos:    certain modules need to be allocated manually. Use position for that.
 const moduleWeights = {
-  'flow-client': {weight: 9},
-  'flow-server': {weight: 4},
-  'vaadin-dev-server': {weight: 3},
-  'fusion-end-point': {weight: 3},
-  'flow-tests/test-pnpm/pom-production.xml': {pos: 1},
-  'flow-tests/test-root-ui-context': {pos: 2},
-  'flow-tests/test-npm/pom-production.xml': {pos: 2},
-  'flow-tests/test-pwa/pom-production.xml': {pos: 2},
-  'flow-tests/test-ccdm-flow-navigation': {pos: 2},
-  'flow-tests/test-fusion-csrf-context': {pos: 3},
-  'flow-tests/test-v14-bootstrap': {pos: 4},
-  'flow-tests/test-fusion-csrf': {pos: 5, weight: 20},
-  'flow-tests/test-ccdm': {pos: 5},
-  'flow-tests/test-pwa' : {pos: 5},
-  'flow-tests/test-ccdm/pom-production.xml': {pos: 6},
-  
+  // There are some modules that last more than usual
+  'flow-server': { weight: 3 },
+  'vaadin-dev-server': { weight: 2 },
+  'flow-client': { weight: 6 },
+  'fusion-endpoint': { weight: 2 },
+  'flow-tests/test-application-theme/test-theme-live-reload': { weight: 4 },
+  'flow-tests/test-npm-only-features/test-npm-bytecode-scanning/pom-prod-fallback.xml': { weight: 2 },
+  'flow-tests/test-custom-route-registry': { weight: 2 },
+  'flow-tests/test-embedding/test-embedding-generic': { weight: 2 },
+  'flow-tests/test-embedding/test-embedding-production-mode': { weight: 4 },
+  'flow-tests/test-embedding/test-embedding-reusable-theme': { weight: 2 },
+  'flow-tests/test-fusion-csrf-context': { weight: 2 },
+  'flow-tests/test-frontend/vite-basics': { weight: 2 },
+  'flow-tests/test-frontend/vite-production': { weight: 2 },
+  'flow-tests/test-application-theme/test-theme-reusable': { weight: 2 },
+  'flow-tests/test-application-theme/test-reusable-as-parent': { weight: 2 },
+  'flow-tests/test-embedding/test-embedding-theme-variant': { weight: 2 },
+  'flow-tests/test-dev-mode': { weight: 3 },
+  'flow-tests/test-ccdm/pom-production.xml': { weight: 3 },
+  'flow-tests/test-embedding/test-embedding-application-theme': { weight: 3 },
+  'flow-tests/test-router-custom-context': { weight: 3 },
+  'flow-tests/test-npm-only-features/test-npm-performance-regression': { weight: 2 },
+  'flow-tests/test-fusion-csrf': { weight: 2 },
+  'flow-tests/test-themes': { weight: 2 },
+  'flow-tests/test-ccdm-flow-navigation': { weight: 3 },
+  'flow-tests/test-application-theme/test-theme-switch-live-reload': { weight: 5 },
+  'flow-tests/test-pwa': { weight: 4 },
+  'flow-tests/test-live-reload': { weight: 2 },
+  'flow-tests/test-mixed/pom-npm-production.xml': { weight: 3 },
+  'flow-tests/test-v14-bootstrap/pom-production.xml': { weight: 2 },
+  'flow-tests/test-pwa/pom-production.xml': { weight: 2 },
+  'flow-tests/test-root-ui-context': { weight: 2 },
+  'flow-tests/test-npm-only-features/test-npm-no-buildmojo': { weight: 2 },
+  'flow-tests/test-ccdm': { weight: 4 },
+  'flow-tests/test-ccdm-flow-navigation/pom-production.xml': { weight: 2 },
+
+
+  // When running `flow-tests/test-mixed/pom-npm.xml` together with the following
+  // modules they fail, so we put it with modules that do not fail in container 1
+  // - flow-tests/test-root-ui-context
+  // - flow-tests/test-live-reload
+  // - flow-tests/test-dev-mode
+  'flow-tests/test-mixed/pom-npm.xml': {pos: 1, weight: 10},
+  'flow-tests/test-application-theme/test-theme-live-reload': {pos: 1, weight: 4},
+  'flow-tests/test-no-theme': {pos: 1},
+  'flow-tests/test-custom-route-registry': {pos: 1, weight: 2},
+  'flow-tests/test-npm-only-features/test-npm-bytecode-scanning/pom-prod-fallback.xml': {pos: 1, weight: 2},
+  'flow-tests/test-resources': {pos: 1},
+  'flow-tests/test-embedding/test-embedding-application-theme': {pos: 1, weight: 3},
+
+  // In containers 2 y 3 we put tests that need shared modules
+  'flow-tests/test-mixed/pom-pnpm-production.xml': {pos: 10},
+  'flow-tests/test-embedding/test-embedding-generic': {pos: 2, weight: 3},
+  'flow-tests/test-embedding/test-embedding-reusable-theme': {pos: 2, weight: 3},
+  'flow-tests/test-fusion-csrf-context': {pos: 2, weight: 2},
+  'flow-tests/test-multi-war/deployment': {pos: 2},
+  'flow-tests/test-live-reload': {pos: 2, weight: 2},
+
+  'flow-tests/test-frontend/vite-basics': {pos: 3, weight: 10},
+  'flow-tests/test-frontend/vite-test-assets': {pos: 3},
+  'flow-tests/test-frontend/vite-production': {pos: 3, weight: 2},
+  'flow-tests/test-application-theme/test-reusable-as-parent': {pos: 3, weight: 2},
+  'flow-tests/test-application-theme/test-theme-reusable': {pos: 3, weight: 2},
+  'flow-tests/test-mixed/pom-npm-production.xml': {pos: 3, weight: 3},
+  'flow-tests/test-v14-bootstrap/pom-production.xml': {pos: 3, weight: 2},
+  'flow-tests/test-ccdm-flow-navigation/pom-production.xml': {pos: 2, weight: 2},
+
+  // flow-tests/test-root-context module is split in tests
   'RemoveRoutersLayoutContentIT': {weight: 2},
   'BrowserWindowResizeIT': {weight: 2},
   'FragmentLinkIT': {weight: 2},
@@ -35,6 +87,7 @@ const moduleWeights = {
   'ShortcutsIT': {weight: 2},
   'JavaScriptReturnValueIT': {weight: 8},
 }
+
 // Set split number for modules with several tests
 const moduleSplits = {
   'flow-tests/test-root-context': 3
@@ -46,20 +99,36 @@ const regexComment = /<!--[\s\S]+?-->/gm;
 const regexModule = /([\s\S]*?)<module>([\s\S]*?)<\/module>([\s\S]*)/;
 const regexVersion = '(<version>)(VERSION)(</version>)';
 
+
 /**
  * 10 seconds faster than `mvn help:evaluate -Dexpression=project.modules`
  */
-function getModules(pomFile, prefix) {
-  prefix = prefix || '';
+function getModules(prefix) {
+  prefix = prefix ? prefix + '/' : '';
   const modules = [];
-  
-  const content = fs.readFileSync(prefix + pomFile).toString().replace(regexComment, '');
-  let res = regexModule.exec(content);
-  while(res) {
-    modules.push(prefix + res[2]);
-    res = regexModule.exec(res[3]);
+  const pom = prefix + 'pom.xml';
+  if (fs.existsSync(pom)) {
+    const content = fs.readFileSync(pom).toString().replace(regexComment, '');
+    let res = regexModule.exec(content);
+    while(res) {
+      modules.push(prefix + res[2]);
+      res = regexModule.exec(res[3]);
+    }
   }
   return modules;
+}
+
+/**
+ * Like `mvn help:evaluate -Dexpression=project.modules` but report sub-modules
+ */
+function getModulesRecursive(prefix) {
+  let ret = [];
+  const modules = getModules(prefix);
+  modules.forEach(module => {
+    const subModules = getModulesRecursive(module);
+    ret = [...ret, ...(subModules.length ? subModules : [module])];
+  });
+  return ret;
 }
 
 /**
@@ -160,11 +229,12 @@ function toObject(parts, suite, module, prevIdx) {
   parts.forEach((items, idx, arr) => {
     const current = prevIdx + idx + 1;
     const total = arr.length;
+    const weight = sumWeights(items, moduleWeights);
+    const nitems = items.length;
     const name = `${suite} (${total}, ${current})`;
     const args = items.join(',');
-    const weight = sumWeights(items, moduleWeights);
     const matrix = [arr.length, prevIdx + idx + 1]
-    object.push({total, current, weight, suite, module, name, args, items, matrix});
+    object.push({total, current, weight, nitems, suite, module, name, args, items, matrix});
   });
   return object;
 }
@@ -174,9 +244,9 @@ function toObject(parts, suite, module, prevIdx) {
  * the object json for actions
  */
 function getParts(suite, prefix, slices) {
-  let modules = getModules('pom.xml', prefix);
+  let modules = prefix ? getModulesRecursive(prefix) : getModules();
   const exclusions = Object.keys(moduleSplits).filter(module => modules.includes(module));
-  modules = grep(modules, exclusions);
+  modules = grep(modules, [...globalExclusions, ...exclusions]);
 
   const excSlices = exclusions.reduce((prev, module) => prev + moduleSplits[module], 0);
   const parts = splitArray(modules, slices - excSlices, moduleWeights);
@@ -229,7 +299,7 @@ function printStrategy(object) {
 async function main() {
   const versionRegx= /--version=(.*)/;
   const parallelRegx= /--parallel=(\d+)/;
-  const program = process.argv[1].replace(/.*\//, ''); 
+  const program = process.argv[1].replace(/.*\//, '');
   const action = process.argv[2];
   const parameter = process.argv[3];
   const keys = process.argv.slice(4);
@@ -242,7 +312,7 @@ async function main() {
     const json = objectToString(object, keys);
     console.log(json);
   } else if (action == 'it-tests' && parallelRegx.test(parameter)) {
-    const object = getParts(action, 'flow-tests/', parameter.replace(parallelRegx, '$1'));
+    const object = getParts(action, 'flow-tests', parameter.replace(parallelRegx, '$1'));
     printStrategy(object);
     const json = objectToString(object, keys);
     console.log(json);
@@ -254,7 +324,7 @@ Usage:
 Actions
   set-version        replace versions in all pom files of the project
   unit-tests         outputs the JSON matrix for unit-tests
-  it-tests           outpurs the JSON matrix for it-tests
+  it-tests           outputs the JSON matrix for it-tests
 
 Parameters
   --version=xxx      the version to set

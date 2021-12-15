@@ -15,11 +15,22 @@
 
     <modules>
         <module>reusable-theme</module>
-        <module>test-theme-reusable</module>
-        <module>test-reusable-as-parent</module>
-        <module>test-theme-live-reload</module>
-        <module>test-theme-component-live-reload</module>
-        <module>test-theme-switch-live-reload</module>
     </modules>
-
+    <profiles>
+        <profile>
+            <id>run-tests</id>
+            <activation>
+                <property>
+                    <name>!skipTests</name>
+                </property>
+            </activation>
+            <modules>
+                <module>test-theme-reusable</module>
+                <module>test-reusable-as-parent</module>
+                <module>test-theme-live-reload</module>
+                <module>test-theme-component-live-reload</module>
+                <module>test-theme-switch-live-reload</module>
+            </modules>
+        </profile>
+    </profiles>
 </project>
