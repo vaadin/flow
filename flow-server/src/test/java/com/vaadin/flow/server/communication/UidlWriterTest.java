@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.server.communication;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.ArrayList;
 import java.util.Collections;

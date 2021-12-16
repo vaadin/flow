@@ -18,7 +18,7 @@ package com.vaadin.flow.internal.springcsrf;
 import java.util.Optional;
 import org.jsoup.nodes.Element;
 
-import javax.servlet.ServletRequest;
+import jakarta.servlet.ServletRequest;
 
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.server.VaadinRequest;

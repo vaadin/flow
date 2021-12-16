@@ -15,10 +15,10 @@
  */
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.ServletContainerInitializer;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.HandlesTypes;
+import jakarta.servlet.ServletContainerInitializer;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.HandlesTypes;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -73,8 +73,8 @@ public class LookupServletContainerInitializer
                     + "provided set of classes is 'null'. "
                     + LookupInitializer.class + " should always be present "
                     + "and has to be passed to the 'onStartup' method as an argument "
-                    + "in the set of classes if the servlet container supports Servlet 3.0 specification. "
-                    + "The project configuration is broken or you are using a Servlet 3.0 incompatible container.");
+                    + "in the set of classes if the servlet container supports Servlet 5.0 specification. "
+                    + "The project configuration is broken or you are using a Servlet 5.0 incompatible container.");
         }
         if (!classSet.contains(LookupInitializer.class)) {
             // this is a specific case for OSGi (PAX web): at some point it may

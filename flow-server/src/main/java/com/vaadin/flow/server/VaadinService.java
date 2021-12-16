@@ -122,7 +122,7 @@ public abstract class VaadinService implements Serializable {
 
     /**
      * Attribute name for telling
-     * {@link VaadinSession#valueUnbound(javax.servlet.http.HttpSessionBindingEvent)}
+     * {@link VaadinSession#valueUnbound(jakarta.servlet.http.HttpSessionBindingEvent)}
      * that it should not close a {@link VaadinSession} even though it gets
      * unbound. If a {@code VaadinSession} has an attribute with this name and
      * the attribute value is {@link Boolean#TRUE}, that session will not be
@@ -464,7 +464,7 @@ public abstract class VaadinService implements Serializable {
      * @param resourceName
      *            a String specifying the name of a file
      * @return a String specifying the file's MIME type
-     * @see javax.servlet.ServletContext#getMimeType(String)
+     * @see jakarta.servlet.ServletContext#getMimeType(String)
      */
     public abstract String getMimeType(String resourceName);
 
@@ -2095,7 +2095,7 @@ public abstract class VaadinService implements Serializable {
      * this service.
      *
      * @see #addServiceDestroyListener(ServiceDestroyListener)
-     * @see javax.servlet.Servlet#destroy()
+     * @see jakarta.servlet.Servlet#destroy()
      */
     public void destroy() {
         ServiceDestroyEvent event = new ServiceDestroyEvent(this);

@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.annotation.HandlesTypes;
+import jakarta.servlet.annotation.HandlesTypes;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
