@@ -7,13 +7,13 @@
         <artifactId>flow-servlet-containers-test</artifactId>
         <version>10.0-SNAPSHOT</version>
     </parent>
-    <artifactId>flow-test-tomcat9-server</artifactId>
+    <artifactId>flow-test-tomcat10-server</artifactId>
     <name>Flow Tomcat 9 Test</name>
     <packaging>war</packaging>
     <properties>
         <jetty.skip>true</jetty.skip>
-        <tomcat.version>9.0.1</tomcat.version>
-        <server.name>tomcat9</server.name>
+        <tomcat.version>10.0.14</tomcat.version>
+        <server.name>tomcat10</server.name>
     </properties>
 
      <dependencies>
@@ -52,7 +52,7 @@
                 <artifactId>cargo-maven3-plugin</artifactId>
                 <configuration>
                     <container>
-                        <containerId>tomcat9x</containerId>
+                        <containerId>tomcat10x</containerId>
                         <systemProperties>
                             <vaadin.frontend.url.es5>context://frontend-es6/</vaadin.frontend.url.es5>
                         </systemProperties>
