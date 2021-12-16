@@ -1,8 +1,8 @@
 package com.vaadin.flow.server.communication;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletOutputStream;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletOutputStream;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
