@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.testnpmonlyfeatures.bytecodescanning;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import com.vaadin.flow.server.ServiceInitEvent;
 import com.vaadin.flow.server.VaadinRequest;

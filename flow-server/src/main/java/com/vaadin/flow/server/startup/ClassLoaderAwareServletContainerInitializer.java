@@ -15,9 +15,9 @@
  */
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.ServletContainerInitializer;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletContainerInitializer;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -138,7 +138,7 @@ public interface ClassLoaderAwareServletContainerInitializer
      * @param classSet
      *            the Set of application classes that extend, implement, or have
      *            been annotated with the class types specified by the
-     *            {@link javax.servlet.annotation.HandlesTypes HandlesTypes}
+     *            {@link jakarta.servlet.annotation.HandlesTypes HandlesTypes}
      *            annotation, or <code>null</code> if there are no matches, or
      *            this <code>ServletContainerInitializer</code> has not been
      *            annotated with <code>HandlesTypes</code>

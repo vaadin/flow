@@ -15,9 +15,9 @@
  */
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.ServletContainerInitializer;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletContainerInitializer;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -42,7 +42,7 @@ import com.vaadin.flow.testutil.ClassFinder;
  * Checks that any class which implements {@link ServletContainerInitializer}
  * implements {@link FixedServletContainerInitializer} instead and doesn't
  * override
- * {@link ServletContainerInitializer#onStartup(java.util.Set, javax.servlet.ServletContext)}
+ * {@link ServletContainerInitializer#onStartup(java.util.Set, jakarta.servlet.ServletContext)}
  */
 public class ServletContainerInitializerTest extends ClassFinder {
 

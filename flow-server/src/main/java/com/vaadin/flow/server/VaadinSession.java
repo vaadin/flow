@@ -16,9 +16,9 @@
 
 package com.vaadin.flow.server;
 
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.HttpSessionBindingEvent;
-import javax.servlet.http.HttpSessionBindingListener;
+import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSessionBindingEvent;
+import jakarta.servlet.http.HttpSessionBindingListener;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -63,7 +63,7 @@ import com.vaadin.flow.shared.communication.PushMode;
  * Current VaadinSession object which can be accessed by
  * {@link VaadinSession#getCurrent} is not present before {@link VaadinServlet}
  * starts handling the HTTP request. For example, it cannot be used in any
- * implementation of {@link javax.servlet.Filter} interface.
+ * implementation of {@link jakarta.servlet.Filter} interface.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -155,7 +155,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
-     * @see javax.servlet.http.HttpSessionBindingListener#valueBound(HttpSessionBindingEvent)
+     * @see jakarta.servlet.http.HttpSessionBindingListener#valueBound(HttpSessionBindingEvent)
      */
     @Override
     public void valueBound(HttpSessionBindingEvent arg0) {
@@ -163,7 +163,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
-     * @see javax.servlet.http.HttpSessionBindingListener#valueUnbound(HttpSessionBindingEvent)
+     * @see jakarta.servlet.http.HttpSessionBindingListener#valueUnbound(HttpSessionBindingEvent)
      */
     @Override
     public void valueUnbound(HttpSessionBindingEvent event) {

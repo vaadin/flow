@@ -1,6 +1,6 @@
 package com.vaadin.flow.uitest.servlet;
 
-import javax.servlet.annotation.WebServlet;
+import jakarta.servlet.annotation.WebServlet;
 
 import java.util.stream.Stream;
 

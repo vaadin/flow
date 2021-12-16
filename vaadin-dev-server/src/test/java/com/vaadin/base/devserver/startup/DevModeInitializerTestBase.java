@@ -22,8 +22,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletRegistration;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletRegistration;
 
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;

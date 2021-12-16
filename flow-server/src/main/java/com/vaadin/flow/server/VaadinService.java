@@ -16,9 +16,9 @@
 
 package com.vaadin.flow.server;
 
-import javax.servlet.Servlet;
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -126,7 +126,7 @@ public abstract class VaadinService implements Serializable {
 
     /**
      * Attribute name for telling
-     * {@link VaadinSession#valueUnbound(javax.servlet.http.HttpSessionBindingEvent)}
+     * {@link VaadinSession#valueUnbound(jakarta.servlet.http.HttpSessionBindingEvent)}
      * that it should not close a {@link VaadinSession} even though it gets
      * unbound. If a {@code VaadinSession} has an attribute with this name and
      * the attribute value is {@link Boolean#TRUE}, that session will not be
