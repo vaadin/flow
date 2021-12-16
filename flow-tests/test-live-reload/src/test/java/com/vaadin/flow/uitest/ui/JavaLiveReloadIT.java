@@ -35,7 +35,8 @@ public class JavaLiveReloadIT extends AbstractLiveReloadIT {
 
         // Upon opening, the LiveReloadUI should show the indicator but not the
         // message window
-        DevModeGizmoElement liveReload = $(DevModeGizmoElement.class).waitForFirst();
+        DevModeGizmoElement liveReload = $(DevModeGizmoElement.class)
+                .waitForFirst();
 
         TestBenchElement window = liveReload.$("*")
                 .attributeContains("class", "window").first();
@@ -64,7 +65,8 @@ public class JavaLiveReloadIT extends AbstractLiveReloadIT {
 
         waitForLiveReload();
 
-        DevModeGizmoElement liveReload = $(DevModeGizmoElement.class).waitForFirst();
+        DevModeGizmoElement liveReload = $(DevModeGizmoElement.class)
+                .waitForFirst();
         WebElement gizmo1 = liveReload.$("*")
                 .attributeContains("class", "gizmo").first();
 
@@ -72,7 +74,8 @@ public class JavaLiveReloadIT extends AbstractLiveReloadIT {
 
         findElement(By.tagName("body")).click();
 
-        DevModeGizmoElement liveReload2 = $(DevModeGizmoElement.class).waitForFirst();
+        DevModeGizmoElement liveReload2 = $(DevModeGizmoElement.class)
+                .waitForFirst();
         Assert.assertNotNull(liveReload2);
         WebElement gizmo2 = liveReload2.$("*")
                 .attributeContains("class", "gizmo").first();
@@ -95,7 +98,8 @@ public class JavaLiveReloadIT extends AbstractLiveReloadIT {
         liveReloadTrigger.click();
 
         // then: page is not reloaded
-        DevModeGizmoElement liveReload2 = $(DevModeGizmoElement.class).waitForFirst();
+        DevModeGizmoElement liveReload2 = $(DevModeGizmoElement.class)
+                .waitForFirst();
         WebElement gizmo2 = liveReload2.$("*")
                 .attributeContains("class", "gizmo").first();
         Assert.assertFalse(gizmo2.getAttribute("class").contains("active"));
