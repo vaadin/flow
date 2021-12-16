@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.spring;
 
-import javax.servlet.MultipartConfigElement;
+import jakarta.servlet.MultipartConfigElement;
 import java.util.HashMap;
 import java.util.Map;
 

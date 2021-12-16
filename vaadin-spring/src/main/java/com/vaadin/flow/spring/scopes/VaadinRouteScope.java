@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.spring.scopes;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 import java.io.Serializable;
 import java.util.Collections;

@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.spring.service;
 
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletException;
 
 import java.util.Properties;
 import java.util.stream.Stream;
