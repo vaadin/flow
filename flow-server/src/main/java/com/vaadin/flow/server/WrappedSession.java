@@ -19,7 +19,7 @@ package com.vaadin.flow.server;
 import java.io.Serializable;
 import java.util.Set;
 
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSession;
 
 /**
  * A generic session, wrapping a more specific session implementation, e.g.
@@ -36,7 +36,7 @@ public interface WrappedSession extends Serializable {
      * @return an integer specifying the number of seconds this session remains
      *         open between client requests
      *
-     * @see javax.servlet.http.HttpSession#getMaxInactiveInterval()
+     * @see jakarta.servlet.http.HttpSession#getMaxInactiveInterval()
      */
     int getMaxInactiveInterval();
 
@@ -48,7 +48,7 @@ public interface WrappedSession extends Serializable {
      * @return the attribute value, or <code>null</code> if the attribute is not
      *         defined in the session
      *
-     * @see javax.servlet.http.HttpSession#getAttribute(String)
+     * @see jakarta.servlet.http.HttpSession#getAttribute(String)
      */
     Object getAttribute(String name);
 
@@ -60,7 +60,7 @@ public interface WrappedSession extends Serializable {
      * @param value
      *            the attribute value
      *
-     * @see javax.servlet.http.HttpSession#setAttribute(String, Object)
+     * @see jakarta.servlet.http.HttpSession#setAttribute(String, Object)
      */
     void setAttribute(String name, Object value);
 

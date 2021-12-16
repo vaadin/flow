@@ -15,8 +15,8 @@
  */
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletResponse;
 
 import java.lang.reflect.Method;
 import java.util.Set;

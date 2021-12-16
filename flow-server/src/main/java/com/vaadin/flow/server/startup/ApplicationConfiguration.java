@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.Servlet;
+import jakarta.servlet.Servlet;
 
 import java.util.Enumeration;
 

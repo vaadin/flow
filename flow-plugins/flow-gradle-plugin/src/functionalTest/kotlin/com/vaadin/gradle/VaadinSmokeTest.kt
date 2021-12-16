@@ -46,7 +46,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
             }
             dependencies {
                 compile("com.vaadin:flow:$flowVersion")
-                providedCompile("javax.servlet:javax.servlet-api:3.1.0")
+                providedCompile("jakarta.servlet:jakarta.servlet-api:3.1.0")
                 compile("org.slf4j:slf4j-simple:1.7.30")
             }
             vaadin {

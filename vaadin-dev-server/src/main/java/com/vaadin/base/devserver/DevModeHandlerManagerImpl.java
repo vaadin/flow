@@ -18,7 +18,7 @@ package com.vaadin.base.devserver;
 import java.io.Serializable;
 import java.util.Set;
 
-import javax.servlet.annotation.HandlesTypes;
+import jakarta.servlet.annotation.HandlesTypes;
 
 import com.vaadin.base.devserver.startup.DevModeInitializer;
 import com.vaadin.base.devserver.startup.DevModeStartupListener;

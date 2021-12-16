@@ -16,9 +16,9 @@
 
 package com.vaadin.flow.server;
 
-import javax.servlet.ServletRequest;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -44,7 +44,7 @@ public interface VaadinRequest {
      * parameter, though other request types might have other ways of
      * representing parameters.
      *
-     * @see javax.servlet.ServletRequest#getParameter(String)
+     * @see jakarta.servlet.ServletRequest#getParameter(String)
      *
      * @param parameter
      *            the name of the parameter
@@ -58,7 +58,7 @@ public interface VaadinRequest {
      *
      * @see #getParameter(String)
      *
-     * @see javax.servlet.ServletRequest#getParameterMap()
+     * @see jakarta.servlet.ServletRequest#getParameterMap()
      *
      * @return A mapping of parameter names to arrays of parameter values
      */
@@ -68,7 +68,7 @@ public interface VaadinRequest {
      * Returns the length of the request content that can be read from the input
      * stream returned by {@link #getInputStream()}.
      *
-     * @see javax.servlet.ServletRequest#getContentLength()
+     * @see jakarta.servlet.ServletRequest#getContentLength()
      *
      * @return content length in bytes
      */
@@ -78,7 +78,7 @@ public interface VaadinRequest {
      * Returns the length of the request content that can be read from the input
      * stream returned by {@link #getInputStream()}.
      *
-     * @see javax.servlet.ServletRequest#getContentLengthLong()
+     * @see jakarta.servlet.ServletRequest#getContentLengthLong()
      *
      * @return a long containing the length of the request body or -1L if the
      *         length is not known
@@ -92,7 +92,7 @@ public interface VaadinRequest {
      * request content length can be obtained with {@link #getContentLength()}
      * without reading the full stream contents.
      *
-     * @see javax.servlet.ServletRequest#getInputStream()
+     * @see jakarta.servlet.ServletRequest#getInputStream()
      *
      * @return the input stream from which the contents of the request can be
      *         read
@@ -109,7 +109,7 @@ public interface VaadinRequest {
      * @return the value of the attribute, or <code>null</code> if there is no
      *         attribute with the given name
      *
-     * @see javax.servlet.ServletRequest#getAttribute(String)
+     * @see jakarta.servlet.ServletRequest#getAttribute(String)
      */
     Object getAttribute(String name);
 
@@ -121,7 +121,7 @@ public interface VaadinRequest {
      * @param value
      *            the attribute value
      *
-     * @see javax.servlet.ServletRequest#setAttribute(String, Object)
+     * @see jakarta.servlet.ServletRequest#setAttribute(String, Object)
      */
     void setAttribute(String name, Object value);
 
@@ -132,7 +132,7 @@ public interface VaadinRequest {
      *
      * @return a string with the path relative to the application.
      *
-     * @see javax.servlet.http.HttpServletRequest#getPathInfo()
+     * @see jakarta.servlet.http.HttpServletRequest#getPathInfo()
      */
     String getPathInfo();
 
@@ -181,7 +181,7 @@ public interface VaadinRequest {
      * @return a string containing the name of the MIME type of the request, or
      *         null if the type is not known
      *
-     * @see javax.servlet.ServletRequest#getContentType()
+     * @see jakarta.servlet.ServletRequest#getContentType()
      *
      */
     String getContentType();

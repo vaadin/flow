@@ -15,7 +15,7 @@
  */
 package dev.hilla;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.vaadin.flow.component.dependency.NpmPackage;

@@ -1,9 +1,9 @@
 package com.vaadin.flow.server.startup;
 
 import javax.annotation.concurrent.NotThreadSafe;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletRegistration;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletRegistration;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.lang.reflect.Field;
 import java.util.Collections;

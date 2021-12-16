@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.router.internal;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
