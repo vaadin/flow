@@ -21,19 +21,13 @@ import java.io.ObjectInputStream;
 import java.io.Reader;
 import java.io.Serializable;
 import java.io.StringReader;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
-import org.atmosphere.cpr.AtmosphereResource;
-import org.atmosphere.cpr.AtmosphereResource.TRANSPORT;
-import org.atmosphere.util.Version;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.shared.communication.PushConstants;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import elemental.json.JsonObject;
 
@@ -50,9 +44,7 @@ public class AtmospherePushConnection implements PushConnection {
 
     private UI ui;
     private transient State state = State.DISCONNECTED;
-    private transient AtmosphereResource resource;
-    private transient FragmentedMessage incomingMessage;
-    private transient Future<Object> outgoingMessage;
+    private transient Object resource;
 
     /**
      * Represents a message that can arrive as multiple fragments.
@@ -156,18 +148,12 @@ public class AtmospherePushConnection implements PushConnection {
 
     /**
      * Gets the Atmosphere version in use, as reported by
-     * {@link Version#getRawVersion()}.
+     * Version#getRawVersion().
      *
      * @return the Atmosphere version in use or null if Atmosphere was not found
      */
     public static String getAtmosphereVersion() {
-        try {
-            String v = Version.getRawVersion();
-            assert v != null;
-            return v;
-        } catch (NoClassDefFoundError e) {
-            return null;
-        }
+        return null;
     }
 
     @Override
@@ -210,10 +196,6 @@ public class AtmospherePushConnection implements PushConnection {
      *            The message to send
      */
     protected void sendMessage(String message) {
-        assert (isConnected());
-        // "Broadcast" the changes to the single client only
-        outgoingMessage = getResource().getBroadcaster().broadcast(message,
-                getResource());
     }
 
     /**
@@ -232,25 +214,7 @@ public class AtmospherePushConnection implements PushConnection {
      *         received message was a partial message
      */
     protected Reader receiveMessage(Reader reader) throws IOException {
-
-        if (resource == null || resource.transport() != TRANSPORT.WEBSOCKET) {
-            return reader;
-        }
-
-        if (incomingMessage == null) {
-            // No existing partially received message
-            incomingMessage = new FragmentedMessage(reader);
-        }
-
-        if (incomingMessage.append(reader)) {
-            // Message is complete
-            Reader completeReader = incomingMessage.getReader();
-            incomingMessage = null;
-            return completeReader;
-        } else {
-            // Only received a partial message
-            return null;
-        }
+        return reader;
     }
 
     @Override
@@ -261,92 +225,14 @@ public class AtmospherePushConnection implements PushConnection {
     }
 
     /**
-     * Associates this {@code AtmospherePushConnection} with the given
-     * {@link AtmosphereResource} representing an established push connection.
-     * If already connected, calls {@link #disconnect()} first. If there is a
-     * deferred push, carries it out via the new connection.
-     *
-     * @param resource
-     *            the resource to associate this connection with
-     */
-    public void connect(AtmosphereResource resource) {
-
-        assert resource != null;
-        assert resource != this.resource;
-
-        if (isConnected()) {
-            disconnect();
-        }
-
-        this.resource = resource;
-        State oldState = state;
-        state = State.CONNECTED;
-
-        if (oldState == State.PUSH_PENDING
-                || oldState == State.RESPONSE_PENDING) {
-            // Sending a "response" message (async=false) also takes care of a
-            // pending push, but not vice versa
-            push(oldState == State.PUSH_PENDING);
-        }
-    }
-
-    /**
      * @return the UI associated with this connection.
      */
     protected UI getUI() {
         return ui;
     }
 
-    /**
-     * @return The AtmosphereResource associated with this connection or null if
-     *         connection not open.
-     */
-    protected AtmosphereResource getResource() {
-        return resource;
-    }
-
     @Override
     public void disconnect() {
-        assert isConnected();
-
-        if (resource == null) {
-            // Already disconnected. Should not happen but if it does, we don't
-            // want to cause NPEs
-            getLogger().debug(
-                    "AtmospherePushConnection.disconnect() called twice, this should not happen");
-            return;
-        }
-        if (resource.isResumed()) {
-            // This can happen for long polling because of
-            // http://dev.vaadin.com/ticket/16919
-            // Once that is fixed, this should never happen
-            connectionLost();
-            return;
-        }
-
-        if (outgoingMessage != null) {
-            // Wait for the last message to be sent before closing the
-            // connection (assumes that futures are completed in order)
-            try {
-                outgoingMessage.get(1000, TimeUnit.MILLISECONDS);
-            } catch (TimeoutException e) {
-                getLogger().info(
-                        "Timeout waiting for messages to be sent to client before disconnect",
-                        e);
-            } catch (Exception e) {
-                getLogger().info(
-                        "Error waiting for messages to be sent to client before disconnect",
-                        e);
-            }
-            outgoingMessage = null;
-        }
-
-        try {
-            resource.close();
-        } catch (IOException e) {
-            getLogger().info("Error when closing push connection", e);
-        }
-        connectionLost();
     }
 
     /**

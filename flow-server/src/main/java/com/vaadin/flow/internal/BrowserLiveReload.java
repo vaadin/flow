@@ -15,11 +15,9 @@
  */
 package com.vaadin.flow.internal;
 
-import org.atmosphere.cpr.AtmosphereResource;
-
 /**
  * Provides a way to reload browser tabs via web socket connection passed as a
- * {@link AtmosphereResource}.
+ * AtmosphereResource.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -51,34 +49,8 @@ public interface BrowserLiveReload {
     void setBackend(Backend backend);
 
     /**
-     * Sets the web socket connection resource when it's established.
-     *
-     * @param resource
-     *            a web socket connection resource, not <code>null</code>.
-     */
-    void onConnect(AtmosphereResource resource);
-
-    /**
-     * Removes the web socket connection resource, not <code>null</code>.
-     *
-     * @param resource
-     *            a web socket connection resource
-     */
-    void onDisconnect(AtmosphereResource resource);
-
-    /**
-     * Returns whether the passed connection is a browser live-reload
-     * connection.
-     * 
-     * @param resource
-     *            a web socket connection resource, not <code>null</code>.
-     * @return whether the web socket connection is for live reload
-     */
-    boolean isLiveReload(AtmosphereResource resource);
-
-    /**
      * Requests reload via the resource provided via
-     * {@link #onConnect(AtmosphereResource)} call.
+     * onConnect(AtmosphereResource).
      */
     void reload();
 

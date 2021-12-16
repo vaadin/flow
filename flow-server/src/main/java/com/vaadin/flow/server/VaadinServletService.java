@@ -37,7 +37,6 @@ import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.communication.FaviconHandler;
 import com.vaadin.flow.server.communication.IndexHtmlRequestHandler;
-import com.vaadin.flow.server.communication.PushRequestHandler;
 import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -85,18 +84,6 @@ public class VaadinServletService extends VaadinService {
             throws ServiceException {
         List<RequestHandler> handlers = super.createRequestHandlers();
         handlers.add(0, new FaviconHandler());
-        if (isAtmosphereAvailable()) {
-            try {
-                handlers.add(new PushRequestHandler(this));
-            } catch (ServiceException e) {
-                // Atmosphere init failed. Push won't work but we don't throw a
-                // service exception as we don't want to prevent non-push
-                // applications from working
-                getLogger().warn(
-                        "Error initializing Atmosphere. Push will not work.",
-                        e);
-            }
-        }
 
         if (getDeploymentConfiguration().enableDevServer()) {
             Optional<DevModeHandler> handlerManager = DevModeHandlerManager

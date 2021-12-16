@@ -458,10 +458,6 @@ public class UIInternals implements Serializable {
             return;
         }
 
-        if (this.pushConnection != null && this.pushConnection.isConnected()) {
-            this.pushConnection.disconnect();
-        }
-
         this.pushConnection = pushConnection;
     }
 

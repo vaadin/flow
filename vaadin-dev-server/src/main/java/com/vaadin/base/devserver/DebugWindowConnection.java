@@ -15,14 +15,11 @@
  */
 package com.vaadin.base.devserver;
 
-import java.lang.ref.WeakReference;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.base.devserver.stats.DevModeUsageStatistics;
@@ -30,7 +27,6 @@ import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.server.VaadinContext;
 
-import org.atmosphere.cpr.AtmosphereResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,8 +45,6 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
     private final ClassLoader classLoader;
     private VaadinContext context;
-
-    private final ConcurrentLinkedQueue<WeakReference<AtmosphereResource>> atmosphereResources = new ConcurrentLinkedQueue<>();
 
     private Backend backend = null;
 
@@ -112,55 +106,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
     }
 
     @Override
-    public void onConnect(AtmosphereResource resource) {
-        resource.suspend(-1);
-        atmosphereResources.add(new WeakReference<>(resource));
-        resource.getBroadcaster().broadcast("{\"command\": \"hello\"}",
-                resource);
-
-        send(resource, "serverInfo", new ServerInfo());
-        send(resource, "featureFlags", new FeatureFlagMessage(FeatureFlags
-                .get(context).getFeatures().stream()
-                .filter(feature -> !feature.equals(FeatureFlags.EXAMPLE))
-                .collect(Collectors.toList())));
-    }
-
-    private void send(AtmosphereResource resource, String command,
-            Object data) {
-        try {
-            resource.getBroadcaster().broadcast(objectMapper.writeValueAsString(
-                    new DebugWindowMessage(command, data)), resource);
-        } catch (Exception e) {
-            getLogger().error("Error sending message", e);
-        }
-    }
-
-    @Override
-    public void onDisconnect(AtmosphereResource resource) {
-        if (!atmosphereResources
-                .removeIf(resourceRef -> resource.equals(resourceRef.get()))) {
-            String uuid = resource.uuid();
-            getLogger().warn(
-                    "Push connection {} is not a live-reload connection or already closed",
-                    uuid);
-        }
-    }
-
-    @Override
-    public boolean isLiveReload(AtmosphereResource resource) {
-        return atmosphereResources.stream()
-                .anyMatch(resourceRef -> resource.equals(resourceRef.get()));
-    }
-
-    @Override
     public void reload() {
-        atmosphereResources.forEach(resourceRef -> {
-            AtmosphereResource resource = resourceRef.get();
-            if (resource != null) {
-                resource.getBroadcaster().broadcast("{\"command\": \"reload\"}",
-                        resource);
-            }
-        });
     }
 
     @Override

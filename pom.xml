@@ -19,7 +19,6 @@
         <module>flow-server</module>
         <module>flow-polymer-template</module>
         <module>flow-lit-template</module>
-        <module>flow-push</module>
         <module>flow-data</module>
         <module>flow-client</module>
         <module>flow-html-components</module>

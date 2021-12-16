@@ -19,8 +19,6 @@ import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
 import jakarta.servlet.annotation.WebListener;
 
-import com.vaadin.flow.server.communication.JSR356WebsocketInitializer;
-
 /**
  * All ServletContextListeners in Flow merged into one actual listener to be
  * able to control the order they are executed in.
@@ -36,7 +34,7 @@ public class ServletContextListeners implements ServletContextListener {
      * The servlet must be deployed before websocket support is added to it.
      */
     private ServletContextListener[] listeners = new ServletContextListener[] {
-            new ServletDeployer(), new JSR356WebsocketInitializer() };
+            new ServletDeployer() };
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {

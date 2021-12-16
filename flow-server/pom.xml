@@ -15,12 +15,6 @@
 
         <!-- Project dependencies -->
 
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>flow-push</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
         <!-- DefaultApplicationConfigurationFactory is declared as an OSGi
             service -->
 

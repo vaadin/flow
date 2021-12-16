@@ -389,9 +389,6 @@
                                         ${project.basedir}/../../flow-client/target/classes/META-INF/resources
                                     </resourceBase>
                                     <resourceBase>
-                                        ${project.basedir}/../../flow-push/src/main/resources/META-INF/resources
-                                    </resourceBase>
-                                    <resourceBase>
                                         ${project.basedir}/../test-resources/src/main/resources/META-INF/resources
                                     </resourceBase>
                                 </resourceBases>

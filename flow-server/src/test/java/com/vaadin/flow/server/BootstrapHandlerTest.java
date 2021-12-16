@@ -1522,27 +1522,6 @@ public class BootstrapHandlerTest {
     }
 
     @Test
-    public void testUIConfiguration_usingPageSettings() throws Exception {
-        Assert.assertTrue("By default loading indicator is themed", testUI
-                .getLoadingIndicatorConfiguration().isApplyDefaultTheme());
-
-        initUI(testUI, createVaadinRequest(),
-                Collections.singleton(InitialPageConfiguratorRoute.class));
-        pageBuilder.getBootstrapPage(new BootstrapContext(request, null,
-                session, testUI, this::contextRootRelativePath));
-
-        Assert.assertFalse("Default indicator theme is not themed anymore",
-                testUI.getLoadingIndicatorConfiguration()
-                        .isApplyDefaultTheme());
-
-        Assert.assertEquals(InitialPageConfiguratorRoute.SECOND_DELAY,
-                testUI.getLoadingIndicatorConfiguration().getSecondDelay());
-
-        Assert.assertEquals(PushMode.MANUAL,
-                testUI.getPushConfiguration().getPushMode());
-    }
-
-    @Test
     public void internal_request_no_bootstrap_page() {
         BootstrapHandler bootstrapHandler = new BootstrapHandler();
         VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);

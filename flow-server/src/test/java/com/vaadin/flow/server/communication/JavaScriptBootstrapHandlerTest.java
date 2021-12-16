@@ -188,24 +188,6 @@ public class JavaScriptBootstrapHandlerTest {
     }
 
     @Test
-    public void should_respondPushScript_when_enabledInDeploymentConfiguration()
-            throws Exception {
-        mocks.getDeploymentConfiguration().setPushMode(PushMode.AUTOMATIC);
-
-        VaadinRequest request = mocks.createRequest(mocks, "/",
-                "v-r=init&foo&location=");
-        jsInitHandler.handleRequest(session, request, response);
-
-        Assert.assertEquals(200, response.getErrorCode());
-        Assert.assertEquals("application/json", response.getContentType());
-        JsonObject json = Json.parse(response.getPayload());
-
-        // Using regex, because version depends on the build
-        Assert.assertTrue(json.getString("pushScript").matches(
-                "^\\./VAADIN/static/push/vaadinPush\\.js\\?v=[\\w\\.\\-]+$"));
-    }
-
-    @Test
     public void should_invoke_modifyPushConfiguration() throws Exception {
         AppShellRegistry registry = Mockito.mock(AppShellRegistry.class);
         mocks.setAppShellRegistry(registry);
@@ -216,28 +198,6 @@ public class JavaScriptBootstrapHandlerTest {
 
         Mockito.verify(registry)
                 .modifyPushConfiguration(Mockito.any(PushConfiguration.class));
-    }
-
-    @Test
-    public void should_respondPushScript_when_annotatedInAppShell()
-            throws Exception {
-        VaadinServletContext context = new VaadinServletContext(
-                mocks.getServletContext());
-        AppShellRegistry registry = AppShellRegistry.getInstance(context);
-        registry.setShell(PushAppShell.class);
-        mocks.setAppShellRegistry(registry);
-
-        VaadinRequest request = mocks.createRequest(mocks, "/",
-                "v-r=init&foo&location");
-        jsInitHandler.handleRequest(session, request, response);
-
-        Assert.assertEquals(200, response.getErrorCode());
-        Assert.assertEquals("application/json", response.getContentType());
-        JsonObject json = Json.parse(response.getPayload());
-
-        // Using regex, because version depends on the build
-        Assert.assertTrue(json.getString("pushScript").matches(
-                "^\\./VAADIN/static/push/vaadinPush\\.js\\?v=[\\w\\.\\-]+$"));
     }
 
     @Test
