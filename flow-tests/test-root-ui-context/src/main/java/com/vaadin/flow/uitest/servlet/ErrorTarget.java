@@ -1,6 +1,6 @@
 package com.vaadin.flow.uitest.servlet;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.router.ErrorParameter;

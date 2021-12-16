@@ -16,8 +16,8 @@
 
 package com.vaadin.flow.uitest.ui;
 
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;

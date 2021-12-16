@@ -75,7 +75,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             }
             dependencies {
                 compile("com.vaadin:flow:$flowVersion")
-                providedCompile("javax.servlet:javax.servlet-api:3.1.0")
+                providedCompile("jakarta.servlet:jakarta.servlet-api:5.0.0")
                 compile("org.slf4j:slf4j-simple:1.7.30")
             }
         """.trimIndent()
@@ -109,7 +109,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             }
             dependencies {
                 compile("com.vaadin:flow:$flowVersion")
-                providedCompile("javax.servlet:javax.servlet-api:3.1.0")
+                providedCompile("jakarta.servlet:jakarta.servlet-api:5.0.0")
                 compile("org.slf4j:slf4j-simple:1.7.30")
             }
         """.trimIndent()
@@ -144,7 +144,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             dependencies {
                 compile("com.vaadin:flow:$flowVersion")
                 compile("org.slf4j:slf4j-simple:1.7.30")
-                compile("javax.servlet:javax.servlet-api:3.1.0")
+                compile("jakarta.servlet:jakarta.servlet-api:5.0.0")
 
                 compile("org.eclipse.jetty:jetty-continuation:${"$"}{jettyVersion}")
                 compile("org.eclipse.jetty:jetty-server:${"$"}{jettyVersion}")
@@ -187,7 +187,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             dependencies {
                 compile("com.vaadin:flow:$flowVersion")
                 compile("org.slf4j:slf4j-simple:1.7.30")
-                compile("javax.servlet:javax.servlet-api:3.1.0")
+                compile("jakarta.servlet:jakarta.servlet-api:5.0.0")
 
                 compile("org.eclipse.jetty:jetty-continuation:${"$"}{jettyVersion}")
                 compile("org.eclipse.jetty:jetty-server:${"$"}{jettyVersion}")
@@ -324,7 +324,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             }
             dependencies {
                 compile("com.vaadin:flow:$flowVersion")
-                providedCompile("javax.servlet:javax.servlet-api:3.1.0")
+                providedCompile("jakarta.servlet:jakarta.servlet-api:5.0.0")
                 compile("org.slf4j:slf4j-simple:1.7.30")
             }
             

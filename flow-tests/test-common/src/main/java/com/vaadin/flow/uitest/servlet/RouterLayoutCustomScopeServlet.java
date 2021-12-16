@@ -19,7 +19,7 @@ package com.vaadin.flow.uitest.servlet;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.annotation.WebServlet;
+import jakarta.servlet.annotation.WebServlet;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;

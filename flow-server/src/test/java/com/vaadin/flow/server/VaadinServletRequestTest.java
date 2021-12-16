@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.server;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.junit.Test;
 import org.mockito.Mockito;

@@ -16,9 +16,9 @@
 
 package com.vaadin.flow.server;
 
-import javax.servlet.GenericServlet;
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.GenericServlet;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.io.InputStream;
 import java.net.MalformedURLException;

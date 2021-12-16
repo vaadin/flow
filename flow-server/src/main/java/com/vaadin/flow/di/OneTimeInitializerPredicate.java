@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.di;
 
-import javax.servlet.ServletContainerInitializer;
+import jakarta.servlet.ServletContainerInitializer;
 
 /**
  * The presence of the service implementing this interface with
@@ -25,13 +25,13 @@ import javax.servlet.ServletContainerInitializer;
  * previous call.
  * <p>
  * In some cases (e.g. OSGi) the
- * {@link ServletContainerInitializer#onStartup(java.util.Set, javax.servlet.ServletContext)}
+ * {@link ServletContainerInitializer#onStartup(java.util.Set, jakarta.servlet.ServletContext)}
  * method may be called several times for the application (with different
  * classes provided). In this case the initializer logic should reset the data
  * passed on the previous call and set the new data. To be able to reset the
  * data correctly the {@link ServletContainerInitializer} implementation may
  * need to store additional data between calls which is excessive if the
- * {@link ServletContainerInitializer#onStartup(java.util.Set, javax.servlet.ServletContext)}
+ * {@link ServletContainerInitializer#onStartup(java.util.Set, jakarta.servlet.ServletContext)}
  * is executed only once.
  * 
  * @author Vaadin Ltd
@@ -44,7 +44,7 @@ public interface OneTimeInitializerPredicate {
     /**
      * Checks whether the {@link ServletContainerInitializer}s requires reset to
      * the previous state on
-     * {@link ServletContainerInitializer#onStartup(java.util.Set, javax.servlet.ServletContext)}
+     * {@link ServletContainerInitializer#onStartup(java.util.Set, jakarta.servlet.ServletContext)}
      * call.
      * 
      * @return {@code true} if {@link ServletContainerInitializer}s are executed

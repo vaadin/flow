@@ -15,12 +15,12 @@
  */
 package com.vaadin.flow.server;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -496,13 +496,13 @@ public class VaadinServlet extends HttpServlet {
                 + request.getRequestURI());
         String servletPath;
         if (request
-                .getAttribute("javax.servlet.include.servlet_path") != null) {
+                .getAttribute("jakarta.servlet.include.servlet_path") != null) {
             // this is an include request
             servletPath = request
-                    .getAttribute("javax.servlet.include.context_path")
+                    .getAttribute("jakarta.servlet.include.context_path")
                     .toString()
-                    + request
-                            .getAttribute("javax.servlet.include.servlet_path");
+                    + request.getAttribute(
+                            "jakarta.servlet.include.servlet_path");
 
         } else {
             servletPath = request.getContextPath() + request.getServletPath();
@@ -519,7 +519,7 @@ public class VaadinServlet extends HttpServlet {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.GenericServlet#destroy()
+     * @see jakarta.servlet.GenericServlet#destroy()
      */
     @Override
     public void destroy() {

@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.uitest.ui.routing;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.dom.Element;

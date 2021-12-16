@@ -16,7 +16,7 @@
 
 package dev.hilla;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 import java.lang.reflect.Method;
 
 import dev.hilla.auth.CsrfChecker;

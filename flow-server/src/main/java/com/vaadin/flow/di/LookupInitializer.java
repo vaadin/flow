@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.di;
 
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletException;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
