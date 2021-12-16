@@ -1,6 +1,6 @@
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 import java.util.ArrayList;
 import java.util.Arrays;

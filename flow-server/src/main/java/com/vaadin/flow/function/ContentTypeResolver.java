@@ -18,7 +18,7 @@ package com.vaadin.flow.function;
 import java.io.Serializable;
 import java.util.function.BiFunction;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 import com.vaadin.flow.server.StreamResource;
 

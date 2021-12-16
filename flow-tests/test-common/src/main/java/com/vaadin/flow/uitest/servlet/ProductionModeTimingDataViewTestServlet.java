@@ -15,8 +15,8 @@
  */
 package com.vaadin.flow.uitest.servlet;
 
-import javax.servlet.annotation.WebInitParam;
-import javax.servlet.annotation.WebServlet;
+import jakarta.servlet.annotation.WebInitParam;
+import jakarta.servlet.annotation.WebServlet;
 
 @WebServlet(asyncSupported = true, urlPatterns = {
         "/view-production-timing/*" }, initParams = {
