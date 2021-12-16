@@ -240,9 +240,10 @@ public final class DevModeHandler implements RequestHandler {
             }
             return false;
         } else {
-            InputStream inputStream = DevModeHandler.class
-                    .getResourceAsStream("dev-mode-not-ready.html");
-            IOUtils.copy(inputStream, response.getOutputStream());
+            try (InputStream inputStream = DevModeHandler.class
+                    .getResourceAsStream("dev-mode-not-ready.html")) {
+                IOUtils.copy(inputStream, response.getOutputStream());
+            }
             response.setContentType("text/html;charset=utf-8");
             return true;
         }

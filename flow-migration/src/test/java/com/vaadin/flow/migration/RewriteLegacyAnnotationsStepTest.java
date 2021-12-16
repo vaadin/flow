@@ -286,8 +286,9 @@ public class RewriteLegacyAnnotationsStepTest {
 
         File sourceFile = new File(sourceFolder, name);
 
-        InputStream inputStream = clazz.getResourceAsStream(name);
-        Files.copy(inputStream, sourceFile.toPath());
+        try (InputStream inputStream = clazz.getResourceAsStream(name)) {
+            Files.copy(inputStream, sourceFile.toPath());
+        }
         return sourceFile;
     }
 
