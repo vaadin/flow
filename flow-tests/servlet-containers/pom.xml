@@ -95,8 +95,7 @@
         <profile>
             <id>tomcat</id>
             <modules>
-                <module>tomcat85</module>
-                <module>tomcat9</module>
+                <module>tomcat10</module>
             </modules>
         </profile>
         <profile>
