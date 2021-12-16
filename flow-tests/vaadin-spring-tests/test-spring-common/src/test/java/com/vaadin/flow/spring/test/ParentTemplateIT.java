@@ -21,6 +21,8 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.testbench.TestBenchElement;
+
 public class ParentTemplateIT extends AbstractSpringTest {
 
     @Override
@@ -32,26 +34,24 @@ public class ParentTemplateIT extends AbstractSpringTest {
     public void customElementIsRegistered() throws Exception {
         open();
 
-        WebElement template = findElement(By.tagName("parent-template"));
-        WebElement div = getInShadowRoot(template, By.id("div"));
+        TestBenchElement template = $("parent-template").first();
+        TestBenchElement div = template.$("*").id("div");
 
         Assert.assertEquals("baz", div.getText());
 
-        WebElement child = getInShadowRoot(template, By.id("child"));
+        TestBenchElement child = template.$("*").id("child");
 
-        Assert.assertEquals("bar",
-                getInShadowRoot(child, By.id("info")).getText());
+        Assert.assertEquals("bar", child.$("*").id("info").getText());
     }
 
     @Test
     public void injectedComponentIsSpringManaged() throws Exception {
         open();
 
-        WebElement template = findElement(By.tagName("parent-template"));
+        TestBenchElement template = $("parent-template").first();
 
-        WebElement child = getInShadowRoot(template, By.id("child"));
+        TestBenchElement child = template.$("*").id("child");
 
-        Assert.assertEquals("foo",
-                getInShadowRoot(child, By.id("message")).getText());
+        Assert.assertEquals("foo", child.$("*").id("message").getText());
     }
 }
