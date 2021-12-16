@@ -140,7 +140,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                 mavenCentral()
                 maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
             }
-            def jettyVersion = "9.4.20.v20190813"
+            def jettyVersion = "11.0.7"
             dependencies {
                 compile("com.vaadin:flow:$flowVersion")
                 compile("org.slf4j:slf4j-simple:1.7.30")
