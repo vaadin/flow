@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.hibernate.annotations.Type;
+
 public class Account {
 
     private UserInfo owner;

@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.spring.scopes;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 import java.util.Collections;
 import java.util.HashMap;
