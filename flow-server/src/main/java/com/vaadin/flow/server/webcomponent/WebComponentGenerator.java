@@ -16,6 +16,7 @@
 package com.vaadin.flow.server.webcomponent;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -61,10 +62,9 @@ public class WebComponentGenerator {
     }
 
     private static String getStringResource(String name) {
-        try {
-            return IOUtils.toString(
-                    WebComponentGenerator.class.getResourceAsStream(name),
-                    StandardCharsets.UTF_8);
+        try (InputStream resourceStream = WebComponentGenerator.class
+                .getResourceAsStream(name)) {
+            return IOUtils.toString(resourceStream, StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new IllegalArgumentException(
                     "Couldn't load string resource '" + name + "'!", e);
