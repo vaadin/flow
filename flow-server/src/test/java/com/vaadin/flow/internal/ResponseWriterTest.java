@@ -41,7 +41,7 @@ import jakarta.servlet.WriteListener;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.apache.commons.fileupload.MultipartStream;
+import org.apache.commons.fileupload2.MultipartStream;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

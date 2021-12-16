@@ -31,10 +31,10 @@ import java.security.MessageDigest;
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.apache.commons.fileupload.FileItemIterator;
-import org.apache.commons.fileupload.FileItemStream;
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
+import org.apache.commons.fileupload2.FileItemIterator;
+import org.apache.commons.fileupload2.FileItemStream;
+import org.apache.commons.fileupload2.FileUploadException;
+import org.apache.commons.fileupload2.jaksrvlt.JakSrvltFileUpload;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -597,7 +597,7 @@ public class StreamReceiverHandler implements Serializable {
     }
 
     protected boolean isMultipartUpload(VaadinRequest request) {
-        return request instanceof HttpServletRequest && ServletFileUpload
+        return request instanceof HttpServletRequest && JakSrvltFileUpload
                 .isMultipartContent((HttpServletRequest) request);
     }
 
@@ -608,7 +608,7 @@ public class StreamReceiverHandler implements Serializable {
 
     protected FileItemIterator getItemIterator(VaadinRequest request)
             throws FileUploadException, IOException {
-        ServletFileUpload upload = new ServletFileUpload();
+        JakSrvltFileUpload upload = new JakSrvltFileUpload();
         return upload.getItemIterator((HttpServletRequest) request);
     }
 
