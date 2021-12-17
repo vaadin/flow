@@ -13,6 +13,7 @@
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
         <spring.profiles.active>enabled</spring.profiles.active>
+        <test.excludegroup>com.vaadin.flow.spring.test.SpringBootOnly</test.excludegroup>
     </properties>
 
     <dependencies>
@@ -141,6 +142,30 @@
                         <goals>
                             <goal>stop</goal>
                         </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <id>enforce-banned-dependencies</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <bannedDependencies>
+                                    <excludes>
+                                        <!-- This is a plain Spring project that cannot include any boot dependencies -->
+                                        <exclude>org.springframework.boot</exclude>
+                                    </excludes>
+                                </bannedDependencies>
+                            </rules>
+                            <fail>true</fail>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

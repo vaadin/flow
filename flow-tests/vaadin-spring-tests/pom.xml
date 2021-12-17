@@ -232,11 +232,6 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
             <groupId>org.junit.vintage</groupId>
             <artifactId>junit-vintage-engine</artifactId>
             <scope>test</scope>
@@ -257,9 +252,8 @@
                 <module>test-spring-boot-undertow</module>
                 -->
         <module>test-spring-boot-scan</module>
-        <!-- Skipping deployable module as it behaves strangely right now -->
         <module>test-spring-war</module>
-        <!--        <module>test-spring</module>-->
+        <module>test-spring</module>
         <module>test-spring-boot-contextpath</module>
 
         <module>test-ts-services</module>

@@ -2,7 +2,9 @@ package com.vaadin.flow.spring.test;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 
+@Category(SpringBootOnly.class)
 public class ResourcesIT extends AbstractSpringTest {
 
     private String loadFile(String file) {
