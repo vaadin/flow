@@ -45,4 +45,6 @@ public @interface ClientCallable {
      * @return the property update mode for disabled element
      */
     DisabledUpdateMode value() default DisabledUpdateMode.ONLY_WHEN_ENABLED;
+
+    boolean allowInert() default false;
 }

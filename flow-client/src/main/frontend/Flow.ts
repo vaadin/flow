@@ -134,9 +134,12 @@ export class Flow {
   }
 
   loadingFinished() {
+    // NEVER CALLED WHEN INERT LINK CLICKED!
     // Make Testbench know that server request has finished
     this.isActive = false;
     $wnd.Vaadin.connectionState.loadingFinished();
+    // @ts-ignore
+    $wnd.console.log('loadingFinished');
   }
 
   private get action(): (params: NavigationParameters) => Promise<HTMLRouterContainer> {
@@ -185,6 +188,8 @@ export class Flow {
       // The callback to run from server side to cancel navigation
       this.container.serverConnected = (cancel) => {
         resolve(cmd && cancel ? cmd.prevent() : {});
+        // @ts-ignore
+        $wnd.console.log('flowLeave: this.container.serverConnected');
         this.loadingFinished();
       };
 
@@ -209,6 +214,8 @@ export class Flow {
             this.container.style.display = '';
             resolve(this.container);
           }
+          // @ts-ignore
+          $wnd.console.log('flowNavigate: this.container.serverConnected');
           this.loadingFinished();
         };
 

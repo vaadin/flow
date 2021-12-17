@@ -71,6 +71,11 @@ public class PublishedServerEventHandlerRpcHandler
     }
 
     @Override
+    protected boolean allowInert() {
+        return true;
+    }
+
+    @Override
     public Optional<Runnable> handleNode(StateNode node,
             JsonObject invocationJson) {
         assert invocationJson
@@ -124,7 +129,7 @@ public class PublishedServerEventHandlerRpcHandler
 
         if (execute) {
             invokeMethod(component.get(), component.get().getClass(),
-                    methodName, (JsonArray) args, promiseId);
+                    methodName, (JsonArray) args, promiseId, node.isInert());
         }
 
         return Optional.empty();
@@ -132,14 +137,19 @@ public class PublishedServerEventHandlerRpcHandler
 
     static void invokeMethod(Component instance, Class<?> clazz,
             String methodName, JsonArray args, int promiseId) {
+        invokeMethod(instance, clazz, methodName, args, promiseId, false);
+    }
+
+    static void invokeMethod(Component instance, Class<?> clazz,
+            String methodName, JsonArray args, int promiseId, boolean inert) {
         assert instance != null;
         Optional<Method> method = findMethod(instance, clazz, methodName);
         if (method.isPresent()) {
-            invokeMethod(instance, method.get(), args, promiseId);
+            invokeMethod(instance, method.get(), args, promiseId, inert);
         } else if (instance instanceof Composite) {
             Component compositeContent = ((Composite<?>) instance).getContent();
             invokeMethod(compositeContent, compositeContent.getClass(),
-                    methodName, args, promiseId);
+                    methodName, args, promiseId, inert);
         } else {
             String msg = String.format("Neither class '%s' "
                     + "nor its super classes declare event handler method '%s'",
@@ -176,8 +186,12 @@ public class PublishedServerEventHandlerRpcHandler
                 || method.isAnnotationPresent(ClientCallable.class);
     }
 
-    private static void invokeMethod(Component instance, Method method,
-            JsonArray args, int promiseId) {
+     private static void invokeMethod(Component instance, Method method,
+            JsonArray args, int promiseId, boolean inert) {
+        if (inert && !(method.isAnnotationPresent(ClientCallable.class) &&
+            method.getAnnotation(ClientCallable.class).allowInert())) {
+                return;
+        }
         if (promiseId == -1) {
             invokeMethod(instance, method, args);
         } else {

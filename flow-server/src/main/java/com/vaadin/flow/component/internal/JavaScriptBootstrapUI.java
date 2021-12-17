@@ -114,9 +114,17 @@ public class JavaScriptBootstrapUI extends UI {
      * @param historyState
      *            client side history state value
      */
-    @ClientCallable
+    @ClientCallable(allowInert = true)
     public void connectClient(String clientElementTag, String clientElementId,
             String flowRoute, String appShellTitle, JsonValue historyState) {
+
+        if (getElement().getNode().isInert()) {
+            // In inert state navigation is blocked, but client side callback
+            // must be called.
+            cancelClient();
+            return;
+        }
+
         if (appShellTitle != null && !appShellTitle.isEmpty()) {
             getInternals().setAppShellTitle(appShellTitle);
         }
