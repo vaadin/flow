@@ -22,6 +22,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.vaadin.testbench.TestBenchElement;
+import com.vaadin.testbench.commands.CanCompareScreenshots;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
@@ -36,22 +38,22 @@ public class ThemedTemplateIT extends ChromeBrowserTest {
         open();
 
         // check that all imported templates are available in the DOM
-        WebElement template = findElement(By.tagName("themed-template"));
+        TestBenchElement template = $("themed-template").first();
 
-        Assert.assertTrue("The main template has no simple child Div inside it",
-                isPresentInShadowRoot(template, By.id("div")));
-        Assert.assertTrue(
-                "The main template has no sub template which is imported by "
+        Assert.assertNotNull("The main template has no simple child Div inside it",
+                isPresentInShadowRoot(template, "div"));
+
+        Assert.assertNotNull("The main template has no sub template which is imported by "
                         + "relative URL referring to the resource in the same folder",
-                isPresentInShadowRoot(template, By.id("relative1")));
-        Assert.assertTrue(
-                "The main template has no sub template which is imported by "
+                isPresentInShadowRoot(template, "relative1"));
+
+        Assert.assertNotNull("The main template has no sub template which is imported by "
                         + "relative URL referring to the resource in the parent folder",
-                isPresentInShadowRoot(template, By.id("relative2")));
-        Assert.assertTrue(
-                "The main template has no sub template which is imported by "
+                isPresentInShadowRoot(template, "relative2"));
+
+        Assert.assertNotNull("The main template has no sub template which is imported by "
                         + "absolute URL",
-                isPresentInShadowRoot(template, By.id("absolute")));
+                isPresentInShadowRoot(template, "absolute"));
 
         WebElement head = findElement(By.tagName("head"));
         List<WebElement> links = head.findElements(By.tagName("link"));
@@ -88,5 +90,10 @@ public class ThemedTemplateIT extends ChromeBrowserTest {
             throw new RuntimeException("Unexpected URL string '" + url + "'",
                     e);
         }
+    }
+
+    private TestBenchElement isPresentInShadowRoot(TestBenchElement template, String id){
+        TestBenchElement element = template.$("*").id(id);
+        return element;
     }
 }

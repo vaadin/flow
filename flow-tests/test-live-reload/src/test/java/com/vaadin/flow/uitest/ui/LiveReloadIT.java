@@ -17,6 +17,7 @@ package com.vaadin.flow.uitest.ui;
 
 import java.util.List;
 
+import com.vaadin.testbench.TestBenchElement;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Test;
@@ -31,9 +32,12 @@ public class LiveReloadIT extends AbstractLiveReloadIT {
         open();
         // Upon opening, the LiveReloadUI should show the indicator but not the
         // message window
-        DevModeGizmoElement liveReload = $(DevModeGizmoElement.class).waitForFirst();
+        waitForElementPresent(By.tagName("vaadin-devmode-gizmo"));
+        List<TestBenchElement> liveReloads = $("vaadin-devmode-gizmo").all();
+        Assert.assertEquals(1, liveReloads.size());
+        TestBenchElement liveReload = liveReloads.get(0);
 
-        TestBenchElement window = liveReload.$("*")
+        WebElement window = liveReload.$("*")
                 .attributeContains("class", "window").first();
         Assert.assertFalse(window.isDisplayed());
 
@@ -58,22 +62,21 @@ public class LiveReloadIT extends AbstractLiveReloadIT {
                 By.id(LiveReloadView.JAVA_LIVE_RELOAD_TRIGGER_BUTTON));
         liveReloadTrigger.click();
 
-        waitForLiveReload();
-
-        DevModeGizmoElement liveReload = $(DevModeGizmoElement.class).waitForFirst();
+        TestBenchElement liveReload = $("vaadin-devmode-gizmo").first();
+        Assert.assertNotNull(liveReload);
         WebElement gizmo1 = liveReload.$("*")
                 .attributeContains("class", "gizmo").first();
-
-        Assert.assertTrue(gizmo1.getAttribute("class").contains("active"));
+        Assert.assertTrue(
+                gizmo1.getAttribute("class").contains("active"));
 
         findElement(By.tagName("body")).click();
 
-        DevModeGizmoElement liveReload2 = $(DevModeGizmoElement.class).waitForFirst();
+        TestBenchElement liveReload2 = $("vaadin-devmode-gizmo").first();
         Assert.assertNotNull(liveReload2);
-
         WebElement gizmo2 = liveReload2.$("*")
                 .attributeContains("class", "gizmo").first();
-        Assert.assertFalse(gizmo2.getAttribute("class").contains("active"));
+        Assert.assertFalse(
+                gizmo2.getAttribute("class").contains("active"));
         Assert.assertTrue(gizmo2.getAttribute("class").contains("gizmo"));
     }
 
@@ -82,11 +85,14 @@ public class LiveReloadIT extends AbstractLiveReloadIT {
         open();
 
         // given: live reload is deactivated
-        DevModeGizmoElement liveReload = $(DevModeGizmoElement.class).waitForFirst();
-        WebElement liveReloadIcon = liveReload.$("*").attributeContains("class", "gizmo").first();
+        waitForElementPresent(By.tagName("vaadin-devmode-gizmo"));
+        TestBenchElement liveReload = $("vaadin-devmode-gizmo").first();
+
+        WebElement liveReloadIcon = liveReload.$("*")
+                .attributeContains("class", "gizmo").first();
         liveReloadIcon.click();
 
-        WebElement deactivateCheckbox = liveReload.$("*").id("toggle").first();
+        WebElement deactivateCheckbox = liveReload.$("*").id("toggle");
         deactivateCheckbox.click();
 
         // when: live reload is triggered
@@ -95,8 +101,9 @@ public class LiveReloadIT extends AbstractLiveReloadIT {
         liveReloadTrigger.click();
 
         // then: page is not reloaded
-        DevModeGizmoElement liveReload2 = $("vaadin-devmode-gizmo").first();
-        WebElement gizmo2 = .attributeContains("class", "gizmo").first();
+        TestBenchElement liveReload2 = $("vaadin-devmode-gizmo").first();
+        WebElement gizmo2 = liveReload2.$("*")
+                .attributeContains("class", "gizmo").first();
         Assert.assertFalse(
                 gizmo2.getAttribute("class").contains("active"));
         Assert.assertTrue(gizmo2.getAttribute("class").contains("gizmo"));
