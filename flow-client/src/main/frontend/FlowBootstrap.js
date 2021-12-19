@@ -136,7 +136,7 @@ Please submit an issue to https://github.com/vaadin/flow-components/issues/new/c
     window.Vaadin.Flow.getAppIds = function () {
       var ids = [];
       for (var id in apps) {
-        if (apps.hasOwnProperty(id)) {
+        if (Object.prototype.hasOwnProperty.call(apps, id)) {
           ids.push(id);
         }
       }
