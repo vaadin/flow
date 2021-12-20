@@ -31,7 +31,8 @@ public class PreserveOnRefreshLiveReloadIT extends AbstractLiveReloadIT {
     public void notificationShownWhenLoadingPreserveOnRefreshView() {
         open();
 
-        DevModeGizmoElement liveReload = $(DevModeGizmoElement.class).waitForFirst();
+        DevModeGizmoElement liveReload = $(DevModeGizmoElement.class)
+                .waitForFirst();
         WebElement messageDetails = liveReload.$("*")
                 .attributeContains("class", "warning").first();
         Assert.assertTrue(

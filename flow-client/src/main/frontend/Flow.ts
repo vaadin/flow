@@ -9,10 +9,12 @@ export interface FlowConfig {
   imports?: () => void;
 }
 
+class FlowUiInitializationError extends Error {}
+
 interface AppConfig {
   productionMode: boolean;
   appId: string;
-  uidl: object;
+  uidl: any;
   clientRouting: boolean;
 }
 
@@ -72,8 +74,7 @@ export class Flow {
   response?: AppInitResponse = undefined;
   pathname = '';
 
-  // @ts-ignore
-  container: HTMLRouterContainer;
+  container!: HTMLRouterContainer;
 
   // flag used to inform Testbench whether a server route is in progress
   private isActive = false;
@@ -141,13 +142,11 @@ export class Flow {
   private get action(): (params: NavigationParameters) => Promise<HTMLRouterContainer> {
     // Return a function which is bound to the flow instance, thus we can use
     // the syntax `...serverSideRoutes` in vaadin-router.
-    // @ts-ignore
     return async (params: NavigationParameters) => {
       // Store last action pathname so as we can check it in events
       this.pathname = params.pathname;
 
       if ($wnd.Vaadin.connectionState.online) {
-        // @ts-ignore
         try {
           await this.flowInit();
         } catch (error) {
@@ -174,11 +173,7 @@ export class Flow {
 
   // Send a remote call to `JavaScriptBootstrapUI` to check
   // whether navigation has to be cancelled.
-  private async flowLeave(
-    // @ts-ignore
-    ctx: NavigationParameters,
-    cmd?: PreventCommands
-  ): Promise<any> {
+  private async flowLeave(ctx: NavigationParameters, cmd?: PreventCommands): Promise<any> {
     // server -> server, viewing offline stub, or browser is offline
     const { connectionState } = $wnd.Vaadin;
     if (this.pathname === ctx.pathname || !this.isFlowClientLoaded() || connectionState.offline) {
@@ -273,7 +268,8 @@ export class Flow {
       if (!serverSideRouting) {
         // we use a custom tag for the flow app container
         const tag = `flow-container-${appId.toLowerCase()}`;
-        this.container = flowRoot.$[appId] = document.createElement(tag);
+        this.container = document.createElement(tag);
+        flowRoot.$[appId] = this.container;
         this.container.id = appId;
       }
 
@@ -432,11 +428,5 @@ export class Flow {
 
   private isFlowClientLoaded(): boolean {
     return this.response !== undefined;
-  }
-}
-
-class FlowUiInitializationError extends Error {
-  constructor(message: any) {
-    super(message);
   }
 }
