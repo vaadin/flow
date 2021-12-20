@@ -13,6 +13,10 @@ body:
     attributes:
       value: |
         NOTE: Issues concerning UI components (e.g. Button, Grid, TextField, ...) should go to the components repository https://github.com/vaadin/flow-components
+  - type: markdown
+    attributes:
+      value: |
+        NOTE: Vulnerabilities should not be reported here, see https://vaadin.com/security for instructions how to report these
   - type: textarea
     id: description
     attributes:
