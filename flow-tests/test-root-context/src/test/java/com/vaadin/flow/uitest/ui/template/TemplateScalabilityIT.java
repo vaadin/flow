@@ -16,15 +16,14 @@ public class TemplateScalabilityIT extends ChromeBrowserTest {
         open();
 
         waitUntil(input -> {
-            return !findInShadowRoot(
-                    input.findElement(By.id("scalability-view")),
-                    By.id(TemplateScalabilityView.COMPLETED)).isEmpty();
+            TestBenchElement view = $("*").id("scalability-view");
+            return view.$("*")
+                    .attribute("id", TemplateScalabilityView.COMPLETED)
+                    .exists();
         });
 
-        WebElement viewTemplate = getDriver()
-                .findElement(By.id("scalability-view"));
-        int buttons = findInShadowRoot(viewTemplate,
-                By.tagName("template-scalability-panel")).size();
+        TestBenchElement viewTemplate = $("*").id("scalability-view");
+        int buttons = viewTemplate.$("template-scalability-panel").all().size();
 
         Assert.assertEquals("Template should have created "
                         + TemplateScalabilityView.NUM_ITEMS + " panels with buttons.",
