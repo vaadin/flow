@@ -446,6 +446,28 @@
                     </execution>
                 </executions>
             </plugin>
+                        <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <id>ps-dump</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>${project.rootdir}/psdump.sh</executable>
+                            <arguments>
+                                <argument>${project.basedir}</argument>
+                                <argument>${project.rootdir}</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
         <pluginManagement>
             <plugins>
