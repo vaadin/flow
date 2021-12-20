@@ -46,11 +46,11 @@ public abstract class AbstractAttachExistingElementByIdIT
         Assert.assertEquals("default", getLabel(id).getText());
     }
 
-    protected WebElement getInput(String id) {
-        return getInShadowRoot(findElement(By.id(id)), By.id("input"));
+    protected TestBenchElement getInput(String id) {
+        return $("*").id(id).$("*").id("input");
     }
 
-    protected WebElement getLabel(String id) {
-        return getInShadowRoot(findElement(By.id(id)), By.id("label"));
+    protected TestBenchElement getLabel(String id) {
+        return $("*").id(id).$("*").id("label");
     }
 }

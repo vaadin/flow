@@ -7,6 +7,7 @@ import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 
 public class InnerTemplateVisibilityIT extends ChromeBrowserTest {
 
@@ -21,10 +22,10 @@ public class InnerTemplateVisibilityIT extends ChromeBrowserTest {
 
         // then: element is not visible, attribute 'hidden' and 'display: none'
         // set
-        WebElement outer = findElement(
-                By.id(InnerTemplateVisibilityView.OUTER_ID));
-        WebElement inner = findInShadowRoot(outer,
-                By.id(InnerTemplateVisibilityView.INNER_ID)).get(0);
+        TestBenchElement outer = $("*")
+                .id(InnerTemplateVisibilityView.OUTER_ID);
+        TestBenchElement inner = outer.$("*")
+                .id(InnerTemplateVisibilityView.INNER_ID);
         Assert.assertFalse("expected inner to be hidden", inner.isDisplayed());
         Assert.assertNotNull("expected attribute hidden on inner",
                 inner.getAttribute("hidden"));
@@ -44,10 +45,10 @@ public class InnerTemplateVisibilityIT extends ChromeBrowserTest {
 
         // then: element is visible, attribute and 'display: none' are no longer
         // present
-        WebElement outer = findElement(
-                By.id(InnerTemplateVisibilityView.OUTER_ID));
-        WebElement inner = findInShadowRoot(outer,
-                By.id(InnerTemplateVisibilityView.INNER_ID)).get(0);
+        TestBenchElement outer = $("*")
+                .id(InnerTemplateVisibilityView.OUTER_ID);
+        TestBenchElement inner = outer.$("*")
+                .id(InnerTemplateVisibilityView.INNER_ID);
         Assert.assertTrue("expected inner to be visible", inner.isDisplayed());
         Assert.assertNull("inner should not have attribute hidden",
                 inner.getAttribute("hidden"));
