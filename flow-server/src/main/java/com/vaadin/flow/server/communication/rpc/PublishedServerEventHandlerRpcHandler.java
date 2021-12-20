@@ -32,6 +32,7 @@ import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.AllowInert;
 import com.vaadin.flow.component.template.internal.DeprecatedPolymerPublishedEventHandler;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.dom.DisabledUpdateMode;
@@ -188,9 +189,8 @@ public class PublishedServerEventHandlerRpcHandler
 
      private static void invokeMethod(Component instance, Method method,
             JsonArray args, int promiseId, boolean inert) {
-        if (inert && !(method.isAnnotationPresent(ClientCallable.class) &&
-            method.getAnnotation(ClientCallable.class).allowInert())) {
-                return;
+        if (inert && !method.isAnnotationPresent(AllowInert.class)) {
+            return;
         }
         if (promiseId == -1) {
             invokeMethod(instance, method, args);

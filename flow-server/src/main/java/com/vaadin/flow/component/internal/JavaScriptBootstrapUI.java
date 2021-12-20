@@ -114,7 +114,8 @@ public class JavaScriptBootstrapUI extends UI {
      * @param historyState
      *            client side history state value
      */
-    @ClientCallable(allowInert = true)
+    @ClientCallable
+    @AllowInert
     public void connectClient(String clientElementTag, String clientElementId,
             String flowRoute, String appShellTitle, JsonValue historyState) {
 
