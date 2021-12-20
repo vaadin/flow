@@ -249,6 +249,7 @@
                             </containerIncludeJarPattern>
                         </webAppConfig>
                         <scanIntervalSeconds>-1</scanIntervalSeconds>
+                        <daemon>true</daemon>
                         <httpConnector>
                             <port>${server.port}</port>
                         </httpConnector>
@@ -261,6 +262,11 @@
                                 </name>
                                 <value>${vaadin.useDeprecatedV14Bootstrapping}
                                 </value>
+                            </systemProperty>
+                            <systemProperty>
+                                <!-- make sure we do not leave webpack-dev-server running after IT -->
+                                <name>vaadin.reuseDevServer</name>
+                                <value>false</value>
                             </systemProperty>
                         </systemProperties>
                     </configuration>
