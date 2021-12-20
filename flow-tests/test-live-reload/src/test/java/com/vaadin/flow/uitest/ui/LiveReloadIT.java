@@ -17,6 +17,7 @@ package com.vaadin.flow.uitest.ui;
 
 import java.util.List;
 
+import com.vaadin.testbench.TestBenchElement;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Test;
@@ -32,25 +33,24 @@ public class LiveReloadIT extends AbstractLiveReloadIT {
         // Upon opening, the LiveReloadUI should show the indicator but not the
         // message window
         waitForElementPresent(By.tagName("vaadin-devmode-gizmo"));
-        List<WebElement> liveReloads = findElements(
-                By.tagName("vaadin-devmode-gizmo"));
+        List<TestBenchElement> liveReloads = $("vaadin-devmode-gizmo").all();
         Assert.assertEquals(1, liveReloads.size());
-        WebElement liveReload = liveReloads.get(0);
+        TestBenchElement liveReload = liveReloads.get(0);
 
-        WebElement window = findInShadowRoot(liveReload, By.className("window"))
-                .get(0);
+        WebElement window = liveReload.$("*")
+                .attributeContains("class", "window").first();
         Assert.assertFalse(window.isDisplayed());
 
         // After clicking the icon in the indicator, the live-reload message
         // window should appear
-        WebElement liveReloadIcon = findInShadowRoot(liveReload,
-                By.className("gizmo")).get(0);
+        WebElement liveReloadIcon = liveReload.$("*")
+                .attributeContains("class", "gizmo").first();
         liveReloadIcon.click();
 
         waitForElementPresent(By.tagName("vaadin-devmode-gizmo"));
 
-        WebElement window2 = findInShadowRoot(liveReload, By.className("gizmo"))
-                .get(0);
+        WebElement window2 = liveReload.$("*")
+                .attributeContains("class", "gizmo").first();
         Assert.assertTrue(window2.isDisplayed());
     }
 
@@ -62,20 +62,19 @@ public class LiveReloadIT extends AbstractLiveReloadIT {
                 By.id(LiveReloadView.JAVA_LIVE_RELOAD_TRIGGER_BUTTON));
         liveReloadTrigger.click();
 
-        WebElement liveReload = findElement(By.tagName("vaadin-devmode-gizmo"));
+        TestBenchElement liveReload = $("vaadin-devmode-gizmo").first();
         Assert.assertNotNull(liveReload);
-        WebElement gizmo1 = findInShadowRoot(liveReload, By.className("gizmo"))
-                .get(0);
+        WebElement gizmo1 = liveReload.$("*")
+                .attributeContains("class", "gizmo").first();
         Assert.assertTrue(
                 gizmo1.getAttribute("class").contains("active"));
 
         findElement(By.tagName("body")).click();
 
-        WebElement liveReload2 = findElement(
-                By.tagName("vaadin-devmode-gizmo"));
+        TestBenchElement liveReload2 = $("vaadin-devmode-gizmo").first();
         Assert.assertNotNull(liveReload2);
-        WebElement gizmo2 = findInShadowRoot(liveReload2, By.className("gizmo"))
-                .get(0);
+        WebElement gizmo2 = liveReload2.$("*")
+                .attributeContains("class", "gizmo").first();
         Assert.assertFalse(
                 gizmo2.getAttribute("class").contains("active"));
         Assert.assertTrue(gizmo2.getAttribute("class").contains("gizmo"));
@@ -87,14 +86,13 @@ public class LiveReloadIT extends AbstractLiveReloadIT {
 
         // given: live reload is deactivated
         waitForElementPresent(By.tagName("vaadin-devmode-gizmo"));
-        WebElement liveReload = findElement(By.tagName("vaadin-devmode-gizmo"));
+        TestBenchElement liveReload = $("vaadin-devmode-gizmo").first();
 
-        WebElement liveReloadIcon = findInShadowRoot(liveReload,
-                By.className("gizmo")).get(0);
+        WebElement liveReloadIcon = liveReload.$("*")
+                .attributeContains("class", "gizmo").first();
         liveReloadIcon.click();
 
-        WebElement deactivateCheckbox = findInShadowRoot(liveReload,
-                By.id("toggle")).get(0);
+        WebElement deactivateCheckbox = liveReload.$("*").id("toggle");
         deactivateCheckbox.click();
 
         // when: live reload is triggered
@@ -103,10 +101,9 @@ public class LiveReloadIT extends AbstractLiveReloadIT {
         liveReloadTrigger.click();
 
         // then: page is not reloaded
-        WebElement liveReload2 = findElement(
-                By.tagName("vaadin-devmode-gizmo"));
-        WebElement gizmo2 = findInShadowRoot(liveReload2, By.className("gizmo"))
-                .get(0);
+        TestBenchElement liveReload2 = $("vaadin-devmode-gizmo").first();
+        WebElement gizmo2 = liveReload2.$("*")
+                .attributeContains("class", "gizmo").first();
         Assert.assertFalse(
                 gizmo2.getAttribute("class").contains("active"));
         Assert.assertTrue(gizmo2.getAttribute("class").contains("gizmo"));
