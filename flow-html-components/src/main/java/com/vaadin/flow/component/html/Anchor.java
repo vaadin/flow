@@ -142,10 +142,7 @@ public class Anchor extends HtmlContainer
      *            the href to set
      */
     public void setHref(String href) {
-        if(href == null) {
-            throw new IllegalArgumentException("Href must not be null");
-        }
-        this.href = href;
+        this.href = Objects.requireNonNull(href);
         if (isEnabled()) {
             assignHref();
         }
