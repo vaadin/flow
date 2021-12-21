@@ -20,6 +20,7 @@
         <skipTsTests>${skipTests}</skipTsTests>
         <org.eclipse.equinox.common.version>3.14.100</org.eclipse.equinox.common.version>
         <org.eclipse.core.runtime.version>3.20.100</org.eclipse.core.runtime.version>
+        <maven.compiler.source>1.8</maven.compiler.source>
     </properties>
 
     <dependencyManagement>
@@ -96,7 +97,7 @@
         <dependency>
             <groupId>org.eclipse.platform</groupId>
             <artifactId>org.eclipse.core.contenttype</artifactId>
-            <version>3.7.1000</version>
+            <version>3.8.100</version>
             <scope>test</scope>
         </dependency>
 
