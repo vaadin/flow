@@ -249,6 +249,7 @@
                             </containerIncludeJarPattern>
                         </webAppConfig>
                         <scanIntervalSeconds>-1</scanIntervalSeconds>
+                        <daemon>true</daemon>
                         <httpConnector>
                             <port>${server.port}</port>
                         </httpConnector>
