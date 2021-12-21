@@ -130,7 +130,7 @@ public class Anchor extends HtmlContainer
      * Sets the URL that this anchor links to.
      * <p>
      * A disabled Anchor removes the attribute from the HTML element, but it is
-     * stored (and reused when enabled again) in the server sided component.
+     * stored (and reused when enabled again) in the server-side component.
      * <p>
      * Use the method {@link #removeHref()} to remove the <b>href</b> attribute
      * instead of setting it to an empty string.
