@@ -6,6 +6,6 @@ onlydir=`basename $dir`
 
 reldir=`echo $dir|sed "s#$rootdir/##"`
 out=$reldir/$onlydir-ps.dump
-ps axv > $out
+ps axv > $rootdir/$out
 
 echo "##teamcity[publishArtifacts '$out']"
