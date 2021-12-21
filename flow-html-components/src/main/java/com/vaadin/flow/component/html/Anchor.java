@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.io.Serializable;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -46,6 +47,7 @@ public class Anchor extends HtmlContainer
                     AnchorTarget.DEFAULT.getValue());
 
     private static final String ROUTER_IGNORE_ATTRIBUTE = "router-ignore";
+    private Serializable href;
 
     /**
      * Creates a new empty anchor component.
@@ -127,6 +129,9 @@ public class Anchor extends HtmlContainer
     /**
      * Sets the URL that this anchor links to.
      * <p>
+     * A disabled Anchor removes the attribute from the HTML element, but it
+     * is stored (and reused when enabled again) in the server sided component.
+     * <p>
      * Use the method {@link #removeHref()} to remove the <b>href</b> attribute
      * instead of setting it to an empty string.
      *
@@ -137,7 +142,10 @@ public class Anchor extends HtmlContainer
      *            the href to set
      */
     public void setHref(String href) {
-        set(hrefDescriptor, href);
+        this.href = href;
+        if(isEnabled()) {
+            assignHref();
+        }
     }
 
     /**
@@ -148,6 +156,7 @@ public class Anchor extends HtmlContainer
      */
     public void removeHref() {
         getElement().removeAttribute("href");
+        href = null;
     }
 
     /**
@@ -158,8 +167,11 @@ public class Anchor extends HtmlContainer
      *            the resource value, not null
      */
     public void setHref(AbstractStreamResource href) {
-        getElement().setAttribute("href", href);
+        this.href = href;
         getElement().setAttribute(ROUTER_IGNORE_ATTRIBUTE, true);
+        if(isEnabled()) {
+            assignHref();
+        }
     }
 
     /**
@@ -170,7 +182,33 @@ public class Anchor extends HtmlContainer
      * @return the href value, or <code>""</code> if no href has been set
      */
     public String getHref() {
+        if (href instanceof String) {
+            // let the method return the actual href string even if disabled
+            return (String) href;
+        }
+        // this only happens if StreamResource is in use, in that case
+        // the disabled Anchor returns null, otherwise some String.
         return get(hrefDescriptor);
+    }
+
+    @Override
+    public void onEnabledStateChanged(boolean enabled) {
+        super.onEnabledStateChanged(enabled);
+        if(enabled) {
+            assignHref();
+        } else {
+            getElement().removeAttribute("href");
+        }
+    }
+
+    private void assignHref() {
+        if(href != null) {
+            if(href instanceof AbstractStreamResource) {
+                getElement().setAttribute("href", (AbstractStreamResource) href);
+            } else {
+                set(hrefDescriptor, (String) href);
+            }
+        }
     }
 
     /**
