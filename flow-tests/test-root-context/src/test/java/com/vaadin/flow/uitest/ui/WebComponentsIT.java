@@ -41,8 +41,9 @@ public class WebComponentsIT extends ChromeBrowserTest {
         if (logs != null) {
             Optional<LogEntry> anyError = StreamSupport
                     .stream(logs.spliterator(), true)
-                    .filter(entry -> entry.getLevel().intValue()
-                            > java.util.logging.Level.INFO.intValue())
+                    .filter(entry -> entry.getLevel()
+                            .intValue() > java.util.logging.Level.INFO
+                                    .intValue())
                     .filter(entry -> !entry.getMessage()
                             .contains("favicon.ico"))
                     .filter(entry -> !entry.getMessage()
