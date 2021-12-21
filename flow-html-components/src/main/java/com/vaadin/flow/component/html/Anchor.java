@@ -146,9 +146,7 @@ public class Anchor extends HtmlContainer
             throw new IllegalArgumentException("Href must not be null");
         }
         this.href = href;
-        if (isEnabled()) {
-            assignHref();
-        }
+        assignHrefAttribute();
     }
 
     /**
@@ -172,9 +170,7 @@ public class Anchor extends HtmlContainer
     public void setHref(AbstractStreamResource href) {
         this.href = href;
         getElement().setAttribute(ROUTER_IGNORE_ATTRIBUTE, true);
-        if (isEnabled()) {
-            assignHref();
-        }
+        assignHrefAttribute();
     }
 
     /**
@@ -197,21 +193,21 @@ public class Anchor extends HtmlContainer
     @Override
     public void onEnabledStateChanged(boolean enabled) {
         super.onEnabledStateChanged(enabled);
-        if (enabled) {
-            assignHref();
-        } else {
-            getElement().removeAttribute("href");
-        }
+        assignHrefAttribute();
     }
 
-    private void assignHref() {
-        if (href != null) {
-            if (href instanceof AbstractStreamResource) {
-                getElement().setAttribute("href",
-                        (AbstractStreamResource) href);
-            } else {
-                set(hrefDescriptor, (String) href);
+    private void assignHrefAttribute() {
+        if (isEnabled()) {
+            if (href != null) {
+                if (href instanceof AbstractStreamResource) {
+                    getElement().setAttribute("href",
+                            (AbstractStreamResource) href);
+                } else {
+                    set(hrefDescriptor, (String) href);
+                }
             }
+        } else {
+            getElement().removeAttribute("href");
         }
     }
 
