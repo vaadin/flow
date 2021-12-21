@@ -262,6 +262,11 @@
                                 <value>${vaadin.useDeprecatedV14Bootstrapping}
                                 </value>
                             </systemProperty>
+                            <systemProperty>
+                                <!-- make sure we do not leave webpack-dev-server running after IT -->
+                                <name>vaadin.reuseDevServer</name>
+                                <value>false</value>
+                            </systemProperty>
                         </systemProperties>
                     </configuration>
                 </plugin>
