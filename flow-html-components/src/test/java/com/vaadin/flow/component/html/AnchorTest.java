@@ -34,6 +34,7 @@ public class AnchorTest extends ComponentTest {
         ui = null;
         UI.setCurrent(null);
     }
+
     @Test
     public void removeHref() {
         Anchor anchor = new Anchor();

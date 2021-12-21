@@ -129,8 +129,8 @@ public class Anchor extends HtmlContainer
     /**
      * Sets the URL that this anchor links to.
      * <p>
-     * A disabled Anchor removes the attribute from the HTML element, but it
-     * is stored (and reused when enabled again) in the server sided component.
+     * A disabled Anchor removes the attribute from the HTML element, but it is
+     * stored (and reused when enabled again) in the server sided component.
      * <p>
      * Use the method {@link #removeHref()} to remove the <b>href</b> attribute
      * instead of setting it to an empty string.
@@ -143,7 +143,7 @@ public class Anchor extends HtmlContainer
      */
     public void setHref(String href) {
         this.href = href;
-        if(isEnabled()) {
+        if (isEnabled()) {
             assignHref();
         }
     }
@@ -169,7 +169,7 @@ public class Anchor extends HtmlContainer
     public void setHref(AbstractStreamResource href) {
         this.href = href;
         getElement().setAttribute(ROUTER_IGNORE_ATTRIBUTE, true);
-        if(isEnabled()) {
+        if (isEnabled()) {
             assignHref();
         }
     }
@@ -194,7 +194,7 @@ public class Anchor extends HtmlContainer
     @Override
     public void onEnabledStateChanged(boolean enabled) {
         super.onEnabledStateChanged(enabled);
-        if(enabled) {
+        if (enabled) {
             assignHref();
         } else {
             getElement().removeAttribute("href");
@@ -202,9 +202,10 @@ public class Anchor extends HtmlContainer
     }
 
     private void assignHref() {
-        if(href != null) {
-            if(href instanceof AbstractStreamResource) {
-                getElement().setAttribute("href", (AbstractStreamResource) href);
+        if (href != null) {
+            if (href instanceof AbstractStreamResource) {
+                getElement().setAttribute("href",
+                        (AbstractStreamResource) href);
             } else {
                 set(hrefDescriptor, (String) href);
             }
