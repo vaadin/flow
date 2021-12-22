@@ -19,7 +19,6 @@ package com.vaadin.flow.uitest.ui;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.logging.Level;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
@@ -269,7 +268,7 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
     }
 
     private void checkNoWebpackErrors(String theme) {
-        getLogEntries(Level.ALL).forEach(logEntry -> {
+        getLogEntries(java.util.logging.Level.ALL).forEach(logEntry -> {
             if (logEntry.getMessage().contains("Module build failed")) {
                 Assert.fail(String.format(
                         "Webpack error detected in the browser console after "
