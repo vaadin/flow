@@ -186,7 +186,8 @@ public class Anchor extends HtmlContainer
             // let the method return the actual href string even if disabled
             return (String) href;
         } else if (href instanceof AbstractStreamResource) {
-            return StreamResourceRegistry.getURI((AbstractStreamResource) href).toString();
+            return StreamResourceRegistry.getURI((AbstractStreamResource) href)
+                    .toString();
         }
         return get(hrefDescriptor);
     }
