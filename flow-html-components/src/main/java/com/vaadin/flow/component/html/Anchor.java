@@ -28,6 +28,7 @@ import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.StreamResourceRegistry;
 
 /**
  * Component representing an <code>&lt;a&gt;</code> element.
@@ -184,9 +185,9 @@ public class Anchor extends HtmlContainer
         if (href instanceof String) {
             // let the method return the actual href string even if disabled
             return (String) href;
+        } else if (href instanceof AbstractStreamResource) {
+            return StreamResourceRegistry.getURI((AbstractStreamResource) href).toString();
         }
-        // this only happens if StreamResource is in use, in that case
-        // the disabled Anchor returns null, otherwise some String.
         return get(hrefDescriptor);
     }
 
