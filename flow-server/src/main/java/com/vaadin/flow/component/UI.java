@@ -1258,7 +1258,7 @@ public class UI extends Component
      */
     public void addModal(Component component) {
         add(component);
-        getInternals().toggleChildModal(component);
+        getInternals().setChildModal(component);
     }
 
     /**
@@ -1285,9 +1285,9 @@ public class UI extends Component
         childComponent.getParent().filter(parent -> parent == this)
                 .orElseThrow(illegalStateExceptionSupplier);
         if (modal) {
-            getInternals().toggleChildModal(childComponent);
+            getInternals().setChildModal(childComponent);
         } else {
-            getInternals().toggleChildModeless(childComponent);
+            getInternals().setChildModeless(childComponent);
         }
     }
 

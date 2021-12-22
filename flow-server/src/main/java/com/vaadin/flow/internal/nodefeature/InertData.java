@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,6 +16,8 @@
 
 package com.vaadin.flow.internal.nodefeature;
 
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.LinkedList;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -26,14 +28,14 @@ import com.vaadin.flow.shared.util.UniqueSerializable;
 
 /**
  * Server side only feature about whether or not the node is inert or if it
- * should ignore inhering inert state from parent. By default the node is not
+ * should ignore inheriting inert state from parent. By default the node is not
  * inert, and it will inherit the inert state from the parent. If the node lacks
  * the inert data, then it will be just inheriting the state from parent.
  * <p>
  * The inert status is only updated when the changes are written to the client
  * side because the inert state changes are applied for upcoming requests from
  * the client side. Thus when an RPC call (like any DOM event) causes a node to
- * become inert, the state is does not block any pending executions until
+ * become inert, the inert state does not block any pending executions until
  * changes are written to the client side.
  * <p>
  * Implementation notes: The inert state changes are collected like with client
@@ -88,8 +90,8 @@ public class InertData extends ServerSideFeature {
     }
 
     /**
-     * Sets whether or not the node itself is inert. By default the node is not
-     * inert, unless parent is inert and inhering parent inert is not blocked.
+     * Sets whether the node itself is inert. By default the node is not inert,
+     * unless parent is inert and inhering parent inert is not blocked.
      * 
      * @param inertSelf
      *            {@code} true for setting the node explicitly inert,
@@ -102,10 +104,21 @@ public class InertData extends ServerSideFeature {
         }
     }
 
+    /**
+     * Gets whether the node itself has been set to be inert (regardless of its
+     * ancestors' inert setting).
+     *
+     * @return whether this node has been set inert
+     */
     public boolean isInertSelf() {
         return inertSelf;
     }
 
+    /**
+     * Gets whether the inertness setting of ancestor nodes should be ignored.
+     *
+     * @return whether this node should ignore its ancestors' inert setting
+     */
     public boolean isIgnoreParentInert() {
         return ignoreParentInert;
     }
@@ -148,28 +161,29 @@ public class InertData extends ServerSideFeature {
 
     private void updateInertAndCascadeToChildren(Boolean resolvedParentInert) {
         boolean newInert = resolveInert(resolvedParentInert);
-        if (cachedInert == null || cachedInert != newInert) {
-            // cascade update to all children unless those are ignoring parent
-            // value or have same value and thus don't need updating.
-            // (all explicitly updated nodes are visited separately)
-            LinkedList<StateNode> stack = new LinkedList<>();
-            getNode().forEachChild(stack::add);
+        if (cachedInert != null && cachedInert == newInert) {
+            return;
+        }
+        // cascade update to all children unless those are ignoring parent
+        // value or have same value and thus don't need updating.
+        // (all explicitly updated nodes are visited separately)
+        Deque<StateNode> stack = new ArrayDeque<>();
+        getNode().forEachChild(stack::add);
 
-            while (!stack.isEmpty()) {
-                StateNode node = stack.removeFirst();
+        while (!stack.isEmpty()) {
+            StateNode node = stack.pop();
 
-                if (node.hasFeature(InertData.class)) {
-                    final Optional<InertData> featureIfInitialized = node
-                            .getFeatureIfInitialized(InertData.class);
-                    if (featureIfInitialized.isPresent()) {
-                        featureIfInitialized.get()
-                                .updateInertAndCascadeToChildren(newInert);
-                    } else {
-                        node.forEachChild(stack::addFirst);
-                    }
+            if (node.hasFeature(InertData.class)) {
+                final Optional<InertData> featureIfInitialized = node
+                        .getFeatureIfInitialized(InertData.class);
+                if (featureIfInitialized.isPresent()) {
+                    featureIfInitialized.get()
+                            .updateInertAndCascadeToChildren(newInert);
                 } else {
-                    node.forEachChild(stack::addFirst);
+                    node.forEachChild(stack::push);
                 }
+            } else {
+                node.forEachChild(stack::push);
             }
         }
         cachedInert = newInert;

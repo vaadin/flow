@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.Stack;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -210,7 +209,7 @@ public class UIInternals implements Serializable {
 
     private boolean isFallbackChunkLoaded;
 
-    private Stack<Component> modalComponentStack;
+    private ArrayDeque<Component> modalComponentStack;
 
     /**
      * Creates a new instance for the given UI.
@@ -1112,9 +1111,9 @@ public class UIInternals implements Serializable {
      * @param child
      *            the child component to toggle modal
      */
-    public void toggleChildModal(Component child) {
+    public void setChildModal(Component child) {
         if (modalComponentStack == null) {
-            modalComponentStack = new Stack<>();
+            modalComponentStack = new ArrayDeque<>();
         } else if (isTopMostModal(child)) {
             return;
         }
@@ -1129,7 +1128,7 @@ public class UIInternals implements Serializable {
         }
 
         final boolean needsListener = !modalComponentStack.remove(child);
-        modalComponentStack.add(child);
+        modalComponentStack.push(child);
 
         if (needsListener) {
             /*
@@ -1137,8 +1136,7 @@ public class UIInternals implements Serializable {
              * possible component.getElement().removeFromParent() usage.
              */
             AtomicReference<Registration> registrationCombination = new AtomicReference<>();
-            final Registration componentRemoval = () -> toggleChildModeless(
-                    child);
+            final Registration componentRemoval = () -> setChildModeless(child);
             final Registration listenerRegistration = child.getElement()
                     .addDetachListener(
                             event -> registrationCombination.get().remove());
@@ -1155,7 +1153,7 @@ public class UIInternals implements Serializable {
      * @param child
      *            the child component to make modeless
      */
-    public void toggleChildModeless(Component child) {
+    public void setChildModeless(Component child) {
         if (modalComponentStack == null) {
             return;
         }
