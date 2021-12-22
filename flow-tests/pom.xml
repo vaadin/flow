@@ -35,10 +35,12 @@
             com.vaadin.flow.testcategory.PushTests,
         </excludedGroups>
 
+        <jetty.scantrigger></jetty.scantrigger>
+
         <vaadin.devmode.liveReload.enabled>false</vaadin.devmode.liveReload.enabled>
         <vaadin.pnpm.enable>true</vaadin.pnpm.enable>
         <vaadin.allow.appshell.annotations>false</vaadin.allow.appshell.annotations>
-
+        <useDeprecatedV14Bootstrapping>false</useDeprecatedV14Bootstrapping>
         <vaadin.devmode.vite.options>--host</vaadin.devmode.vite.options>
 
         <!-- make sure we do not leave webpack-dev-server running after IT -->
@@ -121,6 +123,10 @@
                     <groupId>com.vaadin</groupId>
                     <artifactId>flow-maven-plugin</artifactId>
                     <version>${project.version}</version>
+                    <configuration>
+                        <useDeprecatedV14Bootstrapping>${vaadin.useDeprecatedV14Bootstrapping}</useDeprecatedV14Bootstrapping>
+                        <pnpmEnable>${vaadin.pnpm.enable}</pnpmEnable>
+                    </configuration>
                     <executions>
                         <execution>
                             <goals>
@@ -249,20 +255,12 @@
                                  in all modules so no non-standard value leaks to another module -->
                             <force>true</force>
                             <systemProperty>
-                                <name>vaadin.useDeprecatedV14Bootstrapping</name>
-                                <value>${vaadin.useDeprecatedV14Bootstrapping}</value>
-                            </systemProperty>
-                            <systemProperty>
                                 <name>vaadin.reuseDevServer</name>
                                 <value>${vaadin.reuseDevServer}</value>
                             </systemProperty>
                             <systemProperty>
                                 <name>vaadin.devmode.liveReload.enabled</name>
                                 <value>${vaadin.devmode.liveReload.enabled}</value>
-                            </systemProperty>
-                            <systemProperty>
-                                <name>vaadin.pnpm.enable</name>
-                                <value>${vaadin.pnpm.enable}</value>
                             </systemProperty>
                             <systemProperty>
                                 <name>vaadin.allow.appshell.annotations</name>
@@ -275,7 +273,7 @@
                             <!-- Allow test clients not on localhost to connect to Vite-->
                             <systemProperty>
                                 <name>vaadin.devmode.vite.options</name>
-                                <value>--host</value>
+                                <value>${vaadin.devmode.vite.options}</value>
                             </systemProperty>
                         </systemProperties>
                     </configuration>
