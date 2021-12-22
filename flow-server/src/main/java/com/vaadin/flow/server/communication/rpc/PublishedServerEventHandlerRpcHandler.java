@@ -187,7 +187,7 @@ public class PublishedServerEventHandlerRpcHandler
                 || method.isAnnotationPresent(ClientCallable.class);
     }
 
-     private static void invokeMethod(Component instance, Method method,
+    private static void invokeMethod(Component instance, Method method,
             JsonArray args, int promiseId, boolean inert) {
         if (inert && !method.isAnnotationPresent(AllowInert.class)) {
             return;

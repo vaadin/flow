@@ -21,14 +21,14 @@ public class InertComponentView extends Div {
     public InertComponentView() {
     }
 
-
     @Override
     protected void onAttach(AttachEvent attachEvent) {
         boxCounter = 0;
 
         super.onAttach(attachEvent);
 
-        // collapse outlet so that the added boxes are rendered inside visible browser window
+        // collapse outlet so that the added boxes are rendered inside visible
+        // browser window
         getUI().ifPresent(ui -> ui.getPage().executeJs(
                 "document.getElementById('outlet').style.height = 'auto';"));
 
@@ -41,15 +41,15 @@ public class InertComponentView extends Div {
 
             withId(BOX, this);
 
-            add(new Text(boxCounter + " " + (modal ? "modal" : "not modal") +
-                    " Box"));
+            add(new Text(boxCounter + " " + (modal ? "modal" : "not modal")
+                    + " Box"));
             add(withId(REMOVE, new NativeButton("Remove",
                     event -> getElement().removeFromParent())));
             add(withId(NEW_BOX, new NativeButton("New box",
                     event -> getUI().ifPresent(ui -> ui.add(new Box(false))))));
-            add(withId(NEW_MODAL_BOX, new NativeButton("New Modal Box",
-                    event -> getUI().ifPresent(
-                            ui -> ui.addModal(new Box(true))))));
+            add(withId(NEW_MODAL_BOX,
+                    new NativeButton("New Modal Box", event -> getUI()
+                            .ifPresent(ui -> ui.addModal(new Box(true))))));
             add(withId(LINK, new RouterLink("Link to another view",
                     ModalDialogView.class)));
 

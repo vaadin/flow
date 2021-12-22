@@ -42,8 +42,8 @@ public class InertComponentIT extends ChromeBrowserTest {
                 "Expected no new boxes as the button is now inert.");
 
         List<NativeButtonElement> removeButtons = getAll(
-                NativeButtonElement.class, InertComponentView.REMOVE).collect(
-                Collectors.toList());
+                NativeButtonElement.class, InertComponentView.REMOVE)
+                        .collect(Collectors.toList());
         removeButtons.get(removeButtons.size() - 1).click();
 
         validateBoxCount(initialBoxCount,
@@ -68,11 +68,11 @@ public class InertComponentIT extends ChromeBrowserTest {
         validateBoxCount(initialBoxCount + 1, "Expected a new modal box.");
 
         // Remove the modal box from DOM
-        ((JavascriptExecutor) getDriver()).executeScript(
-                "document.body.removeChild(" +
-                        "((v = document.querySelectorAll('[id^=\"" +
-                        InertComponentView.BOX +
-                        "-\"]')) => v[v.length - 1])());");
+        ((JavascriptExecutor) getDriver())
+                .executeScript("document.body.removeChild("
+                        + "((v = document.querySelectorAll('[id^=\""
+                        + InertComponentView.BOX
+                        + "-\"]')) => v[v.length - 1])());");
 
         validateBoxCount(initialBoxCount,
                 "Expected the modal box was removed from DOM.");

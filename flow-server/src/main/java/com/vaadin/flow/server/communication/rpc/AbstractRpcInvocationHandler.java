@@ -76,7 +76,6 @@ public abstract class AbstractRpcInvocationHandler
         return false;
     }
 
-
     /**
      * Handle the RPC data {@code invocationJson} using target {@code node} as a
      * context.
