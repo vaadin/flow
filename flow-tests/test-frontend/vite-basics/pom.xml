@@ -68,17 +68,8 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-maven-plugin</artifactId>
-                <configuration>
-                    <systemProperties>
-                        <!-- Allow test clients not on localhost to connect to Vite-->
-                        <systemProperty>
-                            <name>vaadin.devmode.vite.options</name>
-                            <value>--host</value>
-                        </systemProperty>
-                    </systemProperties>
-                </configuration>
+                 <groupId>org.eclipse.jetty</groupId>
+                 <artifactId>jetty-maven-plugin</artifactId>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
