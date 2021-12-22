@@ -23,7 +23,7 @@
             concurrent running of test modules. -->
         <server.port>8888</server.port>
         <server.stop.port>8889</server.stop.port>
-        <jetty.version>9.4.9.v20180320</jetty.version>
+        <jetty.version>9.4.21.v20190926</jetty.version>
         <maven.failsafe.plugin.version>3.0.0-M1</maven.failsafe.plugin.version>
         <driver.binary.downloader.maven.plugin.version>1.0.14
         </driver.binary.downloader.maven.plugin.version>
