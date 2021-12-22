@@ -104,6 +104,8 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
     public void componentThemeIsApplied_forPolymerAndLit() {
         open();
 
+        checkLogsForErrors();
+        
         final TestBenchElement themedComponent = $("themed-component").first();
         final TestBenchElement embeddedComponent = themedComponent
             .$(DivElement.class).id(EMBEDDED_ID);
