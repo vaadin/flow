@@ -18,7 +18,6 @@ package com.vaadin.flow.internal.nodefeature;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.LinkedList;
 import java.util.Optional;
 import java.util.function.Consumer;
 
