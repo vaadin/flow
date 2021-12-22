@@ -57,18 +57,6 @@
             <plugin>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
-                <version>${jetty.version}</version>
-                <!-- do not allow faulty app shell annotations for module -->
-                <!-- This should be removed when flow-tests do not break app shell annotation-->
-                <!-- flow-tests should not allow faulty annotations -->
-                <configuration>
-                    <systemProperties>
-                        <systemProperty>
-                            <name>vaadin.allow.appshell.annotations</name>
-                            <value>false</value>
-                        </systemProperty>
-                    </systemProperties>
-                </configuration>
             </plugin>
 
             <plugin>
