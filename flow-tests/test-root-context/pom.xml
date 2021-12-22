@@ -14,6 +14,7 @@
 
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
+        <vaadin.allow.appshell.annotations>true</vaadin.allow.appshell.annotations>
     </properties>
 
     <dependencies>

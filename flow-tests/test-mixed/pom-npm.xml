@@ -14,6 +14,7 @@
     <packaging>war</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
+        <vaadin.pnpm.enable>false</vaadin.pnpm.enable>
     </properties>
 
     <dependencies>
@@ -67,24 +68,6 @@
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
                 <configuration>
-                    <systemProperties>
-                        <systemProperty>
-                            <!-- this avoids an issue in chrome not loading the components
-                                 randomly when webpack dev server is not in debug mode -->
-                            <name>vaadin.devmode.webpack.options</name>
-                            <value>--debug</value>
-                        </systemProperty>
-                        <systemProperty>
-                            <!-- make sure we do not leave webpack-dev-server running after IT -->
-                            <name>vaadin.reuseDevServer</name>
-                            <value>false</value>
-                        </systemProperty>
-                        <systemProperty>
-                            <!-- disable PNPM -->
-                            <name>vaadin.pnpm.enable</name>
-                            <value>false</value>
-                        </systemProperty>
-                    </systemProperties>
                     <webApp>
                         <!-- We deploy the app with a context in the servlet container in order to test
                              that bootstrap code resolves correctly the application context and do
