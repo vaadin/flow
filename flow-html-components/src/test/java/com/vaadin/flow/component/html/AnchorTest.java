@@ -233,6 +233,7 @@ public class AnchorTest extends ComponentTest {
         anchor.setEnabled(false);
 
         Assert.assertFalse(anchor.getElement().hasAttribute("href"));
+        Assert.assertNotEquals(href, anchor.getHref());
 
         anchor.setEnabled(true);
         Assert.assertEquals(href, anchor.getHref());
