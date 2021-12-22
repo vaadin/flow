@@ -95,6 +95,7 @@ public class NodeFeatureTest {
                 NodeFeatures.VIRTUAL_CHILDREN);
         expectedIds.put(ReturnChannelMap.class,
                 NodeFeatures.RETURN_CHANNEL_MAP);
+        expectedIds.put(InertData.class, NodeFeatures.INERT_DATA);
 
         return expectedIds;
     }
@@ -154,6 +155,7 @@ public class NodeFeatureTest {
                 /* Rarely used element stuff */
                 ElementStylePropertyMap.class, ShadowRootData.class,
                 ShadowRootHost.class, AttachExistingElementFeature.class,
+                InertData.class,
 
                 /* Only used for the root node */
                 PushConfigurationMap.class,
