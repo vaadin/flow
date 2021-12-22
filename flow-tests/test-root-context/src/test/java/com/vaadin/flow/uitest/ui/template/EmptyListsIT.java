@@ -16,7 +16,6 @@
 package com.vaadin.flow.uitest.ui.template;
 
 import java.util.Optional;
-import java.util.logging.Level;
 import java.util.stream.StreamSupport;
 
 import org.junit.Assert;
@@ -46,8 +45,9 @@ public class EmptyListsIT extends ChromeBrowserTest {
         if (logs != null) {
             Optional<LogEntry> anyError = StreamSupport
                     .stream(logs.spliterator(), true)
-                    .filter(entry -> entry.getLevel().intValue() > Level.INFO
-                            .intValue())
+                    .filter(entry -> entry.getLevel()
+                            .intValue() > java.util.logging.Level.INFO
+                                    .intValue())
                     .filter(entry -> !entry.getMessage()
                             .contains("favicon.ico"))
                     .filter(entry -> !entry.getMessage()

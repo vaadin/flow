@@ -17,8 +17,6 @@
 
 package com.vaadin.flow.uitest.ui;
 
-import java.util.logging.Level;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
@@ -34,7 +32,7 @@ public class SessionCloseLogoutIT extends ChromeBrowserTest {
 
         // clean all messages: if there is an error in the console it won't
         // appear anymore
-        getLogEntries(Level.ALL).forEach(logEntry -> {
+        getLogEntries(java.util.logging.Level.ALL).forEach(logEntry -> {
             // no-op
         });
 

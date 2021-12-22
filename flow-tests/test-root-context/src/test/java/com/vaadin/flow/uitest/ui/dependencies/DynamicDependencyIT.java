@@ -16,7 +16,6 @@
 package com.vaadin.flow.uitest.ui.dependencies;
 
 import java.util.List;
-import java.util.logging.Level;
 
 import org.hamcrest.Matchers;
 import org.junit.Assert;
@@ -63,7 +62,7 @@ public class DynamicDependencyIT extends ChromeBrowserTest {
         String statusText = findElement(By.id("new-component")).getText();
         Assert.assertEquals("Div updated for " + caseName, statusText);
 
-        List<LogEntry> entries = getLogEntries(Level.SEVERE);
+        List<LogEntry> entries = getLogEntries(java.util.logging.Level.SEVERE);
         Assert.assertEquals(2, entries.size());
 
         Assert.assertThat(entries.get(0).getMessage(),
