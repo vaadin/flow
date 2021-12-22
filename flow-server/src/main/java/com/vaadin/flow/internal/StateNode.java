@@ -956,9 +956,15 @@ public class StateNode implements Serializable {
      * @see InertData
      */
     public boolean isInert() {
-        // the node has inert data, it will resolve state properly
-        return getFeatureIfInitialized(InertData.class).map(InertData::isInert)
-                .orElse(getParent() != null && getParent().isInert());
+        if (hasFeature(InertData.class)) {
+            // the node has inert data, it will resolve state properly
+            Optional<InertData> featureIfInitialized = getFeatureIfInitialized(
+                    InertData.class);
+            if (featureIfInitialized.isPresent()) {
+                return featureIfInitialized.get().isInert();
+            }
+        }
+        return getParent() != null && getParent().isInert();
     }
 
     private Stream<NodeFeature> getDisallowFeatures() {
