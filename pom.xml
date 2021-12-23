@@ -76,9 +76,9 @@
         <jsinterop.version>1.0.2</jsinterop.version>
         <sonar.java.source>8</sonar.java.source>
         <sonar.analysis.mode>preview</sonar.analysis.mode>
-        <sonar.issuesReport.console.enable>true
-        </sonar.issuesReport.console.enable>
+        <sonar.issuesReport.console.enable>true</sonar.issuesReport.console.enable>
         <sonar.issuesReport.html.enable>true</sonar.issuesReport.html.enable>
+
         <maven.javadoc.skip>true</maven.javadoc.skip>
         <failOnMissingWebXml>false</failOnMissingWebXml>
 
@@ -725,6 +725,18 @@
             <properties>
                 <groups>com.vaadin.flow.testcategory.SlowTests</groups>
                 <excludedGroups></excludedGroups>
+            </properties>
+        </profile>
+        <profile>
+            <id>sonar-cloud</id>
+            <properties>
+                <sonar.java.source>${maven.compiler.source}</sonar.java.source>
+                <sonar.organization>vaadin</sonar.organization>
+                <sonar.host.url>https://sonarcloud.io</sonar.host.url>
+                <!-- override properties for legacy sonar instance -->
+                <sonar.analysis.mode></sonar.analysis.mode>
+                <sonar.issuesReport.console.enable></sonar.issuesReport.console.enable>
+                <sonar.issuesReport.html.enable></sonar.issuesReport.html.enable>
             </properties>
         </profile>
     </profiles>
