@@ -400,72 +400,6 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     }
 
     @Test
-    public void generateVersionsJson_noVersions_noDevDeps_versionsGeneratedFromPackageJson()
-            throws IOException {
-        TaskRunNpmInstall task = createTask();
-
-        final String versions = task.generateVersionsJson();
-        Assert.assertNotNull(versions);
-
-        File generatedVersionsFile = new File(getNodeUpdater().npmFolder,
-                versions);
-        final JsonObject versionsJson = Json.parse(FileUtils.readFileToString(
-                generatedVersionsFile, StandardCharsets.UTF_8));
-        Assert.assertEquals("{}", versionsJson.toJson());
-    }
-
-    @Test
-    public void generateVersionsJson_versionsGeneratedFromPackageJson_containsBothDepsAndDevDeps()
-            throws IOException {
-
-        File packageJson = new File(getNodeUpdater().npmFolder, PACKAGE_JSON);
-        packageJson.createNewFile();
-
-        // Write package json file
-        // @formatter:off
-        FileUtils.write(packageJson,
-            "{"
-                + "\"vaadin\": {"
-                  + "\"dependencies\": {"
-                    + "\"lit\": \"2.0.0\","
-                    + "\"@vaadin/router\": \"1.7.4\","
-                    + "\"@polymer/polymer\": \"3.2.0\","
-                  + "},"
-                  + "\"devDependencies\": {"
-                    + "\"css-loader\": \"4.2.1\","
-                    + "\"file-loader\": \"6.1.0\""
-                  + "}"
-                + "},"
-                + "\"dependencies\": {"
-                  + "\"lit\": \"2.0.0\","
-                  + "\"@vaadin/router\": \"1.7.4\","
-                  + "\"@polymer/polymer\": \"3.2.0\","
-                + "},"
-                + "\"devDependencies\": {"
-                  + "\"css-loader\": \"4.2.1\","
-                  + "\"file-loader\": \"6.1.0\""
-                + "}"
-            + "}", StandardCharsets.UTF_8);
-        // @formatter:on
-
-        TaskRunNpmInstall task = createTask();
-
-        final String versions = task.generateVersionsJson();
-        Assert.assertNotNull(versions);
-
-        File generatedVersionsFile = new File(getNodeUpdater().npmFolder,
-                versions);
-        final JsonObject versionsJson = Json.parse(FileUtils.readFileToString(
-                generatedVersionsFile, StandardCharsets.UTF_8));
-        Assert.assertEquals(
-                "{" + "\"lit\":\"2.0.0\"," + "\"@vaadin/router\":\"1.7.4\","
-                        + "\"@polymer/polymer\":\"3.2.0\","
-                        + "\"css-loader\":\"4.2.1\","
-                        + "\"file-loader\":\"6.1.0\"" + "}",
-                versionsJson.toJson());
-    }
-
-    @Test
     public void runPnpmInstall_npmRcFileNotFound_newNpmRcFileIsGenerated()
             throws IOException, ExecutionFailedException {
         TaskRunNpmInstall task = createTask();
@@ -656,20 +590,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         return new TaskRunNpmInstall(getNodeUpdater(), true, false,
                 FrontendTools.DEFAULT_NODE_VERSION,
                 URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false,
-                false) {
-            @Override
-            protected String generateVersionsJson() {
-                try {
-                    FileUtils.write(
-                            new File(getNodeUpdater().npmFolder,
-                                    "versions.json"),
-                            versionsContent, StandardCharsets.UTF_8);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                return "./versions.json";
-            }
-        };
+                false);
     }
 
     private JsonObject getGeneratedVersionsContent(File versions)
@@ -683,7 +604,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                 URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false,
                 false);
 
-        String path = task.generateVersionsJson();
+        String path = getNodeUpdater().generateVersionsJson();
 
         File generatedVersionsFile = new File(getNodeUpdater().npmFolder, path);
         return Json.parse(FileUtils.readFileToString(generatedVersionsFile,

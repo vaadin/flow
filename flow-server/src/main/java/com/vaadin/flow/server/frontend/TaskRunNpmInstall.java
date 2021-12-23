@@ -189,68 +189,6 @@ public class TaskRunNpmInstall implements FallibleCommand {
         return new File(packageUpdater.nodeModulesFolder, INSTALL_HASH);
     }
 
-    /**
-     * Generate versions json file for pnpm.
-     *
-     * @return generated versions json file path
-     * @throws IOException
-     *             when file IO fails
-     */
-    protected String generateVersionsJson() throws IOException {
-        assert enablePnpm;
-        File versions = new File(packageUpdater.generatedFolder,
-                "versions.json");
-
-        JsonObject versionsJson = getLockedVersions();
-        if (versionsJson == null) {
-            versionsJson = generateVersionsFromPackageJson();
-        }
-        FileUtils.write(versions, stringify(versionsJson, 2) + "\n",
-                StandardCharsets.UTF_8);
-        Path versionsPath = versions.toPath();
-        if (versions.isAbsolute()) {
-            return FrontendUtils.getUnixRelativePath(
-                    packageUpdater.npmFolder.toPath(), versionsPath);
-        } else {
-            return FrontendUtils.getUnixPath(versionsPath);
-        }
-    }
-
-    /**
-     * If we do not have the platform versions to lock we should lock any
-     * versions in the package.json so we do not get multiple versions for
-     * defined packages.
-     *
-     * @return versions Json based on package.json
-     * @throws IOException
-     *             If reading package.json fails
-     */
-    private JsonObject generateVersionsFromPackageJson() throws IOException {
-        JsonObject versionsJson = Json.createObject();
-        // if we don't have versionsJson lock package dependency versions.
-        final JsonObject packageJson = packageUpdater.getPackageJson();
-        final JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
-        final JsonObject devDependencies = packageJson
-                .getObject(DEV_DEPENDENCIES);
-        if (dependencies != null) {
-            for (String key : dependencies.keys()) {
-                versionsJson.put(key, dependencies.getString(key));
-            }
-        }
-        if (devDependencies != null) {
-            for (String key : devDependencies.keys()) {
-                versionsJson.put(key, devDependencies.getString(key));
-            }
-        }
-
-        return versionsJson;
-    }
-
-    private JsonObject getLockedVersions() throws IOException {
-        assert enablePnpm;
-        return packageUpdater.getPlatformPinnedDependencies();
-    }
-
     private boolean shouldRunNpmInstall() {
         if (!packageUpdater.nodeModulesFolder.isDirectory()) {
             return true;
@@ -309,7 +247,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
         if (enablePnpm) {
             try {
-                createPnpmFile(generateVersionsJson());
+                createPnpmFile(packageUpdater.generateVersionsJson());
             } catch (IOException exception) {
                 throw new ExecutionFailedException(
                         "Failed to read frontend version data from vaadin-core "

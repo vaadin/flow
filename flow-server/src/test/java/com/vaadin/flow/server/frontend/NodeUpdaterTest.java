@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -41,6 +42,7 @@ import elemental.json.Json;
 import elemental.json.JsonException;
 import elemental.json.JsonObject;
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
@@ -246,6 +248,68 @@ public class NodeUpdaterTest {
         Assert.assertFalse(actualDevDeps.hasKey("some-old-plugin"));
         Assert.assertTrue(
                 actualDevDeps.hasKey("@vaadin/application-theme-plugin"));
+    }
+
+    @Test
+    public void generateVersionsJson_noVersions_noDevDeps_versionsGeneratedFromPackageJson()
+            throws IOException {
+        final String versions = nodeUpdater.generateVersionsJson();
+        Assert.assertNotNull(versions);
+
+        File generatedVersionsFile = new File(npmFolder,
+                versions);
+        final JsonObject versionsJson = Json.parse(FileUtils.readFileToString(
+                generatedVersionsFile, StandardCharsets.UTF_8));
+        Assert.assertEquals("{}", versionsJson.toJson());
+    }
+
+    @Test
+    public void generateVersionsJson_versionsGeneratedFromPackageJson_containsBothDepsAndDevDeps()
+            throws IOException {
+
+        File packageJson = new File(nodeUpdater.npmFolder, PACKAGE_JSON);
+        packageJson.createNewFile();
+
+        // Write package json file
+        // @formatter:off
+        FileUtils.write(packageJson,
+            "{"
+                + "\"vaadin\": {"
+                  + "\"dependencies\": {"
+                    + "\"lit\": \"2.0.0\","
+                    + "\"@vaadin/router\": \"1.7.4\","
+                    + "\"@polymer/polymer\": \"3.2.0\","
+                  + "},"
+                  + "\"devDependencies\": {"
+                    + "\"css-loader\": \"4.2.1\","
+                    + "\"file-loader\": \"6.1.0\""
+                  + "}"
+                + "},"
+                + "\"dependencies\": {"
+                  + "\"lit\": \"2.0.0\","
+                  + "\"@vaadin/router\": \"1.7.4\","
+                  + "\"@polymer/polymer\": \"3.2.0\","
+                + "},"
+                + "\"devDependencies\": {"
+                  + "\"css-loader\": \"4.2.1\","
+                  + "\"file-loader\": \"6.1.0\""
+                + "}"
+            + "}", StandardCharsets.UTF_8);
+        // @formatter:on
+
+        final String versions = nodeUpdater.generateVersionsJson();
+        Assert.assertNotNull(versions);
+
+        File generatedVersionsFile = new File(npmFolder,
+                versions);
+        final JsonObject versionsJson = Json.parse(FileUtils.readFileToString(
+                generatedVersionsFile, StandardCharsets.UTF_8));
+        Assert.assertEquals(
+                "{" + "\"lit\":\"2.0.0\"," + "\"@vaadin/router\":\"1.7.4\","
+                        + "\"@polymer/polymer\":\"3.2.0\","
+                        + "\"css-loader\":\"4.2.1\","
+                        + "\"file-loader\":\"6.1.0\"" + "}",
+                versionsJson.toJson());
     }
 
     private String getPolymerVersion(JsonObject object) {

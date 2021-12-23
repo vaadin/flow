@@ -26,6 +26,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
@@ -91,6 +92,19 @@ public class TaskRunNpmInstallTest {
             @Override
             Logger log() {
                 return logger;
+            }
+
+            @Override
+            protected String generateVersionsJson() {
+                try {
+                    FileUtils.write(
+                            new File(getNodeUpdater().npmFolder,
+                                    "versions.json"),
+                            "", StandardCharsets.UTF_8);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                return "./versions.json";
             }
 
         };
