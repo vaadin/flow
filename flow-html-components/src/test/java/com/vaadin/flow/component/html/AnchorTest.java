@@ -119,12 +119,6 @@ public class AnchorTest extends ComponentTest {
     }
 
     @Test
-    @Override
-    public void testHasAriaLabelIsImplemented() {
-        super.testHasAriaLabelIsImplemented();
-    }
-
-    @Test
     public void setEnabled_anchorWithoutHref_doesNotThrow() {
         Anchor anchor = new Anchor();
         anchor.setEnabled(false);
