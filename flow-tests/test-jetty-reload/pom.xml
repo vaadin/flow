@@ -14,6 +14,8 @@
     <packaging>war</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
+        <vaadin.reuseDevServer>true</vaadin.reuseDevServer>
+        <jetty.scantrigger>${project.build.directory}/scantrigger</jetty.scantrigger>
     </properties>
 
     <dependencies>
@@ -71,17 +73,6 @@
                             </includes>
                         </scanTargetPattern>
                     </scanTargetPatterns>
-                    <systemProperties>
-                        <force>true</force>
-                        <systemProperty>
-                            <name>jetty.scantrigger</name>
-                            <value>${project.build.directory}/scantrigger</value>
-                        </systemProperty>
-                        <systemProperty>
-                            <name>vaadin.reuseDevServer</name>
-                            <value>true</value>
-                        </systemProperty>
-                    </systemProperties>
                 </configuration>
             </plugin>
         </plugins>

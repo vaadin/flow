@@ -90,10 +90,6 @@
                     <productionMode>true</productionMode>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-maven-plugin</artifactId>
-            </plugin>
         </plugins>
     </build>
 
