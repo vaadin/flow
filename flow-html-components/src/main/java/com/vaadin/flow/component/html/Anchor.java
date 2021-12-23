@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.io.Serializable;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -26,6 +27,7 @@ import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.StreamResourceRegistry;
 
 /**
  * Component representing an <code>&lt;a&gt;</code> element.
@@ -44,6 +46,7 @@ public class Anchor extends HtmlContainer implements Focusable<Anchor> {
                     AnchorTarget.DEFAULT.getValue());
 
     private static final String ROUTER_IGNORE_ATTRIBUTE = "router-ignore";
+    private Serializable href;
 
     /**
      * Creates a new empty anchor component.
@@ -125,6 +128,9 @@ public class Anchor extends HtmlContainer implements Focusable<Anchor> {
     /**
      * Sets the URL that this anchor links to.
      * <p>
+     * A disabled Anchor removes the attribute from the HTML element, but it is
+     * stored (and reused when enabled again) in the server-side component.
+     * <p>
      * Use the method {@link #removeHref()} to remove the <b>href</b> attribute
      * instead of setting it to an empty string.
      *
@@ -135,7 +141,11 @@ public class Anchor extends HtmlContainer implements Focusable<Anchor> {
      *            the href to set
      */
     public void setHref(String href) {
-        set(hrefDescriptor, href);
+        if (href == null) {
+            throw new IllegalArgumentException("Href must not be null");
+        }
+        this.href = href;
+        assignHrefAttribute();
     }
 
     /**
@@ -146,6 +156,7 @@ public class Anchor extends HtmlContainer implements Focusable<Anchor> {
      */
     public void removeHref() {
         getElement().removeAttribute("href");
+        href = null;
     }
 
     /**
@@ -156,8 +167,9 @@ public class Anchor extends HtmlContainer implements Focusable<Anchor> {
      *            the resource value, not null
      */
     public void setHref(AbstractStreamResource href) {
-        getElement().setAttribute("href", href);
+        this.href = href;
         getElement().setAttribute(ROUTER_IGNORE_ATTRIBUTE, true);
+        assignHrefAttribute();
     }
 
     /**
@@ -168,7 +180,35 @@ public class Anchor extends HtmlContainer implements Focusable<Anchor> {
      * @return the href value, or <code>""</code> if no href has been set
      */
     public String getHref() {
+        if (href instanceof String) {
+            // let the method return the actual href string even if disabled
+            return (String) href;
+        } else if (href instanceof AbstractStreamResource) {
+            return StreamResourceRegistry.getURI((AbstractStreamResource) href)
+                    .toString();
+        }
         return get(hrefDescriptor);
+    }
+
+    @Override
+    public void onEnabledStateChanged(boolean enabled) {
+        super.onEnabledStateChanged(enabled);
+        assignHrefAttribute();
+    }
+
+    private void assignHrefAttribute() {
+        if (isEnabled()) {
+            if (href != null) {
+                if (href instanceof AbstractStreamResource) {
+                    getElement().setAttribute("href",
+                            (AbstractStreamResource) href);
+                } else {
+                    set(hrefDescriptor, (String) href);
+                }
+            }
+        } else {
+            getElement().removeAttribute("href");
+        }
     }
 
     /**
