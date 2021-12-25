@@ -1,8 +1,7 @@
 name: Flow Validation push
 on:
   push:
-    branches:
-      - master
+    branches: [master, '9.0']
   pull_request:
     types: [opened, synchronize, reopened]
   workflow_dispatch:
@@ -13,6 +12,10 @@ jobs:
       matrix-unit: ${{ steps.set-matrix.outputs.matrix-unit }}
       matrix-it: ${{ steps.set-matrix.outputs.matrix-it }}
     steps:
+      - name: Check Secrets
+        run: |
+          TB_LICENSE="${{secrets.TB_LICENSE}}"
+          [ -z "TB_LICENSE" ] && echo "::error::!! ERROR NO TB_LICENSE: Check if the PR is from an external contributor !!" && exit 1 || exit 0
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
         with:
@@ -133,7 +136,6 @@ jobs:
       - name: Set TB License
         run: |
           TB_LICENSE=${{secrets.TB_LICENSE}}
-          [ -z "$TB_LICENSE" ] && echo "::debug::ERROR NO TB_LICENSE: Check if the PR is from an external contributor" && exit 1
           mkdir -p ~/.vaadin/
           echo '{"username":"'`echo $TB_LICENSE | cut -d / -f1`'","proKey":"'`echo $TB_LICENSE | cut -d / -f2`'"}' > ~/.vaadin/proKey
       - name: Compile Shared modules
@@ -150,7 +152,7 @@ jobs:
             ARGS="-pl ${{matrix.args}}"
           cmd="mvn -V -B -e -fae -Dcom.vaadin.testbench.Parameters.testsInParallel=5 -Dfailsafe.rerunFailingTestsCount=2 $ARGS"
           set -x -e -o pipefail
-          eval $cmd verify | tee -a mvn-it-tests-${{matrix.current}}.out
+          timeout -v -s KILL 540 $cmd verify | tee -a mvn-it-tests-${{matrix.current}}.out
       - name: Set build status flag
         id: set-failure
         if: ${{ failure() }}
@@ -172,14 +174,16 @@ jobs:
         with:
           name: test-reports
       - name: Publish Unit Test Results
-        uses: EnricoMi/publish-unit-test-result-action/composite@v1
+        uses: EnricoMi/publish-unit-test-result-action@v1
         with:
           files: "**/target/*-reports/TEST*.xml"
-          check_run_annotations: true
+          check_run_annotations: all tests, skipped tests
+          check_run_annotations_branch: master, 9.0
       - uses: geekyeggo/delete-artifact@v1
         with:
           name: saved-workspace
       - name: Check Failure Status
         run: |
           fail="${{ needs.unit-tests.outputs.failure }}${{ needs.it-tests.outputs.failure }}"
-          [ -n "$fail" ] && echo "!! THERE ARE TEST MODULES WITH FAILURES !!" >&2 && exit 1 || exit 0
+          [ -n "$fail" ] && echo "::error::!! THERE ARE TEST MODULES WITH FAILURES !!" && exit 1 || exit 0
+
