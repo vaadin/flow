@@ -87,7 +87,7 @@ jobs:
           ($cmd -T 1C verify || $cmd -fae clean verify) | tee mvn-unit-tests-${{matrix.current}}.out
       - name: Set build status flag
         id: set-failure
-        if: ${{ failure() }}
+        if: ${{ failure() || cancelled() }}
         run: echo "::set-output name=failure::true"
       - uses: actions/upload-artifact@v2
         if: ${{ failure() || success() }}
@@ -155,7 +155,7 @@ jobs:
           timeout -v -s KILL 540 $cmd verify | tee -a mvn-it-tests-${{matrix.current}}.out
       - name: Set build status flag
         id: set-failure
-        if: ${{ failure() }}
+        if: ${{ failure() || cancelled() }}
         run: echo "::set-output name=failure::true"
       - uses: actions/upload-artifact@v2
         if: ${{ failure() || success() }}

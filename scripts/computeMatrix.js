@@ -42,8 +42,6 @@ const moduleWeights = {
   'flow-tests/test-root-ui-context': { weight: 2 },
   'flow-tests/test-npm-only-features/test-npm-no-buildmojo': { weight: 2 },
   'flow-tests/test-ccdm': { weight: 4 },
-  'flow-tests/test-ccdm-flow-navigation/pom-production.xml': { weight: 2 },
-
 
   // When running `flow-tests/test-mixed/pom-npm.xml` together with the following
   // modules they fail, so we put it with modules that do not fail in container 1
