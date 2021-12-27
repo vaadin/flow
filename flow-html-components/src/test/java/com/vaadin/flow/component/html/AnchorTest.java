@@ -140,7 +140,6 @@ public class AnchorTest extends ComponentTest {
         addOptionalStringProperty("target");
     }
 
-
     @Test
     public void setEnabled_anchorWithoutHref_doesNotThrow() {
         Anchor anchor = new Anchor();
