@@ -25,7 +25,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.function.Supplier;
 import java.util.regex.Pattern;
 
 import com.vaadin.flow.component.dependency.JsModule;
@@ -1278,12 +1277,13 @@ public class UI extends Component
             boolean modal) {
         Objects.requireNonNull(childComponent,
                 "Given child component may not be null");
-        final Supplier<IllegalStateException> illegalStateExceptionSupplier = () -> new IllegalStateException(
-                "Given component is not a child of this UI. "
-                        + "Add it first as a child of the UI with "
-                        + "ui.add(component) or just use addModal(component).");
-        childComponent.getParent().filter(parent -> parent == this)
-                .orElseThrow(illegalStateExceptionSupplier);
+        if (!childComponent.getParent().filter(parent -> parent == this)
+                .isPresent()) {
+            throw new IllegalStateException(
+                    "Given component is not a child of this UI. "
+                            + "Add it first as a child of the UI with "
+                            + "ui.add(component) or just use addModal(component).");
+        }
         if (modal) {
             getInternals().setChildModal(childComponent);
         } else {

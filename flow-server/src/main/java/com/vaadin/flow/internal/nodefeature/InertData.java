@@ -203,8 +203,7 @@ public class InertData extends ServerSideFeature {
                 // Most state nodes will not have inert data so using recursion
                 // is safe. Need to use resolveInert() as the execution order of
                 // change collection is random
-                return optionalInertData
-                        .map(inertData -> inertData.resolveInert(null)).get();
+                return optionalInertData.get().resolveInert(null);
             } else {
                 parent = parent.getParent();
             }
