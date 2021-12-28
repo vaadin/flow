@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <artifactId>flow-tests</artifactId>
+        <artifactId>test-frontend</artifactId>
         <groupId>com.vaadin</groupId>
         <version>9.0-SNAPSHOT</version>
     </parent>
-    <artifactId>flow-test-pnpm-dev-mode</artifactId>
-    <name>Flow tests in pnpm and development mode</name>
+    <artifactId>flow-test-npm-production</artifactId>
+    <name>Flow tests in npm and production mode</name>
 
     <packaging>war</packaging>
     <properties>
@@ -25,11 +25,6 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-polymer-template</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-dev-server</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
@@ -52,14 +47,24 @@
             </plugin>
             <!-- Clean lib before running jetty -->
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
             </plugin>
-            <!-- Run flow plugin to build frontend -->
+            <!--  Run flow plugin to build frontend -->
             <plugin>
                 <groupId>com.vaadin</groupId>
                 <artifactId>flow-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-frontend</goal>
+                            <goal>build-frontend</goal>
+                        </goals>
+                    </execution>
+                </executions>
                 <configuration>
-                    <productionMode>false</productionMode>
+                    <productionMode>true</productionMode>
+                    <pnpmEnable>false</pnpmEnable>
                 </configuration>
             </plugin>
             <!-- Run jetty before integration tests, and stop after -->
@@ -68,9 +73,9 @@
                 <artifactId>jetty-maven-plugin</artifactId>
                 <configuration>
                     <webApp>
-                        <!-- We deploy the app with a context in the servlet
-                            container in order to test that bootstrap code resolves correctly the application
-                            context and do not render absolute references to the root path -->
+                        <!-- We deploy the app with a context in the servlet container in order to test
+                             that bootstrap code resolves correctly the application context and do
+                             not render absolute references to the root path -->
                         <contextPath>/context-path</contextPath>
                     </webApp>
                 </configuration>
