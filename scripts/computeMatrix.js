@@ -17,7 +17,6 @@ const moduleWeights = {
   'flow-tests/test-npm-only-features/test-npm-bytecode-scanning/pom-prod-fallback.xml': { weight: 2 },
   'flow-tests/test-custom-route-registry': { weight: 2 },
   'flow-tests/test-embedding/test-embedding-generic': { weight: 2 },
-  'flow-tests/test-embedding/test-embedding-production-mode': { weight: 4 },
   'flow-tests/test-embedding/test-embedding-reusable-theme': { weight: 2 },
   'flow-tests/test-fusion-csrf-context': { weight: 2 },
   'flow-tests/test-frontend/vite-basics': { weight: 2 },
@@ -36,7 +35,7 @@ const moduleWeights = {
   'flow-tests/test-application-theme/test-theme-switch-live-reload': { weight: 5 },
   'flow-tests/test-pwa': { weight: 4 },
   'flow-tests/test-live-reload': { weight: 2 },
-  'flow-tests/test-mixed/pom-npm-production.xml': { weight: 3 },
+  'flow-tests/test-frontend/pom-production.xml': { weight: 3 },
   'flow-tests/test-v14-bootstrap/pom-production.xml': { weight: 2 },
   'flow-tests/test-pwa/pom-production.xml': { weight: 2 },
   'flow-tests/test-root-ui-context': { weight: 2 },
@@ -48,7 +47,7 @@ const moduleWeights = {
   // - flow-tests/test-root-ui-context
   // - flow-tests/test-live-reload
   // - flow-tests/test-dev-mode
-  'flow-tests/test-mixed/pom-npm.xml': {pos: 1, weight: 10},
+  'flow-tests/test-frontend/test-npm': {pos: 1, weight: 10},
   'flow-tests/test-application-theme/test-theme-live-reload': {pos: 1, weight: 4},
   'flow-tests/test-no-theme': {pos: 1},
   'flow-tests/test-custom-route-registry': {pos: 1, weight: 2},
@@ -57,12 +56,13 @@ const moduleWeights = {
   'flow-tests/test-embedding/test-embedding-application-theme': {pos: 1, weight: 3},
 
   // In containers 2 y 3 we put tests that need shared modules
-  'flow-tests/test-mixed/pom-pnpm-production.xml': {pos: 10},
+  'flow-tests/test-frontend/test-pnpm/pom-production.xml': {pos: 10},
   'flow-tests/test-embedding/test-embedding-generic': {pos: 2, weight: 3},
   'flow-tests/test-embedding/test-embedding-reusable-theme': {pos: 2, weight: 3},
   'flow-tests/test-fusion-csrf-context': {pos: 2, weight: 2},
   'flow-tests/test-multi-war/deployment': {pos: 2},
   'flow-tests/test-live-reload': {pos: 2, weight: 2},
+  'flow-tests/test-embedding/test-embedding-production-mode': { pos: 2, weight: 4 },
 
   'flow-tests/test-frontend/vite-basics': {pos: 3, weight: 10},
   'flow-tests/test-frontend/vite-test-assets': {pos: 3},
@@ -243,6 +243,7 @@ function toObject(parts, suite, module, prevIdx) {
  */
 function getParts(suite, prefix, slices) {
   let modules = prefix ? getModulesRecursive(prefix) : getModules();
+
   const exclusions = Object.keys(moduleSplits).filter(module => modules.includes(module));
   modules = grep(modules, [...globalExclusions, ...exclusions]);
 
