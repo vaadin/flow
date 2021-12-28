@@ -17,13 +17,6 @@ import com.vaadin.testbench.TestBenchElement;
 
 public class InertComponentIT extends ChromeBrowserTest {
 
-    // TODO
-    // IT where modal Component is working properly DONE
-    // IT where removing the inert Component doesnt make things work DONE
-    // IT where clicking a router link doesn't trigger server side navigation
-    // IT where the UI is refreshed when preserve on refresh is used -> inert
-    // stays LATER
-
     @Test
     public void modalComponentAdded_inertButtonClicked_noNewComponentAdded() {
         open();
