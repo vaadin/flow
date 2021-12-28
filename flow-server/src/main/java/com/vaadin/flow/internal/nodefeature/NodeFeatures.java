@@ -137,6 +137,11 @@ public final class NodeFeatures {
      */
     public static final int RETURN_CHANNEL_MAP = 25;
 
+    /**
+     * Id for {@link InertData}.
+     */
+    public static final int INERT_DATA = 26;
+
     private NodeFeatures() {
         // Only static
     }
