@@ -26,10 +26,10 @@ import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.shared.util.UniqueSerializable;
 
 /**
- * Server side only feature about whether or not the node is inert or if it
- * should ignore inheriting inert state from parent. By default the node is not
- * inert, and it will inherit the inert state from the parent. If the node lacks
- * the inert data, then it will be just inheriting the state from parent.
+ * Server-side feature defining whether a node is inert, and if it should ignore
+ * inheriting inert state from parent. By default, a node is not inert, and it
+ * will inherit the inert state from the parent. If the node lacks the inert
+ * feature, then it will be just inheriting the state from parent.
  * <p>
  * The inert status is only updated when the changes are written to the client
  * side because the inert state changes are applied for upcoming requests from
