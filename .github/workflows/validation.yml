@@ -1,4 +1,4 @@
-name: Flow Validation push
+name: Flow Validation
 on:
   push:
     branches: [master, '9.0']
