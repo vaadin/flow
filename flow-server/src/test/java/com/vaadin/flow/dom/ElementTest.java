@@ -2236,7 +2236,7 @@ public class ElementTest extends AbstractNodeTest {
     @Test
     public void getShadowRoot_shadowRootIsEmpty() {
         Element element = ElementFactory.createDiv();
-        Assert.assertTrue(!element.getShadowRoot().isPresent());
+        Assert.assertFalse(element.getShadowRoot().isPresent());
     }
 
     @Test

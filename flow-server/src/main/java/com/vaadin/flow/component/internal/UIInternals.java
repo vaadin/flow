@@ -16,6 +16,7 @@
 package com.vaadin.flow.component.internal;
 
 import java.io.Serializable;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -25,12 +26,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
@@ -47,6 +46,7 @@ import com.vaadin.flow.component.internal.ComponentMetaData.DependencyInfo;
 import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.page.Push;
+import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
@@ -78,6 +78,8 @@ import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Holds UI-specific methods and data which are intended for internal use by the
@@ -206,6 +208,8 @@ public class UIInternals implements Serializable {
     private ExtendedClientDetails extendedClientDetails = null;
 
     private boolean isFallbackChunkLoaded;
+
+    private ArrayDeque<Component> modalComponentStack;
 
     /**
      * Creates a new instance for the given UI.
@@ -1091,6 +1095,87 @@ public class UIInternals implements Serializable {
      */
     public void setExtendedClientDetails(ExtendedClientDetails details) {
         this.extendedClientDetails = details;
+    }
+
+    /**
+     * Makes an existing child component modal. This will make the UI and the
+     * other components inside it inert - they will not react to any user
+     * interaction until the modal component is removed.
+     * <p>
+     * In case there was an existing modal component in the UI already, that is
+     * made inert until the given new component is removed. The UI is no longer
+     * inert after all modal components have been removed from it. Inert state
+     * is updated automatically when a component is removed from the UI, no need
+     * to call anything. Moving an inert component will remove inert status.
+     *
+     * @param child
+     *            the child component to toggle modal
+     */
+    public void setChildModal(Component child) {
+        if (modalComponentStack == null) {
+            modalComponentStack = new ArrayDeque<>();
+        } else if (isTopMostModal(child)) {
+            return;
+        }
+        ElementUtil.setIgnoreParentInert(child.getElement(), true);
+
+        if (modalComponentStack.isEmpty()) {
+            ElementUtil.setInert(ui.getElement(), true);
+        } else {
+            // disable previous top most modal component
+            ElementUtil.setIgnoreParentInert(
+                    modalComponentStack.peek().getElement(), false);
+        }
+
+        final boolean needsListener = !modalComponentStack.remove(child);
+        modalComponentStack.push(child);
+
+        if (needsListener) {
+            /*
+             * Handle removal automatically on element level always due to
+             * possible component.getElement().removeFromParent() usage.
+             */
+            AtomicReference<Registration> registrationCombination = new AtomicReference<>();
+            final Registration componentRemoval = () -> setChildModeless(child);
+            final Registration listenerRegistration = child.getElement()
+                    .addDetachListener(
+                            event -> registrationCombination.get().remove());
+            registrationCombination.set(Registration.combine(componentRemoval,
+                    listenerRegistration));
+        }
+    }
+
+    /**
+     * Sets the given child modeless. The inert state of the UI and other child
+     * components is updated. This method is called automatically when a modal
+     * child component is removed from the UI.
+     *
+     * @param child
+     *            the child component to make modeless
+     */
+    public void setChildModeless(Component child) {
+        if (modalComponentStack == null) {
+            return;
+        }
+        boolean isTopmostModal = isTopMostModal(child);
+        if (modalComponentStack.remove(child)) {
+            if (isTopmostModal) {
+                // reset ignoring inert
+                ElementUtil.setIgnoreParentInert(child.getElement(), false);
+                if (modalComponentStack.isEmpty()) { // make UI active
+                    ElementUtil.setInert(ui.getElement(), false);
+                } else { // make top most modal component ignore inert
+                    ElementUtil.setIgnoreParentInert(
+                            modalComponentStack.peek().getElement(), true);
+                }
+            }
+        }
+    }
+
+    private boolean isTopMostModal(Component child) {
+        // null has been checked in calling code before this
+        return !modalComponentStack.isEmpty()
+                && modalComponentStack.peek() == child;
     }
 
     private void configurePush(HasElement root) {

@@ -18,6 +18,7 @@ package com.vaadin.flow.server.communication.rpc;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+import com.vaadin.flow.dom.ElementUtil;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -69,6 +70,20 @@ public class AbstractRpcInvocationHandlerTest {
             elem.setVisible(false);
             elem.getNode().updateActiveState();
 
+        });
+
+        Assert.assertNull(handler.node);
+    }
+
+    @Test
+    public void handleInertNode_nodeIsNotHandled() {
+        UI ui = new UI();
+
+        createRpcInvocationData(ui, elem -> {
+            ElementUtil.setInert(elem, true);
+            ui.getInternals().getStateTree().collectDirtyNodes()
+                    .forEach(stateNode -> stateNode.collectChanges(change -> {
+                    }));
         });
 
         Assert.assertNull(handler.node);
