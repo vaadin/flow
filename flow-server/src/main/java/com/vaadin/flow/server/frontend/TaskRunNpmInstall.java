@@ -428,6 +428,10 @@ public class TaskRunNpmInstall implements FallibleCommand {
             }
         } catch (InterruptedException | IOException e) {
             logger.error("Error when running `{} install`", toolName, e);
+            if (e instanceof InterruptedException) {
+                // Restore interrupted state
+                Thread.currentThread().interrupt();
+            }
             throw new ExecutionFailedException(
                     "Command '" + toolName + " install' failed to finish", e);
         } finally {
