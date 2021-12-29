@@ -463,6 +463,10 @@ public class TaskRunNpmInstall implements FallibleCommand {
                 process = runNpmCommand(postinstallCommand, packageFolder);
                 process.waitFor();
             } catch (IOException | InterruptedException e) {
+                if (e instanceof InterruptedException) {
+                    // Restore interrupted state
+                    Thread.currentThread().interrupt();
+                }
                 throw new ExecutionFailedException(
                         "Error when running postinstall script for '"
                                 + postinstallPackage + "'",
