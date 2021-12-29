@@ -117,6 +117,8 @@ public class NodeFeatureRegistry {
         registerFeature(AttachExistingElementFeature.class,
                 AttachExistingElementFeature::new,
                 NodeFeatures.ATTACH_EXISTING_ELEMENT);
+        registerFeature(InertData.class, InertData::new,
+                NodeFeatures.INERT_DATA);
 
         /* Only used for the root node */
         registerFeature(PushConfigurationMap.class, PushConfigurationMap::new,

@@ -1238,4 +1238,57 @@ public class UI extends Component
         return csrfToken;
     }
 
+    /**
+     * Adds the given component as a modal child to the UI, making the UI and
+     * all other (existing) components added to the UI impossible for the user
+     * to interact with. This is useful for modal dialogs which should make the
+     * UI in the background inert. Note that this only prevents user
+     * interaction, but doesn't show a modality curtain or change the visible
+     * state of the components in the UI - that should be handled by the
+     * component separately. Thus this is purely a server side feature.
+     * <p>
+     * When the modal component is removed the UI and its other children are no
+     * longer inert, unless there was another component added as modal before.
+     *
+     * 
+     * @param component
+     *            the modal component to add
+     * @see #setChildComponentModal(Component, boolean)
+     */
+    public void addModal(Component component) {
+        add(component);
+        getInternals().setChildModal(component);
+    }
+
+    /**
+     * Makes the child component modal or modeless. The component needs to be a
+     * direct child of this UI. By default all child components are modeless.
+     * 
+     * @param childComponent
+     *            the child component to change state for
+     * @param modal
+     *            {@code true} for modal, {@code false} for modeless
+     */
+    /*
+     * TODO decide and document whether resize listener still works for UI even
+     * when it is inert.
+     */
+    public void setChildComponentModal(Component childComponent,
+            boolean modal) {
+        Objects.requireNonNull(childComponent,
+                "Given child component may not be null");
+        if (!childComponent.getParent().filter(parent -> parent == this)
+                .isPresent()) {
+            throw new IllegalStateException(
+                    "Given component is not a child of this UI. "
+                            + "Add it first as a child of the UI with "
+                            + "ui.add(component) or just use addModal(component).");
+        }
+        if (modal) {
+            getInternals().setChildModal(childComponent);
+        } else {
+            getInternals().setChildModeless(childComponent);
+        }
+    }
+
 }
