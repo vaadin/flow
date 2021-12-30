@@ -15,17 +15,6 @@
         <!-- shared assets -->
         <module>addon-with-templates</module>
         <module>vite-test-assets</module>
-
-        <!-- test modules -->
-        <module>vite-basics</module>
-        <module>vite-production</module>
-
-        <!-- npm and pnpm dev mode and prod mode -->
-        <module>test-npm</module>
-        <module>test-npm/pom-production.xml</module>
-        <module>test-pnpm</module>
-        <module>test-pnpm/pom-production.xml</module>
-
     </modules>
 
     <dependencies>
@@ -36,4 +25,26 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>run-tests</id>
+            <activation>
+                <property>
+                    <name>!skipTests</name>
+                </property>
+            </activation>
+            <modules>
+                <!-- test modules -->
+                <module>vite-basics</module>
+                <module>vite-production</module>
+                <!-- npm and pnpm dev mode and prod mode -->
+                <module>test-npm</module>
+                <module>test-npm/pom-production.xml</module>
+                <module>test-pnpm</module>
+                <module>test-pnpm/pom-production.xml</module>
+            </modules>
+        </profile>
+    </profiles>
+
 </project>
