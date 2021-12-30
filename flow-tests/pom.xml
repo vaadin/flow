@@ -296,13 +296,30 @@
 
     <profiles>
         <profile>
-            <id>run-tests</id>
+            <!-- Modules that have shared stuff used in other modules -->
+            <id>it-shared-modules</id>
+            <activation>
+                <property>
+                    <!-- usind -DsharedModules -DskipTests we can install these modules and run tests later (GH actions) -->
+                    <name>sharedModules</name>
+                </property>
+            </activation>
+            <modules>
+                <module>test-fusion-csrf</module>
+                <module>test-root-context</module>
+                <module>test-embedding</module>
+                <module>test-frontend</module>
+                <module>test-application-theme</module>
+                <module>test-multi-war</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>it-test-modules</id>
             <activation>
                 <property>
                     <name>!skipTests</name>
                 </property>
             </activation>
-
             <modules>
                 <module>test-dev-mode</module>
                 <module>test-pwa</module>
