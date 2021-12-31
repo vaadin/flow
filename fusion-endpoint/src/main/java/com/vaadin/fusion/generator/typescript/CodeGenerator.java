@@ -86,6 +86,7 @@ public class CodeGenerator extends AbstractTypeScriptClientCodegen {
     private static final String VAADIN_FILE_PATH = "vaadinFilePath";
     private final Logger logger = LoggerFactory.getLogger(CodeGenerator.class);
     private List<Tag> tags;
+    private String gitRepoBaseURL;
 
     /**
      * Create vaadin ts codegen instance.
@@ -770,5 +771,20 @@ public class CodeGenerator extends AbstractTypeScriptClientCodegen {
             }
             return null;
         }
+    }
+
+    @Override
+    public String customTemplateDir() {
+        return null;
+    }
+
+    @Override
+    public String getGitRepoBaseURL() {
+        return gitRepoBaseURL;
+    }
+
+    @Override
+    public void setGitRepoBaseURL(String arg0) {
+        gitRepoBaseURL = arg0;
     }
 }
