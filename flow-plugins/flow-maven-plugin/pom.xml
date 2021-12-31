@@ -47,7 +47,7 @@
         <dependency>
             <groupId>com.github.eirslett</groupId>
             <artifactId>frontend-plugin-core</artifactId>
-            <version>1.12.0</version>
+            <version>1.12.1</version>
         </dependency>
 
         <!-- Non-vulnerable overrides for frontend-plugin-core dependencies -->
