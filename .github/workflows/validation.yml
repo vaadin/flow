@@ -16,7 +16,7 @@ jobs:
       - name: Check Secrets
         run: |
           TB_LICENSE="${{secrets.TB_LICENSE}}"
-          [ -z "TB_LICENSE" ] && echo "::error::!! ERROR NO TB_LICENSE: Check if the PR is from an external contributor !!" && exit 1 || exit 0
+          [ -z "$TB_LICENSE" ] && echo "::error::!! ERROR NO TB_LICENSE: Check if the PR is from an external contributor !!" && exit 1 || exit 0
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
         with:
@@ -37,7 +37,7 @@ jobs:
         id: set-matrix
         run: |
           echo "::set-output name=matrix-it::$(./scripts/computeMatrix.js it-tests --parallel=13 current module args)"
-          echo "::set-output name=matrix-unit::$(./scripts/computeMatrix.js unit-tests --parallel=2 current module args)"
+          echo "::set-output name=matrix-unit::$(./scripts/computeMatrix.js unit-tests --parallel=1 current module args)"
       - name: Compile and Install Flow
         run: |
           cmd="mvn install -B -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
@@ -86,7 +86,7 @@ jobs:
             ARGS="-pl ${{matrix.args}}"
           cmd="mvn -B -T 1C $ARGS"
           set -x -e -o pipefail
-          ($cmd -T 1C verify || $cmd -fae clean verify) | tee mvn-unit-tests-${{matrix.current}}.out
+          (echo $cmd -T 1C verify || echo $cmd clean verify -U) | tee mvn-unit-tests-${{matrix.current}}.out
       - name: Set build status flag
         id: set-failure
         if: ${{ failure() || cancelled() }}
@@ -94,7 +94,7 @@ jobs:
       - uses: actions/upload-artifact@v2
         if: ${{ failure() || success() }}
         with:
-          name: test-reports
+          name: saved-outputs
           path: |
             **/target/*-reports/*
             mvn-*.out
@@ -147,13 +147,12 @@ jobs:
             cmd="mvn install -B -DskipTests -Pit-shared-modules -amd -pl flow-tests"
             $cmd -T 1C || $cmd
           fi
-          if [ ${{matrix.current}} -eq 4 -o ${{matrix.current}} -eq 5 ]; then
+          if [ ${{matrix.current}} -eq 4 -o ${{matrix.current}} -eq 5 -o ${{matrix.current}} -eq 6 ]; then
             cmd="mvn install -B -DskipTests -Pit-shared-spring-modules -amd -pl flow-tests"
             $cmd -T 1C || $cmd
           fi
       - name: Run ITs
         run: |
-          echo TESTING: ${{ strategy.job-index }} ${{matrix.module}} ${{ matrix.args }}
           [ -n "${{matrix.module}}" ] && \
             ARGS="-Dfailsafe.forkCount=4 -pl ${{matrix.module}} -Dit.test=${{matrix.args}}" || \
             ARGS="-pl ${{matrix.args}}"
@@ -167,7 +166,7 @@ jobs:
       - uses: actions/upload-artifact@v2
         if: ${{ failure() || success() }}
         with:
-          name: test-reports
+          name: saved-outputs
           path: |
             **/target/*-reports/*
             **/error-screenshots/*.png
@@ -177,9 +176,10 @@ jobs:
     needs: [unit-tests, it-tests]
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v2
       - uses: actions/download-artifact@v2
         with:
-          name: test-reports
+          name: saved-outputs
       - name: Publish Unit Test Results
         uses: EnricoMi/publish-unit-test-result-action@v1
         with:
@@ -188,7 +188,21 @@ jobs:
           check_run_annotations_branch: master, 9.0
       - uses: geekyeggo/delete-artifact@v1
         with:
-          name: saved-workspace
+          name: |
+            saved-workspace
+            saved-outputs
+      - name: Compute Stats
+        run: |
+          ./scripts/computeMatrix.js test-results
+          ./scripts/computeMatrix.js clean-success
+      - uses: actions/upload-artifact@v2
+        if: ${{ always() }}
+        with:
+          name: test-reports
+          path: |
+            **/target/*-reports/*
+            **/error-screenshots/*.png
+            mvn-*.out
       - name: Check Failure Status
         run: |
           fail="${{ needs.unit-tests.outputs.failure }}${{ needs.it-tests.outputs.failure }}"
