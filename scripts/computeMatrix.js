@@ -246,6 +246,7 @@ function getParts(suite, prefix, slices) {
 
   const exclusions = Object.keys(moduleSplits).filter(module => modules.includes(module));
   modules = grep(modules, [...globalExclusions, ...exclusions]);
+  modules = modules.filter((value, index, array) => array.indexOf(value) === index);
 
   const excSlices = exclusions.reduce((prev, module) => prev + moduleSplits[module], 0);
   const parts = splitArray(modules, slices - excSlices, moduleWeights);
