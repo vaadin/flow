@@ -27,7 +27,7 @@ import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
-import com.vaadin.fusion.frontend.EndpointGeneratorTaskFactoryImpl;
+import dev.hilla.frontend.EndpointGeneratorTaskFactoryImpl;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;

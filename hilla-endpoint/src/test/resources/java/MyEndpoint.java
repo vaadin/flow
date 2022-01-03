@@ -1,4 +1,4 @@
-import com.vaadin.fusion.Endpoint;
+import dev.hilla.Endpoint;
 
 /**
  * A test class.
@@ -8,7 +8,7 @@ public class MyEndpoint {
 
     /**
      * Foo endpoint.
-     * 
+     *
      * @param bar
      */
     public void foo(String bar) {
@@ -16,7 +16,7 @@ public class MyEndpoint {
 
     /**
      * Baz endpoint.
-     * 
+     *
      * @param baz
      * @return
      */
