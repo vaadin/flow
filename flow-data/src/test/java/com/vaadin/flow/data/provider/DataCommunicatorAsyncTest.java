@@ -13,7 +13,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import com.vaadin.flow.component.UI;
@@ -21,11 +20,14 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.Range;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.shared.communication.PushMode;
 
 import elemental.json.JsonValue;
 
-public class DataCommunicatorAsyncTest {
+public class DataCommunictorAsyncTest {
 
     /**
      * Test item that uses id for identity.
@@ -112,16 +114,23 @@ public class DataCommunicatorAsyncTest {
             }
         };
 
-        Mockito.when(arrayUpdater.startUpdate(Mockito.anyInt()))
-                .thenReturn(update);
-
         dataCommunicator = new DataCommunicator<>(dataGenerator, arrayUpdater,
                 data -> {
                 }, element.getNode());
     }
 
-    @Test
+    @Test(expected = IllegalStateException.class)
+    public void asyncExcutorPushDisabledThrows() {
+        ui.getPushConfiguration().setPushMode(PushMode.DISABLED);
+        dataCommunicator.setDataProvider(createDataProvider(), null);
+        dataCommunicator.setExecutorForAsyncUpdates(executor);
+        dataCommunicator.setRequestedRange(0, 50);
+        fakeClientCommunication();
+    }    
+
+    @Test    
     public void asyncRequestedRangeHappensLater() {
+        ui.getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
         latch = new CountDownLatch(1);
         dataCommunicator.setDataProvider(createDataProvider(), null);
         dataCommunicator.setExecutorForAsyncUpdates(executor);
@@ -221,7 +230,8 @@ public class DataCommunicatorAsyncTest {
         private static VaadinSession findOrcreateSession() {
             VaadinSession session = VaadinSession.getCurrent();
             if (session == null) {
-                session = new AlwaysLockedVaadinSession(null);
+                session = new AlwaysLockedVaadinSession(
+                        new VaadinServletService(new VaadinServlet(), null));
                 VaadinSession.setCurrent(session);
             }
             return session;
