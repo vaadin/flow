@@ -127,7 +127,7 @@ public class DataCommunicatorAsyncTest {
         dataCommunicator.setExecutorForAsyncUpdates(executor);
         dataCommunicator.setRequestedRange(0, 50);
         fakeClientCommunication();
-    }    
+    }
 
     @Test
     public void asyncRequestedRangeHappensLater() {
