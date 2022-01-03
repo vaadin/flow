@@ -30,6 +30,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
 
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
@@ -97,8 +98,6 @@ public class TaskRunNpmInstall implements FallibleCommand {
     /**
      * Create an instance of the command.
      *
-     * @param classFinder
-     *            a reusable class finder
      * @param packageUpdater
      *            package-updater instance used for checking if previous
      *            execution modified the package.json file
@@ -298,13 +297,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
      */
     private void runNpmInstall() throws ExecutionFailedException {
         // Do possible cleaning before generating any new files.
-        try {
-            cleanUp();
-        } catch (IOException exception) {
-            throw new ExecutionFailedException("Couldn't remove "
-                    + packageUpdater.nodeModulesFolder + " directory",
-                    exception);
-        }
+        cleanUp();
 
         if (enablePnpm) {
             try {
@@ -459,7 +452,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
         return lines;
     }
 
-    private void cleanUp() throws IOException {
+    private void cleanUp() throws ExecutionFailedException {
         if (!packageUpdater.nodeModulesFolder.exists()) {
             return;
         }
@@ -467,7 +460,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
                 MODULES_YAML);
         boolean hasModulesYaml = modulesYaml.exists() && modulesYaml.isFile();
         if (!enablePnpm && hasModulesYaml) {
-            FileUtils.forceDelete(packageUpdater.nodeModulesFolder);
+            deleteNodeModules(packageUpdater.nodeModulesFolder);
         } else if (enablePnpm && !hasModulesYaml) {
             // presence of .staging dir with a "pnpm-*" folder means that pnpm
             // download is in progress, don't remove anything in this case
@@ -475,8 +468,23 @@ public class TaskRunNpmInstall implements FallibleCommand {
                     ".staging");
             if (!staging.isDirectory() || staging.listFiles(
                     (dir, name) -> name.startsWith("pnpm-")).length == 0) {
-                FileUtils.forceDelete(packageUpdater.nodeModulesFolder);
+                deleteNodeModules(packageUpdater.nodeModulesFolder);
             }
+        }
+    }
+
+    private void deleteNodeModules(File nodeModulesFolder)
+            throws ExecutionFailedException {
+        try {
+            FileUtils.forceDelete(nodeModulesFolder);
+        } catch (IOException exception) {
+            Logger log = packageUpdater.log();
+            log.debug("Exception removing node_modules", exception);
+            log.error("Failed to remove '"
+                    + packageUpdater.nodeModulesFolder.getAbsolutePath()
+                    + "'. Please remove it manually.");
+            throw new ExecutionFailedException(
+                    "Exception removing node_modules. Please remove it manually.");
         }
     }
 
