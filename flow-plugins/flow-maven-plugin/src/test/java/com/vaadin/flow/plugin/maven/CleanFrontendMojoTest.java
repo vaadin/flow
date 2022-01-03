@@ -90,7 +90,8 @@ public class CleanFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "generatedTsFolder",
                 frontendGenerated);
 
-        ReflectionUtils.setVariableValueInObject(mojo, "pnpmEnable", Constants.ENABLE_PNPM_DEFAULT);
+        ReflectionUtils.setVariableValueInObject(mojo, "pnpmEnable",
+                Constants.ENABLE_PNPM_DEFAULT);
         ReflectionUtils.setVariableValueInObject(mojo, "requireHomeNodeExec",
                 true);
         ReflectionUtils.setVariableValueInObject(mojo, "nodeVersion",
