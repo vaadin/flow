@@ -27,7 +27,7 @@ import com.vaadin.flow.shared.communication.PushMode;
 
 import elemental.json.JsonValue;
 
-public class DataCommunictorAsyncTest {
+public class DataCommunicatorAsyncTest {
 
     /**
      * Test item that uses id for identity.
