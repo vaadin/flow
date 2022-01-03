@@ -54,8 +54,9 @@ yarn.lock
 
 flow-client/src/main/frontend/FlowClient.js
 flow-tests/**/types.d.ts
-/flow-tests/**/*.generated.js
-/flow-tests/**/generated/**
+flow-tests/**/*.generated.js
+flow-tests/**/*.generated.ts
+flow-tests/**/generated/**
 flow-tests/**/pnpmfile.js
 flow-tests/**/*.npmrc
 

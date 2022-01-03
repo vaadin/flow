@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -94,8 +94,8 @@ import com.vaadin.fusion.exception.EndpointValidationException.ValidationErrorDa
 @RestController
 @Import({ FusionControllerConfiguration.class, FusionEndpointProperties.class })
 @ConditionalOnBean(annotation = Endpoint.class)
-@NpmPackage(value = "@vaadin/fusion-frontend", version = "0.0.15")
-@NpmPackage(value = "@vaadin/form", version = "0.0.15")
+@NpmPackage(value = "@vaadin/fusion-frontend", version = "0.0.16")
+@NpmPackage(value = "@vaadin/form", version = "0.0.16")
 public class FusionController {
     static final String ENDPOINT_METHODS = "/{endpoint}/{method}";
 

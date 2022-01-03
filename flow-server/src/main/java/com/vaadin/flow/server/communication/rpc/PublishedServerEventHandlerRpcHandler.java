@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -32,6 +32,7 @@ import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.AllowInert;
 import com.vaadin.flow.component.template.internal.DeprecatedPolymerPublishedEventHandler;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.dom.DisabledUpdateMode;
@@ -68,6 +69,11 @@ public class PublishedServerEventHandlerRpcHandler
     @Override
     public String getRpcType() {
         return JsonConstants.RPC_PUBLISHED_SERVER_EVENT_HANDLER;
+    }
+
+    @Override
+    protected boolean allowInert() {
+        return true;
     }
 
     @Override
@@ -124,7 +130,7 @@ public class PublishedServerEventHandlerRpcHandler
 
         if (execute) {
             invokeMethod(component.get(), component.get().getClass(),
-                    methodName, (JsonArray) args, promiseId);
+                    methodName, (JsonArray) args, promiseId, node.isInert());
         }
 
         return Optional.empty();
@@ -132,14 +138,19 @@ public class PublishedServerEventHandlerRpcHandler
 
     static void invokeMethod(Component instance, Class<?> clazz,
             String methodName, JsonArray args, int promiseId) {
+        invokeMethod(instance, clazz, methodName, args, promiseId, false);
+    }
+
+    static void invokeMethod(Component instance, Class<?> clazz,
+            String methodName, JsonArray args, int promiseId, boolean inert) {
         assert instance != null;
         Optional<Method> method = findMethod(instance, clazz, methodName);
         if (method.isPresent()) {
-            invokeMethod(instance, method.get(), args, promiseId);
+            invokeMethod(instance, method.get(), args, promiseId, inert);
         } else if (instance instanceof Composite) {
             Component compositeContent = ((Composite<?>) instance).getContent();
             invokeMethod(compositeContent, compositeContent.getClass(),
-                    methodName, args, promiseId);
+                    methodName, args, promiseId, inert);
         } else {
             String msg = String.format("Neither class '%s' "
                     + "nor its super classes declare event handler method '%s'",
@@ -177,7 +188,10 @@ public class PublishedServerEventHandlerRpcHandler
     }
 
     private static void invokeMethod(Component instance, Method method,
-            JsonArray args, int promiseId) {
+            JsonArray args, int promiseId, boolean inert) {
+        if (inert && !method.isAnnotationPresent(AllowInert.class)) {
+            return;
+        }
         if (promiseId == -1) {
             invokeMethod(instance, method, args);
         } else {

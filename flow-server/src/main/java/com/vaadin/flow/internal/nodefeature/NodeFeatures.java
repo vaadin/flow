@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -136,6 +136,11 @@ public final class NodeFeatures {
      * Id for {@link ReturnChannelMap}.
      */
     public static final int RETURN_CHANNEL_MAP = 25;
+
+    /**
+     * Id for {@link InertData}.
+     */
+    public static final int INERT_DATA = 26;
 
     private NodeFeatures() {
         // Only static

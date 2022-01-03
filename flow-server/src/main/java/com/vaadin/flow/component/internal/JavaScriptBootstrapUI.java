@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -115,8 +115,17 @@ public class JavaScriptBootstrapUI extends UI {
      *            client side history state value
      */
     @ClientCallable
+    @AllowInert
     public void connectClient(String clientElementTag, String clientElementId,
             String flowRoute, String appShellTitle, JsonValue historyState) {
+
+        if (getElement().getNode().isInert()) {
+            // In inert state navigation is blocked, but client side callback
+            // must be called.
+            cancelClient();
+            return;
+        }
+
         if (appShellTitle != null && !appShellTitle.isEmpty()) {
             getInternals().setAppShellTitle(appShellTitle);
         }

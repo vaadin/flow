@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,15 +17,27 @@ package com.vaadin.flow.dom;
 
 import java.util.Optional;
 
+import org.mockito.Mockito;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Node;
 import org.junit.Assert;
 import org.junit.Test;
-import org.mockito.Mockito;
+
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.StateTree;
+import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
+import com.vaadin.flow.internal.nodefeature.InertData;
 
 import com.vaadin.flow.component.Component;
 
 public class ElementUtilTest {
+
+    private Element parent;
+    private Element child;
+    private Element grandchild;
+    private StateTree stateTree;
+
     @Test
     public void isNullValidAttribute() {
         Assert.assertFalse(ElementUtil.isValidAttributeName(null));
@@ -145,4 +157,122 @@ public class ElementUtilTest {
         Assert.assertFalse(ElementUtil.isValidTagName("foo>"));
         Assert.assertFalse(ElementUtil.isValidTagName("foo$bar"));
     }
+
+    @Test
+    public void parentIsInert_childIgnoresParentInert_allThePermutations() {
+        setupElementHierarchy();
+
+        Assert.assertFalse("by default parent inert state is not ignored",
+                isIgnoreParentInert(child));
+        Assert.assertFalse("by default element should not be inert",
+                isInert(child));
+
+        ElementUtil.setIgnoreParentInert(child, true);
+        Assert.assertFalse(isInert(child));
+
+        ElementUtil.setInert(parent, true);
+        simulateWritingChangesToClient();
+
+        Assert.assertTrue(isInert(parent));
+        Assert.assertFalse(isInert(child));
+        Assert.assertFalse(isInert(grandchild));
+
+        ElementUtil.setIgnoreParentInert(child, false);
+        simulateWritingChangesToClient();
+
+        Assert.assertTrue(isInert(parent));
+        Assert.assertTrue(isInert(child));
+        Assert.assertTrue(isInert(grandchild));
+
+        ElementUtil.setIgnoreParentInert(child, true);
+        simulateWritingChangesToClient();
+
+        Assert.assertTrue(isInert(parent));
+        Assert.assertFalse(isInert(child));
+        Assert.assertFalse(isInert(grandchild));
+
+        ElementUtil.setInert(child, true);
+        simulateWritingChangesToClient();
+
+        Assert.assertTrue(isInert(parent));
+        Assert.assertTrue(isInert(child));
+        Assert.assertTrue(isInert(grandchild));
+
+        ElementUtil.setInert(parent, false);
+        simulateWritingChangesToClient();
+
+        Assert.assertFalse(isInert(parent));
+        Assert.assertTrue(isInert(child));
+        Assert.assertTrue(isInert(grandchild));
+    }
+
+    @Test
+    public void parentInert_grandChildIgnoresInert_notInert() {
+        setupElementHierarchy();
+
+        ElementUtil.setInert(parent, true);
+        simulateWritingChangesToClient();
+
+        Assert.assertTrue(isInert(parent));
+        Assert.assertTrue(isInert(child));
+        Assert.assertTrue(isInert(grandchild));
+
+        ElementUtil.setIgnoreParentInert(grandchild, true);
+        simulateWritingChangesToClient();
+
+        Assert.assertTrue(isInert(parent));
+        Assert.assertTrue(isInert(child));
+        Assert.assertFalse(isInert(grandchild));
+
+        ElementUtil.setIgnoreParentInert(grandchild, false);
+        simulateWritingChangesToClient();
+
+        Assert.assertTrue(isInert(parent));
+        Assert.assertTrue(isInert(child));
+        Assert.assertTrue(isInert(grandchild));
+    }
+
+    @Test
+    public void parentInertGrandChildIgnores_statesChangedAtSameTime_changesApplied() {
+        setupElementHierarchy();
+
+        ElementUtil.setInert(parent, true);
+        ElementUtil.setIgnoreParentInert(grandchild, true);
+        simulateWritingChangesToClient();
+
+        Assert.assertTrue(isInert(parent));
+        Assert.assertTrue(isInert(child));
+        Assert.assertFalse(isInert(grandchild));
+    }
+
+    @Test
+    public void parentInert_siblingIgnoresInheritingInert_siblingInert() {
+        final Element sibling = ElementFactory.createDiv();
+    }
+
+    private void setupElementHierarchy() {
+        parent = ElementFactory.createDiv();
+        child = ElementFactory.createDiv();
+        grandchild = ElementFactory.createDiv();
+        parent.appendChild(child.appendChild(grandchild));
+        stateTree = new StateTree(new UI().getInternals(),
+                ElementChildrenList.class, InertData.class);
+        final StateNode rootNode = stateTree.getRootNode();
+        rootNode.getFeature(ElementChildrenList.class).add(0, parent.getNode());
+    }
+
+    private boolean isIgnoreParentInert(Element element) {
+        return element.getNode().getFeatureIfInitialized(InertData.class)
+                .map(InertData::isIgnoreParentInert).orElse(false);
+    }
+
+    private boolean isInert(Element element) {
+        return element.getNode().isInert();
+    }
+
+    private void simulateWritingChangesToClient() {
+        stateTree.collectChanges(nodeChanges -> {
+        });
+    }
+
 }

@@ -1,5 +1,10 @@
 name: Flow Validation
-on: [pull_request, workflow_dispatch]
+on:
+  push:
+    branches: [master, '9.0']
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -7,6 +12,10 @@ jobs:
       matrix-unit: ${{ steps.set-matrix.outputs.matrix-unit }}
       matrix-it: ${{ steps.set-matrix.outputs.matrix-it }}
     steps:
+      - name: Check Secrets
+        run: |
+          TB_LICENSE="${{secrets.TB_LICENSE}}"
+          [ -z "TB_LICENSE" ] && echo "::error::!! ERROR NO TB_LICENSE: Check if the PR is from an external contributor !!" && exit 1 || exit 0
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
         with:
@@ -15,23 +24,27 @@ jobs:
         with:
           java-version: '11'
           distribution: 'adopt'
+      - uses: actions/cache@v1
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-
       - name: Set flow version to 999.99-SNAPSHOT
         run: |
           ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
       - name: Generate matrices
         id: set-matrix
         run: |
-          echo "::set-output name=matrix-unit::$(./scripts/computeMatrix.js unit-tests --parallel=2 current module args)"
           echo "::set-output name=matrix-it::$(./scripts/computeMatrix.js it-tests --parallel=11 current module args)"
+          echo "::set-output name=matrix-unit::$(./scripts/computeMatrix.js unit-tests --parallel=2 current module args)"
       - name: Compile and Install Flow
         run: |
-          cmd="mvn install -B -DskipTests -pl \!flow-plugins/flow-gradle-plugin"
-          # run twice if fails, it might be a multithread failure
+          cmd="mvn install -B -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
           eval $cmd -T 2C -q || eval $cmd
       - name: Save workspace
         run: |
-          mv ~/.m2/ .
-          tar cf workspace.tar .m2 `find . -name target -o -name "pom*.xml"`
+          tar cf workspace.tar -C ~/ .m2
+          tar rf workspace.tar `find . -name target -o -name "pom*xml"`
       - uses: actions/upload-artifact@v2
         with:
           name: saved-workspace
@@ -50,11 +63,17 @@ jobs:
         with:
           java-version: '11'
           distribution: 'adopt'
+      - uses: actions/cache@v1
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-
       - uses: actions/download-artifact@v2
         with:
           name: saved-workspace
       - name: Restore Workspace
         run: |
+          set -x
           tar xf workspace.tar
           rm -rf ~/.m2 && mv -f .m2 ~/
       - name: Unit Test
@@ -64,17 +83,19 @@ jobs:
             ARGS="-pl ${{matrix.module}} -Dtest=${{matrix.args}}" || \
             ARGS="-pl ${{matrix.args}}"
           cmd="mvn -B -T 1C $ARGS"
-          set -x
-          $cmd -T 1C verify || $cmd -fae clean verify
+          set -x -e -o pipefail
+          ($cmd -T 1C verify || $cmd -fae clean verify) | tee mvn-unit-tests-${{matrix.current}}.out
       - name: Set build status flag
         id: set-failure
-        if: ${{ failure() }}
+        if: ${{ failure() || cancelled() }}
         run: echo "::set-output name=failure::true"
       - uses: actions/upload-artifact@v2
         if: ${{ failure() || success() }}
         with:
           name: test-reports
-          path: "**/target/*-reports/*"
+          path: |
+            **/target/*-reports/*
+            mvn-*.out
   it-tests:
     needs: build
     outputs:
@@ -88,11 +109,19 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: '16'
+      - uses: pnpm/action-setup@v2.0.1
+        with:
+          version: '5.15.0'
       - name: Set up JDK 11
         uses: actions/setup-java@v2
         with:
           java-version: '11'
           distribution: 'adopt'
+      - uses: actions/cache@v1
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-
       - uses: browser-actions/setup-chrome@latest
         with:
           chrome-version: stable
@@ -109,10 +138,11 @@ jobs:
           TB_LICENSE=${{secrets.TB_LICENSE}}
           mkdir -p ~/.vaadin/
           echo '{"username":"'`echo $TB_LICENSE | cut -d / -f1`'","proKey":"'`echo $TB_LICENSE | cut -d / -f2`'"}' > ~/.vaadin/proKey
-      - name: Install required modules
+      - name: Compile Shared modules
         run: |
-          if echo ${{matrix.args}} | grep -q test-fusion-csrf-context; then
-            mvn -B -q install -DskipITs -pl flow-tests/test-fusion-csrf
+          if [ ${{matrix.current}} -eq 2 -o ${{matrix.current}} -eq 3 ]; then
+            cmd="mvn install -B -DskipTests -Pit-shared-modules -amd -pl flow-tests"
+            $cmd -T 1C || $cmd
           fi
       - name: Run ITs
         run: |
@@ -120,12 +150,12 @@ jobs:
           [ -n "${{matrix.module}}" ] && \
             ARGS="-Dfailsafe.forkCount=4 -pl ${{matrix.module}} -Dit.test=${{matrix.args}}" || \
             ARGS="-pl ${{matrix.args}}"
-          cmd="mvn -V -B -e -Dcom.vaadin.testbench.Parameters.testsInParallel=5 $ARGS"
-          set -x
-          eval $cmd verify -fae -Dfailsafe.rerunFailingTestsCount=2 || eval $cmd clean verify
+          cmd="mvn -V -B -e -fae -Dcom.vaadin.testbench.Parameters.testsInParallel=5 -Dfailsafe.rerunFailingTestsCount=2 $ARGS"
+          set -x -e -o pipefail
+          $cmd verify | tee -a mvn-it-tests-${{matrix.current}}.out
       - name: Set build status flag
         id: set-failure
-        if: ${{ failure() }}
+        if: ${{ failure() || cancelled() }}
         run: echo "::set-output name=failure::true"
       - uses: actions/upload-artifact@v2
         if: ${{ failure() || success() }}
@@ -134,6 +164,7 @@ jobs:
           path: |
             **/target/*-reports/*
             **/error-screenshots/*.png
+            mvn-*.out
   test-results:
     if: ${{ failure() || success() }}
     needs: [unit-tests, it-tests]
@@ -143,13 +174,16 @@ jobs:
         with:
           name: test-reports
       - name: Publish Unit Test Results
-        uses: EnricoMi/publish-unit-test-result-action/composite@v1
+        uses: EnricoMi/publish-unit-test-result-action@v1
         with:
           files: "**/target/*-reports/TEST*.xml"
+          check_run_annotations: all tests, skipped tests
+          check_run_annotations_branch: master, 9.0
       - uses: geekyeggo/delete-artifact@v1
         with:
           name: saved-workspace
       - name: Check Failure Status
         run: |
           fail="${{ needs.unit-tests.outputs.failure }}${{ needs.it-tests.outputs.failure }}"
-          [ -n "$fail" ] && echo "!! THERE ARE TEST MODULES WITH FAILURES !!" >&2 && exit 1 || exit 0
+          [ -n "$fail" ] && echo "::error::!! THERE ARE TEST MODULES WITH FAILURES !!" && exit 1 || exit 0
+

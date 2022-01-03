@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,6 +18,7 @@ package com.vaadin.flow.server.communication.rpc;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+import com.vaadin.flow.dom.ElementUtil;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -69,6 +70,20 @@ public class AbstractRpcInvocationHandlerTest {
             elem.setVisible(false);
             elem.getNode().updateActiveState();
 
+        });
+
+        Assert.assertNull(handler.node);
+    }
+
+    @Test
+    public void handleInertNode_nodeIsNotHandled() {
+        UI ui = new UI();
+
+        createRpcInvocationData(ui, elem -> {
+            ElementUtil.setInert(elem, true);
+            ui.getInternals().getStateTree().collectDirtyNodes()
+                    .forEach(stateNode -> stateNode.collectChanges(change -> {
+                    }));
         });
 
         Assert.assertNull(handler.node);

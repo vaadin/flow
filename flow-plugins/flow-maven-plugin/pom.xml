@@ -13,7 +13,7 @@
 
     <properties>
         <maven.version>3.8.4</maven.version>
-        <jackson.version>2.13.0</jackson.version>
+        <jackson.version>2.13.1</jackson.version>
     </properties>
 
     <dependencies>
@@ -47,7 +47,7 @@
         <dependency>
             <groupId>com.github.eirslett</groupId>
             <artifactId>frontend-plugin-core</artifactId>
-            <version>1.12.0</version>
+            <version>1.12.1</version>
         </dependency>
 
         <!-- Non-vulnerable overrides for frontend-plugin-core dependencies -->

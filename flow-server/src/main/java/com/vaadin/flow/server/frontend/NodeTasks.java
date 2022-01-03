@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -30,6 +30,7 @@ import java.util.stream.IntStream;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
@@ -96,7 +97,7 @@ public class NodeTasks implements FallibleCommand {
 
         private File tokenFile;
 
-        private boolean enablePnpm;
+        private boolean enablePnpm = Constants.ENABLE_PNPM_DEFAULT;
 
         private boolean useGlobalPnpm = false;
 
@@ -680,6 +681,7 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateTsConfig.class,
             TaskGenerateTsDefinitions.class,
             TaskGenerateServiceWorker.class,
+            TaskGenerateHilla.class,
             TaskGenerateOpenAPI.class,
             TaskGenerateFusion.class,
             TaskGenerateBootstrap.class,
@@ -764,10 +766,18 @@ public class NodeTasks implements FallibleCommand {
         if (!builder.useDeprecatedV14Bootstrapping) {
             addBootstrapTasks(builder);
 
-            if (builder.fusionJavaSourceFolder != null
-                    && builder.fusionJavaSourceFolder.exists()
-                    && builder.fusionGeneratedOpenAPIFile != null) {
-                addFusionServicesTasks(builder);
+            TaskGenerateHilla hillaTask = builder.lookup
+                    .lookup(TaskGenerateHilla.class);
+            // use the new Hilla generator if available, otherwise the old
+            // Fusion generator.
+            if (hillaTask != null) {
+                commands.add(hillaTask);
+            } else {
+                if (builder.fusionJavaSourceFolder != null
+                        && builder.fusionJavaSourceFolder.exists()
+                        && builder.fusionGeneratedOpenAPIFile != null) {
+                    addFusionServicesTasks(builder);
+                }
             }
 
             commands.add(new TaskGenerateBootstrap(frontendDependencies,
