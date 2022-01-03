@@ -12,7 +12,7 @@ const moduleWeights = {
   'flow-server': { weight: 3 },
   'vaadin-dev-server': { weight: 2 },
   'flow-client': { weight: 6 },
-  'fusion-endpoint': { weight: 2 },
+  'hilla-endpoint': { weight: 2 },
   'flow-tests/test-application-theme/test-theme-live-reload': { weight: 4 },
   'flow-tests/test-npm-only-features/test-npm-bytecode-scanning/pom-prod-fallback.xml': { weight: 2 },
   'flow-tests/test-custom-route-registry': { weight: 2 },

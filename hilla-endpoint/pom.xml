@@ -7,7 +7,7 @@
         <artifactId>flow-project</artifactId>
         <version>10.0-SNAPSHOT</version>
     </parent>
-    <artifactId>fusion-endpoint</artifactId>
+    <artifactId>hilla-endpoint</artifactId>
     <name>Fusion Endpoint</name>
     <packaging>jar</packaging>
 
@@ -151,7 +151,7 @@
                     <groupId>ch.qos.logback</groupId>
                     <artifactId>logback-core</artifactId>
                 </exclusion>
-                <!-- Unncessary dependencies that might cause problems 
+                <!-- Unncessary dependencies that might cause problems
                 if user has a different version -->
                 <exclusion>
                     <groupId>javax.mail</groupId>

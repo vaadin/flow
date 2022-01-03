@@ -44,7 +44,7 @@
 
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>fusion-endpoint</artifactId>
+            <artifactId>hilla-endpoint</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
