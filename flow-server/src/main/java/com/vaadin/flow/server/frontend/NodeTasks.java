@@ -680,6 +680,7 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateTsConfig.class,
             TaskGenerateTsDefinitions.class,
             TaskGenerateServiceWorker.class,
+            TaskGenerateHilla.class,
             TaskGenerateOpenAPI.class,
             TaskGenerateFusion.class,
             TaskGenerateBootstrap.class,
@@ -764,10 +765,18 @@ public class NodeTasks implements FallibleCommand {
         if (!builder.useDeprecatedV14Bootstrapping) {
             addBootstrapTasks(builder);
 
-            if (builder.fusionJavaSourceFolder != null
-                    && builder.fusionJavaSourceFolder.exists()
-                    && builder.fusionGeneratedOpenAPIFile != null) {
-                addFusionServicesTasks(builder);
+            TaskGenerateHilla hillaTask = builder.lookup
+                    .lookup(TaskGenerateHilla.class);
+            // use the new Hilla generator if available, otherwise the old
+            // Fusion generator.
+            if (hillaTask != null) {
+                commands.add(hillaTask);
+            } else {
+                if (builder.fusionJavaSourceFolder != null
+                        && builder.fusionJavaSourceFolder.exists()
+                        && builder.fusionGeneratedOpenAPIFile != null) {
+                    addFusionServicesTasks(builder);
+                }
             }
 
             commands.add(new TaskGenerateBootstrap(frontendDependencies,

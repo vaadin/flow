@@ -49,6 +49,11 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
 
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+
 public class NodeTasksTest {
 
     @Rule
@@ -114,7 +119,7 @@ public class NodeTasksTest {
 
     @Test
     public void should_generateServiceWorkerWhenPwa() throws Exception {
-        Lookup mockedLookup = Mockito.mock(Lookup.class);
+        Lookup mockedLookup = mock(Lookup.class);
         Mockito.doReturn(
                 new DefaultClassFinder(this.getClass().getClassLoader()))
                 .when(mockedLookup).lookup(ClassFinder.class);
@@ -143,7 +148,7 @@ public class NodeTasksTest {
         System.setProperty(PARAM_FRONTEND_DIR, "my_custom_sources_folder");
         System.setProperty(PARAM_GENERATED_DIR, "my/custom/generated/folder");
 
-        Lookup mockedLookup = Mockito.mock(Lookup.class);
+        Lookup mockedLookup = mock(Lookup.class);
         Mockito.doReturn(
                 new DefaultClassFinder(this.getClass().getClassLoader()))
                 .when(mockedLookup).lookup(ClassFinder.class);
@@ -170,7 +175,7 @@ public class NodeTasksTest {
     @Test
     public void should_SetIsClientBootstrapMode_When_EnableClientSideBootstrapMode()
             throws ExecutionFailedException, IOException {
-        Lookup mockedLookup = Mockito.mock(Lookup.class);
+        Lookup mockedLookup = mock(Lookup.class);
         Mockito.doReturn(
                 new DefaultClassFinder(this.getClass().getClassLoader()))
                 .when(mockedLookup).lookup(ClassFinder.class);
@@ -198,7 +203,7 @@ public class NodeTasksTest {
     @Test
     public void should_GenerateTsConfigAndTsDefinitions_When_Vaadin14BootstrapMode()
             throws ExecutionFailedException {
-        Lookup mockedLookup = Mockito.mock(Lookup.class);
+        Lookup mockedLookup = mock(Lookup.class);
         Mockito.doReturn(
                 new DefaultClassFinder(this.getClass().getClassLoader()))
                 .when(mockedLookup).lookup(ClassFinder.class);
@@ -210,6 +215,66 @@ public class NodeTasksTest {
 
         Assert.assertTrue(new File(userDir, "tsconfig.json").exists());
         Assert.assertTrue(new File(userDir, "types.d.ts").exists());
+    }
+
+    @Test
+    public void should_useHillaGeneartor_whenAvailable()
+            throws ExecutionFailedException {
+        verifyEndpointGeneratorWithHillaTask(true);
+    }
+
+    @Test
+    public void should_useFusionGeneartor_whenHillaGeneratorNotAvailable()
+            throws ExecutionFailedException {
+        verifyEndpointGeneratorWithHillaTask(false);
+    }
+
+    private void verifyEndpointGeneratorWithHillaTask(boolean withHillaTask)
+            throws ExecutionFailedException {
+        Lookup mockedLookup = mock(Lookup.class);
+        Mockito.doReturn(
+                new DefaultClassFinder(this.getClass().getClassLoader()))
+                .when(mockedLookup).lookup(ClassFinder.class);
+        Builder builder = new Builder(mockedLookup, new File(userDir), TARGET)
+                .enablePackagesUpdate(false).enableImportsUpdate(true)
+                .runNpmInstall(false).withEmbeddableWebComponents(false)
+                .withFusionClientAPIFolder(new File(userDir))
+                .withFusionJavaSourceFolder(new File(userDir))
+                .withFusionGeneratedOpenAPIJson(new File(userDir));
+
+        EndpointGeneratorTaskFactory fusionFactory = mock(
+                EndpointGeneratorTaskFactory.class);
+        TaskGenerateOpenAPI mockGenerateOpenAPI = mock(
+                TaskGenerateOpenAPI.class);
+        TaskGenerateFusion mockGenerateFusion = mock(TaskGenerateFusion.class);
+        Mockito.doReturn(mockGenerateOpenAPI).when(fusionFactory)
+                .createTaskGenerateOpenAPI(any(), any(), any(), any());
+        Mockito.doReturn(mockGenerateFusion).when(fusionFactory)
+                .createTaskGenerateFusion(any(), any(), any(), any());
+        Mockito.doReturn(fusionFactory).when(mockedLookup)
+                .lookup(EndpointGeneratorTaskFactory.class);
+
+        TaskGenerateHilla hillaTask = withHillaTask
+                ? mock(TaskGenerateHilla.class)
+                : null;
+
+        Mockito.doReturn(hillaTask).when(mockedLookup)
+                .lookup(TaskGenerateHilla.class);
+
+        builder.build().execute();
+
+        if (withHillaTask) {
+            Mockito.verify(hillaTask, times(1)).execute();
+        }
+
+        Mockito.verify(fusionFactory, withHillaTask ? never() : times(1))
+                .createTaskGenerateFusion(any(), any(), any(), any());
+        Mockito.verify(fusionFactory, withHillaTask ? never() : times(1))
+                .createTaskGenerateOpenAPI(any(), any(), any(), any());
+        Mockito.verify(mockGenerateOpenAPI, withHillaTask ? never() : times(1))
+                .execute();
+        Mockito.verify(mockGenerateFusion, withHillaTask ? never() : times(1))
+                .execute();
     }
 
     private static void setPropertyIfPresent(String key, String value) {
