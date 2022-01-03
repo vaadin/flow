@@ -348,19 +348,17 @@ public class DataCommunicator<T> implements Serializable {
      * defined and updates are done synchronously.
      * <p>
      * Note: This works only with Grid component. If set to true, Push needs to
-     * be enabled in order this to work.
+     * be enabled and set to PushMode.AUTOMATIC in order this to work.
      * 
      * @param executor
      *            The ExecutorService used for async updates.
      */
     public void setExecutorForAsyncUpdates(ExecutorService executor) {
-        if (ui.getPushConfiguration().getPushMode() != PushMode.DISABLED) {
-            throw new IllegalStateException(
-                    "Asynchronous DataCommunicator updatres require Push to be enabled and PushMode.AUTOMATIC");
-        }
         if (this.executor != null) {
-            future.cancel(true);
-            future = null;
+            if (future != null) {
+                future.cancel(true);
+                future = null;
+            }
             this.executor.shutdown();
         }
         this.executor = executor;
@@ -1148,7 +1146,11 @@ public class DataCommunicator<T> implements Serializable {
 
         if (executor != null) {
             // In async mode wrap fetching data in future, collectKeysToFlush
-            // will perfrom fetch from data provider with given range.
+            // will perform fetch from data provider with given range.
+            if (ui.getPushConfiguration().getPushMode() != PushMode.AUTOMATIC) {
+                throw new IllegalStateException(
+                        "Asynchronous DataCommunicator updates require Push to be enabled and PushMode.AUTOMATIC");
+            }
             if (future != null) {
                 future.cancel(true);
             }
