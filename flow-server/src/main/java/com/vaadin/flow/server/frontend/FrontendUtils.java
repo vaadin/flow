@@ -130,6 +130,8 @@ public class FrontendUtils {
      * The name of the webpack generated configuration file.
      */
     public static final String WEBPACK_GENERATED = "webpack.generated.js";
+    public static final String WEBPACK4_GENERATED = "webpack4.generated.js";
+    public static final String WEBPACK5_GENERATED = "webpack5.generated.js";
 
     /**
      * The name of the service worker source file for InjectManifest method of

@@ -30,6 +30,8 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.experimental.Feature;
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.PwaConfiguration;
 
@@ -51,11 +53,6 @@ import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_STATIC_FILES_PA
  */
 public class TaskUpdateWebpack implements FallibleCommand {
 
-    /**
-     * The name of the webpack config file.
-     */
-    private final String webpackTemplate;
-    private final String webpackGeneratedTemplate;
     private final Path webpackOutputPath;
     private final Path resourceOutputPath;
     private final Path flowImportsFilePath;
@@ -67,6 +64,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
     private final Path resourceFolder;
     private final Path frontendGeneratedFolder;
     private final String buildFolder;
+    private FeatureFlags featureFlags;
 
     /**
      * Create an instance of the updater given all configurable parameters.
@@ -79,12 +77,6 @@ public class TaskUpdateWebpack implements FallibleCommand {
      *            the directory to set for webpack to output its build results.
      * @param resourceOutputDirectory
      *            the directory for generated non-served resources.
-     * @param webpackTemplate
-     *            name of the webpack resource to be used as template when
-     *            creating the <code>webpack.config.js</code> file.
-     * @param webpackGeneratedTemplate
-     *            name of the webpack resource to be used as template when
-     *            creating the <code>webpack.generated.js</code> file.
      * @param generatedFlowImports
      *            name of the JS file to update with the Flow project imports
      * @param useV14Bootstrapping
@@ -95,18 +87,18 @@ public class TaskUpdateWebpack implements FallibleCommand {
      * @param frontendGeneratedFolder
      *            the folder with frontend auto-generated files
      * @param buildFolder
-     *            build target forlder
+     *            build target folder
+     * @param featureFlags
+     *            feature flags
      */
     @SuppressWarnings("squid:S00107")
     TaskUpdateWebpack(File frontendDirectory, File webpackConfigFolder,
             File webpackOutputDirectory, File resourceOutputDirectory,
-            String webpackTemplate, String webpackGeneratedTemplate,
             File generatedFlowImports, boolean useV14Bootstrapping,
             File flowResourcesFolder, PwaConfiguration pwaConfiguration,
-            File frontendGeneratedFolder, String buildFolder) {
+            File frontendGeneratedFolder, String buildFolder,
+            FeatureFlags featureFlags) {
         this.frontendDirectory = frontendDirectory.toPath();
-        this.webpackTemplate = webpackTemplate;
-        this.webpackGeneratedTemplate = webpackGeneratedTemplate;
         this.webpackOutputPath = webpackOutputDirectory.toPath();
         this.resourceOutputPath = resourceOutputDirectory.toPath();
         this.flowImportsFilePath = generatedFlowImports.toPath();
@@ -118,6 +110,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
                 VAADIN_STATIC_FILES_PATH).toPath();
         this.frontendGeneratedFolder = frontendGeneratedFolder.toPath();
         this.buildFolder = buildFolder;
+        this.featureFlags = featureFlags;
     }
 
     @Override
@@ -130,10 +123,6 @@ public class TaskUpdateWebpack implements FallibleCommand {
     }
 
     private void createWebpackConfig() throws IOException {
-        if (webpackTemplate == null || webpackTemplate.trim().isEmpty()) {
-            return;
-        }
-
         File configFile = new File(webpackConfigPath.toFile(), WEBPACK_CONFIG);
 
         // If we have an old config file we remove it and create the new one
@@ -147,9 +136,34 @@ public class TaskUpdateWebpack implements FallibleCommand {
                                 + "in the merge or remove the file to generate a new one.",
                         configFile);
             }
+            // webpack-merge-plugin 5 changes the import format
+            String webpack4Import = "const merge = require('webpack-merge');";
+            String webpack5Import = "const { merge } = require('webpack-merge');";
+            if (featureFlags.isEnabled(FeatureFlags.WEBPACK5)) {
+                String contents = FileUtils.readFileToString(configFile,
+                        StandardCharsets.UTF_8);
+                if (contents.contains(webpack4Import)) {
+                    log().info("Updating " + configFile.getName()
+                            + " to new webpack-merge syntax");
+                    contents = contents.replace(webpack4Import, webpack5Import);
+                    FileUtils.write(configFile, contents,
+                            StandardCharsets.UTF_8);
+                }
+            } else if (!featureFlags.isEnabled(FeatureFlags.VITE)) {
+                // Webpack 4
+                String contents = FileUtils.readFileToString(configFile,
+                        StandardCharsets.UTF_8);
+                if (contents.contains(webpack5Import)) {
+                    log().info("Updating " + configFile.getName()
+                            + " to old webpack-merge syntax");
+                    contents = contents.replace(webpack5Import, webpack4Import);
+                    FileUtils.write(configFile, contents,
+                            StandardCharsets.UTF_8);
+                }
+            }
         } else {
             URL resource = this.getClass().getClassLoader()
-                    .getResource(webpackTemplate);
+                    .getResource(FrontendUtils.WEBPACK_CONFIG);
             FileUtils.copyURLToFile(resource, configFile);
             log().debug("Created webpack configuration file: '{}'", configFile);
         }
@@ -157,9 +171,14 @@ public class TaskUpdateWebpack implements FallibleCommand {
         // Generated file is always re-written
         File generatedFile = new File(webpackConfigPath.toFile(),
                 WEBPACK_GENERATED);
-
-        URL resource = this.getClass().getClassLoader()
-                .getResource(webpackGeneratedTemplate);
+        URL resource;
+        if (featureFlags.isEnabled(FeatureFlags.WEBPACK5)) {
+            resource = this.getClass().getClassLoader()
+                    .getResource(FrontendUtils.WEBPACK5_GENERATED);
+        } else {
+            resource = this.getClass().getClassLoader()
+                    .getResource(FrontendUtils.WEBPACK4_GENERATED);
+        }
         FileUtils.copyURLToFile(resource, generatedFile);
         List<String> lines = modifyWebpackConfig(generatedFile);
 

@@ -289,9 +289,7 @@ public class BuildFrontendUtil {
                     adapter.buildFolder())
                             .runNpmInstall(adapter.runNpmInstall())
                             .withWebpack(adapter.webpackOutputDirectory(),
-                                    adapter.servletResourceOutputDirectory(),
-                                    adapter.webpackTemplate(),
-                                    adapter.webpackGeneratedTemplate())
+                                    adapter.servletResourceOutputDirectory())
                             .useV14Bootstrap(
                                     adapter.isUseDeprecatedV14Bootstrapping())
                             .enablePackagesUpdate(true)

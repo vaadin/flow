@@ -51,7 +51,7 @@ public class WebpackHandlerStopTest extends AbstractDevModeTest {
 
     @Test
     public void testServer_should_HandleStopRequest() throws Exception {
-        int port = WebpackHandler.getFreePort();
+        int port = Webpack4Handler.getFreePort();
 
         // Server is not started
         assertNull(requestWebpackServer(port, "/foo"));
@@ -71,27 +71,27 @@ public class WebpackHandlerStopTest extends AbstractDevModeTest {
     @Test
     public void devModeHandler_should_StopWebPack() throws Exception {
 
-        int port = WebpackHandler.getFreePort();
+        int port = Webpack4Handler.getFreePort();
 
         startTestServer(port, HTTP_OK, "{}");
 
         handler = startWebpack(port);
         waitForDevServer();
-        assertEquals(port, ((WebpackHandler) handler).getPort());
+        assertEquals(port, ((Webpack4Handler) handler).getPort());
         assertNotNull(requestWebpackServer(port, "/bar"));
-        Assert.assertTrue(((WebpackHandler) handler).isRunning());
+        Assert.assertTrue(((Webpack4Handler) handler).isRunning());
 
         stopped = new CountDownLatch(1);
         handler.stop();
         stopped.await();
 
-        Assert.assertFalse(((WebpackHandler) handler).isRunning());
+        Assert.assertFalse(((Webpack4Handler) handler).isRunning());
         assertNull(requestWebpackServer(port, "/bar"));
     }
 
     @Test
     public void devModeHandler_should_Keep_WebPackOnRestart() throws Exception {
-        int port = WebpackHandler.getFreePort();
+        int port = Webpack4Handler.getFreePort();
 
         startTestServer(port, HTTP_OK, "{}");
 
@@ -102,7 +102,7 @@ public class WebpackHandlerStopTest extends AbstractDevModeTest {
         handler = startWebpack(port);
         waitForDevServer();
 
-        Assert.assertTrue(((WebpackHandler) handler).isRunning());
+        Assert.assertTrue(((Webpack4Handler) handler).isRunning());
 
         // Webpack server should continue working on the same port
         assertNotNull(requestWebpackServer(port, "/bar"));
@@ -111,7 +111,7 @@ public class WebpackHandlerStopTest extends AbstractDevModeTest {
         handler.stop();
         stopped.await();
 
-        Assert.assertFalse(((WebpackHandler) handler).isRunning());
+        Assert.assertFalse(((Webpack4Handler) handler).isRunning());
         assertNull(requestWebpackServer(port, "/bar"));
     }
 
@@ -133,7 +133,7 @@ public class WebpackHandlerStopTest extends AbstractDevModeTest {
     private int startTestServer(int port, int status, String response)
             throws Exception {
         if (port == 0) {
-            port = WebpackHandler.getFreePort();
+            port = Webpack4Handler.getFreePort();
         }
         httpServer = HttpServer.create(new InetSocketAddress(port), 0);
         httpServer.createContext("/", exchange -> {

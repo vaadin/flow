@@ -15,7 +15,7 @@
  */
 package com.vaadin.base.devserver;
 
-import static com.vaadin.base.devserver.WebpackHandler.WEBPACK_SERVER;
+import static com.vaadin.base.devserver.Webpack4Handler.WEBPACK_SERVER;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
 import static com.vaadin.flow.testutil.FrontendStubs.WEBPACK_TEST_OUT_FILE;
 import static com.vaadin.flow.testutil.FrontendStubs.createStubWebpackServer;
@@ -131,7 +131,7 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
 
         // use non-existent folder for as npmFolder, it should fail the
         // validation (which means server instance won't be reused)
-        WebpackHandler newhHandler = new WebpackHandler(lookup, 0,
+        Webpack4Handler newhHandler = new Webpack4Handler(lookup, 0,
                 new File(npmFolder, UUID.randomUUID().toString()),
                 CompletableFuture.completedFuture(null));
 
@@ -352,7 +352,7 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
         throwFuture.completeExceptionally(new CustomRuntimeException());
         final String globalResponse = "{}";
         int port = prepareHttpServer(0, HTTP_OK, globalResponse);
-        handler = new WebpackHandler(lookup, port, npmFolder, throwFuture);
+        handler = new Webpack4Handler(lookup, port, npmFolder, throwFuture);
         try {
             waitForDevServer();
         } catch (CompletionException ignore) {
@@ -371,7 +371,7 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
             throws IOException {
         CompletableFuture<Void> throwFuture = new CompletableFuture<>();
         throwFuture.completeExceptionally(new CustomRuntimeException());
-        handler = new WebpackHandler(lookup, 0, npmFolder, throwFuture);
+        handler = new Webpack4Handler(lookup, 0, npmFolder, throwFuture);
         try {
             waitForDevServer();
         } catch (CompletionException ignore) {
@@ -407,7 +407,7 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
          * "start" one more time: there should not be another instance of dev
          * mode handler created
          */
-        WebpackHandler anotherHandler = startWebpack();
+        Webpack4Handler anotherHandler = startWebpack();
         waitForDevServer(anotherHandler);
 
         /*
@@ -422,7 +422,7 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
     public void start_serverPortDoesNotWork_throws() throws Exception {
         exception.expect(CompletionException.class);
         exception.expectCause(Matchers.instanceOf(IllegalStateException.class));
-        int port = WebpackHandler.getFreePort();
+        int port = Webpack4Handler.getFreePort();
         handler = startWebpack(port);
         waitForDevServer();
     }

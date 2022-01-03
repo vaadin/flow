@@ -63,7 +63,8 @@ import java.util.zip.ZipOutputStream;
 import javax.servlet.annotation.HandlesTypes;
 
 import com.vaadin.base.devserver.ViteHandler;
-import com.vaadin.base.devserver.WebpackHandler;
+import com.vaadin.base.devserver.Webpack4Handler;
+import com.vaadin.base.devserver.Webpack5Handler;
 import com.vaadin.base.devserver.stats.DevModeUsageStatistics;
 import com.vaadin.base.devserver.stats.StatisticsSender;
 import com.vaadin.base.devserver.stats.StatisticsStorage;
@@ -201,8 +202,8 @@ public class DevModeInitializer implements Serializable {
         }
         // This needs to be set as there is no "current service" available in
         // this call
-        FeatureFlags.get(context)
-                .setPropertiesLocation(config.getJavaResourceFolder());
+        FeatureFlags featureFlags = FeatureFlags.get(context);
+        featureFlags.setPropertiesLocation(config.getJavaResourceFolder());
 
         String baseDir = config.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
                 null);
@@ -261,8 +262,7 @@ public class DevModeInitializer implements Serializable {
                 Paths.get(target.getPath(), "classes", VAADIN_WEBAPP_RESOURCES)
                         .toFile(),
                 Paths.get(target.getPath(), "classes", VAADIN_SERVLET_RESOURCES)
-                        .toFile(),
-                FrontendUtils.WEBPACK_CONFIG, FrontendUtils.WEBPACK_GENERATED);
+                        .toFile());
 
         builder.useV14Bootstrap(config.useV14Bootstrap());
 
@@ -340,11 +340,14 @@ public class DevModeInitializer implements Serializable {
 
         Lookup devServerLookup = Lookup.compose(lookup,
                 Lookup.of(config, ApplicationConfiguration.class));
-        if (FeatureFlags.get(context).isEnabled(FeatureFlags.VITE)) {
+        if (featureFlags.isEnabled(FeatureFlags.VITE)) {
             return new ViteHandler(devServerLookup, 0, builder.getNpmFolder(),
                     nodeTasksFuture);
+        } else if (featureFlags.isEnabled(FeatureFlags.WEBPACK5)) {
+            return new Webpack5Handler(devServerLookup, 0,
+                    builder.getNpmFolder(), nodeTasksFuture);
         } else {
-            return new WebpackHandler(devServerLookup, 0,
+            return new Webpack4Handler(devServerLookup, 0,
                     builder.getNpmFolder(), nodeTasksFuture);
         }
     }

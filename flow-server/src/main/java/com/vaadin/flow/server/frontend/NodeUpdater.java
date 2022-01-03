@@ -393,8 +393,26 @@ public abstract class NodeUpdater implements FallibleCommand {
             defaults.put("vite-plugin-checker", "0.3.4");
             defaults.put("mkdirp", "1.0.4"); // for application-theme-plugin
             defaults.put("workbox-build", "6.4.1");
+        } else if (featureFlags.isEnabled(FeatureFlags.WEBPACK5)) {
+            // Webpack 5 plugins and helpers
+            defaults.put("esbuild-loader", "2.15.1");
+            defaults.put("html-webpack-plugin", "5.3.2");
+            defaults.put("fork-ts-checker-webpack-plugin", "6.2.1");
+            defaults.put("webpack", "5.65.0");
+            defaults.put("webpack-cli", "4.9.1");
+            defaults.put("webpack-dev-server", "4.7.2");
+            defaults.put("compression-webpack-plugin", "9.2.0");
+            defaults.put("extra-watch-webpack-plugin", "1.0.3");
+            defaults.put("webpack-merge", "5.8.0");
+            defaults.put("css-loader", "6.5.1");
+            defaults.put("extract-loader", "5.1.0");
+            defaults.put("lit-css-loader", "1.2.0");
+            defaults.put("file-loader", "6.2.0");
+            defaults.put("html-loader", "3.0.1");
+            defaults.put("loader-utils", "2.0.0");
+            defaults.put("workbox-webpack-plugin", WORKBOX_VERSION);
         } else {
-            // Webpack plugins and helpers
+            // Webpack 4 plugins and helpers
             defaults.put("esbuild-loader", "2.15.1");
             defaults.put("html-webpack-plugin", "4.5.1");
             defaults.put("fork-ts-checker-webpack-plugin", "6.2.1");

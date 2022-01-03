@@ -48,31 +48,52 @@ class ThemeLiveReloadPlugin {
     // Adds a hook for theme files change event
     compiler.hooks.watchRun.tapAsync('ThemeLiveReloadPlugin', (compilation, callback) => {
       const logger = compiler.getInfrastructureLogger('ThemeLiveReloadPlugin');
-      const changedFilesMap = compiler.watchFileSystem.watcher.mtimes;
-      if (changedFilesMap !== {}) {
-        let themeName = undefined;
-        let themeGeneratedFileChanged = false;
-        let themeGeneratedFileDeleted = false;
-        let deletedComponentStyleFile = undefined;
-        const changedFilesPaths = Object.keys(changedFilesMap);
-        logger.debug('Detected changes in the following files ' + changedFilesPaths);
-        changedFilesPaths.forEach((changedFilePath) => {
-          const file = `${changedFilePath}`;
-          const themeGeneratedFileChangedNow = file.match(this.themeGeneratedFileRegexp);
+      let changedFilesPaths, removedFilesPaths;
+      if (compiler.hasOwnProperty("modifiedFiles")) {
+        // Webpack 5
+        changedFilesPaths = compiler.modifiedFiles;
+        removedFilesPaths = compiler.removedFiles;
+      } else {
+        // Webpack 4
+        const changedFilesMap = compiler.watchFileSystem.watcher.mtimes;
+        if (changedFilesMap === {}) {
+          return;
+        }
+
+        const allFiles = Object.keys(changedFilesMap);
+        removedFilesPaths = allFiles.filter((changedFilePath) => {
           const timestamp = changedFilesMap[changedFilePath];
           // null or negative timestamp means file delete
           const fileRemoved = timestamp === null || timestamp < 0;
+        });
+        changedFilesPaths = allFiles.filter((changedFilePath) => !removedFilesPaths.includes(changedFilePath));
+      }
+
+      let themeGeneratedFileChanged = false;
+      if (changedFilesPaths && changedFilesPaths.length > 0) {
+        logger.debug('Detected changes in the following files ' + changedFilesPaths);
+        changedFilesPaths.forEach((changedFilePath) => {
+          const themeGeneratedFileChangedNow = changedFilePath.match(this.themeGeneratedFileRegexp);
 
           if (themeGeneratedFileChangedNow) {
             themeGeneratedFileChanged = true;
-            if (fileRemoved) {
-              themeGeneratedFileDeleted = true;
-            }
-          } else if (fileRemoved) {
-            const matchResult = file.match(this.componentStyleFileRegexp);
+          }
+        });
+      }
+
+      let themeName = undefined;
+      let deletedComponentStyleFile = undefined;
+      let themeGeneratedFileDeleted = false;
+      if (removedFilesPaths && removedFilesPaths.length > 0) {
+        removedFilesPaths.forEach((removedFilePath) => {
+          const themeGeneratedFileChangedNow = removedFilePath.match(this.themeGeneratedFileRegexp);
+          if (themeGeneratedFileChangedNow) {
+            themeGeneratedFileDeleted = true;
+          } else {
+            const matchResult = removedFilePath.match(this.componentStyleFileRegexp);
             if (matchResult) {
               themeName = matchResult[2];
-              deletedComponentStyleFile = file;
+              deletedComponentStyleFile = removedFilePath;
             }
           }
         });
