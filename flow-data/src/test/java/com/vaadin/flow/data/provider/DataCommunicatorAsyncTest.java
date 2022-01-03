@@ -112,17 +112,24 @@ public class DataCommunicatorAsyncTest {
             }
         };
 
-        Mockito.when(arrayUpdater.startUpdate(Mockito.anyInt()))
-                .thenReturn(update);
-
         dataCommunicator = new DataCommunicator<>(dataGenerator, arrayUpdater,
                 data -> {
                 }, element.getNode());
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void asyncExcutorPushDisabledThrows() {
+        ui.getPushConfiguration().setPushMode(PushMode.DISABLED);
+        latch = new CountDownLatch(1);
+        dataCommunicator.setDataProvider(createDataProvider(), null);
+        dataCommunicator.setExecutorForAsyncUpdates(executor);
+        dataCommunicator.setRequestedRange(0, 50);
+        fakeClientCommunication();
+    }    
+
     @Test
     public void asyncRequestedRangeHappensLater() {
-        latch = new CountDownLatch(1);
+        ui.getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
         dataCommunicator.setDataProvider(createDataProvider(), null);
         dataCommunicator.setExecutorForAsyncUpdates(executor);
         dataCommunicator.setRequestedRange(0, 50);
@@ -221,7 +228,8 @@ public class DataCommunicatorAsyncTest {
         private static VaadinSession findOrcreateSession() {
             VaadinSession session = VaadinSession.getCurrent();
             if (session == null) {
-                session = new AlwaysLockedVaadinSession(null);
+                session = new AlwaysLockedVaadinSession(
+                        new VaadinServletService(new VaadinServlet(), null));
                 VaadinSession.setCurrent(session);
             }
             return session;
