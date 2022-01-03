@@ -123,7 +123,6 @@ public class DataCommunicatorAsyncTest {
     @Test(expected = IllegalStateException.class)
     public void asyncExcutorPushDisabledThrows() {
         ui.getPushConfiguration().setPushMode(PushMode.DISABLED);
-        latch = new CountDownLatch(1);
         dataCommunicator.setDataProvider(createDataProvider(), null);
         dataCommunicator.setExecutorForAsyncUpdates(executor);
         dataCommunicator.setRequestedRange(0, 50);
@@ -132,6 +131,7 @@ public class DataCommunicatorAsyncTest {
 
     @Test
     public void asyncRequestedRangeHappensLater() {
+        latch = new CountDownLatch(1);
         ui.getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
         dataCommunicator.setDataProvider(createDataProvider(), null);
         dataCommunicator.setExecutorForAsyncUpdates(executor);
