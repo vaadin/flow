@@ -345,7 +345,8 @@ public class DataCommunicator<T> implements Serializable {
     /**
      * Control whether DataCommunicator should push data updates to the
      * component asynchronously or not. By default the executor service is not
-     * defined and updates are done synchronously.
+     * defined and updates are done synchronously. Setting to null will disable
+     * the feature.
      * <p>
      * Note: This works only with Grid component. If set to true, Push needs to
      * be enabled and set to PushMode.AUTOMATIC in order this to work.
