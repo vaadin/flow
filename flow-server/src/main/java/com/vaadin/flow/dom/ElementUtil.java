@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Composite;
+import com.vaadin.flow.internal.nodefeature.InertData;
 
 /**
  * Provides utility methods for {@link Element}.
@@ -298,6 +299,56 @@ public class ElementUtil {
     public static boolean isScript(Element element) {
         return !element.isTextNode()
                 && "script".equalsIgnoreCase(element.getTag());
+    }
+
+    /**
+     * Sets whether or not the element should inherit or not inherit its
+     * parent's inert state. Default value is {@code false}.
+     * 
+     * @param element
+     *            the element to update
+     * @param ignoreParentInert
+     *            {@code true} for ignoring parent inert, {@code false} for not
+     *            ignoring
+     * @see #setInert(Element, boolean)
+     */
+    public static void setIgnoreParentInert(Element element,
+            boolean ignoreParentInert) {
+        final Optional<InertData> optionalInertData = element.getNode()
+                .getFeatureIfInitialized(InertData.class);
+        if (ignoreParentInert) {
+            optionalInertData
+                    .orElse(element.getNode().getFeature(InertData.class))
+                    .setIgnoreParentInert(true);
+        } else { // by default InertData not present
+            optionalInertData.ifPresent(
+                    inertData -> inertData.setIgnoreParentInert(false));
+        }
+    }
+
+    /**
+     * Sets whether or not the given element is inert. When an element is inert,
+     * it does not receive any updates or interaction from the client side. The
+     * inert state is inherited to all child elements, unless those are ignoring
+     * the inert state.
+     *
+     * @param element
+     *            the element to update
+     * @param inert
+     *            {@code true} for inert
+     * @see #setIgnoreParentInert(Element, boolean)
+     */
+    public static void setInert(Element element, boolean inert) {
+        final Optional<InertData> optionalInertData = element.getNode()
+                .getFeatureIfInitialized(InertData.class);
+        if (inert) {
+            optionalInertData
+                    .orElse(element.getNode().getFeature(InertData.class))
+                    .setInertSelf(true);
+        } else { // default when no inert data present
+            optionalInertData
+                    .ifPresent(inertData -> inertData.setInertSelf(false));
+        }
     }
 
 }
