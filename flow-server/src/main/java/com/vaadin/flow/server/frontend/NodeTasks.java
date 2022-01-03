@@ -525,7 +525,7 @@ public class NodeTasks implements FallibleCommand {
 
         /**
          * Uses globally installed pnpm tool for frontend packages installation.
-         * 
+         *
          * @param useGlobalPnpm
          *            uses globally installed pnpm instead of default one, see
          *            {@link FrontendTools#DEFAULT_PNPM_VERSION}.
@@ -623,7 +623,7 @@ public class NodeTasks implements FallibleCommand {
 
         /**
          * Get the output directory for webpack output.
-         * 
+         *
          * @return webpackOutputDirectory
          */
         public File getWebappResourcesDirectory() {
@@ -632,7 +632,7 @@ public class NodeTasks implements FallibleCommand {
 
         /**
          * Get the defined frontend directory.
-         * 
+         *
          * @return frontendDirectory
          */
         public File getFrontendDirectory() {
@@ -704,7 +704,7 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateServiceWorker.class,
             TaskGenerateHilla.class,
             TaskGenerateOpenAPI.class,
-            TaskGenerateFusion.class,
+            TaskGenerateHillaLegacy.class,
             TaskGenerateBootstrap.class,
             TaskInstallWebpackPlugins.class,
             TaskUpdatePackages.class,
@@ -920,13 +920,13 @@ public class NodeTasks implements FallibleCommand {
             commands.add(taskGenerateOpenAPI);
 
             if (builder.fusionClientAPIFolder != null) {
-                TaskGenerateFusion taskGenerateFusion = endpointGeneratorTaskFactory
-                        .createTaskGenerateFusion(
+                TaskGenerateHillaLegacy taskGenerateHillaLegacy = endpointGeneratorTaskFactory
+                        .createTaskGenerateHillaLegacy(
                                 builder.fusionApplicationProperties,
                                 builder.fusionGeneratedOpenAPIFile,
                                 builder.fusionClientAPIFolder,
                                 builder.frontendDirectory);
-                commands.add(taskGenerateFusion);
+                commands.add(taskGenerateHillaLegacy);
             }
         }
     }

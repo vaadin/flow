@@ -242,16 +242,16 @@ public class NodeTasksTest {
                 .withFusionJavaSourceFolder(new File(userDir))
                 .withFusionGeneratedOpenAPIJson(new File(userDir));
 
-        EndpointGeneratorTaskFactory fusionFactory = mock(
+        EndpointGeneratorTaskFactory hillaFactory = mock(
                 EndpointGeneratorTaskFactory.class);
         TaskGenerateOpenAPI mockGenerateOpenAPI = mock(
                 TaskGenerateOpenAPI.class);
-        TaskGenerateFusion mockGenerateFusion = mock(TaskGenerateFusion.class);
-        Mockito.doReturn(mockGenerateOpenAPI).when(fusionFactory)
+        TaskGenerateHillaLegacy mockGenerateHillaLegacy = mock(TaskGenerateHillaLegacy.class);
+        Mockito.doReturn(mockGenerateOpenAPI).when(hillaFactory)
                 .createTaskGenerateOpenAPI(any(), any(), any(), any());
-        Mockito.doReturn(mockGenerateFusion).when(fusionFactory)
-                .createTaskGenerateFusion(any(), any(), any(), any());
-        Mockito.doReturn(fusionFactory).when(mockedLookup)
+        Mockito.doReturn(mockGenerateHillaLegacy).when(hillaFactory)
+                .createTaskGenerateHillaLegacy(any(), any(), any(), any());
+        Mockito.doReturn(hillaFactory).when(mockedLookup)
                 .lookup(EndpointGeneratorTaskFactory.class);
 
         TaskGenerateHilla hillaTask = withHillaTask
@@ -267,13 +267,13 @@ public class NodeTasksTest {
             Mockito.verify(hillaTask, times(1)).execute();
         }
 
-        Mockito.verify(fusionFactory, withHillaTask ? never() : times(1))
-                .createTaskGenerateFusion(any(), any(), any(), any());
-        Mockito.verify(fusionFactory, withHillaTask ? never() : times(1))
+        Mockito.verify(hillaFactory, withHillaTask ? never() : times(1))
+                .createTaskGenerateHillaLegacy(any(), any(), any(), any());
+        Mockito.verify(hillaFactory, withHillaTask ? never() : times(1))
                 .createTaskGenerateOpenAPI(any(), any(), any(), any());
         Mockito.verify(mockGenerateOpenAPI, withHillaTask ? never() : times(1))
                 .execute();
-        Mockito.verify(mockGenerateFusion, withHillaTask ? never() : times(1))
+        Mockito.verify(mockGenerateHillaLegacy, withHillaTask ? never() : times(1))
                 .execute();
     }
 

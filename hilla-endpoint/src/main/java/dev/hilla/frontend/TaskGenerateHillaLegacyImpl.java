@@ -19,7 +19,7 @@ import java.io.File;
 import java.util.Objects;
 
 import com.vaadin.flow.server.ExecutionFailedException;
-import com.vaadin.flow.server.frontend.TaskGenerateFusion;
+import com.vaadin.flow.server.frontend.TaskGenerateHillaLegacy;
 import dev.hilla.generator.MainGenerator;
 
 import static dev.hilla.generator.ClientAPIGenerator.CUSTOM_CONNECT_CLIENT_NAME;
@@ -27,14 +27,14 @@ import static dev.hilla.generator.ClientAPIGenerator.CUSTOM_CONNECT_CLIENT_NAME;
 /**
  * Starts the generation of TS files for endpoints.
  */
-public class TaskGenerateFusionImpl extends AbstractTaskFusionGenerator
-        implements TaskGenerateFusion {
+public class TaskGenerateHillaLegacyImpl extends AbstractTaskHillaGenerator
+        implements TaskGenerateHillaLegacy {
 
     private final File frontendDirectory;
     private final File openApi;
     private final File outputFolder;
 
-    TaskGenerateFusionImpl(File applicationProperties, File openApi,
+    TaskGenerateHillaLegacyImpl(File applicationProperties, File openApi,
             File outputFolder, File frontendDirectory) {
         super(applicationProperties);
         Objects.requireNonNull(openApi,

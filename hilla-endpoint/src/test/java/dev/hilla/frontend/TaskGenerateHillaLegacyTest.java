@@ -3,7 +3,7 @@ package dev.hilla.frontend;
 import java.io.File;
 import java.io.IOException;
 
-import com.vaadin.flow.server.frontend.TaskGenerateFusion;
+import com.vaadin.flow.server.frontend.TaskGenerateHillaLegacy;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
@@ -16,12 +16,12 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-public class TaskGenerateFusionTest {
+public class TaskGenerateHillaLegacyTest {
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-    private TaskGenerateFusion taskGenerateFusion;
+    private TaskGenerateHillaLegacy taskGenerateHillaLegacy;
     private File properties;
     private File outputDirectory;
     private File openApiJson;
@@ -46,9 +46,10 @@ public class TaskGenerateFusionTest {
         assertFalse(ts2.exists());
         assertFalse(client.exists());
 
-        taskGenerateFusion = new TaskGenerateFusionImpl(properties, openApiJson,
+        taskGenerateHillaLegacy = new TaskGenerateHillaLegacyImpl(properties,
+                openApiJson,
                 outputDirectory, frontendDirectory);
-        taskGenerateFusion.execute();
+        taskGenerateHillaLegacy.execute();
 
         assertTrue(ts1.exists());
         assertTrue(ts2.exists());
@@ -76,9 +77,9 @@ public class TaskGenerateFusionTest {
         assertFalse(client.exists());
         assertTrue(customConnectClient.exists());
 
-        taskGenerateFusion = new TaskGenerateFusionImpl(properties, openApiJson,
+        taskGenerateHillaLegacy = new TaskGenerateHillaLegacyImpl(properties, openApiJson,
                 outputDirectory, frontendDirectory);
-        taskGenerateFusion.execute();
+        taskGenerateHillaLegacy.execute();
 
         assertTrue(ts1.exists());
         assertTrue(ts2.exists());
