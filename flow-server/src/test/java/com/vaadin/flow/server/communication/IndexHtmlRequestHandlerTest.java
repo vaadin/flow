@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -254,6 +254,36 @@ public class IndexHtmlRequestHandlerTest {
                 "The handler should not handle request with only extension",
                 indexHtmlRequestHandler
                         .canHandleRequest(createVaadinRequest("/.htaccess")));
+    }
+
+    @Test
+    public void canHandleRequest_allow_oldBrowser() {
+        Assert.assertTrue(indexHtmlRequestHandler.canHandleRequest(
+                createRequestWithDestination("/", null, null)));
+    }
+
+    @Test
+    public void canHandleRequest_handle_indexHtmlRequest() {
+        Assert.assertTrue(indexHtmlRequestHandler.canHandleRequest(
+                createRequestWithDestination("/", "document", "navigate")));
+    }
+
+    @Test
+    public void canHandleRequest_doNotHandle_scriptRequest() {
+        Assert.assertFalse(indexHtmlRequestHandler.canHandleRequest(
+                createRequestWithDestination("/", "script", "no-cors")));
+    }
+
+    @Test
+    public void canHandleRequest_doNotHandle_imageRequest() {
+        Assert.assertFalse(indexHtmlRequestHandler.canHandleRequest(
+                createRequestWithDestination("/", "image", "no-cors")));
+    }
+
+    @Test
+    public void canHandleRequest_handle_serviceWorkerDocumentRequest() {
+        Assert.assertTrue(indexHtmlRequestHandler.canHandleRequest(
+                createRequestWithDestination("/", "empty", "same-origin")));
     }
 
     @Test
@@ -754,6 +784,21 @@ public class IndexHtmlRequestHandlerTest {
     public void tearDown() throws Exception {
         session.unlock();
         mocks.cleanup();
+    }
+
+    private VaadinServletRequest createRequestWithDestination(String pathInfo,
+            String fetchDest, String fetchMode) {
+        VaadinServletRequest req = createVaadinRequest(pathInfo);
+        Mockito.when(req.getHeader(Mockito.anyString())).thenAnswer(arg -> {
+            if ("Sec-Fetch-Dest".equals(arg.getArgument(0))) {
+                return fetchDest;
+            } else if ("Sec-Fetch-Mode".equals(arg.getArgument(0))) {
+                return fetchMode;
+            }
+            return null;
+        });
+
+        return req;
     }
 
     private VaadinServletRequest createVaadinRequest(String pathInfo) {

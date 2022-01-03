@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -27,6 +27,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.mobile.NetworkConnection;
 
 import com.vaadin.flow.testutil.ChromeDeviceTest;
+import com.vaadin.testbench.TestBenchElement;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -114,9 +115,9 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
 
             MatcherAssert.assertThat(getDriver().getCurrentUrl(),
                     CoreMatchers.endsWith("/another"));
+            TestBenchElement anotherView = $("another-view").first();
             Assert.assertTrue(
-                    getInShadowRoot(findElement(By.tagName("another-view")),
-                            By.id("another-content")).isDisplayed());
+                    anotherView.$("*").id("another-content").isDisplayed());
         } finally {
             // Reset network conditions back
             setConnectionType(NetworkConnection.ConnectionType.ALL);
@@ -149,9 +150,9 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
 
             MatcherAssert.assertThat(getDriver().getCurrentUrl(),
                     CoreMatchers.endsWith("/another"));
+            TestBenchElement anotherView = $("another-view").first();
             Assert.assertTrue(
-                    getInShadowRoot(findElement(By.tagName("another-view")),
-                            By.id("another-content")).isDisplayed());
+                    anotherView.$("*").id("another-content").isDisplayed());
 
             // Verify <base href> by navigating with a relative link
             $("main-view").first().$("a").id("menu-about").click();
@@ -189,9 +190,9 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
 
             MatcherAssert.assertThat(getDriver().getCurrentUrl(),
                     CoreMatchers.endsWith("/another"));
+            TestBenchElement anotherView = $("another-view").first();
             Assert.assertTrue(
-                    getInShadowRoot(findElement(By.tagName("another-view")),
-                            By.id("another-content")).isDisplayed());
+                    anotherView.$("*").id("another-content").isDisplayed());
         } finally {
             // Reset network conditions back
             setConnectionType(NetworkConnection.ConnectionType.ALL);
@@ -218,9 +219,9 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
 
             MatcherAssert.assertThat(getDriver().getCurrentUrl(),
                     CoreMatchers.endsWith("/another"));
+            TestBenchElement anotherView = $("another-view").first();
             Assert.assertTrue(
-                    getInShadowRoot(findElement(By.tagName("another-view")),
-                            By.id("another-content")).isDisplayed());
+                    anotherView.$("*").id("another-content").isDisplayed());
         } finally {
             // Reset network conditions back
             setConnectionType(NetworkConnection.ConnectionType.ALL);

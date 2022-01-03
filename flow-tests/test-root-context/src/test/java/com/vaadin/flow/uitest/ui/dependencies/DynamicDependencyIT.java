@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,7 +16,6 @@
 package com.vaadin.flow.uitest.ui.dependencies;
 
 import java.util.List;
-import java.util.logging.Level;
 
 import org.hamcrest.Matchers;
 import org.junit.Assert;
@@ -63,7 +62,7 @@ public class DynamicDependencyIT extends ChromeBrowserTest {
         String statusText = findElement(By.id("new-component")).getText();
         Assert.assertEquals("Div updated for " + caseName, statusText);
 
-        List<LogEntry> entries = getLogEntries(Level.SEVERE);
+        List<LogEntry> entries = getLogEntries(java.util.logging.Level.SEVERE);
         Assert.assertEquals(2, entries.size());
 
         Assert.assertThat(entries.get(0).getMessage(),

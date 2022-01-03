@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,7 +16,6 @@
 package com.vaadin.flow.uitest.ui;
 
 import java.util.Optional;
-import java.util.logging.Level;
 import java.util.stream.StreamSupport;
 
 import org.junit.Assert;
@@ -42,8 +41,9 @@ public class WebComponentsIT extends ChromeBrowserTest {
         if (logs != null) {
             Optional<LogEntry> anyError = StreamSupport
                     .stream(logs.spliterator(), true)
-                    .filter(entry -> entry.getLevel().intValue() > Level.INFO
-                            .intValue())
+                    .filter(entry -> entry.getLevel()
+                            .intValue() > java.util.logging.Level.INFO
+                                    .intValue())
                     .filter(entry -> !entry.getMessage()
                             .contains("favicon.ico"))
                     .filter(entry -> !entry.getMessage()

@@ -14,6 +14,7 @@
 
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
+        <vaadin.allow.appshell.annotations>true</vaadin.allow.appshell.annotations>
     </properties>
 
     <dependencies>
@@ -93,28 +94,6 @@
             <!-- Clean lib before running jetty -->
             <plugin>
                 <artifactId>maven-antrun-plugin</artifactId>
-            </plugin>
-            <!--  Run flow plugin to build frontend -->
-            <plugin>
-                <groupId>com.vaadin</groupId>
-                <artifactId>flow-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>prepare-frontend</goal>
-                            <goal>build-frontend</goal>
-                        </goals>
-                        <phase>compile</phase>
-                    </execution>
-                </executions>
-                <configuration>
-                    <productionMode>false</productionMode>
-                </configuration>
-            </plugin>
-            <!-- Run jetty before integration tests, and stop after -->
-            <plugin>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-maven-plugin</artifactId>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -207,6 +186,40 @@
                                 </goals>
                             </execution>
                         </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>run-tests</id>
+            <activation>
+                <property>
+                    <name>!skipTests</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <!--  Run flow plugin to build frontend -->
+                    <plugin>
+                        <groupId>com.vaadin</groupId>
+                        <artifactId>flow-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>prepare-frontend</goal>
+                                    <goal>build-frontend</goal>
+                                </goals>
+                                <phase>compile</phase>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <productionMode>false</productionMode>
+                        </configuration>
+                    </plugin>
+                    <!-- Run jetty before integration tests, and stop after -->
+                    <plugin>
+                        <groupId>org.eclipse.jetty</groupId>
+                        <artifactId>jetty-maven-plugin</artifactId>
                     </plugin>
                 </plugins>
             </build>

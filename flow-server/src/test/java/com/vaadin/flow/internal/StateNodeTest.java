@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -49,6 +49,7 @@ import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
 import com.vaadin.flow.internal.nodefeature.ElementClassList;
 import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
+import com.vaadin.flow.internal.nodefeature.InertData;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.shared.Registration;
 
@@ -572,6 +573,115 @@ public class StateNodeTest {
                     visibility.setVisible(isVisible);
                     stateNode.updateActiveState();
                 });
+    }
+
+    @Test
+    public void collectChanges_inertElement_inertChangesCollected() {
+        StateNode parent = createTestNode("Parent node",
+                ElementChildrenList.class, InertData.class);
+        StateNode child = createTestNode("Child node",
+                ElementChildrenList.class, InertData.class);
+        StateNode grandchild = createTestNode("Grandchild node",
+                InertData.class);
+
+        new StateTree(new UI().getInternals(), ElementChildrenList.class,
+                InertData.class).getRootNode()
+                        .getFeature(ElementChildrenList.class).add(0, parent);
+        parent.getFeature(ElementChildrenList.class).add(0, child);
+        child.getFeature(ElementChildrenList.class).add(0, grandchild);
+
+        Assert.assertFalse(parent.isInert());
+        Assert.assertFalse(child.isInert());
+        Assert.assertFalse(grandchild.isInert());
+
+        parent.getFeature(InertData.class).setInertSelf(true);
+
+        Assert.assertFalse(parent.isInert());
+        Assert.assertFalse(child.isInert());
+        Assert.assertFalse(grandchild.isInert());
+
+        parent.collectChanges(nodeChange -> {
+        });
+
+        Assert.assertTrue(parent.isInert());
+        Assert.assertTrue(child.isInert());
+        Assert.assertTrue(grandchild.isInert());
+
+        child.getFeature(InertData.class).setIgnoreParentInert(true);
+
+        Assert.assertTrue(parent.isInert());
+        Assert.assertTrue(child.isInert());
+        Assert.assertTrue(grandchild.isInert());
+
+        // parent doesn't have any changes, nothing happens until child is
+        // collected
+        parent.collectChanges(nodeChange -> {
+        });
+
+        Assert.assertTrue(parent.isInert());
+        Assert.assertTrue(child.isInert());
+        Assert.assertTrue(grandchild.isInert());
+
+        child.collectChanges(nodeChange -> {
+        });
+
+        Assert.assertTrue(parent.isInert());
+        Assert.assertFalse(child.isInert());
+        Assert.assertFalse(grandchild.isInert());
+
+        // change both but only collect parent -> changes cascaded
+        parent.getFeature(InertData.class).setInertSelf(false);
+        child.getFeature(InertData.class).setIgnoreParentInert(false);
+
+        Assert.assertTrue(parent.isInert());
+        Assert.assertFalse(child.isInert());
+        Assert.assertFalse(grandchild.isInert());
+
+        parent.collectChanges(nodeChange -> {
+        });
+
+        Assert.assertFalse(parent.isInert());
+        Assert.assertFalse(child.isInert());
+        Assert.assertFalse(grandchild.isInert());
+    }
+
+    @Test
+    public void collectChanges_inertChildMoved_inertStateInherited() {
+        StateNode inertParent = createTestNode("Inert parent",
+                ElementChildrenList.class, InertData.class);
+        StateNode child = createTestNode("Child", InertData.class);
+        StateNode parent = createTestNode("Non-inert parent",
+                ElementChildrenList.class, InertData.class);
+
+        final ElementChildrenList feature = new StateTree(
+                new UI().getInternals(), ElementChildrenList.class,
+                InertData.class).getRootNode()
+                        .getFeature(ElementChildrenList.class);
+        feature.add(0, parent);
+        feature.add(1, inertParent);
+        inertParent.getFeature(ElementChildrenList.class).add(0, child);
+
+        inertParent.getFeature(InertData.class).setInertSelf(true);
+        inertParent.collectChanges(node -> {
+        });
+
+        Assert.assertTrue(inertParent.isInert());
+        Assert.assertTrue(child.isInert());
+        Assert.assertFalse(parent.isInert());
+
+        inertParent.getFeature(ElementChildrenList.class).remove(0);
+        parent.getFeature(ElementChildrenList.class).add(0, child);
+
+        Assert.assertTrue(inertParent.isInert());
+        Assert.assertFalse(child.isInert());
+        Assert.assertFalse(parent.isInert());
+
+        parent.getFeature(ElementChildrenList.class).remove(0);
+        inertParent.getFeature(ElementChildrenList.class).add(0, child);
+
+        Assert.assertTrue(inertParent.isInert());
+        Assert.assertTrue(child.isInert());
+        Assert.assertFalse(parent.isInert());
     }
 
     @Test
