@@ -319,7 +319,7 @@ public final class Constants implements Serializable {
     /**
      * Constant for whether pnpm is default or not.
      */
-    public static final boolean ENABLE_PNPM_DEFAULT = true;
+    public static final boolean ENABLE_PNPM_DEFAULT = false;
 
     /**
      * Constant for setting the pinned supported version of pnpm to be used by

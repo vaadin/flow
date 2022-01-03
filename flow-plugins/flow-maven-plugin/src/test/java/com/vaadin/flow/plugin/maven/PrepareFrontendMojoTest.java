@@ -133,7 +133,8 @@ public class PrepareFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "generatedTsFolder",
                 generatedTsFolder);
 
-        ReflectionUtils.setVariableValueInObject(mojo, "pnpmEnable", true);
+        ReflectionUtils.setVariableValueInObject(mojo, "pnpmEnable",
+                Constants.ENABLE_PNPM_DEFAULT);
         ReflectionUtils.setVariableValueInObject(mojo, "requireHomeNodeExec",
                 true);
         ReflectionUtils.setVariableValueInObject(mojo, "nodeVersion",
@@ -203,7 +204,7 @@ public class PrepareFrontendMojoTest {
                 .readFileToString(tokenFile, StandardCharsets.UTF_8);
         JsonObject buildInfo = JsonUtil.parse(json);
 
-        Assert.assertTrue(
+        Assert.assertFalse(
                 InitParameters.SERVLET_PARAMETER_ENABLE_PNPM
                         + "should have been written",
                 buildInfo.getBoolean(
