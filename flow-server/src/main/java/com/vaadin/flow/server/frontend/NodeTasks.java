@@ -160,6 +160,11 @@ public class NodeTasks implements FallibleCommand {
         private File javaResourceFolder;
 
         /**
+         * Additional npm packages to run postinstall for.
+         */
+        private List<String> postinstallPackages;
+
+        /**
          * Create a builder instance given an specific npm folder.
          *
          * @param lookup
@@ -667,6 +672,22 @@ public class NodeTasks implements FallibleCommand {
             }
             return featureFlags;
         }
+
+        /**
+         * Sets the additional npm packages to run {@code postinstall} for.
+         * <p>
+         * By default, postinstall is only run for internal dependencies which
+         * rely on post install scripts to work, e.g. esbuild
+         *
+         * @param postinstallPackages
+         *            the additional npm packages to run postinstall for
+         * @return the builder, for chaining
+         */
+        public Builder withPostinstallPackages(
+                List<String> postinstallPackages) {
+            this.postinstallPackages = postinstallPackages;
+            return this;
+        }
     }
 
     // @formatter:off
@@ -741,7 +762,8 @@ public class NodeTasks implements FallibleCommand {
                 commands.add(new TaskRunNpmInstall(packageUpdater,
                         builder.enablePnpm, builder.requireHomeNodeExec,
                         builder.nodeVersion, builder.nodeDownloadRoot,
-                        builder.useGlobalPnpm, builder.nodeAutoUpdate));
+                        builder.useGlobalPnpm, builder.nodeAutoUpdate,
+                        builder.postinstallPackages));
 
                 commands.add(new TaskInstallWebpackPlugins(
                         new File(builder.npmFolder, builder.buildDirectory)));

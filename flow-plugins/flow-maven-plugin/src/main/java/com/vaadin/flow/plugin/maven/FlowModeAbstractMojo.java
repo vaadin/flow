@@ -212,6 +212,15 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     private String projectBuildDir;
 
     /**
+     * Additional npm packages to run post install scripts for.
+     * <p>
+     * Post install is automatically run for internal dependencies which rely on
+     * post install scripts to work, e.g. esbuild.
+     */
+    @Parameter(property = "npm.postinstallPackages", defaultValue = "")
+    private List<String> postinstallPackages;
+
+    /**
      * Generates a List of ClasspathElements (Run and CompileTime) from a
      * MavenProject.
      *
@@ -429,5 +438,10 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
                     .toString();
         }
         return projectBuildDir;
+    }
+
+    @Override
+    public List<String> postinstallPackages() {
+        return postinstallPackages;
     }
 }

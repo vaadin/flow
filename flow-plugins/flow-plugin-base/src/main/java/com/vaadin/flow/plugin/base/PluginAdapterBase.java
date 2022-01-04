@@ -19,6 +19,7 @@ import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Set;
 
 import com.vaadin.flow.di.Lookup;
@@ -305,4 +306,11 @@ public interface PluginAdapterBase {
      * @return build folder
      */
     String buildFolder();
+
+    /**
+     * Additional npm packages to run postinstall for.
+     *
+     * @return a list of packages
+     */
+    List<String> postinstallPackages();
 }
