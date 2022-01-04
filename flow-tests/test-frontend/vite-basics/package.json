@@ -22,10 +22,11 @@
     "mkdirp": "1.0.4",
     "rollup-plugin-brotli": "3.1.0",
     "typescript": "4.4.3",
-    "vite": "v2.7.0-beta.7",
+    "vite": "v2.7.0",
     "vite-plugin-checker": "0.3.4",
-    "workbox-core": "6.2.0",
-    "workbox-precaching": "6.2.0"
+    "workbox-build": "6.4.1",
+    "workbox-core": "6.4.2",
+    "workbox-precaching": "6.4.2"
   },
   "vaadin": {
     "dependencies": {
@@ -41,11 +42,12 @@
       "mkdirp": "1.0.4",
       "rollup-plugin-brotli": "3.1.0",
       "typescript": "4.4.3",
-      "vite": "v2.7.0-beta.7",
+      "vite": "v2.7.0",
       "vite-plugin-checker": "0.3.4",
-      "workbox-core": "6.2.0",
-      "workbox-precaching": "6.2.0"
+      "workbox-build": "6.4.1",
+      "workbox-core": "6.4.2",
+      "workbox-precaching": "6.4.2"
     },
-    "hash": "b2e71740a9ce5a3c40d524fd9d3fa7fdda7fb5cff652d7c037e79819818b81b9"
+    "hash": "5ce564d422b308509737fbbd7a036ad80c191e574bc151193226da9131b5fcb5"
   }
 }

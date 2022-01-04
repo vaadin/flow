@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -46,6 +46,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -313,6 +314,11 @@ public class DevModeInitializer implements Serializable {
         boolean useHomeNodeExec = config.getBooleanProperty(
                 InitParameters.REQUIRE_HOME_NODE_EXECUTABLE, false);
 
+        String[] additionalPostinstallPackages = config
+                .getStringProperty(
+                        InitParameters.ADDITIONAL_POSTINSTALL_PACKAGES, "")
+                .split(",");
+
         String fusionClientAPIFolder = config.getStringProperty(
                 PROJECT_FRONTEND_GENERATED_DIR_TOKEN,
                 Paths.get(baseDir, DEFAULT_PROJECT_FRONTEND_GENERATED_DIR)
@@ -331,7 +337,10 @@ public class DevModeInitializer implements Serializable {
                 .withEmbeddableWebComponents(true).enablePnpm(enablePnpm)
                 .useGlobalPnpm(useGlobalPnpm)
                 .withHomeNodeExecRequired(useHomeNodeExec)
-                .withProductionMode(config.isProductionMode()).build();
+                .withProductionMode(config.isProductionMode())
+                .withPostinstallPackages(
+                        Arrays.asList(additionalPostinstallPackages))
+                .build();
 
         Runnable runnable = () -> runNodeTasks(context, tokenFileData, tasks);
 

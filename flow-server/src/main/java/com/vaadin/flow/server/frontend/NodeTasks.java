@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -30,6 +30,7 @@ import java.util.stream.IntStream;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
@@ -96,7 +97,7 @@ public class NodeTasks implements FallibleCommand {
 
         private File tokenFile;
 
-        private boolean enablePnpm;
+        private boolean enablePnpm = Constants.ENABLE_PNPM_DEFAULT;
 
         private boolean useGlobalPnpm = false;
 
@@ -157,6 +158,11 @@ public class NodeTasks implements FallibleCommand {
          * The resource folder for java resources.
          */
         private File javaResourceFolder;
+
+        /**
+         * Additional npm packages to run postinstall for.
+         */
+        private List<String> postinstallPackages;
 
         /**
          * Create a builder instance given an specific npm folder.
@@ -666,6 +672,22 @@ public class NodeTasks implements FallibleCommand {
             }
             return featureFlags;
         }
+
+        /**
+         * Sets the additional npm packages to run {@code postinstall} for.
+         * <p>
+         * By default, postinstall is only run for internal dependencies which
+         * rely on post install scripts to work, e.g. esbuild
+         *
+         * @param postinstallPackages
+         *            the additional npm packages to run postinstall for
+         * @return the builder, for chaining
+         */
+        public Builder withPostinstallPackages(
+                List<String> postinstallPackages) {
+            this.postinstallPackages = postinstallPackages;
+            return this;
+        }
     }
 
     // @formatter:off
@@ -680,6 +702,7 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateTsConfig.class,
             TaskGenerateTsDefinitions.class,
             TaskGenerateServiceWorker.class,
+            TaskGenerateHilla.class,
             TaskGenerateOpenAPI.class,
             TaskGenerateFusion.class,
             TaskGenerateBootstrap.class,
@@ -739,7 +762,8 @@ public class NodeTasks implements FallibleCommand {
                 commands.add(new TaskRunNpmInstall(packageUpdater,
                         builder.enablePnpm, builder.requireHomeNodeExec,
                         builder.nodeVersion, builder.nodeDownloadRoot,
-                        builder.useGlobalPnpm, builder.nodeAutoUpdate));
+                        builder.useGlobalPnpm, builder.nodeAutoUpdate,
+                        builder.postinstallPackages));
 
                 commands.add(new TaskInstallWebpackPlugins(
                         new File(builder.npmFolder, builder.buildDirectory)));
@@ -764,10 +788,18 @@ public class NodeTasks implements FallibleCommand {
         if (!builder.useDeprecatedV14Bootstrapping) {
             addBootstrapTasks(builder);
 
-            if (builder.fusionJavaSourceFolder != null
-                    && builder.fusionJavaSourceFolder.exists()
-                    && builder.fusionGeneratedOpenAPIFile != null) {
-                addFusionServicesTasks(builder);
+            TaskGenerateHilla hillaTask = builder.lookup
+                    .lookup(TaskGenerateHilla.class);
+            // use the new Hilla generator if available, otherwise the old
+            // Fusion generator.
+            if (hillaTask != null) {
+                commands.add(hillaTask);
+            } else {
+                if (builder.fusionJavaSourceFolder != null
+                        && builder.fusionJavaSourceFolder.exists()
+                        && builder.fusionGeneratedOpenAPIFile != null) {
+                    addFusionServicesTasks(builder);
+                }
             }
 
             commands.add(new TaskGenerateBootstrap(frontendDependencies,

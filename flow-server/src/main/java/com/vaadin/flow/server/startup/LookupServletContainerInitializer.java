@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -43,6 +43,7 @@ import com.vaadin.flow.server.StaticFileHandlerFactory;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
+import com.vaadin.flow.server.frontend.TaskGenerateHilla;
 
 /**
  * Standard servlet initializer for collecting all SPI implementations.
@@ -59,7 +60,7 @@ import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
         ApplicationConfigurationFactory.class, AbstractLookupInitializer.class,
         AppShellPredicate.class, StaticFileHandlerFactory.class,
         DevModeHandlerManager.class, BrowserLiveReloadAccessor.class,
-        RoutePathProvider.class })
+        RoutePathProvider.class, TaskGenerateHilla.class })
 public class LookupServletContainerInitializer
         implements ClassLoaderAwareServletContainerInitializer {
 

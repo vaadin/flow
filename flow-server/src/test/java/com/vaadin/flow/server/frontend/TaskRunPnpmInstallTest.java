@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,6 +22,9 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.CoreMatchers;
@@ -47,6 +50,8 @@ import elemental.json.JsonObject;
 public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
     private static final String PINNED_VERSION = "3.2.17";
+    private static final List<String> POSTINSTALL_PACKAGES = Collections
+            .singletonList("esbuild");
 
     @Override
     @Before
@@ -146,7 +151,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                 new TaskRunNpmInstall(getNodeUpdater(), true, true,
                         FrontendTools.DEFAULT_NODE_VERSION,
                         URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT),
-                        false, false));
+                        false, false, POSTINSTALL_PACKAGES));
     }
 
     @Test
@@ -639,24 +644,60 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         // then exception is thrown
     }
 
+    @Test
+    public void runPnpmInstall_postInstall_runOnlyForDefaultPackages()
+            throws ExecutionFailedException, IOException {
+        setupEsbuildAndFooInstallation();
+        TaskRunNpmInstall task = createTask();
+        task.execute();
+
+        Assert.assertTrue("Postinstall for 'esbuild' was not run",
+                new File(
+                        new File(getNodeUpdater().nodeModulesFolder, "esbuild"),
+                        "postinstall-file.txt").exists());
+        Assert.assertFalse("Postinstall for 'foo' should not have been run",
+                new File(new File(getNodeUpdater().nodeModulesFolder, "foo"),
+                        "postinstall-file.txt").exists());
+    }
+
+    @Test
+    public void runPnpmInstall_postInstall_runForDefinedAdditionalPackages()
+            throws ExecutionFailedException, IOException {
+        setupEsbuildAndFooInstallation();
+        TaskRunNpmInstall task = createTask(Collections.singletonList("foo"));
+        task.execute();
+
+        Assert.assertTrue("Postinstall for 'esbuild' was not run",
+                new File(
+                        new File(getNodeUpdater().nodeModulesFolder, "esbuild"),
+                        "postinstall-file.txt").exists());
+        Assert.assertTrue("Postinstall for 'foo' was not run",
+                new File(new File(getNodeUpdater().nodeModulesFolder, "foo"),
+                        "postinstall-file.txt").exists());
+    }
+
     @Override
     protected String getToolName() {
         return "pnpm";
     }
 
-    @Override
     protected TaskRunNpmInstall createTask() {
+        return createTask(new ArrayList<>());
+    }
+
+    @Override
+    protected TaskRunNpmInstall createTask(List<String> additionalPostInstall) {
         return new TaskRunNpmInstall(getNodeUpdater(), true, false,
                 FrontendTools.DEFAULT_NODE_VERSION,
                 URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false,
-                false);
+                false, additionalPostInstall);
     }
 
     protected TaskRunNpmInstall createTask(String versionsContent) {
         return new TaskRunNpmInstall(getNodeUpdater(), true, false,
                 FrontendTools.DEFAULT_NODE_VERSION,
                 URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false,
-                false) {
+                false, new ArrayList<>()) {
             @Override
             protected String generateVersionsJson() {
                 try {
@@ -681,7 +722,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         TaskRunNpmInstall task = new TaskRunNpmInstall(getNodeUpdater(), true,
                 false, FrontendTools.DEFAULT_NODE_VERSION,
                 URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false,
-                false);
+                false, POSTINSTALL_PACKAGES);
 
         String path = task.generateVersionsJson();
 

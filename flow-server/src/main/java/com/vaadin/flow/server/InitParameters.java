@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -211,4 +211,12 @@ public class InitParameters implements Serializable {
      * @since
      */
     public static final String BUILD_FOLDER = "build.folder";
+
+    /**
+     * Packages, in addition to the internally used ones, to run postinstall
+     * scripts for.
+     *
+     * @since
+     */
+    public static final String ADDITIONAL_POSTINSTALL_PACKAGES = "npm.postinstallPackages";
 }

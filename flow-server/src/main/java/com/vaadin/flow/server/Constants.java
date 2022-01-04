@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -319,7 +319,7 @@ public final class Constants implements Serializable {
     /**
      * Constant for whether pnpm is default or not.
      */
-    public static final boolean ENABLE_PNPM_DEFAULT = true;
+    public static final boolean ENABLE_PNPM_DEFAULT = false;
 
     /**
      * Constant for setting the pinned supported version of pnpm to be used by

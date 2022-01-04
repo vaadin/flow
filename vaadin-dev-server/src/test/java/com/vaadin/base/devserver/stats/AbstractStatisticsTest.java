@@ -18,10 +18,6 @@ public abstract class AbstractStatisticsTest {
     protected static final String SERVER_MESSAGE_40D = "{\"reportInterval\":3456000,\"serverMessage\":\"\"}";
     protected static final String DEFAULT_PROJECT_ID = "12b7fc85f50e8c82cb6f4b03e12f2335";
 
-    protected static final int HTTP_PORT = 8089;
-    protected static final String USAGE_REPORT_URL_LOCAL = "http://localhost:"
-            + HTTP_PORT + "/";
-
     protected StatisticsStorage storage;
     protected StatisticsSender sender;
 
@@ -49,9 +45,8 @@ public abstract class AbstractStatisticsTest {
 
         // Change the file storage and reporting parameters for testing
         Mockito.when(sender.getReportingUrl())
-                .thenReturn(USAGE_REPORT_URL_LOCAL);
+                .thenReturn("http://localhost:1234");
         Mockito.when(storage.getUsageStatisticsFile()).thenReturn(
                 createTempStorage("stats-data/usage-statistics-1.json"));
     }
-
 }

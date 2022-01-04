@@ -1,5 +1,5 @@
 /**
- *    Copyright 2000-2021 Vaadin Ltd
+ *    Copyright 2000-2022 Vaadin Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -198,6 +198,11 @@ public open class VaadinFlowPluginExtension(project: Project) {
      */
     public var projectBuildDir: String = project.buildDir.toString()
 
+    /**
+     * Defines the npm packages to run postinstall for.
+     */
+    public var postinstallPackages: List<String> = listOf()
+
     public companion object {
         public fun get(project: Project): VaadinFlowPluginExtension =
                 project.extensions.getByType(VaadinFlowPluginExtension::class.java)
@@ -262,6 +267,7 @@ public open class VaadinFlowPluginExtension(project: Project) {
             "nodeDownloadRoot=$nodeDownloadRoot, " +
             "nodeAutoUpdate=$nodeAutoUpdate" +
             "resourceOutputDirectory=$resourceOutputDirectory" +
+            "postinstallPackages=$postinstallPackages" +
             ")"
 }
 
