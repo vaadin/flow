@@ -9,8 +9,8 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>test-fusion-csrf-context</artifactId>
-    <name>Fusion CSRF tests with custom context path</name>
+    <artifactId>test-hilla-csrf</artifactId>
+    <name>Hilla CSRF tests (dev mode)</name>
     <description>
         For https://github.com/vaadin/fusion/issues/105.
         It verifies that the csrf cookie is added to correct path
@@ -38,76 +38,51 @@
             <artifactId>vaadin-dev-server</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>test-fusion-csrf</artifactId>
-            <version>${project.version}</version>
-            <classifier>frontend</classifier>
-        </dependency>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>test-fusion-csrf</artifactId>
-            <version>${project.version}</version>
-            <type>test-jar</type>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
 
     <build>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.0.2</version>
                 <executions>
                     <execution>
-                        <id>unpack</id>
-                        <phase>generate-sources</phase>
                         <goals>
-                            <goal>unpack</goal>
+                            <goal>test-jar</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>package-frontend-folder</id>
+                        <goals>
+                            <goal>jar</goal>
                         </goals>
                         <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>com.vaadin</groupId>
-                                    <artifactId>test-fusion-csrf</artifactId>
-                                    <version>${project.version}</version>
-                                    <classifier>frontend</classifier>
-                                    <outputDirectory>${project.basedir}/frontend</outputDirectory>
-                                </artifactItem>
-                            </artifactItems>
+                            <classifier>frontend</classifier>
+                            <classesDirectory>${project.basedir}/frontend</classesDirectory>
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
-            <!-- This module is mapped to default web context -->
-            <plugin>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-maven-plugin</artifactId>
-                <configuration>
-                    <webApp>
-                        <contextPath>/foo</contextPath>
-                    </webApp>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>com.vaadin</groupId>
-                <artifactId>flow-maven-plugin</artifactId>
-                <configuration>
-                    <productionMode>false</productionMode>
-                </configuration>
             </plugin>
         </plugins>
     </build>
     <profiles>
         <profile>
-            <id>local-run</id>
+            <id>run-tests</id>
             <activation>
                 <property>
-                    <name>!test.use.hub</name>
+                    <name>!skipTests</name>
                 </property>
             </activation>
             <build>
                 <plugins>
+                    <plugin>
+                        <groupId>com.vaadin</groupId>
+                        <artifactId>flow-maven-plugin</artifactId>
+                        <configuration>
+                            <productionMode>false</productionMode>
+                        </configuration>
+                    </plugin>
                     <plugin>
                         <groupId>com.lazerycode.selenium</groupId>
                         <artifactId>driver-binary-downloader-maven-plugin
@@ -136,6 +111,20 @@
                                 </goals>
                             </execution>
                         </executions>
+                    </plugin>
+                    <!-- This module is mapped to default web context -->
+                    <plugin>
+                        <groupId>org.eclipse.jetty</groupId>
+                        <artifactId>jetty-maven-plugin</artifactId>
+                        <configuration>
+                            <systemProperties>
+                                <systemProperty>
+                                    <!-- make sure we do not leave webpack-dev-server running after IT -->
+                                    <name>vaadin.reuseDevServer</name>
+                                    <value>false</value>
+                                </systemProperty>
+                            </systemProperties>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>
