@@ -30,6 +30,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
 
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
@@ -94,11 +95,11 @@ public class TaskRunNpmInstall implements FallibleCommand {
     private final URI nodeDownloadRoot;
     private final boolean useGlobalPnpm;
 
+    private List<String> additionalPostinstallPackages;
+
     /**
      * Create an instance of the command.
      *
-     * @param classFinder
-     *            a reusable class finder
      * @param packageUpdater
      *            package-updater instance used for checking if previous
      *            execution modified the package.json file
@@ -120,10 +121,13 @@ public class TaskRunNpmInstall implements FallibleCommand {
      *            {@link FrontendTools#DEFAULT_PNPM_VERSION})
      * @param autoUpdate
      *            {@code true} to automatically update to a new node version
+     * @param additionalPostinstallPackages
+     *            a list of packages to run postinstall for
      */
     TaskRunNpmInstall(NodeUpdater packageUpdater, boolean enablePnpm,
             boolean requireHomeNodeExec, String nodeVersion,
-            URI nodeDownloadRoot, boolean useGlobalPnpm, boolean autoUpdate) {
+            URI nodeDownloadRoot, boolean useGlobalPnpm, boolean autoUpdate,
+            List<String> additionalPostinstallPackages) {
         this.packageUpdater = packageUpdater;
         this.enablePnpm = enablePnpm;
         this.requireHomeNodeExec = requireHomeNodeExec;
@@ -131,6 +135,8 @@ public class TaskRunNpmInstall implements FallibleCommand {
         this.nodeDownloadRoot = Objects.requireNonNull(nodeDownloadRoot);
         this.useGlobalPnpm = useGlobalPnpm;
         this.autoUpdate = autoUpdate;
+        this.additionalPostinstallPackages = Objects
+                .requireNonNull(additionalPostinstallPackages);
     }
 
     @Override
@@ -237,14 +243,9 @@ public class TaskRunNpmInstall implements FallibleCommand {
      */
     private void runNpmInstall() throws ExecutionFailedException {
         // Do possible cleaning before generating any new files.
-        try {
-            cleanUp();
-        } catch (IOException exception) {
-            throw new ExecutionFailedException("Couldn't remove "
-                    + packageUpdater.nodeModulesFolder + " directory",
-                    exception);
-        }
+        cleanUp();
 
+        Logger logger = packageUpdater.log();
         if (enablePnpm) {
             try {
                 createPnpmFile(packageUpdater.generateVersionsJson());
@@ -259,13 +260,12 @@ public class TaskRunNpmInstall implements FallibleCommand {
             try {
                 createNpmRcFile();
             } catch (IOException exception) {
-                packageUpdater.log().warn(".npmrc generation failed; pnpm "
+                logger.warn(".npmrc generation failed; pnpm "
                         + "package installation may require manaually passing "
                         + "the --shamefully-hoist flag", exception);
             }
         }
 
-        List<String> executable;
         String baseDir = packageUpdater.npmFolder.getAbsolutePath();
 
         FrontendToolsSettings settings = new FrontendToolsSettings(baseDir,
@@ -276,60 +276,63 @@ public class TaskRunNpmInstall implements FallibleCommand {
         settings.setAutoUpdate(autoUpdate);
         settings.setNodeVersion(nodeVersion);
         FrontendTools tools = new FrontendTools(settings);
+        List<String> npmExecutable;
+        List<String> npmInstallCommand;
+        List<String> postinstallCommand;
+
         try {
             if (requireHomeNodeExec) {
                 tools.forceAlternativeNodeExecutable();
             }
             if (enablePnpm) {
                 validateInstalledNpm(tools);
-                executable = tools.getPnpmExecutable();
+                npmExecutable = tools.getPnpmExecutable();
             } else {
-                executable = tools.getNpmExecutable();
+                npmExecutable = tools.getNpmExecutable();
             }
+            npmInstallCommand = new ArrayList<>(npmExecutable);
+            postinstallCommand = new ArrayList<>(npmExecutable);
+            // This only works together with "install"
+            postinstallCommand.remove("--shamefully-hoist=true");
+
         } catch (IllegalStateException exception) {
             throw new ExecutionFailedException(exception.getMessage(),
                     exception);
         }
-        List<String> command = new ArrayList<>(executable);
-        command.add("install");
 
-        if (packageUpdater.log().isDebugEnabled()) {
-            packageUpdater.log().debug(commandToString(
-                    packageUpdater.npmFolder.getAbsolutePath(), command));
+        npmInstallCommand.add("--ignore-scripts");
+        npmInstallCommand.add("install");
+
+        postinstallCommand.add("run");
+        postinstallCommand.add("postinstall");
+
+        if (logger.isDebugEnabled()) {
+            logger.debug(
+                    commandToString(packageUpdater.npmFolder.getAbsolutePath(),
+                            npmInstallCommand));
         }
-
-        ProcessBuilder builder = FrontendUtils.createProcessBuilder(command);
-        builder.environment().put("ADBLOCK", "1");
-        builder.environment().put("NO_UPDATE_NOTIFIER", "1");
-        builder.directory(packageUpdater.npmFolder);
-
-        builder.redirectInput(ProcessBuilder.Redirect.INHERIT);
-        builder.redirectError(ProcessBuilder.Redirect.INHERIT);
 
         String toolName = enablePnpm ? "pnpm" : "npm";
 
-        String commandString = command.stream()
+        String commandString = npmInstallCommand.stream()
                 .collect(Collectors.joining(" "));
+
+        logger.info("using '{}' for frontend package installation",
+                String.join(" ", npmInstallCommand));
 
         Process process = null;
         try {
-            process = builder.start();
-            Process finalProcess = process;
+            process = runNpmCommand(npmInstallCommand,
+                    packageUpdater.npmFolder);
 
-            // This will allow to destroy the process which does IO regardless
-            // whether it's executed in the same thread or another (may be
-            // daemon) thread
-            Runtime.getRuntime()
-                    .addShutdownHook(new Thread(finalProcess::destroyForcibly));
-
-            packageUpdater.log().debug("Output of `{}`:", commandString);
+            logger.debug("Output of `{}`:", commandString);
             StringBuilder toolOutput = new StringBuilder();
             try (BufferedReader reader = new BufferedReader(
                     new InputStreamReader(process.getInputStream(),
                             StandardCharsets.UTF_8))) {
                 String stdoutLine;
                 while ((stdoutLine = reader.readLine()) != null) {
-                    packageUpdater.log().debug(stdoutLine);
+                    logger.debug(stdoutLine);
                     toolOutput.append(stdoutLine)
                             .append(System.lineSeparator());
                 }
@@ -339,9 +342,9 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
             if (errorCode != 0) {
                 // Echo the stdout from pnpm/npm to error level log
-                packageUpdater.log().error("Command `{}` failed:\n{}",
-                        commandString, toolOutput);
-                packageUpdater.log().error(
+                logger.error("Command `{}` failed:\n{}", commandString,
+                        toolOutput);
+                logger.error(
                         ">>> Dependency ERROR. Check that all required dependencies are "
                                 + "deployed in {} repositories.",
                         toolName);
@@ -351,12 +354,14 @@ public class TaskRunNpmInstall implements FallibleCommand {
                                 + "Some dependencies are not installed. Check "
                                 + toolName + " command output");
             } else {
-                packageUpdater.log()
-                        .info("Frontend dependencies resolved successfully.");
+                logger.info("Frontend dependencies resolved successfully.");
             }
         } catch (InterruptedException | IOException e) {
-            packageUpdater.log().error("Error when running `{} install`",
-                    toolName, e);
+            logger.error("Error when running `{} install`", toolName, e);
+            if (e instanceof InterruptedException) {
+                // Restore interrupted state
+                Thread.currentThread().interrupt();
+            }
             throw new ExecutionFailedException(
                     "Command '" + toolName + " install' failed to finish", e);
         } finally {
@@ -364,6 +369,60 @@ public class TaskRunNpmInstall implements FallibleCommand {
                 process.destroyForcibly();
             }
         }
+
+        List<String> postinstallPackages = new ArrayList<>();
+        postinstallPackages.add("esbuild");
+        postinstallPackages.add("@vaadin/vaadin-usage-statistics");
+        postinstallPackages.addAll(additionalPostinstallPackages);
+
+        for (String postinstallPackage : postinstallPackages) {
+            if (postinstallPackage.trim().equals("")) {
+                continue;
+            }
+
+            // Execute "npm run postinstall" in the desired folders in
+            // node_modules
+            File packageFolder = new File(packageUpdater.nodeModulesFolder,
+                    postinstallPackage);
+            if (!packageFolder.exists()) {
+                continue;
+            }
+
+            logger.debug("Running postinstall for '{}'", postinstallPackage);
+            try {
+                process = runNpmCommand(postinstallCommand, packageFolder);
+                process.waitFor();
+            } catch (IOException | InterruptedException e) {
+                if (e instanceof InterruptedException) {
+                    // Restore interrupted state
+                    Thread.currentThread().interrupt();
+                }
+                throw new ExecutionFailedException(
+                        "Error when running postinstall script for '"
+                                + postinstallPackage + "'",
+                        e);
+            }
+        }
+    }
+
+    private Process runNpmCommand(List<String> command, File workingDirectory)
+            throws IOException {
+        ProcessBuilder builder = FrontendUtils.createProcessBuilder(command);
+        builder.environment().put("ADBLOCK", "1");
+        builder.environment().put("NO_UPDATE_NOTIFIER", "1");
+        builder.directory(workingDirectory);
+        builder.redirectInput(ProcessBuilder.Redirect.INHERIT);
+        builder.redirectError(ProcessBuilder.Redirect.INHERIT);
+
+        Process process = builder.start();
+
+        // This will allow to destroy the process which does IO regardless
+        // whether it's executed in the same thread or another (may be
+        // daemon) thread
+        Runtime.getRuntime()
+                .addShutdownHook(new Thread(process::destroyForcibly));
+
+        return process;
     }
 
     /*
@@ -451,7 +510,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
         return lines;
     }
 
-    private void cleanUp() throws IOException {
+    private void cleanUp() throws ExecutionFailedException {
         if (!packageUpdater.nodeModulesFolder.exists()) {
             return;
         }
@@ -459,7 +518,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
                 MODULES_YAML);
         boolean hasModulesYaml = modulesYaml.exists() && modulesYaml.isFile();
         if (!enablePnpm && hasModulesYaml) {
-            FileUtils.forceDelete(packageUpdater.nodeModulesFolder);
+            deleteNodeModules(packageUpdater.nodeModulesFolder);
         } else if (enablePnpm && !hasModulesYaml) {
             // presence of .staging dir with a "pnpm-*" folder means that pnpm
             // download is in progress, don't remove anything in this case
@@ -467,8 +526,23 @@ public class TaskRunNpmInstall implements FallibleCommand {
                     ".staging");
             if (!staging.isDirectory() || staging.listFiles(
                     (dir, name) -> name.startsWith("pnpm-")).length == 0) {
-                FileUtils.forceDelete(packageUpdater.nodeModulesFolder);
+                deleteNodeModules(packageUpdater.nodeModulesFolder);
             }
+        }
+    }
+
+    private void deleteNodeModules(File nodeModulesFolder)
+            throws ExecutionFailedException {
+        try {
+            FileUtils.forceDelete(nodeModulesFolder);
+        } catch (IOException exception) {
+            Logger log = packageUpdater.log();
+            log.debug("Exception removing node_modules", exception);
+            log.error("Failed to remove '"
+                    + packageUpdater.nodeModulesFolder.getAbsolutePath()
+                    + "'. Please remove it manually.");
+            throw new ExecutionFailedException(
+                    "Exception removing node_modules. Please remove it manually.");
         }
     }
 
