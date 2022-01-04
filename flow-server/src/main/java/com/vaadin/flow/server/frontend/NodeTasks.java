@@ -694,12 +694,9 @@ public class NodeTasks implements FallibleCommand {
                 builder.classFinder);
         FrontendDependenciesScanner frontendDependencies = null;
 
-        boolean enableWebpackConfigUpdate = builder.webappResourcesDirectory != null;
-
         final FeatureFlags featureFlags = builder.getFeatureFlags();
 
-        if (builder.enablePackagesUpdate || builder.enableImportsUpdate
-                || enableWebpackConfigUpdate) {
+        if (builder.enablePackagesUpdate || builder.enableImportsUpdate) {
             frontendDependencies = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
                     .createScanner(!builder.useByteCodeScanner, classFinder,
                             builder.generateEmbeddableWebComponents,
@@ -796,7 +793,7 @@ public class NodeTasks implements FallibleCommand {
             commands.add(new TaskUpdateSettingsFile(builder, themeName, pwa));
             commands.add(new TaskUpdateVite(builder.npmFolder,
                     builder.buildDirectory));
-        } else if (enableWebpackConfigUpdate) {
+        } else if (frontendDependencies != null) {
             PwaConfiguration pwaConfiguration = frontendDependencies
                     .getPwaConfiguration();
             commands.add(new TaskUpdateWebpack(builder.frontendDirectory,
