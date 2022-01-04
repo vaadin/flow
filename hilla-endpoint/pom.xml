@@ -8,7 +8,7 @@
         <version>10.0-SNAPSHOT</version>
     </parent>
     <artifactId>hilla-endpoint</artifactId>
-    <name>Fusion Endpoint</name>
+    <name>Hilla Endpoint</name>
     <packaging>jar</packaging>
 
     <properties>
@@ -60,7 +60,7 @@
         </dependency>
 
 
-        <!--  Fusion Dependencies -->
+        <!--  Hilla Dependencies -->
         <dependency>
             <groupId>javax.validation</groupId>
             <artifactId>validation-api</artifactId>
@@ -176,7 +176,7 @@
             </exclusions>
         </dependency>
 
-        <!-- Fusion Testing dependencies -->
+        <!-- Hilla Testing dependencies -->
 
         <!-- TODO: re-enable tests mocking final classes in the connect
           package by using the org.mockito.plugins.MockMaker plugin with
