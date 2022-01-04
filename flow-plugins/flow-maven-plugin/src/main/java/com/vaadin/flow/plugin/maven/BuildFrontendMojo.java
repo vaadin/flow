@@ -92,22 +92,6 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
     @Parameter(defaultValue = "true")
     private boolean optimizeBundle;
 
-    /**
-     * Copy the `webpack.config.js` from the specified URL if missing. Default
-     * is the template provided by this plugin. Set it to empty string to
-     * disable the feature.
-     */
-    @Parameter(defaultValue = FrontendUtils.WEBPACK_CONFIG)
-    private String webpackTemplate;
-
-    /**
-     * Copy the `webpack.generated.js` from the specified URL. Default is the
-     * template provided by this plugin. Set it to empty string to disable the
-     * feature.
-     */
-    @Parameter(defaultValue = FrontendUtils.WEBPACK_GENERATED)
-    private String webpackGeneratedTemplate;
-
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         long start = System.nanoTime();
@@ -162,18 +146,6 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
     public boolean runNpmInstall() {
 
         return runNpmInstall;
-    }
-
-    @Override
-    public String webpackGeneratedTemplate() {
-
-        return webpackGeneratedTemplate;
-    }
-
-    @Override
-    public String webpackTemplate() {
-
-        return webpackTemplate;
     }
 
 }
