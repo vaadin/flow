@@ -101,13 +101,13 @@ public class NodeTasks implements FallibleCommand {
 
         private boolean useGlobalPnpm = false;
 
-        private File fusionJavaSourceFolder;
+        private File hillaJavaSourceFolder;
 
-        private File fusionGeneratedOpenAPIFile;
+        private File hillaGeneratedOpenAPIFile;
 
-        private File fusionApplicationProperties;
+        private File hillaApplicationProperties;
 
-        private File fusionClientAPIFolder;
+        private File hillaClientAPIFolder;
 
         private boolean requireHomeNodeExec;
 
@@ -423,12 +423,12 @@ public class NodeTasks implements FallibleCommand {
         /**
          * Set the folder where Ts files should be generated.
          *
-         * @param fusionClientTsApiFolder
+         * @param hillaClientTsApiFolder
          *            folder for Ts files in the frontend.
          * @return the builder, for chaining
          */
-        public Builder withFusionClientAPIFolder(File fusionClientTsApiFolder) {
-            this.fusionClientAPIFolder = fusionClientTsApiFolder;
+        public Builder withHillaClientAPIFolder(File hillaClientTsApiFolder) {
+            this.hillaClientAPIFolder = hillaClientTsApiFolder;
             return this;
         }
 
@@ -439,9 +439,9 @@ public class NodeTasks implements FallibleCommand {
          *            application properties file.
          * @return this builder, for chaining
          */
-        public Builder withFusionApplicationProperties(
+        public Builder withHillaApplicationProperties(
                 File applicationProperties) {
-            this.fusionApplicationProperties = applicationProperties;
+            this.hillaApplicationProperties = applicationProperties;
             return this;
         }
 
@@ -452,21 +452,21 @@ public class NodeTasks implements FallibleCommand {
          *            the generated output file.
          * @return the builder, for chaining
          */
-        public Builder withFusionGeneratedOpenAPIJson(
+        public Builder withHillaGeneratedOpenAPIJson(
                 File generatedOpenAPIFile) {
-            this.fusionGeneratedOpenAPIFile = generatedOpenAPIFile;
+            this.hillaGeneratedOpenAPIFile = generatedOpenAPIFile;
             return this;
         }
 
         /**
          * Set source paths that OpenAPI generator searches for endpoints.
          *
-         * @param fusionJavaSourceFolder
+         * @param hillaJavaSourceFolder
          *            java source folder
          * @return the builder, for chaining
          */
-        public Builder withFusionJavaSourceFolder(File fusionJavaSourceFolder) {
-            this.fusionJavaSourceFolder = fusionJavaSourceFolder;
+        public Builder withHillaJavaSourceFolder(File hillaJavaSourceFolder) {
+            this.hillaJavaSourceFolder = hillaJavaSourceFolder;
             return this;
         }
 
@@ -791,14 +791,14 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateHilla hillaTask = builder.lookup
                     .lookup(TaskGenerateHilla.class);
             // use the new Hilla generator if available, otherwise the old
-            // Fusion generator.
+            // Hilla legacy generator.
             if (hillaTask != null) {
                 commands.add(hillaTask);
             } else {
-                if (builder.fusionJavaSourceFolder != null
-                        && builder.fusionJavaSourceFolder.exists()
-                        && builder.fusionGeneratedOpenAPIFile != null) {
-                    addFusionServicesTasks(builder);
+                if (builder.hillaJavaSourceFolder != null
+                        && builder.hillaJavaSourceFolder.exists()
+                        && builder.hillaGeneratedOpenAPIFile != null) {
+                    addHillaServicesTasks(builder);
                 }
             }
 
@@ -842,7 +842,7 @@ public class NodeTasks implements FallibleCommand {
                     new File(builder.generatedFolder, IMPORTS_NAME),
                     builder.useDeprecatedV14Bootstrapping,
                     builder.flowResourcesFolder, pwaConfiguration,
-                    builder.fusionClientAPIFolder, builder.buildDirectory));
+                    builder.hillaClientAPIFolder, builder.buildDirectory));
         }
 
         if (builder.enableImportsUpdate) {
@@ -857,7 +857,7 @@ public class NodeTasks implements FallibleCommand {
 
             commands.add(new TaskUpdateThemeImport(builder.npmFolder,
                     frontendDependencies.getThemeDefinition(),
-                    builder.frontendDirectory, builder.fusionClientAPIFolder));
+                    builder.frontendDirectory, builder.hillaClientAPIFolder));
         }
 
         if (builder.copyTemplates) {
@@ -905,7 +905,7 @@ public class NodeTasks implements FallibleCommand {
         }
     }
 
-    private void addFusionServicesTasks(Builder builder) {
+    private void addHillaServicesTasks(Builder builder) {
         Lookup lookup = builder.lookup;
         EndpointGeneratorTaskFactory endpointGeneratorTaskFactory = lookup
                 .lookup(EndpointGeneratorTaskFactory.class);
@@ -913,18 +913,18 @@ public class NodeTasks implements FallibleCommand {
         if (endpointGeneratorTaskFactory != null) {
             TaskGenerateOpenAPI taskGenerateOpenAPI = endpointGeneratorTaskFactory
                     .createTaskGenerateOpenAPI(
-                            builder.fusionApplicationProperties,
-                            builder.fusionJavaSourceFolder,
+                            builder.hillaApplicationProperties,
+                            builder.hillaJavaSourceFolder,
                             builder.classFinder.getClassLoader(),
-                            builder.fusionGeneratedOpenAPIFile);
+                            builder.hillaGeneratedOpenAPIFile);
             commands.add(taskGenerateOpenAPI);
 
-            if (builder.fusionClientAPIFolder != null) {
+            if (builder.hillaClientAPIFolder != null) {
                 TaskGenerateHillaLegacy taskGenerateHillaLegacy = endpointGeneratorTaskFactory
                         .createTaskGenerateHillaLegacy(
-                                builder.fusionApplicationProperties,
-                                builder.fusionGeneratedOpenAPIFile,
-                                builder.fusionClientAPIFolder,
+                                builder.hillaApplicationProperties,
+                                builder.hillaGeneratedOpenAPIFile,
+                                builder.hillaClientAPIFolder,
                                 builder.frontendDirectory);
                 commands.add(taskGenerateHillaLegacy);
             }
