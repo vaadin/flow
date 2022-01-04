@@ -185,11 +185,11 @@ public class HillaControllerTest {
         appConfig = Mockito.mock(ApplicationConfiguration.class);
 
         when(requestMock.getUserPrincipal()).thenReturn(principal);
-        when(requestMock.getHeader("X-CSRF-Token")).thenReturn("Vaadin Fusion");
+        when(requestMock.getHeader("X-CSRF-Token")).thenReturn("Hilla");
         doReturn(mockServletContext()).when(requestMock).getServletContext();
 
         when(requestMock.getCookies()).thenReturn(new Cookie[] {
-                new Cookie(ApplicationConstants.CSRF_TOKEN, "Vaadin Fusion") });
+                new Cookie(ApplicationConstants.CSRF_TOKEN, "Hilla") });
     }
 
     @Test
@@ -1142,7 +1142,7 @@ public class HillaControllerTest {
 
     private void createDifferentCookieToken() {
         when(requestMock.getCookies()).thenReturn(new Cookie[] {
-                new Cookie(ApplicationConstants.CSRF_TOKEN, "Fusion token") });
+                new Cookie(ApplicationConstants.CSRF_TOKEN, "Hilla token") });
     }
 
     private void createAnonymousContext() {

@@ -38,9 +38,9 @@ public class HillaAccessCheckerTest {
         checker = new HillaAccessChecker(new AccessAnnotationChecker());
         requestMock = mock(HttpServletRequest.class);
         when(requestMock.getUserPrincipal()).thenReturn(mock(Principal.class));
-        when(requestMock.getHeader("X-CSRF-Token")).thenReturn("Vaadin Fusion");
+        when(requestMock.getHeader("X-CSRF-Token")).thenReturn("Hilla");
         when(requestMock.getCookies()).thenReturn(new Cookie[] {
-                new Cookie(ApplicationConstants.CSRF_TOKEN, "Vaadin Fusion") });
+                new Cookie(ApplicationConstants.CSRF_TOKEN, "Hilla") });
         when(requestMock.isUserInRole("ROLE_USER")).thenReturn(true);
     }
 

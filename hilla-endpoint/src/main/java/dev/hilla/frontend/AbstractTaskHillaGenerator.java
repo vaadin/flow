@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.server.frontend.FallibleCommand;
 
 /**
- * Abstract class for Vaadin Fusion related generators.
+ * Abstract class for Hilla related generators.
  */
 abstract class AbstractTaskHillaGenerator implements FallibleCommand {
     private final File applicationProperties;

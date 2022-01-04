@@ -106,7 +106,7 @@ public class ViewAccessChecker implements BeforeEnterListener {
     }
 
     /**
-     * Sets the Fusion login view to use.
+     * Sets the Hilla login view to use.
      * <p>
      * The login view can only be set once and cannot be changed afterwards.
      * <p>
@@ -114,7 +114,7 @@ public class ViewAccessChecker implements BeforeEnterListener {
      * {@link #enable()}
      * 
      * @param loginUrl
-     *            the Fusion view to use as login view
+     *            the Hilla view to use as login view
      */
     public void setLoginView(String loginUrl) {
         throwIfLoginViewSet();

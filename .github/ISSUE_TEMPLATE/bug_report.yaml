@@ -8,7 +8,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        NOTE: Issues concerning Vaadin Fusion should go to the Fusion repository https://github.com/vaadin/fusion
+        NOTE: Issues concerning Hilla should go to the Hilla repository https://github.com/vaadin/fusion
   - type: markdown
     attributes:
       value: |
@@ -28,7 +28,7 @@ body:
   - type: textarea
     id: expected
     attributes:
-      label: Expected behavior 
+      label: Expected behavior
       description: What should happen
       placeholder: The application should be shown on the first load
     validations:
@@ -47,7 +47,7 @@ body:
     id: versions
     attributes:
       label: Versions
-      description: For Vaadin 22+, you can copy this from the debug window 
+      description: For Vaadin 22+, you can copy this from the debug window
       value: |
         - Vaadin / Flow version:
         - Java version:

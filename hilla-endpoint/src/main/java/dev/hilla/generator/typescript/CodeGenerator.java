@@ -68,7 +68,7 @@ import static dev.hilla.generator.typescript.ModelGenerator.getModelArgumentsHel
 import static dev.hilla.generator.typescript.ModelGenerator.getModelFullTypeHelper;
 
 /**
- * Vaadin fusion JavaScript generator implementation for swagger-codegen. Some
+ * Hilla legacy TypeScript generator implementation for swagger-codegen. Some
  * parts of the implementation are copied from
  * {@link io.swagger.codegen.languages.JavascriptClientCodegen}
  */
