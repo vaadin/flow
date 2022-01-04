@@ -698,8 +698,7 @@ public abstract class AbstractEndpointGenerationTest
                 "Class '%s' has unexpected json produced in file '%s'",
                 expectedClass, expectedResource.getPath());
         String actualContent = readFile(outputFilePath);
-        if (!expectedClass.getPackage().getName()
-                .startsWith("dev.hilla")) {
+        if (!expectedClass.getPackage().getName().startsWith("dev.hilla")) {
             // the class comes from jars
             Assert.assertEquals(errorMessage, expectedTs, actualContent);
             return;
@@ -723,8 +722,7 @@ public abstract class AbstractEndpointGenerationTest
                 "Model class '%s' has unexpected typescript produced in file '%s'",
                 expectedClass, expectedResource.getPath());
         String actualContent = readFile(outputFilePath);
-        if (!expectedClass.getPackage().getName()
-                .startsWith("dev.hilla")
+        if (!expectedClass.getPackage().getName().startsWith("dev.hilla")
                 || DENY_LIST_CHECKING_ABSOLUTE_PATH.contains(expectedClass)) {
             // the class comes from jars
             TestUtils.equalsIgnoreWhiteSpaces(errorMessage, expectedTs,
@@ -769,8 +767,8 @@ public abstract class AbstractEndpointGenerationTest
      * Shorten the expected model file name. The format is:
      * <code>expected-model-lastPackageSegment.DeclaringClass(IfAny).ModelClass
      * .ts</code>. For example: The generated model of
-     * <code>dev.hilla.SomeModel</code> will be expected to be the same
-     * as file <code>expected-model-connect.SomeModel.ts</code>
+     * <code>dev.hilla.SomeModel</code> will be expected to be the same as file
+     * <code>expected-model-connect.SomeModel.ts</code>
      *
      * @param expectedClass
      * @return

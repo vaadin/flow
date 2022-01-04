@@ -84,7 +84,8 @@ public class DevModeInitializerTestBase extends AbstractDevModeTest {
         taskGenerateOpenAPI = Mockito.mock(TaskGenerateOpenAPI.class);
         Mockito.doReturn(endpointGeneratorTaskFactory).when(lookup)
                 .lookup(EndpointGeneratorTaskFactory.class);
-        Mockito.doReturn(taskGenerateHillaLegacy).when(endpointGeneratorTaskFactory)
+        Mockito.doReturn(taskGenerateHillaLegacy)
+                .when(endpointGeneratorTaskFactory)
                 .createTaskGenerateHillaLegacy(any(), any(), any(), any());
         Mockito.doReturn(taskGenerateOpenAPI).when(endpointGeneratorTaskFactory)
                 .createTaskGenerateOpenAPI(any(), any(), any(), any());

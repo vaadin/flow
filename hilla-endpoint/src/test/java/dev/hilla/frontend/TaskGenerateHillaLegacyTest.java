@@ -47,8 +47,7 @@ public class TaskGenerateHillaLegacyTest {
         assertFalse(client.exists());
 
         taskGenerateHillaLegacy = new TaskGenerateHillaLegacyImpl(properties,
-                openApiJson,
-                outputDirectory, frontendDirectory);
+                openApiJson, outputDirectory, frontendDirectory);
         taskGenerateHillaLegacy.execute();
 
         assertTrue(ts1.exists());
@@ -77,8 +76,8 @@ public class TaskGenerateHillaLegacyTest {
         assertFalse(client.exists());
         assertTrue(customConnectClient.exists());
 
-        taskGenerateHillaLegacy = new TaskGenerateHillaLegacyImpl(properties, openApiJson,
-                outputDirectory, frontendDirectory);
+        taskGenerateHillaLegacy = new TaskGenerateHillaLegacyImpl(properties,
+                openApiJson, outputDirectory, frontendDirectory);
         taskGenerateHillaLegacy.execute();
 
         assertTrue(ts1.exists());

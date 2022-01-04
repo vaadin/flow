@@ -82,8 +82,7 @@ public class HillaAccessChecker {
      * @param accessAnnotationChecker
      *            the access checker to use
      */
-    public HillaAccessChecker(
-            AccessAnnotationChecker accessAnnotationChecker) {
+    public HillaAccessChecker(AccessAnnotationChecker accessAnnotationChecker) {
         this.accessAnnotationChecker = accessAnnotationChecker;
     }
 

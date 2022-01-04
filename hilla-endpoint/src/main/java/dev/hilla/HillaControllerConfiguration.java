@@ -51,8 +51,8 @@ public class HillaControllerConfiguration {
 
     /**
      * Registers {@link HillaController} to use
-     * {@link HillaEndpointProperties#getVaadinEndpointPrefix()} as a prefix
-     * for all Vaadin endpoints.
+     * {@link HillaEndpointProperties#getVaadinEndpointPrefix()} as a prefix for
+     * all Vaadin endpoints.
      *
      * @return updated configuration for {@link HillaController}
      */

@@ -374,8 +374,7 @@ public class HillaControllerTest {
 
     @Test
     public void should_NotCallMethodAnonymously_When_UserPrincipalIsNotInRole() {
-        HillaController vaadinController = createVaadinController(
-                TEST_ENDPOINT,
+        HillaController vaadinController = createVaadinController(TEST_ENDPOINT,
                 new HillaAccessChecker(new AccessAnnotationChecker()));
 
         ResponseEntity<String> response = vaadinController.serveEndpoint(
@@ -391,8 +390,7 @@ public class HillaControllerTest {
     public void should_CallMethodAnonymously_When_UserPrincipalIsInRole() {
         when(requestMock.isUserInRole("FOO_ROLE")).thenReturn(true);
 
-        HillaController vaadinController = createVaadinController(
-                TEST_ENDPOINT,
+        HillaController vaadinController = createVaadinController(TEST_ENDPOINT,
                 new HillaAccessChecker(new AccessAnnotationChecker()));
 
         ResponseEntity<String> response = vaadinController.serveEndpoint(
@@ -406,8 +404,7 @@ public class HillaControllerTest {
 
     @Test
     public void should_CallMethodAnonymously_When_AnonymousOverridesRoles() {
-        HillaController vaadinController = createVaadinController(
-                TEST_ENDPOINT,
+        HillaController vaadinController = createVaadinController(TEST_ENDPOINT,
                 new HillaAccessChecker(new AccessAnnotationChecker()));
 
         ResponseEntity<String> response = vaadinController.serveEndpoint(
@@ -434,8 +431,7 @@ public class HillaControllerTest {
     public void should_bePossibeToGetPrincipalInEndpoint() {
         when(principal.getName()).thenReturn("foo");
 
-        HillaController vaadinController = createVaadinController(
-                TEST_ENDPOINT,
+        HillaController vaadinController = createVaadinController(TEST_ENDPOINT,
                 new HillaAccessChecker(new AccessAnnotationChecker()));
 
         ResponseEntity<String> response = vaadinController.serveEndpoint(
@@ -447,8 +443,7 @@ public class HillaControllerTest {
 
     @Test
     public void should_clearVaadinRequestInsntace_after_EndpointCall() {
-        HillaController vaadinController = createVaadinController(
-                TEST_ENDPOINT,
+        HillaController vaadinController = createVaadinController(TEST_ENDPOINT,
                 new HillaAccessChecker(new AccessAnnotationChecker()));
 
         vaadinController.serveEndpoint(TEST_ENDPOINT_NAME, "getUserName",
@@ -1213,8 +1208,7 @@ public class HillaControllerTest {
     }
 
     private <T> HillaController createVaadinController(T endpoint,
-            ObjectMapper vaadinEndpointMapper,
-            HillaAccessChecker accessChecker,
+            ObjectMapper vaadinEndpointMapper, HillaAccessChecker accessChecker,
             EndpointNameChecker endpointNameChecker,
             ExplicitNullableTypeChecker explicitNullableTypeChecker,
             CsrfChecker csrfChecker) {

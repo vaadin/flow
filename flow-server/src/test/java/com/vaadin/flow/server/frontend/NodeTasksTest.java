@@ -246,7 +246,8 @@ public class NodeTasksTest {
                 EndpointGeneratorTaskFactory.class);
         TaskGenerateOpenAPI mockGenerateOpenAPI = mock(
                 TaskGenerateOpenAPI.class);
-        TaskGenerateHillaLegacy mockGenerateHillaLegacy = mock(TaskGenerateHillaLegacy.class);
+        TaskGenerateHillaLegacy mockGenerateHillaLegacy = mock(
+                TaskGenerateHillaLegacy.class);
         Mockito.doReturn(mockGenerateOpenAPI).when(hillaFactory)
                 .createTaskGenerateOpenAPI(any(), any(), any(), any());
         Mockito.doReturn(mockGenerateHillaLegacy).when(hillaFactory)
@@ -273,8 +274,8 @@ public class NodeTasksTest {
                 .createTaskGenerateOpenAPI(any(), any(), any(), any());
         Mockito.verify(mockGenerateOpenAPI, withHillaTask ? never() : times(1))
                 .execute();
-        Mockito.verify(mockGenerateHillaLegacy, withHillaTask ? never() : times(1))
-                .execute();
+        Mockito.verify(mockGenerateHillaLegacy,
+                withHillaTask ? never() : times(1)).execute();
     }
 
     private static void setPropertyIfPresent(String key, String value) {

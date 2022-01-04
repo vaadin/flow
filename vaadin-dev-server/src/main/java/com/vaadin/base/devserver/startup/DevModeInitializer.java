@@ -282,8 +282,7 @@ public class DevModeInitializer implements Serializable {
                                     DEFAULT_CONNECT_OPENAPI_JSON_FILE)
                                     .toString());
 
-            builder.withHillaJavaSourceFolder(
-                    new File(connectJavaSourceFolder))
+            builder.withHillaJavaSourceFolder(new File(connectJavaSourceFolder))
                     .withHillaApplicationProperties(
                             new File(connectApplicationProperties))
                     .withHillaGeneratedOpenAPIJson(
