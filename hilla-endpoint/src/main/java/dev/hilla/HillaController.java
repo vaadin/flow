@@ -69,7 +69,7 @@ import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
 import dev.hilla.EndpointRegistry.VaadinEndpointData;
 import dev.hilla.auth.CsrfChecker;
-import dev.hilla.auth.FusionAccessChecker;
+import dev.hilla.auth.HillaAccessChecker;
 import dev.hilla.endpointransfermapper.EndpointTransferMapper;
 import dev.hilla.exception.EndpointException;
 import dev.hilla.exception.EndpointValidationException;
@@ -92,17 +92,17 @@ import dev.hilla.exception.EndpointValidationException.ValidationErrorData;
  * parameter types should also correspond for the request to be successful.
  */
 @RestController
-@Import({ FusionControllerConfiguration.class, FusionEndpointProperties.class })
+@Import({ HillaControllerConfiguration.class, HillaEndpointProperties.class })
 @ConditionalOnBean(annotation = Endpoint.class)
 @NpmPackage(value = "@vaadin/fusion-frontend", version = "0.0.16")
 @NpmPackage(value = "@vaadin/form", version = "0.0.16")
-public class FusionController {
+public class HillaController {
     static final String ENDPOINT_METHODS = "/{endpoint}/{method}";
 
     /**
      * A qualifier to override the request and response default json mapper.
      *
-     * @see #FusionController(ObjectMapper, ExplicitNullableTypeChecker,
+     * @see #HillaController(ObjectMapper, ExplicitNullableTypeChecker,
      *      ApplicationContext, EndpointRegistry, CsrfChecker)
      */
     public static final String VAADIN_ENDPOINT_MAPPER_BEAN_QUALIFIER = "vaadinEndpointMapper";
@@ -126,7 +126,7 @@ public class FusionController {
      *            optional bean to override the default {@link ObjectMapper}
      *            that is used for serializing and deserializing request and
      *            response bodies Use
-     *            {@link FusionController#VAADIN_ENDPOINT_MAPPER_BEAN_QUALIFIER}
+     *            {@link HillaController#VAADIN_ENDPOINT_MAPPER_BEAN_QUALIFIER}
      *            qualifier to override the mapper.
      * @param explicitNullableTypeChecker
      *            the method parameter and return value type checker to verify
@@ -139,7 +139,7 @@ public class FusionController {
      * @param csrfChecker
      *            the csrf checker to use
      */
-    public FusionController(
+    public HillaController(
             @Autowired(required = false) @Qualifier(VAADIN_ENDPOINT_MAPPER_BEAN_QUALIFIER) ObjectMapper vaadinEndpointMapper,
             ExplicitNullableTypeChecker explicitNullableTypeChecker,
             ApplicationContext context, EndpointRegistry endpointRegistry,
@@ -172,7 +172,7 @@ public class FusionController {
     }
 
     private static Logger getLogger() {
-        return LoggerFactory.getLogger(FusionController.class);
+        return LoggerFactory.getLogger(HillaController.class);
     }
 
     /**
@@ -211,7 +211,7 @@ public class FusionController {
         if (!csrfChecker.validateCsrfTokenInRequest(request)) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(createResponseErrorObject(
-                            FusionAccessChecker.ACCESS_DENIED_MSG));
+                            HillaAccessChecker.ACCESS_DENIED_MSG));
         }
 
         VaadinEndpointData vaadinEndpointData = endpointRegistry
@@ -257,7 +257,7 @@ public class FusionController {
             String endpointName, String methodName, Method methodToInvoke,
             ObjectNode body, VaadinEndpointData vaadinEndpointData,
             HttpServletRequest request) throws JsonProcessingException {
-        FusionAccessChecker accessChecker = getAccessChecker(
+        HillaAccessChecker accessChecker = getAccessChecker(
                 request.getServletContext());
         String checkError = accessChecker.check(methodToInvoke, request);
         if (checkError != null) {
@@ -517,20 +517,20 @@ public class FusionController {
     }
 
     private static class VaadinConnectAccessCheckerWrapper {
-        private final FusionAccessChecker accessChecker;
+        private final HillaAccessChecker accessChecker;
 
-        private VaadinConnectAccessCheckerWrapper(FusionAccessChecker checker) {
+        private VaadinConnectAccessCheckerWrapper(HillaAccessChecker checker) {
             accessChecker = checker;
         }
     }
 
-    FusionAccessChecker getAccessChecker(ServletContext servletContext) {
+    HillaAccessChecker getAccessChecker(ServletContext servletContext) {
         VaadinServletContext vaadinServletContext = new VaadinServletContext(
                 servletContext);
         VaadinConnectAccessCheckerWrapper wrapper = vaadinServletContext
                 .getAttribute(VaadinConnectAccessCheckerWrapper.class, () -> {
-                    FusionAccessChecker accessChecker = applicationContext
-                            .getBean(FusionAccessChecker.class);
+                    HillaAccessChecker accessChecker = applicationContext
+                            .getBean(HillaAccessChecker.class);
                     return new VaadinConnectAccessCheckerWrapper(accessChecker);
                 });
         return wrapper.accessChecker;

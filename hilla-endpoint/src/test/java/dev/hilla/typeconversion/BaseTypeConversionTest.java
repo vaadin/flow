@@ -31,13 +31,13 @@ import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import dev.hilla.FusionController;
-import dev.hilla.FusionControllerMockBuilder;
+import dev.hilla.HillaController;
+import dev.hilla.HillaControllerMockBuilder;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 @RunWith(SpringRunner.class)
 @WebMvcTest
-@Import(FusionTypeConversionEndpoints.class)
+@Import(HillaTypeConversionEndpoints.class)
 public abstract class BaseTypeConversionTest {
 
     private MockMvc mockMvc;
@@ -51,8 +51,8 @@ public abstract class BaseTypeConversionTest {
     public void setUp() {
         appConfig = Mockito.mock(ApplicationConfiguration.class);
 
-        FusionControllerMockBuilder controllerMockBuilder = new FusionControllerMockBuilder();
-        FusionController controller = controllerMockBuilder
+        HillaControllerMockBuilder controllerMockBuilder = new HillaControllerMockBuilder();
+        HillaController controller = controllerMockBuilder
                 .withApplicationContext(applicationContext).build();
         mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
         Assert.assertNotEquals(null, applicationContext);
@@ -83,7 +83,7 @@ public abstract class BaseTypeConversionTest {
 
     protected MockHttpServletResponse callMethod(String methodName,
             String requestValue) throws Exception {
-        String endpointName = FusionTypeConversionEndpoints.class
+        String endpointName = HillaTypeConversionEndpoints.class
                 .getSimpleName();
         String requestUrl = String.format("/%s/%s", endpointName, methodName);
         String body = String.format("{\"value\": %s}", requestValue);

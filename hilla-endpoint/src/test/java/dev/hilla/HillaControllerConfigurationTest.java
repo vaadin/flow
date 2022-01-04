@@ -1,6 +1,6 @@
 package dev.hilla;
 
-import dev.hilla.auth.FusionAccessChecker;
+import dev.hilla.auth.HillaAccessChecker;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -11,20 +11,20 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @SpringBootTest(classes = { ServletContextTestSetup.class,
-        FusionEndpointProperties.class })
-@ContextConfiguration(classes = FusionControllerConfiguration.class)
+        HillaEndpointProperties.class })
+@ContextConfiguration(classes = HillaControllerConfiguration.class)
 @RunWith(SpringRunner.class)
-public class FusionControllerConfigurationTest {
+public class HillaControllerConfigurationTest {
 
     @Autowired
     private EndpointRegistry endpointRegistry;
 
     @Autowired
-    private FusionAccessChecker fusionAccessChecker;
+    private HillaAccessChecker hillaAccessChecker;
 
     @Test
     public void dependenciesAvailable() {
         Assert.assertNotNull(endpointRegistry);
-        Assert.assertNotNull(fusionAccessChecker);
+        Assert.assertNotNull(hillaAccessChecker);
     }
 }

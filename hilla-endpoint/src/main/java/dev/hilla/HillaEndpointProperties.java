@@ -24,14 +24,14 @@ import org.springframework.stereotype.Component;
  */
 @Component
 @ConfigurationProperties("vaadin.endpoint")
-public class FusionEndpointProperties {
+public class HillaEndpointProperties {
 
     @Value("${vaadin.endpoint.prefix:/connect}")
     private String vaadinEndpointPrefix;
 
     /**
      * Customize the prefix for all Vaadin endpoints. See default value in the
-     * {@link FusionEndpointProperties#vaadinEndpointPrefix} field annotation.
+     * {@link HillaEndpointProperties#vaadinEndpointPrefix} field annotation.
      *
      * @return prefix that should be used to access any Vaadin endpoint
      */

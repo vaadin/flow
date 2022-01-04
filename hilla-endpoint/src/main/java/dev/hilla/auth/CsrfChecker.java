@@ -47,7 +47,7 @@ public class CsrfChecker {
 
     /**
      * Creates a new csrf checker for the given context.
-     * 
+     *
      * @param servletContext
      *            the servlet context
      */
@@ -156,7 +156,7 @@ public class CsrfChecker {
     }
 
     private static Logger getLogger() {
-        return LoggerFactory.getLogger(FusionAccessChecker.class);
+        return LoggerFactory.getLogger(HillaAccessChecker.class);
     }
 
 }

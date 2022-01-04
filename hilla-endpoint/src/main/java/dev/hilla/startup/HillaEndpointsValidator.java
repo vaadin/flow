@@ -35,7 +35,7 @@ import dev.hilla.Endpoint;
  * @since 3.0
  */
 @HandlesTypes({ Endpoint.class })
-public class FusionEndpointsValidator
+public class HillaEndpointsValidator
         implements ClassLoaderAwareServletContainerInitializer, Serializable {
 
     private String classToCheck = "org.springframework.boot.autoconfigure.jackson.JacksonProperties";

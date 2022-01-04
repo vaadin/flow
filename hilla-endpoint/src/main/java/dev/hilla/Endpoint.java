@@ -23,7 +23,7 @@ import java.lang.annotation.Target;
 import org.springframework.stereotype.Component;
 
 /**
- * Annotation to mark the endpoints to be processed by {@link FusionController}
+ * Annotation to mark the endpoints to be processed by {@link HillaController}
  * class. Each class annotated automatically becomes a Spring {@link Component}
  * bean.
  *
@@ -31,9 +31,9 @@ import org.springframework.stereotype.Component;
  * endpoint. This means that the class name and all its public methods can be
  * executed via the post call with the correct parameters sent in a request JSON
  * body. The methods' return values will be returned back as a response to the
- * calls. Refer to {@link FusionController} for more details.
+ * calls. Refer to {@link HillaController} for more details.
  *
- * @see FusionController
+ * @see HillaController
  * @see Component
  */
 @Target(ElementType.TYPE)

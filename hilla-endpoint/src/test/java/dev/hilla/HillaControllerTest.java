@@ -48,7 +48,7 @@ import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.ApplicationConstants;
 import dev.hilla.auth.CsrfChecker;
-import dev.hilla.auth.FusionAccessChecker;
+import dev.hilla.auth.HillaAccessChecker;
 import dev.hilla.exception.EndpointException;
 import dev.hilla.exception.EndpointValidationException;
 import dev.hilla.generator.endpoints.iterableendpoint.IterableEndpoint;
@@ -70,7 +70,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class FusionControllerTest {
+public class HillaControllerTest {
     private static final TestClass TEST_ENDPOINT = new TestClass();
     private static final String TEST_ENDPOINT_NAME = TEST_ENDPOINT.getClass()
             .getSimpleName();
@@ -250,8 +250,8 @@ public class FusionControllerTest {
     public void should_Return404_When_IllegalAccessToMethodIsPerformed() {
         String accessErrorMessage = "Access error";
 
-        FusionAccessChecker restrictingCheckerMock = mock(
-                FusionAccessChecker.class);
+        HillaAccessChecker restrictingCheckerMock = mock(
+                HillaAccessChecker.class);
         when(restrictingCheckerMock.check(Mockito.any(), Mockito.any()))
                 .thenReturn(accessErrorMessage);
 
@@ -330,7 +330,7 @@ public class FusionControllerTest {
 
     @Test
     public void should_NotCallMethod_When_UserPrincipalIsNull() {
-        FusionController vaadinController = createVaadinControllerWithoutPrincipal();
+        HillaController vaadinController = createVaadinControllerWithoutPrincipal();
         ResponseEntity<String> response = vaadinController.serveEndpoint(
                 TEST_ENDPOINT_NAME, TEST_METHOD.getName(),
                 createRequestParameters("{\"value\": 222}"), requestMock);
@@ -339,12 +339,12 @@ public class FusionControllerTest {
         String responseBody = response.getBody();
         assertNotNull("Response body should not be null", responseBody);
         assertTrue("Should return unauthorized error",
-                responseBody.contains(FusionAccessChecker.ACCESS_DENIED_MSG));
+                responseBody.contains(HillaAccessChecker.ACCESS_DENIED_MSG));
     }
 
     @Test
     public void should_CallMethodAnonymously_When_UserPrincipalIsNullAndAnonymousAllowed() {
-        FusionController vaadinController = createVaadinControllerWithoutPrincipal();
+        HillaController vaadinController = createVaadinControllerWithoutPrincipal();
         ResponseEntity<String> response = vaadinController.serveEndpoint(
                 TEST_ENDPOINT_NAME, "testAnonymousMethod",
                 createRequestParameters("{}"), requestMock);
@@ -360,7 +360,7 @@ public class FusionControllerTest {
         when(appConfig.isXsrfProtectionEnabled()).thenReturn(true);
         when(requestMock.getHeader("X-CSRF-Token")).thenReturn(null);
 
-        FusionController vaadinController = createVaadinControllerWithoutPrincipal();
+        HillaController vaadinController = createVaadinControllerWithoutPrincipal();
         ResponseEntity<String> response = vaadinController.serveEndpoint(
                 TEST_ENDPOINT_NAME, "testAnonymousMethod",
                 createRequestParameters("{}"), requestMock);
@@ -369,14 +369,14 @@ public class FusionControllerTest {
         String responseBody = response.getBody();
         assertNotNull("Response body should not be null", responseBody);
         assertTrue("Should return unauthorized error",
-                responseBody.contains(FusionAccessChecker.ACCESS_DENIED_MSG));
+                responseBody.contains(HillaAccessChecker.ACCESS_DENIED_MSG));
     }
 
     @Test
     public void should_NotCallMethodAnonymously_When_UserPrincipalIsNotInRole() {
-        FusionController vaadinController = createVaadinController(
+        HillaController vaadinController = createVaadinController(
                 TEST_ENDPOINT,
-                new FusionAccessChecker(new AccessAnnotationChecker()));
+                new HillaAccessChecker(new AccessAnnotationChecker()));
 
         ResponseEntity<String> response = vaadinController.serveEndpoint(
                 TEST_ENDPOINT_NAME, "testRoleAllowed",
@@ -384,16 +384,16 @@ public class FusionControllerTest {
 
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
         assertTrue(response.getBody()
-                .contains(FusionAccessChecker.ACCESS_DENIED_MSG));
+                .contains(HillaAccessChecker.ACCESS_DENIED_MSG));
     }
 
     @Test
     public void should_CallMethodAnonymously_When_UserPrincipalIsInRole() {
         when(requestMock.isUserInRole("FOO_ROLE")).thenReturn(true);
 
-        FusionController vaadinController = createVaadinController(
+        HillaController vaadinController = createVaadinController(
                 TEST_ENDPOINT,
-                new FusionAccessChecker(new AccessAnnotationChecker()));
+                new HillaAccessChecker(new AccessAnnotationChecker()));
 
         ResponseEntity<String> response = vaadinController.serveEndpoint(
                 TEST_ENDPOINT_NAME, "testRoleAllowed",
@@ -406,9 +406,9 @@ public class FusionControllerTest {
 
     @Test
     public void should_CallMethodAnonymously_When_AnonymousOverridesRoles() {
-        FusionController vaadinController = createVaadinController(
+        HillaController vaadinController = createVaadinController(
                 TEST_ENDPOINT,
-                new FusionAccessChecker(new AccessAnnotationChecker()));
+                new HillaAccessChecker(new AccessAnnotationChecker()));
 
         ResponseEntity<String> response = vaadinController.serveEndpoint(
                 TEST_ENDPOINT_NAME, "anonymousOverrides",
@@ -420,23 +420,23 @@ public class FusionControllerTest {
 
     @Test
     public void should_NotCallMethod_When_DenyAll() {
-        FusionController vaadinController = createVaadinControllerWithoutPrincipal();
+        HillaController vaadinController = createVaadinControllerWithoutPrincipal();
         ResponseEntity<String> response = vaadinController.serveEndpoint(
                 TEST_ENDPOINT_NAME, "denyAll", createRequestParameters("{}"),
                 requestMock);
 
         assertEquals(HttpStatus.UNAUTHORIZED, response.getStatusCode());
         assertTrue(response.getBody()
-                .contains(FusionAccessChecker.ACCESS_DENIED_MSG));
+                .contains(HillaAccessChecker.ACCESS_DENIED_MSG));
     }
 
     @Test
     public void should_bePossibeToGetPrincipalInEndpoint() {
         when(principal.getName()).thenReturn("foo");
 
-        FusionController vaadinController = createVaadinController(
+        HillaController vaadinController = createVaadinController(
                 TEST_ENDPOINT,
-                new FusionAccessChecker(new AccessAnnotationChecker()));
+                new HillaAccessChecker(new AccessAnnotationChecker()));
 
         ResponseEntity<String> response = vaadinController.serveEndpoint(
                 TEST_ENDPOINT_NAME, "getUserName",
@@ -447,9 +447,9 @@ public class FusionControllerTest {
 
     @Test
     public void should_clearVaadinRequestInsntace_after_EndpointCall() {
-        FusionController vaadinController = createVaadinController(
+        HillaController vaadinController = createVaadinController(
                 TEST_ENDPOINT,
-                new FusionAccessChecker(new AccessAnnotationChecker()));
+                new HillaAccessChecker(new AccessAnnotationChecker()));
 
         vaadinController.serveEndpoint(TEST_ENDPOINT_NAME, "getUserName",
                 createRequestParameters("{}"), requestMock);
@@ -467,7 +467,7 @@ public class FusionControllerTest {
         Method endpointMethodMock = createEndpointMethodMockThatThrows(
                 inputValue, new IllegalArgumentException("OOPS"));
 
-        FusionController controller = createVaadinController(TEST_ENDPOINT);
+        HillaController controller = createVaadinController(TEST_ENDPOINT);
         controller.endpointRegistry
                 .get(TEST_ENDPOINT_NAME.toLowerCase()).methods.put(
                         TEST_METHOD.getName().toLowerCase(),
@@ -499,7 +499,7 @@ public class FusionControllerTest {
         Method endpointMethodMock = createEndpointMethodMockThatThrows(
                 inputValue, new IllegalAccessException("OOPS"));
 
-        FusionController controller = createVaadinController(TEST_ENDPOINT);
+        HillaController controller = createVaadinController(TEST_ENDPOINT);
         controller.endpointRegistry
                 .get(TEST_ENDPOINT_NAME.toLowerCase()).methods.put(
                         TEST_METHOD.getName().toLowerCase(),
@@ -532,7 +532,7 @@ public class FusionControllerTest {
                 inputValue, new InvocationTargetException(
                         new IllegalStateException("OOPS")));
 
-        FusionController controller = createVaadinController(TEST_ENDPOINT);
+        HillaController controller = createVaadinController(TEST_ENDPOINT);
         controller.endpointRegistry
                 .get(TEST_ENDPOINT_NAME.toLowerCase()).methods.put(
                         TEST_METHOD.getName().toLowerCase(),
@@ -566,7 +566,7 @@ public class FusionControllerTest {
                 inputValue, new InvocationTargetException(
                         new EndpointException(expectedMessage)));
 
-        FusionController controller = createVaadinController(TEST_ENDPOINT);
+        HillaController controller = createVaadinController(TEST_ENDPOINT);
         controller.endpointRegistry
                 .get(TEST_ENDPOINT_NAME.toLowerCase()).methods.put(
                         TEST_METHOD.getName().toLowerCase(),
@@ -606,7 +606,7 @@ public class FusionControllerTest {
                 inputValue,
                 new InvocationTargetException(new MyCustomException()));
 
-        FusionController controller = createVaadinController(TEST_ENDPOINT);
+        HillaController controller = createVaadinController(TEST_ENDPOINT);
         controller.endpointRegistry
                 .get(TEST_ENDPOINT_NAME.toLowerCase()).methods.put(
                         TEST_METHOD.getName().toLowerCase(),
@@ -662,13 +662,13 @@ public class FusionControllerTest {
                 .thenReturn(Collections.singletonMap(
                         endpoint.getClass().getSimpleName(), proxy));
 
-        FusionController fusionController = createVaadinControllerWithApplicationContext(
+        HillaController hillaController = createVaadinControllerWithApplicationContext(
                 contextMock);
 
         int inputValue = 222;
         String expectedOutput = endpoint.testMethod(inputValue);
 
-        ResponseEntity<String> response = fusionController.serveEndpoint(
+        ResponseEntity<String> response = hillaController.serveEndpoint(
                 "TestClass", "testMethod",
                 createRequestParameters(
                         String.format("{\"value\": %s}", inputValue)),
@@ -736,10 +736,10 @@ public class FusionControllerTest {
                 .thenReturn(Collections.singletonMap(beanName,
                         new TestClassWithCustomEndpointName()));
 
-        FusionController fusionController = createVaadinControllerWithApplicationContext(
+        HillaController hillaController = createVaadinControllerWithApplicationContext(
                 contextMock);
 
-        ResponseEntity<String> response = fusionController
+        ResponseEntity<String> response = hillaController
                 .serveEndpoint("CustomEndpoint", "testMethod",
                         createRequestParameters(
                                 String.format("{\"value\": %s}", input)),
@@ -760,13 +760,13 @@ public class FusionControllerTest {
                 Collections.singletonMap(endpoint.getClass().getSimpleName(),
                         proxy));
 
-        FusionController fusionController = createVaadinControllerWithApplicationContext(
+        HillaController hillaController = createVaadinControllerWithApplicationContext(
                 contextMock);
 
         int input = 111;
         String expectedOutput = endpoint.testMethod(input);
 
-        ResponseEntity<String> response = fusionController
+        ResponseEntity<String> response = hillaController
                 .serveEndpoint("CustomEndpoint", "testMethod",
                         createRequestParameters(
                                 String.format("{\"value\": %s}", input)),
@@ -797,7 +797,7 @@ public class FusionControllerTest {
                 .thenReturn(Collections.emptyMap());
         EndpointRegistry registry = new EndpointRegistry(
                 mock(EndpointNameChecker.class));
-        new FusionController(null, mock(ExplicitNullableTypeChecker.class),
+        new HillaController(null, mock(ExplicitNullableTypeChecker.class),
                 contextMock, registry, null);
 
         verify(contextMock, never()).getBean(ObjectMapper.class);
@@ -830,7 +830,7 @@ public class FusionControllerTest {
                         JsonAutoDetect.Visibility.PUBLIC_ONLY));
         EndpointRegistry registry = new EndpointRegistry(
                 mock(EndpointNameChecker.class));
-        new FusionController(null, mock(ExplicitNullableTypeChecker.class),
+        new HillaController(null, mock(ExplicitNullableTypeChecker.class),
                 contextMock, registry, null);
 
         verify(contextMock, never()).getBean(ObjectMapper.class);
@@ -1196,25 +1196,25 @@ public class FusionControllerTest {
         }
     }
 
-    private <T> FusionController createVaadinController(T endpoint) {
+    private <T> HillaController createVaadinController(T endpoint) {
         return createVaadinController(endpoint, null, null, null, null, null);
     }
 
-    private <T> FusionController createVaadinController(T endpoint,
+    private <T> HillaController createVaadinController(T endpoint,
             ObjectMapper vaadinEndpointMapper) {
         return createVaadinController(endpoint, vaadinEndpointMapper, null,
                 null, null, null);
     }
 
-    private <T> FusionController createVaadinController(T endpoint,
-            FusionAccessChecker accessChecker) {
+    private <T> HillaController createVaadinController(T endpoint,
+            HillaAccessChecker accessChecker) {
         return createVaadinController(endpoint, null, accessChecker, null, null,
                 null);
     }
 
-    private <T> FusionController createVaadinController(T endpoint,
+    private <T> HillaController createVaadinController(T endpoint,
             ObjectMapper vaadinEndpointMapper,
-            FusionAccessChecker accessChecker,
+            HillaAccessChecker accessChecker,
             EndpointNameChecker endpointNameChecker,
             ExplicitNullableTypeChecker explicitNullableTypeChecker,
             CsrfChecker csrfChecker) {
@@ -1228,7 +1228,7 @@ public class FusionControllerTest {
         }
 
         if (accessChecker == null) {
-            accessChecker = mock(FusionAccessChecker.class);
+            accessChecker = mock(HillaAccessChecker.class);
             when(accessChecker.check(TEST_METHOD, requestMock))
                     .thenReturn(null);
         }
@@ -1253,7 +1253,7 @@ public class FusionControllerTest {
                 endpoint);
         EndpointRegistry registry = new EndpointRegistry(endpointNameChecker);
 
-        FusionController connectController = Mockito.spy(new FusionController(
+        HillaController connectController = Mockito.spy(new HillaController(
                 vaadinEndpointMapper, explicitNullableTypeChecker,
                 mockApplicationContext, registry, csrfChecker));
         Mockito.doReturn(accessChecker).when(connectController)
@@ -1261,19 +1261,19 @@ public class FusionControllerTest {
         return connectController;
     }
 
-    private FusionController createVaadinControllerWithoutPrincipal() {
+    private HillaController createVaadinControllerWithoutPrincipal() {
         when(requestMock.getUserPrincipal()).thenReturn(null);
         return createVaadinController(TEST_ENDPOINT,
-                new FusionAccessChecker(new AccessAnnotationChecker()));
+                new HillaAccessChecker(new AccessAnnotationChecker()));
     }
 
-    private FusionController createVaadinControllerWithApplicationContext(
+    private HillaController createVaadinControllerWithApplicationContext(
             ApplicationContext applicationContext) {
-        FusionControllerMockBuilder controllerMockBuilder = new FusionControllerMockBuilder();
-        FusionController fusionController = controllerMockBuilder
+        HillaControllerMockBuilder controllerMockBuilder = new HillaControllerMockBuilder();
+        HillaController hillaController = controllerMockBuilder
                 .withObjectMapper(new ObjectMapper())
                 .withApplicationContext(applicationContext).build();
-        return fusionController;
+        return hillaController;
     }
 
     private Method createEndpointMethodMockThatThrows(Object argument,

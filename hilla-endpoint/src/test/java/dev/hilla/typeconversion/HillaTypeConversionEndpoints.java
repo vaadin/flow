@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
 import dev.hilla.Endpoint;
 
 @Endpoint
-public class FusionTypeConversionEndpoints {
+public class HillaTypeConversionEndpoints {
     public int addOneInt(int value) {
         return value + 1;
     }
@@ -234,8 +234,8 @@ public class FusionTypeConversionEndpoints {
         return enumSet;
     }
 
-    public FusionTestBean getFooBean(FusionTestBean value) {
-        FusionTestBean newBean = new FusionTestBean();
+    public HillaTestBean getFooBean(HillaTestBean value) {
+        HillaTestBean newBean = new HillaTestBean();
         newBean.name = value.name + "-foo";
         newBean.address = value.address + "-foo";
         newBean.age = value.age + 1;

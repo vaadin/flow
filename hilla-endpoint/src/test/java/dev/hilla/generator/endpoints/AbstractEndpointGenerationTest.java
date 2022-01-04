@@ -80,7 +80,7 @@ import org.springframework.data.domain.Sort.NullHandling;
 import com.vaadin.flow.server.auth.AccessAnnotationChecker;
 import dev.hilla.Endpoint;
 import dev.hilla.EndpointExposed;
-import dev.hilla.auth.FusionAccessChecker;
+import dev.hilla.auth.HillaAccessChecker;
 import dev.hilla.endpointransfermapper.EndpointTransferMapper;
 import dev.hilla.generator.OpenAPIObjectGenerator;
 import dev.hilla.generator.endpoints.complexhierarchymodel.GrandParentModel;
@@ -109,7 +109,7 @@ public abstract class AbstractEndpointGenerationTest
      */
     private static final List<Class> DENY_LIST_CHECKING_ABSOLUTE_PATH = Arrays
             .asList(Model.class, ParentModel.class, GrandParentModel.class);
-    private static final FusionAccessChecker accessChecker = new FusionAccessChecker(
+    private static final HillaAccessChecker accessChecker = new HillaAccessChecker(
             new AccessAnnotationChecker());
     private final Set<String> schemaReferences = new HashSet<>();
 

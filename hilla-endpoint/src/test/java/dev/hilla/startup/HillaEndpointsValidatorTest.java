@@ -14,7 +14,7 @@ import org.mockito.Mockito;
 
 import dev.hilla.Endpoint;
 
-public class FusionEndpointsValidatorTest {
+public class HillaEndpointsValidatorTest {
 
     @Endpoint
     public static class WithConnectEndpoint {
@@ -37,7 +37,7 @@ public class FusionEndpointsValidatorTest {
 
     @Test
     public void should_start_when_spring_in_classpath() throws Exception {
-        FusionEndpointsValidator validator = new FusionEndpointsValidator();
+        HillaEndpointsValidator validator = new HillaEndpointsValidator();
         classes.add(WithConnectEndpoint.class);
         validator.process(classes, servletContext);
     }
@@ -45,7 +45,7 @@ public class FusionEndpointsValidatorTest {
     @Test
     public void should_trow_when_spring_not_in_classpath() throws Exception {
         exception.expect(ServletException.class);
-        FusionEndpointsValidator validator = new FusionEndpointsValidator();
+        HillaEndpointsValidator validator = new HillaEndpointsValidator();
         validator.setClassToCheck("foo.bar.Baz");
         classes.add(WithConnectEndpoint.class);
         validator.process(classes, servletContext);
@@ -55,14 +55,14 @@ public class FusionEndpointsValidatorTest {
     @Test
     public void should_start_when_no_endpoints_and_spring_not_in_classpath()
             throws Exception {
-        FusionEndpointsValidator validator = new FusionEndpointsValidator();
+        HillaEndpointsValidator validator = new HillaEndpointsValidator();
         classes.add(WithoutConnectEndpoint.class);
         validator.process(classes, servletContext);
     }
 
     @Test
     public void should_start_when_CDI_environment() throws Exception {
-        FusionEndpointsValidator validator = new FusionEndpointsValidator();
+        HillaEndpointsValidator validator = new HillaEndpointsValidator();
         classes = null;
         validator.process(classes, servletContext);
     }

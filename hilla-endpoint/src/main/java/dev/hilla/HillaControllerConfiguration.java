@@ -29,32 +29,32 @@ import org.springframework.web.util.pattern.PathPatternParser;
 
 import com.vaadin.flow.server.auth.AccessAnnotationChecker;
 import dev.hilla.auth.CsrfChecker;
-import dev.hilla.auth.FusionAccessChecker;
+import dev.hilla.auth.HillaAccessChecker;
 
 /**
- * A configuration class for customizing the {@link FusionController} class.
+ * A configuration class for customizing the {@link HillaController} class.
  */
 @Configuration
-public class FusionControllerConfiguration {
-    private final FusionEndpointProperties fusionEndpointProperties;
+public class HillaControllerConfiguration {
+    private final HillaEndpointProperties hillaEndpointProperties;
 
     /**
      * Initializes the endpoint configuration.
      *
-     * @param fusionEndpointProperties
+     * @param hillaEndpointProperties
      *            Vaadin ednpoint properties
      */
-    public FusionControllerConfiguration(
-            FusionEndpointProperties fusionEndpointProperties) {
-        this.fusionEndpointProperties = fusionEndpointProperties;
+    public HillaControllerConfiguration(
+            HillaEndpointProperties hillaEndpointProperties) {
+        this.hillaEndpointProperties = hillaEndpointProperties;
     }
 
     /**
-     * Registers {@link FusionController} to use
-     * {@link FusionEndpointProperties#getVaadinEndpointPrefix()} as a prefix
+     * Registers {@link HillaController} to use
+     * {@link HillaEndpointProperties#getVaadinEndpointPrefix()} as a prefix
      * for all Vaadin endpoints.
      *
-     * @return updated configuration for {@link FusionController}
+     * @return updated configuration for {@link HillaController}
      */
     @Bean
     public WebMvcRegistrations webMvcRegistrationsHandlerMapping() {
@@ -73,7 +73,7 @@ public class FusionControllerConfiguration {
                         // version in `flow-server` and in `vaadin-spring` is
                         // the same.
 
-                        if (FusionController.class
+                        if (HillaController.class
                                 .equals(method.getDeclaringClass())) {
                             mapping = prependEndpointPrefixUrl(mapping);
                         }
@@ -97,7 +97,7 @@ public class FusionControllerConfiguration {
     private RequestMappingInfo prependEndpointPrefixUrl(
             RequestMappingInfo mapping) {
         RequestMappingInfo.Builder prefixMappingBuilder = RequestMappingInfo
-                .paths(fusionEndpointProperties.getVaadinEndpointPrefix());
+                .paths(hillaEndpointProperties.getVaadinEndpointPrefix());
         if (mapping.getPatternsCondition() == null) {
             // `getPatternsCondition()` and `getPathPatternsCondition()` are
             // mutually exclusive: only one of them is active, the other
@@ -131,16 +131,16 @@ public class FusionControllerConfiguration {
     }
 
     /**
-     * Registers a default {@link FusionAccessChecker} bean instance.
+     * Registers a default {@link HillaAccessChecker} bean instance.
      *
      * @param accessAnnotationChecker
      *            the access controlks checker to use
      * @return the default Vaadin endpoint access checker bean
      */
     @Bean
-    public FusionAccessChecker accessChecker(
+    public HillaAccessChecker accessChecker(
             AccessAnnotationChecker accessAnnotationChecker) {
-        return new FusionAccessChecker(accessAnnotationChecker);
+        return new HillaAccessChecker(accessAnnotationChecker);
     }
 
     /**

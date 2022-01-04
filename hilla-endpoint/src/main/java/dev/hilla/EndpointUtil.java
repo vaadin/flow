@@ -29,7 +29,7 @@ import org.springframework.web.util.pattern.PathPattern;
 import org.springframework.web.util.pattern.PathPattern.PathMatchInfo;
 import org.springframework.web.util.pattern.PathPatternParser;
 
-import dev.hilla.auth.FusionAccessChecker;
+import dev.hilla.auth.HillaAccessChecker;
 
 /**
  * A util class related to {@link Endpoint}.
@@ -38,13 +38,13 @@ import dev.hilla.auth.FusionAccessChecker;
 public class EndpointUtil {
 
     @Autowired
-    private FusionEndpointProperties endpointProperties;
+    private HillaEndpointProperties endpointProperties;
 
     @Autowired
     private EndpointRegistry registry;
 
     @Autowired
-    private FusionAccessChecker accessChecker;
+    private HillaAccessChecker accessChecker;
 
     /**
      * Checks if the request is for an endpoint.
@@ -66,7 +66,7 @@ public class EndpointUtil {
         PathPatternParser pathParser = new PathPatternParser();
         PathPattern pathPattern = pathParser
                 .parse(endpointProperties.getVaadinEndpointPrefix()
-                        + FusionController.ENDPOINT_METHODS);
+                        + HillaController.ENDPOINT_METHODS);
         RequestPath requestPath = ServletRequestPathUtils
                 .parseAndCache(request);
         PathContainer pathWithinApplication = requestPath
