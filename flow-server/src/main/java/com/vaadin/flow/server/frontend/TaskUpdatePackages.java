@@ -128,8 +128,7 @@ public class TaskUpdatePackages extends NodeUpdater {
         }
     }
 
-    private boolean lockVersionForNpm(JsonObject packageJson)
-            throws IOException {
+    boolean lockVersionForNpm(JsonObject packageJson) throws IOException {
         if (enablePnpm) {
             return false;
         }
