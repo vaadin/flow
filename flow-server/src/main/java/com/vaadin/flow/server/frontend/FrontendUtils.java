@@ -132,6 +132,11 @@ public class FrontendUtils {
     public static final String WEBPACK_GENERATED = "webpack.generated.js";
 
     /**
+     * The name of the webpack generated configuration source file.
+     */
+    public static final String WEBPACK4_GENERATED_SOURCE = "webpack4.generated.js";
+
+    /**
      * The name of the service worker source file for InjectManifest method of
      * workbox-webpack-plugin.
      */

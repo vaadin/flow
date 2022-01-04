@@ -64,7 +64,7 @@ import java.util.zip.ZipOutputStream;
 import javax.servlet.annotation.HandlesTypes;
 
 import com.vaadin.base.devserver.ViteHandler;
-import com.vaadin.base.devserver.WebpackHandler;
+import com.vaadin.base.devserver.Webpack4Handler;
 import com.vaadin.base.devserver.stats.DevModeUsageStatistics;
 import com.vaadin.base.devserver.stats.StatisticsSender;
 import com.vaadin.base.devserver.stats.StatisticsStorage;
@@ -352,7 +352,7 @@ public class DevModeInitializer implements Serializable {
             return new ViteHandler(devServerLookup, 0, builder.getNpmFolder(),
                     nodeTasksFuture);
         } else {
-            return new WebpackHandler(devServerLookup, 0,
+            return new Webpack4Handler(devServerLookup, 0,
                     builder.getNpmFolder(), nodeTasksFuture);
         }
     }

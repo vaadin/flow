@@ -141,7 +141,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
                 WEBPACK_GENERATED);
 
         URL resource = this.getClass().getClassLoader()
-                .getResource(FrontendUtils.WEBPACK_GENERATED);
+                .getResource(FrontendUtils.WEBPACK4_GENERATED_SOURCE);
         FileUtils.copyURLToFile(resource, generatedFile);
         List<String> lines = modifyWebpackConfig(generatedFile);
 

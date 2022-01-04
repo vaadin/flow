@@ -12,7 +12,7 @@ import javax.servlet.ServletContext;
 import com.vaadin.base.devserver.AbstractDevServerRunner;
 import com.vaadin.base.devserver.DevModeHandlerManagerImpl;
 import com.vaadin.base.devserver.MockDeploymentConfiguration;
-import com.vaadin.base.devserver.WebpackHandler;
+import com.vaadin.base.devserver.Webpack4Handler;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -144,12 +144,12 @@ public abstract class AbstractDevModeTest {
         waitForDevServer(handler);
     }
 
-    protected WebpackHandler startWebpack() {
-        return startWebpack(0);
+    protected Webpack4Handler startWebpack4() {
+        return startWebpack4(0);
     }
 
-    protected WebpackHandler startWebpack(int port) {
-        return new WebpackHandler(lookup, port, npmFolder,
+    protected Webpack4Handler startWebpack4(int port) {
+        return new Webpack4Handler(lookup, port, npmFolder,
                 CompletableFuture.completedFuture(null));
     }
 

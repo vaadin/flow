@@ -46,7 +46,7 @@ import org.slf4j.LoggerFactory;
  *
  * @since 2.0
  */
-public final class WebpackHandler extends AbstractDevServerRunner {
+public final class Webpack4Handler extends AbstractDevServerRunner {
 
     // It's not possible to know whether webpack is ready unless reading output
     // messages. When webpack finishes, it writes either a `Compiled` or a
@@ -73,13 +73,13 @@ public final class WebpackHandler extends AbstractDevServerRunner {
      *            a completable future whose execution result needs to be
      *            available to start the dev server
      */
-    public WebpackHandler(Lookup lookup, int runningPort, File npmFolder,
+    public Webpack4Handler(Lookup lookup, int runningPort, File npmFolder,
             CompletableFuture<Void> waitFor) {
         super(lookup, runningPort, npmFolder, waitFor);
     }
 
     private static Logger getLogger() {
-        return LoggerFactory.getLogger(WebpackHandler.class);
+        return LoggerFactory.getLogger(Webpack4Handler.class);
     }
 
     @Override
@@ -130,7 +130,7 @@ public final class WebpackHandler extends AbstractDevServerRunner {
 
     @Override
     protected String getServerName() {
-        return "Webpack";
+        return "Webpack4";
     }
 
     @Override

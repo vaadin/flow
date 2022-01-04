@@ -15,7 +15,7 @@
  */
 package com.vaadin.base.devserver;
 
-import static com.vaadin.base.devserver.WebpackHandler.WEBPACK_SERVER;
+import static com.vaadin.base.devserver.Webpack4Handler.WEBPACK_SERVER;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
 import static com.vaadin.flow.testutil.FrontendStubs.WEBPACK_TEST_OUT_FILE;
 import static com.vaadin.flow.testutil.FrontendStubs.createStubWebpackServer;
@@ -75,7 +75,7 @@ import org.mockito.Mockito;
 import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
-public class WebpackHandlerTest extends AbstractDevModeTest {
+public class Webpack4HandlerTest extends AbstractDevModeTest {
 
     private HttpServer httpServer;
     private int responseStatus;
@@ -106,7 +106,7 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
     @Test
     public void should_CreateInstanceAndRunWebPack_When_DevModeAndNpmInstalled()
             throws Exception {
-        handler = startWebpack();
+        handler = startWebpack4();
         assertNotNull(handler);
         waitForDevServer();
         assertTrue(new File(baseDir,
@@ -120,7 +120,7 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
     @Test
     public void avoidStoringPortOfFailingWebPackDevServer_failWebpackStart_startWebPackSucessfullyAfter()
             throws Exception {
-        handler = startWebpack();
+        handler = startWebpack4();
 
         waitForDevServer();
 
@@ -131,7 +131,7 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
 
         // use non-existent folder for as npmFolder, it should fail the
         // validation (which means server instance won't be reused)
-        WebpackHandler newhHandler = new WebpackHandler(lookup, 0,
+        Webpack4Handler newhHandler = new Webpack4Handler(lookup, 0,
                 new File(npmFolder, UUID.randomUUID().toString()),
                 CompletableFuture.completedFuture(null));
 
@@ -161,7 +161,7 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
         exception.expectMessage("Webpack exited prematurely");
 
         createStubWebpackServer("Foo", 0, baseDir);
-        handler = startWebpack();
+        handler = startWebpack4();
     }
 
     @Test
@@ -169,7 +169,7 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
         configuration.setApplicationOrSystemProperty(
                 SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT, "100");
         createStubWebpackServer("Failed to compile", 300, baseDir, true);
-        handler = startWebpack();
+        handler = startWebpack4();
         assertNotNull(handler);
         waitForDevServer();
         int port = getDevServerPort();
@@ -188,7 +188,7 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
     public void shouldNot_RunWebpack_When_WebpackRunning() throws Exception {
         final String globalResponse = "{}";
         int port = prepareHttpServer(0, HTTP_OK, globalResponse);
-        handler = startWebpack(port);
+        handler = startWebpack4(port);
         waitForDevServer();
         assertFalse(new File(baseDir,
                 FrontendUtils.DEFAULT_NODE_DIR + WEBPACK_TEST_OUT_FILE)
@@ -199,7 +199,7 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
     public void webpackNotInstalled_throws() throws Exception {
         exception.expectCause(CoreMatchers.isA(ExecutionFailedException.class));
         new File(baseDir, WEBPACK_SERVER).delete();
-        handler = startWebpack();
+        handler = startWebpack4();
         waitForDevServer();
     }
 
@@ -214,7 +214,7 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
         if (systemImplementsExecutable) {
             exception.expectCause(
                     CoreMatchers.isA(ExecutionFailedException.class));
-            handler = startWebpack();
+            handler = startWebpack4();
             waitForDevServer();
         }
     }
@@ -223,7 +223,7 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
     public void webpackNotConfigured_throws() {
         exception.expectCause(CoreMatchers.isA(ExecutionFailedException.class));
         new File(baseDir, FrontendUtils.WEBPACK_CONFIG).delete();
-        handler = startWebpack();
+        handler = startWebpack4();
         waitForDevServer();
     }
 
@@ -232,7 +232,7 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
             throws IOException {
         createStubWebpackServer("Compiled", 3000, baseDir, false);
         HttpServletRequest request = prepareRequest("/VAADIN//foo.js");
-        handler = startWebpack();
+        handler = startWebpack4();
         waitForDevServer();
         handler.serveDevModeRequest(request, null);
     }
@@ -246,7 +246,7 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
                 + "\"VAADIN//foo.js\" }";
         int port = prepareHttpServer(0, HTTP_OK, globalResponse);
 
-        handler = startWebpack(port);
+        handler = startWebpack4(port);
         waitForDevServer();
         assertTrue(handler.serveDevModeRequest(request, response));
         assertEquals(HTTP_OK, responseStatus);
@@ -294,7 +294,7 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
 
         String statsContent = "{}";
         int port = prepareHttpServer(0, HTTP_OK, statsContent);
-        handler = startWebpack(port);
+        handler = startWebpack4(port);
         devModeHandlerManager.setDevModeHandler(handler);
         waitForDevServer();
 
@@ -307,7 +307,7 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
         final String globalResponse = "{}";
         int port = prepareHttpServer(0, HTTP_OK, globalResponse);
 
-        handler = startWebpack(port);
+        handler = startWebpack4(port);
         devModeHandlerManager.setDevModeHandler(handler);
         waitForDevServer();
         assertNotNull(handler);
@@ -315,7 +315,7 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
 
         removeDevModeHandlerInstance();
 
-        handler = startWebpack();
+        handler = startWebpack4();
         waitForDevServer();
         assertNotNull(handler);
         assertEquals(port, getDevServerPort());
@@ -338,7 +338,7 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
             Mockito.when(appConfig.getBooleanProperty(
                     InitParameters.REQUIRE_HOME_NODE_EXECUTABLE, false))
                     .thenReturn(true);
-            handler = startWebpack();
+            handler = startWebpack4();
             waitForDevServer();
         } finally {
             System.setProperty(userHome, originalHome);
@@ -352,7 +352,7 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
         throwFuture.completeExceptionally(new CustomRuntimeException());
         final String globalResponse = "{}";
         int port = prepareHttpServer(0, HTTP_OK, globalResponse);
-        handler = new WebpackHandler(lookup, port, npmFolder, throwFuture);
+        handler = new Webpack4Handler(lookup, port, npmFolder, throwFuture);
         try {
             waitForDevServer();
         } catch (CompletionException ignore) {
@@ -371,7 +371,7 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
             throws IOException {
         CompletableFuture<Void> throwFuture = new CompletableFuture<>();
         throwFuture.completeExceptionally(new CustomRuntimeException());
-        handler = new WebpackHandler(lookup, 0, npmFolder, throwFuture);
+        handler = new Webpack4Handler(lookup, 0, npmFolder, throwFuture);
         try {
             waitForDevServer();
         } catch (CompletionException ignore) {
@@ -400,14 +400,14 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
 
     @Test
     public void start_twoTimes_onlyOneWebpackServerRunning() {
-        handler = startWebpack();
+        handler = startWebpack4();
         waitForDevServer();
         Assert.assertTrue(hasDevServerProcess(handler));
         /*
          * "start" one more time: there should not be another instance of dev
          * mode handler created
          */
-        WebpackHandler anotherHandler = startWebpack();
+        Webpack4Handler anotherHandler = startWebpack4();
         waitForDevServer(anotherHandler);
 
         /*
@@ -422,14 +422,14 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
     public void start_serverPortDoesNotWork_throws() throws Exception {
         exception.expect(CompletionException.class);
         exception.expectCause(Matchers.instanceOf(IllegalStateException.class));
-        int port = WebpackHandler.getFreePort();
-        handler = startWebpack(port);
+        int port = Webpack4Handler.getFreePort();
+        handler = startWebpack4(port);
         waitForDevServer();
     }
 
     @Test
     public void devModeNotReady_handleRequest_returnsHtml() throws Exception {
-        handler = startWebpack();
+        handler = startWebpack4();
         VaadinResponse response = Mockito.mock(VaadinResponse.class);
         ByteArrayOutputStream stream = new ByteArrayOutputStream();
         Mockito.when(response.getOutputStream()).thenReturn(stream);
@@ -455,7 +455,7 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
                 + "\"sw.js\", \"index.html\": \"index.html\" }";
         int port = prepareHttpServer(0, HTTP_OK, globalResponse);
 
-        handler = startWebpack(port);
+        handler = startWebpack4(port);
         waitForDevServer();
 
         assertTrue(handler.serveDevModeRequest(request, response));
@@ -473,7 +473,7 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
                 + "\"sw.js\", \"index.html\": \"index.html\" }";
         int port = prepareHttpServer(0, HTTP_OK, globalResponse);
 
-        handler = startWebpack(port);
+        handler = startWebpack4(port);
         waitForDevServer();
 
         assertTrue(handler.serveDevModeRequest(request, response));
@@ -540,7 +540,7 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
             String uri) throws IOException {
         HttpServletRequest request = prepareRequest(uri);
         HttpServletResponse response = prepareResponse();
-        handler = startWebpack();
+        handler = startWebpack4();
         waitForDevServer();
         assertTrue(handler.serveDevModeRequest(request, response));
 
@@ -549,7 +549,7 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
 
     private VaadinServlet prepareServlet(int port)
             throws ServletException, IOException {
-        handler = startWebpack(port);
+        handler = startWebpack4(port);
         devModeHandlerManager.setDevModeHandler(handler);
         waitForDevServer();
         VaadinServlet servlet = new VaadinServlet();
