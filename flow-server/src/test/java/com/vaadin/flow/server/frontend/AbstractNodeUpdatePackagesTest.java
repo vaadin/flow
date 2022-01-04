@@ -105,7 +105,6 @@ public abstract class AbstractNodeUpdatePackagesTest
         Mockito.when(classFinder.getResource(Constants.VAADIN_VERSIONS_JSON))
                 .thenReturn(versions.toURI().toURL());
 
-
         packageUpdater = new TaskUpdatePackages(classFinder,
                 getScanner(classFinder), baseDir, generatedDir, resourcesDir,
                 false, false, TARGET, featureFlags);
