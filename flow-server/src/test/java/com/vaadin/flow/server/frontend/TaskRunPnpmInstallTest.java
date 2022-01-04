@@ -640,11 +640,6 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         Mockito.when(classFinder.getResource(Constants.VAADIN_VERSIONS_JSON))
                 .thenReturn(versions.toURI().toURL());
 
-        TaskRunNpmInstall task = new TaskRunNpmInstall(getNodeUpdater(), true,
-                false, FrontendTools.DEFAULT_NODE_VERSION,
-                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false,
-                false, POSTINSTALL_PACKAGES);
-
         String path = getNodeUpdater().generateVersionsJson();
 
         File generatedVersionsFile = new File(getNodeUpdater().npmFolder, path);

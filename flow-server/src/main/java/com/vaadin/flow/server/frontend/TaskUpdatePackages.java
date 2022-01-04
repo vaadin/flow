@@ -141,7 +141,8 @@ public class TaskUpdatePackages extends NodeUpdater {
         if (versionsJson != null) {
             JsonObject overridesSection = getOverridesSection(packageJson);
             for (String dependency : versionsJson.keys()) {
-                if (!overridesSection.hasKey(dependency)) {
+                if (!overridesSection.hasKey(dependency)
+                        && !NodeUpdater.DEP_NAME_FLOW_JARS.equals(dependency)) {
                     overridesSection.put(dependency, "$" + dependency);
                     modified = true;
                 }
