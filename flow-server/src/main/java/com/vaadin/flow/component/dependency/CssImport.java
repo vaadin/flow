@@ -72,11 +72,11 @@ import java.lang.annotation.Target;
  * </pre>
  *
  *
- *
  * <li>When 'value' and 'id' are given, a new 'dom-module' with the provided
  * 'id' is registered using the {@code registerStyles} function from
  * {@code vaadin-themable-mixin}. The 'include' parameter is allowed and is
  * added to the &lt;style&gt; element inside the module template.
+ *
  *
  * <li>When 'value' and 'themeFor' are given, a new 'dom-module' for customizing
  * a themable element is registered using the {@code registerStyles} function

@@ -323,7 +323,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 .add("registerStyles('', css`${$css_3}`, {moduleId: 'baz'});");
         expectedLines.add(
                 "registerStyles('', css`${$css_4}`, {include: 'bar', moduleId: 'baz'});");
-        expectedLines.add("registerStyles('foo-bar', css`${$css_5}`, {moduleId: 'flow_css_mod'});");
+        expectedLines.add(
+                "registerStyles('foo-bar', css`${$css_5}`, {moduleId: 'flow_css_mod'});");
         expectedLines.add(
                 "registerStyles('foo-bar', css`${$css_6}`, {include: 'bar', moduleId: 'flow_css_mod'});");
 

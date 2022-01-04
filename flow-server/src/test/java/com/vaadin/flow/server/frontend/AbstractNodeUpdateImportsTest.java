@@ -128,15 +128,14 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
         expectedLines.add("import $css_4 from 'Frontend/foo.css';");
         expectedLines.add("import $css_5 from 'Frontend/foo.css';");
         expectedLines.add("import $css_6 from 'Frontend/foo.css';");
-        expectedLines.add("import { css, registerStyles } from '@vaadin/vaadin-themable-mixin';");
         expectedLines.add(
-                "addCssBlock(`<style>${$css_0}</style>`);");
-        expectedLines.add(
-                "addCssBlock(`<style>${$css_1}</style>`);");
+                "import { css, registerStyles } from '@vaadin/vaadin-themable-mixin';");
+        expectedLines.add("addCssBlock(`<style>${$css_0}</style>`);");
+        expectedLines.add("addCssBlock(`<style>${$css_1}</style>`);");
         expectedLines.add(
                 "addCssBlock(`<style include=\"bar\">${$css_2}</style>`);");
-        expectedLines.add(
-                "registerStyles('', css`${$css_3}`, {moduleId: 'baz'});");
+        expectedLines
+                .add("registerStyles('', css`${$css_3}`, {moduleId: 'baz'});");
         expectedLines.add(
                 "registerStyles('', css`${$css_4}`, {include: 'bar', moduleId: 'baz'});");
         expectedLines.add(
