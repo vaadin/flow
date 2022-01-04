@@ -101,10 +101,10 @@ public class TaskUpdatePackages extends NodeUpdater {
                     .getPackages();
             JsonObject packageJson = getPackageJson();
             modified = updatePackageJsonDependencies(packageJson,
-                    scannedApplicationDependencies)
-                    | lockVersionForNpm(packageJson);
+                    scannedApplicationDependencies);
+            boolean npmVersionLockingUpdated = lockVersionForNpm(packageJson);
 
-            if (modified) {
+            if (modified || npmVersionLockingUpdated) {
                 writePackageFile(packageJson);
 
                 if (enablePnpm) {
@@ -118,8 +118,11 @@ public class TaskUpdatePackages extends NodeUpdater {
                     // https://github.com/pnpm/pnpm/issues/2587
                     // https://github.com/vaadin/flow/issues/9719
                     deletePnpmLockFile();
+                } else if (npmVersionLockingUpdated) {
+                    deleteNpmLockFile();
                 }
             }
+
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -130,7 +133,7 @@ public class TaskUpdatePackages extends NodeUpdater {
         if (enablePnpm) {
             return false;
         }
-        boolean modified = false;
+        boolean versionLockingUpdated = false;
 
         final String versionsPath = generateVersionsJson();
 
@@ -140,22 +143,24 @@ public class TaskUpdatePackages extends NodeUpdater {
 
         if (versionsJson != null) {
             JsonObject overridesSection = getOverridesSection(packageJson);
+            final JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
             for (String dependency : versionsJson.keys()) {
                 if (!overridesSection.hasKey(dependency)
+                        && dependencies.hasKey(dependency)
                         && !NodeUpdater.DEP_NAME_FLOW_JARS.equals(dependency)) {
                     overridesSection.put(dependency, "$" + dependency);
-                    modified = true;
+                    versionLockingUpdated = true;
                 }
             }
         }
-        return modified;
+        return versionLockingUpdated;
     }
 
     private JsonObject getOverridesSection(JsonObject packageJson) {
-        JsonObject overridesSection = packageJson.getObject(OVERRIEDS);
+        JsonObject overridesSection = packageJson.getObject(OVERRIDES);
         if (overridesSection == null) {
             overridesSection = Json.createObject();
-            packageJson.put(OVERRIEDS, overridesSection);
+            packageJson.put(OVERRIDES, overridesSection);
         }
         return overridesSection;
     }
@@ -521,7 +526,15 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     private void deletePnpmLockFile() throws IOException {
-        File lockFile = new File(npmFolder, "pnpm-lock.yaml");
+        deleteLockFile("pnpm-lock.yaml");
+    }
+
+    private void deleteNpmLockFile() throws IOException {
+        deleteLockFile("package-lock.json");
+    }
+
+    private void deleteLockFile(String fileName) throws IOException {
+        File lockFile = new File(npmFolder, fileName);
         if (lockFile.exists()) {
             FileUtils.forceDelete(lockFile);
         }

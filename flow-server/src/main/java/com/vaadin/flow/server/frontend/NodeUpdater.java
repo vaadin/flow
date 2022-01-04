@@ -81,7 +81,7 @@ public abstract class NodeUpdater implements FallibleCommand {
     static final String VAADIN_DEP_KEY = "vaadin";
     static final String HASH_KEY = "hash";
     static final String DEV_DEPENDENCIES = "devDependencies";
-    static final String OVERRIEDS = "overrides";
+    static final String OVERRIDES = "overrides";
 
     private static final String DEP_LICENSE_KEY = "license";
     private static final String DEP_LICENSE_DEFAULT = "UNLICENSED";
@@ -570,7 +570,7 @@ public abstract class NodeUpdater implements FallibleCommand {
     }
 
     /**
-     * Generate versions json file for pnpm.
+     * Generate versions json file for version locking.
      *
      * @return generated versions json file path
      * @throws IOException
