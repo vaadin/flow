@@ -69,10 +69,6 @@ public class NodeTasks implements FallibleCommand {
 
         private File resourceOutputDirectory = null;
 
-        private String webpackTemplate = null;
-
-        private String webpackGeneratedTemplate = null;
-
         private boolean enablePackagesUpdate = false;
 
         private boolean createMissingPackageJson = false;
@@ -243,21 +239,12 @@ public class NodeTasks implements FallibleCommand {
          *            the directory to output generated non-served resources,
          *            such as the "config/stats.json" stats file, and the
          *            "config/flow-build-info.json" token file.
-         * @param webpackTemplate
-         *            name of the webpack resource to be used as template when
-         *            creating the <code>webpack.config.js</code> file.
-         * @param webpackGeneratedTemplate
-         *            name of the webpack resource to be used as template when
-         *            creating the <code>webpack.generated.js</code> file.
          * @return this builder
          */
         public Builder withWebpack(File webappResourcesDirectory,
-                File resourceOutputDirectory, String webpackTemplate,
-                String webpackGeneratedTemplate) {
+                File resourceOutputDirectory) {
             this.webappResourcesDirectory = webappResourcesDirectory;
             this.resourceOutputDirectory = resourceOutputDirectory;
-            this.webpackTemplate = webpackTemplate;
-            this.webpackGeneratedTemplate = webpackGeneratedTemplate;
             return this;
         }
 
@@ -707,8 +694,7 @@ public class NodeTasks implements FallibleCommand {
                 builder.classFinder);
         FrontendDependenciesScanner frontendDependencies = null;
 
-        boolean enableWebpackConfigUpdate = builder.webpackTemplate != null
-                && !builder.webpackTemplate.isEmpty();
+        boolean enableWebpackConfigUpdate = builder.webappResourcesDirectory != null;
 
         final FeatureFlags featureFlags = builder.getFeatureFlags();
 
@@ -815,8 +801,7 @@ public class NodeTasks implements FallibleCommand {
                     .getPwaConfiguration();
             commands.add(new TaskUpdateWebpack(builder.frontendDirectory,
                     builder.npmFolder, builder.webappResourcesDirectory,
-                    builder.resourceOutputDirectory, builder.webpackTemplate,
-                    builder.webpackGeneratedTemplate,
+                    builder.resourceOutputDirectory,
                     new File(builder.generatedFolder, IMPORTS_NAME),
                     builder.useDeprecatedV14Bootstrapping,
                     builder.flowResourcesFolder, pwaConfiguration,

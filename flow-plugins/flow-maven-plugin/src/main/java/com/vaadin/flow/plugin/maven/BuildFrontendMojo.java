@@ -164,16 +164,4 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
         return runNpmInstall;
     }
 
-    @Override
-    public String webpackGeneratedTemplate() {
-
-        return webpackGeneratedTemplate;
-    }
-
-    @Override
-    public String webpackTemplate() {
-
-        return webpackTemplate;
-    }
-
 }

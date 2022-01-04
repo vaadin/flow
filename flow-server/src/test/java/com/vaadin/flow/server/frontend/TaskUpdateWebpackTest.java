@@ -168,8 +168,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
 
         TaskUpdateWebpack newUpdater = new TaskUpdateWebpack(frontendFolder,
                 baseDir, new File(baseDir, "baz"), new File(baseDir, "foo"),
-                WEBPACK_CONFIG, WEBPACK_GENERATED, new File(baseDir, "bar"),
-                false,
+                new File(baseDir, "bar"), false,
                 new File(baseDir,
                         Paths.get(TARGET, DEFAULT_FLOW_RESOURCES_FOLDER)
                                 .toString()),
@@ -310,8 +309,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
     protected void createWebpackUpdater() {
         webpackUpdater = new TaskUpdateWebpack(frontendFolder, baseDir,
                 new File(baseDir, TARGET + "/webapp"),
-                new File(baseDir, TARGET + "/classes"), WEBPACK_CONFIG,
-                WEBPACK_GENERATED,
+                new File(baseDir, TARGET + "/classes"),
                 new File(baseDir,
                         Paths.get(Constants.TARGET, DEFAULT_GENERATED_DIR,
                                 IMPORTS_NAME).toString()),
