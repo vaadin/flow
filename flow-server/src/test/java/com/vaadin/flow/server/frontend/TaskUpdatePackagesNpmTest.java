@@ -53,6 +53,7 @@ import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.NodeUpdater.DEPENDENCIES;
 import static com.vaadin.flow.server.frontend.NodeUpdater.DEV_DEPENDENCIES;
 import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
+import static com.vaadin.flow.server.frontend.NodeUpdater.OVERRIEDS;
 import static com.vaadin.flow.server.frontend.VersionsJsonConverter.VAADIN_CORE_NPM_PACKAGE;
 
 @NotThreadSafe
@@ -354,8 +355,15 @@ public class TaskUpdatePackagesNpmTest {
         packageJson = getOrCreatePackageJson();
 
         List<String> list = Arrays.asList(packageJson.keys());
-        // the "vaadin" key is the last one
-        Assert.assertEquals(list.size() - 1, list.indexOf(VAADIN_DEP_KEY));
+        int indexOfOverrides = list.indexOf(OVERRIEDS);
+        if (indexOfOverrides == -1) {
+            // the "vaadin" key is the last one if no overrides
+            Assert.assertEquals(list.size() - 1, list.indexOf(VAADIN_DEP_KEY));
+        }else {
+            // the "vaadin" key is the second to the last one with overrides
+            Assert.assertEquals(list.size() - 2, list.indexOf(VAADIN_DEP_KEY));
+        }
+        
 
         List<String> keysBeforeDeps = new ArrayList<>();
 

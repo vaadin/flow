@@ -98,7 +98,7 @@ public class TaskRunNpmInstallTest {
             protected String generateVersionsJson() {
                 try {
                     FileUtils.write(
-                            new File(getNodeUpdater().npmFolder,
+                            new File(npmFolder,
                                     "versions.json"),
                             "", StandardCharsets.UTF_8);
                 } catch (IOException e) {

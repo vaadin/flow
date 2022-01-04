@@ -57,6 +57,8 @@ public class NodeUpdaterTest {
 
     private File npmFolder;
 
+    private File generatedPath;
+
     private File resourceFolder;
 
     private ClassFinder finder;
@@ -68,10 +70,11 @@ public class NodeUpdaterTest {
         url = new URL("file://bar");
         npmFolder = temporaryFolder.newFolder();
         resourceFolder = temporaryFolder.newFolder();
+        generatedPath = temporaryFolder.newFolder();
         finder = Mockito.mock(ClassFinder.class);
         nodeUpdater = new NodeUpdater(finder,
                 Mockito.mock(FrontendDependencies.class), npmFolder,
-                new File(""), resourceFolder, TARGET,
+                generatedPath, resourceFolder, TARGET,
                 Mockito.mock(FeatureFlags.class)) {
 
             @Override
