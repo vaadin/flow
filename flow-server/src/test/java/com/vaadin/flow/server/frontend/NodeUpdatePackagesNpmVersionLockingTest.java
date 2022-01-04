@@ -107,7 +107,7 @@ public class NodeUpdatePackagesNpmVersionLockingTest
 
         packageUpdater.lockVersionForNpm(json);
 
-        Assert.assertEquals("$"+TEST_DEPENDENCY,
+        Assert.assertEquals("$" + TEST_DEPENDENCY,
                 json.getObject(OVERRIDES).getString(TEST_DEPENDENCY));
     }
 
