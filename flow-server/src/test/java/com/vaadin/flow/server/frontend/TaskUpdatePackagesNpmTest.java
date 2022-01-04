@@ -359,11 +359,10 @@ public class TaskUpdatePackagesNpmTest {
         if (indexOfOverrides == -1) {
             // the "vaadin" key is the last one if no overrides
             Assert.assertEquals(list.size() - 1, list.indexOf(VAADIN_DEP_KEY));
-        }else {
+        } else {
             // the "vaadin" key is the second to the last one with overrides
             Assert.assertEquals(list.size() - 2, list.indexOf(VAADIN_DEP_KEY));
         }
-        
 
         List<String> keysBeforeDeps = new ArrayList<>();
 

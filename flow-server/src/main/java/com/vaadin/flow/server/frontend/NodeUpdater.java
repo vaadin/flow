@@ -577,8 +577,7 @@ public abstract class NodeUpdater implements FallibleCommand {
      *             when file IO fails
      */
     protected String generateVersionsJson() throws IOException {
-        File versions = new File(generatedFolder,
-                "versions.json");
+        File versions = new File(generatedFolder, "versions.json");
 
         JsonObject versionsJson = getPlatformPinnedDependencies();
         if (versionsJson == null) {
@@ -588,8 +587,8 @@ public abstract class NodeUpdater implements FallibleCommand {
                 StandardCharsets.UTF_8);
         Path versionsPath = versions.toPath();
         if (versions.isAbsolute()) {
-            return FrontendUtils.getUnixRelativePath(
-                    npmFolder.toPath(), versionsPath);
+            return FrontendUtils.getUnixRelativePath(npmFolder.toPath(),
+                    versionsPath);
         } else {
             return FrontendUtils.getUnixPath(versionsPath);
         }

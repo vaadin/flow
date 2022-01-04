@@ -102,7 +102,7 @@ public class TaskUpdatePackages extends NodeUpdater {
             JsonObject packageJson = getPackageJson();
             modified = updatePackageJsonDependencies(packageJson,
                     scannedApplicationDependencies)
-                        | lockVersionForNpm(packageJson);
+                    | lockVersionForNpm(packageJson);
 
             if (modified) {
                 writePackageFile(packageJson);
@@ -125,23 +125,24 @@ public class TaskUpdatePackages extends NodeUpdater {
         }
     }
 
-    private boolean lockVersionForNpm(JsonObject packageJson) throws IOException {
-        if(enablePnpm) {
+    private boolean lockVersionForNpm(JsonObject packageJson)
+            throws IOException {
+        if (enablePnpm) {
             return false;
         }
         boolean modified = false;
-        
+
         final String versionsPath = generateVersionsJson();
-        
+
         File generatedVersionsFile = new File(npmFolder, versionsPath);
         final JsonObject versionsJson = Json.parse(FileUtils.readFileToString(
                 generatedVersionsFile, StandardCharsets.UTF_8));
-        
+
         if (versionsJson != null) {
             JsonObject overridesSection = getOverridesSection(packageJson);
-            for(String dependency: versionsJson.keys()) {
-                if(!overridesSection.hasKey(dependency)) {
-                    overridesSection.put(dependency, "$"+dependency);
+            for (String dependency : versionsJson.keys()) {
+                if (!overridesSection.hasKey(dependency)) {
+                    overridesSection.put(dependency, "$" + dependency);
                     modified = true;
                 }
             }
@@ -151,7 +152,7 @@ public class TaskUpdatePackages extends NodeUpdater {
 
     private JsonObject getOverridesSection(JsonObject packageJson) {
         JsonObject overridesSection = packageJson.getObject(OVERRIEDS);
-        if(overridesSection == null) {
+        if (overridesSection == null) {
             overridesSection = Json.createObject();
             packageJson.put(OVERRIEDS, overridesSection);
         }

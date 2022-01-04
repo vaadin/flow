@@ -101,10 +101,8 @@ public class TaskRunNpmInstallTest {
             @Override
             protected String generateVersionsJson() {
                 try {
-                    FileUtils.write(
-                            new File(npmFolder,
-                                    "versions.json"),
-                            "", StandardCharsets.UTF_8);
+                    FileUtils.write(new File(npmFolder, "versions.json"), "",
+                            StandardCharsets.UTF_8);
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }

@@ -259,8 +259,7 @@ public class NodeUpdaterTest {
         final String versions = nodeUpdater.generateVersionsJson();
         Assert.assertNotNull(versions);
 
-        File generatedVersionsFile = new File(npmFolder,
-                versions);
+        File generatedVersionsFile = new File(npmFolder, versions);
         final JsonObject versionsJson = Json.parse(FileUtils.readFileToString(
                 generatedVersionsFile, StandardCharsets.UTF_8));
         Assert.assertEquals("{}", versionsJson.toJson());
@@ -303,8 +302,7 @@ public class NodeUpdaterTest {
         final String versions = nodeUpdater.generateVersionsJson();
         Assert.assertNotNull(versions);
 
-        File generatedVersionsFile = new File(npmFolder,
-                versions);
+        File generatedVersionsFile = new File(npmFolder, versions);
         final JsonObject versionsJson = Json.parse(FileUtils.readFileToString(
                 generatedVersionsFile, StandardCharsets.UTF_8));
         Assert.assertEquals(
