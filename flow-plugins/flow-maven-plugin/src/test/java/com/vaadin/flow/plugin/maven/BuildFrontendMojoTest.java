@@ -164,10 +164,6 @@ public class BuildFrontendMojoTest {
                 projectFrontendResourcesDirectory);
 
         ReflectionUtils.setVariableValueInObject(mojo, "project", project);
-        ReflectionUtils.setVariableValueInObject(mojo, "webpackTemplate",
-                WEBPACK_CONFIG);
-        ReflectionUtils.setVariableValueInObject(mojo,
-                "webpackGeneratedTemplate", WEBPACK_GENERATED);
         ReflectionUtils.setVariableValueInObject(mojo, "webpackOutputDirectory",
                 webpackOutputDirectory);
         ReflectionUtils.setVariableValueInObject(mojo,

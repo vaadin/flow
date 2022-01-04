@@ -65,22 +65,4 @@ public interface PluginAdapterBuild extends PluginAdapterBase {
      */
     boolean runNpmInstall();
 
-    /**
-     * Copy the `webpack.generated.js` from the specified URL. Default is the
-     * template provided by this plugin. Set it to empty string to disable the
-     * feature.
-     *
-     * @return webpackGeneratedTemplate
-     */
-    String webpackGeneratedTemplate();
-
-    /**
-     * Copy the `webpack.config.js` from the specified URL if missing. Default
-     * is the template provided by this plugin. Set it to empty string to
-     * disable the feature.
-     *
-     * @return webpackTemplate
-     */
-    String webpackTemplate();
-
 }

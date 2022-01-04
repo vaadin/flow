@@ -182,8 +182,7 @@ public class NodeTasksTest {
         Builder builder = new Builder(mockedLookup, new File(userDir), TARGET)
                 .enablePackagesUpdate(false)
                 .withWebpack(new File(userDir, TARGET + "webapp"),
-                        new File(userDir, TARGET + "classes"), WEBPACK_CONFIG,
-                        WEBPACK_GENERATED)
+                        new File(userDir, TARGET + "classes"))
                 .enableImportsUpdate(true).runNpmInstall(false)
                 .withEmbeddableWebComponents(false).useV14Bootstrap(false)
                 .withFlowResourcesFolder(

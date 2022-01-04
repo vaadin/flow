@@ -262,8 +262,7 @@ public class DevModeInitializer implements Serializable {
                 Paths.get(target.getPath(), "classes", VAADIN_WEBAPP_RESOURCES)
                         .toFile(),
                 Paths.get(target.getPath(), "classes", VAADIN_SERVLET_RESOURCES)
-                        .toFile(),
-                FrontendUtils.WEBPACK_CONFIG, FrontendUtils.WEBPACK_GENERATED);
+                        .toFile());
 
         builder.useV14Bootstrap(config.useV14Bootstrap());
 

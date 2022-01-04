@@ -45,18 +45,6 @@ public open class VaadinFlowPluginExtension(project: Project) {
      */
     public var npmFolder: File = project.projectDir
     /**
-     * Copy the `webapp.config.js` from the specified URL if missing. Default is
-     * the template provided by this plugin. Set it to empty string to disable
-     * the feature.
-     */
-    public var webpackTemplate: String = FrontendUtils.WEBPACK_CONFIG
-    /**
-     * Copy the `webapp.generated.js` from the specified URL. Default is the
-     * template provided by this plugin. Set it to empty string to disable the
-     * feature.
-     */
-    public var webpackGeneratedTemplate: String = FrontendUtils.WEBPACK_GENERATED
-    /**
      * The folder where flow will put generated files that will be used by
      * webpack.
      */
@@ -244,8 +232,6 @@ public open class VaadinFlowPluginExtension(project: Project) {
             "productionMode=$productionMode, " +
             "webpackOutputDirectory=$webpackOutputDirectory, " +
             "npmFolder=$npmFolder, " +
-            "webpackTemplate='$webpackTemplate', " +
-            "webpackGeneratedTemplate='$webpackGeneratedTemplate', " +
             "generatedFolder=$generatedFolder, " +
             "frontendDirectory=$frontendDirectory, " +
             "generateBundle=$generateBundle, " +
