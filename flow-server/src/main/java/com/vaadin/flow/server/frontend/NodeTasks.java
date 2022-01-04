@@ -75,6 +75,8 @@ public class NodeTasks implements FallibleCommand {
 
         private boolean enableImportsUpdate = false;
 
+        private boolean enableWebpackConfigUpdate = false;
+
         private boolean runNpmInstall = false;
 
         private Set<File> jarFiles = null;
@@ -243,6 +245,7 @@ public class NodeTasks implements FallibleCommand {
          */
         public Builder withWebpack(File webappResourcesDirectory,
                 File resourceOutputDirectory) {
+            this.enableWebpackConfigUpdate = true;
             this.webappResourcesDirectory = webappResourcesDirectory;
             this.resourceOutputDirectory = resourceOutputDirectory;
             return this;
@@ -694,12 +697,10 @@ public class NodeTasks implements FallibleCommand {
                 builder.classFinder);
         FrontendDependenciesScanner frontendDependencies = null;
 
-        boolean enableWebpackConfigUpdate = builder.webappResourcesDirectory != null;
-
         final FeatureFlags featureFlags = builder.getFeatureFlags();
 
         if (builder.enablePackagesUpdate || builder.enableImportsUpdate
-                || enableWebpackConfigUpdate) {
+                || builder.enableWebpackConfigUpdate) {
             frontendDependencies = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
                     .createScanner(!builder.useByteCodeScanner, classFinder,
                             builder.generateEmbeddableWebComponents,
@@ -796,7 +797,7 @@ public class NodeTasks implements FallibleCommand {
             commands.add(new TaskUpdateSettingsFile(builder, themeName, pwa));
             commands.add(new TaskUpdateVite(builder.npmFolder,
                     builder.buildDirectory));
-        } else if (enableWebpackConfigUpdate) {
+        } else if (builder.enableWebpackConfigUpdate) {
             PwaConfiguration pwaConfiguration = frontendDependencies
                     .getPwaConfiguration();
             commands.add(new TaskUpdateWebpack(builder.frontendDirectory,
