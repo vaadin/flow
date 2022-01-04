@@ -16,6 +16,7 @@
 package com.vaadin.base.devserver;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -26,8 +27,8 @@ import java.util.regex.Pattern;
 import com.vaadin.base.devserver.DevServerOutputTracker.Result;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.frontend.FrontendVersion;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,6 +95,9 @@ public final class WebpackHandler extends AbstractDevServerRunner {
     protected List<String> getServerStartupCommand(String nodeExec) {
         List<String> command = new ArrayList<>();
         command.add(nodeExec);
+        if (requiresOpenSslLegacyProvider(nodeExec)) {
+            command.add("--openssl-legacy-provider");
+        }
         command.add(getServerBinary().getAbsolutePath());
         command.add("--config");
         command.add(getServerConfig().getAbsolutePath());
@@ -119,10 +123,10 @@ public final class WebpackHandler extends AbstractDevServerRunner {
     }
 
     @Override
-    protected void updateServerStartupEnvironment(FrontendVersion nodeVersion,
+    protected void updateServerStartupEnvironment(FrontendTools frontendTools,
             Map<String, String> environment) {
-        super.updateServerStartupEnvironment(nodeVersion, environment);
-        if (!nodeVersion.isOlderThan(new FrontendVersion(17, 0, 0))) {
+        super.updateServerStartupEnvironment(frontendTools, environment);
+        if (requiresOpenSslLegacyProvider(frontendTools.getNodeExecutable())) {
             environment.put("NODE_OPTIONS", "--openssl-legacy-provider");
         }
     }
@@ -156,4 +160,27 @@ public final class WebpackHandler extends AbstractDevServerRunner {
                 DEFAULT_ERROR_PATTERN));
     }
 
+    private boolean requiresOpenSslLegacyProvider(String nodeExec) {
+        // Determine whether webpack requires Node.js to be started with the
+        // --openssl-legacy-provider parameter. This is a webpack 4 workaround
+        // of the issue https://github.com/webpack/webpack/issues/14532
+        // See: https://github.com/vaadin/flow/issues/12649
+
+        List<String> command = new ArrayList<>();
+        command.add(nodeExec);
+        ProcessBuilder processBuilder = new ProcessBuilder()
+                .directory(getProjectRoot())
+                .command(nodeExec, "-p", "crypto.createHash('md4')");
+        try {
+            Process process = processBuilder.start();
+            int errorLevel = process.waitFor();
+            return errorLevel != 0;
+        } catch (IOException | InterruptedException e) {
+            getLogger().error(
+                    "Exception while determining --openssl-legacy-provider "
+                            + "parameter requirement",
+                    e);
+        }
+        return false;
+    }
 }
