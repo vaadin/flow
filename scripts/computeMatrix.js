@@ -18,7 +18,6 @@ const moduleWeights = {
   'flow-tests/test-custom-route-registry': { weight: 2 },
   'flow-tests/test-embedding/test-embedding-generic': { weight: 2 },
   'flow-tests/test-embedding/test-embedding-reusable-theme': { weight: 2 },
-  'flow-tests/test-hilla-csrf-context': { weight: 2 },
   'flow-tests/test-frontend/vite-basics': { weight: 2 },
   'flow-tests/test-frontend/vite-production': { weight: 2 },
   'flow-tests/test-application-theme/test-theme-reusable': { weight: 2 },
