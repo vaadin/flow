@@ -29,9 +29,9 @@
     <dependencies>
         <!-- Project dependencies -->
         <dependency>
-            <groupId>com.vaadin</groupId>
+            <groupId>dev.hilla</groupId>
             <artifactId>hilla-endpoint</artifactId>
-            <version>${project.version}</version>
+            <version>${hilla.version}</version>
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>

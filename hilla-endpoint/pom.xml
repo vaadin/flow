@@ -7,7 +7,9 @@
         <artifactId>flow-project</artifactId>
         <version>10.0-SNAPSHOT</version>
     </parent>
+    <groupId>dev.hilla</groupId>
     <artifactId>hilla-endpoint</artifactId>
+    <version>${hilla.version}</version>
     <name>Hilla Endpoint</name>
     <packaging>jar</packaging>
 
