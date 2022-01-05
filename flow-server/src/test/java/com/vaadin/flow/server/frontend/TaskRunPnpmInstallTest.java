@@ -630,8 +630,8 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     }
 
     protected TaskRunNpmInstall createTask(String versionsContent) {
-        return new TaskRunNpmInstall(createAndRunNodeUpdater(versionsContent), true,
-                false, FrontendTools.DEFAULT_NODE_VERSION,
+        return new TaskRunNpmInstall(createAndRunNodeUpdater(versionsContent),
+                true, false, FrontendTools.DEFAULT_NODE_VERSION,
                 URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false,
                 false, new ArrayList<>());
     }
