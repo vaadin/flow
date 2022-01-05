@@ -447,7 +447,7 @@ public class TaskRunNpmInstallTest {
         return nodeUpdater;
     }
 
-    protected NodeUpdater getNodeUpdater(String versionsContent) {
+    protected NodeUpdater createAndRunNodeUpdater(String versionsContent) {
         NodeUpdater nodeUpdater = createNodeUpdater(versionsContent);
         try {
             nodeUpdater.execute();
