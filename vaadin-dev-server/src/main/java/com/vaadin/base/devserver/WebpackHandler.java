@@ -172,11 +172,18 @@ public final class WebpackHandler extends AbstractDevServerRunner {
             Process process = processBuilder.start();
             int errorLevel = process.waitFor();
             return errorLevel != 0;
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
             getLogger().error(
-                    "Exception while determining --openssl-legacy-provider "
+                    "IO error while determining --openssl-legacy-provider "
                             + "parameter requirement",
                     e);
+        } catch (InterruptedException e) {
+            getLogger().error(
+                    "Interrupted while determining --openssl-legacy-provider "
+                            + "parameter requirement",
+                    e);
+            // re-interrupt the thread
+            Thread.currentThread().interrupt();
         }
         return false;
     }
