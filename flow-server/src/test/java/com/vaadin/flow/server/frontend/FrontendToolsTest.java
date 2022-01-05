@@ -375,18 +375,6 @@ public class FrontendToolsTest {
         Assert.assertTrue(file.exists());
     }
 
-    @Test
-    public void validateNodeAndNpmVersion_brokenNode17() throws Exception {
-        settings.setIgnoreVersionChecks(false);
-        tools = Mockito.spy(new FrontendTools(settings));
-
-        Mockito.when(tools.getNodeVersion())
-                .thenReturn(new FrontendVersion(17, 0));
-        Assert.assertThrows(IllegalStateException.class, () -> {
-            tools.validateNodeAndNpmVersion();
-        });
-    }
-
     @Test(expected = IllegalStateException.class)
     public void ensureNodeExecutableInHome_vaadinHomeNodeIsAFolder_throws()
             throws IOException {

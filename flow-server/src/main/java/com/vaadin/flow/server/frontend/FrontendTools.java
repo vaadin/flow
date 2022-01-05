@@ -548,11 +548,6 @@ public class FrontendTools {
         }
         try {
             FrontendVersion foundNodeVersion = getNodeVersion();
-            if (foundNodeVersion.getMajorVersion() == 17
-                    && foundNodeVersion.getMinorVersion() == 0) {
-                throw new IllegalStateException(
-                        "Node version 17.0 is incompatible with webpack 4. Please upgrade to Node 17.1 or newer, or downgrade to Node 16.");
-            }
             FrontendUtils.validateToolVersion("node", foundNodeVersion,
                     SUPPORTED_NODE_VERSION, SHOULD_WORK_NODE_VERSION);
         } catch (UnknownVersionException e) {
