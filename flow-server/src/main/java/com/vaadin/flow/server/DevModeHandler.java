@@ -54,8 +54,6 @@ import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.frontend.FrontendVersion;
-import com.vaadin.flow.server.frontend.FrontendUtils.UnknownVersionException;
 
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN;
@@ -631,16 +629,9 @@ public final class DevModeHandler implements RequestHandler {
                 () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath(),
                 useHomeNodeExec);
         tools.validateNodeAndNpmVersion();
-        FrontendVersion nodeVersion;
-        try {
-            nodeVersion = tools.getNodeVersion();
-        } catch (UnknownVersionException e) {
-            getLogger().error("Unable to determine node version", e);
-            // Need to assume something..
-            nodeVersion = new FrontendVersion(16, 0, 0);
-        }
 
-        if (!nodeVersion.isOlderThan(new FrontendVersion(17, 0, 0))) {
+        if (requiresOpenSslLegacyProvider(npmFolder,
+                tools.getNodeExecutable())) {
             processBuilder.environment().put("NODE_OPTIONS",
                     "--openssl-legacy-provider");
         }
@@ -876,6 +867,34 @@ public final class DevModeHandler implements RequestHandler {
      */
     void join() {
         devServerStartFuture.join();
+    }
+
+    private boolean requiresOpenSslLegacyProvider(File baseDir, String nodeExec) {
+        // Determine whether webpack requires Node.js to be started with the
+        // --openssl-legacy-provider parameter. This is a webpack 4 workaround
+        // of the issue https://github.com/webpack/webpack/issues/14532
+        // See: https://github.com/vaadin/flow/issues/12649
+        ProcessBuilder processBuilder = new ProcessBuilder()
+                .directory(baseDir)
+                .command(nodeExec, "-p", "crypto.createHash('md4')");
+        try {
+            Process process = processBuilder.start();
+            int errorLevel = process.waitFor();
+            return errorLevel != 0;
+        } catch (IOException e) {
+            getLogger().error(
+                    "IO error while determining --openssl-legacy-provider "
+                            + "parameter requirement",
+                    e);
+        } catch (InterruptedException e) {
+            getLogger().error(
+                    "Interrupted while determining --openssl-legacy-provider "
+                            + "parameter requirement",
+                    e);
+            // re-interrupt the thread
+            Thread.currentThread().interrupt();
+        }
+        return false;
     }
 
     private static final class LazyDevServerPortFileInit {
