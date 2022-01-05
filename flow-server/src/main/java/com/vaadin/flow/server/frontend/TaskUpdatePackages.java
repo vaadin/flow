@@ -118,8 +118,6 @@ public class TaskUpdatePackages extends NodeUpdater {
                     // https://github.com/pnpm/pnpm/issues/2587
                     // https://github.com/vaadin/flow/issues/9719
                     deletePnpmLockFile();
-                } else if (npmVersionLockingUpdated) {
-                    deleteNpmLockFile();
                 }
             }
 
@@ -525,15 +523,7 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     private void deletePnpmLockFile() throws IOException {
-        deleteLockFile("pnpm-lock.yaml");
-    }
-
-    private void deleteNpmLockFile() throws IOException {
-        deleteLockFile("package-lock.json");
-    }
-
-    private void deleteLockFile(String fileName) throws IOException {
-        File lockFile = new File(npmFolder, fileName);
+        File lockFile = new File(npmFolder, "pnpm-lock.yaml");
         if (lockFile.exists()) {
             FileUtils.forceDelete(lockFile);
         }

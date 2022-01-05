@@ -43,7 +43,6 @@ import elemental.json.JsonObject;
 import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 @Category(SlowTests.class)
 public class NodeUpdatePackagesNpmVersionLockingTest
@@ -64,7 +63,6 @@ public class NodeUpdatePackagesNpmVersionLockingTest
 
     private ClassFinder classFinder;
 
-    private File packageLockFile;
     private FeatureFlags featureFlags;
 
     @Before
@@ -93,7 +91,6 @@ public class NodeUpdatePackagesNpmVersionLockingTest
 
         Mockito.when(classFinder.getResource(Constants.VAADIN_VERSIONS_JSON))
                 .thenReturn(versions.toURI().toURL());
-        packageLockFile = new File(baseDir, "package-lock.json");
     }
 
     @Test
@@ -155,21 +152,6 @@ public class NodeUpdatePackagesNpmVersionLockingTest
         packageUpdater.lockVersionForNpm(json);
 
         Assert.assertNull(json.getObject(OVERRIDES));
-    }
-
-    @Test
-    public void shouldDeletePackageLockFile_afterVersionLocking()
-            throws IOException {
-        TaskUpdatePackages packageUpdater = Mockito.spy(createPackageUpdater());
-        Mockito.doReturn(true).when(packageUpdater)
-                .lockVersionForNpm(Mockito.any());
-        packageLockFile.createNewFile();
-        FileUtils.writeStringToFile(packageLockFile, "{}", UTF_8);
-        Assert.assertTrue(packageLockFile.exists());
-
-        packageUpdater.execute();
-
-        Assert.assertFalse(packageLockFile.exists());
     }
 
     private TaskUpdatePackages createPackageUpdater(boolean enablePnpm) {
