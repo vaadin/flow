@@ -299,15 +299,16 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
 
     /**
      * Defines the environment variables to use when starting the dev server.
-     * 
+     *
+     * @param frontendTools
+     *            frontend tools metadata
      * @param environment
      *            the environment variables to use
      */
-    protected void updateServerStartupEnvironment(FrontendVersion nodeVersion,
+    protected void updateServerStartupEnvironment(FrontendTools frontendTools,
             Map<String, String> environment) {
         environment.put("watchDogPort",
                 Integer.toString(getWatchDog().getWatchDogPort()));
-
     }
 
     /**
@@ -345,15 +346,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         processBuilder.command(command);
 
         Map<String, String> environment = processBuilder.environment();
-        FrontendVersion nodeVersion;
-        try {
-            nodeVersion = tools.getNodeVersion();
-        } catch (UnknownVersionException e) {
-            getLogger().error("Unable to determine node version", e);
-            // Need to assume something..
-            nodeVersion = new FrontendVersion(16, 0, 0);
-        }
-        updateServerStartupEnvironment(nodeVersion, environment);
+        updateServerStartupEnvironment(tools, environment);
 
         try {
             Process process = processBuilder.redirectErrorStream(true).start();
