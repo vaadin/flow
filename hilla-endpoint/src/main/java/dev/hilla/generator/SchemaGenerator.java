@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -38,7 +39,6 @@ import com.github.javaparser.resolution.declarations.ResolvedFieldDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedReferenceTypeDeclaration;
 import com.github.javaparser.resolution.types.ResolvedReferenceType;
 import com.github.javaparser.resolution.types.ResolvedType;
-
 import io.swagger.v3.oas.models.media.ComposedSchema;
 import io.swagger.v3.oas.models.media.ObjectSchema;
 import io.swagger.v3.oas.models.media.Schema;
@@ -265,6 +265,7 @@ class SchemaGenerator {
 
     private boolean isAnnotationIndicatingRequired(String str) {
         return str.matches("(NonNull|NotNull|NotEmpty|NotBlank)\\(.+")
-                || str.matches("Size\\(\\{.*min:[^0].+");
+                || str.matches("Size\\(.+")
+                        && Pattern.compile("\\bmin:[^0]").matcher(str).find();
     }
 }
