@@ -165,9 +165,6 @@ public final class WebpackHandler extends AbstractDevServerRunner {
         // --openssl-legacy-provider parameter. This is a webpack 4 workaround
         // of the issue https://github.com/webpack/webpack/issues/14532
         // See: https://github.com/vaadin/flow/issues/12649
-
-        List<String> command = new ArrayList<>();
-        command.add(nodeExec);
         ProcessBuilder processBuilder = new ProcessBuilder()
                 .directory(getProjectRoot())
                 .command(nodeExec, "-p", "crypto.createHash('md4')");
