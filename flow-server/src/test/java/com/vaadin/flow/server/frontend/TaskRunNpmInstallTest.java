@@ -64,6 +64,8 @@ public class TaskRunNpmInstallTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
+    private NodeUpdater nodeUpdater;
+
     private TaskRunNpmInstall task;
 
     private File npmFolder;
@@ -83,6 +85,20 @@ public class TaskRunNpmInstallTest {
         generatedPath = new File(npmFolder, "generated");
         generatedPath.mkdir();
         finder = Mockito.mock(ClassFinder.class);
+        nodeUpdater = new NodeUpdater(finder,
+                Mockito.mock(FrontendDependencies.class), npmFolder,
+                generatedPath, null, TARGET, Mockito.mock(FeatureFlags.class)) {
+
+            @Override
+            public void execute() {
+            }
+
+            @Override
+            Logger log() {
+                return logger;
+            }
+
+        };
         task = createTask(new ArrayList<>());
     }
 
@@ -428,40 +444,42 @@ public class TaskRunNpmInstallTest {
     }
 
     protected NodeUpdater getNodeUpdater() {
-        return new NodeUpdater(finder, Mockito.mock(FrontendDependencies.class),
-                npmFolder, generatedPath, null, TARGET,
-                Mockito.mock(FeatureFlags.class)) {
-
-            @Override
-            public void execute() {
-            }
-
-            @Override
-            Logger log() {
-                return logger;
-            }
-        };
+        return nodeUpdater;
     }
 
     protected NodeUpdater getNodeUpdater(String versionsContent) {
+        NodeUpdater nodeUpdater = createNodeUpdater(versionsContent);
+        try {
+            nodeUpdater.execute();
+        } catch (Exception e) {
+            throw new IllegalStateException(
+                    "NodeUpdater failed to genereate the version.json file");
+        }
+
+        return nodeUpdater;
+    }
+
+    private NodeUpdater createNodeUpdater(String versionsContent) {
         return new NodeUpdater(finder, Mockito.mock(FrontendDependencies.class),
                 npmFolder, generatedPath, null, TARGET,
                 Mockito.mock(FeatureFlags.class)) {
 
             @Override
             public void execute() {
-            }
-
-            @Override
-            Logger log() {
-                return logger;
-            }
-
-            @Override
-            protected String generateVersionsJson() throws IOException {
                 try {
-                    FileUtils.write(new File(npmFolder, "versions.json"),
-                            versionsContent, StandardCharsets.UTF_8);
+                    versionsPath = generateVersionsJson();
+                } catch (Exception e) {
+                    versionsPath = null;
+                }
+            }
+
+            @Override
+            protected String generateVersionsJson() {
+                try {
+                    if (versionsContent != null) {
+                        FileUtils.write(new File(npmFolder, "versions.json"),
+                                versionsContent, StandardCharsets.UTF_8);
+                    }
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }

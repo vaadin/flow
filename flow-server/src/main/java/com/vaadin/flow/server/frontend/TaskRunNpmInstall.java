@@ -22,7 +22,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -246,7 +245,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
         Logger logger = packageUpdater.log();
         if (enablePnpm) {
             try {
-                createPnpmFile(packageUpdater.generateVersionsJson());
+                createPnpmFile(packageUpdater.versionsPath);
             } catch (IOException exception) {
                 throw new ExecutionFailedException(
                         "Failed to read frontend version data from vaadin-core "

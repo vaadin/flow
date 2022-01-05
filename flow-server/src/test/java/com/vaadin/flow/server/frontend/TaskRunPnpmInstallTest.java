@@ -165,6 +165,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
         TaskRunNpmInstall task = createTask();
         getNodeUpdater().modified = true;
+        getNodeUpdater().versionsPath = "./version.json";
         task.execute();
 
         File file = new File(getNodeUpdater().npmFolder, "pnpmfile.js");
@@ -180,6 +181,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
             throws IOException, ExecutionFailedException {
         TaskRunNpmInstall task = createTask();
         getNodeUpdater().modified = true;
+        getNodeUpdater().versionsPath = "./version.json";
         task.execute();
 
         File file = new File(getNodeUpdater().npmFolder, "pnpmfile.js");

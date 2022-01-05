@@ -132,6 +132,11 @@ public abstract class NodeUpdater implements FallibleCommand {
     FeatureFlags featureFlags;
 
     /**
+     * path to the versions.json file
+     */
+    String versionsPath;
+
+    /**
      * Constructor.
      *
      * @param finder

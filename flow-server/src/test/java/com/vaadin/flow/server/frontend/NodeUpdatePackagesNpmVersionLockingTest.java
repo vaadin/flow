@@ -97,29 +97,33 @@ public class NodeUpdatePackagesNpmVersionLockingTest
     public void shoudlLockPinnedVersion_whenExistsInDependencies()
             throws IOException {
         TaskUpdatePackages packageUpdater = createPackageUpdater();
-        JsonObject json = packageUpdater.getPackageJson();
-        json.getObject(DEPENDENCIES).put(TEST_DEPENDENCY,
+        JsonObject packageJson = packageUpdater.getPackageJson();
+        packageJson.getObject(DEPENDENCIES).put(TEST_DEPENDENCY,
                 PLATFORM_PINNED_DEPENDENCY_VERSION);
-        Assert.assertNull(json.getObject(OVERRIDES));
+        Assert.assertNull(packageJson.getObject(OVERRIDES));
 
-        packageUpdater.lockVersionForNpm(json);
+        String versionsPath = packageUpdater.generateVersionsJson();
+        packageUpdater.lockVersionForNpm(packageJson, versionsPath);
 
         Assert.assertEquals("$" + TEST_DEPENDENCY,
-                json.getObject(OVERRIDES).getString(TEST_DEPENDENCY));
+                packageJson.getObject(OVERRIDES).getString(TEST_DEPENDENCY));
     }
 
     @Test
     public void shoudlNotLockPinnedVersion_whenNotExistsInDependencies()
             throws IOException {
         TaskUpdatePackages packageUpdater = createPackageUpdater();
-        JsonObject json = packageUpdater.getPackageJson();
+        JsonObject packageJson = packageUpdater.getPackageJson();
 
-        Assert.assertNull(json.getObject(OVERRIDES));
-        Assert.assertNull(json.getObject(DEPENDENCIES).get(TEST_DEPENDENCY));
+        Assert.assertNull(packageJson.getObject(OVERRIDES));
+        Assert.assertNull(
+                packageJson.getObject(DEPENDENCIES).get(TEST_DEPENDENCY));
 
-        packageUpdater.lockVersionForNpm(json);
+        String versionsPath = packageUpdater.generateVersionsJson();
+        packageUpdater.lockVersionForNpm(packageJson, versionsPath);
 
-        Assert.assertNull(json.getObject(OVERRIDES).get(TEST_DEPENDENCY));
+        Assert.assertNull(
+                packageJson.getObject(OVERRIDES).get(TEST_DEPENDENCY));
     }
 
     @Test
@@ -134,7 +138,8 @@ public class NodeUpdatePackagesNpmVersionLockingTest
                 USER_PINNED_DEPENDENCY_VERSION);
         overridesSection.put(TEST_DEPENDENCY, USER_PINNED_DEPENDENCY_VERSION);
 
-        packageUpdater.lockVersionForNpm(packageJson);
+        String versionsPath = packageUpdater.generateVersionsJson();
+        packageUpdater.lockVersionForNpm(packageJson, versionsPath);
 
         Assert.assertEquals(USER_PINNED_DEPENDENCY_VERSION,
                 packageJson.getObject(OVERRIDES).getString(TEST_DEPENDENCY));
@@ -144,14 +149,15 @@ public class NodeUpdatePackagesNpmVersionLockingTest
     public void shouldDoNothingForNpmLocking_whenInPnpmMode()
             throws IOException {
         TaskUpdatePackages packageUpdater = createPackageUpdater(true);
-        JsonObject json = packageUpdater.getPackageJson();
-        json.getObject(DEPENDENCIES).put(TEST_DEPENDENCY,
+        JsonObject packageJson = packageUpdater.getPackageJson();
+        packageJson.getObject(DEPENDENCIES).put(TEST_DEPENDENCY,
                 PLATFORM_PINNED_DEPENDENCY_VERSION);
-        Assert.assertNull(json.getObject(OVERRIDES));
+        Assert.assertNull(packageJson.getObject(OVERRIDES));
 
-        packageUpdater.lockVersionForNpm(json);
+        String versionsPath = packageUpdater.generateVersionsJson();
+        packageUpdater.lockVersionForNpm(packageJson, versionsPath);
 
-        Assert.assertNull(json.getObject(OVERRIDES));
+        Assert.assertNull(packageJson.getObject(OVERRIDES));
     }
 
     private TaskUpdatePackages createPackageUpdater(boolean enablePnpm) {

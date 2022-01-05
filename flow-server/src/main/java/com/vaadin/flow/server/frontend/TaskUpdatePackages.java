@@ -102,7 +102,9 @@ public class TaskUpdatePackages extends NodeUpdater {
             JsonObject packageJson = getPackageJson();
             modified = updatePackageJsonDependencies(packageJson,
                     scannedApplicationDependencies);
-            boolean npmVersionLockingUpdated = lockVersionForNpm(packageJson);
+            versionsPath = generateVersionsJson();
+            boolean npmVersionLockingUpdated = lockVersionForNpm(packageJson,
+                    versionsPath);
 
             if (modified || npmVersionLockingUpdated) {
                 writePackageFile(packageJson);
@@ -126,13 +128,12 @@ public class TaskUpdatePackages extends NodeUpdater {
         }
     }
 
-    boolean lockVersionForNpm(JsonObject packageJson) throws IOException {
+    boolean lockVersionForNpm(JsonObject packageJson, String versionsPath)
+            throws IOException {
         if (enablePnpm) {
             return false;
         }
         boolean versionLockingUpdated = false;
-
-        final String versionsPath = generateVersionsJson();
 
         File generatedVersionsFile = new File(npmFolder, versionsPath);
         final JsonObject versionsJson = Json.parse(FileUtils.readFileToString(
