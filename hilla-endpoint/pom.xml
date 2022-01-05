@@ -7,9 +7,10 @@
         <artifactId>flow-project</artifactId>
         <version>10.0-SNAPSHOT</version>
     </parent>
+
     <groupId>dev.hilla</groupId>
     <artifactId>hilla-endpoint</artifactId>
-    <version>${hilla.version}</version>
+    <version>1.0-SNAPSHOT</version>
     <name>Hilla Endpoint</name>
     <packaging>jar</packaging>
 
@@ -29,7 +30,7 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-server</artifactId>
-            <version>${project.version}</version>
+            <version>${parent.version}</version>
         </dependency>
 
         <!-- API DEPENDENCIES -->
@@ -188,7 +189,7 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-test-generic</artifactId>
-            <version>${project.version}</version>
+            <version>${parent.version}</version>
             <scope>test</scope>
         </dependency>
 
