@@ -10,7 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>test-hilla-csrf-context</artifactId>
-    <name> CSRF tests with custom context path</name>
+    <name>Hilla CSRF tests with custom context path</name>
     <description>
         For https://github.com/vaadin/fusion/issues/105.
         It verifies that the csrf cookie is added to correct path
