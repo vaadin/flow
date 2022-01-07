@@ -488,10 +488,13 @@ abstract class AbstractUpdateImports implements Runnable {
         } else if (cssData.getThemefor() != null) {
             optionalsMap.put("moduleId", getThemeIdPrefix());
         }
-        String optionals = optionalsMap.isEmpty() ? ""
-                : ", {" + optionalsMap.keySet().stream()
-                        .map(k -> k + ": '" + optionalsMap.get(k) + "'")
-                        .collect(Collectors.joining(", ")) + "}";
+        String optionals = "";
+        if (!optionalsMap.isEmpty()) {
+            String mapped = optionalsMap.keySet().stream()
+                    .map(k -> k + ": '" + optionalsMap.get(k) + "'")
+                    .collect(Collectors.joining(", "));
+            optionals = ", {" + mapped + "}";
+        }
 
         if (cssData.getThemefor() != null || cssData.getId() != null) {
             if (!lines.contains(THEMABLE_MIXIN_IMPORT)) {
