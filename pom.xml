@@ -32,7 +32,7 @@
         <module>flow-plugins</module>
         <module>flow-test-generic</module>
         <module>flow-bom</module>
-        <module>fusion-endpoint</module>
+        <module>hilla-endpoint</module>
         <module>vaadin-dev-server</module>
         <module>flow-jandex</module>
     </modules>
@@ -68,6 +68,8 @@
             https://maven.vaadin.com/vaadin-addons
         </flow.addons.repo.url>
 
+        <hilla.version>1.0-SNAPSHOT</hilla.version>
+
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -90,7 +92,7 @@
         <jackson.version>2.13.1</jackson.version>
         <validation.api.version>2.0.1.Final</validation.api.version>
         <javax.annotation.api.version>1.3.2</javax.annotation.api.version>
-        <jaxb.version>2.3.0.1</jaxb.version>
+        <jaxb.version>2.3.5</jaxb.version>
 
         <!-- Plugins -->
         <driver.binary.downloader.maven.plugin.version>1.0.18</driver.binary.downloader.maven.plugin.version>
@@ -662,24 +664,9 @@
                             <artifactId>maven-failsafe-plugin</artifactId>
                             <dependencies>
                                 <dependency>
-                                    <groupId>javax.xml.bind</groupId>
-                                    <artifactId>jaxb-api</artifactId>
-                                    <version>2.3.1</version>
-                                </dependency>
-                                <dependency>
-                                    <groupId>com.sun.xml.bind</groupId>
-                                    <artifactId>jaxb-core</artifactId>
-                                    <version>${jaxb.version}</version>
-                                </dependency>
-                                <dependency>
                                     <groupId>com.sun.xml.bind</groupId>
                                     <artifactId>jaxb-impl</artifactId>
                                     <version>${jaxb.version}</version>
-                                </dependency>
-                                <dependency>
-                                    <groupId>com.sun.activation</groupId>
-                                    <artifactId>javax.activation</artifactId>
-                                    <version>1.2.0</version>
                                 </dependency>
                             </dependencies>
                         </plugin>
@@ -692,24 +679,9 @@
                             </version>
                             <dependencies>
                                 <dependency>
-                                    <groupId>javax.xml.bind</groupId>
-                                    <artifactId>jaxb-api</artifactId>
-                                    <version>2.2.11</version>
-                                </dependency>
-                                <dependency>
-                                    <groupId>com.sun.xml.bind</groupId>
-                                    <artifactId>jaxb-core</artifactId>
-                                    <version>2.2.11</version>
-                                </dependency>
-                                <dependency>
                                     <groupId>com.sun.xml.bind</groupId>
                                     <artifactId>jaxb-impl</artifactId>
-                                    <version>2.3.5</version>
-                                </dependency>
-                                <dependency>
-                                    <groupId>com.sun.activation</groupId>
-                                    <artifactId>javax.activation</artifactId>
-                                    <version>1.2.0</version>
+                                    <version>${jaxb.version}</version>
                                 </dependency>
                             </dependencies>
                         </plugin>

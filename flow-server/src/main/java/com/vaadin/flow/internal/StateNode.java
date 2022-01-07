@@ -574,7 +574,15 @@ public class StateNode implements Serializable {
      *         this node is not attached
      */
     public boolean isAttached() {
-        return parent != null && parent.isAttached();
+        if (getParent() == null) {
+            return false;
+        } else {
+            StateNode root = getParent();
+            while (root.getParent() != null) {
+                root = root.getParent();
+            }
+            return root.isAttached();
+        }
     }
 
     /**

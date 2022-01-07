@@ -305,13 +305,13 @@ public class BuildFrontendUtil {
                                     BuildFrontendUtil.getTokenFile(adapter))
                             .enablePnpm(adapter.pnpmEnable())
                             .useGlobalPnpm(adapter.useGlobalPnpm())
-                            .withFusionApplicationProperties(
+                            .withHillaApplicationProperties(
                                     adapter.applicationProperties())
-                            .withFusionJavaSourceFolder(
+                            .withHillaJavaSourceFolder(
                                     adapter.javaSourceFolder())
-                            .withFusionGeneratedOpenAPIJson(
+                            .withHillaGeneratedOpenAPIJson(
                                     adapter.openApiJsonFile())
-                            .withFusionClientAPIFolder(
+                            .withHillaClientAPIFolder(
                                     adapter.generatedTsFolder())
                             .withHomeNodeExecRequired(
                                     adapter.requireHomeNodeExec())

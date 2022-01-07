@@ -41,8 +41,9 @@ public interface EndpointGeneratorTaskFactory {
      *            the frontend folder.
      * @return an endpoint tasks for generating TypeScript files for endpoints.
      */
-    TaskGenerateFusion createTaskGenerateFusion(File applicationProperties,
-            File openApi, File outputFolder, File frontendDirectory);
+    TaskGenerateHillaLegacy createTaskGenerateHillaLegacy(
+            File applicationProperties, File openApi, File outputFolder,
+            File frontendDirectory);
 
     /**
      * Create a task for generating OpenAPI spec.
