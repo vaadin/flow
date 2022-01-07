@@ -168,7 +168,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
         TaskRunNpmInstall task = createTask();
         getNodeUpdater().modified = true;
-        getNodeUpdater().versionsPath = "./version.json";
+        getNodeUpdater().versionsPath = "./versions.json";
         task.execute();
 
         File file = new File(getNodeUpdater().npmFolder, "pnpmfile.js");
