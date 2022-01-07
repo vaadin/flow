@@ -1,6 +1,6 @@
 package com.vaadin.flow.connect;
 
-import com.vaadin.fusion.Endpoint;
+import dev.hilla.Endpoint;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 
 /**

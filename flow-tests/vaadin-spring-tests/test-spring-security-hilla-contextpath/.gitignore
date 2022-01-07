@@ -1,0 +1,3 @@
+# ignore the frontend folder
+# since it's supposed to be extracted from test-spring-security-hilla:frontend jar
+frontend/

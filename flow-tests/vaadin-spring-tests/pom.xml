@@ -64,11 +64,6 @@
             </dependency>
             <dependency>
                 <groupId>com.vaadin</groupId>
-                <artifactId>vaadin-notification-flow</artifactId>
-                <version>${vaadin.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.vaadin</groupId>
                 <artifactId>vaadin-ordered-layout-flow</artifactId>
                 <version>${vaadin.version}</version>
             </dependency>
@@ -262,9 +257,9 @@
 
         <module>test-spring-security-flow</module>
         <module>test-spring-security-flow-contextpath</module>
-        <module>test-spring-security-fusion</module>
-        <module>test-spring-security-fusion-jwt</module>
-        <module>test-spring-security-fusion-contextpath</module>
+        <module>test-spring-security-hilla</module>
+        <module>test-spring-security-hilla-jwt</module>
+        <module>test-spring-security-hilla-contextpath</module>
 
         <!-- nexus-staging-maven-plugin requires the last module to be not skipped for deployment -->
         <module>dummy-module</module>
