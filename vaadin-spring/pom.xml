@@ -29,8 +29,8 @@
             <artifactId>flow-client</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>fusion-endpoint</artifactId>
+            <groupId>dev.hilla</groupId>
+            <artifactId>hilla-endpoint</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>

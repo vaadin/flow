@@ -110,7 +110,7 @@ public abstract class VaadinWebSecurityConfigurerAdapter
                 VaadinAwareSecurityContextHolderStrategy.class.getName());
 
         // Respond with 401 Unauthorized HTTP status code for unauthorized
-        // requests for protected Fusion endpoints, so that the response could
+        // requests for protected Hilla endpoints, so that the response could
         // be handled on the client side using e.g. `InvalidSessionMiddleware`.
         http.exceptionHandling()
                 .accessDeniedHandler(createAccessDeniedHandler())
@@ -180,48 +180,48 @@ public abstract class VaadinWebSecurityConfigurerAdapter
      * Sets up login for the application using form login with the given path
      * for the login view.
      * <p>
-     * This is used when your application uses a Fusion based login view
+     * This is used when your application uses a Hilla based login view
      * available at the given path.
      *
      * @param http
      *            the http security from {@link #configure(HttpSecurity)}
-     * @param fusionLoginViewPath
+     * @param hillaLoginViewPath
      *            the path to the login view
      * @throws Exception
      *             if something goes wrong
      */
-    protected void setLoginView(HttpSecurity http, String fusionLoginViewPath)
+    protected void setLoginView(HttpSecurity http, String hillaLoginViewPath)
             throws Exception {
-        setLoginView(http, fusionLoginViewPath, "/");
+        setLoginView(http, hillaLoginViewPath, "/");
     }
 
     /**
      * Sets up login for the application using form login with the given path
      * for the login view.
      * <p>
-     * This is used when your application uses a Fusion based login view
+     * This is used when your application uses a Hilla based login view
      * available at the given path.
      *
      * @param http
      *            the http security from {@link #configure(HttpSecurity)}
-     * @param fusionLoginViewPath
+     * @param hillaLoginViewPath
      *            the path to the login view
      * @param logoutUrl
      *            the URL to redirect the user to after logging out
      * @throws Exception
      *             if something goes wrong
      */
-    protected void setLoginView(HttpSecurity http, String fusionLoginViewPath,
+    protected void setLoginView(HttpSecurity http, String hillaLoginViewPath,
             String logoutUrl) throws Exception {
         FormLoginConfigurer<HttpSecurity> formLogin = http.formLogin();
-        formLogin.loginPage(fusionLoginViewPath).permitAll();
+        formLogin.loginPage(hillaLoginViewPath).permitAll();
         formLogin.successHandler(
                 getVaadinSavedRequestAwareAuthenticationSuccessHandler(http));
         http.logout().logoutSuccessUrl(logoutUrl);
         http.exceptionHandling().defaultAuthenticationEntryPointFor(
-                new LoginUrlAuthenticationEntryPoint(fusionLoginViewPath),
+                new LoginUrlAuthenticationEntryPoint(hillaLoginViewPath),
                 AnyRequestMatcher.INSTANCE);
-        viewAccessChecker.setLoginView(fusionLoginViewPath);
+        viewAccessChecker.setLoginView(hillaLoginViewPath);
     }
 
     /**

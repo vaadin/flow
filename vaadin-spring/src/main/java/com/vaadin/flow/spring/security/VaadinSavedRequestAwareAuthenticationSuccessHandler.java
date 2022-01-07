@@ -35,7 +35,7 @@ import org.springframework.security.web.savedrequest.SavedRequest;
 
 /**
  * A version of {@link SavedRequestAwareAuthenticationSuccessHandler} that
- * writes a different return value for a Fusion TypeScript client.
+ * writes a different return value for a Hilla TypeScript client.
  * <p>
  * This class acts as a {@link SavedRequestAwareAuthenticationSuccessHandler}
  * unless the request from the client contains a "source: typescript" header.
