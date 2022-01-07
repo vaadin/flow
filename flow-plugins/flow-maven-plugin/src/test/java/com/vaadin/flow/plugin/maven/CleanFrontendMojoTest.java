@@ -38,7 +38,6 @@ import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.assertContainsPackage;
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.getPackageJson;
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.setProject;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
@@ -173,6 +172,21 @@ public class CleanFrontendMojoTest {
     }
 
     @Test
+    public void should_cleanPackageJson_removeVaadinDependenciesInOverrides()
+            throws MojoFailureException, IOException {
+        JsonObject json = createInitialPackageJson(true);
+        FileUtils.fileWrite(packageJson, json.toJson());
+
+        assertContainsPackage(json.getObject("overrides"), "@polymer/polymer");
+
+        mojo.execute();
+
+        JsonObject packageJsonObject = getPackageJson(packageJson);
+        assertNotContainsPackage(packageJsonObject.getObject("overrides"),
+                "@polymer/polymer");
+    }
+
+    @Test
     public void should_keepUserDependencies_whenPackageJsonEdited()
             throws MojoFailureException, IOException {
         JsonObject json = createInitialPackageJson();
@@ -204,7 +218,17 @@ public class CleanFrontendMojoTest {
                 dependencies.hasKey(dep)));
     }
 
+    static void assertContainsPackage(JsonObject dependencies,
+            String... packages) {
+        Arrays.asList(packages).forEach(dep -> Assert
+                .assertTrue("Not Have " + dep, dependencies.hasKey(dep)));
+    }
+
     static JsonObject createInitialPackageJson() {
+        return createInitialPackageJson(false);
+    }
+
+    static JsonObject createInitialPackageJson(boolean withOverrides) {
         JsonObject packageJson = Json.createObject();
         JsonObject vaadinPackages = Json.createObject();
 
@@ -228,6 +252,12 @@ public class CleanFrontendMojoTest {
 
         vaadinPackages.put("hash", "");
         packageJson.put("vaadin", vaadinPackages);
+
+        if (withOverrides) {
+            JsonObject overrides = Json.createObject();
+            overrides.put("@polymer/polymer", "$@polymer/polymer");
+            packageJson.put("overrides", overrides);
+        }
 
         return packageJson;
     }
