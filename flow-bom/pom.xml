@@ -19,9 +19,9 @@
                 <version>${project.version}</version>
             </dependency>
             <dependency>
-                <groupId>com.vaadin</groupId>
-                <artifactId>fusion-endpoint</artifactId>
-                <version>${project.version}</version>
+                <groupId>dev.hilla</groupId>
+                <artifactId>hilla-endpoint</artifactId>
+                <version>${hilla.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.vaadin</groupId>

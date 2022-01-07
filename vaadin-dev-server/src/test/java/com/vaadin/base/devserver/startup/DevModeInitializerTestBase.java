@@ -27,7 +27,7 @@ import javax.servlet.ServletRegistration;
 
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
-import com.vaadin.flow.server.frontend.TaskGenerateFusion;
+import com.vaadin.flow.server.frontend.TaskGenerateHillaLegacy;
 import com.vaadin.flow.server.frontend.TaskGenerateOpenAPI;
 
 import org.apache.commons.io.FileUtils;
@@ -52,7 +52,7 @@ public class DevModeInitializerTestBase extends AbstractDevModeTest {
     File mainPackageFile;
     File webpackFile;
     EndpointGeneratorTaskFactory endpointGeneratorTaskFactory;
-    TaskGenerateFusion taskGenerateFusion;
+    TaskGenerateHillaLegacy taskGenerateHillaLegacy;
     TaskGenerateOpenAPI taskGenerateOpenAPI;
 
     @Rule
@@ -80,12 +80,13 @@ public class DevModeInitializerTestBase extends AbstractDevModeTest {
                 .thenReturn(VaadinServletSubClass.class.getName());
         endpointGeneratorTaskFactory = Mockito
                 .mock(EndpointGeneratorTaskFactory.class);
-        taskGenerateFusion = Mockito.mock(TaskGenerateFusion.class);
+        taskGenerateHillaLegacy = Mockito.mock(TaskGenerateHillaLegacy.class);
         taskGenerateOpenAPI = Mockito.mock(TaskGenerateOpenAPI.class);
         Mockito.doReturn(endpointGeneratorTaskFactory).when(lookup)
                 .lookup(EndpointGeneratorTaskFactory.class);
-        Mockito.doReturn(taskGenerateFusion).when(endpointGeneratorTaskFactory)
-                .createTaskGenerateFusion(any(), any(), any(), any());
+        Mockito.doReturn(taskGenerateHillaLegacy)
+                .when(endpointGeneratorTaskFactory)
+                .createTaskGenerateHillaLegacy(any(), any(), any(), any());
         Mockito.doReturn(taskGenerateOpenAPI).when(endpointGeneratorTaskFactory)
                 .createTaskGenerateOpenAPI(any(), any(), any(), any());
 

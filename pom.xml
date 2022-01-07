@@ -32,7 +32,7 @@
         <module>flow-plugins</module>
         <module>flow-test-generic</module>
         <module>flow-bom</module>
-        <module>fusion-endpoint</module>
+        <module>hilla-endpoint</module>
         <module>vaadin-dev-server</module>
         <module>flow-jandex</module>
     </modules>
@@ -67,6 +67,8 @@
         <flow.addons.repo.url>
             https://maven.vaadin.com/vaadin-addons
         </flow.addons.repo.url>
+
+        <hilla.version>1.0-SNAPSHOT</hilla.version>
 
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
