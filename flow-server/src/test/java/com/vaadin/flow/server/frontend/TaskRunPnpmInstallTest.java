@@ -659,7 +659,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
             nodeUpdater.execute();
         } catch (Exception e) {
             throw new IllegalStateException(
-                    "NodeUpdater failed to genereate the version.json file");
+                    "NodeUpdater failed to genereate the versions.json file");
         }
 
         return nodeUpdater;
