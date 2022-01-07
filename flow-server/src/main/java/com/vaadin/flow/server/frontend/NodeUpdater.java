@@ -81,6 +81,7 @@ public abstract class NodeUpdater implements FallibleCommand {
     static final String VAADIN_DEP_KEY = "vaadin";
     static final String HASH_KEY = "hash";
     static final String DEV_DEPENDENCIES = "devDependencies";
+    static final String OVERRIDES = "overrides";
 
     private static final String DEP_LICENSE_KEY = "license";
     private static final String DEP_LICENSE_DEFAULT = "UNLICENSED";
@@ -129,6 +130,11 @@ public abstract class NodeUpdater implements FallibleCommand {
     boolean modified;
 
     FeatureFlags featureFlags;
+
+    /**
+     * path to the versions.json file
+     */
+    String versionsPath;
 
     /**
      * Constructor.
@@ -566,5 +572,60 @@ public abstract class NodeUpdater implements FallibleCommand {
 
     Logger log() {
         return LoggerFactory.getLogger(this.getClass());
+    }
+
+    /**
+     * Generate versions json file for version locking.
+     *
+     * @return generated versions json file path
+     * @throws IOException
+     *             when file IO fails
+     */
+    protected String generateVersionsJson() throws IOException {
+        File versions = new File(generatedFolder, "versions.json");
+
+        JsonObject versionsJson = getPlatformPinnedDependencies();
+        if (versionsJson == null) {
+            versionsJson = generateVersionsFromPackageJson();
+        }
+        FileUtils.write(versions, stringify(versionsJson, 2) + "\n",
+                StandardCharsets.UTF_8);
+        Path versionsPath = versions.toPath();
+        if (versions.isAbsolute()) {
+            return FrontendUtils.getUnixRelativePath(npmFolder.toPath(),
+                    versionsPath);
+        } else {
+            return FrontendUtils.getUnixPath(versionsPath);
+        }
+    }
+
+    /**
+     * If we do not have the platform versions to lock we should lock any
+     * versions in the package.json so we do not get multiple versions for
+     * defined packages.
+     *
+     * @return versions Json based on package.json
+     * @throws IOException
+     *             If reading package.json fails
+     */
+    private JsonObject generateVersionsFromPackageJson() throws IOException {
+        JsonObject versionsJson = Json.createObject();
+        // if we don't have versionsJson lock package dependency versions.
+        final JsonObject packageJson = getPackageJson();
+        final JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
+        final JsonObject devDependencies = packageJson
+                .getObject(DEV_DEPENDENCIES);
+        if (dependencies != null) {
+            for (String key : dependencies.keys()) {
+                versionsJson.put(key, dependencies.getString(key));
+            }
+        }
+        if (devDependencies != null) {
+            for (String key : devDependencies.keys()) {
+                versionsJson.put(key, devDependencies.getString(key));
+            }
+        }
+
+        return versionsJson;
     }
 }

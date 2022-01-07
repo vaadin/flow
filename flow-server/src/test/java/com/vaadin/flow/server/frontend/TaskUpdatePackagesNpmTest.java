@@ -53,6 +53,7 @@ import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.NodeUpdater.DEPENDENCIES;
 import static com.vaadin.flow.server.frontend.NodeUpdater.DEV_DEPENDENCIES;
 import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
+import static com.vaadin.flow.server.frontend.NodeUpdater.OVERRIDES;
 import static com.vaadin.flow.server.frontend.VersionsJsonConverter.VAADIN_CORE_NPM_PACKAGE;
 
 @NotThreadSafe
@@ -107,6 +108,7 @@ public class TaskUpdatePackagesNpmTest {
         Assert.assertTrue("Updates we're not written", task.modified);
         verifyVersions(PLATFORM_DIALOG_VERSION, PLATFORM_ELEMENT_MIXIN_VERSION,
                 PLATFORM_OVERLAY_VERSION);
+        verifyVersionLockingWithNpmOverrides(true, true, true);
     }
 
     @Test
@@ -172,6 +174,7 @@ public class TaskUpdatePackagesNpmTest {
         Assert.assertTrue("Updates not picked", task.modified);
 
         verifyVersions(newVersion, newVersion, newVersion);
+        verifyVersionLockingWithNpmOverrides(true, true, true);
     }
 
     @Test
@@ -211,6 +214,7 @@ public class TaskUpdatePackagesNpmTest {
         Assert.assertTrue("Updates not picked", task.modified);
 
         verifyVersions(newVersion, newVersion, newVersion);
+        verifyVersionLockingWithNpmOverrides(true, true, true);
     }
 
     @Test
@@ -239,6 +243,7 @@ public class TaskUpdatePackagesNpmTest {
 
         verifyVersions(PLATFORM_DIALOG_VERSION, PLATFORM_ELEMENT_MIXIN_VERSION,
                 null);
+        verifyVersionLockingWithNpmOverrides(true, true, false);
     }
 
     @Test
@@ -254,6 +259,7 @@ public class TaskUpdatePackagesNpmTest {
 
         verifyVersions(PLATFORM_DIALOG_VERSION, PLATFORM_ELEMENT_MIXIN_VERSION,
                 null);
+        verifyVersionLockingWithNpmOverrides(true, true, false);
     }
 
     @Test
@@ -275,6 +281,7 @@ public class TaskUpdatePackagesNpmTest {
 
         verifyVersions(PLATFORM_DIALOG_VERSION, PLATFORM_ELEMENT_MIXIN_VERSION,
                 PLATFORM_OVERLAY_VERSION);
+        verifyVersionLockingWithNpmOverrides(true, true, true);
     }
 
     // #11025
@@ -301,6 +308,7 @@ public class TaskUpdatePackagesNpmTest {
 
         verifyVersions(PLATFORM_DIALOG_VERSION, expectedElementMixinVersion,
                 null);
+        verifyVersionLockingWithNpmOverrides(false, true, false);
         final JsonObject packageJson = getOrCreatePackageJson();
         JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
 
@@ -354,8 +362,14 @@ public class TaskUpdatePackagesNpmTest {
         packageJson = getOrCreatePackageJson();
 
         List<String> list = Arrays.asList(packageJson.keys());
-        // the "vaadin" key is the last one
-        Assert.assertEquals(list.size() - 1, list.indexOf(VAADIN_DEP_KEY));
+        int indexOfOverrides = list.indexOf(OVERRIDES);
+        if (indexOfOverrides == -1) {
+            // the "vaadin" key is the last one if no overrides
+            Assert.assertEquals(list.size() - 1, list.indexOf(VAADIN_DEP_KEY));
+        } else {
+            // the "vaadin" key is the second to the last one with overrides
+            Assert.assertEquals(list.size() - 2, list.indexOf(VAADIN_DEP_KEY));
+        }
 
         List<String> keysBeforeDeps = new ArrayList<>();
 
@@ -525,6 +539,31 @@ public class TaskUpdatePackagesNpmTest {
         } else {
             Assert.assertEquals(expectedOverlayVersion,
                     dependencies.getString(VAADIN_OVERLAY));
+        }
+    }
+
+    private void verifyVersionLockingWithNpmOverrides(boolean hasDialogLocking,
+            boolean hasElementMixinLocking, boolean hasOverlayLocking)
+            throws IOException {
+        JsonObject overrides = getOrCreatePackageJson().getObject(OVERRIDES);
+
+        if (hasDialogLocking) {
+            Assert.assertEquals("$" + VAADIN_DIALOG,
+                    overrides.getString(VAADIN_DIALOG));
+        } else {
+            Assert.assertNull(overrides.get(VAADIN_DIALOG));
+        }
+        if (hasElementMixinLocking) {
+            Assert.assertEquals("$" + VAADIN_ELEMENT_MIXIN,
+                    overrides.getString(VAADIN_ELEMENT_MIXIN));
+        } else {
+            Assert.assertNull(overrides.get(VAADIN_ELEMENT_MIXIN));
+        }
+        if (hasOverlayLocking) {
+            Assert.assertEquals("$" + VAADIN_OVERLAY,
+                    overrides.getString(VAADIN_OVERLAY));
+        } else {
+            Assert.assertNull(overrides.get(VAADIN_OVERLAY));
         }
     }
 

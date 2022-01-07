@@ -16,6 +16,7 @@
 package com.vaadin.flow.server.frontend;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
 
 import java.io.File;
@@ -36,10 +37,12 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import com.vaadin.flow.testcategory.SlowTests;
 import com.vaadin.flow.testutil.FrontendStubs;
 
@@ -165,6 +168,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
         TaskRunNpmInstall task = createTask();
         getNodeUpdater().modified = true;
+        getNodeUpdater().versionsPath = "./versions.json";
         task.execute();
 
         File file = new File(getNodeUpdater().npmFolder, "pnpmfile.js");
@@ -180,6 +184,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
             throws IOException, ExecutionFailedException {
         TaskRunNpmInstall task = createTask();
         getNodeUpdater().modified = true;
+        getNodeUpdater().versionsPath = "./versions.json";
         task.execute();
 
         File file = new File(getNodeUpdater().npmFolder, "pnpmfile.js");
@@ -402,72 +407,6 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         Assert.assertEquals("Upload should be pinned to user version.",
                 uploadVersion,
                 generatedVersions.getString("@vaadin/vaadin-upload"));
-    }
-
-    @Test
-    public void generateVersionsJson_noVersions_noDevDeps_versionsGeneratedFromPackageJson()
-            throws IOException {
-        TaskRunNpmInstall task = createTask();
-
-        final String versions = task.generateVersionsJson();
-        Assert.assertNotNull(versions);
-
-        File generatedVersionsFile = new File(getNodeUpdater().npmFolder,
-                versions);
-        final JsonObject versionsJson = Json.parse(FileUtils.readFileToString(
-                generatedVersionsFile, StandardCharsets.UTF_8));
-        Assert.assertEquals("{}", versionsJson.toJson());
-    }
-
-    @Test
-    public void generateVersionsJson_versionsGeneratedFromPackageJson_containsBothDepsAndDevDeps()
-            throws IOException {
-
-        File packageJson = new File(getNodeUpdater().npmFolder, PACKAGE_JSON);
-        packageJson.createNewFile();
-
-        // Write package json file
-        // @formatter:off
-        FileUtils.write(packageJson,
-            "{"
-                + "\"vaadin\": {"
-                  + "\"dependencies\": {"
-                    + "\"lit\": \"2.0.0\","
-                    + "\"@vaadin/router\": \"1.7.4\","
-                    + "\"@polymer/polymer\": \"3.2.0\","
-                  + "},"
-                  + "\"devDependencies\": {"
-                    + "\"css-loader\": \"4.2.1\","
-                    + "\"file-loader\": \"6.1.0\""
-                  + "}"
-                + "},"
-                + "\"dependencies\": {"
-                  + "\"lit\": \"2.0.0\","
-                  + "\"@vaadin/router\": \"1.7.4\","
-                  + "\"@polymer/polymer\": \"3.2.0\","
-                + "},"
-                + "\"devDependencies\": {"
-                  + "\"css-loader\": \"4.2.1\","
-                  + "\"file-loader\": \"6.1.0\""
-                + "}"
-            + "}", StandardCharsets.UTF_8);
-        // @formatter:on
-
-        TaskRunNpmInstall task = createTask();
-
-        final String versions = task.generateVersionsJson();
-        Assert.assertNotNull(versions);
-
-        File generatedVersionsFile = new File(getNodeUpdater().npmFolder,
-                versions);
-        final JsonObject versionsJson = Json.parse(FileUtils.readFileToString(
-                generatedVersionsFile, StandardCharsets.UTF_8));
-        Assert.assertEquals(
-                "{" + "\"lit\":\"2.0.0\"," + "\"@vaadin/router\":\"1.7.4\","
-                        + "\"@polymer/polymer\":\"3.2.0\","
-                        + "\"css-loader\":\"4.2.1\","
-                        + "\"file-loader\":\"6.1.0\"" + "}",
-                versionsJson.toJson());
     }
 
     @Test
@@ -694,23 +633,10 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     }
 
     protected TaskRunNpmInstall createTask(String versionsContent) {
-        return new TaskRunNpmInstall(getNodeUpdater(), true, false,
-                FrontendTools.DEFAULT_NODE_VERSION,
+        return new TaskRunNpmInstall(createAndRunNodeUpdater(versionsContent),
+                true, false, FrontendTools.DEFAULT_NODE_VERSION,
                 URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false,
-                false, new ArrayList<>()) {
-            @Override
-            protected String generateVersionsJson() {
-                try {
-                    FileUtils.write(
-                            new File(getNodeUpdater().npmFolder,
-                                    "versions.json"),
-                            versionsContent, StandardCharsets.UTF_8);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                return "./versions.json";
-            }
-        };
+                false, new ArrayList<>());
     }
 
     private JsonObject getGeneratedVersionsContent(File versions)
@@ -719,17 +645,53 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         Mockito.when(classFinder.getResource(Constants.VAADIN_VERSIONS_JSON))
                 .thenReturn(versions.toURI().toURL());
 
-        TaskRunNpmInstall task = new TaskRunNpmInstall(getNodeUpdater(), true,
-                false, FrontendTools.DEFAULT_NODE_VERSION,
-                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false,
-                false, POSTINSTALL_PACKAGES);
-
-        String path = task.generateVersionsJson();
+        String path = getNodeUpdater().generateVersionsJson();
 
         File generatedVersionsFile = new File(getNodeUpdater().npmFolder, path);
         return Json.parse(FileUtils.readFileToString(generatedVersionsFile,
                 StandardCharsets.UTF_8));
 
+    }
+
+    private NodeUpdater createAndRunNodeUpdater(String versionsContent) {
+        NodeUpdater nodeUpdater = createNodeUpdater(versionsContent);
+        try {
+            nodeUpdater.execute();
+        } catch (Exception e) {
+            throw new IllegalStateException(
+                    "NodeUpdater failed to genereate the versions.json file");
+        }
+
+        return nodeUpdater;
+    }
+
+    private NodeUpdater createNodeUpdater(String versionsContent) {
+        return new NodeUpdater(finder, Mockito.mock(FrontendDependencies.class),
+                npmFolder, generatedPath, null, TARGET,
+                Mockito.mock(FeatureFlags.class)) {
+
+            @Override
+            public void execute() {
+                try {
+                    versionsPath = generateVersionsJson();
+                } catch (Exception e) {
+                    versionsPath = null;
+                }
+            }
+
+            @Override
+            protected String generateVersionsJson() {
+                try {
+                    if (versionsContent != null) {
+                        FileUtils.write(new File(npmFolder, "versions.json"),
+                                versionsContent, StandardCharsets.UTF_8);
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                return "./versions.json";
+            }
+        };
     }
 
 }

@@ -68,9 +68,9 @@ public class TaskRunNpmInstallTest {
 
     private TaskRunNpmInstall task;
 
-    private File npmFolder;
+    protected File npmFolder;
 
-    private ClassFinder finder;
+    protected ClassFinder finder;
 
     private Logger logger = Mockito
             .spy(LoggerFactory.getLogger(NodeUpdater.class));
