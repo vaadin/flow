@@ -145,13 +145,19 @@ public class TaskUpdatePackages extends NodeUpdater {
             for (String dependency : versionsJson.keys()) {
                 if (!overridesSection.hasKey(dependency)
                         && dependencies.hasKey(dependency)
-                        && !NodeUpdater.DEP_NAME_FLOW_JARS.equals(dependency)) {
+                        && !isInternalPseudoDependency(
+                                versionsJson.getString(dependency))) {
                     overridesSection.put(dependency, "$" + dependency);
                     versionLockingUpdated = true;
                 }
             }
         }
         return versionLockingUpdated;
+    }
+
+    private boolean isInternalPseudoDependency(String dependencyVersion) {
+        return dependencyVersion != null
+                && dependencyVersion.startsWith("./" + buildDir);
     }
 
     private JsonObject getOverridesSection(JsonObject packageJson) {

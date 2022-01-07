@@ -127,7 +127,7 @@ public class NodeUpdatePackagesNpmVersionLockingTest
     }
 
     @Test
-    public void shouldNotNotUpdatesOverrides_whenHasUserModification()
+    public void shouldNotUpdatesOverrides_whenHasUserModification()
             throws IOException {
         TaskUpdatePackages packageUpdater = createPackageUpdater();
         JsonObject packageJson = packageUpdater.getPackageJson();

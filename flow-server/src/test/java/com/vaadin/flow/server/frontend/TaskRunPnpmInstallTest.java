@@ -16,6 +16,7 @@
 package com.vaadin.flow.server.frontend;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
 
 import java.io.File;
@@ -36,10 +37,12 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import com.vaadin.flow.testcategory.SlowTests;
 import com.vaadin.flow.testutil.FrontendStubs;
 
@@ -648,6 +651,47 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         return Json.parse(FileUtils.readFileToString(generatedVersionsFile,
                 StandardCharsets.UTF_8));
 
+    }
+
+    private NodeUpdater createAndRunNodeUpdater(String versionsContent) {
+        NodeUpdater nodeUpdater = createNodeUpdater(versionsContent);
+        try {
+            nodeUpdater.execute();
+        } catch (Exception e) {
+            throw new IllegalStateException(
+                    "NodeUpdater failed to genereate the version.json file");
+        }
+
+        return nodeUpdater;
+    }
+
+    private NodeUpdater createNodeUpdater(String versionsContent) {
+        return new NodeUpdater(finder, Mockito.mock(FrontendDependencies.class),
+                npmFolder, generatedPath, null, TARGET,
+                Mockito.mock(FeatureFlags.class)) {
+
+            @Override
+            public void execute() {
+                try {
+                    versionsPath = generateVersionsJson();
+                } catch (Exception e) {
+                    versionsPath = null;
+                }
+            }
+
+            @Override
+            protected String generateVersionsJson() {
+                try {
+                    if (versionsContent != null) {
+                        FileUtils.write(new File(npmFolder, "versions.json"),
+                                versionsContent, StandardCharsets.UTF_8);
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                return "./versions.json";
+            }
+        };
     }
 
 }

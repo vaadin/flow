@@ -68,9 +68,9 @@ public class TaskRunNpmInstallTest {
 
     private TaskRunNpmInstall task;
 
-    private File npmFolder;
+    protected File npmFolder;
 
-    private ClassFinder finder;
+    protected ClassFinder finder;
 
     private Logger logger = Mockito
             .spy(LoggerFactory.getLogger(NodeUpdater.class));
@@ -445,47 +445,6 @@ public class TaskRunNpmInstallTest {
 
     protected NodeUpdater getNodeUpdater() {
         return nodeUpdater;
-    }
-
-    protected NodeUpdater createAndRunNodeUpdater(String versionsContent) {
-        NodeUpdater nodeUpdater = createNodeUpdater(versionsContent);
-        try {
-            nodeUpdater.execute();
-        } catch (Exception e) {
-            throw new IllegalStateException(
-                    "NodeUpdater failed to genereate the version.json file");
-        }
-
-        return nodeUpdater;
-    }
-
-    private NodeUpdater createNodeUpdater(String versionsContent) {
-        return new NodeUpdater(finder, Mockito.mock(FrontendDependencies.class),
-                npmFolder, generatedPath, null, TARGET,
-                Mockito.mock(FeatureFlags.class)) {
-
-            @Override
-            public void execute() {
-                try {
-                    versionsPath = generateVersionsJson();
-                } catch (Exception e) {
-                    versionsPath = null;
-                }
-            }
-
-            @Override
-            protected String generateVersionsJson() {
-                try {
-                    if (versionsContent != null) {
-                        FileUtils.write(new File(npmFolder, "versions.json"),
-                                versionsContent, StandardCharsets.UTF_8);
-                    }
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                return "./versions.json";
-            }
-        };
     }
 
     protected ClassFinder getClassFinder() {
