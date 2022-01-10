@@ -16,7 +16,7 @@ For general support from the community, use https://stackoverflow.com/questions/
 
 NOTE: Issues concerning UI components (e.g. Button, Grid, TextField, ...) should go to the components repository https://github.com/vaadin/flow-components .
 
-NOTE: Issues concerning Hilla should go to the Hilla repository https://github.com/vaadin/fusion
+NOTE: Issues concerning Vaadin Fusion should go to the Fusion repository https://github.com/vaadin/fusion
 
 Good quality bug report increases the likelihood to get the bug fixed. A bad quality one will likely be just closed. Please use the following template to report bugs.
 -->

@@ -251,7 +251,7 @@
                         <stopKey>foo</stopKey>
                         <stopWait>5</stopWait>
                         <systemProperties>
-                            <!-- All system props are defined here as they need to be overridden
+                            <!-- All system props are defined here as they need to be overridden 
                                  in all modules so no non-standard value leaks to another module -->
                             <force>true</force>
                             <systemProperty>
@@ -305,7 +305,7 @@
                 </property>
             </activation>
             <modules>
-                <module>test-hilla-csrf</module>
+                <module>test-fusion-csrf</module>
                 <module>test-root-context</module>
                 <module>test-embedding</module>
                 <module>test-frontend</module>
@@ -347,8 +347,8 @@
                 <module>test-ccdm/pom-production.xml</module>
                 <module>test-ccdm-flow-navigation</module>
                 <module>test-ccdm-flow-navigation/pom-production.xml</module>
-                <module>test-hilla-csrf</module>
-                <module>test-hilla-csrf-context</module>
+                <module>test-fusion-csrf</module>
+                <module>test-fusion-csrf-context</module>
 
                 <module>test-root-context</module>
 

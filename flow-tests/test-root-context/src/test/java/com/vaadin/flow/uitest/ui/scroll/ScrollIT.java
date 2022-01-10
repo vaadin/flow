@@ -30,7 +30,7 @@ import static org.junit.Assert.assertThat;
 public class ScrollIT extends AbstractScrollIT {
 
     @Test
-    @Ignore("Ignored because of Hilla issue: https://github.com/vaadin/flow/issues/7584")
+    @Ignore("Ignored because of fusion issue: https://github.com/vaadin/flow/issues/7584")
     public void scrollPositionIsRestoredAfterNavigatingToNewPageAndBack() {
         open();
 
@@ -87,7 +87,7 @@ public class ScrollIT extends AbstractScrollIT {
     }
 
     @Test
-    @Ignore("Ignored because of Hilla issue: https://github.com/vaadin/flow/issues/7584")
+    @Ignore("Ignored because of fusion issue: https://github.com/vaadin/flow/issues/7584")
     public void scrollPositionIsRestoredWhenNavigatingToHistoryWithAnchorLink() {
         open();
 
@@ -108,7 +108,7 @@ public class ScrollIT extends AbstractScrollIT {
     }
 
     @Test
-    @Ignore("Ignored because of Hilla issue: https://github.com/vaadin/flow/issues/7584")
+    @Ignore("Ignored because of fusion issue: https://github.com/vaadin/flow/issues/7584")
     public void scrollPositionShouldBeAtAnchorWhenNavigatingFromOtherPage() {
         open();
 

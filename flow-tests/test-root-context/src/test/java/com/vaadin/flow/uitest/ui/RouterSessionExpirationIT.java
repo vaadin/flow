@@ -49,7 +49,7 @@ public class RouterSessionExpirationIT extends ChromeBrowserTest {
     }
 
     @Test
-    @Ignore("Ignored because of Hilla issue: https://github.com/vaadin/flow/issues/7581")
+    @Ignore("Ignored because of fusion issue : https://github.com/vaadin/flow/issues/7581")
     public void should_StayOnSessionExpirationView_when_NavigationAfterSessionExpired() {
         openUrl("/new-router-session/NormalView");
 

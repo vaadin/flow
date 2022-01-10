@@ -99,13 +99,13 @@ public class NodeTasks implements FallibleCommand {
 
         private boolean useGlobalPnpm = false;
 
-        private File hillaJavaSourceFolder;
+        private File fusionJavaSourceFolder;
 
-        private File hillaGeneratedOpenAPIFile;
+        private File fusionGeneratedOpenAPIFile;
 
-        private File hillaApplicationProperties;
+        private File fusionApplicationProperties;
 
-        private File hillaClientAPIFolder;
+        private File fusionClientAPIFolder;
 
         private boolean requireHomeNodeExec;
 
@@ -413,12 +413,12 @@ public class NodeTasks implements FallibleCommand {
         /**
          * Set the folder where Ts files should be generated.
          *
-         * @param hillaClientTsApiFolder
+         * @param fusionClientTsApiFolder
          *            folder for Ts files in the frontend.
          * @return the builder, for chaining
          */
-        public Builder withHillaClientAPIFolder(File hillaClientTsApiFolder) {
-            this.hillaClientAPIFolder = hillaClientTsApiFolder;
+        public Builder withFusionClientAPIFolder(File fusionClientTsApiFolder) {
+            this.fusionClientAPIFolder = fusionClientTsApiFolder;
             return this;
         }
 
@@ -429,9 +429,9 @@ public class NodeTasks implements FallibleCommand {
          *            application properties file.
          * @return this builder, for chaining
          */
-        public Builder withHillaApplicationProperties(
+        public Builder withFusionApplicationProperties(
                 File applicationProperties) {
-            this.hillaApplicationProperties = applicationProperties;
+            this.fusionApplicationProperties = applicationProperties;
             return this;
         }
 
@@ -442,21 +442,21 @@ public class NodeTasks implements FallibleCommand {
          *            the generated output file.
          * @return the builder, for chaining
          */
-        public Builder withHillaGeneratedOpenAPIJson(
+        public Builder withFusionGeneratedOpenAPIJson(
                 File generatedOpenAPIFile) {
-            this.hillaGeneratedOpenAPIFile = generatedOpenAPIFile;
+            this.fusionGeneratedOpenAPIFile = generatedOpenAPIFile;
             return this;
         }
 
         /**
          * Set source paths that OpenAPI generator searches for endpoints.
          *
-         * @param hillaJavaSourceFolder
+         * @param fusionJavaSourceFolder
          *            java source folder
          * @return the builder, for chaining
          */
-        public Builder withHillaJavaSourceFolder(File hillaJavaSourceFolder) {
-            this.hillaJavaSourceFolder = hillaJavaSourceFolder;
+        public Builder withFusionJavaSourceFolder(File fusionJavaSourceFolder) {
+            this.fusionJavaSourceFolder = fusionJavaSourceFolder;
             return this;
         }
 
@@ -515,7 +515,7 @@ public class NodeTasks implements FallibleCommand {
 
         /**
          * Uses globally installed pnpm tool for frontend packages installation.
-         *
+         * 
          * @param useGlobalPnpm
          *            uses globally installed pnpm instead of default one, see
          *            {@link FrontendTools#DEFAULT_PNPM_VERSION}.
@@ -613,7 +613,7 @@ public class NodeTasks implements FallibleCommand {
 
         /**
          * Get the output directory for webpack output.
-         *
+         * 
          * @return webpackOutputDirectory
          */
         public File getWebappResourcesDirectory() {
@@ -622,7 +622,7 @@ public class NodeTasks implements FallibleCommand {
 
         /**
          * Get the defined frontend directory.
-         *
+         * 
          * @return frontendDirectory
          */
         public File getFrontendDirectory() {
@@ -694,7 +694,7 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateServiceWorker.class,
             TaskGenerateHilla.class,
             TaskGenerateOpenAPI.class,
-            TaskGenerateHillaLegacy.class,
+            TaskGenerateFusion.class,
             TaskGenerateBootstrap.class,
             TaskInstallWebpackPlugins.class,
             TaskUpdatePackages.class,
@@ -778,14 +778,14 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateHilla hillaTask = builder.lookup
                     .lookup(TaskGenerateHilla.class);
             // use the new Hilla generator if available, otherwise the old
-            // Hilla legacy generator.
+            // Fusion generator.
             if (hillaTask != null) {
                 commands.add(hillaTask);
             } else {
-                if (builder.hillaJavaSourceFolder != null
-                        && builder.hillaJavaSourceFolder.exists()
-                        && builder.hillaGeneratedOpenAPIFile != null) {
-                    addHillaServicesTasks(builder);
+                if (builder.fusionJavaSourceFolder != null
+                        && builder.fusionJavaSourceFolder.exists()
+                        && builder.fusionGeneratedOpenAPIFile != null) {
+                    addFusionServicesTasks(builder);
                 }
             }
 
@@ -828,7 +828,7 @@ public class NodeTasks implements FallibleCommand {
                     new File(builder.generatedFolder, IMPORTS_NAME),
                     builder.useDeprecatedV14Bootstrapping,
                     builder.flowResourcesFolder, pwaConfiguration,
-                    builder.hillaClientAPIFolder, builder.buildDirectory));
+                    builder.fusionClientAPIFolder, builder.buildDirectory));
         }
 
         if (builder.enableImportsUpdate) {
@@ -843,7 +843,7 @@ public class NodeTasks implements FallibleCommand {
 
             commands.add(new TaskUpdateThemeImport(builder.npmFolder,
                     frontendDependencies.getThemeDefinition(),
-                    builder.frontendDirectory, builder.hillaClientAPIFolder));
+                    builder.frontendDirectory, builder.fusionClientAPIFolder));
         }
 
         if (builder.copyTemplates) {
@@ -891,7 +891,7 @@ public class NodeTasks implements FallibleCommand {
         }
     }
 
-    private void addHillaServicesTasks(Builder builder) {
+    private void addFusionServicesTasks(Builder builder) {
         Lookup lookup = builder.lookup;
         EndpointGeneratorTaskFactory endpointGeneratorTaskFactory = lookup
                 .lookup(EndpointGeneratorTaskFactory.class);
@@ -899,20 +899,20 @@ public class NodeTasks implements FallibleCommand {
         if (endpointGeneratorTaskFactory != null) {
             TaskGenerateOpenAPI taskGenerateOpenAPI = endpointGeneratorTaskFactory
                     .createTaskGenerateOpenAPI(
-                            builder.hillaApplicationProperties,
-                            builder.hillaJavaSourceFolder,
+                            builder.fusionApplicationProperties,
+                            builder.fusionJavaSourceFolder,
                             builder.classFinder.getClassLoader(),
-                            builder.hillaGeneratedOpenAPIFile);
+                            builder.fusionGeneratedOpenAPIFile);
             commands.add(taskGenerateOpenAPI);
 
-            if (builder.hillaClientAPIFolder != null) {
-                TaskGenerateHillaLegacy taskGenerateHillaLegacy = endpointGeneratorTaskFactory
-                        .createTaskGenerateHillaLegacy(
-                                builder.hillaApplicationProperties,
-                                builder.hillaGeneratedOpenAPIFile,
-                                builder.hillaClientAPIFolder,
+            if (builder.fusionClientAPIFolder != null) {
+                TaskGenerateFusion taskGenerateFusion = endpointGeneratorTaskFactory
+                        .createTaskGenerateFusion(
+                                builder.fusionApplicationProperties,
+                                builder.fusionGeneratedOpenAPIFile,
+                                builder.fusionClientAPIFolder,
                                 builder.frontendDirectory);
-                commands.add(taskGenerateHillaLegacy);
+                commands.add(taskGenerateFusion);
             }
         }
     }

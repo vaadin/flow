@@ -73,10 +73,10 @@ import org.mockito.Mockito;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.plugin.TestUtils;
 import com.vaadin.flow.server.Constants;
-import dev.hilla.Endpoint;
+import com.vaadin.fusion.Endpoint;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.FrontendTools;
-import dev.hilla.frontend.EndpointGeneratorTaskFactoryImpl;
+import com.vaadin.fusion.frontend.EndpointGeneratorTaskFactoryImpl;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
