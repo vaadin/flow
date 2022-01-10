@@ -32,7 +32,7 @@ public class FragmentLinkIT extends ChromeBrowserTest {
     }
 
     @Test
-    @Ignore("Ignored because of Hilla issue: https://github.com/vaadin/flow/issues/7575")
+    @Ignore("Ignored because of fusion issue : https://github.com/vaadin/flow/issues/7575")
     public void testViewChangeWithFragment_scrollToPageAndHashChangeEventWorks() {
         open();
 
@@ -46,7 +46,7 @@ public class FragmentLinkIT extends ChromeBrowserTest {
     }
 
     @Test
-    @Ignore("Ignored because of Hilla issue: https://github.com/vaadin/flow/issues/7575")
+    @Ignore("Ignored because of fusion issue : https://github.com/vaadin/flow/issues/7575")
     public void testViewChangeWithFragment_serverOverridesLocation_noScrollOrHashChange() {
         open();
 

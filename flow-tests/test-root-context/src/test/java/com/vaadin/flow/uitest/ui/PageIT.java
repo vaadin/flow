@@ -74,7 +74,7 @@ public class PageIT extends ChromeBrowserTest {
     }
 
     @Test
-    @Ignore("Ignored because of Hilla issue: https://github.com/vaadin/flow/issues/7575")
+    @Ignore("Ignored because of fusion issue: https://github.com/vaadin/flow/issues/7575")
     public void testSetLocation() {
         open();
 
@@ -84,7 +84,7 @@ public class PageIT extends ChromeBrowserTest {
     }
 
     @Test
-    @Ignore("Ignored because of Hilla issue: https://github.com/vaadin/flow/issues/7575")
+    @Ignore("Ignored because of fusion issue: https://github.com/vaadin/flow/issues/7575")
     public void testOpenUrlInNewTab() {
         open();
 
@@ -97,7 +97,7 @@ public class PageIT extends ChromeBrowserTest {
     }
 
     @Test
-    @Ignore("Ignored because of Hilla issue: https://github.com/vaadin/flow/issues/7575")
+    @Ignore("Ignored because of fusion issue: https://github.com/vaadin/flow/issues/7575")
     public void testOpenUrlInIFrame() throws InterruptedException {
         open();
 

@@ -36,7 +36,7 @@ public class ConnectionIndicator {
 
     /**
      * Application is connected and Flow is loading application state from the
-     * server, or Hilla is waiting for an endpoint call to return.
+     * server, or Fusion is waiting for an endpoint call to return.
      */
     public static final String LOADING = "loading";
 

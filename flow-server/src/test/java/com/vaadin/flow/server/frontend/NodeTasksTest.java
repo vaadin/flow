@@ -187,7 +187,7 @@ public class NodeTasksTest {
                 .withEmbeddableWebComponents(false).useV14Bootstrap(false)
                 .withFlowResourcesFolder(
                         new File(userDir, TARGET + "flow-frontend"))
-                .withHillaClientAPIFolder(new File(userDir,
+                .withFusionClientAPIFolder(new File(userDir,
                         DEFAULT_PROJECT_FRONTEND_GENERATED_DIR));
         builder.build().execute();
         String webpackGeneratedContent = Files
@@ -223,7 +223,7 @@ public class NodeTasksTest {
     }
 
     @Test
-    public void should_useHillaLegacyGeneartor_whenHillaGeneratorNotAvailable()
+    public void should_useFusionGeneartor_whenHillaGeneratorNotAvailable()
             throws ExecutionFailedException {
         verifyEndpointGeneratorWithHillaTask(false);
     }
@@ -237,21 +237,20 @@ public class NodeTasksTest {
         Builder builder = new Builder(mockedLookup, new File(userDir), TARGET)
                 .enablePackagesUpdate(false).enableImportsUpdate(true)
                 .runNpmInstall(false).withEmbeddableWebComponents(false)
-                .withHillaClientAPIFolder(new File(userDir))
-                .withHillaJavaSourceFolder(new File(userDir))
-                .withHillaGeneratedOpenAPIJson(new File(userDir));
+                .withFusionClientAPIFolder(new File(userDir))
+                .withFusionJavaSourceFolder(new File(userDir))
+                .withFusionGeneratedOpenAPIJson(new File(userDir));
 
-        EndpointGeneratorTaskFactory hillaFactory = mock(
+        EndpointGeneratorTaskFactory fusionFactory = mock(
                 EndpointGeneratorTaskFactory.class);
         TaskGenerateOpenAPI mockGenerateOpenAPI = mock(
                 TaskGenerateOpenAPI.class);
-        TaskGenerateHillaLegacy mockGenerateHillaLegacy = mock(
-                TaskGenerateHillaLegacy.class);
-        Mockito.doReturn(mockGenerateOpenAPI).when(hillaFactory)
+        TaskGenerateFusion mockGenerateFusion = mock(TaskGenerateFusion.class);
+        Mockito.doReturn(mockGenerateOpenAPI).when(fusionFactory)
                 .createTaskGenerateOpenAPI(any(), any(), any(), any());
-        Mockito.doReturn(mockGenerateHillaLegacy).when(hillaFactory)
-                .createTaskGenerateHillaLegacy(any(), any(), any(), any());
-        Mockito.doReturn(hillaFactory).when(mockedLookup)
+        Mockito.doReturn(mockGenerateFusion).when(fusionFactory)
+                .createTaskGenerateFusion(any(), any(), any(), any());
+        Mockito.doReturn(fusionFactory).when(mockedLookup)
                 .lookup(EndpointGeneratorTaskFactory.class);
 
         TaskGenerateHilla hillaTask = withHillaTask
@@ -267,14 +266,14 @@ public class NodeTasksTest {
             Mockito.verify(hillaTask, times(1)).execute();
         }
 
-        Mockito.verify(hillaFactory, withHillaTask ? never() : times(1))
-                .createTaskGenerateHillaLegacy(any(), any(), any(), any());
-        Mockito.verify(hillaFactory, withHillaTask ? never() : times(1))
+        Mockito.verify(fusionFactory, withHillaTask ? never() : times(1))
+                .createTaskGenerateFusion(any(), any(), any(), any());
+        Mockito.verify(fusionFactory, withHillaTask ? never() : times(1))
                 .createTaskGenerateOpenAPI(any(), any(), any(), any());
         Mockito.verify(mockGenerateOpenAPI, withHillaTask ? never() : times(1))
                 .execute();
-        Mockito.verify(mockGenerateHillaLegacy,
-                withHillaTask ? never() : times(1)).execute();
+        Mockito.verify(mockGenerateFusion, withHillaTask ? never() : times(1))
+                .execute();
     }
 
     private static void setPropertyIfPresent(String key, String value) {
