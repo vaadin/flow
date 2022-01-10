@@ -483,6 +483,11 @@ abstract class AbstractUpdateImports implements Runnable {
         if (cssData.getInclude() != null) {
             optionalsMap.put("include", cssData.getInclude());
         }
+        if (cssData.getId() != null && cssData.getThemefor() != null) {
+            throw new IllegalStateException(
+                    "provide either id or themeFor for @CssImport of resource "
+                            + cssData.getValue() + ", not both");
+        }
         if (cssData.getId() != null) {
             optionalsMap.put("moduleId", cssData.getId());
         } else if (cssData.getThemefor() != null) {
