@@ -495,10 +495,9 @@ abstract class AbstractUpdateImports implements Runnable {
         }
         String optionals = "";
         if (!optionalsMap.isEmpty()) {
-            String mapped = optionalsMap.keySet().stream()
+            optionals = ", " + optionalsMap.keySet().stream()
                     .map(k -> k + ": '" + optionalsMap.get(k) + "'")
-                    .collect(Collectors.joining(", "));
-            optionals = ", {" + mapped + "}";
+                    .collect(Collectors.joining(", ", "{", "}"));
         }
 
         if (cssData.getThemefor() != null || cssData.getId() != null) {
