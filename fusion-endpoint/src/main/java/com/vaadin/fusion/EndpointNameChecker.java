@@ -51,8 +51,7 @@ public class EndpointNameChecker {
                     "true", "try", "typeof", "var", "void", "volatile", "while",
                     "with", "yield")));
 
-    private static final Pattern CONTAINS_WHITESPACE_PATTERN = Pattern
-            .compile(".*[\\s+].*");
+    private static final Pattern WHITESPACE_PATTERN = Pattern.compile("\\s");
 
     /**
      * Validates the Vaadin endpoint name given.
@@ -69,7 +68,7 @@ public class EndpointNameChecker {
         if (ECMA_SCRIPT_RESERVED_WORDS.contains(endpointName)) {
             return "Endpoint name cannot be equal to JavaScript reserved words";
         }
-        if (CONTAINS_WHITESPACE_PATTERN.matcher(endpointName).matches()) {
+        if (WHITESPACE_PATTERN.matcher(endpointName).find()) {
             return "Endpoint name cannot contain any whitespaces";
         }
         return null;

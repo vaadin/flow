@@ -265,6 +265,7 @@ class SchemaGenerator {
 
     private boolean isAnnotationIndicatingRequired(String str) {
         return str.matches("(NonNull|NotNull|NotEmpty|NotBlank)\\(.+")
-                || str.matches("Size\\(\\{.*min:[^0].+");
+                || (str.matches("Size\\(.+")
+                        && Pattern.compile("\\bmin:[^0]").matcher(str).find());
     }
 }
