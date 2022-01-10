@@ -27,6 +27,7 @@ import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.net.HttpURLConnection;
 import java.net.ServerSocket;
+import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -54,8 +55,11 @@ import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
+import static com.vaadin.flow.server.InitParameters.NODE_DOWNLOAD_ROOT;
+import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN;
@@ -623,11 +627,15 @@ public final class DevModeHandler implements RequestHandler {
         ProcessBuilder processBuilder = new ProcessBuilder()
                 .directory(npmFolder);
 
+        final String nodeVersion = config.getStringProperty(NODE_VERSION,
+                FrontendTools.DEFAULT_NODE_VERSION);
+        final String nodeDownloadRoot = config.getStringProperty(
+                NODE_DOWNLOAD_ROOT, NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT);
         boolean useHomeNodeExec = config.getBooleanProperty(
                 InitParameters.REQUIRE_HOME_NODE_EXECUTABLE, false);
         FrontendTools tools = new FrontendTools(npmFolder.getAbsolutePath(),
                 () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath(),
-                useHomeNodeExec);
+                nodeVersion, URI.create(nodeDownloadRoot), useHomeNodeExec);
         tools.validateNodeAndNpmVersion();
 
         if (requiresOpenSslLegacyProvider(npmFolder,

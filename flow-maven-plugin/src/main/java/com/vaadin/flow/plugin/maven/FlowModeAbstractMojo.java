@@ -27,6 +27,8 @@ import org.apache.maven.plugins.annotations.Parameter;
 import com.vaadin.flow.server.Constants;
 
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static com.vaadin.flow.server.InitParameters.NODE_DOWNLOAD_ROOT;
+import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
 
 /**
@@ -95,7 +97,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
      * Vaadin, for example `"v14.15.4"`. Defaults to null which uses the
      * Vaadin-default node version - see {@link FrontendTools} for details.
      */
-    @Parameter(property = "node.version", defaultValue = FrontendTools.DEFAULT_NODE_VERSION)
+    @Parameter(property = NODE_VERSION, defaultValue = FrontendTools.DEFAULT_NODE_VERSION)
     protected String nodeVersion;
 
     /**
@@ -106,7 +108,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
      * <p></p>
      * Example: <code>"https://nodejs.org/dist/"</code>.
      */
-    @Parameter(property = "node.download.root", defaultValue = NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT)
+    @Parameter(property = NODE_DOWNLOAD_ROOT, defaultValue = NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT)
     protected String nodeDownloadRoot;
 
     /**
