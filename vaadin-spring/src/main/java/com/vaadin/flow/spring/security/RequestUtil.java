@@ -13,7 +13,7 @@ import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.auth.AccessAnnotationChecker;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
-import dev.hilla.EndpointUtil;
+import com.vaadin.fusion.EndpointUtil;
 import com.vaadin.flow.spring.SpringServlet;
 import com.vaadin.flow.spring.VaadinConfigurationProperties;
 
@@ -49,9 +49,9 @@ public class RequestUtil {
         try {
             endpointUtil = applicationContext.getBean(EndpointUtil.class);
         } catch (NoClassDefFoundError e) {
-            // Presumable Hilla is not on the classpath
+            // Presumable Fusion is not on the classpath
         } catch (Exception e) {
-            // Presumable Hilla is not on the classpath
+            // Presumable Fusion is not on the classpath
         }
 
     }

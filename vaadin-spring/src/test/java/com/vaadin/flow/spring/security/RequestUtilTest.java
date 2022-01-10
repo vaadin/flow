@@ -22,8 +22,8 @@ import com.vaadin.flow.spring.SpringSecurityAutoConfiguration;
 import com.vaadin.flow.spring.SpringServlet;
 import com.vaadin.flow.spring.SpringVaadinServletService;
 import com.vaadin.flow.spring.VaadinConfigurationProperties;
-import dev.hilla.HillaControllerConfiguration;
-import dev.hilla.HillaEndpointProperties;
+import com.vaadin.fusion.FusionControllerConfiguration;
+import com.vaadin.fusion.FusionEndpointProperties;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -38,8 +38,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { HillaEndpointProperties.class })
-@ContextConfiguration(classes = { HillaControllerConfiguration.class,
+@SpringBootTest(classes = { FusionEndpointProperties.class })
+@ContextConfiguration(classes = { FusionControllerConfiguration.class,
         SpringBootAutoConfiguration.class,
         SpringSecurityAutoConfiguration.class })
 public class RequestUtilTest {

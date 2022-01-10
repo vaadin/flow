@@ -20,14 +20,14 @@ import org.springframework.test.context.junit4.SpringRunner;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.spring.SpringBootAutoConfiguration;
 import com.vaadin.flow.spring.SpringSecurityAutoConfiguration;
-import dev.hilla.Endpoint;
-import dev.hilla.EndpointRegistry;
-import dev.hilla.HillaControllerConfiguration;
-import dev.hilla.HillaEndpointProperties;
+import com.vaadin.fusion.Endpoint;
+import com.vaadin.fusion.EndpointRegistry;
+import com.vaadin.fusion.FusionControllerConfiguration;
+import com.vaadin.fusion.FusionEndpointProperties;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { HillaEndpointProperties.class })
-@ContextConfiguration(classes = { HillaControllerConfiguration.class,
+@SpringBootTest(classes = { FusionEndpointProperties.class })
+@ContextConfiguration(classes = { FusionControllerConfiguration.class,
         SpringBootAutoConfiguration.class,
         SpringSecurityAutoConfiguration.class })
 public class VaadinDefaultRequestCacheTest {

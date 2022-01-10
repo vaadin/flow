@@ -75,7 +75,7 @@ public class SpringSecurityAutoConfiguration {
      * Makes the default access annotation checker available for security
      * configuration.
      * <p>
-     * Hilla makes this bean available by default but if Hilla is excluded
+     * Fusion makes this bean available by default but if Fusion is excluded
      * from the project, we make it available here
      * 
      * @return the default access annotation checker
