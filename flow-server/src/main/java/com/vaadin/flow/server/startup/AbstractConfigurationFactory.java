@@ -118,8 +118,7 @@ public class AbstractConfigurationFactory implements Serializable {
         }
 
         if (buildInfo.hasKey(NODE_VERSION)) {
-            params.put(NODE_VERSION,
-                    buildInfo.getString(NODE_VERSION));
+            params.put(NODE_VERSION, buildInfo.getString(NODE_VERSION));
         }
         if (buildInfo.hasKey(NODE_DOWNLOAD_ROOT)) {
             params.put(NODE_DOWNLOAD_ROOT,

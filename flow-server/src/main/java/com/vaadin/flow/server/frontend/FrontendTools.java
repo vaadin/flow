@@ -431,10 +431,11 @@ public class FrontendTools {
                 .getBooleanProperty(InitParameters.NODE_AUTO_UPDATE, false);
         boolean useGlobalPnpm = applicationConfiguration.getBooleanProperty(
                 InitParameters.SERVLET_PARAMETER_GLOBAL_PNPM, false);
-        final String nodeVersion = applicationConfiguration.getStringProperty(NODE_VERSION,
-                FrontendTools.DEFAULT_NODE_VERSION);
-        final String nodeDownloadRoot = applicationConfiguration.getStringProperty(
-                NODE_DOWNLOAD_ROOT, NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT);
+        final String nodeVersion = applicationConfiguration.getStringProperty(
+                NODE_VERSION, FrontendTools.DEFAULT_NODE_VERSION);
+        final String nodeDownloadRoot = applicationConfiguration
+                .getStringProperty(NODE_DOWNLOAD_ROOT,
+                        NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT);
 
         FrontendToolsSettings settings = new FrontendToolsSettings(
                 projectRoot.getAbsolutePath(),

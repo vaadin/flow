@@ -212,7 +212,8 @@ public class BuildFrontendUtil {
                 adapter.eagerServerLoad());
         buildInfo.put(NPM_TOKEN, adapter.npmFolder().getAbsolutePath());
         buildInfo.put(NODE_VERSION, adapter.nodeVersion());
-        buildInfo.put(NODE_DOWNLOAD_ROOT, adapter.nodeDownloadRoot().toString());
+        buildInfo.put(NODE_DOWNLOAD_ROOT,
+                adapter.nodeDownloadRoot().toString());
         buildInfo.put(GENERATED_TOKEN,
                 adapter.generatedFolder().getAbsolutePath());
         buildInfo.put(FRONTEND_TOKEN,
