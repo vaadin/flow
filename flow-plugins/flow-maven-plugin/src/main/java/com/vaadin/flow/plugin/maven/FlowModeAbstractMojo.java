@@ -109,7 +109,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * </p>
      * Example: <code>"https://nodejs.org/dist/"</code>.
      */
-    @Parameter(property = "node.download.root", defaultValue = NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT)
+    @Parameter(property = InitParameters.NODE_DOWNLOAD_ROOT, defaultValue = NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT)
     private String nodeDownloadRoot;
 
     /**
@@ -117,7 +117,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * Vaadin, for example `"v16.0.0"`. Defaults to null which uses the
      * Vaadin-default node version - see {@link FrontendTools} for details.
      */
-    @Parameter(property = "node.version", defaultValue = FrontendTools.DEFAULT_NODE_VERSION)
+    @Parameter(property = InitParameters.NODE_VERSION, defaultValue = FrontendTools.DEFAULT_NODE_VERSION)
     private String nodeVersion;
 
     /**

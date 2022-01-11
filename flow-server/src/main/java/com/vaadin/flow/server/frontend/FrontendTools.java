@@ -44,6 +44,9 @@ import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.installer.ProxyConfig;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
+import static com.vaadin.flow.server.InitParameters.NODE_DOWNLOAD_ROOT;
+import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
+
 /**
  * Provides access to frontend tools (node.js and npm, pnpm) and optionally
  * installs the tools if needed.
@@ -428,6 +431,10 @@ public class FrontendTools {
                 .getBooleanProperty(InitParameters.NODE_AUTO_UPDATE, false);
         boolean useGlobalPnpm = applicationConfiguration.getBooleanProperty(
                 InitParameters.SERVLET_PARAMETER_GLOBAL_PNPM, false);
+        final String nodeVersion = applicationConfiguration.getStringProperty(NODE_VERSION,
+                FrontendTools.DEFAULT_NODE_VERSION);
+        final String nodeDownloadRoot = applicationConfiguration.getStringProperty(
+                NODE_DOWNLOAD_ROOT, NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT);
 
         FrontendToolsSettings settings = new FrontendToolsSettings(
                 projectRoot.getAbsolutePath(),
@@ -435,6 +442,8 @@ public class FrontendTools {
         settings.setForceAlternativeNode(useHomeNodeExec);
         settings.setAutoUpdate(nodeAutoUpdate);
         settings.setUseGlobalPnpm(useGlobalPnpm);
+        settings.setNodeVersion(nodeVersion);
+        settings.setNodeDownloadRoot(URI.create(nodeDownloadRoot));
         return settings;
     }
 

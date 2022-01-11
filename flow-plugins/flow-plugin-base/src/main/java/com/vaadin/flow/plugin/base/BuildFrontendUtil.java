@@ -58,6 +58,8 @@ import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
 import static com.vaadin.flow.server.Constants.GENERATED_TOKEN;
 import static com.vaadin.flow.server.Constants.NPM_TOKEN;
 import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
+import static com.vaadin.flow.server.InitParameters.NODE_DOWNLOAD_ROOT;
+import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_INITIAL_UIDL;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
@@ -194,7 +196,8 @@ public class BuildFrontendUtil {
      *            - the PluginAdapterBase.
      * @return the Token {@link File}.
      */
-    public static File propagateBuildInfo(PluginAdapterBase adapter) {
+    public static File propagateBuildInfo(PluginAdapterBase adapter)
+            throws URISyntaxException {
 
         // For forked processes not accessing to System.properties we leave a
         // token file with the information about the build
@@ -208,6 +211,8 @@ public class BuildFrontendUtil {
         buildInfo.put(SERVLET_PARAMETER_INITIAL_UIDL,
                 adapter.eagerServerLoad());
         buildInfo.put(NPM_TOKEN, adapter.npmFolder().getAbsolutePath());
+        buildInfo.put(NODE_VERSION, adapter.nodeVersion());
+        buildInfo.put(NODE_DOWNLOAD_ROOT, adapter.nodeDownloadRoot().toString());
         buildInfo.put(GENERATED_TOKEN,
                 adapter.generatedFolder().getAbsolutePath());
         buildInfo.put(FRONTEND_TOKEN,
@@ -462,6 +467,8 @@ public class BuildFrontendUtil {
             JsonObject buildInfo = JsonUtil.parse(json);
 
             buildInfo.remove(NPM_TOKEN);
+            buildInfo.remove(NODE_VERSION);
+            buildInfo.remove(NODE_DOWNLOAD_ROOT);
             buildInfo.remove(GENERATED_TOKEN);
             buildInfo.remove(FRONTEND_TOKEN);
             buildInfo.remove(Constants.SERVLET_PARAMETER_ENABLE_PNPM);
