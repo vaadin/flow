@@ -30,6 +30,7 @@ import java.util.Set;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.io.FileUtils;
+import org.slf4j.LoggerFactory;
 import org.zeroturnaround.exec.InvalidExitValueException;
 import org.zeroturnaround.exec.ProcessExecutor;
 
@@ -196,8 +197,7 @@ public class BuildFrontendUtil {
      *            - the PluginAdapterBase.
      * @return the Token {@link File}.
      */
-    public static File propagateBuildInfo(PluginAdapterBase adapter)
-            throws URISyntaxException {
+    public static File propagateBuildInfo(PluginAdapterBase adapter) {
 
         // For forked processes not accessing to System.properties we leave a
         // token file with the information about the build
@@ -212,8 +212,13 @@ public class BuildFrontendUtil {
                 adapter.eagerServerLoad());
         buildInfo.put(NPM_TOKEN, adapter.npmFolder().getAbsolutePath());
         buildInfo.put(NODE_VERSION, adapter.nodeVersion());
-        buildInfo.put(NODE_DOWNLOAD_ROOT,
-                adapter.nodeDownloadRoot().toString());
+        try {
+            buildInfo.put(NODE_DOWNLOAD_ROOT,
+                    adapter.nodeDownloadRoot().toString());
+        } catch (URISyntaxException e) {
+            LoggerFactory.getLogger("BuildInfo")
+                    .error("NODE_DOWNLOAD_ROOT defined incorrectly", e);
+        }
         buildInfo.put(GENERATED_TOKEN,
                 adapter.generatedFolder().getAbsolutePath());
         buildInfo.put(FRONTEND_TOKEN,
