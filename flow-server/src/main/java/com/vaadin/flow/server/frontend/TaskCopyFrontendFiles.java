@@ -40,7 +40,8 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
  */
 public class TaskCopyFrontendFiles implements FallibleCommand {
     private static final String[] WILDCARD_INCLUSIONS = new String[] {
-            "**/*.js", "**/*.css", "**/*.ts" };
+            "**/*.js", "**/*.js.map", "**/*.css", "**/*.css.map", "**/*.ts",
+            "**/*.ts.map" };
     private static final String WILDCARD_INCLUSION_APP_THEME_JAR = "**/themes/**/*";
     private File targetDirectory;
     private File themeJarTargetDirectory;
