@@ -102,10 +102,13 @@ public class PushRequestHandler
             getLogger().debug("Using pre-initialized Atmosphere for servlet {}",
                     vaadinServletConfig.getServletName());
         }
-        pushHandler.setLongPollingSuspendTimeout(
-                atmosphere.getAtmosphereConfig().getInitParameter(
-                        InitParameters.SERVLET_PARAMETER_PUSH_SUSPEND_TIMEOUT_LONGPOLLING,
-                        -1));
+        String timeout = service.getDeploymentConfiguration().getStringProperty(
+                InitParameters.SERVLET_PARAMETER_PUSH_SUSPEND_TIMEOUT_LONGPOLLING,
+                "-1");
+        atmosphere.addInitParameter(
+                InitParameters.SERVLET_PARAMETER_PUSH_SUSPEND_TIMEOUT_LONGPOLLING,
+                timeout);
+        pushHandler.setLongPollingSuspendTimeout(Integer.parseInt(timeout));
         for (AtmosphereHandlerWrapper handlerWrapper : atmosphere
                 .getAtmosphereHandlers().values()) {
             AtmosphereHandler handler = handlerWrapper.atmosphereHandler;
