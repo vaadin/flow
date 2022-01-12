@@ -81,10 +81,10 @@ public class ThemeSwitchLiveReloadIT extends ChromeBrowserTest {
                                     SerializableSupplier<Boolean> themeStylesSupplier) {
         int attempts = 0;
         while (attempts < ATTEMPTS) {
-            getDriver().navigate().refresh();
+            open();
+            getCommandExecutor().waitForVaadin();
             try {
-                getCommandExecutor().waitForVaadin();
-                waitUntil(driver -> themeStylesSupplier.get(), TIMEOUT);
+                waitUntil(driver -> themeStylesSupplier.get());
                 return;
             } catch (TimeoutException e) {
                 attempts++;
