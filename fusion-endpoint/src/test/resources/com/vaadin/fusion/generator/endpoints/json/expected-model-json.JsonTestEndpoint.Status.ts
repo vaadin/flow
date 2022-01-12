@@ -1,7 +1,7 @@
 /**
  * Status bean. Used only in request parameters to verify that request
  * parameter type descriptions are generated.
- * This module is generated from com.vaadin.fusion.generator.endpoints.json.JsonTestEndpoint.Status.
+ * This module is generated from dev.hilla.generator.endpoints.json.JsonTestEndpoint.Status.
  * All changes to this file are overridden. Please consider to make changes in the corresponding Java file if necessary.
  */
 

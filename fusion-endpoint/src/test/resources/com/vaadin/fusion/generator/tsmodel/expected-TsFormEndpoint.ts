@@ -9,7 +9,7 @@ import {ObjectModel,StringModel,NumberModel,ArrayModel,BooleanModel,Required,Mod
 import {Email,Null,NotNull,NotEmpty,NotBlank,AssertTrue,AssertFalse,Negative,NegativeOrZero,Positive,PositiveOrZero,Size,Past,Future,Digits,Min,Max,Pattern,DecimalMin,DecimalMax} from '@vaadin/form';
 
 /**
- * This module is generated from com.vaadin.fusion.generator.tsmodel.TsFormEndpoint.MyEntity.
+ * This module is generated from dev.hilla.generator.tsmodel.TsFormEndpoint.MyEntity.
  * All changes to this file are overridden. Please consider to make changes in the corresponding Java file if necessary.
  * @see {@link file:///.../fusion-endpoint/src/test/java/com/vaadin/fusion/generator/tsmodel/TsFormEndpoint.java}
  */

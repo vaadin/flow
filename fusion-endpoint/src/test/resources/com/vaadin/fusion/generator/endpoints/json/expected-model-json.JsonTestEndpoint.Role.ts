@@ -2,7 +2,7 @@ import Permissions from './Permissions';
 
 /**
  * Role bean
- * This module is generated from com.vaadin.fusion.generator.endpoints.json.JsonTestEndpoint.Role.
+ * This module is generated from dev.hilla.generator.endpoints.json.JsonTestEndpoint.Role.
  * All changes to this file are overridden. Please consider to make changes in the corresponding Java file if necessary.
  */
 

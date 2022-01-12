@@ -98,7 +98,7 @@
                   "additionalProperties" : {
                     "nullable" : true,
                     "allOf" : [ {
-                      "$ref" : "#/components/schemas/com.vaadin.fusion.generator.endpoints.json.JsonTestEndpoint.User"
+                      "$ref" : "#/components/schemas/dev.hilla.generator.endpoints.json.JsonTestEndpoint.User"
                     } ]
                   },
                   "description" : "",
@@ -130,7 +130,7 @@
                   "items" : {
                     "nullable" : true,
                     "allOf" : [ {
-                      "$ref" : "#/components/schemas/com.vaadin.fusion.generator.endpoints.json.JsonTestEndpoint.User"
+                      "$ref" : "#/components/schemas/dev.hilla.generator.endpoints.json.JsonTestEndpoint.User"
                     } ]
                   }
                 }
@@ -208,7 +208,7 @@
                     "additionalProperties" : {
                       "nullable" : true,
                       "allOf" : [ {
-                        "$ref" : "#/components/schemas/com.vaadin.fusion.generator.endpoints.json.JsonTestEndpoint.User"
+                        "$ref" : "#/components/schemas/dev.hilla.generator.endpoints.json.JsonTestEndpoint.User"
                       } ]
                     },
                     "description" : "input map",
@@ -311,7 +311,7 @@
                   "description" : "",
                   "nullable" : true,
                   "allOf" : [ {
-                    "$ref" : "#/components/schemas/com.vaadin.fusion.generator.endpoints.json.JsonTestEndpoint.User"
+                    "$ref" : "#/components/schemas/dev.hilla.generator.endpoints.json.JsonTestEndpoint.User"
                   } ]
                 }
               }
@@ -369,7 +369,7 @@
                   "input" : {
                     "nullable" : true,
                     "allOf" : [ {
-                      "$ref" : "#/components/schemas/com.vaadin.fusion.generator.endpoints.json.JsonTestEndpoint.Status"
+                      "$ref" : "#/components/schemas/dev.hilla.generator.endpoints.json.JsonTestEndpoint.Status"
                     } ]
                   }
                 }
@@ -438,7 +438,7 @@
                   "description" : "",
                   "nullable" : true,
                   "allOf" : [ {
-                    "$ref" : "#/components/schemas/com.vaadin.fusion.generator.endpoints.json.JsonTestEndpoint.User"
+                    "$ref" : "#/components/schemas/dev.hilla.generator.endpoints.json.JsonTestEndpoint.User"
                   } ]
                 }
               }
@@ -495,7 +495,7 @@
                     "description" : "User to be updated",
                     "nullable" : true,
                     "allOf" : [ {
-                      "$ref" : "#/components/schemas/com.vaadin.fusion.generator.endpoints.json.JsonTestEndpoint.User"
+                      "$ref" : "#/components/schemas/dev.hilla.generator.endpoints.json.JsonTestEndpoint.User"
                     } ]
                   }
                 }
@@ -558,7 +558,7 @@
   },
   "components" : {
     "schemas" : {
-      "com.vaadin.fusion.generator.endpoints.json.JsonTestEndpoint.Role" : {
+      "dev.hilla.generator.endpoints.json.JsonTestEndpoint.Role" : {
         "type" : "object",
         "properties" : {
           "roleName" : {
@@ -568,7 +568,7 @@
           "permissions" : {
             "description" : "Description for permissions.",
             "allOf" : [ {
-              "$ref" : "#/components/schemas/com.vaadin.fusion.generator.endpoints.json.JsonTestEndpoint.Permissions"
+              "$ref" : "#/components/schemas/dev.hilla.generator.endpoints.json.JsonTestEndpoint.Permissions"
             } ]
           }
         },
@@ -599,12 +599,12 @@
           }
         }
       },
-      "com.vaadin.fusion.generator.endpoints.json.JsonTestEndpoint.Permissions" : {
+      "dev.hilla.generator.endpoints.json.JsonTestEndpoint.Permissions" : {
         "type" : "string",
         "enum" : [ "ADMIN", "USER", "GUEST" ],
         "x-vaadin-file-path" : "com/vaadin/fusion/generator/endpoints/json/JsonTestEndpoint.java"
       },
-      "com.vaadin.fusion.generator.endpoints.json.JsonTestEndpoint.Status" : {
+      "dev.hilla.generator.endpoints.json.JsonTestEndpoint.Status" : {
         "type" : "object",
         "properties" : {
           "createdAt" : {
@@ -619,7 +619,7 @@
         "description" : "Status bean. Used only in request parameters to verify that request\nparameter type descriptions are generated.",
         "x-vaadin-file-path" : "com/vaadin/fusion/generator/endpoints/json/JsonTestEndpoint.java"
       },
-      "com.vaadin.fusion.generator.endpoints.json.JsonTestEndpoint.User" : {
+      "dev.hilla.generator.endpoints.json.JsonTestEndpoint.User" : {
         "type" : "object",
         "properties" : {
           "name" : {
@@ -633,7 +633,7 @@
             "additionalProperties" : {
               "nullable" : true,
               "allOf" : [ {
-                "$ref" : "#/components/schemas/com.vaadin.fusion.generator.endpoints.json.JsonTestEndpoint.Role"
+                "$ref" : "#/components/schemas/dev.hilla.generator.endpoints.json.JsonTestEndpoint.Role"
               } ]
             }
           },
