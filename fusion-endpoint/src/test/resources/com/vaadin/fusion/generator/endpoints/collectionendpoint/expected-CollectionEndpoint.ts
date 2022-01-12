@@ -6,7 +6,7 @@
 
 // @ts-ignore
 import client from './connect-client.default';
-import type Collection from './com/vaadin/fusion/generator/endpoints/collectionendpoint/CollectionEndpoint/Collection';
+import type Collection from './dev/hilla/generator/endpoints/collectionendpoint/CollectionEndpoint/Collection';
 
 /**
  * Get a collection by author name. The generator should not mix this type with the Java's Collection type.

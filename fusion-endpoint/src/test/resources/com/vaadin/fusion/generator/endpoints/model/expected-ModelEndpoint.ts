@@ -6,9 +6,9 @@
 
 // @ts-ignore
 import client from './connect-client.default';
-import type Account from './com/vaadin/fusion/generator/endpoints/model/ModelEndpoint/Account';
-import type Group from './com/vaadin/fusion/generator/endpoints/model/ModelEndpoint/Group';
-import type ModelFromDifferentPackage from './com/vaadin/fusion/generator/endpoints/model/subpackage/ModelFromDifferentPackage';
+import type Account from './dev/hilla/generator/endpoints/model/ModelEndpoint/Account';
+import type Group from './dev/hilla/generator/endpoints/model/ModelEndpoint/Group';
+import type ModelFromDifferentPackage from './dev/hilla/generator/endpoints/model/subpackage/ModelFromDifferentPackage';
 
 function _getAccountByGroups(
   groups: Array<Group | undefined> | undefined

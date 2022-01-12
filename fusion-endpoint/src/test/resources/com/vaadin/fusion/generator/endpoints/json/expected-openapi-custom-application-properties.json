@@ -11,11 +11,11 @@
   "tags" : [ {
     "name" : "JsonTestEndpoint",
     "description" : "This class is used for OpenApi generator test",
-    "x-vaadin-file-path" : "com/vaadin/fusion/generator/endpoints/json/JsonTestEndpoint.java"
+    "x-vaadin-file-path" : "dev/hilla/generator/endpoints/json/JsonTestEndpoint.java"
   }, {
     "name" : "GeneratorAnonymousAllowedTestClass",
     "description" : "This nested class is also used in the OpenApi generator test",
-    "x-vaadin-file-path" : "com/vaadin/fusion/generator/endpoints/json/JsonTestEndpoint.java"
+    "x-vaadin-file-path" : "dev/hilla/generator/endpoints/json/JsonTestEndpoint.java"
   } ],
   "paths" : {
     "/JsonTestEndpoint/countUser" : {
@@ -573,7 +573,7 @@
           }
         },
         "description" : "Role bean",
-        "x-vaadin-file-path" : "com/vaadin/fusion/generator/endpoints/json/JsonTestEndpoint.java"
+        "x-vaadin-file-path" : "dev/hilla/generator/endpoints/json/JsonTestEndpoint.java"
       },
       "com.fasterxml.jackson.core.Version" : {
         "required" : [ "_majorVersion", "_minorVersion", "_patchLevel" ],
@@ -602,7 +602,7 @@
       "dev.hilla.generator.endpoints.json.JsonTestEndpoint.Permissions" : {
         "type" : "string",
         "enum" : [ "ADMIN", "USER", "GUEST" ],
-        "x-vaadin-file-path" : "com/vaadin/fusion/generator/endpoints/json/JsonTestEndpoint.java"
+        "x-vaadin-file-path" : "dev/hilla/generator/endpoints/json/JsonTestEndpoint.java"
       },
       "dev.hilla.generator.endpoints.json.JsonTestEndpoint.Status" : {
         "type" : "object",
@@ -617,7 +617,7 @@
           }
         },
         "description" : "Status bean. Used only in request parameters to verify that request\nparameter type descriptions are generated.",
-        "x-vaadin-file-path" : "com/vaadin/fusion/generator/endpoints/json/JsonTestEndpoint.java"
+        "x-vaadin-file-path" : "dev/hilla/generator/endpoints/json/JsonTestEndpoint.java"
       },
       "dev.hilla.generator.endpoints.json.JsonTestEndpoint.User" : {
         "type" : "object",
@@ -641,7 +641,7 @@
             "type" : "string"
           }
         },
-        "x-vaadin-file-path" : "com/vaadin/fusion/generator/endpoints/json/JsonTestEndpoint.java"
+        "x-vaadin-file-path" : "dev/hilla/generator/endpoints/json/JsonTestEndpoint.java"
       }
     },
     "securitySchemes" : {

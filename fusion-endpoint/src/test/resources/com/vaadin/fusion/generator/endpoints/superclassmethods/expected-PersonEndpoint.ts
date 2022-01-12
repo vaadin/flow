@@ -6,7 +6,7 @@
 
 // @ts-ignore
 import client from './connect-client.default';
-import type Person from './com/vaadin/fusion/generator/endpoints/superclassmethods/PersonEndpoint/Person';
+import type Person from './dev/hilla/generator/endpoints/superclassmethods/PersonEndpoint/Person';
 
 function _delete(
   id: number | undefined

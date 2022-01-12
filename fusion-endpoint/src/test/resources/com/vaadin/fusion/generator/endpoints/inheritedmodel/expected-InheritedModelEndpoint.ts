@@ -6,8 +6,8 @@
 
 // @ts-ignore
 import client from './connect-client.default';
-import type ChildModel from './com/vaadin/fusion/generator/endpoints/inheritedmodel/InheritedModelEndpoint/ChildModel';
-import type ParentModel from './com/vaadin/fusion/generator/endpoints/inheritedmodel/InheritedModelEndpoint/ParentModel';
+import type ChildModel from './dev/hilla/generator/endpoints/inheritedmodel/InheritedModelEndpoint/ChildModel';
+import type ParentModel from './dev/hilla/generator/endpoints/inheritedmodel/InheritedModelEndpoint/ParentModel';
 
 function _getParentModel(
   child: ChildModel | undefined

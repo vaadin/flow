@@ -5,7 +5,7 @@
 */
 // @ts-ignore
 import client from './connect-client.default';
-import type Pageable from './com/vaadin/fusion/mappedtypes/Pageable';
+import type Pageable from './dev/hilla/mappedtypes/Pageable';
 function _getPageable(): Promise<Pageable | undefined> {
   return client.call (
     'MappedTypeEndpoint', 'getPageable'

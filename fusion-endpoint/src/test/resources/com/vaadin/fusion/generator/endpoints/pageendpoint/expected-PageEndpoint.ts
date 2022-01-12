@@ -5,7 +5,7 @@
 */
 // @ts-ignore
 import client from './connect-client.default';
-import type Foo from './com/vaadin/fusion/generator/endpoints/pageendpoint/PageEndpoint/Foo';
+import type Foo from './dev/hilla/generator/endpoints/pageendpoint/PageEndpoint/Foo';
 function _getPageOfObjects(): Promise<Array<Foo | undefined> | undefined> {
   return client.call (
     'PageEndpoint', 'getPageOfObjects'

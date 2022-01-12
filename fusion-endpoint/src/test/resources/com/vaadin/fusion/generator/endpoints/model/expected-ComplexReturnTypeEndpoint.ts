@@ -6,7 +6,7 @@
 
 // @ts-ignore
 import client from './connect-client.default';
-import type Account from './com/vaadin/fusion/generator/endpoints/model/ModelEndpoint/Account';
+import type Account from './dev/hilla/generator/endpoints/model/ModelEndpoint/Account';
 
 function _getAccounts(): Promise<Array<Account | undefined> | undefined> {
   return client.call('ComplexReturnTypeEndpoint', 'getAccounts');

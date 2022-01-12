@@ -6,7 +6,7 @@
 
 // @ts-ignore
 import client from './connect-client.default';
-import type Model from './com/vaadin/fusion/generator/endpoints/complexhierarchymodel/Model';
+import type Model from './dev/hilla/generator/endpoints/complexhierarchymodel/Model';
 
 function _getModel(): Promise<Model | undefined> {
   return client.call('ComplexHierarchyEndpoint', 'getModel');

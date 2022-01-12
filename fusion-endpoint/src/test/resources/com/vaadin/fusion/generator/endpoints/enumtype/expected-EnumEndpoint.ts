@@ -6,7 +6,7 @@
 
 // @ts-ignore
 import client from './connect-client.default';
-import type MyEnum from './com/vaadin/fusion/generator/endpoints/enumtype/EnumEndpoint/MyEnum';
+import type MyEnum from './dev/hilla/generator/endpoints/enumtype/EnumEndpoint/MyEnum';
 
 function _echoEnum(
     value: MyEnum | undefined

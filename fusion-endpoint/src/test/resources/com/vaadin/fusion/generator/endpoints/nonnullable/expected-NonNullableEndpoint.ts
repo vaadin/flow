@@ -6,10 +6,10 @@
 
 // @ts-ignore
 import client from './connect-client.default';
-import type NonNullableModel from './com/vaadin/fusion/generator/endpoints/nonnullable/NonNullableEndpoint/NonNullableModel';
-import type ParameterType from './com/vaadin/fusion/generator/endpoints/nonnullable/NonNullableEndpoint/ParameterType';
-import type ReturnType from './com/vaadin/fusion/generator/endpoints/nonnullable/NonNullableEndpoint/ReturnType';
-import type VaadinNonNullableModel from './com/vaadin/fusion/generator/endpoints/nonnullable/NonNullableEndpoint/VaadinNonNullableModel';
+import type NonNullableModel from './dev/hilla/generator/endpoints/nonnullable/NonNullableEndpoint/NonNullableModel';
+import type ParameterType from './dev/hilla/generator/endpoints/nonnullable/NonNullableEndpoint/ParameterType';
+import type ReturnType from './dev/hilla/generator/endpoints/nonnullable/NonNullableEndpoint/ReturnType';
+import type VaadinNonNullableModel from './dev/hilla/generator/endpoints/nonnullable/NonNullableEndpoint/VaadinNonNullableModel';
 
 function _echoMap(
   shouldBeNotNull: boolean

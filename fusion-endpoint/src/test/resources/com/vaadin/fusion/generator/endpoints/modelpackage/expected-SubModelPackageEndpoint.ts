@@ -6,7 +6,7 @@
 
 // @ts-ignore
 import client from './connect-client.default';
-import type Account from './com/vaadin/fusion/generator/endpoints/modelpackage/subpackage/Account';
+import type Account from './dev/hilla/generator/endpoints/modelpackage/subpackage/Account';
 
 function _getSubAccountPackage(
   name: string | undefined

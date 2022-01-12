@@ -6,8 +6,8 @@
 
 // @ts-ignore
 import client from './connect-client.default';
-import type SameClassNameModel from './com/vaadin/fusion/generator/endpoints/sameclassname/SameClassNameEndpoint/SameClassNameModel';
-import type SubpackageSameClassNameModel from './com/vaadin/fusion/generator/endpoints/sameclassname/subpackage/SameClassNameModel';
+import type SameClassNameModel from './dev/hilla/generator/endpoints/sameclassname/SameClassNameEndpoint/SameClassNameModel';
+import type SubpackageSameClassNameModel from './dev/hilla/generator/endpoints/sameclassname/subpackage/SameClassNameModel';
 
 function _getMyClass(
   sameClassNameModel: Array<SubpackageSameClassNameModel | undefined> | undefined
