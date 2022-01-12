@@ -254,7 +254,8 @@ public class FusionController {
 
     private ResponseEntity<String> invokeVaadinEndpointMethod(
             String endpointName, String methodName, Method methodToInvoke,
-            ObjectNode body, EndpointRegistry.VaadinEndpointData vaadinEndpointData,
+            ObjectNode body,
+            EndpointRegistry.VaadinEndpointData vaadinEndpointData,
             HttpServletRequest request) throws JsonProcessingException {
         FusionAccessChecker accessChecker = getAccessChecker(
                 request.getServletContext());

@@ -152,7 +152,8 @@ public class CodeGenerator extends AbstractTypeScriptClientCodegen {
                 getClassNameFromImportsHelper());
         handlebars.registerHelper("getModelArguments",
                 ModelGenerator.getModelArgumentsHelper());
-        handlebars.registerHelper("getModelFullType", ModelGenerator.getModelFullTypeHelper());
+        handlebars.registerHelper("getModelFullType",
+                ModelGenerator.getModelFullTypeHelper());
     }
 
     /**
@@ -444,8 +445,8 @@ public class CodeGenerator extends AbstractTypeScriptClientCodegen {
                 (String) o2.get(IMPORT)));
         for (Map<String, Object> anImport : imports) {
             String importQualifiedName = (String) anImport.get(IMPORT);
-            String className = CodeGeneratorUtils.getSimpleNameFromQualifiedName(
-                    importQualifiedName);
+            String className = CodeGeneratorUtils
+                    .getSimpleNameFromQualifiedName(importQualifiedName);
             if (usedNames.contains(className)) {
                 String importAs = getUniqueNameFromQualifiedName(usedNames,
                         importQualifiedName);
@@ -510,8 +511,8 @@ public class CodeGenerator extends AbstractTypeScriptClientCodegen {
     }
 
     private Helper<String> getClassNameFromImportsHelper() {
-        return (className, options) -> CodeGeneratorUtils.getSimpleNameFromImports(className,
-                options.param(0));
+        return (className, options) -> CodeGeneratorUtils
+                .getSimpleNameFromImports(className, options.param(0));
     }
 
     private String getDescriptionFromParameterExtension(String paramName,

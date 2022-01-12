@@ -214,7 +214,7 @@ class GeneratorType {
                         return GeneratorUtils.zip(typeArguments, typeParameters,
                                 (argument, parameterPair) -> new GeneratorType(
                                         argument, parameterPair.b))
-                                                .collect(Collectors.toList());
+                                .collect(Collectors.toList());
                     }).orElseGet(this::getTypeArgumentsFallback);
         }
 
