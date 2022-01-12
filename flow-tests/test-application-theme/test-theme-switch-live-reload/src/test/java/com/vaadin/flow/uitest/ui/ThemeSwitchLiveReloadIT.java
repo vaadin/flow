@@ -60,6 +60,9 @@ public class ThemeSwitchLiveReloadIT extends ChromeBrowserTest {
     @Test
     public void switchThemeName_changeThemeNameAndRecompile_themeIsChangedOnFly() {
         open();
+
+        getCommandExecutor().waitForVaadin();
+
         Assert.assertFalse(OTHER_THEME +
                            " styles are not expected before switching the theme",
                 isOtherThemeUsed());
