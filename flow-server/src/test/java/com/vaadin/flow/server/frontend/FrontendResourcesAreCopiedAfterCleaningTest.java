@@ -58,14 +58,14 @@ public class FrontendResourcesAreCopiedAfterCleaningTest {
     public void frontendResources_should_beCopiedFromJars_when_TaskUpdatePackagesRemovesThem()
             throws IOException, ExecutionFailedException {
         copyResources();
-        assertCopiedFrontendFileAmount(3);
+        assertCopiedFrontendFileAmount(6/* jar files */ + 1/* package.json */);
 
         performPackageClean();
         // Should keep the `package.json` file
         assertCopiedFrontendFileAmount(1);
 
         copyResources();
-        assertCopiedFrontendFileAmount(3);
+        assertCopiedFrontendFileAmount(6/* jar files */ + 1/* package.json */);
     }
 
     private void assertCopiedFrontendFileAmount(int fileCount)
