@@ -119,11 +119,19 @@ class VersionsJsonFilter {
     private boolean isUserChanged(String key, JsonObject vaadinDep,
             JsonObject dependencies) {
         if (vaadinDep.hasKey(key)) {
-            FrontendVersion vaadin = new FrontendVersion(key,
-                    vaadinDep.getString(key));
-            FrontendVersion dep = new FrontendVersion(key,
-                    dependencies.getString(key));
-            return !vaadin.isEqualTo(dep);
+            try {
+                FrontendVersion vaadin = new FrontendVersion(key,
+                        vaadinDep.getString(key));
+                FrontendVersion dep = new FrontendVersion(key,
+                        dependencies.getString(key));
+                return !vaadin.isEqualTo(dep);
+            } catch (NumberFormatException nfe) {
+                LoggerFactory.getLogger("VersionsFilter").debug(
+                        "Received version with non numbers {} and {}",
+                        vaadinDep.getString(key), dependencies.getString(key));
+                return !vaadinDep.getString(key)
+                        .equals(dependencies.getString(key));
+            }
         }
         // User changed if not in vaadin dependency
         return true;
