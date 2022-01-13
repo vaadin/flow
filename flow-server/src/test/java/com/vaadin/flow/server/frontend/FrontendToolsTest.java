@@ -620,8 +620,7 @@ public class FrontendToolsTest {
         createStubNode(false, true, vaadinHomeDir);
 
         assertThat(tools.getNodeExecutable(), containsString("node"));
-        assertThat(tools.getNodeExecutable(),
-                not(containsString(DEFAULT_NODE)));
+
         List<String> npmExecutable = tools.getNpmExecutable();
         assertThat(npmExecutable.get(0), containsString("node"));
         assertThat(npmExecutable.get(1), containsString(NPM_CLI_STRING));
