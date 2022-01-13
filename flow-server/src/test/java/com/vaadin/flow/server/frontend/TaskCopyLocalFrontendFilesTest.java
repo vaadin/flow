@@ -46,10 +46,8 @@ public class TaskCopyLocalFrontendFilesTest {
         File readOnly = new File(sourceFolder, "readOnly.txt");
         readOnly.createNewFile();
         Assert.assertTrue("Could not make file read-only",
-                readOnly.setWritable(false));
+                readOnly.setReadOnly());
 
-        Assert.assertFalse("Should not be able to write read-only file",
-                readOnly.canWrite());
         return sourceFolder;
     }
 }
