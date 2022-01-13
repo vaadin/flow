@@ -107,7 +107,7 @@ public class CodeGenerator extends AbstractTypeScriptClientCodegen {
          * from. The generator will use the resource stream to attempt to read
          * the templates.
          */
-        templateDir = "com/vaadin/fusion/generator";
+        templateDir = "dev/hilla/generator";
 
         /*
          * Reserved words copied from
