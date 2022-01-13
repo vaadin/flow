@@ -164,10 +164,6 @@ public class FeatureFlagsTest {
         restoreUsageStatistics(originalEntries);
     }
 
-    private List<UsageEntry> getUsageStatisticsEntries() {
-        return UsageStatistics.getEntries().collect(Collectors.toList());
-    }
-
     @Test
     public void enabledFeatureFlagsMarkedInStatsWhenLoading()
             throws IOException {
@@ -230,6 +226,10 @@ public class FeatureFlagsTest {
         FileUtils.write(
                 new File(propertiesDir, FeatureFlags.PROPERTIES_FILENAME), data,
                 StandardCharsets.UTF_8);
+    }
+
+    private List<UsageEntry> getUsageStatisticsEntries() {
+        return UsageStatistics.getEntries().collect(Collectors.toList());
     }
 
     private void restoreUsageStatistics(Collection<UsageEntry> entries) {
