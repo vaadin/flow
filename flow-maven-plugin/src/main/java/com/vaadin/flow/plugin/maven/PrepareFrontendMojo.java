@@ -52,6 +52,8 @@ import static com.vaadin.flow.server.Constants.GENERATED_TOKEN;
 import static com.vaadin.flow.server.Constants.NPM_TOKEN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_PRODUCTION_MODE;
+import static com.vaadin.flow.server.InitParameters.NODE_DOWNLOAD_ROOT;
+import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
@@ -143,7 +145,7 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         try {
             FrontendTools tools = new FrontendTools(npmFolder.getAbsolutePath(),
                     () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath(),
-                    nodeVersion, nodeDownloadRootURI);
+                    nodeVersion, nodeDownloadRootURI, requireHomeNodeExec);
             tools.validateNodeAndNpmVersion();
         } catch (IllegalStateException exception) {
             throw new MojoExecutionException(exception.getMessage(), exception);
@@ -197,6 +199,8 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         buildInfo.put(Constants.SERVLET_PARAMETER_ENABLE_PNPM, pnpmEnable);
         buildInfo.put(Constants.REQUIRE_HOME_NODE_EXECUTABLE,
                 requireHomeNodeExec);
+        buildInfo.put(NODE_VERSION, nodeVersion);
+        buildInfo.put(NODE_DOWNLOAD_ROOT, nodeDownloadRoot);
 
         try {
             FileUtils.forceMkdir(token.getParentFile());
