@@ -299,7 +299,7 @@ public class FrontendTools {
     public String getNodeExecutable() {
         Pair<String, String> nodeCommands = getNodeCommands();
         File file = getExecutable(baseDir, nodeCommands.getSecond());
-        if (file == null) {
+        if (file == null && !forceAlternativeNode) {
             file = frontendToolsLocator.tryLocateTool(nodeCommands.getFirst())
                     .orElse(null);
         }

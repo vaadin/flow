@@ -57,6 +57,8 @@ import static com.vaadin.flow.server.Constants.GENERATED_TOKEN;
 import static com.vaadin.flow.server.Constants.NPM_TOKEN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
+import static com.vaadin.flow.server.InitParameters.NODE_DOWNLOAD_ROOT;
+import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
@@ -218,7 +220,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
         String nodePath;
         FrontendTools tools = new FrontendTools(npmFolder.getAbsolutePath(),
                 ()-> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath(),
-                nodeVersion, nodeDownloadRootURI);
+                nodeVersion, nodeDownloadRootURI, requireHomeNodeExec);
         if (requireHomeNodeExec) {
             nodePath = tools
                     .forceAlternativeNodeExecutable();
@@ -292,6 +294,8 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
             buildInfo.remove(NPM_TOKEN);
             buildInfo.remove(GENERATED_TOKEN);
             buildInfo.remove(FRONTEND_TOKEN);
+            buildInfo.remove(NODE_VERSION);
+            buildInfo.remove(NODE_DOWNLOAD_ROOT);
             buildInfo.remove(Constants.SERVLET_PARAMETER_ENABLE_PNPM);
             buildInfo.remove(Constants.REQUIRE_HOME_NODE_EXECUTABLE);
 
