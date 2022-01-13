@@ -98,7 +98,8 @@ public class VaadinServiceTest {
 
         // this test needs a fresh empty statistics, so we need to clear
         // them for resusing forks for unit tests
-        List<UsageEntry> originalEntries = UsageStatistics.getEntries().collect(Collectors.toList());
+        List<UsageEntry> originalEntries = UsageStatistics.getEntries()
+                .collect(Collectors.toList());
         UsageStatistics.clearEntries();
 
         VaadinServiceInitListener initListener = event -> {
@@ -114,7 +115,8 @@ public class VaadinServiceTest {
         Assert.assertTrue(UsageStatistics.getEntries().anyMatch(
                 e -> Constants.STATISTIC_ROUTING_SERVER.equals(e.getName())));
 
-        originalEntries.forEach(entry -> UsageStatistics.markAsUsed(entry.getName(), entry.getVersion()));
+        originalEntries.forEach(entry -> UsageStatistics
+                .markAsUsed(entry.getName(), entry.getVersion()));
     }
 
     @Test
