@@ -150,13 +150,13 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         // Contains CSS import lines
         MatcherAssert.assertThat(mainContent, CoreMatchers.containsString(
                 "import $css_0 from '@vaadin/vaadin-mixed-component/bar.css';"));
-        MatcherAssert.assertThat(mainContent, CoreMatchers.containsString(
-                "addCssBlock(`<custom-style><style>${$css_0}</style></custom-style>`);"));
+        MatcherAssert.assertThat(mainContent, CoreMatchers
+                .containsString("addCssBlock(`<style>${$css_0}</style>`);"));
 
         MatcherAssert.assertThat(mainContent, CoreMatchers
                 .containsString("import $css_5 from 'Frontend/foo.css';"));
         MatcherAssert.assertThat(mainContent, CoreMatchers.containsString(
-                "addCssBlock(`<dom-module id=\"flow_css_mod_5\" theme-for=\"foo-bar\"><template><style>${$css_5}</style></template></dom-module>`);"));
+                "registerStyles('foo-bar', css`${$css_5}`, {moduleId: 'flow_css_mod'});"));
 
         // Contains theme imports
         MatcherAssert.assertThat(mainContent, CoreMatchers.containsString(
@@ -212,7 +212,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         MatcherAssert.assertThat(fallBackContent, CoreMatchers
                 .containsString("import $css_0 from 'Frontend/b-css.css';"));
         MatcherAssert.assertThat(fallBackContent, CoreMatchers.containsString(
-                "addCssBlock(`<dom-module id=\"fallback_flow_css_mod_2\" theme-for=\"extra-foo\"><template><style include=\"extra-bar\">${$css_2}</style></template></dom-module>`);"));
+                "registerStyles('extra-foo', css`${$css_2}`, {include: 'extra-bar', moduleId: 'fallback_flow_css_mod'});"));
 
         // Does not contains JS module imports
         MatcherAssert.assertThat(fallBackContent, CoreMatchers.not(CoreMatchers
@@ -307,7 +307,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         MatcherAssert.assertThat(fallBackContent, CoreMatchers
                 .containsString("import $css_0 from 'Frontend/foo.css';"));
         MatcherAssert.assertThat(fallBackContent, CoreMatchers.containsString(
-                "addCssBlock(`<dom-module id=\"baz\"><template><style include=\"bar\">${$css_0}</style></template></dom-module>`);"));
+                "registerStyles('', css`${$css_0}`, {include: 'bar', moduleId: 'baz'});"));
 
         // Contains JS module imports
         MatcherAssert.assertThat(fallBackContent, CoreMatchers.containsString(

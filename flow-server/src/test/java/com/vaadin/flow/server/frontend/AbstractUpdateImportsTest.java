@@ -315,20 +315,18 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         expectedLines.add("import $css_4 from 'Frontend/foo.css';");
         expectedLines.add("import $css_5 from 'Frontend/foo.css';");
         expectedLines.add("import $css_6 from 'Frontend/foo.css';");
+        expectedLines.add("addCssBlock(`<style>${$css_0}</style>`);");
+        expectedLines.add("addCssBlock(`<style>${$css_1}</style>`);");
         expectedLines.add(
-                "addCssBlock(`<custom-style><style>${$css_0}</style></custom-style>`);");
+                "addCssBlock(`<style include=\"bar\">${$css_2}</style>`);");
+        expectedLines
+                .add("registerStyles('', css`${$css_3}`, {moduleId: 'baz'});");
         expectedLines.add(
-                "addCssBlock(`<custom-style><style>${$css_1}</style></custom-style>`);");
+                "registerStyles('', css`${$css_4}`, {include: 'bar', moduleId: 'baz'});");
         expectedLines.add(
-                "addCssBlock(`<custom-style><style include=\"bar\">${$css_2}</style></custom-style>`);");
+                "registerStyles('foo-bar', css`${$css_5}`, {moduleId: 'flow_css_mod'});");
         expectedLines.add(
-                "addCssBlock(`<dom-module id=\"baz\"><template><style>${$css_3}</style></template></dom-module>`);");
-        expectedLines.add(
-                "addCssBlock(`<dom-module id=\"baz\"><template><style include=\"bar\">${$css_4}</style></template></dom-module>`);");
-        expectedLines.add(
-                "addCssBlock(`<dom-module id=\"flow_css_mod_5\" theme-for=\"foo-bar\"><template><style>${$css_5}</style></template></dom-module>`);");
-        expectedLines.add(
-                "addCssBlock(`<dom-module id=\"flow_css_mod_6\" theme-for=\"foo-bar\"><template><style include=\"bar\">${$css_6}</style></template></dom-module>`);");
+                "registerStyles('foo-bar', css`${$css_6}`, {include: 'bar', moduleId: 'flow_css_mod'});");
 
         expectedLines.add("import 'generated-modules-foo';");
         expectedLines.add("import 'generated-modules-bar';");
