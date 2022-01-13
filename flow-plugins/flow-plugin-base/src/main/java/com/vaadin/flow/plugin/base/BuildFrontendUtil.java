@@ -216,8 +216,9 @@ public class BuildFrontendUtil {
             buildInfo.put(NODE_DOWNLOAD_ROOT,
                     adapter.nodeDownloadRoot().toString());
         } catch (URISyntaxException e) {
-            LoggerFactory.getLogger("BuildInfo")
-                    .error("NODE_DOWNLOAD_ROOT defined incorrectly", e);
+            LoggerFactory.getLogger("BuildInfo").error(
+                    "Configuration 'nodeDownloadRoot'  (property 'node.download.root') is defined incorrectly",
+                    e);
         }
         buildInfo.put(GENERATED_TOKEN,
                 adapter.generatedFolder().getAbsolutePath());
