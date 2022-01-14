@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
+import javax.annotation.concurrent.NotThreadSafe;
+
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.VaadinContext;
@@ -34,6 +36,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
+@NotThreadSafe
 public class FeatureFlagsTest {
 
     @Rule
@@ -151,7 +154,7 @@ public class FeatureFlagsTest {
     @Test
     public void disabledFeatureFlagsNotMarkedInStatsWhenLoading()
             throws IOException {
-        UsageStatistics.clearEntries();
+        UsageStatistics.resetEntries();
         createFeatureFlagsFile("");
         featureFlags.loadProperties();
         Assert.assertFalse(
@@ -173,11 +176,10 @@ public class FeatureFlagsTest {
             throws IOException {
         createFeatureFlagsFile(
                 "com.vaadin.experimental.exampleFeatureFlag=true\n");
-        UsageStatistics.clearEntries();
+        UsageStatistics.resetEntries();
         featureFlags.setEnabled(FeatureFlags.EXAMPLE.getId(), false);
         Assert.assertFalse(
                 hasUsageStatsEntry("flow/featureflags/exampleFeatureFlag"));
-
     }
 
     @Test
@@ -185,11 +187,10 @@ public class FeatureFlagsTest {
             throws IOException {
         createFeatureFlagsFile(
                 "com.vaadin.experimental.exampleFeatureFlag=false\n");
-        UsageStatistics.clearEntries();
+        UsageStatistics.resetEntries();
         featureFlags.setEnabled(FeatureFlags.EXAMPLE.getId(), true);
         Assert.assertTrue(
                 hasUsageStatsEntry("flow/featureflags/exampleFeatureFlag"));
-
     }
 
     private boolean hasUsageStatsEntry(String name) {
