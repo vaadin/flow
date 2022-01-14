@@ -31,12 +31,13 @@ public class BuildFrontendUtilTest {
 
         PluginAdapterBase adapter = Mockito.mock(PluginAdapterBase.class);
         Mockito.when(adapter.npmFolder()).thenReturn(baseDir);
-        Mockito.when(adapter.projectBaseDirectory()).thenReturn(tmpDir.getRoot()
-                .toPath());
+        Mockito.when(adapter.projectBaseDirectory())
+                .thenReturn(tmpDir.getRoot().toPath());
 
         FrontendTools tools = Mockito.mock(FrontendTools.class);
 
-        // given: "node" stub that exits normally only if expected environment set
+        // given: "node" stub that exits normally only if expected environment
+        // set
         File fakeNode = new File(baseDir, "node");
         try (PrintWriter out = new PrintWriter(fakeNode)) {
             out.println("!/bin/sh");
@@ -44,7 +45,8 @@ public class BuildFrontendUtilTest {
             out.println("exit $?");
         }
         Assert.assertTrue(fakeNode.setExecutable(true));
-        Mockito.when(tools.getNodeExecutable()).thenReturn(fakeNode.getAbsolutePath());
+        Mockito.when(tools.getNodeExecutable())
+                .thenReturn(fakeNode.getAbsolutePath());
 
         Map<String, String> environment = new HashMap<>();
         environment.put("NODE_OPTIONS", "expected");
