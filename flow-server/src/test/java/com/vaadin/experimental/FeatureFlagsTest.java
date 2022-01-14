@@ -159,7 +159,7 @@ public class FeatureFlagsTest {
     public void disabledFeatureFlagsNotMarkedInStatsWhenLoading()
             throws IOException {
         Collection<UsageEntry> originalEntries = getUsageStatisticsEntries();
-        UsageStatistics.clearEntries();
+        UsageStatistics.resetEntries();
         createFeatureFlagsFile("");
         featureFlags.loadProperties();
         Assert.assertFalse(
@@ -183,7 +183,7 @@ public class FeatureFlagsTest {
         Collection<UsageEntry> originalEntries = getUsageStatisticsEntries();
         createFeatureFlagsFile(
                 "com.vaadin.experimental.exampleFeatureFlag=true\n");
-        UsageStatistics.clearEntries();
+        UsageStatistics.resetEntries();
         featureFlags.setEnabled(FeatureFlags.EXAMPLE.getId(), false);
         Assert.assertFalse(
                 hasUsageStatsEntry("flow/featureflags/exampleFeatureFlag"));
@@ -196,7 +196,7 @@ public class FeatureFlagsTest {
         Collection<UsageEntry> originalEntries = getUsageStatisticsEntries();
         createFeatureFlagsFile(
                 "com.vaadin.experimental.exampleFeatureFlag=false\n");
-        UsageStatistics.clearEntries();
+        UsageStatistics.resetEntries();
         featureFlags.setEnabled(FeatureFlags.EXAMPLE.getId(), true);
         Assert.assertTrue(
                 hasUsageStatsEntry("flow/featureflags/exampleFeatureFlag"));

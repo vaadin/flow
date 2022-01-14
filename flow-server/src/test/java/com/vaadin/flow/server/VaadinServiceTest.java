@@ -102,7 +102,7 @@ public class VaadinServiceTest {
         // them for resusing forks for unit tests
         List<UsageEntry> originalEntries = UsageStatistics.getEntries()
                 .collect(Collectors.toList());
-        UsageStatistics.clearEntries();
+        UsageStatistics.resetEntries();
 
         VaadinServiceInitListener initListener = event -> {
             RouteConfiguration.forApplicationScope().setRoute("test",
