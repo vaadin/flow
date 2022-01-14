@@ -281,11 +281,10 @@ public class DevModeInitializer implements Serializable {
                                     DEFAULT_CONNECT_OPENAPI_JSON_FILE)
                                     .toString());
 
-            builder.withFusionJavaSourceFolder(
-                    new File(connectJavaSourceFolder))
-                    .withFusionApplicationProperties(
+            builder.withEndpointSourceFolder(new File(connectJavaSourceFolder))
+                    .withApplicationProperties(
                             new File(connectApplicationProperties))
-                    .withFusionGeneratedOpenAPIJson(
+                    .withEndpointGeneratedOpenAPIFile(
                             new File(connectOpenApiJsonFile));
         }
 
@@ -318,7 +317,7 @@ public class DevModeInitializer implements Serializable {
                         InitParameters.ADDITIONAL_POSTINSTALL_PACKAGES, "")
                 .split(",");
 
-        String fusionClientAPIFolder = config.getStringProperty(
+        String frontendGeneratedFolder = config.getStringProperty(
                 PROJECT_FRONTEND_GENERATED_DIR_TOKEN,
                 Paths.get(baseDir, DEFAULT_PROJECT_FRONTEND_GENERATED_DIR)
                         .toString());
@@ -327,7 +326,7 @@ public class DevModeInitializer implements Serializable {
         NodeTasks tasks = builder.enablePackagesUpdate(true)
                 .useByteCodeScanner(useByteCodeScanner)
                 .withFlowResourcesFolder(flowResourcesFolder)
-                .withFusionClientAPIFolder(new File(fusionClientAPIFolder))
+                .withFrontendGeneratedFolder(new File(frontendGeneratedFolder))
                 .copyResources(frontendLocations)
                 .copyLocalResources(new File(baseDir,
                         Constants.LOCAL_FRONTEND_RESOURCES_PATH))

@@ -332,7 +332,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
             handler = getDevModeHandler();
             waitForDevServer();
 
-            Mockito.verify(taskGenerateFusion, times(1)).execute();
+            Mockito.verify(taskGenerateEndpoint, times(1)).execute();
         } finally {
             if (originalJavaSourceFolder != null) {
                 System.setProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
@@ -365,7 +365,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
             handler = getDevModeHandler();
             waitForDevServer();
 
-            Mockito.verify(taskGenerateFusion, never()).execute();
+            Mockito.verify(taskGenerateEndpoint, never()).execute();
         } finally {
             if (originalJavaSourceFolder != null) {
                 System.setProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
@@ -395,7 +395,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
             handler = getDevModeHandler();
             waitForDevServer();
 
-            Mockito.verify(taskGenerateFusion, times(1)).execute();
+            Mockito.verify(taskGenerateEndpoint, times(1)).execute();
         } finally {
             if (originalJavaSourceFolder != null) {
                 System.setProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
