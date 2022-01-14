@@ -125,8 +125,12 @@ public class UsageStatistics {
     private static void setupDefaultEntries() {
         String version = System.getProperty("java.version");
 
-        // Ignore pre, build and opt fields
-        version = version.replaceAll("[-_+].*", "");
+        if (version != null) {
+            // Ignore pre, build and opt fields
+            version = version.replaceAll("[-_+].*", "");
+        } else {
+            version = "unknown";
+        }
 
         markAsUsed("java", version);
     }
