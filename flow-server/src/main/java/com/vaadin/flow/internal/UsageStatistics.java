@@ -115,7 +115,7 @@ public class UsageStatistics {
     }
 
     /**
-     * Clear the usage entries.
+     * Reset the usage entries.
      */
     public static void resetEntries() {
         entries.clear();
