@@ -36,7 +36,6 @@ class MiscMultiModuleTest : AbstractGradleTest() {
                 repositories {
                     mavenLocal()
                     mavenCentral()
-                    jcenter()
                     maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
                 }
             }
@@ -81,7 +80,6 @@ class MiscMultiModuleTest : AbstractGradleTest() {
                 repositories {
                     mavenLocal()
                     mavenCentral()
-                    jcenter()
                     maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
                 }
             }
