@@ -23,6 +23,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.annotation.concurrent.NotThreadSafe;
+
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.internal.UsageStatistics.UsageEntry;
 import com.vaadin.flow.server.MockVaadinContext;
@@ -38,6 +40,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
+@NotThreadSafe
 public class FeatureFlagsTest {
 
     @Rule

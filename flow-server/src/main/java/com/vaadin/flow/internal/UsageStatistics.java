@@ -72,12 +72,7 @@ public class UsageStatistics {
 
     private static ConcurrentHashMap<String, UsageEntry> entries = new ConcurrentHashMap<>();
     static {
-        String version = System.getProperty("java.version");
-
-        // Ignore pre, build and opt fields
-        version = version.replaceAll("[-_+].*", "");
-
-        markAsUsed("java", version);
+        setupDefaultEntries();
     }
 
     private UsageStatistics() {
@@ -124,5 +119,15 @@ public class UsageStatistics {
      */
     public static void clearEntries() {
         entries.clear();
+        setupDefaultEntries();
+    }
+
+    private static void setupDefaultEntries() {
+        String version = System.getProperty("java.version");
+
+        // Ignore pre, build and opt fields
+        version = version.replaceAll("[-_+].*", "");
+
+        markAsUsed("java", version);
     }
 }

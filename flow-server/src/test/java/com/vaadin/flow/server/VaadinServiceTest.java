@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server;
 
+import javax.annotation.concurrent.NotThreadSafe;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpSessionBindingEvent;
@@ -61,6 +62,7 @@ import static org.junit.Assert.assertEquals;
  * @author Vaadin Ltd
  * @since 1.0
  */
+@NotThreadSafe
 public class VaadinServiceTest {
 
     @Tag("div")
