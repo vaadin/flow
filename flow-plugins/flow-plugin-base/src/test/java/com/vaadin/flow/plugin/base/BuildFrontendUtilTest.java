@@ -9,16 +9,21 @@ import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 import com.vaadin.flow.server.frontend.FrontendTools;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 
 public class BuildFrontendUtilTest {
 
     @Test
     public void testWebpackRequiredFlagsPassedToNodeEnvironment()
             throws IOException, URISyntaxException, TimeoutException {
+        Assume.assumeFalse("Test not runnable on Windows",
+                FrontendUtils.isWindows());
+
         TemporaryFolder tmpDir = new TemporaryFolder();
         tmpDir.create();
         File baseDir = tmpDir.newFolder();
