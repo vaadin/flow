@@ -25,7 +25,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeoutException;
 
@@ -351,10 +353,13 @@ public class BuildFrontendUtil {
 
         final FeatureFlags featureFlags = new FeatureFlags(lookup);
         featureFlags.setPropertiesLocation(adapter.javaResourceFolder());
+
+        FrontendToolsSettings settings = getFrontendToolsSettings(adapter);
+        FrontendTools tools = new FrontendTools(settings);
         if (featureFlags.isEnabled(FeatureFlags.VITE)) {
-            BuildFrontendUtil.runVite(adapter);
+            BuildFrontendUtil.runVite(adapter, tools);
         } else {
-            BuildFrontendUtil.runWebpack(adapter);
+            BuildFrontendUtil.runWebpack(adapter, tools);
         }
     }
 
@@ -363,14 +368,19 @@ public class BuildFrontendUtil {
      *
      * @param adapter
      *            - the PluginAdapterBase.
+     * @param frontendTools
+     *            - frontend tools access object
      * @throws TimeoutException
      *             - while run webpack
      * @throws URISyntaxException
      *             - while parsing nodeDownloadRoot()) to URI
      */
-    public static void runWebpack(PluginAdapterBase adapter)
+    public static void runWebpack(PluginAdapterBase adapter,
+            FrontendTools frontendTools)
             throws TimeoutException, URISyntaxException {
-        runFrontendBuildTool(adapter, "Webpack", "webpack/bin/webpack.js");
+        runFrontendBuildTool(adapter, frontendTools, "Webpack",
+                "webpack/bin/webpack.js",
+                frontendTools.getWebpackNodeEnvironment());
     }
 
     /**
@@ -378,18 +388,23 @@ public class BuildFrontendUtil {
      *
      * @param adapter
      *            - the PluginAdapterBase.
+     * @param frontendTools
+     *            - frontend tools access object
      * @throws TimeoutException
      *             - while running vite
      * @throws URISyntaxException
      *             - while parsing nodeDownloadRoot()) to URI
      */
-    public static void runVite(PluginAdapterBase adapter)
+    public static void runVite(PluginAdapterBase adapter,
+            FrontendTools frontendTools)
             throws TimeoutException, URISyntaxException {
-        runFrontendBuildTool(adapter, "Vite", "vite/bin/vite.js", "build");
+        runFrontendBuildTool(adapter, frontendTools, "Vite", "vite/bin/vite.js",
+                Collections.emptyMap(), "build");
     }
 
     private static void runFrontendBuildTool(PluginAdapterBase adapter,
-            String toolName, String executable, String... params)
+            FrontendTools frontendTools, String toolName, String executable,
+            Map<String, String> environment, String... params)
             throws TimeoutException, URISyntaxException {
 
         File buildExecutable = new File(adapter.npmFolder(),
@@ -402,12 +417,10 @@ public class BuildFrontendUtil {
         }
 
         String nodePath;
-        FrontendToolsSettings settings = getFrontendToolsSettings(adapter);
-        FrontendTools tools = new FrontendTools(settings);
         if (adapter.requireHomeNodeExec()) {
-            nodePath = tools.forceAlternativeNodeExecutable();
+            nodePath = frontendTools.forceAlternativeNodeExecutable();
         } else {
-            nodePath = tools.getNodeExecutable();
+            nodePath = frontendTools.getNodeExecutable();
         }
 
         List<String> command = new ArrayList<>();
@@ -419,6 +432,7 @@ public class BuildFrontendUtil {
 
         ProcessExecutor processExecutor = new ProcessExecutor()
                 .command(builder.command()).environment(builder.environment())
+                .environment(environment)
                 .directory(adapter.projectBaseDirectory().toFile());
 
         adapter.logInfo("Running " + toolName + " ...");
