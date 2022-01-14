@@ -19,14 +19,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.annotation.concurrent.NotThreadSafe;
 
 import com.vaadin.flow.internal.UsageStatistics;
-import com.vaadin.flow.internal.UsageStatistics.UsageEntry;
 import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
@@ -158,13 +154,11 @@ public class FeatureFlagsTest {
     @Test
     public void disabledFeatureFlagsNotMarkedInStatsWhenLoading()
             throws IOException {
-        Collection<UsageEntry> originalEntries = getUsageStatisticsEntries();
         UsageStatistics.resetEntries();
         createFeatureFlagsFile("");
         featureFlags.loadProperties();
         Assert.assertFalse(
                 hasUsageStatsEntry("flow/featureflags/exampleFeatureFlag"));
-        restoreUsageStatistics(originalEntries);
     }
 
     @Test
@@ -180,27 +174,23 @@ public class FeatureFlagsTest {
     @Test
     public void disabledFeatureFlagsNotMarkedInStatsWhenToggled()
             throws IOException {
-        Collection<UsageEntry> originalEntries = getUsageStatisticsEntries();
         createFeatureFlagsFile(
                 "com.vaadin.experimental.exampleFeatureFlag=true\n");
         UsageStatistics.resetEntries();
         featureFlags.setEnabled(FeatureFlags.EXAMPLE.getId(), false);
         Assert.assertFalse(
                 hasUsageStatsEntry("flow/featureflags/exampleFeatureFlag"));
-        restoreUsageStatistics(originalEntries);
     }
 
     @Test
     public void enabledFeatureFlagsMarkedInStatsWhenToggled()
             throws IOException {
-        Collection<UsageEntry> originalEntries = getUsageStatisticsEntries();
         createFeatureFlagsFile(
                 "com.vaadin.experimental.exampleFeatureFlag=false\n");
         UsageStatistics.resetEntries();
         featureFlags.setEnabled(FeatureFlags.EXAMPLE.getId(), true);
         Assert.assertTrue(
                 hasUsageStatsEntry("flow/featureflags/exampleFeatureFlag"));
-        restoreUsageStatistics(originalEntries);
     }
 
     private boolean hasUsageStatsEntry(String name) {
@@ -229,14 +219,5 @@ public class FeatureFlagsTest {
         FileUtils.write(
                 new File(propertiesDir, FeatureFlags.PROPERTIES_FILENAME), data,
                 StandardCharsets.UTF_8);
-    }
-
-    private List<UsageEntry> getUsageStatisticsEntries() {
-        return UsageStatistics.getEntries().collect(Collectors.toList());
-    }
-
-    private void restoreUsageStatistics(Collection<UsageEntry> entries) {
-        entries.forEach(entry -> UsageStatistics.markAsUsed(entry.getName(),
-                entry.getVersion()));
     }
 }
