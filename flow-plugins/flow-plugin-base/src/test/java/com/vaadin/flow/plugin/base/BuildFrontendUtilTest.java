@@ -23,6 +23,8 @@ public class BuildFrontendUtilTest {
             throws IOException, URISyntaxException, TimeoutException {
         Assume.assumeFalse("Test not runnable on Windows",
                 FrontendUtils.isWindows());
+        Assume.assumeTrue("Test requires /bin/bash",
+                new File("/bin/bash").exists());
 
         TemporaryFolder tmpDir = new TemporaryFolder();
         tmpDir.create();
@@ -45,7 +47,7 @@ public class BuildFrontendUtilTest {
         // set
         File fakeNode = new File(baseDir, "node");
         try (PrintWriter out = new PrintWriter(fakeNode)) {
-            out.println("!/bin/sh");
+            out.println("#!/bin/bash");
             out.println("[ x$NODE_OPTIONS == xexpected ]");
             out.println("exit $?");
         }
