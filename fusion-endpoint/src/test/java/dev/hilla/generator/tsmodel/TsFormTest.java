@@ -55,20 +55,32 @@ public class TsFormTest extends AbstractEndpointGeneratorBaseTest {
                 .getObject(modelName).getArray("allOf").getObject(1)
                 .getObject("properties");
 
-        assertFalse(props.getObject("foo").hasKey(OpenAPIObjectGenerator.CONSTRAINT_ANNOTATIONS));
-        assertEquals("AssertFalse()", props.getObject("assertFalse")
-                .getArray(OpenAPIObjectGenerator.CONSTRAINT_ANNOTATIONS).getString(0));
-        assertEquals("AssertTrue()", props.getObject("assertTrue")
-                .getArray(OpenAPIObjectGenerator.CONSTRAINT_ANNOTATIONS).getString(0));
-        assertEquals("Digits({integer:5, fraction:2})",
-                props.getObject("digits").getArray(OpenAPIObjectGenerator.CONSTRAINT_ANNOTATIONS)
+        assertFalse(props.getObject("foo")
+                .hasKey(OpenAPIObjectGenerator.CONSTRAINT_ANNOTATIONS));
+        assertEquals("AssertFalse()",
+                props.getObject("assertFalse")
+                        .getArray(OpenAPIObjectGenerator.CONSTRAINT_ANNOTATIONS)
                         .getString(0));
-        assertEquals("NotEmpty()", props.getObject("notEmpty")
-                .getArray(OpenAPIObjectGenerator.CONSTRAINT_ANNOTATIONS).getString(0));
-        assertEquals("NotNull()", props.getObject("notEmpty")
-                .getArray(OpenAPIObjectGenerator.CONSTRAINT_ANNOTATIONS).getString(1));
-        assertEquals("NotNull()", props.getObject("notNullEntity")
-                .getArray(OpenAPIObjectGenerator.CONSTRAINT_ANNOTATIONS).getString(0));
+        assertEquals("AssertTrue()",
+                props.getObject("assertTrue")
+                        .getArray(OpenAPIObjectGenerator.CONSTRAINT_ANNOTATIONS)
+                        .getString(0));
+        assertEquals("Digits({integer:5, fraction:2})",
+                props.getObject("digits")
+                        .getArray(OpenAPIObjectGenerator.CONSTRAINT_ANNOTATIONS)
+                        .getString(0));
+        assertEquals("NotEmpty()",
+                props.getObject("notEmpty")
+                        .getArray(OpenAPIObjectGenerator.CONSTRAINT_ANNOTATIONS)
+                        .getString(0));
+        assertEquals("NotNull()",
+                props.getObject("notEmpty")
+                        .getArray(OpenAPIObjectGenerator.CONSTRAINT_ANNOTATIONS)
+                        .getString(1));
+        assertEquals("NotNull()",
+                props.getObject("notNullEntity")
+                        .getArray(OpenAPIObjectGenerator.CONSTRAINT_ANNOTATIONS)
+                        .getString(0));
     }
 
     @Test

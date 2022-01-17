@@ -40,8 +40,8 @@ class ModelGenerator {
     }
 
     static Helper<CodegenProperty> getModelFullTypeHelper() {
-        return (prop, options) -> getModelFullType(
-                CodeGeneratorUtils.getSimpleNameFromImports(prop.datatype, options.param(0)));
+        return (prop, options) -> getModelFullType(CodeGeneratorUtils
+                .getSimpleNameFromImports(prop.datatype, options.param(0)));
     }
 
     private static List<String> getConstrainsArguments(
@@ -60,7 +60,8 @@ class ModelGenerator {
             List<Map<String, String>> imports) {
         String dataType = property.datatype;
         boolean optional = !property.required;
-        String simpleName = CodeGeneratorUtils.getSimpleNameFromImports(dataType, imports);
+        String simpleName = CodeGeneratorUtils
+                .getSimpleNameFromImports(dataType, imports);
         return getModelVariableArguments(simpleName, optional,
                 getConstrainsArguments(property));
     }

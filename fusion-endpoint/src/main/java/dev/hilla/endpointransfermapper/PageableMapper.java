@@ -22,8 +22,8 @@ import org.springframework.data.domain.PageRequest;
 /**
  * A mapper between {@link Pageable} and {@link Pageable}.
  */
-public class PageableMapper
-        implements EndpointTransferMapper.Mapper<org.springframework.data.domain.Pageable, Pageable> {
+public class PageableMapper implements
+        EndpointTransferMapper.Mapper<org.springframework.data.domain.Pageable, Pageable> {
 
     private SortMapper sortMapper = new SortMapper();
 

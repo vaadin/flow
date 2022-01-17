@@ -37,7 +37,8 @@ import org.slf4j.LoggerFactory;
  */
 class BarrelGenerator {
     public static final String BARREL_FILE_NAME = "endpoints";
-    public static final String BARREL_NAME = BARREL_FILE_NAME + MainGenerator.TS;
+    public static final String BARREL_NAME = BARREL_FILE_NAME
+            + MainGenerator.TS;
     private static final Logger log = LoggerFactory
             .getLogger(ClientAPIGenerator.class);
 
