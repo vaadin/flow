@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.net.httpserver.HttpServer;
 import com.vaadin.flow.testutil.TestUtils;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Assert;
@@ -14,6 +15,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+@NotThreadSafe
 public class StatisticsSenderTest extends AbstractStatisticsTest {
 
     private static final long SEC_12H = 60 * 60 * 12;
