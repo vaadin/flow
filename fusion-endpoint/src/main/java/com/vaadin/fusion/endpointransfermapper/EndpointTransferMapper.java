@@ -212,9 +212,10 @@ public class EndpointTransferMapper {
         }
 
         if (getLogger().isDebugEnabled()) {
-            getLogger().debug("Mapping from endpoint type ("
-                    + endpointValueType.getName() + ") to transfer type ("
-                    + mapper.getTransferType().getName() + ")");
+            getLogger().debug(
+                    "Mapping from endpoint type ({}) to transfer type ({})",
+                    endpointValueType.getName(),
+                    mapper.getTransferType().getName());
         }
 
         return mapper.toTransferType(endpointValue);
