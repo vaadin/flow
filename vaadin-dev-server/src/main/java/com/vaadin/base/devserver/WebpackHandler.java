@@ -16,7 +16,6 @@
 package com.vaadin.base.devserver;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -95,9 +94,6 @@ public final class WebpackHandler extends AbstractDevServerRunner {
     protected List<String> getServerStartupCommand(String nodeExec) {
         List<String> command = new ArrayList<>();
         command.add(nodeExec);
-        if (requiresOpenSslLegacyProvider(nodeExec)) {
-            command.add("--openssl-legacy-provider");
-        }
         command.add(getServerBinary().getAbsolutePath());
         command.add("--config");
         command.add(getServerConfig().getAbsolutePath());
@@ -126,9 +122,9 @@ public final class WebpackHandler extends AbstractDevServerRunner {
     protected void updateServerStartupEnvironment(FrontendTools frontendTools,
             Map<String, String> environment) {
         super.updateServerStartupEnvironment(frontendTools, environment);
-        if (requiresOpenSslLegacyProvider(frontendTools.getNodeExecutable())) {
-            environment.put("NODE_OPTIONS", "--openssl-legacy-provider");
-        }
+        // use environment variable as flags must be passed to Webpack
+        // subprocess
+        environment.putAll(frontendTools.getWebpackNodeEnvironment());
     }
 
     @Override
@@ -158,33 +154,5 @@ public final class WebpackHandler extends AbstractDevServerRunner {
         return Pattern.compile(getApplicationConfiguration().getStringProperty(
                 InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN,
                 DEFAULT_ERROR_PATTERN));
-    }
-
-    private boolean requiresOpenSslLegacyProvider(String nodeExec) {
-        // Determine whether webpack requires Node.js to be started with the
-        // --openssl-legacy-provider parameter. This is a webpack 4 workaround
-        // of the issue https://github.com/webpack/webpack/issues/14532
-        // See: https://github.com/vaadin/flow/issues/12649
-        ProcessBuilder processBuilder = new ProcessBuilder()
-                .directory(getProjectRoot())
-                .command(nodeExec, "-p", "crypto.createHash('md4')");
-        try {
-            Process process = processBuilder.start();
-            int errorLevel = process.waitFor();
-            return errorLevel != 0;
-        } catch (IOException e) {
-            getLogger().error(
-                    "IO error while determining --openssl-legacy-provider "
-                            + "parameter requirement",
-                    e);
-        } catch (InterruptedException e) {
-            getLogger().error(
-                    "Interrupted while determining --openssl-legacy-provider "
-                            + "parameter requirement",
-                    e);
-            // re-interrupt the thread
-            Thread.currentThread().interrupt();
-        }
-        return false;
     }
 }
