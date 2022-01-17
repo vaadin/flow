@@ -292,10 +292,11 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
     /**
      * Gets the commands to run to start the dev server.
      * 
-     * @param nodeExec
-     *            the path to the node binary
+     * @param tools
+     *            the frontend tools object
      */
-    protected abstract List<String> getServerStartupCommand(String nodeExec);
+    protected abstract List<String> getServerStartupCommand(
+            FrontendTools tools);
 
     /**
      * Defines the environment variables to use when starting the dev server.
@@ -335,7 +336,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         FrontendTools tools = new FrontendTools(config, getProjectRoot());
         tools.validateNodeAndNpmVersion();
 
-        List<String> command = getServerStartupCommand(tools.getNodeBinary());
+        List<String> command = getServerStartupCommand(tools);
 
         FrontendUtils.console(FrontendUtils.GREEN, START);
         if (getLogger().isDebugEnabled()) {

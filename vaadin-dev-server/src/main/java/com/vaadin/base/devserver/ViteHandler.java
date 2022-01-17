@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import org.slf4j.Logger;
@@ -66,9 +67,10 @@ public final class ViteHandler extends AbstractDevServerRunner {
     }
 
     @Override
-    protected List<String> getServerStartupCommand(String nodeExec) {
+    protected List<String> getServerStartupCommand(
+            FrontendTools frontendTools) {
         List<String> command = new ArrayList<>();
-        command.add(nodeExec);
+        command.add(frontendTools.getNodeExecutable());
         command.add(getServerBinary().getAbsolutePath());
         command.add("--config");
         command.add(getServerConfig().getAbsolutePath());

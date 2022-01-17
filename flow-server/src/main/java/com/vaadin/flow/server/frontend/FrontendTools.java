@@ -23,7 +23,9 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
@@ -748,6 +750,41 @@ public class FrontendTools {
                 getNpmExecutable(false));
         npmVersionCommand.add("--version"); // NOSONAR
         return FrontendUtils.getVersion("npm", npmVersionCommand);
+    }
+
+    /**
+     * Returns flags required to pass to Node for Webpack to function. Determine
+     * whether webpack requires Node.js to be started with the
+     * --openssl-legacy-provider parameter. This is a webpack 4 workaround of
+     * the issue https://github.com/webpack/webpack/issues/14532 See:
+     * https://github.com/vaadin/flow/issues/12649
+     *
+     * @return the flags
+     */
+    public Map<String, String> getWebpackNodeEnvironment() {
+        Map<String, String> environment = new HashMap<>();
+        ProcessBuilder processBuilder = new ProcessBuilder()
+                .command(getNodeExecutable(), "-p", "crypto.createHash('md4')");
+        try {
+            Process process = processBuilder.start();
+            int errorLevel = process.waitFor();
+            if (errorLevel != 0) {
+                environment.put("NODE_OPTIONS", "--openssl-legacy-provider");
+            }
+        } catch (IOException e) {
+            getLogger().error(
+                    "IO error while determining --openssl-legacy-provider "
+                            + "parameter requirement",
+                    e);
+        } catch (InterruptedException e) {
+            getLogger().error(
+                    "Interrupted while determining --openssl-legacy-provider "
+                            + "parameter requirement",
+                    e);
+            // re-interrupt the thread
+            Thread.currentThread().interrupt();
+        }
+        return environment;
     }
 
     private File getExecutable(String dir, String location) {
