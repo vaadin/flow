@@ -63,6 +63,8 @@ public class InitParameters implements Serializable {
     public static final String SERVLET_PARAMETER_MAX_MESSAGE_SUSPEND_TIMEOUT = "maxMessageSuspendTimeout";
     public static final String SERVLET_PARAMETER_JSBUNDLE = "module.bundle";
     public static final String SERVLET_PARAMETER_POLYFILLS = "module.polyfills";
+    public static final String NODE_VERSION = "node.version";
+    public static final String NODE_DOWNLOAD_ROOT = "node.download.root";
 
     /**
      * Configuration name for the parameter that determines whether Brotli

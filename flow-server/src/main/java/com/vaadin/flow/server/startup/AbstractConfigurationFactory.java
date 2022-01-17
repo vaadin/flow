@@ -44,6 +44,8 @@ import static com.vaadin.flow.server.Constants.NPM_TOKEN;
 import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
 import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
 import static com.vaadin.flow.server.InitParameters.BUILD_FOLDER;
+import static com.vaadin.flow.server.InitParameters.NODE_DOWNLOAD_ROOT;
+import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_INITIAL_UIDL;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
@@ -113,6 +115,14 @@ public class AbstractConfigurationFactory implements Serializable {
         if (buildInfo.hasKey(NPM_TOKEN)) {
             params.put(PROJECT_BASEDIR, buildInfo.getString(NPM_TOKEN));
             verifyFolderExists(params, buildInfo.getString(NPM_TOKEN));
+        }
+
+        if (buildInfo.hasKey(NODE_VERSION)) {
+            params.put(NODE_VERSION, buildInfo.getString(NODE_VERSION));
+        }
+        if (buildInfo.hasKey(NODE_DOWNLOAD_ROOT)) {
+            params.put(NODE_DOWNLOAD_ROOT,
+                    buildInfo.getString(NODE_DOWNLOAD_ROOT));
         }
 
         if (buildInfo.hasKey(FRONTEND_TOKEN)) {

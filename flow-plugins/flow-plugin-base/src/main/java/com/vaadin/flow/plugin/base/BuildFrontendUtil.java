@@ -32,6 +32,7 @@ import java.util.Set;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.io.FileUtils;
+import org.slf4j.LoggerFactory;
 import org.zeroturnaround.exec.InvalidExitValueException;
 import org.zeroturnaround.exec.ProcessExecutor;
 
@@ -60,6 +61,8 @@ import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
 import static com.vaadin.flow.server.Constants.GENERATED_TOKEN;
 import static com.vaadin.flow.server.Constants.NPM_TOKEN;
 import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
+import static com.vaadin.flow.server.InitParameters.NODE_DOWNLOAD_ROOT;
+import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_INITIAL_UIDL;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
@@ -210,6 +213,15 @@ public class BuildFrontendUtil {
         buildInfo.put(SERVLET_PARAMETER_INITIAL_UIDL,
                 adapter.eagerServerLoad());
         buildInfo.put(NPM_TOKEN, adapter.npmFolder().getAbsolutePath());
+        buildInfo.put(NODE_VERSION, adapter.nodeVersion());
+        try {
+            buildInfo.put(NODE_DOWNLOAD_ROOT,
+                    adapter.nodeDownloadRoot().toString());
+        } catch (URISyntaxException e) {
+            LoggerFactory.getLogger("BuildInfo").error(
+                    "Configuration 'nodeDownloadRoot'  (property 'node.download.root') is defined incorrectly",
+                    e);
+        }
         buildInfo.put(GENERATED_TOKEN,
                 adapter.generatedFolder().getAbsolutePath());
         buildInfo.put(FRONTEND_TOKEN,
@@ -476,6 +488,8 @@ public class BuildFrontendUtil {
             JsonObject buildInfo = JsonUtil.parse(json);
 
             buildInfo.remove(NPM_TOKEN);
+            buildInfo.remove(NODE_VERSION);
+            buildInfo.remove(NODE_DOWNLOAD_ROOT);
             buildInfo.remove(GENERATED_TOKEN);
             buildInfo.remove(FRONTEND_TOKEN);
             buildInfo.remove(Constants.SERVLET_PARAMETER_ENABLE_PNPM);
