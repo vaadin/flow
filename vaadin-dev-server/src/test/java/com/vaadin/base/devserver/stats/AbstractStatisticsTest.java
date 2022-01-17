@@ -7,6 +7,8 @@ import com.vaadin.flow.testutil.TestUtils;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
 public abstract class AbstractStatisticsTest {
@@ -21,6 +23,9 @@ public abstract class AbstractStatisticsTest {
     protected StatisticsStorage storage;
     protected StatisticsSender sender;
 
+    @Rule
+    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
     /**
      * Create a temporary file from given test resource.
      *
@@ -28,12 +33,11 @@ public abstract class AbstractStatisticsTest {
      *            Name of the test resource
      * @return Temporary file
      */
-    protected static File createTempStorage(String testResourceName)
+    private File createTempStorage(String testResourceName)
             throws IOException {
         File original = new File(
                 TestUtils.getTestResource(testResourceName).getFile());
-        File result = File.createTempFile("test", "json");
-        result.deleteOnExit();
+        File result = temporaryFolder.newFile("test.json");
         FileUtils.copyFile(original, result);
         return result;
     }
