@@ -33,8 +33,7 @@ public abstract class AbstractStatisticsTest {
      *            Name of the test resource
      * @return Temporary file
      */
-    private File createTempStorage(String testResourceName)
-            throws IOException {
+    private File createTempStorage(String testResourceName) throws IOException {
         File original = new File(
                 TestUtils.getTestResource(testResourceName).getFile());
         File result = temporaryFolder.newFile("test.json");
