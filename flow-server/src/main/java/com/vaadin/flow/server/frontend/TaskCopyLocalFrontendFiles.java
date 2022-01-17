@@ -18,7 +18,11 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -74,6 +78,12 @@ public class TaskCopyLocalFrontendFiles implements FallibleCommand {
         }
         try {
             FileUtils.copyDirectory(source, target);
+            try (Stream<Path> fileStream = Files
+                    .walk(Paths.get(target.getPath()))) {
+                // used with try-with-resources as defined in walk API note
+                fileStream.filter(file -> !Files.isWritable(file)).forEach(
+                        filePath -> filePath.toFile().setWritable(true));
+            }
         } catch (IOException e) {
             throw new UncheckedIOException(String.format(
                     "Failed to copy project frontend resources from '%s' to '%s'",
