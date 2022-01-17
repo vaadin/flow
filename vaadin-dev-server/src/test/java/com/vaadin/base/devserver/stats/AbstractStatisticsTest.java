@@ -44,6 +44,8 @@ public abstract class AbstractStatisticsTest {
     @Before
     public void setup() throws Exception {
         storage = Mockito.spy(new StatisticsStorage());
+        storage.usageStatisticsFile = File.createTempFile("test-storage",
+                "json");
         sender = Mockito.spy(new StatisticsSender(storage));
 
         // Change the file storage and reporting parameters for testing
