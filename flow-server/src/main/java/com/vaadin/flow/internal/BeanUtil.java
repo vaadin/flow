@@ -239,7 +239,7 @@ public final class BeanUtil implements Serializable {
 
         private static boolean isAvailable() {
             try {
-                Class<?> clazz = Class.forName("javax.validation.Validation");
+                Class<?> clazz = Class.forName("jakarta.validation.Validation");
                 Method method = clazz.getMethod("buildDefaultValidatorFactory");
                 method.invoke(null);
                 return true;
@@ -251,7 +251,7 @@ public final class BeanUtil implements Serializable {
                 return false;
             } catch (IllegalAccessException | IllegalArgumentException e) {
                 throw new RuntimeException(
-                        "Unable to invoke javax.validation.Validation.buildDefaultValidatorFactory()",
+                        "Unable to invoke jakarta.validation.Validation.buildDefaultValidatorFactory()",
                         e);
             }
         }
