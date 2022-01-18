@@ -43,6 +43,7 @@ public class StatisticsSenderTest extends AbstractStatisticsTest {
 
     @After
     public void teardown() throws Exception {
+        super.teardown();
         if (server != null) {
             server.close();
             server = null;

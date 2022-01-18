@@ -2,10 +2,12 @@ package com.vaadin.base.devserver.stats;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.locks.ReentrantLock;
 
 import com.vaadin.flow.testutil.TestUtils;
 
 import org.apache.commons.io.FileUtils;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
@@ -26,6 +28,8 @@ public abstract class AbstractStatisticsTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
+    protected static final ReentrantLock lock = new ReentrantLock();
+
     /**
      * Create a temporary file from given test resource.
      *
@@ -43,6 +47,7 @@ public abstract class AbstractStatisticsTest {
 
     @Before
     public void setup() throws Exception {
+        lock.lock();
         storage = Mockito.spy(new StatisticsStorage());
         storage.usageStatisticsFile = File.createTempFile("test-storage",
                 "json");
@@ -53,5 +58,10 @@ public abstract class AbstractStatisticsTest {
                 .thenReturn("http://localhost:1234");
         Mockito.when(storage.getUsageStatisticsFile()).thenReturn(
                 createTempStorage("stats-data/usage-statistics-1.json"));
+    }
+
+    @After
+    public void teardown() throws Exception {
+        lock.unlock();
     }
 }
