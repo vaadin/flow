@@ -165,8 +165,8 @@ public class StatisticsSenderTest extends AbstractStatisticsTest {
 
         private HttpServer createStubGatherServlet(int status, String response)
                 throws Exception {
-            HttpServer httpServer = HttpServer.create(new InetSocketAddress("localhost", 0),
-                    0);
+            HttpServer httpServer = HttpServer
+                    .create(new InetSocketAddress("localhost", 0), 0);
             httpServer.createContext("/", exchange -> {
                 this.lastRequestContent = IOUtils.toString(
                         exchange.getRequestBody(), Charset.defaultCharset());
