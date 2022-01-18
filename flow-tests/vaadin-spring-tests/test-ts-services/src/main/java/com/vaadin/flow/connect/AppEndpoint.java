@@ -10,7 +10,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.fusion.Endpoint;
+import dev.hilla.Endpoint;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 
 /**

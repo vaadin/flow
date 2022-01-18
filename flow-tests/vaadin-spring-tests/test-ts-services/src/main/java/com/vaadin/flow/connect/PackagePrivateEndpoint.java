@@ -4,7 +4,7 @@ import javax.annotation.Nullable;
 import javax.annotation.security.PermitAll;
 
 import com.vaadin.flow.server.auth.AnonymousAllowed;
-import com.vaadin.fusion.Endpoint;
+import dev.hilla.Endpoint;
 
 /**
  * Simple Vaadin Connect Service definition.
