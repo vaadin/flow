@@ -22,8 +22,8 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
+import com.vaadin.flow.shared.internal.NodeProperties;
 
 /**
  * Represents a node in the DOM.

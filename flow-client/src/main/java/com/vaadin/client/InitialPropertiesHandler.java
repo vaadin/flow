@@ -24,7 +24,7 @@ import com.vaadin.client.flow.collection.JsMap;
 import com.vaadin.client.flow.collection.JsSet;
 import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.reactive.Reactive;
-import com.vaadin.flow.internal.nodefeature.NodeFeatures;
+import com.vaadin.flow.shared.internal.NodeFeatures;
 
 /**
  * Handles server initial property values with the purpose to prevent change

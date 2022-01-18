@@ -27,7 +27,7 @@ import com.vaadin.client.flow.reactive.Computation;
 import com.vaadin.client.flow.reactive.ReactiveEventRouter;
 import com.vaadin.client.flow.reactive.ReactiveValue;
 import com.vaadin.client.flow.reactive.ReactiveValueChangeListener;
-import com.vaadin.flow.internal.nodefeature.NodeFeatures;
+import com.vaadin.flow.shared.internal.NodeFeatures;
 
 import elemental.events.EventRemover;
 import elemental.json.JsonObject;

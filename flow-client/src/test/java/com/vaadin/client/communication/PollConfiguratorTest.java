@@ -24,8 +24,8 @@ import com.vaadin.client.Registry;
 import com.vaadin.client.UILifecycle;
 import com.vaadin.client.flow.StateTree;
 import com.vaadin.client.flow.nodefeature.MapProperty;
-import com.vaadin.flow.internal.nodefeature.NodeFeatures;
-import com.vaadin.flow.internal.nodefeature.PollConfigurationMap;
+import com.vaadin.flow.shared.internal.NodeFeatures;
+import com.vaadin.flow.shared.internal.PollConfigurationConstants;
 
 public class PollConfiguratorTest {
 
@@ -55,7 +55,7 @@ public class PollConfiguratorTest {
         Assert.assertEquals(0, pollerSetIntervalCalled.get());
         MapProperty pollIntervalProperty = stateTree.getRootNode()
                 .getMap(NodeFeatures.POLL_CONFIGURATION)
-                .getProperty(PollConfigurationMap.POLL_INTERVAL_KEY);
+                .getProperty(PollConfigurationConstants.POLL_INTERVAL_KEY);
 
         pollIntervalProperty.setValue(100.0);
         Assert.assertEquals(100, pollerInterval.get());

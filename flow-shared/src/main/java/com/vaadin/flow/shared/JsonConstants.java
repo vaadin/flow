@@ -17,9 +17,6 @@ package com.vaadin.flow.shared;
 
 import java.io.Serializable;
 
-import com.vaadin.flow.component.page.Page;
-import com.vaadin.flow.dom.DebouncePhase;
-
 /**
  * A utility class providing constants for JSON related features.
  *
@@ -161,7 +158,7 @@ public class JsonConstants implements Serializable {
 
     /**
      * Key used for data related to
-     * {@link Page#executeJs(String, Serializable...)} in UIDL messages.
+     * {@code Page#executeJs(String, Serializable...)} in UIDL messages.
      */
     public static final String UIDL_KEY_EXECUTE = "execute";
 
@@ -293,17 +290,17 @@ public class JsonConstants implements Serializable {
     public static final String EVENT_DATA_PHASE = "for";
 
     /**
-     * Character used for representing {@link DebouncePhase#LEADING}.
+     * Character used for representing {@code DebouncePhase#LEADING}.
      */
     public static final String EVENT_PHASE_LEADING = "leading";
 
     /**
-     * Character used for representing {@link DebouncePhase#INTERMEDIATE}.
+     * Character used for representing {@code DebouncePhase#INTERMEDIATE}.
      */
     public static final String EVENT_PHASE_INTERMEDIATE = "intermediate";
 
     /**
-     * Character used for representing {@link DebouncePhase#TRAILING}.
+     * Character used for representing {@code DebouncePhase#TRAILING}.
      */
     public static final String EVENT_PHASE_TRAILING = "trailing";
 
@@ -343,5 +340,21 @@ public class JsonConstants implements Serializable {
      * Key for the arguments array in return channel messages.
      */
     public static final String RPC_CHANNEL_ARGUMENTS = "args";
+
+    /**
+     * Type id for a complex type array containing an {@code Element}.
+     */
+    public static final int JSON_NODE_TYPE = 0;
+
+    /**
+     * Type id for a complex type array containing a {@code JsonArray}.
+     */
+    public static final int JSON_ARRAY_TYPE = 1;
+
+    /**
+     * Type id for a complex type array identifying a
+     * {@code ReturnChannelRegistration} reference.
+     */
+    public static final int JSON_RETURN_CHANNEL_TYPE = 2;
 
 }

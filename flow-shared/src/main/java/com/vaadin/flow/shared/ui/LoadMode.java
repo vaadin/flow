@@ -15,20 +15,17 @@
  */
 package com.vaadin.flow.shared.ui;
 
-import com.vaadin.flow.component.dependency.JavaScript;
-import com.vaadin.flow.component.dependency.StyleSheet;
-
 /**
  * Determines a way that dependency is loaded. This mode can be specified when
  * importing dependency either via annotations:
  * <ul>
- * <li>{@link JavaScript},
- * <li>{@link StyleSheet}
+ * <li>{@code @JavaScript},
+ * <li>{@code @StyleSheet}
  * </ul>
- * or via {@link com.vaadin.flow.component.page.Page} methods:
+ * or via {@code com.vaadin.flow.component.page.Page} methods:
  * <ul>
- * <li>{@link com.vaadin.flow.component.page.Page#addJavaScript(String, LoadMode)}
- * <li>{@link com.vaadin.flow.component.page.Page#addStyleSheet(String, LoadMode)}
+ * <li>{@code com.vaadin.flow.component.page.Page#addJavaScript(String, LoadMode)}
+ * <li>{@code com.vaadin.flow.component.page.Page#addStyleSheet(String, LoadMode)}
  * </ul>
  *
  * @author Vaadin Ltd

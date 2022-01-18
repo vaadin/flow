@@ -29,6 +29,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
+import com.vaadin.flow.shared.JsonConstants;
 
 import elemental.json.Json;
 import elemental.json.JsonBoolean;
@@ -97,9 +98,8 @@ public class JsonCodecTest {
                 JsonCodec.encodeWithTypeInfo(Json.createObject()));
 
         // Array is escaped
-        assertJsonEquals(
-                JsonUtils.createArray(Json.create(JsonCodec.ARRAY_TYPE),
-                        Json.createArray()),
+        assertJsonEquals(JsonUtils.createArray(
+                Json.create(JsonConstants.JSON_ARRAY_TYPE), Json.createArray()),
                 JsonCodec.encodeWithTypeInfo(Json.createArray()));
     }
 
@@ -114,8 +114,10 @@ public class JsonCodecTest {
 
         JsonValue json = JsonCodec.encodeWithTypeInfo(element);
 
-        assertJsonEquals(JsonUtils.createArray(Json.create(JsonCodec.NODE_TYPE),
-                Json.create(element.getNode().getId())), json);
+        assertJsonEquals(
+                JsonUtils.createArray(Json.create(JsonConstants.JSON_NODE_TYPE),
+                        Json.create(element.getNode().getId())),
+                json);
     }
 
     @Test

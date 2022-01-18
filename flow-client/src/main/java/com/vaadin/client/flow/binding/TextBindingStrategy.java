@@ -22,8 +22,8 @@ import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.nodefeature.NodeMap;
 import com.vaadin.client.flow.reactive.Computation;
 import com.vaadin.client.flow.reactive.Reactive;
-import com.vaadin.flow.internal.nodefeature.NodeFeatures;
-import com.vaadin.flow.internal.nodefeature.NodeProperties;
+import com.vaadin.flow.shared.internal.NodeFeatures;
+import com.vaadin.flow.shared.internal.NodeProperties;
 
 import elemental.client.Browser;
 import elemental.dom.Node;

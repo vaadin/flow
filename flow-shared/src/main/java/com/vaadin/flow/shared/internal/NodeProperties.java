@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.internal.nodefeature;
+package com.vaadin.flow.shared.internal;
 
 /**
  * Various node properties' ids.
@@ -26,51 +26,50 @@ package com.vaadin.flow.internal.nodefeature;
 public final class NodeProperties {
 
     /**
-     * Key for {@link ElementData#getTag()}.
+     * Key for ElementData#getTag().
      */
     public static final String TAG = "tag";
 
     /**
-     * Key for {@link ElementData#getPayload()}.
+     * Key for ElementData#getPayload().
      */
     public static final String PAYLOAD = "payload";
 
     /**
-     * Key for {@link TextNodeMap#getText()}.
+     * Key for TextNodeMap#getText().
      */
     public static final String TEXT = "text";
     /**
-     * Key for {@link ShadowRootData}.
+     * Key for ShadowRootData.
      */
     public static final String SHADOW_ROOT = "shadowRoot";
     /**
-     * Key for {@link BasicTypeValue#getValue()}.
+     * Key for BasicTypeValue#getValue().
      */
     public static final String VALUE = "value";
 
     /**
-     * JsonObject type key for {@link VirtualChildrenList}.
+     * JsonObject type key for VirtualChildrenList.
      */
     public static final String TYPE = "type";
 
     /**
-     * JsonObject in-memory type value for {@link VirtualChildrenList}.
+     * JsonObject in-memory type value for VirtualChildrenList.
      */
     public static final String IN_MEMORY_CHILD = "inMemory";
 
     /**
-     * JsonObject {@code @id} type value for {@link VirtualChildrenList}.
+     * JsonObject {@code @id} type value for VirtualChildrenList.
      */
     public static final String INJECT_BY_ID = "@id";
 
     /**
-     * JsonObject template-in-template type value for
-     * {@link VirtualChildrenList}.
+     * JsonObject template-in-template type value for VirtualChildrenList.
      */
     public static final String TEMPLATE_IN_TEMPLATE = "subTemplate";
 
     /**
-     * Key for {@link ElementData#isVisible()}.
+     * Key for ElementData#isVisible().
      */
     public static final String VISIBLE = "visible";
 
@@ -78,23 +77,22 @@ public final class NodeProperties {
     public static final String ID = "id";
 
     /**
-     * The property value used on the client side only in addition to
-     * {@link #VISIBLE}.
+     * The property value used on the client side only in addition to #VISIBLE.
      */
     public static final String VISIBILITY_BOUND_PROPERTY = "bound";
 
     /**
-     * The property used on the client side only in addition to
-     * {@link #VISIBLE}. Stores the client side value of "hidden" property.
+     * The property used on the client side only in addition to #VISIBLE. Stores
+     * the client side value of "hidden" property.
      */
     public static final String VISIBILITY_HIDDEN_PROPERTY = "hidden";
 
     /**
-     * The property used on the client side only in addition to
-     * {@link #VISIBLE}. It stores the client side value of the CSS "display"
-     * property to be able to restore when making a hidden element visible
-     * again. Used only when the element is inside a shadow root, and the CSS
-     * "display: none" is set in addition the "hidden" attribute.
+     * The property used on the client side only in addition to #VISIBLE. It
+     * stores the client side value of the CSS "display" property to be able to
+     * restore when making a hidden element visible again. Used only when the
+     * element is inside a shadow root, and the CSS "display: none" is set in
+     * addition the "hidden" attribute.
      */
     public static final String VISIBILITY_STYLE_DISPLAY_PROPERTY = "styleDisplay";
 
@@ -102,7 +100,7 @@ public final class NodeProperties {
      * The property in Json object which marks the object as special value
      * transmitting URI (not just any string).
      * <p>
-     * Used in the {@link ElementAttributeMap}.
+     * Used in the ElementAttributeMap.
      */
     public static final String URI_ATTRIBUTE = "uri";
 

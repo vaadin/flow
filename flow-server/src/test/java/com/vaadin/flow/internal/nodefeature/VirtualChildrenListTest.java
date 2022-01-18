@@ -22,6 +22,8 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.shared.internal.NodeProperties;
+
 import org.junit.Assert;
 import org.junit.Test;
 

@@ -14,6 +14,11 @@
     <dependencies>
 
         <!-- Project dependencies -->
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-shared</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
         <!-- DefaultApplicationConfigurationFactory is declared as an OSGi
             service -->

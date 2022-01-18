@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.server;
 
-import java.io.Serializable;
-
 /**
  * A generic command interface meant to be used for passing lambdas around.
  *
@@ -24,7 +22,7 @@ import java.io.Serializable;
  * @since 1.0
  */
 @FunctionalInterface
-public interface Command extends Serializable {
+public interface Command extends com.vaadin.flow.shared.SharedCommand {
     /**
      * Runs the given command.
      */

@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.internal.nodefeature;
 
+import static com.vaadin.flow.shared.internal.PollConfigurationConstants.POLL_INTERVAL_KEY;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.StateNode;
 
@@ -27,8 +29,6 @@ import com.vaadin.flow.internal.StateNode;
  * @since 1.0
  */
 public class PollConfigurationMap extends NodeMap {
-
-    public static final String POLL_INTERVAL_KEY = "pollInterval";
 
     /**
      * Creates a new map for the given node.

@@ -29,8 +29,8 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.NodeVisitor.ElementType;
 import com.vaadin.flow.dom.impl.ShadowRootStateProvider;
 import com.vaadin.flow.internal.NullOwner;
-import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.shared.internal.NodeProperties;
 
 public class ShadowRootTest extends AbstractNodeTest {
 

@@ -18,8 +18,8 @@ package com.vaadin.client.communication;
 import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.nodefeature.NodeMap;
-import com.vaadin.flow.internal.nodefeature.NodeFeatures;
-import com.vaadin.flow.internal.nodefeature.PollConfigurationMap;
+import com.vaadin.flow.shared.internal.NodeFeatures;
+import com.vaadin.flow.shared.internal.PollConfigurationConstants;
 
 /**
  * Observes the poll configuration stored in the given node and configures
@@ -46,7 +46,7 @@ public class PollConfigurator {
     public static void observe(StateNode node, Poller poller) {
         NodeMap configurationMap = node.getMap(NodeFeatures.POLL_CONFIGURATION);
         MapProperty pollIntervalProperty = configurationMap
-                .getProperty(PollConfigurationMap.POLL_INTERVAL_KEY);
+                .getProperty(PollConfigurationConstants.POLL_INTERVAL_KEY);
         pollIntervalProperty.addChangeListener(e -> {
             int interval = (int) (double) e.getNewValue();
             poller.setInterval(interval);

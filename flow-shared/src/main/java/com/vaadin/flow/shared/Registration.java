@@ -21,8 +21,6 @@ import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.Objects;
 
-import com.vaadin.flow.server.Command;
-
 /**
  * A registration object for removing an event listener added to a source.
  *
@@ -52,8 +50,7 @@ public interface Registration extends Serializable {
      *         <code>null</code>
      * @since
      */
-    @GwtIncompatible("Command is not in a package available to GWT")
-    static Registration once(Command command) {
+    static Registration once(SharedCommand command) {
         Objects.requireNonNull(command);
         return new Registration() {
             private boolean removed = false;

@@ -27,8 +27,8 @@ import com.vaadin.flow.component.template.Id;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ShadowRoot;
 import com.vaadin.flow.internal.ReflectTools;
-import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
+import com.vaadin.flow.shared.internal.NodeProperties;
 
 /**
  * Creates or maps Element instances to fields mapped using {@link Id @Id}.

@@ -18,17 +18,17 @@ package com.vaadin.client.flow;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.Assert;
-import org.junit.Test;
-
 import com.vaadin.client.InitialPropertiesHandler;
 import com.vaadin.client.Registry;
 import com.vaadin.client.flow.collection.JsSet;
 import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.nodefeature.NodeList;
-import com.vaadin.flow.internal.JsonUtils;
-import com.vaadin.flow.internal.nodefeature.NodeFeatures;
 import com.vaadin.flow.shared.JsonConstants;
+import com.vaadin.flow.shared.internal.NodeFeatures;
+import com.vaadin.flow.shared.internal.SharedJsonUtils;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -313,7 +313,7 @@ public class TreeChangeProcessorTest {
     }
 
     private static JsonArray toArray(JsonValue... changes) {
-        return Arrays.stream(changes).collect(JsonUtils.asArray());
+        return Arrays.stream(changes).collect(SharedJsonUtils.asArray());
     }
 
     private static JsonObject baseChange(int node, String type) {
@@ -400,7 +400,7 @@ public class TreeChangeProcessorTest {
 
         if (children != null && children.length != 0) {
             JsonArray add = Arrays.stream(children).mapToObj(Json::create)
-                    .collect(JsonUtils.asArray());
+                    .collect(SharedJsonUtils.asArray());
             json.put(JsonConstants.CHANGE_SPLICE_ADD_NODES, add);
         }
 

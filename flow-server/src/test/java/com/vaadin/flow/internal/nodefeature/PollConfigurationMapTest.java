@@ -1,5 +1,7 @@
 package com.vaadin.flow.internal.nodefeature;
 
+import com.vaadin.flow.shared.internal.PollConfigurationConstants;
+
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -15,7 +17,7 @@ public class PollConfigurationMapTest
 
     @Test
     public void setGetPollInterval() {
-        super.testInt(map, PollConfigurationMap.POLL_INTERVAL_KEY,
+        super.testInt(map, PollConfigurationConstants.POLL_INTERVAL_KEY,
                 map::setPollInterval, map::getPollInterval);
     }
 }

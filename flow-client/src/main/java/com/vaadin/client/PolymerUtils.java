@@ -28,8 +28,8 @@ import com.vaadin.client.flow.nodefeature.NodeFeature;
 import com.vaadin.client.flow.nodefeature.NodeList;
 import com.vaadin.client.flow.nodefeature.NodeMap;
 import com.vaadin.client.flow.reactive.Reactive;
-import com.vaadin.flow.internal.nodefeature.NodeFeatures;
-import com.vaadin.flow.internal.nodefeature.NodeProperties;
+import com.vaadin.flow.shared.internal.NodeFeatures;
+import com.vaadin.flow.shared.internal.NodeProperties;
 
 import elemental.dom.Element;
 import elemental.dom.Node;

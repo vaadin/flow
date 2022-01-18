@@ -22,12 +22,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.junit.Assert;
-import org.junit.Test;
-
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateNodeTest;
 import com.vaadin.flow.internal.nodefeature.PushConfigurationMap.PushConfigurationParametersMap;
+import com.vaadin.flow.shared.internal.NodeFeatures;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 public class NodeFeatureTest {
     private static abstract class UnregisteredNodeFeature extends NodeFeature {

@@ -22,7 +22,7 @@ import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.StateTree;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
-import com.vaadin.flow.internal.JsonCodec;
+import com.vaadin.flow.shared.JsonConstants;
 
 import elemental.dom.Node;
 import elemental.json.Json;
@@ -43,7 +43,7 @@ public class ClientJsonCodec {
 
     /**
      * Decodes a value as a {@link StateNode} encoded on the server using
-     * {@link JsonCodec#encodeWithTypeInfo(Object)} if it's possible. Otherwise
+     * {@code JsonCodec#encodeWithTypeInfo(Object)} if it's possible. Otherwise
      * returns {@code null}.
      * <p>
      * It does the same as {@link #decodeWithTypeInfo(StateTree, JsonValue)} for
@@ -63,12 +63,12 @@ public class ClientJsonCodec {
             JsonArray array = (JsonArray) json;
             int typeId = (int) array.getNumber(0);
             switch (typeId) {
-            case JsonCodec.NODE_TYPE: {
+            case JsonConstants.JSON_NODE_TYPE: {
                 int nodeId = (int) array.getNumber(1);
                 return tree.getNode(nodeId);
             }
-            case JsonCodec.ARRAY_TYPE:
-            case JsonCodec.RETURN_CHANNEL_TYPE:
+            case JsonConstants.JSON_ARRAY_TYPE:
+            case JsonConstants.JSON_RETURN_CHANNEL_TYPE:
                 return null;
             default:
                 throw new IllegalArgumentException(
@@ -81,7 +81,7 @@ public class ClientJsonCodec {
 
     /**
      * Decodes a value encoded on the server using
-     * {@link JsonCodec#encodeWithTypeInfo(Object)}.
+     * {@code JsonCodec#encodeWithTypeInfo(Object)}.
      *
      * @param tree
      *            the state tree to use for resolving nodes and elements
@@ -94,14 +94,14 @@ public class ClientJsonCodec {
             JsonArray array = (JsonArray) json;
             int typeId = (int) array.getNumber(0);
             switch (typeId) {
-            case JsonCodec.NODE_TYPE: {
+            case JsonConstants.JSON_NODE_TYPE: {
                 int nodeId = (int) array.getNumber(1);
                 Node domNode = tree.getNode(nodeId).getDomNode();
                 return domNode;
             }
-            case JsonCodec.ARRAY_TYPE:
+            case JsonConstants.JSON_ARRAY_TYPE:
                 return jsonArrayAsJsArray(array.getArray(1));
-            case JsonCodec.RETURN_CHANNEL_TYPE:
+            case JsonConstants.JSON_RETURN_CHANNEL_TYPE:
                 return createReturnChannelCallback((int) array.getNumber(1),
                         (int) array.getNumber(2),
                         tree.getRegistry().getServerConnector());
@@ -125,7 +125,7 @@ public class ClientJsonCodec {
 
     /**
      * Decodes a value encoded on the server using
-     * {@link JsonCodec#encodeWithoutTypeInfo(Object)}. This is a no-op in
+     * {@code JsonCodec#encodeWithoutTypeInfo(Object)}. This is a no-op in
      * compiled JavaScript since the JSON representation can be used as-is, but
      * some special handling is needed for tests running in the JVM.
      *

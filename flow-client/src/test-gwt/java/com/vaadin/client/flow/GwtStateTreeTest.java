@@ -25,7 +25,7 @@ import com.vaadin.client.communication.ServerConnector;
 import com.vaadin.client.flow.binding.ServerEventObject;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.reactive.Reactive;
-import com.vaadin.flow.internal.nodefeature.NodeFeatures;
+import com.vaadin.flow.shared.internal.NodeFeatures;
 
 import elemental.client.Browser;
 import elemental.dom.Element;

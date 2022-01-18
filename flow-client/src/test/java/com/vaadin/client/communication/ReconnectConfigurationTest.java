@@ -15,27 +15,27 @@
  */
 package com.vaadin.client.communication;
 
-import static com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap.DIALOG_TEXT_GAVE_UP_KEY;
-import static com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap.DIALOG_TEXT_KEY;
-import static com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap.RECONNECT_ATTEMPTS_DEFAULT;
-import static com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap.RECONNECT_ATTEMPTS_KEY;
-import static com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap.RECONNECT_INTERVAL_DEFAULT;
-import static com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap.RECONNECT_INTERVAL_KEY;
+import static com.vaadin.flow.shared.internal.ReconnectDialogConstants.DIALOG_TEXT_GAVE_UP_KEY;
+import static com.vaadin.flow.shared.internal.ReconnectDialogConstants.DIALOG_TEXT_KEY;
+import static com.vaadin.flow.shared.internal.ReconnectDialogConstants.RECONNECT_ATTEMPTS_DEFAULT;
+import static com.vaadin.flow.shared.internal.ReconnectDialogConstants.RECONNECT_ATTEMPTS_KEY;
+import static com.vaadin.flow.shared.internal.ReconnectDialogConstants.RECONNECT_INTERVAL_DEFAULT;
+import static com.vaadin.flow.shared.internal.ReconnectDialogConstants.RECONNECT_INTERVAL_KEY;
 
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.junit.Assert;
-import org.junit.Test;
-import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 import com.vaadin.client.Registry;
 import com.vaadin.client.UILifecycle;
 import com.vaadin.client.flow.StateTree;
 import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.reactive.Reactive;
-import com.vaadin.flow.internal.nodefeature.NodeFeatures;
+import com.vaadin.flow.shared.internal.NodeFeatures;
+
+import org.junit.Assert;
+import org.junit.Test;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 public class ReconnectConfigurationTest extends AbstractConfigurationTest {
 

@@ -30,9 +30,9 @@ import com.vaadin.flow.component.polymertemplate.TemplateDataAnalyzer.PolymerPar
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectionCache;
-import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.shared.internal.NodeProperties;
 
 import elemental.json.JsonArray;
 

@@ -33,6 +33,7 @@ import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.shared.internal.NodeProperties;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;

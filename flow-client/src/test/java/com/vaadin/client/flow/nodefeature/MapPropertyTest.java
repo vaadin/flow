@@ -26,7 +26,7 @@ import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.StateTree;
 import com.vaadin.client.flow.reactive.CountingComputation;
 import com.vaadin.client.flow.reactive.Reactive;
-import com.vaadin.flow.internal.nodefeature.NodeFeatures;
+import com.vaadin.flow.shared.internal.NodeFeatures;
 
 import elemental.events.EventRemover;
 

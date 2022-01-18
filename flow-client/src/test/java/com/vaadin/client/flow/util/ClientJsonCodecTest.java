@@ -17,14 +17,14 @@ package com.vaadin.client.flow.util;
 
 import java.util.function.Function;
 
-import org.junit.Assert;
-import org.junit.Test;
-
 import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.StateTree;
 import com.vaadin.client.flow.collection.JsArray;
-import com.vaadin.flow.internal.JsonCodec;
-import com.vaadin.flow.internal.JsonUtils;
+import com.vaadin.flow.shared.JsonConstants;
+import com.vaadin.flow.shared.internal.SharedJsonUtils;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 import elemental.js.dom.JsElement;
 import elemental.json.Json;
@@ -67,8 +67,9 @@ public class ClientJsonCodecTest {
 
     @Test
     public void decodeWithTypeInfo_array() {
-        JsonValue json = JsonCodec.encodeWithTypeInfo(JsonUtils
-                .createArray(Json.create("string"), Json.create(true)));
+        // JsonValue json = JsonCodec.encodeWithTypeInfo(JsonUtils
+        // .createArray(Json.create("string"), Json.create(true)));
+        JsonValue json = Json.instance().parse("[1,[\"string\",true]]");
 
         Object decoded = ClientJsonCodec.decodeWithTypeInfo(null, json);
 
@@ -91,7 +92,8 @@ public class ClientJsonCodecTest {
         };
         node.setDomNode(element);
 
-        JsonArray json = JsonUtils.createArray(Json.create(JsonCodec.NODE_TYPE),
+        JsonArray json = SharedJsonUtils.createArray(
+                Json.create(JsonConstants.JSON_NODE_TYPE),
                 Json.create(node.getId()));
 
         Object decoded = ClientJsonCodec.decodeWithTypeInfo(tree, json);
@@ -115,7 +117,8 @@ public class ClientJsonCodecTest {
         };
         node.setDomNode(element);
 
-        JsonArray json = JsonUtils.createArray(Json.create(JsonCodec.NODE_TYPE),
+        JsonArray json = SharedJsonUtils.createArray(
+                Json.create(JsonConstants.JSON_NODE_TYPE),
                 Json.create(node.getId()));
 
         StateNode decoded = ClientJsonCodec.decodeStateNode(tree, json);
@@ -125,9 +128,9 @@ public class ClientJsonCodecTest {
 
     @Test
     public void decodeStateNode_array() {
-        JsonValue json = JsonCodec.encodeWithTypeInfo(JsonUtils
-                .createArray(Json.create("string"), Json.create(true)));
-
+        // JsonValue json = JsonCodec.encodeWithTypeInfo(JsonUtils
+        // .createArray(Json.create("string"), Json.create(true)));
+        JsonValue json = Json.instance().parse("[1,[\"string\",true]]");
         Assert.assertNull(ClientJsonCodec.decodeStateNode(null, json));
     }
 
@@ -153,7 +156,7 @@ public class ClientJsonCodecTest {
     private static void assertJsonEquals(JsonValue expected, JsonValue actual) {
         Assert.assertTrue(
                 actual.toJson() + " does not equal " + expected.toJson(),
-                JsonUtils.jsonEquals(expected, actual));
+                SharedJsonUtils.jsonEquals(expected, actual));
     }
 
 }

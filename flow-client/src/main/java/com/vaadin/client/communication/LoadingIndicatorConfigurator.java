@@ -21,8 +21,8 @@ import com.vaadin.client.ConnectionIndicator;
 import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.nodefeature.NodeMap;
-import com.vaadin.flow.internal.nodefeature.LoadingIndicatorConfigurationMap;
-import com.vaadin.flow.internal.nodefeature.NodeFeatures;
+import com.vaadin.flow.shared.internal.LoadingIndicatorConstants;
+import com.vaadin.flow.shared.internal.NodeFeatures;
 
 /**
  * Observes the loading indicator configuration stored in the given node and
@@ -48,22 +48,21 @@ public class LoadingIndicatorConfigurator {
         NodeMap configMap = node
                 .getMap(NodeFeatures.LOADING_INDICATOR_CONFIGURATION);
 
-        bindInteger(configMap, LoadingIndicatorConfigurationMap.FIRST_DELAY_KEY,
+        bindInteger(configMap, LoadingIndicatorConstants.FIRST_DELAY_KEY,
                 LoadingIndicatorConfigurator::setFirstDelay,
-                LoadingIndicatorConfigurationMap.FIRST_DELAY_DEFAULT);
-        bindInteger(configMap,
-                LoadingIndicatorConfigurationMap.SECOND_DELAY_KEY,
+                LoadingIndicatorConstants.FIRST_DELAY_DEFAULT);
+        bindInteger(configMap, LoadingIndicatorConstants.SECOND_DELAY_KEY,
                 LoadingIndicatorConfigurator::setSecondDelay,
-                LoadingIndicatorConfigurationMap.SECOND_DELAY_DEFAULT);
-        bindInteger(configMap, LoadingIndicatorConfigurationMap.THIRD_DELAY_KEY,
+                LoadingIndicatorConstants.SECOND_DELAY_DEFAULT);
+        bindInteger(configMap, LoadingIndicatorConstants.THIRD_DELAY_KEY,
                 LoadingIndicatorConfigurator::setThirdDelay,
-                LoadingIndicatorConfigurationMap.THIRD_DELAY_DEFAULT);
+                LoadingIndicatorConstants.THIRD_DELAY_DEFAULT);
 
         MapProperty defaultThemeProperty = configMap.getProperty(
-                LoadingIndicatorConfigurationMap.DEFAULT_THEME_APPLIED_KEY);
+                LoadingIndicatorConstants.DEFAULT_THEME_APPLIED_KEY);
         defaultThemeProperty.addChangeListener(event -> setApplyDefaultTheme(
                 event.getSource().getValueOrDefault(
-                        LoadingIndicatorConfigurationMap.DEFAULT_THEME_APPLIED_DEFAULT)));
+                        LoadingIndicatorConstants.DEFAULT_THEME_APPLIED_DEFAULT)));
     }
 
     /**

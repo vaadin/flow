@@ -15,6 +15,15 @@
  */
 package com.vaadin.flow.internal.nodefeature;
 
+import static com.vaadin.flow.shared.internal.LoadingIndicatorConstants.DEFAULT_THEME_APPLIED_DEFAULT;
+import static com.vaadin.flow.shared.internal.LoadingIndicatorConstants.DEFAULT_THEME_APPLIED_KEY;
+import static com.vaadin.flow.shared.internal.LoadingIndicatorConstants.FIRST_DELAY_DEFAULT;
+import static com.vaadin.flow.shared.internal.LoadingIndicatorConstants.FIRST_DELAY_KEY;
+import static com.vaadin.flow.shared.internal.LoadingIndicatorConstants.SECOND_DELAY_DEFAULT;
+import static com.vaadin.flow.shared.internal.LoadingIndicatorConstants.SECOND_DELAY_KEY;
+import static com.vaadin.flow.shared.internal.LoadingIndicatorConstants.THIRD_DELAY_DEFAULT;
+import static com.vaadin.flow.shared.internal.LoadingIndicatorConstants.THIRD_DELAY_KEY;
+
 import com.vaadin.flow.component.page.LoadingIndicatorConfiguration;
 import com.vaadin.flow.internal.StateNode;
 
@@ -28,14 +37,6 @@ import com.vaadin.flow.internal.StateNode;
  */
 public class LoadingIndicatorConfigurationMap extends NodeMap
         implements LoadingIndicatorConfiguration {
-    public static final String FIRST_DELAY_KEY = "first";
-    public static final int FIRST_DELAY_DEFAULT = 300;
-    public static final String SECOND_DELAY_KEY = "second";
-    public static final int SECOND_DELAY_DEFAULT = 1500;
-    public static final String THIRD_DELAY_KEY = "third";
-    public static final int THIRD_DELAY_DEFAULT = 5000;
-    public static final String DEFAULT_THEME_APPLIED_KEY = "theme";
-    public static final boolean DEFAULT_THEME_APPLIED_DEFAULT = true;
 
     /**
      * Creates a new map for the given node.

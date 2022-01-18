@@ -17,7 +17,7 @@ package com.vaadin.client.flow.binding;
 
 import com.vaadin.client.PolymerUtils;
 import com.vaadin.client.flow.StateNode;
-import com.vaadin.flow.internal.nodefeature.NodeFeatures;
+import com.vaadin.flow.shared.internal.NodeFeatures;
 
 import elemental.dom.Node;
 

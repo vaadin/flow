@@ -22,13 +22,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.server.Command;
-
 public class RegistrationTest {
     @Test
     public void once_onlyCalledOnce() {
         AtomicBoolean invoked = new AtomicBoolean();
-        Command action = () -> {
+        SharedCommand action = () -> {
             boolean calledPreviously = invoked.getAndSet(true);
 
             Assert.assertFalse("Command should not invoked previously",

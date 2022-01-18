@@ -19,18 +19,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.junit.Assert;
-import org.junit.Test;
-
 import com.vaadin.client.ExistingElementMap;
 import com.vaadin.client.Registry;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsMap;
 import com.vaadin.client.flow.reactive.Reactive;
-import com.vaadin.flow.internal.JsonCodec;
-import com.vaadin.flow.internal.JsonUtils;
-import com.vaadin.flow.internal.nodefeature.NodeFeatures;
-import com.vaadin.flow.internal.nodefeature.NodeProperties;
+import com.vaadin.flow.shared.JsonConstants;
+import com.vaadin.flow.shared.internal.NodeFeatures;
+import com.vaadin.flow.shared.internal.NodeProperties;
+import com.vaadin.flow.shared.internal.SharedJsonUtils;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 import elemental.js.dom.JsElement;
 import elemental.json.Json;
@@ -107,10 +107,12 @@ public class ExecuteJavaScriptProcessorTest {
     public void execute_parametersAndCodeAreValidAndNoNodeParameters() {
         CollectingExecuteJavaScriptProcessor processor = new CollectingExecuteJavaScriptProcessor();
 
-        JsonArray invocation1 = JsonUtils.createArray(Json.create("script1"));
+        JsonArray invocation1 = SharedJsonUtils
+                .createArray(Json.create("script1"));
         JsonArray invocation2 = Stream.of("param1", "param2", "script2")
-                .map(Json::create).collect(JsonUtils.asArray());
-        JsonArray invocations = JsonUtils.createArray(invocation1, invocation2);
+                .map(Json::create).collect(SharedJsonUtils.asArray());
+        JsonArray invocations = SharedJsonUtils.createArray(invocation1,
+                invocation2);
 
         processor.execute(invocations);
 
@@ -153,15 +155,16 @@ public class ExecuteJavaScriptProcessorTest {
         };
         node.setDomNode(element);
 
-        JsonArray json = JsonUtils.createArray(Json.create(JsonCodec.NODE_TYPE),
+        JsonArray json = SharedJsonUtils.createArray(
+                Json.create(JsonConstants.JSON_NODE_TYPE),
                 Json.create(node.getId()));
 
         JsonArray invocation = Stream.of(json, Json.create("$0"))
-                .collect(JsonUtils.asArray());
+                .collect(SharedJsonUtils.asArray());
 
         // JRE impl of the array uses
 
-        processor.execute(JsonUtils.createArray(invocation));
+        processor.execute(SharedJsonUtils.createArray(invocation));
 
         Assert.assertEquals(1, processor.nodeParametersList.size());
 
@@ -188,13 +191,14 @@ public class ExecuteJavaScriptProcessorTest {
 
         registry.getStateTree().registerNode(node);
 
-        JsonArray json = JsonUtils.createArray(Json.create(JsonCodec.NODE_TYPE),
+        JsonArray json = SharedJsonUtils.createArray(
+                Json.create(JsonConstants.JSON_NODE_TYPE),
                 Json.create(node.getId()));
 
         JsonArray invocation = Stream.of(json, Json.create("$0"))
-                .collect(JsonUtils.asArray());
+                .collect(SharedJsonUtils.asArray());
 
-        processor.execute(JsonUtils.createArray(invocation));
+        processor.execute(SharedJsonUtils.createArray(invocation));
 
         // The invocation has not been executed
         Assert.assertEquals(0, processor.nodeParametersList.size());
@@ -228,13 +232,14 @@ public class ExecuteJavaScriptProcessorTest {
 
         registry.getStateTree().registerNode(node);
 
-        JsonArray json = JsonUtils.createArray(Json.create(JsonCodec.NODE_TYPE),
+        JsonArray json = SharedJsonUtils.createArray(
+                Json.create(JsonConstants.JSON_NODE_TYPE),
                 Json.create(node.getId()));
 
         JsonArray invocation = Stream.of(json, Json.create("$0"))
-                .collect(JsonUtils.asArray());
+                .collect(SharedJsonUtils.asArray());
 
-        processor.execute(JsonUtils.createArray(invocation));
+        processor.execute(SharedJsonUtils.createArray(invocation));
 
         Assert.assertEquals(0, processor.nodeParametersList.size());
 
@@ -267,13 +272,14 @@ public class ExecuteJavaScriptProcessorTest {
 
         registry.getStateTree().registerNode(node);
 
-        JsonArray json = JsonUtils.createArray(Json.create(JsonCodec.NODE_TYPE),
+        JsonArray json = SharedJsonUtils.createArray(
+                Json.create(JsonConstants.JSON_NODE_TYPE),
                 Json.create(node.getId()));
 
         JsonArray invocation = Stream.of(json, Json.create("$0"))
-                .collect(JsonUtils.asArray());
+                .collect(SharedJsonUtils.asArray());
 
-        processor.execute(JsonUtils.createArray(invocation));
+        processor.execute(SharedJsonUtils.createArray(invocation));
 
         // The invocation has been executed
         Assert.assertEquals(1, processor.nodeParametersList.size());

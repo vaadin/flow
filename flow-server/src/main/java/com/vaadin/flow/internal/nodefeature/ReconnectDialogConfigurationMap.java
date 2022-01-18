@@ -15,6 +15,15 @@
  */
 package com.vaadin.flow.internal.nodefeature;
 
+import static com.vaadin.flow.shared.internal.ReconnectDialogConstants.DIALOG_TEXT_DEFAULT;
+import static com.vaadin.flow.shared.internal.ReconnectDialogConstants.DIALOG_TEXT_GAVE_UP_DEFAULT;
+import static com.vaadin.flow.shared.internal.ReconnectDialogConstants.DIALOG_TEXT_GAVE_UP_KEY;
+import static com.vaadin.flow.shared.internal.ReconnectDialogConstants.DIALOG_TEXT_KEY;
+import static com.vaadin.flow.shared.internal.ReconnectDialogConstants.RECONNECT_ATTEMPTS_DEFAULT;
+import static com.vaadin.flow.shared.internal.ReconnectDialogConstants.RECONNECT_ATTEMPTS_KEY;
+import static com.vaadin.flow.shared.internal.ReconnectDialogConstants.RECONNECT_INTERVAL_DEFAULT;
+import static com.vaadin.flow.shared.internal.ReconnectDialogConstants.RECONNECT_INTERVAL_KEY;
+
 import com.vaadin.flow.component.ReconnectDialogConfiguration;
 import com.vaadin.flow.internal.StateNode;
 
@@ -28,15 +37,6 @@ import com.vaadin.flow.internal.StateNode;
  */
 public class ReconnectDialogConfigurationMap extends NodeMap
         implements ReconnectDialogConfiguration {
-
-    public static final String DIALOG_TEXT_KEY = "dialogText";
-    public static final String DIALOG_TEXT_DEFAULT = "Server connection lost, trying to reconnect...";
-    public static final String DIALOG_TEXT_GAVE_UP_KEY = "dialogTextGaveUp";
-    public static final String DIALOG_TEXT_GAVE_UP_DEFAULT = "Server connection lost.";
-    public static final String RECONNECT_ATTEMPTS_KEY = "reconnectAttempts";
-    public static final int RECONNECT_ATTEMPTS_DEFAULT = 10000;
-    public static final String RECONNECT_INTERVAL_KEY = "reconnectInterval";
-    public static final int RECONNECT_INTERVAL_DEFAULT = 5000;
 
     /**
      * Creates a new map for the given node.

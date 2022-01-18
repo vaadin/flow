@@ -1,10 +1,15 @@
 package com.vaadin.client.communication;
 
 import com.google.gwt.xhr.client.XMLHttpRequest;
-import com.vaadin.client.*;
+import com.vaadin.client.ApplicationConfiguration;
+import com.vaadin.client.ClientEngineTestBase;
+import com.vaadin.client.ConnectionIndicator;
+import com.vaadin.client.Registry;
+import com.vaadin.client.UILifecycle;
 import com.vaadin.client.flow.StateTree;
-import com.vaadin.flow.internal.nodefeature.NodeFeatures;
-import com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap;
+import com.vaadin.flow.shared.internal.NodeFeatures;
+import com.vaadin.flow.shared.internal.ReconnectDialogConstants;
+
 import elemental.client.Browser;
 import elemental.events.Event;
 
@@ -29,10 +34,10 @@ public class GwtDefaultConnectionStateHandlerTest extends ClientEngineTestBase {
                 }});
                 set(StateTree.class, new StateTree(this) {{
                     getRootNode().getMap(NodeFeatures.RECONNECT_DIALOG_CONFIGURATION)
-                            .getProperty(ReconnectDialogConfigurationMap.RECONNECT_ATTEMPTS_KEY).setValue((double)3);
+                            .getProperty(ReconnectDialogConstants.RECONNECT_ATTEMPTS_KEY).setValue((double)3);
                     // keep the timer from interfering with the test:
                     getRootNode().getMap(NodeFeatures.RECONNECT_DIALOG_CONFIGURATION)
-                            .getProperty(ReconnectDialogConfigurationMap.RECONNECT_INTERVAL_KEY).setValue((double)10000000);
+                            .getProperty(ReconnectDialogConstants.RECONNECT_INTERVAL_KEY).setValue((double)10000000);
                 }});
                 set(ReconnectConfiguration.class, new ReconnectConfiguration(this));
                 set(Heartbeat.class, new Heartbeat(this));

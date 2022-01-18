@@ -28,7 +28,6 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.History;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.router.ErrorNavigationEvent;
 import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.Location;
@@ -44,6 +43,7 @@ import com.vaadin.flow.router.internal.ErrorTargetEntry;
 import com.vaadin.flow.router.internal.PathUtil;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.server.communication.JavaScriptBootstrapHandler;
+import com.vaadin.flow.shared.internal.NodeProperties;
 
 import elemental.json.JsonValue;
 

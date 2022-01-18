@@ -24,9 +24,9 @@ import com.vaadin.client.flow.model.UpdatableModelProperties;
 import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.nodefeature.NodeMap;
 import com.vaadin.client.flow.reactive.Reactive;
-import com.vaadin.flow.internal.JsonCodec;
-import com.vaadin.flow.internal.nodefeature.NodeFeatures;
-import com.vaadin.flow.internal.nodefeature.NodeProperties;
+import com.vaadin.flow.shared.JsonConstants;
+import com.vaadin.flow.shared.internal.NodeFeatures;
+import com.vaadin.flow.shared.internal.NodeProperties;
 
 import elemental.client.Browser;
 import elemental.dom.Element;
@@ -303,7 +303,7 @@ public class GwtExecuteJavaScriptElementUtilsTest extends ClientEngineTestBase {
                 });
 
         JsonArray serializedChannel = Json.createArray();
-        serializedChannel.set(0, JsonCodec.RETURN_CHANNEL_TYPE);
+        serializedChannel.set(0, JsonConstants.JSON_RETURN_CHANNEL_TYPE);
         serializedChannel.set(1, expectedNodeId);
         serializedChannel.set(2, expectedChannelId);
 

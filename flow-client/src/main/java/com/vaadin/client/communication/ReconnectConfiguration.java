@@ -19,8 +19,8 @@ import com.vaadin.client.Registry;
 import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.nodefeature.NodeMap;
 import com.vaadin.client.flow.reactive.Reactive;
-import com.vaadin.flow.internal.nodefeature.NodeFeatures;
-import com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap;
+import com.vaadin.flow.shared.internal.NodeFeatures;
+import com.vaadin.flow.shared.internal.ReconnectDialogConstants;
 
 /**
  * Tracks the reconnect configuration stored in the root node and provides it
@@ -75,7 +75,7 @@ public class ReconnectConfiguration {
      */
     @Deprecated
     public String getDialogText() {
-        return getProperty(ReconnectDialogConfigurationMap.DIALOG_TEXT_KEY)
+        return getProperty(ReconnectDialogConstants.DIALOG_TEXT_KEY)
                 .getValueOrDefault(null);
     }
 
@@ -90,9 +90,8 @@ public class ReconnectConfiguration {
      */
     @Deprecated
     public String getDialogTextGaveUp() {
-        return getProperty(
-                ReconnectDialogConfigurationMap.DIALOG_TEXT_GAVE_UP_KEY)
-                        .getValueOrDefault(null);
+        return getProperty(ReconnectDialogConstants.DIALOG_TEXT_GAVE_UP_KEY)
+                .getValueOrDefault(null);
     }
 
     /**
@@ -102,10 +101,9 @@ public class ReconnectConfiguration {
      * @return the number of reconnect attempts to perform
      */
     public int getReconnectAttempts() {
-        return getProperty(
-                ReconnectDialogConfigurationMap.RECONNECT_ATTEMPTS_KEY)
-                        .getValueOrDefault(
-                                ReconnectDialogConfigurationMap.RECONNECT_ATTEMPTS_DEFAULT);
+        return getProperty(ReconnectDialogConstants.RECONNECT_ATTEMPTS_KEY)
+                .getValueOrDefault(
+                        ReconnectDialogConstants.RECONNECT_ATTEMPTS_DEFAULT);
     }
 
     /**
@@ -114,9 +112,8 @@ public class ReconnectConfiguration {
      * @return the interval in milliseconds to wait between reconnect attempts
      */
     public int getReconnectInterval() {
-        return getProperty(
-                ReconnectDialogConfigurationMap.RECONNECT_INTERVAL_KEY)
-                        .getValueOrDefault(
-                                ReconnectDialogConfigurationMap.RECONNECT_INTERVAL_DEFAULT);
+        return getProperty(ReconnectDialogConstants.RECONNECT_INTERVAL_KEY)
+                .getValueOrDefault(
+                        ReconnectDialogConstants.RECONNECT_INTERVAL_DEFAULT);
     }
 }

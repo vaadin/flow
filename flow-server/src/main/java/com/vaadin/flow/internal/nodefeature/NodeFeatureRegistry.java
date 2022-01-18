@@ -25,6 +25,7 @@ import java.util.Map;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.PushConfigurationMap.PushConfigurationParametersMap;
+import com.vaadin.flow.shared.internal.NodeFeatures;
 
 /**
  * A registry of node features that are available based on type.

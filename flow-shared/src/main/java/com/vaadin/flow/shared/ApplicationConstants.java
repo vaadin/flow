@@ -17,8 +17,6 @@ package com.vaadin.flow.shared;
 
 import java.io.Serializable;
 
-import com.vaadin.flow.component.internal.UIInternals;
-
 /**
  * A utility class providing static constants. Mostly for internal use.
  * <p>
@@ -107,7 +105,7 @@ public class ApplicationConstants implements Serializable {
      * set to -1 e.g. when testing with pre-recorded requests to make the
      * framework ignore the sync id.
      *
-     * @see UIInternals#getServerSyncId()
+     * See UIInternals#getServerSyncId()
      */
     public static final String SERVER_SYNC_ID = "syncId";
 

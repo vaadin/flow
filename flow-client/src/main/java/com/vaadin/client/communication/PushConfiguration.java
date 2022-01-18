@@ -23,8 +23,8 @@ import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.nodefeature.MapPropertyChangeEvent;
 import com.vaadin.client.flow.nodefeature.NodeMap;
 import com.vaadin.client.flow.reactive.Reactive;
-import com.vaadin.flow.internal.nodefeature.NodeFeatures;
-import com.vaadin.flow.internal.nodefeature.PushConfigurationMap;
+import com.vaadin.flow.shared.internal.NodeFeatures;
+import com.vaadin.flow.shared.internal.PushConfigurationConstants;
 
 /**
  * Provides the push configuration stored in the root node with an easier to use
@@ -52,7 +52,8 @@ public class PushConfiguration {
     }
 
     private void setupListener() {
-        getConfigurationMap().getProperty(PushConfigurationMap.PUSHMODE_KEY)
+        getConfigurationMap()
+                .getProperty(PushConfigurationConstants.PUSHMODE_KEY)
                 .addChangeListener(this::onPushModeChange);
     }
 
@@ -95,9 +96,10 @@ public class PushConfiguration {
      */
     public String getPushUrl() {
         if (getConfigurationMap()
-                .hasPropertyValue(PushConfigurationMap.PUSH_URL_KEY)) {
+                .hasPropertyValue(PushConfigurationConstants.PUSH_URL_KEY)) {
             return (String) getConfigurationMap()
-                    .getProperty(PushConfigurationMap.PUSH_URL_KEY).getValue();
+                    .getProperty(PushConfigurationConstants.PUSH_URL_KEY)
+                    .getValue();
         }
 
         return null;
@@ -112,7 +114,7 @@ public class PushConfiguration {
     public boolean isAlwaysXhrToServer() {
         // The only possible value is "true"
         return (getConfigurationMap().hasPropertyValue(
-                PushConfigurationMap.ALWAYS_USE_XHR_TO_SERVER));
+                PushConfigurationConstants.ALWAYS_USE_XHR_TO_SERVER));
     }
 
     /**
@@ -124,7 +126,7 @@ public class PushConfiguration {
      */
     public JsMap<String, String> getParameters() {
         MapProperty p = getConfigurationMap()
-                .getProperty(PushConfigurationMap.PARAMETERS_KEY);
+                .getProperty(PushConfigurationConstants.PARAMETERS_KEY);
         StateNode parametersNode = (StateNode) p.getValue();
         NodeMap parametersMap = parametersNode
                 .getMap(NodeFeatures.UI_PUSHCONFIGURATION_PARAMETERS);
@@ -144,7 +146,8 @@ public class PushConfiguration {
      */
     public boolean isPushEnabled() {
         return isPushEnabled(getConfigurationMap()
-                .getProperty(PushConfigurationMap.PUSHMODE_KEY).getValue());
+                .getProperty(PushConfigurationConstants.PUSHMODE_KEY)
+                .getValue());
     }
 
     /**

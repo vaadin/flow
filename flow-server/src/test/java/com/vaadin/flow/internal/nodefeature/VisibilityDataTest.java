@@ -20,6 +20,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.shared.internal.NodeProperties;
 
 public class VisibilityDataTest {
 

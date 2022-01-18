@@ -13,9 +13,9 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.internal.nodefeature;
+package com.vaadin.flow.shared.internal;
 
-import com.vaadin.flow.internal.nodefeature.PushConfigurationMap.PushConfigurationParametersMap;
+import java.io.Serializable;
 
 /**
  * Registry of node feature id numbers and map keys shared between server and
@@ -28,117 +28,117 @@ import com.vaadin.flow.internal.nodefeature.PushConfigurationMap.PushConfigurati
  */
 public final class NodeFeatures {
     /**
-     * Id for {@link ElementData}.
+     * Id for ElementData.
      */
     public static final int ELEMENT_DATA = 0;
 
     /**
-     * Id for {@link ElementPropertyMap}.
+     * Id for ElementPropertyMap.
      */
     public static final int ELEMENT_PROPERTIES = 1;
 
     /**
-     * Id for {@link ElementChildrenList}.
+     * Id for ElementChildrenList.
      */
     public static final int ELEMENT_CHILDREN = 2;
 
     /**
-     * Id for {@link ElementAttributeMap}.
+     * Id for ElementAttributeMap.
      */
     public static final int ELEMENT_ATTRIBUTES = 3;
 
     /**
-     * Id for {@link ElementListenerMap}.
+     * Id for ElementListenerMap.
      */
     public static final int ELEMENT_LISTENERS = 4;
     /**
-     * Id for {@link PushConfigurationMap}.
+     * Id for PushConfigurationMap.
      */
     public static final int UI_PUSHCONFIGURATION = 5;
     /**
-     * Id for {@link PushConfigurationParametersMap}.
+     * Id for PushConfigurationParametersMap.
      */
     public static final int UI_PUSHCONFIGURATION_PARAMETERS = 6;
     /**
-     * Id for {@link TextNodeMap}.
+     * Id for TextNodeMap.
      */
     public static final int TEXT_NODE = 7;
     /**
-     * Id for {@link PollConfigurationMap}.
+     * Id for PollConfigurationMap.
      */
     public static final int POLL_CONFIGURATION = 8;
     /**
-     * Id for {@link ReconnectDialogConfigurationMap}.
+     * Id for ReconnectDialogConfigurationMap.
      */
     public static final int RECONNECT_DIALOG_CONFIGURATION = 9;
     /**
-     * Id for {@link ReconnectDialogConfigurationMap}.
+     * Id for ReconnectDialogConfigurationMap.
      */
     public static final int LOADING_INDICATOR_CONFIGURATION = 10;
     /**
-     * Id for {@link ElementClassList}.
+     * Id for ElementClassList.
      */
     public static final int CLASS_LIST = 11;
     /**
-     * Id for {@link ElementStylePropertyMap}.
+     * Id for ElementStylePropertyMap.
      */
     public static final int ELEMENT_STYLE_PROPERTIES = 12;
     /**
-     * Id for {@link ComponentMapping}.
+     * Id for ComponentMapping.
      */
     public static final int COMPONENT_MAPPING = 15;
     /**
-     * Id for {@link ModelList}.
+     * Id for ModelList.
      */
     public static final int TEMPLATE_MODELLIST = 16;
 
     /**
-     * Id for {@link PolymerServerEventHandlers}.
+     * Id for PolymerServerEventHandlers.
      */
     public static final int POLYMER_SERVER_EVENT_HANDLERS = 17;
 
     /**
-     * Id for {@link PolymerEventListenerMap}.
+     * Id for PolymerEventListenerMap.
      */
     public static final int POLYMER_EVENT_LISTENERS = 18;
 
     /**
-     * Id for {@link ClientCallableHandlers}.
+     * Id for ClientCallableHandlers.
      */
     public static final int CLIENT_DELEGATE_HANDLERS = 19;
 
     /**
-     * Id for {@link ShadowRootData}.
+     * Id for ShadowRootData.
      */
     public static final int SHADOW_ROOT_DATA = 20;
 
     /**
-     * Id for {@link ShadowRootHost}.
+     * Id for ShadowRootHost.
      */
     public static final int SHADOW_ROOT_HOST = 21;
 
     /**
-     * Id for {@link AttachExistingElementFeature}.
+     * Id for AttachExistingElementFeature.
      */
     public static final int ATTACH_EXISTING_ELEMENT = 22;
 
     /**
-     * Id for {@link BasicTypeValue}.
+     * Id for BasicTypeValue.
      */
     public static final int BASIC_TYPE_VALUE = 23;
 
     /**
-     * Id for {@link VirtualChildrenList}.
+     * Id for VirtualChildrenList.
      */
     public static final int VIRTUAL_CHILDREN = 24;
 
     /**
-     * Id for {@link ReturnChannelMap}.
+     * Id for ReturnChannelMap.
      */
     public static final int RETURN_CHANNEL_MAP = 25;
 
     /**
-     * Id for {@link InertData}.
+     * Id for InertData.
      */
     public static final int INERT_DATA = 26;
 

@@ -3,10 +3,11 @@ package com.vaadin.flow.internal.nodefeature;
 import java.util.Arrays;
 import java.util.Collection;
 
+import com.vaadin.flow.shared.internal.PushConfigurationConstants;
+import com.vaadin.flow.shared.ui.Transport;
+
 import org.junit.Assert;
 import org.junit.Test;
-
-import com.vaadin.flow.shared.ui.Transport;
 
 public class PushConfigurationMapTest
         extends AbstractNodeFeatureTest<PushConfigurationMap> {
@@ -18,8 +19,8 @@ public class PushConfigurationMapTest
         ns.setTransport(Transport.WEBSOCKET);
         Assert.assertEquals(Transport.WEBSOCKET.getIdentifier(),
                 ns.getParameter("transport"));
-        Assert.assertFalse(
-                ns.contains(PushConfigurationMap.ALWAYS_USE_XHR_TO_SERVER));
+        Assert.assertFalse(ns
+                .contains(PushConfigurationConstants.ALWAYS_USE_XHR_TO_SERVER));
         Assert.assertEquals(Transport.WEBSOCKET, ns.getTransport());
     }
 
@@ -28,8 +29,8 @@ public class PushConfigurationMapTest
         ns.setTransport(Transport.LONG_POLLING);
         Assert.assertEquals(Transport.LONG_POLLING.getIdentifier(),
                 ns.getParameter("transport"));
-        Assert.assertFalse(
-                ns.contains(PushConfigurationMap.ALWAYS_USE_XHR_TO_SERVER));
+        Assert.assertFalse(ns
+                .contains(PushConfigurationConstants.ALWAYS_USE_XHR_TO_SERVER));
         Assert.assertEquals(Transport.LONG_POLLING, ns.getTransport());
     }
 
@@ -39,7 +40,7 @@ public class PushConfigurationMapTest
         Assert.assertEquals(Transport.WEBSOCKET.getIdentifier(),
                 ns.getParameter("transport"));
         Assert.assertTrue((Boolean) ns
-                .get(PushConfigurationMap.ALWAYS_USE_XHR_TO_SERVER));
+                .get(PushConfigurationConstants.ALWAYS_USE_XHR_TO_SERVER));
         Assert.assertEquals(Transport.WEBSOCKET_XHR, ns.getTransport());
     }
 

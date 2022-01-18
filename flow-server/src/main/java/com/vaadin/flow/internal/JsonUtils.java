@@ -33,6 +33,7 @@ import java.util.stream.Stream;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vaadin.flow.shared.internal.SharedJsonUtils;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -55,49 +56,6 @@ public final class JsonUtils {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    /**
-     * Collects a stream of JSON values to a JSON array.
-     *
-     * @author Vaadin Ltd
-     * @since 1.0
-     */
-    private static final class JsonArrayCollector
-            implements Collector<JsonValue, JsonArray, JsonArray> {
-        @Override
-        public Supplier<JsonArray> supplier() {
-            return Json::createArray;
-        }
-
-        @Override
-        public BiConsumer<JsonArray, JsonValue> accumulator() {
-            return (array, value) -> array.set(array.length(), value);
-        }
-
-        @Override
-        public BinaryOperator<JsonArray> combiner() {
-            return (left, right) -> {
-                for (int i = 0; i < right.length(); i++) {
-                    left.set(left.length(), right.<JsonValue> get(i));
-                }
-                return left;
-            };
-        }
-
-        @Override
-        public Function<JsonArray, JsonArray> finisher() {
-            return Function.identity();
-        }
-
-        @Override
-        public Set<Collector.Characteristics> characteristics() {
-            return arrayCollectorCharacteristics;
-        }
-    }
-
-    private static final Set<Collector.Characteristics> arrayCollectorCharacteristics = Collections
-            .unmodifiableSet(
-                    EnumSet.of(Collector.Characteristics.IDENTITY_FINISH));
-
     private JsonUtils() {
         // Static-only class
     }
@@ -118,78 +76,7 @@ public final class JsonUtils {
      *         <code>false</code> otherwise
      */
     public static boolean jsonEquals(JsonValue a, JsonValue b) {
-        assert a != null;
-        assert b != null;
-
-        if (a == b) {
-            return true;
-        }
-
-        JsonType type = a.getType();
-        if (type != b.getType()) {
-            return false;
-        }
-
-        switch (type) {
-        case NULL:
-            return true;
-        case BOOLEAN:
-            return a.asBoolean() == b.asBoolean();
-        case NUMBER:
-            return Double.doubleToRawLongBits(a.asNumber()) == Double
-                    .doubleToRawLongBits(b.asNumber());
-        case STRING:
-            return a.asString().equals(b.asString());
-        case OBJECT:
-            return jsonObjectEquals((JsonObject) a, (JsonObject) b);
-        case ARRAY:
-            return jsonArrayEquals((JsonArray) a, (JsonArray) b);
-        default:
-            throw new IllegalArgumentException("Unsupported JsonType: " + type);
-        }
-    }
-
-    private static boolean jsonObjectEquals(JsonObject a, JsonObject b) {
-        assert a != null;
-        assert b != null;
-
-        if (a == b) {
-            return true;
-        }
-
-        String[] keys = a.keys();
-
-        if (keys.length != b.keys().length) {
-            return false;
-        }
-
-        for (String key : keys) {
-            JsonValue value = b.get(key);
-            if (value == null || !jsonEquals(a.get(key), value)) {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private static boolean jsonArrayEquals(JsonArray a, JsonArray b) {
-        assert a != null;
-        assert b != null;
-
-        if (a == b) {
-            return true;
-        }
-
-        if (a.length() != b.length()) {
-            return false;
-        }
-        for (int i = 0; i < a.length(); i++) {
-            if (!jsonEquals(a.get(i), b.get(i))) {
-                return false;
-            }
-        }
-        return true;
+        return SharedJsonUtils.jsonEquals(a, b);
     }
 
     /**
@@ -252,7 +139,7 @@ public final class JsonUtils {
      * @return the collector
      */
     public static Collector<JsonValue, JsonArray, JsonArray> asArray() {
-        return new JsonArrayCollector();
+        return SharedJsonUtils.asArray();
     }
 
     /**
@@ -263,7 +150,7 @@ public final class JsonUtils {
      * @return the created array
      */
     public static JsonArray createArray(JsonValue... values) {
-        return Stream.of(values).collect(asArray());
+        return SharedJsonUtils.createArray(values);
     }
 
     /**

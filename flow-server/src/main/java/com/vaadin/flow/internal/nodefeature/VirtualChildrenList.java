@@ -18,6 +18,7 @@ package com.vaadin.flow.internal.nodefeature;
 import java.util.Iterator;
 
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.shared.internal.NodeProperties;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;

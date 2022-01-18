@@ -22,6 +22,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
+import com.vaadin.flow.shared.JsonConstants;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -50,21 +51,6 @@ import elemental.json.JsonValue;
  * @since 1.0
  */
 public class JsonCodec {
-    /**
-     * Type id for a complex type array containing an {@link Element}.
-     */
-    public static final int NODE_TYPE = 0;
-
-    /**
-     * Type id for a complex type array containing a {@link JsonArray}.
-     */
-    public static final int ARRAY_TYPE = 1;
-
-    /**
-     * Type id for a complex type array identifying a
-     * {@link ReturnChannelRegistration} reference.
-     */
-    public static final int RETURN_CHANNEL_TYPE = 2;
 
     private JsonCodec() {
         // Don't create instances
@@ -95,7 +81,8 @@ public class JsonCodec {
             JsonValue encoded = encodeWithoutTypeInfo(value);
             if (encoded.getType() == JsonType.ARRAY) {
                 // Must "escape" arrays
-                encoded = wrapComplexValue(ARRAY_TYPE, encoded);
+                encoded = wrapComplexValue(JsonConstants.JSON_ARRAY_TYPE,
+                        encoded);
             }
             return encoded;
         }
@@ -103,7 +90,7 @@ public class JsonCodec {
 
     private static JsonValue encodeReturnChannel(
             ReturnChannelRegistration value) {
-        return wrapComplexValue(RETURN_CHANNEL_TYPE,
+        return wrapComplexValue(JsonConstants.JSON_RETURN_CHANNEL_TYPE,
                 Json.create(value.getStateNodeId()),
                 Json.create(value.getChannelId()));
     }
@@ -111,7 +98,8 @@ public class JsonCodec {
     private static JsonValue encodeNode(Node<?> node) {
         StateNode stateNode = node.getNode();
         if (stateNode.isAttached()) {
-            return wrapComplexValue(NODE_TYPE, Json.create(stateNode.getId()));
+            return wrapComplexValue(JsonConstants.JSON_NODE_TYPE,
+                    Json.create(stateNode.getId()));
         } else {
             return Json.createNull();
         }

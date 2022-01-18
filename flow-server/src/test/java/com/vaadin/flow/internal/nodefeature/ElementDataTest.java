@@ -27,6 +27,7 @@ import org.junit.Test;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.change.MapPutChange;
 import com.vaadin.flow.internal.change.NodeChange;
+import com.vaadin.flow.shared.internal.NodeProperties;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;

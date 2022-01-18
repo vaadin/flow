@@ -18,7 +18,6 @@ package com.vaadin.client.communication;
 import com.google.gwt.user.client.Timer;
 import com.vaadin.client.Registry;
 import com.vaadin.client.flow.StateTree;
-import com.vaadin.flow.component.PollEvent;
 
 /**
  * Handles polling the server with a given interval.
@@ -85,8 +84,7 @@ public class Poller {
      */
     public void poll() {
         StateTree stateTree = registry.getStateTree();
-        stateTree.sendEventToServer(stateTree.getRootNode(),
-                PollEvent.DOM_EVENT_NAME, null);
+        stateTree.sendEventToServer(stateTree.getRootNode(), "ui-poll", null);
     }
 
 }

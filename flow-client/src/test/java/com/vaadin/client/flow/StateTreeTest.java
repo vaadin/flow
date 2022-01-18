@@ -27,8 +27,8 @@ import com.vaadin.client.communication.ServerConnector;
 import com.vaadin.client.flow.binding.Binder;
 import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.nodefeature.NodeMap;
-import com.vaadin.flow.internal.nodefeature.NodeFeatures;
-import com.vaadin.flow.internal.nodefeature.NodeProperties;
+import com.vaadin.flow.shared.internal.NodeFeatures;
+import com.vaadin.flow.shared.internal.NodeProperties;
 
 import elemental.events.EventRemover;
 

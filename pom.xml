@@ -17,6 +17,7 @@
     <modules>
         <module>flow</module>
         <module>flow-server</module>
+        <module>flow-shared</module>
         <module>flow-polymer-template</module>
         <module>flow-lit-template</module>
         <module>flow-data</module>

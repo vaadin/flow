@@ -16,13 +16,10 @@
 
 package com.vaadin.flow.shared.communication;
 
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.function.DeploymentConfiguration;
-
 /**
  * The mode of bidirectional ("push") communication that is in use.
  *
- * @see DeploymentConfiguration#getPushMode()
+ * See DeploymentConfiguration#getPushMode()
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -31,10 +28,9 @@ public enum PushMode {
     /**
      * Push is disabled. Regular AJAX requests are used to communicate between
      * the client and the server. Asynchronous messages from the server are not
-     * possible. {@link UI#push() ui.push()} throws IllegalStateException.
+     * possible. {@code ui.push()} throws IllegalStateException.
      * <p>
-     * This is the default mode unless
-     * {@link DeploymentConfiguration#getPushMode() configured} otherwise.
+     * This is the default mode unless configured otherwise.
      */
     DISABLED,
 
@@ -42,8 +38,8 @@ public enum PushMode {
      * Push is enabled. A bidirectional channel is established between the
      * client and server and used to communicate state changes and RPC
      * invocations. The client is not automatically updated if the server-side
-     * state is asynchronously changed; {@link UI#push() ui.push()} must be
-     * explicitly called.
+     * state is asynchronously changed; {@code ui.push()} must be explicitly
+     * called.
      */
     MANUAL,
 

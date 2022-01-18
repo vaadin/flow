@@ -15,6 +15,13 @@
  */
 package com.vaadin.flow.internal.nodefeature;
 
+import static com.vaadin.flow.shared.internal.PushConfigurationConstants.ALWAYS_USE_XHR_TO_SERVER;
+import static com.vaadin.flow.shared.internal.PushConfigurationConstants.FALLBACK_TRANSPORT_KEY;
+import static com.vaadin.flow.shared.internal.PushConfigurationConstants.PARAMETERS_KEY;
+import static com.vaadin.flow.shared.internal.PushConfigurationConstants.PUSHMODE_KEY;
+import static com.vaadin.flow.shared.internal.PushConfigurationConstants.PUSH_URL_KEY;
+import static com.vaadin.flow.shared.internal.PushConfigurationConstants.TRANSPORT_KEY;
+
 import java.util.Collection;
 
 import com.vaadin.flow.component.PushConfiguration;
@@ -53,13 +60,6 @@ public class PushConfigurationMap extends NodeMap implements PushConfiguration {
         }
 
     }
-
-    public static final String TRANSPORT_KEY = "transport";
-    public static final String FALLBACK_TRANSPORT_KEY = "fallbackTransport";
-    public static final String PUSHMODE_KEY = "pushMode";
-    public static final String ALWAYS_USE_XHR_TO_SERVER = "alwaysXhrToServer";
-    public static final String PUSH_URL_KEY = "pushUrl";
-    public static final String PARAMETERS_KEY = "parameters";
 
     /**
      * Creates a new map for the given node.

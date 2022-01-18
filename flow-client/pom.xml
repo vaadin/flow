@@ -52,7 +52,7 @@
         <!-- Project dependencies -->
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>flow-server</artifactId>
+            <artifactId>flow-shared</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
@@ -132,7 +132,10 @@
                 <filtering>true</filtering>
             </resource>
             <resource>
-                <directory>../flow-server/src/main/java</directory>
+                <directory>../flow-shared/src/main/java</directory>
+                <includes>
+                    <include>com/vaadin/flow/shared/**</include>
+                </includes>
             </resource>
         </resources>
 

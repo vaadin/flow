@@ -19,6 +19,7 @@ package com.vaadin.flow.component;
 import java.io.Serializable;
 
 import com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap;
+import com.vaadin.flow.shared.internal.ReconnectDialogConstants;
 
 /**
  * Provides methods for configuring the reconnect dialog.
@@ -32,7 +33,7 @@ public interface ReconnectDialogConfiguration extends Serializable {
      * the server connection.
      * <p>
      * The default is
-     * {@value ReconnectDialogConfigurationMap#DIALOG_TEXT_DEFAULT}
+     * {@value ReconnectDialogConstants#DIALOG_TEXT_DEFAULT}
      *
      * @return the text to show in the reconnect dialog
      */
@@ -52,7 +53,7 @@ public interface ReconnectDialogConfiguration extends Serializable {
      * reconnect ({@link #getReconnectAttempts()} reached).
      * <p>
      * The default is
-     * {@value ReconnectDialogConfigurationMap#DIALOG_TEXT_GAVE_UP_DEFAULT}
+     * {@value ReconnectDialogConstants#DIALOG_TEXT_GAVE_UP_DEFAULT}
      *
      * @return the text to show in the reconnect dialog after giving up
      */
@@ -72,7 +73,7 @@ public interface ReconnectDialogConfiguration extends Serializable {
      * up.
      * <p>
      * The default is
-     * {@value ReconnectDialogConfigurationMap#RECONNECT_ATTEMPTS_DEFAULT}
+     * {@value ReconnectDialogConstants#RECONNECT_ATTEMPTS_DEFAULT}
      *
      * @return the number of times to try to reconnect
      */
@@ -91,7 +92,7 @@ public interface ReconnectDialogConfiguration extends Serializable {
      * Gets the interval (in milliseconds) between reconnect attempts.
      * <p>
      * The default is
-     * {@value ReconnectDialogConfigurationMap#RECONNECT_INTERVAL_DEFAULT}
+     * {@value ReconnectDialogConstants#RECONNECT_INTERVAL_DEFAULT}
      *
      * @return the interval (in ms) between reconnect attempts
      */
