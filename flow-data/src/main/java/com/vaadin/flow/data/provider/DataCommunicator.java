@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executor;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -108,7 +108,7 @@ public class DataCommunicator<T> implements Serializable {
     private SerializableConsumer<ExecutionContext> flushRequest;
     private SerializableConsumer<ExecutionContext> flushUpdatedDataRequest;
 
-    private ExecutorService executor = null;
+    private Executor executor = null;
     private CompletableFuture<Activation> future;
     private UI ui;
 
@@ -193,15 +193,14 @@ public class DataCommunicator<T> implements Serializable {
      * be enabled and set to PushMode.AUTOMATIC in order this to work.
      * 
      * @param executor
-     *            The ExecutorService used for async updates.
+     *            The Executor used for async updates.
      */
-    public void setExecutorForAsyncUpdates(ExecutorService executor) {
+    public void enablePushUpdates(Executor executor) {
         if (this.executor != null) {
             if (future != null) {
                 future.cancel(true);
                 future = null;
             }
-            this.executor.shutdown();
         }
         this.executor = executor;
     }
