@@ -15,8 +15,8 @@
  */
 package com.vaadin.flow.spring;
 
-import com.vaadin.fusion.FusionControllerConfiguration;
-import com.vaadin.fusion.FusionEndpointProperties;
+import dev.hilla.FusionControllerConfiguration;
+import dev.hilla.FusionEndpointProperties;
 
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;

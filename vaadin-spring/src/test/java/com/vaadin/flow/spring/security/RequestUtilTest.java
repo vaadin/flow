@@ -22,8 +22,8 @@ import com.vaadin.flow.spring.SpringSecurityAutoConfiguration;
 import com.vaadin.flow.spring.SpringServlet;
 import com.vaadin.flow.spring.SpringVaadinServletService;
 import com.vaadin.flow.spring.VaadinConfigurationProperties;
-import com.vaadin.fusion.FusionControllerConfiguration;
-import com.vaadin.fusion.FusionEndpointProperties;
+import dev.hilla.FusionControllerConfiguration;
+import dev.hilla.FusionEndpointProperties;
 
 import org.junit.Assert;
 import org.junit.Test;

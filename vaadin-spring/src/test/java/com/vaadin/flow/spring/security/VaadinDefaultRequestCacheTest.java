@@ -20,10 +20,10 @@ import org.springframework.test.context.junit4.SpringRunner;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.spring.SpringBootAutoConfiguration;
 import com.vaadin.flow.spring.SpringSecurityAutoConfiguration;
-import com.vaadin.fusion.Endpoint;
-import com.vaadin.fusion.EndpointRegistry;
-import com.vaadin.fusion.FusionControllerConfiguration;
-import com.vaadin.fusion.FusionEndpointProperties;
+import dev.hilla.Endpoint;
+import dev.hilla.EndpointRegistry;
+import dev.hilla.FusionControllerConfiguration;
+import dev.hilla.FusionEndpointProperties;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { FusionEndpointProperties.class })
