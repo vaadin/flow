@@ -125,9 +125,9 @@ public final class ViteHandler extends AbstractDevServerRunner {
     public HttpURLConnection prepareConnection(String path, String method)
             throws IOException {
         if ("/index.html".equals(path)) {
-            return super.prepareConnection("/VAADIN/index.html", method);
+            return super.prepareConnection("/my-context/VAADIN/index.html", method);
         }
 
-        return super.prepareConnection(path, method);
+        return super.prepareConnection("/my-context" + path, method);
     }
 }

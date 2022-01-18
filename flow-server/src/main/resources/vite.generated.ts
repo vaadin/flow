@@ -84,7 +84,7 @@ const allowedFrontendFolders = [
 
 export const vaadinConfig: UserConfigFn = (env) => {
   const devMode = env.mode === 'development';
-  const basePath = env.mode === 'production' ? '' : '/VAADIN/';
+  const basePath = env.mode === 'production' ? '' : '/my-context/VAADIN/';
   let pwaConfig;
 
   if (devMode && process.env.watchDogPort) {
@@ -199,7 +199,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
             }
             const vaadinScript: HtmlTagDescriptor = {
               tag: 'script',
-              attrs: { type: 'module', src: devMode ? '/VAADIN/generated/vaadin.ts' : './generated/vaadin.ts' },
+              attrs: { type: 'module', src: devMode ? './VAADIN/generated/vaadin.ts' : './generated/vaadin.ts' },
               injectTo: 'head'
             };
 
@@ -208,7 +208,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
             if (devMode) {
               const viteDevModeScript: HtmlTagDescriptor = {
                 tag: 'script',
-                attrs: { type: 'module', src: '/VAADIN/generated/vite-devmode.ts' },
+                attrs: { type: 'module', src: './VAADIN/generated/vite-devmode.ts' },
                 injectTo: 'head'
               };
               scripts.push(viteDevModeScript);
