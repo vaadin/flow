@@ -15,14 +15,14 @@
  */
 package com.vaadin.flow.data.binder;
 
-import javax.validation.metadata.BeanDescriptor;
-import javax.validation.metadata.ConstraintDescriptor;
-import javax.validation.metadata.PropertyDescriptor;
-
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.data.binder.BeanPropertySet.NestedBeanPropertyDefinition;
 import com.vaadin.flow.data.validator.BeanValidator;
 import com.vaadin.flow.internal.BeanUtil;
+
+import jakarta.validation.metadata.BeanDescriptor;
+import jakarta.validation.metadata.ConstraintDescriptor;
+import jakarta.validation.metadata.PropertyDescriptor;
 
 /**
  * Binder that uses reflection based on the provided bean type to resolve bean
