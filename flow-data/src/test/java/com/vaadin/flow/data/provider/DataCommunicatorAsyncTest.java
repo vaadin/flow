@@ -2,7 +2,7 @@ package com.vaadin.flow.data.provider;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -80,7 +80,7 @@ public class DataCommunicatorAsyncTest {
     private ArrayUpdater.Update update;
 
     private CountDownLatch latch;
-    private ExecutorService executor;
+    private Executor executor;
 
     public Range lastClear = null;
     public Range lastSet = null;
@@ -124,7 +124,7 @@ public class DataCommunicatorAsyncTest {
     public void asyncExcutorPushDisabledThrows() {
         ui.getPushConfiguration().setPushMode(PushMode.DISABLED);
         dataCommunicator.setDataProvider(createDataProvider(), null);
-        dataCommunicator.setExecutorForAsyncUpdates(executor);
+        dataCommunicator.enablePushUpdates(executor);
         dataCommunicator.setRequestedRange(0, 50);
         fakeClientCommunication();
     }
@@ -134,7 +134,7 @@ public class DataCommunicatorAsyncTest {
         latch = new CountDownLatch(1);
         ui.getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
         dataCommunicator.setDataProvider(createDataProvider(), null);
-        dataCommunicator.setExecutorForAsyncUpdates(executor);
+        dataCommunicator.enablePushUpdates(executor);
         dataCommunicator.setRequestedRange(0, 50);
         fakeClientCommunication();
 
