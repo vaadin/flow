@@ -22,11 +22,11 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.MessageInterpolator.Context;
-import javax.validation.Validation;
-import javax.validation.ValidatorFactory;
-import javax.validation.metadata.ConstraintDescriptor;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.MessageInterpolator.Context;
+import jakarta.validation.Validation;
+import jakarta.validation.ValidatorFactory;
+import jakarta.validation.metadata.ConstraintDescriptor;
 
 import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.data.binder.Validator;
@@ -34,7 +34,7 @@ import com.vaadin.flow.data.binder.ValueContext;
 import com.vaadin.flow.internal.BeanUtil;
 
 /**
- * A {@code Validator} using the JSR-303 (javax.validation) annotation-based
+ * A {@code Validator} using the JSR-303 (jakarta.validation) annotation-based
  * bean validation mechanism. Values passed to this validator are compared
  * against the constraints, if any, specified by annotations on the
  * corresponding bean property.
@@ -155,7 +155,7 @@ public class BeanValidator implements Validator<Object> {
      *
      * @return the validator to use
      */
-    public javax.validation.Validator getJavaxBeanValidator() {
+    public jakarta.validation.Validator getJavaxBeanValidator() {
         return getJavaxBeanValidatorFactory().getValidator();
     }
 
