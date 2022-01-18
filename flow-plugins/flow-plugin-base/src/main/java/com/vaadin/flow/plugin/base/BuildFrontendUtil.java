@@ -319,13 +319,13 @@ public class BuildFrontendUtil {
                                     BuildFrontendUtil.getTokenFile(adapter))
                             .enablePnpm(adapter.pnpmEnable())
                             .useGlobalPnpm(adapter.useGlobalPnpm())
-                            .withFusionApplicationProperties(
+                            .withApplicationProperties(
                                     adapter.applicationProperties())
-                            .withFusionJavaSourceFolder(
+                            .withEndpointSourceFolder(
                                     adapter.javaSourceFolder())
-                            .withFusionGeneratedOpenAPIJson(
+                            .withEndpointGeneratedOpenAPIFile(
                                     adapter.openApiJsonFile())
-                            .withFusionClientAPIFolder(
+                            .withFrontendGeneratedFolder(
                                     adapter.generatedTsFolder())
                             .withHomeNodeExecRequired(
                                     adapter.requireHomeNodeExec())

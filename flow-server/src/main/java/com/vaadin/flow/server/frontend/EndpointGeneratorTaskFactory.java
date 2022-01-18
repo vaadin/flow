@@ -41,7 +41,7 @@ public interface EndpointGeneratorTaskFactory {
      *            the frontend folder.
      * @return an endpoint tasks for generating TypeScript files for endpoints.
      */
-    TaskGenerateFusion createTaskGenerateFusion(File applicationProperties,
+    TaskGenerateEndpoint createTaskGenerateEndpoint(File applicationProperties,
             File openApi, File outputFolder, File frontendDirectory);
 
     /**

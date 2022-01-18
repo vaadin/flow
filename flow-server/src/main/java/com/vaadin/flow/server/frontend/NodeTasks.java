@@ -99,13 +99,13 @@ public class NodeTasks implements FallibleCommand {
 
         private boolean useGlobalPnpm = false;
 
-        private File fusionJavaSourceFolder;
+        private File endpointSourceFolder;
 
-        private File fusionGeneratedOpenAPIFile;
+        private File endpointGeneratedOpenAPIFile;
 
-        private File fusionApplicationProperties;
+        private File applicationProperties;
 
-        private File fusionClientAPIFolder;
+        private File frontendGeneratedFolder;
 
         private boolean requireHomeNodeExec;
 
@@ -411,14 +411,15 @@ public class NodeTasks implements FallibleCommand {
         }
 
         /**
-         * Set the folder where Ts files should be generated.
+         * Set the folder where frontend files should be generated.
          *
-         * @param fusionClientTsApiFolder
-         *            folder for Ts files in the frontend.
+         * @param frontendGeneratedFolder
+         *            folder to generate frontend files in.
          * @return the builder, for chaining
          */
-        public Builder withFusionClientAPIFolder(File fusionClientTsApiFolder) {
-            this.fusionClientAPIFolder = fusionClientTsApiFolder;
+        public Builder withFrontendGeneratedFolder(
+                File frontendGeneratedFolder) {
+            this.frontendGeneratedFolder = frontendGeneratedFolder;
             return this;
         }
 
@@ -429,34 +430,33 @@ public class NodeTasks implements FallibleCommand {
          *            application properties file.
          * @return this builder, for chaining
          */
-        public Builder withFusionApplicationProperties(
-                File applicationProperties) {
-            this.fusionApplicationProperties = applicationProperties;
+        public Builder withApplicationProperties(File applicationProperties) {
+            this.applicationProperties = applicationProperties;
             return this;
         }
 
         /**
          * Set output location for the generated OpenAPI file.
          *
-         * @param generatedOpenAPIFile
+         * @param endpointGeneratedOpenAPIFile
          *            the generated output file.
          * @return the builder, for chaining
          */
-        public Builder withFusionGeneratedOpenAPIJson(
-                File generatedOpenAPIFile) {
-            this.fusionGeneratedOpenAPIFile = generatedOpenAPIFile;
+        public Builder withEndpointGeneratedOpenAPIFile(
+                File endpointGeneratedOpenAPIFile) {
+            this.endpointGeneratedOpenAPIFile = endpointGeneratedOpenAPIFile;
             return this;
         }
 
         /**
          * Set source paths that OpenAPI generator searches for endpoints.
          *
-         * @param fusionJavaSourceFolder
+         * @param endpointSourceFolder
          *            java source folder
          * @return the builder, for chaining
          */
-        public Builder withFusionJavaSourceFolder(File fusionJavaSourceFolder) {
-            this.fusionJavaSourceFolder = fusionJavaSourceFolder;
+        public Builder withEndpointSourceFolder(File endpointSourceFolder) {
+            this.endpointSourceFolder = endpointSourceFolder;
             return this;
         }
 
@@ -694,7 +694,7 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateServiceWorker.class,
             TaskGenerateHilla.class,
             TaskGenerateOpenAPI.class,
-            TaskGenerateFusion.class,
+            TaskGenerateEndpoint.class,
             TaskGenerateBootstrap.class,
             TaskInstallWebpackPlugins.class,
             TaskUpdatePackages.class,
@@ -778,14 +778,14 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateHilla hillaTask = builder.lookup
                     .lookup(TaskGenerateHilla.class);
             // use the new Hilla generator if available, otherwise the old
-            // Fusion generator.
+            // generator.
             if (hillaTask != null) {
                 commands.add(hillaTask);
             } else {
-                if (builder.fusionJavaSourceFolder != null
-                        && builder.fusionJavaSourceFolder.exists()
-                        && builder.fusionGeneratedOpenAPIFile != null) {
-                    addFusionServicesTasks(builder);
+                if (builder.endpointSourceFolder != null
+                        && builder.endpointSourceFolder.exists()
+                        && builder.endpointGeneratedOpenAPIFile != null) {
+                    addEndpointServicesTasks(builder);
                 }
             }
 
@@ -828,7 +828,7 @@ public class NodeTasks implements FallibleCommand {
                     new File(builder.generatedFolder, IMPORTS_NAME),
                     builder.useDeprecatedV14Bootstrapping,
                     builder.flowResourcesFolder, pwaConfiguration,
-                    builder.fusionClientAPIFolder, builder.buildDirectory));
+                    builder.frontendGeneratedFolder, builder.buildDirectory));
         }
 
         if (builder.enableImportsUpdate) {
@@ -843,7 +843,8 @@ public class NodeTasks implements FallibleCommand {
 
             commands.add(new TaskUpdateThemeImport(builder.npmFolder,
                     frontendDependencies.getThemeDefinition(),
-                    builder.frontendDirectory, builder.fusionClientAPIFolder));
+                    builder.frontendDirectory,
+                    builder.frontendGeneratedFolder));
         }
 
         if (builder.copyTemplates) {
@@ -891,28 +892,27 @@ public class NodeTasks implements FallibleCommand {
         }
     }
 
-    private void addFusionServicesTasks(Builder builder) {
+    private void addEndpointServicesTasks(Builder builder) {
         Lookup lookup = builder.lookup;
         EndpointGeneratorTaskFactory endpointGeneratorTaskFactory = lookup
                 .lookup(EndpointGeneratorTaskFactory.class);
 
         if (endpointGeneratorTaskFactory != null) {
             TaskGenerateOpenAPI taskGenerateOpenAPI = endpointGeneratorTaskFactory
-                    .createTaskGenerateOpenAPI(
-                            builder.fusionApplicationProperties,
-                            builder.fusionJavaSourceFolder,
+                    .createTaskGenerateOpenAPI(builder.applicationProperties,
+                            builder.endpointSourceFolder,
                             builder.classFinder.getClassLoader(),
-                            builder.fusionGeneratedOpenAPIFile);
+                            builder.endpointGeneratedOpenAPIFile);
             commands.add(taskGenerateOpenAPI);
 
-            if (builder.fusionClientAPIFolder != null) {
-                TaskGenerateFusion taskGenerateFusion = endpointGeneratorTaskFactory
-                        .createTaskGenerateFusion(
-                                builder.fusionApplicationProperties,
-                                builder.fusionGeneratedOpenAPIFile,
-                                builder.fusionClientAPIFolder,
+            if (builder.frontendGeneratedFolder != null) {
+                TaskGenerateEndpoint taskGenerateEndpoint = endpointGeneratorTaskFactory
+                        .createTaskGenerateEndpoint(
+                                builder.applicationProperties,
+                                builder.endpointGeneratedOpenAPIFile,
+                                builder.frontendGeneratedFolder,
                                 builder.frontendDirectory);
-                commands.add(taskGenerateFusion);
+                commands.add(taskGenerateEndpoint);
             }
         }
     }
