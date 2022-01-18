@@ -1,7 +1,0 @@
-{
-  "@vaadin/vaadin-progress-bar": "1.1.2",
-  "@vaadin/vaadin-upload":  "4.2.2",
-  "@polymer/iron-list":  "2.0.19",
-  "enforced": "1.5.0",
-  "platform": "foo"
-}

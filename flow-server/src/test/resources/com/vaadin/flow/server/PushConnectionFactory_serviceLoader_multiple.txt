@@ -1,3 +1,0 @@
-com.vaadin.flow.server.BootstrapHandlerPushConfigurationTest$TestPushConnectionFactory1
-com.vaadin.flow.server.BootstrapHandlerPushConfigurationTest$TestPushConnectionFactory2
-com.vaadin.flow.server.BootstrapHandlerPushConfigurationTest$TestPushConnectionFactory3

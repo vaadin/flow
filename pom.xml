@@ -26,7 +26,6 @@
         <module>flow-html-components-testbench</module>
         <module>flow-dnd</module>
         <module>flow-test-util</module>
-        <module>flow-tests</module>
         <module>flow-server-production-mode</module>
         <module>flow-component-demo-helpers</module>
         <module>flow-plugins</module>
