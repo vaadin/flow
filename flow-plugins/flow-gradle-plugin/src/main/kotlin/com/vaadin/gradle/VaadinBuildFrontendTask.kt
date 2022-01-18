@@ -73,7 +73,7 @@ public open class VaadinBuildFrontendTask : DefaultTask() {
         BuildFrontendUtil.runNodeUpdater(adapter)
 
         if (adapter.generateBundle()) {
-            BuildFrontendUtil.runWebpack(adapter)
+            BuildFrontendUtil.runFrontendBuild(adapter)
         } else {
             logger.info("Not running webpack since generateBundle is false")
         }
