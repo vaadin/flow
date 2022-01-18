@@ -3,7 +3,7 @@ package com.vaadin.flow.data.validator;
 import java.util.Calendar;
 import java.util.Locale;
 
-import javax.validation.Validation;
+import jakarta.validation.Validation;
 
 import org.junit.After;
 import org.junit.Test;
