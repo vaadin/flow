@@ -637,12 +637,7 @@ public final class DevModeHandler implements RequestHandler {
                 () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath(),
                 nodeVersion, URI.create(nodeDownloadRoot), useHomeNodeExec);
         tools.validateNodeAndNpmVersion();
-
-        if (requiresOpenSslLegacyProvider(npmFolder,
-                tools.getNodeExecutable())) {
-            processBuilder.environment().put("NODE_OPTIONS",
-                    "--openssl-legacy-provider");
-        }
+        processBuilder.environment().putAll(tools.getWebpackNodeEnvironment());
 
         String nodeExec = null;
         if (useHomeNodeExec) {
@@ -880,34 +875,6 @@ public final class DevModeHandler implements RequestHandler {
      */
     void join() {
         devServerStartFuture.join();
-    }
-
-    private boolean requiresOpenSslLegacyProvider(File baseDir, String nodeExec) {
-        // Determine whether webpack requires Node.js to be started with the
-        // --openssl-legacy-provider parameter. This is a webpack 4 workaround
-        // of the issue https://github.com/webpack/webpack/issues/14532
-        // See: https://github.com/vaadin/flow/issues/12649
-        ProcessBuilder processBuilder = new ProcessBuilder()
-                .directory(baseDir)
-                .command(nodeExec, "-p", "crypto.createHash('md4')");
-        try {
-            Process process = processBuilder.start();
-            int errorLevel = process.waitFor();
-            return errorLevel != 0;
-        } catch (IOException e) {
-            getLogger().error(
-                    "IO error while determining --openssl-legacy-provider "
-                            + "parameter requirement",
-                    e);
-        } catch (InterruptedException e) {
-            getLogger().error(
-                    "Interrupted while determining --openssl-legacy-provider "
-                            + "parameter requirement",
-                    e);
-            // re-interrupt the thread
-            Thread.currentThread().interrupt();
-        }
-        return false;
     }
 
     private static final class LazyDevServerPortFileInit {
