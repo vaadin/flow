@@ -27,6 +27,7 @@ import java.io.InputStreamReader;
 import java.io.UncheckedIOException;
 import java.net.HttpURLConnection;
 import java.net.ServerSocket;
+import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -54,10 +55,11 @@ import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.frontend.FrontendVersion;
-import com.vaadin.flow.server.frontend.FrontendUtils.UnknownVersionException;
+import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
+import static com.vaadin.flow.server.InitParameters.NODE_DOWNLOAD_ROOT;
+import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN;
@@ -240,9 +242,10 @@ public final class DevModeHandler implements RequestHandler {
             }
             return false;
         } else {
-            InputStream inputStream = DevModeHandler.class
-                    .getResourceAsStream("dev-mode-not-ready.html");
-            IOUtils.copy(inputStream, response.getOutputStream());
+            try (InputStream inputStream = DevModeHandler.class
+                    .getResourceAsStream("dev-mode-not-ready.html")) {
+                IOUtils.copy(inputStream, response.getOutputStream());
+            }
             response.setContentType("text/html;charset=utf-8");
             return true;
         }
@@ -624,25 +627,17 @@ public final class DevModeHandler implements RequestHandler {
         ProcessBuilder processBuilder = new ProcessBuilder()
                 .directory(npmFolder);
 
+        final String nodeVersion = config.getStringProperty(NODE_VERSION,
+                FrontendTools.DEFAULT_NODE_VERSION);
+        final String nodeDownloadRoot = config.getStringProperty(
+                NODE_DOWNLOAD_ROOT, NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT);
         boolean useHomeNodeExec = config.getBooleanProperty(
                 InitParameters.REQUIRE_HOME_NODE_EXECUTABLE, false);
         FrontendTools tools = new FrontendTools(npmFolder.getAbsolutePath(),
                 () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath(),
-                useHomeNodeExec);
+                nodeVersion, URI.create(nodeDownloadRoot), useHomeNodeExec);
         tools.validateNodeAndNpmVersion();
-        FrontendVersion nodeVersion;
-        try {
-            nodeVersion = tools.getNodeVersion();
-        } catch (UnknownVersionException e) {
-            getLogger().error("Unable to determine node version", e);
-            // Need to assume something..
-            nodeVersion = new FrontendVersion(16, 0, 0);
-        }
-
-        if (!nodeVersion.isOlderThan(new FrontendVersion(17, 0, 0))) {
-            processBuilder.environment().put("NODE_OPTIONS",
-                    "--openssl-legacy-provider");
-        }
+        processBuilder.environment().putAll(tools.getWebpackNodeEnvironment());
 
         String nodeExec = null;
         if (useHomeNodeExec) {
@@ -736,6 +731,11 @@ public final class DevModeHandler implements RequestHandler {
         command.add("--port");
         command.add(String.valueOf(port));
         command.add("--watchDogPort=" + watchDog.get().getWatchDogPort());
+
+        // Workaround for issue with Node 17 webpack dev server denying
+        // request to localhost. See https://github.com/vaadin/flow/issues/12546
+        command.add("--host=127.0.0.1");
+
         command.addAll(Arrays.asList(config
                 .getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS,
                         "-d --inline=false")

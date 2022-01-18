@@ -255,15 +255,6 @@ public class FrontendToolsTest {
         Assert.assertTrue(file.exists());
     }
 
-    @Test
-    public void validateNodeAndNpmVersion_brokenNode17() throws Exception {
-        Mockito.when(tools.getNodeVersion())
-                .thenReturn(new FrontendVersion(17, 0));
-        Assert.assertThrows(IllegalStateException.class, () -> {
-            tools.validateNodeAndNpmVersion();
-        });
-    }
-
     @Test(expected = IllegalStateException.class)
     public void ensureNodeExecutableInHome_vaadinHomeNodeIsAFolder_throws()
             throws IOException {
@@ -629,8 +620,7 @@ public class FrontendToolsTest {
         createStubNode(false, true, vaadinHomeDir);
 
         assertThat(tools.getNodeExecutable(), containsString("node"));
-        assertThat(tools.getNodeExecutable(),
-                not(containsString(DEFAULT_NODE)));
+
         List<String> npmExecutable = tools.getNpmExecutable();
         assertThat(npmExecutable.get(0), containsString("node"));
         assertThat(npmExecutable.get(1), containsString(NPM_CLI_STRING));

@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
+import com.vaadin.testbench.TestBenchElement;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
@@ -28,10 +29,10 @@ public class BundledTemplateInTemplateWithIdIT extends ChromeBrowserTest {
     public void childTemplateInstanceHandlesEvent() {
         open();
 
-        WebElement template = findElement(By.id("template"));
-        WebElement child = getInShadowRoot(template, By.id("child"));
+        TestBenchElement template = $("*").id("template");
+        TestBenchElement child = template.$("*").id("child");
 
-        WebElement text = getInShadowRoot(child, By.id("text"));
+        WebElement text = child.$("*").id("text");
         Assert.assertEquals("div", text.getTagName());
         Assert.assertEquals("@Id injected!", text.getText());
     }

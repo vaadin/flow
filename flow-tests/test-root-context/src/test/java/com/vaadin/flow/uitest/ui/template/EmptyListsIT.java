@@ -27,6 +27,7 @@ import org.openqa.selenium.logging.LogEntries;
 import org.openqa.selenium.logging.LogEntry;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 
 public class EmptyListsIT extends ChromeBrowserTest {
 
@@ -34,10 +35,10 @@ public class EmptyListsIT extends ChromeBrowserTest {
     public void emptyListsAreProperlyHandled() {
         open();
 
-        WebElement template = findElement(By.id("template"));
+        TestBenchElement template = $("*").id("template");
 
         Assert.assertTrue(
-                isPresentInShadowRoot(template, By.className("item")));
+                template.$("*").attributeContains("class", "item").exists());
 
         findElement(By.id("set-empty")).click();
 

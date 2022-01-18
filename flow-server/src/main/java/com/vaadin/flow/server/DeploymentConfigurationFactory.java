@@ -54,6 +54,8 @@ import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
 import static com.vaadin.flow.server.Constants.NPM_TOKEN;
 import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static com.vaadin.flow.server.InitParameters.NODE_DOWNLOAD_ROOT;
+import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
@@ -246,6 +248,15 @@ public final class DeploymentConfigurationFactory implements Serializable {
             initParameters.setProperty(PROJECT_BASEDIR,
                     buildInfo.getString(NPM_TOKEN));
             verifyFolderExists(initParameters, buildInfo.getString(NPM_TOKEN));
+        }
+
+        if (buildInfo.hasKey(NODE_VERSION)) {
+            initParameters.setProperty(NODE_VERSION,
+                    buildInfo.getString(NODE_VERSION));
+        }
+        if (buildInfo.hasKey(NODE_DOWNLOAD_ROOT)) {
+            initParameters.setProperty(NODE_DOWNLOAD_ROOT,
+                    buildInfo.getString(NODE_DOWNLOAD_ROOT));
         }
 
         if (buildInfo.hasKey(FRONTEND_TOKEN)) {

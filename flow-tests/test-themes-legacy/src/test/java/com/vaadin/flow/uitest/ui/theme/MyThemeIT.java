@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.uitest.ui.theme;
 
+import com.vaadin.testbench.TestBenchElement;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
@@ -29,9 +30,9 @@ public class MyThemeIT extends ChromeBrowserTest {
         getDriver().get(getRootURL()
                 + "/view/com.vaadin.flow.uitest.ui.theme.MyComponentView");
 
-        WebElement element = findElement(By.tagName("my-component"));
-        Assert.assertFalse(
-                findInShadowRoot(element, By.id("component")).isEmpty());
+        TestBenchElement element = $("my-component").first();
+
+        Assert.assertNotNull("Couldn't find element.", element.$("*").id("component"));
     }
 
     @Test

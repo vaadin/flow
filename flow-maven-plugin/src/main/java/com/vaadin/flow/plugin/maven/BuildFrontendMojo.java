@@ -57,6 +57,8 @@ import static com.vaadin.flow.server.Constants.GENERATED_TOKEN;
 import static com.vaadin.flow.server.Constants.NPM_TOKEN;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.Constants.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
+import static com.vaadin.flow.server.InitParameters.NODE_DOWNLOAD_ROOT;
+import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
@@ -157,7 +159,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
 
         if (generateBundle) {
             try {
-                runWebpack();
+                runWebpack(getFrontendTools());
             } catch (IllegalStateException exception) {
                 throw new MojoExecutionException(exception.getMessage(),
                         exception);
@@ -198,7 +200,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
                         .execute();
     }
 
-    private void runWebpack() throws MojoExecutionException {
+    void runWebpack(FrontendTools tools) throws MojoExecutionException {
         String webpackCommand = "webpack/bin/webpack.js";
         File webpackExecutable = new File(npmFolder,
                 NODE_MODULES + webpackCommand);
@@ -209,19 +211,9 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
                     webpackExecutable.getAbsolutePath()));
         }
 
-        final URI nodeDownloadRootURI;
-        try {
-            nodeDownloadRootURI = new URI(nodeDownloadRoot);
-        } catch (URISyntaxException e) {
-            throw new MojoExecutionException("Failed to parse " + nodeDownloadRoot, e);
-        }
         String nodePath;
-        FrontendTools tools = new FrontendTools(npmFolder.getAbsolutePath(),
-                ()-> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath(),
-                nodeVersion, nodeDownloadRootURI);
         if (requireHomeNodeExec) {
-            nodePath = tools
-                    .forceAlternativeNodeExecutable();
+            nodePath = tools.forceAlternativeNodeExecutable();
         } else {
             nodePath = tools.getNodeExecutable();
         }
@@ -230,6 +222,8 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
                 webpackExecutable.getAbsolutePath());
         ProcessBuilder builder = FrontendUtils.createProcessBuilder(command)
                 .directory(project.getBasedir()).inheritIO();
+        builder.environment().putAll(tools.getWebpackNodeEnvironment());
+
         getLog().info("Running webpack ...");
         if ( getLog().isDebugEnabled()) {
             getLog().debug(FrontendUtils.commandToString(npmFolder.getAbsolutePath(),
@@ -251,6 +245,18 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
                 webpackLaunch.destroyForcibly();
             }
         }
+    }
+
+    private FrontendTools getFrontendTools() throws MojoExecutionException {
+        final URI nodeDownloadRootURI;
+        try {
+            nodeDownloadRootURI = new URI(nodeDownloadRoot);
+        } catch (URISyntaxException e) {
+            throw new MojoExecutionException("Failed to parse " + nodeDownloadRoot, e);
+        }
+        return new FrontendTools(npmFolder.getAbsolutePath(),
+                ()-> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath(),
+                nodeVersion, nodeDownloadRootURI, requireHomeNodeExec);
     }
 
     private void readDetailsAndThrowException(Process webpackLaunch) {
@@ -292,6 +298,8 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
             buildInfo.remove(NPM_TOKEN);
             buildInfo.remove(GENERATED_TOKEN);
             buildInfo.remove(FRONTEND_TOKEN);
+            buildInfo.remove(NODE_VERSION);
+            buildInfo.remove(NODE_DOWNLOAD_ROOT);
             buildInfo.remove(Constants.SERVLET_PARAMETER_ENABLE_PNPM);
             buildInfo.remove(Constants.REQUIRE_HOME_NODE_EXECUTABLE);
 
