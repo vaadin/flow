@@ -34,7 +34,7 @@ import org.slf4j.LoggerFactory;
 public class StatisticsStorage {
 
     private String projectId;
-    private File usageStatisticsFile;
+    File usageStatisticsFile;
 
     /**
      * Creates an instance.
