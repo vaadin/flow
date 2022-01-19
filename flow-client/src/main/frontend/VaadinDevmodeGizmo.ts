@@ -1083,7 +1083,7 @@ export class VaadinDevmodeGizmo extends LitElement {
     this.disableEventListener = (_: any) => this.demoteSplashMessage();
     document.body.addEventListener('focus', this.disableEventListener);
     document.body.addEventListener('click', this.disableEventListener);
-    this.openWebSocketConnection();
+    // this.openWebSocketConnection();
 
     const lastReload = window.sessionStorage.getItem(VaadinDevmodeGizmo.TRIGGERED_KEY_IN_SESSION_STORAGE);
     if (lastReload) {
