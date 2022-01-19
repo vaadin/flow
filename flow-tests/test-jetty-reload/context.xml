@@ -1,9 +1,11 @@
+<?xml version="1.0"  encoding="ISO-8859-1"?>
+<!DOCTYPE Configure PUBLIC "-//Jetty//Configure//EN" "http://www.eclipse.org/jetty/configure.dtd">
 <Configure id="testWebapp" class="org.eclipse.jetty.webapp.WebAppContext">
     <Get id="sh" name="sessionHandler">
         <Set name="sessionCache">
             <New class="org.eclipse.jetty.server.session.DefaultSessionCache">
                 <Arg>
-                    <Ref id="sh"/>
+                    <Ref refid="sh"/>
                 </Arg>
                 <Set name="sessionDataStore">
                     <New class="org.eclipse.jetty.server.session.FileSessionDataStore">
