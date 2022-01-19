@@ -248,7 +248,12 @@ public class NodeInstaller {
 
             extractFile(data.getArchive(), data.getTmpDirectory());
         } catch (DownloadException e) {
-            throw new InstallationException("Could not download Node.js", e);
+            String errorMessage = "Download of Node.js failed. This may be due to lost of internet connection. "
+                    + "If you are behind a proxy server you should configure your proxy settings. "
+                    + "Check your connection and proxy settings and try again, "
+                    + "or follow the https://nodejs.org/en/download/ guide to install Node.js globally.";
+            getLogger().error(errorMessage);
+            throw new InstallationException(errorMessage, e);
         } catch (ArchiveExtractionException e) {
             throw new InstallationException(
                     "Could not extract the Node archive", e);
