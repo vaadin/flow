@@ -26,7 +26,7 @@ import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.startup.LookupServletContainerInitializer;
 
 /**
- * SPI for customizing lookup in applications inside Servlet 3.0 containers.
+ * SPI for customizing lookup in applications inside Servlet 5.0 containers.
  * <p>
  * There are two ways of customizing Lookup in various servlet containers:
  * <ul>
@@ -41,7 +41,7 @@ import com.vaadin.flow.server.startup.LookupServletContainerInitializer;
  * The first case allows to customize {@link Lookup} creation and initialization
  * in case when it's not possible to prevent
  * {@link LookupServletContainerInitializer} execution (any container which
- * completely supports Servlet 3.0 specification). In this case it's possible to
+ * completely supports Servlet 5.0 specification). In this case it's possible to
  * implement {@link AbstractLookupInitializer} for the framework.
  * <p>
  * The second case is only possible when a servlet container doesn't run

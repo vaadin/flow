@@ -73,8 +73,8 @@ public class LookupServletContainerInitializer
                     + "provided set of classes is 'null'. "
                     + LookupInitializer.class + " always presents "
                     + "and has to be passed to the 'onStartup' method as an argument "
-                    + "in the set of classes if the servlet container supports Servlet 3.0 specification. "
-                    + "The propject configuration is broken somehow or you are using Servlet 3.0 incompatible container.");
+                    + "in the set of classes if the servlet container supports Servlet 5.0 specification. "
+                    + "The project configuration is broken somehow or you are using Servlet 5.0 incompatible container.");
         }
         if (!classSet.contains(LookupInitializer.class)) {
             // this is a specific case for OSGi (PAX web): at some point it may
