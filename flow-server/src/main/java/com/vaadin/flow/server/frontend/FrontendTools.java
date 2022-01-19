@@ -520,7 +520,7 @@ public class FrontendTools {
      *
      * Returns the input executable if version is supported, otherwise
      * {@literal null}.
-     * 
+     *
      * @param nodeExecutable
      *            node executable to be checked
      * @return input node executable if supported, otherwise {@literal null}.
@@ -618,9 +618,12 @@ public class FrontendTools {
             return;
         }
         try {
-            FrontendVersion foundNodeVersion = getNodeVersion();
+            Pair<FrontendVersion, String> foundNodeVersionAndExe = getNodeVersionAndExecutable();
+            FrontendVersion foundNodeVersion = foundNodeVersionAndExe.getFirst();
             FrontendUtils.validateToolVersion("node", foundNodeVersion,
                     SUPPORTED_NODE_VERSION, SUPPORTED_NODE_VERSION);
+            getLogger().info("Using node {} located at {}",
+                    foundNodeVersion.getFullVersion(), foundNodeVersionAndExe.getSecond());
         } catch (UnknownVersionException e) {
             getLogger().warn("Error checking if node is new enough", e);
         }
@@ -630,6 +633,8 @@ public class FrontendTools {
             FrontendUtils.validateToolVersion("npm", foundNpmVersion,
                     SUPPORTED_NPM_VERSION, SHOULD_WORK_NPM_VERSION);
             checkForFaultyNpmVersion(foundNpmVersion);
+            getLogger().info("Using npm {} located at {}",
+                    foundNpmVersion.getFullVersion(), getNpmExecutable(false).get(0));
         } catch (UnknownVersionException e) {
             getLogger().warn("Error checking if npm is new enough", e);
         }
@@ -640,10 +645,16 @@ public class FrontendTools {
      * Gets the version of the node executable.
      */
     public FrontendVersion getNodeVersion() throws UnknownVersionException {
+        return getNodeVersionAndExecutable().getFirst();
+    }
+
+    private Pair<FrontendVersion, String> getNodeVersionAndExecutable()
+            throws UnknownVersionException {
+        String executable = getNodeBinary();
         List<String> nodeVersionCommand = new ArrayList<>();
-        nodeVersionCommand.add(getNodeBinary());
+        nodeVersionCommand.add(executable);
         nodeVersionCommand.add("--version"); // NOSONAR
-        return FrontendUtils.getVersion("node", nodeVersionCommand);
+        return new Pair<>(FrontendUtils.getVersion("node", nodeVersionCommand), executable);
     }
 
     /**
