@@ -56,7 +56,7 @@ public interface ApplicationConfiguration extends AbstractConfiguration {
                         + " instance. It means that "
                         + "the container has not executed "
                         + Lookup.class.getSimpleName()
-                        + " initialization code: so either the container is not Servlet 3.0 compatible"
+                        + " initialization code: so either the container is not Servlet 5.0 compatible"
                         + " or project configuration is broken.");
             }
             ApplicationConfigurationFactory factory = lookup
