@@ -18,6 +18,7 @@ package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
@@ -28,7 +29,9 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -42,6 +45,7 @@ import org.codehaus.plexus.util.FileUtils;
 import org.codehaus.plexus.util.ReflectionUtils;
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -51,6 +55,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.plugin.TestUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.FrontendTools;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 
 import elemental.json.Json;
@@ -387,6 +392,46 @@ public class BuildFrontendMojoTest {
         mojo.execute();
 
         Assert.assertFalse(tokenFile.exists());
+    }
+
+    @Test
+    public void testWebpackRequiredFlagsPassedToNodeEnvironment()
+            throws IOException, MojoExecutionException {
+        Assume.assumeFalse("Test not runnable on Windows",
+                FrontendUtils.isWindows());
+        Assume.assumeTrue("Test requires /bin/bash",
+                new File("/bin/bash").exists());
+
+        File npmFolder = temporaryFolder.getRoot();
+
+        // setup: mock a webpack executable
+        File webpackBin = new File(npmFolder, "node_modules/webpack/bin");
+        Assert.assertTrue(webpackBin.mkdirs());
+        File webPackExecutableMock = new File(webpackBin, "webpack.js");
+        Assert.assertTrue(webPackExecutableMock.createNewFile());
+
+        FrontendTools tools = Mockito.mock(FrontendTools.class);
+
+        // given: "node" stub that exits normally only if expected environment
+        // set
+        File fakeNode = new File(npmFolder, "node");
+        try (PrintWriter out = new PrintWriter(fakeNode)) {
+            out.println("#!/bin/bash");
+            out.println("[ x$NODE_OPTIONS == xexpected ]");
+            out.println("exit $?");
+        }
+        Assert.assertTrue(fakeNode.setExecutable(true));
+        Mockito.when(tools.getNodeExecutable())
+                .thenReturn(fakeNode.getAbsolutePath());
+
+        Map<String, String> environment = new HashMap<>();
+        environment.put("NODE_OPTIONS", "expected");
+        Mockito.when(tools.getWebpackNodeEnvironment()).thenReturn(environment);
+
+        // then
+        mojo.runWebpack(tools);
+
+        // terminates successfully
     }
 
     static void assertContainsPackage(JsonObject dependencies,
