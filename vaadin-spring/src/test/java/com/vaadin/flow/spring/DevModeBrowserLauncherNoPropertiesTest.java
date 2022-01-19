@@ -15,8 +15,8 @@
  */
 package com.vaadin.flow.spring;
 
-import dev.hilla.FusionControllerConfiguration;
-import dev.hilla.FusionEndpointProperties;
+import dev.hilla.EndpointControllerConfiguration;
+import dev.hilla.EndpointProperties;
 
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
@@ -26,8 +26,8 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.web.context.support.GenericWebApplicationContext;
 
-@SpringBootTest(classes = { FusionEndpointProperties.class })
-@ContextConfiguration(classes = { FusionControllerConfiguration.class,
+@SpringBootTest(classes = { EndpointProperties.class })
+@ContextConfiguration(classes = { EndpointControllerConfiguration.class,
         SpringBootAutoConfiguration.class,
         SpringSecurityAutoConfiguration.class })
 @TestPropertySource(properties = { "server.port = 1244" })
