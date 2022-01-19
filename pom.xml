@@ -85,7 +85,7 @@
         <!-- Dependencies -->
         <gwt.version>2.8.2</gwt.version>
         <hibernate.validator.version>6.2.0.Final</hibernate.validator.version>
-        <slf4j.version>1.7.32</slf4j.version>
+        <slf4j.version>1.7.33</slf4j.version>
         <polymer.version>2.6.1</polymer.version>
         <jackson.version>2.13.1</jackson.version>
         <validation.api.version>2.0.1.Final</validation.api.version>
