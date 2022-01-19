@@ -55,7 +55,7 @@
                 <configuration>
                     <contextHandlers>
                         <contextHandler
-                            implementation="org.eclipse.jetty.maven.plugin.JettyWebAppContext">
+                            implementation="org.eclipse.jetty.maven.plugin.MavenWebAppContext">
                             <contextPath>/pages</contextPath>
                             <resourceBases>
                                 ${project.basedir}/../webapp/npm
