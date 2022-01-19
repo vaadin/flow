@@ -660,7 +660,7 @@ public class VaadinServletContextInitializer
                 Arrays.asList(annotations), Collections.emptySet());
     }
 
-    private Stream<Class<?>> findBySuperType(Collection<String> packages,
+    Stream<Class<?>> findBySuperType(Collection<String> packages,
             Class<?> type) {
         return findBySuperType(packages, appContext, type);
     }
@@ -671,8 +671,8 @@ public class VaadinServletContextInitializer
                 Collections.emptySet(), Collections.singleton(type));
     }
 
-    private Stream<Class<?>> findByAnnotationOrSuperType(
-            Collection<String> packages, ResourceLoader loader,
+    Stream<Class<?>> findByAnnotationOrSuperType(Collection<String> packages,
+            ResourceLoader loader,
             Collection<Class<? extends Annotation>> annotations,
             Collection<Class<?>> types) {
         ClassPathScanner scanner = new ClassPathScanner(
@@ -717,7 +717,7 @@ public class VaadinServletContextInitializer
                 .collect(Collectors.toSet());
     }
 
-    private List<String> getDefaultPackages() {
+    List<String> getDefaultPackages() {
         List<String> packagesList = Collections.emptyList();
         if (appContext
                 .getBeanNamesForType(VaadinScanPackages.class).length > 0) {
