@@ -84,7 +84,6 @@ const allowedFrontendFolders = [
 
 export const vaadinConfig: UserConfigFn = (env) => {
   const devMode = env.mode === 'development';
-  const basePath = env.mode === 'production' ? '' : '/VAADIN/';
   let pwaConfig;
 
   if (devMode && process.env.watchDogPort) {
@@ -94,12 +93,11 @@ export const vaadinConfig: UserConfigFn = (env) => {
   }
   return {
     root: 'frontend',
-    base: basePath,
     resolve: {
       alias: {
         themes: themeFolder,
-        Frontend: frontendFolder
-      }
+        Frontend: frontendFolder,
+      },
     },
     define: {
       // should be settings.offlinePath after manifests are fixed
@@ -108,21 +106,20 @@ export const vaadinConfig: UserConfigFn = (env) => {
     server: {
       fs: {
         allow: allowedFrontendFolders,
-      }
+      },
     },
     build: {
       outDir: frontendBundleFolder,
       assetsDir: 'VAADIN/build',
       rollupOptions: {
         input: {
-          indexhtml: path.resolve(frontendFolder, 'index.html')
-        }
-      }
+          indexhtml: path.resolve(frontendFolder, 'index.html'),
+        },
+      },
     },
     plugins: [
       !devMode && brotli(),
-      settings.pwaEnabled &&
-      {
+      settings.pwaEnabled && {
         name: 'pwa',
         enforce: 'post',
         apply: 'build',
@@ -134,7 +131,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
           // This could probably be made another way which needs to be investigated
 
           // eslint-disable-next-line @typescript-eslint/no-var-requires
-          const rollup = require('rollup') as typeof Rollup
+          const rollup = require('rollup') as typeof Rollup;
           const includedPluginNames = [
             'alias',
             'vite:resolve',
@@ -144,23 +141,21 @@ export const vaadinConfig: UserConfigFn = (env) => {
             'rollup-plugin-dynamic-import-variables',
             'vite:esbuild-transpile',
             'vite:terser',
-          ]
-          const plugins = pwaConfig.plugins.filter(p => includedPluginNames.includes(p.name)) as Plugin[]
+          ];
+          const plugins = pwaConfig.plugins.filter((p) => includedPluginNames.includes(p.name)) as Plugin[];
           const bundle = await rollup.rollup({
             input: path.resolve(settings.clientServiceWorkerSource),
             plugins,
-          })
+          });
           try {
             await bundle.write({
               format: 'es',
               exports: 'none',
               inlineDynamicImports: true,
               file: path.resolve(frontendBundleFolder, 'sw.js'),
-
-            })
-          }
-          finally {
-            await bundle.close()
+            });
+          } finally {
+            await bundle.close();
           }
           // end of resolve and transpilation
 
@@ -170,7 +165,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
             globDirectory: frontendBundleFolder,
             injectionPoint: 'self.__WB_MANIFEST',
           });
-        }
+        },
       },
       {
         name: 'custom-theme',
@@ -179,6 +174,23 @@ export const vaadinConfig: UserConfigFn = (env) => {
         },
         handleHotUpdate(context) {
           updateTheme(path.resolve(context.file));
+        },
+      },
+      {
+        name: 'force-remove-spa-middleware',
+        transformIndexHtml: {
+          enforce: 'pre',
+          transform(_html, context) {
+            const { server } = context;
+
+            if (server && !spaMiddlewareForceRemoved) {
+              server.middlewares.stack = server.middlewares.stack.filter((mw) => {
+                const handleName = '' + mw.handle;
+                return !handleName.includes('viteSpaFallbackMiddleware');
+              });
+              spaMiddlewareForceRemoved = true;
+            }
+          }
         }
       },
       {
@@ -186,41 +198,40 @@ export const vaadinConfig: UserConfigFn = (env) => {
         transformIndexHtml: {
           enforce: 'pre',
           transform(_html, context) {
-            if (context.server && !spaMiddlewareForceRemoved) {
-              context.server.middlewares.stack = context.server.middlewares.stack.filter((mw) => {
-                const handleName = '' + mw.handle;
-                return !handleName.includes('viteSpaFallbackMiddleware');
-              });
-              spaMiddlewareForceRemoved = true;
-            }
-
             if (context.path !== '/index.html') {
               return;
             }
-            const vaadinScript: HtmlTagDescriptor = {
-              tag: 'script',
-              attrs: { type: 'module', src: devMode ? '/VAADIN/generated/vaadin.ts' : './generated/vaadin.ts' },
-              injectTo: 'head'
-            };
-
-            let scripts = [vaadinScript];
 
             if (devMode) {
-              const viteDevModeScript: HtmlTagDescriptor = {
-                tag: 'script',
-                attrs: { type: 'module', src: '/VAADIN/generated/vite-devmode.ts' },
-                injectTo: 'head'
-              };
-              scripts.push(viteDevModeScript);
+              const basePath = context.server?.config.base ?? '';
+              return [
+                {
+                  tag: 'script',
+                  attrs: { type: 'module', src: `${basePath}generated/vite-devmode.ts` },
+                  injectTo: 'head',
+                },
+                {
+                  tag: 'script',
+                  attrs: { type: 'module', src: `${basePath}generated/vaadin.ts` },
+                  injectTo: 'head',
+                }
+              ]
             }
-            return scripts;
-          }
-        }
+
+            return [
+              {
+                tag: 'script',
+                attrs: { type: 'module', src: './generated/vaadin.ts' },
+                injectTo: 'head',
+              }
+            ]
+          },
+        },
       },
       checker({
-        typescript: true
-      })
-    ]
+        typescript: true,
+      }),
+    ],
   };
 };
 
