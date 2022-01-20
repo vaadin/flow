@@ -391,6 +391,7 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         defaults.put("typescript", "4.5.3");
         defaults.put("@babel/core", "7.16.10");
+        defaults.put("core-js-compat", "3.19.0");
 
         final String WORKBOX_VERSION = "6.4.2";
 
