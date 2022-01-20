@@ -53,7 +53,6 @@
                 <!-- npm -->
                 <module>test-embedding-generic</module>
                 <module>test-embedding-theme-variant</module>
-                <module>test-embedding-production-mode</module>
 
                 <!-- Custom theme tests -->
                 <module>test-embedding-application-theme</module>
