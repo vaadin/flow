@@ -327,6 +327,8 @@ public abstract class NodeUpdater implements FallibleCommand {
         defaults.put("extract-loader", "5.1.0");
         defaults.put("lit-css-loader", "0.0.4");
 
+        defaults.put("@babel/core", "7.16.7");
+
         // Forcing chokidar version for now until new babel version is available
         // check out https://github.com/babel/babel/issues/11488
         defaults.put("chokidar", "^3.5.0");
