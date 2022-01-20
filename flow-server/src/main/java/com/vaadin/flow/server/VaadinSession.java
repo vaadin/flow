@@ -1066,11 +1066,16 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
             throws IOException {
         boolean serializeUIs = true;
 
-        ApplicationConfiguration appConfiguration = ApplicationConfiguration
-                .get(getService().getContext());
-        if (!appConfiguration.isProductionMode()
-                && !appConfiguration.isDevModeSessionSerializationEnabled()) {
-            serializeUIs = false;
+        // If service is null it has just been deserialized and should be
+        // serialized in
+        // the same way again
+        if (getService() != null) {
+            ApplicationConfiguration appConfiguration = ApplicationConfiguration
+                    .get(getService().getContext());
+            if (!appConfiguration.isProductionMode() && !appConfiguration
+                    .isDevModeSessionSerializationEnabled()) {
+                serializeUIs = false;
+            }
         }
 
         stream.defaultWriteObject();
