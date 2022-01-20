@@ -93,13 +93,14 @@ export const vaadinConfig: UserConfigFn = (env) => {
     runWatchDog(process.env.watchDogPort);
   }
   return {
-    root: 'frontend',
+    root: '',
     base: basePath,
     resolve: {
       alias: {
         themes: themeFolder,
         Frontend: frontendFolder
-      }
+      },
+      preserveSymlinks: true,
     },
     define: {
       // should be settings.offlinePath after manifests are fixed
@@ -121,6 +122,13 @@ export const vaadinConfig: UserConfigFn = (env) => {
     },
     plugins: [
       !devMode && brotli(),
+      {
+        name: 'disable-pre-bundling',
+        configResolved(config) {
+          // @ts-ignore
+          config.cacheDir = undefined;
+        }
+      },
       settings.pwaEnabled &&
       {
         name: 'pwa',
@@ -194,12 +202,12 @@ export const vaadinConfig: UserConfigFn = (env) => {
               spaMiddlewareForceRemoved = true;
             }
 
-            if (context.path !== '/index.html') {
+            if (context.path !== '/frontend/index.html') {
               return;
             }
             const vaadinScript: HtmlTagDescriptor = {
               tag: 'script',
-              attrs: { type: 'module', src: devMode ? '/VAADIN/generated/vaadin.ts' : './generated/vaadin.ts' },
+              attrs: { type: 'module', src: devMode ? '/VAADIN/frontend/generated/vaadin.ts' : './generated/vaadin.ts' },
               injectTo: 'head'
             };
 
@@ -208,7 +216,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
             if (devMode) {
               const viteDevModeScript: HtmlTagDescriptor = {
                 tag: 'script',
-                attrs: { type: 'module', src: '/VAADIN/generated/vite-devmode.ts' },
+                attrs: { type: 'module', src: '/VAADIN/frontend/generated/vite-devmode.ts' },
                 injectTo: 'head'
               };
               scripts.push(viteDevModeScript);

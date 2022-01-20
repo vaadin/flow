@@ -369,9 +369,7 @@ public class VaadinServiceTest {
             throws ServiceException {
         VaadinService service = createService();
 
-        Lookup lookup = Mockito.mock(Lookup.class);
-
-        service.getContext().setAttribute(Lookup.class, lookup);
+        Lookup lookup = service.getContext().getAttribute(Lookup.class);
 
         InstantiatorFactory factory = createInstantiatorFactory(lookup);
 
@@ -390,9 +388,7 @@ public class VaadinServiceTest {
             throws ServiceException {
         VaadinService service = createService();
 
-        Lookup lookup = Mockito.mock(Lookup.class);
-
-        service.getContext().setAttribute(Lookup.class, lookup);
+        Lookup lookup = service.getContext().getAttribute(Lookup.class);
 
         InstantiatorFactory factory1 = createInstantiatorFactory(lookup);
         InstantiatorFactory factory2 = createInstantiatorFactory(lookup);

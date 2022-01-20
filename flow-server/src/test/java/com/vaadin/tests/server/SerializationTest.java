@@ -12,6 +12,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import junit.framework.TestCase;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
@@ -139,6 +140,7 @@ public class SerializationTest extends TestCase {
         private final boolean productionMode;
         private final boolean serialize;
         private final Lock lock = new ReentrantLock();
+        private final Lookup lookup;
 
         {
             lock.lock();
@@ -146,6 +148,7 @@ public class SerializationTest extends TestCase {
 
         public MockVaadinService(boolean productionMode) {
             super();
+            this.lookup = Mockito.mock(Lookup.class);
             this.vaadinContext = Mockito.mock(VaadinContext.class);
             this.productionMode = productionMode;
             serialize = false;
@@ -153,6 +156,7 @@ public class SerializationTest extends TestCase {
 
         public MockVaadinService(boolean productionMode, boolean serialize) {
             super();
+            this.lookup = Mockito.mock(Lookup.class);
             this.vaadinContext = Mockito.mock(VaadinContext.class);
             this.productionMode = productionMode;
             this.serialize = serialize;
@@ -162,6 +166,8 @@ public class SerializationTest extends TestCase {
         public VaadinContext getContext() {
             ApplicationConfiguration applicationConfiguration = Mockito
                     .mock(ApplicationConfiguration.class);
+            Mockito.when(vaadinContext.getAttribute(Lookup.class))
+                    .thenReturn(lookup);
             Mockito.when(
                     vaadinContext.getAttribute(Mockito.any(), Mockito.any()))
                     .thenReturn(applicationConfiguration);

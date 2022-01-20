@@ -40,6 +40,7 @@ import java.util.stream.Stream;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.CssData;
@@ -79,6 +80,7 @@ abstract class AbstractUpdateImports implements Runnable {
     private static final String REGISTER_STYLES_FOR_TEMPLATE = CSS_IMPORT + "%n"
             + "registerStyles('%s', css`${$css_%d}`%s);";
 
+    // FIXME(platosha): remove these lines entirely for Devmode Vite
     private static final String IMPORT_TEMPLATE = "import '%s';";
 
     // Used to recognize and sort FRONTEND/ imports in the final
@@ -96,13 +98,17 @@ abstract class AbstractUpdateImports implements Runnable {
 
     private boolean productionMode;
 
+    private FeatureFlags featureFlags;
+
     AbstractUpdateImports(File frontendDirectory, File npmDirectory,
-            File generatedDirectory, File tokenFile, boolean productionMode) {
+            File generatedDirectory, File tokenFile, boolean productionMode,
+            FeatureFlags featureFlags) {
         frontendDir = frontendDirectory;
         npmDir = npmDirectory;
         generatedDir = generatedDirectory;
         this.tokenFile = tokenFile;
         this.productionMode = productionMode;
+        this.featureFlags = featureFlags;
     }
 
     @Override
@@ -116,7 +122,11 @@ abstract class AbstractUpdateImports implements Runnable {
             // This is only needed for v14bootstrap mode
             lines.add(TaskGenerateBootstrap.DEVMODE_GIZMO_IMPORT);
         }
-        collectModules(lines);
+
+        // Modules are added dynamically in Vite devmode
+        if (productionMode || !featureFlags.isEnabled(FeatureFlags.VITE)) {
+            collectModules(lines);
+        }
 
         writeImportLines(lines);
     }

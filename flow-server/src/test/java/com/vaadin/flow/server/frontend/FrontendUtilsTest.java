@@ -356,8 +356,7 @@ public class FrontendUtilsTest {
 
         VaadinContext context = service.getContext();
 
-        Lookup lookup = Mockito.mock(Lookup.class);
-        context.setAttribute(Lookup.class, lookup);
+        Lookup lookup = context.getAttribute(Lookup.class);
 
         ResourceProvider provider = Mockito.mock(ResourceProvider.class);
 

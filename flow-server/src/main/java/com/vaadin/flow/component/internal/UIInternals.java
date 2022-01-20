@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.internal;
 
+import java.io.File;
 import java.io.Serializable;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -31,6 +32,10 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.HasElement;
@@ -51,6 +56,8 @@ import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ConstantPool;
+import com.vaadin.flow.internal.DevModeHandler;
+import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.UrlUtil;
@@ -76,15 +83,18 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.vaadin.flow.shared.ui.Dependency;
+import com.vaadin.flow.shared.ui.LoadMode;
+
+import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 
 /**
  * Holds UI-specific methods and data which are intended for internal use by the
  * framework.
- * 
+ *
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -831,14 +841,58 @@ public class UIInternals implements Serializable {
     public void addComponentDependencies(
             Class<? extends Component> componentClass) {
         Page page = ui.getPage();
-        DependencyInfo dependencies = ComponentUtil
-                .getDependencies(session.getService(), componentClass);
-        // In npm mode, add external JavaScripts directly to the page.
-        addExternalDependencies(dependencies);
+        final VaadinService service = session.getService();
+        DependencyInfo dependencies = ComponentUtil.getDependencies(service,
+                componentClass);
+
+        if (FeatureFlags.get(service.getContext()).isEnabled(FeatureFlags.VITE)
+                && !service.getDeploymentConfiguration().isProductionMode()) {
+            // In Vite Devmoode, add component modules to the page
+            dependencies.getJavaScripts()
+                    .forEach(js -> page.addJavaScript(
+                            resolveModuleSpecifier(service, js.value()),
+                            js.loadMode()));
+            dependencies.getJsModules()
+                    .forEach(js -> dependencyList
+                            .add(new Dependency(Dependency.Type.JS_MODULE,
+                                    resolveModuleSpecifier(service, js.value()),
+                                    LoadMode.EAGER)));
+        } else {
+            // In npm mode, add external JavaScripts directly to the page.
+            addExternalDependencies(dependencies);
+        }
+
         addFallbackDependencies(dependencies);
 
         dependencies.getStyleSheets().forEach(styleSheet -> page
                 .addStyleSheet(styleSheet.value(), styleSheet.loadMode()));
+    }
+
+    private String resolveModuleSpecifier(VaadinService service, String id) {
+        if (id.startsWith("/")) {
+            return id;
+        }
+
+        final Optional<DevModeHandler> devModeHandler = DevModeHandlerManager
+                .getDevModeHandler(service);
+        assert devModeHandler.isPresent();
+        final File projectRoot = devModeHandler.get().getProjectRoot();
+        final File jsFile = FrontendUtils.resolveFrontendPath(projectRoot, id);
+        final String resolvedId = projectRoot.toURI().relativize(jsFile.toURI())
+                .toString();
+        if (resolvedId.startsWith(FrontendUtils.NODE_MODULES)) {
+            // Resolve using theme
+            final Optional<String> themeResolvedId = ThemeHolder.of(ui)
+                    .getTheme()
+                    .filter(theme -> resolvedId.contains(theme.getBaseUrl()))
+                    .map(theme -> theme.translateUrl(resolvedId))
+                    .filter(translatedId -> new File(projectRoot, translatedId)
+                            .exists());
+            if (themeResolvedId.isPresent()) {
+                return VAADIN_MAPPING + themeResolvedId.get();
+            }
+        }
+        return VAADIN_MAPPING + resolvedId;
     }
 
     private void addFallbackDependencies(DependencyInfo dependency) {

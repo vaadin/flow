@@ -42,9 +42,11 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.Mock;
 import org.mockito.internal.util.collections.Sets;
 import org.slf4j.Logger;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
@@ -85,6 +87,9 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
     private static final String ERROR_MSG = "foo-bar-baz";
 
+    @Mock
+    private FeatureFlags featureFlags;
+
     private class UpdateImports extends AbstractUpdateImports {
 
         private final ClassFinder finder;
@@ -93,9 +98,10 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
         UpdateImports(ClassFinder classFinder,
                 FrontendDependenciesScanner scanner, File npmDirectory,
-                File tokenFile, boolean productionMode) {
+                File tokenFile, boolean productionMode,
+                FeatureFlags featureFlags) {
             super(frontendDirectory, npmDirectory, generatedPath, tokenFile,
-                    productionMode);
+                    productionMode, featureFlags);
             this.scanner = scanner;
             finder = classFinder;
         }
@@ -171,7 +177,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
         ClassFinder classFinder = getClassFinder();
         updater = new UpdateImports(classFinder, getScanner(classFinder),
-                tmpRoot, tokenFile, true);
+                tmpRoot, tokenFile, true, featureFlags);
         assertTrue(nodeModulesPath.mkdirs());
         createExpectedImports(frontendDirectory, nodeModulesPath);
         assertTrue(new File(nodeModulesPath,
@@ -230,7 +236,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
             throws Exception {
         ClassFinder classFinder = getClassFinder();
         updater = new UpdateImports(classFinder, getScanner(classFinder),
-                tmpRoot, null, true);
+                tmpRoot, null, true, featureFlags);
 
         Files.move(frontendDirectory.toPath(),
                 new File(tmpRoot, "_frontend").toPath());
@@ -433,7 +439,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         ClassFinder classFinder = getClassFinder(testClasses);
 
         updater = new UpdateImports(classFinder, getScanner(classFinder),
-                tmpRoot, new File(tmpRoot, TOKEN_FILE), true);
+                tmpRoot, new File(tmpRoot, TOKEN_FILE), true, featureFlags);
         updater.run();
 
         // Imports are collected as

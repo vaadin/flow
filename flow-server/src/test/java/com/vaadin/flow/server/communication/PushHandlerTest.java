@@ -324,13 +324,15 @@ public class PushHandlerTest {
     public static BrowserLiveReload mockBrowserLiveReloadImpl(
             VaadinContext context) {
         BrowserLiveReload liveReload = Mockito.mock(BrowserLiveReload.class);
-        Lookup lookup = Lookup.of(new BrowserLiveReloadAccessor() {
-            @Override
-            public BrowserLiveReload getLiveReload(VaadinContext context) {
-                return liveReload;
-            }
-        }, BrowserLiveReloadAccessor.class);
-        context.setAttribute(Lookup.class, lookup);
+        Lookup lookup = context.getAttribute(Lookup.class);
+        Mockito.when(lookup.lookup(BrowserLiveReloadAccessor.class))
+                .thenReturn(new BrowserLiveReloadAccessor() {
+                    @Override
+                    public BrowserLiveReload getLiveReload(
+                            VaadinContext context) {
+                        return liveReload;
+                    }
+                });
         return liveReload;
     }
 }

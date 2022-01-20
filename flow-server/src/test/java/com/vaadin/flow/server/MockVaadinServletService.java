@@ -20,7 +20,10 @@ import javax.servlet.ServletException;
 import java.util.Collections;
 import java.util.List;
 
+import org.mockito.Mockito;
+
 import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.Router;
@@ -38,6 +41,8 @@ public class MockVaadinServletService extends VaadinServletService {
     private Router router;
 
     private ResourceProvider resourceProvider;
+
+    private Lookup lookup;
 
     private static class MockVaadinServlet extends VaadinServlet {
 
@@ -111,6 +116,11 @@ public class MockVaadinServletService extends VaadinServletService {
             servlet.service = this;
             if (getServlet().getServletConfig() == null) {
                 getServlet().init(new MockServletConfig());
+            }
+            this.lookup = this.getContext().getAttribute(Lookup.class);
+            if (this.lookup == null) {
+                this.lookup = Mockito.mock(Lookup.class);
+                this.getContext().setAttribute(Lookup.class, lookup);
             }
             super.init();
         } catch (ServiceException | ServletException e) {
