@@ -538,7 +538,9 @@ public class FrontendTools {
 
             if (installedNodeVersion.isOlderThan(SUPPORTED_NODE_VERSION)) {
                 getLogger().info(
-                        "Installed node version {} is not supported. Minimum supported version is {}.",
+                        "{} installed node version {} is not supported. Minimum supported version is {}.",
+                        nodeExecutable.getPath().startsWith(baseDir) ? "Project"
+                                : "Globally",
                         installedNodeVersion.getFullVersion(),
                         SUPPORTED_NODE_VERSION.getFullVersion());
                 return null;
@@ -623,7 +625,7 @@ public class FrontendTools {
                     .getFirst();
             FrontendUtils.validateToolVersion("node", foundNodeVersion,
                     SUPPORTED_NODE_VERSION, SUPPORTED_NODE_VERSION);
-            getLogger().info("Using node {} located at {}",
+            getLogger().debug("Using node {} located at {}",
                     foundNodeVersion.getFullVersion(),
                     foundNodeVersionAndExe.getSecond());
         } catch (UnknownVersionException e) {
@@ -635,7 +637,7 @@ public class FrontendTools {
             FrontendUtils.validateToolVersion("npm", foundNpmVersion,
                     SUPPORTED_NPM_VERSION, SHOULD_WORK_NPM_VERSION);
             checkForFaultyNpmVersion(foundNpmVersion);
-            getLogger().info("Using npm {} located at {}",
+            getLogger().debug("Using npm {} located at {}",
                     foundNpmVersion.getFullVersion(),
                     getNpmExecutable(false).get(0));
         } catch (UnknownVersionException e) {
