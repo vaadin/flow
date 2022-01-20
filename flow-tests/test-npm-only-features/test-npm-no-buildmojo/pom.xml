@@ -56,43 +56,6 @@
 
     <build>
         <plugins>
-            <!--
-                Clean node_modules and package-lock to make sure that
-                @NpmPackage test works as it should.
-             -->
-            <plugin>
-                <artifactId>maven-clean-plugin</artifactId>
-                <version>3.1.0</version>
-                <configuration>
-                    <filesets>
-                        <fileset>
-                            <directory>${project.basedir}/node_modules</directory>
-                            <includes>
-                                <include>@polymer/**/*</include>
-                                <include>@vaadin/**/*</include>
-                            </includes>
-                            <followSymlinks>false</followSymlinks>
-                        </fileset>
-                        <fileset>
-                            <directory>${project.basedir}</directory>
-                            <includes>
-                                <include>package-lock.json</include>
-                                <include>/target/**</include>
-                            </includes>
-                        </fileset>
-                    </filesets>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>auto-clean</id>
-                        <phase>initialize</phase>
-                        <goals>
-                            <goal>clean</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
             <!-- This module is mapped to default web context -->
             <plugin>
                 <groupId>org.eclipse.jetty</groupId>
@@ -121,6 +84,19 @@
             <plugin>
                 <groupId>com.vaadin</groupId>
                 <artifactId>flow-maven-plugin</artifactId>
+                <executions>
+                    <!--
+                        Clean node_modules and package-lock to make sure that
+                        @NpmPackage test works as it should.
+                     -->
+                    <execution>
+                        <id>auto-clean</id>
+                        <goals>
+                            <goal>clean-frontend</goal>
+                        </goals>
+                        <phase>initialize</phase>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
