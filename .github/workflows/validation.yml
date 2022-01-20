@@ -142,7 +142,9 @@ jobs:
         run: |
           if [ ${{matrix.current}} -eq 2 -o ${{matrix.current}} -eq 3 ]; then
             cmd="mvn install -B -DskipTests -Pit-shared-modules -amd -pl flow-tests"
-            $cmd -T 1C || $cmd
+            ulimit -c unlimited
+            sudo $cmd -T 1C || sudo $cmd
+            sudo chmod -R +rwx /cores/*
           fi
       - name: Run ITs
         run: |
@@ -160,11 +162,8 @@ jobs:
       - uses: actions/upload-artifact@v2
         if: ${{ failure() || success() }}
         with:
-          name: test-reports
-          path: |
-            **/target/*-reports/*
-            **/error-screenshots/*.png
-            mvn-*.out
+          name: crashes
+          path: /cores
   test-results:
     if: ${{ failure() || success() }}
     needs: [unit-tests, it-tests]
