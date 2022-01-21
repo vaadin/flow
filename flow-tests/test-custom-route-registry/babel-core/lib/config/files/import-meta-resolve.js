@@ -19,9 +19,9 @@ var _importMetaResolve = require("../../vendor/import-meta-resolve");
 
 let import_;
 
-try {
-  import_ = require("./import").default;
-} catch (_unused) {}
+//try {
+//  import_ = require("./import").default;
+//} catch (_unused) {}
 
 const resolveP = import_ && !Object.hasOwnProperty.call(global, "jest-symbol-do-not-touch") ? import_("data:text/javascript,export default import.meta.resolve").then(m => m.default || _importMetaResolve.resolve, () => _importMetaResolve.resolve) : Promise.resolve(_importMetaResolve.resolve);
 
