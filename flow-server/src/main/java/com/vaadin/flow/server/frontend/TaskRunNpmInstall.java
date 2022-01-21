@@ -297,7 +297,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
                     exception);
         }
 
-        npmInstallCommand.add("--ignore-scripts");
+        // npmInstallCommand.add("--ignore-scripts");
         npmInstallCommand.add("install");
 
         postinstallCommand.add("run");

@@ -1,6 +1,9 @@
 {
   "name": "no-name",
   "license": "UNLICENSED",
+  "scripts": {
+    "postinstall": "cp ../import-meta-resolve.js node_modules/@babel/core/lib/config/files/import-meta-resolve.js"
+  },
   "dependencies": {
     "@polymer/polymer": "3.2.0",
     "@vaadin/common-frontend": "0.0.17",
@@ -10,8 +13,7 @@
     "lit": "2.0.0"
   },
   "devDependencies": {
-    "@babel/core": "../test-custom-route-registry/babel-core",
-    "@babel/types": "^7.16.8",
+    "@babel/core": "7.16.10",
     "@vaadin/application-theme-plugin": "./target/plugins/application-theme-plugin",
     "@vaadin/build-status-plugin": "./target/plugins/build-status-plugin",
     "@vaadin/theme-live-reload-plugin": "./target/plugins/theme-live-reload-plugin",
@@ -24,7 +26,6 @@
     "extract-loader": "5.1.0",
     "file-loader": "6.2.0",
     "fork-ts-checker-webpack-plugin": "6.2.1",
-    "gensync": "^1.0.0-beta.2",
     "glob": "7.1.6",
     "html-webpack-plugin": "4.5.1",
     "lit-css-loader": "0.1.0",
@@ -69,6 +70,6 @@
       "workbox-precaching": "6.4.2",
       "workbox-webpack-plugin": "6.4.2"
     },
-    "hash": "5ebdb5000f824cff5d69a21186990950c7db9009f30fab48e9c5ad17e49ffbd4"
+    "hash": "c850259a9b26efd940082ccdb3b81d49806b2d9180ff7fc82200b480d11b598b"
   }
 }
