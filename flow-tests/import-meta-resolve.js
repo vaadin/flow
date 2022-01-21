@@ -24,8 +24,8 @@ try {
 } catch (_unused) {}
 
 const resolveP = import_ && process.execArgv.includes("--experimental-import-meta-resolve")
-    ? import_("data:text/javascript,export default import.meta.resolve").then(m => m.default || polyfill, () => polyfill)
-    : Promise.resolve(polyfill);
+    ? import_("data:text/javascript,export default import.meta.resolve").then(m => m.default || _importMetaResolve.resolve, () => _importMetaResolve.resolve)
+    : Promise.resolve(_importMetaResolve.resolve);
 
 function getImportMetaResolve() {
   return resolveP;
