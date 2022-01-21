@@ -30,6 +30,8 @@ import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
+import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,7 +80,7 @@ public final class ViteHandler extends AbstractDevServerRunner {
         command.add("--port");
         command.add(String.valueOf(getPort()));
         command.add("--base");
-        command.add(getContextPath() + "/VAADIN/");
+        command.add(getContextPath() + "/" + VAADIN_MAPPING);
 
         String customParameters = getApplicationConfiguration()
                 .getStringProperty(
@@ -128,14 +130,17 @@ public final class ViteHandler extends AbstractDevServerRunner {
     public HttpURLConnection prepareConnection(String path, String method)
             throws IOException {
         if ("/index.html".equals(path)) {
-            return super.prepareConnection(getContextPath() + "/VAADIN/index.html", method);
+            return super.prepareConnection(
+                    getContextPath() + "/" + VAADIN_MAPPING + "/index.html",
+                    method);
         }
 
         return super.prepareConnection(getContextPath() + path, method);
     }
 
     private String getContextPath() {
-        VaadinServletContext servletContext = (VaadinServletContext) getApplicationConfiguration().getContext();
+        VaadinServletContext servletContext = (VaadinServletContext) getApplicationConfiguration()
+                .getContext();
         return servletContext.getContext().getContextPath();
     }
 }
