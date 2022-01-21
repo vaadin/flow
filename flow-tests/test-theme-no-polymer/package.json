@@ -2,13 +2,10 @@
   "name": "no-name",
   "license": "UNLICENSED",
   "dependencies": {
-    "@fortawesome/fontawesome-free": "5.15.1",
     "@polymer/polymer": "3.2.0",
     "@vaadin/common-frontend": "0.0.17",
     "@vaadin/flow-frontend": "./target/flow-frontend",
     "@vaadin/router": "1.7.4",
-    "@vaadin/vaadin-lumo-styles": "22.0.0-alpha9",
-    "@vaadin/vaadin-themable-mixin": "22.0.0-alpha9",
     "construct-style-sheets-polyfill": "3.0.4",
     "lit": "2.0.0"
   },
@@ -26,6 +23,7 @@
     "extract-loader": "5.1.0",
     "file-loader": "6.2.0",
     "fork-ts-checker-webpack-plugin": "6.2.1",
+    "gensync": "^1.0.0-beta.2",
     "glob": "7.1.6",
     "html-webpack-plugin": "4.5.1",
     "lit-css-loader": "0.1.0",
@@ -41,12 +39,9 @@
   },
   "vaadin": {
     "dependencies": {
-      "@fortawesome/fontawesome-free": "5.15.1",
       "@polymer/polymer": "3.2.0",
       "@vaadin/common-frontend": "0.0.17",
       "@vaadin/router": "1.7.4",
-      "@vaadin/vaadin-lumo-styles": "22.0.0-alpha9",
-      "@vaadin/vaadin-themable-mixin": "22.0.0-alpha9",
       "construct-style-sheets-polyfill": "3.0.4",
       "lit": "2.0.0"
     },
@@ -73,6 +68,6 @@
       "workbox-precaching": "6.4.2",
       "workbox-webpack-plugin": "6.4.2"
     },
-    "hash": "6434fc77be1e94ffed6748b18b81ce6de6068d8307e9c7b87acbeac97ffb7163"
+    "hash": "5ebdb5000f824cff5d69a21186990950c7db9009f30fab48e9c5ad17e49ffbd4"
   }
 }
