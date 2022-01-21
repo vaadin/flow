@@ -37,20 +37,18 @@ public class TaskGenerateFeatureFlagsTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-    private File frontendFolder;
     private TaskGenerateFeatureFlags taskGenerateFeatureFlags;
     private FeatureFlags featureFlags;
 
     @Before
     public void setUp() throws Exception {
-
         VaadinContext context = new MockVaadinContext();
         ApplicationConfiguration configuration = Mockito
                 .mock(ApplicationConfiguration.class);
         context.setAttribute(ApplicationConfiguration.class, configuration);
 
+        File frontendFolder = temporaryFolder.newFolder(FRONTEND);
         featureFlags = FeatureFlags.get(context);
-        frontendFolder = temporaryFolder.newFolder(FRONTEND);
         taskGenerateFeatureFlags = new TaskGenerateFeatureFlags(frontendFolder,
                 featureFlags);
     }
@@ -64,14 +62,14 @@ public class TaskGenerateFeatureFlagsTest {
     }
 
     @Test
-    public void should_setupExperimentalGlobal()
+    public void should_setupFeatureFlagsGlobal()
             throws ExecutionFailedException {
         taskGenerateFeatureFlags.execute();
         String content = taskGenerateFeatureFlags.getFileContent();
         Assert.assertTrue(
                 content.contains("window.Vaadin = window.Vaadin || {};"));
         Assert.assertTrue(content.contains(
-                "window.Vaadin.experimental = window.Vaadin.experimental || {};"));
+                "window.Vaadin.featureFlags = window.Vaadin.featureFlags || {};"));
     }
 
     @Test
@@ -101,7 +99,7 @@ public class TaskGenerateFeatureFlagsTest {
     private static void assertFeatureFlagGlobal(String content, Feature feature,
             boolean enabled) {
         Assert.assertTrue(content
-                .contains(String.format("window.Vaadin.experimental.%s = %s",
+                .contains(String.format("window.Vaadin.featureFlags.%s = %s",
                         feature.getId(), enabled)));
     }
 }

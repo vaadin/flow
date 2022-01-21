@@ -49,10 +49,10 @@ public class TaskGenerateFeatureFlags extends AbstractTaskClientGenerator {
         lines.add("// @ts-nocheck");
         lines.add("window.Vaadin = window.Vaadin || {};");
         lines.add(
-                "window.Vaadin.experimental = window.Vaadin.experimental || {};");
+                "window.Vaadin.featureFlags = window.Vaadin.featureFlags || {};");
 
         featureFlags.getFeatures().forEach(feature -> {
-            lines.add(String.format("window.Vaadin.experimental.%s = %s;",
+            lines.add(String.format("window.Vaadin.featureFlags.%s = %s;",
                     feature.getId(), featureFlags.isEnabled(feature)));
         });
 

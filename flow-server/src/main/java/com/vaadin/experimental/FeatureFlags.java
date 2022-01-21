@@ -56,7 +56,7 @@ public class FeatureFlags implements Serializable {
             "Use Vite for faster front-end builds", "viteForFrontendBuild",
             "https://github.com/vaadin/platform/issues/2448", true);
     public static final Feature MAP_COMPONENT = new Feature(
-            "Enable the Map component", "enableMapComponent",
+            "Map component (Pro)", "mapComponent",
             "https://github.com/vaadin/platform/issues/2611", true);
 
     private List<Feature> features = new ArrayList<>();
