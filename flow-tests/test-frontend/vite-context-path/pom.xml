@@ -8,8 +8,8 @@
         <artifactId>test-frontend</artifactId>
         <version>10.0-SNAPSHOT</version>
     </parent>
-    <artifactId>vite-context-path-production</artifactId>
-    <name>Vite in production mode with a servlet context path specified</name>
+    <artifactId>vite-context-path</artifactId>
+    <name>Vite with a context path in dev mode</name>
     <packaging>war</packaging>
 
     <dependencyManagement>
