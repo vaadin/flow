@@ -11,6 +11,7 @@
   },
   "devDependencies": {
     "@babel/core": "../test-custom-route-registry/babel-core",
+    "@babel/types": "^7.16.8",
     "@vaadin/application-theme-plugin": "./target/plugins/application-theme-plugin",
     "@vaadin/build-status-plugin": "./target/plugins/build-status-plugin",
     "@vaadin/theme-live-reload-plugin": "./target/plugins/theme-live-reload-plugin",
