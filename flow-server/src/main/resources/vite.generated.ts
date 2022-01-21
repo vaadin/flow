@@ -93,6 +93,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
   }
   return {
     root: 'frontend',
+    base: '',
     resolve: {
       alias: {
         themes: themeFolder,
