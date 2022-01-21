@@ -34,7 +34,7 @@ public final class StringUtil {
      * Comment parser state enumeration.
      */
     private enum State {
-        NORMAL, IN_LINE_COMMENT, IN_BLOCK_COMMENT, IN_STRING
+        NORMAL, IN_LINE_COMMENT, IN_BLOCK_COMMENT, IN_STRING, IN_STRING_APOSTROPHE
     }
 
     /**
@@ -71,6 +71,78 @@ public final class StringUtil {
             case IN_STRING:
                 result.append(character);
                 if (character.equals("\"")) {
+                    state = State.NORMAL;
+                } else if (character.equals("\\") && scanner.hasNext()) {
+                    result.append(scanner.next());
+                }
+                break;
+            case IN_LINE_COMMENT:
+                if (character.equals("\n")) {
+                    result.append(character);
+                    state = State.NORMAL;
+                }
+                break;
+            case IN_BLOCK_COMMENT:
+                if (character.equals("*") && scanner.hasNext("/")) {
+                    scanner.next();
+                    state = State.NORMAL;
+                    break;
+                }
+            }
+        }
+        scanner.close();
+        String handled = result.toString();
+        for (Entry<String, Character> entry : replacements.entrySet()) {
+            handled = handled.replace(entry.getKey(),
+                    String.valueOf(entry.getValue()));
+        }
+        return handled;
+    }
+
+    /**
+     * Removes comments (block comments and line comments) from the JS code.
+     *
+     * @return the code with removed comments
+     */
+    public static String removeJsComments(String code) {
+        State state = State.NORMAL;
+        StringBuilder result = new StringBuilder();
+        Map<String, Character> replacements = new HashMap<>();
+        Scanner scanner = new Scanner(normalize(code, replacements));
+        scanner.useDelimiter("");
+        while (scanner.hasNext()) {
+            String character = scanner.next();
+            switch (state) {
+            case NORMAL:
+                if (character.equals("/") && scanner.hasNext()) {
+                    String nextCharacter = scanner.next();
+                    if (nextCharacter.equals("/")) {
+                        state = State.IN_LINE_COMMENT;
+                    } else if (nextCharacter.equals("*")) {
+                        state = State.IN_BLOCK_COMMENT;
+                    } else {
+                        result.append(character).append(nextCharacter);
+                    }
+                } else {
+                    result.append(character);
+                    if (character.equals("\"")) {
+                        state = State.IN_STRING;
+                    } else if (character.equals("\'")) {
+                        state = State.IN_STRING_APOSTROPHE;
+                    }
+                }
+                break;
+            case IN_STRING:
+                result.append(character);
+                if (character.equals("\"")) {
+                    state = State.NORMAL;
+                } else if (character.equals("\\") && scanner.hasNext()) {
+                    result.append(scanner.next());
+                }
+                break;
+            case IN_STRING_APOSTROPHE:
+                result.append(character);
+                if (character.equals("\'")) {
                     state = State.NORMAL;
                 } else if (character.equals("\\") && scanner.hasNext()) {
                     result.append(scanner.next());

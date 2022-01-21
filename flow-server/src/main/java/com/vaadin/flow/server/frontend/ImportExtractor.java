@@ -86,7 +86,7 @@ class ImportExtractor implements Serializable {
      * @return the code with removed comments
      */
     String removeComments() {
-        return StringUtil.removeComments(content);
+        return StringUtil.removeJsComments(content);
     }
 
     /**

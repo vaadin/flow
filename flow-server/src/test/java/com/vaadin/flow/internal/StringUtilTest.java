@@ -66,7 +66,44 @@ public class StringUtilTest {
     @Test
     public void removeComments_commentsWithAsterisksInside_commentIsRemoved() {
         String result = StringUtil.removeComments("/* comment **/ ;");
-        Assert.assertEquals(result, " ;");
+        Assert.assertEquals(" ;", result);
     }
 
+    @Test
+    public void removeJsComments_handlesApostropheAsInString() {
+        String httpImport = "import 'http://localhost:56445/files/transformed/@vaadin/vaadin-text-field/vaadin-text-field.js';";
+
+        Assert.assertEquals("Nothing shoiuld be removed for import", httpImport,
+                StringUtil.removeJsComments(httpImport));
+
+        String result = StringUtil.removeJsComments("/* comment **/ ;");
+        Assert.assertEquals(" ;", result);
+
+        String singleLineBlock = StringUtil.removeJsComments(
+                "return html`/* single line block comment*/`;");
+
+        Assert.assertEquals("return html``;", singleLineBlock);
+
+        String blockComment = StringUtil
+                .removeJsComments("return html`/* block with new lines\n"
+                        + "* still in my/their block */`;");
+        Assert.assertEquals("return html``;", blockComment);
+
+        String newLineSingleBlock = StringUtil
+                .removeJsComments("return html`/* not here \n*/`;");
+        Assert.assertEquals("return html``;", newLineSingleBlock);
+
+        String noComments = "<vaadin-text-field label=\"Nats Url(s)\" placeholder=\"nats://server:port\" id=\"natsUrlTxt\" style=\"width:100%\"></vaadin-text-field>`";
+        Assert.assertEquals(noComments,
+                StringUtil.removeJsComments(noComments));
+
+        String lineComment = StringUtil
+                .removeJsComments("return html`// this line comment\n`;");
+        Assert.assertEquals("return html`\n`;", lineComment);
+
+        String mixedComments = StringUtil.removeJsComments(
+                "return html`/* not here \n*/\nCode;// neither this\n"
+                        + "/* this should // be fine\n* to remove / */`;");
+        Assert.assertEquals("return html`\nCode;\n`;", mixedComments);
+    }
 }
