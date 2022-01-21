@@ -390,7 +390,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         Map<String, String> defaults = new HashMap<>();
 
         defaults.put("typescript", "4.5.3");
-        defaults.put("@babel/core", "7.16.10");
+        defaults.put("@babel/core", "7.16.11");
 
         final String WORKBOX_VERSION = "6.4.2";
 
