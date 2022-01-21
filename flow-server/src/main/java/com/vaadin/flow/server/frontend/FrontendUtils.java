@@ -199,6 +199,14 @@ public class FrontendUtils {
     public static final String BOOTSTRAP_FILE_NAME = "vaadin.ts";
 
     /**
+     * File name of the feature flags file that is generated in frontend
+     * {@link #GENERATED} folder. The feature flags file contains code to define
+     * feature flags as globals that might be used by Vaadin web components or
+     * application code.
+     */
+    public static final String FEATURE_FLAGS_FILE_NAME = "feature-flags.ts";
+
+    /**
      * File name of the index.html in client side.
      */
     public static final String INDEX_HTML = "index.html";
