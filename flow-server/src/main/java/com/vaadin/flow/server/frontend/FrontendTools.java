@@ -75,15 +75,6 @@ public class FrontendTools {
     private static final String MSG_PREFIX = "%n%n======================================================================================================";
     private static final String MSG_SUFFIX = "%n======================================================================================================%n";
 
-    private static final String NODE_NOT_FOUND = MSG_PREFIX
-            + "%nVaadin requires node.js & npm to be installed. Please install the latest LTS version of node.js (with npm) either by:"
-            + "%n  1) following the https://nodejs.org/en/download/ guide to install it globally. This is the recommended way."
-            + "%n  2) running the following Maven plugin goal to install it in this project:"
-            + INSTALL_NODE_LOCALLY
-            + "%n%nNote that in case you don't install it globally, you'll need to install it again for another Vaadin project."
-            + "%nIn case you have just installed node.js globally, it was not discovered, so you need to restart your system to get the path variables updated."
-            + MSG_SUFFIX;
-
     private static final String PNPM_NOT_FOUND = MSG_PREFIX
             + "%nVaadin application is configured to use globally installed pnpm ('pnpm.global=true'), but no pnpm tool has been found on your system."
             + "%nPlease install pnpm tool following the instruction given here https://pnpm.io/installation, "
@@ -117,15 +108,11 @@ public class FrontendTools {
     private static final int SUPPORTED_NODE_MINOR_VERSION = 22;
     private static final int SUPPORTED_NPM_MAJOR_VERSION = 6;
     private static final int SUPPORTED_NPM_MINOR_VERSION = 14;
-    private static final int SHOULD_WORK_NODE_MAJOR_VERSION = 8;
-    private static final int SHOULD_WORK_NODE_MINOR_VERSION = 9;
     private static final int SHOULD_WORK_NPM_MAJOR_VERSION = 5;
     private static final int SHOULD_WORK_NPM_MINOR_VERSION = 5;
 
     private static final FrontendVersion SUPPORTED_NODE_VERSION = new FrontendVersion(
             SUPPORTED_NODE_MAJOR_VERSION, SUPPORTED_NODE_MINOR_VERSION);
-    private static final FrontendVersion SHOULD_WORK_NODE_VERSION = new FrontendVersion(
-            SHOULD_WORK_NODE_MAJOR_VERSION, SHOULD_WORK_NODE_MINOR_VERSION);
 
     private static final FrontendVersion SUPPORTED_NPM_VERSION = new FrontendVersion(
             SUPPORTED_NPM_MAJOR_VERSION, SUPPORTED_NPM_MINOR_VERSION);
@@ -462,6 +449,7 @@ public class FrontendTools {
             file = frontendToolsLocator.tryLocateTool(nodeCommands.getFirst())
                     .orElse(null);
         }
+        file = rejectUnsupportedNodeVersion(file);
         if (file == null) {
             file = updateAlternateIfNeeded(getExecutable(getAlternativeDir(),
                     nodeCommands.getSecond()));
@@ -472,7 +460,9 @@ public class FrontendTools {
             file = new File(installNode(nodeVersion, nodeDownloadRoot));
         }
         if (file == null) {
-            throw new IllegalStateException(String.format(NODE_NOT_FOUND));
+            // This should never happen, because node is automatically installed
+            // if not detected globally or at project level
+            throw new IllegalStateException("Node not found");
         }
         return file.getAbsolutePath();
     }
@@ -503,7 +493,7 @@ public class FrontendTools {
             boolean installDefault = false;
             final FrontendVersion defaultVersion = new FrontendVersion(
                     nodeVersion);
-            if (installedNodeVersion.isOlderThan(SHOULD_WORK_NODE_VERSION)) {
+            if (installedNodeVersion.isOlderThan(SUPPORTED_NODE_VERSION)) {
                 getLogger().info("Updating unsupported node version {} to {}",
                         installedNodeVersion.getFullVersion(),
                         defaultVersion.getFullVersion());
@@ -523,6 +513,42 @@ public class FrontendTools {
             getLogger().error("Failed to get version for installed node.", e);
         }
         return file;
+    }
+
+    /**
+     * Ensures that given node executable is supported by Vaadin.
+     *
+     * Returns the input executable if version is supported, otherwise
+     * {@literal null}.
+     *
+     * @param nodeExecutable
+     *            node executable to be checked
+     * @return input node executable if supported, otherwise {@literal null}.
+     */
+    private File rejectUnsupportedNodeVersion(File nodeExecutable) {
+        if (nodeExecutable == null) {
+            return null;
+        }
+        try {
+            List<String> versionCommand = Lists.newArrayList();
+            versionCommand.add(nodeExecutable.getAbsolutePath());
+            versionCommand.add("--version"); // NOSONAR
+            final FrontendVersion installedNodeVersion = FrontendUtils
+                    .getVersion("node", versionCommand);
+
+            if (installedNodeVersion.isOlderThan(SUPPORTED_NODE_VERSION)) {
+                getLogger().info(
+                        "{} installed node version {} is not supported. Minimum supported version is {}.",
+                        nodeExecutable.getPath().startsWith(baseDir) ? "Project"
+                                : "Globally",
+                        installedNodeVersion.getFullVersion(),
+                        SUPPORTED_NODE_VERSION.getFullVersion());
+                return null;
+            }
+        } catch (UnknownVersionException e) {
+            getLogger().error("Failed to get version for installed node.", e);
+        }
+        return nodeExecutable;
     }
 
     /**
@@ -594,9 +620,14 @@ public class FrontendTools {
             return;
         }
         try {
-            FrontendVersion foundNodeVersion = getNodeVersion();
+            Pair<FrontendVersion, String> foundNodeVersionAndExe = getNodeVersionAndExecutable();
+            FrontendVersion foundNodeVersion = foundNodeVersionAndExe
+                    .getFirst();
             FrontendUtils.validateToolVersion("node", foundNodeVersion,
-                    SUPPORTED_NODE_VERSION, SHOULD_WORK_NODE_VERSION);
+                    SUPPORTED_NODE_VERSION, SUPPORTED_NODE_VERSION);
+            getLogger().debug("Using node {} located at {}",
+                    foundNodeVersion.getFullVersion(),
+                    foundNodeVersionAndExe.getSecond());
         } catch (UnknownVersionException e) {
             getLogger().warn("Error checking if node is new enough", e);
         }
@@ -606,6 +637,9 @@ public class FrontendTools {
             FrontendUtils.validateToolVersion("npm", foundNpmVersion,
                     SUPPORTED_NPM_VERSION, SHOULD_WORK_NPM_VERSION);
             checkForFaultyNpmVersion(foundNpmVersion);
+            getLogger().debug("Using npm {} located at {}",
+                    foundNpmVersion.getFullVersion(),
+                    getNpmExecutable(false).get(0));
         } catch (UnknownVersionException e) {
             getLogger().warn("Error checking if npm is new enough", e);
         }
@@ -616,10 +650,17 @@ public class FrontendTools {
      * Gets the version of the node executable.
      */
     public FrontendVersion getNodeVersion() throws UnknownVersionException {
+        return getNodeVersionAndExecutable().getFirst();
+    }
+
+    private Pair<FrontendVersion, String> getNodeVersionAndExecutable()
+            throws UnknownVersionException {
+        String executable = getNodeBinary();
         List<String> nodeVersionCommand = new ArrayList<>();
-        nodeVersionCommand.add(getNodeBinary());
+        nodeVersionCommand.add(executable);
         nodeVersionCommand.add("--version"); // NOSONAR
-        return FrontendUtils.getVersion("node", nodeVersionCommand);
+        return new Pair<>(FrontendUtils.getVersion("node", nodeVersionCommand),
+                executable);
     }
 
     /**

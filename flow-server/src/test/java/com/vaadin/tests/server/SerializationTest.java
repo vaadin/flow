@@ -10,6 +10,9 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import junit.framework.TestCase;
+
+import org.junit.Assert;
+import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.server.VaadinContext;
@@ -21,8 +24,9 @@ import com.vaadin.flow.server.WrappedSession;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.tests.util.MockUI;
 
-public class SerializationTest extends TestCase {
+public class SerializationTest {
 
+    @Test
     public void testSerializeVaadinSession_accessQueueIsRecreated()
             throws Exception {
         VaadinService vaadinService = new MockVaadinService(true);
@@ -30,32 +34,51 @@ public class SerializationTest extends TestCase {
 
         session = serializeAndDeserialize(session);
 
-        assertNotNull(
+        Assert.assertNotNull(
                 "Pending access queue was not recreated after deserialization",
                 session.getPendingAccessQueue());
     }
 
+    @Test
     public void testSerializeVaadinSession_notProductionMode_disableDevModeSerialization_deserializedSessionHasNoUIs()
             throws Exception {
         VaadinSession session = serializeAndDeserializeWithUI(false);
 
-        assertNotNull("UIs should be available after empty deserialization",
+        Assert.assertNotNull(
+                "UIs should be available after empty deserialization",
                 session.getUIs());
-        assertTrue("UIs should be empty after empty deserialization",
+        Assert.assertTrue("UIs should be empty after empty deserialization",
                 session.getUIs().isEmpty());
     }
 
+    @Test
     public void testSerializeVaadinSession_notProductionMode_enableDevModeSerialization_deserializedSessionHasUI()
             throws Exception {
         VaadinSession session = serializeAndDeserializeWithUI(true);
 
-        assertNotNull("UIs should be available after empty deserialization",
+        Assert.assertNotNull(
+                "UIs should be available after empty deserialization",
                 session.getUIs());
-        assertEquals(
+        Assert.assertEquals(
                 "UIs should contain a UI instance after empty deserialization",
                 1, session.getUIs().size());
-        assertEquals("Unexpected UI id after empty deserialization", 42,
+        Assert.assertEquals("Unexpected UI id after empty deserialization", 42,
                 session.getUIs().iterator().next().getUIId());
+    }
+
+    @Test
+    public void testSerializeVaadinSession_notProductionMode_canSerializeWithoutTransients()
+            throws Exception {
+        VaadinService vaadinService = new MockVaadinService(false, true);
+        VaadinSession session = Mockito.spy(new VaadinSession(vaadinService));
+
+        Assert.assertEquals(vaadinService, session.getService());
+        VaadinSession serializedAndDeserializedSession = serializeAndDeserialize(
+                session);
+        Assert.assertNull(serializedAndDeserializedSession.getService());
+        VaadinSession againSerializedAndDeserializedSession = serializeAndDeserialize(
+                serializedAndDeserializedSession);
+        Assert.assertNull(againSerializedAndDeserializedSession.getService());
     }
 
     private static VaadinSession serializeAndDeserializeWithUI(
