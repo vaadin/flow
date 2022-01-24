@@ -531,7 +531,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
     private void deleteNodeModules(File nodeModulesFolder)
             throws ExecutionFailedException {
         try {
-            FileUtils.forceDelete(nodeModulesFolder);
+            FrontendUtils.deleteNodeModules(nodeModulesFolder);
         } catch (IOException exception) {
             Logger log = packageUpdater.log();
             log.debug("Exception removing node_modules", exception);

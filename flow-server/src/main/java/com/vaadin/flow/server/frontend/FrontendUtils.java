@@ -25,16 +25,19 @@ import java.io.UncheckedIOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
@@ -1215,4 +1218,37 @@ public class FrontendUtils {
         System.out.print(format(format, message));
     }
 
+    /**
+     * Try to remove the {@code node_modules} directory, if it exists inside the
+     * given base directory. Note that pnpm uses symlinks internally, so delete
+     * utilities that follow symlinks when deleting and/or modifying permissions
+     * may not work as intended.
+     *
+     * @param nodeModules
+     *            the {@code node_modules} directory
+     * @throws IOException
+     *             on failure to delete any one file, or if the directory name
+     *             is not {@code node_modules}
+     */
+    public static void deleteNodeModules(File nodeModules) throws IOException {
+        if (!nodeModules.isDirectory()
+                || !nodeModules.getName().equals("node_modules")) {
+            throw new IOException(nodeModules.getAbsolutePath()
+                    + " does not look like a node_modules directory");
+        }
+
+        Path nodeModulesPath = nodeModules.toPath();
+
+        Files.walk(nodeModulesPath).map(Path::toFile)
+                .forEach(file -> file.setWritable(true, true));
+
+        String undeletable = Files.walk(nodeModulesPath)
+                .sorted(Comparator.reverseOrder()).map(Path::toFile)
+                .filter(file -> !file.delete()).map(File::getAbsolutePath)
+                .collect(Collectors.joining(", "));
+
+        if (!undeletable.isEmpty()) {
+            throw new IOException("Unable to delete files: " + undeletable);
+        }
+    }
 }
