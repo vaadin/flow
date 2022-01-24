@@ -131,7 +131,7 @@ public final class ViteHandler extends AbstractDevServerRunner {
             throws IOException {
         if ("/index.html".equals(path)) {
             return super.prepareConnection(
-                    getContextPath() + "/" + VAADIN_MAPPING + "/index.html",
+                    getContextPath() + "/" + VAADIN_MAPPING + "index.html",
                     method);
         }
 
