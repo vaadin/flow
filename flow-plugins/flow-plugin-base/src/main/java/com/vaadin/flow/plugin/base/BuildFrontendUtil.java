@@ -423,9 +423,9 @@ public class BuildFrontendUtil {
                 NODE_MODULES + executable);
         if (!buildExecutable.isFile()) {
             throw new IllegalStateException(String.format(
-                    "Unable to locate webpack executable by path '%s'. Double"
+                    "Unable to locate %s executable by path '%s'. Double"
                             + " check that the plugin is executed correctly",
-                    buildExecutable.getAbsolutePath()));
+                    toolName, buildExecutable.getAbsolutePath()));
         }
 
         String nodePath;
@@ -461,7 +461,8 @@ public class BuildFrontendUtil {
                     toolName, e.getResult().outputUTF8()), e);
         } catch (IOException | InterruptedException e) {
             throw new IllegalStateException(
-                    "Failed to run webpack due to an error", e);
+                    String.format("Failed to run %s due to an error", toolName),
+                    e);
         }
     }
 
