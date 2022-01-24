@@ -60,9 +60,6 @@ public class ThemeSwitchLiveReloadIT extends ChromeBrowserTest {
     @Test
     public void switchThemeName_changeThemeNameAndRecompile_themeIsChangedOnFly() {
         open();
-
-        getCommandExecutor().waitForVaadin();
-
         Assert.assertFalse(OTHER_THEME +
                            " styles are not expected before switching the theme",
                 isOtherThemeUsed());
@@ -81,10 +78,10 @@ public class ThemeSwitchLiveReloadIT extends ChromeBrowserTest {
                                     SerializableSupplier<Boolean> themeStylesSupplier) {
         int attempts = 0;
         while (attempts < ATTEMPTS) {
-            open();
-            getCommandExecutor().waitForVaadin();
+            getDriver().navigate().refresh();
             try {
-                waitUntil(driver -> themeStylesSupplier.get());
+                getCommandExecutor().waitForVaadin();
+                waitUntil(driver -> themeStylesSupplier.get(), TIMEOUT);
                 return;
             } catch (TimeoutException e) {
                 attempts++;
