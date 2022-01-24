@@ -317,29 +317,6 @@ public class DevModeInitializer
 
         VaadinContext vaadinContext = new VaadinServletContext(context);
         JsonObject tokenFileData = Json.createObject();
-        try {
-            builder.enablePackagesUpdate(true)
-                    .useByteCodeScanner(useByteCodeScanner)
-                    .copyResources(frontendLocations)
-                    .copyLocalResources(new File(baseDir,
-                            Constants.LOCAL_FRONTEND_RESOURCES_PATH))
-                    .enableImportsUpdate(true).runNpmInstall(true)
-                    .populateTokenFileData(tokenFileData)
-                    .withEmbeddableWebComponents(true).enablePnpm(enablePnpm)
-                    .withHomeNodeExecRequired(useHomeNodeExec).build()
-                    .execute();
-
-            FallbackChunk chunk = FrontendUtils
-                    .readFallbackChunk(tokenFileData);
-            if (chunk != null) {
-                vaadinContext.setAttribute(chunk);
-            }
-        } catch (ExecutionFailedException exception) {
-            log().debug(
-                    "Could not initialize dev mode handler. One of the node tasks failed",
-                    exception);
-            throw new ServletException(exception);
-        }
 
         NodeTasks tasks = builder.enablePackagesUpdate(true)
                 .useByteCodeScanner(useByteCodeScanner)
