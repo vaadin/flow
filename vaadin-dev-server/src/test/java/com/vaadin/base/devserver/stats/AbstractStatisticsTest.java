@@ -46,8 +46,6 @@ public abstract class AbstractStatisticsTest {
         sender = Mockito.spy(new StatisticsSender(storage));
 
         // Change the file storage and reporting parameters for testing
-        Mockito.when(sender.getReportingUrl())
-                .thenReturn("http://localhost:1234");
         Mockito.when(storage.getUsageStatisticsFile()).thenReturn(
                 createTempStorage("stats-data/usage-statistics-1.json"));
     }
