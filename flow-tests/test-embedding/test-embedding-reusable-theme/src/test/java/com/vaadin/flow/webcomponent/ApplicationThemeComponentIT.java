@@ -101,6 +101,8 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
     public void componentThemeIsApplied_forPolymerAndLit() {
         open();
 
+        checkLogsForErrors();
+
         final TestBenchElement themedComponent = $("themed-component").first();
         final TestBenchElement embeddedComponent = themedComponent
             .$(DivElement.class).id(EMBEDDED_ID);
@@ -149,6 +151,8 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
     public void documentCssFonts_fromLocalCssFile_fontAppliedToDocumentRoot() {
         open();
 
+        checkLogsForErrors();
+
         Object ostrichFontStylesFound = getCommandExecutor().executeScript(
                 "let target = document;" + FIND_FONT_FACE_RULE_SCRIPT);
 
@@ -160,7 +164,7 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
     @Test
     public void documentCssFonts_fromLocalCssFile_fontNotAppliedToEmbeddedComponent() {
         open();
-
+        checkLogsForErrors();
         Object ostrichFontStylesFoundForEmbedded = getCommandExecutor()
                 .executeScript("let target = document.getElementsByTagName"
                         + "('themed-component')[0].shadowRoot;"
