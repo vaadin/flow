@@ -13,6 +13,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class StatisticsSenderTest extends AbstractStatisticsTest {
 
@@ -160,22 +162,21 @@ public class StatisticsSenderTest extends AbstractStatisticsTest {
         private String lastRequestContent;
 
         public TestHttpServer(int code, String response) throws Exception {
-            this.httpServer = createStubGatherServlet(code, response);
-        }
-
-        private HttpServer createStubGatherServlet(int status, String response)
-                throws Exception {
-            HttpServer httpServer = HttpServer
+            httpServer = HttpServer
                     .create(new InetSocketAddress("localhost", 0), 0);
             httpServer.createContext("/", exchange -> {
                 this.lastRequestContent = IOUtils.toString(
                         exchange.getRequestBody(), Charset.defaultCharset());
-                exchange.sendResponseHeaders(status, response.length());
+                exchange.sendResponseHeaders(code, response.length());
                 exchange.getResponseBody().write(response.getBytes());
                 exchange.close();
             });
             httpServer.start();
-            return httpServer;
+            getLogger().warn("Gather servlet started on port " + getPort());
+        }
+
+        private Logger getLogger() {
+            return LoggerFactory.getLogger(getClass());
         }
 
         public String getLastRequestContent() {

@@ -290,13 +290,13 @@ public class StatisticsSender {
             String responseStatus = response.getStatusLine().getStatusCode()
                     + ": " + response.getStatusLine().getReasonPhrase();
             JsonNode jsonResponse = null;
+            String responseString = EntityUtils.toString(response.getEntity());
             if (response.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
-                String responseString = EntityUtils
-                        .toString(response.getEntity());
                 jsonResponse = JsonHelpers.getJsonMapper()
                         .readTree(responseString);
             }
 
+            getLogger().warn("Response from {}: {}", postUrl, responseString);
             if (jsonResponse != null && jsonResponse.isObject()) {
                 result = (ObjectNode) jsonResponse;
             } else {
