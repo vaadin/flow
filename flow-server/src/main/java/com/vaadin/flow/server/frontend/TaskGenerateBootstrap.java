@@ -24,6 +24,7 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.theme.ThemeDefinition;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.BOOTSTRAP_FILE_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FEATURE_FLAGS_FILE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_JS;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
@@ -57,6 +58,7 @@ public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
     @Override
     protected String getFileContent() {
         List<String> lines = new ArrayList<>();
+        lines.add(String.format("import './%s';%n", FEATURE_FLAGS_FILE_NAME));
         lines.add(String.format("import '%s';%n", getIndexTsEntryPath()));
         if (!productionMode) {
             lines.add(DEVMODE_GIZMO_IMPORT);
