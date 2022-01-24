@@ -1,7 +1,5 @@
 package com.vaadin.flow.uitest.ui;
 
-import java.util.List;
-
 import com.vaadin.flow.component.html.testbench.DivElement;
 import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
