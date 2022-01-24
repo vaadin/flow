@@ -1,5 +1,7 @@
 package com.vaadin.flow.uitest.ui;
 
+import java.util.List;
+
 import com.vaadin.flow.component.html.testbench.DivElement;
 import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
@@ -124,8 +126,8 @@ public class ModalDialogIT extends ChromeBrowserTest {
 
     private void validateShortcutEvent(int indexFromTop, int eventCounter,
             String eventSourceId) {
-        final WebElement latestEvent = eventLog.findElements(By.tagName("div"))
-                .get(indexFromTop);
+        final WebElement latestEvent = eventLog.findElement(
+                By.xpath(String.format("div[%d]", indexFromTop + 1)));
         Assert.assertEquals("Invalid latest event",
                 eventCounter + "-" + eventSourceId, latestEvent.getText());
     }
