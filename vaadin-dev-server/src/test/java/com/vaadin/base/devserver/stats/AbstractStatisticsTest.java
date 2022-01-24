@@ -44,7 +44,8 @@ public abstract class AbstractStatisticsTest {
         storage.usageStatisticsFile = File.createTempFile("test-storage",
                 "json");
         sender = Mockito.spy(new StatisticsSender(storage));
-
+        Mockito.doAnswer(answer -> null).when(sender)
+                .triggerSendIfNeeded(Mockito.any());
         // Change the file storage and reporting parameters for testing
         Mockito.when(storage.getUsageStatisticsFile()).thenReturn(
                 createTempStorage("stats-data/usage-statistics-1.json"));
