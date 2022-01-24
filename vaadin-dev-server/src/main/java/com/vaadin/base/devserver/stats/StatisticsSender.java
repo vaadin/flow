@@ -279,6 +279,8 @@ public class StatisticsSender {
      *         sent.
      */
     private static ObjectNode postData(String postUrl, String data) {
+        getLogger().warn("postData for {}", postUrl);
+
         ObjectNode result;
         try {
             HttpPost post = new HttpPost(postUrl);
@@ -309,7 +311,7 @@ public class StatisticsSender {
             return result;
 
         } catch (IOException e) {
-            getLogger().debug("Failed to send statistics.", e);
+            getLogger().error("Failed to send statistics.", e);
         }
 
         // Fallback

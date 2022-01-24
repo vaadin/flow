@@ -14,6 +14,7 @@
     "package2-outside-npm": "./package2-outside-npm"
   },
   "devDependencies": {
+    "@babel/core": "7.16.7",
     "@vaadin/application-theme-plugin": "./target/plugins/application-theme-plugin",
     "@vaadin/build-status-plugin": "./target/plugins/build-status-plugin",
     "@vaadin/theme-live-reload-plugin": "./target/plugins/theme-live-reload-plugin",
@@ -21,8 +22,8 @@
     "glob": "7.1.6",
     "mkdirp": "1.0.4",
     "rollup-plugin-brotli": "3.1.0",
-    "typescript": "4.4.3",
-    "vite": "v2.7.0",
+    "typescript": "4.5.3",
+    "vite": "v2.7.4",
     "vite-plugin-checker": "0.3.4",
     "workbox-build": "6.4.1",
     "workbox-core": "6.4.2",
@@ -38,16 +39,17 @@
       "lit": "2.0.0"
     },
     "devDependencies": {
+      "@babel/core": "7.16.7",
       "glob": "7.1.6",
       "mkdirp": "1.0.4",
       "rollup-plugin-brotli": "3.1.0",
-      "typescript": "4.4.3",
-      "vite": "v2.7.0",
+      "typescript": "4.5.3",
+      "vite": "v2.7.4",
       "vite-plugin-checker": "0.3.4",
       "workbox-build": "6.4.1",
       "workbox-core": "6.4.2",
       "workbox-precaching": "6.4.2"
     },
-    "hash": "5ce564d422b308509737fbbd7a036ad80c191e574bc151193226da9131b5fcb5"
+    "hash": "5b6b3717f0cf8e1ea6963ab47a59e47ef71f53896b4675921d71a5b226e237eb"
   }
 }
