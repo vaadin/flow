@@ -51,6 +51,7 @@ public class StatisticsSenderTest extends AbstractStatisticsTest {
 
     @Test
     public void defaultServerResponse() throws Exception {
+        getLogger().info("running defaultServerResponse");
         // Test with default server response
         createServer(200, DEFAULT_SERVER_MESSAGE);
         ObjectNode fullStats = storage.read();
@@ -68,6 +69,7 @@ public class StatisticsSenderTest extends AbstractStatisticsTest {
 
     @Test
     public void responseWithCustomInterval() throws Exception {
+        getLogger().info("running responseWithCustomInterval");
 
         // Test with server response with too custom interval
         createServer(200, SERVER_MESSAGE_48H);
@@ -85,6 +87,7 @@ public class StatisticsSenderTest extends AbstractStatisticsTest {
 
     @Test
     public void tooShortInterval() throws Exception {
+        getLogger().info("running tooShortInterval");
         // Test with server response with too short interval
         createServer(200, SERVER_MESSAGE_3H);
         ObjectNode fullStats = storage.read();
@@ -101,6 +104,7 @@ public class StatisticsSenderTest extends AbstractStatisticsTest {
 
     @Test
     public void tooLongInterval() throws Exception {
+        getLogger().info("running tooLongInterval");
         // Test with server response with too long interval
         createServer(200, SERVER_MESSAGE_40D);
         ObjectNode fullStats = storage.read();
@@ -118,6 +122,7 @@ public class StatisticsSenderTest extends AbstractStatisticsTest {
 
     @Test
     public void failResponse() throws Exception {
+        getLogger().info("running failResponse");
 
         // Test with server fail response
         createServer(500, SERVER_MESSAGE_40D);
@@ -136,6 +141,7 @@ public class StatisticsSenderTest extends AbstractStatisticsTest {
 
     @Test
     public void returnedMessage() throws Exception {
+        getLogger().info("running returnedMessage");
         // Test with server returned message
         createServer(200, SERVER_MESSAGE_MESSAGE);
         ObjectNode fullStats = storage.read();
@@ -194,5 +200,9 @@ public class StatisticsSenderTest extends AbstractStatisticsTest {
             }
         }
 
+    }
+
+    private Logger getLogger() {
+        return LoggerFactory.getLogger(getClass());
     }
 }

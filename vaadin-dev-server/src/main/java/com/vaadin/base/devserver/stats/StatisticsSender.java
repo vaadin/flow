@@ -296,7 +296,8 @@ public class StatisticsSender {
                         .readTree(responseString);
             }
 
-            getLogger().warn("Response from {}: {}", postUrl, responseString);
+            getLogger().warn("Response from {}: code: {}, message: {}", postUrl,
+                    responseStatus, responseString);
             if (jsonResponse != null && jsonResponse.isObject()) {
                 result = (ObjectNode) jsonResponse;
             } else {
