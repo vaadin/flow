@@ -108,8 +108,8 @@ public class DataCommunicator<T> implements Serializable {
     private SerializableConsumer<ExecutionContext> flushRequest;
     private SerializableConsumer<ExecutionContext> flushUpdatedDataRequest;
 
-    private Executor executor = null;
-    private CompletableFuture<Activation> future;
+    private transient Executor executor = null;
+    private transient CompletableFuture<Activation> future;
     private UI ui;
 
     private static class SizeVerifier<T> implements Consumer<T>, Serializable {
@@ -196,11 +196,9 @@ public class DataCommunicator<T> implements Serializable {
      *            The Executor used for async updates.
      */
     public void enablePushUpdates(Executor executor) {
-        if (this.executor != null) {
-            if (future != null) {
-                future.cancel(true);
-                future = null;
-            }
+        if (this.executor != null && future != null) {
+            future.cancel(true);
+            future = null;
         }
         this.executor = executor;
     }
