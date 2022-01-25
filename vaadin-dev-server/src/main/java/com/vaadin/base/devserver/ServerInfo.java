@@ -30,6 +30,8 @@ import org.slf4j.LoggerFactory;
  */
 public class ServerInfo implements Serializable {
 
+    private static boolean versionErrorLogged = false;
+
     private final String flowVersion;
     private final String vaadinVersion;
     private final String javaVersion;
@@ -69,8 +71,11 @@ public class ServerInfo implements Serializable {
                 JsonNode vaadinVersions = m.readTree(vaadinVersionsStream);
                 return vaadinVersions.get("platform").asText();
             } else {
-                LoggerFactory.getLogger(getClass()).info(
-                        "Unable to determine version information. No vaadin_versions.json found");
+                if (!versionErrorLogged) {
+                    versionErrorLogged = true;
+                    LoggerFactory.getLogger(getClass()).info(
+                            "Unable to determine version information. No vaadin_versions.json found");
+                }
             }
         } catch (Exception e) {
             LoggerFactory.getLogger(getClass())
