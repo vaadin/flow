@@ -31,7 +31,6 @@ import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -216,20 +215,6 @@ public class TaskUpdatePackagesNpmTest {
 
         verifyVersions(newVersion, newVersion, newVersion);
         verifyVersionLockingWithNpmOverrides(true, true, true);
-    }
-
-    @Test
-    @Ignore
-    public void npmIsInUse_switchToPnpm_pinnedVersionsDeleted()
-            throws IOException {
-        runTestWithoutPreexistingPackageJson();
-        final TaskUpdatePackages task = createTask(
-                createApplicationDependencies(), true);
-        task.execute();
-        Assert.assertTrue("Updates not picked", task.modified);
-
-        // only the application dependency should stay
-        verifyVersions(PLATFORM_DIALOG_VERSION, null, null);
     }
 
     @Test
