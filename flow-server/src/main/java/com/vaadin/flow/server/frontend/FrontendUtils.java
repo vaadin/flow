@@ -1239,16 +1239,20 @@ public class FrontendUtils {
 
         Path nodeModulesPath = nodeModules.toPath();
 
-        Files.walk(nodeModulesPath).map(Path::toFile)
-                .forEach(file -> file.setWritable(true, true));
+        try (Stream<Path> walk = Files.walk(nodeModulesPath)) {
+            walk.map(Path::toFile)
+                    .forEach(file -> file.setWritable(true, true));
+        }
 
-        String undeletable = Files.walk(nodeModulesPath)
-                .sorted(Comparator.reverseOrder()).map(Path::toFile)
-                .filter(file -> !file.delete()).map(File::getAbsolutePath)
-                .collect(Collectors.joining(", "));
+        try (Stream<Path> walk = Files.walk(nodeModulesPath)) {
+            String undeletable = walk.sorted(Comparator.reverseOrder())
+                    .map(Path::toFile).filter(file -> !file.delete())
+                    .map(File::getAbsolutePath)
+                    .collect(Collectors.joining(", "));
 
-        if (!undeletable.isEmpty()) {
-            throw new IOException("Unable to delete files: " + undeletable);
+            if (!undeletable.isEmpty()) {
+                throw new IOException("Unable to delete files: " + undeletable);
+            }
         }
     }
 }
