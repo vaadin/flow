@@ -336,8 +336,10 @@ public class FrontendUtilsTest {
             throws IOException {
         File externalDir = new File(tmpDir.getRoot(), "external");
         File externalLicense = new File(externalDir, "LICENSE");
-        externalLicense.mkdirs();
+
+        externalLicense.getParentFile().mkdirs();
         externalLicense.createNewFile();
+        externalLicense.setWritable(false);
 
         File nodeModules = new File(tmpDir.getRoot(), "node_modules");
         File containing = new File(nodeModules, ".pnpm/a/node_modules/dep");
@@ -348,12 +350,12 @@ public class FrontendUtilsTest {
         File linking = new File(nodeModules, ".pnpm/b/node_modules/dep");
         linking.getParentFile().mkdirs();
         Files.createSymbolicLink(linking.toPath(),
-                Path.of("../../a/node_modules/dep"));
+                new File("../../a/node_modules/dep").toPath());
 
         File linkingExternal = new File(nodeModules,
                 ".pnpm/b/node_modules/external");
         Files.createSymbolicLink(linkingExternal.toPath(),
-                Path.of("../../../../external"));
+                new File("../../../../external").toPath());
 
         Assert.assertTrue(nodeModules.exists());
         Assert.assertTrue(linking.exists());
@@ -364,6 +366,7 @@ public class FrontendUtilsTest {
 
         Assert.assertFalse(nodeModules.exists());
         Assert.assertTrue(externalLicense.exists());
+        Assert.assertFalse(externalLicense.canWrite());
     }
 
     private ResourceProvider mockResourceProvider(VaadinService service) {
