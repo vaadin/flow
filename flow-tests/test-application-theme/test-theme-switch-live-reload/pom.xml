@@ -61,9 +61,9 @@
                     <scanIntervalSeconds>1</scanIntervalSeconds>
                     <scanTargetPatterns>
                         <scanTargetPattern>
-                            <directory>${project.basedir}</directory>
+                            <directory>${project.basedir}/src/main/java</directory>
                             <includes>
-                                <include>**/AppShell.java</include>
+                                <include>**/ThemeSwitchLiveReloadView.java</include>
                             </includes>
                         </scanTargetPattern>
                     </scanTargetPatterns>

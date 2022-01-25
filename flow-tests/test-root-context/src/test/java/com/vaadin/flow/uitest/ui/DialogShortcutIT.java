@@ -9,12 +9,14 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import static com.vaadin.flow.uitest.ui.DialogShortcutView.REUSABLE_DIALOG_ID;
 
+@Ignore("Flaky test #10481, #10487, #10491")
 public class DialogShortcutIT extends ChromeBrowserTest {
 
     private TestBenchElement eventLog;
