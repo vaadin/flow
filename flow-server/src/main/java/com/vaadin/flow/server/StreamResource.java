@@ -83,12 +83,13 @@ public class StreamResource extends AbstractStreamResource {
             try (InputStream input = createInputStream(session)) {
                 copy(session, input, stream);
             } catch (IOException ioe) {
-                if (!"Broken pipe".equals(ioe.getMessage())) {
+                if ("Broken pipe".equals(ioe.getMessage())) {
+                    LoggerFactory.getLogger(StreamResource.class).debug(
+                            "The client browser has most likely cancelled the request.",
+                            ioe);
+                } else {
                     throw ioe;
                 }
-                LoggerFactory.getLogger(StreamResource.class).debug(
-                        "Broken pipe. Client has most likely cancelled link.",
-                        ioe);
             }
         }
 
