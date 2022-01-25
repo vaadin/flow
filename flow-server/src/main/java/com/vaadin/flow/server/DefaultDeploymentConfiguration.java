@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -46,7 +46,7 @@ public class DefaultDeploymentConfiguration
 
     public static final String NOT_PRODUCTION_MODE_WARNING = "\nWARNING: Vaadin is running in DEBUG MODE with debug features enabled, but with a prebuild frontend bundle (production ready).\n"
             + "When deploying application for production, disable debug features by enabling production mode!\n"
-            + "See more from https://vaadin.com/docs/v14/flow/production/tutorial-production-mode-basic.html";
+            + "See more from https://vaadin.com/docs/latest/flow/production/overview";
 
     public static final String WARNING_V14_BOOTSTRAP = "Using deprecated Vaadin 14 bootstrap mode.\n"
             + "Client-side views written in TypeScript are not supported. Vaadin 15+ enables client-side and server-side views.\n"

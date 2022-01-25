@@ -1,0 +1,12 @@
+{
+  "name": "package-outside-npm",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall": "echo 'hello' > ../target/classs/package-outside-npm.postinstall"
+  },
+  "author": "",
+  "license": "Apache-2.0"
+}

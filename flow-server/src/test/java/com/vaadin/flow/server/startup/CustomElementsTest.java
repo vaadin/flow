@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -88,7 +89,7 @@ public class CustomElementsTest {
         elementsToAdd.forEach(
                 element -> customElements.addElement(getTag(element), element));
 
-        Assert.assertThat(
+        MatcherAssert.assertThat(
                 "Custom elements should contain only one class that we put into",
                 customElements.computeTagToElementRelation(),
                 is(expectedClasses.stream().collect(Collectors.toMap(

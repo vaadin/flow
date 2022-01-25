@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,34 +15,46 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.Constants.TARGET;
+import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
+import com.vaadin.flow.testcategory.SlowTests;
 import com.vaadin.flow.testutil.FrontendStubs;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
-import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
-
+@Category(SlowTests.class)
 public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
     private static final String PINNED_VERSION = "3.2.17";
+    private static final List<String> POSTINSTALL_PACKAGES = Collections
+            .singletonList("esbuild");
 
     @Override
     @Before
@@ -139,10 +151,10 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         exception.expectMessage(
                 "it's either not a file or not a 'node' executable.");
         assertRunNpmInstallThrows_vaadinHomeNodeIsAFolder(
-                new TaskRunNpmInstall(getClassFinder(), getNodeUpdater(), true,
-                        true, FrontendTools.DEFAULT_NODE_VERSION,
+                new TaskRunNpmInstall(getNodeUpdater(), true, true,
+                        FrontendTools.DEFAULT_NODE_VERSION,
                         URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT),
-                        false, false));
+                        false, false, POSTINSTALL_PACKAGES));
     }
 
     @Test
@@ -156,13 +168,14 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
         TaskRunNpmInstall task = createTask();
         getNodeUpdater().modified = true;
+        getNodeUpdater().versionsPath = "./versions.json";
         task.execute();
 
         File file = new File(getNodeUpdater().npmFolder, "pnpmfile.js");
         Assert.assertTrue(file.exists());
         String content = FileUtils.readFileToString(file,
                 StandardCharsets.UTF_8);
-        Assert.assertThat(content,
+        MatcherAssert.assertThat(content,
                 CoreMatchers.containsString("JSON.parse(fs.readFileSync"));
     }
 
@@ -171,13 +184,14 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
             throws IOException, ExecutionFailedException {
         TaskRunNpmInstall task = createTask();
         getNodeUpdater().modified = true;
+        getNodeUpdater().versionsPath = "./versions.json";
         task.execute();
 
         File file = new File(getNodeUpdater().npmFolder, "pnpmfile.js");
         Assert.assertTrue(file.exists());
         String content = FileUtils.readFileToString(file,
                 StandardCharsets.UTF_8);
-        Assert.assertThat(content,
+        MatcherAssert.assertThat(content,
                 CoreMatchers.containsString("JSON.parse(fs.readFileSync"));
     }
 
@@ -396,72 +410,6 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     }
 
     @Test
-    public void generateVersionsJson_noVersions_noDevDeps_versionsGeneratedFromPackageJson()
-            throws IOException {
-        TaskRunNpmInstall task = createTask();
-
-        final String versions = task.generateVersionsJson();
-        Assert.assertNotNull(versions);
-
-        File generatedVersionsFile = new File(getNodeUpdater().npmFolder,
-                versions);
-        final JsonObject versionsJson = Json.parse(FileUtils.readFileToString(
-                generatedVersionsFile, StandardCharsets.UTF_8));
-        Assert.assertEquals("{}", versionsJson.toJson());
-    }
-
-    @Test
-    public void generateVersionsJson_versionsGeneratedFromPackageJson_containsBothDepsAndDevDeps()
-            throws IOException {
-
-        File packageJson = new File(getNodeUpdater().npmFolder, PACKAGE_JSON);
-        packageJson.createNewFile();
-
-        // Write package json file
-        // @formatter:off
-        FileUtils.write(packageJson,
-            "{"
-                + "\"vaadin\": {"
-                  + "\"dependencies\": {"
-                    + "\"lit\": \"2.0.0\","
-                    + "\"@vaadin/router\": \"1.7.4\","
-                    + "\"@polymer/polymer\": \"3.2.0\","
-                  + "},"
-                  + "\"devDependencies\": {"
-                    + "\"css-loader\": \"4.2.1\","
-                    + "\"file-loader\": \"6.1.0\""
-                  + "}"
-                + "},"
-                + "\"dependencies\": {"
-                  + "\"lit\": \"2.0.0\","
-                  + "\"@vaadin/router\": \"1.7.4\","
-                  + "\"@polymer/polymer\": \"3.2.0\","
-                + "},"
-                + "\"devDependencies\": {"
-                  + "\"css-loader\": \"4.2.1\","
-                  + "\"file-loader\": \"6.1.0\""
-                + "}"
-            + "}", StandardCharsets.UTF_8);
-        // @formatter:on
-
-        TaskRunNpmInstall task = createTask();
-
-        final String versions = task.generateVersionsJson();
-        Assert.assertNotNull(versions);
-
-        File generatedVersionsFile = new File(getNodeUpdater().npmFolder,
-                versions);
-        final JsonObject versionsJson = Json.parse(FileUtils.readFileToString(
-                generatedVersionsFile, StandardCharsets.UTF_8));
-        Assert.assertEquals(
-                "{" + "\"lit\":\"2.0.0\"," + "\"@vaadin/router\":\"1.7.4\","
-                        + "\"@polymer/polymer\":\"3.2.0\","
-                        + "\"css-loader\":\"4.2.1\","
-                        + "\"file-loader\":\"6.1.0\"" + "}",
-                versionsJson.toJson());
-    }
-
-    @Test
     public void runPnpmInstall_npmRcFileNotFound_newNpmRcFileIsGenerated()
             throws IOException, ExecutionFailedException {
         TaskRunNpmInstall task = createTask();
@@ -635,37 +583,60 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         // then exception is thrown
     }
 
+    @Test
+    public void runPnpmInstall_postInstall_runOnlyForDefaultPackages()
+            throws ExecutionFailedException, IOException {
+        setupEsbuildAndFooInstallation();
+        TaskRunNpmInstall task = createTask();
+        task.execute();
+
+        Assert.assertTrue("Postinstall for 'esbuild' was not run",
+                new File(
+                        new File(getNodeUpdater().nodeModulesFolder, "esbuild"),
+                        "postinstall-file.txt").exists());
+        Assert.assertFalse("Postinstall for 'foo' should not have been run",
+                new File(new File(getNodeUpdater().nodeModulesFolder, "foo"),
+                        "postinstall-file.txt").exists());
+    }
+
+    @Test
+    public void runPnpmInstall_postInstall_runForDefinedAdditionalPackages()
+            throws ExecutionFailedException, IOException {
+        setupEsbuildAndFooInstallation();
+        TaskRunNpmInstall task = createTask(Collections.singletonList("foo"));
+        task.execute();
+
+        Assert.assertTrue("Postinstall for 'esbuild' was not run",
+                new File(
+                        new File(getNodeUpdater().nodeModulesFolder, "esbuild"),
+                        "postinstall-file.txt").exists());
+        Assert.assertTrue("Postinstall for 'foo' was not run",
+                new File(new File(getNodeUpdater().nodeModulesFolder, "foo"),
+                        "postinstall-file.txt").exists());
+    }
+
     @Override
     protected String getToolName() {
         return "pnpm";
     }
 
-    @Override
     protected TaskRunNpmInstall createTask() {
-        return new TaskRunNpmInstall(getClassFinder(), getNodeUpdater(), true,
-                false, FrontendTools.DEFAULT_NODE_VERSION,
+        return createTask(new ArrayList<>());
+    }
+
+    @Override
+    protected TaskRunNpmInstall createTask(List<String> additionalPostInstall) {
+        return new TaskRunNpmInstall(getNodeUpdater(), true, false,
+                FrontendTools.DEFAULT_NODE_VERSION,
                 URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false,
-                false);
+                false, additionalPostInstall);
     }
 
     protected TaskRunNpmInstall createTask(String versionsContent) {
-        return new TaskRunNpmInstall(getClassFinder(), getNodeUpdater(), true,
-                false, FrontendTools.DEFAULT_NODE_VERSION,
+        return new TaskRunNpmInstall(createAndRunNodeUpdater(versionsContent),
+                true, false, FrontendTools.DEFAULT_NODE_VERSION,
                 URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false,
-                false) {
-            @Override
-            protected String generateVersionsJson() {
-                try {
-                    FileUtils.write(
-                            new File(getNodeUpdater().npmFolder,
-                                    "versions.json"),
-                            versionsContent, StandardCharsets.UTF_8);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-                return "./versions.json";
-            }
-        };
+                false, new ArrayList<>());
     }
 
     private JsonObject getGeneratedVersionsContent(File versions)
@@ -674,18 +645,53 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         Mockito.when(classFinder.getResource(Constants.VAADIN_VERSIONS_JSON))
                 .thenReturn(versions.toURI().toURL());
 
-        TaskRunNpmInstall task = new TaskRunNpmInstall(getClassFinder(),
-                getNodeUpdater(), true, false,
-                FrontendTools.DEFAULT_NODE_VERSION,
-                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false,
-                false);
-
-        String path = task.generateVersionsJson();
+        String path = getNodeUpdater().generateVersionsJson();
 
         File generatedVersionsFile = new File(getNodeUpdater().npmFolder, path);
         return Json.parse(FileUtils.readFileToString(generatedVersionsFile,
                 StandardCharsets.UTF_8));
 
+    }
+
+    private NodeUpdater createAndRunNodeUpdater(String versionsContent) {
+        NodeUpdater nodeUpdater = createNodeUpdater(versionsContent);
+        try {
+            nodeUpdater.execute();
+        } catch (Exception e) {
+            throw new IllegalStateException(
+                    "NodeUpdater failed to genereate the versions.json file");
+        }
+
+        return nodeUpdater;
+    }
+
+    private NodeUpdater createNodeUpdater(String versionsContent) {
+        return new NodeUpdater(finder, Mockito.mock(FrontendDependencies.class),
+                npmFolder, generatedPath, null, TARGET,
+                Mockito.mock(FeatureFlags.class)) {
+
+            @Override
+            public void execute() {
+                try {
+                    versionsPath = generateVersionsJson();
+                } catch (Exception e) {
+                    versionsPath = null;
+                }
+            }
+
+            @Override
+            protected String generateVersionsJson() {
+                try {
+                    if (versionsContent != null) {
+                        FileUtils.write(new File(npmFolder, "versions.json"),
+                                versionsContent, StandardCharsets.UTF_8);
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                return "./versions.json";
+            }
+        };
     }
 
 }

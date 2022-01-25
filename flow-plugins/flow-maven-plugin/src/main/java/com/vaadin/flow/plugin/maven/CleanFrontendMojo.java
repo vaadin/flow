@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -49,6 +49,7 @@ public class CleanFrontendMojo extends FlowModeAbstractMojo {
     public static final String VAADIN = "vaadin";
     public static final String DEPENDENCIES = "dependencies";
     public static final String DEV_DEPENDENCIES = "devDependencies";
+    public static final String OVERRIDES = "overrides";
 
     @Override
     public void execute() throws MojoFailureException {
@@ -117,6 +118,7 @@ public class CleanFrontendMojo extends FlowModeAbstractMojo {
     private void cleanupPackage(JsonObject packageJson) {
         JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
         JsonObject devDependencies = packageJson.getObject(DEV_DEPENDENCIES);
+        JsonObject overridesSection = packageJson.getObject(OVERRIDES);
 
         if (packageJson.hasKey(VAADIN)) {
             JsonObject vaadin = packageJson.getObject(VAADIN);
@@ -127,6 +129,8 @@ public class CleanFrontendMojo extends FlowModeAbstractMojo {
             // Remove all
             cleanObject(dependencies, vaadinDependencies);
             cleanObject(devDependencies, vaadinDevDependencies);
+            cleanObject(overridesSection, vaadinDependencies, false);
+
             packageJson.remove(VAADIN);
         }
 
@@ -139,14 +143,19 @@ public class CleanFrontendMojo extends FlowModeAbstractMojo {
     }
 
     private void cleanObject(JsonObject target, JsonObject reference) {
+        cleanObject(target, reference, true);
+    }
+
+    private void cleanObject(JsonObject target, JsonObject reference,
+            boolean requireVersionsMatch) {
         if (target == null) {
             return;
         }
         Set<String> removeKeys = new HashSet<>();
 
         for (String key : target.keys()) {
-            if (reference.hasKey(key)
-                    && target.getString(key).equals(reference.getString(key))) {
+            if (reference.hasKey(key) && (!requireVersionsMatch
+                    || versionsMatch(target, reference, key))) {
                 removeKeys.add(key);
             }
         }
@@ -154,6 +163,11 @@ public class CleanFrontendMojo extends FlowModeAbstractMojo {
         for (String key : removeKeys) {
             target.remove(key);
         }
+    }
+
+    private boolean versionsMatch(JsonObject target, JsonObject reference,
+            String key) {
+        return target.getString(key).equals(reference.getString(key));
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -63,6 +63,8 @@ public class InitParameters implements Serializable {
     public static final String SERVLET_PARAMETER_MAX_MESSAGE_SUSPEND_TIMEOUT = "maxMessageSuspendTimeout";
     public static final String SERVLET_PARAMETER_JSBUNDLE = "module.bundle";
     public static final String SERVLET_PARAMETER_POLYFILLS = "module.polyfills";
+    public static final String NODE_VERSION = "node.version";
+    public static final String NODE_DOWNLOAD_ROOT = "node.download.root";
 
     /**
      * Configuration name for the parameter that determines whether Brotli
@@ -126,6 +128,13 @@ public class InitParameters implements Serializable {
      * @since 2.2
      */
     public static final String SERVLET_PARAMETER_ENABLE_PNPM = "pnpm.enable";
+
+    /*
+     * Configuration parameter name for enabling usage statistics.
+     *
+     * @since
+     */
+    public static final String SERVLET_PARAMETER_DEVMODE_STATISTICS = "devmode.usageStatistics.enabled";
 
     /**
      * Configuration parameter name for using globally installed pnpm or default
@@ -204,4 +213,12 @@ public class InitParameters implements Serializable {
      * @since
      */
     public static final String BUILD_FOLDER = "build.folder";
+
+    /**
+     * Packages, in addition to the internally used ones, to run postinstall
+     * scripts for.
+     *
+     * @since
+     */
+    public static final String ADDITIONAL_POSTINSTALL_PACKAGES = "npm.postinstallPackages";
 }

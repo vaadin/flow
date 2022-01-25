@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -55,6 +55,9 @@ public class FeatureFlags implements Serializable {
     public static final Feature VITE = new Feature(
             "Use Vite for faster front-end builds", "viteForFrontendBuild",
             "https://github.com/vaadin/platform/issues/2448", true);
+    public static final Feature MAP_COMPONENT = new Feature(
+            "Map component (Pro)", "mapComponent",
+            "https://github.com/vaadin/platform/issues/2611", true);
 
     private List<Feature> features = new ArrayList<>();
 
@@ -74,6 +77,7 @@ public class FeatureFlags implements Serializable {
         this.lookup = lookup;
         features.add(new Feature(EXAMPLE));
         features.add(new Feature(VITE));
+        features.add(new Feature(MAP_COMPONENT));
         loadProperties();
     }
 
@@ -152,8 +156,9 @@ public class FeatureFlags implements Serializable {
                     .getApplicationResource(PROPERTIES_FILENAME);
             if (applicationResource != null) {
                 getLogger().debug("Properties loaded from classpath.");
-                try {
-                    loadProperties(applicationResource.openStream());
+                try (InputStream propertiesStream = applicationResource
+                        .openStream()) {
+                    loadProperties(propertiesStream);
                     return;
                 } catch (IOException e) {
                     throw new UncheckedIOException(

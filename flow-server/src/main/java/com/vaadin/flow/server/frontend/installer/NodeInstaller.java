@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -248,7 +248,13 @@ public class NodeInstaller {
 
             extractFile(data.getArchive(), data.getTmpDirectory());
         } catch (DownloadException e) {
-            throw new InstallationException("Could not download Node.js", e);
+            getLogger().error(
+                    "Node.js download failed. This may be due to loss of internet connection.\n"
+                            + "If you are behind a proxy server you should configure your proxy settings.\n"
+                            + "Verify connection and proxy settings or follow the https://nodejs.org/en/download/ guide to install Node.js globally.");
+            throw new InstallationException(
+                    "Could not download Node.js. Check your connection and proxy settings.",
+                    e);
         } catch (ArchiveExtractionException e) {
             throw new InstallationException(
                     "Could not extract the Node archive", e);

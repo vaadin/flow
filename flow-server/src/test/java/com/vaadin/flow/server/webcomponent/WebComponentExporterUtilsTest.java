@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -57,11 +58,11 @@ public class WebComponentExporterUtilsTest {
         Assert.assertTrue(
                 anotherFactory instanceof DefaultWebComponentExporterFactory);
         WebComponentExporter exporter = anotherFactory.create();
-        Assert.assertThat(exporter,
+        MatcherAssert.assertThat(exporter,
                 CoreMatchers.instanceOf(GoodExporter.class));
 
         exporter = factory.create();
-        Assert.assertThat(exporter,
+        MatcherAssert.assertThat(exporter,
                 CoreMatchers.instanceOf(NoDefaultCtorExporter.class));
     }
 

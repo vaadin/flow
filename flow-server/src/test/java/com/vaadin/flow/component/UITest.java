@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,6 +16,9 @@
 
 package com.vaadin.flow.component;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -24,13 +27,19 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.commons.io.IOUtils;
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.impl.SimpleLogger;
 
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.page.History;
@@ -79,6 +88,8 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
+import com.vaadin.flow.server.frontend.MockLogger;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
 
@@ -86,6 +97,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mockStatic;
 
 public class UITest {
 
@@ -181,10 +193,16 @@ public class UITest {
     }
 
     private static UI createTestUI() {
+        MockLogger mockLogger = new MockLogger();
         UI ui = new UI() {
             @Override
             public void doInit(VaadinRequest request, int uiId) {
 
+            }
+
+            @Override
+            Logger getLogger() {
+                return mockLogger;
             }
         };
 
@@ -284,7 +302,7 @@ public class UITest {
         List<HasElement> chain = ui.getInternals()
                 .getActiveRouterTargetsChain();
         Assert.assertEquals(1, chain.size());
-        Assert.assertThat(chain.get(0),
+        MatcherAssert.assertThat(chain.get(0),
                 CoreMatchers.instanceOf(FooBarNavigationTarget.class));
     }
 
@@ -326,9 +344,9 @@ public class UITest {
         List<HasElement> chain = ui.getInternals()
                 .getActiveRouterTargetsChain();
         Assert.assertEquals(2, chain.size());
-        Assert.assertThat(chain.get(0),
+        MatcherAssert.assertThat(chain.get(0),
                 CoreMatchers.instanceOf(FooBarParamNavigationTarget.class));
-        Assert.assertThat(chain.get(1), CoreMatchers
+        MatcherAssert.assertThat(chain.get(1), CoreMatchers
                 .instanceOf(FooBarParamParentNavigationTarget.class));
     }
 
@@ -376,7 +394,7 @@ public class UITest {
 
         Assert.assertEquals(1, ui.getChildren().count());
         Optional<Component> errorComponent = ui.getChildren().findFirst();
-        Assert.assertThat(errorComponent.get(),
+        MatcherAssert.assertThat(errorComponent.get(),
                 CoreMatchers.instanceOf(RouteNotFoundError.class));
         assertEquals(Integer.valueOf(404), statusCodeCaptor.getValue());
     }
@@ -406,6 +424,60 @@ public class UITest {
         ui.remove(text);
 
         ComponentTest.assertChildren(ui);
+    }
+
+    @Test
+    public void setLastHeartbeatTimestamp_heartbeatEventIsFired() {
+        UI ui = new UI();
+        initUI(ui, "", null);
+
+        long heartbeatTimestamp = System.currentTimeMillis();
+        List<HeartbeatEvent> events = new ArrayList<>();
+        ui.addHeartbeatListener(events::add);
+
+        ui.getInternals().setLastHeartbeatTimestamp(heartbeatTimestamp);
+
+        assertEquals(1, events.size());
+        assertEquals(ui, events.get(0).getSource());
+        assertEquals(heartbeatTimestamp, events.get(0).getHeartbeatTime());
+    }
+
+    @Test
+    public void setLastHeartbeatTimestamp_multipleHeartbeatListenerRegistered_eachHeartbeatListenerIsCalled() {
+        UI ui = new UI();
+        initUI(ui, "", null);
+
+        List<HeartbeatEvent> events = new ArrayList<>();
+        ui.addHeartbeatListener(events::add);
+        ui.addHeartbeatListener(events::add);
+
+        ui.getInternals().setLastHeartbeatTimestamp(System.currentTimeMillis());
+
+        assertEquals(2, events.size());
+    }
+
+    @Test
+    public void setLastHeartbeatTimestamp_heartbeatListenerRemoved_listenerNotRun() {
+        UI ui = new UI();
+        initUI(ui, "", null);
+
+        AtomicReference<Registration> reference = new AtomicReference<>();
+        AtomicInteger runCount = new AtomicInteger();
+
+        Registration registration = ui.addHeartbeatListener(event -> {
+            runCount.incrementAndGet();
+            reference.get().remove(); // removes the listener on the first
+                                      // invocation
+        });
+        reference.set(registration);
+
+        ui.getInternals().setLastHeartbeatTimestamp(System.currentTimeMillis());
+        assertEquals("Listener should have been run once", 1, runCount.get());
+
+        ui.getInternals().setLastHeartbeatTimestamp(System.currentTimeMillis());
+        assertEquals(
+                "Listener should not have been run again since it was removed",
+                1, runCount.get());
     }
 
     @Test
@@ -458,7 +530,7 @@ public class UITest {
     }
 
     @Test
-    public void unserSession_datachEventIsFiredForElements() {
+    public void unsetSession_detachEventIsFiredForElements() {
         UI ui = createTestUI();
 
         List<ElementDetachEvent> events = new ArrayList<>();
@@ -478,6 +550,32 @@ public class UITest {
         assertEquals(2, events.size());
         assertEquals(childComponent.getElement(), events.get(0).getSource());
         assertEquals(ui.getElement(), events.get(1).getSource());
+    }
+
+    @Test
+    public void unsetSession_accessErrorHandlerStillWorks() throws IOException {
+        UI ui = createTestUI();
+        initUI(ui, "", null);
+
+        ui.getSession().access(() -> ui.getInternals().setSession(null));
+        ui.access(() -> {
+            Assert.fail("We should never get here because the UI is detached");
+        });
+
+        // Unlock to run pending access tasks
+        ui.getSession().unlock();
+
+        String logOutput = ((MockLogger) ui.getLogger()).getLogs();
+        String logOutputNoDebug = logOutput.replaceAll("^\\[Debug\\].*", "");
+
+        Assert.assertFalse(
+                "No NullPointerException should be logged but got: "
+                        + logOutput,
+                logOutput.contains("NullPointerException"));
+        Assert.assertFalse(
+                "No UIDetachedException should be logged but got: "
+                        + logOutputNoDebug,
+                logOutputNoDebug.contains("UIDetachedException"));
     }
 
     @Test
@@ -1051,4 +1149,316 @@ public class UITest {
         }
     }
 
+    @Test
+    public void routingComponentVisible_modalComponentAdded_routingComponentInert() {
+        final TestFixture fixture = new TestFixture();
+
+        verifyInert(fixture.ui, false);
+        verifyInert(fixture.routingComponent, false);
+        verifyInert(fixture.modalComponent, false);
+
+        fixture.collectUiChanges(); // the modal add will be visible
+
+        verifyInert(fixture.ui, true);
+        verifyInert(fixture.routingComponent, true);
+        verifyInert(fixture.modalComponent, false);
+
+        fixture.ui.remove(fixture.modalComponent);
+        fixture.collectUiChanges();
+
+        verifyInert(fixture.ui, false);
+        verifyInert(fixture.routingComponent, false);
+        verifyInert(fixture.modalComponent, false);
+
+        fixture.ui.addModal(fixture.modalComponent);
+        fixture.collectUiChanges(); // the modal add will be visible
+
+        verifyInert(fixture.ui, true);
+        verifyInert(fixture.routingComponent, true);
+        verifyInert(fixture.modalComponent, false);
+    }
+
+    @Test
+    public void routingComponentAndModalComponentVisible_modalComponentAdded_anotherModalComponentInert() {
+        final TestFixture fixture = new TestFixture();
+        fixture.collectUiChanges();
+
+        verifyInert(fixture.ui, true);
+        verifyInert(fixture.routingComponent, true);
+        verifyInert(fixture.modalComponent, false);
+
+        final AttachableComponent secondModal = new AttachableComponent();
+        fixture.ui.addModal(secondModal);
+        fixture.collectUiChanges();
+
+        verifyInert(fixture.ui, true);
+        verifyInert(fixture.routingComponent, true);
+        verifyInert(fixture.modalComponent, true);
+        verifyInert(secondModal, false);
+
+        fixture.ui.remove(secondModal);
+        fixture.collectUiChanges();
+
+        verifyInert(fixture.ui, true);
+        verifyInert(fixture.routingComponent, true);
+        verifyInert(fixture.modalComponent, false);
+    }
+
+    @Test
+    public void modalComponentPresent_modalityChanged_routingComponentNotInert() {
+        final TestFixture fixture = new TestFixture();
+        fixture.collectUiChanges();
+
+        verifyInert(fixture.ui, true);
+        verifyInert(fixture.routingComponent, true);
+        verifyInert(fixture.modalComponent, false);
+
+        fixture.ui.setChildComponentModal(fixture.modalComponent, false);
+        fixture.collectUiChanges();
+
+        verifyInert(fixture.ui, false);
+        verifyInert(fixture.routingComponent, false);
+        verifyInert(fixture.modalComponent, false);
+
+        fixture.ui.setChildComponentModal(fixture.modalComponent, true);
+        fixture.collectUiChanges();
+
+        verifyInert(fixture.ui, true);
+        verifyInert(fixture.routingComponent, true);
+        verifyInert(fixture.modalComponent, false);
+    }
+
+    @Test
+    public void modalComponentsPresent_newComponentAdded_isInert() {
+        final TestFixture fixture = new TestFixture();
+        fixture.collectUiChanges();
+
+        verifyInert(fixture.ui, true);
+        verifyInert(fixture.routingComponent, true);
+        verifyInert(fixture.modalComponent, false);
+
+        final AttachableComponent component = new AttachableComponent();
+        fixture.ui.add(component);
+
+        // inert state inherited from UI immediately
+        verifyInert(component, true);
+
+        fixture.collectUiChanges();
+
+        verifyInert(fixture.ui, true);
+        verifyInert(fixture.routingComponent, true);
+        verifyInert(fixture.modalComponent, false);
+        verifyInert(component, true);
+    }
+
+    @Test
+    public void modalComponent_addedAndRemovedBeforeResponse_noInertChanged() {
+        final TestFixture fixture = new TestFixture();
+
+        verifyInert(fixture.ui, false);
+        verifyInert(fixture.routingComponent, false);
+        verifyInert(fixture.modalComponent, false);
+
+        fixture.ui.remove(fixture.modalComponent);
+        fixture.collectUiChanges();
+
+        verifyInert(fixture.ui, false);
+        verifyInert(fixture.routingComponent, false);
+        verifyInert(fixture.modalComponent, false);
+    }
+
+    @Test
+    public void modalComponentsPresent_componentMoved_notModal() {
+        final TestFixture fixture = new TestFixture();
+        fixture.collectUiChanges();
+
+        fixture.ui.add(fixture.modalComponent);
+
+        verifyInert(fixture.ui, true);
+        verifyInert(fixture.routingComponent, true);
+        verifyInert(fixture.modalComponent, false);
+
+        fixture.collectUiChanges();
+
+        verifyInert(fixture.ui, false);
+        verifyInert(fixture.routingComponent, false);
+        verifyInert(fixture.modalComponent, false);
+    }
+
+    @Test
+    public void modalComponentPresent_sameModalAddedAgain_modeless() {
+        final TestFixture fixture = new TestFixture();
+        fixture.collectUiChanges();
+
+        fixture.ui.add(fixture.modalComponent);
+
+        verifyInert(fixture.ui, true);
+        verifyInert(fixture.routingComponent, true);
+        verifyInert(fixture.modalComponent, false);
+
+        fixture.collectUiChanges();
+
+        verifyInert(fixture.ui, false);
+        verifyInert(fixture.routingComponent, false);
+        verifyInert(fixture.modalComponent, false);
+    }
+
+    @Test
+    public void modalComponentPresent_toggleTopModalAgain_noChanges() {
+        final TestFixture fixture = new TestFixture();
+        fixture.collectUiChanges();
+
+        verifyInert(fixture.ui, true);
+        verifyInert(fixture.routingComponent, true);
+        verifyInert(fixture.modalComponent, false);
+
+        fixture.ui.setChildComponentModal(fixture.modalComponent, true);
+        fixture.collectUiChanges();
+
+        verifyInert(fixture.ui, true);
+        verifyInert(fixture.routingComponent, true);
+        verifyInert(fixture.modalComponent, false);
+    }
+
+    @Test
+    public void modelessComponentPresent_toggleModelessAgain_noChanges() {
+        final TestFixture fixture = new TestFixture();
+        fixture.ui.setChildComponentModal(fixture.modalComponent, false);
+        fixture.collectUiChanges();
+
+        verifyInert(fixture.ui, false);
+        verifyInert(fixture.routingComponent, false);
+        verifyInert(fixture.modalComponent, false);
+
+        fixture.ui.setChildComponentModal(fixture.modalComponent, true);
+        fixture.collectUiChanges();
+
+        verifyInert(fixture.ui, true);
+        verifyInert(fixture.routingComponent, true);
+        verifyInert(fixture.modalComponent, false);
+    }
+
+    @Test
+    public void twoModalComponents_lowerComponentModelssAndTopMostRemoved_routingComponentNotInert() {
+        final TestFixture fixture = new TestFixture();
+        final AttachableComponent secondModal = new AttachableComponent();
+        fixture.ui.addModal(secondModal);
+        fixture.collectUiChanges();
+
+        verifyInert(fixture.ui, true);
+        verifyInert(fixture.routingComponent, true);
+        verifyInert(fixture.modalComponent, true);
+        verifyInert(secondModal, false);
+
+        // (not a typical use case but tested anyway)
+        // the change of modality has no effect due to another modal component
+        // on top
+        fixture.ui.setChildComponentModal(fixture.modalComponent, false);
+        fixture.collectUiChanges();
+
+        verifyInert(fixture.ui, true);
+        verifyInert(fixture.routingComponent, true);
+        verifyInert(fixture.modalComponent, true);
+        verifyInert(secondModal, false);
+
+        fixture.ui.remove(secondModal);
+        fixture.collectUiChanges();
+
+        verifyInert(fixture.ui, false);
+        verifyInert(fixture.routingComponent, false);
+        verifyInert(fixture.modalComponent, false);
+    }
+
+    @Test
+    public void twoModalComponents_topComponentMoved_modalComponentSwitches() {
+        final TestFixture fixture = new TestFixture();
+        final AttachableComponent secondModal = new AttachableComponent();
+        fixture.ui.addModal(secondModal);
+        fixture.collectUiChanges();
+
+        verifyInert(fixture.ui, true);
+        verifyInert(fixture.routingComponent, true);
+        verifyInert(fixture.modalComponent, true);
+        verifyInert(secondModal, false);
+
+        fixture.ui.add(secondModal);
+        fixture.collectUiChanges();
+
+        verifyInert(fixture.ui, true);
+        verifyInert(fixture.routingComponent, true);
+        verifyInert(fixture.modalComponent, false);
+        verifyInert(secondModal, true);
+    }
+
+    @Test
+    public void twoModalComponents_lowerComponentModalAgain_topComponentInert() {
+        final TestFixture fixture = new TestFixture();
+        final AttachableComponent secondModal = new AttachableComponent();
+        fixture.ui.addModal(secondModal);
+        fixture.collectUiChanges();
+
+        fixture.ui.setChildComponentModal(fixture.modalComponent, true);
+        fixture.collectUiChanges();
+
+        verifyInert(fixture.ui, true);
+        verifyInert(fixture.routingComponent, true);
+        verifyInert(fixture.modalComponent, false);
+        verifyInert(secondModal, true);
+
+        fixture.ui.remove(fixture.modalComponent);
+        fixture.collectUiChanges();
+
+        verifyInert(fixture.ui, true);
+        verifyInert(fixture.routingComponent, true);
+        verifyInert(secondModal, false);
+    }
+
+    @Test
+    public void threeModalComponents_topComponentRemoved_onlyTopMostNotInert() {
+        final TestFixture fixture = new TestFixture();
+        final AttachableComponent secondModal = new AttachableComponent();
+        final AttachableComponent thirdModal = new AttachableComponent();
+        fixture.ui.addModal(secondModal);
+        fixture.ui.addModal(thirdModal);
+        fixture.collectUiChanges();
+
+        verifyInert(fixture.ui, true);
+        verifyInert(fixture.routingComponent, true);
+        verifyInert(fixture.modalComponent, true);
+        verifyInert(secondModal, true);
+        verifyInert(thirdModal, false);
+
+        fixture.ui.remove(thirdModal);
+        fixture.collectUiChanges();
+
+        verifyInert(fixture.ui, true);
+        verifyInert(fixture.routingComponent, true);
+        verifyInert(fixture.modalComponent, true);
+        verifyInert(secondModal, false);
+    }
+
+    private void verifyInert(Component component, boolean inert) {
+        Assert.assertEquals("Invalid inert state", inert,
+                component.getElement().getNode().isInert());
+    }
+
+    private static class TestFixture {
+        public final UI ui;
+        public final Component routingComponent;
+        public final Component modalComponent;
+
+        public TestFixture() {
+            ui = createTestUI();
+            initUI(ui, "", null);
+            routingComponent = ui.getChildren().findFirst().get();
+
+            modalComponent = new AttachableComponent();
+            ui.addModal(modalComponent);
+        }
+
+        public void collectUiChanges() {
+            ui.getInternals().getStateTree().collectChanges(nodeChange -> {
+            });
+        }
+    }
 }

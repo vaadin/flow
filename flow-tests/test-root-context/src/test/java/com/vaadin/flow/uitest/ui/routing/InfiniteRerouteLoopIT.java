@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,11 +17,14 @@ package com.vaadin.flow.uitest.ui.routing;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.flow.testcategory.SlowTests;
 
+@Category(SlowTests.class)
 public class InfiniteRerouteLoopIT extends ChromeBrowserTest {
 
     private static final String NAVIGATION_EXCEPTION = "navigation-exception";

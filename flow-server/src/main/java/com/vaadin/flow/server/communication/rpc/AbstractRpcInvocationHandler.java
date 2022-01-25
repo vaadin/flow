@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -44,27 +44,36 @@ public abstract class AbstractRpcInvocationHandler
         StateNode node = ui.getInternals().getStateTree()
                 .getNodeById(getNodeId(invocationJson));
         if (node == null) {
-            getLogger().warn("Got an RPC for non-existent node: {}",
+            getLogger().warn("Ignoring RPC for non-existent node: {}",
                     getNodeId(invocationJson));
             return Optional.empty();
         }
         if (!node.isAttached()) {
-            getLogger().warn("Got an RPC for detached node: {}",
+            getLogger().warn("Ignoring RPC for detached node: {}",
                     getNodeId(invocationJson));
             return Optional.empty();
         }
 
+        // ignore RPC requests from the client side for the nodes that are
+        // invisible, disabled or inert
         if (node.isInactive()) {
-            // ignore RPC requests from the client side for the nodes that are
-            // invisible or disabled
-            LoggerFactory.getLogger(AbstractRpcInvocationHandler.class).trace(
-                    "RPC request for invocation handler '{}' is recieved from "
-                            + "the client side for inactive node id='{}'",
+            getLogger().trace("Ignored RPC for invocation handler '{}' from "
+                    + "the client side for an inactive (disabled or invisible) node id='{}'",
+                    getClass().getName(), node.getId());
+            return Optional.empty();
+        } else if (!allowInert() && node.isInert()) {
+            getLogger().trace(
+                    "Ignored RPC for invocation handler '{}' from "
+                            + "the client side for an inert node id='{}'",
                     getClass().getName(), node.getId());
             return Optional.empty();
         } else {
             return handleNode(node, invocationJson);
         }
+    }
+
+    protected boolean allowInert() {
+        return false;
     }
 
     /**

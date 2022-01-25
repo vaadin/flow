@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -168,8 +168,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
 
         TaskUpdateWebpack newUpdater = new TaskUpdateWebpack(frontendFolder,
                 baseDir, new File(baseDir, "baz"), new File(baseDir, "foo"),
-                WEBPACK_CONFIG, WEBPACK_GENERATED, new File(baseDir, "bar"),
-                false,
+                new File(baseDir, "bar"), false,
                 new File(baseDir,
                         Paths.get(TARGET, DEFAULT_FLOW_RESOURCES_FOLDER)
                                 .toString()),
@@ -215,16 +214,12 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void should_disableOfflinePath_when_defaultInPwa()
-            throws IOException {
+    public void should_useAppShellPath_when_defaultInPwa() throws IOException {
         webpackUpdater.execute();
         String webpackGeneratedContents = Files.lines(webpackGenerated.toPath())
                 .collect(Collectors.joining("\n"));
-        Assert.assertTrue("offlinePathEnabled should be false by default",
-                webpackGeneratedContents
-                        .contains("const offlinePathEnabled = false;"));
-        Assert.assertTrue("offlinePath should be empty by default",
-                webpackGeneratedContents.contains("const offlinePath = '';"));
+        Assert.assertTrue("offlinePath should be appShellPath '.' by default",
+                webpackGeneratedContents.contains("const offlinePath = '.';"));
     }
 
     @Test
@@ -238,9 +233,6 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
         String webpackGeneratedContents = Files.lines(webpackGenerated.toPath())
                 .collect(Collectors.joining("\n"));
 
-        Assert.assertTrue("offlinePathEnabled should be true",
-                webpackGeneratedContents
-                        .contains("const offlinePathEnabled = true;"));
         Assert.assertTrue("offlinePath should be customizable",
                 webpackGeneratedContents
                         .contains("const offlinePath = 'off.html';"));
@@ -317,8 +309,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
     protected void createWebpackUpdater() {
         webpackUpdater = new TaskUpdateWebpack(frontendFolder, baseDir,
                 new File(baseDir, TARGET + "/webapp"),
-                new File(baseDir, TARGET + "/classes"), WEBPACK_CONFIG,
-                WEBPACK_GENERATED,
+                new File(baseDir, TARGET + "/classes"),
                 new File(baseDir,
                         Paths.get(Constants.TARGET, DEFAULT_GENERATED_DIR,
                                 IMPORTS_NAME).toString()),

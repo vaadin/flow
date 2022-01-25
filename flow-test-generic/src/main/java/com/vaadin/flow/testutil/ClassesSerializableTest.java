@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -69,6 +69,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.osgi\\.support\\..*",
                 "com\\.vaadin\\.flow\\.server\\.osgi\\..*",
                 "com\\.vaadin\\.base\\.devserver\\.DevServerOutputTracker.*",
+                "com\\.vaadin\\.base\\.devserver\\.stats..*",
                 "com\\.vaadin\\.flow\\.internal\\.VaadinContextInitializer",
                 "com\\.vaadin\\.flow\\.internal\\.ApplicationClassLoaderAccess",
                 "com\\.vaadin\\.base\\.devserver\\.BrowserLiveReloadAccessorImpl",
@@ -202,27 +203,9 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.FallibleCommand",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.NodeTasks",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.NodeUpdater",
-                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskCopyFrontendFiles",
-                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskCopyLocalFrontendFiles",
-                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskGeneratePackageJson",
-                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskRunNpmInstall",
-                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskUpdateImports(\\$.*)?",
-                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskUpdatePackages",
-                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskUpdateWebpack",
-                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskGenerateEndpointBase",
-                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskGenerateFusion",
-                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskGenerateOpenAPI",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.Task.*",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.AbstractTaskClientGenerator",
-                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskGenerateTsConfig",
-                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskGenerateIndexHtml",
-                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskGenerateIndexTs",
-                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskGenerateBootstrap",
-                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskGenerateTsDefinitions",
-                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskGenerateServiceWorker",
-                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskInstallWebpackPlugins",
-                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskUpdateThemeImport",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.EndpointGeneratorTaskFactory",
-                "com\\.vaadin\\.flow\\.server\\.frontend\\.TaskCopyTemplateFiles",
 
                 // Node downloader classes
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.DefaultArchiveExtractor",

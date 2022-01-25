@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -88,10 +88,15 @@ public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
 
         // contains:
         // - ExampleConnector.js
+        // - ExampleConnector.js.map
         // - inline.css
+        // - inline.css.map
+        // - example.ts
+        // - example.ts.map
         File jar = TestUtils.getTestJar(jarFile);
         // Contains:
         // - resourceInFolder.js
+        // - resourceInFolder.js.map
         File dir = TestUtils.getTestFolder(fsDir);
 
         TaskCopyFrontendFiles task = new TaskCopyFrontendFiles(
@@ -100,17 +105,36 @@ public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
         task.execute();
 
         List<String> files = TestUtils.listFilesRecursively(frontendDepsFolder);
-        Assert.assertEquals(3, files.size());
+        Assert.assertEquals(8, files.size());
 
-        Assert.assertTrue("Js resource should have been copied from jar file",
+        Assert.assertTrue("TS resource should have been copied from jar file",
+                files.contains("example.ts"));
+
+        Assert.assertTrue(
+                "TS resource source map should have been copied from jar file",
+                files.contains("example.ts.map"));
+
+        Assert.assertTrue("JS resource should have been copied from jar file",
                 files.contains("ExampleConnector.js"));
 
-        Assert.assertTrue("Css resource should have been copied from jar file",
+        Assert.assertTrue(
+                "JS resource source map should have been copied from jar file",
+                files.contains("ExampleConnector.js.map"));
+
+        Assert.assertTrue("CSS resource should have been copied from jar file",
                 files.contains("inline.css"));
 
         Assert.assertTrue(
-                "Js resource should have been copied from resource folder",
+                "CSS resource source map should have been copied from jar file",
+                files.contains("inline.css.map"));
+
+        Assert.assertTrue(
+                "JS resource should have been copied from resource folder",
                 files.contains("resourceInFolder.js"));
+
+        Assert.assertTrue(
+                "JS resource source map should have been copied from resource folder",
+                files.contains("resourceInFolder.js.map"));
     }
 
     private static Set<File> jars(File... files) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -94,8 +94,14 @@ public class DndUtil {
     //@formatter:on
 
     private static final String DND_POLYFILL_SCRIPT_KEY = "DND-POLYFILL-SCRIPT";
-    private static final String MOBILE_DND_POLYFILL_URL = "context://webjars/mobile-drag-drop/2.3.0-rc.1/index.min.js";
-    private static final String VAADIN_MOBILE_DND_POLYFILL_URL = "context://webjars/vaadin__vaadin-mobile-drag-drop/1.0.0/index.min.js";
+    /**
+     * NOTE: THIS NEEDS TO MATCH THE NPM-WEBJAR DEPENDENCY VERSION IN POM.XML
+     */
+    private static final String MOBILE_DND_POLYFILL_URL = "context://webjars/mobile-drag-drop/2.3.0-rc.2/index.min.js";
+    /**
+     * NOTE: THIS NEEDS TO MATCH THE NPM-WEBJAR DEPENDENCY VERSION IN POM.XML
+     */
+    private static final String VAADIN_MOBILE_DND_POLYFILL_URL = "context://webjars/vaadin__vaadin-mobile-drag-drop/1.0.1/index.min.js";
 
     private DndUtil() {
         // no instances from this class

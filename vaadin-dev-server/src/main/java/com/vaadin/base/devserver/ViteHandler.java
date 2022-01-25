@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,6 +16,8 @@
 package com.vaadin.base.devserver;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -24,7 +26,11 @@ import java.util.regex.Pattern;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.server.VaadinServletContext;
+import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+
+import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,14 +70,17 @@ public final class ViteHandler extends AbstractDevServerRunner {
     }
 
     @Override
-    protected List<String> getServerStartupCommand(String nodeExec) {
+    protected List<String> getServerStartupCommand(
+            FrontendTools frontendTools) {
         List<String> command = new ArrayList<>();
-        command.add(nodeExec);
+        command.add(frontendTools.getNodeExecutable());
         command.add(getServerBinary().getAbsolutePath());
         command.add("--config");
         command.add(getServerConfig().getAbsolutePath());
         command.add("--port");
         command.add(String.valueOf(getPort()));
+        command.add("--base");
+        command.add(getContextPath() + "/" + VAADIN_MAPPING);
 
         String customParameters = getApplicationConfiguration()
                 .getStringProperty(
@@ -117,4 +126,21 @@ public final class ViteHandler extends AbstractDevServerRunner {
         return LoggerFactory.getLogger(ViteHandler.class);
     }
 
+    @Override
+    public HttpURLConnection prepareConnection(String path, String method)
+            throws IOException {
+        if ("/index.html".equals(path)) {
+            return super.prepareConnection(
+                    getContextPath() + "/" + VAADIN_MAPPING + "index.html",
+                    method);
+        }
+
+        return super.prepareConnection(getContextPath() + path, method);
+    }
+
+    private String getContextPath() {
+        VaadinServletContext servletContext = (VaadinServletContext) getApplicationConfiguration()
+                .getContext();
+        return servletContext.getContext().getContextPath();
+    }
 }

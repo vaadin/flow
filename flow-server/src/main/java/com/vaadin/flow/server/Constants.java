@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -28,7 +28,7 @@ import java.io.Serializable;
 public final class Constants implements Serializable {
 
     // Keep the version number in sync with flow-push/pom.xml
-    public static final String REQUIRED_ATMOSPHERE_RUNTIME_VERSION = "2.4.30.slf4jvaadin1";
+    public static final String REQUIRED_ATMOSPHERE_RUNTIME_VERSION = "2.7.3.slf4jvaadin3";
 
     /**
      * The prefix used for System property parameters.
@@ -319,7 +319,7 @@ public final class Constants implements Serializable {
     /**
      * Constant for whether pnpm is default or not.
      */
-    public static final boolean ENABLE_PNPM_DEFAULT = true;
+    public static final boolean ENABLE_PNPM_DEFAULT = false;
 
     /**
      * Constant for setting the pinned supported version of pnpm to be used by
@@ -337,6 +337,11 @@ public final class Constants implements Serializable {
      * The default value for {@link #REQUIRE_HOME_NODE_EXECUTABLE}.
      */
     public static final boolean DEFAULT_REQUIRE_HOME_NODE_EXECUTABLE = false;
+
+    /**
+     * The default value for whether usage statistics is enabled.
+     */
+    public static final boolean DEFAULT_DEVMODE_STATS = true;
 
     /**
      * @deprecated Use {@link InitParameters#REQUIRE_HOME_NODE_EXECUTABLE}

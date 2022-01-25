@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -92,26 +92,8 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
     @Parameter(defaultValue = "true")
     private boolean optimizeBundle;
 
-    /**
-     * Copy the `webpack.config.js` from the specified URL if missing. Default
-     * is the template provided by this plugin. Set it to empty string to
-     * disable the feature.
-     */
-    @Parameter(defaultValue = FrontendUtils.WEBPACK_CONFIG)
-    private String webpackTemplate;
-
-    /**
-     * Copy the `webpack.generated.js` from the specified URL. Default is the
-     * template provided by this plugin. Set it to empty string to disable the
-     * feature.
-     */
-    @Parameter(defaultValue = FrontendUtils.WEBPACK_GENERATED)
-    private String webpackGeneratedTemplate;
-
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
-        BuildFrontendUtil.updateBuildFile(this);
-
         long start = System.nanoTime();
 
         try {
@@ -129,6 +111,8 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
                         exception);
             }
         }
+
+        BuildFrontendUtil.updateBuildFile(this);
 
         long ms = (System.nanoTime() - start) / 1000000;
         getLog().info("update-frontend took " + ms + "ms.");
@@ -162,18 +146,6 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
     public boolean runNpmInstall() {
 
         return runNpmInstall;
-    }
-
-    @Override
-    public String webpackGeneratedTemplate() {
-
-        return webpackGeneratedTemplate;
-    }
-
-    @Override
-    public String webpackTemplate() {
-
-        return webpackTemplate;
     }
 
 }

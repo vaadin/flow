@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -200,7 +201,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         assertTrue(atLeastOneRemoved);
         updater.run();
 
-        Assert.assertThat(logger.getLogs(),
+        MatcherAssert.assertThat(logger.getLogs(),
                 CoreMatchers.allOf(
                         CoreMatchers.containsString(
                                 "@vaadin/vaadin-lumo-styles/spacing.js"),
@@ -314,20 +315,18 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         expectedLines.add("import $css_4 from 'Frontend/foo.css';");
         expectedLines.add("import $css_5 from 'Frontend/foo.css';");
         expectedLines.add("import $css_6 from 'Frontend/foo.css';");
+        expectedLines.add("addCssBlock(`<style>${$css_0}</style>`);");
+        expectedLines.add("addCssBlock(`<style>${$css_1}</style>`);");
         expectedLines.add(
-                "addCssBlock(`<custom-style><style>${$css_0}</style></custom-style>`);");
+                "addCssBlock(`<style include=\"bar\">${$css_2}</style>`);");
+        expectedLines
+                .add("registerStyles('', css`${$css_3}`, {moduleId: 'baz'});");
         expectedLines.add(
-                "addCssBlock(`<custom-style><style>${$css_1}</style></custom-style>`);");
+                "registerStyles('', css`${$css_4}`, {include: 'bar', moduleId: 'baz'});");
         expectedLines.add(
-                "addCssBlock(`<custom-style><style include=\"bar\">${$css_2}</style></custom-style>`);");
+                "registerStyles('foo-bar', css`${$css_5}`, {moduleId: 'flow_css_mod'});");
         expectedLines.add(
-                "addCssBlock(`<dom-module id=\"baz\"><template><style>${$css_3}</style></template></dom-module>`);");
-        expectedLines.add(
-                "addCssBlock(`<dom-module id=\"baz\"><template><style include=\"bar\">${$css_4}</style></template></dom-module>`);");
-        expectedLines.add(
-                "addCssBlock(`<dom-module id=\"flow_css_mod_5\" theme-for=\"foo-bar\"><template><style>${$css_5}</style></template></dom-module>`);");
-        expectedLines.add(
-                "addCssBlock(`<dom-module id=\"flow_css_mod_6\" theme-for=\"foo-bar\"><template><style include=\"bar\">${$css_6}</style></template></dom-module>`);");
+                "registerStyles('foo-bar', css`${$css_6}`, {include: 'bar', moduleId: 'flow_css_mod'});");
 
         expectedLines.add("import 'generated-modules-foo';");
         expectedLines.add("import 'generated-modules-bar';");
@@ -343,19 +342,20 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
         String output = logger.getLogs();
 
-        Assert.assertThat(output, CoreMatchers.containsString(
+        MatcherAssert.assertThat(output, CoreMatchers.containsString(
                 "Use the './' prefix for files in JAR files: 'ExampleConnector.js'"));
-        Assert.assertThat(output, CoreMatchers
+        MatcherAssert.assertThat(output, CoreMatchers
                 .containsString("Use the './' prefix for files in the '"
                         + frontendDirectory.getPath()
                         + "' folder: 'vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js'"));
 
         // Using regex match because of the ➜ character in TC
-        Assert.assertThat(output, CoreMatchers.containsString(
+        MatcherAssert.assertThat(output, CoreMatchers.containsString(
                 "Failed to find the following imports in the `node_modules` tree:\n      - unresolved/component"));
 
-        Assert.assertThat(output, CoreMatchers.not(CoreMatchers.containsString(
-                "changing 'frontend://foo-dir/javascript-lib.js' to './foo-dir/javascript-lib.js'")));
+        MatcherAssert.assertThat(output,
+                CoreMatchers.not(CoreMatchers.containsString(
+                        "changing 'frontend://foo-dir/javascript-lib.js' to './foo-dir/javascript-lib.js'")));
     }
 
     @Test

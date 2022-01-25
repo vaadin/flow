@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -42,7 +42,7 @@ public class LazyWidgetIT extends ChromeBrowserTest {
         String input = "InputMaster";
         Assert.assertFalse(
                 "No greeting should be present before we press the button",
-                isPresentInShadowRoot(template, By.id("greeting")));
+                template.$("*").attribute("id", "greeting").exists());
 
         template.$(TestBenchElement.class).id("input").sendKeys(input);
         template.$(TestBenchElement.class).id("button").click();

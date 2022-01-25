@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,9 +16,14 @@
 package com.vaadin.flow.dom;
 
 import java.util.EventObject;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
+import com.vaadin.flow.internal.NodeOwner;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.shared.JsonConstants;
 
 import elemental.json.JsonObject;
@@ -78,22 +83,45 @@ public class DomEvent extends EventObject {
 
     private static Element extractEventTarget(JsonObject eventData,
             Element currentTarget) {
-        JsonValue jsonValue = eventData.get(JsonConstants.MAP_EVENT_TARGET);
-        if (jsonValue == null) {
+        return extractElement(eventData, currentTarget,
+                JsonConstants.MAP_STATE_NODE_EVENT_DATA, false);
+    }
+
+    static Element extractElement(JsonObject eventData, Element source,
+            String key, boolean lookUnderUI) {
+        assert key.startsWith(JsonConstants.MAP_STATE_NODE_EVENT_DATA);
+        if (!eventData.hasKey(key)) {
             return null;
-        } else {
-            int id = (int) jsonValue.asNumber();
-            if (id == -1) {
-                return null;
-            }
-            AtomicReference<Element> matchingNode = new AtomicReference<>();
-            currentTarget.getNode().visitNodeTree(node -> {
-                if (node.getId() == id) {
-                    matchingNode.set(Element.get(node));
-                }
-            });
-            return matchingNode.get();
         }
+        final JsonValue reportedStateNodeId = eventData.get(key);
+        if (reportedStateNodeId == null) {
+            return null;
+        }
+        int id = (int) reportedStateNodeId.asNumber();
+        if (id == -1) {
+            return null;
+        }
+        AtomicReference<Element> matchingNode = new AtomicReference<>();
+        final Consumer<StateNode> visitor = node -> {
+            if (node.getId() == id) {
+                matchingNode.set(Element.get(node));
+            }
+        };
+        // first look under event source
+        source.getNode().visitNodeTree(visitor);
+        if (lookUnderUI && matchingNode.get() == null) {
+            // widen search to look under UI too
+            final NodeOwner owner = source.getNode().getOwner();
+            if (owner instanceof StateTree) {
+                ((StateTree) owner).getRootNode().visitNodeTree(visitor);
+            }
+        }
+        final Element mappedElementOrNull = matchingNode.get();
+        // prevent spoofing invisible elements by sending bad state node ids
+        if (mappedElementOrNull != null && !mappedElementOrNull.isVisible()) {
+            return null;
+        }
+        return mappedElementOrNull;
     }
 
     /**
@@ -161,5 +189,37 @@ public class DomEvent extends EventObject {
      */
     public Optional<Element> getEventTarget() {
         return Optional.ofNullable(eventTarget);
+    }
+
+    /**
+     * Gets the closest {@link Element} corresponding to the given event data
+     * expression. <em>NOTE:</em> this only works if you have added the
+     * expression using
+     * {@link DomListenerRegistration#addEventDataElement(String)}.
+     * <p>
+     * If the evaluated JS expression returned an element that is not created or
+     * controlled by the server side, the closest parent element that is
+     * controlled is returned instead. Invisible elements are not reported.
+     * <p>
+     * In case you want the {@code event.target} element, use
+     * {@link #getEventTarget()} instead.
+     * 
+     * @param eventDataExpression
+     *            the expression that was executed on the client to retrieve the
+     *            element, not <code>null</code>
+     * @return the element that corresponds to the given expression or an empty
+     *         optional
+     * @since 9.0
+     */
+    public Optional<Element> getEventDataElement(String eventDataExpression) {
+        Objects.requireNonNull(eventDataExpression);
+        if (Objects.equals(eventDataExpression, "event.target")) {
+            return getEventTarget();
+        } else {
+            return Optional.ofNullable(extractElement(eventData, getSource(),
+                    JsonConstants.MAP_STATE_NODE_EVENT_DATA
+                            + eventDataExpression,
+                    true));
+        }
     }
 }

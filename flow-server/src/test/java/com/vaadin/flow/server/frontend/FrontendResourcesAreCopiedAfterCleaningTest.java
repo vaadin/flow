@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -58,14 +58,14 @@ public class FrontendResourcesAreCopiedAfterCleaningTest {
     public void frontendResources_should_beCopiedFromJars_when_TaskUpdatePackagesRemovesThem()
             throws IOException, ExecutionFailedException {
         copyResources();
-        assertCopiedFrontendFileAmount(3);
+        assertCopiedFrontendFileAmount(6/* jar files */ + 1/* package.json */);
 
         performPackageClean();
         // Should keep the `package.json` file
         assertCopiedFrontendFileAmount(1);
 
         copyResources();
-        assertCopiedFrontendFileAmount(3);
+        assertCopiedFrontendFileAmount(6/* jar files */ + 1/* package.json */);
     }
 
     private void assertCopiedFrontendFileAmount(int fileCount)

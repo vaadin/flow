@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,6 +18,7 @@ package com.vaadin.flow.router.internal;
 import java.util.Collections;
 import java.util.List;
 
+import org.hamcrest.MatcherAssert;
 import org.hamcrest.collection.IsIterableContainingInOrder;
 import org.junit.Assert;
 import org.junit.Test;
@@ -287,14 +288,14 @@ public class RouteUtilTest {
                 .getParentLayouts(BaseRouteWithParentPrefixAndRouteAlias.class,
                         "parent");
 
-        Assert.assertThat(
+        MatcherAssert.assertThat(
                 "Get parent layouts for route \"\" with parent prefix \"parent\" gave wrong result.",
                 parentLayouts, IsIterableContainingInOrder
                         .contains(new Class[] { RoutePrefixParent.class }));
 
         parentLayouts = RouteUtil.getParentLayouts(RootWithParents.class, "");
 
-        Assert.assertThat(
+        MatcherAssert.assertThat(
                 "Expected to receive MiddleParent and Parent classes as parents.",
                 parentLayouts, IsIterableContainingInOrder.contains(
                         new Class[] { MiddleParent.class, Parent.class }));
@@ -309,7 +310,7 @@ public class RouteUtilTest {
         Assert.assertEquals("Expected one parent layout", 1,
                 parentLayouts.size());
 
-        Assert.assertThat(
+        MatcherAssert.assertThat(
                 "Get parent layouts for route \"\" with parent prefix \"parent\" gave wrong result.",
                 parentLayouts, IsIterableContainingInOrder
                         .contains(new Class[] { Parent.class }));
@@ -321,7 +322,7 @@ public class RouteUtilTest {
                 .getParentLayouts(RouteAliasWithParentPrefix.class,
                         "aliasparent/alias");
 
-        Assert.assertThat(
+        MatcherAssert.assertThat(
                 "Get parent layouts for route \"\" with parent prefix \"parent\" gave wrong result.",
                 parentLayouts, IsIterableContainingInOrder.contains(
                         new Class[] { RouteAliasPrefixParent.class }));
@@ -332,7 +333,7 @@ public class RouteUtilTest {
         List<Class<? extends RouterLayout>> parentLayouts = RouteUtil
                 .getParentLayouts(AbsoluteRoute.class, "single");
 
-        Assert.assertThat(
+        MatcherAssert.assertThat(
                 "Get parent layouts for route \"\" with parent prefix \"parent\" gave wrong result.",
                 parentLayouts, IsIterableContainingInOrder
                         .contains(new Class[] { RoutePrefixParent.class }));
@@ -340,7 +341,7 @@ public class RouteUtilTest {
         parentLayouts = RouteUtil.getParentLayouts(AbsoluteCenterRoute.class,
                 "absolute/child");
 
-        Assert.assertThat(
+        MatcherAssert.assertThat(
                 "Expected to receive MiddleParent and Parent classes as parents.",
                 parentLayouts,
                 IsIterableContainingInOrder.contains(new Class[] {
@@ -352,7 +353,7 @@ public class RouteUtilTest {
         List<Class<? extends RouterLayout>> parentLayouts = RouteUtil
                 .getParentLayouts(AbsoluteRoute.class, "alias");
 
-        Assert.assertThat(
+        MatcherAssert.assertThat(
                 "Get parent layouts for route \"\" with parent prefix \"parent\" gave wrong result.",
                 parentLayouts, IsIterableContainingInOrder
                         .contains(new Class[] { RoutePrefixParent.class }));
@@ -360,7 +361,7 @@ public class RouteUtilTest {
         parentLayouts = RouteUtil.getParentLayouts(AbsoluteCenterRoute.class,
                 "absolute/alias");
 
-        Assert.assertThat(
+        MatcherAssert.assertThat(
                 "Expected to receive MiddleParent and Parent classes as parents.",
                 parentLayouts,
                 IsIterableContainingInOrder.contains(new Class[] {
@@ -404,14 +405,14 @@ public class RouteUtilTest {
         List<Class<? extends RouterLayout>> parentLayouts = RouteUtil
                 .getParentLayouts(MultiTarget.class, "");
 
-        Assert.assertThat(
+        MatcherAssert.assertThat(
                 "Get parent layouts for route \"\" gave wrong result.",
                 parentLayouts, IsIterableContainingInOrder
                         .contains(new Class[] { Parent.class }));
 
         parentLayouts = RouteUtil.getParentLayouts(MultiTarget.class, "alias");
 
-        Assert.assertThat(
+        MatcherAssert.assertThat(
                 "Get parent layouts for routeAlias \"alias\" gave wrong result.",
                 parentLayouts, IsIterableContainingInOrder.contains(
                         new Class[] { MiddleParent.class, Parent.class }));
@@ -419,7 +420,7 @@ public class RouteUtilTest {
         parentLayouts = RouteUtil.getParentLayouts(SubLayout.class,
                 "parent/sub");
 
-        Assert.assertThat(
+        MatcherAssert.assertThat(
                 "Get parent layouts for route \"parent/sub\" with parent Route + ParentLayout gave wrong result.",
                 parentLayouts,
                 IsIterableContainingInOrder.contains(new Class[] {

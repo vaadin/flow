@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -28,8 +28,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -68,18 +70,14 @@ abstract class AbstractUpdateImports implements Runnable {
             + " document.head[before ? 'insertBefore' : 'appendChild'](tpl.content, document.head.firstChild);\n"
             + "};";
 
-    private static final String CSS_PRE = "import $css_%d from '%s';%n"
-            + "addCssBlock(`";
+    private static final String CSS_IMPORT = "import $css_%d from '%s';";
+    private static final String CSS_PRE = CSS_IMPORT + "%n" + "addCssBlock(`";
     private static final String CSS_POST = "`);";
     private static final String CSS_BASIC_TPL = CSS_PRE
-            + "<custom-style><style%s>${$css_%d}</style></custom-style>"
-            + CSS_POST;
-    private static final String CSS_MODULE_TPL = CSS_PRE
-            + "<dom-module id=\"%s\"><template><style%s>${$css_%d}</style></template></dom-module>"
-            + CSS_POST;
-    private static final String CSS_THEME_FOR_TPL = CSS_PRE
-            + "<dom-module id=\"%s_%d\" theme-for=\"%s\"><template><style%s>${$css_%d}</style></template></dom-module>"
-            + CSS_POST;
+            + "<style%s>${$css_%d}</style>" + CSS_POST;
+    private static final String THEMABLE_MIXIN_IMPORT = "import { css, registerStyles } from '@vaadin/vaadin-themable-mixin';";
+    private static final String REGISTER_STYLES_FOR_TEMPLATE = CSS_IMPORT + "%n"
+            + "registerStyles('%s', css`${$css_%d}`%s);";
 
     private static final String IMPORT_TEMPLATE = "import '%s';";
 
@@ -480,17 +478,41 @@ abstract class AbstractUpdateImports implements Runnable {
         String cssFile = resolveResource(cssData.getValue());
         boolean found = importedFileExists(cssFile);
         String cssImport = toValidBrowserImport(cssFile);
-        String include = cssData.getInclude() != null
-                ? " include=\"" + cssData.getInclude() + "\""
-                : "";
 
-        if (cssData.getThemefor() != null) {
-            addLines(lines, String.format(CSS_THEME_FOR_TPL, i, cssImport,
-                    getThemeIdPrefix(), i, cssData.getThemefor(), include, i));
-        } else if (cssData.getId() != null) {
-            addLines(lines, String.format(CSS_MODULE_TPL, i, cssImport,
-                    cssData.getId(), include, i));
+        Map<String, String> optionalsMap = new LinkedHashMap<>();
+        if (cssData.getInclude() != null) {
+            optionalsMap.put("include", cssData.getInclude());
+        }
+        if (cssData.getId() != null && cssData.getThemefor() != null) {
+            throw new IllegalStateException(
+                    "provide either id or themeFor for @CssImport of resource "
+                            + cssData.getValue() + ", not both");
+        }
+        if (cssData.getId() != null) {
+            optionalsMap.put("moduleId", cssData.getId());
+        } else if (cssData.getThemefor() != null) {
+            optionalsMap.put("moduleId", getThemeIdPrefix());
+        }
+        String optionals = "";
+        if (!optionalsMap.isEmpty()) {
+            optionals = ", " + optionalsMap.keySet().stream()
+                    .map(k -> k + ": '" + optionalsMap.get(k) + "'")
+                    .collect(Collectors.joining(", ", "{", "}"));
+        }
+
+        if (cssData.getThemefor() != null || cssData.getId() != null) {
+            if (!lines.contains(THEMABLE_MIXIN_IMPORT)) {
+                addLines(lines, THEMABLE_MIXIN_IMPORT);
+            }
+            String themeFor = cssData.getThemefor() != null
+                    ? cssData.getThemefor()
+                    : "";
+            addLines(lines, String.format(REGISTER_STYLES_FOR_TEMPLATE, i,
+                    cssImport, themeFor, i, optionals));
         } else {
+            String include = cssData.getInclude() != null
+                    ? " include=\"" + cssData.getInclude() + "\""
+                    : "";
             addLines(lines,
                     String.format(CSS_BASIC_TPL, i, cssImport, include, i));
         }

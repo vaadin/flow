@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -51,11 +51,6 @@ import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_STATIC_FILES_PA
  */
 public class TaskUpdateWebpack implements FallibleCommand {
 
-    /**
-     * The name of the webpack config file.
-     */
-    private final String webpackTemplate;
-    private final String webpackGeneratedTemplate;
     private final Path webpackOutputPath;
     private final Path resourceOutputPath;
     private final Path flowImportsFilePath;
@@ -79,12 +74,6 @@ public class TaskUpdateWebpack implements FallibleCommand {
      *            the directory to set for webpack to output its build results.
      * @param resourceOutputDirectory
      *            the directory for generated non-served resources.
-     * @param webpackTemplate
-     *            name of the webpack resource to be used as template when
-     *            creating the <code>webpack.config.js</code> file.
-     * @param webpackGeneratedTemplate
-     *            name of the webpack resource to be used as template when
-     *            creating the <code>webpack.generated.js</code> file.
      * @param generatedFlowImports
      *            name of the JS file to update with the Flow project imports
      * @param useV14Bootstrapping
@@ -95,18 +84,15 @@ public class TaskUpdateWebpack implements FallibleCommand {
      * @param frontendGeneratedFolder
      *            the folder with frontend auto-generated files
      * @param buildFolder
-     *            build target forlder
+     *            build target folder
      */
     @SuppressWarnings("squid:S00107")
     TaskUpdateWebpack(File frontendDirectory, File webpackConfigFolder,
             File webpackOutputDirectory, File resourceOutputDirectory,
-            String webpackTemplate, String webpackGeneratedTemplate,
             File generatedFlowImports, boolean useV14Bootstrapping,
             File flowResourcesFolder, PwaConfiguration pwaConfiguration,
             File frontendGeneratedFolder, String buildFolder) {
         this.frontendDirectory = frontendDirectory.toPath();
-        this.webpackTemplate = webpackTemplate;
-        this.webpackGeneratedTemplate = webpackGeneratedTemplate;
         this.webpackOutputPath = webpackOutputDirectory.toPath();
         this.resourceOutputPath = resourceOutputDirectory.toPath();
         this.flowImportsFilePath = generatedFlowImports.toPath();
@@ -130,10 +116,6 @@ public class TaskUpdateWebpack implements FallibleCommand {
     }
 
     private void createWebpackConfig() throws IOException {
-        if (webpackTemplate == null || webpackTemplate.trim().isEmpty()) {
-            return;
-        }
-
         File configFile = new File(webpackConfigPath.toFile(), WEBPACK_CONFIG);
 
         // If we have an old config file we remove it and create the new one
@@ -149,7 +131,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
             }
         } else {
             URL resource = this.getClass().getClassLoader()
-                    .getResource(webpackTemplate);
+                    .getResource(FrontendUtils.WEBPACK_CONFIG);
             FileUtils.copyURLToFile(resource, configFile);
             log().debug("Created webpack configuration file: '{}'", configFile);
         }
@@ -159,7 +141,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
                 WEBPACK_GENERATED);
 
         URL resource = this.getClass().getClassLoader()
-                .getResource(webpackGeneratedTemplate);
+                .getResource(FrontendUtils.WEBPACK_GENERATED);
         FileUtils.copyURLToFile(resource, generatedFile);
         List<String> lines = modifyWebpackConfig(generatedFile);
 
@@ -210,9 +192,6 @@ public class TaskUpdateWebpack implements FallibleCommand {
                         getClientEntryPoint()),
                 new Pair<>("const pwaEnabled",
                         Boolean.toString(pwaConfiguration.isEnabled())),
-                new Pair<>("const offlinePathEnabled",
-                        Boolean.toString(
-                                pwaConfiguration.isOfflinePathEnabled())),
                 new Pair<>("const offlinePath", getOfflinePath()),
                 new Pair<>("const clientServiceWorkerEntryPoint",
                         getClientServiceWorker()),
@@ -255,8 +234,11 @@ public class TaskUpdateWebpack implements FallibleCommand {
     }
 
     private String getOfflinePath() {
-        return "'" + getEscapedRelativeWebpackPath(
-                Paths.get(pwaConfiguration.getOfflinePath())) + "'";
+        if (pwaConfiguration.isOfflinePathEnabled()) {
+            return "'" + getEscapedRelativeWebpackPath(
+                    Paths.get(pwaConfiguration.getOfflinePath())) + "'";
+        }
+        return "'.'";
     }
 
     private String formatPathResolve(String path) {

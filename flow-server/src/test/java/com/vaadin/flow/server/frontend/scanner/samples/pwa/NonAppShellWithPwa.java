@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,7 +16,6 @@
 
 package com.vaadin.flow.server.frontend.scanner.samples.pwa;
 
-import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.server.PWA;
 
 @PWA(name = "PWA Application", shortName = "PWA", description = "Testing PWA", display = "minimal-ui", backgroundColor = "#eee", themeColor = "#369", iconPath = "pwa.png", manifestPath = "appmanifest.json", offlinePath = "pwa.html", offlineResources = {

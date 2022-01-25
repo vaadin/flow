@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -30,6 +30,7 @@ import java.util.stream.IntStream;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
@@ -68,15 +69,13 @@ public class NodeTasks implements FallibleCommand {
 
         private File resourceOutputDirectory = null;
 
-        private String webpackTemplate = null;
-
-        private String webpackGeneratedTemplate = null;
-
         private boolean enablePackagesUpdate = false;
 
         private boolean createMissingPackageJson = false;
 
         private boolean enableImportsUpdate = false;
+
+        private boolean enableWebpackConfigUpdate = false;
 
         private boolean runNpmInstall = false;
 
@@ -96,17 +95,17 @@ public class NodeTasks implements FallibleCommand {
 
         private File tokenFile;
 
-        private boolean enablePnpm;
+        private boolean enablePnpm = Constants.ENABLE_PNPM_DEFAULT;
 
         private boolean useGlobalPnpm = false;
 
-        private File fusionJavaSourceFolder;
+        private File endpointSourceFolder;
 
-        private File fusionGeneratedOpenAPIFile;
+        private File endpointGeneratedOpenAPIFile;
 
-        private File fusionApplicationProperties;
+        private File applicationProperties;
 
-        private File fusionClientAPIFolder;
+        private File frontendGeneratedFolder;
 
         private boolean requireHomeNodeExec;
 
@@ -157,6 +156,11 @@ public class NodeTasks implements FallibleCommand {
          * The resource folder for java resources.
          */
         private File javaResourceFolder;
+
+        /**
+         * Additional npm packages to run postinstall for.
+         */
+        private List<String> postinstallPackages;
 
         /**
          * Create a builder instance given an specific npm folder.
@@ -242,21 +246,13 @@ public class NodeTasks implements FallibleCommand {
          *            the directory to output generated non-served resources,
          *            such as the "config/stats.json" stats file, and the
          *            "config/flow-build-info.json" token file.
-         * @param webpackTemplate
-         *            name of the webpack resource to be used as template when
-         *            creating the <code>webpack.config.js</code> file.
-         * @param webpackGeneratedTemplate
-         *            name of the webpack resource to be used as template when
-         *            creating the <code>webpack.generated.js</code> file.
          * @return this builder
          */
         public Builder withWebpack(File webappResourcesDirectory,
-                File resourceOutputDirectory, String webpackTemplate,
-                String webpackGeneratedTemplate) {
+                File resourceOutputDirectory) {
+            this.enableWebpackConfigUpdate = true;
             this.webappResourcesDirectory = webappResourcesDirectory;
             this.resourceOutputDirectory = resourceOutputDirectory;
-            this.webpackTemplate = webpackTemplate;
-            this.webpackGeneratedTemplate = webpackGeneratedTemplate;
             return this;
         }
 
@@ -415,14 +411,15 @@ public class NodeTasks implements FallibleCommand {
         }
 
         /**
-         * Set the folder where Ts files should be generated.
+         * Set the folder where frontend files should be generated.
          *
-         * @param fusionClientTsApiFolder
-         *            folder for Ts files in the frontend.
+         * @param frontendGeneratedFolder
+         *            folder to generate frontend files in.
          * @return the builder, for chaining
          */
-        public Builder withFusionClientAPIFolder(File fusionClientTsApiFolder) {
-            this.fusionClientAPIFolder = fusionClientTsApiFolder;
+        public Builder withFrontendGeneratedFolder(
+                File frontendGeneratedFolder) {
+            this.frontendGeneratedFolder = frontendGeneratedFolder;
             return this;
         }
 
@@ -433,34 +430,33 @@ public class NodeTasks implements FallibleCommand {
          *            application properties file.
          * @return this builder, for chaining
          */
-        public Builder withFusionApplicationProperties(
-                File applicationProperties) {
-            this.fusionApplicationProperties = applicationProperties;
+        public Builder withApplicationProperties(File applicationProperties) {
+            this.applicationProperties = applicationProperties;
             return this;
         }
 
         /**
          * Set output location for the generated OpenAPI file.
          *
-         * @param generatedOpenAPIFile
+         * @param endpointGeneratedOpenAPIFile
          *            the generated output file.
          * @return the builder, for chaining
          */
-        public Builder withFusionGeneratedOpenAPIJson(
-                File generatedOpenAPIFile) {
-            this.fusionGeneratedOpenAPIFile = generatedOpenAPIFile;
+        public Builder withEndpointGeneratedOpenAPIFile(
+                File endpointGeneratedOpenAPIFile) {
+            this.endpointGeneratedOpenAPIFile = endpointGeneratedOpenAPIFile;
             return this;
         }
 
         /**
          * Set source paths that OpenAPI generator searches for endpoints.
          *
-         * @param fusionJavaSourceFolder
+         * @param endpointSourceFolder
          *            java source folder
          * @return the builder, for chaining
          */
-        public Builder withFusionJavaSourceFolder(File fusionJavaSourceFolder) {
-            this.fusionJavaSourceFolder = fusionJavaSourceFolder;
+        public Builder withEndpointSourceFolder(File endpointSourceFolder) {
+            this.endpointSourceFolder = endpointSourceFolder;
             return this;
         }
 
@@ -666,6 +662,22 @@ public class NodeTasks implements FallibleCommand {
             }
             return featureFlags;
         }
+
+        /**
+         * Sets the additional npm packages to run {@code postinstall} for.
+         * <p>
+         * By default, postinstall is only run for internal dependencies which
+         * rely on post install scripts to work, e.g. esbuild
+         *
+         * @param postinstallPackages
+         *            the additional npm packages to run postinstall for
+         * @return the builder, for chaining
+         */
+        public Builder withPostinstallPackages(
+                List<String> postinstallPackages) {
+            this.postinstallPackages = postinstallPackages;
+            return this;
+        }
     }
 
     // @formatter:off
@@ -676,12 +688,15 @@ public class NodeTasks implements FallibleCommand {
             TaskGeneratePackageJson.class,
             TaskGenerateIndexHtml.class,
             TaskGenerateIndexTs.class,
+            TaskGenerateViteDevMode.class,
             TaskGenerateTsConfig.class,
             TaskGenerateTsDefinitions.class,
             TaskGenerateServiceWorker.class,
+            TaskGenerateHilla.class,
             TaskGenerateOpenAPI.class,
-            TaskGenerateFusion.class,
+            TaskGenerateEndpoint.class,
             TaskGenerateBootstrap.class,
+            TaskGenerateFeatureFlags.class,
             TaskInstallWebpackPlugins.class,
             TaskUpdatePackages.class,
             TaskRunNpmInstall.class,
@@ -704,13 +719,10 @@ public class NodeTasks implements FallibleCommand {
                 builder.classFinder);
         FrontendDependenciesScanner frontendDependencies = null;
 
-        boolean enableWebpackConfigUpdate = builder.webpackTemplate != null
-                && !builder.webpackTemplate.isEmpty();
-
         final FeatureFlags featureFlags = builder.getFeatureFlags();
 
         if (builder.enablePackagesUpdate || builder.enableImportsUpdate
-                || enableWebpackConfigUpdate) {
+                || builder.enableWebpackConfigUpdate) {
             frontendDependencies = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
                     .createScanner(!builder.useByteCodeScanner, classFinder,
                             builder.generateEmbeddableWebComponents,
@@ -735,10 +747,11 @@ public class NodeTasks implements FallibleCommand {
 
             }
             if (packageUpdater != null && builder.runNpmInstall) {
-                commands.add(new TaskRunNpmInstall(classFinder, packageUpdater,
+                commands.add(new TaskRunNpmInstall(packageUpdater,
                         builder.enablePnpm, builder.requireHomeNodeExec,
                         builder.nodeVersion, builder.nodeDownloadRoot,
-                        builder.useGlobalPnpm, builder.nodeAutoUpdate));
+                        builder.useGlobalPnpm, builder.nodeAutoUpdate,
+                        builder.postinstallPackages));
 
                 commands.add(new TaskInstallWebpackPlugins(
                         new File(builder.npmFolder, builder.buildDirectory)));
@@ -763,15 +776,25 @@ public class NodeTasks implements FallibleCommand {
         if (!builder.useDeprecatedV14Bootstrapping) {
             addBootstrapTasks(builder);
 
-            if (builder.fusionJavaSourceFolder != null
-                    && builder.fusionJavaSourceFolder.exists()
-                    && builder.fusionGeneratedOpenAPIFile != null) {
-                addFusionServicesTasks(builder);
+            TaskGenerateHilla hillaTask = builder.lookup
+                    .lookup(TaskGenerateHilla.class);
+            // use the new Hilla generator if available, otherwise the old
+            // generator.
+            if (hillaTask != null) {
+                commands.add(hillaTask);
+            } else {
+                if (builder.endpointSourceFolder != null
+                        && builder.endpointSourceFolder.exists()
+                        && builder.endpointGeneratedOpenAPIFile != null) {
+                    addEndpointServicesTasks(builder);
+                }
             }
 
             commands.add(new TaskGenerateBootstrap(frontendDependencies,
-                    builder.frontendDirectory, builder.buildDirectory,
-                    builder.productionMode));
+                    builder.frontendDirectory, builder.productionMode));
+
+            commands.add(new TaskGenerateFeatureFlags(builder.frontendDirectory,
+                    featureFlags));
         }
 
         if (builder.jarFiles != null && builder.flowResourcesFolder != null) {
@@ -787,23 +810,29 @@ public class NodeTasks implements FallibleCommand {
 
         if (featureFlags.isEnabled(FeatureFlags.VITE)) {
             String themeName = "";
+            PwaConfiguration pwa;
             if (frontendDependencies != null) {
-                themeName = frontendDependencies.getThemeDefinition().getName();
+                if (frontendDependencies.getThemeDefinition() != null) {
+                    themeName = frontendDependencies.getThemeDefinition()
+                            .getName();
+                }
+                pwa = frontendDependencies.getPwaConfiguration();
+            } else {
+                pwa = new PwaConfiguration();
             }
-            commands.add(new TaskUpdateSettingsFile(builder, themeName));
+            commands.add(new TaskUpdateSettingsFile(builder, themeName, pwa));
             commands.add(new TaskUpdateVite(builder.npmFolder,
                     builder.buildDirectory));
-        } else if (enableWebpackConfigUpdate) {
+        } else if (builder.enableWebpackConfigUpdate) {
             PwaConfiguration pwaConfiguration = frontendDependencies
                     .getPwaConfiguration();
             commands.add(new TaskUpdateWebpack(builder.frontendDirectory,
                     builder.npmFolder, builder.webappResourcesDirectory,
-                    builder.resourceOutputDirectory, builder.webpackTemplate,
-                    builder.webpackGeneratedTemplate,
+                    builder.resourceOutputDirectory,
                     new File(builder.generatedFolder, IMPORTS_NAME),
                     builder.useDeprecatedV14Bootstrapping,
                     builder.flowResourcesFolder, pwaConfiguration,
-                    builder.fusionClientAPIFolder, builder.buildDirectory));
+                    builder.frontendGeneratedFolder, builder.buildDirectory));
         }
 
         if (builder.enableImportsUpdate) {
@@ -818,7 +847,8 @@ public class NodeTasks implements FallibleCommand {
 
             commands.add(new TaskUpdateThemeImport(builder.npmFolder,
                     frontendDependencies.getThemeDefinition(),
-                    builder.frontendDirectory, builder.fusionClientAPIFolder));
+                    builder.frontendDirectory,
+                    builder.frontendGeneratedFolder));
         }
 
         if (builder.copyTemplates) {
@@ -831,13 +861,18 @@ public class NodeTasks implements FallibleCommand {
         TaskGenerateIndexHtml taskGenerateIndexHtml = new TaskGenerateIndexHtml(
                 builder.frontendDirectory);
         commands.add(taskGenerateIndexHtml);
-        File outputDirectory = new File(builder.npmFolder,
+        File buildDirectory = new File(builder.npmFolder,
                 builder.buildDirectory);
         TaskGenerateIndexTs taskGenerateIndexTs = new TaskGenerateIndexTs(
                 builder.frontendDirectory,
                 new File(builder.generatedFolder, IMPORTS_NAME),
-                outputDirectory);
+                buildDirectory);
         commands.add(taskGenerateIndexTs);
+        if (builder.getFeatureFlags().isEnabled(FeatureFlags.VITE)
+                && !builder.productionMode) {
+            commands.add(
+                    new TaskGenerateViteDevMode(builder.frontendDirectory));
+        }
     }
 
     private void addGenerateTsConfigTask(Builder builder) {
@@ -861,28 +896,27 @@ public class NodeTasks implements FallibleCommand {
         }
     }
 
-    private void addFusionServicesTasks(Builder builder) {
+    private void addEndpointServicesTasks(Builder builder) {
         Lookup lookup = builder.lookup;
         EndpointGeneratorTaskFactory endpointGeneratorTaskFactory = lookup
                 .lookup(EndpointGeneratorTaskFactory.class);
 
         if (endpointGeneratorTaskFactory != null) {
             TaskGenerateOpenAPI taskGenerateOpenAPI = endpointGeneratorTaskFactory
-                    .createTaskGenerateOpenAPI(
-                            builder.fusionApplicationProperties,
-                            builder.fusionJavaSourceFolder,
+                    .createTaskGenerateOpenAPI(builder.applicationProperties,
+                            builder.endpointSourceFolder,
                             builder.classFinder.getClassLoader(),
-                            builder.fusionGeneratedOpenAPIFile);
+                            builder.endpointGeneratedOpenAPIFile);
             commands.add(taskGenerateOpenAPI);
 
-            if (builder.fusionClientAPIFolder != null) {
-                TaskGenerateFusion taskGenerateFusion = endpointGeneratorTaskFactory
-                        .createTaskGenerateFusion(
-                                builder.fusionApplicationProperties,
-                                builder.fusionGeneratedOpenAPIFile,
-                                builder.fusionClientAPIFolder,
+            if (builder.frontendGeneratedFolder != null) {
+                TaskGenerateEndpoint taskGenerateEndpoint = endpointGeneratorTaskFactory
+                        .createTaskGenerateEndpoint(
+                                builder.applicationProperties,
+                                builder.endpointGeneratedOpenAPIFile,
+                                builder.frontendGeneratedFolder,
                                 builder.frontendDirectory);
-                commands.add(taskGenerateFusion);
+                commands.add(taskGenerateEndpoint);
             }
         }
     }

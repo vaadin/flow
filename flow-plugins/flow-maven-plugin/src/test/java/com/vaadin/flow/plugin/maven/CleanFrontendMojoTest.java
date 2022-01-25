@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,11 +18,9 @@ package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
-import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.util.FileUtils;
@@ -31,31 +29,21 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.plugin.TestUtils;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-import elemental.json.impl.JsonUtil;
-import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.assertContainsPackage;
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.getPackageJson;
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.setProject;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
 public class CleanFrontendMojoTest {
     @Rule
@@ -101,7 +89,8 @@ public class CleanFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "generatedTsFolder",
                 frontendGenerated);
 
-        ReflectionUtils.setVariableValueInObject(mojo, "pnpmEnable", true);
+        ReflectionUtils.setVariableValueInObject(mojo, "pnpmEnable",
+                Constants.ENABLE_PNPM_DEFAULT);
         ReflectionUtils.setVariableValueInObject(mojo, "requireHomeNodeExec",
                 true);
         ReflectionUtils.setVariableValueInObject(mojo, "nodeVersion",
@@ -183,6 +172,21 @@ public class CleanFrontendMojoTest {
     }
 
     @Test
+    public void should_cleanPackageJson_removeVaadinDependenciesInOverrides()
+            throws MojoFailureException, IOException {
+        JsonObject json = createInitialPackageJson(true);
+        FileUtils.fileWrite(packageJson, json.toJson());
+
+        assertContainsPackage(json.getObject("overrides"), "@polymer/polymer");
+
+        mojo.execute();
+
+        JsonObject packageJsonObject = getPackageJson(packageJson);
+        assertNotContainsPackage(packageJsonObject.getObject("overrides"),
+                "@polymer/polymer");
+    }
+
+    @Test
     public void should_keepUserDependencies_whenPackageJsonEdited()
             throws MojoFailureException, IOException {
         JsonObject json = createInitialPackageJson();
@@ -214,7 +218,17 @@ public class CleanFrontendMojoTest {
                 dependencies.hasKey(dep)));
     }
 
+    static void assertContainsPackage(JsonObject dependencies,
+            String... packages) {
+        Arrays.asList(packages).forEach(dep -> Assert
+                .assertTrue("Not Have " + dep, dependencies.hasKey(dep)));
+    }
+
     static JsonObject createInitialPackageJson() {
+        return createInitialPackageJson(false);
+    }
+
+    static JsonObject createInitialPackageJson(boolean withOverrides) {
         JsonObject packageJson = Json.createObject();
         JsonObject vaadinPackages = Json.createObject();
 
@@ -238,6 +252,12 @@ public class CleanFrontendMojoTest {
 
         vaadinPackages.put("hash", "");
         packageJson.put("vaadin", vaadinPackages);
+
+        if (withOverrides) {
+            JsonObject overrides = Json.createObject();
+            overrides.put("@polymer/polymer", "$@polymer/polymer");
+            packageJson.put("overrides", overrides);
+        }
 
         return packageJson;
     }

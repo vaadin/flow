@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,8 +19,6 @@ import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Test;
-
-import com.vaadin.flow.dom.StyleUtil;
 
 public class StyleUtilTest {
     private static final Map<String, String> stylepPropertyToAttribute = new java.util.HashMap<>();

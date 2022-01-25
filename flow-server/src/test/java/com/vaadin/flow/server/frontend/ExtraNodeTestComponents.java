@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -26,12 +26,36 @@ public class ExtraNodeTestComponents {
     public class ExtraJsModuleComponent extends Component {
     }
 
+    @JsModule("@polymer/b.js")
+    public class ExtraJsModuleComponent2 extends Component {
+    }
+
+    @JsModule("@polymer/c.js")
+    public class ExtraJsModuleComponent3 extends Component {
+    }
+
+    @JsModule("@polymer/D.js")
+    public class ExtraJsModuleComponent4 extends Component {
+    }
+
+    @JsModule("@polymer/e.js")
+    public class ExtraJsModuleComponent5 extends Component {
+    }
+
     @JavaScript("./extra-javascript.js")
     public class ExtraJavaScriptComponent extends Component {
     }
 
     @CssImport(value = "./extra-css.css", themeFor = "extra-foo", include = "extra-bar")
     public static class ExtraCssImport extends Component {
+    }
+
+    @CssImport(value = "./a-css.css", include = "a-a")
+    public static class ExtraCssImport2 extends Component {
+    }
+
+    @CssImport(value = "./b-css.css")
+    public static class ExtraCssImport3 extends Component {
     }
 
 }

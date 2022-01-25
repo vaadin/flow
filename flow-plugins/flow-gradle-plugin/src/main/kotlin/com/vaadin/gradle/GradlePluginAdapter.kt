@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd
+ * Copyright 2000-2022 Vaadin Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -167,14 +167,11 @@ internal class GradlePluginAdapter(val project: Project, private val isBeforePro
 
     override fun runNpmInstall(): Boolean = extension.runNpmInstall
 
-    override fun webpackGeneratedTemplate(): String = extension.webpackGeneratedTemplate
-
-    override fun webpackTemplate(): String = extension.webpackTemplate
-
     override fun buildFolder(): String {
         if (extension.projectBuildDir.startsWith(project.projectDir.toString())) {
             return File(extension.projectBuildDir).relativeTo(project.projectDir).toString()
         }
         return extension.projectBuildDir
     }
+    override fun postinstallPackages(): List<String> = extension.postinstallPackages
 }

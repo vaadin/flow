@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -254,31 +254,35 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      * At the same time when the root level view is visited, compute the theme
      * to use and create its instance.
      *
+     * @throws ClassNotFoundException
+     * @throws IOException
      */
-    private void computeEndpoints() throws IOException {
+    private void computeEndpoints() throws ClassNotFoundException, IOException {
         // Because of different classLoaders we need compare against class
         // references loaded by the specific class finder loader
-        for (Class<?> route : getFinder().getAnnotatedClasses(Route.class)) {
+        Class<? extends Annotation> routeClass = getFinder()
+                .loadClass(Route.class.getName());
+        for (Class<?> route : getFinder().getAnnotatedClasses(routeClass)) {
             collectEndpoints(route);
         }
 
-        for (Class<?> initListener : getFinder()
-                .getSubTypesOf(UIInitListener.class)) {
+        for (Class<?> initListener : getFinder().getSubTypesOf(
+                getFinder().loadClass(UIInitListener.class.getName()))) {
             collectEndpoints(initListener);
         }
 
-        for (Class<?> initListener : getFinder()
-                .getSubTypesOf(VaadinServiceInitListener.class)) {
+        for (Class<?> initListener : getFinder().getSubTypesOf(getFinder()
+                .loadClass(VaadinServiceInitListener.class.getName()))) {
             collectEndpoints(initListener);
         }
 
-        for (Class<?> appShell : getFinder()
-                .getSubTypesOf(AppShellConfigurator.class)) {
+        for (Class<?> appShell : getFinder().getSubTypesOf(
+                getFinder().loadClass(AppShellConfigurator.class.getName()))) {
             collectEndpoints(appShell);
         }
 
-        for (Class<?> errorParameters : getFinder()
-                .getSubTypesOf(HasErrorParameter.class)) {
+        for (Class<?> errorParameters : getFinder().getSubTypesOf(
+                getFinder().loadClass(HasErrorParameter.class.getName()))) {
             collectEndpoints(errorParameters);
         }
 
@@ -410,13 +414,16 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     /**
      * Visit all classes annotated with {@link NpmPackage} and update the list
      * of dependencies and their versions.
+     *
+     * @throws ClassNotFoundException
+     * @throws IOException
      */
-    private void computePackages() {
+    private void computePackages() throws ClassNotFoundException, IOException {
         FrontendAnnotatedClassVisitor npmPackageVisitor = new FrontendAnnotatedClassVisitor(
                 getFinder(), NpmPackage.class.getName());
 
         for (Class<?> component : getFinder()
-                .getAnnotatedClasses(NpmPackage.class)) {
+                .getAnnotatedClasses(NpmPackage.class.getName())) {
             npmPackageVisitor.visitClass(component.getName());
         }
 
@@ -439,15 +446,18 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      * Find the class with a {@link com.vaadin.flow.server.PWA} annotation and
      * read it into a {@link com.vaadin.flow.server.PwaConfiguration} object.
      *
+     * @throws ClassNotFoundException
      */
-    private void computePwaConfiguration() {
+    private void computePwaConfiguration() throws ClassNotFoundException {
         FrontendAnnotatedClassVisitor pwaVisitor = new FrontendAnnotatedClassVisitor(
                 getFinder(), PWA.class.getName());
+        Class<?> appShellConfiguratorClass = getFinder()
+                .loadClass(AppShellConfigurator.class.getName());
 
         for (Class<?> hopefullyAppShellClass : getFinder()
-                .getAnnotatedClasses(PWA.class)) {
+                .getAnnotatedClasses(PWA.class.getName())) {
             if (!Arrays.asList(hopefullyAppShellClass.getInterfaces())
-                    .contains(AppShellConfigurator.class)) {
+                    .contains(appShellConfiguratorClass)) {
                 throw new IllegalStateException(ERROR_INVALID_PWA_ANNOTATION);
             }
             pwaVisitor.visitClass(hopefullyAppShellClass.getName());
@@ -500,14 +510,21 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      *
      * @param clazz
      *            the exporter endpoint class
+     * @throws ClassNotFoundException
+     *             if unable to load a class by class name
      * @throws IOException
      *             if unable to scan the class byte code
      */
-    private void computeExporterEndpoints(Class<?> clazz) throws IOException {
+    @SuppressWarnings("unchecked")
+    private void computeExporterEndpoints(Class<?> clazz)
+            throws ClassNotFoundException, IOException {
         // Because of different classLoaders we need compare against class
         // references loaded by the specific class finder loader
+        Class<? extends Annotation> routeClass = getFinder()
+                .loadClass(Route.class.getName());
+        Class<?> exporterClass = getFinder().loadClass(clazz.getName());
         Set<? extends Class<?>> exporterClasses = getFinder()
-                .getSubTypesOf(clazz);
+                .getSubTypesOf(exporterClass);
 
         // if no exporters in the project, return
         if (exporterClasses.isEmpty()) {
@@ -525,7 +542,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             }
 
             if (!Modifier.isAbstract(exporter.getModifiers())) {
-                visitComponenClass(Route.class, clazz, exportedPoints,
+                visitComponenClass(routeClass, exporterClass, exportedPoints,
                         exporter);
             }
         }

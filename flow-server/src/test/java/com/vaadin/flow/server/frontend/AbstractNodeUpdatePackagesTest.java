@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,6 +19,7 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -36,6 +37,7 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
 import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
@@ -97,7 +99,12 @@ public abstract class AbstractNodeUpdatePackagesTest
         packageCreator = new TaskGeneratePackageJson(baseDir, generatedDir,
                 resourcesDir, TARGET, featureFlags);
 
-        classFinder = getClassFinder();
+        classFinder = Mockito.spy(getClassFinder());
+        File versions = temporaryFolder.newFile();
+        FileUtils.write(versions, "{}", StandardCharsets.UTF_8);
+        Mockito.when(classFinder.getResource(Constants.VAADIN_VERSIONS_JSON))
+                .thenReturn(versions.toURI().toURL());
+
         packageUpdater = new TaskUpdatePackages(classFinder,
                 getScanner(classFinder), baseDir, generatedDir, resourcesDir,
                 false, false, TARGET, featureFlags);

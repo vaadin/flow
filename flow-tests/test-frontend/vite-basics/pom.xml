@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>test-frontend</artifactId>
-        <version>9.0-SNAPSHOT</version>
+        <version>10.0-SNAPSHOT</version>
     </parent>
     <artifactId>vite-basics</artifactId>
     <name>Vite dev mode functionality</name>
@@ -68,17 +68,8 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-maven-plugin</artifactId>
-                <configuration>
-                    <systemProperties>
-                        <!-- Allow test clients not on localhost to connect to Vite-->
-                        <systemProperty>
-                            <name>vaadin.devmode.vite.options</name>
-                            <value>--host</value>
-                        </systemProperty>
-                    </systemProperties>
-                </configuration>
+                 <groupId>org.eclipse.jetty</groupId>
+                 <artifactId>jetty-maven-plugin</artifactId>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

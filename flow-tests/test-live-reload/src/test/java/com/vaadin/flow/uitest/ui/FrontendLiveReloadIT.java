@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,10 +19,15 @@ import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.testcategory.SlowTests;
+import com.vaadin.testbench.TestBenchElement;
+
 @NotThreadSafe
+@Category(SlowTests.class)
 public class FrontendLiveReloadIT extends AbstractLiveReloadIT {
 
     @After
@@ -53,10 +58,9 @@ public class FrontendLiveReloadIT extends AbstractLiveReloadIT {
         waitForLiveReload();
 
         // then: the frontend changes are visible in the DOM
-        WebElement customComponent = findElement(
-                By.id(FrontendLiveReloadView.CUSTOM_COMPONENT));
-        WebElement embeddedDiv = findInShadowRoot(customComponent,
-                By.id("custom-div")).get(0);
+        TestBenchElement customComponent = $("*")
+                .id(FrontendLiveReloadView.CUSTOM_COMPONENT);
+        TestBenchElement embeddedDiv = customComponent.$("*").id("custom-div");
         Assert.assertEquals("Updated component contents",
                 embeddedDiv.getText());
     }

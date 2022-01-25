@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,8 +18,10 @@ package com.vaadin.flow.server.frontend.scanner;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -40,7 +42,7 @@ public interface ClassFinder extends Serializable {
      * list of classes.
      */
     class DefaultClassFinder implements ClassFinder {
-        private final Set<Class<?>> classes;
+        private final LinkedHashSet<Class<?>> classes;
 
         private final transient ClassLoader classLoader;
 
@@ -51,7 +53,15 @@ public interface ClassFinder extends Serializable {
          *            The classes.
          */
         public DefaultClassFinder(Set<Class<?>> classes) {
-            this.classes = classes;
+            /*
+             * Order the classes to get deterministic behavior. It does not
+             * really matter HOW the classes are ordered as long as they are
+             * always in the same order
+             */
+            List<Class<?>> classList = new ArrayList<>(classes);
+            classList.sort(
+                    (cls1, cls2) -> cls1.getName().compareTo(cls2.getName()));
+            this.classes = new LinkedHashSet<>(classList);
             // take classLoader from the first class in the set, unless empty
             classLoader = classes.isEmpty() ? getClass().getClassLoader()
                     : classes.iterator().next().getClassLoader();
@@ -70,7 +80,7 @@ public interface ClassFinder extends Serializable {
         public DefaultClassFinder(ClassLoader classLoader,
                 Class<?>... classes) {
             this.classLoader = classLoader;
-            this.classes = new HashSet<>();
+            this.classes = new LinkedHashSet<>();
             for (Class<?> clazz : classes) {
                 this.classes.add(clazz);
             }
@@ -81,7 +91,7 @@ public interface ClassFinder extends Serializable {
                 Class<? extends Annotation> annotation) {
             return classes.stream().filter(
                     cl -> cl.getAnnotationsByType(annotation).length > 0)
-                    .collect(Collectors.toSet());
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
         }
 
         @Override
@@ -102,7 +112,8 @@ public interface ClassFinder extends Serializable {
             return this.classes.stream()
                     .filter(cl -> GenericTypeReflector.isSuperType(type, cl)
                             && !type.equals(cl))
-                    .map(cl -> (Class<T>) cl).collect(Collectors.toSet());
+                    .map(cl -> (Class<T>) cl)
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
         }
 
         @Override

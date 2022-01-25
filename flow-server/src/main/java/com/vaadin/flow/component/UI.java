@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.regex.Pattern;
 
@@ -527,9 +528,24 @@ public class UI extends Component
                     if (command instanceof ErrorHandlingCommand) {
                         ErrorHandlingCommand errorHandlingCommand = (ErrorHandlingCommand) command;
                         errorHandlingCommand.handleError(exception);
-                    } else {
+                    } else if (getSession() != null) {
                         getSession().getErrorHandler()
                                 .error(new ErrorEvent(exception));
+                    } else {
+                        /*
+                         * The session has expired after `ui.access` was called.
+                         * It makes no sense to pollute the logs with a
+                         * UIDetachedException at this point.
+                         */
+                        if (exception instanceof ExecutionException
+                                && ((ExecutionException) exception)
+                                        .getCause() instanceof UIDetachedException) {
+                            getLogger().debug(exception.getMessage(),
+                                    exception);
+                        } else {
+                            getLogger().error(exception.getMessage(),
+                                    exception);
+                        }
                     }
                 } catch (Exception e) {
                     getLogger().error(e.getMessage(), e);
@@ -708,7 +724,7 @@ public class UI extends Component
         return getNode().getFeature(ReconnectDialogConfigurationMap.class);
     }
 
-    private static Logger getLogger() {
+    Logger getLogger() {
         return LoggerFactory.getLogger(UI.class.getName());
     }
 
@@ -1178,6 +1194,26 @@ public class UI extends Component
     }
 
     /**
+     * Add a listener that will be informed when this UI received a heartbeat
+     * from the client-side.
+     * <p>
+     * Heartbeat requests are periodically sent by the client-side to inform the
+     * server that the UI sending the heartbeat is still alive (the browser
+     * window is open, the connection is up) even when there are no UIDL
+     * requests for a prolonged period of time. UIs that do not receive either
+     * heartbeat or UIDL requests are eventually removed from the session and
+     * garbage collected.
+     *
+     * @param listener
+     *            the heartbeat listener
+     * @return handler to remove the heartbeat listener
+     */
+    public Registration addHeartbeatListener(HeartbeatListener listener) {
+        Objects.requireNonNull(listener, NULL_LISTENER);
+        return internals.addHeartbeatListener(listener);
+    }
+
+    /**
      * Gets the drag source of an active HTML5 drag event.
      * <p>
      * <em>NOTE: the generic drag and drop feature for Flow is available in
@@ -1200,6 +1236,59 @@ public class UI extends Component
      */
     public String getCsrfToken() {
         return csrfToken;
+    }
+
+    /**
+     * Adds the given component as a modal child to the UI, making the UI and
+     * all other (existing) components added to the UI impossible for the user
+     * to interact with. This is useful for modal dialogs which should make the
+     * UI in the background inert. Note that this only prevents user
+     * interaction, but doesn't show a modality curtain or change the visible
+     * state of the components in the UI - that should be handled by the
+     * component separately. Thus this is purely a server side feature.
+     * <p>
+     * When the modal component is removed the UI and its other children are no
+     * longer inert, unless there was another component added as modal before.
+     *
+     * 
+     * @param component
+     *            the modal component to add
+     * @see #setChildComponentModal(Component, boolean)
+     */
+    public void addModal(Component component) {
+        add(component);
+        getInternals().setChildModal(component);
+    }
+
+    /**
+     * Makes the child component modal or modeless. The component needs to be a
+     * direct child of this UI. By default all child components are modeless.
+     * 
+     * @param childComponent
+     *            the child component to change state for
+     * @param modal
+     *            {@code true} for modal, {@code false} for modeless
+     */
+    /*
+     * TODO decide and document whether resize listener still works for UI even
+     * when it is inert.
+     */
+    public void setChildComponentModal(Component childComponent,
+            boolean modal) {
+        Objects.requireNonNull(childComponent,
+                "Given child component may not be null");
+        if (!childComponent.getParent().filter(parent -> parent == this)
+                .isPresent()) {
+            throw new IllegalStateException(
+                    "Given component is not a child of this UI. "
+                            + "Add it first as a child of the UI with "
+                            + "ui.add(component) or just use addModal(component).");
+        }
+        if (modal) {
+            getInternals().setChildModal(childComponent);
+        } else {
+            getInternals().setChildModeless(childComponent);
+        }
     }
 
 }

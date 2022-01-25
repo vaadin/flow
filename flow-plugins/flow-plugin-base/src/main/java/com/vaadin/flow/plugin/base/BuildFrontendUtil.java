@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -25,11 +25,14 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.io.FileUtils;
+import org.slf4j.LoggerFactory;
 import org.zeroturnaround.exec.InvalidExitValueException;
 import org.zeroturnaround.exec.ProcessExecutor;
 
@@ -58,6 +61,8 @@ import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
 import static com.vaadin.flow.server.Constants.GENERATED_TOKEN;
 import static com.vaadin.flow.server.Constants.NPM_TOKEN;
 import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
+import static com.vaadin.flow.server.InitParameters.NODE_DOWNLOAD_ROOT;
+import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_INITIAL_UIDL;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
@@ -167,7 +172,7 @@ public class BuildFrontendUtil {
             throw new ExecutionFailedException(
                     "Error occured during goal execution: "
                             + throwable.getMessage()
-                            + "Please run Maven with the -e switch (or Gradle with the --stacktrace switch), to learn the full stack trace.",
+                            + "\n\nPlease run Maven with the -e switch (or Gradle with the --stacktrace switch), to learn the full stack trace.",
                     throwable);
         }
 
@@ -208,6 +213,15 @@ public class BuildFrontendUtil {
         buildInfo.put(SERVLET_PARAMETER_INITIAL_UIDL,
                 adapter.eagerServerLoad());
         buildInfo.put(NPM_TOKEN, adapter.npmFolder().getAbsolutePath());
+        buildInfo.put(NODE_VERSION, adapter.nodeVersion());
+        try {
+            buildInfo.put(NODE_DOWNLOAD_ROOT,
+                    adapter.nodeDownloadRoot().toString());
+        } catch (URISyntaxException e) {
+            LoggerFactory.getLogger("BuildInfo").error(
+                    "Configuration 'nodeDownloadRoot'  (property 'node.download.root') is defined incorrectly",
+                    e);
+        }
         buildInfo.put(GENERATED_TOKEN,
                 adapter.generatedFolder().getAbsolutePath());
         buildInfo.put(FRONTEND_TOKEN,
@@ -289,9 +303,7 @@ public class BuildFrontendUtil {
                     adapter.buildFolder())
                             .runNpmInstall(adapter.runNpmInstall())
                             .withWebpack(adapter.webpackOutputDirectory(),
-                                    adapter.servletResourceOutputDirectory(),
-                                    adapter.webpackTemplate(),
-                                    adapter.webpackGeneratedTemplate())
+                                    adapter.servletResourceOutputDirectory())
                             .useV14Bootstrap(
                                     adapter.isUseDeprecatedV14Bootstrapping())
                             .enablePackagesUpdate(true)
@@ -307,13 +319,13 @@ public class BuildFrontendUtil {
                                     BuildFrontendUtil.getTokenFile(adapter))
                             .enablePnpm(adapter.pnpmEnable())
                             .useGlobalPnpm(adapter.useGlobalPnpm())
-                            .withFusionApplicationProperties(
+                            .withApplicationProperties(
                                     adapter.applicationProperties())
-                            .withFusionJavaSourceFolder(
+                            .withEndpointSourceFolder(
                                     adapter.javaSourceFolder())
-                            .withFusionGeneratedOpenAPIJson(
+                            .withEndpointGeneratedOpenAPIFile(
                                     adapter.openApiJsonFile())
-                            .withFusionClientAPIFolder(
+                            .withFrontendGeneratedFolder(
                                     adapter.generatedTsFolder())
                             .withHomeNodeExecRequired(
                                     adapter.requireHomeNodeExec())
@@ -321,6 +333,8 @@ public class BuildFrontendUtil {
                             .withNodeDownloadRoot(nodeDownloadRootURI)
                             .setNodeAutoUpdate(adapter.nodeAutoUpdate())
                             .setJavaResourceFolder(adapter.javaResourceFolder())
+                            .withPostinstallPackages(
+                                    adapter.postinstallPackages())
                             .build().execute();
         } catch (ExecutionFailedException exception) {
             throw exception;
@@ -351,10 +365,13 @@ public class BuildFrontendUtil {
 
         final FeatureFlags featureFlags = new FeatureFlags(lookup);
         featureFlags.setPropertiesLocation(adapter.javaResourceFolder());
+
+        FrontendToolsSettings settings = getFrontendToolsSettings(adapter);
+        FrontendTools tools = new FrontendTools(settings);
         if (featureFlags.isEnabled(FeatureFlags.VITE)) {
-            BuildFrontendUtil.runVite(adapter);
+            BuildFrontendUtil.runVite(adapter, tools);
         } else {
-            BuildFrontendUtil.runWebpack(adapter);
+            BuildFrontendUtil.runWebpack(adapter, tools);
         }
     }
 
@@ -363,14 +380,19 @@ public class BuildFrontendUtil {
      *
      * @param adapter
      *            - the PluginAdapterBase.
+     * @param frontendTools
+     *            - frontend tools access object
      * @throws TimeoutException
      *             - while run webpack
      * @throws URISyntaxException
      *             - while parsing nodeDownloadRoot()) to URI
      */
-    public static void runWebpack(PluginAdapterBase adapter)
+    public static void runWebpack(PluginAdapterBase adapter,
+            FrontendTools frontendTools)
             throws TimeoutException, URISyntaxException {
-        runFrontendBuildTool(adapter, "Webpack", "webpack/bin/webpack.js");
+        runFrontendBuildTool(adapter, frontendTools, "Webpack",
+                "webpack/bin/webpack.js",
+                frontendTools.getWebpackNodeEnvironment());
     }
 
     /**
@@ -378,36 +400,39 @@ public class BuildFrontendUtil {
      *
      * @param adapter
      *            - the PluginAdapterBase.
+     * @param frontendTools
+     *            - frontend tools access object
      * @throws TimeoutException
      *             - while running vite
      * @throws URISyntaxException
      *             - while parsing nodeDownloadRoot()) to URI
      */
-    public static void runVite(PluginAdapterBase adapter)
+    public static void runVite(PluginAdapterBase adapter,
+            FrontendTools frontendTools)
             throws TimeoutException, URISyntaxException {
-        runFrontendBuildTool(adapter, "Vite", "vite/bin/vite.js", "build");
+        runFrontendBuildTool(adapter, frontendTools, "Vite", "vite/bin/vite.js",
+                Collections.emptyMap(), "build");
     }
 
     private static void runFrontendBuildTool(PluginAdapterBase adapter,
-            String toolName, String executable, String... params)
+            FrontendTools frontendTools, String toolName, String executable,
+            Map<String, String> environment, String... params)
             throws TimeoutException, URISyntaxException {
 
         File buildExecutable = new File(adapter.npmFolder(),
                 NODE_MODULES + executable);
         if (!buildExecutable.isFile()) {
             throw new IllegalStateException(String.format(
-                    "Unable to locate webpack executable by path '%s'. Double"
+                    "Unable to locate %s executable by path '%s'. Double"
                             + " check that the plugin is executed correctly",
-                    buildExecutable.getAbsolutePath()));
+                    toolName, buildExecutable.getAbsolutePath()));
         }
 
         String nodePath;
-        FrontendToolsSettings settings = getFrontendToolsSettings(adapter);
-        FrontendTools tools = new FrontendTools(settings);
         if (adapter.requireHomeNodeExec()) {
-            nodePath = tools.forceAlternativeNodeExecutable();
+            nodePath = frontendTools.forceAlternativeNodeExecutable();
         } else {
-            nodePath = tools.getNodeExecutable();
+            nodePath = frontendTools.getNodeExecutable();
         }
 
         List<String> command = new ArrayList<>();
@@ -419,6 +444,7 @@ public class BuildFrontendUtil {
 
         ProcessExecutor processExecutor = new ProcessExecutor()
                 .command(builder.command()).environment(builder.environment())
+                .environment(environment)
                 .directory(adapter.projectBaseDirectory().toFile());
 
         adapter.logInfo("Running " + toolName + " ...");
@@ -435,7 +461,8 @@ public class BuildFrontendUtil {
                     toolName, e.getResult().outputUTF8()), e);
         } catch (IOException | InterruptedException e) {
             throw new IllegalStateException(
-                    "Failed to run webpack due to an error", e);
+                    String.format("Failed to run %s due to an error", toolName),
+                    e);
         }
     }
 
@@ -462,6 +489,8 @@ public class BuildFrontendUtil {
             JsonObject buildInfo = JsonUtil.parse(json);
 
             buildInfo.remove(NPM_TOKEN);
+            buildInfo.remove(NODE_VERSION);
+            buildInfo.remove(NODE_DOWNLOAD_ROOT);
             buildInfo.remove(GENERATED_TOKEN);
             buildInfo.remove(FRONTEND_TOKEN);
             buildInfo.remove(Constants.SERVLET_PARAMETER_ENABLE_PNPM);

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,12 +22,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import com.vaadin.base.devserver.DevServerOutputTracker.Result;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.frontend.FrontendVersion;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -91,9 +92,9 @@ public final class WebpackHandler extends AbstractDevServerRunner {
     }
 
     @Override
-    protected List<String> getServerStartupCommand(String nodeExec) {
+    protected List<String> getServerStartupCommand(FrontendTools tools) {
         List<String> command = new ArrayList<>();
-        command.add(nodeExec);
+        command.add(tools.getNodeExecutable());
         command.add(getServerBinary().getAbsolutePath());
         command.add("--config");
         command.add(getServerConfig().getAbsolutePath());
@@ -119,12 +120,12 @@ public final class WebpackHandler extends AbstractDevServerRunner {
     }
 
     @Override
-    protected void updateServerStartupEnvironment(FrontendVersion nodeVersion,
+    protected void updateServerStartupEnvironment(FrontendTools frontendTools,
             Map<String, String> environment) {
-        super.updateServerStartupEnvironment(nodeVersion, environment);
-        if (!nodeVersion.isOlderThan(new FrontendVersion(17, 0, 0))) {
-            environment.put("NODE_OPTIONS", "--openssl-legacy-provider");
-        }
+        super.updateServerStartupEnvironment(frontendTools, environment);
+        // use environment variable as flags must be passed to Webpack
+        // subprocess
+        environment.putAll(frontendTools.getWebpackNodeEnvironment());
     }
 
     @Override
@@ -155,5 +156,4 @@ public final class WebpackHandler extends AbstractDevServerRunner {
                 InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN,
                 DEFAULT_ERROR_PATTERN));
     }
-
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -1066,11 +1066,16 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
             throws IOException {
         boolean serializeUIs = true;
 
-        ApplicationConfiguration appConfiguration = ApplicationConfiguration
-                .get(getService().getContext());
-        if (!appConfiguration.isProductionMode()
-                && !appConfiguration.isDevModeSessionSerializationEnabled()) {
-            serializeUIs = false;
+        // If service is null it has just been deserialized and should be
+        // serialized in
+        // the same way again
+        if (getService() != null) {
+            ApplicationConfiguration appConfiguration = ApplicationConfiguration
+                    .get(getService().getContext());
+            if (!appConfiguration.isProductionMode() && !appConfiguration
+                    .isDevModeSessionSerializationEnabled()) {
+                serializeUIs = false;
+            }
         }
 
         stream.defaultWriteObject();

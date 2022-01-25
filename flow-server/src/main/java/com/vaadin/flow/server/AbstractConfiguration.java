@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -121,6 +121,21 @@ public interface AbstractConfiguration extends Serializable {
     default boolean isGlobalPnpm() {
         return getBooleanProperty(InitParameters.SERVLET_PARAMETER_GLOBAL_PNPM,
                 Constants.GLOBAL_PNPM_DEFAULT);
+    }
+
+    /**
+     * Returns whether development time usage statistics collection is enabled
+     * or not.
+     *
+     * Always return false if <code>isProductionMode</code> is {@code true}.
+     *
+     * @see #isProductionMode()
+     * @return {@code true} if enabled, {@code false} if not collected.
+     */
+    default boolean isUsageStatisticsEnabled() {
+        return !isProductionMode() && getBooleanProperty(
+                InitParameters.SERVLET_PARAMETER_DEVMODE_STATISTICS,
+                Constants.DEFAULT_DEVMODE_STATS);
     }
 
     /**

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -64,23 +64,5 @@ public interface PluginAdapterBuild extends PluginAdapterBase {
      * @return boolean
      */
     boolean runNpmInstall();
-
-    /**
-     * Copy the `webpack.generated.js` from the specified URL. Default is the
-     * template provided by this plugin. Set it to empty string to disable the
-     * feature.
-     *
-     * @return webpackGeneratedTemplate
-     */
-    String webpackGeneratedTemplate();
-
-    /**
-     * Copy the `webpack.config.js` from the specified URL if missing. Default
-     * is the template provided by this plugin. Set it to empty string to
-     * disable the feature.
-     *
-     * @return webpackTemplate
-     */
-    String webpackTemplate();
 
 }

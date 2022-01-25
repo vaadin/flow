@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -67,7 +67,7 @@ final class FrontendClassVisitor extends ClassVisitor {
 
     private final class FrontendMethodVisitor extends MethodVisitor {
         public FrontendMethodVisitor() {
-            super(Opcodes.ASM8);
+            super(Opcodes.ASM9);
         }
 
         // We are interested in the new instances created inside the method
@@ -143,7 +143,7 @@ final class FrontendClassVisitor extends ClassVisitor {
      */
     FrontendClassVisitor(String className, EndPointData endPoint,
             boolean themeScope) { // NOSONAR
-        super(Opcodes.ASM8);
+        super(Opcodes.ASM9);
         this.className = className;
         this.endPoint = endPoint;
 

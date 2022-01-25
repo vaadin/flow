@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -44,6 +44,7 @@ import com.vaadin.flow.internal.StateTree.ExecutionRegistration;
 import com.vaadin.flow.internal.change.NodeAttachChange;
 import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.internal.change.NodeDetachChange;
+import com.vaadin.flow.internal.nodefeature.InertData;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.NodeFeatureRegistry;
 import com.vaadin.flow.server.Command;
@@ -343,7 +344,13 @@ public class StateNode implements Serializable {
         }
     }
 
-    private void forEachChild(Consumer<StateNode> action) {
+    /**
+     * Executes the given action for each child node of this state node.
+     *
+     * @param action
+     *            the action to execute, not {@code null}
+     */
+    public void forEachChild(Consumer<StateNode> action) {
         forEachFeature(n -> n.forEachChild(action));
     }
 
@@ -567,7 +574,15 @@ public class StateNode implements Serializable {
      *         this node is not attached
      */
     public boolean isAttached() {
-        return parent != null && parent.isAttached();
+        if (getParent() == null) {
+            return false;
+        } else {
+            StateNode root = getParent();
+            while (root.getParent() != null) {
+                root = root.getParent();
+            }
+            return root.isAttached();
+        }
     }
 
     /**
@@ -622,10 +637,10 @@ public class StateNode implements Serializable {
                 Stream<NodeFeature> initialFeatures = Stream
                         .concat(featureSet.mappings.keySet().stream()
                                 .filter(this::isReportedFeature)
-                                .map(this::getFeature), getDisalowFeatures());
+                                .map(this::getFeature), getDisallowFeatures());
                 doCollectChanges(collector, initialFeatures);
             } else {
-                doCollectChanges(collector, getDisalowFeatures());
+                doCollectChanges(collector, getDisallowFeatures());
             }
         } else {
             doCollectChanges(collector, getInitializedFeatures());
@@ -919,7 +934,7 @@ public class StateNode implements Serializable {
      * @see NodeFeature#allowsChanges()
      */
     public void updateActiveState() {
-        setInactive(getDisalowFeatures().count() != 0);
+        setInactive(getDisallowFeatures().count() != 0);
     }
 
     /**
@@ -936,7 +951,31 @@ public class StateNode implements Serializable {
         return getParent().isInactive();
     }
 
-    private Stream<NodeFeature> getDisalowFeatures() {
+    /**
+     * Returns whether or not this state node is inert and it should not receive
+     * any updates from the client side. Inert state is inherited from parent,
+     * unless explicitly set to ignore parent inert state.
+     * <p>
+     * The inert state is only updated when the changes are written to the
+     * client side, but the inert state is not sent to the client side - it is a
+     * server side feature only.
+     * 
+     * @return {@code true} if the node is inert, {@code false} if not
+     * @see InertData
+     */
+    public boolean isInert() {
+        if (hasFeature(InertData.class)) {
+            // the node has inert data, it will resolve state properly
+            Optional<InertData> featureIfInitialized = getFeatureIfInitialized(
+                    InertData.class);
+            if (featureIfInitialized.isPresent()) {
+                return featureIfInitialized.get().isInert();
+            }
+        }
+        return getParent() != null && getParent().isInert();
+    }
+
+    private Stream<NodeFeature> getDisallowFeatures() {
         return getInitializedFeatures()
                 .filter(feature -> !feature.allowsChanges());
     }

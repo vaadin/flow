@@ -1,5 +1,5 @@
 /**
- *    Copyright 2000-2021 Vaadin Ltd
+ *    Copyright 2000-2022 Vaadin Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,18 +44,6 @@ public open class VaadinFlowPluginExtension(project: Project) {
      * dir.
      */
     public var npmFolder: File = project.projectDir
-    /**
-     * Copy the `webapp.config.js` from the specified URL if missing. Default is
-     * the template provided by this plugin. Set it to empty string to disable
-     * the feature.
-     */
-    public var webpackTemplate: String = FrontendUtils.WEBPACK_CONFIG
-    /**
-     * Copy the `webapp.generated.js` from the specified URL. Default is the
-     * template provided by this plugin. Set it to empty string to disable the
-     * feature.
-     */
-    public var webpackGeneratedTemplate: String = FrontendUtils.WEBPACK_GENERATED
     /**
      * The folder where flow will put generated files that will be used by
      * webpack.
@@ -198,6 +186,11 @@ public open class VaadinFlowPluginExtension(project: Project) {
      */
     public var projectBuildDir: String = project.buildDir.toString()
 
+    /**
+     * Defines the npm packages to run postinstall for.
+     */
+    public var postinstallPackages: List<String> = listOf()
+
     public companion object {
         public fun get(project: Project): VaadinFlowPluginExtension =
                 project.extensions.getByType(VaadinFlowPluginExtension::class.java)
@@ -239,8 +232,6 @@ public open class VaadinFlowPluginExtension(project: Project) {
             "productionMode=$productionMode, " +
             "webpackOutputDirectory=$webpackOutputDirectory, " +
             "npmFolder=$npmFolder, " +
-            "webpackTemplate='$webpackTemplate', " +
-            "webpackGeneratedTemplate='$webpackGeneratedTemplate', " +
             "generatedFolder=$generatedFolder, " +
             "frontendDirectory=$frontendDirectory, " +
             "generateBundle=$generateBundle, " +
@@ -262,6 +253,7 @@ public open class VaadinFlowPluginExtension(project: Project) {
             "nodeDownloadRoot=$nodeDownloadRoot, " +
             "nodeAutoUpdate=$nodeAutoUpdate" +
             "resourceOutputDirectory=$resourceOutputDirectory" +
+            "postinstallPackages=$postinstallPackages" +
             ")"
 }
 

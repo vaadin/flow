@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -30,6 +30,7 @@ import com.vaadin.flow.component.Composite;
 import com.vaadin.flow.component.EventData;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.AllowInert;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.component.polymertemplate.EventHandler;
@@ -62,6 +63,12 @@ public class PublishedServerEventHandlerRpcHandlerTest {
 
         @ClientCallable
         private void method() {
+            isInvoked = true;
+        }
+
+        @ClientCallable
+        @AllowInert
+        private void methodThatCanBeCalledWhenInert() {
             isInvoked = true;
         }
 
@@ -208,6 +215,25 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         ComponentWithCompute component = new ComponentWithCompute();
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
                 component.getClass(), "method", Json.createArray(), -1);
+
+        Assert.assertTrue(component.isInvoked);
+    }
+
+    @Test
+    public void methodIsNotInvokedWhenInert() {
+        ComponentWithCompute component = new ComponentWithCompute();
+        PublishedServerEventHandlerRpcHandler.invokeMethod(component,
+                component.getClass(), "method", Json.createArray(), -1, true);
+
+        Assert.assertFalse(component.isInvoked);
+    }
+
+    @Test
+    public void methodIsInvokedWhenInertAndInertAllowed() {
+        ComponentWithCompute component = new ComponentWithCompute();
+        PublishedServerEventHandlerRpcHandler.invokeMethod(component,
+                component.getClass(), "methodThatCanBeCalledWhenInert",
+                Json.createArray(), -1, true);
 
         Assert.assertTrue(component.isInvoked);
     }

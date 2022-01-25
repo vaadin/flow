@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -275,9 +276,9 @@ public class NodeListAddRemoveTest
         List<NodeChange> changes = collectChanges(nodeList);
 
         Assert.assertEquals(2, changes.size());
-        Assert.assertThat(changes.get(0),
+        MatcherAssert.assertThat(changes.get(0),
                 CoreMatchers.instanceOf(ListClearChange.class));
-        Assert.assertThat(changes.get(1),
+        MatcherAssert.assertThat(changes.get(1),
                 CoreMatchers.instanceOf(ListAddChange.class));
 
         Assert.assertEquals(1, nodeList.size());
@@ -306,11 +307,11 @@ public class NodeListAddRemoveTest
         nodeList.getNode().collectChanges(changes::add);
 
         Assert.assertEquals(3, changes.size());
-        Assert.assertThat(changes.get(0),
+        MatcherAssert.assertThat(changes.get(0),
                 CoreMatchers.instanceOf(NodeAttachChange.class));
-        Assert.assertThat(changes.get(1),
+        MatcherAssert.assertThat(changes.get(1),
                 CoreMatchers.instanceOf(ListClearChange.class));
-        Assert.assertThat(changes.get(2),
+        MatcherAssert.assertThat(changes.get(2),
                 CoreMatchers.instanceOf(ListAddChange.class));
 
         nodeList.add("baz");
@@ -504,7 +505,7 @@ public class NodeListAddRemoveTest
     private void verifyCleared(List<NodeChange> changes) {
         Assert.assertEquals(1, changes.size());
         NodeChange nodeChange = changes.get(0);
-        Assert.assertThat(nodeChange,
+        MatcherAssert.assertThat(nodeChange,
                 CoreMatchers.instanceOf(ListClearChange.class));
     }
 
@@ -513,7 +514,7 @@ public class NodeListAddRemoveTest
         Assert.assertTrue(changes.size() > 0);
         for (int i = 0; i < indexes.length; i++) {
             NodeChange nodeChange = changes.get(i);
-            Assert.assertThat(nodeChange,
+            MatcherAssert.assertThat(nodeChange,
                     CoreMatchers.instanceOf(ListRemoveChange.class));
             ListRemoveChange<?> change = (ListRemoveChange<?>) nodeChange;
             Assert.assertEquals(indexes[i].intValue(), change.getIndex());
@@ -525,7 +526,7 @@ public class NodeListAddRemoveTest
             Integer... indexes) {
         for (int i = 0; i < indexes.length; i++) {
             NodeChange nodeChange = changes.get(i);
-            Assert.assertThat(nodeChange,
+            MatcherAssert.assertThat(nodeChange,
                     CoreMatchers.instanceOf(ListAddChange.class));
             ListAddChange<?> change = (ListAddChange<?>) nodeChange;
             Assert.assertEquals(indexes[i].intValue(), change.getIndex());

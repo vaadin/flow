@@ -12,11 +12,12 @@ Vaadin Flow
 
 Join Vaadin Flow community chat in https://discord.gg/MYFq5RTbBn
 
-The `master` branch is the latest version (9.0) that targets the [Vaadin platform 22.0](https://github.com/vaadin/platform). See other branches for other **supported** framework versions:
+The `master` branch is the latest version (10.0) that targets the upcoming LTS [Vaadin platform 23.0](https://github.com/vaadin/platform). See other branches for other **supported** framework versions:
 
 | Branch | [Platform Version](https://github.com/vaadin/platform/releases) | [Flow Version](https://github.com/vaadin/flow/releases) |
 |--------|-----------------------------------------------------------------|---------------------------------------------------------|
 |  1.0   |  10 (LTS)                                                       |  1.0                                                    |
 |  2.7   |  14.7.x (LTS)                                                   |  2.7.x                                                  |
-|  8.0   |  21.0.x (LATEST)                                                |  8.x                                                    |
-|  master|  22.0.x (PRERELEASE)                                            |  9.x                                                    |
+|  8.0   |  21.0.x                                                         |  8.x                                                    |
+|  9.0   |  22.0.x (LATEST)                                                |  9.x                                                    |
+|  master|  23.0.x (NEXT LTS)                                              |  10.x                                                   |

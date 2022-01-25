@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.base.devserver.startup.AbstractDevModeTest;
 import com.vaadin.flow.internal.DevModeHandler;
+import com.vaadin.flow.server.frontend.FrontendTools;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -46,7 +47,7 @@ public class AbstractDevServerRunnerTest extends AbstractDevModeTest {
         }
 
         @Override
-        protected List<String> getServerStartupCommand(String nodeExec) {
+        protected List<String> getServerStartupCommand(FrontendTools tools) {
             List<String> commands = new ArrayList<>();
             commands.add("echo");
             return commands;

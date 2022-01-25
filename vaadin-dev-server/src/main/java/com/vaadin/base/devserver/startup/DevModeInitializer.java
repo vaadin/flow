@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -46,6 +46,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -64,6 +65,9 @@ import javax.servlet.annotation.HandlesTypes;
 
 import com.vaadin.base.devserver.ViteHandler;
 import com.vaadin.base.devserver.WebpackHandler;
+import com.vaadin.base.devserver.stats.DevModeUsageStatistics;
+import com.vaadin.base.devserver.stats.StatisticsSender;
+import com.vaadin.base.devserver.stats.StatisticsStorage;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.DevModeHandler;
@@ -207,6 +211,13 @@ public class DevModeInitializer implements Serializable {
             baseDir = getBaseDirectoryFallback();
         }
 
+        // Initialize the usage statistics if enabled
+        if (config.isUsageStatisticsEnabled()) {
+            StatisticsStorage storage = new StatisticsStorage();
+            DevModeUsageStatistics.init(baseDir, storage,
+                    new StatisticsSender(storage));
+        }
+
         String generatedDir = System.getProperty(PARAM_GENERATED_DIR,
                 Paths.get(config.getBuildFolder(), DEFAULT_GENERATED_DIR)
                         .toString());
@@ -251,8 +262,7 @@ public class DevModeInitializer implements Serializable {
                 Paths.get(target.getPath(), "classes", VAADIN_WEBAPP_RESOURCES)
                         .toFile(),
                 Paths.get(target.getPath(), "classes", VAADIN_SERVLET_RESOURCES)
-                        .toFile(),
-                FrontendUtils.WEBPACK_CONFIG, FrontendUtils.WEBPACK_GENERATED);
+                        .toFile());
 
         builder.useV14Bootstrap(config.useV14Bootstrap());
 
@@ -271,11 +281,10 @@ public class DevModeInitializer implements Serializable {
                                     DEFAULT_CONNECT_OPENAPI_JSON_FILE)
                                     .toString());
 
-            builder.withFusionJavaSourceFolder(
-                    new File(connectJavaSourceFolder))
-                    .withFusionApplicationProperties(
+            builder.withEndpointSourceFolder(new File(connectJavaSourceFolder))
+                    .withApplicationProperties(
                             new File(connectApplicationProperties))
-                    .withFusionGeneratedOpenAPIJson(
+                    .withEndpointGeneratedOpenAPIFile(
                             new File(connectOpenApiJsonFile));
         }
 
@@ -303,7 +312,12 @@ public class DevModeInitializer implements Serializable {
         boolean useHomeNodeExec = config.getBooleanProperty(
                 InitParameters.REQUIRE_HOME_NODE_EXECUTABLE, false);
 
-        String fusionClientAPIFolder = config.getStringProperty(
+        String[] additionalPostinstallPackages = config
+                .getStringProperty(
+                        InitParameters.ADDITIONAL_POSTINSTALL_PACKAGES, "")
+                .split(",");
+
+        String frontendGeneratedFolder = config.getStringProperty(
                 PROJECT_FRONTEND_GENERATED_DIR_TOKEN,
                 Paths.get(baseDir, DEFAULT_PROJECT_FRONTEND_GENERATED_DIR)
                         .toString());
@@ -312,7 +326,7 @@ public class DevModeInitializer implements Serializable {
         NodeTasks tasks = builder.enablePackagesUpdate(true)
                 .useByteCodeScanner(useByteCodeScanner)
                 .withFlowResourcesFolder(flowResourcesFolder)
-                .withFusionClientAPIFolder(new File(fusionClientAPIFolder))
+                .withFrontendGeneratedFolder(new File(frontendGeneratedFolder))
                 .copyResources(frontendLocations)
                 .copyLocalResources(new File(baseDir,
                         Constants.LOCAL_FRONTEND_RESOURCES_PATH))
@@ -321,7 +335,10 @@ public class DevModeInitializer implements Serializable {
                 .withEmbeddableWebComponents(true).enablePnpm(enablePnpm)
                 .useGlobalPnpm(useGlobalPnpm)
                 .withHomeNodeExecRequired(useHomeNodeExec)
-                .withProductionMode(config.isProductionMode()).build();
+                .withProductionMode(config.isProductionMode())
+                .withPostinstallPackages(
+                        Arrays.asList(additionalPostinstallPackages))
+                .build();
 
         Runnable runnable = () -> runNodeTasks(context, tokenFileData, tasks);
 

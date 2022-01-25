@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,14 +17,14 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
 import org.apache.commons.io.IOUtils;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
- * Generate <code>tsconfig.json</code> if it is missing in project folder and
- * <code>index.ts</code> exists in frontend folder.
+ * Generate <code>tsconfig.json</code> if it is missing in project folder.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -47,8 +47,10 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
 
     @Override
     protected String getFileContent() throws IOException {
-        return IOUtils.toString(getClass().getResourceAsStream(TSCONFIG_JSON),
-                UTF_8);
+        try (InputStream tsConfStream = getClass()
+                .getResourceAsStream(TSCONFIG_JSON)) {
+            return IOUtils.toString(tsConfStream, UTF_8);
+        }
     }
 
     @Override

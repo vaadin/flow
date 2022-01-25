@@ -2,14 +2,12 @@ package com.vaadin.flow.shared.util;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.util.Locale;
 
 import org.junit.Assert;
 import org.junit.Test;
-
-import com.vaadin.flow.shared.util.SharedUtil;
 
 public class SharedUtilTests {
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -44,6 +44,8 @@ import static com.vaadin.flow.server.Constants.NPM_TOKEN;
 import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
 import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
 import static com.vaadin.flow.server.InitParameters.BUILD_FOLDER;
+import static com.vaadin.flow.server.InitParameters.NODE_DOWNLOAD_ROOT;
+import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_INITIAL_UIDL;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
@@ -61,7 +63,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.PROJECT_BASEDIR;
 public class AbstractConfigurationFactory implements Serializable {
 
     public static final String DEV_FOLDER_MISSING_MESSAGE = "Running project in development mode with no access to folder '%s'.%n"
-            + "Build project in production mode instead, see https://vaadin.com/docs/v15/flow/production/tutorial-production-mode-basic.html";
+            + "Build project in production mode instead, see https://vaadin.com/docs/latest/flow/production/overview";
 
     /**
      * Returns the config parameters from the token file data {@code buildInfo}.
@@ -113,6 +115,14 @@ public class AbstractConfigurationFactory implements Serializable {
         if (buildInfo.hasKey(NPM_TOKEN)) {
             params.put(PROJECT_BASEDIR, buildInfo.getString(NPM_TOKEN));
             verifyFolderExists(params, buildInfo.getString(NPM_TOKEN));
+        }
+
+        if (buildInfo.hasKey(NODE_VERSION)) {
+            params.put(NODE_VERSION, buildInfo.getString(NODE_VERSION));
+        }
+        if (buildInfo.hasKey(NODE_DOWNLOAD_ROOT)) {
+            params.put(NODE_DOWNLOAD_ROOT,
+                    buildInfo.getString(NODE_DOWNLOAD_ROOT));
         }
 
         if (buildInfo.hasKey(FRONTEND_TOKEN)) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -25,6 +25,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vaadin.base.devserver.stats.DevModeUsageStatistics;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.server.VaadinContext;
@@ -169,10 +170,14 @@ public class DebugWindowConnection implements BrowserLiveReload {
             return;
         }
         JsonObject json = Json.parse(message);
-        if ("setFeature".equals(json.getString("command"))) {
+        String command = json.getString("command");
+        if ("setFeature".equals(command)) {
             JsonObject data = json.getObject("data");
             FeatureFlags.get(context).setEnabled(data.getString("featureId"),
                     data.getBoolean("enabled"));
+        } else if ("reportTelemetry".equals(command)) {
+            JsonObject data = json.getObject("data");
+            DevModeUsageStatistics.handleBrowserData(data);
         }
     }
 

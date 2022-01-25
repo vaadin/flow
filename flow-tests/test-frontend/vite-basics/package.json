@@ -1,0 +1,53 @@
+{
+  "name": "no-name",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@polymer/polymer": "3.2.0",
+    "@vaadin/common-frontend": "0.0.17",
+    "@vaadin/flow-frontend": "./target/flow-frontend",
+    "@vaadin/router": "1.7.4",
+    "@vaadin/vaadin-lumo-styles": "22.0.0-alpha9",
+    "construct-style-sheets-polyfill": "3.0.4",
+    "copy-to-clipboard": "^3.3.1",
+    "lit": "2.0.0",
+    "package-outside-npm": "file:package-outside-npm",
+    "package2-outside-npm": "./package2-outside-npm"
+  },
+  "devDependencies": {
+    "@vaadin/application-theme-plugin": "./target/plugins/application-theme-plugin",
+    "@vaadin/build-status-plugin": "./target/plugins/build-status-plugin",
+    "@vaadin/theme-live-reload-plugin": "./target/plugins/theme-live-reload-plugin",
+    "@vaadin/theme-loader": "./target/plugins/theme-loader",
+    "glob": "7.1.6",
+    "mkdirp": "1.0.4",
+    "rollup-plugin-brotli": "3.1.0",
+    "typescript": "4.4.3",
+    "vite": "v2.7.0",
+    "vite-plugin-checker": "0.3.4",
+    "workbox-build": "6.4.1",
+    "workbox-core": "6.4.2",
+    "workbox-precaching": "6.4.2"
+  },
+  "vaadin": {
+    "dependencies": {
+      "@polymer/polymer": "3.2.0",
+      "@vaadin/common-frontend": "0.0.17",
+      "@vaadin/router": "1.7.4",
+      "@vaadin/vaadin-lumo-styles": "22.0.0-alpha9",
+      "construct-style-sheets-polyfill": "3.0.4",
+      "lit": "2.0.0"
+    },
+    "devDependencies": {
+      "glob": "7.1.6",
+      "mkdirp": "1.0.4",
+      "rollup-plugin-brotli": "3.1.0",
+      "typescript": "4.4.3",
+      "vite": "v2.7.0",
+      "vite-plugin-checker": "0.3.4",
+      "workbox-build": "6.4.1",
+      "workbox-core": "6.4.2",
+      "workbox-precaching": "6.4.2"
+    },
+    "hash": "5ce564d422b308509737fbbd7a036ad80c191e574bc151193226da9131b5fcb5"
+  }
+}

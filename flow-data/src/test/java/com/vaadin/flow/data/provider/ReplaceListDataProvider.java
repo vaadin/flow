@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,9 +17,6 @@ package com.vaadin.flow.data.provider;
 
 import java.util.List;
 import java.util.stream.Stream;
-
-import com.vaadin.flow.data.provider.AbstractDataProvider;
-import com.vaadin.flow.data.provider.Query;
 
 /**
  * A dummy data provider for testing item replacement and stale elements.

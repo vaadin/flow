@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -39,6 +39,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.base.devserver.DevServerOutputTracker.Result;
+import com.vaadin.base.devserver.stats.DevModeUsageStatistics;
+import com.vaadin.base.devserver.stats.StatisticsConstants;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
@@ -52,7 +54,6 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendTools;
-import com.vaadin.flow.server.frontend.FrontendToolsSettings;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.FrontendVersion;
 import com.vaadin.flow.server.frontend.FrontendUtils.UnknownVersionException;
@@ -62,6 +63,8 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static com.vaadin.base.devserver.stats.StatisticsConstants.EVENT_LIVE_RELOAD;
 
 /**
  * Deals with most details of starting a frontend development server or
@@ -218,6 +221,10 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
 
             long ms = (System.nanoTime() - start) / 1000000;
             getLogger().info("Started {}. Time: {}ms", getServerName(), ms);
+            DevModeUsageStatistics.collectEvent(
+                    StatisticsConstants.EVENT_DEV_SERVER_START_PREFIX
+                            + getServerName(),
+                    ms);
         } finally {
             if (devServerProcess.get() == null) {
                 removeRunningDevServerPort();
@@ -277,29 +284,32 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
     protected abstract File getServerConfig();
 
     /**
-     * Gets the name of the dev server for outputting to the user.
+     * Gets the name of the dev server for outputting to the user and
+     * statistics.
      */
     protected abstract String getServerName();
 
     /**
      * Gets the commands to run to start the dev server.
      * 
-     * @param nodeExec
-     *            the path to the node binary
+     * @param tools
+     *            the frontend tools object
      */
-    protected abstract List<String> getServerStartupCommand(String nodeExec);
+    protected abstract List<String> getServerStartupCommand(
+            FrontendTools tools);
 
     /**
      * Defines the environment variables to use when starting the dev server.
-     * 
+     *
+     * @param frontendTools
+     *            frontend tools metadata
      * @param environment
      *            the environment variables to use
      */
-    protected void updateServerStartupEnvironment(FrontendVersion nodeVersion,
+    protected void updateServerStartupEnvironment(FrontendTools frontendTools,
             Map<String, String> environment) {
         environment.put("watchDogPort",
                 Integer.toString(getWatchDog().getWatchDogPort()));
-
     }
 
     /**
@@ -323,32 +333,10 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         ApplicationConfiguration config = getApplicationConfiguration();
         ProcessBuilder processBuilder = new ProcessBuilder()
                 .directory(getProjectRoot());
-
-        boolean useHomeNodeExec = config.getBooleanProperty(
-                InitParameters.REQUIRE_HOME_NODE_EXECUTABLE, false);
-        boolean nodeAutoUpdate = config
-                .getBooleanProperty(InitParameters.NODE_AUTO_UPDATE, false);
-        boolean useGlobalPnpm = config.getBooleanProperty(
-                InitParameters.SERVLET_PARAMETER_GLOBAL_PNPM, false);
-
-        FrontendToolsSettings settings = new FrontendToolsSettings(
-                getProjectRoot().getAbsolutePath(),
-                () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
-        settings.setForceAlternativeNode(useHomeNodeExec);
-        settings.setAutoUpdate(nodeAutoUpdate);
-        settings.setUseGlobalPnpm(useGlobalPnpm);
-
-        FrontendTools tools = new FrontendTools(settings);
+        FrontendTools tools = new FrontendTools(config, getProjectRoot());
         tools.validateNodeAndNpmVersion();
 
-        String nodeExec = null;
-        if (useHomeNodeExec) {
-            nodeExec = tools.forceAlternativeNodeExecutable();
-        } else {
-            nodeExec = tools.getNodeExecutable();
-        }
-
-        List<String> command = getServerStartupCommand(nodeExec);
+        List<String> command = getServerStartupCommand(tools);
 
         FrontendUtils.console(FrontendUtils.GREEN, START);
         if (getLogger().isDebugEnabled()) {
@@ -359,15 +347,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         processBuilder.command(command);
 
         Map<String, String> environment = processBuilder.environment();
-        FrontendVersion nodeVersion;
-        try {
-            nodeVersion = tools.getNodeVersion();
-        } catch (UnknownVersionException e) {
-            getLogger().error("Unable to determine node version", e);
-            // Need to assume something..
-            nodeVersion = new FrontendVersion(16, 0, 0);
-        }
-        updateServerStartupEnvironment(nodeVersion, environment);
+        updateServerStartupEnvironment(tools, environment);
 
         try {
             Process process = processBuilder.redirectErrorStream(true).start();
@@ -441,6 +421,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
     protected void triggerLiveReload() {
         if (liveReload != null) {
             liveReload.reload();
+            DevModeUsageStatistics.collectEvent(EVENT_LIVE_RELOAD);
         }
     }
 

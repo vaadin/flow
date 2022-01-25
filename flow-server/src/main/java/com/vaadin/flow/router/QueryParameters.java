@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -130,7 +130,7 @@ public class QueryParameters implements Serializable {
             return Collections.singletonList(paramAndValue);
         }
         String param = paramAndValue.substring(0, index);
-        String value = paramAndValue.substring(index + 1);
+        String value = paramAndValue.substring(index + 1).replace("+", "%2B");
         try {
             value = URLDecoder.decode(value, "utf-8");
         } catch (UnsupportedEncodingException e) {

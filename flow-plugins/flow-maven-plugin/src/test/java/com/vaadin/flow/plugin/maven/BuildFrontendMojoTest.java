@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -73,10 +73,10 @@ import org.mockito.Mockito;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.plugin.TestUtils;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.fusion.Endpoint;
+import dev.hilla.Endpoint;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.FrontendTools;
-import com.vaadin.fusion.frontend.EndpointGeneratorTaskFactoryImpl;
+import dev.hilla.frontend.EndpointGeneratorTaskFactoryImpl;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
@@ -164,10 +164,6 @@ public class BuildFrontendMojoTest {
                 projectFrontendResourcesDirectory);
 
         ReflectionUtils.setVariableValueInObject(mojo, "project", project);
-        ReflectionUtils.setVariableValueInObject(mojo, "webpackTemplate",
-                WEBPACK_CONFIG);
-        ReflectionUtils.setVariableValueInObject(mojo,
-                "webpackGeneratedTemplate", WEBPACK_GENERATED);
         ReflectionUtils.setVariableValueInObject(mojo, "webpackOutputDirectory",
                 webpackOutputDirectory);
         ReflectionUtils.setVariableValueInObject(mojo,

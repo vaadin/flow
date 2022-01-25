@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -617,16 +617,16 @@ public class BrowserDetails implements Serializable {
             }
             return true;
         }
-        // Firefox 43+ for now
-        if (isFirefox() && getBrowserMajorVersion() < 43) {
+        // Firefox 78+ for now
+        if (isFirefox() && getBrowserMajorVersion() < 78) {
             return true;
         }
-        // Opera 34+ for now
-        if (isOpera() && getBrowserMajorVersion() < 34) {
+        // Opera 58+ for now
+        if (isOpera() && getBrowserMajorVersion() < 58) {
             return true;
         }
-        // Chrome 47+ for now
-        if (isChrome() && getBrowserMajorVersion() < 47) {
+        // Chrome 71+ for now
+        if (isChrome() && getBrowserMajorVersion() < 71) {
             return true;
         }
         return false;

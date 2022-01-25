@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -623,13 +623,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         binder.setBean(item);
         rentField.setValue("10");
 
-        // € 10.00
-        DecimalFormat formatter = new DecimalFormat("0.00",
-                // Needed for the environments where Locale.getDefault()
-                // differs from Locale.getDefault(Locale.Category.FORMAT).
-                // For example, these could be en_US and en_FI.
-                DecimalFormatSymbols.getInstance(Locale.getDefault()));
-        assertEquals("€ " + formatter.format(10), rentField.getValue());
+        assertEquals("€ 10.00", rentField.getValue());
     }
 
     @Test
@@ -2126,7 +2120,7 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         @Override
         protected NumberFormat getFormat(Locale locale) {
             // Always display currency with two decimals
-            NumberFormat format = super.getFormat(locale);
+            NumberFormat format = super.getFormat(Locale.ENGLISH);
             if (format instanceof DecimalFormat) {
                 ((DecimalFormat) format).setMaximumFractionDigits(2);
                 ((DecimalFormat) format).setMinimumFractionDigits(2);

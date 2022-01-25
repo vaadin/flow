@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server;
 
+import javax.annotation.concurrent.NotThreadSafe;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpSessionBindingEvent;
@@ -60,6 +61,7 @@ import static org.junit.Assert.assertEquals;
  * @author Vaadin Ltd
  * @since 1.0
  */
+@NotThreadSafe
 public class VaadinServiceTest {
 
     @Tag("div")
@@ -97,7 +99,7 @@ public class VaadinServiceTest {
 
         // this test needs a fresh empty statistics, so we need to clear
         // them for resusing forks for unit tests
-        UsageStatistics.clearEntries();
+        UsageStatistics.resetEntries();
 
         VaadinServiceInitListener initListener = event -> {
             RouteConfiguration.forApplicationScope().setRoute("test",

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -379,11 +379,11 @@ public class StreamReceiverHandler implements Serializable {
         } finally {
             session.unlock();
         }
-        try {
+        try (InputStream handledStream = inputStream) {
             // Store ui reference so we can do cleanup even if node is
             // detached in some event handler
             Pair<Boolean, UploadStatus> result = streamToReceiver(session,
-                    inputStream, streamReceiver, filename, mimeType,
+                    handledStream, streamReceiver, filename, mimeType,
                     contentLength);
             if (result.getFirst()) {
                 cleanStreamVariable(session, streamReceiver);

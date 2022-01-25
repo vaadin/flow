@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -45,75 +45,43 @@ import java.lang.annotation.Target;
  * <ul>
  *
  * <li>When specifying only the 'value', it will be appended to the
- * 'document.head' inside a '&lt;custom-style&gt;' block.
+ * 'document.head' as a `style` element:
  *
  *
  *
  * <pre>
- *  &lt;custom-style&gt;
- *    &lt;style&gt;
- *      CSS-CONTENT
- *    &lt;/style&gt;
- *  &lt;/custom-style&gt;
+ *  &lt;style&gt;
+ *    CSS-CONTENT
+ *  &lt;/style&gt;
  *
  * </pre>
  *
  *
  *
- * <li>When specifying 'value' and 'include', it is appended inside a
- * '&lt;custom-style&gt;' block, but 'include' value is used for including a
- * defined module. Multiple modules are allowed by passing a space separated
- * list.
+ * <li>When specifying 'value' and 'include', the 'include' value is used for
+ * including a defined module. Multiple modules are allowed by passing a space
+ * separated list.
  *
  *
  *
  * <pre>
- *  &lt;custom-style&gt;
- *    &lt;style include="INCLUDE-VALUE"&gt;
- *      CSS-CONTENT
- *    &lt;/style&gt;
- *  &lt;/custom-style&gt;
+ *  &lt;style include="INCLUDE-VALUE"&gt;
+ *    CSS-CONTENT
+ *  &lt;/style&gt;
  *
  * </pre>
- *
  *
  *
  * <li>When 'value' and 'id' are given, a new 'dom-module' with the provided
- * 'id' is created, the 'include' parameter is allowed and is added to the
- * &lt;style&gt; tag inside the module template.
- *
- *
- *
- * <pre>
- * &lt;dom-module id="ID-VALUE"&gt;
- *   &lt;template&gt;
- *     &lt;style include="INCLUDE-VALUE"&gt;
- *       CSS-CONTENT
- *     &lt;/style&gt;
- *   &lt;/template&gt;
- * &lt;/dom-module&gt;
- *
- * </pre>
- *
+ * 'id' is registered using the {@code registerStyles} function from
+ * {@code vaadin-themable-mixin}. The 'include' parameter is allowed and is
+ * added to the &lt;style&gt; element inside the module template.
  *
  *
  * <li>When 'value' and 'themeFor' are given, a new 'dom-module' for customizing
- * a themable element is created, the 'include' parameter is allowed and is
- * added to the &lt;style&gt; tag inside the module template.
- *
- *
- *
- * <pre>
- * &lt;dom-module id="RANDOM-ID" theme-for="THEME-FOR-VALUE"&gt;
- *   &lt;template&gt;
- *     &lt;style include="INCLUDE-VALUE"&gt;
- *       CSS-CONTENT
- *     &lt;/style&gt;
- *   &lt;/template&gt;
- * &lt;/dom-module&gt;
- *
- * </pre>
- *
+ * a themable element is registered using the {@code registerStyles} function
+ * from {@code vaadin-themable-mixin}. The 'include' parameter is allowed and is
+ * added to the &lt;style&gt; element inside the module template.*
  *
  * </ul>
  * <p>

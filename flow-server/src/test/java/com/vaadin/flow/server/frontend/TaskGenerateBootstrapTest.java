@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -36,10 +36,9 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
-import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
-import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FEATURE_FLAGS_FILE_NAME;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.getClassFinder;
 
 public class TaskGenerateBootstrapTest {
@@ -61,14 +60,15 @@ public class TaskGenerateBootstrapTest {
 
         frontendFolder = temporaryFolder.newFolder(FRONTEND);
         taskGenerateBootstrap = new TaskGenerateBootstrap(frontDeps,
-                frontendFolder, TARGET, true);
+                frontendFolder, true);
     }
 
     @Test
-    public void should_importTargetIndexTS() throws ExecutionFailedException {
+    public void should_importGeneratedIndexTS()
+            throws ExecutionFailedException {
         taskGenerateBootstrap.execute();
         String content = taskGenerateBootstrap.getFileContent();
-        Assert.assertTrue(content.contains("import '../../target/index';"));
+        Assert.assertTrue(content.contains("import './index';"));
     }
 
     @Test
@@ -83,7 +83,7 @@ public class TaskGenerateBootstrapTest {
     public void should_importDevModeGizmo_inDevMode()
             throws ExecutionFailedException {
         taskGenerateBootstrap = new TaskGenerateBootstrap(frontDeps,
-                frontendFolder, TARGET, false);
+                frontendFolder, false);
         taskGenerateBootstrap.execute();
         String content = taskGenerateBootstrap.getFileContent();
         Assert.assertTrue(content.contains(DEV_MODE_GIZMO_IMPORT));
@@ -99,15 +99,22 @@ public class TaskGenerateBootstrapTest {
     }
 
     @Test
+    public void should_importFeatureFlagTS() throws ExecutionFailedException {
+        taskGenerateBootstrap.execute();
+        String content = taskGenerateBootstrap.getFileContent();
+        Assert.assertTrue(content.contains(
+                String.format("import './%s';", FEATURE_FLAGS_FILE_NAME)));
+    }
+
+    @Test
     public void should_load_AppTheme()
             throws MalformedURLException, ExecutionFailedException {
         taskGenerateBootstrap = new TaskGenerateBootstrap(getThemedDependency(),
-                frontendFolder, TARGET, true);
+                frontendFolder, true);
         taskGenerateBootstrap.execute();
         String content = taskGenerateBootstrap.getFileContent();
 
-        final List<String> expectedContent = Arrays.asList(
-                "import '../../target/index';",
+        final List<String> expectedContent = Arrays.asList("import './index';",
                 "import { applyTheme } from './theme';",
                 "applyTheme(document);");
 

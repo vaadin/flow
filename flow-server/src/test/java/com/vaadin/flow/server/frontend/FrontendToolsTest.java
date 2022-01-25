@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -14,6 +14,11 @@
  * the License.
  */
 package com.vaadin.flow.server.frontend;
+
+import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -34,7 +39,6 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
@@ -45,21 +49,21 @@ import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.frontend.installer.ProxyConfig;
+import com.vaadin.flow.testcategory.SlowTests;
 import com.vaadin.flow.testutil.FrontendStubs;
 
-import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import net.jcip.annotations.NotThreadSafe;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 @NotThreadSafe
+@Category(SlowTests.class)
 public class FrontendToolsTest {
 
     public static final String DEFAULT_NODE = FrontendUtils.isWindows()
@@ -144,11 +148,11 @@ public class FrontendToolsTest {
     public void nodeIsBeingLocated_supportedNodeInstalled_autoUpdateFalse_NodeNotUpdated()
             throws FrontendUtils.UnknownVersionException {
         FrontendVersion updatedNodeVersion = getUpdatedAlternativeNodeVersion(
-                "10.14.2", () -> tools.getNodeExecutable());
+                "13.10.1", () -> tools.getNodeExecutable());
 
         Assert.assertEquals(
                 "Locate Node version: Node version updated even if it should not have been touched.",
-                "10.14.2", updatedNodeVersion.getFullVersion());
+                "13.10.1", updatedNodeVersion.getFullVersion());
     }
 
     @Test
@@ -156,13 +160,57 @@ public class FrontendToolsTest {
             throws FrontendUtils.UnknownVersionException {
         settings.setAutoUpdate(true);
         FrontendVersion updatedNodeVersion = getUpdatedAlternativeNodeVersion(
-                "10.14.2", () -> tools.getNodeExecutable());
+                "13.10.1", () -> tools.getNodeExecutable());
 
         Assert.assertEquals(
                 "Locate Node version: Node version was not auto updated.",
                 new FrontendVersion(FrontendTools.DEFAULT_NODE_VERSION)
                         .getFullVersion(),
                 updatedNodeVersion.getFullVersion());
+    }
+
+    @Test
+    public void nodeIsBeingLocated_unsupportedNodeInstalled_defaultNodeVersionInstalledToAlternativeDirectory()
+            throws FrontendUtils.UnknownVersionException, IOException {
+        // Unsupported node version
+        FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo
+                .builder(FrontendStubs.Tool.NODE).withVersion("8.9.3").build();
+        FrontendStubs.ToolStubInfo npmStub = FrontendStubs.ToolStubInfo.none();
+        createStubNode(nodeStub, npmStub, baseDir);
+
+        List<String> nodeVersionCommand = new ArrayList<>();
+        nodeVersionCommand.add(tools.getNodeExecutable());
+        nodeVersionCommand.add("--version");
+        FrontendVersion usedNodeVersion = FrontendUtils.getVersion("node",
+                nodeVersionCommand);
+
+        Assert.assertEquals(
+                "Locate unsupported Node version: Default Node version was not used.",
+                new FrontendVersion(FrontendTools.DEFAULT_NODE_VERSION)
+                        .getFullVersion(),
+                usedNodeVersion.getFullVersion());
+    }
+
+    @Test
+    public void nodeIsBeingLocated_unsupportedNodeInstalled_fallbackToNodeInstalledToAlternativeDirectory()
+            throws IOException, FrontendUtils.UnknownVersionException {
+        // Unsupported node version
+        FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo
+                .builder(FrontendStubs.Tool.NODE).withVersion("8.9.3").build();
+        FrontendStubs.ToolStubInfo npmStub = FrontendStubs.ToolStubInfo.none();
+        createStubNode(nodeStub, npmStub, baseDir);
+
+        tools.installNode("v13.10.1", null);
+
+        List<String> nodeVersionCommand = new ArrayList<>();
+        nodeVersionCommand.add(tools.getNodeExecutable());
+        nodeVersionCommand.add("--version");
+        FrontendVersion usedNodeVersion = FrontendUtils.getVersion("node",
+                nodeVersionCommand);
+
+        Assert.assertEquals(
+                "Locate unsupported Node version: Expecting Node in alternative directory to be used, but was not.",
+                "13.10.1", usedNodeVersion.getFullVersion());
     }
 
     @Test
@@ -182,11 +230,11 @@ public class FrontendToolsTest {
     public void forceAlternativeDirectory_supportedNodeInstalled_autoUpdateFalse_NodeNotUpdated()
             throws FrontendUtils.UnknownVersionException {
         FrontendVersion updatedNodeVersion = getUpdatedAlternativeNodeVersion(
-                "10.14.2", () -> tools.forceAlternativeNodeExecutable());
+                "13.10.1", () -> tools.forceAlternativeNodeExecutable());
 
         Assert.assertEquals(
                 "Force alternative directory: Node version updated even if it should not have been touched.",
-                "10.14.2", updatedNodeVersion.getFullVersion());
+                "13.10.1", updatedNodeVersion.getFullVersion());
     }
 
     @Test
@@ -194,7 +242,7 @@ public class FrontendToolsTest {
             throws FrontendUtils.UnknownVersionException {
         settings.setAutoUpdate(true);
         FrontendVersion updatedNodeVersion = getUpdatedAlternativeNodeVersion(
-                "10.14.2", () -> tools.forceAlternativeNodeExecutable());
+                "13.10.1", () -> tools.forceAlternativeNodeExecutable());
 
         Assert.assertEquals(
                 "Force alternative directory: Node version was not auto updated.",
@@ -369,18 +417,6 @@ public class FrontendToolsTest {
         tools.validateNodeAndNpmVersion();
 
         Assert.assertTrue(file.exists());
-    }
-
-    @Test
-    public void validateNodeAndNpmVersion_brokenNode17() throws Exception {
-        settings.setIgnoreVersionChecks(false);
-        tools = Mockito.spy(new FrontendTools(settings));
-
-        Mockito.when(tools.getNodeVersion())
-                .thenReturn(new FrontendVersion(17, 0));
-        Assert.assertThrows(IllegalStateException.class, () -> {
-            tools.validateNodeAndNpmVersion();
-        });
     }
 
     @Test(expected = IllegalStateException.class)
@@ -601,21 +637,6 @@ public class FrontendToolsTest {
 
         createStubNode(true, true, vaadinHomeDir);
         assertNpmCommand(() -> vaadinHomeDir);
-    }
-
-    @Test
-    public void getSuitablePnpm_useDefaultSupportedPnpmVersion_oldGlobalPnpmIgnored()
-            throws Exception {
-        createStubNode(false, true, baseDir);
-        createFakePnpm(OLD_PNPM_VERSION);
-        List<String> pnpmCommand = tools.getSuitablePnpm();
-        Assert.assertTrue(
-                "expected the default pnpm command to include '--ignore-existing' flag",
-                pnpmCommand.contains("--ignore-existing"));
-        Assert.assertEquals(
-                "expected old global pnpm version to be ignored and the default supported one is used",
-                "pnpm@" + FrontendTools.DEFAULT_PNPM_VERSION,
-                pnpmCommand.get(pnpmCommand.size() - 1));
     }
 
     @Test

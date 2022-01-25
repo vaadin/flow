@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-project</artifactId>
-        <version>9.0-SNAPSHOT</version>
+        <version>10.0-SNAPSHOT</version>
     </parent>
     <artifactId>flow-tests</artifactId>
     <name>Flow tests</name>
@@ -26,6 +26,25 @@
         <!-- This property is needed to allow some Win-specific IT tests -->
         <!-- to be disabled via system property in CI until they got fixed-->
         <exclude.windows.failed.it.tests></exclude.windows.failed.it.tests>
+        <testListener></testListener>
+
+        <!-- Skip these categories in validation, use -Pslow-tests to run them -->
+        <excludedGroups>
+            com.vaadin.flow.testcategory.SlowTests,
+            com.vaadin.flow.testcategory.ScreenshotTests,
+            com.vaadin.flow.testcategory.PushTests,
+        </excludedGroups>
+
+        <jetty.scantrigger></jetty.scantrigger>
+
+        <vaadin.devmode.liveReload.enabled>false</vaadin.devmode.liveReload.enabled>
+        <vaadin.pnpm.enable>true</vaadin.pnpm.enable>
+        <vaadin.allow.appshell.annotations>false</vaadin.allow.appshell.annotations>
+        <useDeprecatedV14Bootstrapping>false</useDeprecatedV14Bootstrapping>
+        <vaadin.devmode.vite.options>--host</vaadin.devmode.vite.options>
+
+        <!-- make sure we do not leave webpack-dev-server running after IT -->
+        <vaadin.reuseDevServer>false</vaadin.reuseDevServer>
     </properties>
 
     <dependencies>
@@ -96,48 +115,6 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-failsafe-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>integration-test</goal>
-                            <goal>verify</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <!-- export test server port to integration tests -->
-                    <systemPropertyVariables>
-                        <serverPort>${server.port}</serverPort>
-                        <webdriver.chrome.driver>${webdriver.chrome.driver}
-                        </webdriver.chrome.driver>
-                    </systemPropertyVariables>
-                    <excludedGroups>${test.excludegroup}</excludedGroups>
-                    <excludes>
-                        <exclude>**/*$*</exclude>
-                        <exclude>${exclude.it.tests}</exclude>
-                        <exclude>${exclude.windows.failed.it.tests}</exclude>
-                    </excludes>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>properties-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>set-system-properties</goal>
-                        </goals>
-                        <configuration>
-                            <properties>
-                                <property>
-                                    <name>vaadin.devmode.liveReload.enabled
-                                    </name>
-                                    <value>false</value>
-                                </property>
-                            </properties>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
         <pluginManagement>
@@ -146,6 +123,10 @@
                     <groupId>com.vaadin</groupId>
                     <artifactId>flow-maven-plugin</artifactId>
                     <version>${project.version}</version>
+                    <configuration>
+                        <useDeprecatedV14Bootstrapping>${vaadin.useDeprecatedV14Bootstrapping}</useDeprecatedV14Bootstrapping>
+                        <pnpmEnable>${vaadin.pnpm.enable}</pnpmEnable>
+                    </configuration>
                     <executions>
                         <execution>
                             <goals>
@@ -270,11 +251,29 @@
                         <stopKey>foo</stopKey>
                         <stopWait>5</stopWait>
                         <systemProperties>
+                            <!-- All system props are defined here as they need to be overridden 
+                                 in all modules so no non-standard value leaks to another module -->
+                            <force>true</force>
                             <systemProperty>
-                                <name>vaadin.useDeprecatedV14Bootstrapping
-                                </name>
-                                <value>${vaadin.useDeprecatedV14Bootstrapping}
-                                </value>
+                                <name>vaadin.reuseDevServer</name>
+                                <value>${vaadin.reuseDevServer}</value>
+                            </systemProperty>
+                            <systemProperty>
+                                <name>vaadin.devmode.liveReload.enabled</name>
+                                <value>${vaadin.devmode.liveReload.enabled}</value>
+                            </systemProperty>
+                            <systemProperty>
+                                <name>vaadin.allow.appshell.annotations</name>
+                                <value>${vaadin.allow.appshell.annotations}</value>
+                            </systemProperty>
+                            <systemProperty>
+                                <name>jetty.scantrigger</name>
+                                <value>${jetty.scantrigger}</value>
+                            </systemProperty>
+                            <!-- Allow test clients not on localhost to connect to Vite-->
+                            <systemProperty>
+                                <name>vaadin.devmode.vite.options</name>
+                                <value>${vaadin.devmode.vite.options}</value>
                             </systemProperty>
                         </systemProperties>
                     </configuration>
@@ -297,16 +296,31 @@
 
     <profiles>
         <profile>
-            <id>run-tests</id>
+            <!-- Modules that have shared stuff used in other modules -->
+            <id>it-shared-modules</id>
+            <activation>
+                <property>
+                    <!-- usind -DsharedModules -DskipTests we can install these modules and run tests later (GH actions) -->
+                    <name>sharedModules</name>
+                </property>
+            </activation>
+            <modules>
+                <module>test-fusion-csrf</module>
+                <module>test-root-context</module>
+                <module>test-embedding</module>
+                <module>test-frontend</module>
+                <module>test-application-theme</module>
+                <module>test-multi-war</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>it-test-modules</id>
             <activation>
                 <property>
                     <name>!skipTests</name>
                 </property>
             </activation>
-
             <modules>
-                <module>test-mixed</module>
-                <module>test-mixed/pom-npm.xml</module>
                 <module>test-dev-mode</module>
                 <module>test-pwa</module>
                 <module>test-pwa/pom-production.xml</module>
@@ -327,8 +341,6 @@
                 <!-- tests running in both modes -->
                 <module>test-misc</module>
 
-                <module>test-mixed/pom-pnpm-production.xml</module>
-                <module>test-mixed/pom-npm-production.xml</module>
                 <module>test-npm-only-features</module>
                 <module>test-multi-war</module>
                 <module>test-ccdm</module>
@@ -389,7 +401,7 @@
                             <httpConnector>
                                 <port>${server.port}</port>
                             </httpConnector>
-                            <stopPort>8889</stopPort>
+                            <stopPort>${server.stop.port}</stopPort>
                         </configuration>
                     </plugin>
                 </plugins>
@@ -402,26 +414,6 @@
             </properties>
         </profile>
         <profile>
-            <id>default</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <properties>
-                <test.excludegroup>com.vaadin.flow.testcategory.ScreenshotTests,
-                    com.vaadin.flow.testcategory.PushTests
-                </test.excludegroup>
-            </properties>
-        </profile>
-        <profile>
-            <id>all-tests</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-            </activation>
-            <properties>
-                <test.excludegroup></test.excludegroup>
-            </properties>
-        </profile>
-        <profile>
             <id>ie11</id>
             <activation>
                 <property>
@@ -431,9 +423,27 @@
                 </property>
             </activation>
             <properties>
-                <test.excludegroup>com.vaadin.flow.testcategory.IgnoreIE11,
-                    com.vaadin.flow.testcategory.PushTests
-                </test.excludegroup>
+                <groups></groups>
+                <excludedGroups>
+                    com.vaadin.flow.testcategory.SlowTests,
+                    com.vaadin.flow.testcategory.ScreenshotTests,
+                    com.vaadin.flow.testcategory.PushTests,
+                    com.vaadin.flow.testcategory.IgnoreIE11,
+                </excludedGroups>
+            </properties>
+        </profile>
+        <profile>
+            <id>all-tests</id>
+            <properties>
+                <groups></groups>
+                <excludedGroups></excludedGroups>
+            </properties>
+        </profile>
+        <profile>
+            <id>slow-tests</id>
+            <properties>
+                <groups>${excludedGroups}</groups>
+                <excludedGroups></excludedGroups>
             </properties>
         </profile>
         <profile>

@@ -1,5 +1,5 @@
 /**
- *    Copyright 2000-2021 Vaadin Ltd
+ *    Copyright 2000-2022 Vaadin Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,8 +36,8 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                 id 'com.vaadin'
             }
             repositories {
+                mavenLocal()
                 mavenCentral()
-                jcenter()
                 maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
             }
             // test that we can configure both plugins
@@ -69,8 +69,8 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                 id("com.vaadin")
             }
             repositories {
+                mavenLocal()
                 mavenCentral()
-                jcenter()
                 maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
             }
             dependencies {
@@ -103,8 +103,8 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                 id("com.vaadin")
             }
             repositories {
+                mavenLocal()
                 mavenCentral()
-                jcenter()
                 maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
             }
             dependencies {
@@ -136,8 +136,8 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                 id("com.vaadin")
             }
             repositories {
+                mavenLocal()
                 mavenCentral()
-                jcenter()
                 maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
             }
             def jettyVersion = "9.4.20.v20190813"
@@ -176,8 +176,8 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                 id("com.vaadin")
             }
             repositories {
+                mavenLocal()
                 mavenCentral()
-                jcenter()
                 maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
             }
             def jettyVersion = "9.4.20.v20190813"
@@ -233,8 +233,8 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             }
             
             repositories {
+                mavenLocal()
                 mavenCentral()
-                jcenter()
                 maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
             }
 
@@ -318,8 +318,8 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                 id("com.vaadin")
             }
             repositories {
+                mavenLocal()
                 mavenCentral()
-                jcenter()
                 maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
             }
             dependencies {
@@ -374,8 +374,8 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                 id 'com.vaadin'
             }
             repositories {
+                mavenLocal()
                 mavenCentral()
-                jcenter()
                 maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
             }
             dependencies {
@@ -425,8 +425,8 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                 id 'com.vaadin'
             }
             repositories {
+                mavenLocal()
                 mavenCentral()
-                jcenter()
                 maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
             }
             dependencies {

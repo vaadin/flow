@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -72,12 +72,7 @@ public class UsageStatistics {
 
     private static ConcurrentHashMap<String, UsageEntry> entries = new ConcurrentHashMap<>();
     static {
-        String version = System.getProperty("java.version");
-
-        // Ignore pre, build and opt fields
-        version = version.replaceAll("[-_+].*", "");
-
-        markAsUsed("java", version);
+        setupDefaultEntries();
     }
 
     private UsageStatistics() {
@@ -120,9 +115,23 @@ public class UsageStatistics {
     }
 
     /**
-     * Clear the usage entries.
+     * Reset the usage entries.
      */
-    public static void clearEntries() {
+    public static void resetEntries() {
         entries.clear();
+        setupDefaultEntries();
+    }
+
+    private static void setupDefaultEntries() {
+        String version = System.getProperty("java.version");
+
+        if (version != null) {
+            // Ignore pre, build and opt fields
+            version = version.replaceAll("[-_+].*", "");
+        } else {
+            version = "unknown";
+        }
+
+        markAsUsed("java", version);
     }
 }

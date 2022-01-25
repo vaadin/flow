@@ -1353,6 +1353,7 @@ public class ElementTest extends AbstractNodeTest {
 
     @Test
     public void setResourceAttribute_elementIsNotAttachedAndHasAttribute_elementHasAttribute() {
+        UI.setCurrent(createUI());
         Element element = ElementFactory.createDiv();
         element.setAttribute("foo", "bar");
 
@@ -2235,7 +2236,7 @@ public class ElementTest extends AbstractNodeTest {
     @Test
     public void getShadowRoot_shadowRootIsEmpty() {
         Element element = ElementFactory.createDiv();
-        Assert.assertTrue(!element.getShadowRoot().isPresent());
+        Assert.assertFalse(element.getShadowRoot().isPresent());
     }
 
     @Test

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,9 +17,6 @@ package com.vaadin.flow.internal;
 
 import org.junit.Assert;
 import org.junit.Test;
-
-import com.vaadin.flow.internal.ConstantPool;
-import com.vaadin.flow.internal.ConstantPoolKey;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;

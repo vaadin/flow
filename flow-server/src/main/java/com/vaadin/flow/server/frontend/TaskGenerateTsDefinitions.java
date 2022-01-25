@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,6 +17,7 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
 import org.apache.commons.io.IOUtils;
 
@@ -47,8 +48,10 @@ public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
 
     @Override
     protected String getFileContent() throws IOException {
-        return IOUtils.toString(getClass().getResourceAsStream(TS_DEFINITIONS),
-                UTF_8);
+        try (InputStream tsDefinitionStream = getClass()
+                .getResourceAsStream(TS_DEFINITIONS)) {
+            return IOUtils.toString(tsDefinitionStream, UTF_8);
+        }
     }
 
     @Override

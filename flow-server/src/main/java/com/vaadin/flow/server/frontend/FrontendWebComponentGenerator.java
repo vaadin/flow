@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -82,14 +82,24 @@ public class FrontendWebComponentGenerator implements Serializable {
      */
     public Set<File> generateWebComponents(File outputDirectory,
             ThemeDefinition theme) {
-        Set<Class<?>> exporterRelatedClasses = new HashSet<>();
-        finder.getSubTypesOf(WebComponentExporter.class)
-                .forEach(exporterRelatedClasses::add);
-        finder.getSubTypesOf(WebComponentExporterFactory.class)
-                .forEach(exporterRelatedClasses::add);
-        final String themeName = theme == null ? "" : theme.getName();
-        return WebComponentModulesWriter.DirectoryWriter
-                .generateWebComponentsToDirectory(exporterRelatedClasses,
-                        outputDirectory, false, themeName);
+        try {
+            final Class<?> writerClass = finder
+                    .loadClass(WebComponentModulesWriter.class.getName());
+            Set<Class<?>> exporterRelatedClasses = new HashSet<>();
+            finder.getSubTypesOf(WebComponentExporter.class.getName())
+                    .forEach(exporterRelatedClasses::add);
+            finder.getSubTypesOf(WebComponentExporterFactory.class.getName())
+                    .forEach(exporterRelatedClasses::add);
+            final String themeName = theme == null ? "" : theme.getName();
+            return WebComponentModulesWriter.DirectoryWriter
+                    .generateWebComponentsToDirectory(writerClass,
+                            exporterRelatedClasses, outputDirectory, false,
+                            themeName);
+        } catch (ClassNotFoundException e) {
+            throw new IllegalStateException(
+                    "Unable to locate a required class using custom class "
+                            + "loader",
+                    e);
+        }
     }
 }

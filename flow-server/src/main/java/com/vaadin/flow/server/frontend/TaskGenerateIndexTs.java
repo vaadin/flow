@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,6 +17,7 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
 import org.apache.commons.io.IOUtils;
 
@@ -39,7 +40,7 @@ public class TaskGenerateIndexTs extends AbstractTaskClientGenerator {
 
     private final File frontendDirectory;
     private File generatedImports;
-    private final File outputDirectory;
+    private final File buildDirectory;
 
     /**
      * Create a task to generate <code>index.js</code> if necessary.
@@ -51,18 +52,19 @@ public class TaskGenerateIndexTs extends AbstractTaskClientGenerator {
      *            the flow generated imports file to include in the
      *            <code>index.js</code>
      * @param outputDirectory
-     *            the output directory of the generated file
+     *            the build output directory
      */
     TaskGenerateIndexTs(File frontendDirectory, File generatedImports,
-            File outputDirectory) {
+            File buildDirectory) {
         this.frontendDirectory = frontendDirectory;
         this.generatedImports = generatedImports;
-        this.outputDirectory = outputDirectory;
+        this.buildDirectory = buildDirectory;
     }
 
     @Override
     protected File getGeneratedFile() {
-        return new File(outputDirectory, INDEX_TS);
+        return new File(new File(frontendDirectory, FrontendUtils.GENERATED),
+                INDEX_TS);
     }
 
     @Override
@@ -75,16 +77,18 @@ public class TaskGenerateIndexTs extends AbstractTaskClientGenerator {
 
     @Override
     protected String getFileContent() throws IOException {
-        String indexTemplate = IOUtils
-                .toString(getClass().getResourceAsStream(INDEX_TS), UTF_8);
+        String indexTemplate;
+        try (InputStream indexTsStream = getClass()
+                .getResourceAsStream(INDEX_TS)) {
+            indexTemplate = IOUtils.toString(indexTsStream, UTF_8);
+        }
         String relativizedImport = ensureValidRelativePath(
-                FrontendUtils.getUnixRelativePath(outputDirectory.toPath(),
+                FrontendUtils.getUnixRelativePath(buildDirectory.toPath(),
                         generatedImports.toPath()));
 
         relativizedImport = relativizedImport
-                // replace `./frontend/` with `../target/frontend/`
-                // so as it can be copied to `frontend` without changes.
-                .replaceFirst("^./", "../" + outputDirectory.getName() + "/")
+                // replace `./` with `../../target/` to make it work
+                .replaceFirst("^./", "../../" + buildDirectory.getName() + "/")
                 // remove extension
                 .replaceFirst("\\.(ts|js)$", "");
 

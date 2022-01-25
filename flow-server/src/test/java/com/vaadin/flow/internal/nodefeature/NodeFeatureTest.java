@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -95,6 +95,7 @@ public class NodeFeatureTest {
                 NodeFeatures.VIRTUAL_CHILDREN);
         expectedIds.put(ReturnChannelMap.class,
                 NodeFeatures.RETURN_CHANNEL_MAP);
+        expectedIds.put(InertData.class, NodeFeatures.INERT_DATA);
 
         return expectedIds;
     }
@@ -154,6 +155,7 @@ public class NodeFeatureTest {
                 /* Rarely used element stuff */
                 ElementStylePropertyMap.class, ShadowRootData.class,
                 ShadowRootHost.class, AttachExistingElementFeature.class,
+                InertData.class,
 
                 /* Only used for the root node */
                 PushConfigurationMap.class,

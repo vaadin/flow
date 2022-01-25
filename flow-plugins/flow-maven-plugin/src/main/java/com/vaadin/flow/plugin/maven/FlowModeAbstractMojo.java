@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -109,7 +109,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * </p>
      * Example: <code>"https://nodejs.org/dist/"</code>.
      */
-    @Parameter(property = "node.download.root", defaultValue = NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT)
+    @Parameter(property = InitParameters.NODE_DOWNLOAD_ROOT, defaultValue = NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT)
     private String nodeDownloadRoot;
 
     /**
@@ -117,7 +117,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * Vaadin, for example `"v16.0.0"`. Defaults to null which uses the
      * Vaadin-default node version - see {@link FrontendTools} for details.
      */
-    @Parameter(property = "node.version", defaultValue = FrontendTools.DEFAULT_NODE_VERSION)
+    @Parameter(property = InitParameters.NODE_VERSION, defaultValue = FrontendTools.DEFAULT_NODE_VERSION)
     private String nodeVersion;
 
     /**
@@ -210,6 +210,15 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      */
     @Parameter(property = "build.folder", defaultValue = "${project.build.directory}")
     private String projectBuildDir;
+
+    /**
+     * Additional npm packages to run post install scripts for.
+     * <p>
+     * Post install is automatically run for internal dependencies which rely on
+     * post install scripts to work, e.g. esbuild.
+     */
+    @Parameter(property = "npm.postinstallPackages", defaultValue = "")
+    private List<String> postinstallPackages;
 
     /**
      * Generates a List of ClasspathElements (Run and CompileTime) from a
@@ -429,5 +438,10 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
                     .toString();
         }
         return projectBuildDir;
+    }
+
+    @Override
+    public List<String> postinstallPackages() {
+        return postinstallPackages;
     }
 }

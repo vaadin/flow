@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -60,6 +60,7 @@ import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_STATISTICS_JSON;
+import static com.vaadin.flow.server.frontend.FrontendTools.INSTALL_NODE_LOCALLY;
 import static java.lang.String.format;
 
 /**
@@ -198,6 +199,14 @@ public class FrontendUtils {
     public static final String BOOTSTRAP_FILE_NAME = "vaadin.ts";
 
     /**
+     * File name of the feature flags file that is generated in frontend
+     * {@link #GENERATED} folder. The feature flags file contains code to define
+     * feature flags as globals that might be used by Vaadin web components or
+     * application code.
+     */
+    public static final String FEATURE_FLAGS_FILE_NAME = "vaadin-featureflags.ts";
+
+    /**
      * File name of the index.html in client side.
      */
     public static final String INDEX_HTML = "index.html";
@@ -211,6 +220,11 @@ public class FrontendUtils {
      * File name of the index.js in client side.
      */
     public static final String INDEX_JS = "index.js";
+
+    /**
+     * File name of Vite helper used in development mode.
+     */
+    public static final String VITE_DEVMODE_TS = "vite-devmode.ts";
 
     /**
      * Default Java source folder for OpenAPI generator.
@@ -305,7 +319,6 @@ public class FrontendUtils {
      */
     public static final String PARAM_TOKEN_FILE = "vaadin.frontend.token.file";
 
-    public static final String INSTALL_NODE_LOCALLY = "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.7.6:install-node-and-npm -DnodeVersion=\"v12.14.0\" ";
     public static final String DISABLE_CHECK = "%nYou can disable the version check using -D%s=true";
 
     private static final String NO_CONNECTION = "Webpack-dev-server couldn't be reached for %s.%n"
@@ -378,8 +391,8 @@ public class FrontendUtils {
      */
     public static String streamToString(InputStream inputStream) {
         String ret = "";
-        try {
-            return IOUtils.toString(inputStream, StandardCharsets.UTF_8)
+        try (InputStream handledStream = inputStream) {
+            return IOUtils.toString(handledStream, StandardCharsets.UTF_8)
                     .replaceAll("\\R", System.lineSeparator());
         } catch (IOException exception) {
             // ignore exception on close()
@@ -593,18 +606,17 @@ public class FrontendUtils {
                 .getAttribute(Lookup.class).lookup(ResourceProvider.class);
         URL statsUrl = resourceProvider.getApplicationResource(stats);
         InputStream stream = null;
-        try {
-            stream = statsUrl == null ? null : statsUrl.openStream();
-            if (stream != null) {
-                byte[] buffer = IOUtils.toByteArray(stream);
+        if (statsUrl != null) {
+            try (InputStream statsStream = statsUrl.openStream()) {
+                byte[] buffer = IOUtils.toByteArray(statsStream);
                 statistics = new Stats(buffer, null);
                 service.getContext().setAttribute(statistics);
                 stream = new ByteArrayInputStream(buffer);
+            } catch (IOException exception) {
+                getLogger().warn("Couldn't read content of stats file {}",
+                        stats, exception);
+                stream = null;
             }
-        } catch (IOException exception) {
-            getLogger().warn("Couldn't read content of stats file {}", stats,
-                    exception);
-            stream = null;
         }
         if (stream == null) {
             getLogger().error(
@@ -970,12 +982,22 @@ public class FrontendUtils {
 
     protected static FrontendVersion getVersion(String tool,
             List<String> versionCommand) throws UnknownVersionException {
+        String output;
         try {
-            String output = executeCommand(versionCommand);
-            return new FrontendVersion(parseVersionString(output));
-        } catch (IOException | CommandExecutionException e) {
+            output = executeCommand(versionCommand);
+        } catch (CommandExecutionException e) {
             throw new UnknownVersionException(tool,
                     "Using command " + String.join(" ", versionCommand), e);
+        }
+
+        try {
+            return new FrontendVersion(parseVersionString(output));
+        } catch (IOException e) {
+            throw new UnknownVersionException(tool,
+                    "Expected a version number as output but got '" + output
+                            + "'" + " when using command "
+                            + String.join(" ", versionCommand),
+                    e);
         }
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -316,15 +316,18 @@ public class JsonConstants implements Serializable {
     public static final String SYNCHRONIZE_PROPERTY_TOKEN = "}";
 
     /**
-     * Token used as an event data expression to represent that the state node
-     * ID should be fetched for the element, or its closest parent, that
-     * corresponds to {@code event.target}. The token is chosen to avoid
-     * collisions with regular event data expressions by using a character that
-     * cannot be the start of a valid JS expression.
+     * Token used as an event data expression or prefix to an event data
+     * expression to represent that the state node ID should be fetched for the
+     * element, or its closest parent, that corresponds to {@code event.target}
+     * or the element returned by the evaluated expression.
+     * <p>
+     * The token is chosen to avoid collisions with regular event data
+     * expressions by using a character that cannot be the start of a valid JS
+     * expression.
      * 
      * @since 9.0
      */
-    public static final String MAP_EVENT_TARGET = "]";
+    public static final String MAP_STATE_NODE_EVENT_DATA = "]";
 
     /**
      * RPC type value used for return channel messages.

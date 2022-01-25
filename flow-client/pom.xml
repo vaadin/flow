@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-project</artifactId>
-        <version>9.0-SNAPSHOT</version>
+        <version>10.0-SNAPSHOT</version>
     </parent>
     <artifactId>flow-client</artifactId>
     <name>Flow Client</name>
@@ -17,8 +17,11 @@
         <gwt.module.output>${project.build.outputDirectory}/META-INF/resources/VAADIN/static/</gwt.module.output>
         <gwt.module.style>OBF</gwt.module.style>
         <gwt.sdm.bindAddress>0.0.0.0</gwt.sdm.bindAddress>
+        <skipTsTests>${skipTests}</skipTsTests>
         <org.eclipse.equinox.common.version>3.14.100</org.eclipse.equinox.common.version>
         <org.eclipse.core.runtime.version>3.20.100</org.eclipse.core.runtime.version>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <testListener></testListener>
     </properties>
 
     <dependencyManagement>
@@ -140,7 +143,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.2.0</version>
+                <version>3.2.2</version>
                 <configuration>
                     <!-- Exclude all source files and classes so only the
                         compile result ends up in the JAR -->
@@ -223,6 +226,7 @@
                     <htmlunit>FF38</htmlunit>
                     <testTimeOut>300</testTimeOut>
                     <extraJvmArgs>-Xmx512m -Dvaadin.enableDevServer=false</extraJvmArgs>
+                    <includes>${gwt.test.pattern}</includes>
                 </configuration>
             </plugin>
 
@@ -230,7 +234,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
-                <version>3.2.0</version>
+                <version>3.3.0</version>
                 <executions>
                     <execution>
                         <id>add-gwt-test-sources-as-test-sources</id>
@@ -290,7 +294,7 @@
                             <arguments>
                                 <argument>test</argument>
                             </arguments>
-                            <skip>${skipTests}</skip>
+                            <skip>${skipTsTests}</skip>
                         </configuration>
                     </execution>
                 </executions>
@@ -302,6 +306,15 @@
             <id>sdm</id>
             <properties>
                 <gwt.module>com.vaadin.ClientEngineXSI</gwt.module>
+            </properties>
+        </profile>
+        <profile>
+            <id>slow-tests</id>
+            <properties>
+                <!-- There are no slowTests in this module, we disable surefire, gwt and Ts -->
+                <groups>none</groups>
+                <gwt.test.pattern>none</gwt.test.pattern>
+                <skipTsTests>true</skipTsTests>
             </properties>
         </profile>
     </profiles>

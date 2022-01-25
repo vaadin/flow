@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -81,6 +81,7 @@ public abstract class NodeUpdater implements FallibleCommand {
     static final String VAADIN_DEP_KEY = "vaadin";
     static final String HASH_KEY = "hash";
     static final String DEV_DEPENDENCIES = "devDependencies";
+    static final String OVERRIDES = "overrides";
 
     private static final String DEP_LICENSE_KEY = "license";
     private static final String DEP_LICENSE_DEFAULT = "UNLICENSED";
@@ -129,6 +130,11 @@ public abstract class NodeUpdater implements FallibleCommand {
     boolean modified;
 
     FeatureFlags featureFlags;
+
+    /**
+     * path to the versions.json file
+     */
+    String versionsPath;
 
     /**
      * Constructor.
@@ -383,14 +389,16 @@ public abstract class NodeUpdater implements FallibleCommand {
     Map<String, String> getDefaultDevDependencies() {
         Map<String, String> defaults = new HashMap<>();
 
-        defaults.put("typescript", "4.4.3");
+        defaults.put("typescript", "4.5.3");
 
-        final String WORKBOX_VERSION = "6.2.0";
+        final String WORKBOX_VERSION = "6.4.2";
 
         if (featureFlags.isEnabled(FeatureFlags.VITE)) {
-            defaults.put("vite", "v2.7.0-beta.5");
+            defaults.put("vite", "v2.7.4");
             defaults.put("rollup-plugin-brotli", "3.1.0");
+            defaults.put("vite-plugin-checker", "0.3.4");
             defaults.put("mkdirp", "1.0.4"); // for application-theme-plugin
+            defaults.put("workbox-build", "6.4.1");
         } else {
             // Webpack plugins and helpers
             defaults.put("esbuild-loader", "2.15.1");
@@ -500,19 +508,27 @@ public abstract class NodeUpdater implements FallibleCommand {
         boolean added = false;
         FrontendVersion vaadinVersion = toVersion(vaadinDeps, pkg);
         if (json.hasKey(pkg)) {
-            FrontendVersion packageVersion = toVersion(json, pkg);
-            FrontendVersion newVersion = new FrontendVersion(version);
-            // Vaadin and package.json versions are the same, but dependency
-            // updates (can be up or down)
-            if (vaadinVersion.isEqualTo(packageVersion)
-                    && !vaadinVersion.isEqualTo(newVersion)) {
-                json.put(pkg, version);
-                added = true;
-                // if vaadin and package not the same, but new version is newer
-                // update package version.
-            } else if (newVersion.isNewerThan(packageVersion)) {
-                json.put(pkg, version);
-                added = true;
+            try {
+                FrontendVersion packageVersion = toVersion(json, pkg);
+                FrontendVersion newVersion = new FrontendVersion(version);
+                // Vaadin and package.json versions are the same, but dependency
+                // updates (can be up or down)
+                if (vaadinVersion.isEqualTo(packageVersion)
+                        && !vaadinVersion.isEqualTo(newVersion)) {
+                    json.put(pkg, version);
+                    added = true;
+                    // if vaadin and package not the same, but new version is
+                    // newer
+                    // update package version.
+                } else if (newVersion.isNewerThan(packageVersion)) {
+                    json.put(pkg, version);
+                    added = true;
+                }
+            } catch (NumberFormatException e) { // NOSONAR
+                /*
+                 * If the current version is not parseable, it can refer to a
+                 * file and we should leave it alone
+                 */
             }
         } else {
             json.put(pkg, version);
@@ -556,5 +572,60 @@ public abstract class NodeUpdater implements FallibleCommand {
 
     Logger log() {
         return LoggerFactory.getLogger(this.getClass());
+    }
+
+    /**
+     * Generate versions json file for version locking.
+     *
+     * @return generated versions json file path
+     * @throws IOException
+     *             when file IO fails
+     */
+    protected String generateVersionsJson() throws IOException {
+        File versions = new File(generatedFolder, "versions.json");
+
+        JsonObject versionsJson = getPlatformPinnedDependencies();
+        if (versionsJson == null) {
+            versionsJson = generateVersionsFromPackageJson();
+        }
+        FileUtils.write(versions, stringify(versionsJson, 2) + "\n",
+                StandardCharsets.UTF_8);
+        Path versionsPath = versions.toPath();
+        if (versions.isAbsolute()) {
+            return FrontendUtils.getUnixRelativePath(npmFolder.toPath(),
+                    versionsPath);
+        } else {
+            return FrontendUtils.getUnixPath(versionsPath);
+        }
+    }
+
+    /**
+     * If we do not have the platform versions to lock we should lock any
+     * versions in the package.json so we do not get multiple versions for
+     * defined packages.
+     *
+     * @return versions Json based on package.json
+     * @throws IOException
+     *             If reading package.json fails
+     */
+    private JsonObject generateVersionsFromPackageJson() throws IOException {
+        JsonObject versionsJson = Json.createObject();
+        // if we don't have versionsJson lock package dependency versions.
+        final JsonObject packageJson = getPackageJson();
+        final JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
+        final JsonObject devDependencies = packageJson
+                .getObject(DEV_DEPENDENCIES);
+        if (dependencies != null) {
+            for (String key : dependencies.keys()) {
+                versionsJson.put(key, dependencies.getString(key));
+            }
+        }
+        if (devDependencies != null) {
+            for (String key : devDependencies.keys()) {
+                versionsJson.put(key, devDependencies.getString(key));
+            }
+        }
+
+        return versionsJson;
     }
 }

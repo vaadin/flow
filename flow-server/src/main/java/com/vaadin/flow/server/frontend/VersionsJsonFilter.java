@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -119,11 +119,19 @@ class VersionsJsonFilter {
     private boolean isUserChanged(String key, JsonObject vaadinDep,
             JsonObject dependencies) {
         if (vaadinDep.hasKey(key)) {
-            FrontendVersion vaadin = new FrontendVersion(key,
-                    vaadinDep.getString(key));
-            FrontendVersion dep = new FrontendVersion(key,
-                    dependencies.getString(key));
-            return !vaadin.isEqualTo(dep);
+            try {
+                FrontendVersion vaadin = new FrontendVersion(key,
+                        vaadinDep.getString(key));
+                FrontendVersion dep = new FrontendVersion(key,
+                        dependencies.getString(key));
+                return !vaadin.isEqualTo(dep);
+            } catch (NumberFormatException nfe) {
+                LoggerFactory.getLogger("VersionsFilter").debug(
+                        "Received version with non numbers {} and {}",
+                        vaadinDep.getString(key), dependencies.getString(key));
+                return !vaadinDep.getString(key)
+                        .equals(dependencies.getString(key));
+            }
         }
         // User changed if not in vaadin dependency
         return true;

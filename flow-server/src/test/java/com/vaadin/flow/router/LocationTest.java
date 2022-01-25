@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -108,6 +108,18 @@ public class LocationTest {
         Location location = new Location(Arrays.asList("one", "two"));
         assertEquals(Arrays.asList("one", "two"), location.getSegments());
         assertEquals("one/two", location.getPath());
+    }
+
+    @Test
+    public void queryValue_decodedCorrectly() {
+        Location location = new Location("home?value+part");
+        Assert.assertEquals("'+' should not be decoded to space", "value+part",
+                location.getQueryParameters().getQueryString());
+
+        location = new Location("home?someValue1%2BsomeValue2");
+        Assert.assertEquals("'+' should not be double decoded",
+                "someValue1+someValue2",
+                location.getQueryParameters().getQueryString());
     }
 
     @Test

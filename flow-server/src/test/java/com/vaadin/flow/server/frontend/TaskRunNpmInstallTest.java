@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,33 +15,6 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URI;
-
-import net.jcip.annotations.NotThreadSafe;
-import org.apache.commons.io.FileUtils;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.ExpectedException;
-import org.junit.rules.TemporaryFolder;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.vaadin.experimental.FeatureFlags;
-import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.ExecutionFailedException;
-import com.vaadin.flow.server.frontend.installer.NodeInstaller;
-import com.vaadin.flow.server.frontend.scanner.ClassFinder;
-import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
-
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.NodeUpdater.DEPENDENCIES;
@@ -50,7 +23,42 @@ import static com.vaadin.flow.server.frontend.NodeUpdater.HASH_KEY;
 import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.frontend.installer.NodeInstaller;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
+import com.vaadin.flow.testcategory.SlowTests;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
+import org.junit.rules.ExpectedException;
+import org.junit.rules.TemporaryFolder;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import elemental.json.Json;
+import elemental.json.JsonObject;
+import net.jcip.annotations.NotThreadSafe;
+
 @NotThreadSafe
+@Category(SlowTests.class)
 public class TaskRunNpmInstallTest {
 
     @Rule
@@ -60,9 +68,9 @@ public class TaskRunNpmInstallTest {
 
     private TaskRunNpmInstall task;
 
-    private File npmFolder;
+    protected File npmFolder;
 
-    private ClassFinder finder;
+    protected ClassFinder finder;
 
     private Logger logger = Mockito
             .spy(LoggerFactory.getLogger(NodeUpdater.class));
@@ -91,14 +99,14 @@ public class TaskRunNpmInstallTest {
             }
 
         };
-        task = createTask();
+        task = createTask(new ArrayList<>());
     }
 
-    protected TaskRunNpmInstall createTask() {
-        return new TaskRunNpmInstall(getClassFinder(), getNodeUpdater(), false,
-                false, FrontendTools.DEFAULT_NODE_VERSION,
+    protected TaskRunNpmInstall createTask(List<String> additionalPostInstall) {
+        return new TaskRunNpmInstall(getNodeUpdater(), false, false,
+                FrontendTools.DEFAULT_NODE_VERSION,
                 URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false,
-                false);
+                false, additionalPostInstall);
     }
 
     @Test
@@ -263,10 +271,10 @@ public class TaskRunNpmInstallTest {
         exception.expectMessage(
                 "it's either not a file or not a 'node' executable.");
         assertRunNpmInstallThrows_vaadinHomeNodeIsAFolder(
-                new TaskRunNpmInstall(getClassFinder(), getNodeUpdater(), false,
-                        true, FrontendTools.DEFAULT_NODE_VERSION,
+                new TaskRunNpmInstall(getNodeUpdater(), false, true,
+                        FrontendTools.DEFAULT_NODE_VERSION,
                         URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT),
-                        false, false));
+                        false, false, new ArrayList<>()));
     }
 
     @Test
@@ -308,6 +316,74 @@ public class TaskRunNpmInstallTest {
         task.execute();
 
         Mockito.verify(logger).info(getRunningMsg());
+    }
+
+    protected void setupEsbuildAndFooInstallation() throws IOException {
+        File nodeModules = getNodeUpdater().nodeModulesFolder;
+        nodeModules.mkdir();
+        getNodeUpdater().modified = false;
+
+        // Fake that we have installed "esbuild"
+        File esbuildPackageJson = new File(
+                new File(nodeModules.getParentFile(), "fake-esbuild"),
+                "package.json");
+        String esbuildPackageJsonContents = IOUtils.toString(
+                getClass().getResourceAsStream(
+                        "fake-package-with-postinstall.json"),
+                StandardCharsets.UTF_8);
+        FileUtils.write(esbuildPackageJson, esbuildPackageJsonContents,
+                StandardCharsets.UTF_8);
+
+        // Fake that we have installed "foo"
+        File fooPackageJson = new File(
+                new File(nodeModules.getParentFile(), "fake-foo"),
+                "package.json");
+        String fooPackageJsonContents = IOUtils.toString(
+                getClass().getResourceAsStream(
+                        "fake-package-with-postinstall.json"),
+                StandardCharsets.UTF_8);
+        FileUtils.write(fooPackageJson, fooPackageJsonContents,
+                StandardCharsets.UTF_8);
+
+        File packageJsonFile = ensurePackageJson();
+        JsonObject packageJson = getNodeUpdater().getPackageJson();
+        packageJson.getObject(DEV_DEPENDENCIES).put("esbuild",
+                "./fake-esbuild");
+        packageJson.getObject(DEV_DEPENDENCIES).put("foo", "./fake-foo");
+        FileUtils.write(packageJsonFile, packageJson.toJson(),
+                StandardCharsets.UTF_8);
+
+    }
+
+    @Test
+    public void runNpmInstall_postInstall_runOnlyForDefaultPackages()
+            throws ExecutionFailedException, IOException {
+        setupEsbuildAndFooInstallation();
+        task.execute();
+
+        Assert.assertTrue("Postinstall for 'esbuild' was not run",
+                new File(
+                        new File(getNodeUpdater().nodeModulesFolder, "esbuild"),
+                        "postinstall-file.txt").exists());
+        Assert.assertFalse("Postinstall for 'foo' should not have been run",
+                new File(new File(getNodeUpdater().nodeModulesFolder, "foo"),
+                        "postinstall-file.txt").exists());
+    }
+
+    @Test
+    public void runNpmInstall_postInstall_runForDefinedAdditionalPackages()
+            throws ExecutionFailedException, IOException {
+        setupEsbuildAndFooInstallation();
+        task = createTask(Collections.singletonList("foo"));
+        task.execute();
+
+        Assert.assertTrue("Postinstall for 'esbuild' was not run",
+                new File(
+                        new File(getNodeUpdater().nodeModulesFolder, "esbuild"),
+                        "postinstall-file.txt").exists());
+        Assert.assertTrue("Postinstall for 'foo' was not run",
+                new File(new File(getNodeUpdater().nodeModulesFolder, "foo"),
+                        "postinstall-file.txt").exists());
     }
 
     /**
@@ -379,12 +455,13 @@ public class TaskRunNpmInstallTest {
         return "npm";
     }
 
-    private void ensurePackageJson() throws IOException {
+    private File ensurePackageJson() throws IOException {
         File file = new File(npmFolder, PACKAGE_JSON);
         if (!file.exists()) {
             JsonObject packageJson = getNodeUpdater().getPackageJson();
             getNodeUpdater().writePackageFile(packageJson);
         }
+        return file;
     }
 
 }

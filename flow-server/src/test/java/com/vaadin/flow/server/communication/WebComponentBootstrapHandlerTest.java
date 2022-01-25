@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -96,11 +96,11 @@ public class WebComponentBootstrapHandlerTest {
 
         String resultingScript = stream.toString(StandardCharsets.UTF_8.name());
 
-        Assert.assertThat(resultingScript,
+        MatcherAssert.assertThat(resultingScript,
                 CoreMatchers.containsString("var i=1;"));
-        Assert.assertThat(resultingScript, CoreMatchers.not(CoreMatchers
+        MatcherAssert.assertThat(resultingScript, CoreMatchers.not(CoreMatchers
                 .containsString("body {height:100vh;width:100vw;margin:0;}")));
-        Assert.assertThat(resultingScript,
+        MatcherAssert.assertThat(resultingScript,
                 CoreMatchers.not(CoreMatchers.containsString("http-equiv")));
     }
 
@@ -190,11 +190,11 @@ public class WebComponentBootstrapHandlerTest {
         handler.synchronizedHandleRequest(session, request, response);
 
         String result = stream.toString(StandardCharsets.UTF_8.name());
-        Assert.assertThat(result,
+        MatcherAssert.assertThat(result,
                 CoreMatchers.not(CoreMatchers.containsString("bar")));
-        Assert.assertThat(result,
+        MatcherAssert.assertThat(result,
                 CoreMatchers.not(CoreMatchers.containsString("h1")));
-        Assert.assertThat(result,
+        MatcherAssert.assertThat(result,
                 CoreMatchers.not(CoreMatchers.containsString("baz")));
     }
 

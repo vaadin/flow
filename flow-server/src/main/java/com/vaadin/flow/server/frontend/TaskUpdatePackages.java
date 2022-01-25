@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -102,8 +102,11 @@ public class TaskUpdatePackages extends NodeUpdater {
             JsonObject packageJson = getPackageJson();
             modified = updatePackageJsonDependencies(packageJson,
                     scannedApplicationDependencies);
+            versionsPath = generateVersionsJson();
+            boolean npmVersionLockingUpdated = lockVersionForNpm(packageJson,
+                    versionsPath);
 
-            if (modified) {
+            if (modified || npmVersionLockingUpdated) {
                 writePackageFile(packageJson);
 
                 if (enablePnpm) {
@@ -119,9 +122,51 @@ public class TaskUpdatePackages extends NodeUpdater {
                     deletePnpmLockFile();
                 }
             }
+
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    boolean lockVersionForNpm(JsonObject packageJson, String versionsPath)
+            throws IOException {
+        if (enablePnpm) {
+            return false;
+        }
+        boolean versionLockingUpdated = false;
+
+        File generatedVersionsFile = new File(npmFolder, versionsPath);
+        final JsonObject versionsJson = Json.parse(FileUtils.readFileToString(
+                generatedVersionsFile, StandardCharsets.UTF_8));
+
+        if (versionsJson != null) {
+            JsonObject overridesSection = getOverridesSection(packageJson);
+            final JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
+            for (String dependency : versionsJson.keys()) {
+                if (!overridesSection.hasKey(dependency)
+                        && dependencies.hasKey(dependency)
+                        && !isInternalPseudoDependency(
+                                versionsJson.getString(dependency))) {
+                    overridesSection.put(dependency, "$" + dependency);
+                    versionLockingUpdated = true;
+                }
+            }
+        }
+        return versionLockingUpdated;
+    }
+
+    private boolean isInternalPseudoDependency(String dependencyVersion) {
+        return dependencyVersion != null
+                && dependencyVersion.startsWith("./" + buildDir);
+    }
+
+    private JsonObject getOverridesSection(JsonObject packageJson) {
+        JsonObject overridesSection = packageJson.getObject(OVERRIDES);
+        if (overridesSection == null) {
+            overridesSection = Json.createObject();
+            packageJson.put(OVERRIDES, overridesSection);
+        }
+        return overridesSection;
     }
 
     @Override

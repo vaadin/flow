@@ -1,6 +1,7 @@
 import { css, html, LitElement, nothing } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { copy } from './copy-to-clipboard.js';
 
@@ -25,6 +26,140 @@ interface Tab {
   render: () => unknown;
   activate?: () => void;
 }
+
+enum ConnectionStatus {
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+  UNAVAILABLE = 'unavailable',
+  ERROR = 'error'
+}
+
+export class Connection extends Object {
+  static HEARTBEAT_INTERVAL = 180000;
+
+  status: ConnectionStatus = ConnectionStatus.UNAVAILABLE;
+  webSocket?: WebSocket;
+
+  constructor(url?: string) {
+    super();
+
+    if (url) {
+      this.webSocket = new WebSocket(url);
+      this.webSocket.onmessage = (msg) => this.handleMessage(msg);
+      this.webSocket.onerror = (err) => this.handleError(err);
+      this.webSocket.onclose = (_) => {
+        if (this.status !== ConnectionStatus.ERROR) {
+          this.setStatus(ConnectionStatus.UNAVAILABLE);
+        }
+        this.webSocket = undefined;
+      };
+    }
+
+    setInterval(() => {
+      if (this.webSocket && self.status !== ConnectionStatus.ERROR && this.status !== ConnectionStatus.UNAVAILABLE) {
+        this.webSocket.send('');
+      }
+    }, Connection.HEARTBEAT_INTERVAL);
+  }
+
+  onHandshake() {
+    // Intentionally empty
+  }
+
+  onReload() {
+    // Intentionally empty
+  }
+
+  onConnectionError(_: string) {
+    // Intentionally empty
+  }
+
+  onStatusChange(_: ConnectionStatus) {
+    // Intentionally empty
+  }
+
+  onMessage(message: any) {
+    // eslint-disable-next-line no-console
+    console.error('Unknown message received from the live reload server:', message);
+  }
+
+  handleMessage(msg: any) {
+    let json;
+    try {
+      json = JSON.parse(msg.data);
+    } catch (e: any) {
+      this.handleError(`[${e.name}: ${e.message}`);
+      return;
+    }
+    if (json.command === 'hello') {
+      this.setStatus(ConnectionStatus.ACTIVE);
+      this.onHandshake();
+    } else if (json.command === 'reload') {
+      if (this.status === ConnectionStatus.ACTIVE) {
+        this.onReload();
+      }
+    } else {
+      this.onMessage(json);
+    }
+  }
+
+  handleError(msg: any) {
+    // eslint-disable-next-line no-console
+    console.error(msg);
+    this.setStatus(ConnectionStatus.ERROR);
+    if (msg instanceof Event && this.webSocket) {
+      this.onConnectionError(`Error in WebSocket connection to ${this.webSocket.url}`);
+    } else {
+      this.onConnectionError(msg);
+    }
+  }
+
+  setActive(yes: boolean) {
+    if (!yes && this.status === ConnectionStatus.ACTIVE) {
+      this.setStatus(ConnectionStatus.INACTIVE);
+    } else if (yes && this.status === ConnectionStatus.INACTIVE) {
+      this.setStatus(ConnectionStatus.ACTIVE);
+    }
+  }
+
+  setStatus(status: ConnectionStatus) {
+    if (this.status !== status) {
+      this.status = status;
+      this.onStatusChange(status);
+    }
+  }
+
+  private send(command: string, data: any) {
+    const message = { command, data };
+    this.webSocket!.send(JSON.stringify(message));
+  }
+
+  setFeature(featureId: string, enabled: boolean) {
+    this.send('setFeature', { featureId, enabled });
+  }
+  sendTelemetry(browserData: any) {
+    this.send('reportTelemetry', { browserData });
+  }
+}
+
+enum MessageType {
+  LOG = 'log',
+  INFORMATION = 'information',
+  WARNING = 'warning',
+  ERROR = 'error'
+}
+
+interface Message {
+  id: number;
+  type: MessageType;
+  message: string;
+  details?: string;
+  link?: string;
+  persistentId?: string;
+  dontShowAgain: boolean;
+  deleted: boolean;
+}
+
 export class VaadinDevmodeGizmo extends LitElement {
   static BLUE_HSL = css`206, 100%, 70%`;
   static GREEN_HSL = css`145, 80%, 42%`;
@@ -803,8 +938,24 @@ export class VaadinDevmodeGizmo extends LitElement {
 
   private transitionDuration: number = 0;
 
-  constructor() {
-    super();
+  elementTelemetry() {
+    let data = {};
+    try {
+      // localstorage data is collected by vaadin-usage-statistics.js
+      const localStorageStatsString = localStorage.getItem('vaadin.statistics.basket');
+      if (!localStorageStatsString) {
+        // Do not send empty data
+        return;
+      }
+      data = JSON.parse(localStorageStatsString);
+    } catch (e) {
+      // In case of parse errors don't send anything
+      return;
+    }
+
+    if (this.frontendConnection) {
+      this.frontendConnection.sendTelemetry(data);
+    }
   }
 
   openWebSocketConnection() {
@@ -830,6 +981,7 @@ export class VaadinDevmodeGizmo extends LitElement {
       if (!VaadinDevmodeGizmo.isActive) {
         frontendConnection.setActive(false);
       }
+      this.elementTelemetry();
     };
     frontendConnection.onConnectionError = onConnectionError;
     frontendConnection.onReload = onReload;
@@ -1101,7 +1253,6 @@ export class VaadinDevmodeGizmo extends LitElement {
 
   findNotificationIndex(id: number): number {
     let index = -1;
-    // @ts-ignore
     this.notifications.some((notification, idx) => {
       if (notification.id === id) {
         index = idx;
@@ -1379,129 +1530,6 @@ export class VaadinDevmodeGizmo extends LitElement {
       this.log(MessageType.ERROR, `Unable to toggle feature ${feature.title}: No server connection available`);
     }
   }
-}
-
-enum ConnectionStatus {
-  ACTIVE = 'active',
-  INACTIVE = 'inactive',
-  UNAVAILABLE = 'unavailable',
-  ERROR = 'error'
-}
-
-// eslint-disable-next-line
-class Connection extends Object {
-  static HEARTBEAT_INTERVAL = 180000;
-
-  status: ConnectionStatus = ConnectionStatus.UNAVAILABLE;
-  webSocket?: WebSocket;
-
-  constructor(url?: string) {
-    super();
-
-    if (url) {
-      this.webSocket = new WebSocket(url);
-      this.webSocket.onmessage = (msg) => this.handleMessage(msg);
-      this.webSocket.onerror = (err) => this.handleError(err);
-      this.webSocket.onclose = (_) => {
-        if (this.status !== ConnectionStatus.ERROR) {
-          this.setStatus(ConnectionStatus.UNAVAILABLE);
-        }
-        this.webSocket = undefined;
-      };
-    }
-
-    setInterval(() => {
-      if (this.webSocket && self.status !== ConnectionStatus.ERROR && this.status !== ConnectionStatus.UNAVAILABLE) {
-        this.webSocket.send('');
-      }
-    }, Connection.HEARTBEAT_INTERVAL);
-  }
-
-  onHandshake() {}
-
-  onReload() {}
-
-  onConnectionError(_: string) {}
-
-  onStatusChange(_: ConnectionStatus) {}
-
-  onMessage(message: any) {
-    // eslint-disable-next-line no-console
-    console.error('Unknown message received from the live reload server:', message);
-  }
-
-  handleMessage(msg: any) {
-    let json;
-    try {
-      json = JSON.parse(msg.data);
-    } catch (e: any) {
-      this.handleError(`[${e.name}: ${e.message}`);
-      return;
-    }
-    if (json.command === 'hello') {
-      this.setStatus(ConnectionStatus.ACTIVE);
-      this.onHandshake();
-    } else if (json.command === 'reload') {
-      if (this.status === ConnectionStatus.ACTIVE) {
-        this.onReload();
-      }
-    } else {
-      this.onMessage(json);
-    }
-  }
-
-  handleError(msg: any) {
-    // eslint-disable-next-line no-console
-    console.error(msg);
-    this.setStatus(ConnectionStatus.ERROR);
-    if (msg instanceof Event && this.webSocket) {
-      this.onConnectionError(`Error in WebSocket connection to ${this.webSocket.url}`);
-    } else {
-      this.onConnectionError(msg);
-    }
-  }
-
-  setActive(yes: boolean) {
-    if (!yes && this.status === ConnectionStatus.ACTIVE) {
-      this.setStatus(ConnectionStatus.INACTIVE);
-    } else if (yes && this.status === ConnectionStatus.INACTIVE) {
-      this.setStatus(ConnectionStatus.ACTIVE);
-    }
-  }
-
-  setStatus(status: ConnectionStatus) {
-    if (this.status !== status) {
-      this.status = status;
-      this.onStatusChange(status);
-    }
-  }
-
-  private send(command: string, data: any) {
-    const message = { command, data };
-    this.webSocket!.send(JSON.stringify(message));
-  }
-
-  setFeature(featureId: string, enabled: boolean) {
-    this.send('setFeature', { featureId, enabled });
-  }
-}
-
-enum MessageType {
-  LOG = 'log',
-  INFORMATION = 'information',
-  WARNING = 'warning',
-  ERROR = 'error'
-}
-
-interface Message {
-  id: number;
-  type: MessageType;
-  message: string;
-  details?: string;
-  link?: string;
-  persistentId?: string;
-  dontShowAgain: boolean;
-  deleted: boolean;
 }
 
 if (customElements.get('vaadin-devmode-gizmo') === undefined) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -42,7 +42,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.fileupload.MultipartStream;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -50,7 +49,6 @@ import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.server.VaadinService;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 /**
@@ -166,13 +164,6 @@ public class ResponseWriterTest {
             responseContentLength.set((long) invocation.getArguments()[0]);
             return null;
         }).when(response).setContentLengthLong(ArgumentMatchers.anyLong());
-
-        Assert.assertNull(VaadinService.getCurrent());
-    }
-
-    @After
-    public void tearDown() {
-        Assert.assertNull(VaadinService.getCurrent());
     }
 
     @Test

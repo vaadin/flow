@@ -22,8 +22,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.function.Supplier;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import org.mockito.Mock;
 import org.mockito.Mockito;

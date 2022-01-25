@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -106,7 +106,7 @@ public class ViewAccessChecker implements BeforeEnterListener {
     }
 
     /**
-     * Sets the Fusion login view to use.
+     * Sets the frontend login view to use.
      * <p>
      * The login view can only be set once and cannot be changed afterwards.
      * <p>
@@ -114,7 +114,7 @@ public class ViewAccessChecker implements BeforeEnterListener {
      * {@link #enable()}
      * 
      * @param loginUrl
-     *            the Fusion view to use as login view
+     *            the frontend view to use as login view
      */
     public void setLoginView(String loginUrl) {
         throwIfLoginViewSet();

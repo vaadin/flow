@@ -14,7 +14,7 @@ import static com.vaadin.flow.server.frontend.scanner.ScannerDependenciesTest.ge
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 public class ScannerCssTest {
 

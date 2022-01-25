@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -140,7 +140,7 @@ function generateThemeFile(themeFolder, themeName, themeProperties, productionMo
   // styles.css will always be available as we write one if it doesn't exist.
   let filename = path.basename(styles);
   let variable = camelCase(filename);
-  imports.push(`import ${variable} from 'themes/${themeName}/${filename}';\n`);
+  imports.push(`import ${variable} from 'themes/${themeName}/${filename}?inline';\n`);
   /* Lumo must be first so that custom styles override Lumo styles */
   const lumoImports = themeProperties.lumoImports || ['color', 'typography'];
   if (lumoImports && lumoImports.length > 0) {
@@ -157,7 +157,7 @@ function generateThemeFile(themeFolder, themeName, themeProperties, productionMo
   if (fs.existsSync(document)) {
     filename = path.basename(document);
     variable = camelCase(filename);
-    imports.push(`import ${variable} from 'themes/${themeName}/${filename}';\n`);
+    imports.push(`import ${variable} from 'themes/${themeName}/${filename}?inline';\n`);
     globalCssCode.push(`injectGlobalCss(${variable}.toString(), document);\n    `);
   }
 
@@ -204,7 +204,7 @@ function generateThemeFile(themeFolder, themeName, themeProperties, productionMo
     const filename = path.basename(componentCss);
     const tag = filename.replace('.css', '');
     const variable = camelCase(filename);
-    imports.push(`import ${variable} from 'themes/${themeName}/${themeComponentsFolder}/${filename}';\n`);
+    imports.push(`import ${variable} from 'themes/${themeName}/${themeComponentsFolder}/${filename}?inline';\n`);
     // Don't format as the generated file formatting will get wonky!
     const componentString = `registerStyles(
       '${tag}',

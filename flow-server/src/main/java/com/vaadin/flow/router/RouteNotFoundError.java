@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -77,7 +77,7 @@ public class RouteNotFoundError extends Component
         template = template.replace("{{additionalInfo}}", additionalInfo);
         template = template.replace("{{path}}", path);
 
-        getElement().appendChild(new Html(template).getElement());
+        getElement().setChild(0, new Html(template).getElement());
         return HttpServletResponse.SC_NOT_FOUND;
     }
 

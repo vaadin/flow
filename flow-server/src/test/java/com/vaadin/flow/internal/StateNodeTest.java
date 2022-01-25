@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -33,6 +33,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -48,6 +49,7 @@ import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
 import com.vaadin.flow.internal.nodefeature.ElementClassList;
 import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
+import com.vaadin.flow.internal.nodefeature.InertData;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.shared.Registration;
 
@@ -223,7 +225,7 @@ public class StateNodeTest {
     @Test
     public void recursiveTreeNavigation_resilienceInDepth() {
         TestStateNode childOfRoot = new TestStateNode();
-        TestStateNode node = createTree(childOfRoot, 5000);
+        TestStateNode node = createTree(childOfRoot, 3000);
         StateTree tree = createStateTree();
 
         setParent(childOfRoot, tree.getRootNode());
@@ -571,6 +573,115 @@ public class StateNodeTest {
                     visibility.setVisible(isVisible);
                     stateNode.updateActiveState();
                 });
+    }
+
+    @Test
+    public void collectChanges_inertElement_inertChangesCollected() {
+        StateNode parent = createTestNode("Parent node",
+                ElementChildrenList.class, InertData.class);
+        StateNode child = createTestNode("Child node",
+                ElementChildrenList.class, InertData.class);
+        StateNode grandchild = createTestNode("Grandchild node",
+                InertData.class);
+
+        new StateTree(new UI().getInternals(), ElementChildrenList.class,
+                InertData.class).getRootNode()
+                        .getFeature(ElementChildrenList.class).add(0, parent);
+        parent.getFeature(ElementChildrenList.class).add(0, child);
+        child.getFeature(ElementChildrenList.class).add(0, grandchild);
+
+        Assert.assertFalse(parent.isInert());
+        Assert.assertFalse(child.isInert());
+        Assert.assertFalse(grandchild.isInert());
+
+        parent.getFeature(InertData.class).setInertSelf(true);
+
+        Assert.assertFalse(parent.isInert());
+        Assert.assertFalse(child.isInert());
+        Assert.assertFalse(grandchild.isInert());
+
+        parent.collectChanges(nodeChange -> {
+        });
+
+        Assert.assertTrue(parent.isInert());
+        Assert.assertTrue(child.isInert());
+        Assert.assertTrue(grandchild.isInert());
+
+        child.getFeature(InertData.class).setIgnoreParentInert(true);
+
+        Assert.assertTrue(parent.isInert());
+        Assert.assertTrue(child.isInert());
+        Assert.assertTrue(grandchild.isInert());
+
+        // parent doesn't have any changes, nothing happens until child is
+        // collected
+        parent.collectChanges(nodeChange -> {
+        });
+
+        Assert.assertTrue(parent.isInert());
+        Assert.assertTrue(child.isInert());
+        Assert.assertTrue(grandchild.isInert());
+
+        child.collectChanges(nodeChange -> {
+        });
+
+        Assert.assertTrue(parent.isInert());
+        Assert.assertFalse(child.isInert());
+        Assert.assertFalse(grandchild.isInert());
+
+        // change both but only collect parent -> changes cascaded
+        parent.getFeature(InertData.class).setInertSelf(false);
+        child.getFeature(InertData.class).setIgnoreParentInert(false);
+
+        Assert.assertTrue(parent.isInert());
+        Assert.assertFalse(child.isInert());
+        Assert.assertFalse(grandchild.isInert());
+
+        parent.collectChanges(nodeChange -> {
+        });
+
+        Assert.assertFalse(parent.isInert());
+        Assert.assertFalse(child.isInert());
+        Assert.assertFalse(grandchild.isInert());
+    }
+
+    @Test
+    public void collectChanges_inertChildMoved_inertStateInherited() {
+        StateNode inertParent = createTestNode("Inert parent",
+                ElementChildrenList.class, InertData.class);
+        StateNode child = createTestNode("Child", InertData.class);
+        StateNode parent = createTestNode("Non-inert parent",
+                ElementChildrenList.class, InertData.class);
+
+        final ElementChildrenList feature = new StateTree(
+                new UI().getInternals(), ElementChildrenList.class,
+                InertData.class).getRootNode()
+                        .getFeature(ElementChildrenList.class);
+        feature.add(0, parent);
+        feature.add(1, inertParent);
+        inertParent.getFeature(ElementChildrenList.class).add(0, child);
+
+        inertParent.getFeature(InertData.class).setInertSelf(true);
+        inertParent.collectChanges(node -> {
+        });
+
+        Assert.assertTrue(inertParent.isInert());
+        Assert.assertTrue(child.isInert());
+        Assert.assertFalse(parent.isInert());
+
+        inertParent.getFeature(ElementChildrenList.class).remove(0);
+        parent.getFeature(ElementChildrenList.class).add(0, child);
+
+        Assert.assertTrue(inertParent.isInert());
+        Assert.assertFalse(child.isInert());
+        Assert.assertFalse(parent.isInert());
+
+        parent.getFeature(ElementChildrenList.class).remove(0);
+        inertParent.getFeature(ElementChildrenList.class).add(0, child);
+
+        Assert.assertTrue(inertParent.isInert());
+        Assert.assertTrue(child.isInert());
+        Assert.assertFalse(parent.isInert());
     }
 
     @Test
@@ -1347,18 +1458,19 @@ public class StateNodeTest {
 
         if (visibilityChanged) {
             Assert.assertEquals(1, tree.dirtyNodes.size());
-            Assert.assertThat(tree.dirtyNodes, CoreMatchers.hasItem(stateNode));
+            MatcherAssert.assertThat(tree.dirtyNodes,
+                    CoreMatchers.hasItem(stateNode));
         } else {
             // the target node should be marked as dirty because it's visible
             // but its parent is inactive
             Assert.assertEquals(2, tree.dirtyNodes.size());
-            stateNode.visitNodeTree(node -> Assert.assertThat(tree.dirtyNodes,
-                    CoreMatchers.hasItem(node)));
+            stateNode.visitNodeTree(node -> MatcherAssert
+                    .assertThat(tree.dirtyNodes, CoreMatchers.hasItem(node)));
         }
 
         Assert.assertEquals(visibilityChanged ? 3 : 2, changes.size());
         // node is attached event
-        Assert.assertThat(changes.get(0),
+        MatcherAssert.assertThat(changes.get(0),
                 CoreMatchers.instanceOf(NodeAttachChange.class));
         // tag update (ElementData is reported feature) and possible active
         // state update
@@ -1371,7 +1483,7 @@ public class StateNodeTest {
 
         MapPutChange change = (MapPutChange) changes.get(1);
         if (visibilityChanged) {
-            Assert.assertThat(changes.get(2),
+            MatcherAssert.assertThat(changes.get(2),
                     CoreMatchers.instanceOf(MapPutChange.class));
             change = tagChange.equals(change) ? (MapPutChange) changes.get(2)
                     : change;
@@ -1397,7 +1509,7 @@ public class StateNodeTest {
         Assert.assertEquals(visibilityChanged ? 3 : 2, changes.size());
         // node is attached event
         // property updates and possible visibility update
-        Assert.assertThat(changes.get(1),
+        MatcherAssert.assertThat(changes.get(1),
                 CoreMatchers.instanceOf(MapPutChange.class));
 
         Optional<MapPutChange> visibilityChange = changes.stream()
@@ -1445,10 +1557,10 @@ public class StateNodeTest {
 
         Assert.assertEquals(2, changes.size());
         // node is attached event
-        Assert.assertThat(changes.get(0),
+        MatcherAssert.assertThat(changes.get(0),
                 CoreMatchers.instanceOf(NodeAttachChange.class));
         // the property update event
-        Assert.assertThat(changes.get(1),
+        MatcherAssert.assertThat(changes.get(1),
                 CoreMatchers.instanceOf(MapPutChange.class));
 
         changes.clear();
@@ -1478,8 +1590,9 @@ public class StateNodeTest {
         MapPutChange change;
         if (visibilityChanged) {
             Assert.assertEquals(1, tree.dirtyNodes.size());
-            Assert.assertThat(tree.dirtyNodes, CoreMatchers.hasItem(stateNode));
-            Assert.assertThat(changes.get(0),
+            MatcherAssert.assertThat(tree.dirtyNodes,
+                    CoreMatchers.hasItem(stateNode));
+            MatcherAssert.assertThat(changes.get(0),
                     CoreMatchers.instanceOf(MapPutChange.class));
             change = (MapPutChange) changes.get(0);
             Assert.assertEquals(ElementData.class, change.getFeature());
@@ -1487,8 +1600,8 @@ public class StateNodeTest {
             // the target node should be marked as dirty because it's visible
             // but its parent is inactive
             Assert.assertEquals(2, tree.dirtyNodes.size());
-            stateNode.visitNodeTree(node -> Assert.assertThat(tree.dirtyNodes,
-                    CoreMatchers.hasItem(node)));
+            stateNode.visitNodeTree(node -> MatcherAssert
+                    .assertThat(tree.dirtyNodes, CoreMatchers.hasItem(node)));
         }
 
         changes.clear();
@@ -1501,7 +1614,7 @@ public class StateNodeTest {
         // Two possible changes: probable visibility value change and property
         // update change
         Assert.assertEquals(visibilityChanged ? 2 : 1, changes.size());
-        Assert.assertThat(changes.get(0),
+        MatcherAssert.assertThat(changes.get(0),
                 CoreMatchers.instanceOf(MapPutChange.class));
         change = (MapPutChange) changes.get(0);
 

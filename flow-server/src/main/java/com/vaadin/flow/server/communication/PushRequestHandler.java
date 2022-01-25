@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -102,10 +102,13 @@ public class PushRequestHandler
             getLogger().debug("Using pre-initialized Atmosphere for servlet {}",
                     vaadinServletConfig.getServletName());
         }
-        pushHandler.setLongPollingSuspendTimeout(
-                atmosphere.getAtmosphereConfig().getInitParameter(
-                        InitParameters.SERVLET_PARAMETER_PUSH_SUSPEND_TIMEOUT_LONGPOLLING,
-                        -1));
+        String timeout = service.getDeploymentConfiguration().getStringProperty(
+                InitParameters.SERVLET_PARAMETER_PUSH_SUSPEND_TIMEOUT_LONGPOLLING,
+                "-1");
+        atmosphere.addInitParameter(
+                InitParameters.SERVLET_PARAMETER_PUSH_SUSPEND_TIMEOUT_LONGPOLLING,
+                timeout);
+        pushHandler.setLongPollingSuspendTimeout(Integer.parseInt(timeout));
         for (AtmosphereHandlerWrapper handlerWrapper : atmosphere
                 .getAtmosphereHandlers().values()) {
             AtmosphereHandler handler = handlerWrapper.atmosphereHandler;

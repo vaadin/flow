@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,9 +15,14 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import com.vaadin.flow.testcategory.PushTests;
+
+import org.junit.experimental.categories.Category;
+
 /**
  * The tests are in the superclass.
  */
+@Category(PushTests.class)
 public class PushLongPollingUpdateDivIT extends AbstractUpdateDivIT {
 
 }
