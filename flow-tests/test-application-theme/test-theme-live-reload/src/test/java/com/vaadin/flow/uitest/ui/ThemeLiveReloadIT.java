@@ -87,9 +87,8 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
                 + "applying the font styles", fontFile.exists());
 
         // Live reload upon adding a new font file and a new styles.css
-        doActionAndWaitUntilLiveReloadComplete(this::copyFontFile);
-        doActionAndWaitUntilLiveReloadComplete(
-                this::createStylesCssWithFontAndRedBackground);
+        copyFontFile();
+        createStylesCssWithFontAndRedBackground();
         waitUntilCustomFont();
         waitUntilCustomBackgroundColor();
 
