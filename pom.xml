@@ -102,7 +102,7 @@
         <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
         <maven.clean.plugin.version>3.1.0</maven.clean.plugin.version>
         <maven.exec.plugin.version>1.6.0</maven.exec.plugin.version>
-        <testbench.version>7.0.3</testbench.version>
+        <testbench.version>8.0.0.alpha1</testbench.version>
         <jetty.version>9.4.43.v20210629</jetty.version>
         <properties-maven-plugin.version>1.0.0</properties-maven-plugin.version>
 
@@ -128,6 +128,7 @@
         <bnd.version>6.1.0</bnd.version>
         <osgi.core.version>7.0.0</osgi.core.version>
         <osgi.compendium.version>7.0.0</osgi.compendium.version>
+        <osgi.annotation.version>7.0.0</osgi.annotation.version>
 
         <maven.test.skip>false</maven.test.skip>
 
