@@ -160,8 +160,8 @@ public class UidlWriter implements Serializable {
         response.put(ApplicationConstants.CLIENT_TO_SERVER_ID,
                 nextClientToServerMessageId);
 
-        SystemMessages messages = ui.getSession().getService()
-                .getSystemMessages(ui.getLocale(), null);
+        SystemMessages messages = service.getSystemMessages(ui.getLocale(),
+                null);
 
         JsonObject meta = new MetadataWriter().createMetadata(ui, false, async,
                 messages);
@@ -190,8 +190,7 @@ public class UidlWriter implements Serializable {
             response.put(JsonConstants.UIDL_KEY_EXECUTE,
                     encodeExecuteJavaScriptList(executeJavaScriptList));
         }
-        if (ui.getSession().getService().getDeploymentConfiguration()
-                .isRequestTiming()) {
+        if (service.getDeploymentConfiguration().isRequestTiming()) {
             response.put("timings", createPerformanceData(ui));
         }
         uiInternals.incrementServerId();
