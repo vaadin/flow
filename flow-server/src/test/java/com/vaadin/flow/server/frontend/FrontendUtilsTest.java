@@ -350,7 +350,8 @@ public class FrontendUtilsTest {
         Files.createSymbolicLink(linking.toPath(),
                 Path.of("../../a/node_modules/dep"));
 
-        File linkingExternal = new File(nodeModules, ".pnpm/b/node_modules/external");
+        File linkingExternal = new File(nodeModules,
+                ".pnpm/b/node_modules/external");
         Files.createSymbolicLink(linkingExternal.toPath(),
                 Path.of("../../../../external"));
 
