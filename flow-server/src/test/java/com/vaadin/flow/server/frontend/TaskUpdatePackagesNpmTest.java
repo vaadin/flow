@@ -200,7 +200,23 @@ public class TaskUpdatePackagesNpmTest {
     @Test
     public void npmIsInUse_platformVersionsJsonAdded_versionsPinned()
             throws IOException {
-        verifyPlatformDependenciesAreAdded(false);
+        Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
+                .thenReturn(null);
+        createTask(createApplicationDependencies()).execute();
+
+        Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
+                .thenReturn(versionJsonFile.toURI().toURL());
+        final String newVersion = "20.0.0";
+        createVaadinVersionsJson(newVersion, newVersion, newVersion);
+
+        final Map<String, String> applicationDependencies = createApplicationDependencies();
+        applicationDependencies.put(VAADIN_DIALOG, newVersion);
+        final TaskUpdatePackages task = createTask(applicationDependencies);
+        task.execute();
+        Assert.assertTrue("Updates not picked", task.modified);
+
+        verifyVersions(newVersion, newVersion, newVersion);
+        verifyVersionLockingWithNpmOverrides(true, true, true);
     }
 
     @Test
@@ -552,14 +568,17 @@ public class TaskUpdatePackagesNpmTest {
         }
     }
 
-    private void verifyPlatformDependenciesAreAdded(boolean enablePnpm) throws MalformedURLException, IOException {
+    private void verifyPlatformDependenciesAreAdded(boolean enablePnpm)
+            throws MalformedURLException, IOException {
         Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
                 .thenReturn(versionJsonFile.toURI().toURL());
         final String newVersion = "20.0.0";
         createVaadinVersionsJson(newVersion, newVersion, newVersion);
 
-        final Map<String, String> applicationDependencies = Collections.emptyMap();
-        final TaskUpdatePackages task = createTask(applicationDependencies, enablePnpm);
+        final Map<String, String> applicationDependencies = Collections
+                .emptyMap();
+        final TaskUpdatePackages task = createTask(applicationDependencies,
+                enablePnpm);
 
         verifyVersions(null, null, null);
 
