@@ -58,22 +58,6 @@
                         </contextHandler>
                     </contextHandlers>
                 </configuration>
-                <executions>
-                    <!-- overriding start-jetty to get a war going for prod -->
-                    <execution>
-                        <id>start-jetty</id>
-                        <phase>none</phase>
-                    </execution>
-                    <!-- actual start: -->
-                    <execution>
-                        <id>start-jetty-war</id>
-                        <phase>pre-integration-test</phase>
-                        <goals>
-                            <goal>deploy-war</goal>
-                        </goals>
-                    </execution>
-                    <!-- stop is inherited -->
-                </executions>
             </plugin>
 
             <plugin>

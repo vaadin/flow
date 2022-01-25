@@ -84,7 +84,6 @@ const allowedFrontendFolders = [
 
 export const vaadinConfig: UserConfigFn = (env) => {
   const devMode = env.mode === 'development';
-  const basePath = env.mode === 'production' ? '' : '/VAADIN/';
   let pwaConfig;
 
   if (devMode && process.env.watchDogPort) {
@@ -94,7 +93,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
   }
   return {
     root: 'frontend',
-    base: basePath,
+    base: '',
     resolve: {
       alias: {
         themes: themeFolder,
@@ -182,40 +181,54 @@ export const vaadinConfig: UserConfigFn = (env) => {
         }
       },
       {
-        name: 'inject-entrypoint-script',
+        name: 'force-remove-spa-middleware',
         transformIndexHtml: {
           enforce: 'pre',
-          transform(_html, context) {
-            if (context.server && !spaMiddlewareForceRemoved) {
-              context.server.middlewares.stack = context.server.middlewares.stack.filter((mw) => {
+          transform(_html, { server }) {
+            if (server && !spaMiddlewareForceRemoved) {
+              server.middlewares.stack = server.middlewares.stack.filter((mw) => {
                 const handleName = '' + mw.handle;
                 return !handleName.includes('viteSpaFallbackMiddleware');
               });
               spaMiddlewareForceRemoved = true;
             }
-
-            if (context.path !== '/index.html') {
-              return;
-            }
-            const vaadinScript: HtmlTagDescriptor = {
-              tag: 'script',
-              attrs: { type: 'module', src: devMode ? '/VAADIN/generated/vaadin.ts' : './generated/vaadin.ts' },
-              injectTo: 'head'
-            };
-
-            let scripts = [vaadinScript];
-
-            if (devMode) {
-              const viteDevModeScript: HtmlTagDescriptor = {
-                tag: 'script',
-                attrs: { type: 'module', src: '/VAADIN/generated/vite-devmode.ts' },
-                injectTo: 'head'
-              };
-              scripts.push(viteDevModeScript);
-            }
-            return scripts;
           }
         }
+      },
+      {
+        name: 'inject-entrypoint-script',
+        transformIndexHtml: {
+          enforce: 'pre',
+          transform(_html, { path, server }) {
+            if (path !== '/index.html') {
+              return;
+            }
+
+            if (devMode) {
+              const basePath = server?.config.base ?? '';
+              return [
+                {
+                  tag: 'script',
+                  attrs: { type: 'module', src: `${basePath}generated/vite-devmode.ts` },
+                  injectTo: 'head',
+                },
+                {
+                  tag: 'script',
+                  attrs: { type: 'module', src: `${basePath}generated/vaadin.ts` },
+                  injectTo: 'head',
+                }
+              ]
+            }
+
+            return [
+              {
+                tag: 'script',
+                attrs: { type: 'module', src: './generated/vaadin.ts' },
+                injectTo: 'head',
+              }
+            ]
+          },
+        },
       },
       checker({
         typescript: true
