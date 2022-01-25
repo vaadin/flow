@@ -25,6 +25,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.ContentTypeResolver;
 
@@ -80,6 +82,13 @@ public class StreamResource extends AbstractStreamResource {
                 throws IOException {
             try (InputStream input = createInputStream(session)) {
                 copy(session, input, stream);
+            } catch (IOException ioe) {
+                if (!"Broken pipe".equals(ioe.getMessage())) {
+                    throw ioe;
+                }
+                LoggerFactory.getLogger(StreamResource.class).debug(
+                        "Broken pipe. Client has most likely cancelled link.",
+                        ioe);
             }
         }
 
