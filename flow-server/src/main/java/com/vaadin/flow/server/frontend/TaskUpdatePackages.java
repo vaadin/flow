@@ -221,24 +221,22 @@ public class TaskUpdatePackages extends NodeUpdater {
         }
 
         /*
-         * #10572 lock all platform internal versions for npm
+         * #10572 lock all platform internal versions
          */
         List<String> pinnedPlatformDependencies = new ArrayList<>();
-        if (!enablePnpm) {
-            final JsonObject platformPinnedDependencies = getPlatformPinnedDependencies();
-            if (platformPinnedDependencies != null) {
-                for (String key : platformPinnedDependencies.keys()) {
-                    // need to double check that not overriding a scanned
-                    // dependency since add-ons should be able to downgrade
-                    // version through exclusion
-                    if (!applicationDependencies.containsKey(key)
-                            && pinPlatformDependency(packageJson,
-                                    platformPinnedDependencies, key)) {
-                        added++;
-                    }
-                    // make sure platform pinned dependency is not cleared
-                    pinnedPlatformDependencies.add(key);
+        final JsonObject platformPinnedDependencies = getPlatformPinnedDependencies();
+        if (platformPinnedDependencies != null) {
+            for (String key : platformPinnedDependencies.keys()) {
+                // need to double check that not overriding a scanned
+                // dependency since add-ons should be able to downgrade
+                // version through exclusion
+                if (!applicationDependencies.containsKey(key)
+                        && pinPlatformDependency(packageJson,
+                                platformPinnedDependencies, key)) {
+                    added++;
                 }
+                // make sure platform pinned dependency is not cleared
+                pinnedPlatformDependencies.add(key);
             }
         }
 

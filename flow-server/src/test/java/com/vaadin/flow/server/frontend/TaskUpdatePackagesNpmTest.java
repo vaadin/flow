@@ -18,9 +18,11 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -31,7 +33,6 @@ import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -219,17 +220,15 @@ public class TaskUpdatePackagesNpmTest {
     }
 
     @Test
-    @Ignore
-    public void npmIsInUse_switchToPnpm_pinnedVersionsDeleted()
+    public void pnpmIsInUse_platformVersionsJsonAdded_dependenciesAdded()
             throws IOException {
-        runTestWithoutPreexistingPackageJson();
-        final TaskUpdatePackages task = createTask(
-                createApplicationDependencies(), true);
-        task.execute();
-        Assert.assertTrue("Updates not picked", task.modified);
+        verifyPlatformDependenciesAreAdded(true);
+    }
 
-        // only the application dependency should stay
-        verifyVersions(PLATFORM_DIALOG_VERSION, null, null);
+    @Test
+    public void npmIsInUse_platformVersionsJsonAdded_dependenciesAdded()
+            throws IOException {
+        verifyPlatformDependenciesAreAdded(false);
     }
 
     @Test
@@ -567,6 +566,25 @@ public class TaskUpdatePackagesNpmTest {
         } else {
             Assert.assertNull(overrides.get(VAADIN_OVERLAY));
         }
+    }
+
+    private void verifyPlatformDependenciesAreAdded(boolean enablePnpm)
+            throws MalformedURLException, IOException {
+        Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
+                .thenReturn(versionJsonFile.toURI().toURL());
+        final String newVersion = "20.0.0";
+        createVaadinVersionsJson(newVersion, newVersion, newVersion);
+
+        final Map<String, String> applicationDependencies = Collections
+                .emptyMap();
+        final TaskUpdatePackages task = createTask(applicationDependencies,
+                enablePnpm);
+
+        verifyVersions(null, null, null);
+
+        task.execute();
+
+        verifyVersions(newVersion, newVersion, newVersion);
     }
 
 }
