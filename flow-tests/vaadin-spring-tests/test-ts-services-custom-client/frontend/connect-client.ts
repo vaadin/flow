@@ -1,4 +1,4 @@
-import {ConnectClient, MiddlewareContext, MiddlewareNext} from '@vaadin/fusion-frontend';
+import {ConnectClient, MiddlewareContext, MiddlewareNext} from '@hilla/frontend';
 
 async function logger(context: MiddlewareContext, next: MiddlewareNext): Promise<Response> {
   const start = new Date().getTime();
