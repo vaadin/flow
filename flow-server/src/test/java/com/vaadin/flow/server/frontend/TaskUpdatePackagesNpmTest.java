@@ -18,9 +18,11 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -198,23 +200,19 @@ public class TaskUpdatePackagesNpmTest {
     @Test
     public void npmIsInUse_platformVersionsJsonAdded_versionsPinned()
             throws IOException {
-        Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
-                .thenReturn(null);
-        createTask(createApplicationDependencies()).execute();
+        verifyPlatformDependenciesAreAdded(false);
+    }
 
-        Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
-                .thenReturn(versionJsonFile.toURI().toURL());
-        final String newVersion = "20.0.0";
-        createVaadinVersionsJson(newVersion, newVersion, newVersion);
+    @Test
+    public void pnpmIsInUse_platformVersionsJsonAdded_dependenciesAdded()
+            throws IOException {
+        verifyPlatformDependenciesAreAdded(true);
+    }
 
-        final Map<String, String> applicationDependencies = createApplicationDependencies();
-        applicationDependencies.put(VAADIN_DIALOG, newVersion);
-        final TaskUpdatePackages task = createTask(applicationDependencies);
-        task.execute();
-        Assert.assertTrue("Updates not picked", task.modified);
-
-        verifyVersions(newVersion, newVersion, newVersion);
-        verifyVersionLockingWithNpmOverrides(true, true, true);
+    @Test
+    public void npmIsInUse_platformVersionsJsonAdded_dependenciesAdded()
+            throws IOException {
+        verifyPlatformDependenciesAreAdded(false);
     }
 
     @Test
@@ -552,6 +550,22 @@ public class TaskUpdatePackagesNpmTest {
         } else {
             Assert.assertNull(overrides.get(VAADIN_OVERLAY));
         }
+    }
+
+    private void verifyPlatformDependenciesAreAdded(boolean enablePnpm) throws MalformedURLException, IOException {
+        Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
+                .thenReturn(versionJsonFile.toURI().toURL());
+        final String newVersion = "20.0.0";
+        createVaadinVersionsJson(newVersion, newVersion, newVersion);
+
+        final Map<String, String> applicationDependencies = Collections.emptyMap();
+        final TaskUpdatePackages task = createTask(applicationDependencies, enablePnpm);
+
+        verifyVersions(null, null, null);
+
+        task.execute();
+
+        verifyVersions(newVersion, newVersion, newVersion);
     }
 
 }
