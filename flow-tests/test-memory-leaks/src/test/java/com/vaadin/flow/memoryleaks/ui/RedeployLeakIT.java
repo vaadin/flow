@@ -25,7 +25,6 @@ import org.eclipse.jetty.plus.webapp.EnvConfiguration;
 import org.eclipse.jetty.plus.webapp.PlusConfiguration;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.util.log.JavaUtilLog;
 import org.eclipse.jetty.webapp.Configuration;
 import org.eclipse.jetty.webapp.FragmentConfiguration;
 import org.eclipse.jetty.webapp.MetaInfConfiguration;
@@ -102,10 +101,6 @@ public class RedeployLeakIT extends AbstractTestBenchTest {
     }
 
     public void setup(int port) throws Exception {
-        System.setProperty("java.awt.headless", "true");
-        System.setProperty("org.eclipse.jetty.util.log.class",
-                JavaUtilLog.class.getName());
-
         server = new Server();
 
         try (ServerConnector connector = new ServerConnector(server)) {
