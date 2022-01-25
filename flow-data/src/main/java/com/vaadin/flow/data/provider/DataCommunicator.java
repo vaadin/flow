@@ -24,11 +24,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.data.provider.ArrayUpdater.Update;
 import com.vaadin.flow.data.provider.DataChangeEvent.DataRefreshEvent;
 import com.vaadin.flow.function.SerializableComparator;
@@ -38,6 +41,7 @@ import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.Range;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.shared.communication.PushMode;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -103,6 +107,10 @@ public class DataCommunicator<T> implements Serializable {
 
     private SerializableConsumer<ExecutionContext> flushRequest;
     private SerializableConsumer<ExecutionContext> flushUpdatedDataRequest;
+
+    private transient Executor executor = null;
+    private transient CompletableFuture<Activation> future;
+    private UI ui;
 
     private static class SizeVerifier<T> implements Consumer<T>, Serializable {
 
@@ -173,6 +181,26 @@ public class DataCommunicator<T> implements Serializable {
                 Math.min(length, MAXIMUM_ALLOWED_ITEMS));
 
         requestFlush();
+    }
+
+    /**
+     * Control whether DataCommunicator should push data updates to the
+     * component asynchronously or not. By default the executor service is not
+     * defined and updates are done synchronously. Setting to null will disable
+     * the feature.
+     * <p>
+     * Note: This works only with Grid component. If set to true, Push needs to
+     * be enabled and set to PushMode.AUTOMATIC in order this to work.
+     * 
+     * @param executor
+     *            The Executor used for async updates.
+     */
+    public void enablePushUpdates(Executor executor) {
+        if (this.executor != null && future != null) {
+            future.cancel(true);
+            future = null;
+        }
+        this.executor = executor;
     }
 
     /**
@@ -402,6 +430,7 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     private void handleAttach() {
+        ui = UI.getCurrent();
         if (dataProviderUpdateRegistration != null) {
             dataProviderUpdateRegistration.remove();
         }
@@ -424,6 +453,11 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     private void handleDetach() {
+        ui = null;
+        if (future != null) {
+            future.cancel(true);
+            future = null;
+        }
         dataGenerator.destroyAllData();
         if (dataProviderUpdateRegistration != null) {
             dataProviderUpdateRegistration.remove();
@@ -457,10 +491,10 @@ public class DataCommunicator<T> implements Serializable {
         }
     }
 
+    @SuppressWarnings("FutureReturnValueIgnored")
     private void flush() {
         Set<String> oldActive = new HashSet<>(activeKeyOrder);
 
-        Range effectiveRequested;
         final Range previousActive = Range.withLength(activeStart,
                 activeKeyOrder.size());
 
@@ -468,30 +502,64 @@ public class DataCommunicator<T> implements Serializable {
         if (resendEntireRange) {
             assumedSize = getDataProviderSize();
         }
-        effectiveRequested = requestedRange
+        final Range effectiveRequested = requestedRange
                 .restrictTo(Range.withLength(0, assumedSize));
 
         resendEntireRange |= !(previousActive.intersects(effectiveRequested)
                 || (previousActive.isEmpty() && effectiveRequested.isEmpty()));
 
-        Activation activation = collectKeysToFlush(previousActive,
-                effectiveRequested);
+        if (executor != null) {
+            // In async mode wrap fetching data in future, collectKeysToFlush
+            // will perform fetch from data provider with given range.
+            if (ui.getPushConfiguration().getPushMode() != PushMode.AUTOMATIC) {
+                throw new IllegalStateException(
+                        "Asynchronous DataCommunicator updates require Push to be enabled and PushMode.AUTOMATIC");
+            }            
+            if (future != null) {
+                future.cancel(true);
+            }
+            future = CompletableFuture
+                    .supplyAsync(() -> collectKeysToFlush(previousActive,
+                            effectiveRequested), executor);
+            future.thenAccept(activation -> {
+                if (ui == null) {
+                    return;
+                }
+                ui.access(() -> {
+                    performUpdate(oldActive, previousActive, effectiveRequested,
+                            activation);
+                });
+            });
+        } else {
+            Activation activation = collectKeysToFlush(previousActive,
+                    effectiveRequested);
 
-        // If the returned stream from the DataProvider is smaller than it
+            performUpdate(oldActive, previousActive, effectiveRequested,
+                    activation);
+        }
+    }
+
+    private void performUpdate(Set<String> oldActive,
+            final Range previousActive, final Range effectiveRequested,
+            Activation activation) {
+        Range effRequested = effectiveRequested;
+
+        // If the returned stream from the DataProvider is smaller
+        // than it
         // should, a new query for the actual size needs to be done
         if (activation.isSizeRecheckNeeded()) {
             assumedSize = getDataProviderSize();
-            effectiveRequested = requestedRange
+            effRequested = requestedRange
                     .restrictTo(Range.withLength(0, assumedSize));
         }
 
         activeKeyOrder = activation.getActiveKeys();
-        activeStart = effectiveRequested.getStart();
+        activeStart = effRequested.getStart();
 
         // Phase 2: Collect changes to send
         Update update = arrayUpdater.startUpdate(assumedSize);
-        boolean updated = collectChangesToSend(previousActive,
-                effectiveRequested, update);
+        boolean updated = collectChangesToSend(previousActive, effRequested,
+                update);
 
         resendEntireRange = false;
         assumeEmptyClient = false;
