@@ -1231,6 +1231,10 @@ public class FrontendUtils {
      *             is not {@code node_modules}
      */
     public static void deleteNodeModules(File nodeModules) throws IOException {
+        if (!nodeModules.exists()) {
+            return;
+        }
+        
         if (!nodeModules.isDirectory()
                 || !nodeModules.getName().equals("node_modules")) {
             throw new IOException(nodeModules.getAbsolutePath()
