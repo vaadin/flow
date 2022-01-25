@@ -1242,12 +1242,6 @@ public class FrontendUtils {
         }
 
         Path nodeModulesPath = nodeModules.toPath();
-
-        try (Stream<Path> walk = Files.walk(nodeModulesPath)) {
-            walk.map(Path::toFile)
-                    .forEach(file -> file.setWritable(true, true));
-        }
-
         try (Stream<Path> walk = Files.walk(nodeModulesPath)) {
             String undeletable = walk.sorted(Comparator.reverseOrder())
                     .map(Path::toFile).filter(file -> !file.delete())

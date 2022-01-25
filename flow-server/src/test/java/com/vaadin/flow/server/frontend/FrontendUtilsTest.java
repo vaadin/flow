@@ -339,7 +339,6 @@ public class FrontendUtilsTest {
 
         externalLicense.getParentFile().mkdirs();
         externalLicense.createNewFile();
-        externalLicense.setWritable(false);
 
         File nodeModules = new File(tmpDir.getRoot(), "node_modules");
         File containing = new File(nodeModules, ".pnpm/a/node_modules/dep");
@@ -366,7 +365,6 @@ public class FrontendUtilsTest {
 
         Assert.assertFalse(nodeModules.exists());
         Assert.assertTrue(externalLicense.exists());
-        Assert.assertFalse(externalLicense.canWrite());
     }
 
     private ResourceProvider mockResourceProvider(VaadinService service) {
