@@ -56,7 +56,7 @@ public class TaskGenerateEndpointTest {
 
         String output = FileUtils.readFileToString(client, "UTF-8");
         assertTrue(output.contains(
-                "import {ConnectClient} from '@vaadin/fusion-frontend';"));
+                "import {ConnectClient} from '@hilla/frontend';"));
         assertTrue(output.contains(
                 "const client = new ConnectClient({prefix: 'connect'});"));
         assertTrue(output.contains("export default client;"));
