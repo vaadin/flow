@@ -1234,7 +1234,7 @@ public class FrontendUtils {
         if (!nodeModules.exists()) {
             return;
         }
-        
+
         if (!nodeModules.isDirectory()
                 || !nodeModules.getName().equals("node_modules")) {
             throw new IOException(nodeModules.getAbsolutePath()
