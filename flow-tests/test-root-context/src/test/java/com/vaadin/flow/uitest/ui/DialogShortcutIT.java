@@ -199,8 +199,8 @@ public class DialogShortcutIT extends ChromeBrowserTest {
 
     private void validateShortcutEvent(int indexFromTop, int eventCounter,
             String eventSourceId) {
-        final WebElement latestEvent = eventLog.findElement(
-                By.xpath(String.format("div[%d]", indexFromTop + 1)));
+        final WebElement latestEvent = waitUntil(driver -> eventLog.findElement(
+                By.xpath(String.format("div[%d]", indexFromTop + 1))));
         Assert.assertEquals(
                 "Invalid latest event with " + indexFromTop + ":" + ":"
                         + eventSourceId,
