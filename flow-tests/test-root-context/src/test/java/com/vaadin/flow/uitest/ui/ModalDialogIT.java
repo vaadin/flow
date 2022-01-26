@@ -124,8 +124,8 @@ public class ModalDialogIT extends ChromeBrowserTest {
 
     private void validateShortcutEvent(int indexFromTop, int eventCounter,
             String eventSourceId) {
-        final WebElement latestEvent = eventLog.findElements(By.tagName("div"))
-                .get(indexFromTop);
+        final WebElement latestEvent = waitUntil(driver -> eventLog.findElement(
+                By.xpath(String.format("div[%d]", indexFromTop + 1))));
         Assert.assertEquals("Invalid latest event",
                 eventCounter + "-" + eventSourceId, latestEvent.getText());
     }
