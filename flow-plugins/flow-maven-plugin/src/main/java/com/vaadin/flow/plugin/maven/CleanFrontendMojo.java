@@ -26,6 +26,8 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 
+import com.vaadin.flow.server.frontend.FrontendUtils;
+
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
@@ -102,15 +104,12 @@ public class CleanFrontendMojo extends FlowModeAbstractMojo {
     private void removeNodeModules() {
         // Remove node_modules folder
         File nodeModules = new File(npmFolder(), "node_modules");
-        if (nodeModules.exists()) {
-            try {
-                FileUtils.deleteDirectory(nodeModules);
-            } catch (IOException exception) {
-                getLog().debug("Exception removing node_modules", exception);
-                getLog().error(
-                        "Failed to remove '" + nodeModules.getAbsolutePath()
-                                + "'. Please remove it manually.");
-            }
+        try {
+            FrontendUtils.deleteNodeModules(nodeModules);
+        } catch (IOException exception) {
+            getLog().debug("Exception removing node_modules", exception);
+            getLog().error("Failed to remove '" + nodeModules.getAbsolutePath()
+                    + "'. Please remove it manually.");
         }
     }
 
