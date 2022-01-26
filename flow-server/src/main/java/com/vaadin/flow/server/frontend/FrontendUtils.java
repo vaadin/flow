@@ -1248,7 +1248,7 @@ public class FrontendUtils {
                     .map(File::getAbsolutePath)
                     .collect(Collectors.joining(", "));
 
-            if (!undeletable.isEmpty()) {
+            if (!undeletable.isEmpty() && nodeModules.exists()) {
                 throw new IOException("Unable to delete files: " + undeletable);
             }
         }
