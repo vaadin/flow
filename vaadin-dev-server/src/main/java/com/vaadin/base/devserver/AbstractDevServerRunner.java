@@ -215,8 +215,8 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
             Process process = doStartDevServer();
             devServerProcess.set(process);
             if (!isRunning()) {
-                throw new IllegalStateException(
-                        getServerName() + " exited prematurely");
+                throw new IllegalStateException("Startup of " + getServerName()
+                        + " failed. Output was:\n" + getFailedOutput());
             }
 
             long ms = (System.nanoTime() - start) / 1000000;

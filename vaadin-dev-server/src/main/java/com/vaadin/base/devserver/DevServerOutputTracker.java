@@ -64,7 +64,7 @@ public class DevServerOutputTracker {
 
             // Process closed stream, means that it exited, notify
             // DevModeHandler to continue without any result
-            onMatch.accept(null);
+            onMatch.accept(new Result(false, cumulativeOutput.toString()));
         }
 
         private void readLinesLoop(InputStreamReader reader)
