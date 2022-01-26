@@ -18,15 +18,15 @@ package com.vaadin.flow.uitest.ui;
 import java.net.URISyntaxException;
 import java.util.List;
 
-import com.vaadin.flow.shared.internal.NodeFeatures;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
+
+import com.vaadin.flow.internal.nodefeature.NodeFeatures;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 /**
  * @author Vaadin Ltd
