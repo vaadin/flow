@@ -1,12 +1,10 @@
 package com.vaadin.flow.uitest.ui;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
 import static com.vaadin.flow.uitest.ui.DialogShortcutView.REUSABLE_DIALOG_ID;
 
-@Ignore("Flaky test #10481, #10487, #10491")
 public class ComplexDialogShortcutIT extends DialogShortcutIT {
 
     @Test
