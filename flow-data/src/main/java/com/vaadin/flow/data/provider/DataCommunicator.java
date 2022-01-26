@@ -42,6 +42,7 @@ import com.vaadin.flow.internal.NodeOwner;
 import com.vaadin.flow.internal.NullOwner;
 import com.vaadin.flow.internal.Range;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
 
@@ -111,7 +112,6 @@ public class DataCommunicator<T> implements Serializable {
 
     private transient Executor executor = null;
     private transient CompletableFuture<Activation> future;
-    private UI ui;
 
     private static class SizeVerifier<T> implements Consumer<T>, Serializable {
 
@@ -431,7 +431,6 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     private void handleAttach() {
-        ui = UI.getCurrent();
         if (dataProviderUpdateRegistration != null) {
             dataProviderUpdateRegistration.remove();
         }
@@ -454,7 +453,6 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     private void handleDetach() {
-        ui = null;
         if (future != null) {
             future.cancel(true);
             future = null;
@@ -512,7 +510,8 @@ public class DataCommunicator<T> implements Serializable {
         resendEntireRange |= !(previousActive.intersects(effectiveRequested)
                 || (previousActive.isEmpty() && effectiveRequested.isEmpty()));
 
-        if (executor != null) {
+        UI ui = getUI();
+        if (ui != null && executor != null) {
             // In async mode wrap fetching data in future, collectKeysToFlush
             // will perform fetch from data provider with given range.
             if (ui.getPushConfiguration().getPushMode() != PushMode.AUTOMATIC) {
@@ -754,6 +753,14 @@ public class DataCommunicator<T> implements Serializable {
         return json;
     }
 
+    private UI getUI() {
+        NodeOwner owner = stateNode.getOwner();
+        if (owner instanceof StateTree) {
+            return ((StateTree) owner).getUI();
+        }
+        return null;
+    }
+	
     private static class Activation implements Serializable {
         private final List<String> activeKeys;
         private final boolean sizeRecheckNeeded;
