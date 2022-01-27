@@ -8,12 +8,12 @@
     </parent>
     <artifactId>flow-test-redeployment</artifactId>
     <name>Flow tests that require redeployment during the test</name>
-    <packaging>war</packaging>
+    <packaging>jar</packaging>
 
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
         <vaadin.reuseDevServer>true</vaadin.reuseDevServer>
-        <jetty.scantrigger>${project.build.directory}/scantrigger</jetty.scantrigger>
+        <spring.boot.version>2.6.3</spring.boot.version>
     </properties>
 
     <dependencies>
@@ -33,6 +33,22 @@
             <version>${project.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <version>${spring.boot.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <version>${spring.boot.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-spring</artifactId>
+            <version>20.0-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.google.code.findbugs</groupId>
             <artifactId>annotations</artifactId>
             <version>3.0.1</version>
@@ -47,30 +63,31 @@
 
     <build>
         <plugins>
-            <!-- Run flow plugin to build frontend -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>start-server</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>start</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>stop-server</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>stop</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>com.vaadin</groupId>
                 <artifactId>flow-maven-plugin</artifactId>
                 <configuration>
                     <productionMode>false</productionMode>
-                </configuration>
-            </plugin>
-            <!-- Run jetty before integration tests, and stop after -->
-            <plugin>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-maven-plugin</artifactId>
-                <configuration>
-                    <!-- Scan target/scantrigger in 1 second intervals -->
-                    <contextXml>${project.basedir}/context.xml</contextXml>
-                    <scanIntervalSeconds>1</scanIntervalSeconds>
-                    <scanTargetPatterns>
-                        <scanTargetPattern>
-                            <directory>${project.build.directory}</directory>
-                            <includes>
-                                <include>**/scantrigger</include>
-                            </includes>
-                        </scanTargetPattern>
-                    </scanTargetPatterns>
                 </configuration>
             </plugin>
         </plugins>

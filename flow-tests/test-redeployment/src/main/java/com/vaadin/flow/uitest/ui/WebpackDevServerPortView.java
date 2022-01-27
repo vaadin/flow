@@ -27,9 +27,8 @@ import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
-@Route(value = "com.vaadin.flow.uitest.ui.WebpackDevServerPortView", layout = ViewTestLayout.class)
+@Route(value = "com.vaadin.flow.uitest.ui.WebpackDevServerPortView")
 public class WebpackDevServerPortView extends Div {
 
     public static final String UUID_ID = "uuid";
@@ -51,26 +50,9 @@ public class WebpackDevServerPortView extends Div {
         add(portSpan);
 
         final NativeButton triggerButton = new NativeButton("Trigger reload",
-                event -> {
-                    triggerJettyReload();
-                });
+                event -> Application.triggerReload());
         triggerButton.setId(TRIGGER_RELOAD_ID);
         add(triggerButton);
     }
 
-    public static void triggerJettyReload() {
-        try {
-            touch(new File(System.getProperty("jetty.scantrigger")));
-        } catch (IOException ioException) {
-            throw new UncheckedIOException(ioException);
-        }
-
-    }
-
-    private static void touch(File file) throws IOException {
-        if (!file.exists()) {
-            file.createNewFile();
-        }
-        file.setLastModified(System.currentTimeMillis());
-    }
 }
