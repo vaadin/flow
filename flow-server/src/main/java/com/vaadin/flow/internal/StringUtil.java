@@ -127,7 +127,7 @@ public final class StringUtil {
                     result.append(character);
                     if (character.equals("\"")) {
                         state = State.IN_STRING;
-                    } else if (character.equals("\'")) {
+                    } else if (character.equals("'")) {
                         state = State.IN_STRING_APOSTROPHE;
                     }
                 }
@@ -142,7 +142,7 @@ public final class StringUtil {
                 break;
             case IN_STRING_APOSTROPHE:
                 result.append(character);
-                if (character.equals("\'")) {
+                if (character.equals("'")) {
                     state = State.NORMAL;
                 } else if (character.equals("\\") && scanner.hasNext()) {
                     result.append(scanner.next());
