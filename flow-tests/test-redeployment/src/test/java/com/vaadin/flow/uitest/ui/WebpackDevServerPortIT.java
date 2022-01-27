@@ -17,7 +17,8 @@ package com.vaadin.flow.uitest.ui;
 
 import java.util.List;
 
-import net.jcip.annotations.NotThreadSafe;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
+
 import org.apache.commons.lang3.math.NumberUtils;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -25,11 +26,15 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
+import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 @Ignore("Fails in Containers")
 public class WebpackDevServerPortIT extends ChromeBrowserTest {
+    @Override
+    protected String getTestPath() {
+        return super.getTestPath().replace("/view", "");
+    }
 
     @Test
     public void webpackDevServerPortShouldBeReusedOnReload()
