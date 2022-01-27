@@ -29,7 +29,6 @@
                 <module>test-reusable-as-parent</module>
                 <module>test-theme-live-reload</module>
                 <module>test-theme-component-live-reload</module>
-                <module>test-theme-switch-live-reload</module>
             </modules>
         </profile>
     </profiles>
