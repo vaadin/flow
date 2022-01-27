@@ -74,36 +74,37 @@ public class StringUtilTest {
         String httpImport = "import 'http://localhost:56445/files/transformed/@vaadin/vaadin-text-field/vaadin-text-field.js';";
 
         Assert.assertEquals("Nothing shoiuld be removed for import", httpImport,
-                StringUtil.removeJsComments(httpImport));
+                StringUtil.removeComments(httpImport, true));
 
-        String result = StringUtil.removeJsComments("/* comment **/ ;");
+        String result = StringUtil.removeComments("/* comment **/ ;", true);
         Assert.assertEquals(" ;", result);
 
-        String singleLineBlock = StringUtil.removeJsComments(
-                "return html`/* single line block comment*/`;");
+        String singleLineBlock = StringUtil.removeComments(
+                "return html`/* single line block comment*/`;", true);
 
         Assert.assertEquals("return html``;", singleLineBlock);
 
         String blockComment = StringUtil
-                .removeJsComments("return html`/* block with new lines\n"
-                        + "* still in my/their block */`;");
+                .removeComments("return html`/* block with new lines\n"
+                        + "* still in my/their block */`;", true);
         Assert.assertEquals("return html``;", blockComment);
 
         String newLineSingleBlock = StringUtil
-                .removeJsComments("return html`/* not here \n*/`;");
+                .removeComments("return html`/* not here \n*/`;", true);
         Assert.assertEquals("return html``;", newLineSingleBlock);
 
         String noComments = "<vaadin-text-field label=\"Nats Url(s)\" placeholder=\"nats://server:port\" id=\"natsUrlTxt\" style=\"width:100%\"></vaadin-text-field>`";
         Assert.assertEquals(noComments,
-                StringUtil.removeJsComments(noComments));
+                StringUtil.removeComments(noComments, true));
 
         String lineComment = StringUtil
-                .removeJsComments("return html`// this line comment\n`;");
+                .removeComments("return html`// this line comment\n`;", true);
         Assert.assertEquals("return html`\n`;", lineComment);
 
-        String mixedComments = StringUtil.removeJsComments(
+        String mixedComments = StringUtil.removeComments(
                 "return html`/* not here \n*/\nCode;// neither this\n"
-                        + "/* this should // be fine\n* to remove / */`;");
+                        + "/* this should // be fine\n* to remove / */`;",
+                true);
         Assert.assertEquals("return html`\nCode;\n`;", mixedComments);
     }
 }
