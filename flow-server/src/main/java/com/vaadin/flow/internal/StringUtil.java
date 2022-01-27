@@ -34,15 +34,32 @@ public final class StringUtil {
      * Comment parser state enumeration.
      */
     private enum State {
-        NORMAL, IN_LINE_COMMENT, IN_BLOCK_COMMENT, IN_STRING
+        NORMAL, IN_LINE_COMMENT, IN_BLOCK_COMMENT, IN_STRING, IN_STRING_APOSTROPHE
     }
 
     /**
      * Removes comments (block comments and line comments) from the JS code.
      *
+     * @param code
+     *            code to clean comments from
      * @return the code with removed comments
      */
-    public final static String removeComments(String code) {
+    public static String removeComments(String code) {
+        return removeComments(code, false);
+    }
+
+    /**
+     * Removes comments (block comments and line comments) from the JS code.
+     *
+     * @param code
+     *            code to clean comments from
+     * @param useStringApostrophe
+     *            if {@code true} then ' is also considered a string and
+     *            comments will not be considered inside it
+     * @return the code with removed comments
+     */
+    public static String removeComments(String code,
+            boolean useStringApostrophe) {
         State state = State.NORMAL;
         StringBuilder result = new StringBuilder();
         Map<String, Character> replacements = new HashMap<>();
@@ -65,12 +82,22 @@ public final class StringUtil {
                     result.append(character);
                     if (character.equals("\"")) {
                         state = State.IN_STRING;
+                    } else if (useStringApostrophe && character.equals("'")) {
+                        state = State.IN_STRING_APOSTROPHE;
                     }
                 }
                 break;
             case IN_STRING:
                 result.append(character);
                 if (character.equals("\"")) {
+                    state = State.NORMAL;
+                } else if (character.equals("\\") && scanner.hasNext()) {
+                    result.append(scanner.next());
+                }
+                break;
+            case IN_STRING_APOSTROPHE:
+                result.append(character);
+                if (character.equals("'")) {
                     state = State.NORMAL;
                 } else if (character.equals("\\") && scanner.hasNext()) {
                     result.append(scanner.next());
