@@ -41,7 +41,6 @@ import com.vaadin.testbench.TestBenchElement;
 import static com.vaadin.flow.uitest.ui.ComponentThemeLiveReloadView.ATTACH_IDENTIFIER;
 import static com.vaadin.flow.uitest.ui.ComponentThemeLiveReloadView.THEMED_COMPONENT_ID;
 
-@Ignore("Temporary solution for https://github.com/vaadin/flow/issues/11928")
 @NotThreadSafe
 public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
 
@@ -166,9 +165,9 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
             TestBenchElement themedTextField = $(TestBenchElement.class)
                     .id(THEMED_COMPONENT_ID);
             TestBenchElement input = themedTextField.$(DivElement.class)
-                    .attribute("class", "vaadin-text-field-container").first()
-                    .$(DivElement.class).attribute("part", "input-field")
-                    .first();
+                    .attribute("class", "vaadin-field-container").first()
+                    .$("vaadin-input-container")
+                    .attribute("part", "input-field").first();
             return borderRadius.equals(input.getCssValue("border-radius"));
         } catch (StaleElementReferenceException e) {
             return false;
