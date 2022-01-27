@@ -64,16 +64,18 @@ final class ChromeDriverLocator {
                 || !new File(chromedriverProperty).exists()) {
             String location = getDriverLocation();
             if (location == null) {
-                throw new IllegalStateException(
-                        "Unable to find chromedriver. Ensure it is available as -D"
-                                + WEBDRIVER_CHROME_DRIVER
-                                + " (currently set to " + chromedriverProperty
-                                + ") or available in your PATH");
+                if (!AbstractTestBenchTest.USE_HUB) {
+                    throw new IllegalStateException(
+                            "Unable to find chromedriver. Ensure it is available as -D"
+                                    + WEBDRIVER_CHROME_DRIVER
+                                    + " (currently set to "
+                                    + chromedriverProperty
+                                    + ") or available in your PATH");
+                }
+            } else {
+                System.out.println("Using chromedriver from " + location);
+                System.setProperty(WEBDRIVER_CHROME_DRIVER, location);
             }
-            System.out.println("Using chromedriver from " + location);
-            Optional.ofNullable(getDriverLocation())
-                    .ifPresent(driverLocation -> System.setProperty(
-                            WEBDRIVER_CHROME_DRIVER, driverLocation));
         }
     }
 
