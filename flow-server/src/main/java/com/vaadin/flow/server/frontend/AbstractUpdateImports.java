@@ -22,6 +22,7 @@ import java.net.URL;
 import java.nio.charset.MalformedInputException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -544,7 +545,10 @@ abstract class AbstractUpdateImports implements Runnable {
             if (file == null && !importedPath.startsWith("./")) {
                 // In case such file doesn't exist it may be external: inside
                 // node_modules folder
-                file = getFile(getNodeModulesDir(), resolvedPath);
+                file = getFile(getNodeModulesDir(), importedPath);
+                if (!file.exists()) {
+                    file = null;
+                }
                 resolvedPath = importedPath;
             }
             if (file == null) {
@@ -602,12 +606,19 @@ abstract class AbstractUpdateImports implements Runnable {
         String pathPrefix = moduleFile.toString();
         pathPrefix = pathPrefix.substring(0,
                 pathPrefix.length() - path.length());
-        String resolvedPath = moduleFile.getParent().resolve(importedPath)
-                .toString();
-        if (resolvedPath.startsWith(pathPrefix)) {
-            resolvedPath = resolvedPath.substring(pathPrefix.length());
+        try {
+            String resolvedPath = moduleFile.getParent().resolve(importedPath)
+                    .toString();
+            if (resolvedPath.startsWith(pathPrefix)) {
+                resolvedPath = resolvedPath.substring(pathPrefix.length());
+            }
+            return resolvedPath;
+        } catch (InvalidPathException ipe) {
+            getLogger().error("Invalid import '{}' in file '{}'", importedPath,
+                    moduleFile);
+            getLogger().debug("Failed to resolve path.", ipe);
         }
-        return resolvedPath;
+        return importedPath;
     }
 
     private String normalizePath(String path) {
