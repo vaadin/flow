@@ -76,8 +76,6 @@ public class StringToUuidConverter implements Converter<String, UUID> {
         try {
             uuid = UUID.fromString(value);
         } catch (java.lang.IllegalArgumentException e) {
-            LoggerFactory.getLogger(StringToUuidConverter.class.getName())
-                    .warn("Unable to convert String to UUID: " + value, e);
             return Result.error(this.errorMessageProvider.apply(context));
         }
         return Result.ok(uuid); // Return the UUID object, converted from
