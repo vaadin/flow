@@ -106,7 +106,9 @@ final class ChromeDriverLocator {
 
     private static String getDriverFromPath() {
         try {
-            Process p = new ProcessBuilder().command(FrontendUtils.isWindows() ? "where" : "which", "chromedriver")
+            Process p = new ProcessBuilder()
+                    .command(FrontendUtils.isWindows() ? "where" : "which",
+                            "chromedriver")
                     .start();
             int exitCode = p.waitFor();
             if (exitCode == 0) {
