@@ -20,6 +20,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
 
@@ -362,6 +363,57 @@ public class FrontendUtilsTest {
         assertNull("Stats cache should not be present",
                 service.getContext().getAttribute(CACHE_KEY));
     }
+
+    @Test
+    public void deleteNodeModules_nopIfNotExists() throws IOException {
+        File nodeModules = new File(tmpDir.getRoot(), "node_modules");
+        FrontendUtils.deleteNodeModules(nodeModules);
+    }
+
+    @Test(expected = IOException.class)
+    public void deleteNodeModules_throwsIfNotNamedNodeModules()
+            throws IOException {
+        File myModules = new File(tmpDir.getRoot(), "my_modules");
+        myModules.mkdirs();
+        FrontendUtils.deleteNodeModules(myModules);
+    }
+
+    @Test
+    public void deleteNodeModules_canDeleteSymlinksAndNotFollowThem()
+            throws IOException {
+        File externalDir = new File(tmpDir.getRoot(), "external");
+        File externalLicense = new File(externalDir, "LICENSE");
+
+        externalLicense.getParentFile().mkdirs();
+        externalLicense.createNewFile();
+
+        File nodeModules = new File(tmpDir.getRoot(), "node_modules");
+        File containing = new File(nodeModules, ".pnpm/a/node_modules/dep");
+        containing.mkdirs();
+        File license = new File(containing, "LICENSE");
+        license.createNewFile();
+
+        File linking = new File(nodeModules, ".pnpm/b/node_modules/dep");
+        linking.getParentFile().mkdirs();
+        Files.createSymbolicLink(linking.toPath(),
+                new File("../../a/node_modules/dep").toPath());
+
+        File linkingExternal = new File(nodeModules,
+                ".pnpm/b/node_modules/external");
+        Files.createSymbolicLink(linkingExternal.toPath(),
+                new File("../../../../external").toPath());
+
+        Assert.assertTrue(nodeModules.exists());
+        Assert.assertTrue(linking.exists());
+        Assert.assertTrue(new File(linking, "LICENSE").exists());
+        Assert.assertTrue(new File(linkingExternal, "LICENSE").exists());
+
+        FrontendUtils.deleteNodeModules(nodeModules);
+
+        Assert.assertFalse(nodeModules.exists());
+        Assert.assertTrue(externalLicense.exists());
+    }
+
 
     private ResourceProvider mockResourceProvider(VaadinService service,
             VaadinContext context) {
