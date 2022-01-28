@@ -28,8 +28,8 @@
         <driver.binary.downloader.maven.plugin.version>1.0.14
         </driver.binary.downloader.maven.plugin.version>
         <maven.war.plugin.version>3.3.2</maven.war.plugin.version>
-        <vaadin.version>22.0-SNAPSHOT</vaadin.version>
-        <testbench.version>7.0.3</testbench.version>
+        <vaadin.version>23.0-SNAPSHOT</vaadin.version>
+        <testbench.version>8.0.0.alpha1</testbench.version>
     </properties>
 
     <dependencyManagement>
