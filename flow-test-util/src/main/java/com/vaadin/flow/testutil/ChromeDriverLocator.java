@@ -42,9 +42,9 @@ final class ChromeDriverLocator {
      * with chromedriver path, does not override already existing value.
      * 
      * @throws UncheckedIOException
-     *                              on io exceptions of the
-     *                              {@link Files#find(Path, int, BiPredicate, FileVisitOption...)}
-     *                              method
+     *             on io exceptions of the
+     *             {@link Files#find(Path, int, BiPredicate, FileVisitOption...)}
+     *             method
      */
     static void fillEnvironmentProperty() {
         if (AbstractTestBenchTest.USE_HUB) {
