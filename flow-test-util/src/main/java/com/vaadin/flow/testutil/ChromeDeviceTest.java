@@ -21,6 +21,7 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -30,6 +31,9 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.devtools.DevTools;
+import org.openqa.selenium.devtools.HasDevTools;
+import org.openqa.selenium.devtools.v96.network.Network;
 import org.openqa.selenium.mobile.NetworkConnection;
 import org.openqa.selenium.remote.Command;
 import org.openqa.selenium.remote.DesiredCapabilities;
@@ -162,6 +166,39 @@ public class ChromeDeviceTest extends ViewOrUITest {
         if (response.getStatus() != 0) {
             throw new RuntimeException("Unable to set connection type");
         }
+    }
+
+    /**
+     * Controls the throttling `Offline` option in DevTools via the respective
+     * Selenium API.
+     *
+     * @param isEnabled
+     *            whether to enable the offline mode.
+     */
+    protected void setOfflineEnabled(Boolean isEnabled) {
+        RemoteWebDriver driver = (RemoteWebDriver) ((TestBenchDriverProxy) getDriver())
+                .getWrappedDriver();
+        DevTools devTools = ((HasDevTools) driver).getDevTools();
+        devTools.createSessionIfThereIsNotOne();
+        devTools.send(Network.emulateNetworkConditions(isEnabled, -1, -1, -1,
+                Optional.empty()));
+    }
+
+    /**
+     * Controls the `Disable cache` option in DevTools via the respective
+     * Selenium API.
+     *
+     * @param isDisabled
+     *            whether to disable the browser cache.
+     */
+    protected void setCacheDisabled(Boolean isDisabled) {
+        RemoteWebDriver driver = (RemoteWebDriver) ((TestBenchDriverProxy) getDriver())
+                .getWrappedDriver();
+        DevTools devTools = ((HasDevTools) driver).getDevTools();
+        devTools.createSessionIfThereIsNotOne();
+        devTools.send(Network.enable(Optional.empty(), Optional.empty(),
+                Optional.of(100000000)));
+        devTools.send(Network.setCacheDisabled(isDisabled));
     }
 
     public void waitForServiceWorkerReady() {
