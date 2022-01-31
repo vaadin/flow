@@ -72,7 +72,7 @@ public class ServerInfo implements Serializable {
                 return vaadinVersions.get("platform").asText();
             } else {
                 if (!versionErrorLogged) {
-                    versionErrorLogged = true;
+                    versionErrorLogged = true; // NOSONAR
                     LoggerFactory.getLogger(getClass()).info(
                             "Unable to determine version information. No vaadin_versions.json found");
                 }

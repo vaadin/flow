@@ -16,8 +16,10 @@
 
 package com.vaadin.flow.testutil;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -25,9 +27,12 @@ import java.nio.file.Paths;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
 import java.util.Locale;
-import java.util.Optional;
 import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
+
+import com.vaadin.flow.server.frontend.FrontendUtils;
+
+import org.apache.commons.io.IOUtils;
 
 /**
  * Locates chromedriver binary in the project and sets its valu
@@ -54,19 +59,31 @@ final class ChromeDriverLocator {
      *             method
      */
     static void fillEnvironmentProperty() {
-        if (System.getProperty(WEBDRIVER_CHROME_DRIVER) == null) {
-            Optional.ofNullable(getDriverLocation())
-                    .ifPresent(driverLocation -> System.setProperty(
-                            WEBDRIVER_CHROME_DRIVER, driverLocation));
+        String chromedriverProperty = System
+                .getProperty(WEBDRIVER_CHROME_DRIVER);
+        if (chromedriverProperty == null
+                || !new File(chromedriverProperty).exists()) {
+            String location = getDriverLocation();
+            if (location == null) {
+                if (!AbstractTestBenchTest.USE_HUB) {
+                    throw new IllegalStateException(
+                            "Unable to find chromedriver. Ensure it is available as -D"
+                                    + WEBDRIVER_CHROME_DRIVER
+                                    + " (currently set to "
+                                    + chromedriverProperty
+                                    + ") or available in your PATH");
+                }
+            } else {
+                System.out.println("Using chromedriver from " + location);
+                System.setProperty(WEBDRIVER_CHROME_DRIVER, location);
+            }
         }
     }
 
     private static String getDriverLocation() {
         Path driverDirectory = Paths.get("../../driver/");
         if (!driverDirectory.toFile().isDirectory()) {
-            System.out.println(String.format(
-                    "Could not find driver directory: %s", driverDirectory));
-            return null;
+            return getDriverFromPath();
         }
 
         List<Path> driverPaths = getDriverPaths(driverDirectory);
@@ -85,6 +102,30 @@ final class ChromeDriverLocator {
         }
         return driverPaths.get(0).toAbsolutePath().toString();
 
+    }
+
+    private static String getDriverFromPath() {
+        try {
+            Process p = new ProcessBuilder()
+                    .command(FrontendUtils.isWindows() ? "where" : "which",
+                            "chromedriver")
+                    .start();
+            int exitCode = p.waitFor();
+            if (exitCode == 0) {
+                String location = IOUtils
+                        .toString(p.getInputStream(), StandardCharsets.UTF_8)
+                        .trim();
+                if (location == null || location.isEmpty()) {
+                    return null;
+                }
+                return location;
+            }
+        } catch (IOException e) {
+            // Called at least if "which" was not found. Just ignore it all
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     private static List<Path> getDriverPaths(Path driverDirectory) {

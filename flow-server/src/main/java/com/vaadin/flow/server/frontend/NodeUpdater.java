@@ -398,7 +398,7 @@ public abstract class NodeUpdater implements FallibleCommand {
             defaults.put("rollup-plugin-brotli", "3.1.0");
             defaults.put("vite-plugin-checker", "0.3.4");
             defaults.put("mkdirp", "1.0.4"); // for application-theme-plugin
-            defaults.put("workbox-build", "6.4.1");
+            defaults.put("workbox-build", WORKBOX_VERSION);
         } else {
             // Webpack plugins and helpers
             defaults.put("esbuild-loader", "2.15.1");
@@ -410,7 +410,7 @@ public abstract class NodeUpdater implements FallibleCommand {
             defaults.put("compression-webpack-plugin", "4.0.1");
             defaults.put("extra-watch-webpack-plugin", "1.0.3");
             defaults.put("webpack-merge", "4.2.2");
-            defaults.put("css-loader", "4.2.1");
+            defaults.put("css-loader", "5.2.7");
             defaults.put("extract-loader", "5.1.0");
             defaults.put("lit-css-loader", "0.1.0");
             defaults.put("file-loader", "6.2.0");
