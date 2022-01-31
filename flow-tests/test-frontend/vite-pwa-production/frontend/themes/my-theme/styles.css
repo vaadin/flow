@@ -1,0 +1,11 @@
+@font-face {
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  src: url('./fonts/IBMPlexMono-Regular.otf') format('opentype');
+}
+
+body {
+  background-image: url('./images/bg.jpg');
+  font-family: 'IBM Plex Mono';
+}
