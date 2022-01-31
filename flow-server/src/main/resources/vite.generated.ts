@@ -122,7 +122,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
       !devMode && brotli(),
       settings.pwaEnabled &&
       {
-        name: 'pwa',
+        name: 'vaadin:pwa',
         enforce: 'post',
         apply: 'build',
         async configResolved(config) {
@@ -172,7 +172,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
         }
       },
       {
-        name: 'custom-theme',
+        name: 'vaadin:custom-theme',
         config() {
           processThemeResources(themeOptions, console);
         },
@@ -181,7 +181,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
         }
       },
       {
-        name: 'force-remove-spa-middleware',
+        name: 'vaadin:force-remove-spa-middleware',
         transformIndexHtml: {
           enforce: 'pre',
           transform(_html, { server }) {
@@ -196,7 +196,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
         }
       },
       {
-        name: 'inject-entrypoint-script',
+        name: 'vaadin:inject-entrypoint-script',
         transformIndexHtml: {
           enforce: 'pre',
           transform(_html, { path, server }) {
