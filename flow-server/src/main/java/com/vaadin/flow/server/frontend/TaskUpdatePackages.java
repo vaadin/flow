@@ -446,7 +446,7 @@ public class TaskUpdatePackages extends NodeUpdater {
             }
         }
 
-        removeDir(nodeModulesFolder);
+        FrontendUtils.deleteNodeModules(nodeModulesFolder);
 
         if (flowResourcesFolder != null && flowResourcesFolder.exists()) {
             // Clean all files but `package.json`
@@ -459,12 +459,8 @@ public class TaskUpdatePackages extends NodeUpdater {
 
         File generatedNodeModules = new File(generatedFolder, NODE_MODULES);
         if (generatedNodeModules.exists()) {
-            removeDir(generatedNodeModules);
+            FrontendUtils.deleteNodeModules(generatedNodeModules);
         }
-    }
-
-    private void removeDir(File folder) throws IOException {
-        FileUtils.deleteDirectory(folder);
     }
 
     private String getExistingShrinkWrapVersion() throws IOException {
