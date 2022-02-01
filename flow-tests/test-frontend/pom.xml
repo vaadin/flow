@@ -38,13 +38,14 @@
                 <!-- test modules -->
                 <module>vite-basics</module>
                 <module>vite-production</module>
-                <module>vite-context-path</module>
                 <module>vite-context-path/pom-production.xml</module>
+                <module>vite-context-path</module>
                 <!-- npm and pnpm dev mode and prod mode -->
-                <module>test-npm</module>
+                <!-- run production build before dev build as dev build has npm i in thread -->
                 <module>test-npm/pom-production.xml</module>
-                <module>test-pnpm</module>
+                <module>test-npm</module>
                 <module>test-pnpm/pom-production.xml</module>
+                <module>test-pnpm</module>
             </modules>
         </profile>
     </profiles>
