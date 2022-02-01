@@ -619,8 +619,9 @@ public class FrontendTools {
         if (ignoreVersionChecks) {
             return;
         }
+        Pair<FrontendVersion, String> foundNodeVersionAndExe = null;
         try {
-            Pair<FrontendVersion, String> foundNodeVersionAndExe = getNodeVersionAndExecutable();
+            foundNodeVersionAndExe = getNodeVersionAndExecutable();
             FrontendVersion foundNodeVersion = foundNodeVersionAndExe
                     .getFirst();
             FrontendUtils.validateToolVersion("node", foundNodeVersion,
@@ -630,6 +631,12 @@ public class FrontendTools {
                     foundNodeVersionAndExe.getSecond());
         } catch (UnknownVersionException e) {
             getLogger().warn("Error checking if node is new enough", e);
+        } catch (IllegalStateException ise) {
+            if (foundNodeVersionAndExe != null) {
+                getLogger().info("Validated node from '{}'",
+                        foundNodeVersionAndExe.getSecond());
+            }
+            throw ise;
         }
 
         try {
