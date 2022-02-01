@@ -32,6 +32,12 @@
             <artifactId>vaadin-testbench-core</artifactId>
             <version>${testbench.version}</version>
         </dependency>
+        <dependency>
+            <groupId>io.github.bonigarcia</groupId>
+            <artifactId>webdrivermanager</artifactId>
+            <version>5.1.1</version>
+        </dependency>
+
         <!-- override scope for junit -->
         <dependency>
             <groupId>junit</groupId>
