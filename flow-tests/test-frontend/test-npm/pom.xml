@@ -61,6 +61,8 @@
                 <artifactId>flow-maven-plugin</artifactId>
                 <configuration>
                     <productionMode>false</productionMode>
+                    <requireHomeNodeExec>true</requireHomeNodeExec>
+                    <nodeAutoUpdate>true</nodeAutoUpdate>
                 </configuration>
             </plugin>
             <!-- Run jetty before integration tests, and stop after -->
