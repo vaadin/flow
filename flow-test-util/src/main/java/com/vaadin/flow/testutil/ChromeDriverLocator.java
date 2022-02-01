@@ -16,30 +16,18 @@
 
 package com.vaadin.flow.testutil;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.nio.file.FileVisitOption;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
-import java.util.function.BiPredicate;
-import java.util.stream.Collectors;
+import java.io.File;
+
+import io.github.bonigarcia.wdm.WebDriverManager;
 
 /**
- * Locates chromedriver binary in the project and sets its valu
+ * Locates a chromedriver binary.
  *
  * @author Vaadin Ltd
  * @since 1.0.
  */
 final class ChromeDriverLocator {
     private static final String WEBDRIVER_CHROME_DRIVER = "webdriver.chrome.driver";
-    private static final String CHROMEDRIVER_NAME_PART = "chromedriver";
-    // examples: driver\windows\googlechrome\64bit\chromedriver.exe
-    private static final int MAX_DRIVER_SEARCH_DEPTH = 4;
 
     private ChromeDriverLocator() {
     }
@@ -47,64 +35,23 @@ final class ChromeDriverLocator {
     /**
      * Fills {@link ChromeDriverLocator#WEBDRIVER_CHROME_DRIVER} system property
      * with chromedriver path, does not override already existing value.
-     * 
-     * @throws UncheckedIOException
-     *             on io exceptions of the
-     *             {@link Files#find(Path, int, BiPredicate, FileVisitOption...)}
-     *             method
      */
     static void fillEnvironmentProperty() {
-        if (System.getProperty(WEBDRIVER_CHROME_DRIVER) == null) {
-            Optional.ofNullable(getDriverLocation())
-                    .ifPresent(driverLocation -> System.setProperty(
-                            WEBDRIVER_CHROME_DRIVER, driverLocation));
-        }
-    }
-
-    private static String getDriverLocation() {
-        Path driverDirectory = Paths.get("../../driver/");
-        if (!driverDirectory.toFile().isDirectory()) {
-            System.out.println(String.format(
-                    "Could not find driver directory: %s", driverDirectory));
-            return null;
+        if (AbstractTestBenchTest.USE_HUB) {
+            return;
         }
 
-        List<Path> driverPaths = getDriverPaths(driverDirectory);
-
-        if (driverPaths.isEmpty()) {
-            System.out.println("No " + CHROMEDRIVER_NAME_PART + " found at \""
-                    + driverDirectory.toAbsolutePath() + "\"\n"
-                    + "  Verify that the path is correct and that driver-binary-downloader-maven-plugin has been run at least once.");
-            return null;
+        String chromedriverProperty = System
+                .getProperty(WEBDRIVER_CHROME_DRIVER);
+        if (chromedriverProperty == null
+                || !new File(chromedriverProperty).exists()) {
+            // This sets the same property
+            WebDriverManager.chromedriver().setup();
+        } else {
+            System.out
+                    .println("Using chromedriver from " + chromedriverProperty);
         }
-
-        if (driverPaths.size() > 1) {
-            System.out.println(String.format(
-                    "Have found multiple driver paths, using the first one from the list: %s",
-                    driverPaths));
-        }
-        return driverPaths.get(0).toAbsolutePath().toString();
 
     }
 
-    private static List<Path> getDriverPaths(Path driverDirectory) {
-        List<Path> driverPaths;
-        try {
-            driverPaths = Files
-                    .find(driverDirectory, MAX_DRIVER_SEARCH_DEPTH,
-                            ChromeDriverLocator::isChromeDriver)
-                    .collect(Collectors.toList());
-        } catch (IOException e) {
-            throw new UncheckedIOException("Error trying to locate "
-                    + CHROMEDRIVER_NAME_PART + " binary", e);
-        }
-        return driverPaths;
-    }
-
-    private static boolean isChromeDriver(Path path,
-            BasicFileAttributes attributes) {
-        return attributes.isRegularFile()
-                && path.toString().toLowerCase(Locale.getDefault())
-                        .contains(CHROMEDRIVER_NAME_PART);
-    }
 }
