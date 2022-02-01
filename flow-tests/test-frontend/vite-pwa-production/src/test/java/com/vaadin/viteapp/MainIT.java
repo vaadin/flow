@@ -87,9 +87,8 @@ public class MainIT extends ChromeDeviceTest {
 
     private Boolean isAppThemeLoaded() {
         return (Boolean) executeScript(
-            "return "
-            + "window.Vaadin.theme !== undefined && "
-            + "window.Vaadin.theme.injectedGlobalCss.length !== 0");
+                "return window.Vaadin.theme !== undefined && "
+                        + "window.Vaadin.theme.injectedGlobalCss.length !== 0");
     }
 
     private void setOfflineAndReload() {
