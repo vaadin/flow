@@ -40,11 +40,6 @@ final class ChromeDriverLocator {
     /**
      * Fills {@link ChromeDriverLocator#WEBDRIVER_CHROME_DRIVER} system property
      * with chromedriver path, does not override already existing value.
-     * 
-     * @throws UncheckedIOException
-     *             on io exceptions of the
-     *             {@link Files#find(Path, int, BiPredicate, FileVisitOption...)}
-     *             method
      */
     static void fillEnvironmentProperty() {
         if (AbstractTestBenchTest.USE_HUB) {
@@ -57,11 +52,8 @@ final class ChromeDriverLocator {
                 || !new File(chromedriverProperty).exists()) {
             // This sets the same property
             WebDriverManager.chromedriver().setup();
-        } else {
-            String location = System.getProperty(WEBDRIVER_CHROME_DRIVER);
-            if (location != null) {
-                System.out.println("Using chromedriver from " + location);
-            }
+        } else if (chromedriverProperty != null) {
+            System.out.println("Using chromedriver from " + chromedriverProperty);
         }
 
     }
