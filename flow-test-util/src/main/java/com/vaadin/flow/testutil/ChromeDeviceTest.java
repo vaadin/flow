@@ -35,6 +35,7 @@ import org.openqa.selenium.devtools.DevTools;
 import org.openqa.selenium.devtools.HasDevTools;
 import org.openqa.selenium.devtools.v96.network.Network;
 import org.openqa.selenium.mobile.NetworkConnection;
+import org.openqa.selenium.remote.Augmenter;
 import org.openqa.selenium.remote.Command;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
@@ -176,8 +177,9 @@ public class ChromeDeviceTest extends ViewOrUITest {
      *            whether to enable the offline mode.
      */
     protected void setOfflineEnabled(Boolean isEnabled) {
-        RemoteWebDriver driver = (RemoteWebDriver) ((TestBenchDriverProxy) getDriver())
+        RemoteWebDriver remoteDriver = (RemoteWebDriver) ((TestBenchDriverProxy) getDriver())
                 .getWrappedDriver();
+        WebDriver driver = new Augmenter().augment(remoteDriver);
         DevTools devTools = ((HasDevTools) driver).getDevTools();
         devTools.createSessionIfThereIsNotOne();
         devTools.send(Network.emulateNetworkConditions(isEnabled, -1, -1, -1,
@@ -192,8 +194,9 @@ public class ChromeDeviceTest extends ViewOrUITest {
      *            whether to disable the browser cache.
      */
     protected void setCacheDisabled(Boolean isDisabled) {
-        RemoteWebDriver driver = (RemoteWebDriver) ((TestBenchDriverProxy) getDriver())
+        RemoteWebDriver remoteDriver = (RemoteWebDriver) ((TestBenchDriverProxy) getDriver())
                 .getWrappedDriver();
+        WebDriver driver = new Augmenter().augment(remoteDriver);
         DevTools devTools = ((HasDevTools) driver).getDevTools();
         devTools.createSessionIfThereIsNotOne();
         devTools.send(Network.enable(Optional.empty(), Optional.empty(),
