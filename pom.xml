@@ -106,10 +106,6 @@
         <properties-maven-plugin.version>1.0.0</properties-maven-plugin.version>
 
         <!-- Frontend -->
-        <!-- Not the newest version because of https://www.polymer-project.org/2.0/docs/tools/node-support -->
-        <node.version>v8.11.1</node.version>
-        <npm.version>6.1.0</npm.version>
-
         <flow.dev.dependencies.folder>generatedDeps</flow.dev.dependencies.folder>
         <flow.dev.dependencies.file>devDependencies.json</flow.dev.dependencies.file>
 
