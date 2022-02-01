@@ -39,6 +39,8 @@ public class MainIT extends ChromeDeviceTest {
     public void openHomePage_pageIsLoaded() {
         openPage("/");
 
+        Assert.assertTrue("Should load the app theme", isAppThemeLoaded());
+
         WebElement h1 = $("h1").first();
         Assert.assertEquals(h1.getText(), "Home Page");
 
@@ -50,6 +52,8 @@ public class MainIT extends ChromeDeviceTest {
         openPage("/");
         setOfflineAndReload();
 
+        Assert.assertTrue("Should load the app theme", isAppThemeLoaded());
+
         WebElement h1 = $("h1").first();
         Assert.assertEquals(h1.getText(), "Home Page");
 
@@ -59,6 +63,8 @@ public class MainIT extends ChromeDeviceTest {
     @Test
     public void openAboutPage_pageIsLoaded() {
         openPage("/about");
+
+        Assert.assertTrue("Should load the app theme", isAppThemeLoaded());
 
         WebElement h1 = $("h1").first();
         Assert.assertEquals(h1.getText(), "About Page");
@@ -71,10 +77,19 @@ public class MainIT extends ChromeDeviceTest {
         openPage("/about");
         setOfflineAndReload();
 
+        Assert.assertTrue("Should load the app theme", isAppThemeLoaded());
+
         WebElement h1 = $("h1").first();
         Assert.assertEquals(h1.getText(), "About Page");
 
         checkLogsForErrors(msg -> !msg.contains("Failed to load"));
+    }
+
+    private Boolean isAppThemeLoaded() {
+        return (Boolean) executeScript(
+            "return "
+            + "window.Vaadin.theme !== undefined && "
+            + "window.Vaadin.theme.injectedGlobalCss.length !== 0");
     }
 
     private void setOfflineAndReload() {
