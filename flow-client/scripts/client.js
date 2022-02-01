@@ -42,19 +42,3 @@ fs.mkdirSync(targetDir, {recursive: true});
 fs.readdirSync(sourceDir)
   .filter(s => s.endsWith('.d.ts') || s.endsWith('.js'))
   .forEach(file => fs.copyFileSync(sourceDir + file, targetDir + file));
-
-// Check that chromedriver version matches in flow and intern
-const driversContent = fs.readFileSync('../drivers.xml', 'utf8');
-const [,flowChromeVersion] = /\/([\d\\.]+)\/chromedriver/.exec(driversContent);
-const internJson = require('../intern.json');
-const internChromeVersion = internJson.tunnelOptions.drivers[0].version;
-if (flowChromeVersion !== internChromeVersion) {
-    throw(new Error(`
-
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  ChromeDriver version in Flow drivers.xml: ${flowChromeVersion}
-  does not match the version in intern.json: ${internChromeVersion}
-!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-`));
-}

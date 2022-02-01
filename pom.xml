@@ -92,7 +92,6 @@
         <jaxb.version>2.3.5</jaxb.version>
 
         <!-- Plugins -->
-        <driver.binary.downloader.maven.plugin.version>1.0.18</driver.binary.downloader.maven.plugin.version>
         <frontend.maven.plugin.version>1.5</frontend.maven.plugin.version>
         <maven.surefire.plugin.version>2.22.2</maven.surefire.plugin.version>
         <maven.failsafe.plugin.version>2.22.2</maven.failsafe.plugin.version>
@@ -660,21 +659,6 @@
                         </plugin>
                         <plugin>
                             <artifactId>maven-failsafe-plugin</artifactId>
-                            <dependencies>
-                                <dependency>
-                                    <groupId>com.sun.xml.bind</groupId>
-                                    <artifactId>jaxb-impl</artifactId>
-                                    <version>${jaxb.version}</version>
-                                </dependency>
-                            </dependencies>
-                        </plugin>
-                        <plugin>
-                            <groupId>com.lazerycode.selenium</groupId>
-                            <artifactId>driver-binary-downloader-maven-plugin
-                            </artifactId>
-                            <version>
-                                ${driver.binary.downloader.maven.plugin.version}
-                            </version>
                             <dependencies>
                                 <dependency>
                                     <groupId>com.sun.xml.bind</groupId>
