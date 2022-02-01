@@ -52,7 +52,7 @@ final class ChromeDriverLocator {
                 || !new File(chromedriverProperty).exists()) {
             // This sets the same property
             WebDriverManager.chromedriver().setup();
-        } else if (chromedriverProperty != null) {
+        } else {
             System.out
                     .println("Using chromedriver from " + chromedriverProperty);
         }
