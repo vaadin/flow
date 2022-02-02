@@ -492,6 +492,11 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         try (InputStream is = url.openStream()) {
             ClassReader cr = new ClassReader(is);
             cr.accept(visitor, ClassReader.EXPAND_FRAMES);
+        } catch (Exception e) {
+            log().error(
+                    "Visiting class {} failed with {}.\nThis might be a broken class in the project.",
+                    className, e.getMessage());
+            throw e;
         }
 
         // all classes visited by the scanner, used for performance (#5933)
