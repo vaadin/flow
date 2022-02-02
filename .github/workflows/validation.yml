@@ -7,6 +7,7 @@ on:
   workflow_dispatch:
 jobs:
   build:
+    timeout-minutes: 10
     runs-on: ubuntu-latest
     outputs:
       matrix-unit: ${{ steps.set-matrix.outputs.matrix-unit }}
@@ -51,6 +52,7 @@ jobs:
           path: workspace.tar
   unit-tests:
     needs: build
+    timeout-minutes: 10
     outputs:
       failure: ${{steps.set-failure.outputs.failure}}
     strategy:
@@ -98,6 +100,7 @@ jobs:
             mvn-*.out
   it-tests:
     needs: build
+    timeout-minutes: 20
     outputs:
       failure: ${{steps.set-failure.outputs.failure}}
     strategy:

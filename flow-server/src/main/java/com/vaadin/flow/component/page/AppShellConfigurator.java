@@ -60,7 +60,7 @@ import com.vaadin.flow.server.AppShellSettings;
  * &#64;Viewport("width=device-width, initial-scale=1")
  * &#64;BodySize(height = "100vh", width = "100vw")
  * &#64;PageTitle("my-title")
- * &#67;Push(value = PushMode.AUTOMATIC, transport = Transport.WEBSOCKET_XHR)
+ * &#64;Push(value = PushMode.AUTOMATIC, transport = Transport.WEBSOCKET_XHR)
  * public class AppShell implements AppShellConfigurator {
  * }
  * </code>
