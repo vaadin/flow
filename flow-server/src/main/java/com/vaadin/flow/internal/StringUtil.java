@@ -173,8 +173,8 @@ public final class StringUtil {
 
     private static String bytesToHex(byte[] hash) {
         StringBuilder result = new StringBuilder();
-        for (byte bit : hash) {
-            String hex = Integer.toHexString(0xff & bit);
+        for (byte hashByte : hash) {
+            String hex = Integer.toHexString(0xff & hashByte);
             if (hex.length() == 1) {
                 result.append('0');
             }
