@@ -178,8 +178,8 @@ public class QueryParameters implements Serializable {
      * values suitable for appending to a URL after the {@code ?} character.
      * Parameters may appear in different order than in the query string they
      * were originally parsed from, and may be differently encoded (for example,
-     * if a space was encoded as {@code %20} in the initial URL it will be
-     * encoded as {@code +} in the result.
+     * if a space was encoded as {@code +} in the initial URL it will be
+     * encoded as {@code %20} in the result.
      *
      * @return query string suitable for appending to a URL
      * @see URLEncoder#encode(String, String)
