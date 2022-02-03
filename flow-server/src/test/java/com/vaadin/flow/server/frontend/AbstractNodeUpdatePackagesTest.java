@@ -227,7 +227,8 @@ public abstract class AbstractNodeUpdatePackagesTest
                 getScanner(classFinder), baseDir, generatedDir, resourcesDir,
                 false, true, TARGET, featureFlags);
         packageUpdater.execute();
-        Assert.assertFalse(packageLock.exists());
+        Assert.assertFalse("NPM package-lock should be removed for pnpm",
+                packageLock.exists());
     }
 
     @Test
@@ -850,7 +851,8 @@ public abstract class AbstractNodeUpdatePackagesTest
     private void assertCleanUp() {
         Assert.assertFalse(mainNodeModules.exists());
         Assert.assertFalse(appNodeModules.exists());
-        Assert.assertFalse(packageLock.exists());
+        Assert.assertTrue("package-lock should not be removed",
+                packageLock.exists());
     }
 
     private void assertMainPackageJsonContent() throws IOException {

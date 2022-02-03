@@ -437,15 +437,6 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     private void cleanUp() throws IOException {
-        File packageLock = getPackageLockFile();
-        if (packageLock.exists()) {
-            if (!packageLock.delete()) {
-                throw new IOException("Could not remove "
-                        + packageLock.getPath() + " file. "
-                        + "This file has been generated with a different platform version. Try to remove it manually.");
-            }
-        }
-
         FrontendUtils.deleteNodeModules(nodeModulesFolder);
 
         if (flowResourcesFolder != null && flowResourcesFolder.exists()) {
