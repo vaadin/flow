@@ -326,7 +326,8 @@ public class LocationTest {
 
     @Test
     public void locationWithUrlEncodedCharacters() {
-        Location location = new Location("foo?bar=a%20b%20%C3%B1%20%26%20%3F&baz=xyz");
+        Location location = new Location(
+                "foo?bar=a%20b%20%C3%B1%20%26%20%3F&baz=xyz");
         Assert.assertEquals(Arrays.asList("a b ñ & ?"),
                 location.getQueryParameters().getParameters().get("bar"));
         Assert.assertEquals(Arrays.asList("xyz"),
