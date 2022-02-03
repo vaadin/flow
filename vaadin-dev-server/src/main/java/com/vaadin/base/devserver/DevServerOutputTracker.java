@@ -110,6 +110,7 @@ public class DevServerOutputTracker {
 
             // We found the success or failure pattern in stream
             if (succeed || failed) {
+                System.out.println(cumulativeOutput.toString());
                 onMatch.accept(
                         new Result(succeed, cumulativeOutput.toString()));
                 cumulativeOutput = new StringBuilder();

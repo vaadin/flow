@@ -268,6 +268,7 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
 
     private void checkNoWebpackErrors(String theme) {
         getLogEntries(java.util.logging.Level.ALL).forEach(logEntry -> {
+            System.out.println("============== Webpack error: " + logEntry.getMessage());
             if (logEntry.getMessage().contains("Module build failed")) {
                 Assert.fail(String.format(
                         "Webpack error detected in the browser console after "
