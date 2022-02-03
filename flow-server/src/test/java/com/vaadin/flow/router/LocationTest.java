@@ -130,7 +130,7 @@ public class LocationTest {
         queryParameters = new Location("home?%25HF").getQueryParameters();
         Assert.assertEquals("'%25' should be decoded in map", "%HF",
                 queryParameters.getParameters().keySet().iterator().next());
-        Assert.assertEquals("'%2B' should not be decoded in query param string",
+        Assert.assertEquals("'%25' should not be decoded in query param string",
                 "%25HF", queryParameters.getQueryString());
 
         queryParameters = new Location("home?p=%26&q=%20").getQueryParameters();
@@ -139,7 +139,7 @@ public class LocationTest {
         Assert.assertEquals("'%20' should be decoded in map", " ",
                 queryParameters.getParameters().get("q").get(0));
         Assert.assertEquals(
-                "'%26' and '%2B' should not be decoded in query param string",
+                "'%26' and '%20' should not be decoded in query param string",
                 "p=%26&q=%20", queryParameters.getQueryString());
     }
 
