@@ -18,6 +18,7 @@ package com.vaadin.flow.router;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -26,6 +27,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import com.vaadin.flow.internal.UrlUtil;
 
 /**
  * Holds query parameters information.
@@ -127,17 +130,11 @@ public class QueryParameters implements Serializable {
     private static List<String> makeQueryParamList(String paramAndValue) {
         int index = paramAndValue.indexOf('=');
         if (index == -1) {
-            return Collections.singletonList(paramAndValue);
+            return Collections.singletonList(decode(paramAndValue));
         }
         String param = paramAndValue.substring(0, index);
-        String value = paramAndValue.substring(index + 1).replace("+", "%2B");
-        try {
-            value = URLDecoder.decode(value, "utf-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(
-                    "Unable to decode parameter value: " + value, e);
-        }
-        return Arrays.asList(param, value);
+        String value = paramAndValue.substring(index + 1);
+        return Arrays.asList(decode(param), decode(value));
     }
 
     private static List<String> getParameterValues(List<String> paramAndValue) {
@@ -177,11 +174,15 @@ public class QueryParameters implements Serializable {
     }
 
     /**
-     * Turns query parameters into query string that contains all parameter
-     * names and their values. No guarantee on parameters' appearance order is
-     * made.
+     * Returns a UTF-8 encoded query string containing all parameter names and
+     * values suitable for appending to a URL after the {@code ?} character.
+     * Parameters may appear in different order than in the query string they
+     * were originally parsed from, and may be differently encoded (for example,
+     * if a space was encoded as {@code +} in the initial URL it will be encoded
+     * as {@code %20} in the result.
      *
-     * @return query string
+     * @return query string suitable for appending to a URL
+     * @see URLEncoder#encode(String, String)
      */
     public String getQueryString() {
         return parameters.entrySet().stream()
@@ -191,12 +192,25 @@ public class QueryParameters implements Serializable {
 
     private Stream<String> getParameterAndValues(
             Entry<String, List<String>> entry) {
-        List<String> params = entry.getValue();
-        if (params.size() == 1 && "".equals(params.get(0))) {
-            return Stream.of(entry.getKey());
-        }
         String param = entry.getKey();
-        return params.stream().map(value -> "".equals(value) ? param
-                : param + PARAMETER_VALUES_SEPARATOR + value);
+        List<String> values = entry.getValue();
+        if (values.size() == 1 && "".equals(values.get(0))) {
+            return Stream.of(UrlUtil.encodeURIComponent(entry.getKey()));
+        }
+        return values.stream()
+                .map(value -> "".equals(value)
+                        ? UrlUtil.encodeURIComponent(param)
+                        : UrlUtil.encodeURIComponent(param)
+                                + PARAMETER_VALUES_SEPARATOR
+                                + UrlUtil.encodeURIComponent(value));
+    }
+
+    private static String decode(String parameter) {
+        try {
+            return URLDecoder.decode(parameter, "utf-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new RuntimeException(
+                    "Unable to decode parameter: " + parameter, e);
+        }
     }
 }
