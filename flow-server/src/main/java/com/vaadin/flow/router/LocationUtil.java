@@ -145,14 +145,15 @@ public class LocationUtil {
         }
         String query;
 
+        // URI::getRawQuery as decoding of parameters is done in
+        // QueryParameters. For issue with URI::getQuery, see:
+        // https://bugs.java.com/bugdatabase/view_bug.do?bug_id=JDK-8214423
         try {
-            query = new java.net.URI(location).getQuery();
+            query = new java.net.URI(location).getRawQuery();
         } catch (URISyntaxException ignore) { // NOSONAR
             query = null;
         }
-
         if (query == null) {
-            // decoding of parameters is done in QueryParameters
             query = location.substring(beginIndex + 1);
         }
 
