@@ -1262,7 +1262,7 @@ public class UI extends Component
 
     /**
      * Makes the child component modal or modeless. The component needs to be a
-     * direct child of this UI. By default all child components are modeless.
+     * child of this UI. By default all child components are modeless.
      * 
      * @param childComponent
      *            the child component to change state for
@@ -1277,12 +1277,12 @@ public class UI extends Component
             boolean modal) {
         Objects.requireNonNull(childComponent,
                 "Given child component may not be null");
-        if (!childComponent.getParent().filter(parent -> parent == this)
-                .isPresent()) {
+        final Optional<UI> ui = childComponent.getUI();
+        if (ui.isPresent() && !ui.get().equals(this)) {
             throw new IllegalStateException(
-                    "Given component is not a child of this UI. "
-                            + "Add it first as a child of the UI with "
-                            + "ui.add(component) or just use addModal(component).");
+                    "Given component is not a child in this UI. "
+                            + "Add it first as a child of the UI so it is "
+                            + "attached or just use addModal(component).");
         }
         if (modal) {
             getInternals().setChildModal(childComponent);
