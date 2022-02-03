@@ -178,8 +178,8 @@ public class QueryParameters implements Serializable {
      * values suitable for appending to a URL after the {@code ?} character.
      * Parameters may appear in different order than in the query string they
      * were originally parsed from, and may be differently encoded (for example,
-     * if a space was encoded as {@code +} in the initial URL it will be
-     * encoded as {@code %20} in the result.
+     * if a space was encoded as {@code +} in the initial URL it will be encoded
+     * as {@code %20} in the result.
      *
      * @return query string suitable for appending to a URL
      * @see URLEncoder#encode(String, String)
@@ -197,10 +197,12 @@ public class QueryParameters implements Serializable {
         if (values.size() == 1 && "".equals(values.get(0))) {
             return Stream.of(UrlUtil.encodeURIComponent(entry.getKey()));
         }
-        return values.stream().map(value -> "".equals(value) ?
-                UrlUtil.encodeURIComponent(param) :
-                UrlUtil.encodeURIComponent(param) + PARAMETER_VALUES_SEPARATOR
-                        + UrlUtil.encodeURIComponent(value));
+        return values.stream()
+                .map(value -> "".equals(value)
+                        ? UrlUtil.encodeURIComponent(param)
+                        : UrlUtil.encodeURIComponent(param)
+                                + PARAMETER_VALUES_SEPARATOR
+                                + UrlUtil.encodeURIComponent(value));
     }
 
     private static String decode(String parameter) {
