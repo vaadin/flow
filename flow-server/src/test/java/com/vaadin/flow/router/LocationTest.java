@@ -117,7 +117,7 @@ public class LocationTest {
         Assert.assertEquals("'+' should be decoded in map", "value part",
                 queryParameters.getParameters().keySet().iterator().next());
         Assert.assertEquals("'+' should not be decoded in query param string",
-                "value+part", queryParameters.getQueryString());
+                "value%20part", queryParameters.getQueryString());
 
         queryParameters = new Location("home?someValue1%2BsomeValue2")
                 .getQueryParameters();
@@ -133,14 +133,14 @@ public class LocationTest {
         Assert.assertEquals("'%2B' should not be decoded in query param string",
                 "%25HF", queryParameters.getQueryString());
 
-        queryParameters = new Location("home?p=%26&q=+").getQueryParameters();
+        queryParameters = new Location("home?p=%26&q=%20").getQueryParameters();
         Assert.assertEquals("'%26' should be decoded in map", "&",
                 queryParameters.getParameters().get("p").get(0));
         Assert.assertEquals("'%20' should be decoded in map", " ",
                 queryParameters.getParameters().get("q").get(0));
         Assert.assertEquals(
                 "'%26' and '%2B' should not be decoded in query param string",
-                "p=%26&q=+", queryParameters.getQueryString());
+                "p=%26&q=%20", queryParameters.getQueryString());
     }
 
     @Test
@@ -329,7 +329,7 @@ public class LocationTest {
         Location location = new Location("foo?bar=a%20b%20%C3%B1%20%26%20%3F");
         Assert.assertEquals(Arrays.asList("a b ñ & ?"),
                 location.getQueryParameters().getParameters().get("bar"));
-        Assert.assertEquals("bar=a+b+%C3%B1+%26+%3F",
+        Assert.assertEquals("bar=a%20b%20%C3%B1%20%26%20%3F",
                 location.getQueryParameters().getQueryString());
     }
 

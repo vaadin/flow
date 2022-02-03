@@ -28,6 +28,8 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.internal.UrlUtil;
+
 /**
  * Holds query parameters information.
  *
@@ -190,13 +192,15 @@ public class QueryParameters implements Serializable {
 
     private Stream<String> getParameterAndValues(
             Entry<String, List<String>> entry) {
-        List<String> params = entry.getValue();
-        if (params.size() == 1 && "".equals(params.get(0))) {
-            return Stream.of(encode(entry.getKey()));
-        }
         String param = entry.getKey();
-        return params.stream().map(value -> "".equals(value) ? encode(param)
-                : encode(param) + PARAMETER_VALUES_SEPARATOR + encode(value));
+        List<String> values = entry.getValue();
+        if (values.size() == 1 && "".equals(values.get(0))) {
+            return Stream.of(UrlUtil.encodeURIComponent(entry.getKey()));
+        }
+        return values.stream().map(value -> "".equals(value) ?
+                UrlUtil.encodeURIComponent(param) :
+                UrlUtil.encodeURIComponent(param) + PARAMETER_VALUES_SEPARATOR
+                        + UrlUtil.encodeURIComponent(value));
     }
 
     private static String decode(String parameter) {
@@ -205,15 +209,6 @@ public class QueryParameters implements Serializable {
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException(
                     "Unable to decode parameter: " + parameter, e);
-        }
-    }
-
-    private static String encode(String parameter) {
-        try {
-            return URLEncoder.encode(parameter, "utf-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(
-                    "Unable to encode parameter: " + parameter, e);
         }
     }
 }
