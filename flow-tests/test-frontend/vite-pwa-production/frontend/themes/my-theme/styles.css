@@ -1,13 +1,15 @@
 @font-face {
-  font-family: 'IBM Plex Mono';
+  font-family: 'Roboto';
   font-style: normal;
   font-weight: 400;
-  src: url('./fonts/IBMPlexMono-Regular.otf') format('opentype');
+  src: url('./fonts/Roboto-Regular.woff') format('woff');
 }
 
 body {
-  font-family: 'IBM Plex Mono';
-  background-image: url('./images/bg.jpg');
+  font-family: 'Roboto';
+  background-image: url('./images/bg.jpeg');
+  background-size: cover;
+  background-repeat: no-repeat;
 }
 
 #outlet {
