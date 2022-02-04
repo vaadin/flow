@@ -34,6 +34,7 @@ import org.apache.commons.io.FileUtils;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
@@ -561,34 +562,7 @@ public class TaskUpdatePackages extends NodeUpdater {
             hashContent.append(sortedDevDependencies);
             hashContent.append("}");
         }
-        return getHash(hashContent.toString());
-    }
-
-    private static String getHash(String content) {
-        if (content.isEmpty()) {
-            return content;
-        }
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            return bytesToHex(
-                    digest.digest(content.getBytes(StandardCharsets.UTF_8)));
-        } catch (NoSuchAlgorithmException e) {
-            // Unrecoverable runtime exception, that can not happen
-            throw new RuntimeException(
-                    "Unable to find a provider for SHA-256 algorithm", e);
-        }
-    }
-
-    private static String bytesToHex(byte[] hash) {
-        StringBuilder result = new StringBuilder();
-        for (byte bit : hash) {
-            String hex = Integer.toHexString(0xff & bit);
-            if (hex.length() == 1) {
-                result.append('0');
-            }
-            result.append(hex);
-        }
-        return result.toString();
+        return StringUtil.getHash(hashContent.toString());
     }
 
 }
