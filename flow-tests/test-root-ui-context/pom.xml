@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-tests</artifactId>
-        <version>10.0-SNAPSHOT</version>
+        <version>11.0-SNAPSHOT</version>
     </parent>
     <artifactId>flow-test-root-ui-context</artifactId>
     <name>Flow root ui context tests</name>
