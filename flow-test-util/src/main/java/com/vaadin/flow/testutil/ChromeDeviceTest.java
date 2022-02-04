@@ -17,6 +17,7 @@ package com.vaadin.flow.testutil;
 
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
@@ -40,6 +41,7 @@ import org.openqa.selenium.remote.Command;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.remote.Response;
+import org.openqa.selenium.MutableCapabilities;
 
 import com.vaadin.flow.testcategory.ChromeTests;
 import com.vaadin.testbench.TestBench;
@@ -90,6 +92,7 @@ public class ChromeDeviceTest extends ViewOrUITest {
             driver = new ChromeDriver(chromeOptions);
         } else {
             driver = new RemoteWebDriver(new URL(getHubURL()), chromeOptions);
+            enableDevToolsForRemoteWebDriver((RemoteWebDriver) driver);
         }
 
         setDriver(TestBench.createDriver(driver));
@@ -218,5 +221,27 @@ public class ChromeDeviceTest extends ViewOrUITest {
                                 + "  navigator.serviceWorker.ready,"
                                 + "  timeout])"
                                 + ".then(result => done(!!result));"));
+    }
+
+    /**
+     * Enables the DevTools CDP protocol for a remote WebDriver by setting
+     * the corresponding `se:cdp` and `se:cdpVersion` capabilities for this driver.
+     */
+    private void enableDevToolsForRemoteWebDriver(RemoteWebDriver driver) {
+
+        Field capabilitiesField = RemoteWebDriver.class
+                .getDeclaredField("capabilities");
+        capabilitiesField.setAccessible(true);
+
+        URL hubUrl = new URL(getHubURL());
+        String sessionId = driver.getSessionId().toString();
+        String devtoolsUrl = String.format("ws://%s:%s/devtools/%s/page",
+                hubUrl.getHost(), hubUrl.getPort(), sessionId);
+
+        MutableCapabilities mutableCapabilities = (MutableCapabilities) capabilitiesField
+                .get(driver);
+        mutableCapabilities.setCapability("se:cdp", devtoolsUrl);
+        mutableCapabilities.setCapability("se:cdpVersion",
+                mutableCapabilities.getBrowserVersion());
     }
 }
