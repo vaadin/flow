@@ -5,6 +5,7 @@
  * This file will be overwritten on every run. Any custom changes should be made to vite.config.ts
  */
 import path from 'path';
+import { promises as fs } from 'fs';
 import * as net from 'net';
 
 import { processThemeResources } from '@vaadin/application-theme-plugin/theme-handle.js';
@@ -52,7 +53,6 @@ function transpileSWPlugin(): PluginOption {
   return {
     name: 'vaadin:transpile-sw',
     enforce: 'post',
-    apply: 'build',
     async configResolved(resolvedConfig) {
       config = resolvedConfig;
     },
@@ -66,10 +66,12 @@ function transpileSWPlugin(): PluginOption {
         'rollup-plugin-dynamic-import-variables',
         'vite:esbuild-transpile',
         'vite:terser',
+        'vite:client-inject',
       ]
       const plugins = config.plugins.filter((p) => includedPluginNames.includes(p.name))
+      const sourceCode = await fs.readFile(path.resolve(settings.clientServiceWorkerSource))
       const bundle = await rollup.rollup({
-        input: path.resolve(settings.clientServiceWorkerSource),
+        input: sourceCode,
         plugins,
       })
       try {
@@ -250,9 +252,9 @@ export const vaadinConfig: UserConfigFn = (env) => {
           },
         },
       },
-      checker({
-        typescript: true
-      })
+      // checker({
+      //   typescript: true
+      // })
     ]
   };
 };
