@@ -17,6 +17,7 @@ package com.vaadin.flow.testutil;
 
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
@@ -40,6 +41,7 @@ import org.openqa.selenium.remote.Command;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.remote.Response;
+import org.openqa.selenium.MutableCapabilities;
 
 import com.vaadin.flow.testcategory.ChromeTests;
 import com.vaadin.testbench.TestBench;
@@ -90,6 +92,7 @@ public class ChromeDeviceTest extends ViewOrUITest {
             driver = new ChromeDriver(chromeOptions);
         } else {
             driver = new RemoteWebDriver(new URL(getHubURL()), chromeOptions);
+            enableDevToolsForRemoteWebDriver((RemoteWebDriver) driver);
         }
 
         setDriver(TestBench.createDriver(driver));
@@ -218,5 +221,31 @@ public class ChromeDeviceTest extends ViewOrUITest {
                                 + "  navigator.serviceWorker.ready,"
                                 + "  timeout])"
                                 + ".then(result => done(!!result));"));
+    }
+
+    private void enableDevToolsForRemoteWebDriver(RemoteWebDriver driver) {
+        // Before proceeding, reach into the driver and manipulate the
+        // capabilities to
+        // include the se:cdp and se:cdpVersion keys.
+        try {
+            URL hubUrl = new URL(getHubURL());
+
+            Field capabilitiesField = RemoteWebDriver.class
+                    .getDeclaredField("capabilities");
+            capabilitiesField.setAccessible(true);
+
+            String sessionId = driver.getSessionId().toString();
+            String devtoolsUrl = String.format("ws://%s:%s/devtools/%s/page",
+                    hubUrl.getHost(), hubUrl.getPort(), sessionId);
+
+            MutableCapabilities mutableCapabilities = (MutableCapabilities) capabilitiesField
+                    .get(driver);
+            mutableCapabilities.setCapability("se:cdp", devtoolsUrl);
+            mutableCapabilities.setCapability("se:cdpVersion",
+                    mutableCapabilities.getBrowserVersion());
+        } catch (Exception e) {
+            System.err.println(
+                    "Failed to spoof RemoteWebDriver capabilities :sadpanda:");
+        }
     }
 }
