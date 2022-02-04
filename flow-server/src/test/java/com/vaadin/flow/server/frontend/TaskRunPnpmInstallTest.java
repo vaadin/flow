@@ -258,7 +258,8 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         // @formatter:on
 
         JsonObject versionsJson = getGeneratedVersionsContent(versions);
-        Assert.assertEquals("Generated versions json should have keys for each dependency",
+        Assert.assertEquals(
+                "Generated versions json should have keys for each dependency",
                 3, versionsJson.keys().length);
         Assert.assertEquals("Overlay should be pinned to user version",
                 customOverlayVersion,
@@ -310,7 +311,8 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         // @formatter:on
 
         JsonObject versionsJson = getGeneratedVersionsContent(versions);
-        Assert.assertEquals("Generated versions json should have keys for each dependency",
+        Assert.assertEquals(
+                "Generated versions json should have keys for each dependency",
                 3, versionsJson.keys().length);
         Assert.assertEquals("Overlay should be pinned to user version",
                 customOverlayVersion,
