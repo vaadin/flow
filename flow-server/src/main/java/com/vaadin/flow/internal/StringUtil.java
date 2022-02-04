@@ -15,6 +15,10 @@
  */
 package com.vaadin.flow.internal;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.MessageDigestSpi;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -149,5 +153,33 @@ public final class StringUtil {
             return generateReplacement(str);
         }
         return replacement;
+    }
+
+    /**
+     * Generate a hash for given content.
+     *
+     * @param content
+     *            content to generate hash for
+     * @return hash String for given content. In case content is null or empty
+     *         returns empty String.
+     */
+    public static String getHash(String content) {
+        if (content == null || content.isEmpty()) {
+            return "";
+        }
+
+        return bytesToHex(MessageDigestUtil.sha256(content));
+    }
+
+    private static String bytesToHex(byte[] hash) {
+        StringBuilder result = new StringBuilder();
+        for (byte hashByte : hash) {
+            String hex = Integer.toHexString(0xff & hashByte);
+            if (hex.length() == 1) {
+                result.append('0');
+            }
+            result.append(hex);
+        }
+        return result.toString();
     }
 }
