@@ -585,8 +585,15 @@ public abstract class NodeUpdater implements FallibleCommand {
         File versions = new File(generatedFolder, "versions.json");
 
         JsonObject versionsJson = getPlatformPinnedDependencies();
+        JsonObject packageJsonVersions = generateVersionsFromPackageJson();
         if (versionsJson == null) {
-            versionsJson = generateVersionsFromPackageJson();
+            versionsJson = packageJsonVersions;
+        } else {
+            for (String key : packageJsonVersions.keys()) {
+                if (!versionsJson.hasKey(key)) {
+                    versionsJson.put(key, packageJsonVersions.getString(key));
+                }
+            }
         }
         FileUtils.write(versions, stringify(versionsJson, 2) + "\n",
                 StandardCharsets.UTF_8);
