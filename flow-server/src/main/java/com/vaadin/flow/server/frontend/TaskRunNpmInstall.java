@@ -201,8 +201,15 @@ public class TaskRunNpmInstall implements FallibleCommand {
                 "versions.json");
 
         JsonObject versionsJson = getLockedVersions();
+        JsonObject packageJsonVersions = generateVersionsFromPackageJson();
         if (versionsJson == null) {
-            versionsJson = generateVersionsFromPackageJson();
+            versionsJson = packageJsonVersions;
+        } else {
+            for (String key : packageJsonVersions.keys()) {
+                if (!versionsJson.hasKey(key)) {
+                    versionsJson.put(key, packageJsonVersions.getString(key));
+                }
+            }
         }
         FileUtils.write(versions, stringify(versionsJson, 2) + "\n",
                 StandardCharsets.UTF_8);
