@@ -5,7 +5,6 @@
  * This file will be overwritten on every run. Any custom changes should be made to vite.config.ts
  */
 import path from 'path';
-import { promises as fs } from 'fs';
 import * as net from 'net';
 
 import { processThemeResources } from '@vaadin/application-theme-plugin/theme-handle.js';
@@ -68,11 +67,24 @@ function transpileSWPlugin(): PluginOption {
         'vite:terser',
         'vite:client-inject',
       ]
-      const plugins = config.plugins.filter((p) => includedPluginNames.includes(p.name))
-      const sourceCode = await fs.readFile(path.resolve(settings.clientServiceWorkerSource))
+      const plugins = config.plugins.filter((p) => includedPluginNames.includes(p.name));
+      if (config.mode === 'development') {
+        plugins.push({
+          name: 'vaadin:inject-vite-env',
+          enforce: 'pre',
+          transform(code, id) {
+            if (id.endsWith('sw.ts')) {
+              return `import '@vite/env';\n${code}`
+            }
+
+            return code;
+          }
+        });
+      }
+
       const bundle = await rollup.rollup({
-        input: sourceCode,
-        plugins,
+        input: path.resolve(settings.clientServiceWorkerSource),
+        plugins
       })
       try {
         await bundle.write({

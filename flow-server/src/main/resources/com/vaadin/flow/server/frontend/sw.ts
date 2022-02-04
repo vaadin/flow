@@ -1,21 +1,21 @@
 /// <reference lib="webworker" />
 
 importScripts('sw-runtime-resources-precache.js');
-import { clientsClaim, RouteHandlerCallbackOptions, skipWaiting } from 'workbox-core';
-import { matchPrecache, precacheAndRoute } from 'workbox-precaching';
-import { NavigationRoute, registerRoute } from 'workbox-routing';
+import { clientsClaim } from 'workbox-core';
+import { matchPrecache, precache } from 'workbox-precaching';
+import { registerRoute } from 'workbox-routing';
 import { PrecacheEntry } from 'workbox-precaching/_types';
-import { NetworkOnly } from 'workbox-strategies';
+import { NetworkOnly, NetworkFirst } from 'workbox-strategies';
 
-declare var self: ServiceWorkerGlobalScope & {
-  __WB_MANIFEST: Array<PrecacheEntry>;
-  additionalManifestEntries?: Array<PrecacheEntry>;
-};
-
-skipWaiting();
+self.skipWaiting();
 clientsClaim();
 
-declare var OFFLINE_PATH: string; // defined by webpack.generated.js
+declare var self: ServiceWorkerGlobalScope & {
+  __WB_MANIFEST: PrecacheEntry[];
+  additionalManifestEntries?: PrecacheEntry[];
+};
+
+declare var OFFLINE_PATH: string; // defined by Webpack/Vite
 
 /**
  * Replaces <base href> in pre-cached response HTML with the service worker’s
@@ -24,62 +24,92 @@ declare var OFFLINE_PATH: string; // defined by webpack.generated.js
  * @param response HTML response to modify
  * @returns modified response
  */
-const rewriteBaseHref = async (response: Response) => {
+async function rewriteBaseHref(response: Response) {
   const html = await response.text();
   return new Response(html.replace(/<base\s+href=[^>]*>/, `<base href="${self.registration.scope}">`), response);
 };
 
-const offlinePath = OFFLINE_PATH;
+// Combine manifest entries injected at compile-time by Webpack/Vite
+// with entries that Flow injects at runtime through `sw-runtime-resources-precache.js`.
+let manifestEntries: PrecacheEntry[] = self.__WB_MANIFEST || [];
+if (self.additionalManifestEntries?.length) {
+  manifestEntries.push(...self.additionalManifestEntries);
+}
+// Precache the resulting manifest entries.
+precache(manifestEntries);
+
+// Compute the scope path in case the app is run under a servlet context path.
+const scopePath = new URL(self.registration.scope).pathname;
+
 const networkOnly = new NetworkOnly();
+const networkFirst = new NetworkFirst();
+
+// Indicates whether the app is offline.
 let connectionLost = false;
 
-const navigationFallback = new NavigationRoute(async (context: RouteHandlerCallbackOptions) => {
-  const serveResourceFromCache = async () => {
-    // serve any file in the manifest directly from cache
-    const path = context.url.pathname;
-    const scopePath = new URL(self.registration.scope).pathname;
-    if (path.startsWith(scopePath)) {
+// @ts-ignore
+if (process.env.NODE_ENV === 'development') {
+  // Precache OFFLINE_PATH manually in dev mode in case it is not not been included
+  // in the manifest which happens when OFFLINE_PATH is different from '.'.
+  precache([OFFLINE_PATH]);
+
+  // Don't cache ping/pong requests that Vite sends to determine the dev server's availability.
+  // Otherwise, the page will fall into an infinite reload caused by the `@vite/client` module.
+  registerRoute(
+    ({ url }) => url.pathname.startsWith(`${scopePath}VAADIN/__vite_ping`),
+    networkOnly
+  );
+
+  // Cache requests to the dev server.
+  registerRoute(
+    ({ url }) => url.pathname.startsWith(`${scopePath}VAADIN/`),
+    networkFirst
+  );
+}
+
+registerRoute(
+  ({ url }) => url.pathname.startsWith(scopePath),
+  async (context) => {
+    async function serveResourceFromCache() {
+      // serve any file in the manifest directly from cache
+      const path = context.url.pathname;
       const pathRelativeToScope = path.substr(scopePath.length);
       if (manifestEntries.some(({ url }) => url === pathRelativeToScope)) {
         return await matchPrecache(pathRelativeToScope);
       }
-    }
-    const offlinePathPrecachedResponse = await matchPrecache(offlinePath);
-    if (offlinePathPrecachedResponse) {
-      return await rewriteBaseHref(offlinePathPrecachedResponse);
-    }
-    return undefined;
-  };
 
-  // Use offlinePath fallback if offline was detected
-  if (!self.navigator.onLine) {
-    const precachedResponse = await serveResourceFromCache();
-    if (precachedResponse) {
-      return precachedResponse;
+      const offlinePathPrecachedResponse = await matchPrecache(OFFLINE_PATH);
+      if (offlinePathPrecachedResponse) {
+        return await rewriteBaseHref(offlinePathPrecachedResponse);
+      }
+      return undefined;
+    };
+
+    // When offline is detected, try to serve the resource from the cache.
+    if (!self.navigator.onLine) {
+      const precachedResponse = await serveResourceFromCache();
+      if (precachedResponse) {
+        return precachedResponse;
+      }
+    }
+
+    // According to https://developer.mozilla.org/en-US/docs/Web/API/Navigator/onLine,
+    // `navigator.onLine` is not a reliable indicator of the online status due to browser differences.
+    // So try to serve the resource from the cache also in the case of a network failure.
+    try {
+      const response = await networkOnly.handle(context);
+      connectionLost = false;
+      return response;
+    } catch (error) {
+      connectionLost = true;
+      const precachedResponse = await serveResourceFromCache();
+      if (precachedResponse) {
+        return precachedResponse;
+      }
+      throw error;
     }
   }
-
-  // Sometimes navigator.onLine is not reliable, use fallback to offlinePath
-  // also in case of network failure
-  try {
-    const response = await networkOnly.handle(context);
-    connectionLost = false;
-    return response;
-  } catch (error) {
-    connectionLost = true;
-    const precachedResponse = await serveResourceFromCache();
-    return precachedResponse || error;
-  }
-});
-
-registerRoute(navigationFallback);
-
-let manifestEntries: Array<PrecacheEntry> = self.__WB_MANIFEST;
-if (self.additionalManifestEntries && self.additionalManifestEntries.length) {
-  manifestEntries = [...manifestEntries, ...self.additionalManifestEntries];
-}
-
-precacheAndRoute(manifestEntries);
+);
 
 self.addEventListener('message', (event) => {
   if (typeof event.data !== 'object' || !('method' in event.data)) {
