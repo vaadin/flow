@@ -366,7 +366,8 @@ public class MockServletContext implements ServletContext {
         return null;
     }
 
-    @Override public Dynamic addJspFile(String s, String s1) {
+    @Override
+    public Dynamic addJspFile(String s, String s1) {
         return null;
     }
 
@@ -581,27 +582,33 @@ public class MockServletContext implements ServletContext {
         return null;
     }
 
-    @Override public int getSessionTimeout() {
+    @Override
+    public int getSessionTimeout() {
         return 0;
     }
 
-    @Override public void setSessionTimeout(int i) {
+    @Override
+    public void setSessionTimeout(int i) {
 
     }
 
-    @Override public String getRequestCharacterEncoding() {
+    @Override
+    public String getRequestCharacterEncoding() {
         return null;
     }
 
-    @Override public void setRequestCharacterEncoding(String s) {
+    @Override
+    public void setRequestCharacterEncoding(String s) {
 
     }
 
-    @Override public String getResponseCharacterEncoding() {
+    @Override
+    public String getResponseCharacterEncoding() {
         return null;
     }
 
-    @Override public void setResponseCharacterEncoding(String s) {
+    @Override
+    public void setResponseCharacterEncoding(String s) {
 
     }
 
