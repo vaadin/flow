@@ -34,6 +34,7 @@ import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.internal.StateTree;
+import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -62,6 +63,7 @@ public class ShortcutRegistration implements Registration, Serializable {
             + "}";//@formatter:on
     private boolean allowDefaultBehavior = false;
     private boolean allowEventPropagation = false;
+    static final String LISTEN_ON_INITIALIZED = "_initialized_listen_on_for_component";
 
     private Set<Key> modifiers = new HashSet<>(2);
     private Key primaryKey = null;
@@ -760,8 +762,35 @@ public class ShortcutRegistration implements Registration, Serializable {
                     : "event.preventDefault();";
             final String jsExpression = String.format(ELEMENT_LOCATOR_JS,
                     elementLocatorJs, filterText, preventDefault);
+
+            final String expressionHash = StringUtil.getHash(jsExpression);
+            final Set<String> expressions = getOrInitListenData(listenOn);
+            if (expressions.contains(expressionHash)) {
+                return;
+            }
+            expressions.add(expressionHash);
             listenOn.getElement().executeJs(jsExpression);
         }
+    }
+
+    /**
+     * Get the sent listenOn event data or initialize new listenOn data.
+     * 
+     * @param listenOn
+     *            component to listen events on
+     * @return set with already executed expressions.
+     */
+    private Set<String> getOrInitListenData(Component listenOn) {
+        final Object componentData = ComponentUtil.getData(listenOn,
+                LISTEN_ON_INITIALIZED);
+        if (componentData != null) {
+            return (Set<String>) componentData;
+        }
+        final HashSet<String> expressionHash = new HashSet<>();
+        ComponentUtil.setData(listenOn, LISTEN_ON_INITIALIZED, expressionHash);
+        listenOn.addDetachListener(event -> ComponentUtil
+                .setData(event.getSource(), LISTEN_ON_INITIALIZED, null));
+        return expressionHash;
     }
 
     /**
