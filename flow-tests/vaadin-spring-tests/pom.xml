@@ -212,7 +212,7 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-html-components</artifactId>
-            <version>${project.parent.version}</version>
+            <version>${vaadin.flow.version}</version>
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
@@ -222,7 +222,7 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-test-util</artifactId>
-            <version>${project.parent.version}</version>
+            <version>10.0-SNAPSHOT</version>
             <scope>test</scope>
         </dependency>
         <dependency>
