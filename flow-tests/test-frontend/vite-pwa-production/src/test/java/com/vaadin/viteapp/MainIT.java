@@ -30,11 +30,6 @@ public class MainIT extends ChromeDeviceTest {
         setCacheDisabled(true);
     }
 
-    @After
-    public void teardown() {
-        setOfflineEnabled(false);
-    }
-
     @Test
     public void openHomePage_pageIsLoaded() {
         openPage("/");

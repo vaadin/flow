@@ -32,11 +32,6 @@ public class MainIT extends ChromeDeviceTest {
         setCacheDisabled(true);
     }
 
-    @After
-    public void teardown() {
-        setOfflineEnabled(false);
-    }
-
     @Test
     public void appShellIsLoaded() {
         Assert.assertNotNull("Should load the app shell",

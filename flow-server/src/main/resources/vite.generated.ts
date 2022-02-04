@@ -47,18 +47,16 @@ console.trace = () => {};
 console.debug = () => {};
 
 function transpileSWPlugin(): PluginOption {
-  let buildConfig: ResolvedConfig;
+  let config: ResolvedConfig;
 
   return {
     name: 'vaadin:transpile-sw',
     enforce: 'post',
     apply: 'build',
-    async configResolved(config) {
-      buildConfig = config;
+    async configResolved(resolvedConfig) {
+      config = resolvedConfig;
     },
     async buildStart() {
-      // Before inject manifest we need to resolve and transpile the sw.ts file
-      // This could probably be made another way which needs to be investigated
       const includedPluginNames = [
         'alias',
         'vite:resolve',
@@ -69,7 +67,7 @@ function transpileSWPlugin(): PluginOption {
         'vite:esbuild-transpile',
         'vite:terser',
       ]
-      const plugins = buildConfig.plugins.filter((p) => includedPluginNames.includes(p.name))
+      const plugins = config.plugins.filter((p) => includedPluginNames.includes(p.name))
       const bundle = await rollup.rollup({
         input: path.resolve(settings.clientServiceWorkerSource),
         plugins,
@@ -111,6 +109,7 @@ function injectManifestToSWPlugin(): PluginOption {
         globIgnores: ['**/*.br'],
         injectionPoint: 'self.__WB_MANIFEST',
         manifestTransforms: [rewriteManifestIndexHtmlUrl],
+        maximumFileSizeToCacheInBytes: 100 * 1024 * 1024 // 100mb,
       });
     }
   }
