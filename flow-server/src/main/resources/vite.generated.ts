@@ -12,7 +12,7 @@ import settings from '#settingsImport#';
 import { UserConfigFn, defineConfig, mergeConfig, PluginOption, ResolvedConfig } from 'vite';
 import { injectManifest } from 'workbox-build';
 
-import rollup from 'rollup';
+import * as rollup from 'rollup';
 import brotli from 'rollup-plugin-brotli';
 import checker from 'vite-plugin-checker';
 
