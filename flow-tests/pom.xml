@@ -260,6 +260,9 @@
         <module>test-resources</module>
         <module>test-common</module>
         <module>test-lumo</module>
+		<module>vaadin-spring-tests/test-spring-common</module>
+		<module>vaadin-spring-tests/test-spring-security-fusion</module>
+		<module>vaadin-spring-tests/test-spring-security-flow</module>
     </modules>
 
     <profiles>
