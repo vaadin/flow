@@ -94,7 +94,7 @@ public abstract class NodeUpdater implements FallibleCommand {
     private static final String DEP_VERSION_KEY = "version";
     private static final String DEP_VERSION_DEFAULT = "1.0.0";
     private static final String ROUTER_VERSION = "1.7.4";
-    protected static final String POLYMER_VERSION = "3.2.0";
+    protected static final String POLYMER_VERSION = "3.4.1";
 
     /**
      * Base directory for {@link Constants#PACKAGE_JSON},
@@ -394,7 +394,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         final String WORKBOX_VERSION = "6.4.2";
 
         if (featureFlags.isEnabled(FeatureFlags.VITE)) {
-            defaults.put("vite", "v2.8.0-beta.3");
+            defaults.put("vite", "v2.8.0-beta.5");
             defaults.put("rollup-plugin-brotli", "3.1.0");
             defaults.put("vite-plugin-checker", "0.3.4");
             defaults.put("mkdirp", "1.0.4"); // for application-theme-plugin
@@ -585,8 +585,15 @@ public abstract class NodeUpdater implements FallibleCommand {
         File versions = new File(generatedFolder, "versions.json");
 
         JsonObject versionsJson = getPlatformPinnedDependencies();
+        JsonObject packageJsonVersions = generateVersionsFromPackageJson();
         if (versionsJson == null) {
-            versionsJson = generateVersionsFromPackageJson();
+            versionsJson = packageJsonVersions;
+        } else {
+            for (String key : packageJsonVersions.keys()) {
+                if (!versionsJson.hasKey(key)) {
+                    versionsJson.put(key, packageJsonVersions.getString(key));
+                }
+            }
         }
         FileUtils.write(versions, stringify(versionsJson, 2) + "\n",
                 StandardCharsets.UTF_8);

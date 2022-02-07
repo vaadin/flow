@@ -136,7 +136,7 @@ public class NodeUpdaterTest {
         nodeUpdater.updateDefaultDependencies(object);
 
         String version = getPolymerVersion(object);
-        Assert.assertEquals("3.2.0", version);
+        Assert.assertEquals("3.4.1", version);
     }
 
     @Test
@@ -164,8 +164,8 @@ public class NodeUpdaterTest {
         nodeUpdater.addVaadinDefaultsToJson(object);
         nodeUpdater.updateDefaultDependencies(object);
 
-        Assert.assertEquals("3.2.0", getPolymerVersion(object));
-        Assert.assertEquals("3.2.0", getPolymerVersion(
+        Assert.assertEquals("3.4.1", getPolymerVersion(object));
+        Assert.assertEquals("3.4.1", getPolymerVersion(
                 object.getObject(NodeUpdater.VAADIN_DEP_KEY)));
     }
 
@@ -280,7 +280,7 @@ public class NodeUpdaterTest {
                   + "\"dependencies\": {"
                     + "\"lit\": \"2.0.0\","
                     + "\"@vaadin/router\": \"1.7.4\","
-                    + "\"@polymer/polymer\": \"3.2.0\","
+                    + "\"@polymer/polymer\": \"3.4.1\","
                   + "},"
                   + "\"devDependencies\": {"
                     + "\"css-loader\": \"4.2.1\","
@@ -290,7 +290,7 @@ public class NodeUpdaterTest {
                 + "\"dependencies\": {"
                   + "\"lit\": \"2.0.0\","
                   + "\"@vaadin/router\": \"1.7.4\","
-                  + "\"@polymer/polymer\": \"3.2.0\","
+                  + "\"@polymer/polymer\": \"3.4.1\","
                 + "},"
                 + "\"devDependencies\": {"
                   + "\"css-loader\": \"4.2.1\","
@@ -307,7 +307,7 @@ public class NodeUpdaterTest {
                 generatedVersionsFile, StandardCharsets.UTF_8));
         Assert.assertEquals(
                 "{" + "\"lit\":\"2.0.0\"," + "\"@vaadin/router\":\"1.7.4\","
-                        + "\"@polymer/polymer\":\"3.2.0\","
+                        + "\"@polymer/polymer\":\"3.4.1\","
                         + "\"css-loader\":\"4.2.1\","
                         + "\"file-loader\":\"6.1.0\"" + "}",
                 versionsJson.toJson());

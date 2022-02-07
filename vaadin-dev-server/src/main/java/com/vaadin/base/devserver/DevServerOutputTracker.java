@@ -42,6 +42,7 @@ public class DevServerOutputTracker {
         private Pattern success;
         private Pattern failure;
         private Consumer<Result> onMatch;
+        private boolean started = false;
 
         private Finder(InputStream inputStream, Pattern success,
                 Pattern failure, Consumer<Result> onMatch) {
@@ -62,9 +63,18 @@ public class DevServerOutputTracker {
                 onMatch.accept(new Result(false));
             }
 
-            // Process closed stream, means that it exited, notify
-            // DevModeHandler to continue without any result
-            onMatch.accept(new Result(false, cumulativeOutput.toString()));
+            /*
+             * Process closed stream, means that it exited. If the server has
+             * never started, there was most likely a problem with the
+             * configuration or similar. We need to show that to the user. If
+             * the server has already started, this is probably about stopping
+             * the server.
+             */
+            if (!started) {
+                onMatch.accept(new Result(false, cumulativeOutput.toString()));
+            } else {
+                onMatch.accept(null);
+            }
         }
 
         private void readLinesLoop(InputStreamReader reader)
@@ -112,6 +122,9 @@ public class DevServerOutputTracker {
             if (succeed || failed) {
                 onMatch.accept(
                         new Result(succeed, cumulativeOutput.toString()));
+                if (succeed) {
+                    started = true;
+                }
                 cumulativeOutput = new StringBuilder();
             }
         }
