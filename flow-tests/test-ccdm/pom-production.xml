@@ -9,7 +9,6 @@
 
     <artifactId>flow-test-ccdm-prod</artifactId>
     <name>Flow CCDM tests (production mode)</name>
-    <version>23.1-SNAPSHOT</version>
     <packaging>war</packaging>
 
     <properties>
