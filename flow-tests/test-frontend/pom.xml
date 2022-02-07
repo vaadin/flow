@@ -34,6 +34,8 @@
                 <module>vite-production</module>
                 <module>vite-context-path/pom-production.xml</module>
                 <module>vite-context-path</module>
+                <module>vite-pwa-production</module>
+                <module>vite-pwa-production-custom-offline-path</module>
                 <!-- npm and pnpm dev mode and prod mode -->
                 <!-- run production build before dev build as dev build has npm i in thread -->
                 <module>test-npm/pom-production.xml</module>

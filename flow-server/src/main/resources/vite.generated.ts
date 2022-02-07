@@ -9,12 +9,14 @@ import * as net from 'net';
 
 import { processThemeResources } from '@vaadin/application-theme-plugin/theme-handle.js';
 import settings from '#settingsImport#';
-import { UserConfigFn, defineConfig, HtmlTagDescriptor, mergeConfig } from 'vite';
+import { UserConfigFn, defineConfig, mergeConfig, PluginOption, ResolvedConfig } from 'vite';
 import { injectManifest } from 'workbox-build';
 
+import * as rollup from 'rollup';
 import brotli from 'rollup-plugin-brotli';
 import checker from 'vite-plugin-checker';
 
+const appShellUrl = '.';
 
 const frontendFolder = path.resolve(__dirname, settings.frontendFolder);
 const themeFolder = path.resolve(frontendFolder, settings.themeFolder);
@@ -43,6 +45,75 @@ const themeOptions = {
 // Block debug and trace logs.
 console.trace = () => {};
 console.debug = () => {};
+
+function transpileSWPlugin(): PluginOption {
+  let config: ResolvedConfig;
+
+  return {
+    name: 'vaadin:transpile-sw',
+    enforce: 'post',
+    apply: 'build',
+    async configResolved(resolvedConfig) {
+      config = resolvedConfig;
+    },
+    async buildStart() {
+      const includedPluginNames = [
+        'alias',
+        'vite:resolve',
+        'vite:esbuild',
+        'replace',
+        'vite:define',
+        'rollup-plugin-dynamic-import-variables',
+        'vite:esbuild-transpile',
+        'vite:terser',
+      ]
+      const plugins = config.plugins.filter((p) => includedPluginNames.includes(p.name))
+      const bundle = await rollup.rollup({
+        input: path.resolve(settings.clientServiceWorkerSource),
+        plugins,
+      })
+      try {
+        await bundle.write({
+          format: 'es',
+          exports: 'none',
+          inlineDynamicImports: true,
+          file: path.resolve(frontendBundleFolder, 'sw.js'),
+        })
+      } finally {
+        await bundle.close()
+      }
+    },
+  }
+}
+
+function injectManifestToSWPlugin(): PluginOption {
+  const rewriteManifestIndexHtmlUrl = (manifest) => {
+    const indexEntry = manifest.find((entry) => entry.url === 'index.html');
+    if (indexEntry) {
+      indexEntry.url = appShellUrl;
+    }
+
+    return { manifest, warnings: [] };
+  }
+
+  return {
+    name: 'vaadin:inject-manifest-to-sw',
+    enforce: 'post',
+    apply: 'build',
+    async closeBundle() {
+      await injectManifest({
+        swSrc: path.resolve(frontendBundleFolder, 'sw.js'),
+        swDest: path.resolve(frontendBundleFolder, 'sw.js'),
+        globDirectory: frontendBundleFolder,
+        globPatterns: ['**/*'],
+        globIgnores: ['**/*.br'],
+        injectionPoint: 'self.__WB_MANIFEST',
+        manifestTransforms: [rewriteManifestIndexHtmlUrl],
+        maximumFileSizeToCacheInBytes: 100 * 1024 * 1024 // 100mb,
+      });
+    }
+  }
+}
 
 function updateTheme(contextPath: string) {
   const themePath = path.resolve(themeFolder);
@@ -84,7 +155,6 @@ const allowedFrontendFolders = [
 
 export const vaadinConfig: UserConfigFn = (env) => {
   const devMode = env.mode === 'development';
-  let pwaConfig;
 
   if (devMode && process.env.watchDogPort) {
     // Open a connection with the Java dev-mode handler in order to finish
@@ -101,8 +171,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
       }
     },
     define: {
-      // should be settings.offlinePath after manifests are fixed
-      OFFLINE_PATH: "'.'"
+      OFFLINE_PATH: settings.offlinePath
     },
     server: {
       fs: {
@@ -120,57 +189,8 @@ export const vaadinConfig: UserConfigFn = (env) => {
     },
     plugins: [
       !devMode && brotli(),
-      settings.pwaEnabled &&
-      {
-        name: 'vaadin:pwa',
-        enforce: 'post',
-        apply: 'build',
-        async configResolved(config) {
-          pwaConfig = config;
-        },
-        async buildStart() {
-          // Before inject manifest we need to resolve and transpile the sw.ts file
-          // This could probably be made another way which needs to be investigated
-
-          // eslint-disable-next-line @typescript-eslint/no-var-requires
-          const rollup = require('rollup') as typeof Rollup
-          const includedPluginNames = [
-            'alias',
-            'vite:resolve',
-            'vite:esbuild',
-            'replace',
-            'vite:define',
-            'rollup-plugin-dynamic-import-variables',
-            'vite:esbuild-transpile',
-            'vite:terser',
-          ]
-          const plugins = pwaConfig.plugins.filter(p => includedPluginNames.includes(p.name)) as Plugin[]
-          const bundle = await rollup.rollup({
-            input: path.resolve(settings.clientServiceWorkerSource),
-            plugins,
-          })
-          try {
-            await bundle.write({
-              format: 'es',
-              exports: 'none',
-              inlineDynamicImports: true,
-              file: path.resolve(frontendBundleFolder, 'sw.js'),
-
-            })
-          }
-          finally {
-            await bundle.close()
-          }
-          // end of resolve and transpilation
-
-          await injectManifest({
-            swSrc: path.resolve(frontendBundleFolder, 'sw.js'),
-            swDest: path.resolve(frontendBundleFolder, 'sw.js'),
-            globDirectory: frontendBundleFolder,
-            injectionPoint: 'self.__WB_MANIFEST',
-          });
-        }
-      },
+      settings.pwaEnabled && transpileSWPlugin(),
+      settings.pwaEnabled && injectManifestToSWPlugin(),
       {
         name: 'vaadin:custom-theme',
         config() {
