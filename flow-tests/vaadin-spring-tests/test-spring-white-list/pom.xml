@@ -94,6 +94,22 @@
                 </exclusion>
             </exclusions>
         </dependency>
+		
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-polymer-template</artifactId>
+			<version>${vaadin.flow.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-button-testbench</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-text-field-testbench</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>
