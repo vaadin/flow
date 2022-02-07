@@ -105,6 +105,14 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
     @Ignore
     public void webpackLiveReload_newComponentStylesCreatedAndDeleted_stylesUpdatedOnFly() {
         open();
+
+        /*
+         * Access browser logs in order to clear them to avoid
+         * to check entries from a previous run if the test is flaky
+         * due to webpack file change detection
+         */
+        getLogEntries(java.util.logging.Level.ALL);
+
         Assert.assertFalse(
                 "Border radius for themed component is not expected before "
                         + "applying the styles",
