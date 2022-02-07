@@ -260,9 +260,6 @@
         <module>test-resources</module>
         <module>test-common</module>
         <module>test-lumo</module>
-		<module>vaadin-spring-tests/test-spring-common</module>
-		<module>vaadin-spring-tests/test-spring-security-fusion</module>
-		<module>vaadin-spring-tests/test-spring-security-flow</module>
     </modules>
 
     <profiles>
@@ -282,6 +279,10 @@
                 <module>test-frontend</module>
                 <module>test-application-theme</module>
                 <module>test-multi-war</module>
+				<module>vaadin-spring-tests</module>
+				<module>vaadin-spring-tests/test-spring-common</module>
+				<module>vaadin-spring-tests/test-spring-security-fusion</module>
+				<module>vaadin-spring-tests/test-spring-security-flow</module>
             </modules>
         </profile>
         <profile>
@@ -335,7 +336,22 @@
                 <module>test-theme-no-polymer</module>
                 <module>test-frontend</module>
 				
-				<module>vaadin-spring-tests</module>
+		        <module>vaadin-spring-tests/test-spring-boot</module>
+		        <module>vaadin-spring-tests/test-spring-boot-scan</module>
+		        <module>vaadin-spring-tests/test-spring-war</module>
+		        <module>vaadin-spring-tests/test-spring</module>
+		        <module>vaadin-spring-tests/test-spring-boot-contextpath</module>
+
+		        <module>vaadin-spring-tests/test-ts-services</module>
+		        <module>vaadin-spring-tests/test-ts-services-custom-client</module>
+		        <module>vaadin-spring-tests/test-mvc-without-endpoints</module>
+
+		        <module>vaadin-spring-tests/test-spring-security-flow-contextpath</module>
+		        <module>vaadin-spring-tests/test-spring-security-fusion-jwt</module>
+		        <module>vaadin-spring-tests/test-spring-security-fusion-contextpath</module>
+
+		        <module>vaadin-spring-tests/test-spring-boot-only-prepare</module>
+		        <module>vaadin-spring-tests/test-spring-white-list</module>
             </modules>
         </profile>
         <profile>

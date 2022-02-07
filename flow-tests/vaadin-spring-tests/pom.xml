@@ -35,19 +35,6 @@
 
     <dependencyManagement>
         <dependencies>
-	        <dependency>
-	            <groupId>org.springframework.boot</groupId>
-	            <artifactId>spring-boot-dependencies</artifactId>
-	            <version>${spring-boot.version}</version>
-	            <type>pom</type>
-	            <scope>import</scope>
-	        </dependency>
-            <dependency>
-                <groupId>org.springframework.security.oauth</groupId>
-                <artifactId>spring-security-oauth2</artifactId>
-                <version>2.2.4.RELEASE</version>
-            </dependency>
-
             <dependency>
                 <groupId>com.vaadin</groupId>
                 <artifactId>vaadin-testbench-bom</artifactId>
@@ -55,6 +42,21 @@
                 <scope>import</scope>
                 <version>${testbench.version}</version>
             </dependency>
+	        <dependency>
+	            <groupId>org.springframework.boot</groupId>
+	            <artifactId>spring-boot-dependencies</artifactId>
+	            <version>${spring-boot.version}</version>
+	            <type>pom</type>
+	            <scope>import</scope>
+	        </dependency>
+			
+            <dependency>
+                <groupId>org.springframework.security.oauth</groupId>
+                <artifactId>spring-security-oauth2</artifactId>
+                <version>2.2.4.RELEASE</version>
+            </dependency>
+
+
             <dependency>
                 <groupId>com.vaadin</groupId>
                 <artifactId>vaadin-login-flow</artifactId>
@@ -258,35 +260,6 @@
         </dependency>
     </dependencies>
 
-    <modules>
-        <module>test-spring-common</module>
-        <module>test-spring-boot</module>
-        <!--
-                Disabled as the resource scanner does not work with Undertow
-                <module>test-spring-boot-undertow</module>
-                -->
-        <module>test-spring-boot-scan</module>
-        <module>test-spring-war</module>
-        <module>test-spring</module>
-        <module>test-spring-boot-contextpath</module>
-
-        <module>test-ts-services</module>
-        <module>test-ts-services-custom-client</module>
-        <module>test-mvc-without-endpoints</module>
-
-        <module>test-spring-security-flow</module>
-        <module>test-spring-security-flow-contextpath</module>
-        <module>test-spring-security-fusion</module>
-        <module>test-spring-security-fusion-jwt</module>
-        <module>test-spring-security-fusion-contextpath</module>
-
-        <module>test-spring-boot-only-prepare</module>
-        <module>test-spring-white-list</module>
-
-        <!-- nexus-staging-maven-plugin requires the last module to be not skipped for deployment -->
-        <module>dummy-module</module>
-    </modules>
-
     <build>
         <plugins>
             <plugin>
@@ -457,6 +430,42 @@
     </build>
 
     <profiles>
+        <profile>
+            <id>run-tests</id>
+            <activation>
+                <property>
+                    <name>!skipTests</name>
+                </property>
+            </activation>
+		    <modules>
+		        <module>test-spring-boot</module>
+		        <!--
+		                Disabled as the resource scanner does not work with Undertow
+		                <module>test-spring-boot-undertow</module>
+		                -->
+		        <module>test-spring-boot-scan</module>
+		        <module>test-spring-war</module>
+		        <module>test-spring</module>
+		        <module>test-spring-boot-contextpath</module>
+
+		        <module>test-ts-services</module>
+		        <module>test-ts-services-custom-client</module>
+		        <module>test-mvc-without-endpoints</module>
+				
+		        <module>test-spring-security-flow</module>
+		        <module>test-spring-security-flow-contextpath</module>
+		        <module>test-spring-security-fusion</module>
+		        <module>test-spring-security-fusion-jwt</module>
+		        <module>test-spring-security-fusion-contextpath</module>
+
+		        <module>test-spring-boot-only-prepare</module>
+		        <module>test-spring-white-list</module>
+
+		        <!-- nexus-staging-maven-plugin requires the last module to be not skipped for deployment -->
+		        <module>dummy-module</module>
+		    </modules>
+        </profile>
+		
         <profile>
             <id>eclipse</id>
             <build>
