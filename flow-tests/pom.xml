@@ -352,6 +352,10 @@
 
 		        <module>vaadin-spring-tests/test-spring-boot-only-prepare</module>
 		        <module>vaadin-spring-tests/test-spring-white-list</module>
+
+				<module>vaadin-spring-tests/test-spring-common</module>
+				<module>vaadin-spring-tests/test-spring-security-fusion</module>
+				<module>vaadin-spring-tests/test-spring-security-flow</module>
             </modules>
         </profile>
         <profile>
