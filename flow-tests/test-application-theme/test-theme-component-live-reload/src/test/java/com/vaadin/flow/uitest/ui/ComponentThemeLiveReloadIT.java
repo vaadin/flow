@@ -107,9 +107,9 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
         open();
 
         /*
-         * Access browser logs in order to clear them to avoid
-         * to check entries from a previous run if the test is flaky
-         * due to webpack file change detection
+         * Access browser logs in order to clear them to avoid to check entries
+         * from a previous run if the test is flaky due to webpack file change
+         * detection during parent css deletion
          */
         getLogEntries(java.util.logging.Level.ALL);
 
