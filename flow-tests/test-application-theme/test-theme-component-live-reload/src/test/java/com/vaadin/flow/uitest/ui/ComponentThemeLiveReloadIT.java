@@ -100,7 +100,9 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
         }
     }
 
+    // ignored until resolved. See issue 11928
     @Test
+    @Ignore
     public void webpackLiveReload_newComponentStylesCreatedAndDeleted_stylesUpdatedOnFly() {
         open();
         Assert.assertFalse(
