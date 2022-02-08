@@ -11,7 +11,6 @@
 
     <artifactId>test-ccdm</artifactId>
     <name>Flow CCDM tests (dev mode)</name>
-    <version>23.1-SNAPSHOT</version>
     <packaging>war</packaging>
 
     <properties>
