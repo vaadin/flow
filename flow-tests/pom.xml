@@ -279,7 +279,6 @@
                 <module>test-frontend</module>
                 <module>test-application-theme</module>
                 <module>test-multi-war</module>
-				<module>vaadin-spring-tests</module>
             </modules>
         </profile>
         <profile>

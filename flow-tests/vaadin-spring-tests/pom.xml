@@ -446,6 +446,7 @@
                 </property>
             </activation>
 		    <modules>
+		        <module>test-spring-common</module>
 		        <module>test-spring-boot</module>
 		        <!--
 		                Disabled as the resource scanner does not work with Undertow
