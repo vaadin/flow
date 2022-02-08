@@ -14,6 +14,7 @@ import com.vaadin.testbench.TestBenchElement;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 public class AppViewIT extends AbstractIT {
@@ -227,6 +228,7 @@ public class AppViewIT extends AbstractIT {
     }
 
     @Test
+    @Ignore
     public void upload_file_in_private_view() throws IOException {
         open("private");
         loginUser();
