@@ -2,7 +2,7 @@
 
 importScripts('sw-runtime-resources-precache.js');
 import { clientsClaim, cacheNames, WorkboxPlugin } from 'workbox-core';
-import { matchPrecache, precache } from 'workbox-precaching';
+import { matchPrecache, precacheAndRoute } from 'workbox-precaching';
 import { registerRoute, NavigationRoute } from 'workbox-routing';
 import { PrecacheEntry } from 'workbox-precaching/_types';
 import { NetworkOnly, NetworkFirst } from 'workbox-strategies';
@@ -20,8 +20,6 @@ let manifestEntries: PrecacheEntry[] = self.__WB_MANIFEST || [];
 if (self.additionalManifestEntries?.length) {
   manifestEntries.push(...self.additionalManifestEntries);
 }
-// Precache the resulting manifest entries.
-precache(manifestEntries);
 
 // Compute the registration scope path.
 const scopePath = new URL(self.registration.scope).pathname;
@@ -42,7 +40,9 @@ async function rewriteBaseHref(response: Response) {
  * Returns true if the given URL is included in the manifest, otherwise false.
  */
 function isManifestEntryURL(url: URL) {
-  return manifestEntries.some((entry) => `${scopePath}${entry.url}` === `${url}`);
+  return manifestEntries.some((entry) => {
+    return `${scopePath}${entry.url}` === url.pathname;
+  });
 }
 
 /**
@@ -68,7 +68,7 @@ const networkOnly = new NetworkOnly({
 const networkFirst = new NetworkFirst({
   plugins: [checkConnectionPlugin()]
 });
-≈
+
 if (process.env.NODE_ENV === 'development') {
   self.addEventListener('activate', (event) => {
     event.waitUntil(caches.delete(cacheNames.runtime));
@@ -86,7 +86,7 @@ if (process.env.NODE_ENV === 'development') {
 
   if (OFFLINE_PATH === '.') {
     registerRoute(
-      ({ url }) => url.pathname.startsWith(scopePath) && !isManifestEntryURL(url),
+      ({ request, url }) => request.mode === 'navigate' && !isManifestEntryURL(url),
       async ({ event }) => {
         const response = await networkFirst.handle({
           request: new Request(OFFLINE_PATH),
@@ -99,10 +99,10 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 /**
- * Handle requests to manifest entries.
+ * Handle navigation requests to manifest entries.
  */
 registerRoute(
-  ({ url }) => isManifestEntryURL(url),
+  ({ request, url }) => request.mode === 'navigate' && isManifestEntryURL(url),
   async (context) => {
     if (!navigator.onLine) {
       const response = await matchPrecache(context.request)
@@ -124,10 +124,10 @@ registerRoute(
 );
 
 /**
- * Handle other requests.
+ * Handle other navigation requests.
  */
-registerRoute(
-  ({ url }) => url.pathname.startsWith(scopePath),
+ registerRoute(
+  ({ request }) => request.mode === 'navigate',
   async (context) => {
     if (!navigator.onLine) {
       const response = await matchPrecache(OFFLINE_PATH);
@@ -147,6 +147,8 @@ registerRoute(
     }
   }
 );
+
+precacheAndRoute(manifestEntries);
 
 self.addEventListener('message', (event) => {
   if (typeof event.data !== 'object' || !('method' in event.data)) {

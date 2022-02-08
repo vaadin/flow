@@ -2,12 +2,11 @@
 
 importScripts('sw-runtime-resources-precache.js');
 import { clientsClaim, cacheNames, WorkboxPlugin } from 'workbox-core';
-import { matchPrecache, precache } from 'workbox-precaching';
+import { matchPrecache, precacheAndRoute } from 'workbox-precaching';
 import { registerRoute, NavigationRoute } from 'workbox-routing';
 import { PrecacheEntry } from 'workbox-precaching/_types';
 import { NetworkOnly, NetworkFirst } from 'workbox-strategies';
 
-// TS declarations
 declare var self: ServiceWorkerGlobalScope & {
   __WB_MANIFEST: PrecacheEntry[];
   additionalManifestEntries?: PrecacheEntry[];
@@ -16,13 +15,11 @@ declare var self: ServiceWorkerGlobalScope & {
 declare var OFFLINE_PATH: string; // defined by Webpack/Vite
 
 // Combine manifest entries injected at compile-time by Webpack/Vite
-// with entries that Flow injects at runtime through `sw-runtime-resources-precache.js`.
+// with ones that Flow injects at runtime through `sw-runtime-resources-precache.js`.
 let manifestEntries: PrecacheEntry[] = self.__WB_MANIFEST || [];
 if (self.additionalManifestEntries?.length) {
   manifestEntries.push(...self.additionalManifestEntries);
 }
-// Precache the resulting manifest entries.
-precache(manifestEntries);
 
 // Compute the registration scope path.
 const scopePath = new URL(self.registration.scope).pathname;
@@ -43,8 +40,9 @@ async function rewriteBaseHref(response: Response) {
  * Returns true if the given URL is included in the manifest, otherwise false.
  */
 function isManifestEntryURL(url: URL) {
-  const pathRelativeToScope = url.pathname.substring(scopePath.length);
-  return manifestEntries.some((entry) => entry.url === pathRelativeToScope);
+  return manifestEntries.some((entry) => {
+    return `${scopePath}${entry.url}` === url.pathname;
+  });
 }
 
 /**
@@ -64,6 +62,13 @@ function checkConnectionPlugin(): WorkboxPlugin {
   }
 }
 
+const networkOnly = new NetworkOnly({
+  plugins: [checkConnectionPlugin()]
+});
+const networkFirst = new NetworkFirst({
+  plugins: [checkConnectionPlugin()]
+});
+
 if (process.env.NODE_ENV === 'development') {
   self.addEventListener('activate', (event) => {
     event.waitUntil(caches.delete(cacheNames.runtime));
@@ -71,46 +76,33 @@ if (process.env.NODE_ENV === 'development') {
 
   registerRoute(
     ({ url }) => url.pathname.startsWith(`${scopePath}VAADIN/__vite_ping`),
-    new NetworkOnly({
-      plugins: [checkConnectionPlugin()]
-    })
+    networkOnly
   );
 
   registerRoute(
     ({ url }) => url.pathname.startsWith(`${scopePath}VAADIN/`),
-    new NetworkFirst({
-      plugins: [checkConnectionPlugin()]
-    })
+    networkFirst
   );
 
   if (OFFLINE_PATH === '.') {
     registerRoute(
-      ({ url }) => !isManifestEntryURL(url),
-      new NetworkFirst({
-        plugins: [
-          checkConnectionPlugin(),
-          {
-            async cachedResponseWillBeUsed({ cachedResponse }) {
-              return cachedResponse
-                ? rewriteBaseHref(cachedResponse)
-                : null;
-            }
-          }
-        ]
-      })
+      ({ request, url }) => request.mode === 'navigate' && !isManifestEntryURL(url),
+      async ({ event }) => {
+        const response = await networkFirst.handle({
+          request: new Request(OFFLINE_PATH),
+          event
+        });
+        return rewriteBaseHref(response);
+      }
     )
   }
 }
 
-const networkOnly = new NetworkOnly({
-  plugins: [checkConnectionPlugin()]
-});
-
 /**
- * Handle requests to manifest entries.
+ * Handle navigation requests to manifest entries.
  */
 registerRoute(
-  ({ url }) => isManifestEntryURL(url),
+  ({ request, url }) => request.mode === 'navigate' && isManifestEntryURL(url),
   async (context) => {
     if (!navigator.onLine) {
       const response = await matchPrecache(context.request)
@@ -132,10 +124,11 @@ registerRoute(
 );
 
 /**
- * Handle other requests.
+ * Handle other navigation requests.
  */
-registerRoute(
-  new NavigationRoute(async (context) => {
+ registerRoute(
+  ({ request }) => request.mode === 'navigate',
+  async (context) => {
     if (!navigator.onLine) {
       const response = await matchPrecache(OFFLINE_PATH);
       if (response) {
@@ -152,8 +145,10 @@ registerRoute(
       }
       throw error;
     }
-  })
+  }
 );
+
+precacheAndRoute(manifestEntries);
 
 self.addEventListener('message', (event) => {
   if (typeof event.data !== 'object' || !('method' in event.data)) {
