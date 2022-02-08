@@ -431,6 +431,14 @@
 
     <profiles>
         <profile>
+            <!-- Modules that have shared stuff used in other modules -->
+            <id>it-shared-spring-modules</id>
+            <modules>
+				<module>test-spring-common</module>
+            </modules>
+        </profile>
+		
+        <profile>
             <id>run-tests</id>
             <activation>
                 <property>

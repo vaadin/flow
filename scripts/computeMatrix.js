@@ -84,6 +84,25 @@ const moduleWeights = {
   'DomEventFilterIT': {weight: 2},
   'ShortcutsIT': {weight: 2},
   'JavaScriptReturnValueIT': {weight: 8},
+  
+  // put Spring tests in containers 4 and 5
+  'flow-tests/vaadin-spring-tests/test-spring-boot': {pos: 4},
+  'flow-tests/vaadin-spring-tests/test-spring-boot-scan': {pos: 4},
+  'flow-tests/vaadin-spring-tests/test-spring-war': {pos: 4},
+  'flow-tests/vaadin-spring-tests/test-spring': {pos: 4},
+  'flow-tests/vaadin-spring-tests/test-spring-boot-contextpath': {pos: 4},
+  'flow-tests/vaadin-spring-tests/test-spring-boot-only-prepare': {pos: 4},
+  'flow-tests/vaadin-spring-tests/test-spring-white-list': {pos: 4},
+
+  'flow-tests/vaadin-spring-tests/test-spring-security-flow': {pos: 5},
+  'flow-tests/vaadin-spring-tests/test-spring-security-flow-contextpath': {pos: 5},
+  'flow-tests/vaadin-spring-tests/test-spring-security-fusion': {pos: 5},
+  'flow-tests/vaadin-spring-tests/test-spring-security-fusion-contextpath': {pos: 5},
+  'flow-tests/vaadin-spring-tests/test-spring-security-fusion-jwt': {pos: 5},
+
+  'flow-tests/vaadin-spring-tests/test-ts-services': {pos: 5},
+  'flow-tests/vaadin-spring-tests/test-ts-services-custom-client': {pos: 5},
+  'flow-tests/vaadin-spring-tests/test-mvc-without-endpoints/pom.xml': {pos: 5},
 }
 
 // Set split number for modules with several tests
