@@ -493,6 +493,13 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         if (request.getHeader(SERVICE_WORKER_HEADER) != null) {
             return false;
         }
+
+        if (request.getPathInfo() != null
+                && request.getPathInfo().startsWith("/" + VAADIN_MAPPING)) {
+            // Do not allow routes inside /VAADIN/
+            return false;
+        }
+
         return super.canHandleRequest(request);
     }
 
