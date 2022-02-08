@@ -42,8 +42,7 @@ async function rewriteBaseHref(response: Response) {
  * Returns true if the given URL is included in the manifest, otherwise false.
  */
 function isManifestEntryURL(url: URL) {
-  const pathRelativeToScope = url.pathname.substring(scopePath.length);
-  return manifestEntries.some((entry) => entry.url === pathRelativeToScope);
+  return manifestEntries.some((entry) => `${scopePath}${entry.url}` === `${url}`);
 }
 
 /**
@@ -69,7 +68,7 @@ const networkOnly = new NetworkOnly({
 const networkFirst = new NetworkFirst({
   plugins: [checkConnectionPlugin()]
 });
-
+≈
 if (process.env.NODE_ENV === 'development') {
   self.addEventListener('activate', (event) => {
     event.waitUntil(caches.delete(cacheNames.runtime));
@@ -87,7 +86,7 @@ if (process.env.NODE_ENV === 'development') {
 
   if (OFFLINE_PATH === '.') {
     registerRoute(
-      ({ url }) => !isManifestEntryURL(url),
+      ({ url }) => url.pathname.startsWith(scopePath) && !isManifestEntryURL(url),
       async ({ event }) => {
         const response = await networkFirst.handle({
           request: new Request(OFFLINE_PATH),
@@ -128,7 +127,8 @@ registerRoute(
  * Handle other requests.
  */
 registerRoute(
-  new NavigationRoute(async (context) => {
+  ({ url }) => url.pathname.startsWith(scopePath),
+  async (context) => {
     if (!navigator.onLine) {
       const response = await matchPrecache(OFFLINE_PATH);
       if (response) {
@@ -145,7 +145,7 @@ registerRoute(
       }
       throw error;
     }
-  })
+  }
 );
 
 self.addEventListener('message', (event) => {
