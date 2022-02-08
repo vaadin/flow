@@ -5,11 +5,11 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-tests</artifactId>
-        <version>10.0-SNAPSHOT</version>
+        <version>23.1-SNAPSHOT</version>
     </parent>
     <artifactId>vaadin-spring-tests</artifactId>
     <name>Vaadin Spring tests</name>
-	<version>20.0-SNAPSHOT</version>
+    <version>23.1-SNAPSHOT</version>
     <description>Test modules for Spring integration</description>
 
     <packaging>pom</packaging>
@@ -30,7 +30,7 @@
         </driver.binary.downloader.maven.plugin.version>
         <maven.war.plugin.version>3.3.2</maven.war.plugin.version>
         <vaadin.version>23.0-SNAPSHOT</vaadin.version>
-		<vaadin.flow.version>10.0-SNAPSHOT</vaadin.flow.version>
+		<vaadin.flow.version>${project.version}</vaadin.flow.version>
     </properties>
 
     <dependencyManagement>
@@ -230,7 +230,7 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-test-util</artifactId>
-            <version>10.0-SNAPSHOT</version>
+            <version>${vaadin.flow.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -460,9 +460,6 @@
 
 		        <module>test-spring-boot-only-prepare</module>
 		        <module>test-spring-white-list</module>
-
-		        <!-- nexus-staging-maven-plugin requires the last module to be not skipped for deployment -->
-		        <module>dummy-module</module>
 		    </modules>
         </profile>
 		
