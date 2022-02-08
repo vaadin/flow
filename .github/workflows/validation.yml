@@ -36,7 +36,7 @@ jobs:
       - name: Generate matrices
         id: set-matrix
         run: |
-          echo "::set-output name=matrix-it::$(./scripts/computeMatrix.js it-tests --parallel=11 current module args)"
+          echo "::set-output name=matrix-it::$(./scripts/computeMatrix.js it-tests --parallel=13 current module args)"
           echo "::set-output name=matrix-unit::$(./scripts/computeMatrix.js unit-tests --parallel=2 current module args)"
       - name: Compile and Install Flow
         run: |
