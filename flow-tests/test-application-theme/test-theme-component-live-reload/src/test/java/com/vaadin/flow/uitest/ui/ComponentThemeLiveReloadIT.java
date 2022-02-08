@@ -25,7 +25,6 @@ import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
@@ -100,9 +99,7 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
         }
     }
 
-    // ignored until resolved. See issue 11928
     @Test
-    @Ignore
     public void webpackLiveReload_newComponentStylesCreatedAndDeleted_stylesUpdatedOnFly() {
         open();
 
