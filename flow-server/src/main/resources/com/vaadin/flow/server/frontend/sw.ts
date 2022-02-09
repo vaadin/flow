@@ -3,19 +3,19 @@
 importScripts('sw-runtime-resources-precache.js');
 import { clientsClaim, cacheNames, WorkboxPlugin } from 'workbox-core';
 import { matchPrecache, precacheAndRoute, getCacheKeyForURL } from 'workbox-precaching';
-import { registerRoute, NavigationRoute } from 'workbox-routing';
+import { NavigationRoute, registerRoute } from 'workbox-routing';
 import { PrecacheEntry } from 'workbox-precaching/_types';
 import { NetworkOnly, NetworkFirst } from 'workbox-strategies';
 
 declare var self: ServiceWorkerGlobalScope & {
-  __WB_MANIFEST: PrecacheEntry[];
-  additionalManifestEntries?: PrecacheEntry[];
+  __WB_MANIFEST: Array<PrecacheEntry>;
+  additionalManifestEntries?: Array<PrecacheEntry>;
 };
-
-declare var OFFLINE_PATH: string; // defined by Webpack/Vite
 
 self.skipWaiting();
 clientsClaim();
+
+declare var OFFLINE_PATH: string; // defined by Webpack/Vite
 
 // Combine manifest entries injected at compile-time by Webpack/Vite
 // with ones that Flow injects at runtime through `sw-runtime-resources-precache.js`.
