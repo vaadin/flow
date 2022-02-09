@@ -1557,6 +1557,19 @@ public class BootstrapHandlerTest {
     }
 
     @Test
+    public void vaadin_request_no_bootstrap_page() {
+        BootstrapHandler bootstrapHandler = new BootstrapHandler();
+        VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
+        Mockito.when(request.getPathInfo()).thenReturn("/VAADIN/hello.js");
+        Assert.assertFalse(bootstrapHandler.canHandleRequest(request));
+
+        Mockito.when(request.getPathInfo())
+                .thenReturn("/VAADIN/bundle/notfound");
+        Assert.assertFalse(bootstrapHandler.canHandleRequest(request));
+
+    }
+
+    @Test
     public void serviceWorkerRequest_canNotHandleRequest() {
         BootstrapHandler bootstrapHandler = new BootstrapHandler();
         VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);

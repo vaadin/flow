@@ -256,6 +256,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     protected boolean canHandleRequest(VaadinRequest request) {
         return isRequestForHtml(request)
                 && !BootstrapHandler.isFrameworkInternalRequest(request)
+                && !BootstrapHandler.isVaadinStaticFileRequest(request)
                 && request.getService().getBootstrapUrlPredicate()
                         .isValidUrl(request);
     }
