@@ -1,0 +1,70 @@
+/*
+ * Copyright 2000-2022 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+
+package com.vaadin.base.devserver.stats;
+
+import java.io.File;
+import java.io.IOException;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * An internal helper class representing a user key.
+ */
+class UserKey {
+
+    private final String key;
+
+    UserKey(String key) {
+        this.key = key;
+    }
+
+    UserKey(File keyFile) {
+        String key = null;
+        try {
+            JsonNode value = JsonHelpers.getJsonMapper().readTree(keyFile);
+            key = value.get("key").asText();
+        } catch (Exception e) {
+            getLogger().debug("Unable to read UserKey", e);
+        }
+        this.key = key;
+    }
+
+    public String getKey() {
+        return key;
+    }
+
+    /**
+     * Writes the user key to the given file.
+     */
+    void toFile(File fileLocation) throws IOException {
+        ObjectMapper jsonMapper = JsonHelpers.getJsonMapper();
+
+        ObjectNode value = jsonMapper.createObjectNode();
+        value.put("key", this.key);
+        jsonMapper.writeValue(fileLocation, value);
+    }
+
+    private static Logger getLogger() {
+        // Use the same logger that DevModeUsageStatistics uses
+        return LoggerFactory.getLogger(DevModeUsageStatistics.class.getName());
+    }
+}
