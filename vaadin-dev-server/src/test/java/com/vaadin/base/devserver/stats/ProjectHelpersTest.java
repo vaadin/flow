@@ -57,9 +57,11 @@ public class ProjectHelpersTest {
         Assert.assertNotNull(userKey);
 
         // Check file
-        File userFile = new File(System.getProperty("user.home"), ".vaadin/userKey");
-        String fromFile = IOUtils.toString(new FileInputStream(userFile), StandardCharsets.UTF_8);
-        Assert.assertEquals("{\"key\":\""+userKey+"\"}", fromFile);
+        File userFile = new File(System.getProperty("user.home"),
+                ".vaadin/userKey");
+        String fromFile = IOUtils.toString(new FileInputStream(userFile),
+                StandardCharsets.UTF_8);
+        Assert.assertEquals("{\"key\":\"" + userKey + "\"}", fromFile);
 
         Assert.assertEquals(userKey, ProjectHelpers.getUserKey());
     }

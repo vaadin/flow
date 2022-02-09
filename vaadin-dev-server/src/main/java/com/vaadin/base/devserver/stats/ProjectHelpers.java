@@ -325,10 +325,13 @@ class ProjectHelpers {
         localKey = new UserKey("user-" + UUID.randomUUID());
         try {
             localKey.toFile(userKeyFile);
+            return localKey.getKey();
         } catch (IOException e) {
             getLogger().debug("Failed to write generated userKey", e);
         }
-        return localKey.getKey();
+
+        // No point in returning a key if we haven't stored it
+        return null;
     }
 
     private static Logger getLogger() {
