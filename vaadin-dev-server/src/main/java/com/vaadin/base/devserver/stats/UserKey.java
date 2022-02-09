@@ -61,6 +61,7 @@ class UserKey {
 
         ObjectNode value = jsonMapper.createObjectNode();
         value.put(FIELD_KEY, this.key);
+        fileLocation.getParentFile().mkdirs();
         jsonMapper.writeValue(fileLocation, value);
     }
 
