@@ -493,6 +493,12 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         if (request.getHeader(SERVICE_WORKER_HEADER) != null) {
             return false;
         }
+
+        if (isVaadinStaticFileRequest(request)) {
+            // Do not allow routes inside /VAADIN/
+            return false;
+        }
+
         return super.canHandleRequest(request);
     }
 
@@ -523,6 +529,26 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                             ApplicationConstants.REQUEST_TYPE_PARAMETER));
         }
         return false;
+    }
+
+    /**
+     * Checks whether the request is a request for /VAADIN/*.
+     * <p>
+     * Warning: This assumes that the VaadinRequest is targeted for a
+     * VaadinServlet and does no further checks to validate this.
+     * <p>
+     * This is public only so that
+     * {@link com.vaadin.flow.server.communication.IndexHtmlRequestHandler} can
+     * access it. If you are not IndexHtmlRequestHandler, go away.
+     *
+     * @param request
+     *            the request
+     * @return {@code true} if the request is for /VAADIN/*, {@code false}
+     *         otherwise
+     */
+    public static boolean isVaadinStaticFileRequest(VaadinRequest request) {
+        return request.getPathInfo() != null
+                && request.getPathInfo().startsWith("/" + VAADIN_MAPPING);
     }
 
     @Override
