@@ -18,7 +18,7 @@ public class FileAccessIT extends ViteDevModeIT {
          */
         assertAllowed("target/flow-frontend/Flow.js");
         assertAllowed("target/frontend/generated-flow-imports.js");
-        assertAllowed("frontend/index.ts");
+        assertAllowed("frontend/jsonloader.js");
     }
 
     private void assertAllowed(String fileInProject) throws IOException {

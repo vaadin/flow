@@ -281,6 +281,12 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
+    public void canHandleRequest_doNotHandle_vaadinStaticResources() {
+        Assert.assertFalse(indexHtmlRequestHandler.canHandleRequest(
+                createRequestWithDestination("/VAADIN/foo.js", null, null)));
+    }
+
+    @Test
     public void canHandleRequest_handle_serviceWorkerDocumentRequest() {
         Assert.assertTrue(indexHtmlRequestHandler.canHandleRequest(
                 createRequestWithDestination("/", "empty", "same-origin")));
