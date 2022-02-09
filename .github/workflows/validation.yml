@@ -36,7 +36,7 @@ jobs:
       - name: Generate matrices
         id: set-matrix
         run: |
-          echo "::set-output name=matrix-it::$(./scripts/computeMatrix.js it-tests --parallel=12 current module args)"
+          echo "::set-output name=matrix-it::$(./scripts/computeMatrix.js it-tests --parallel=13 current module args)"
           echo "::set-output name=matrix-unit::$(./scripts/computeMatrix.js unit-tests --parallel=2 current module args)"
       - name: Compile and Install Flow
         run: |
@@ -147,7 +147,7 @@ jobs:
             cmd="mvn install -B -DskipTests -Pit-shared-modules -amd -pl flow-tests"
             $cmd -T 1C || $cmd
           fi
-          if [ ${{matrix.current}} -eq 4 ]; then
+          if [ ${{matrix.current}} -eq 4 -o ${{matrix.current}} -eq 5 ]; then
             cmd="mvn install -B -DskipTests -Pit-shared-spring-modules -amd -pl flow-tests"
             $cmd -T 1C || $cmd
           fi
