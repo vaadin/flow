@@ -109,18 +109,14 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
 
         TestBenchElement myField = embeddedComponent.$(TestBenchElement.class)
             .id(MY_POLYMER_ID);
-        TestBenchElement input = myField.$(TestBenchElement.class)
-            .id("vaadin-text-field-input-0");
+        TestBenchElement input = myField.$("div")
+                .attribute("part", "input-field").first();
         Assert.assertEquals("Polymer text field should have red background",
             "rgba(255, 0, 0, 1)", input.getCssValue("background-color"));
 
         myField = embeddedComponent.$(TestBenchElement.class).id(MY_LIT_ID);
-        final SpanElement radio = myField.$(SpanElement.class).all().stream()
-            .filter(element -> "radio".equals(element.getAttribute("part")))
-            .findFirst().orElseGet(null);
-
-        Assert.assertNotNull("Element with part='radio' was not found", radio);
-
+        final SpanElement radio = myField.$(SpanElement.class)
+            .attribute("part", "radio").first();
         Assert.assertEquals("Lit radiobutton should have red background",
             "rgba(255, 0, 0, 1)", radio.getCssValue("background-color"));
     }
