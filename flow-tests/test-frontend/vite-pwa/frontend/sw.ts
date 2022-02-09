@@ -2,7 +2,7 @@
 
 importScripts('sw-runtime-resources-precache.js');
 import { clientsClaim, cacheNames, WorkboxPlugin } from 'workbox-core';
-import { matchPrecache, precacheAndRoute } from 'workbox-precaching';
+import { matchPrecache, precacheAndRoute, getCacheKeyForURL } from 'workbox-precaching';
 import { registerRoute, NavigationRoute } from 'workbox-routing';
 import { PrecacheEntry } from 'workbox-precaching/_types';
 import { NetworkOnly, NetworkFirst } from 'workbox-strategies';
@@ -14,12 +14,17 @@ declare var self: ServiceWorkerGlobalScope & {
 
 declare var OFFLINE_PATH: string; // defined by Webpack/Vite
 
+self.skipWaiting();
+clientsClaim();
+
 // Combine manifest entries injected at compile-time by Webpack/Vite
 // with ones that Flow injects at runtime through `sw-runtime-resources-precache.js`.
 let manifestEntries: PrecacheEntry[] = self.__WB_MANIFEST || [];
 if (self.additionalManifestEntries?.length) {
   manifestEntries.push(...self.additionalManifestEntries);
 }
+
+const offlinePath = OFFLINE_PATH;
 
 // Compute the registration scope path.
 const scopePath = new URL(self.registration.scope).pathname;
@@ -40,9 +45,7 @@ async function rewriteBaseHref(response: Response) {
  * Returns true if the given URL is included in the manifest, otherwise false.
  */
 function isManifestEntryURL(url: URL) {
-  return manifestEntries.some((entry) => {
-    return `${scopePath}${entry.url}` === url.pathname;
-  });
+  return manifestEntries.some((entry) => getCacheKeyForURL(entry.url) === getCacheKeyForURL(`${url}`));
 }
 
 /**
@@ -84,68 +87,53 @@ if (process.env.NODE_ENV === 'development') {
     networkFirst
   );
 
-  if (OFFLINE_PATH === '.') {
+  if (offlinePath === '.') {
     registerRoute(
       ({ request, url }) => request.mode === 'navigate' && !isManifestEntryURL(url),
       async ({ event }) => {
-        const response = await networkFirst.handle({
-          request: new Request(OFFLINE_PATH),
-          event
-        });
-        return rewriteBaseHref(response);
+        return networkFirst
+          .handle({ request: new Request(offlinePath), event })
+          .then(rewriteBaseHref);
       }
     )
   }
 }
 
-/**
- * Handle navigation requests to manifest entries.
- */
 registerRoute(
-  ({ request, url }) => request.mode === 'navigate' && isManifestEntryURL(url),
-  async (context) => {
-    if (!navigator.onLine) {
-      const response = await matchPrecache(context.request)
-      if (response) {
-        return response;
+  new NavigationRoute(async (context) => {
+    const serveResourceFromCache = async () => {
+      // Serve any file in the manifest directly from cache
+      if (isManifestEntryURL(context.url)) {
+        return await matchPrecache(context.request);
+      }
+
+      const offlinePathPrecachedResponse = await matchPrecache(offlinePath);
+      if (offlinePathPrecachedResponse) {
+        return await rewriteBaseHref(offlinePathPrecachedResponse);
+      }
+      return undefined;
+    };
+
+    // Use offlinePath fallback if offline was detected
+    if (!self.navigator.onLine) {
+      const precachedResponse = await serveResourceFromCache();
+      if (precachedResponse) {
+        return precachedResponse;
       }
     }
 
+    // Sometimes navigator.onLine is not reliable, use fallback to offlinePath
+    // also in case of network failure
     try {
       return await networkOnly.handle(context);
     } catch (error) {
-      const response = await matchPrecache(context.request);
-      if (response) {
-        return response;
+      const precachedResponse = await serveResourceFromCache();
+      if (precachedResponse) {
+        return precachedResponse;
       }
       throw error;
     }
-  }
-);
-
-/**
- * Handle other navigation requests.
- */
- registerRoute(
-  ({ request }) => request.mode === 'navigate',
-  async (context) => {
-    if (!navigator.onLine) {
-      const response = await matchPrecache(OFFLINE_PATH);
-      if (response) {
-        return rewriteBaseHref(response);
-      }
-    }
-
-    try {
-      return await networkOnly.handle(context);
-    } catch (error) {
-      const response = await matchPrecache(OFFLINE_PATH);
-      if (response) {
-        return rewriteBaseHref(response);
-      }
-      throw error;
-    }
-  }
+  })
 );
 
 precacheAndRoute(manifestEntries);
@@ -160,6 +148,3 @@ self.addEventListener('message', (event) => {
     event.source?.postMessage({ id: event.data.id, result: connectionLost }, []);
   }
 });
-
-self.skipWaiting();
-clientsClaim();
