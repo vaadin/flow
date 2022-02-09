@@ -54,15 +54,27 @@ public class StartupPerformanceIT extends ChromeBrowserTest {
         int startupTimeWithoutNpmInstallTime = startupTime - npmInstallTime;
 
         // https://github.com/vaadin/flow/issues/7596
-        final int thresholdMs = Boolean.getBoolean(
-                System.getProperty("vaadin.useDeprecatedV14Bootstrapping"))
-                        ? 5500
-                        : 13000;
+        boolean deprecatedBootstrap = Boolean.getBoolean(
+                System.getProperty("vaadin.useDeprecatedV14Bootstrapping"));
+        final int thresholdMs = deprecatedBootstrap ? 5500 : 20000;
+        String key = "webpack-time";
+        if (deprecatedBootstrap) {
+            key += "-v14boostrap";
+        }
+        printTeamcityStats(key, startupTimeWithoutNpmInstallTime);
 
         Assert.assertTrue(
                 String.format("startup time expected <= %d but was %d",
                         thresholdMs, startupTimeWithoutNpmInstallTime),
                 startupTimeWithoutNpmInstallTime <= thresholdMs);
+    }
+
+    private void printTeamcityStats(String key, long value) {
+        // ##teamcity[buildStatisticValue key=&#39;&lt;valueTypeKey&gt;&#39;
+        // value=&#39;&lt;value&gt;&#39;]
+        System.out.println("##teamcity[buildStatisticValue key='" + key
+                + "' value='" + value + "']");
+
     }
 
     private int measureLogEntryTimeDistance(String startFragment,
