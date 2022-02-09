@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
  */
 class UserKey {
 
+    private static final String FIELD_KEY = "key";
     private final String key;
 
     UserKey(String key) {
@@ -38,14 +39,14 @@ class UserKey {
     }
 
     UserKey(File keyFile) {
-        String key = null;
+        String keyFromFile = null;
         try {
             JsonNode value = JsonHelpers.getJsonMapper().readTree(keyFile);
-            key = value.get("key").asText();
+            keyFromFile = value.get(FIELD_KEY).asText();
         } catch (Exception e) {
             getLogger().debug("Unable to read UserKey", e);
         }
-        this.key = key;
+        this.key = keyFromFile;
     }
 
     public String getKey() {
@@ -59,7 +60,7 @@ class UserKey {
         ObjectMapper jsonMapper = JsonHelpers.getJsonMapper();
 
         ObjectNode value = jsonMapper.createObjectNode();
-        value.put("key", this.key);
+        value.put(FIELD_KEY, this.key);
         jsonMapper.writeValue(fileLocation, value);
     }
 
