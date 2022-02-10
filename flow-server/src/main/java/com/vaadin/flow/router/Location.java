@@ -202,7 +202,8 @@ public class Location implements Serializable {
         if (fragment != null) {
             pathBuilder.append(fragment);
         }
-        return pathBuilder.toString();
+        String path = pathBuilder.toString();
+        return path.isEmpty() ? "." : path;
     }
 
     /**
