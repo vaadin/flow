@@ -27,8 +27,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * An internal helper class representing a Vaadin Pro key.
- * <p>
- * This class is also used to load and save the generated user key.
  */
 class ProKey {
 
@@ -61,10 +59,6 @@ class ProKey {
             getLogger().debug("Unable to read proKey", e);
         }
         return null;
-    }
-
-    void toFile(File fileLocation) throws IOException {
-        JsonHelpers.getJsonMapper().writeValue(fileLocation, this);
     }
 
     static ProKey get() {
