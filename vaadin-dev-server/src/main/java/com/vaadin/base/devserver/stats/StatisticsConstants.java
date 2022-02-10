@@ -57,6 +57,7 @@ public class StatisticsConstants {
     static final String FIELD_USER_KEY = "userKey";
     static final String FIELD_PROJECTS = "projects";
     static final String VAADIN_PROJECT_SOURCE_TEXT = "Vaadin project from";
+    static final String PROJECT_SOURCE_TEXT = "Project from";
 
     /*
      * Default data values and limits.

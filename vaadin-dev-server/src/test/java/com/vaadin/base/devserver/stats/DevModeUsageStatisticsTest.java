@@ -59,7 +59,7 @@ public class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
     }
 
     @Test
-    public void sourceId() throws Exception {
+    public void sourceIdMaven1() throws Exception {
         String mavenProjectFolder = TestUtils
                 .getTestFolder("stats-data/maven-project-folder1").toPath()
                 .toString();
@@ -67,6 +67,42 @@ public class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
 
         ObjectNode json = storage.readProject();
         Assert.assertEquals("https://start.vaadin.com/test/1",
+                json.get(StatisticsConstants.FIELD_SOURCE_ID).asText());
+    }
+
+    @Test
+    public void sourceIdMaven2() throws Exception {
+        String mavenProjectFolder = TestUtils
+                .getTestFolder("stats-data/maven-project-folder2").toPath()
+                .toString();
+        DevModeUsageStatistics.init(mavenProjectFolder, storage, sender);
+
+        ObjectNode json = storage.readProject();
+        Assert.assertEquals("https://start.vaadin.com/test/2",
+                json.get(StatisticsConstants.FIELD_SOURCE_ID).asText());
+    }
+
+    @Test
+    public void sourceIdGradle1() throws Exception {
+        String mavenProjectFolder = TestUtils
+                .getTestFolder("stats-data/gradle-project-folder1").toPath()
+                .toString();
+        DevModeUsageStatistics.init(mavenProjectFolder, storage, sender);
+
+        ObjectNode json = storage.readProject();
+        Assert.assertEquals("https://start.vaadin.com/test/3",
+                json.get(StatisticsConstants.FIELD_SOURCE_ID).asText());
+    }
+
+    @Test
+    public void sourceIdGradle2() throws Exception {
+        String mavenProjectFolder = TestUtils
+                .getTestFolder("stats-data/gradle-project-folder2").toPath()
+                .toString();
+        DevModeUsageStatistics.init(mavenProjectFolder, storage, sender);
+
+        ObjectNode json = storage.readProject();
+        Assert.assertEquals("https://start.vaadin.com/test/4",
                 json.get(StatisticsConstants.FIELD_SOURCE_ID).asText());
     }
 
