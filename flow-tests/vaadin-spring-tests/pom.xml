@@ -273,6 +273,9 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <excludedGroups>${test.excludegroup}</excludedGroups>
+                </configuration>
             </plugin>
             <!-- jetty plugin for those child modules that need it -->
             <plugin>
