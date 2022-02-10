@@ -257,6 +257,36 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
+    public void canHandleRequest_allow_oldBrowser() {
+        Assert.assertTrue(indexHtmlRequestHandler.canHandleRequest(
+                createRequestWithDestination("/", null, null)));
+    }
+
+    @Test
+    public void canHandleRequest_handle_indexHtmlRequest() {
+        Assert.assertTrue(indexHtmlRequestHandler.canHandleRequest(
+                createRequestWithDestination("/", "document", "navigate")));
+    }
+
+    @Test
+    public void canHandleRequest_doNotHandle_scriptRequest() {
+        Assert.assertFalse(indexHtmlRequestHandler.canHandleRequest(
+                createRequestWithDestination("/", "script", "no-cors")));
+    }
+
+    @Test
+    public void canHandleRequest_doNotHandle_imageRequest() {
+        Assert.assertFalse(indexHtmlRequestHandler.canHandleRequest(
+                createRequestWithDestination("/", "image", "no-cors")));
+    }
+
+    @Test
+    public void canHandleRequest_handle_serviceWorkerDocumentRequest() {
+        Assert.assertTrue(indexHtmlRequestHandler.canHandleRequest(
+                createRequestWithDestination("/", "empty", "same-origin")));
+    }
+
+    @Test
     public void bootstrapListener_addListener_responseIsModified()
             throws IOException {
         service.addIndexHtmlRequestListener(evt -> evt.getDocument().head()
@@ -754,6 +784,21 @@ public class IndexHtmlRequestHandlerTest {
     public void tearDown() throws Exception {
         session.unlock();
         mocks.cleanup();
+    }
+
+    private VaadinServletRequest createRequestWithDestination(String pathInfo,
+            String fetchDest, String fetchMode) {
+        VaadinServletRequest req = createVaadinRequest(pathInfo);
+        Mockito.when(req.getHeader(Mockito.anyString())).thenAnswer(arg -> {
+            if ("Sec-Fetch-Dest".equals(arg.getArgument(0))) {
+                return fetchDest;
+            } else if ("Sec-Fetch-Mode".equals(arg.getArgument(0))) {
+                return fetchMode;
+            }
+            return null;
+        });
+
+        return req;
     }
 
     private VaadinServletRequest createVaadinRequest(String pathInfo) {
