@@ -316,26 +316,21 @@ class ProjectHelpers {
      */
     static String getUserKey() {
         File userKeyFile = resolveUserKeyLocation();
-        if (userKeyFile.exists()) {
-            try {
-                ProKey localKey = ProKey.fromFile(userKeyFile);
-                if (localKey != null && localKey.getKey() != null) {
-                    return localKey.getKey();
-                }
-            } catch (IOException e) {
-                getLogger().debug("Failed to load userKey", e);
-            }
+        UserKey localKey = new UserKey(userKeyFile);
+        if (localKey.getKey() != null) {
+            return localKey.getKey();
         }
 
+        // Generate a new one if missing and store it
+        localKey = new UserKey("user-" + UUID.randomUUID());
         try {
-            // Generate a new one if missing and store it
-            ProKey localKey = new ProKey(StatisticsConstants.GENERATED_USERNAME,
-                    "user-" + UUID.randomUUID());
             localKey.toFile(userKeyFile);
             return localKey.getKey();
         } catch (IOException e) {
             getLogger().debug("Failed to write generated userKey", e);
         }
+
+        // No point in returning a key if we haven't stored it
         return null;
     }
 

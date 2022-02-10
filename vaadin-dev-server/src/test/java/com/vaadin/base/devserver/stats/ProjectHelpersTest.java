@@ -5,10 +5,14 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
 import com.vaadin.flow.testutil.TestUtils;
 
+import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -25,10 +29,7 @@ public class ProjectHelpersTest {
         assertEquals(keyString, key);
 
         // Try with non existent
-        File tempDir = File.createTempFile("user.home", "test");
-        tempDir.delete(); // Delete
-        tempDir.mkdir(); // Recreate as directory
-        tempDir.deleteOnExit();
+        File tempDir = createTempDir();
         File vaadinHome = new File(tempDir, ".vaadin");
         vaadinHome.mkdir();
 
@@ -39,6 +40,30 @@ public class ProjectHelpersTest {
         File userKeyFile = new File(vaadinHome, "userKey");
         Assert.assertTrue("userKey should be created automatically",
                 userKeyFile.exists());
+    }
+
+    private File createTempDir() throws IOException {
+        File tempDir = Files.createTempDirectory("test-folder").toFile();
+        tempDir.deleteOnExit();
+        return tempDir;
+    }
+
+    @Test
+    public void writeAndReadUserKey() throws IOException {
+        System.setProperty("user.home", createTempDir().getAbsolutePath());
+
+        // Write file
+        String userKey = ProjectHelpers.getUserKey();
+        Assert.assertNotNull(userKey);
+
+        // Check file
+        File userFile = new File(System.getProperty("user.home"),
+                ".vaadin/userKey");
+        String fromFile = IOUtils.toString(new FileInputStream(userFile),
+                StandardCharsets.UTF_8);
+        Assert.assertEquals("{\"key\":\"" + userKey + "\"}", fromFile);
+
+        Assert.assertEquals(userKey, ProjectHelpers.getUserKey());
     }
 
     @Test
