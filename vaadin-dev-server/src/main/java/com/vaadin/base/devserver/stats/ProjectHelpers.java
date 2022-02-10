@@ -219,6 +219,9 @@ class ProjectHelpers {
     }
 
     private static String findProjectSource(String comment) {
+        if (comment == null) {
+            return null;
+        }
         if (comment.contains(StatisticsConstants.VAADIN_PROJECT_SOURCE_TEXT)) {
             return comment.substring(comment
                     .indexOf(StatisticsConstants.VAADIN_PROJECT_SOURCE_TEXT)
