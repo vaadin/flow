@@ -90,26 +90,18 @@ public class FrontendUtilsTest {
     @Test
     public void validateLargerThan_passesForNewVersion() {
         FrontendUtils.validateToolVersion("test", new FrontendVersion("10.0.2"),
-                new FrontendVersion(10, 0), new FrontendVersion(10, 0));
+                new FrontendVersion(10, 0));
         FrontendUtils.validateToolVersion("test", new FrontendVersion("10.1.2"),
-                new FrontendVersion(10, 0), new FrontendVersion(10, 0));
+                new FrontendVersion(10, 0));
         FrontendUtils.validateToolVersion("test", new FrontendVersion("11.0.2"),
-                new FrontendVersion(10, 0), new FrontendVersion(10, 0));
-    }
-
-    @Test
-    public void validateLargerThan_passesForSlightlyOldVersion()
-            throws UnsupportedEncodingException {
-        FrontendUtils.validateToolVersion("test", new FrontendVersion(9, 0, 0),
-                new FrontendVersion(10, 0), new FrontendVersion(8, 0));
+                new FrontendVersion(10, 0));
     }
 
     @Test
     public void validateLargerThan_throwsForOldVersion() {
         try {
             FrontendUtils.validateToolVersion("test",
-                    new FrontendVersion(7, 5, 0), new FrontendVersion(10, 0),
-                    new FrontendVersion(8, 0));
+                    new FrontendVersion(7, 5, 0), new FrontendVersion(10, 0));
             Assert.fail("No exception was thrown for old version");
         } catch (IllegalStateException e) {
             Assert.assertTrue(e.getMessage().contains(
