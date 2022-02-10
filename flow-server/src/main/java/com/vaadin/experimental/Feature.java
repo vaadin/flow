@@ -25,15 +25,16 @@ import com.vaadin.flow.internal.UsageStatistics;
  */
 public final class Feature implements Serializable {
 
-    private String title;
-    private String id;
-    private String moreInfoLink;
+    private final String title;
+    private final String id;
+    private final String moreInfoLink;
+    private final boolean requiresServerRestart;
+    private final String componentClassName;
     private boolean enabled;
-    private boolean requiresServerRestart;
 
     /**
      * Creates a new feature with the given options.
-     * 
+     *
      * @param title
      *            the title of the feature
      * @param id
@@ -44,11 +45,12 @@ public final class Feature implements Serializable {
      *            {@code true} if toggling the feature requires a server restart
      */
     public Feature(String title, String id, String moreInfoLink,
-            boolean requiresServerRestart) {
+            boolean requiresServerRestart, String componentClassName) {
         this.title = Objects.requireNonNull(title);
         this.id = Objects.requireNonNull(id);
         this.moreInfoLink = moreInfoLink;
         this.requiresServerRestart = requiresServerRestart;
+        this.componentClassName = componentClassName;
     }
 
     /**
@@ -62,6 +64,8 @@ public final class Feature implements Serializable {
         this.id = feature.getId();
         this.moreInfoLink = feature.getMoreInfoLink();
         this.requiresServerRestart = feature.isRequiresServerRestart();
+        this.enabled = feature.enabled;
+        this.componentClassName = feature.componentClassName;
     }
 
     public String getTitle() {
@@ -74,6 +78,10 @@ public final class Feature implements Serializable {
 
     public String getMoreInfoLink() {
         return moreInfoLink;
+    }
+
+    public String getComponentClassName() {
+        return componentClassName;
     }
 
     public boolean isRequiresServerRestart() {

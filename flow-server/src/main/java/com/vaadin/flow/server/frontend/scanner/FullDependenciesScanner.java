@@ -259,12 +259,15 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
             Set<Class<?>> annotatedClasses = getFinder()
                     .getAnnotatedClasses(loadedAnnotation);
 
-            annotatedClasses.stream().forEach(clazz -> annotationFinder
-                    .apply(clazz, loadedAnnotation).forEach(ann -> {
-                        String value = valueExtractor.apply(ann);
-                        valueHandler.accept(clazz, value);
-                        logs.add(value + " " + clazz);
-                    }));
+            List<String> experimental = getFinder().getExcludedClassNames();
+            annotatedClasses.stream()
+                    .filter(c -> !experimental.contains(c.getName()))
+                    .forEach(clazz -> annotationFinder
+                            .apply(clazz, loadedAnnotation).forEach(ann -> {
+                                String value = valueExtractor.apply(ann);
+                                valueHandler.accept(clazz, value);
+                                logs.add(value + " " + clazz);
+                            }));
 
             debug("@" + annotationType.getSimpleName(), logs);
         } catch (ClassNotFoundException exception) {

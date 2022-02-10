@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.server.frontend.scanner;
 
+import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.VALUE;
+import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.VERSION;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
@@ -32,7 +35,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import net.bytebuddy.jar.asm.ClassReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,8 +55,7 @@ import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
-import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.VALUE;
-import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.VERSION;
+import net.bytebuddy.jar.asm.ClassReader;
 
 /**
  * Represents the class dependency tree of the application.
@@ -627,7 +628,9 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         // HasElement, and AbstractTheme classes, but that prevents the usage of
         // factories. This is the reason of having just a blacklist of some
         // common name-spaces that would not have components.
+        // We also exclude Feature-Flag classes
         return className != null && // @formatter:off
+                !getFinder().getExcludedClassNames().contains(className) &&
                 !className.matches(
                     "(^$|"
                     + ".*(slf4j).*|"

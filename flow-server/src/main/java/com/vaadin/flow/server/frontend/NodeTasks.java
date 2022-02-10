@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import com.vaadin.experimental.FeatureFlags;
@@ -720,6 +721,13 @@ public class NodeTasks implements FallibleCommand {
         FrontendDependenciesScanner frontendDependencies = null;
 
         final FeatureFlags featureFlags = builder.getFeatureFlags();
+        if (featureFlags != null) {
+            classFinder.setExcludeClassNames(featureFlags.getFeatures().stream()
+                    .filter(f -> !f.isEnabled()
+                            && f.getComponentClassName() != null)
+                    .map(f -> f.getComponentClassName())
+                    .collect(Collectors.toList()));
+        }
 
         if (builder.enablePackagesUpdate || builder.enableImportsUpdate
                 || builder.enableWebpackConfigUpdate) {
