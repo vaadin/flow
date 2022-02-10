@@ -208,15 +208,31 @@ class ProjectHelpers {
         for (int i = 0; i < nodeList.getLength(); i++) {
             if (nodeList.item(i).getNodeType() == Node.COMMENT_NODE) {
                 String comment = nodeList.item(i).getTextContent();
-                if (comment.contains(
-                        StatisticsConstants.VAADIN_PROJECT_SOURCE_TEXT)) {
-                    return comment.substring(comment.indexOf(
-                            StatisticsConstants.VAADIN_PROJECT_SOURCE_TEXT)
-                            + StatisticsConstants.VAADIN_PROJECT_SOURCE_TEXT
-                                    .length())
-                            .trim();
+                String projectSource = findProjectSource(comment);
+                if (projectSource != null) {
+                    return projectSource;
                 }
             }
+        }
+
+        return null;
+    }
+
+    private static String findProjectSource(String comment) {
+        if (comment == null) {
+            return null;
+        }
+        if (comment.contains(StatisticsConstants.VAADIN_PROJECT_SOURCE_TEXT)) {
+            return comment.substring(comment
+                    .indexOf(StatisticsConstants.VAADIN_PROJECT_SOURCE_TEXT)
+                    + StatisticsConstants.VAADIN_PROJECT_SOURCE_TEXT.length())
+                    .trim();
+        } else if (comment.contains(StatisticsConstants.PROJECT_SOURCE_TEXT)) {
+            return comment
+                    .substring(comment
+                            .indexOf(StatisticsConstants.PROJECT_SOURCE_TEXT)
+                            + StatisticsConstants.PROJECT_SOURCE_TEXT.length())
+                    .trim();
         }
 
         return null;
@@ -227,16 +243,14 @@ class ProjectHelpers {
         Path gradleFile = projectPath.resolve("settings.gradle");
         if (gradleFile.toFile().exists()) {
             try (Stream<String> stream = Files.lines(gradleFile)) {
-                String projectName = stream
-                        .filter(line -> line.contains(
-                                StatisticsConstants.VAADIN_PROJECT_SOURCE_TEXT))
+                String comment = stream.filter(line -> line.contains(
+                        StatisticsConstants.VAADIN_PROJECT_SOURCE_TEXT)
+                        || line.contains(
+                                StatisticsConstants.PROJECT_SOURCE_TEXT))
                         .findFirst().orElse(null);
-                if (projectName != null) {
-                    return projectName.substring(projectName.indexOf(
-                            StatisticsConstants.VAADIN_PROJECT_SOURCE_TEXT)
-                            + StatisticsConstants.VAADIN_PROJECT_SOURCE_TEXT
-                                    .length())
-                            .trim();
+                String projectSource = findProjectSource(comment);
+                if (projectSource != null) {
+                    return projectSource;
                 }
             }
         }
