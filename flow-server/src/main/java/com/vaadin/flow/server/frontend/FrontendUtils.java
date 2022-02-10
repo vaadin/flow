@@ -328,15 +328,6 @@ public class FrontendUtils {
             + "Check the startup logs for exceptions in running webpack-dev-server.%n"
             + "If server should be running in production mode check that production mode flag is set correctly.";
 
-    private static final String SHOULD_WORK = "%n%n======================================================================================================"
-            + "%nYour installed '%s' version (%s) is not supported but should still work. Supported versions are %d.%d+" //
-            + "%nYou can install a new one:"
-            + "%n  - by following the https://nodejs.org/en/download/ guide to install it globally"
-            + "%n  - or by running the frontend-maven-plugin goal to install it in this project:"
-            + INSTALL_NODE_LOCALLY + "%n" //
-            + DISABLE_CHECK //
-            + "%n======================================================================================================%n";
-
     private static final String TOO_OLD = "%n%n======================================================================================================"
             + "%nYour installed '%s' version (%s) is too old. Supported versions are %d.%d+" //
             + "%nPlease install a new one either:"
@@ -782,12 +773,6 @@ public class FrontendUtils {
                 supportedMinor, PARAM_IGNORE_VERSION_CHECKS);
     }
 
-    private static String buildShouldWorkString(String tool, String version,
-            int supportedMajor, int supportedMinor) {
-        return String.format(SHOULD_WORK, tool, version, supportedMajor,
-                supportedMinor, PARAM_IGNORE_VERSION_CHECKS);
-    }
-
     /**
      * Get directory where project's frontend files are located.
      *
@@ -895,14 +880,8 @@ public class FrontendUtils {
     }
 
     static void validateToolVersion(String tool, FrontendVersion toolVersion,
-            FrontendVersion supported, FrontendVersion shouldWork) {
+            FrontendVersion supported) {
         if (isVersionAtLeast(toolVersion, supported)) {
-            return;
-        }
-        if (isVersionAtLeast(toolVersion, shouldWork)) {
-            getLogger().warn(buildShouldWorkString(tool,
-                    toolVersion.getFullVersion(), supported.getMajorVersion(),
-                    supported.getMinorVersion()));
             return;
         }
 

@@ -108,16 +108,12 @@ public class FrontendTools {
     private static final int SUPPORTED_NODE_MINOR_VERSION = 22;
     private static final int SUPPORTED_NPM_MAJOR_VERSION = 6;
     private static final int SUPPORTED_NPM_MINOR_VERSION = 14;
-    private static final int SHOULD_WORK_NPM_MAJOR_VERSION = 5;
-    private static final int SHOULD_WORK_NPM_MINOR_VERSION = 5;
 
     private static final FrontendVersion SUPPORTED_NODE_VERSION = new FrontendVersion(
             SUPPORTED_NODE_MAJOR_VERSION, SUPPORTED_NODE_MINOR_VERSION);
 
     private static final FrontendVersion SUPPORTED_NPM_VERSION = new FrontendVersion(
             SUPPORTED_NPM_MAJOR_VERSION, SUPPORTED_NPM_MINOR_VERSION);
-    private static final FrontendVersion SHOULD_WORK_NPM_VERSION = new FrontendVersion(
-            SHOULD_WORK_NPM_MAJOR_VERSION, SHOULD_WORK_NPM_MINOR_VERSION);
 
     static final String NPMRC_NOPROXY_PROPERTY_KEY = "noproxy";
     static final String NPMRC_HTTPS_PROXY_PROPERTY_KEY = "https-proxy";
@@ -625,7 +621,7 @@ public class FrontendTools {
             FrontendVersion foundNodeVersion = foundNodeVersionAndExe
                     .getFirst();
             FrontendUtils.validateToolVersion("node", foundNodeVersion,
-                    SUPPORTED_NODE_VERSION, SUPPORTED_NODE_VERSION);
+                    SUPPORTED_NODE_VERSION);
             getLogger().debug("Using node {} located at {}",
                     foundNodeVersion.getFullVersion(),
                     foundNodeVersionAndExe.getSecond());
@@ -642,7 +638,7 @@ public class FrontendTools {
         try {
             FrontendVersion foundNpmVersion = getNpmVersion();
             FrontendUtils.validateToolVersion("npm", foundNpmVersion,
-                    SUPPORTED_NPM_VERSION, SHOULD_WORK_NPM_VERSION);
+                    SUPPORTED_NPM_VERSION);
             checkForFaultyNpmVersion(foundNpmVersion);
             getLogger().debug("Using npm {} located at {}",
                     foundNpmVersion.getFullVersion(),
