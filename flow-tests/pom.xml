@@ -279,6 +279,13 @@
                 <module>test-frontend</module>
                 <module>test-application-theme</module>
                 <module>test-multi-war</module>
+                <module>vaadin-spring-tests</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>it-shared-spring-modules</id>
+            <modules>
+                <module>vaadin-spring-tests</module>
             </modules>
         </profile>
         <profile>
@@ -331,6 +338,8 @@
                 <module>test-application-theme</module>
                 <module>test-theme-no-polymer</module>
                 <module>test-frontend</module>
+
+                <module>vaadin-spring-tests</module>
             </modules>
         </profile>
         <profile>
