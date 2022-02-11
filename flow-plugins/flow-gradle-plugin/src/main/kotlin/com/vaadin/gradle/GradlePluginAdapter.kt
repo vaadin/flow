@@ -174,4 +174,9 @@ internal class GradlePluginAdapter(val project: Project, private val isBeforePro
         return extension.projectBuildDir
     }
     override fun postinstallPackages(): List<String> = extension.postinstallPackages
+
+    override fun timestampBuildStart(): Long = extension.timestampBuildStart
+
+    override fun timestampPrepareFrontend(): Long = extension.timestampPrepareFrontend
+
 }

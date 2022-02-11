@@ -190,6 +190,8 @@ public open class VaadinFlowPluginExtension(project: Project) {
      * Defines the npm packages to run postinstall for.
      */
     public var postinstallPackages: List<String> = listOf()
+    public var timestampBuildStart: Long = 0L;
+    public var timestampPrepareFrontend: Long = 0L;
 
     public companion object {
         public fun get(project: Project): VaadinFlowPluginExtension =
