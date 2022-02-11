@@ -191,8 +191,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
       }
     },
     define: {
-      OFFLINE_PATH: settings.offlinePath,
-      VITE_ENABLED: 'true',
+      OFFLINE_PATH: settings.offlinePath
     },
     server: {
       fs: {

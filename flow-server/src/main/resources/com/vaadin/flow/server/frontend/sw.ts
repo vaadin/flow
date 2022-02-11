@@ -72,7 +72,7 @@ const networkFirst = new NetworkFirst({
   plugins: [checkConnectionPlugin()]
 });
 
-if (process.env.NODE_ENV === 'development' && process.env.VITE_ENABLED) {
+if (process.env.NODE_ENV === 'development') {
   self.addEventListener('activate', (event) => {
     event.waitUntil(caches.delete(cacheNames.runtime));
   });
