@@ -723,11 +723,12 @@ public class NodeTasks implements FallibleCommand {
 
         final FeatureFlags featureFlags = builder.getFeatureFlags();
         if (featureFlags != null) {
-            classFinder.setExcludeClassNames(featureFlags.getFeatures().stream()
-                    .filter(f -> !f.isEnabled()
-                            && f.getComponentClassName() != null)
-                    .map(Feature::getComponentClassName)
-                    .collect(Collectors.toList()));
+            classFinder
+                    .setExcludedClassNames(featureFlags.getFeatures().stream()
+                            .filter(f -> !f.isEnabled()
+                                    && f.getComponentClassName() != null)
+                            .map(Feature::getComponentClassName)
+                            .collect(Collectors.toList()));
         }
 
         if (builder.enablePackagesUpdate || builder.enableImportsUpdate

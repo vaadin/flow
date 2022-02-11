@@ -123,7 +123,7 @@ public interface ClassFinder extends Serializable {
         }
 
         @Override
-        public void setExcludeClassNames(List<String> classNames) {
+        public void setExcludedClassNames(List<String> classNames) {
             excludedClasses = Collections.unmodifiableList(classNames);
         }
 
@@ -183,9 +183,9 @@ public interface ClassFinder extends Serializable {
         }
 
         @Override
-        public void setExcludeClassNames(List<String> classNames) {
+        public void setExcludedClassNames(List<String> classNames) {
             if (classFinder != null) {
-                classFinder.setExcludeClassNames(classNames);
+                classFinder.setExcludedClassNames(classNames);
             }
         }
 
@@ -274,7 +274,7 @@ public interface ClassFinder extends Serializable {
         return getSubTypesOf(parent);
     }
 
-    void setExcludeClassNames(List<String> classNames);
+    void setExcludedClassNames(List<String> classNames);
 
     List<String> getExcludedClassNames();
 }

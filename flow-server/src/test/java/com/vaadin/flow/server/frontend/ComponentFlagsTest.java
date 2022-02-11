@@ -125,7 +125,7 @@ public class ComponentFlagsTest extends NodeUpdateTestUtil {
 
     private TaskUpdateImports createUpdater() throws IOException {
         ClassFinder classFinder = getClassFinder(testClasses);
-        classFinder.setExcludeClassNames(featureFlags.getFeatures().stream()
+        classFinder.setExcludedClassNames(featureFlags.getFeatures().stream()
                 .filter(f -> !f.isEnabled()
                         && f.getComponentClassName() != null)
                 .map(f -> f.getComponentClassName())
