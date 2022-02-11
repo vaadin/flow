@@ -62,7 +62,8 @@ public class MainIT extends ChromeDeviceTest {
         getDevTools().setOfflineEnabled(true);
         reloadPage();
 
-        checkLogsForErrors(msg -> msg.contains(VITE_PING_PATH) || !msg.contains("Failed to load"));
+        checkLogsForErrors(msg -> msg.contains(VITE_PING_PATH)
+                || !msg.contains("Failed to load"));
 
         WebElement h1 = $("h1").first();
         Assert.assertEquals(h1.getText(), "Home Page");
@@ -88,7 +89,8 @@ public class MainIT extends ChromeDeviceTest {
         getDevTools().setOfflineEnabled(true);
         reloadPage();
 
-        checkLogsForErrors(msg -> msg.contains(VITE_PING_PATH) || !msg.contains("Failed to load"));
+        checkLogsForErrors(msg -> msg.contains(VITE_PING_PATH)
+                || !msg.contains("Failed to load"));
 
         WebElement h1 = $("h1").first();
         Assert.assertEquals(h1.getText(), "About Page");
@@ -103,11 +105,13 @@ public class MainIT extends ChromeDeviceTest {
     }
 
     private Boolean sendVitePingRequest() {
-        return (Boolean) ((JavascriptExecutor) getDriver()).executeAsyncScript(
-                "const done = arguments[arguments.length - 1];"
-                        + "fetch('" + VITE_PING_PATH + "')"
-                        + "  .then(() => done(true))"
-                        + "  .catch(() => done(false))");
+        return (Boolean) ((JavascriptExecutor) getDriver())
+                .executeAsyncScript(
+                        "const done = arguments[arguments.length - 1];"
+                                + "fetch(arguments[0])"
+                                + "         .then(() => done(true))"
+                                + "         .catch(() => done(false))",
+                        VITE_PING_PATH);
     }
 
     private void reloadPage() {

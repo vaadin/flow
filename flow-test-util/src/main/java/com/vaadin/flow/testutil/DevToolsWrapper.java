@@ -25,6 +25,7 @@ import org.openqa.selenium.MutableCapabilities;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.devtools.Connection;
 import org.openqa.selenium.devtools.DevTools;
+import org.openqa.selenium.devtools.Command;
 import org.openqa.selenium.devtools.HasDevTools;
 import org.openqa.selenium.devtools.SeleniumCdpConnection;
 import org.openqa.selenium.devtools.idealized.Domains;
@@ -37,8 +38,8 @@ import org.openqa.selenium.remote.RemoteWebDriver;
 public class DevToolsWrapper {
     private final WebDriver driver;
     private final Duration timeout = Duration.ofSeconds(3);
-    private final HashMap<TargetID, SessionID> sessions = new HashMap<TargetID, SessionID>();
-    private Connection cdpConnection = null;
+    private final HashMap<TargetID, SessionID> attachedTargets = new HashMap<TargetID, SessionID>();
+    private Connection connection = null;
 
     public DevToolsWrapper(WebDriver driver) {
         this.driver = driver;
@@ -68,21 +69,17 @@ public class DevToolsWrapper {
     }
 
     /**
-     * Controls the throttling `Offline` option in DevTools via the corresponding
-     * Selenium API.
+     * Controls the throttling `Offline` option in DevTools via the
+     * corresponding Selenium API.
      *
      * @param isEnabled
      *            whether to enable the offline mode.
      */
     public void setOfflineEnabled(Boolean isEnabled) {
-        attachToTargets();
-
-        for (SessionID sessionId : sessions.values()) {
-            cdpConnection.sendAndWait(sessionId, Network.enable(Optional.empty(),
-                    Optional.empty(), Optional.empty()), timeout);
-            cdpConnection.sendAndWait(sessionId, Network.emulateNetworkConditions(
-                    isEnabled, -1, -1, -1, Optional.empty()), timeout);
-        }
+        sendToAllTargets(Network.enable(Optional.empty(), Optional.empty(),
+                Optional.empty()));
+        sendToAllTargets(Network.emulateNetworkConditions(isEnabled, -1, -1, -1,
+                Optional.empty()));
     }
 
     /**
@@ -93,52 +90,61 @@ public class DevToolsWrapper {
      *            whether to disable the browser cache.
      */
     public void setCacheDisabled(Boolean isDisabled) {
-        attachToTargets();
-
-        for (SessionID sessionId : sessions.values()) {
-            cdpConnection.sendAndWait(sessionId, Network.enable(Optional.empty(),
-                    Optional.empty(), Optional.empty()), timeout);
-            cdpConnection.sendAndWait(sessionId,
-                    Network.setCacheDisabled(isDisabled), timeout);
-        }
+        sendToAllTargets(Network.enable(Optional.empty(), Optional.empty(),
+                Optional.empty()));
+        sendToAllTargets(Network.setCacheDisabled(isDisabled));
     }
 
     /**
-     * Creates a custom DevTools CDP connection if there is no any yet.
+     * Creates a custom DevTools CDP connection if there is not one yet.
      *
-     * Note, there is already a CDP connection provided by {@class DevTools}
-     * but it allows sending commands only to the page session whereas we need
-     * to also send commands to service workers. Therefore a custom connection is necessary.
+     * Note, there is already a CDP connection provided by {@class DevTools} but
+     * it allows sending commands only to the page session whereas we need to
+     * also send commands to service workers. Therefore a custom connection is
+     * necessary.
      */
-    private void createCDPConnectionIfThereIsNotOne() {
-        if (cdpConnection == null) {
-            cdpConnection = SeleniumCdpConnection.create(driver).get();
+    private void createConnectionIfThereIsNotOne() {
+        if (connection == null) {
+            connection = SeleniumCdpConnection.create(driver).get();
         }
     }
 
     /**
-     * Attaches to all the existing targets by creating a session per each.
-     * These sessions can be later used for sending commands to the corresponding targets.
+     * Attaches to all the available targets by creating a session per each.
+     * These sessions can be later used for sending commands to the
+     * corresponding targets.
      *
      * Every target represents a certain browser page, service worker and etc.
      *
      * Read more about targets and sessions here:
      * https://github.com/aslushnikov/getting-started-with-cdp#targets--sessions
      */
-    private void attachToTargets() {
-        createCDPConnectionIfThereIsNotOne();
+    private void attachToAllTargets() {
+        createConnectionIfThereIsNotOne();
 
-        cdpConnection
+        connection
                 .sendAndWait(null, getDomains().target().getTargets(), timeout)
                 .stream()
-                .filter((target) -> !sessions.containsKey(target.getTargetId()))
+                .filter((target) -> !attachedTargets
+                        .containsKey(target.getTargetId()))
                 .forEach((target) -> {
                     TargetID targetId = target.getTargetId();
-                    SessionID sessionId = cdpConnection.sendAndWait(null,
+                    SessionID sessionId = connection.sendAndWait(null,
                             getDomains().target().attachToTarget(targetId),
                             timeout);
-                    sessions.put(targetId, sessionId);
+                    attachedTargets.put(targetId, sessionId);
                 });
+    }
+
+    /**
+     * Sends a DevTools command to all the available targets.
+     */
+    private <X> void sendToAllTargets(Command<X> command) {
+        attachToAllTargets();
+
+        for (SessionID sessionId : attachedTargets.values()) {
+            connection.sendAndWait(sessionId, command, timeout);
+        }
     }
 
     private DevTools getDevTools() {
