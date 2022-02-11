@@ -47,6 +47,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -145,22 +146,24 @@ public class FrontendToolsTest {
     }
 
     @Test
+    // Test will test correctly when supported node is newer than 16.14
     public void nodeIsBeingLocated_supportedNodeInstalled_autoUpdateFalse_NodeNotUpdated()
             throws FrontendUtils.UnknownVersionException {
         FrontendVersion updatedNodeVersion = getUpdatedAlternativeNodeVersion(
-                "13.10.1", () -> tools.getNodeExecutable());
+                "16.14.0", () -> tools.getNodeExecutable());
 
         Assert.assertEquals(
                 "Locate Node version: Node version updated even if it should not have been touched.",
-                "13.10.1", updatedNodeVersion.getFullVersion());
+                "16.14.0", updatedNodeVersion.getFullVersion());
     }
 
     @Test
+    // Test will test correctly when supported node is newer than 16.14
     public void nodeIsBeingLocated_supportedNodeInstalled_autoUpdateTrue_NodeUpdated()
             throws FrontendUtils.UnknownVersionException {
         settings.setAutoUpdate(true);
         FrontendVersion updatedNodeVersion = getUpdatedAlternativeNodeVersion(
-                "13.10.1", () -> tools.getNodeExecutable());
+                "16.14.0", () -> tools.getNodeExecutable());
 
         Assert.assertEquals(
                 "Locate Node version: Node version was not auto updated.",
@@ -227,14 +230,15 @@ public class FrontendToolsTest {
     }
 
     @Test
+    // Test will test correctly when supported node is newer than 16.14
     public void forceAlternativeDirectory_supportedNodeInstalled_autoUpdateFalse_NodeNotUpdated()
             throws FrontendUtils.UnknownVersionException {
         FrontendVersion updatedNodeVersion = getUpdatedAlternativeNodeVersion(
-                "13.10.1", () -> tools.forceAlternativeNodeExecutable());
+                "16.14.0", () -> tools.forceAlternativeNodeExecutable());
 
         Assert.assertEquals(
                 "Force alternative directory: Node version updated even if it should not have been touched.",
-                "13.10.1", updatedNodeVersion.getFullVersion());
+                "16.14.0", updatedNodeVersion.getFullVersion());
     }
 
     @Test
@@ -242,7 +246,7 @@ public class FrontendToolsTest {
             throws FrontendUtils.UnknownVersionException {
         settings.setAutoUpdate(true);
         FrontendVersion updatedNodeVersion = getUpdatedAlternativeNodeVersion(
-                "13.10.1", () -> tools.forceAlternativeNodeExecutable());
+                "16.14.0", () -> tools.forceAlternativeNodeExecutable());
 
         Assert.assertEquals(
                 "Force alternative directory: Node version was not auto updated.",
