@@ -206,7 +206,7 @@ public class FrontendToolsTest {
         FrontendStubs.ToolStubInfo npmStub = FrontendStubs.ToolStubInfo.none();
         createStubNode(nodeStub, npmStub, baseDir);
 
-        tools.installNode("v16.14.10", null);
+        tools.installNode("v16.14.0", null);
 
         List<String> nodeVersionCommand = new ArrayList<>();
         nodeVersionCommand.add(tools.getNodeExecutable());
