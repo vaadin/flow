@@ -14,22 +14,9 @@
     <packaging>pom</packaging>
 
     <properties>
-        <!-- Don't care about coding style or licenses for tests -->
-        <sonar.skip>true</sonar.skip>
-        <license.skipDownloadLicenses>true</license.skipDownloadLicenses>
-
         <maven.deploy.skip>true</maven.deploy.skip>
-        <!-- Used in the tests, should be overridden for each module to support
-            concurrent running of test modules. -->
-        <server.port>8888</server.port>
-        <server.stop.port>8889</server.stop.port>
-        <jetty.version>9.4.21.v20190926</jetty.version>
         <maven.failsafe.plugin.version>3.0.0-M1</maven.failsafe.plugin.version>
-        <driver.binary.downloader.maven.plugin.version>1.0.14
-        </driver.binary.downloader.maven.plugin.version>
-        <maven.war.plugin.version>3.3.2</maven.war.plugin.version>
         <vaadin.version>23.0-SNAPSHOT</vaadin.version>
-        <testbench.version>8.0.0.beta2</testbench.version>
     </properties>
 
     <dependencyManagement>
