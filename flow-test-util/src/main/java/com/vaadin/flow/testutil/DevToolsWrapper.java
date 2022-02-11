@@ -1,0 +1,153 @@
+/*
+ * Copyright 2000-2022 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
+package com.vaadin.flow.testutil;
+
+import java.lang.reflect.Field;
+import java.net.URL;
+import java.time.Duration;
+import java.util.HashMap;
+import java.util.Optional;
+
+import org.openqa.selenium.MutableCapabilities;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.devtools.Connection;
+import org.openqa.selenium.devtools.DevTools;
+import org.openqa.selenium.devtools.HasDevTools;
+import org.openqa.selenium.devtools.SeleniumCdpConnection;
+import org.openqa.selenium.devtools.idealized.Domains;
+import org.openqa.selenium.devtools.idealized.target.model.SessionID;
+import org.openqa.selenium.devtools.idealized.target.model.TargetID;
+import org.openqa.selenium.devtools.v97.network.Network;
+import org.openqa.selenium.remote.Augmenter;
+import org.openqa.selenium.remote.RemoteWebDriver;
+
+public class DevToolsWrapper {
+    private final WebDriver driver;
+    private final Duration timeout = Duration.ofSeconds(3);
+    private final HashMap<TargetID, SessionID> sessions = new HashMap<TargetID, SessionID>();
+    private Connection cdpConnection = null;
+
+    public DevToolsWrapper(WebDriver driver) {
+        this.driver = driver;
+    }
+
+    public DevToolsWrapper(RemoteWebDriver driver, URL remoteURL) {
+        this.driver = driver;
+
+        try {
+            Field capabilitiesField = RemoteWebDriver.class
+                    .getDeclaredField("capabilities");
+            capabilitiesField.setAccessible(true);
+
+            String sessionId = driver.getSessionId().toString();
+            String devtoolsUrl = String.format("ws://%s:%s/devtools/%s/page",
+                    remoteURL.getHost(), remoteURL.getPort(), sessionId);
+
+            MutableCapabilities mutableCapabilities = (MutableCapabilities) capabilitiesField
+                    .get(driver);
+            mutableCapabilities.setCapability("se:cdp", devtoolsUrl);
+            mutableCapabilities.setCapability("se:cdpVersion",
+                    mutableCapabilities.getBrowserVersion());
+        } catch (Exception e) {
+            System.err.println(
+                    "Failed to spoof RemoteWebDriver capabilities :sadpanda:");
+        }
+    }
+
+    /**
+     * Controls the throttling `Offline` option in DevTools via the corresponding
+     * Selenium API.
+     *
+     * @param isEnabled
+     *            whether to enable the offline mode.
+     */
+    public void setOfflineEnabled(Boolean isEnabled) {
+        attachToTargets();
+
+        for (SessionID sessionId : sessions.values()) {
+            cdpConnection.sendAndWait(sessionId, Network.enable(Optional.empty(),
+                    Optional.empty(), Optional.empty()), timeout);
+            cdpConnection.sendAndWait(sessionId, Network.emulateNetworkConditions(
+                    isEnabled, -1, -1, -1, Optional.empty()), timeout);
+        }
+    }
+
+    /**
+     * Controls the `Disable cache` option in DevTools via the corresponding
+     * Selenium API.
+     *
+     * @param isDisabled
+     *            whether to disable the browser cache.
+     */
+    public void setCacheDisabled(Boolean isDisabled) {
+        attachToTargets();
+
+        for (SessionID sessionId : sessions.values()) {
+            cdpConnection.sendAndWait(sessionId, Network.enable(Optional.empty(),
+                    Optional.empty(), Optional.empty()), timeout);
+            cdpConnection.sendAndWait(sessionId,
+                    Network.setCacheDisabled(isDisabled), timeout);
+        }
+    }
+
+    /**
+     * Creates a custom DevTools CDP connection if there is no any yet.
+     *
+     * Note, there is already a CDP connection provided by {@class DevTools}
+     * but it allows sending commands only to the page session whereas we need
+     * to also send commands to service workers. Therefore a custom connection is necessary.
+     */
+    private void createCDPConnectionIfThereIsNotOne() {
+        if (cdpConnection == null) {
+            cdpConnection = SeleniumCdpConnection.create(driver).get();
+        }
+    }
+
+    /**
+     * Attaches to all the existing targets by creating a session per each.
+     * These sessions can be later used for sending commands to the corresponding targets.
+     *
+     * Every target represents a certain browser page, service worker and etc.
+     *
+     * Read more about targets and sessions here:
+     * https://github.com/aslushnikov/getting-started-with-cdp#targets--sessions
+     */
+    private void attachToTargets() {
+        createCDPConnectionIfThereIsNotOne();
+
+        cdpConnection
+                .sendAndWait(null, getDomains().target().getTargets(), timeout)
+                .stream()
+                .filter((target) -> !sessions.containsKey(target.getTargetId()))
+                .forEach((target) -> {
+                    TargetID targetId = target.getTargetId();
+                    SessionID sessionId = cdpConnection.sendAndWait(null,
+                            getDomains().target().attachToTarget(targetId),
+                            timeout);
+                    sessions.put(targetId, sessionId);
+                });
+    }
+
+    private DevTools getDevTools() {
+        WebDriver driver = new Augmenter()
+                .augment((RemoteWebDriver) this.driver);
+        return ((HasDevTools) driver).getDevTools();
+    }
+
+    private Domains getDomains() {
+        return getDevTools().getDomains();
+    }
+}

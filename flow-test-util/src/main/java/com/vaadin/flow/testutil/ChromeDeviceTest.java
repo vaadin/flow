@@ -17,12 +17,10 @@ package com.vaadin.flow.testutil;
 
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
-import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -32,16 +30,11 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.devtools.DevTools;
-import org.openqa.selenium.devtools.HasDevTools;
-import org.openqa.selenium.devtools.v97.network.Network;
 import org.openqa.selenium.mobile.NetworkConnection;
-import org.openqa.selenium.remote.Augmenter;
 import org.openqa.selenium.remote.Command;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.remote.Response;
-import org.openqa.selenium.MutableCapabilities;
 
 import com.vaadin.flow.testcategory.ChromeTests;
 import com.vaadin.testbench.TestBench;
@@ -67,6 +60,11 @@ import com.vaadin.testbench.parallel.Browser;
  */
 @Category(ChromeTests.class)
 public class ChromeDeviceTest extends ViewOrUITest {
+    private DevToolsWrapper devTools = null;
+
+    protected DevToolsWrapper getDevTools() {
+        return devTools;
+    }
 
     /**
      * Sets up the chrome driver path in a system variable.
@@ -90,9 +88,11 @@ public class ChromeDeviceTest extends ViewOrUITest {
         WebDriver driver;
         if (Browser.CHROME == getRunLocallyBrowser()) {
             driver = new ChromeDriver(chromeOptions);
+            devTools = new DevToolsWrapper(driver);
         } else {
-            driver = new RemoteWebDriver(new URL(getHubURL()), chromeOptions);
-            enableDevToolsForRemoteWebDriver((RemoteWebDriver) driver);
+            URL remoteURL = new URL(getHubURL());
+            driver = new RemoteWebDriver(remoteURL, chromeOptions);
+            devTools = new DevToolsWrapper((RemoteWebDriver) driver, remoteURL);
         }
 
         setDriver(TestBench.createDriver(driver));
@@ -172,41 +172,6 @@ public class ChromeDeviceTest extends ViewOrUITest {
         }
     }
 
-    /**
-     * Controls the throttling `Offline` option in DevTools via the respective
-     * Selenium API.
-     *
-     * @param isEnabled
-     *            whether to enable the offline mode.
-     */
-    protected void setOfflineEnabled(Boolean isEnabled) {
-        RemoteWebDriver remoteDriver = (RemoteWebDriver) ((TestBenchDriverProxy) getDriver())
-                .getWrappedDriver();
-        WebDriver driver = new Augmenter().augment(remoteDriver);
-        DevTools devTools = ((HasDevTools) driver).getDevTools();
-        devTools.createSessionIfThereIsNotOne();
-        devTools.send(Network.emulateNetworkConditions(isEnabled, -1, -1, -1,
-                Optional.empty()));
-    }
-
-    /**
-     * Controls the `Disable cache` option in DevTools via the respective
-     * Selenium API.
-     *
-     * @param isDisabled
-     *            whether to disable the browser cache.
-     */
-    protected void setCacheDisabled(Boolean isDisabled) {
-        RemoteWebDriver remoteDriver = (RemoteWebDriver) ((TestBenchDriverProxy) getDriver())
-                .getWrappedDriver();
-        WebDriver driver = new Augmenter().augment(remoteDriver);
-        DevTools devTools = ((HasDevTools) driver).getDevTools();
-        devTools.createSessionIfThereIsNotOne();
-        devTools.send(Network.enable(Optional.empty(), Optional.empty(),
-                Optional.of(100000000)));
-        devTools.send(Network.setCacheDisabled(isDisabled));
-    }
-
     public void waitForServiceWorkerReady() {
         Assert.assertTrue("Should have navigator.serviceWorker",
                 (Boolean) executeScript("return !!navigator.serviceWorker;"));
@@ -221,31 +186,5 @@ public class ChromeDeviceTest extends ViewOrUITest {
                                 + "  navigator.serviceWorker.ready,"
                                 + "  timeout])"
                                 + ".then(result => done(!!result));"));
-    }
-
-    private void enableDevToolsForRemoteWebDriver(RemoteWebDriver driver) {
-        // Before proceeding, reach into the driver and manipulate the
-        // capabilities to
-        // include the se:cdp and se:cdpVersion keys.
-        try {
-            URL hubUrl = new URL(getHubURL());
-
-            Field capabilitiesField = RemoteWebDriver.class
-                    .getDeclaredField("capabilities");
-            capabilitiesField.setAccessible(true);
-
-            String sessionId = driver.getSessionId().toString();
-            String devtoolsUrl = String.format("ws://%s:%s/devtools/%s/page",
-                    hubUrl.getHost(), hubUrl.getPort(), sessionId);
-
-            MutableCapabilities mutableCapabilities = (MutableCapabilities) capabilitiesField
-                    .get(driver);
-            mutableCapabilities.setCapability("se:cdp", devtoolsUrl);
-            mutableCapabilities.setCapability("se:cdpVersion",
-                    mutableCapabilities.getBrowserVersion());
-        } catch (Exception e) {
-            System.err.println(
-                    "Failed to spoof RemoteWebDriver capabilities :sadpanda:");
-        }
     }
 }
