@@ -13,6 +13,8 @@ public class StartupPerformance {
 
     private static long lastDevServerStartupTimeMs = 0;
     private static long lastPackageManagerInstallTimeMs = 0;
+    private static String lastPackageManager = "";
+    private static String lastDevServer = "";
 
     public static void markMavenGradleStart(long sessionStartTimestamp) {
         timestampSessionStart = sessionStartTimestamp;
@@ -26,6 +28,7 @@ public class StartupPerformance {
     public static void markPackageManagerInstallTime(String packageManager,
             long packageManagerInstallTimeMs) {
         lastPackageManagerInstallTimeMs = packageManagerInstallTimeMs;
+        lastPackageManager = packageManager;
         DevModeUsageStatistics.collectEvent(
                 EVENT_PACKAGEMANAGER_INSTALL_TIME_PREFIX + packageManager,
                 packageManagerInstallTimeMs);
@@ -34,6 +37,7 @@ public class StartupPerformance {
     public static void markDevServerStartupTime(String serverName,
             long devServerStartupTimeMs) {
         lastDevServerStartupTimeMs = devServerStartupTimeMs;
+        lastDevServer = serverName;
         DevModeUsageStatistics.collectEvent(
                 EVENT_DEV_SERVER_START_PREFIX + serverName,
                 devServerStartupTimeMs);
@@ -56,11 +60,13 @@ public class StartupPerformance {
         DevModeUsageStatistics.collectEvent(
                 "startup-" + EVENT_MODULE_COMPILE_AND_START,
                 lastModuleCompileAndServerStartTimeMs);
+        DevModeUsageStatistics
+                .collectEvent(
+                        "startup-" + EVENT_PACKAGEMANAGER_INSTALL_TIME_PREFIX
+                                + lastPackageManager,
+                        lastPackageManagerInstallTimeMs);
         DevModeUsageStatistics.collectEvent(
-                "startup-" + EVENT_PACKAGEMANAGER_INSTALL_TIME_PREFIX,
-                lastPackageManagerInstallTimeMs);
-        DevModeUsageStatistics.collectEvent(
-                "startup-" + EVENT_DEV_SERVER_START_PREFIX,
+                "startup-" + EVENT_DEV_SERVER_START_PREFIX + lastDevServer,
                 lastDevServerStartupTimeMs);
         startupTimeReported = true;
     }
