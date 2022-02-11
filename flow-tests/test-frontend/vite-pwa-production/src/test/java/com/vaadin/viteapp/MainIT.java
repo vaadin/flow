@@ -26,7 +26,7 @@ import com.vaadin.flow.testutil.ChromeDeviceTest;
 public class MainIT extends ChromeDeviceTest {
     @Before
     public void init() {
-        setCacheDisabled(true);
+        getDevTools().setCacheDisabled(true);
     }
 
     @Test
@@ -86,7 +86,7 @@ public class MainIT extends ChromeDeviceTest {
     }
 
     private void setOfflineAndReload() {
-        setOfflineEnabled(true);
+        getDevTools().setOfflineEnabled(true);
         executeScript("window.location.reload()");
         waitUntil(webDriver -> ((JavascriptExecutor) driver)
                 .executeScript("return document.readyState")
