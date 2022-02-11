@@ -124,13 +124,12 @@ public interface ClassFinder extends Serializable {
 
         @Override
         public void setExcludeClassNames(List<String> classNames) {
-            excludedClasses = classNames;
+            excludedClasses = Collections.unmodifiableList(classNames);
         }
 
         @Override
         public List<String> getExcludedClassNames() {
-            return excludedClasses != null
-                    ? Collections.unmodifiableList(excludedClasses)
+            return excludedClasses != null ? excludedClasses
                     : Collections.emptyList();
         }
 

@@ -43,6 +43,9 @@ public final class Feature implements Serializable {
      *            a link to an issue describing the feature on a high level
      * @param requiresServerRestart
      *            {@code true} if toggling the feature requires a server restart
+     * @param componentClassName
+     *            If the feature is a component, the qualified name of the class
+     *            otherwise null
      */
     public Feature(String title, String id, String moreInfoLink,
             boolean requiresServerRestart, String componentClassName) {
