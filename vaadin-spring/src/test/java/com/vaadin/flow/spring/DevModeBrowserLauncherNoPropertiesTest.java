@@ -15,31 +15,18 @@
  */
 package com.vaadin.flow.spring;
 
-import dev.hilla.EndpointControllerConfiguration;
-import dev.hilla.EndpointProperties;
-
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.web.context.support.GenericWebApplicationContext;
 
-@SpringBootTest(classes = { EndpointProperties.class })
-@ContextConfiguration(classes = { EndpointControllerConfiguration.class,
-        SpringBootAutoConfiguration.class,
-        SpringSecurityAutoConfiguration.class })
-@TestPropertySource(properties = { "server.port = 1244" })
-public class DevModeBrowserLauncherNoPropertiesTest {
-
-    @Autowired
-    protected GenericWebApplicationContext app;
+@TestPropertySource(properties = { "server.port = 1234" })
+public class DevModeBrowserLauncherNoPropertiesTest
+        extends AbstractDevModeBrowserLauncherTest {
 
     @Test
     public void getUrl_noProperties_givesUrlWithNoContextPathAndUrlMapping() {
         String url = DevModeBrowserLauncher.getUrl(app);
-        Assert.assertEquals("http://localhost:1244/", url);
+        Assert.assertEquals("http://localhost:1234/", url);
     }
 
 }

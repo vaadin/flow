@@ -135,8 +135,7 @@ public class VaadinServletContextInitializer
             .of(Component.class.getPackage().getName(),
                     Theme.class.getPackage().getName(),
                     // LitRenderer uses script annotation
-                    "com.vaadin.flow.data.renderer",
-                    "com.vaadin.shrinkwrap")
+                    "com.vaadin.flow.data.renderer", "com.vaadin.shrinkwrap")
             .collect(Collectors.toList());
 
     /**
