@@ -35,6 +35,17 @@
 
     <dependencyManagement>
         <dependencies>
+	        <dependency>
+	            <groupId>org.springframework.boot</groupId>
+	            <artifactId>spring-boot-starter-web</artifactId>
+	            <exclusions>
+	                <exclusion>
+	                    <groupId>ch.qos.logback</groupId>
+	                    <artifactId>logback-classic</artifactId>
+	                </exclusion>
+	            </exclusions>
+	            <version>${spring-boot.version}</version>
+	        </dependency>
             <dependency>
                 <groupId>com.vaadin</groupId>
                 <artifactId>vaadin-testbench-bom</artifactId>
