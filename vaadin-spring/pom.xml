@@ -6,8 +6,8 @@
 
     <parent>
         <groupId>com.vaadin</groupId>
-        <artifactId>vaadin-spring-parent</artifactId>
-        <version>20.0-SNAPSHOT</version>
+        <artifactId>flow-project</artifactId>
+        <version>23.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>vaadin-spring</artifactId>
@@ -19,34 +19,42 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-server</artifactId>
+            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-push</artifactId>
+            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-client</artifactId>
+            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>fusion-endpoint</artifactId>
+            <version>${project.parent.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin-dev-server</artifactId>
+            <version>${project.parent.version}</version>
             <scope>provided</scope>
         </dependency>
+
         <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
+            <version>4.0.1</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-html-components</artifactId>
+            <version>${project.parent.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -94,6 +102,7 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-data</artifactId>
+            <version>${project.parent.version}</version>
             <optional>true</optional>
         </dependency>
 
@@ -145,7 +154,7 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-test-generic</artifactId>
-            <version>${vaadin.flow.version}</version>
+            <version>${project.parent.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -160,6 +169,18 @@
         </dependency>
 
     </dependencies>
+	
+    <dependencyManagement>
+        <dependencies>
+	        <dependency>
+	            <groupId>org.springframework.boot</groupId>
+	            <artifactId>spring-boot-dependencies</artifactId>
+	            <version>${spring-boot.version}</version>
+	            <type>pom</type>
+	            <scope>import</scope>
+	        </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <build>
         <plugins>
