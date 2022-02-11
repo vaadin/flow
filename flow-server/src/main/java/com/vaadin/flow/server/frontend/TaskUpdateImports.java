@@ -493,7 +493,7 @@ public class TaskUpdateImports extends NodeUpdater {
     }
 
     private String getAbsentPackagesMessage() {
-        String lockFile = enablePnpm ? "pnpm-lock.yaml" : "package-lock.json" ;
+        String lockFile = enablePnpm ? "pnpm-lock.yaml" : "package-lock.json";
         String command = enablePnpm ? "pnpm" : "npm";
         String note = "";
         if (enablePnpm) {
