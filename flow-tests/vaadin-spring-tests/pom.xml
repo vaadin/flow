@@ -4,8 +4,8 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.vaadin</groupId>
-        <artifactId>vaadin-spring-parent</artifactId>
-        <version>20.0-SNAPSHOT</version>
+        <artifactId>flow-tests</artifactId>
+        <version>23.1-SNAPSHOT</version>
     </parent>
     <artifactId>vaadin-spring-tests</artifactId>
     <name>Vaadin Spring tests</name>
@@ -34,6 +34,7 @@
 
     <dependencyManagement>
         <dependencies>
+
             <dependency>
                 <groupId>org.springframework.security.oauth</groupId>
                 <artifactId>spring-security-oauth2</artifactId>
@@ -47,6 +48,15 @@
                 <scope>import</scope>
                 <version>${testbench.version}</version>
             </dependency>
+
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
             <dependency>
                 <groupId>com.vaadin</groupId>
                 <artifactId>vaadin-login-flow</artifactId>
@@ -90,11 +100,6 @@
             <dependency>
                 <groupId>com.vaadin</groupId>
                 <artifactId>vaadin-button-flow</artifactId>
-                <version>${vaadin.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.vaadin</groupId>
-                <artifactId>vaadin-notification-flow</artifactId>
                 <version>${vaadin.version}</version>
             </dependency>
             <dependency>
@@ -205,6 +210,7 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-html-components</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
@@ -214,7 +220,7 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-test-util</artifactId>
-            <version>${vaadin.flow.version}</version>
+            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -244,32 +250,6 @@
         </dependency>
     </dependencies>
 
-    <modules>
-        <module>test-spring-common</module>
-        <module>test-spring-boot</module>
-        <!--
-                Disabled as the resource scanner does not work with Undertow
-                <module>test-spring-boot-undertow</module>
-                -->
-        <module>test-spring-boot-scan</module>
-        <module>test-spring-war</module>
-        <module>test-spring</module>
-        <module>test-spring-boot-contextpath</module>
-
-        <module>test-ts-services</module>
-        <module>test-ts-services-custom-client</module>
-        <module>test-mvc-without-endpoints</module>
-
-        <module>test-spring-security-flow</module>
-        <module>test-spring-security-flow-contextpath</module>
-        <module>test-spring-security-fusion</module>
-        <module>test-spring-security-fusion-jwt</module>
-        <module>test-spring-security-fusion-contextpath</module>
-
-        <!-- nexus-staging-maven-plugin requires the last module to be not skipped for deployment -->
-        <module>dummy-module</module>
-    </modules>
-
     <build>
         <plugins>
             <plugin>
@@ -284,11 +264,6 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <!-- export test server port to integration tests -->
-                    <systemPropertyVariables>
-                        <serverPort>${server.port}</serverPort>
-                        <webdriver.chrome.driver>${webdriver.chrome.driver}</webdriver.chrome.driver>
-                    </systemPropertyVariables>
                     <excludedGroups>${test.excludegroup}</excludedGroups>
                 </configuration>
             </plugin>
@@ -423,25 +398,6 @@
                                         <ignore></ignore>
                                     </action>
                                 </pluginExecution>
-                                <pluginExecution>
-                                    <pluginExecutionFilter>
-                                        <groupId>
-                                            com.lazerycode.selenium
-                                        </groupId>
-                                        <artifactId>
-                                            driver-binary-downloader-maven-plugin
-                                        </artifactId>
-                                        <versionRange>
-                                            [${driver.binary.downloader.maven.plugin.version},)
-                                        </versionRange>
-                                        <goals>
-                                            <goal>selenium</goal>
-                                        </goals>
-                                    </pluginExecutionFilter>
-                                    <action>
-                                        <ignore></ignore>
-                                    </action>
-                                </pluginExecution>
                             </pluginExecutions>
                         </lifecycleMappingMetadata>
                     </configuration>
@@ -462,54 +418,52 @@
                         <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
                     </configuration>
                 </plugin>
-                <plugin>
-                    <groupId>com.lazerycode.selenium</groupId>
-                    <artifactId>driver-binary-downloader-maven-plugin</artifactId>
-                    <version>${driver.binary.downloader.maven.plugin.version}</version>
-                    <configuration>
-                        <onlyGetDriversForHostOperatingSystem>true</onlyGetDriversForHostOperatingSystem>
-                        <rootStandaloneServerDirectory>${project.rootdir}/driver</rootStandaloneServerDirectory>
-                        <downloadedZipFileDirectory>${project.rootdir}/driver_zips</downloadedZipFileDirectory>
-                        <customRepositoryMap>${project.rootdir}/drivers.xml</customRepositoryMap>
-                    </configuration>
-                    <dependencies>
-                        <dependency>
-                            <groupId>javax.activation</groupId>
-                            <artifactId>activation</artifactId>
-                            <version>1.1</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>javax.annotation</groupId>
-                            <artifactId>javax.annotation-api</artifactId>
-                            <version>1.3.2</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>javax.xml.bind</groupId>
-                            <artifactId>jaxb-api</artifactId>
-                            <version>2.3.0</version>
-                        </dependency>
-                        <dependency>
-                            <groupId>org.glassfish.jaxb</groupId>
-                            <artifactId>jaxb-runtime</artifactId>
-                            <version>2.3.0</version>
-                        </dependency>
-
-                    </dependencies>
-                </plugin>
             </plugins>
         </pluginManagement>
     </build>
 
     <profiles>
         <profile>
-            <id>prepare</id>
+            <!-- Modules shared by ITs -->
+            <id>it-shared-spring-modules</id>
             <modules>
                 <module>test-spring-common</module>
-                <!-- This test tests that we find the packages as expected -->
+            </modules>
+        </profile>
+
+        <profile>
+            <id>run-tests</id>
+            <activation>
+                <property>
+                    <name>!skipTests</name>
+                </property>
+            </activation>
+            <modules>
+                <module>test-spring-common</module>
+                <module>test-spring-boot</module>
+                <!-- Disabled as the resource scanner does not work with Undertow
+                <module>test-spring-boot-undertow</module>
+                -->
+                <module>test-spring-boot-scan</module>
+                <module>test-spring-war</module>
+                <module>test-spring</module>
+                <module>test-spring-boot-contextpath</module>
+
+                <module>test-ts-services</module>
+                <module>test-ts-services-custom-client</module>
+                <module>test-mvc-without-endpoints</module>
+
+                <module>test-spring-security-flow</module>
+                <module>test-spring-security-flow-contextpath</module>
+                <module>test-spring-security-fusion</module>
+                <module>test-spring-security-fusion-jwt</module>
+                <module>test-spring-security-fusion-contextpath</module>
+
                 <module>test-spring-boot-only-prepare</module>
                 <module>test-spring-white-list</module>
             </modules>
         </profile>
+
         <profile>
             <id>eclipse</id>
             <build>
