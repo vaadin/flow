@@ -108,7 +108,7 @@ public class ReflectionsClassFinder implements ClassFinder {
 
     @Override
     public List<String> getExcludedClassNames() {
-        return excludedClasses != null ? excludedClasses
+        return excludedClasses != null ? Collections.unmodifiableList(excludedClasses)
                 : Collections.emptyList();
     }
 }
