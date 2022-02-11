@@ -42,6 +42,8 @@ import static com.vaadin.flow.server.Constants.EXTERNAL_STATS_URL_TOKEN;
 import static com.vaadin.flow.server.Constants.FRONTEND_TOKEN;
 import static com.vaadin.flow.server.Constants.NPM_TOKEN;
 import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
+import static com.vaadin.flow.server.Constants.TIMESTAMP_BUILD_START;
+import static com.vaadin.flow.server.Constants.TIMESTAMP_PREPARE_FRONTEND;
 import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
 import static com.vaadin.flow.server.InitParameters.BUILD_FOLDER;
 import static com.vaadin.flow.server.InitParameters.NODE_DOWNLOAD_ROOT;
@@ -170,6 +172,14 @@ public class AbstractConfigurationFactory implements Serializable {
         }
         if (buildInfo.hasKey(BUILD_FOLDER)) {
             params.put(BUILD_FOLDER, buildInfo.getString(BUILD_FOLDER));
+        }
+        if (buildInfo.hasKey(TIMESTAMP_BUILD_START)) {
+            params.put(TIMESTAMP_BUILD_START,
+                    buildInfo.getString(TIMESTAMP_BUILD_START));
+        }
+        if (buildInfo.hasKey(TIMESTAMP_PREPARE_FRONTEND)) {
+            params.put(TIMESTAMP_PREPARE_FRONTEND,
+                    buildInfo.getString(TIMESTAMP_PREPARE_FRONTEND));
         }
 
         setDevModePropertiesUsingTokenData(params, buildInfo);

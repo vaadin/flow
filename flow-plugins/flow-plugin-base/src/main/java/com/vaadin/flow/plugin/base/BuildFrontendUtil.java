@@ -243,6 +243,10 @@ public class BuildFrontendUtil {
                 adapter.requireHomeNodeExec());
 
         buildInfo.put(InitParameters.BUILD_FOLDER, adapter.buildFolder());
+        buildInfo.put(Constants.TIMESTAMP_BUILD_START,
+                String.valueOf(adapter.timestampBuildStart()));
+        buildInfo.put(Constants.TIMESTAMP_PREPARE_FRONTEND,
+                String.valueOf(adapter.timestampPrepareFrontend()));
 
         try {
             FileUtils.forceMkdir(token.getParentFile());
@@ -503,6 +507,8 @@ public class BuildFrontendUtil {
             buildInfo.remove(Constants.CONNECT_OPEN_API_FILE_TOKEN);
             buildInfo.remove(Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN);
             buildInfo.remove(InitParameters.BUILD_FOLDER);
+            buildInfo.remove(Constants.TIMESTAMP_BUILD_START);
+            buildInfo.remove(Constants.TIMESTAMP_PREPARE_FRONTEND);
 
             buildInfo.put(SERVLET_PARAMETER_ENABLE_DEV_SERVER, false);
             FileUtils.write(tokenFile, JsonUtil.stringify(buildInfo, 2) + "\n",

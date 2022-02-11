@@ -16,6 +16,7 @@
 package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
+import java.time.Instant;
 
 import com.vaadin.flow.plugin.base.BuildFrontendUtil;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -43,6 +44,7 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
+        this.timestampPrepareFrontend = Instant.now().toEpochMilli();
         // propagate info via System properties and token file
         File tokenFile = BuildFrontendUtil.propagateBuildInfo(this);
 

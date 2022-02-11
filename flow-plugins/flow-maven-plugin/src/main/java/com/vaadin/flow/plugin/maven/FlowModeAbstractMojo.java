@@ -24,6 +24,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -31,7 +32,9 @@ import java.util.stream.Stream;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DependencyResolutionRequiredException;
+import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
+import org.apache.maven.plugins.annotations.Component;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 
@@ -219,6 +222,11 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      */
     @Parameter(property = "npm.postinstallPackages", defaultValue = "")
     private List<String> postinstallPackages;
+
+    @Component
+    private MavenSession mavenSession;
+
+    protected long timestampPrepareFrontend = 0L;
 
     /**
      * Generates a List of ClasspathElements (Run and CompileTime) from a
@@ -444,4 +452,19 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     public List<String> postinstallPackages() {
         return postinstallPackages;
     }
+
+    @Override
+    public long timestampBuildStart() {
+        Date startTime = mavenSession.getStartTime();
+        if (startTime == null) {
+            return 0L;
+        }
+        return startTime.getTime();
+    }
+
+    @Override
+    public long timestampPrepareFrontend() {
+        return timestampPrepareFrontend;
+    }
+
 }

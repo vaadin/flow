@@ -53,6 +53,8 @@ public final class Constants implements Serializable {
     public static final String PROJECT_FRONTEND_GENERATED_DIR_TOKEN = "project.frontend.generated";
     public static final String EXTERNAL_STATS_FILE_TOKEN = "externalStatsFile";
     public static final String EXTERNAL_STATS_URL_TOKEN = "externalStatsUrl";
+    public static final String TIMESTAMP_BUILD_START = "timestamp.buildStart";
+    public static final String TIMESTAMP_PREPARE_FRONTEND = "timestamp.prepareFrontend";
 
     /**
      * @deprecated Use

@@ -23,6 +23,7 @@ import java.net.HttpURLConnection;
 import java.net.ServerSocket;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
@@ -40,12 +41,13 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.base.devserver.DevServerOutputTracker.Result;
 import com.vaadin.base.devserver.stats.DevModeUsageStatistics;
-import com.vaadin.base.devserver.stats.StatisticsConstants;
+import com.vaadin.base.devserver.stats.StartupPerformance;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.UrlUtil;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.InitParameters;
@@ -55,8 +57,7 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.frontend.FrontendVersion;
-import com.vaadin.flow.server.frontend.FrontendUtils.UnknownVersionException;
+import com.vaadin.flow.server.frontend.TaskRunNpmInstall;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import org.apache.commons.io.FileUtils;
@@ -221,10 +222,18 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
 
             long ms = (System.nanoTime() - start) / 1000000;
             getLogger().info("Started {}. Time: {}ms", getServerName(), ms);
-            DevModeUsageStatistics.collectEvent(
-                    StatisticsConstants.EVENT_DEV_SERVER_START_PREFIX
-                            + getServerName(),
-                    ms);
+            StartupPerformance.markMavenGradleStart(
+                    getApplicationConfiguration().getLongProperty(
+                            Constants.TIMESTAMP_BUILD_START, 0));
+            StartupPerformance.markPrepareFrontendStart(
+                    getApplicationConfiguration().getLongProperty(
+                            Constants.TIMESTAMP_PREPARE_FRONTEND, 0));
+            StartupPerformance.markPackageManagerInstallTime(
+                    TaskRunNpmInstall.lastInstallPackageManager,
+                    TaskRunNpmInstall.lastInstallTime);
+            StartupPerformance.markDevServerStartupTime(getServerName(), ms);
+            StartupPerformance
+                    .markApplicationStarted(Instant.now().toEpochMilli());
         } finally {
             if (devServerProcess.get() == null) {
                 removeRunningDevServerPort();

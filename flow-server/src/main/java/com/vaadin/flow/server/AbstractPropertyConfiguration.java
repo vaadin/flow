@@ -75,6 +75,22 @@ public abstract class AbstractPropertyConfiguration
         }
     }
 
+    @Override
+    public long getLongProperty(String name, long defaultValue) {
+        String stringValue = getStringProperty(name, null);
+        if (stringValue == null) {
+            return defaultValue;
+        }
+        try {
+            return Long.parseLong(stringValue);
+        } catch (Exception e) {
+            throw new IllegalArgumentException(String.format(
+                    "Property named '%s' is long, but contains incorrect value '%s'",
+                    name, stringValue));
+        }
+
+    }
+
     /**
      * Gets an application property value.
      *

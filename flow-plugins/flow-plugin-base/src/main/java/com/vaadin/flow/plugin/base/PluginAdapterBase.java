@@ -313,4 +313,18 @@ public interface PluginAdapterBase {
      * @return a list of packages
      */
     List<String> postinstallPackages();
+
+    /**
+     * The timestamp when the build started.
+     * 
+     * @return the timestamp when the build started
+     */
+    long timestampBuildStart();
+
+    /**
+     * The timestamp when the prepare frontend was run.
+     * 
+     * @return the timestamp when the prepare frontend was run
+     */
+    long timestampPrepareFrontend();
 }

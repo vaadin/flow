@@ -29,7 +29,6 @@ public class StatisticsConstants {
      * Event tracking identifiers.
      */
     public static final String EVENT_LIVE_RELOAD = "liveReload";
-    public static final String EVENT_DEV_SERVER_START_PREFIX = "startDevserver";
 
     /*
      * Name of the default JSON file containing all the statistics.

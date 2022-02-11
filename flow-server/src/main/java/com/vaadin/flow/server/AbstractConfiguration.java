@@ -102,6 +102,20 @@ public interface AbstractConfiguration extends Serializable {
     boolean getBooleanProperty(String name, boolean defaultValue);
 
     /**
+     * Gets a configured property as a long.
+     *
+     * @param name
+     *            The simple of the property, in some contexts, lookup might be
+     *            performed using variations of the provided name.
+     * @param defaultValue
+     *            the default value that should be used if no value has been
+     *            defined
+     * @return the property value, or the passed default value if no property
+     *         value is found
+     */
+    long getLongProperty(String name, long defaultValue);
+
+    /**
      * Returns whether pnpm is enabled or not.
      *
      * @return {@code true} if enabled, {@code false} if not
