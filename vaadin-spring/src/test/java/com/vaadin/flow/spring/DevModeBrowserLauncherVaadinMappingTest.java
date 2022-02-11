@@ -19,14 +19,15 @@ import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.springframework.test.context.TestPropertySource;
 
-@TestPropertySource(properties = { "vaadin.urlMapping=/ui/*" })
+@TestPropertySource(properties = { "server.port = 1235",
+        "vaadin.urlMapping=/ui/*" })
 public class DevModeBrowserLauncherVaadinMappingTest
-        extends DevModeBrowserLauncherNoPropertiesTest {
+        extends AbstractDevModeBrowserLauncherTest {
 
     @Test
     public void getUrl_withUrlMapping_givesUrlWithUrlMappingAndNoContextPath() {
         String url = DevModeBrowserLauncher.getUrl(app);
-        Assert.assertEquals("http://localhost:1244/ui/", url);
+        Assert.assertEquals("http://localhost:1235/ui/", url);
     }
 
 }
