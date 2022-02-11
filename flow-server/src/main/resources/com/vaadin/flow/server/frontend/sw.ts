@@ -72,7 +72,7 @@ const networkFirst = new NetworkFirst({
   plugins: [checkConnectionPlugin()]
 });
 
-if (process.env.NODE_ENV === 'development') {
+if (process.env.NODE_ENV === 'development' && process.env.VITE_ENABLED) {
   self.addEventListener('activate', (event) => {
     event.waitUntil(caches.delete(cacheNames.runtime));
   });
@@ -101,35 +101,40 @@ if (process.env.NODE_ENV === 'development') {
 
 registerRoute(
   new NavigationRoute(async (context) => {
-    const serveResourceFromCache = async () => {
-      // Serve any file in the manifest directly from cache
-      if (isManifestEntryURL(context.url)) {
-        return await matchPrecache(context.request);
+    async function serveOfflineFallback() {
+      const response = await matchPrecache(offlinePath);
+      return response ? rewriteBaseHref(response) : undefined;
+    }
+
+    function serveResourceFromCache() {
+      // Always serve the offline fallback page at the `/` URL.
+      if (context.url.pathname === '/') {
+        return serveOfflineFallback();
       }
 
-      const offlinePathPrecachedResponse = await matchPrecache(offlinePath);
-      if (offlinePathPrecachedResponse) {
-        return await rewriteBaseHref(offlinePathPrecachedResponse);
+      if (isManifestEntryURL(context.url)) {
+        return matchPrecache(context.request);
       }
-      return undefined;
+
+      return serveOfflineFallback();
     };
 
-    // Use offlinePath fallback if offline was detected
+    // Try to serve the resource from the cache when offline is detected.
     if (!self.navigator.onLine) {
-      const precachedResponse = await serveResourceFromCache();
-      if (precachedResponse) {
-        return precachedResponse;
+      const response = await serveResourceFromCache();
+      if (response) {
+        return response;
       }
     }
 
-    // Sometimes navigator.onLine is not reliable, use fallback to offlinePath
-    // also in case of network failure
+    // Sometimes navigator.onLine is not reliable,
+    // try to serve the resource from the cache also in the case of a network failure.
     try {
       return await networkOnly.handle(context);
     } catch (error) {
-      const precachedResponse = await serveResourceFromCache();
-      if (precachedResponse) {
-        return precachedResponse;
+      const response = await serveResourceFromCache();
+      if (response) {
+        return response;
       }
       throw error;
     }

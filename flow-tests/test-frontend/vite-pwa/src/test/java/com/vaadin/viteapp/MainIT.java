@@ -37,10 +37,10 @@ public class MainIT extends ChromeDeviceTest {
 
         checkLogsForErrors(msg -> !msg.contains("Failed to load"));
 
-        Assert.assertTrue("Should load the app theme", isAppThemeLoaded());
-
         WebElement h1 = $("h1").first();
         Assert.assertEquals(h1.getText(), "Home Page");
+
+        Assert.assertTrue("Should load the app theme", isAppThemeLoaded());
     }
 
     @Test
@@ -64,10 +64,10 @@ public class MainIT extends ChromeDeviceTest {
 
         checkLogsForErrors(msg -> msg.contains(VITE_PING_PATH) || !msg.contains("Failed to load"));
 
-        Assert.assertTrue("Should load the app theme", isAppThemeLoaded());
-
         WebElement h1 = $("h1").first();
         Assert.assertEquals(h1.getText(), "Home Page");
+
+        Assert.assertTrue("Should load the app theme", isAppThemeLoaded());
     }
 
     @Test
@@ -76,10 +76,10 @@ public class MainIT extends ChromeDeviceTest {
 
         checkLogsForErrors(msg -> !msg.contains("Failed to load"));
 
-        Assert.assertTrue("Should load the app theme", isAppThemeLoaded());
-
         WebElement h1 = $("h1").first();
         Assert.assertEquals(h1.getText(), "About Page");
+
+        Assert.assertTrue("Should load the app theme", isAppThemeLoaded());
     }
 
     @Test
@@ -90,10 +90,10 @@ public class MainIT extends ChromeDeviceTest {
 
         checkLogsForErrors(msg -> msg.contains(VITE_PING_PATH) || !msg.contains("Failed to load"));
 
-        Assert.assertTrue("Should load the app theme", isAppThemeLoaded());
-
         WebElement h1 = $("h1").first();
         Assert.assertEquals(h1.getText(), "About Page");
+
+        Assert.assertTrue("Should load the app theme", isAppThemeLoaded());
     }
 
     private Boolean isAppThemeLoaded() {
