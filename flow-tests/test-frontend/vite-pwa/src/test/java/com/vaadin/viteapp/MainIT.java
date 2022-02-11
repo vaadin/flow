@@ -24,6 +24,8 @@ import org.openqa.selenium.JavascriptExecutor;
 import com.vaadin.flow.testutil.ChromeDeviceTest;
 
 public class MainIT extends ChromeDeviceTest {
+    final String VITE_PING_PATH = "/VAADIN/__vite_ping";
+
     @Before
     public void init() {
         getDevTools().setCacheDisabled(true);
@@ -60,7 +62,7 @@ public class MainIT extends ChromeDeviceTest {
         getDevTools().setOfflineEnabled(true);
         reloadPage();
 
-        checkLogsForErrors(msg -> !msg.contains("Failed to load"));
+        checkLogsForErrors(msg -> msg.contains(VITE_PING_PATH) || !msg.contains("Failed to load"));
 
         Assert.assertTrue("Should load the app theme", isAppThemeLoaded());
 
@@ -86,7 +88,7 @@ public class MainIT extends ChromeDeviceTest {
         getDevTools().setOfflineEnabled(true);
         reloadPage();
 
-        checkLogsForErrors(msg -> !msg.contains("Failed to load"));
+        checkLogsForErrors(msg -> msg.contains(VITE_PING_PATH) || !msg.contains("Failed to load"));
 
         Assert.assertTrue("Should load the app theme", isAppThemeLoaded());
 
@@ -103,9 +105,9 @@ public class MainIT extends ChromeDeviceTest {
     private Boolean sendVitePingRequest() {
         return (Boolean) ((JavascriptExecutor) getDriver()).executeAsyncScript(
                 "const done = arguments[arguments.length - 1];"
-                        + "fetch('/VAADIN/__vite_ping')"
-                        + " .then(() => done(true))"
-                        + " .catch(() => done(false))");
+                        + "fetch('" + VITE_PING_PATH + "')"
+                        + "  .then(() => done(true))"
+                        + "  .catch(() => done(false))");
     }
 
     private void reloadPage() {
