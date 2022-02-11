@@ -5,4 +5,4 @@ Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-License: http://www.apache.org/licenses/LICENSE-2.0
 Import-Package: org.atmosphere*;resolution:=optional;bundle-version='${atmosphere.runtime.version}',\
     org.apache.http*;resolution:=optional;,*
-Export-Package: !com.vaadin.flow.push*, com.vaadin.flow*, com.vaadin.experimental*;-noimport:=true
+Export-Package: !com.vaadin.flow.push*, com.vaadin.flow*;-noimport:=true, com.vaadin.experimental*
