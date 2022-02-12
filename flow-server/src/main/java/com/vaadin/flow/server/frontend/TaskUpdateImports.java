@@ -74,7 +74,7 @@ public class TaskUpdateImports extends NodeUpdater {
     private final File tokenFile;
     private final JsonObject tokenFileData;
 
-    private final boolean disablePnpm;
+    private final boolean enablePnpm;
     private boolean productionMode;
 
     private class UpdateMainImportsFile extends AbstractUpdateImports {
@@ -340,9 +340,9 @@ public class TaskUpdateImports extends NodeUpdater {
      *            the token (flow-build-info.json) path, may be {@code null}
      * @param tokenFileData
      *            object to fill with token file data, may be {@code null}
-     * @param disablePnpm
-     *            if {@code true} then npm is used instead of pnpm, otherwise
-     *            pnpm is used
+     * @param enablePnpm
+     *            if {@code true} then pnpm is used instead of npm, otherwise
+     *            npm is used
      * @param buildDir
      *            the used build directory
      */
@@ -350,7 +350,7 @@ public class TaskUpdateImports extends NodeUpdater {
             FrontendDependenciesScanner frontendDepScanner,
             SerializableFunction<ClassFinder, FrontendDependenciesScanner> fallBackScannerProvider,
             File npmFolder, File generatedPath, File frontendDirectory,
-            File tokenFile, JsonObject tokenFileData, boolean disablePnpm,
+            File tokenFile, JsonObject tokenFileData, boolean enablePnpm,
             String buildDir, boolean productionMode,
             FeatureFlags featureFlags) {
         super(finder, frontendDepScanner, npmFolder, generatedPath, null,
@@ -359,7 +359,7 @@ public class TaskUpdateImports extends NodeUpdater {
         fallbackScanner = fallBackScannerProvider.apply(finder);
         this.tokenFile = tokenFile;
         this.tokenFileData = tokenFileData;
-        this.disablePnpm = disablePnpm;
+        this.enablePnpm = enablePnpm;
         this.productionMode = productionMode;
     }
 
@@ -493,10 +493,10 @@ public class TaskUpdateImports extends NodeUpdater {
     }
 
     private String getAbsentPackagesMessage() {
-        String lockFile = disablePnpm ? "package-lock.json" : "pnpm-lock.yaml";
-        String command = disablePnpm ? "npm" : "pnpm";
+        String lockFile = enablePnpm ? "pnpm-lock.yaml" : "package-lock.json";
+        String command = enablePnpm ? "pnpm" : "npm";
         String note = "";
-        if (!disablePnpm) {
+        if (enablePnpm) {
             note = "\nMake sure first that `pnpm` command is installed, otherwise you should install it using npm: `npm add -g pnpm@"
                     + FrontendTools.DEFAULT_PNPM_VERSION + "`";
         }
