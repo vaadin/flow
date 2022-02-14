@@ -1,0 +1,45 @@
+.header {
+  height: var(--lumo-size-xl);
+  box-shadow: var(--lumo-box-shadow-s);
+}
+.header vaadin-avatar {
+  margin-left: auto;
+  margin-right: var(--lumo-space-m);
+}
+vaadin-app-layout[dir="rtl"] #header vaadin-avatar {
+  margin-left: var(--lumo-space-m);
+  margin-right: auto;
+}
+.header h1 {
+  font-size: var(--lumo-font-size-l);
+  margin: 0;
+}
+.logo {
+  box-sizing: border-box;
+  box-shadow: inset 0 -1px var(--lumo-contrast-10pct);
+  padding: var(--lumo-space-s) var(--lumo-space-m);
+}
+.logo img {
+  height: calc(var(--lumo-size-l) * 1.5);
+}
+.logo h1 {
+  font-size: var(--lumo-font-size-xl);
+  font-weight: 600;
+  margin: 0 var(--lumo-space-s);
+}
+
+vaadin-tab {
+  font-size: var(--lumo-font-size-s);
+  height: var(--lumo-size-l);
+  font-weight: 600;
+  color: var(--lumo-body-text-color);
+}
+
+vaadin-tab:hover {
+  background-color: var(--lumo-contrast-5pct);
+}
+
+vaadin-tab[selected] {
+  background-color: var(--lumo-primary-color-10pct);
+  color: var(--lumo-primary-text-color);
+}
