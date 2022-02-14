@@ -372,8 +372,12 @@ public class VaadinRouteScope extends AbstractScope implements UIInitListener {
                     .getRequiredWebApplicationContext(servletContext);
         }
 
+        @NonNull
         private NavigationListener getNavigationListener() {
-            return ComponentUtil.getData(currentUI, NavigationListener.class);
+            NavigationListener navigationListener = ComponentUtil
+                    .getData(currentUI, NavigationListener.class);
+            assert navigationListener != null;
+            return navigationListener;
         }
 
     }
