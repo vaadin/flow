@@ -170,12 +170,20 @@ public @interface PWA {
     String[] offlineResources() default {};
 
     /**
-     * Whether to disable the service worker.
+     * Whether the application should be available offline.
      *
-     * Setting this property to {@code true} will cause the active service
-     * worker to unregister.
+     * <p>
+     * Defaults to {@code true}, which enables the service worker build and
+     * registers the service worker in the browser so that the application could
+     * work offline.
+     * </p>
      *
-     * @return whether to disable the service worker.
+     * <p>
+     * Setting to {@code false} disables the service worker build and causes the
+     * active service worker to unregister.
+     * </p>
+     *
+     * @return whether offline is enabled.
      */
-    boolean serviceWorkerDisabled() default false;
+    boolean offline() default true;
 }

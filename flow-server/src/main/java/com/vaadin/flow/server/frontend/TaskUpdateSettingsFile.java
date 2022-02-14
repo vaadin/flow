@@ -99,7 +99,7 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
 
         settings.put("pwaEnabled", pwaConfiguration.isEnabled());
 
-        settings.put("serviceWorkerDisabled", pwaConfiguration.isServiceWorkerDisabled());
+        settings.put("offlineEnabled", pwaConfiguration.isOfflineEnabled());
 
         settings.put("offlinePath", getOfflinePath());
 

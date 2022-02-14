@@ -1681,15 +1681,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 head.appendChild(icon.asElement());
             }
 
-            if (config.isServiceWorkerDisabled()) {
-                head.appendElement(SCRIPT_TAG).text(String.format(
-                        "if ('serviceWorker' in navigator) {\n"
-                                + "  navigator.serviceWorker.getRegistration('%s').then(function(registration) {\n"
-                                + "    if (registration) {\n"
-                                + "      registration.unregister();\n"
-                                + "    }\n" + "  });\n" + "}",
-                        config.getServiceWorkerPath()));
-            } else {
+            if (config.isOfflineEnabled()) {
                 // Add service worker initialization
                 head.appendElement(SCRIPT_TAG).text(String.format(
                         "if ('serviceWorker' in navigator) {\n"
@@ -1697,6 +1689,15 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                                 + "    navigator.serviceWorker.register('%s')\n"
                                 + "  });\n" + "}",
                         config.getServiceWorkerPath()));
+            } else {
+                head.appendElement(SCRIPT_TAG).text(String.format(
+                        "if ('serviceWorker' in navigator) {\n"
+                                + "  navigator.serviceWorker.getRegistration('%s').then(function(registration) {\n"
+                                + "    if (registration) {\n"
+                                + "      registration.unregister();\n"
+                                + "    }\n" + "  });\n" + "}",
+                        config.getServiceWorkerPath()));
+
             }
         }
     }

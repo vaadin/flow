@@ -60,8 +60,8 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
     class AppShellWithOfflinePath {
     }
 
-    @PWA(name = "foo", shortName = "bar", serviceWorkerDisabled = true)
-    class AppShellWithDisabledServiceWorker {
+    @PWA(name = "foo", shortName = "bar", offline = false)
+    class AppShellWithDisabledOffline {
     }
 
     @Rule
@@ -263,26 +263,30 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void should_setServiceWorkerDisabledFalse_when_defaultInPwa() throws IOException {
+    public void should_setOfflineEnabledTrue_when_defaultInPwa()
+            throws IOException {
         webpackUpdater.execute();
         String webpackGeneratedContents = Files.lines(webpackGenerated.toPath())
                 .collect(Collectors.joining("\n"));
-        Assert.assertTrue("serviceWorkerDisabled expected false",
-                webpackGeneratedContents.contains("const serviceWorkerDisabled = false;"));
+        Assert.assertTrue("offlineEnabled expected true",
+                webpackGeneratedContents
+                        .contains("const offlineEnabled = true;"));
     }
 
     @Test
-    public void should_setServiceWorkerDisabledTrue_when_customisedInPwa() throws IOException {
+    public void should_setOfflineEnabledFalse_when_customisedInPwa()
+            throws IOException {
         pwaConfiguration = new PwaConfiguration(
-                AppShellWithDisabledServiceWorker.class.getAnnotation(PWA.class));
+                AppShellWithDisabledOffline.class.getAnnotation(PWA.class));
         createWebpackUpdater();
 
         webpackUpdater.execute();
         String webpackGeneratedContents = Files.lines(webpackGenerated.toPath())
                 .collect(Collectors.joining("\n"));
 
-        Assert.assertTrue("serviceWorkerDisabled expected true",
-                webpackGeneratedContents.contains("const serviceWorkerDisabled = true;"));
+        Assert.assertTrue("offlineEnabled expected false",
+                webpackGeneratedContents
+                        .contains("const offlineEnabled = false;"));
     }
 
     @Test
