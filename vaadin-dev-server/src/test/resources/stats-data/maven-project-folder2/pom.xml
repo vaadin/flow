@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.example</groupId>
-	<!--  Vaadin project from https://start.vaadin.com/test/2 -->
+	<!--  Project from https://start.vaadin.com/test/2 -->
 	<artifactId>demo2</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>demo</name>
