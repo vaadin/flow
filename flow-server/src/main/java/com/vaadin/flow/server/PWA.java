@@ -172,7 +172,8 @@ public @interface PWA {
     /**
      * Whether to disable the service worker.
      *
-     * Setting this property to {@code true} will cause the active service worker to unregister.
+     * Setting this property to {@code true} will cause the active service
+     * worker to unregister.
      *
      * @return whether to disable the service worker.
      */

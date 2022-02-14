@@ -1684,21 +1684,18 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             if (config.isServiceWorkerDisabled()) {
                 head.appendElement(SCRIPT_TAG).text(String.format(
                         "if ('serviceWorker' in navigator) {\n"
-                        + "  navigator.serviceWorker.getRegistration('%s').then(function(registration) {\n"
-                        + "    if (registration) {\n"
-                        + "      registration.unregister();\n"
-                        + "    }\n"
-                        + "  });\n"
-                        + "}",
+                                + "  navigator.serviceWorker.getRegistration('%s').then(function(registration) {\n"
+                                + "    if (registration) {\n"
+                                + "      registration.unregister();\n"
+                                + "    }\n" + "  });\n" + "}",
                         config.getServiceWorkerPath()));
             } else {
                 // Add service worker initialization
                 head.appendElement(SCRIPT_TAG).text(String.format(
                         "if ('serviceWorker' in navigator) {\n"
-                        + "  window.addEventListener('load', function() {\n"
-                        + "    navigator.serviceWorker.register('%s')\n"
-                        + "  });\n"
-                        + "}",
+                                + "  window.addEventListener('load', function() {\n"
+                                + "    navigator.serviceWorker.register('%s')\n"
+                                + "  });\n" + "}",
                         config.getServiceWorkerPath()));
             }
         }

@@ -95,7 +95,8 @@ public class PwaConfiguration implements Serializable {
         this(true, pwa.name(), pwa.shortName(), pwa.description(),
                 pwa.backgroundColor(), pwa.themeColor(), pwa.iconPath(),
                 pwa.manifestPath(), pwa.offlinePath(), pwa.display(),
-                pwa.startPath(), pwa.offlineResources(), pwa.serviceWorkerDisabled(), useV14Bootstrap);
+                pwa.startPath(), pwa.offlineResources(),
+                pwa.serviceWorkerDisabled(), useV14Bootstrap);
     }
 
     /**
@@ -132,7 +133,8 @@ public class PwaConfiguration implements Serializable {
     public PwaConfiguration(boolean enabled, String name, String shortName,
             String description, String backgroundColor, String themeColor,
             String iconPath, String manifestPath, String offlinePath,
-            String display, String startPath, String[] offlineResources, boolean serviceWorkerDisabled) {
+            String display, String startPath, String[] offlineResources,
+            boolean serviceWorkerDisabled) {
         this(enabled, name, shortName, description, backgroundColor, themeColor,
                 iconPath, manifestPath, offlinePath, display, startPath,
                 offlineResources, serviceWorkerDisabled, false);
@@ -175,8 +177,7 @@ public class PwaConfiguration implements Serializable {
             String description, String backgroundColor, String themeColor,
             String iconPath, String manifestPath, String offlinePath,
             String display, String startPath, String[] offlineResources,
-            boolean serviceWorkerDisabled,
-            boolean useV14Bootstrap) {
+            boolean serviceWorkerDisabled, boolean useV14Bootstrap) {
         this.appName = name;
         this.shortName = shortName.substring(0,
                 Math.min(shortName.length(), 12));
