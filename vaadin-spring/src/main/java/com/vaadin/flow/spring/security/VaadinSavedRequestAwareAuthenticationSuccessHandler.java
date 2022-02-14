@@ -58,9 +58,6 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandler
     /** This header contains 'ok' if login was successful. */
     private static final String RESULT_HEADER = "Result";
 
-    /** This header contains the Vaadin CSRF token. */
-    private static final String VAADIN_CSRF_HEADER = "Vaadin-CSRF";
-
     /**
      * This header contains the URL defined as the default URL to redirect to
      * after login.
