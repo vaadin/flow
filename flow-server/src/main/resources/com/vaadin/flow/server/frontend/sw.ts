@@ -27,6 +27,7 @@ if (self.additionalManifestEntries?.length) {
 const offlinePath = OFFLINE_PATH;
 
 // Compute the registration scope path.
+// Example: http://localhost:8888/scope-path/sw.js => /scope-path/
 const scopePath = new URL(self.registration.scope).pathname;
 
 /**
@@ -107,8 +108,8 @@ registerRoute(
     }
 
     function serveResourceFromCache() {
-      // Always serve the offline fallback page at the `/` URL.
-      if (context.url.pathname === '/') {
+      // Always serve the offline fallback at the scope path.
+      if (context.url.pathname === scopePath) {
         return serveOfflineFallback();
       }
 
