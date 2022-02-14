@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.lang.NonNull;
 import org.springframework.web.context.support.WebApplicationContextUtils;
 
 import com.vaadin.flow.component.ComponentEventListener;
@@ -268,7 +269,7 @@ public class VaadinRouteScope extends AbstractScope implements UIInitListener {
             if (wrapper == null) {
                 return Collections.emptyMap();
             }
-            return getBeanNamesWrapper().beanNamesByNavigationComponents;
+            return wrapper.beanNamesByNavigationComponents;
         }
 
         private Set<String> removeBeansByNavigationComponent(Class<?> clazz) {
@@ -282,7 +283,10 @@ public class VaadinRouteScope extends AbstractScope implements UIInitListener {
 
         private void setBeanNamesByNavigationComponents(
                 Map<Class<?>, Set<String>> map) {
-            getBeanNamesWrapper().beanNamesByNavigationComponents = map;
+            BeanNamesWrapper wrapper = getBeanNamesWrapper();
+            if (wrapper != null) {
+                wrapper.beanNamesByNavigationComponents = map;
+            }
         }
     }
 
@@ -327,6 +331,7 @@ public class VaadinRouteScope extends AbstractScope implements UIInitListener {
             RouteScopeOwner owner = getContext().findAnnotationOnBean(name,
                     RouteScopeOwner.class);
             if (!getNavigationListener().hasNavigationOwner(owner)) {
+                assert owner != null;
                 throw new IllegalStateException(String.format(
                         "Route owner '%s' instance is not available in the "
                                 + "active navigation components chain: the scope defined by the bean '%s' doesn't exist.",
@@ -356,13 +361,15 @@ public class VaadinRouteScope extends AbstractScope implements UIInitListener {
             return true;
         }
 
+        @NonNull
         private ApplicationContext getContext() {
             VaadinService service = currentUI.getSession().getService();
             VaadinContext context = service.getContext();
             ServletContext servletContext = ((VaadinServletContext) context)
                     .getContext();
+            assert servletContext != null;
             return WebApplicationContextUtils
-                    .getWebApplicationContext(servletContext);
+                    .getRequiredWebApplicationContext(servletContext);
         }
 
         private NavigationListener getNavigationListener() {

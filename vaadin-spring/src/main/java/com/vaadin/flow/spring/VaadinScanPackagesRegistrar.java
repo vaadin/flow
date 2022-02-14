@@ -19,6 +19,7 @@ import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -74,8 +75,11 @@ public class VaadinScanPackagesRegistrar
             Class<? extends Annotation> annotation, String getterName) {
         String annotationName = annotation.getName();
         if (annotationMetadata.hasAnnotation(annotationName)) {
-            return clazz.cast(annotationMetadata
-                    .getAnnotationAttributes(annotationName).get(getterName));
+            Map<String, Object> annotationAttributes = annotationMetadata
+                    .getAnnotationAttributes(annotationName);
+            return annotationAttributes != null
+                    ? clazz.cast(annotationAttributes.get(getterName))
+                    : null;
         }
         return null;
     }
