@@ -85,7 +85,6 @@ import com.vaadin.flow.server.startup.WebComponentConfigurationRegistryInitializ
 import com.vaadin.flow.server.startup.WebComponentExporterAwareValidator;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.spring.VaadinScanPackagesRegistrar.VaadinScanPackages;
-import com.vaadin.flow.spring.router.SpringRouteNotFoundError;
 import com.vaadin.flow.theme.Theme;
 
 /**
