@@ -150,4 +150,14 @@ public class HistoryTest {
                 page.parameters[1]);
     }
 
+    @Test // #11628
+    public void replaceState_locationEmpty_pushesPeriod() {
+        history.replaceState(null, "");
+        Assert.assertEquals("push state JS not included",
+                "setTimeout(() => window.history.replaceState($0, '', $1))",
+                page.expression);
+        Assert.assertEquals(null, page.parameters[0]);
+        Assert.assertEquals("location should be '.'", ".", page.parameters[1]);
+    }
+
 }
