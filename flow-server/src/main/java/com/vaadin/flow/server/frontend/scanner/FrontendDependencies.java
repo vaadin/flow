@@ -483,11 +483,13 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         String display = pwaVisitor.getValue("display");
         String startPath = pwaVisitor.getValue("startPath");
         List<String> offlineResources = pwaVisitor.getValue("offlineResources");
+        boolean offline = pwaVisitor.getValue("offline");
 
         this.pwaConfiguration = new PwaConfiguration(true, name, shortName,
                 description, backgroundColor, themeColor, iconPath,
                 manifestPath, offlinePath, display, startPath,
-                offlineResources.toArray(new String[] {}), useV14Bootstrap);
+                offlineResources.toArray(new String[] {}), offline,
+                useV14Bootstrap);
     }
 
     private Logger log() {

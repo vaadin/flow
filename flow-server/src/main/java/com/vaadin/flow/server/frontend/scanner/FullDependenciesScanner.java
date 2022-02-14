@@ -476,12 +476,13 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
             String startPath = getAnnotationValueAsString(pwa, "startPath");
             String[] offlineResources = (String[]) getAnnotationValue(pwa,
                     "offlineResources");
+            boolean offline = (Boolean) getAnnotationValue(pwa, "offline");
 
             assert shortName != null; // required in @PWA annotation
 
             return new PwaConfiguration(true, name, shortName, description,
                     backgroundColor, themeColor, iconPath, manifestPath,
-                    offlinePath, display, startPath, offlineResources,
+                    offlinePath, display, startPath, offlineResources, offline,
                     useV14Bootstrap);
         } catch (ClassNotFoundException exception) {
             throw new IllegalStateException(
