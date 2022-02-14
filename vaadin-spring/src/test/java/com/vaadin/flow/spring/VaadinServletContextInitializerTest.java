@@ -40,7 +40,6 @@ import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.server.startup.ServletDeployer;
-import com.vaadin.flow.spring.router.SpringRouteNotFoundError;
 
 public class VaadinServletContextInitializerTest {
 
@@ -140,31 +139,6 @@ public class VaadinServletContextInitializerTest {
         Mockito.verify(devModeHandlerManager, Mockito.never())
                 .initDevModeHandler(Mockito.any(),
                         Mockito.any(VaadinContext.class));
-    }
-
-    @Test
-    public void errorParameterServletContextListenerEvent_defaultRouteNotFoundView_defaultRouteNotFoundViewIsRegistered()
-            throws Exception {
-        // given
-        initDefaultMocks();
-        final VaadinServletContextInitializer initializer = getStubbedVaadinServletContextInitializer();
-        Runnable when = initRouteNotFoundMocksAndGetContextInitializedMockCall(
-                initializer);
-
-        Mockito.doAnswer(invocation -> Stream.of(RouteNotFoundError.class,
-                SpringRouteNotFoundError.class)).when(initializer)
-                .findBySuperType(Mockito.anyCollection(),
-                        Mockito.eq(HasErrorParameter.class));
-        // when
-        when.run();
-
-        // then
-        ApplicationRouteRegistry registry = ApplicationRouteRegistry
-                .getInstance(new VaadinServletContext(servletContext));
-        final Class<? extends Component> navigationTarget = registry
-                .getErrorNavigationTarget(new NotFoundException()).get()
-                .getNavigationTarget();
-        Assert.assertEquals(SpringRouteNotFoundError.class, navigationTarget);
     }
 
     @Test
