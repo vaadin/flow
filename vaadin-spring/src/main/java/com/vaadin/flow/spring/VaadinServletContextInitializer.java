@@ -194,6 +194,11 @@ public class VaadinServletContextInitializer
             }
         }
 
+        @Override
+        default void contextDestroyed(ServletContextEvent sce) {
+            // NOP
+        }
+
         void failFastContextInitialized(ServletContextEvent event)
                 throws ServletException;
 
