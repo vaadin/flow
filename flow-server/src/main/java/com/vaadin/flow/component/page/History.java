@@ -182,8 +182,8 @@ public class History implements Serializable {
      *            to only change the JSON state
      */
     public void pushState(JsonValue state, Location location) {
-        final String pathWithQueryParameters = Optional.ofNullable(location)
-                .map(Location::getPathWithQueryParameters).orElse(null);
+        final String pathWithQueryParameters = getPathWithQueryParameters(
+                location);
         // Second parameter is title which is currently ignored according to
         // https://developer.mozilla.org/en-US/docs/Web/API/History_API
         ui.getPage().executeJs(
@@ -221,8 +221,8 @@ public class History implements Serializable {
      *            to only change the JSON state
      */
     public void replaceState(JsonValue state, Location location) {
-        final String pathWithQueryParameters = Optional.ofNullable(location)
-                .map(Location::getPathWithQueryParameters).orElse(null);
+        final String pathWithQueryParameters = getPathWithQueryParameters(
+                location);
         // Second parameter is title which is currently ignored according to
         // https://developer.mozilla.org/en-US/docs/Web/API/History_API
         ui.getPage().executeJs(
@@ -296,5 +296,14 @@ public class History implements Serializable {
      */
     public void go(int steps) {
         ui.getPage().executeJs("history.go($0)", steps);
+    }
+
+    private String getPathWithQueryParameters(Location location) {
+        // In the Location API, getPath() returning "" means document base URL.
+        // On FF and Safari, passing '' for the URL parameter does not update
+        // URL to the base, so we replace '' with '.' here.
+        return Optional.ofNullable(location)
+                .map(Location::getPathWithQueryParameters)
+                .map(path -> path.isEmpty() ? "." : path).orElse(null);
     }
 }
