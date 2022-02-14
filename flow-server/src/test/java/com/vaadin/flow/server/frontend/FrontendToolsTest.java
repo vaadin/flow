@@ -379,7 +379,7 @@ public class FrontendToolsTest {
             nodeCommands = new Pair<>("node", "node/node");
         }
         File file = new File(baseDir, nodeCommands.getSecond());
-        if (file == null) {
+        if (!file.exists()) {
             file = frontendToolsLocator.tryLocateTool(nodeCommands.getFirst())
                     .orElse(null);
             List<String> versionCommand = Lists.newArrayList();
