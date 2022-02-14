@@ -65,7 +65,7 @@ import com.vaadin.flow.spring.security.VaadinDefaultRequestCache;
  * delegate saving requests to {@link CookieRequestCache}</li>
  * </ul>
  *
- * @param <H>
+ * @param <H> the concrete {@link HttpSecurityBuilder} subclass
  */
 public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuilder<H>>
         extends

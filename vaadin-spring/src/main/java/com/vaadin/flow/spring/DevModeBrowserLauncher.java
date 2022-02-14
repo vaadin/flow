@@ -65,7 +65,7 @@ public class DevModeBrowserLauncher
      *
      * Does nothing if the application is running in production mode.
      * 
-     * @param applicationContext
+     * @param appContext
      *            the application context
      */
     private void launchBrowserInDevelopmentMode(ApplicationContext appContext) {
