@@ -57,16 +57,7 @@
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
                 <configuration>
-                    <!-- Scan AppShell in 1 second intervals -->
                     <scanIntervalSeconds>1</scanIntervalSeconds>
-                    <scanTargetPatterns>
-                        <scanTargetPattern>
-                            <directory>${project.basedir}</directory>
-                            <includes>
-                                <include>**/AppShell.java</include>
-                            </includes>
-                        </scanTargetPattern>
-                    </scanTargetPatterns>
                 </configuration>
             </plugin>
         </plugins>
