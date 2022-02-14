@@ -42,6 +42,8 @@ const themeOptions = {
   frontendGeneratedFolder: path.resolve(frontendFolder, settings.generatedFolder)
 };
 
+const isServiceWorkerEnabled = settings.pwaEnabled && !settings.serviceWorkerDisabled;
+
 // Block debug and trace logs.
 console.trace = () => {};
 console.debug = () => {};
@@ -189,8 +191,8 @@ export const vaadinConfig: UserConfigFn = (env) => {
     },
     plugins: [
       !devMode && brotli(),
-      settings.pwaEnabled && transpileSWPlugin(),
-      settings.pwaEnabled && injectManifestToSWPlugin(),
+      isServiceWorkerEnabled && transpileSWPlugin(),
+      isServiceWorkerEnabled && injectManifestToSWPlugin(),
       {
         name: 'vaadin:custom-theme',
         config() {

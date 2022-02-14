@@ -60,6 +60,10 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
     class AppShellWithOfflinePath {
     }
 
+    @PWA(name = "foo", shortName = "bar", serviceWorkerDisabled = true)
+    class AppShellWithDisabledServiceWorker {
+    }
+
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
@@ -256,6 +260,29 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
                 .collect(Collectors.joining("\n"));
         Assert.assertTrue("pwaEnabled expected true",
                 webpackGeneratedContents.contains("const pwaEnabled = true;"));
+    }
+
+    @Test
+    public void should_setServiceWorkerDisabledFalse_when_defaultInPwa() throws IOException {
+        webpackUpdater.execute();
+        String webpackGeneratedContents = Files.lines(webpackGenerated.toPath())
+                .collect(Collectors.joining("\n"));
+        Assert.assertTrue("serviceWorkerDisabled expected false",
+                webpackGeneratedContents.contains("const serviceWorkerDisabled = false;"));
+    }
+
+    @Test
+    public void should_setServiceWorkerDisabledTrue_when_customisedInPwa() throws IOException {
+        pwaConfiguration = new PwaConfiguration(
+                AppShellWithDisabledServiceWorker.class.getAnnotation(PWA.class));
+        createWebpackUpdater();
+
+        webpackUpdater.execute();
+        String webpackGeneratedContents = Files.lines(webpackGenerated.toPath())
+                .collect(Collectors.joining("\n"));
+
+        Assert.assertTrue("serviceWorkerDisabled expected true",
+                webpackGeneratedContents.contains("const serviceWorkerDisabled = true;"));
     }
 
     @Test
