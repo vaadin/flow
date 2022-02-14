@@ -168,4 +168,13 @@ public @interface PWA {
      * @return offline resources to be cached
      */
     String[] offlineResources() default {};
+
+    /**
+     * Whether to disable the service worker.
+     *
+     * Setting this property to {@code true} will cause the active service worker to unregister.
+     *
+     * @return whether to disable the service worker.
+     */
+    boolean serviceWorkerDisabled() default false;
 }

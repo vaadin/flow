@@ -51,6 +51,7 @@ public class PwaConfiguration implements Serializable {
     private final String startPath;
     private final boolean enabled;
     private final List<String> offlineResources;
+    private final boolean serviceWorkerDisabled;
 
     /**
      * Default constructor, uses default values.
@@ -69,7 +70,7 @@ public class PwaConfiguration implements Serializable {
         this(false, DEFAULT_NAME, "Flow PWA", "", DEFAULT_BACKGROUND_COLOR,
                 DEFAULT_THEME_COLOR, DEFAULT_ICON, DEFAULT_PATH,
                 DEFAULT_OFFLINE_PATH, DEFAULT_DISPLAY, DEFAULT_START_URL,
-                new String[] {}, useV14Bootstrap);
+                new String[] {}, false, useV14Bootstrap);
     }
 
     /**
@@ -94,7 +95,7 @@ public class PwaConfiguration implements Serializable {
         this(true, pwa.name(), pwa.shortName(), pwa.description(),
                 pwa.backgroundColor(), pwa.themeColor(), pwa.iconPath(),
                 pwa.manifestPath(), pwa.offlinePath(), pwa.display(),
-                pwa.startPath(), pwa.offlineResources(), useV14Bootstrap);
+                pwa.startPath(), pwa.offlineResources(), pwa.serviceWorkerDisabled(), useV14Bootstrap);
     }
 
     /**
@@ -124,15 +125,17 @@ public class PwaConfiguration implements Serializable {
      *            the start path
      * @param offlineResources
      *            the list of files to add for pre-caching
+     * @param serviceWorkerDisabled
+     *            is the service worker disabled.
      */
     @SuppressWarnings("squid:S00107")
     public PwaConfiguration(boolean enabled, String name, String shortName,
             String description, String backgroundColor, String themeColor,
             String iconPath, String manifestPath, String offlinePath,
-            String display, String startPath, String[] offlineResources) {
+            String display, String startPath, String[] offlineResources, boolean serviceWorkerDisabled) {
         this(enabled, name, shortName, description, backgroundColor, themeColor,
                 iconPath, manifestPath, offlinePath, display, startPath,
-                offlineResources, false);
+                offlineResources, serviceWorkerDisabled, false);
     }
 
     /**
@@ -162,6 +165,8 @@ public class PwaConfiguration implements Serializable {
      *            the start path
      * @param offlineResources
      *            the list of files to add for pre-caching
+     * @param serviceWorkerDisabled
+     *            is the service worker disabled.
      * @param useV14Bootstrap
      *            true iff using legacy bootstrap mode
      */
@@ -170,6 +175,7 @@ public class PwaConfiguration implements Serializable {
             String description, String backgroundColor, String themeColor,
             String iconPath, String manifestPath, String offlinePath,
             String display, String startPath, String[] offlineResources,
+            boolean serviceWorkerDisabled,
             boolean useV14Bootstrap) {
         this.appName = name;
         this.shortName = shortName.substring(0,
@@ -186,6 +192,7 @@ public class PwaConfiguration implements Serializable {
         this.startPath = startPath;
         this.enabled = enabled;
         this.offlineResources = Arrays.asList(offlineResources);
+        this.serviceWorkerDisabled = serviceWorkerDisabled;
     }
 
     /**
@@ -322,6 +329,15 @@ public class PwaConfiguration implements Serializable {
      */
     public List<String> getOfflineResources() {
         return Collections.unmodifiableList(offlineResources);
+    }
+
+    /**
+     * Is the service worker disabled.
+     *
+     * @return is the service worker disabled.
+     */
+    public boolean isServiceWorkerDisabled() {
+        return serviceWorkerDisabled;
     }
 
     /**
