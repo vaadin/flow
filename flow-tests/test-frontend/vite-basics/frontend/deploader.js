@@ -1,0 +1,1 @@
+import('@vaadin/flow-frontend/package.json');

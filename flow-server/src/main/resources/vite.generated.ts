@@ -23,6 +23,8 @@ const themeFolder = path.resolve(frontendFolder, settings.themeFolder);
 const frontendBundleFolder = path.resolve(__dirname, settings.frontendBundleOutput);
 const addonFrontendFolder = path.resolve(__dirname, settings.addonFrontendFolder);
 
+const frontendPath = path.posix.relative(__dirname, settings.frontendFolder) + '/';
+
 const projectStaticAssetsFolders = [
   path.resolve(__dirname, 'src', 'main', 'resources', 'META-INF', 'resources'),
   path.resolve(__dirname, 'src', 'main', 'resources', 'static'),
@@ -162,9 +164,10 @@ export const vaadinConfig: UserConfigFn = (env) => {
     runWatchDog(process.env.watchDogPort);
   }
   return {
-    root: 'frontend',
+    root: devMode ? '' : frontendFolder,
     base: '',
     resolve: {
+      preserveSymlinks: true,
       alias: {
         themes: themeFolder,
         Frontend: frontendFolder
@@ -220,7 +223,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
         transformIndexHtml: {
           enforce: 'pre',
           transform(_html, { path, server }) {
-            if (path !== '/index.html') {
+            if (path !== `/${devMode ? frontendPath : ''}index.html`) {
               return;
             }
 
@@ -229,12 +232,12 @@ export const vaadinConfig: UserConfigFn = (env) => {
               return [
                 {
                   tag: 'script',
-                  attrs: { type: 'module', src: `${basePath}generated/vite-devmode.ts` },
+                  attrs: { type: 'module', src: `${basePath}${frontendPath}generated/vite-devmode.ts` },
                   injectTo: 'head',
                 },
                 {
                   tag: 'script',
-                  attrs: { type: 'module', src: `${basePath}generated/vaadin.ts` },
+                  attrs: { type: 'module', src: `${basePath}${frontendPath}generated/vaadin.ts` },
                   injectTo: 'head',
                 }
               ]

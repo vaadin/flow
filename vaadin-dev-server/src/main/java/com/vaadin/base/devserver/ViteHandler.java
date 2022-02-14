@@ -50,6 +50,8 @@ public final class ViteHandler extends AbstractDevServerRunner {
      */
     public static final String VITE_SERVER = "node_modules/vite/bin/vite.js";
 
+    private final String frontendPath;
+
     /**
      * Creates and starts the dev mode handler if none has been started yet.
      *
@@ -67,6 +69,11 @@ public final class ViteHandler extends AbstractDevServerRunner {
     public ViteHandler(Lookup lookup, int runningPort, File npmFolder,
             CompletableFuture<Void> waitFor) {
         super(lookup, runningPort, npmFolder, waitFor);
+        frontendPath = FrontendUtils.getUnixRelativePath(npmFolder.toPath(),
+                new File(getApplicationConfiguration().getStringProperty(
+                        FrontendUtils.PARAM_FRONTEND_DIR,
+                        System.getProperty(FrontendUtils.PARAM_FRONTEND_DIR,
+                                FrontendUtils.DEFAULT_FRONTEND_DIR))).toPath());
     }
 
     @Override
@@ -130,9 +137,7 @@ public final class ViteHandler extends AbstractDevServerRunner {
     public HttpURLConnection prepareConnection(String path, String method)
             throws IOException {
         if ("/index.html".equals(path)) {
-            return super.prepareConnection(
-                    getContextPath() + "/" + VAADIN_MAPPING + "index.html",
-                    method);
+            path = "/" + VAADIN_MAPPING + frontendPath + "/index.html";
         }
 
         return super.prepareConnection(getContextPath() + path, method);

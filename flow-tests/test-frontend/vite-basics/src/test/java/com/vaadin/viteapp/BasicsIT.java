@@ -1,12 +1,13 @@
 package com.vaadin.viteapp;
 
+import org.junit.Assert;
+import org.junit.Test;
+import org.openqa.selenium.JavascriptExecutor;
+
 import com.vaadin.flow.component.html.testbench.ParagraphElement;
 import com.vaadin.flow.testutil.DevModeGizmoElement;
 import com.vaadin.testbench.TestBenchElement;
 import com.vaadin.viteapp.views.empty.MainView;
-
-import org.junit.Assert;
-import org.junit.Test;
 
 public class BasicsIT extends ViteDevModeIT {
 
@@ -48,5 +49,18 @@ public class BasicsIT extends ViteDevModeIT {
         $("button").id(MainView.LOAD_AND_SHOW_JSON).click();
         Assert.assertEquals("{\"hello\":\"World\"}",
                 $("*").id(MainView.JSON_CONTAINER).getText());
+    }
+
+    @Test
+    public void hasNeatNodeModulesPath() {
+        final String processedJs = (String) ((JavascriptExecutor) getDriver())
+                .executeAsyncScript(
+                        "const done = arguments[arguments.length - 1];"
+                                + "fetch('frontend/deploader.js', {"
+                                + "headers: {Accept: 'application/javascript'}"
+                                + "}).then(response => response.text()).then(done);");
+        Assert.assertEquals(
+                "import('/VAADIN/node_modules/@vaadin/flow-frontend/package.json?import');",
+                processedJs);
     }
 }

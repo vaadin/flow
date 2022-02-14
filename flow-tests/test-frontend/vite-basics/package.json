@@ -22,7 +22,7 @@
     "mkdirp": "1.0.4",
     "rollup-plugin-brotli": "3.1.0",
     "typescript": "4.5.3",
-    "vite": "v2.8.0-beta.5",
+    "vite": "v2.8.2",
     "vite-plugin-checker": "0.3.4",
     "workbox-build": "6.4.2",
     "workbox-core": "6.4.2",
@@ -42,12 +42,12 @@
       "mkdirp": "1.0.4",
       "rollup-plugin-brotli": "3.1.0",
       "typescript": "4.5.3",
-      "vite": "v2.8.0-beta.5",
+      "vite": "v2.8.2",
       "vite-plugin-checker": "0.3.4",
       "workbox-build": "6.4.2",
       "workbox-core": "6.4.2",
       "workbox-precaching": "6.4.2"
     },
-    "hash": "ebde6e0910bd4ca3eebbc855a4b06a9aa2f8621fe76bd2b4d0ef2e7bd203b822"
+    "hash": "c1ebbcd7c4ebeb25f7f6b0038575c932b6bc6083191ecb1bcf10ee42c953b3fe"
   }
 }
