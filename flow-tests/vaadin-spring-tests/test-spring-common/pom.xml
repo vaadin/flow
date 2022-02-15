@@ -19,6 +19,12 @@
     <dependencies>
         <dependency>
             <groupId>com.vaadin</groupId>
+            <artifactId>flow-test-monkey</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.vaadin</groupId>
             <artifactId>vaadin-spring</artifactId>
             <version>${project.version}</version>
         </dependency>

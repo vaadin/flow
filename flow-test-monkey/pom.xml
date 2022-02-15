@@ -5,11 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.vaadin</groupId>
-        <artifactId>flow-tests</artifactId>
+        <artifactId>flow-project</artifactId>
         <version>23.1-SNAPSHOT</version>
     </parent>
-    <artifactId>flow-test-common</artifactId>
-    <name>Flow common test UI classes</name>
+    <artifactId>flow-test-monkey</artifactId>
+    <name>Flow monkey patched selenium</name>
     <packaging>jar</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
@@ -18,9 +18,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>flow-test-monkey</artifactId>
-            <version>${project.version}</version>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-api</artifactId>
+            <version>4.1.2</version>
         </dependency>
     </dependencies>
 

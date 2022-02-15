@@ -48,6 +48,11 @@
     </properties>
 
     <dependencies>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-test-monkey</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <!-- Project dependencies -->
         <dependency>
             <groupId>com.vaadin</groupId>

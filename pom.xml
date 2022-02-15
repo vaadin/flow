@@ -35,6 +35,7 @@
         <module>vaadin-dev-server</module>
         <module>flow-jandex</module>
         <module>vaadin-spring</module>
+		<module>flow-test-monkey</module>
     </modules>
 
     <organization>
