@@ -15,21 +15,25 @@
  */
 package com.vaadin.flow.testutil;
 
+import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.util.List;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Consumer;
 
+import com.vaadin.flow.testcategory.ChromeTests;
+import com.vaadin.testbench.TestBench;
+import com.vaadin.testbench.parallel.Browser;
+
+import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.experimental.categories.Category;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeDriverService;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.DesiredCapabilities;
-
-import com.vaadin.flow.testcategory.ChromeTests;
-import com.vaadin.testbench.TestBench;
-import com.vaadin.testbench.parallel.Browser;
 
 /**
  * Base class for TestBench tests to run locally in the Chrome browser.
@@ -48,6 +52,8 @@ import com.vaadin.testbench.parallel.Browser;
  */
 @Category(ChromeTests.class)
 public class ChromeBrowserTest extends ViewOrUITest {
+
+    private static final ReentrantLock oneAtATime = new ReentrantLock();
 
     /**
      * Sets up the chrome driver path in a system variable.
@@ -73,7 +79,7 @@ public class ChromeBrowserTest extends ViewOrUITest {
      * Chrome.
      * 
      * @param chromeOptions
-     *            chrome options to use when running on a local Chrome
+     *                      chrome options to use when running on a local Chrome
      */
     protected void updateHeadlessChromeOptions(ChromeOptions chromeOptions) {
     }
@@ -85,9 +91,31 @@ public class ChromeBrowserTest extends ViewOrUITest {
 
     static WebDriver createHeadlessChromeDriver(
             Consumer<ChromeOptions> optionsUpdater) {
-        ChromeOptions headlessOptions = createHeadlessChromeOptions();
-        optionsUpdater.accept(headlessOptions);
-        return TestBench.createDriver(new ChromeDriver(headlessOptions));
+        String output = "Creating ChromeDriver";
+        try {
+            output += showPortsInUse();
+            ChromeOptions headlessOptions = createHeadlessChromeOptions();
+            optionsUpdater.accept(headlessOptions);
+            ChromeDriverService service = ChromeDriverService.createServiceWithConfig(headlessOptions);
+            ChromeDriver crd = new ChromeDriver(service, headlessOptions);
+            output += "Chromedriver using " + service.getUrl();
+            return TestBench.createDriver(crd);
+        } finally {
+            output += showPortsInUse();
+            System.err.println(output);
+        }
+    }
+
+    private static String showPortsInUse() {
+        try {
+            Process p = new ProcessBuilder("lsof", "-i", "-P", "-n").start();
+            String result = IOUtils.toString(p.getInputStream());
+            p.waitFor();
+            return result;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "ERROR RUNNING lsof\n";
+        }
     }
 
     @Override
