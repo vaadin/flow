@@ -181,7 +181,7 @@ public @interface PWA {
      * <p>
      * Setting to {@code false} disables the service worker script build. The
      * active service worker, if one is running in the browser, will be
-     * unregistered on the next user's visit.
+     * unregistered on the user's next visit.
      * </p>
      *
      * @return whether offline is enabled.
