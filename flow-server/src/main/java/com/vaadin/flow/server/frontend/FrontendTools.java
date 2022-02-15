@@ -534,11 +534,12 @@ public class FrontendTools {
 
             if (installedNodeVersion.isOlderThan(SUPPORTED_NODE_VERSION)) {
                 getLogger().info(
-                        "{} installed node version {} is not supported. Minimum supported version is {}.",
+                        "{} node version {} is older than {}. Using node from {}.",
                         nodeExecutable.getPath().startsWith(baseDir) ? "Project"
                                 : "Globally",
                         installedNodeVersion.getFullVersion(),
-                        SUPPORTED_NODE_VERSION.getFullVersion());
+                        SUPPORTED_NODE_VERSION.getFullVersion(),
+                        alternativeDirGetter.get());
                 // Global node is not supported use alternative for everything
                 forceAlternativeNode = true;
                 return null;
@@ -1015,16 +1016,21 @@ public class FrontendTools {
                         final FrontendVersion npmVersion = FrontendUtils
                                 .getVersion("npm", npmVersionCommand);
                         if (npmVersion.isOlderThan(SUPPORTED_NPM_VERSION)) {
-                            getLogger().warn(
-                                    "Global npm is older than {}. Using npm form .vaadin.",
-                                    SUPPORTED_NPM_VERSION.getFullVersion());
+                            // Global npm is older than SUPPORTED_NPM_VERSION.
+                            // Using npm from ~/.vaadin
                             returnCommand = new ArrayList<>();
                             // Force installation if not installed
-                            getNodeBinary();
+                            forceAlternativeNodeExecutable();
                         }
                     } catch (UnknownVersionException uve) {
                         getLogger().error("Could not determine npm version",
                                 uve);
+                        // Use from alternate directory if global
+                        // version check failed
+                        returnCommand = new ArrayList<>();
+                        // Force installation if not installed
+                        // as the global version check failed
+                        forceAlternativeNodeExecutable();
                     }
                 }
             }
@@ -1034,6 +1040,8 @@ public class FrontendTools {
             // is not yet checked
             returnCommand = getNpmScriptCommand(getAlternativeDir(),
                     cliTool.getScript());
+            // force alternative to not check global again for these tools
+            forceAlternativeNode = true;
         }
 
         if (flags.length > 0) {
