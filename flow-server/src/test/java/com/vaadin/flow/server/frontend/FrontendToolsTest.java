@@ -148,7 +148,6 @@ public class FrontendToolsTest {
     }
 
     @Test
-    // Test will test correctly when supported node is newer than 16.14
     public void nodeIsBeingLocated_supportedNodeInstalled_autoUpdateFalse_NodeNotUpdated()
             throws FrontendUtils.UnknownVersionException {
         FrontendVersion updatedNodeVersion = getUpdatedAlternativeNodeVersion(
@@ -160,7 +159,6 @@ public class FrontendToolsTest {
     }
 
     @Test
-    // Test will test correctly when supported node is newer than 16.14
     public void nodeIsBeingLocated_supportedNodeInstalled_autoUpdateTrue_NodeUpdated()
             throws FrontendUtils.UnknownVersionException {
         settings.setAutoUpdate(true);
@@ -197,7 +195,6 @@ public class FrontendToolsTest {
     }
 
     @Test
-    // Test will test correctly when supported node is newer than 16.14
     public void nodeIsBeingLocated_unsupportedNodeInstalled_fallbackToNodeInstalledToAlternativeDirectory()
             throws IOException, FrontendUtils.UnknownVersionException {
         // Unsupported node version
@@ -233,7 +230,6 @@ public class FrontendToolsTest {
     }
 
     @Test
-    // Test will test correctly when supported node is newer than 16.14
     public void forceAlternativeDirectory_supportedNodeInstalled_autoUpdateFalse_NodeNotUpdated()
             throws FrontendUtils.UnknownVersionException {
         FrontendVersion updatedNodeVersion = getUpdatedAlternativeNodeVersion(
