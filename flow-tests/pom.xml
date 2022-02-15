@@ -219,7 +219,7 @@
                         <stopKey>foo</stopKey>
                         <stopWait>5</stopWait>
                         <systemProperties>
-                            <!-- All system props are defined here as they need to be overridden 
+                            <!-- All system props are defined here as they need to be overridden
                                  in all modules so no non-standard value leaks to another module -->
                             <force>true</force>
                             <systemProperty>
@@ -292,6 +292,8 @@
                 <module>test-dev-mode</module>
                 <module>test-pwa</module>
                 <module>test-pwa/pom-production.xml</module>
+                <module>test-pwa-with-disabled-offline</module>
+                <module>test-pwa-with-disabled-offline/pom-production.xml</module>
                 <module>test-root-ui-context</module>
                 <module>test-router-custom-context</module>
                 <module>test-live-reload</module>

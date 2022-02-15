@@ -1697,7 +1697,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                                 + "      registration.unregister();\n"
                                 + "    }\n" + "  });\n" + "}",
                         config.getServiceWorkerPath()));
-
             }
         }
     }
