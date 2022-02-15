@@ -6,7 +6,7 @@
         <groupId>com.vaadin</groupId>
         <version>23.1-SNAPSHOT</version>
     </parent>
-    <artifactId>flow-test-pwa-with-disabled-offline-prod</artifactId>
+    <artifactId>flow-test-pwa-disabled-offline-prod</artifactId>
     <name>Flow tests for PWA annotation with disabled offline (production mode)</name>
 
     <packaging>war</packaging>
