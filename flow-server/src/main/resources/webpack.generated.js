@@ -201,6 +201,16 @@ module.exports = {
             loader: 'css-loader',
             options: {
               url: (url, resourcePath) => {
+                // css urls may contain query string or fragment identifiers
+                // that should removed before resolving real path
+                // e.g
+                //  ../webfonts/fa-solid-900.svg#fontawesome
+                //  ../webfonts/fa-brands-400.eot?#iefix
+                if(url.includes('?'))
+                    url = url.substring(0, url.indexOf('?'));
+                if(url.includes('#'))
+                    url = url.substring(0, url.indexOf('#'));
+
                 // Only translate files from node_modules
                 const resolve = resourcePath.match(/(\\|\/)node_modules\1/)
                   && fs.existsSync(path.resolve(path.dirname(resourcePath), url));
