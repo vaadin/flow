@@ -1296,7 +1296,7 @@ public class UI extends Component
      * 
      * @return {@code true} if a modal component has been set
      */
-    public boolean hasModal() {
+    public boolean hasModalComponent() {
         return getInternals().hasModalComponent();
     }
 
@@ -1312,7 +1312,7 @@ public class UI extends Component
      *            component to add to modal component
      */
     public void addToModalComponent(Component component) {
-        if (hasModal()) {
+        if (hasModalComponent()) {
             final Component activeModalComponent = getInternals()
                     .getActiveModalComponent();
             if (activeModalComponent instanceof HasComponents) {
