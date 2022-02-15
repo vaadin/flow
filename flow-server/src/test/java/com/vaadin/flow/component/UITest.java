@@ -1150,6 +1150,57 @@ public class UITest {
     }
 
     @Test
+    public void modalComponent_addedAndRemoved_hasModalReturnsCorrectValue() {
+        final TestFixture fixture = new TestFixture();
+        Assert.assertTrue("Fixture should have set a modal component",
+                fixture.ui.hasModal());
+
+        fixture.ui.setChildComponentModal(fixture.modalComponent, false);
+
+        Assert.assertFalse(
+                "Setting modal to false should have removed all modality",
+                fixture.ui.hasModal());
+    }
+
+    @Test
+    public void modalComponentPresent_getActiveModalComponent_returnsExpectedComponent() {
+        final TestFixture fixture = new TestFixture();
+        Assert.assertEquals("modalComponent should be modal",
+                fixture.modalComponent,
+                fixture.ui.getInternals().getActiveModalComponent());
+
+        fixture.ui.setChildComponentModal(fixture.routingComponent, true);
+
+        Assert.assertEquals(
+                "routingComponent should override modalComponent as active modal component",
+                fixture.routingComponent,
+                fixture.ui.getInternals().getActiveModalComponent());
+
+        fixture.ui.setChildComponentModal(fixture.routingComponent, false);
+
+        Assert.assertEquals(
+                "modalComponent should return to active modal component when routingComponent made non modal",
+                fixture.modalComponent,
+                fixture.ui.getInternals().getActiveModalComponent());
+
+    }
+
+    @Test
+    public void addToModalComponent_newComponentAdded_isAddedCorrectlyAsChild() {
+        final TestFixture fixture = new TestFixture();
+        Component test = new AttachableComponent();
+        fixture.ui.addToModalComponent(test);
+
+        final Optional<Component> testComponentParent = test.getParent();
+        Assert.assertTrue("test component was not attached",
+                testComponentParent.isPresent());
+        Assert.assertEquals(
+                "test component should have been attached to modalComponent",
+                fixture.ui.getInternals().getActiveModalComponent(),
+                testComponentParent.get());
+    }
+
+    @Test
     public void routingComponentVisible_modalComponentAdded_routingComponentInert() {
         final TestFixture fixture = new TestFixture();
 

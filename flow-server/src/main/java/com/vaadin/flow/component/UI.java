@@ -1291,4 +1291,38 @@ public class UI extends Component
         }
     }
 
+    /**
+     * Check if UI has a defined modal component.
+     * 
+     * @return {@code true} if a modal component has been set
+     */
+    public boolean hasModal() {
+        return getInternals().hasModalComponent();
+    }
+
+    /**
+     * Add component as child to modal component if one is active. Else it will
+     * be added to the UI normally.
+     * <p>
+     * This is meant to be used with components that are not added as part of a
+     * layout, like dialog, so that they are interactive when a modal component
+     * opens up an overlay component.
+     * 
+     * @param component
+     *            component to add to modal component
+     */
+    public void addToModalComponent(Component component) {
+        if (hasModal()) {
+            final Component activeModalComponent = getInternals()
+                    .getActiveModalComponent();
+            if (activeModalComponent instanceof HasComponents) {
+                ((HasComponents) activeModalComponent).add(component);
+            } else {
+                activeModalComponent.getElement()
+                        .appendChild(component.getElement());
+            }
+        } else {
+            add(component);
+        }
+    }
 }
