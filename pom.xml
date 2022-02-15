@@ -34,6 +34,7 @@
         <module>fusion-endpoint</module>
         <module>vaadin-dev-server</module>
         <module>flow-jandex</module>
+        <module>vaadin-spring</module>
     </modules>
 
     <organization>
@@ -82,6 +83,7 @@
         <failOnMissingWebXml>false</failOnMissingWebXml>
 
         <!-- Dependencies -->
+        <spring-boot.version>2.6.3</spring-boot.version>
         <gwt.version>2.8.2</gwt.version>
         <hibernate.validator.version>6.2.1.Final</hibernate.validator.version>
         <slf4j.version>1.7.35</slf4j.version>

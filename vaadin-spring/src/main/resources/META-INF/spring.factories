@@ -1,0 +1,2 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.vaadin.flow.spring.SpringBootAutoConfiguration,com.vaadin.flow.spring.SpringSecurityAutoConfiguration,com.vaadin.flow.spring.VaadinScopesConfig
+org.springframework.boot.SpringApplicationRunListener=com.vaadin.flow.spring.DevModeBrowserLauncher
