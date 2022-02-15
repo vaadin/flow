@@ -84,19 +84,17 @@ public class StartupPerformanceIT extends ChromeBrowserTest {
         Pattern endPattern = createPattern(endFragment);
         AtomicInteger startTime = new AtomicInteger();
         AtomicInteger endTime = new AtomicInteger();
-        try {
-            try (Stream<String> lines = Files.lines(getLogPath())) {
-                lines.forEach(line -> {
-                    Matcher matcherFirst = startPattern.matcher(line);
-                    if (matcherFirst.matches() && startTime.get() == 0) {
-                        startTime.set(Integer.parseInt(matcherFirst.group(1)));
-                    }
-                    Matcher matcherEnd = endPattern.matcher(line);
-                    if (matcherEnd.matches()) {
-                        endTime.set(Integer.parseInt(matcherEnd.group(1)));
-                    }
-                });
-            }
+        try (Stream<String> lines = Files.lines(getLogPath())) {
+            lines.forEach(line -> {
+                Matcher matcherFirst = startPattern.matcher(line);
+                if (matcherFirst.matches() && startTime.get() == 0) {
+                    startTime.set(Integer.parseInt(matcherFirst.group(1)));
+                }
+                Matcher matcherEnd = endPattern.matcher(line);
+                if (matcherEnd.matches()) {
+                    endTime.set(Integer.parseInt(matcherEnd.group(1)));
+                }
+            });
             if (startTime.get() == 0 && failIfNotFound) {
                 throw new RuntimeException("No match: " + startFragment);
             }
