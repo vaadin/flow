@@ -340,17 +340,6 @@
                         </archive>
                     </configuration>
                 </plugin>
-                <plugin>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-failsafe-plugin</artifactId>
-                    <version>${maven.failsafe.plugin.version}</version>
-                    <configuration>
-                        <trimStackTrace>false</trimStackTrace>
-                        <enableAssertions>true</enableAssertions>
-                        <parallel>all</parallel>
-                        <threadCount>2</threadCount>
-                    </configuration>
-                </plugin>
                 <!--This plugin's configuration is used to store Eclipse
                     m2e settings only. It has no influence on the Maven build itself. -->
                 <plugin>
