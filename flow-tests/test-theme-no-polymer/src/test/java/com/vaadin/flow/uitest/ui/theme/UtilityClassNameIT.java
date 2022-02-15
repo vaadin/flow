@@ -15,13 +15,35 @@
  */
 package com.vaadin.flow.uitest.ui.theme;
 
-import org.junit.Assert;
-import org.junit.Test;
+import java.net.ServerSocket;
 
 import com.vaadin.flow.component.html.testbench.SpanElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
+import org.junit.Assert;
+import org.junit.Test;
+import org.openqa.selenium.net.PortProber;
+
 public class UtilityClassNameIT extends ChromeBrowserTest {
+
+    @Test
+    public void ports() throws Exception {
+        int i = 0;
+        int port = 0;
+        try {
+
+            for (i = 0; i < 1000; i++) {
+                port = PortProber.findFreePort();
+                System.err.println("Using port " + port);
+                ServerSocket socket = new ServerSocket(port);
+                System.err.println("listening");
+                socket.close();
+                System.err.println("stopped");
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("Failed at iteration " + i + " when trying port " + port, e);
+        }
+    }
 
     @Test
     public void lumoUtils_customStylesHaveBeenExpanded() {
