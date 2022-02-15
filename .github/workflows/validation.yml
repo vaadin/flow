@@ -37,7 +37,6 @@ jobs:
         id: set-matrix
         run: |
           echo "::set-output name=matrix-it::$(./scripts/computeMatrix.js it-tests --parallel=13 current module args)"
-          echo "::set-output name=matrix-unit::$(./scripts/computeMatrix.js unit-tests --parallel=2 current module args)"
       - name: Compile and Install Flow
         run: |
           cmd="mvn install -B -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
@@ -50,54 +49,6 @@ jobs:
         with:
           name: saved-workspace
           path: workspace.tar
-  unit-tests:
-    needs: build
-    timeout-minutes: 10
-    outputs:
-      failure: ${{steps.set-failure.outputs.failure}}
-    strategy:
-      fail-fast: false
-      matrix: ${{fromJson(needs.build.outputs.matrix-unit)}}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-java@v2
-        with:
-          java-version: '11'
-          distribution: 'adopt'
-      - uses: actions/cache@v1
-        with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-maven-
-      - uses: actions/download-artifact@v2
-        with:
-          name: saved-workspace
-      - name: Restore Workspace
-        run: |
-          set -x
-          tar xf workspace.tar
-          rm -rf ~/.m2 && mv -f .m2 ~/
-      - name: Unit Test
-        run: |
-          echo Running TESTS: ${{ strategy.job-index }} ${{matrix.module}} ${{ matrix.args }}
-          [ -n "${{matrix.module}}" ] && \
-            ARGS="-pl ${{matrix.module}} -Dtest=${{matrix.args}}" || \
-            ARGS="-pl ${{matrix.args}}"
-          cmd="mvn -B -T 1C $ARGS"
-          set -x -e -o pipefail
-          ($cmd -T 1C verify || $cmd -fae clean verify) | tee mvn-unit-tests-${{matrix.current}}.out
-      - name: Set build status flag
-        id: set-failure
-        if: ${{ failure() || cancelled() }}
-        run: echo "::set-output name=failure::true"
-      - uses: actions/upload-artifact@v2
-        if: ${{ failure() || success() }}
-        with:
-          name: test-reports
-          path: |
-            **/target/*-reports/*
-            mvn-*.out
   it-tests:
     needs: build
     timeout-minutes: 20
@@ -175,25 +126,3 @@ jobs:
             **/target/*-reports/*
             **/error-screenshots/*.png
             mvn-*.out
-  test-results:
-    if: ${{ failure() || success() }}
-    needs: [unit-tests, it-tests]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/download-artifact@v2
-        with:
-          name: test-reports
-      - name: Publish Unit Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v1
-        with:
-          files: "**/target/*-reports/TEST*.xml"
-          check_run_annotations: all tests, skipped tests
-          check_run_annotations_branch: master, 9.0
-      - uses: geekyeggo/delete-artifact@v1
-        with:
-          name: saved-workspace
-      - name: Check Failure Status
-        run: |
-          fail="${{ needs.unit-tests.outputs.failure }}${{ needs.it-tests.outputs.failure }}"
-          [ -n "$fail" ] && echo "::error::!! THERE ARE TEST MODULES WITH FAILURES !!" && exit 1 || exit 0
-
