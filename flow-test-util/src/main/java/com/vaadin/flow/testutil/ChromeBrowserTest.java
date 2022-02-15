@@ -33,6 +33,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeDriverService;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.net.PortProber;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
 /**
@@ -91,17 +92,24 @@ public class ChromeBrowserTest extends ViewOrUITest {
 
     static WebDriver createHeadlessChromeDriver(
             Consumer<ChromeOptions> optionsUpdater) {
-        String output = "Creating ChromeDriver";
+        String output = "Creating ChromeDriver\n";
         try {
-            output += showPortsInUse();
+            output += "Ports before starting driver: " + showPortsInUse() + "\n.\n";
+            output += "Netstat before starting driver: " + showNetstat() + "\n.\n";
             ChromeOptions headlessOptions = createHeadlessChromeOptions();
             optionsUpdater.accept(headlessOptions);
-            ChromeDriverService service = ChromeDriverService.createServiceWithConfig(headlessOptions);
+            int port = PortProber.findFreePort();
+            output += "Trying with port " + port + "\n";
+            ChromeDriverService service = new ChromeDriverService.Builder()
+                    .withLogLevel(headlessOptions.getLogLevel()).usingPort(port)
+                    .build();
+
+            ChromeDriverService.createServiceWithConfig(headlessOptions);
             ChromeDriver crd = new ChromeDriver(service, headlessOptions);
-            output += "Chromedriver using " + service.getUrl();
+            output += "Chromedriver started using " + service.getUrl() + "\n";
             return TestBench.createDriver(crd);
         } finally {
-            output += showPortsInUse();
+            output += "Ports after at least trying to start driver: " + showPortsInUse() + "\n.\n";
             System.err.println(output);
         }
     }
@@ -115,6 +123,18 @@ public class ChromeBrowserTest extends ViewOrUITest {
         } catch (Exception e) {
             e.printStackTrace();
             return "ERROR RUNNING lsof\n";
+        }
+    }
+
+    private static String showNetstat() {
+        try {
+            Process p = new ProcessBuilder("netstat", "-n").start();
+            String result = IOUtils.toString(p.getInputStream());
+            p.waitFor();
+            return result;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "ERROR RUNNING netstat\n";
         }
     }
 
