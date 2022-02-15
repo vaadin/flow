@@ -19,7 +19,6 @@ import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -44,8 +43,8 @@ public interface ClassFinder extends Serializable {
      */
     class DefaultClassFinder implements ClassFinder {
         private final LinkedHashSet<Class<?>> classes;
+
         private final transient ClassLoader classLoader;
-        private List<String> excludedClasses;
 
         /**
          * It uses current classloader for getting resources or loading classes.
@@ -121,18 +120,6 @@ public interface ClassFinder extends Serializable {
         public ClassLoader getClassLoader() {
             return this.classLoader;
         }
-
-        @Override
-        public void setExcludedClassNames(List<String> classNames) {
-            excludedClasses = Collections.unmodifiableList(classNames);
-        }
-
-        @Override
-        public List<String> getExcludedClassNames() {
-            return excludedClasses != null ? excludedClasses
-                    : Collections.emptyList();
-        }
-
     }
 
     /**
@@ -180,19 +167,6 @@ public interface ClassFinder extends Serializable {
         @Override
         public ClassLoader getClassLoader() {
             return classFinder.getClassLoader();
-        }
-
-        @Override
-        public void setExcludedClassNames(List<String> classNames) {
-            if (classFinder != null) {
-                classFinder.setExcludedClassNames(classNames);
-            }
-        }
-
-        @Override
-        public List<String> getExcludedClassNames() {
-            return classFinder != null ? classFinder.getExcludedClassNames()
-                    : Collections.emptyList();
         }
     }
 
@@ -273,8 +247,4 @@ public interface ClassFinder extends Serializable {
         Class<T> parent = loadClass(name);
         return getSubTypesOf(parent);
     }
-
-    void setExcludedClassNames(List<String> classNames);
-
-    List<String> getExcludedClassNames();
 }

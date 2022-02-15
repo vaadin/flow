@@ -38,6 +38,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.WebComponentExporter;
@@ -81,7 +82,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      *            the class finder
      */
     public FrontendDependencies(ClassFinder finder) {
-        this(finder, true, false);
+        this(finder, true, false, null);
     }
 
     /**
@@ -98,7 +99,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      */
     public FrontendDependencies(ClassFinder finder,
             boolean generateEmbeddableWebComponents) {
-        this(finder, generateEmbeddableWebComponents, false);
+        this(finder, generateEmbeddableWebComponents, false, null);
     }
 
     /**
@@ -114,10 +115,13 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      *            {@link FrontendDependencies#FrontendDependencies(ClassFinder)}
      * @param useV14Bootstrap
      *            whether we are in legacy V14 bootstrap mode
+     * @param featureFlags
+     *            available feature flags and their status
      */
     public FrontendDependencies(ClassFinder finder,
-            boolean generateEmbeddableWebComponents, boolean useV14Bootstrap) {
-        super(finder);
+            boolean generateEmbeddableWebComponents, boolean useV14Bootstrap,
+            FeatureFlags featureFlags) {
+        super(finder, featureFlags);
         this.useV14Bootstrap = useV14Bootstrap;
         log().info(
                 "Scanning classes to find frontend configurations and dependencies...");
@@ -630,7 +634,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         // common name-spaces that would not have components.
         // We also exclude Feature-Flag classes
         return className != null && // @formatter:off
-                !getFinder().getExcludedClassNames().contains(className) &&
+                !isExperimental(className) &&
                 !className.matches(
                     "(^$|"
                     + ".*(slf4j).*|"

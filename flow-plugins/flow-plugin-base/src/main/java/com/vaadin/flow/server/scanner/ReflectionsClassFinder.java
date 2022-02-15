@@ -22,7 +22,6 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import org.reflections.Reflections;
@@ -36,10 +35,9 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
  * @since 2.0
  */
 public class ReflectionsClassFinder implements ClassFinder {
-
     private final transient ClassLoader classLoader;
+
     private final transient Reflections reflections;
-    private List<String> excludedClasses;
 
     /**
      * Constructor.
@@ -99,16 +97,5 @@ public class ReflectionsClassFinder implements ClassFinder {
     @Override
     public ClassLoader getClassLoader() {
         return classLoader;
-    }
-
-    @Override
-    public void setExcludedClassNames(List<String> classNames) {
-        excludedClasses = Collections.unmodifiableList(classNames);
-    }
-
-    @Override
-    public List<String> getExcludedClassNames() {
-        return excludedClasses != null ? excludedClasses
-                : Collections.emptyList();
     }
 }

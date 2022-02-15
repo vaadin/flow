@@ -80,14 +80,33 @@ public class ComponentFlagsTest extends NodeUpdateTestUtil {
         createExpectedImports(frontendDirectory, nodeModulesPath);
     }
 
-    protected FrontendDependenciesScanner getScanner(ClassFinder finder) {
+    protected FrontendDependenciesScanner getScanner(ClassFinder finder,
+            FeatureFlags featureFlags) {
         return new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
-                .createScanner(false, finder, true);
+                .createScanner(false, finder, true, false, featureFlags);
     }
 
     @Test
-    public void should_ExcludeExperimentalComponent_WhenFlagEnabled()
+    public void should_ExcludeExperimentalComponent_WhenFlagDisabled()
             throws IOException {
+        createUpdater().execute();
+
+        String content = FileUtils.readFileToString(importsFile,
+                Charset.defaultCharset());
+        assertFalse(content
+                .contains("@vaadin/example-flag/experimental-module-1.js"));
+        assertFalse(content
+                .contains("@vaadin/example-flag/experimental-module-2.js"));
+        assertFalse(content.contains("experimental-Connector.js"));
+    }
+
+    @Test
+    public void should_ExcludeExperimentalComponent_WhenFlagFoo()
+            throws IOException {
+        createFeatureFlagsFile(
+                "com.vaadin.experimental.exampleFeatureFlag=FOO\n");
+        featureFlags.loadProperties();
+
         createUpdater().execute();
 
         String content = FileUtils.readFileToString(importsFile,
@@ -125,14 +144,10 @@ public class ComponentFlagsTest extends NodeUpdateTestUtil {
 
     private TaskUpdateImports createUpdater() throws IOException {
         ClassFinder classFinder = getClassFinder(testClasses);
-        classFinder.setExcludedClassNames(featureFlags.getFeatures().stream()
-                .filter(f -> !f.isEnabled()
-                        && f.getComponentClassName() != null)
-                .map(f -> f.getComponentClassName())
-                .collect(Collectors.toList()));
 
-        return new TaskUpdateImports(classFinder, getScanner(classFinder),
-                finder -> null, tmpRoot, generatedPath, frontendDirectory, null,
-                null, false, TARGET, true, featureFlags);
+        return new TaskUpdateImports(classFinder,
+                getScanner(classFinder, featureFlags), finder -> null, tmpRoot,
+                generatedPath, frontendDirectory, null, null, false, TARGET,
+                true, featureFlags);
     }
 }
