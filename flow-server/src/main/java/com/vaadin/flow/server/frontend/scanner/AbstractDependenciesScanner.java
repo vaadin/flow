@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.frontend.scanner;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.theme.AbstractTheme;
 
@@ -35,13 +36,22 @@ abstract class AbstractDependenciesScanner
             + AppShellConfigurator.class.getSimpleName() + " implementor.";
 
     private final ClassFinder finder;
+    private final FeatureFlags featureFlags;
 
-    protected AbstractDependenciesScanner(ClassFinder finder) {
+    protected AbstractDependenciesScanner(ClassFinder finder,
+            FeatureFlags featureFlags) {
         this.finder = finder;
+        this.featureFlags = featureFlags;
     }
 
     protected final ClassFinder getFinder() {
         return finder;
+    }
+
+    protected final boolean isExperimental(String className) {
+        return featureFlags != null && featureFlags.getFeatures().stream()
+                .anyMatch(f -> !f.isEnabled()
+                        && className.equals(f.getComponentClassName()));
     }
 
     protected Class<? extends AbstractTheme> getLumoTheme() {

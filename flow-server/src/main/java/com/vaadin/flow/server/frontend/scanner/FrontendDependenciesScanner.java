@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
@@ -61,7 +62,7 @@ public interface FrontendDependenciesScanner extends Serializable {
                 boolean allDependenciesScan, ClassFinder finder,
                 boolean generateEmbeddableWebComponents) {
             return createScanner(allDependenciesScan, finder,
-                    generateEmbeddableWebComponents, false);
+                    generateEmbeddableWebComponents, false, null);
         }
 
         /**
@@ -79,19 +80,24 @@ public interface FrontendDependenciesScanner extends Serializable {
          *            dependencies if {@code true}, doesn't check otherwise
          * @param useV14Bootstrap
          *            whether we are in legacy V14 bootstrap mode
+         * @param featureFlags
+         *            available feature flags and their status
          * @return a scanner implementation strategy
+         * 
          */
         public FrontendDependenciesScanner createScanner(
                 boolean allDependenciesScan, ClassFinder finder,
                 boolean generateEmbeddableWebComponents,
-                boolean useV14Bootstrap) {
+                boolean useV14Bootstrap, FeatureFlags featureFlags) {
             if (allDependenciesScan) {
                 // this dep scanner can't distinguish embeddable web component
                 // frontend related annotations
-                return new FullDependenciesScanner(finder, useV14Bootstrap);
+                return new FullDependenciesScanner(finder, useV14Bootstrap,
+                        featureFlags);
             } else {
                 return new FrontendDependencies(finder,
-                        generateEmbeddableWebComponents, useV14Bootstrap);
+                        generateEmbeddableWebComponents, useV14Bootstrap,
+                        featureFlags);
             }
         }
     }

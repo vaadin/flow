@@ -208,7 +208,7 @@ public class FullDependenciesScannerTest {
 
         Assert.assertTrue(scripts.contains("ExampleConnector.js"));
 
-        Assert.assertEquals(4, scripts.size());
+        Assert.assertEquals(5, scripts.size());
 
         List<String> orderedJs = scripts.stream()
                 .filter(script -> script.startsWith("javascript"))
@@ -263,12 +263,12 @@ public class FullDependenciesScannerTest {
                 JsModule.class);
         List<String> modules = scanner.getModules();
 
-        Assert.assertEquals(17, modules.size());
+        Assert.assertEquals(19, modules.size());
 
         assertJsModules(modules);
 
         Set<String> classes = scanner.getClasses();
-        Assert.assertEquals(12, classes.size());
+        Assert.assertEquals(13, classes.size());
 
         assertJsModulesClasses(classes);
         Assert.assertFalse(classes.contains(LumoTest.class.getName()));
@@ -313,10 +313,10 @@ public class FullDependenciesScannerTest {
                     }
                     Assert.fail();
                     return null;
-                }, false);
+                }, false, null);
 
         List<String> modules = scanner.getModules();
-        Assert.assertEquals(23, modules.size());
+        Assert.assertEquals(25, modules.size());
         assertJsModules(modules);
 
         // Theme modules should be included now
@@ -337,7 +337,7 @@ public class FullDependenciesScannerTest {
         Assert.assertFalse(modules.contains("./foo-bar-baz.js"));
 
         Set<String> classes = scanner.getClasses();
-        Assert.assertEquals(13, classes.size());
+        Assert.assertEquals(14, classes.size());
 
         assertJsModulesClasses(classes);
         Assert.assertTrue(classes.contains(LumoTest.class.getName()));
@@ -387,7 +387,7 @@ public class FullDependenciesScannerTest {
 
         return new FullDependenciesScanner(finder,
                 (type, annotation) -> findAnnotations(type, annotationType),
-                false);
+                false, null);
     }
 
     private FullDependenciesScanner setUpThemeScanner(
@@ -407,7 +407,8 @@ public class FullDependenciesScannerTest {
         Mockito.when(finder.getAnnotatedClasses(fakeNoThemeClass))
                 .thenReturn(noThemeClasses);
 
-        return new FullDependenciesScanner(finder, annotationFinder, false) {
+        return new FullDependenciesScanner(finder, annotationFinder, false,
+                null) {
             @Override
             protected Class<? extends AbstractTheme> getLumoTheme() {
                 return FakeLumoTheme.class;
