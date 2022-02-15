@@ -141,6 +141,9 @@ jobs:
           TB_LICENSE=${{secrets.TB_LICENSE}}
           mkdir -p ~/.vaadin/
           echo '{"username":"'`echo $TB_LICENSE | cut -d / -f1`'","proKey":"'`echo $TB_LICENSE | cut -d / -f2`'"}' > ~/.vaadin/proKey
+      - name: Show ports
+        run: |
+          sudo lsof -i -P -n | grep LISTEN
       - name: Compile Shared modules
         run: |
           if [ ${{matrix.current}} -eq 2 -o ${{matrix.current}} -eq 3 ]; then
