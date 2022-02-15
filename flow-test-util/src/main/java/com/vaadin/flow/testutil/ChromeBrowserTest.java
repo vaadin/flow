@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.testutil;
 
-import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
@@ -33,7 +32,6 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeDriverService;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.net.PortProber;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
 /**
@@ -98,15 +96,13 @@ public class ChromeBrowserTest extends ViewOrUITest {
             output += "Netstat before starting driver: " + showNetstat() + "\n.\n";
             ChromeOptions headlessOptions = createHeadlessChromeOptions();
             optionsUpdater.accept(headlessOptions);
-            int port = PortProber.findFreePort();
-            output += "Trying with port " + port + "\n";
+            // int port = PortProber.findFreePort();
             ChromeDriverService service = new ChromeDriverService.Builder()
-                    .withLogLevel(headlessOptions.getLogLevel()).usingPort(port)
-                    .build();
+            .withLogLevel(headlessOptions.getLogLevel())
+            .build();
+            output += "Trying with URL " + service.getUrl() + "\n";
 
-            ChromeDriverService.createServiceWithConfig(headlessOptions);
             ChromeDriver crd = new ChromeDriver(service, headlessOptions);
-            output += "Chromedriver started using " + service.getUrl() + "\n";
             return TestBench.createDriver(crd);
         } finally {
             output += "Ports after at least trying to start driver: " + showPortsInUse() + "\n.\n";
