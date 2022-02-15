@@ -173,14 +173,15 @@ public @interface PWA {
      * Whether the application should be available offline.
      *
      * <p>
-     * Defaults to {@code true}, which enables the service worker build and
-     * registers the service worker in the browser so that the application could
-     * work offline.
+     * Defaults to {@code true}, which enables the service worker script build.
+     * The service worker is required for the application to work offline and
+     * will be registered in the browser on the user's first visit.
      * </p>
      *
      * <p>
-     * Setting to {@code false} disables the service worker build and causes the
-     * active service worker to unregister.
+     * Setting to {@code false} disables the service worker script build. The
+     * active service worker, if one is running in the browser, will be
+     * unregistered on the next user's visit.
      * </p>
      *
      * @return whether offline is enabled.
