@@ -2,12 +2,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <artifactId>flow-tests</artifactId>
+        <artifactId>test-frontend</artifactId>
         <groupId>com.vaadin</groupId>
         <version>23.1-SNAPSHOT</version>
     </parent>
-    <artifactId>flow-test-pwa-disabled-offline-prod</artifactId>
-    <name>Flow tests for PWA annotation with disabled offline (production mode)</name>
+    <artifactId>vite-pwa-disabled-offline-production</artifactId>
+    <name>Vite PWA app with disabled offline (production mode)</name>
 
     <packaging>war</packaging>
     <properties>

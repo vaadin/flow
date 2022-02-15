@@ -2,12 +2,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <artifactId>flow-tests</artifactId>
+        <artifactId>test-frontend</artifactId>
         <groupId>com.vaadin</groupId>
         <version>23.1-SNAPSHOT</version>
     </parent>
-    <artifactId>flow-test-pwa-disabled-offline-prod</artifactId>
-    <name>Flow tests for PWA annotation with disabled offline (production mode)</name>
+    <artifactId>vite-pwa-disabled-offline</artifactId>
+    <name>Vite PWA app with disabled offline</name>
 
     <packaging>war</packaging>
     <properties>
@@ -20,6 +20,11 @@
             <artifactId>flow-test-resources</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-dev-server</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -27,23 +32,34 @@
             <plugin>
                 <groupId>com.vaadin</groupId>
                 <artifactId>flow-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>prepare-frontend</goal>
-                            <goal>build-frontend</goal>
-                        </goals>
-                        <phase>compile</phase>
-                    </execution>
-                </executions>
                 <configuration>
-                    <productionMode>true</productionMode>
+                    <productionMode>false</productionMode>
                 </configuration>
             </plugin>
+            <!-- This module is mapped to default web context -->
             <plugin>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
                 <version>${jetty.version}</version>
+
+                <executions>
+                    <!-- start and stop jetty (running our app) when running
+                        integration tests -->
+                    <execution>
+                        <id>start-jetty</id>
+                        <phase>pre-integration-test</phase>
+                        <goals>
+                            <goal>start</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>stop-jetty</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>stop</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
