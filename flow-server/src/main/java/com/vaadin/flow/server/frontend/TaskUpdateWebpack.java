@@ -192,6 +192,8 @@ public class TaskUpdateWebpack implements FallibleCommand {
                         getClientEntryPoint()),
                 new Pair<>("const pwaEnabled",
                         Boolean.toString(pwaConfiguration.isEnabled())),
+                new Pair<>("const offlineEnabled",
+                        Boolean.toString(pwaConfiguration.isOfflineEnabled())),
                 new Pair<>("const offlinePath", getOfflinePath()),
                 new Pair<>("const clientServiceWorkerEntryPoint",
                         getClientServiceWorker()),

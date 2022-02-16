@@ -9,7 +9,7 @@
         <version>23.1-SNAPSHOT</version>
     </parent>
     <artifactId>vite-context-path</artifactId>
-    <name>Vite with a context path in dev mode</name>
+    <name>Vite with a context path</name>
     <packaging>war</packaging>
 
     <dependencyManagement>

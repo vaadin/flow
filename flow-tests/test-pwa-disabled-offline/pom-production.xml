@@ -1,40 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <!-- Vaadin project from https://start.vaadin.com/project/null -->
     <parent>
+        <artifactId>flow-tests</artifactId>
         <groupId>com.vaadin</groupId>
-        <artifactId>test-frontend</artifactId>
         <version>23.1-SNAPSHOT</version>
     </parent>
-    <artifactId>vite-pwa-production</artifactId>
-    <name>Vite PWA app (production mode)</name>
-    <packaging>war</packaging>
+    <artifactId>flow-test-pwa-disabled-offline-prod</artifactId>
+    <name>Flow tests for PWA annotation with disabled offline (production mode)</name>
 
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>com.vaadin</groupId>
-                <artifactId>flow-bom</artifactId>
-                <version>${project.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
+    <packaging>war</packaging>
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+    </properties>
 
     <dependencies>
-        <!-- Project dependencies -->
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>flow-test-lumo</artifactId>
+            <artifactId>flow-test-resources</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
 
     <build>
-        <defaultGoal>jetty:run</defaultGoal>
         <plugins>
             <plugin>
                 <groupId>com.vaadin</groupId>
@@ -45,6 +33,7 @@
                             <goal>prepare-frontend</goal>
                             <goal>build-frontend</goal>
                         </goals>
+                        <phase>compile</phase>
                     </execution>
                 </executions>
                 <configuration>
@@ -58,4 +47,5 @@
             </plugin>
         </plugins>
     </build>
+
 </project>
