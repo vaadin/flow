@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.testutil;
 
-import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
@@ -33,7 +32,6 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeDriverService;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.net.PortProber;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
 /**
@@ -97,7 +95,7 @@ public class ChromeBrowserTest extends ViewOrUITest {
             output += showPortsInUse();
             ChromeOptions headlessOptions = createHeadlessChromeOptions();
             optionsUpdater.accept(headlessOptions);
-            int port = PortProber.findFreePort();
+            int port = PortProberCopy.findFreePort();
             ChromeDriverService service = new ChromeDriverService.Builder().usingPort(port).build();
             ChromeDriver crd = new ChromeDriver(service, headlessOptions);
             output += "Chromedriver using " + service.getUrl();
@@ -152,4 +150,5 @@ public class ChromeBrowserTest extends ViewOrUITest {
         options.addArguments("--headless", "--disable-gpu");
         return options;
     }
+
 }
