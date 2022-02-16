@@ -22,6 +22,7 @@ import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -71,8 +72,8 @@ public class StartupPerformanceIT extends ChromeBrowserTest {
         Pattern endPattern = createPattern(endFragment);
         AtomicInteger startTime = new AtomicInteger();
         AtomicInteger endTime = new AtomicInteger();
-        try {
-            Files.lines(getLogPath()).forEach(line -> {
+        try (Stream<String> lines = Files.lines(getLogPath())) {
+            lines.forEach(line -> {
                 Matcher matcherFirst = startPattern.matcher(line);
                 if (matcherFirst.matches() && startTime.get() == 0) {
                     startTime.set(Integer.parseInt(matcherFirst.group(1)));
