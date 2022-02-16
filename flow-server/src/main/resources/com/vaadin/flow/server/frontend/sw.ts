@@ -16,6 +16,7 @@ self.skipWaiting();
 clientsClaim();
 
 declare var OFFLINE_PATH: string; // defined by Webpack/Vite
+declare var VITE_ENABLED: boolean; // defined by Webpack/Vite
 
 // Combine manifest entries injected at compile-time by Webpack/Vite
 // with ones that Flow injects at runtime through `sw-runtime-resources-precache.js`.
@@ -73,7 +74,7 @@ const networkFirst = new NetworkFirst({
   plugins: [checkConnectionPlugin()]
 });
 
-if (process.env.NODE_ENV === 'development') {
+if (process.env.NODE_ENV === 'development' && VITE_ENABLED) {
   self.addEventListener('activate', (event) => {
     event.waitUntil(caches.delete(cacheNames.runtime));
   });
