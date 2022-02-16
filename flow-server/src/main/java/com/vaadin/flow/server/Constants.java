@@ -238,6 +238,12 @@ public final class Constants implements Serializable {
     public static final String PACKAGE_JSON = "package.json";
 
     /**
+     * Name of the <code>npm</code> version locking ile.
+     */
+
+    public static final String PACKAGE_LOCK_JSON = "package-lock.json";
+
+    /**
      * Target folder constant.
      */
     public static final String TARGET = "target";

@@ -497,10 +497,6 @@ public class TaskUpdatePackages extends NodeUpdater {
         return dependencies;
     }
 
-    private File getPackageLockFile() {
-        return new File(npmFolder, "package-lock.json");
-    }
-
     private String getShrinkWrapVersion(JsonObject packageJson) {
         if (packageJson == null) {
             return null;

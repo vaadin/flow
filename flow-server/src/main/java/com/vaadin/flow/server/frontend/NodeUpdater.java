@@ -51,6 +51,7 @@ import elemental.json.JsonValue;
 
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.Constants.PACKAGE_LOCK_JSON;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
@@ -168,8 +169,12 @@ public abstract class NodeUpdater implements FallibleCommand {
         this.featureFlags = featureFlags;
     }
 
-    private File getPackageJsonFile() {
+    protected File getPackageJsonFile() {
         return new File(npmFolder, PACKAGE_JSON);
+    }
+
+    protected File getPackageLockFile() {
+        return new File(npmFolder, PACKAGE_LOCK_JSON);
     }
 
     /**
