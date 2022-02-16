@@ -140,7 +140,6 @@ public class TaskRunNpmInstall implements FallibleCommand {
     public void execute() throws ExecutionFailedException {
         String toolName = enablePnpm ? "pnpm" : "npm";
         if (packageUpdater.modified || shouldRunNpmInstall()) {
-            String waitMessage;
             // Log a stronger request for patience if package-lock.json is
             // missing as "npm install" in this case can take minutes
             // https://github.com/vaadin/flow/issues/12825
