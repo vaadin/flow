@@ -33,6 +33,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeDriverService;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.net.PortProber;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
 /**
@@ -96,7 +97,8 @@ public class ChromeBrowserTest extends ViewOrUITest {
             output += showPortsInUse();
             ChromeOptions headlessOptions = createHeadlessChromeOptions();
             optionsUpdater.accept(headlessOptions);
-            ChromeDriverService service = ChromeDriverService.createServiceWithConfig(headlessOptions);
+            int port = PortProber.findFreePort();
+            ChromeDriverService service = new ChromeDriverService.Builder().usingPort(port).build();
             ChromeDriver crd = new ChromeDriver(service, headlessOptions);
             output += "Chromedriver using " + service.getUrl();
             return TestBench.createDriver(crd);
