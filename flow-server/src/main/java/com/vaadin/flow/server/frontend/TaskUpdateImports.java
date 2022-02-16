@@ -36,6 +36,7 @@ import org.slf4j.Logger;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.CssData;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
@@ -493,7 +494,8 @@ public class TaskUpdateImports extends NodeUpdater {
     }
 
     private String getAbsentPackagesMessage() {
-        String lockFile = enablePnpm ? "pnpm-lock.yaml" : "package-lock.json";
+        String lockFile = enablePnpm ? "pnpm-lock.yaml"
+                : Constants.PACKAGE_LOCK_JSON;
         String command = enablePnpm ? "pnpm" : "npm";
         String note = "";
         if (enablePnpm) {
