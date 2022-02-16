@@ -101,8 +101,8 @@ public class PortProberCopy {
 
   private static int checkPortIsFree(int port) {
     try (ServerSocket socket = new ServerSocket()) {
-    //   socket.setReuseAddress(true);
-      socket.bind(new InetSocketAddress("localhost", port));
+      socket.setReuseAddress(true);
+      socket.bind(new InetSocketAddress( port));
       return socket.getLocalPort();
     } catch (IOException e) {
       return -1;
