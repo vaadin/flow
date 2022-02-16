@@ -207,7 +207,11 @@ public class ElementListenerMap extends NodeMap {
                 return false;
             }
 
-            return eventData.getBoolean(filter);
+            if (eventData.hasKey(filter)) {
+                return eventData.getBoolean(filter);
+            } else {
+                return false;
+            }
         }
 
         @Override
