@@ -25,6 +25,7 @@ import java.util.Map;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
@@ -84,6 +85,18 @@ public class NodeTestComponents extends NodeUpdateTestUtil {
 
     @JsModule("unresolved/component")
     public static class UnresolvedComponent extends Component {
+    }
+
+    @JsModule("@vaadin/example-flag/experimental-module-1.js")
+    @JsModule("@vaadin/example-flag/experimental-module-2.js")
+    @JavaScript("experimental-Connector.js")
+    @Tag("example-experimental-component")
+    public static class ExampleExperimentalComponent extends Component {
+    }
+
+    @Route("flag-view")
+    public static class FlagView extends Component {
+        ExampleExperimentalComponent component;
     }
 
     @JsModule("./foo.js")

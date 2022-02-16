@@ -34,6 +34,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
@@ -85,9 +86,13 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
      *            a class finder
      * @param useV14Bootstrap
      *            whether we are in V14 bootstrap mode
+     * @param featureFlags
+     *            available feature flags and their status
      */
-    FullDependenciesScanner(ClassFinder finder, boolean useV14Bootstrap) {
-        this(finder, AnnotationReader::getAnnotationsFor, useV14Bootstrap);
+    FullDependenciesScanner(ClassFinder finder, boolean useV14Bootstrap,
+            FeatureFlags featureFlags) {
+        this(finder, AnnotationReader::getAnnotationsFor, useV14Bootstrap,
+                featureFlags);
     }
 
     /**
@@ -98,11 +103,15 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
      *            a class finder
      * @param annotationFinder
      *            a strategy to discover class annotations
+     * @param useV14Bootstrap
+     *            whether we are in V14 bootstrap mode
+     * @param featureFlags
+     *            available feature flags and their status
      */
     FullDependenciesScanner(ClassFinder finder,
             SerializableBiFunction<Class<?>, Class<? extends Annotation>, List<? extends Annotation>> annotationFinder,
-            boolean useV14Bootstrap) {
-        super(finder);
+            boolean useV14Bootstrap, FeatureFlags featureFlags) {
+        super(finder, featureFlags);
 
         this.useV14Bootstrap = useV14Bootstrap;
 
@@ -259,12 +268,13 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
             Set<Class<?>> annotatedClasses = getFinder()
                     .getAnnotatedClasses(loadedAnnotation);
 
-            annotatedClasses.stream().forEach(clazz -> annotationFinder
-                    .apply(clazz, loadedAnnotation).forEach(ann -> {
-                        String value = valueExtractor.apply(ann);
-                        valueHandler.accept(clazz, value);
-                        logs.add(value + " " + clazz);
-                    }));
+            annotatedClasses.stream().filter(c -> !isExperimental(c.getName()))
+                    .forEach(clazz -> annotationFinder
+                            .apply(clazz, loadedAnnotation).forEach(ann -> {
+                                String value = valueExtractor.apply(ann);
+                                valueHandler.accept(clazz, value);
+                                logs.add(value + " " + clazz);
+                            }));
 
             debug("@" + annotationType.getSimpleName(), logs);
         } catch (ClassNotFoundException exception) {
