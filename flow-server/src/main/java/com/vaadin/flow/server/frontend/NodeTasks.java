@@ -726,7 +726,8 @@ public class NodeTasks implements FallibleCommand {
             frontendDependencies = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
                     .createScanner(!builder.useByteCodeScanner, classFinder,
                             builder.generateEmbeddableWebComponents,
-                            builder.useDeprecatedV14Bootstrapping);
+                            builder.useDeprecatedV14Bootstrapping,
+                            featureFlags);
 
             if (builder.generateEmbeddableWebComponents) {
                 FrontendWebComponentGenerator generator = new FrontendWebComponentGenerator(
@@ -838,7 +839,8 @@ public class NodeTasks implements FallibleCommand {
         if (builder.enableImportsUpdate) {
             commands.add(
                     new TaskUpdateImports(classFinder, frontendDependencies,
-                            finder -> getFallbackScanner(builder, finder),
+                            finder -> getFallbackScanner(builder, finder,
+                                    featureFlags),
                             builder.npmFolder, builder.generatedFolder,
                             builder.frontendDirectory, builder.tokenFile,
                             builder.tokenFileData, builder.enablePnpm,
@@ -922,12 +924,13 @@ public class NodeTasks implements FallibleCommand {
     }
 
     private FrontendDependenciesScanner getFallbackScanner(Builder builder,
-            ClassFinder finder) {
+            ClassFinder finder, FeatureFlags featureFlags) {
         if (builder.useByteCodeScanner) {
             return new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
                     .createScanner(true, finder,
                             builder.generateEmbeddableWebComponents,
-                            builder.useDeprecatedV14Bootstrapping);
+                            builder.useDeprecatedV14Bootstrapping,
+                            featureFlags);
         } else {
             return null;
         }

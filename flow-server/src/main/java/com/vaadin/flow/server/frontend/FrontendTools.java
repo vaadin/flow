@@ -61,11 +61,11 @@ import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
  */
 public class FrontendTools {
 
-    public static final String DEFAULT_NODE_VERSION = "v17.3.0";
+    public static final String DEFAULT_NODE_VERSION = "v16.14.0";
     /**
      * This is the version shipped with the default Node version.
      */
-    public static final String DEFAULT_NPM_VERSION = "8.3.0";
+    public static final String DEFAULT_NPM_VERSION = "8.3.1";
 
     public static final String DEFAULT_PNPM_VERSION = "5.18.10";
 
@@ -104,12 +104,12 @@ public class FrontendTools {
     private static final FrontendVersion WHITESPACE_ACCEPTING_NPM_VERSION = new FrontendVersion(
             7, 0);
 
-    private static final int SUPPORTED_NODE_MAJOR_VERSION = 12;
-    private static final int SUPPORTED_NODE_MINOR_VERSION = 22;
-    private static final int SUPPORTED_NPM_MAJOR_VERSION = 6;
-    private static final int SUPPORTED_NPM_MINOR_VERSION = 14;
+    private static final int SUPPORTED_NODE_MAJOR_VERSION = 16;
+    private static final int SUPPORTED_NODE_MINOR_VERSION = 14;
+    private static final int SUPPORTED_NPM_MAJOR_VERSION = 8;
+    private static final int SUPPORTED_NPM_MINOR_VERSION = 3;
 
-    private static final FrontendVersion SUPPORTED_NODE_VERSION = new FrontendVersion(
+    static final FrontendVersion SUPPORTED_NODE_VERSION = new FrontendVersion(
             SUPPORTED_NODE_MAJOR_VERSION, SUPPORTED_NODE_MINOR_VERSION);
 
     private static final FrontendVersion SUPPORTED_NPM_VERSION = new FrontendVersion(
@@ -164,7 +164,7 @@ public class FrontendTools {
     private final URI nodeDownloadRoot;
 
     private final boolean ignoreVersionChecks;
-    private final boolean forceAlternativeNode;
+    private boolean forceAlternativeNode;
     private final boolean useGlobalPnpm;
     private final boolean autoUpdate;
 
@@ -534,11 +534,14 @@ public class FrontendTools {
 
             if (installedNodeVersion.isOlderThan(SUPPORTED_NODE_VERSION)) {
                 getLogger().info(
-                        "{} installed node version {} is not supported. Minimum supported version is {}.",
+                        "{} node version {} is older than {}. Using node from {}.",
                         nodeExecutable.getPath().startsWith(baseDir) ? "Project"
                                 : "Globally",
                         installedNodeVersion.getFullVersion(),
-                        SUPPORTED_NODE_VERSION.getFullVersion());
+                        SUPPORTED_NODE_VERSION.getFullVersion(),
+                        alternativeDirGetter.get());
+                // Global node is not supported use alternative for everything
+                forceAlternativeNode = true;
                 return null;
             }
         } catch (UnknownVersionException e) {
@@ -1005,6 +1008,31 @@ public class FrontendTools {
                     .map(File::getAbsolutePath);
             if (command.isPresent()) {
                 returnCommand = Collections.singletonList(command.get());
+                if (!alternativeDirChecked && cliTool.equals(BuildTool.NPM)) {
+                    try {
+                        List<String> npmVersionCommand = new ArrayList<>(
+                                returnCommand);
+                        npmVersionCommand.add("--version"); // NOSONAR
+                        final FrontendVersion npmVersion = FrontendUtils
+                                .getVersion("npm", npmVersionCommand);
+                        if (npmVersion.isOlderThan(SUPPORTED_NPM_VERSION)) {
+                            // Global npm is older than SUPPORTED_NPM_VERSION.
+                            // Using npm from ~/.vaadin
+                            returnCommand = new ArrayList<>();
+                            // Force installation if not installed
+                            forceAlternativeNodeExecutable();
+                        }
+                    } catch (UnknownVersionException uve) {
+                        getLogger().error("Could not determine npm version",
+                                uve);
+                        // Use from alternate directory if global
+                        // version check failed
+                        returnCommand = new ArrayList<>();
+                        // Force installation if not installed
+                        // as the global version check failed
+                        forceAlternativeNodeExecutable();
+                    }
+                }
             }
         }
         if (!alternativeDirChecked && returnCommand.isEmpty()) {
@@ -1012,6 +1040,8 @@ public class FrontendTools {
             // is not yet checked
             returnCommand = getNpmScriptCommand(getAlternativeDir(),
                     cliTool.getScript());
+            // force alternative to not check global again for these tools
+            forceAlternativeNode = true;
         }
 
         if (flags.length > 0) {

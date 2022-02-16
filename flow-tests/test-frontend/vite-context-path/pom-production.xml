@@ -9,7 +9,7 @@
         <version>23.1-SNAPSHOT</version>
     </parent>
     <artifactId>vite-context-path-production</artifactId>
-    <name>Vite with a context path in prod mode</name>
+    <name>Vite with a context path (production mode)</name>
     <packaging>war</packaging>
 
     <dependencyManagement>

@@ -18,10 +18,13 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.stream.Collectors;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
@@ -31,11 +34,14 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
+import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.component.dependency.JavaScript;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.ExecutionFailedException;
-import com.vaadin.flow.server.MockVaadinContext;
-import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.frontend.NodeTasks.Builder;
+import com.vaadin.flow.server.frontend.NodeTestComponents.ExampleExperimentalComponent;
+import com.vaadin.flow.server.frontend.NodeTestComponents.FlagView;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 
@@ -46,13 +52,15 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DI
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
 
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 public class NodeTasksTest {
 
@@ -66,7 +74,6 @@ public class NodeTasksTest {
     private static String globalGeneratedDirValue;
 
     private String userDir;
-    private VaadinContext context;
 
     @Before
     public void setup() {
@@ -74,7 +81,6 @@ public class NodeTasksTest {
         System.setProperty(USER_DIR, userDir);
         System.clearProperty(PARAM_FRONTEND_DIR);
         System.clearProperty(PARAM_GENERATED_DIR);
-        context = new MockVaadinContext();
     }
 
     @BeforeClass
@@ -89,6 +95,72 @@ public class NodeTasksTest {
         setPropertyIfPresent(USER_DIR, globalUserDirValue);
         setPropertyIfPresent(PARAM_FRONTEND_DIR, globalFrontendDirValue);
         setPropertyIfPresent(PARAM_GENERATED_DIR, globalGeneratedDirValue);
+    }
+
+    @Test
+    public void should_ExcludeExperimentalComponent_WhenFeatureDisabled()
+            throws Exception {
+        Class<?>[] classes = { FlagView.class,
+                ExampleExperimentalComponent.class };
+
+        Lookup mockedLookup = Mockito.mock(Lookup.class);
+        ClassFinder finder = NodeUpdateTestUtil.getClassFinder(classes);
+        Mockito.doReturn(finder).when(mockedLookup).lookup(ClassFinder.class);
+
+        Builder builder = new Builder(mockedLookup, new File(userDir), TARGET)
+                .enablePackagesUpdate(false).enableImportsUpdate(true)
+                .runNpmInstall(false).withEmbeddableWebComponents(false);
+
+        assertEquals(1, finder.getAnnotatedClasses(JsModule.class).size());
+        assertEquals(1, finder.getAnnotatedClasses(JavaScript.class).size());
+
+        builder.build().execute();
+        File importsFile = Paths
+                .get(userDir, TARGET, DEFAULT_GENERATED_DIR, IMPORTS_NAME)
+                .toFile();
+        String content = FileUtils.readFileToString(importsFile,
+                Charset.defaultCharset());
+
+        assertFalse(content
+                .contains("@vaadin/example-flag/experimental-module-1.js"));
+        assertFalse(content
+                .contains("@vaadin/example-flag/experimental-module-2.js"));
+        assertFalse(content.contains("experimental-Connector.js"));
+    }
+
+    @Test
+    public void should_IncludeExperimentalComponent_WhenFeatureEnabled()
+            throws Exception {
+        Class<?>[] classes = { FlagView.class,
+                ExampleExperimentalComponent.class };
+
+        File propertiesDir = temporaryFolder.newFolder();
+        FileUtils.write(
+                new File(propertiesDir, FeatureFlags.PROPERTIES_FILENAME),
+                "com.vaadin.experimental.exampleFeatureFlag=true\n",
+                StandardCharsets.UTF_8);
+
+        Lookup mockedLookup = Mockito.mock(Lookup.class);
+        ClassFinder finder = NodeUpdateTestUtil.getClassFinder(classes);
+        Mockito.doReturn(finder).when(mockedLookup).lookup(ClassFinder.class);
+
+        Builder builder = new Builder(mockedLookup, new File(userDir), TARGET)
+                .enablePackagesUpdate(false).enableImportsUpdate(true)
+                .runNpmInstall(false).withEmbeddableWebComponents(false)
+                .setJavaResourceFolder(propertiesDir);
+
+        builder.build().execute();
+        File importsFile = Paths
+                .get(userDir, TARGET, DEFAULT_GENERATED_DIR, IMPORTS_NAME)
+                .toFile();
+        String content = FileUtils.readFileToString(importsFile,
+                Charset.defaultCharset());
+
+        assertTrue(content
+                .contains("@vaadin/example-flag/experimental-module-1.js"));
+        assertTrue(content
+                .contains("@vaadin/example-flag/experimental-module-2.js"));
+        assertTrue(content.contains("experimental-Connector.js"));
     }
 
     @Test

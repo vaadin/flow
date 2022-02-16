@@ -16,9 +16,7 @@
 
 package com.vaadin.flow.component;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -27,7 +25,6 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.commons.io.IOUtils;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.junit.After;
@@ -35,11 +32,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
-import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.slf4j.impl.SimpleLogger;
 
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.page.History;
@@ -1147,6 +1141,57 @@ public class UITest {
             Assert.fail("NotFoundException expected.");
         } catch (NotFoundException e) {
         }
+    }
+
+    @Test
+    public void modalComponent_addedAndRemoved_hasModalReturnsCorrectValue() {
+        final TestFixture fixture = new TestFixture();
+        Assert.assertTrue("Fixture should have set a modal component",
+                fixture.ui.hasModalComponent());
+
+        fixture.ui.setChildComponentModal(fixture.modalComponent, false);
+
+        Assert.assertFalse(
+                "Setting modal to false should have removed all modality",
+                fixture.ui.hasModalComponent());
+    }
+
+    @Test
+    public void modalComponentPresent_getActiveModalComponent_returnsExpectedComponent() {
+        final TestFixture fixture = new TestFixture();
+        Assert.assertEquals("modalComponent should be modal",
+                fixture.modalComponent,
+                fixture.ui.getInternals().getActiveModalComponent());
+
+        fixture.ui.setChildComponentModal(fixture.routingComponent, true);
+
+        Assert.assertEquals(
+                "routingComponent should override modalComponent as active modal component",
+                fixture.routingComponent,
+                fixture.ui.getInternals().getActiveModalComponent());
+
+        fixture.ui.setChildComponentModal(fixture.routingComponent, false);
+
+        Assert.assertEquals(
+                "modalComponent should return to active modal component when routingComponent made non modal",
+                fixture.modalComponent,
+                fixture.ui.getInternals().getActiveModalComponent());
+
+    }
+
+    @Test
+    public void addToModalComponent_newComponentAdded_isAddedCorrectlyAsChild() {
+        final TestFixture fixture = new TestFixture();
+        Component test = new AttachableComponent();
+        fixture.ui.addToModalComponent(test);
+
+        final Optional<Component> testComponentParent = test.getParent();
+        Assert.assertTrue("test component was not attached",
+                testComponentParent.isPresent());
+        Assert.assertEquals(
+                "test component should have been attached to modalComponent",
+                fixture.ui.getInternals().getActiveModalComponent(),
+                testComponentParent.get());
     }
 
     @Test

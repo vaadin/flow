@@ -1098,6 +1098,27 @@ public class UIInternals implements Serializable {
     }
 
     /**
+     * Check if we have a modal component defined for the UI.
+     *
+     * @return {@code true} if modal component is defined
+     */
+    public boolean hasModalComponent() {
+        return modalComponentStack != null && !modalComponentStack.isEmpty();
+    }
+
+    /**
+     * Get the active modal component if modal components set.
+     * 
+     * @return the current active modal component
+     */
+    public Component getActiveModalComponent() {
+        if (hasModalComponent()) {
+            return modalComponentStack.peek();
+        }
+        return null;
+    }
+
+    /**
      * Makes an existing child component modal. This will make the UI and the
      * other components inside it inert - they will not react to any user
      * interaction until the modal component is removed.

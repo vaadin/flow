@@ -9,7 +9,7 @@
         <version>23.1-SNAPSHOT</version>
     </parent>
     <artifactId>vite-pwa-production</artifactId>
-    <name>Vite PWA app in prod mode</name>
+    <name>Vite PWA app (production mode)</name>
     <packaging>war</packaging>
 
     <dependencyManagement>

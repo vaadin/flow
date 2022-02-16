@@ -60,6 +60,10 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
     class AppShellWithOfflinePath {
     }
 
+    @PWA(name = "foo", shortName = "bar", offline = false)
+    class AppShellWithDisabledOffline {
+    }
+
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
@@ -256,6 +260,33 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
                 .collect(Collectors.joining("\n"));
         Assert.assertTrue("pwaEnabled expected true",
                 webpackGeneratedContents.contains("const pwaEnabled = true;"));
+    }
+
+    @Test
+    public void should_setOfflineEnabledTrue_when_defaultInPwa()
+            throws IOException {
+        webpackUpdater.execute();
+        String webpackGeneratedContents = Files.lines(webpackGenerated.toPath())
+                .collect(Collectors.joining("\n"));
+        Assert.assertTrue("offlineEnabled expected true",
+                webpackGeneratedContents
+                        .contains("const offlineEnabled = true;"));
+    }
+
+    @Test
+    public void should_setOfflineEnabledFalse_when_customisedInPwa()
+            throws IOException {
+        pwaConfiguration = new PwaConfiguration(
+                AppShellWithDisabledOffline.class.getAnnotation(PWA.class));
+        createWebpackUpdater();
+
+        webpackUpdater.execute();
+        String webpackGeneratedContents = Files.lines(webpackGenerated.toPath())
+                .collect(Collectors.joining("\n"));
+
+        Assert.assertTrue("offlineEnabled expected false",
+                webpackGeneratedContents
+                        .contains("const offlineEnabled = false;"));
     }
 
     @Test

@@ -168,4 +168,23 @@ public @interface PWA {
      * @return offline resources to be cached
      */
     String[] offlineResources() default {};
+
+    /**
+     * Whether the application should be available offline.
+     *
+     * <p>
+     * Defaults to {@code true}, which enables the service worker script build.
+     * The service worker is required for the application to work offline and
+     * will be registered in the browser on the user's first visit.
+     * </p>
+     *
+     * <p>
+     * Setting to {@code false} disables the service worker script build. The
+     * active service worker, if one is running in the browser, will be
+     * unregistered on the user's next visit.
+     * </p>
+     *
+     * @return whether offline is enabled.
+     */
+    boolean offline() default true;
 }

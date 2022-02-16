@@ -9,7 +9,7 @@
         <version>23.1-SNAPSHOT</version>
     </parent>
     <artifactId>vite-pwa-production-custom-offline-path</artifactId>
-    <name>Vite PWA app with a custom offline path in prod mode</name>
+    <name>Vite PWA app with a custom offline path (production mode)</name>
     <packaging>war</packaging>
 
     <dependencyManagement>

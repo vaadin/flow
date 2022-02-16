@@ -39,7 +39,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Tracks available feature flags and their status.
- * 
+ *
  * Enabled feature flags are stored in
  * <code>vaadin-featureflags.properties</code> inside the resources folder
  * (<code>src/main/resources</code>).
@@ -51,13 +51,15 @@ public class FeatureFlags implements Serializable {
     public static final Feature EXAMPLE = new Feature(
             "Example feature. Will be removed once the first real feature flag is added",
             "exampleFeatureFlag", "https://github.com/vaadin/flow/pull/12004",
-            false);
+            false,
+            "com.vaadin.flow.server.frontend.NodeTestComponents$ExampleExperimentalComponent");
     public static final Feature VITE = new Feature(
             "Use Vite for faster front-end builds", "viteForFrontendBuild",
-            "https://github.com/vaadin/platform/issues/2448", true);
+            "https://github.com/vaadin/platform/issues/2448", true, null);
     public static final Feature MAP_COMPONENT = new Feature(
             "Map component (Pro)", "mapComponent",
-            "https://github.com/vaadin/platform/issues/2611", true);
+            "https://github.com/vaadin/platform/issues/2611", true,
+            "com.vaadin.flow.component.map.Map");
 
     private List<Feature> features = new ArrayList<>();
 
@@ -148,7 +150,11 @@ public class FeatureFlags implements Serializable {
         loadProperties();
     }
 
-    void loadProperties() {
+    /**
+     * Read the feature flag properties files and updates the enable property of
+     * each feature object.
+     */
+    public void loadProperties() {
         final ResourceProvider resourceProvider = lookup
                 .lookup(ResourceProvider.class);
         if (resourceProvider != null) {
@@ -195,11 +201,9 @@ public class FeatureFlags implements Serializable {
                 props.load(propertiesStream);
             }
             for (Feature f : features) {
-                boolean enabled = "true".equals(
-                        props.getProperty(getPropertyName(f.getId()), "false"));
-                f.setEnabled(enabled);
+                f.setEnabled(Boolean.valueOf(
+                        props.getProperty(getPropertyName(f.getId()))));
             }
-
         } catch (IOException e) {
             getLogger().error("Unable to read feature flags", e);
         }
@@ -233,7 +237,7 @@ public class FeatureFlags implements Serializable {
 
     /**
      * Get a list of all available features and their status.
-     * 
+     *
      * @return a list of all features
      */
     public List<Feature> getFeatures() {
@@ -242,7 +246,7 @@ public class FeatureFlags implements Serializable {
 
     /**
      * Checks if the given feature is enabled.
-     * 
+     *
      * @param feature
      *            the feature to check
      * @return <code>true</code> if enabled, <code>false</code> otherwise
@@ -256,7 +260,7 @@ public class FeatureFlags implements Serializable {
 
     /**
      * Checks if the given feature is enabled.
-     * 
+     *
      * @param featureId
      *            the feature to check
      * @return <code>true</code> if enabled, <code>false</code> otherwise
@@ -277,7 +281,7 @@ public class FeatureFlags implements Serializable {
 
     /**
      * Enables or disables the given feature.
-     * 
+     *
      * @param featureId
      *            the feature id
      * @param enabled

@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.server.frontend.scanner;
 
+import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.VALUE;
+import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.VERSION;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
@@ -32,10 +35,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import net.bytebuddy.jar.asm.ClassReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.WebComponentExporter;
@@ -53,8 +56,7 @@ import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
-import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.VALUE;
-import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.VERSION;
+import net.bytebuddy.jar.asm.ClassReader;
 
 /**
  * Represents the class dependency tree of the application.
@@ -80,7 +82,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      *            the class finder
      */
     public FrontendDependencies(ClassFinder finder) {
-        this(finder, true, false);
+        this(finder, true, false, null);
     }
 
     /**
@@ -97,7 +99,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      */
     public FrontendDependencies(ClassFinder finder,
             boolean generateEmbeddableWebComponents) {
-        this(finder, generateEmbeddableWebComponents, false);
+        this(finder, generateEmbeddableWebComponents, false, null);
     }
 
     /**
@@ -113,10 +115,13 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      *            {@link FrontendDependencies#FrontendDependencies(ClassFinder)}
      * @param useV14Bootstrap
      *            whether we are in legacy V14 bootstrap mode
+     * @param featureFlags
+     *            available feature flags and their status
      */
     public FrontendDependencies(ClassFinder finder,
-            boolean generateEmbeddableWebComponents, boolean useV14Bootstrap) {
-        super(finder);
+            boolean generateEmbeddableWebComponents, boolean useV14Bootstrap,
+            FeatureFlags featureFlags) {
+        super(finder, featureFlags);
         this.useV14Bootstrap = useV14Bootstrap;
         log().info(
                 "Scanning classes to find frontend configurations and dependencies...");
@@ -483,11 +488,13 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         String display = pwaVisitor.getValue("display");
         String startPath = pwaVisitor.getValue("startPath");
         List<String> offlineResources = pwaVisitor.getValue("offlineResources");
+        boolean offline = pwaVisitor.getValue("offline");
 
         this.pwaConfiguration = new PwaConfiguration(true, name, shortName,
                 description, backgroundColor, themeColor, iconPath,
                 manifestPath, offlinePath, display, startPath,
-                offlineResources.toArray(new String[] {}), useV14Bootstrap);
+                offlineResources.toArray(new String[] {}), offline,
+                useV14Bootstrap);
     }
 
     private Logger log() {
@@ -627,7 +634,9 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         // HasElement, and AbstractTheme classes, but that prevents the usage of
         // factories. This is the reason of having just a blacklist of some
         // common name-spaces that would not have components.
+        // We also exclude Feature-Flag classes
         return className != null && // @formatter:off
+                !isExperimental(className) &&
                 !className.matches(
                     "(^$|"
                     + ".*(slf4j).*|"
