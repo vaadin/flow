@@ -1,0 +1,13 @@
+{
+  "name": "@bundle/button",
+  "version": "1.0.0",
+  "description": "",
+  "type": "module",
+  "main": "bundle-button.js",
+  "module": "bundle-button.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Vaadin Ltd",
+  "license": "Apache-2.0"
+}

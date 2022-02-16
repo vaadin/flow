@@ -2,19 +2,16 @@
   "name": "no-name",
   "license": "UNLICENSED",
   "dependencies": {
-    "@polymer/polymer": "3.4.1",
     "@testscope/all": "../vite-test-assets/packages/@testscope/all",
     "@testscope/button": "../vite-test-assets/packages/@testscope/button",
+    "@polymer/polymer": "3.4.1",
     "@vaadin/bundles": "../vite-test-assets/packages/@vaadin/bundles",
     "@vaadin/common-frontend": "0.0.17",
     "@vaadin/flow-frontend": "./target/flow-frontend",
     "@vaadin/router": "1.7.4",
     "@vaadin/vaadin-lumo-styles": "22.0.0-alpha9",
     "construct-style-sheets-polyfill": "3.0.4",
-    "copy-to-clipboard": "^3.3.1",
-    "lit": "2.0.0",
-    "package-outside-npm": "file:package-outside-npm",
-    "package2-outside-npm": "./package2-outside-npm"
+    "lit": "2.0.0"
   },
   "devDependencies": {
     "@vaadin/application-theme-plugin": "./target/plugins/application-theme-plugin",
@@ -51,6 +48,6 @@
       "workbox-core": "6.4.2",
       "workbox-precaching": "6.4.2"
     },
-    "hash": "b203ee51775514109118ea6f8f40a4a7b2accf6275aabcbfa91f6c42a086b2c2"
+    "hash": "5d8f12501d22fb35530ea59286901d6af4ac209868d64108c3abd95544207848"
   }
 }

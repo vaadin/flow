@@ -5,6 +5,7 @@
  * This file will be overwritten on every run. Any custom changes should be made to vite.config.ts
  */
 import path from 'path';
+import { readFile } from 'fs/promises';
 import * as net from 'net';
 
 import { processThemeResources } from '@vaadin/application-theme-plugin/theme-handle.js';
@@ -115,6 +116,138 @@ function injectManifestToSWPlugin(): PluginOption {
   }
 }
 
+function vaadinBundlesPlugin(): PluginOption {
+  type ExportInfo = string | {
+    namespace?: string,
+    source: string,
+  };
+
+  type ExposeInfo = {
+    exports: ExportInfo[],
+  };
+
+  type PackageInfo = {
+    version: string,
+    exposes: Record<string, ExposeInfo>,
+  };
+
+  type BundleJson = {
+    packages: Record<string, PackageInfo>,
+  };
+
+  const modulesDirectory = path.posix.resolve(__dirname, 'node_modules');
+
+  let vaadinBundleJsonPath: string | undefined;
+  let vaadinBundleJson: BundleJson;
+
+  function resolveVaadinBundleJsonPath() {
+    try {
+      vaadinBundleJsonPath = require.resolve('@vaadin/bundles/vaadin-bundle.json');
+    } catch (e: unknown) {
+      vaadinBundleJsonPath = undefined;
+      if (!(typeof e === 'object' && (e as {code: string}).code === 'MODULE_NOT_FOUND')) {
+        throw e;
+      }
+    }
+  }
+
+  function parseModuleId(id: string): { packageName: string, modulePath: string } {
+    const [scope, scopedPackageName] = id.split('/', 3);
+    const packageName = scope.startsWith('@') ? `${scope}/${scopedPackageName}` : scope;
+    const modulePath = `.${id.substring(packageName.length)}`;
+    return {
+      packageName,
+      modulePath
+    };
+  }
+
+  function getExports(id: string): string[] | undefined {
+    const {
+      packageName,
+      modulePath
+    } = parseModuleId(id);
+    const packageInfo = vaadinBundleJson.packages[packageName];
+    if (!packageInfo) return;
+
+    const exposeInfo: ExposeInfo = packageInfo.exposes[modulePath];
+    if (!exposeInfo) return;
+
+    const exportsSet = new Set<string>();
+    for (const e of exposeInfo.exports) {
+      if (typeof e === 'string') {
+        exportsSet.add(e);
+      } else {
+        const {namespace, source} = e;
+        if (namespace) {
+          exportsSet.add(namespace);
+        } else {
+          const sourceExports = getExports(source);
+          if (sourceExports) {
+            sourceExports.forEach((e) => exportsSet.add(e));
+          }
+        }
+      }
+    }
+    return Array.from(exportsSet);
+  }
+
+  return {
+    name: 'vaadin-bundle',
+    enforce: 'pre',
+    apply(config, {command}) {
+      if (command !== "serve") return false;
+
+      resolveVaadinBundleJsonPath();
+      if (vaadinBundleJsonPath === undefined) {
+        console.warn('@vaadin/bundles npm package is not found, ' +
+          'Vaadin component dependency bundles are disabled.');
+        vaadinBundleJson = {packages: {}};
+        return false;
+      }
+
+      return true;
+    },
+    async config(config) {
+      vaadinBundleJson = JSON.parse(
+        await readFile(vaadinBundleJsonPath!, {encoding: 'utf8'})
+      );
+
+      return mergeConfig(config, {
+        optimizeDeps: {
+          include: [
+            // Happen to fail dedupe in Vite pre-bundling
+            '@polymer/iron-meta',
+            '@polymer/iron-meta/iron-meta.js',
+          ],
+          exclude: [
+            // Vaadin bundle
+            '@vaadin/bundles',
+            ...Object.keys(vaadinBundleJson.packages),
+            // Known small packages
+            '@vaadin/router',
+          ]
+        }
+      });
+    },
+    load(rawId) {
+      const [path, params] = rawId.split('?');
+      if (!path.startsWith(modulesDirectory)) return;
+
+      const id = path.substring(modulesDirectory.length + 1);
+      const exports = getExports(id);
+      if (exports === undefined) return;
+
+      const cacheSuffix = params ? `?${params}` : '';
+      const bundlePath = `@vaadin/bundles/vaadin.js${cacheSuffix}`;
+
+      return `import { init as VaadinBundleInit, get as VaadinBundleGet } from '${bundlePath}';
+await VaadinBundleInit('default');
+const { ${exports.join(', ')} } = (await VaadinBundleGet('./node_modules/${id}'))();
+export { ${exports.map((binding) => `${binding} as ${binding}`).join(', ')} };`;
+    }
+  }
+}
+
 function updateTheme(contextPath: string) {
   const themePath = path.resolve(themeFolder);
   if (contextPath.startsWith(themePath)) {
@@ -168,7 +301,8 @@ export const vaadinConfig: UserConfigFn = (env) => {
       alias: {
         themes: themeFolder,
         Frontend: frontendFolder
-      }
+      },
+      preserveSymlinks: true,
     },
     define: {
       OFFLINE_PATH: settings.offlinePath
@@ -187,8 +321,15 @@ export const vaadinConfig: UserConfigFn = (env) => {
         }
       }
     },
+    optimizeDeps: {
+      entries: [
+        // Pre-scan entrypoints in Vite to avoid reloading on first open
+        'generated/vaadin.ts'
+      ],
+    },
     plugins: [
       !devMode && brotli(),
+      devMode && vaadinBundlesPlugin(),
       settings.offlineEnabled && transpileSWPlugin(),
       settings.offlineEnabled && injectManifestToSWPlugin(),
       {

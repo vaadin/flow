@@ -1,0 +1,3 @@
+!package-outside-npm/package.json
+!package2-outside-npm/package.json
+!package-stub-vaadin-bundles/**/package.json

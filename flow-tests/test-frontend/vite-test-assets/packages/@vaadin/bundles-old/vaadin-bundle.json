@@ -1,0 +1,43 @@
+{
+  "packages": {
+    "@bundle/bundle": {
+      "version": "0.1.0",
+      "exposes": {
+        "./bundle.js": {
+          "exports": []
+        },
+        ".": {
+          "exports": [
+            {
+              "source": "@bundle/bundle/bundle.js"
+            }
+          ]
+        }
+      }
+    },
+    "@bundle/button": {
+      "version": "1.0.0-alpha1",
+      "exposes": {
+        "./bundle-button.js": {
+          "exports": [
+            {
+              "source": "@bundle/button/src/bundle-button.js"
+            }
+          ]
+        },
+        "./src/bundle-button.js": {
+          "exports": [
+            "Button"
+          ]
+        },
+        ".": {
+          "exports": [
+            {
+              "source": "@bundle/button/bundle-button.js"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
