@@ -15,21 +15,26 @@
  */
 package com.vaadin.flow.testutil;
 
+import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.net.InetSocketAddress;
+import java.net.ServerSocket;
 import java.util.List;
 import java.util.function.Consumer;
+
+import com.vaadin.flow.testcategory.ChromeTests;
+import com.vaadin.testbench.TestBench;
+import com.vaadin.testbench.parallel.Browser;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.experimental.categories.Category;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeDriverService;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.net.PortProber;
 import org.openqa.selenium.remote.DesiredCapabilities;
-
-import com.vaadin.flow.testcategory.ChromeTests;
-import com.vaadin.testbench.TestBench;
-import com.vaadin.testbench.parallel.Browser;
 
 /**
  * Base class for TestBench tests to run locally in the Chrome browser.
@@ -87,7 +92,33 @@ public class ChromeBrowserTest extends ViewOrUITest {
             Consumer<ChromeOptions> optionsUpdater) {
         ChromeOptions headlessOptions = createHeadlessChromeOptions();
         optionsUpdater.accept(headlessOptions);
-        return TestBench.createDriver(new ChromeDriver(headlessOptions));
+
+        int port = findFreePort();
+        ChromeDriverService service = new ChromeDriverService.Builder()
+                .usingPort(port).build();
+        ChromeDriver chromeDriver = new ChromeDriver(service, headlessOptions);
+        return TestBench.createDriver(chromeDriver);
+    }
+
+    private static int findFreePort() {
+        for (int i = 0; i < 10; i++) {
+
+            int port = PortProber.findFreePort();
+
+            // Ensure port is really free...
+            // This is copied from PortProber.checkPortIsFree but does not use
+            // "localhost"
+            try (ServerSocket socket = new ServerSocket()) {
+                socket.setReuseAddress(true);
+                socket.bind(new InetSocketAddress(port));
+                return socket.getLocalPort();
+            } catch (IOException e) {
+                System.err.println("Not using port " + port
+                        + " even though Selenium says it is free");
+            }
+        }
+        throw new RuntimeException("Unable to find free port");
+
     }
 
     @Override
