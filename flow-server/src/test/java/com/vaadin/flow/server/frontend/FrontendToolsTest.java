@@ -42,6 +42,7 @@ import java.util.zip.ZipOutputStream;
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
+import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.junit.Assert;
@@ -51,15 +52,17 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.function.SerializableSupplier;
+import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.frontend.installer.ProxyConfig;
 import com.vaadin.flow.testcategory.SlowTests;
 import com.vaadin.flow.testutil.FrontendStubs;
 
 import net.jcip.annotations.NotThreadSafe;
+import org.slf4j.LoggerFactory;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 
 @NotThreadSafe
@@ -148,11 +151,11 @@ public class FrontendToolsTest {
     public void nodeIsBeingLocated_supportedNodeInstalled_autoUpdateFalse_NodeNotUpdated()
             throws FrontendUtils.UnknownVersionException {
         FrontendVersion updatedNodeVersion = getUpdatedAlternativeNodeVersion(
-                "13.10.1", () -> tools.getNodeExecutable());
+                "16.14.0", () -> tools.getNodeExecutable());
 
         Assert.assertEquals(
                 "Locate Node version: Node version updated even if it should not have been touched.",
-                "13.10.1", updatedNodeVersion.getFullVersion());
+                "16.14.0", updatedNodeVersion.getFullVersion());
     }
 
     @Test
@@ -160,7 +163,7 @@ public class FrontendToolsTest {
             throws FrontendUtils.UnknownVersionException {
         settings.setAutoUpdate(true);
         FrontendVersion updatedNodeVersion = getUpdatedAlternativeNodeVersion(
-                "13.10.1", () -> tools.getNodeExecutable());
+                "16.14.0", () -> tools.getNodeExecutable());
 
         Assert.assertEquals(
                 "Locate Node version: Node version was not auto updated.",
@@ -200,7 +203,7 @@ public class FrontendToolsTest {
         FrontendStubs.ToolStubInfo npmStub = FrontendStubs.ToolStubInfo.none();
         createStubNode(nodeStub, npmStub, baseDir);
 
-        tools.installNode("v13.10.1", null);
+        tools.installNode("v16.14.0", null);
 
         List<String> nodeVersionCommand = new ArrayList<>();
         nodeVersionCommand.add(tools.getNodeExecutable());
@@ -210,7 +213,7 @@ public class FrontendToolsTest {
 
         Assert.assertEquals(
                 "Locate unsupported Node version: Expecting Node in alternative directory to be used, but was not.",
-                "13.10.1", usedNodeVersion.getFullVersion());
+                "16.14.0", usedNodeVersion.getFullVersion());
     }
 
     @Test
@@ -230,11 +233,11 @@ public class FrontendToolsTest {
     public void forceAlternativeDirectory_supportedNodeInstalled_autoUpdateFalse_NodeNotUpdated()
             throws FrontendUtils.UnknownVersionException {
         FrontendVersion updatedNodeVersion = getUpdatedAlternativeNodeVersion(
-                "13.10.1", () -> tools.forceAlternativeNodeExecutable());
+                "16.14.0", () -> tools.forceAlternativeNodeExecutable());
 
         Assert.assertEquals(
                 "Force alternative directory: Node version updated even if it should not have been touched.",
-                "13.10.1", updatedNodeVersion.getFullVersion());
+                "16.14.0", updatedNodeVersion.getFullVersion());
     }
 
     @Test
@@ -242,7 +245,7 @@ public class FrontendToolsTest {
             throws FrontendUtils.UnknownVersionException {
         settings.setAutoUpdate(true);
         FrontendVersion updatedNodeVersion = getUpdatedAlternativeNodeVersion(
-                "13.10.1", () -> tools.forceAlternativeNodeExecutable());
+                "16.14.0", () -> tools.forceAlternativeNodeExecutable());
 
         Assert.assertEquals(
                 "Force alternative directory: Node version was not auto updated.",
@@ -360,8 +363,35 @@ public class FrontendToolsTest {
     }
 
     @Test
-    public void homeNodeIsNotForced_useGlobalNode() throws IOException {
+    public void homeNodeIsNotForced_useGlobalNode()
+            throws IOException, FrontendUtils.UnknownVersionException {
         createStubNode(true, true, vaadinHomeDir);
+
+        // Validate the global node to be applicable for testing.
+        Pair<String, String> nodeCommands;
+        if (FrontendUtils.isWindows()) {
+            nodeCommands = new Pair<>("node.exe", "node/node.exe");
+        } else {
+            nodeCommands = new Pair<>("node", "node/node");
+        }
+        File file = new File(baseDir, nodeCommands.getSecond());
+        if (!file.exists()) {
+            file = frontendToolsLocator.tryLocateTool(nodeCommands.getFirst())
+                    .orElse(null);
+            List<String> versionCommand = Lists.newArrayList();
+            versionCommand.add(file.getAbsolutePath());
+            versionCommand.add("--version"); // NOSONAR
+            final FrontendVersion installedNodeVersion = FrontendUtils
+                    .getVersion("node", versionCommand);
+            if (installedNodeVersion
+                    .isOlderThan(FrontendTools.SUPPORTED_NODE_VERSION)) {
+                LoggerFactory.getLogger(FrontendToolsTest.class).info(
+                        "Global version of node is {} which is older than the supported version {}",
+                        installedNodeVersion.getFullVersion(),
+                        FrontendTools.SUPPORTED_NODE_VERSION.getFullVersion());
+                return;
+            }
+        }
 
         assertThat(tools.getNodeExecutable(), containsString("node"));
         assertThat(tools.getNodeExecutable(),
