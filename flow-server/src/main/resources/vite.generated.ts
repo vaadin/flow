@@ -270,9 +270,9 @@ export const vaadinConfig: UserConfigFn = (env) => {
           },
         },
       },
-      // checker({
-      //   typescript: true
-      // })
+      checker({
+        typescript: true
+      })
     ]
   };
 };
