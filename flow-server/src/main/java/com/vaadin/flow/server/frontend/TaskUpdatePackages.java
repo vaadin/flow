@@ -257,7 +257,7 @@ public class TaskUpdatePackages extends NodeUpdater {
 
         // FIXME do not do cleanup of node_modules every time platform is
         // updated ?
-        doCleanUp = doCleanUp || !enablePnpm && isPlatformVersionUpdated();
+        doCleanUp = doCleanUp || (!enablePnpm && isPlatformVersionUpdated());
 
         // Remove obsolete devDependencies
         dependencyCollection = new ArrayList<>(
