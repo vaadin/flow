@@ -94,10 +94,19 @@ public class ChromeBrowserTest extends ViewOrUITest {
         optionsUpdater.accept(headlessOptions);
 
         int port = findFreePort();
+        checkPortReallyFree(port);
         ChromeDriverService service = new ChromeDriverService.Builder()
                 .usingPort(port).build();
         ChromeDriver chromeDriver = new ChromeDriver(service, headlessOptions);
         return TestBench.createDriver(chromeDriver);
+    }
+
+    private static void checkPortReallyFree(int port) {
+        try (ServerSocket socket = new ServerSocket()) {
+            socket.bind(new InetSocketAddress(port));
+        } catch (IOException e) {
+            throw new RuntimeException("Port " + port + " was supposed to be free but is not", e);
+        }
     }
 
     private static int findFreePort() {
