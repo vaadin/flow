@@ -56,6 +56,17 @@ import org.openqa.selenium.remote.DesiredCapabilities;
 @Category(ChromeTests.class)
 public class ChromeBrowserTest extends ViewOrUITest {
 
+    private static InetAddress ipv4Loopback;
+    private static InetAddress ipv6Loopback;
+    static {
+        try {
+            ipv4Loopback = InetAddress.getByName("127.0.0.1");
+            ipv6Loopback = InetAddress.getByName("::1");
+        } catch (UnknownHostException e) {
+            throw new ExceptionInInitializerError(e);
+        }
+    }
+
     /**
      * Sets up the chrome driver path in a system variable.
      */
@@ -108,9 +119,6 @@ public class ChromeBrowserTest extends ViewOrUITest {
     }
 
     private static void checkPortReallyFree(int port) throws UnknownHostException {
-        InetAddress ipv4Loopback = InetAddress.getByName("127.0.0.1");
-        InetAddress ipv6Loopback = InetAddress.getByName("::1");
-
         try (ServerSocket socket = new ServerSocket()) {
             socket.bind(new InetSocketAddress(ipv4Loopback, port));
         } catch (IOException e) {
