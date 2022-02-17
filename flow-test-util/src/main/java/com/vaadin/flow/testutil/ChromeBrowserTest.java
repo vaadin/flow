@@ -17,8 +17,10 @@ package com.vaadin.flow.testutil;
 
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
+import java.net.UnknownHostException;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -94,18 +96,30 @@ public class ChromeBrowserTest extends ViewOrUITest {
         optionsUpdater.accept(headlessOptions);
 
         int port = findFreePort();
-        checkPortReallyFree(port);
+        try {
+            checkPortReallyFree(port);
+        } catch (UnknownHostException e) {
+            throw new RuntimeException("Error checking if port is free", e);
+        }
         ChromeDriverService service = new ChromeDriverService.Builder()
                 .usingPort(port).build();
         ChromeDriver chromeDriver = new ChromeDriver(service, headlessOptions);
         return TestBench.createDriver(chromeDriver);
     }
 
-    private static void checkPortReallyFree(int port) {
+    private static void checkPortReallyFree(int port) throws UnknownHostException {
+        InetAddress ipv4Loopback = InetAddress.getByName("127.0.0.1");
+        InetAddress ipv6Loopback = InetAddress.getByName("::1");
+
         try (ServerSocket socket = new ServerSocket()) {
-            socket.bind(new InetSocketAddress(port));
+            socket.bind(new InetSocketAddress(ipv4Loopback, port));
         } catch (IOException e) {
-            throw new RuntimeException("Port " + port + " was supposed to be free but is not", e);
+            throw new RuntimeException("Port " + port + " was supposed to be free but is not for ipv4", e);
+        }
+        try (ServerSocket socket = new ServerSocket()) {
+            socket.bind(new InetSocketAddress(ipv6Loopback, port));
+        } catch (IOException e) {
+            throw new RuntimeException("Port " + port + " was supposed to be free but is not for ipv6", e);
         }
     }
 
