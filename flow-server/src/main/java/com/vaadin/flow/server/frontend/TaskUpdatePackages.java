@@ -56,7 +56,6 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
  */
 public class TaskUpdatePackages extends NodeUpdater {
 
-    private static final String VERSION = "version";
     protected static final String VAADIN_APP_PACKAGE_HASH = "vaadinAppPackageHash";
     private final boolean forceCleanUp;
     private final boolean enablePnpm;
