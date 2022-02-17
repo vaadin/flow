@@ -56,25 +56,22 @@ function transpileSWPlugin(): PluginOption {
       config = resolvedConfig;
     },
     async buildStart() {
-      const pluginsMap = config.plugins.reduce((map, plugin) => {
-        map.set(plugin.name, plugin);
-        return map;
-      }, new Map())
-
-      const plugins = [
-        pluginsMap.get('alias'),
-        pluginsMap.get('vite:resolve'),
-        pluginsMap.get('vite:esbuild'),
-        pluginsMap.get('replace'),
-        pluginsMap.get('vite:define'),
-        pluginsMap.get('rollup-plugin-dynamic-import-variables'),
-        pluginsMap.get('vite:esbuild-transpile'),
-        pluginsMap.get('vite:terser'),
-      ];
-
+      const includedPluginNames = [
+        'alias',
+        'vite:resolve',
+        'vite:esbuild',
+        'replace',
+        'vite:define',
+        'rollup-plugin-dynamic-import-variables',
+        'vite:esbuild-transpile',
+        'vite:terser',
+      ]
       if (config.mode === 'development') {
-        plugins.push(pluginsMap.get('vite:client-inject'));
+        includedPluginNames.push('vite:client-inject');
+      }
 
+      const plugins = config.plugins.filter((p) => includedPluginNames.includes(p.name));
+      if (config.mode === 'development') {
         plugins.push({
           name: 'vaadin:inject-vite-env',
           enforce: 'pre',
@@ -90,7 +87,7 @@ function transpileSWPlugin(): PluginOption {
 
       const bundle = await rollup.rollup({
         input: path.resolve(settings.clientServiceWorkerSource),
-        plugins
+        plugins,
       })
       try {
         await bundle.write({
