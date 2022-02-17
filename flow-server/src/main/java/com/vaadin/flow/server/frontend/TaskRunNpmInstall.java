@@ -24,7 +24,9 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -33,6 +35,7 @@ import org.slf4j.Logger;
 
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.Platform;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.shared.util.SharedUtil;
 
@@ -43,8 +46,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAM
 import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
 import static com.vaadin.flow.server.frontend.NodeUpdater.HASH_KEY;
 import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
-import static elemental.json.impl.JsonUtil.stringify;
-import static java.nio.charset.StandardCharsets.UTF_8;
+import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_VERSION;
 
 /**
  * Run <code>npm install</code> after dependencies have been updated.
@@ -56,11 +58,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class TaskRunNpmInstall implements FallibleCommand {
 
     private static final String MODULES_YAML = ".modules.yaml";
-
-    // .vaadin/vaadin.json contains local installation data inside node_modules
-    // This will hep us know to execute even when another developer has pushed
-    // a new hash to the code repository.
-    private static final String INSTALL_HASH = ".vaadin/vaadin.json";
 
     private static final String NPM_VALIDATION_FAIL_MESSAGE = "%n%n======================================================================================================"
             + "%nThe path to npm cache contains whitespaces, and the currently installed npm version doesn't accept this."
@@ -162,18 +159,25 @@ public class TaskRunNpmInstall implements FallibleCommand {
                             + "installed in the folder '{}' and the hash in the file '{}' is the same as in '{}'",
                     toolName,
                     packageUpdater.nodeModulesFolder.getAbsolutePath(),
-                    getLocalHashFile().getAbsolutePath(),
+                    packageUpdater.getVaadinJsonFile().getAbsolutePath(),
                     Constants.PACKAGE_JSON);
 
         }
     }
 
     /**
-     * Updates the local hash to node_modules.
+     * Updates
+     * 
+     * <pre>
+     * node_modules/.vaadin/vaadin.json
+     * </pre>
+     * 
+     * with package.json hash and the platform version.
      * <p>
      * This is for handling updated package to the code repository by another
      * developer as then the hash is updated and we may just be missing one
-     * module.
+     * module, as well as for detecting that the platform version has changed
+     * which may require a deeper cleanup.
      */
     private void updateLocalHash() {
         try {
@@ -185,21 +189,14 @@ public class TaskRunNpmInstall implements FallibleCommand {
             }
             final String hash = vaadin.getString(HASH_KEY);
 
-            final JsonObject localHash = Json.createObject();
-            localHash.put(HASH_KEY, hash);
-
-            final File localHashFile = getLocalHashFile();
-            FileUtils.forceMkdirParent(localHashFile);
-            String content = stringify(localHash, 2) + "\n";
-            FileUtils.writeStringToFile(localHashFile, content, UTF_8.name());
-
+            final Map<String, String> updates = new HashMap<>();
+            updates.put(HASH_KEY, hash);
+            Platform.getVaadinVersion()
+                    .ifPresent(s -> updates.put(VAADIN_VERSION, s));
+            packageUpdater.updateVaadinJsonContents(updates);
         } catch (IOException e) {
             packageUpdater.log().warn("Failed to update node_modules hash.", e);
         }
-    }
-
-    private File getLocalHashFile() {
-        return new File(packageUpdater.nodeModulesFolder, INSTALL_HASH);
     }
 
     private boolean shouldRunNpmInstall() {
@@ -224,22 +221,16 @@ public class TaskRunNpmInstall implements FallibleCommand {
     }
 
     private boolean isVaadinHashUpdated() {
-        final File localHashFile = getLocalHashFile();
-        if (localHashFile.exists()) {
-            try {
-                String fileContent = FileUtils.readFileToString(localHashFile,
-                        UTF_8.name());
-                JsonObject content = Json.parse(fileContent);
-                if (content.hasKey(HASH_KEY)) {
-                    final JsonObject packageJson = packageUpdater
-                            .getPackageJson();
-                    return !content.getString(HASH_KEY).equals(packageJson
-                            .getObject(VAADIN_DEP_KEY).getString(HASH_KEY));
-                }
-            } catch (IOException e) {
-                packageUpdater.log()
-                        .warn("Failed to load hashes forcing npm execution", e);
+        try {
+            JsonObject content = packageUpdater.getVaadinJsonContents();
+            if (content != null && content.hasKey(HASH_KEY)) {
+                final JsonObject packageJson = packageUpdater.getPackageJson();
+                return !content.getString(HASH_KEY).equals(packageJson
+                        .getObject(VAADIN_DEP_KEY).getString(HASH_KEY));
             }
+        } catch (IOException e) {
+            packageUpdater.log()
+                    .warn("Failed to load hashes forcing npm execution", e);
         }
         return true;
     }

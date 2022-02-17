@@ -205,10 +205,6 @@ public class NodeTestComponents extends NodeUpdateTestUtil {
     public static class ExtraImport {
     }
 
-    @NpmPackage(value = "@vaadin/vaadin-core", version = "1.2.3")
-    public static class SimulatedPlatformUpdate {
-    }
-
     @JavaScript("javascript/a.js")
     @JavaScript("javascript/b.js")
     @JavaScript("javascript/c.js")

@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -33,6 +34,7 @@ import org.apache.commons.io.FileUtils;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.internal.StringUtil;
+import com.vaadin.flow.server.Platform;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
@@ -55,7 +57,6 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 public class TaskUpdatePackages extends NodeUpdater {
 
     private static final String VERSION = "version";
-    private static final String VAADIN_CORE = "@vaadin/vaadin-core";
     protected static final String VAADIN_APP_PACKAGE_HASH = "vaadinAppPackageHash";
     private final boolean forceCleanUp;
     private final boolean enablePnpm;
@@ -253,12 +254,10 @@ public class TaskUpdatePackages extends NodeUpdater {
         int removed = removeLegacyProperties(packageJson);
         removed += cleanDependencies(dependencyCollection, packageJson,
                 DEPENDENCIES);
-        if (dependencies != null) {
-            // FIXME do not do cleanup of node_modules every time platform is
-            // updated ?
-            doCleanUp = doCleanUp
-                    || !enablePnpm && isPlatformVersionUpdated(dependencies);
-        }
+
+        // FIXME do not do cleanup of node_modules every time platform is
+        // updated ?
+        doCleanUp = doCleanUp || !enablePnpm && isPlatformVersionUpdated();
 
         // Remove obsolete devDependencies
         dependencyCollection = new ArrayList<>(
@@ -365,29 +364,30 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     /**
-     * Compares vaadin-core dependency version (which is the same as the
-     * platform version) from the {@code dependencies} object with the current
-     * vaadin-core version (retrieved from file system: package.json,
-     * package-lock.json). In case there was no existing vaadin-core version,
-     * then version is considered updated.
+     * Compares current platform version with the one last recorded as installed
+     * in node_modules/.vaadin/vaadin_version. In case there was no existing
+     * vaadin-core version, then version is considered updated.
      *
-     * @param dependencies
-     *            dependencies object with the vaadin-core version
      * @return {@code true} if the version has changed, {@code false} if not
      * @throws IOException
      *             when file reading fails
      */
-    private boolean isPlatformVersionUpdated(JsonObject dependencies)
-            throws IOException {
-        String vaadinCoreVersion = null;
-        if (dependencies.hasKey(VAADIN_CORE)) {
-            vaadinCoreVersion = dependencies.getString(VAADIN_CORE);
+    private boolean isPlatformVersionUpdated() throws IOException {
+        // if no record of current version is present, version is not
+        // considered updated
+        Optional<String> platformVersion = Platform.getVaadinVersion();
+        if (platformVersion.isPresent()) {
+            JsonObject vaadinJsonContents = getVaadinJsonContents();
+            // If no record of previous version, version is considered updated;
+            if (vaadinJsonContents == null
+                    || !vaadinJsonContents.hasKey(NodeUpdater.VAADIN_VERSION)) {
+                return true;
+            }
+            return !Objects.equals(
+                    vaadinJsonContents.getString(NodeUpdater.VAADIN_VERSION),
+                    platformVersion.get());
         }
-
-        final String existingVaadinVersion = getExistingVaadinCoreVersion();
-        // if no existing vaadin-core version is present, version is not
-        // "updated"
-        return !Objects.equals(vaadinCoreVersion, existingVaadinVersion);
+        return false;
     }
 
     /**
@@ -450,62 +450,6 @@ public class TaskUpdatePackages extends NodeUpdater {
         if (generatedNodeModules.exists()) {
             FrontendUtils.deleteNodeModules(generatedNodeModules);
         }
-    }
-
-    private String getExistingVaadinCoreVersion() throws IOException {
-        String vaadinCoreVersion = getVaadinCoreVersion(getPackageJson());
-        if (vaadinCoreVersion != null) {
-            return vaadinCoreVersion;
-        }
-
-        vaadinCoreVersion = getPackageLockVaadinCoreVersion();
-        return vaadinCoreVersion;
-    }
-
-    private String getPackageLockVaadinCoreVersion() throws IOException {
-        JsonObject dependencies = getPackageLockDependencies();
-        if (dependencies == null) {
-            return null;
-        }
-
-        if (!dependencies.hasKey(VAADIN_CORE)) {
-            return null;
-        }
-        JsonObject shrinkWrap = dependencies.getObject(VAADIN_CORE);
-        if (shrinkWrap.hasKey(VERSION)) {
-            return shrinkWrap.get(VERSION).asString();
-        }
-        return null;
-    }
-
-    private JsonObject getPackageLockDependencies() throws IOException {
-        File packageLock = getPackageLockFile();
-        if (!packageLock.exists()) {
-            return null;
-        }
-        JsonObject packageLockJson = getJsonFileContent(packageLock);
-        if (packageLockJson == null) {
-            return null;
-        }
-        if (!packageLockJson.hasKey(DEPENDENCIES)) {
-            return null;
-        }
-        JsonObject dependencies = packageLockJson.getObject(DEPENDENCIES);
-        return dependencies;
-    }
-
-    private String getVaadinCoreVersion(JsonObject packageJson) {
-        if (packageJson == null) {
-            return null;
-        }
-        if (packageJson.hasKey(DEPENDENCIES)) {
-            JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
-            if (dependencies.hasKey(VAADIN_CORE)) {
-                JsonValue value = dependencies.get(VAADIN_CORE);
-                return value.asString();
-            }
-        }
-        return null;
     }
 
     private void deletePnpmLockFile() throws IOException {

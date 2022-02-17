@@ -179,7 +179,7 @@ public class FullDependenciesScannerTest {
         Assert.assertEquals(packages.get("@webcomponents/webcomponentsjs"),
                 "2.2.10");
 
-        Assert.assertEquals(5, packages.size());
+        Assert.assertEquals(4, packages.size());
 
         Set<String> visitedClasses = scanner.getClasses();
         Assert.assertTrue(

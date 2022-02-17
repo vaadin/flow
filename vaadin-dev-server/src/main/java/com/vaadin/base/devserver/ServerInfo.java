@@ -15,22 +15,15 @@
  */
 package com.vaadin.base.devserver;
 
-import java.io.InputStream;
 import java.io.Serializable;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.Platform;
 import com.vaadin.flow.server.Version;
-
-import org.slf4j.LoggerFactory;
 
 /**
  * Data for a info message to the debug window.
  */
 public class ServerInfo implements Serializable {
-
-    private static boolean versionErrorLogged = false;
 
     private final String flowVersion;
     private final String vaadinVersion;
@@ -64,25 +57,7 @@ public class ServerInfo implements Serializable {
     }
 
     private String fetchVaadinVersion() {
-        try (InputStream vaadinVersionsStream = getClass().getClassLoader()
-                .getResourceAsStream(Constants.VAADIN_VERSIONS_JSON)) {
-            if (vaadinVersionsStream != null) {
-                ObjectMapper m = new ObjectMapper();
-                JsonNode vaadinVersions = m.readTree(vaadinVersionsStream);
-                return vaadinVersions.get("platform").asText();
-            } else {
-                if (!versionErrorLogged) {
-                    versionErrorLogged = true; // NOSONAR
-                    LoggerFactory.getLogger(getClass()).info(
-                            "Unable to determine version information. No vaadin_versions.json found");
-                }
-            }
-        } catch (Exception e) {
-            LoggerFactory.getLogger(getClass())
-                    .error("Unable to determine version information", e);
-        }
-
-        return "?";
+        return Platform.getVaadinVersion().orElse("?");
     }
 
     public String getFlowVersion() {
