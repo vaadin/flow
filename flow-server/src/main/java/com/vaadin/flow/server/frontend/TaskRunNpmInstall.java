@@ -79,6 +79,9 @@ public class TaskRunNpmInstall implements FallibleCommand {
             + "%n        node_modules, package-lock.json, webpack.generated.js, pnpm-lock.yaml, pnpmfile.js"
             + "%n======================================================================================================%n";
 
+    public static long lastInstallTimeMs = 0;
+    public static String lastInstallPackageManager = "";
+
     private final NodeUpdater packageUpdater;
 
     private final List<String> ignoredNodeFolders = Arrays.asList(".bin",
@@ -249,6 +252,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
      * `package.json` has been updated.
      */
     private void runNpmInstall() throws ExecutionFailedException {
+        long startTime = System.currentTimeMillis();
         // Do possible cleaning before generating any new files.
         cleanUp();
 
@@ -410,6 +414,9 @@ public class TaskRunNpmInstall implements FallibleCommand {
                         e);
             }
         }
+        lastInstallTimeMs = System.currentTimeMillis() - startTime;
+        lastInstallPackageManager = enablePnpm ? "pnpm" : "npm";
+
     }
 
     private Process runNpmCommand(List<String> command, File workingDirectory)

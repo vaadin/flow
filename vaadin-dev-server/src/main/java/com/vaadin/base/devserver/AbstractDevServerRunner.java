@@ -55,16 +55,13 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.frontend.FrontendVersion;
-import com.vaadin.flow.server.frontend.FrontendUtils.UnknownVersionException;
+import com.vaadin.flow.server.frontend.TaskRunNpmInstall;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static com.vaadin.base.devserver.stats.StatisticsConstants.EVENT_LIVE_RELOAD;
 
 /**
  * Deals with most details of starting a frontend development server or
@@ -221,6 +218,10 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
 
             long ms = (System.nanoTime() - start) / 1000000;
             getLogger().info("Started {}. Time: {}ms", getServerName(), ms);
+            DevModeUsageStatistics.collectEvent(
+                    StatisticsConstants.EVENT_PACKAGEMANAGER_INSTALL_TIME_PREFIX
+                            + TaskRunNpmInstall.lastInstallPackageManager,
+                    TaskRunNpmInstall.lastInstallTimeMs);
             DevModeUsageStatistics.collectEvent(
                     StatisticsConstants.EVENT_DEV_SERVER_START_PREFIX
                             + getServerName(),
@@ -421,7 +422,8 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
     protected void triggerLiveReload() {
         if (liveReload != null) {
             liveReload.reload();
-            DevModeUsageStatistics.collectEvent(EVENT_LIVE_RELOAD);
+            DevModeUsageStatistics
+                    .collectEvent(StatisticsConstants.EVENT_LIVE_RELOAD);
         }
     }
 
