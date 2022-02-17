@@ -17,8 +17,10 @@ package com.vaadin.flow.testutil;
 
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
+import java.net.UnknownHostException;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -35,6 +37,8 @@ import org.openqa.selenium.chrome.ChromeDriverService;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.net.PortProber;
 import org.openqa.selenium.remote.DesiredCapabilities;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Base class for TestBench tests to run locally in the Chrome browser.
@@ -53,6 +57,17 @@ import org.openqa.selenium.remote.DesiredCapabilities;
  */
 @Category(ChromeTests.class)
 public class ChromeBrowserTest extends ViewOrUITest {
+
+    private static InetAddress ipv4All;
+    private static InetAddress ipv6All;
+    static {
+        try {
+            ipv4All = InetAddress.getByName("0.0.0.0");
+            ipv6All = InetAddress.getByName("::0");
+        } catch (UnknownHostException e) {
+            throw new ExceptionInInitializerError(e);
+        }
+    }
 
     /**
      * Sets up the chrome driver path in a system variable.
@@ -90,6 +105,24 @@ public class ChromeBrowserTest extends ViewOrUITest {
 
     static WebDriver createHeadlessChromeDriver(
             Consumer<ChromeOptions> optionsUpdater) {
+        for (int i = 0; i < 3; i++) {
+            try {
+                return tryCreateHeadlessChromeDriver(optionsUpdater);
+            } catch (Exception e) {
+                getLogger().warn(
+                        "Unable to create chromedriver on attempt " + i, e);
+            }
+        }
+        throw new RuntimeException(
+                "Gave up trying to create a chromedriver instance");
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(ChromeBrowserTest.class);
+    }
+
+    private static WebDriver tryCreateHeadlessChromeDriver(
+            Consumer<ChromeOptions> optionsUpdater) {
         ChromeOptions headlessOptions = createHeadlessChromeOptions();
         optionsUpdater.accept(headlessOptions);
 
@@ -102,20 +135,26 @@ public class ChromeBrowserTest extends ViewOrUITest {
 
     private static int findFreePort() {
         for (int i = 0; i < 10; i++) {
-
             int port = PortProber.findFreePort();
 
-            // Ensure port is really free...
-            // This is copied from PortProber.checkPortIsFree but does not use
-            // "localhost"
-            try (ServerSocket socket = new ServerSocket()) {
-                socket.setReuseAddress(true);
-                socket.bind(new InetSocketAddress(port));
-                return socket.getLocalPort();
+            // PortProber.checkPortIsFree checks "localhost" but we also need to
+            // check both
+            // ipv4 and ipv6 for all interfaces
+            try (ServerSocket ipv4socket = new ServerSocket()) {
+                ipv4socket.bind(new InetSocketAddress(ipv4All, port));
             } catch (IOException e) {
                 System.err.println("Not using port " + port
-                        + " even though Selenium says it is free");
+                        + " even though Selenium says it is free because binding to 0.0.0.0 fails");
+                continue;
             }
+            try (ServerSocket ipv6socket = new ServerSocket()) {
+                ipv6socket.bind(new InetSocketAddress(ipv6All, port));
+            } catch (IOException e) {
+                System.err.println("Not using port " + port
+                        + " even though Selenium says it is free because binding to ::0 fails");
+                continue;
+            }
+            return port;
         }
         throw new RuntimeException("Unable to find free port");
 
