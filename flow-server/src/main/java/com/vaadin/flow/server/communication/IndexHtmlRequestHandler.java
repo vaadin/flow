@@ -261,7 +261,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     }
 
     /**
-     * Checks if the request is potentially a request for a HTML page.
+     * Checks if the request is potentially a request for an HTML page.
      * 
      * @param request
      *            the request to check
@@ -270,6 +270,9 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
      *         image or something else
      */
     protected boolean isRequestForHtml(VaadinRequest request) {
+        if (request.getHeader(SERVICE_WORKER_HEADER) != null) {
+            return false;
+        }
         String fetchDest = request.getHeader("Sec-Fetch-Dest");
         if (fetchDest == null) {
             // Old browsers do not send the header at all
