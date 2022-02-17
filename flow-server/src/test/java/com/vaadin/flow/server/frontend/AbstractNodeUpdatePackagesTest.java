@@ -63,7 +63,7 @@ public abstract class AbstractNodeUpdatePackagesTest
     private static final String DEPENDENCIES = "dependencies";
     private static final String DEV_DEPENDENCIES = "devDependencies";
 
-    private static final String SHRINKWRAP = "@vaadin/vaadin-shrinkwrap";
+    private static final String VAADIN_CORE = "@vaadin/vaadin-core";
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -173,7 +173,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         makeNodeModulesAndPackageLock();
 
         // Change the versions
-        getDependencies(packageUpdater.getPackageJson()).put(SHRINKWRAP,
+        getDependencies(packageUpdater.getPackageJson()).put(VAADIN_CORE,
                 "1.1.1");
 
         // run it again with existing generated package.json and mismatched
@@ -280,7 +280,7 @@ public abstract class AbstractNodeUpdatePackagesTest
      */
     private void assertVersionAndCleanUp() throws IOException {
         JsonValue value = getDependencies(packageUpdater.getPackageJson())
-                .get(SHRINKWRAP);
+                .get(VAADIN_CORE);
         Assert.assertEquals("1.2.3", value.asString());
 
         // Check that clean up was done
@@ -300,7 +300,7 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         // Change the version
         JsonObject json = packageUpdater.getPackageJson();
-        getDependencies(json).put(SHRINKWRAP, "1.1.1");
+        getDependencies(json).put(VAADIN_CORE, "1.1.1");
         Files.write(packageJson.toPath(),
                 Collections.singletonList(json.toJson()));
 
@@ -395,7 +395,7 @@ public abstract class AbstractNodeUpdatePackagesTest
             throws IOException {
         versionsDoNotMatch_inMainJson_cleanUp(true);
         JsonValue value = getDependencies(packageUpdater.getPackageJson())
-                .get(SHRINKWRAP);
+                .get(VAADIN_CORE);
         Assert.assertEquals("1.2.3", value.asString());
 
         // nothing is removed except package-lock
@@ -416,7 +416,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         packages.put("@vaadin/vaadin-checkbox", "2.2.10");
         packages.put("@polymer/iron-icon", "3.0.1");
         packages.put("@vaadin/vaadin-time-picker", "2.0.2");
-        packages.put(SHRINKWRAP, "1.1.1");
+        packages.put(VAADIN_CORE, "1.1.1");
 
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
@@ -884,7 +884,7 @@ public abstract class AbstractNodeUpdatePackagesTest
     private void updateVersion() throws IOException {
         // Change the version
         JsonObject json = packageUpdater.getPackageJson();
-        getDependencies(json).put(SHRINKWRAP, "1.1.1");
+        getDependencies(json).put(VAADIN_CORE, "1.1.1");
         Files.write(packageJson.toPath(),
                 Collections.singletonList(stringify(json)));
     }
@@ -894,7 +894,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         JsonObject deps = Json.createObject();
         JsonObject shrinkWrap = Json.createObject();
         object.put(DEPENDENCIES, deps);
-        deps.put(SHRINKWRAP, shrinkWrap);
+        deps.put(VAADIN_CORE, shrinkWrap);
         shrinkWrap.put("version", version);
         return object;
     }
@@ -910,7 +910,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         packages.put("@vaadin/vaadin-checkbox", "2.2.10");
         packages.put("@polymer/iron-icon", "3.0.1");
         packages.put("@vaadin/vaadin-time-picker", "2.0.2");
-        packages.put(SHRINKWRAP, "1.2.3");
+        packages.put(VAADIN_CORE, "1.2.3");
 
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
@@ -924,7 +924,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         makeNodeModulesAndPackageLock();
 
         JsonObject packageJson = getPackageJson(this.packageJson);
-        packageJson.put(SHRINKWRAP, "1.1.1");
+        packageJson.put(VAADIN_CORE, "1.1.1");
         Files.write(packageLock.toPath(),
                 Collections.singletonList(stringify(packageJson)));
 

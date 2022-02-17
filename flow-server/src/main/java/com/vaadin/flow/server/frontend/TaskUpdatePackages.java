@@ -19,8 +19,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -57,7 +55,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 public class TaskUpdatePackages extends NodeUpdater {
 
     private static final String VERSION = "version";
-    private static final String SHRINK_WRAP = "@vaadin/vaadin-shrinkwrap";
+    private static final String VAADIN_CORE = "@vaadin/vaadin-core";
     protected static final String VAADIN_APP_PACKAGE_HASH = "vaadinAppPackageHash";
     private final boolean forceCleanUp;
     private final boolean enablePnpm;
@@ -111,13 +109,12 @@ public class TaskUpdatePackages extends NodeUpdater {
                 writePackageFile(packageJson);
 
                 if (enablePnpm) {
-                    // With pnpm dependency versions are pinned via pnpmfile.js
-                    // (instead of @vaadin/vaadin-shrinkwrap). When updating
-                    // a dependency in package.json, the old version may be
-                    // left in the pnpm-lock.yaml file, causing duplicate
-                    // dependencies. Work around this issue by deleting
-                    // pnpm-lock.yaml ("pnpm install" will re-generate).
-                    // For details, see:
+                    // With pnpm dependency versions are pinned via pnpmfile.js.
+                    // When updating a dependency in package.json, the old
+                    // version may be left in the pnpm-lock.yaml file, causing
+                    // duplicate dependencies. Work around this issue by
+                    // deleting pnpm-lock.yaml ("pnpm install" will
+                    // re-generate). For details, see:
                     // https://github.com/pnpm/pnpm/issues/2587
                     // https://github.com/vaadin/flow/issues/9719
                     deletePnpmLockFile();
@@ -368,29 +365,29 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     /**
-     * Compares vaadin-shrinkwrap dependency version (which is the same as
+     * Compares vaadin-core dependency version (which is the same as the
      * platform version) from the {@code dependencies} object with the current
-     * vaadin-shrinkwrap version (retrieved from file system: package.json,
-     * package-lock.json). In case there was no existing shrinkwrap version,
+     * vaadin-core version (retrieved from file system: package.json,
+     * package-lock.json). In case there was no existing vaadin-core version,
      * then version is considered updated.
      *
      * @param dependencies
-     *            dependencies object with the vaadin-shrinkwrap version
+     *            dependencies object with the vaadin-core version
      * @return {@code true} if the version has changed, {@code false} if not
      * @throws IOException
      *             when file reading fails
      */
     private boolean isPlatformVersionUpdated(JsonObject dependencies)
             throws IOException {
-        String shrinkWrapVersion = null;
-        if (dependencies.hasKey(SHRINK_WRAP)) {
-            shrinkWrapVersion = dependencies.getString(SHRINK_WRAP);
+        String vaadinCoreVersion = null;
+        if (dependencies.hasKey(VAADIN_CORE)) {
+            vaadinCoreVersion = dependencies.getString(VAADIN_CORE);
         }
 
-        final String existingShrinkWrapVersion = getExistingShrinkWrapVersion();
-        // if no existing shrinkwrap version is present, version is not
+        final String existingVaadinVersion = getExistingVaadinCoreVersion();
+        // if no existing vaadin-core version is present, version is not
         // "updated"
-        return !Objects.equals(shrinkWrapVersion, existingShrinkWrapVersion);
+        return !Objects.equals(vaadinCoreVersion, existingVaadinVersion);
     }
 
     /**
@@ -455,26 +452,26 @@ public class TaskUpdatePackages extends NodeUpdater {
         }
     }
 
-    private String getExistingShrinkWrapVersion() throws IOException {
-        String shrinkWrapVersion = getShrinkWrapVersion(getPackageJson());
-        if (shrinkWrapVersion != null) {
-            return shrinkWrapVersion;
+    private String getExistingVaadinCoreVersion() throws IOException {
+        String vaadinCoreVersion = getVaadinCoreVersion(getPackageJson());
+        if (vaadinCoreVersion != null) {
+            return vaadinCoreVersion;
         }
 
-        shrinkWrapVersion = getPackageLockShrinkWrapVersion();
-        return shrinkWrapVersion;
+        vaadinCoreVersion = getPackageLockVaadinCoreVersion();
+        return vaadinCoreVersion;
     }
 
-    private String getPackageLockShrinkWrapVersion() throws IOException {
+    private String getPackageLockVaadinCoreVersion() throws IOException {
         JsonObject dependencies = getPackageLockDependencies();
         if (dependencies == null) {
             return null;
         }
 
-        if (!dependencies.hasKey(SHRINK_WRAP)) {
+        if (!dependencies.hasKey(VAADIN_CORE)) {
             return null;
         }
-        JsonObject shrinkWrap = dependencies.getObject(SHRINK_WRAP);
+        JsonObject shrinkWrap = dependencies.getObject(VAADIN_CORE);
         if (shrinkWrap.hasKey(VERSION)) {
             return shrinkWrap.get(VERSION).asString();
         }
@@ -497,14 +494,14 @@ public class TaskUpdatePackages extends NodeUpdater {
         return dependencies;
     }
 
-    private String getShrinkWrapVersion(JsonObject packageJson) {
+    private String getVaadinCoreVersion(JsonObject packageJson) {
         if (packageJson == null) {
             return null;
         }
         if (packageJson.hasKey(DEPENDENCIES)) {
             JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
-            if (dependencies.hasKey(SHRINK_WRAP)) {
-                JsonValue value = dependencies.get(SHRINK_WRAP);
+            if (dependencies.hasKey(VAADIN_CORE)) {
+                JsonValue value = dependencies.get(VAADIN_CORE);
                 return value.asString();
             }
         }

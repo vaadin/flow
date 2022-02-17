@@ -205,8 +205,8 @@ public class NodeTestComponents extends NodeUpdateTestUtil {
     public static class ExtraImport {
     }
 
-    @NpmPackage(value = "@vaadin/vaadin-shrinkwrap", version = "1.2.3")
-    public static class VaadinShrinkWrap extends Component {
+    @NpmPackage(value = "@vaadin/vaadin-core", version = "1.2.3")
+    public static class SimulatedPlatformUpdate {
     }
 
     @JavaScript("javascript/a.js")

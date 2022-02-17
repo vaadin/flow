@@ -49,7 +49,6 @@ import com.vaadin.flow.server.frontend.NodeTestComponents.VaadinBowerComponent;
 import com.vaadin.flow.server.frontend.NodeTestComponents.VaadinElementMixin;
 import com.vaadin.flow.server.frontend.NodeTestComponents.VaadinMixedComponent;
 import com.vaadin.flow.server.frontend.NodeTestComponents.VaadinNpmComponent;
-import com.vaadin.flow.server.frontend.NodeTestComponents.VaadinShrinkWrap;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.Theme;
@@ -179,13 +178,10 @@ public class FullDependenciesScannerTest {
         Assert.assertEquals(packages.get("@foo/var-component"), "1.1.0");
         Assert.assertEquals(packages.get("@webcomponents/webcomponentsjs"),
                 "2.2.10");
-        Assert.assertEquals(packages.get("@vaadin/vaadin-shrinkwrap"), "1.2.3");
 
         Assert.assertEquals(5, packages.size());
 
         Set<String> visitedClasses = scanner.getClasses();
-        Assert.assertTrue(
-                visitedClasses.contains(VaadinShrinkWrap.class.getName()));
         Assert.assertTrue(
                 visitedClasses.contains(LocalP3Template.class.getName()));
         Assert.assertTrue(visitedClasses
