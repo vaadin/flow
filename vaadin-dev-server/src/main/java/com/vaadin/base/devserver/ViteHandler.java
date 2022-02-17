@@ -136,7 +136,7 @@ public final class ViteHandler extends AbstractDevServerRunner {
     public HttpURLConnection prepareConnection(String path, String method)
             throws IOException {
         if ("/index.html".equals(path)) {
-            path = "/" + VAADIN_MAPPING + frontendPath + "/index.html";
+            path = prependFrontendPath(path);
         }
 
         return super.prepareConnection(getContextPath() + path, method);
@@ -146,5 +146,10 @@ public final class ViteHandler extends AbstractDevServerRunner {
         VaadinServletContext servletContext = (VaadinServletContext) getApplicationConfiguration()
                 .getContext();
         return servletContext.getContext().getContextPath();
+    }
+
+    @SuppressWarnings("squid:S1075")
+    private String prependFrontendPath(String path) {
+        return "/" + VAADIN_MAPPING + frontendPath + path;
     }
 }
