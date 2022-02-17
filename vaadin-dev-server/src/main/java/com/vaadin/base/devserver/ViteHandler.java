@@ -24,6 +24,9 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinServletContext;
@@ -31,9 +34,6 @@ import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Handles communication with a Vite server.
@@ -72,8 +72,7 @@ public final class ViteHandler extends AbstractDevServerRunner {
         frontendPath = FrontendUtils.getUnixRelativePath(npmFolder.toPath(),
                 new File(getApplicationConfiguration().getStringProperty(
                         FrontendUtils.PARAM_FRONTEND_DIR,
-                        System.getProperty(FrontendUtils.PARAM_FRONTEND_DIR,
-                                FrontendUtils.DEFAULT_FRONTEND_DIR))).toPath());
+                        FrontendUtils.DEFAULT_FRONTEND_DIR)).toPath());
     }
 
     @Override

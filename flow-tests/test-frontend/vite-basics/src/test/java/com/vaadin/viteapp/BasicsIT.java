@@ -56,7 +56,7 @@ public class BasicsIT extends ViteDevModeIT {
         final String processedJs = (String) ((JavascriptExecutor) getDriver())
                 .executeAsyncScript(
                         "const done = arguments[arguments.length - 1];"
-                                + "fetch('frontend/deploader.js', {"
+                                + "fetch('/VAADIN/frontend/deploader.js', {"
                                 + "headers: {Accept: 'application/javascript'}"
                                 + "}).then(response => response.text()).then(done);");
         Assert.assertEquals(

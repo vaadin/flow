@@ -23,6 +23,7 @@ const themeFolder = path.resolve(frontendFolder, settings.themeFolder);
 const frontendBundleFolder = path.resolve(__dirname, settings.frontendBundleOutput);
 const addonFrontendFolder = path.resolve(__dirname, settings.addonFrontendFolder);
 
+// The URL path prefix for the frontend directory: relative, `/` separators
 const frontendPath = path.posix.relative(__dirname, settings.frontendFolder) + '/';
 
 const projectStaticAssetsFolders = [
