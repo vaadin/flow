@@ -871,6 +871,18 @@ public class IndexHtmlRequestHandlerTest {
                 response.getErrorMessage());
     }
 
+    @Test
+    public void serviceWorkerRequest_canNotHandleRequest() {
+        IndexHtmlRequestHandler bootstrapHandler = new IndexHtmlRequestHandler();
+
+        VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
+
+        Mockito.when(request.getHeader(BootstrapHandler.SERVICE_WORKER_HEADER))
+                .thenReturn("script");
+
+        Assert.assertFalse(bootstrapHandler.canHandleRequest(request));
+    }
+
     private VaadinRequest createVaadinRequestWithSpringCsrfToken() {
         VaadinRequest request = Mockito.spy(createVaadinRequest("/"));
         Map<String, String> csrfJsonMap = new HashMap<>();
