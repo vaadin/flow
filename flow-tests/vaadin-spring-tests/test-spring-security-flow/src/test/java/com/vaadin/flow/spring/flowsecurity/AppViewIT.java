@@ -228,7 +228,6 @@ public class AppViewIT extends AbstractIT {
     }
 
     @Test
-    @Ignore
     public void upload_file_in_private_view() throws IOException {
         open("private");
         loginUser();
