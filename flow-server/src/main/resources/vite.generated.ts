@@ -189,8 +189,8 @@ export const vaadinConfig: UserConfigFn = (env) => {
     },
     plugins: [
       !devMode && brotli(),
-      settings.pwaEnabled && transpileSWPlugin(),
-      settings.pwaEnabled && injectManifestToSWPlugin(),
+      settings.offlineEnabled && transpileSWPlugin(),
+      settings.offlineEnabled && injectManifestToSWPlugin(),
       {
         name: 'vaadin:custom-theme',
         config() {
