@@ -14,6 +14,7 @@ import { injectManifest } from 'workbox-build';
 
 import * as rollup from 'rollup';
 import brotli from 'rollup-plugin-brotli';
+import replace from '@rollup/plugin-replace';
 import checker from 'vite-plugin-checker';
 
 const appShellUrl = '.';
@@ -66,24 +67,14 @@ function transpileSWPlugin(): PluginOption {
         'vite:esbuild-transpile',
         'vite:terser',
       ]
-      if (config.mode === 'development') {
-        includedPluginNames.push('vite:client-inject');
-      }
 
       const plugins = config.plugins.filter((p) => includedPluginNames.includes(p.name));
-      if (config.mode === 'development') {
-        plugins.push({
-          name: 'vaadin:inject-vite-env',
-          enforce: 'pre',
-          transform(code, id) {
-            if (id.endsWith('sw.ts')) {
-              return `import '@vite/env';\n${code}`
-            }
-
-            return code;
-          }
-        });
-      }
+      plugins.push(
+        replace({
+          'process.env.NODE_ENV': JSON.stringify(config.mode),
+          ...config.define
+        })
+      );
 
       const bundle = await rollup.rollup({
         input: path.resolve(settings.clientServiceWorkerSource),
@@ -93,6 +84,7 @@ function transpileSWPlugin(): PluginOption {
         await bundle.write({
           format: 'es',
           exports: 'none',
+          sourcemap: config.build.sourcemap,
           inlineDynamicImports: true,
           file: path.resolve(frontendBundleFolder, 'sw.js'),
         })
