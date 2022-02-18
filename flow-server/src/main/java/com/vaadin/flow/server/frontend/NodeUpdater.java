@@ -28,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -78,6 +79,11 @@ public abstract class NodeUpdater implements FallibleCommand {
      */
     public static final String GENERATED_PREFIX = "GENERATED/";
 
+    // .vaadin/vaadin.json contains local installation data inside node_modules
+    // This will help us know to execute even when another developer has pushed
+    // a new hash to the code repository.
+    private static final String VAADIN_JSON = ".vaadin/vaadin.json";
+
     static final String DEPENDENCIES = "dependencies";
     static final String VAADIN_DEP_KEY = "vaadin";
     static final String HASH_KEY = "hash";
@@ -96,6 +102,8 @@ public abstract class NodeUpdater implements FallibleCommand {
     private static final String DEP_VERSION_DEFAULT = "1.0.0";
     private static final String ROUTER_VERSION = "1.7.4";
     protected static final String POLYMER_VERSION = "3.4.1";
+
+    static final String VAADIN_VERSION = "vaadinVersion";
 
     /**
      * Base directory for {@link Constants#PACKAGE_JSON},
@@ -573,6 +581,31 @@ public abstract class NodeUpdater implements FallibleCommand {
         String content = stringify(json, 2) + "\n";
         FileUtils.writeStringToFile(packageFile, content, UTF_8.name());
         return content;
+    }
+
+    File getVaadinJsonFile() {
+        return new File(nodeModulesFolder, VAADIN_JSON);
+    }
+
+    JsonObject getVaadinJsonContents() throws IOException {
+        File vaadinJsonFile = getVaadinJsonFile();
+        if (vaadinJsonFile.exists()) {
+            String fileContent = FileUtils.readFileToString(vaadinJsonFile,
+                    UTF_8.name());
+            return Json.parse(fileContent);
+        } else {
+            return Json.createObject();
+        }
+    }
+
+    void updateVaadinJsonContents(Map<String, String> newContent)
+            throws IOException {
+        JsonObject fileContent = getVaadinJsonContents();
+        newContent.forEach(fileContent::put);
+        File vaadinJsonFile = getVaadinJsonFile();
+        FileUtils.forceMkdirParent(vaadinJsonFile);
+        String content = stringify(fileContent, 2) + "\n";
+        FileUtils.writeStringToFile(vaadinJsonFile, content, UTF_8.name());
     }
 
     Logger log() {
