@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
@@ -34,10 +35,12 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.Platform;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
@@ -62,8 +65,7 @@ public abstract class AbstractNodeUpdatePackagesTest
 
     private static final String DEPENDENCIES = "dependencies";
     private static final String DEV_DEPENDENCIES = "devDependencies";
-
-    private static final String SHRINKWRAP = "@vaadin/vaadin-shrinkwrap";
+    private static final String VAADIN_VERSION = "vaadinVersion";
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -142,45 +144,6 @@ public abstract class AbstractNodeUpdatePackagesTest
         Assert.assertTrue(packageCreator.modified);
         Assert.assertTrue(packageUpdater.modified);
         assertMainPackageJsonContent();
-    }
-
-    @Test
-    public void versions_doNotMatch_inGeneratedPackage_cleanUp()
-            throws IOException {
-        // Generate package json in a proper format first
-        packageCreator.execute();
-        packageUpdater.execute();
-
-        updateVersion();
-
-        makeNodeModulesAndPackageLock();
-
-        // run it again with existing generated package.json and mismatched
-        // versions
-        packageUpdater.execute();
-
-        assertVersionAndCleanUp();
-    }
-
-    @Test
-    public void versions_doNotMatch_inMainPackage_cleanUp() throws IOException {
-        // Generate package json in a proper format first
-        packageCreator.execute();
-        packageUpdater.execute();
-
-        updateVersion();
-
-        makeNodeModulesAndPackageLock();
-
-        // Change the versions
-        getDependencies(packageUpdater.getPackageJson()).put(SHRINKWRAP,
-                "1.1.1");
-
-        // run it again with existing generated package.json and mismatched
-        // versions
-        packageUpdater.execute();
-
-        assertVersionAndCleanUp();
     }
 
     @Test
@@ -275,42 +238,6 @@ public abstract class AbstractNodeUpdatePackagesTest
 
     // Some npm-dependency pinning tests are in TaskRunNpmInstallTest
 
-    /**
-     * @throws IOException
-     */
-    private void assertVersionAndCleanUp() throws IOException {
-        JsonValue value = getDependencies(packageUpdater.getPackageJson())
-                .get(SHRINKWRAP);
-        Assert.assertEquals("1.2.3", value.asString());
-
-        // Check that clean up was done
-        assertCleanUp();
-    }
-
-    @Test
-    public void versions_doNotMatch_inFlowDepsPackage_cleanUp()
-            throws IOException {
-        // Generate package json in a proper format first
-        packageCreator.execute();
-        packageUpdater.execute();
-
-        updateVersion();
-
-        makeNodeModulesAndPackageLock();
-
-        // Change the version
-        JsonObject json = packageUpdater.getPackageJson();
-        getDependencies(json).put(SHRINKWRAP, "1.1.1");
-        Files.write(packageJson.toPath(),
-                Collections.singletonList(json.toJson()));
-
-        // run it again with existing generated package.json and mismatched
-        // versions
-        packageUpdater.execute();
-
-        assertVersionAndCleanUp();
-    }
-
     @Test
     public void unmatchedDevDependency_devDependencyIsRemoved()
             throws IOException {
@@ -372,41 +299,56 @@ public abstract class AbstractNodeUpdatePackagesTest
     }
 
     @Test
-    public void versions_doNotMatch_inPackageLock_cleanUp() throws IOException {
+    public void versionsDoNotMatch_inVaadinJson_cleanUpNpm()
+            throws IOException {
+        // Generate package json in a proper format first
+        packageCreator.execute();
+
         makeNodeModulesAndPackageLock();
 
-        Files.write(packageLock.toPath(),
-                Collections.singletonList(stringify(makePackageLock("1.1.1"))));
+        packageUpdater.updateVaadinJsonContents(
+                Collections.singletonMap(VAADIN_VERSION, "1.1.1"));
 
-        packageCreator.execute();
-        packageUpdater.execute();
-
-        assertVersionAndCleanUp();
+        try (MockedStatic<Platform> platform = Mockito
+                .mockStatic(Platform.class)) {
+            platform.when(Platform::getVaadinVersion)
+                    .thenReturn(Optional.of("1.2.3"));
+            packageUpdater.execute();
+            assertCleanUp();
+        }
     }
 
     @Test
-    public void versionsDoNotMatch_inMainJson_npm_cleanUp() throws IOException {
-        versionsDoNotMatch_inMainJson_cleanUp(false);
-        assertVersionAndCleanUp();
-    }
-
-    @Test
-    public void versionsDoNotMatch_inMainJson_pnpm_cleanUp()
+    public void versionsDoNotMatch_inVaadinJson_cleanUpPnpm()
             throws IOException {
-        versionsDoNotMatch_inMainJson_cleanUp(true);
-        JsonValue value = getDependencies(packageUpdater.getPackageJson())
-                .get(SHRINKWRAP);
-        Assert.assertEquals("1.2.3", value.asString());
+        packageUpdater = new TaskUpdatePackages(classFinder,
+                Mockito.mock(FrontendDependencies.class), baseDir, generatedDir,
+                resourcesDir, false, true, TARGET, featureFlags);
 
-        // nothing is removed except package-lock
-        Assert.assertTrue(mainNodeModules.exists());
-        Assert.assertTrue(appNodeModules.exists());
-        // package-lock is removed
-        Assert.assertFalse(packageLock.exists());
+        // Generate package json in a proper format first
+        packageCreator.execute();
+
+        makeNodeModulesAndPackageLock();
+
+        packageUpdater.updateVaadinJsonContents(
+                Collections.singletonMap(VAADIN_VERSION, "1.1.1"));
+
+        try (MockedStatic<Platform> platform = Mockito
+                .mockStatic(Platform.class)) {
+            platform.when(Platform::getVaadinVersion)
+                    .thenReturn(Optional.of("1.2.3"));
+            packageUpdater.execute();
+            // nothing is removed except package-lock
+            Assert.assertTrue(mainNodeModules.exists());
+            Assert.assertTrue(appNodeModules.exists());
+            // package-lock is removed
+            Assert.assertFalse(packageLock.exists());
+        }
     }
 
     @Test
     public void versionsMatch_noCleanUp() throws IOException {
+        // TODO: Fixme
         FrontendDependencies frontendDependencies = Mockito
                 .mock(FrontendDependencies.class);
 
@@ -416,7 +358,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         packages.put("@vaadin/vaadin-checkbox", "2.2.10");
         packages.put("@polymer/iron-icon", "3.0.1");
         packages.put("@vaadin/vaadin-time-picker", "2.0.2");
-        packages.put(SHRINKWRAP, "1.1.1");
+        // packages.put(VAADIN_CORE, "1.1.1");
 
         Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
 
@@ -881,54 +823,13 @@ public abstract class AbstractNodeUpdatePackagesTest
         return json.getObject(DEPENDENCIES);
     }
 
-    private void updateVersion() throws IOException {
-        // Change the version
-        JsonObject json = packageUpdater.getPackageJson();
-        getDependencies(json).put(SHRINKWRAP, "1.1.1");
-        Files.write(packageJson.toPath(),
-                Collections.singletonList(stringify(json)));
-    }
-
     private JsonObject makePackageLock(String version) {
         JsonObject object = Json.createObject();
         JsonObject deps = Json.createObject();
         JsonObject shrinkWrap = Json.createObject();
         object.put(DEPENDENCIES, deps);
-        deps.put(SHRINKWRAP, shrinkWrap);
         shrinkWrap.put("version", version);
         return object;
-    }
-
-    private void versionsDoNotMatch_inMainJson_cleanUp(boolean isPnpm)
-            throws IOException {
-        FrontendDependencies frontendDependencies = Mockito
-                .mock(FrontendDependencies.class);
-
-        Map<String, String> packages = new HashMap<>();
-        packages.put("@polymer/iron-list", "3.0.2");
-        packages.put("@vaadin/vaadin-confirm-dialog", "1.1.4");
-        packages.put("@vaadin/vaadin-checkbox", "2.2.10");
-        packages.put("@polymer/iron-icon", "3.0.1");
-        packages.put("@vaadin/vaadin-time-picker", "2.0.2");
-        packages.put(SHRINKWRAP, "1.2.3");
-
-        Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
-
-        packageUpdater = new TaskUpdatePackages(classFinder,
-                frontendDependencies, baseDir, generatedDir, resourcesDir,
-                false, isPnpm, TARGET, featureFlags);
-
-        // Generate package json in a proper format first
-        packageCreator.execute();
-
-        makeNodeModulesAndPackageLock();
-
-        JsonObject packageJson = getPackageJson(this.packageJson);
-        packageJson.put(SHRINKWRAP, "1.1.1");
-        Files.write(packageLock.toPath(),
-                Collections.singletonList(stringify(packageJson)));
-
-        packageUpdater.execute();
     }
 
     private void assertPackageJsonFlowDeps() throws IOException {
