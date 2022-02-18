@@ -258,7 +258,12 @@ public class HandlerHelper implements Serializable {
              * A string beginning with a ‘/’ character and ending with a ‘/*’
              * suffix is used for path mapping.
              */
-            String directory = servletMappingPath.substring(0,
+
+            // Requested path should not contain the initial slash,
+            // but if it does, we should consider starting slash
+            // also in servletMapping
+            int cutMappingFrom = requestedPath.startsWith("/") ? 0 : 1;
+            String directory = servletMappingPath.substring(cutMappingFrom,
                     servletMappingPath.length() - 2);
             String directoryWithSlash = directory + "/";
 
