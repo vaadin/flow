@@ -6,7 +6,7 @@
  */
 import path
   from 'path';
-import {readFile} from 'fs/promises';
+import {readFile, exists} from 'fs/promises';
 import * as net
   from 'net';
 
@@ -227,14 +227,12 @@ function vaadinBundlesPlugin(): PluginOption {
       );
 
       const versionMismatches: Array<{name: string, bundledVersion: string, installedVersion: string}> = [];
-      await Promise.all(Object.entries(vaadinBundleJson.packages).map(async ([name, packageInfo]) => {
+      for (const [name, packageInfo] of Object.entries(vaadinBundleJson.packages)) {
         let installedVersion: string | undefined = undefined;
         try {
           const { version: bundledVersion } = packageInfo;
-          const installedPackageJsonFile = require.resolve(`${name}/package.json`, {
-            pre
-          });
-          const packageJson = JSON.parse(await readFile(installedPackageJsonFile, {encoding: 'utf8'}));
+          const installedPackageJsonFile = path.resolve(modulesDirectory, name, 'package.json');
+          const packageJson = JSON.parse(await readFile(installedPackageJsonFile, { encoding: 'utf8' }));
           installedVersion = packageJson.version;
           if (installedVersion && installedVersion !== bundledVersion) {
             versionMismatches.push({
@@ -246,7 +244,7 @@ function vaadinBundlesPlugin(): PluginOption {
         } catch (_) {
           // ignore package not found
         }
-      }));
+      }
       if (versionMismatches.length) {
         console.info(`@vaadin/bundles has version mismatches with installed packages, ${disabledMessage}`);
         console.info(`Packages with version mismatches: ${JSON.stringify(versionMismatches, undefined, 2)}`);

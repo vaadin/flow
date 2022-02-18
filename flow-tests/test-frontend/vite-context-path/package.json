@@ -11,7 +11,7 @@
     "@vaadin/router": "1.7.4",
     "@vaadin/vaadin-lumo-styles": "22.0.0-alpha9",
     "construct-style-sheets-polyfill": "3.0.4",
-    "lit": "2.0.0"
+    "lit": "2.1.4"
   },
   "devDependencies": {
     "@vaadin/application-theme-plugin": "./target/plugins/application-theme-plugin",
@@ -35,7 +35,7 @@
       "@vaadin/router": "1.7.4",
       "@vaadin/vaadin-lumo-styles": "22.0.0-alpha9",
       "construct-style-sheets-polyfill": "3.0.4",
-      "lit": "2.0.0"
+      "lit": "2.1.4"
     },
     "devDependencies": {
       "glob": "7.1.6",
@@ -48,6 +48,6 @@
       "workbox-core": "6.4.2",
       "workbox-precaching": "6.4.2"
     },
-    "hash": "086d1e7b62290097d1147c81822c2fc5aa3f9784d3018b54fb0f105725123094"
+    "hash": "9e28d81c2b643176481210207d77fc2f89c0285e989d5f672a7f710434fb06fb"
   }
 }
