@@ -365,7 +365,8 @@ public class TaskUpdatePackages extends NodeUpdater {
     /**
      * Compares current platform version with the one last recorded as installed
      * in node_modules/.vaadin/vaadin_version. In case there was no existing
-     * platform, then platform is considered updated.
+     * platform version recorder and node_modules exists, then platform is
+     * considered updated.
      *
      * @return {@code true} if the version has changed, {@code false} if not
      * @throws IOException
@@ -375,7 +376,7 @@ public class TaskUpdatePackages extends NodeUpdater {
         // if no record of current version is present, version is not
         // considered updated
         Optional<String> platformVersion = Platform.getVaadinVersion();
-        if (platformVersion.isPresent()) {
+        if (platformVersion.isPresent() && nodeModulesFolder.exists()) {
             JsonObject vaadinJsonContents = getVaadinJsonContents();
             // If no record of previous version, version is considered updated;
             if (vaadinJsonContents == null
