@@ -299,27 +299,6 @@ public abstract class AbstractNodeUpdatePackagesTest
     }
 
     @Test
-    public void versionsMatch_inVaadinJson_noCleanUp() throws IOException {
-        // Generate package json in a proper format first
-        packageCreator.execute();
-
-        makeNodeModulesAndPackageLock();
-
-        packageUpdater.updateVaadinJsonContents(
-                Collections.singletonMap(VAADIN_VERSION, "1.1.1"));
-
-        try (MockedStatic<Platform> platform = Mockito
-                .mockStatic(Platform.class)) {
-            platform.when(Platform::getVaadinVersion)
-                    .thenReturn(Optional.of("1.1.1"));
-            packageUpdater.execute();
-            Assert.assertTrue(mainNodeModules.exists());
-            Assert.assertTrue(appNodeModules.exists());
-            Assert.assertTrue(packageLock.exists());
-        }
-    }
-
-    @Test
     public void versionsDoNotMatch_inVaadinJson_cleanUpNpm()
             throws IOException {
         // Generate package json in a proper format first
