@@ -159,6 +159,48 @@ public class RequestUtil {
         return result;
     }
 
+    String getUrlMapping() {
+        return configurationProperties.getUrlMapping();
+    }
+
+    /**
+     * Prepends to the given {@code path} with the configured url mapping.
+     *
+     * A {@literal null} path is treated as empty string; the same applies for
+     * url mapping.
+     *
+     * @return the path with prepended url mapping.
+     * @see VaadinConfigurationProperties#getUrlMapping()
+     */
+    String applyUrlMapping(String path) {
+        return applyUrlMapping(configurationProperties.getUrlMapping(), path);
+    }
+
+    /**
+     * Prepends to the given {@code path} with the servlet path prefix from
+     * input url mapping.
+     *
+     * A {@literal null} path is treated as empty string; the same applies for
+     * url mapping.
+     *
+     * @return the path with prepended url mapping.
+     * @see VaadinConfigurationProperties#getUrlMapping()
+     */
+    static String applyUrlMapping(String urlMapping, String path) {
+        if (urlMapping == null) {
+            urlMapping = "";
+        } else {
+            // remove potential / or /* at the end of the mapping
+            urlMapping = urlMapping.replaceFirst("/\\*?$", "");
+        }
+        if (path == null) {
+            path = "";
+        } else if (path.startsWith("/")) {
+            path = path.substring(1);
+        }
+        return urlMapping + "/" + path;
+    }
+
     private Logger getLogger() {
         return LoggerFactory.getLogger(getClass());
     }
@@ -169,7 +211,12 @@ public class RequestUtil {
         String pathInfo = request.getPathInfo();
         String url = "";
         if (servletPath != null) {
-            url += servletPath;
+            if (servletPath.startsWith("/")) {
+                // This SHOULD always be true...
+                url += servletPath.substring(1);
+            } else {
+                url += servletPath;
+            }
         }
         if (pathInfo != null) {
             url += pathInfo;
