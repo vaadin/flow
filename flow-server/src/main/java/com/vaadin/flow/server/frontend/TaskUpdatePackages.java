@@ -365,7 +365,7 @@ public class TaskUpdatePackages extends NodeUpdater {
     /**
      * Compares current platform version with the one last recorded as installed
      * in node_modules/.vaadin/vaadin_version. In case there was no existing
-     * vaadin-core version, then version is considered updated.
+     * platform, then platform is considered updated.
      *
      * @return {@code true} if the version has changed, {@code false} if not
      * @throws IOException

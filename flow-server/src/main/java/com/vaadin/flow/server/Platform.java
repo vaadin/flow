@@ -46,7 +46,7 @@ public class Platform implements Serializable {
                 return Optional.of(vaadinVersions.get("platform").asText());
             } else {
                 if (!versionErrorLogged) {
-                    versionErrorLogged = true; // NOSONAR
+                    versionErrorLogged = true;
                     LoggerFactory.getLogger(Platform.class)
                             .info("Unable to determine version information. "
                                     + "No vaadin_versions.json found");
