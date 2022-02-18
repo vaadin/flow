@@ -57,10 +57,12 @@ import org.openqa.selenium.remote.DesiredCapabilities;
 public class ChromeBrowserTest extends ViewOrUITest {
 
     private static InetAddress ipv4All;
+    private static InetAddress ipv4Localhost;
     private static InetAddress ipv6All;
     static {
         try {
             ipv4All = InetAddress.getByName("0.0.0.0");
+            ipv4Localhost = InetAddress.getByName("127.0.0.1");
             ipv6All = InetAddress.getByName("::0");
         } catch (UnknownHostException e) {
             throw new ExceptionInInitializerError(e);
@@ -122,13 +124,18 @@ public class ChromeBrowserTest extends ViewOrUITest {
         try (ServerSocket socket = new ServerSocket()) {
             socket.bind(new InetSocketAddress(ipv4All, port));
         } catch (IOException e) {
-            throw new RuntimeException("Port " + port + " was supposed to be free but is not for ipv4", e);
+            throw new RuntimeException("Port " + port + " on 0.0.0.0 was supposed to be free but is not for ipv4", e);
         }
         try (ServerSocket socket = new ServerSocket()) {
-            socket.bind(new InetSocketAddress(ipv6All, port));
+            socket.bind(new InetSocketAddress(ipv4Localhost, port));
         } catch (IOException e) {
-            throw new RuntimeException("Port " + port + " was supposed to be free but is not for ipv6", e);
+            throw new RuntimeException("Port " + port + " on 127.0.0.1 was supposed to be free but is not for ipv4", e);
         }
+        // try (ServerSocket socket = new ServerSocket()) {
+        //     socket.bind(new InetSocketAddress(ipv6All, port));
+        // } catch (IOException e) {
+        //     throw new RuntimeException("Port " + port + " was supposed to be free but is not for ipv6", e);
+        // }
     }
 
     private static int findFreePort() {
