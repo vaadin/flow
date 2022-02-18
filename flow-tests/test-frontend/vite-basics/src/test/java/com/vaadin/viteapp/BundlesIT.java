@@ -7,15 +7,14 @@ public class BundlesIT extends ViteDevModeIT {
 
     @Test
     public void bundlesIsUsed() {
-        Assert.assertTrue(
-                (Boolean) $("testscope-button").first().getProperty(
-                        "isFromBundle")
-        );
+        Assert.assertTrue((Boolean) $("testscope-button").first()
+                .getProperty("isFromBundle"));
     }
 
     @Test
     public void bundleExportWorks() {
-        Assert.assertTrue((Boolean) executeScript("return !!window.BundleButtonClass"));
+        Assert.assertTrue(
+                (Boolean) executeScript("return !!window.BundleButtonClass"));
     }
 
     @Test
@@ -36,7 +35,9 @@ public class BundlesIT extends ViteDevModeIT {
     }
 
     private boolean isExcluded(String dependency) {
-        return (Boolean) executeScript("return (window.ViteConfigOptimizeDeps.exclude || []).includes(arguments[0]);", dependency);
+        return (Boolean) executeScript(
+                "return (window.ViteConfigOptimizeDeps.exclude || []).includes(arguments[0]);",
+                dependency);
     }
 
 }

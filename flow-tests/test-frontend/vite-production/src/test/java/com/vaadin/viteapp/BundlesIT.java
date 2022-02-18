@@ -18,10 +18,8 @@ public class BundlesIT extends ChromeBrowserTest {
     public void bundlesIsNotUsed() {
         getDriver().get(getRootURL());
         waitForClientRouter();
-        Assert.assertFalse(
-                (Boolean) $("testscope-button").first().getProperty(
-                        "isFromBundle")
-        );
+        Assert.assertFalse((Boolean) $("testscope-button").first()
+                .getProperty("isFromBundle"));
     }
 
 }
