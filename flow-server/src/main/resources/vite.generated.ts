@@ -84,7 +84,7 @@ function transpileSWPlugin(): PluginOption {
         await bundle.write({
           format: 'es',
           exports: 'none',
-          sourcemap: config.build.sourcemap,
+          sourcemap: config.mode === 'development' || config.build.sourcemap,
           inlineDynamicImports: true,
           file: path.resolve(frontendBundleFolder, 'sw.js'),
         })
