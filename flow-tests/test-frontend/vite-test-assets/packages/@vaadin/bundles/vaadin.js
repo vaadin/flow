@@ -29,31 +29,37 @@ function internalImport(module) {
   return moduleMap[module]();
 }
 
-defineModule("./node_modules/@bundle/bundle", () => {
+defineModule("./node_modules/@testscope/all", () => {
   // re-export from package alias
-  return internalImport("./node_modules/@bundle/bundle/bundle.js");
+  return internalImport("./node_modules/@testscope/all/all.js");
 });
 
-defineModule("./node_modules/@bundle/bundle/bundle.js", () => {
+defineModule("./node_modules/@testscope/all/all.js", () => {
   // imports package for side effects, empty export
-  return internalImport("./node_modules/@bundle/button");
+  return internalImport("./node_modules/@testscope/button");
   return {};
 });
 
-defineModule("./node_modules/@bundle/button", () => {
+defineModule("./node_modules/@testscope/button", () => {
   // re-export from package alias
-  return internalImport("./node_modules/@bundle/button/bundle-button.js");
+  return internalImport("./node_modules/@testscope/button/testscope-button.js");
 });
 
-defineModule("./node_modules/@bundle/button/bundle-button.js", () => {
+defineModule("./node_modules/@testscope/button/testscope-button.js", () => {
   // re-export from another module
-  return internalImport("./node_modules/@bundle/button/src/bundle-button.js");
+  return internalImport("./node_modules/@testscope/button/src/testscope-button.js");
 });
 
-defineModule("./node_modules/@bundle/button/src/bundle-button.js", () => {
+defineModule("./node_modules/@testscope/button/src/testscope-button.js", () => {
   class Button extends HTMLElement {
     static get is() {
-      return 'bundle-button';
+      return 'testscope-button';
+    }
+
+    connectedCallback() {
+      if (!this.textContent) {
+        this.textContent = 'testscope-button from bundle';
+      }
     }
 
     get isFromBundle() {
@@ -61,7 +67,7 @@ defineModule("./node_modules/@bundle/button/src/bundle-button.js", () => {
     }
   }
 
-  customElements.define('bundle-button', Button);
+  customElements.define('testscope-button', Button);
 
   // export the web component class
   return { Button };

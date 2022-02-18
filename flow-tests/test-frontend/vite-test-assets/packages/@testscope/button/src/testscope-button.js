@@ -1,11 +1,11 @@
 export class Button extends HTMLElement {
   static get is() {
-    return 'bundle-button';
+    return 'testscope-button';
   }
 
   connectedCallback() {
     if (!this.textContent) {
-      this.textContent = 'bundle-button NOT from bundle';
+      this.textContent = 'testscope-button NOT from bundle';
     }
   }
 
@@ -14,4 +14,4 @@ export class Button extends HTMLElement {
   }
 }
 
-customElements.define('bundle-button', Button);
+customElements.define('testscope-button', Button);

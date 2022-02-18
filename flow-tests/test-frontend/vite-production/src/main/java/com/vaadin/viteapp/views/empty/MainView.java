@@ -1,5 +1,7 @@
 package com.vaadin.viteapp.views.empty;
 
+import com.vaadin.flow.component.HtmlComponent;
+import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Image;
@@ -8,6 +10,7 @@ import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.router.Route;
 
 @Route("")
+@JsModule("@testscope/button")
 public class MainView extends Div {
 
     public static final String PLANT = "plant";
@@ -28,6 +31,8 @@ public class MainView extends Div {
         add(button);
         setSizeFull();
         getStyle().set("text-align", "center");
+
+        add(new HtmlComponent("testscope-button"));
     }
 
 }

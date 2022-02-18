@@ -2,9 +2,9 @@
   "name": "no-name",
   "license": "UNLICENSED",
   "dependencies": {
+    "@polymer/polymer": "3.4.1",
     "@testscope/all": "../vite-test-assets/packages/@testscope/all",
     "@testscope/button": "../vite-test-assets/packages/@testscope/button",
-    "@polymer/polymer": "3.4.1",
     "@vaadin/bundles": "../vite-test-assets/packages/@vaadin/bundles",
     "@vaadin/common-frontend": "0.0.17",
     "@vaadin/flow-frontend": "./target/flow-frontend",
@@ -48,6 +48,6 @@
       "workbox-core": "6.4.2",
       "workbox-precaching": "6.4.2"
     },
-    "hash": "5d8f12501d22fb35530ea59286901d6af4ac209868d64108c3abd95544207848"
+    "hash": "1bcda35280e3531e661975533150ac4314b38195f2b7b2c4afb2ea43597626a6"
   }
 }

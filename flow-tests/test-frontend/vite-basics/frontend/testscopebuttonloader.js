@@ -1,4 +1,4 @@
 import '@testscope/all';
 
-import { Button } from '@bundle/button';
+import { Button } from '@testscope/button';
 window.BundleButtonClass = Button;

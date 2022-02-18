@@ -1,31 +1,31 @@
 {
   "packages": {
-    "@bundle/bundle": {
+    "@testscope/all": {
       "version": "0.1.0",
       "exposes": {
-        "./bundle.js": {
+        "./all.js": {
           "exports": []
         },
         ".": {
           "exports": [
             {
-              "source": "@bundle/bundle/bundle.js"
+              "source": "@testscope/all/all.js"
             }
           ]
         }
       }
     },
-    "@bundle/button": {
+    "@testscope/button": {
       "version": "1.0.0-alpha1",
       "exposes": {
-        "./bundle-button.js": {
+        "./testscope-button.js": {
           "exports": [
             {
-              "source": "@bundle/button/src/bundle-button.js"
+              "source": "@testscope/button/src/testscope-button.js"
             }
           ]
         },
-        "./src/bundle-button.js": {
+        "./src/testscope-button.js": {
           "exports": [
             "Button"
           ]
@@ -33,7 +33,7 @@
         ".": {
           "exports": [
             {
-              "source": "@bundle/button/bundle-button.js"
+              "source": "@testscope/button/testscope-button.js"
             }
           ]
         }

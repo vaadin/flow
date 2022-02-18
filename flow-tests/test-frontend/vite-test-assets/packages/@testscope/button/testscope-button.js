@@ -1,1 +1,1 @@
-export * from './src/bundle-button.js'
+export * from './src/testscope-button.js'

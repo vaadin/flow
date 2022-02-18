@@ -1,10 +1,10 @@
 {
-  "name": "@bundle/bundle",
+  "name": "@testscope/all",
   "version": "1.0.0",
   "description": "",
   "type": "module",
-  "main": "bundle.js",
-  "module": "bundle.js",
+  "main": "all.js",
+  "module": "all.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
