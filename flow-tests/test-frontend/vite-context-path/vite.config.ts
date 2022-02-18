@@ -9,7 +9,6 @@ function dumpOptimizeDepsPlugin(): PluginOption {
 
   return {
     name: 'dump-optimize-deps',
-    apply: 'serve',
     configResolved(_config) {
       config = _config;
     },

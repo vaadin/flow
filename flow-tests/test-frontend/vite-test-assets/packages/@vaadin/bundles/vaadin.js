@@ -36,7 +36,7 @@ defineModule("./node_modules/@testscope/all", () => {
 
 defineModule("./node_modules/@testscope/all/all.js", () => {
   // imports package for side effects, empty export
-  return internalImport("./node_modules/@testscope/button");
+  internalImport("./node_modules/@testscope/button");
   return {};
 });
 
