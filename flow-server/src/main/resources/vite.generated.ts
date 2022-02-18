@@ -13,6 +13,7 @@ import { UserConfigFn, defineConfig, mergeConfig, PluginOption, ResolvedConfig }
 import { injectManifest } from 'workbox-build';
 
 import * as rollup from 'rollup';
+import chokidar from 'chokidar';
 import brotli from 'rollup-plugin-brotli';
 import replace from '@rollup/plugin-replace';
 import checker from 'vite-plugin-checker';
@@ -47,49 +48,78 @@ const themeOptions = {
 console.trace = () => {};
 console.debug = () => {};
 
-function transpileSWPlugin(): PluginOption {
+function buildSWPlugin(): PluginOption {
   let config: ResolvedConfig;
+  let watcher: chokidar.FSWatcher;
+
+  async function build() {
+    const includedPluginNames = [
+      'alias',
+      'vite:resolve',
+      'vite:esbuild',
+      'rollup-plugin-dynamic-import-variables',
+      'vite:esbuild-transpile',
+      'vite:terser',
+    ]
+    const rollupPlugins: rollup.Plugin[] = config.plugins.filter((p) => {
+      return includedPluginNames.includes(p.name)
+    });
+    rollupPlugins.push(
+      replace({
+        'process.env.NODE_ENV': JSON.stringify(config.mode),
+        ...config.define
+      })
+    );
+
+    const rollupOutput: rollup.OutputOptions = {
+      file: path.resolve(frontendBundleFolder, 'sw.js'),
+      format: 'es',
+      exports: 'none',
+      sourcemap: config.command === 'serve' || config.build.sourcemap,
+      inlineDynamicImports: true,
+    }
+
+    const rollupConfig: rollup.RollupOptions = {
+      input: path.resolve(settings.clientServiceWorkerSource),
+      output: rollupOutput,
+      plugins: rollupPlugins,
+    }
+
+    const bundle = await rollup.rollup(rollupConfig);
+    try {
+      await bundle.write(rollupOutput);
+    } finally {
+      await bundle.close();
+    }
+  }
 
   return {
-    name: 'vaadin:transpile-sw',
+    name: 'vaadin:build-sw',
     enforce: 'post',
     async configResolved(resolvedConfig) {
       config = resolvedConfig;
     },
     async buildStart() {
-      const includedPluginNames = [
-        'alias',
-        'vite:resolve',
-        'vite:esbuild',
-        'rollup-plugin-dynamic-import-variables',
-        'vite:esbuild-transpile',
-        'vite:terser',
-      ]
+      await build();
 
-      const plugins = config.plugins.filter((p) => includedPluginNames.includes(p.name));
-      plugins.push(
-        replace({
-          'process.env.NODE_ENV': JSON.stringify(config.mode),
-          ...config.define
-        })
-      );
-
-      const bundle = await rollup.rollup({
-        input: path.resolve(settings.clientServiceWorkerSource),
-        plugins,
-      })
-      try {
-        await bundle.write({
-          format: 'es',
-          exports: 'none',
-          sourcemap: config.mode === 'development' || config.build.sourcemap,
-          inlineDynamicImports: true,
-          file: path.resolve(frontendBundleFolder, 'sw.js'),
-        })
-      } finally {
-        await bundle.close()
+      if (config.command === 'serve') {
+        watcher = chokidar.watch(path.resolve(settings.clientServiceWorkerSource), {
+          ignoreInitial: true,
+        });
+        watcher.on('all', async () => {
+          try {
+            await build();
+          } catch (error) {
+            console.error(error);
+          }
+        });
       }
     },
+    buildEnd() {
+      if (watcher) {
+        watcher.close();
+      }
+    }
   }
 }
 
@@ -197,7 +227,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
     },
     plugins: [
       !devMode && brotli(),
-      settings.offlineEnabled && transpileSWPlugin(),
+      settings.offlineEnabled && buildSWPlugin(),
       settings.offlineEnabled && injectManifestToSWPlugin(),
       {
         name: 'vaadin:custom-theme',

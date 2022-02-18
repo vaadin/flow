@@ -410,6 +410,7 @@ public abstract class NodeUpdater implements FallibleCommand {
             defaults.put("@rollup/plugin-replace", "3.1.0");
             defaults.put("rollup-plugin-brotli", "3.1.0");
             defaults.put("vite-plugin-checker", "0.3.4");
+            defaults.put("chokidar", "3.5.3");
             defaults.put("mkdirp", "1.0.4"); // for application-theme-plugin
             defaults.put("workbox-build", WORKBOX_VERSION);
         } else {
