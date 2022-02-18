@@ -56,12 +56,12 @@ import org.openqa.selenium.remote.DesiredCapabilities;
 @Category(ChromeTests.class)
 public class ChromeBrowserTest extends ViewOrUITest {
 
-    private static InetAddress ipv4Loopback;
-    private static InetAddress ipv6Loopback;
+    private static InetAddress ipv4All;
+    private static InetAddress ipv6All;
     static {
         try {
-            ipv4Loopback = InetAddress.getByName("127.0.0.1");
-            ipv6Loopback = InetAddress.getByName("::1");
+            ipv4All = InetAddress.getByName("0.0.0.0");
+            ipv6All = InetAddress.getByName("::0");
         } catch (UnknownHostException e) {
             throw new ExceptionInInitializerError(e);
         }
@@ -120,12 +120,12 @@ public class ChromeBrowserTest extends ViewOrUITest {
 
     private static void checkPortReallyFree(int port) throws UnknownHostException {
         try (ServerSocket socket = new ServerSocket()) {
-            socket.bind(new InetSocketAddress(ipv4Loopback, port));
+            socket.bind(new InetSocketAddress(ipv4All, port));
         } catch (IOException e) {
             throw new RuntimeException("Port " + port + " was supposed to be free but is not for ipv4", e);
         }
         try (ServerSocket socket = new ServerSocket()) {
-            socket.bind(new InetSocketAddress(ipv6Loopback, port));
+            socket.bind(new InetSocketAddress(ipv6All, port));
         } catch (IOException e) {
             throw new RuntimeException("Port " + port + " was supposed to be free but is not for ipv6", e);
         }
