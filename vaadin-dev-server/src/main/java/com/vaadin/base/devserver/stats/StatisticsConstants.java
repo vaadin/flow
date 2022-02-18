@@ -31,6 +31,7 @@ public class StatisticsConstants {
     public static final String EVENT_LIVE_RELOAD = "liveReload";
     public static final String EVENT_DEV_SERVER_START_PREFIX = "startDevserver";
     public static final String EVENT_PACKAGEMANAGER_INSTALL_TIME_PREFIX = "packageManagerInstall";
+    public static final String EVENT_PACKAGEMANAGER_CLEANUP_TIME_PREFIX = "packageManagerCleanup";
 
     /*
      * Name of the default JSON file containing all the statistics.
