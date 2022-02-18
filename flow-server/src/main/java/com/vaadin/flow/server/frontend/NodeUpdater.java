@@ -594,14 +594,13 @@ public abstract class NodeUpdater implements FallibleCommand {
                     UTF_8.name());
             return Json.parse(fileContent);
         } else {
-            return null;
+            return Json.createObject();
         }
     }
 
     void updateVaadinJsonContents(Map<String, String> newContent)
             throws IOException {
-        JsonObject fileContent = Optional.ofNullable(getVaadinJsonContents())
-                .orElse(Json.createObject());
+        JsonObject fileContent = getVaadinJsonContents();
         newContent.forEach(fileContent::put);
         File vaadinJsonFile = getVaadinJsonFile();
         FileUtils.forceMkdirParent(vaadinJsonFile);

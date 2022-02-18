@@ -223,7 +223,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
     private boolean isVaadinHashUpdated() {
         try {
             JsonObject content = packageUpdater.getVaadinJsonContents();
-            if (content != null && content.hasKey(HASH_KEY)) {
+            if (content.hasKey(HASH_KEY)) {
                 final JsonObject packageJson = packageUpdater.getPackageJson();
                 return !content.getString(HASH_KEY).equals(packageJson
                         .getObject(VAADIN_DEP_KEY).getString(HASH_KEY));
