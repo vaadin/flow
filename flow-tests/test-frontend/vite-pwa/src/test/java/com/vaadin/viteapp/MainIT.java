@@ -109,8 +109,8 @@ public class MainIT extends ChromeDeviceTest {
                 .executeAsyncScript(
                         "const done = arguments[arguments.length - 1];"
                                 + "fetch(arguments[0])"
-                                + "         .then(() => done(true))"
-                                + "         .catch(() => done(false))",
+                                + "  .then((response) => done(response.ok))"
+                                + "  .catch(() => done(false))",
                         VITE_PING_PATH);
     }
 
