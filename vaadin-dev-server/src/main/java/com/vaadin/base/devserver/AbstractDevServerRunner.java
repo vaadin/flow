@@ -223,6 +223,10 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
                             + TaskRunNpmInstall.lastInstallPackageManager,
                     TaskRunNpmInstall.lastInstallTimeMs);
             DevModeUsageStatistics.collectEvent(
+                    StatisticsConstants.EVENT_PACKAGEMANAGER_CLEANUP_TIME_PREFIX
+                            + TaskRunNpmInstall.lastInstallPackageManager,
+                    TaskRunNpmInstall.lastCleanupTimeMs);
+            DevModeUsageStatistics.collectEvent(
                     StatisticsConstants.EVENT_DEV_SERVER_START_PREFIX
                             + getServerName(),
                     ms);

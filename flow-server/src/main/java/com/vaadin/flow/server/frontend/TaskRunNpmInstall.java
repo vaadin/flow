@@ -80,6 +80,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
             + "%n======================================================================================================%n";
 
     public static long lastInstallTimeMs = 0;
+    public static long lastCleanupTimeMs = 0;
     public static String lastInstallPackageManager = "";
 
     private final NodeUpdater packageUpdater;
@@ -252,9 +253,9 @@ public class TaskRunNpmInstall implements FallibleCommand {
      * `package.json` has been updated.
      */
     private void runNpmInstall() throws ExecutionFailedException {
-        long startTime = System.currentTimeMillis();
         // Do possible cleaning before generating any new files.
         cleanUp();
+        long startTime = System.currentTimeMillis();
 
         Logger logger = packageUpdater.log();
         if (enablePnpm) {
@@ -526,8 +527,10 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
     private void cleanUp() throws ExecutionFailedException {
         if (!packageUpdater.nodeModulesFolder.exists()) {
+            lastCleanupTimeMs = 0;
             return;
         }
+        long startTime = System.currentTimeMillis();
         File modulesYaml = new File(packageUpdater.nodeModulesFolder,
                 MODULES_YAML);
         boolean hasModulesYaml = modulesYaml.exists() && modulesYaml.isFile();
@@ -543,6 +546,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
                 deleteNodeModules(packageUpdater.nodeModulesFolder);
             }
         }
+        lastCleanupTimeMs = System.currentTimeMillis() - startTime;
     }
 
     private void deleteNodeModules(File nodeModulesFolder)
