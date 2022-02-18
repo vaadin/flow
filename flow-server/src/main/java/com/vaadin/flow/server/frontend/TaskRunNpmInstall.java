@@ -79,6 +79,10 @@ public class TaskRunNpmInstall implements FallibleCommand {
             + "%n        node_modules, package-lock.json, webpack.generated.js, pnpm-lock.yaml, pnpmfile.js"
             + "%n======================================================================================================%n";
 
+    public static long lastInstallTimeMs = 0;
+    public static long lastCleanupTimeMs = 0;
+    public static String lastInstallPackageManager = "";
+
     private final NodeUpdater packageUpdater;
 
     private final List<String> ignoredNodeFolders = Arrays.asList(".bin",
@@ -251,6 +255,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
     private void runNpmInstall() throws ExecutionFailedException {
         // Do possible cleaning before generating any new files.
         cleanUp();
+        long startTime = System.currentTimeMillis();
 
         Logger logger = packageUpdater.log();
         if (enablePnpm) {
@@ -410,6 +415,9 @@ public class TaskRunNpmInstall implements FallibleCommand {
                         e);
             }
         }
+        lastInstallTimeMs = System.currentTimeMillis() - startTime;
+        lastInstallPackageManager = enablePnpm ? "pnpm" : "npm";
+
     }
 
     private Process runNpmCommand(List<String> command, File workingDirectory)
@@ -519,8 +527,10 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
     private void cleanUp() throws ExecutionFailedException {
         if (!packageUpdater.nodeModulesFolder.exists()) {
+            lastCleanupTimeMs = 0;
             return;
         }
+        long startTime = System.currentTimeMillis();
         File modulesYaml = new File(packageUpdater.nodeModulesFolder,
                 MODULES_YAML);
         boolean hasModulesYaml = modulesYaml.exists() && modulesYaml.isFile();
@@ -536,6 +546,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
                 deleteNodeModules(packageUpdater.nodeModulesFolder);
             }
         }
+        lastCleanupTimeMs = System.currentTimeMillis() - startTime;
     }
 
     private void deleteNodeModules(File nodeModulesFolder)
