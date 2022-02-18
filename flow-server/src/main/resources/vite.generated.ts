@@ -61,8 +61,6 @@ function transpileSWPlugin(): PluginOption {
         'alias',
         'vite:resolve',
         'vite:esbuild',
-        'replace',
-        'vite:define',
         'rollup-plugin-dynamic-import-variables',
         'vite:esbuild-transpile',
         'vite:terser',
