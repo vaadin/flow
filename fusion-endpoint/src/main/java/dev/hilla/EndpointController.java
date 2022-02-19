@@ -62,9 +62,6 @@ public class EndpointController {
 
     /**
      * A qualifier to override the request and response default json mapper.
-     *
-     * @see #EndpointController(ObjectMapper, ExplicitNullableTypeChecker,
-     *      ApplicationContext, EndpointRegistry, CsrfChecker)
      */
     public static final String VAADIN_ENDPOINT_MAPPER_BEAN_QUALIFIER = "vaadinEndpointMapper";
 

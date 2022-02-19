@@ -37,8 +37,6 @@ import com.vaadin.flow.server.VaadinServletService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.jackson.JacksonProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
@@ -48,7 +46,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.ClassUtils;
 
 import dev.hilla.EndpointRegistry.VaadinEndpointData;
-import dev.hilla.auth.CsrfChecker;
 import dev.hilla.auth.EndpointAccessChecker;
 import dev.hilla.endpointransfermapper.EndpointTransferMapper;
 import dev.hilla.exception.EndpointException;
@@ -80,7 +77,7 @@ public class EndpointInvoker {
     /**
      * Creates an instance of this bean.
      * 
-     * @param context
+     * @param applicationContext
      *            Spring context to extract beans annotated with
      *            {@link Endpoint} from
      * @param vaadinEndpointMapper
@@ -92,9 +89,11 @@ public class EndpointInvoker {
      * @param explicitNullableTypeChecker
      *            the method parameter and return value type checker to verify
      *            that null values are explicit
+     * @param endpointRegistry
+     *            the registry used to store endpoint information
      */
     public EndpointInvoker(ApplicationContext applicationContext,
-            @Autowired(required = false) @Qualifier(EndpointController.VAADIN_ENDPOINT_MAPPER_BEAN_QUALIFIER) ObjectMapper vaadinEndpointMapper,
+            ObjectMapper vaadinEndpointMapper,
             ExplicitNullableTypeChecker explicitNullableTypeChecker,
             EndpointRegistry endpointRegistry) {
         this.applicationContext = applicationContext;
@@ -110,6 +109,22 @@ public class EndpointInvoker {
         return LoggerFactory.getLogger(EndpointInvoker.class);
     }
 
+    /**
+     * Invoke the given endpoint method with the given parameters if the user
+     * has access to do so.
+     * 
+     * @param endpointName
+     *            the name of the endpoint
+     * @param methodName
+     *            the name of the method in the endpoint
+     * @param body
+     *            optional request body, that should be specified if the method
+     *            called has parameters
+     * @param request
+     *            the HTTP request which should not be here in the end
+     * @return the return value of the invoked endpoint method, wrapped in a
+     *         response entity
+     */
     public ResponseEntity<String> invoke(String endpointName, String methodName,
             ObjectNode body, HttpServletRequest request) {
         VaadinEndpointData vaadinEndpointData = endpointRegistry
