@@ -23,8 +23,6 @@ import com.vaadin.flow.server.auth.AccessAnnotationChecker;
 import com.vaadin.flow.spring.flowsecurity.SecurityUtils;
 import com.vaadin.flow.spring.flowsecurity.data.UserInfo;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 public class MainView extends AppLayout {
 
     private final Tabs menu;

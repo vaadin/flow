@@ -19,7 +19,6 @@ package com.vaadin.flow.data.converter;
 import com.vaadin.flow.data.binder.ErrorMessageProvider;
 import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.ValueContext;
-import org.slf4j.LoggerFactory;
 
 import java.util.UUID;
 

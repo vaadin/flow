@@ -3,7 +3,6 @@ package com.vaadin.flow.spring.flowsecurity.views;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.concurrent.Executor;
 
 import javax.annotation.security.PermitAll;
