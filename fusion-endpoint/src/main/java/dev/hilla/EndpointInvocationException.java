@@ -57,6 +57,25 @@ public abstract class EndpointInvocationException extends Exception {
     }
 
     /**
+     * Exception indicating an unexpected server error occured during handling
+     * of the endpoint invocation.
+     */
+    public static class EndpointInternalException
+            extends EndpointInvocationException {
+
+        /**
+         * Creates a new instance.
+         * 
+         * @param message
+         *            the message to pass to the client
+         */
+        public EndpointInternalException(String message) {
+            super(message);
+        }
+
+    }
+
+    /**
      * Creates a new instance..
      * 
      * @param errorMessage

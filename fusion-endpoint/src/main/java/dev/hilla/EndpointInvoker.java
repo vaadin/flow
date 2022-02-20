@@ -45,6 +45,7 @@ import org.springframework.util.ClassUtils;
 
 import dev.hilla.EndpointInvocationException.EndpointAccessDeniedException;
 import dev.hilla.EndpointInvocationException.EndpointBadRequestException;
+import dev.hilla.EndpointInvocationException.EndpointInternalException;
 import dev.hilla.EndpointInvocationException.EndpointNotFoundException;
 import dev.hilla.EndpointRegistry.VaadinEndpointData;
 import dev.hilla.auth.EndpointAccessChecker;
@@ -137,12 +138,15 @@ public class EndpointInvoker {
      * @throws EndpointAccessDeniedException
      *             if access to the endpoint was denied
      * @throws EndpointBadRequestException
+     *             if there was a problem with the request data
+     * @throws EndpointInternalException
+     *             if there was an internal error executing the endpoint method
      */
     public ResponseEntity<String> invoke(String endpointName, String methodName,
             ObjectNode body, Principal principal,
             Function<String, Boolean> rolesChecker)
             throws EndpointNotFoundException, EndpointAccessDeniedException,
-            EndpointBadRequestException {
+            EndpointBadRequestException, EndpointInternalException {
         VaadinEndpointData vaadinEndpointData = endpointRegistry
                 .get(endpointName);
         if (vaadinEndpointData == null) {
@@ -169,8 +173,7 @@ public class EndpointInvoker {
                     endpointName, methodName,
                     EndpointController.VAADIN_ENDPOINT_MAPPER_BEAN_QUALIFIER);
             getLogger().error(errorMessage, e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(createResponseErrorObject(errorMessage));
+            throw new EndpointInternalException(errorMessage);
         } finally {
             CurrentInstance.set(VaadinRequest.class, null);
         }
@@ -196,7 +199,7 @@ public class EndpointInvoker {
             ObjectNode body, VaadinEndpointData vaadinEndpointData,
             Principal principal, Function<String, Boolean> rolesChecker)
             throws JsonProcessingException, EndpointAccessDeniedException,
-            EndpointBadRequestException {
+            EndpointBadRequestException, EndpointInternalException {
         EndpointAccessChecker accessChecker = getAccessChecker();
         String checkError = accessChecker.check(methodToInvoke, principal,
                 rolesChecker);
@@ -263,8 +266,7 @@ public class EndpointInvoker {
                     "Endpoint '%s' method '%s' access failure", endpointName,
                     methodName);
             getLogger().error(errorMessage, e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(createResponseErrorObject(errorMessage));
+            throw new EndpointInternalException(errorMessage);
         } catch (InvocationTargetException e) {
             return handleMethodExecutionError(endpointName, methodName, e);
         }
@@ -306,7 +308,7 @@ public class EndpointInvoker {
 
     private ResponseEntity<String> handleMethodExecutionError(
             String endpointName, String methodName, InvocationTargetException e)
-            throws JsonProcessingException {
+            throws JsonProcessingException, EndpointInternalException {
         if (EndpointException.class.isAssignableFrom(e.getCause().getClass())) {
             EndpointException endpointException = ((EndpointException) e
                     .getCause());
@@ -320,8 +322,7 @@ public class EndpointInvoker {
                     "Endpoint '%s' method '%s' execution failure", endpointName,
                     methodName);
             getLogger().error(errorMessage, e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(createResponseErrorObject(errorMessage));
+            throw new EndpointInternalException(errorMessage);
         }
     }
 
