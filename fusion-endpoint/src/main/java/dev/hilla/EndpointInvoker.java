@@ -276,15 +276,11 @@ public class EndpointInvoker {
         String implicitNullError = this.explicitNullableTypeChecker
                 .checkValueForAnnotatedElement(returnValue, methodToInvoke);
         if (implicitNullError != null) {
-            EndpointException returnValueException = new EndpointException(
-                    String.format(
-                            "Unexpected return value in endpoint '%s' method '%s'. %s",
-                            endpointName, methodName, implicitNullError));
-
-            getLogger().error(returnValueException.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(vaadinEndpointMapper.writeValueAsString(
-                            returnValueException.getSerializationData()));
+            String errorMessage = String.format(
+                    "Unexpected return value in endpoint '%s' method '%s'. %s",
+                    endpointName, methodName, implicitNullError);
+            getLogger().error(errorMessage);
+            throw new EndpointInternalException(errorMessage);
         }
 
         Set<ConstraintViolation<Object>> returnValueConstraintViolations = validator
@@ -292,9 +288,10 @@ public class EndpointInvoker {
                 .validateReturnValue(vaadinEndpointData.getEndpointObject(),
                         methodToInvoke, returnValue);
         if (!returnValueConstraintViolations.isEmpty()) {
-            getLogger().error(
-                    "Endpoint '{}' method '{}' had returned a value that has validation errors: '{}', this might cause bugs on the client side. Fix the method implementation.",
+            String errorMessage = String.format(
+                    "Endpoint '%s' method '%s' returned a value that has validation errors: '%s'",
                     endpointName, methodName, returnValueConstraintViolations);
+            throw new EndpointInternalException(errorMessage);
         }
         return ResponseEntity
                 .ok(vaadinEndpointMapper.writeValueAsString(returnValue));
