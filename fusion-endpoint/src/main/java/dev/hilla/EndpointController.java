@@ -17,6 +17,7 @@ package dev.hilla;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.internal.CurrentInstance;
@@ -44,6 +45,7 @@ import dev.hilla.EndpointInvocationException.EndpointInternalException;
 import dev.hilla.EndpointInvocationException.EndpointNotFoundException;
 import dev.hilla.auth.CsrfChecker;
 import dev.hilla.auth.EndpointAccessChecker;
+import dev.hilla.exception.EndpointException;
 
 /**
  * The controller that is responsible for processing Vaadin endpoint requests.
@@ -157,6 +159,16 @@ public class EndpointController {
                     new VaadinServletRequest(request, service));
             return endpointInvoker.invoke(endpointName, methodName, body,
                     request.getUserPrincipal(), request::isUserInRole);
+        } catch (EndpointException e) {
+            try {
+                return ResponseEntity.badRequest().body(endpointInvoker
+                        .createResponseErrorObject(e.getSerializationData()));
+            } catch (JsonProcessingException ee) {
+                String errorMessage = String.format(
+                        "Failed to serialize error object for endpoint exception. ");
+                getLogger().error(errorMessage, e);
+                return ResponseEntity.internalServerError().body(errorMessage);
+            }
         } catch (EndpointNotFoundException e) {
             return ResponseEntity.notFound().build();
         } catch (EndpointAccessDeniedException e) {
