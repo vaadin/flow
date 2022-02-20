@@ -37,7 +37,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.jackson.JacksonProperties;
 import org.springframework.context.ApplicationContext;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.stereotype.Component;
@@ -220,32 +219,20 @@ public class EndpointInvoker {
                     requestParameters.size()));
         }
 
-        Object[] vaadinEndpointParameters;
-        try {
-            vaadinEndpointParameters = getVaadinEndpointParameters(
-                    requestParameters, javaParameters, methodName,
-                    endpointName);
-        } catch (EndpointValidationException e) {
-            getLogger().debug(
-                    "Endpoint '{}' method '{}' received invalid response",
-                    endpointName, methodName, e);
-            return ResponseEntity.badRequest().body(vaadinEndpointMapper
-                    .writeValueAsString(e.getSerializationData()));
-        }
+        Object[] vaadinEndpointParameters = getVaadinEndpointParameters(
+                requestParameters, javaParameters, methodName, endpointName);
 
         Set<ConstraintViolation<Object>> methodParameterConstraintViolations = validator
                 .forExecutables()
                 .validateParameters(vaadinEndpointData.getEndpointObject(),
                         methodToInvoke, vaadinEndpointParameters);
         if (!methodParameterConstraintViolations.isEmpty()) {
-            return ResponseEntity.badRequest().body(vaadinEndpointMapper
-                    .writeValueAsString(new EndpointValidationException(
-                            String.format(
-                                    "Validation error in endpoint '%s' method '%s'",
-                                    endpointName, methodName),
-                            createMethodValidationErrors(
-                                    methodParameterConstraintViolations))
-                                            .getSerializationData()));
+            throw new EndpointValidationException(
+                    String.format(
+                            "Validation error in endpoint '%s' method '%s'",
+                            endpointName, methodName),
+                    createMethodValidationErrors(
+                            methodParameterConstraintViolations));
         }
 
         Object returnValue;
@@ -305,15 +292,13 @@ public class EndpointInvoker {
 
     private ResponseEntity<String> handleMethodExecutionError(
             String endpointName, String methodName, InvocationTargetException e)
-            throws JsonProcessingException, EndpointInternalException {
+            throws EndpointInternalException {
         if (EndpointException.class.isAssignableFrom(e.getCause().getClass())) {
             EndpointException endpointException = ((EndpointException) e
                     .getCause());
             getLogger().debug("Endpoint '{}' method '{}' aborted the execution",
                     endpointName, methodName, endpointException);
-            return ResponseEntity.badRequest()
-                    .body(vaadinEndpointMapper.writeValueAsString(
-                            endpointException.getSerializationData()));
+            throw endpointException;
         } else {
             String errorMessage = String.format(
                     "Endpoint '%s' method '%s' execution failure", endpointName,
@@ -327,6 +312,11 @@ public class EndpointInvoker {
         ObjectNode objectNode = vaadinEndpointMapper.createObjectNode();
         objectNode.put(EndpointException.ERROR_MESSAGE_FIELD, errorMessage);
         return objectNode.toString();
+    }
+
+    String createResponseErrorObject(Map<String, Object> serializationData)
+            throws JsonProcessingException {
+        return vaadinEndpointMapper.writeValueAsString(serializationData);
     }
 
     private String listMethodParameterTypes(Type[] javaParameters) {
