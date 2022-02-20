@@ -38,6 +38,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import dev.hilla.EndpointInvocationException.EndpointNotFoundException;
 import dev.hilla.auth.CsrfChecker;
 import dev.hilla.auth.EndpointAccessChecker;
 
@@ -153,6 +154,8 @@ public class EndpointController {
                     new VaadinServletRequest(request, service));
             return endpointInvoker.invoke(endpointName, methodName, body,
                     request.getUserPrincipal(), request::isUserInRole);
+        } catch (EndpointNotFoundException e) {
+            return ResponseEntity.notFound().build();
         } finally {
             CurrentInstance.set(VaadinRequest.class, null);
         }

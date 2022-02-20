@@ -43,6 +43,7 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ClassUtils;
 
+import dev.hilla.EndpointInvocationException.EndpointNotFoundException;
 import dev.hilla.EndpointRegistry.VaadinEndpointData;
 import dev.hilla.auth.EndpointAccessChecker;
 import dev.hilla.endpointransfermapper.EndpointTransferMapper;
@@ -129,15 +130,18 @@ public class EndpointInvoker {
      *            a function for checking if a user is in a given role
      * @return the return value of the invoked endpoint method, wrapped in a
      *         response entity
+     * @throws EndpointNotFoundException
+     *             if the endpoint was not found
      */
     public ResponseEntity<String> invoke(String endpointName, String methodName,
             ObjectNode body, Principal principal,
-            Function<String, Boolean> rolesChecker) {
+            Function<String, Boolean> rolesChecker)
+            throws EndpointNotFoundException {
         VaadinEndpointData vaadinEndpointData = endpointRegistry
                 .get(endpointName);
         if (vaadinEndpointData == null) {
             getLogger().debug("Endpoint '{}' not found", endpointName);
-            return ResponseEntity.notFound().build();
+            throw new EndpointNotFoundException();
         }
 
         Method methodToInvoke = vaadinEndpointData.getMethod(methodName)
@@ -145,7 +149,7 @@ public class EndpointInvoker {
         if (methodToInvoke == null) {
             getLogger().debug("Method '{}' not found in endpoint '{}'",
                     methodName, endpointName);
-            return ResponseEntity.notFound().build();
+            throw new EndpointNotFoundException();
         }
 
         try {
