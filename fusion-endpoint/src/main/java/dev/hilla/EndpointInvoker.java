@@ -44,6 +44,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.ClassUtils;
 
 import dev.hilla.EndpointInvocationException.EndpointAccessDeniedException;
+import dev.hilla.EndpointInvocationException.EndpointBadRequestException;
 import dev.hilla.EndpointInvocationException.EndpointNotFoundException;
 import dev.hilla.EndpointRegistry.VaadinEndpointData;
 import dev.hilla.auth.EndpointAccessChecker;
@@ -135,11 +136,13 @@ public class EndpointInvoker {
      *             if the endpoint was not found
      * @throws EndpointAccessDeniedException
      *             if access to the endpoint was denied
+     * @throws EndpointBadRequestException
      */
     public ResponseEntity<String> invoke(String endpointName, String methodName,
             ObjectNode body, Principal principal,
             Function<String, Boolean> rolesChecker)
-            throws EndpointNotFoundException, EndpointAccessDeniedException {
+            throws EndpointNotFoundException, EndpointAccessDeniedException,
+            EndpointBadRequestException {
         VaadinEndpointData vaadinEndpointData = endpointRegistry
                 .get(endpointName);
         if (vaadinEndpointData == null) {
@@ -192,7 +195,8 @@ public class EndpointInvoker {
             String endpointName, String methodName, Method methodToInvoke,
             ObjectNode body, VaadinEndpointData vaadinEndpointData,
             Principal principal, Function<String, Boolean> rolesChecker)
-            throws JsonProcessingException, EndpointAccessDeniedException {
+            throws JsonProcessingException, EndpointAccessDeniedException,
+            EndpointBadRequestException {
         EndpointAccessChecker accessChecker = getAccessChecker();
         String checkError = accessChecker.check(methodToInvoke, principal,
                 rolesChecker);
@@ -206,12 +210,11 @@ public class EndpointInvoker {
         Type[] javaParameters = getJavaParameters(methodToInvoke, ClassUtils
                 .getUserClass(vaadinEndpointData.getEndpointObject()));
         if (javaParameters.length != requestParameters.size()) {
-            return ResponseEntity.badRequest()
-                    .body(createResponseErrorObject(String.format(
-                            "Incorrect number of parameters for endpoint '%s' method '%s', "
-                                    + "expected: %s, got: %s",
-                            endpointName, methodName, javaParameters.length,
-                            requestParameters.size())));
+            throw new EndpointBadRequestException(String.format(
+                    "Incorrect number of parameters for endpoint '%s' method '%s', "
+                            + "expected: %s, got: %s",
+                    endpointName, methodName, javaParameters.length,
+                    requestParameters.size()));
         }
 
         Object[] vaadinEndpointParameters;
@@ -254,8 +257,7 @@ public class EndpointInvoker {
                     endpointName, methodName,
                     listMethodParameterTypes(javaParameters));
             getLogger().debug(errorMessage, e);
-            return ResponseEntity.badRequest()
-                    .body(createResponseErrorObject(errorMessage));
+            throw new EndpointBadRequestException(errorMessage);
         } catch (IllegalAccessException e) {
             String errorMessage = String.format(
                     "Endpoint '%s' method '%s' access failure", endpointName,

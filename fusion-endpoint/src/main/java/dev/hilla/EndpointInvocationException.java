@@ -27,12 +27,30 @@ public abstract class EndpointInvocationException extends Exception {
             extends EndpointInvocationException {
 
         /**
-         * Creates a new instance..
+         * Creates a new instance.
          * 
          * @param message
          *            the message to pass to the client
          */
         public EndpointAccessDeniedException(String message) {
+            super(message);
+        }
+
+    }
+
+    /**
+     * Exception indicating a problem with the request data.
+     */
+    public static class EndpointBadRequestException
+            extends EndpointInvocationException {
+
+        /**
+         * Creates a new instance.
+         * 
+         * @param message
+         *            the message to pass to the client
+         */
+        public EndpointBadRequestException(String message) {
             super(message);
         }
 

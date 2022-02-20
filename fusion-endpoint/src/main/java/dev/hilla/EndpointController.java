@@ -39,6 +39,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import dev.hilla.EndpointInvocationException.EndpointAccessDeniedException;
+import dev.hilla.EndpointInvocationException.EndpointBadRequestException;
 import dev.hilla.EndpointInvocationException.EndpointNotFoundException;
 import dev.hilla.auth.CsrfChecker;
 import dev.hilla.auth.EndpointAccessChecker;
@@ -159,6 +160,9 @@ public class EndpointController {
             return ResponseEntity.notFound().build();
         } catch (EndpointAccessDeniedException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                    endpointInvoker.createResponseErrorObject(e.getMessage()));
+        } catch (EndpointBadRequestException e) {
+            return ResponseEntity.badRequest().body(
                     endpointInvoker.createResponseErrorObject(e.getMessage()));
         } finally {
             CurrentInstance.set(VaadinRequest.class, null);
