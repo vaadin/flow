@@ -141,7 +141,7 @@ public class EndpointInvoker {
      * @throws EndpointInternalException
      *             if there was an internal error executing the endpoint method
      */
-    public ResponseEntity<String> invoke(String endpointName, String methodName,
+    public Object invoke(String endpointName, String methodName,
             ObjectNode body, Principal principal,
             Function<String, Boolean> rolesChecker)
             throws EndpointNotFoundException, EndpointAccessDeniedException,
@@ -161,21 +161,9 @@ public class EndpointInvoker {
             throw new EndpointNotFoundException();
         }
 
-        try {
-            return invokeVaadinEndpointMethod(endpointName, methodName,
-                    methodToInvoke, body, vaadinEndpointData, principal,
-                    rolesChecker);
-        } catch (JsonProcessingException e) {
-            String errorMessage = String.format(
-                    "Failed to serialize endpoint '%s' method '%s' response. "
-                            + "Double check method's return type or specify a custom mapper bean with qualifier '%s'",
-                    endpointName, methodName,
-                    EndpointController.VAADIN_ENDPOINT_MAPPER_BEAN_QUALIFIER);
-            getLogger().error(errorMessage, e);
-            throw new EndpointInternalException(errorMessage);
-        } finally {
-            CurrentInstance.set(VaadinRequest.class, null);
-        }
+        return invokeVaadinEndpointMethod(endpointName, methodName,
+                methodToInvoke, body, vaadinEndpointData, principal,
+                rolesChecker);
 
     }
 
@@ -193,12 +181,12 @@ public class EndpointInvoker {
         return objectMapper;
     }
 
-    private ResponseEntity<String> invokeVaadinEndpointMethod(
-            String endpointName, String methodName, Method methodToInvoke,
-            ObjectNode body, VaadinEndpointData vaadinEndpointData,
-            Principal principal, Function<String, Boolean> rolesChecker)
-            throws JsonProcessingException, EndpointAccessDeniedException,
-            EndpointBadRequestException, EndpointInternalException {
+    private Object invokeVaadinEndpointMethod(String endpointName,
+            String methodName, Method methodToInvoke, ObjectNode body,
+            VaadinEndpointData vaadinEndpointData, Principal principal,
+            Function<String, Boolean> rolesChecker)
+            throws EndpointAccessDeniedException, EndpointBadRequestException,
+            EndpointInternalException {
         EndpointAccessChecker accessChecker = getAccessChecker();
         String checkError = accessChecker.check(methodToInvoke, principal,
                 rolesChecker);
@@ -280,8 +268,8 @@ public class EndpointInvoker {
                     endpointName, methodName, returnValueConstraintViolations);
             throw new EndpointInternalException(errorMessage);
         }
-        return ResponseEntity
-                .ok(vaadinEndpointMapper.writeValueAsString(returnValue));
+
+        return returnValue;
     }
 
     private Type[] getJavaParameters(Method methodToInvoke, Type classType) {
@@ -317,6 +305,11 @@ public class EndpointInvoker {
     String createResponseErrorObject(Map<String, Object> serializationData)
             throws JsonProcessingException {
         return vaadinEndpointMapper.writeValueAsString(serializationData);
+    }
+
+    String writeValueAsString(Object returnValue)
+            throws JsonProcessingException {
+        return vaadinEndpointMapper.writeValueAsString(returnValue);
     }
 
     private String listMethodParameterTypes(Type[] javaParameters) {

@@ -157,8 +157,21 @@ public class EndpointController {
                     .getCurrent();
             CurrentInstance.set(VaadinRequest.class,
                     new VaadinServletRequest(request, service));
-            return endpointInvoker.invoke(endpointName, methodName, body,
-                    request.getUserPrincipal(), request::isUserInRole);
+            Object returnValue = endpointInvoker.invoke(endpointName,
+                    methodName, body, request.getUserPrincipal(),
+                    request::isUserInRole);
+            try {
+                return ResponseEntity
+                        .ok(endpointInvoker.writeValueAsString(returnValue));
+            } catch (JsonProcessingException e) {
+                String errorMessage = String.format(
+                        "Failed to serialize endpoint '%s' method '%s' response. "
+                                + "Double check method's return type or specify a custom mapper bean with qualifier '%s'",
+                        endpointName, methodName,
+                        EndpointController.VAADIN_ENDPOINT_MAPPER_BEAN_QUALIFIER);
+                getLogger().error(errorMessage, e);
+                throw new EndpointInternalException(errorMessage);
+            }
         } catch (EndpointException e) {
             try {
                 return ResponseEntity.badRequest().body(endpointInvoker
