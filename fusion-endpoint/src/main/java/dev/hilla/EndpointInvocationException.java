@@ -21,6 +21,24 @@ public abstract class EndpointInvocationException extends Exception {
     }
 
     /**
+     * Exception indicating access to the endpoint was denied.
+     */
+    public static class EndpointAccessDeniedException
+            extends EndpointInvocationException {
+
+        /**
+         * Creates a new instance..
+         * 
+         * @param message
+         *            the message to pass to the client
+         */
+        public EndpointAccessDeniedException(String message) {
+            super(message);
+        }
+
+    }
+
+    /**
      * Creates a new instance..
      * 
      * @param errorMessage

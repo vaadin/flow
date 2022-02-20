@@ -43,6 +43,7 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ClassUtils;
 
+import dev.hilla.EndpointInvocationException.EndpointAccessDeniedException;
 import dev.hilla.EndpointInvocationException.EndpointNotFoundException;
 import dev.hilla.EndpointRegistry.VaadinEndpointData;
 import dev.hilla.auth.EndpointAccessChecker;
@@ -132,11 +133,13 @@ public class EndpointInvoker {
      *         response entity
      * @throws EndpointNotFoundException
      *             if the endpoint was not found
+     * @throws EndpointAccessDeniedException
+     *             if access to the endpoint was denied
      */
     public ResponseEntity<String> invoke(String endpointName, String methodName,
             ObjectNode body, Principal principal,
             Function<String, Boolean> rolesChecker)
-            throws EndpointNotFoundException {
+            throws EndpointNotFoundException, EndpointAccessDeniedException {
         VaadinEndpointData vaadinEndpointData = endpointRegistry
                 .get(endpointName);
         if (vaadinEndpointData == null) {
@@ -189,15 +192,14 @@ public class EndpointInvoker {
             String endpointName, String methodName, Method methodToInvoke,
             ObjectNode body, VaadinEndpointData vaadinEndpointData,
             Principal principal, Function<String, Boolean> rolesChecker)
-            throws JsonProcessingException {
+            throws JsonProcessingException, EndpointAccessDeniedException {
         EndpointAccessChecker accessChecker = getAccessChecker();
         String checkError = accessChecker.check(methodToInvoke, principal,
                 rolesChecker);
         if (checkError != null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(createResponseErrorObject(String.format(
-                            "Endpoint '%s' method '%s' request cannot be accessed, reason: '%s'",
-                            endpointName, methodName, checkError)));
+            throw new EndpointAccessDeniedException(String.format(
+                    "Endpoint '%s' method '%s' request cannot be accessed, reason: '%s'",
+                    endpointName, methodName, checkError));
         }
 
         Map<String, JsonNode> requestParameters = getRequestParameters(body);
