@@ -124,7 +124,7 @@ public class NodeTasks implements FallibleCommand {
         /**
          * Is in client-side bootstrapping mode.
          */
-        private boolean useDeprecatedV14Bootstrapping;
+        private boolean useLegacyV14Bootstrap;
 
         /**
          * The node.js version to be used when node.js is installed
@@ -406,7 +406,7 @@ public class NodeTasks implements FallibleCommand {
          * @return the builder, for chaining
          */
         public Builder useV14Bootstrap(boolean useDeprecatedV14Bootstrapping) {
-            this.useDeprecatedV14Bootstrapping = useDeprecatedV14Bootstrapping;
+            this.useLegacyV14Bootstrap = useDeprecatedV14Bootstrapping;
             return this;
         }
 
@@ -726,8 +726,7 @@ public class NodeTasks implements FallibleCommand {
             frontendDependencies = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
                     .createScanner(!builder.useByteCodeScanner, classFinder,
                             builder.generateEmbeddableWebComponents,
-                            builder.useDeprecatedV14Bootstrapping,
-                            featureFlags);
+                            builder.useLegacyV14Bootstrap, featureFlags);
 
             if (builder.generateEmbeddableWebComponents) {
                 FrontendWebComponentGenerator generator = new FrontendWebComponentGenerator(
@@ -774,7 +773,7 @@ public class NodeTasks implements FallibleCommand {
             addGenerateTsConfigTask(builder);
         }
 
-        if (!builder.useDeprecatedV14Bootstrapping) {
+        if (!builder.useLegacyV14Bootstrap) {
             addBootstrapTasks(builder);
 
             TaskGenerateHilla hillaTask = builder.lookup
@@ -831,21 +830,20 @@ public class NodeTasks implements FallibleCommand {
                     builder.npmFolder, builder.webappResourcesDirectory,
                     builder.resourceOutputDirectory,
                     new File(builder.generatedFolder, IMPORTS_NAME),
-                    builder.useDeprecatedV14Bootstrapping,
-                    builder.flowResourcesFolder, pwaConfiguration,
-                    builder.frontendGeneratedFolder, builder.buildDirectory));
+                    builder.useLegacyV14Bootstrap, builder.flowResourcesFolder,
+                    pwaConfiguration, builder.frontendGeneratedFolder,
+                    builder.buildDirectory));
         }
 
         if (builder.enableImportsUpdate) {
-            commands.add(
-                    new TaskUpdateImports(classFinder, frontendDependencies,
-                            finder -> getFallbackScanner(builder, finder,
-                                    featureFlags),
-                            builder.npmFolder, builder.generatedFolder,
-                            builder.frontendDirectory, builder.tokenFile,
-                            builder.tokenFileData, builder.enablePnpm,
-                            builder.buildDirectory, builder.productionMode,
-                            featureFlags));
+            commands.add(new TaskUpdateImports(classFinder,
+                    frontendDependencies,
+                    finder -> getFallbackScanner(builder, finder, featureFlags),
+                    builder.npmFolder, builder.generatedFolder,
+                    builder.frontendDirectory, builder.tokenFile,
+                    builder.tokenFileData, builder.enablePnpm,
+                    builder.buildDirectory, builder.productionMode,
+                    builder.useLegacyV14Bootstrap, featureFlags));
 
             commands.add(new TaskUpdateThemeImport(builder.npmFolder,
                     frontendDependencies.getThemeDefinition(),
@@ -929,8 +927,7 @@ public class NodeTasks implements FallibleCommand {
             return new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
                     .createScanner(true, finder,
                             builder.generateEmbeddableWebComponents,
-                            builder.useDeprecatedV14Bootstrapping,
-                            featureFlags);
+                            builder.useLegacyV14Bootstrap, featureFlags);
         } else {
             return null;
         }

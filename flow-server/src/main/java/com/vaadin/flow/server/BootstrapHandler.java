@@ -182,6 +182,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         private JsonObject applicationParameters;
         private BootstrapUriResolver uriResolver;
 
+        private boolean initTheme = true;
+
         /**
          * Creates a new context instance using the given parameters.
          *
@@ -272,6 +274,25 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          */
         public VaadinSession getSession() {
             return session;
+        }
+
+        /**
+         * Should custom theme be initialized.
+         * 
+         * @return true if theme should be initialized
+         */
+        public boolean isInitTheme() {
+            return initTheme;
+        }
+
+        /**
+         * Set if custom theme should be initialized.
+         * 
+         * @param initTheme
+         *            enable or disable theme initialisation
+         */
+        public void setInitTheme(boolean initTheme) {
+            this.initTheme = initTheme;
         }
 
         /**
@@ -661,6 +682,17 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             setupDocumentBody(document);
 
             document.outputSettings().prettyPrint(false);
+
+            // In V14 legacy bootstrap mode, the theme is initialized in
+            // target/frontend/generated-flow-imports.js but not in normal
+            // bootstrap mode and for exported webcomponents; set a flag in
+            // the DOM only if initialization is needed.
+            if (config.useV14Bootstrap() && context.isInitTheme()) {
+                head.prependElement("script").attr("type", "text/javascript")
+                        .appendChild(new DataNode(
+                                "window.Vaadin = window.Vaadin || {}; window.Vaadin.theme = window.Vaadin.theme || {};"
+                                        + "window.Vaadin.theme.flowBootstrap = true;"));
+            }
 
             BootstrapUtils.getInlineTargets(context)
                     .ifPresent(targets -> handleInlineTargets(context, head,

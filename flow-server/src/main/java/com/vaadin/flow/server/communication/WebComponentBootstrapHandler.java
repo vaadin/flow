@@ -78,6 +78,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 Function<VaadinRequest, String> callback) {
             super(request, response, ui.getInternals().getSession(), ui,
                     callback);
+            setInitTheme(false);
         }
 
         @Override
