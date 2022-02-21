@@ -39,7 +39,6 @@ import com.vaadin.flow.server.Platform;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.shared.util.SharedUtil;
 
-import elemental.json.Json;
 import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;

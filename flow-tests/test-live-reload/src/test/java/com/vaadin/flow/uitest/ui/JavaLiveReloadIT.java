@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import java.util.List;
-
 import com.vaadin.flow.testutil.DevModeGizmoElement;
 import com.vaadin.testbench.TestBenchElement;
 

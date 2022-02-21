@@ -18,8 +18,6 @@ package com.vaadin.flow.spring;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.vaadin.flow.spring.security.RequestUtil;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
