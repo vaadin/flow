@@ -56,6 +56,45 @@ import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_VERSION;
  */
 public class TaskRunNpmInstall implements FallibleCommand {
 
+    /** Container for npm installation statistics. */
+    public static class Stats {
+        private long installTimeMs = 0;
+        private long cleanupTimeMs = 0;
+        private String packageManager = "";
+
+        /** Create an instance. */
+        public Stats() {
+        }
+
+        /**
+         * Gets the time spent running {@code npm install}.
+         * 
+         * @return the time in milliseconds
+         */
+        public long getInstallTimeMs() {
+            return installTimeMs;
+        }
+
+        /**
+         * Gets the time spent doing cleanup before {@code npm install}.
+         * 
+         * @return the time in milliseconds
+         */
+        public long getCleanupTimeMs() {
+            return cleanupTimeMs;
+        }
+
+        /**
+         * Gets the package manager used for installation.
+         * 
+         * @return the name of the package manager
+         */
+        public String getPackageManager() {
+            return packageManager;
+        }
+
+    }
+
     private static final String MODULES_YAML = ".modules.yaml";
 
     private static final String NPM_VALIDATION_FAIL_MESSAGE = "%n%n======================================================================================================"
@@ -75,9 +114,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
             + "%n        node_modules, package-lock.json, webpack.generated.js, pnpm-lock.yaml, pnpmfile.js"
             + "%n======================================================================================================%n";
 
-    public static long lastInstallTimeMs = 0;
-    public static long lastCleanupTimeMs = 0;
-    public static String lastInstallPackageManager = "";
+    private static Stats lastInstallStats = new Stats();
 
     private final NodeUpdater packageUpdater;
 
@@ -405,8 +442,8 @@ public class TaskRunNpmInstall implements FallibleCommand {
                         e);
             }
         }
-        lastInstallTimeMs = System.currentTimeMillis() - startTime;
-        lastInstallPackageManager = enablePnpm ? "pnpm" : "npm";
+        lastInstallStats.installTimeMs = System.currentTimeMillis() - startTime;
+        lastInstallStats.packageManager = enablePnpm ? "pnpm" : "npm";
 
     }
 
@@ -517,7 +554,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
     private void cleanUp() throws ExecutionFailedException {
         if (!packageUpdater.nodeModulesFolder.exists()) {
-            lastCleanupTimeMs = 0;
+            lastInstallStats.cleanupTimeMs = 0;
             return;
         }
         long startTime = System.currentTimeMillis();
@@ -536,7 +573,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
                 deleteNodeModules(packageUpdater.nodeModulesFolder);
             }
         }
-        lastCleanupTimeMs = System.currentTimeMillis() - startTime;
+        lastInstallStats.cleanupTimeMs = System.currentTimeMillis() - startTime;
     }
 
     private void deleteNodeModules(File nodeModulesFolder)
@@ -570,4 +607,14 @@ public class TaskRunNpmInstall implements FallibleCommand {
                     String.format(NPM_VALIDATION_FAIL_MESSAGE));
         }
     }
+
+    /**
+     * Returns timing information for the last operation.
+     * 
+     * @return timing information
+     */
+    public static Stats getLastInstallStats() {
+        return lastInstallStats;
+    }
+
 }
