@@ -6,7 +6,7 @@
  */
 import path
   from 'path';
-import {readFile, exists} from 'fs/promises';
+import {readFileSync} from 'fs';
 import * as net
   from 'net';
 
@@ -151,18 +151,9 @@ function vaadinBundlesPlugin(): PluginOption {
 
   const modulesDirectory = path.posix.resolve(__dirname, 'node_modules');
 
-  let vaadinBundleJsonPath: string | undefined;
   let vaadinBundleJson: BundleJson;
 
   function resolveVaadinBundleJsonPath() {
-    try {
-      vaadinBundleJsonPath = require.resolve('@vaadin/bundles/vaadin-bundle.json');
-    } catch (e: unknown) {
-      vaadinBundleJsonPath = undefined;
-      if (!(typeof e === 'object' && (e as {code: string}).code === 'MODULE_NOT_FOUND')) {
-        throw e;
-      }
-    }
   }
 
   function parseModuleId(id: string): { packageName: string, modulePath: string } {
@@ -212,19 +203,18 @@ function vaadinBundlesPlugin(): PluginOption {
     apply(config, {command}) {
       if (command !== "serve") return false;
 
-      resolveVaadinBundleJsonPath();
-      if (vaadinBundleJsonPath === undefined) {
-        console.info(`@vaadin/bundles npm package is not found, ${disabledMessage}`);
-        vaadinBundleJson = {packages: {}};
-        return false;
+      try {
+        const vaadinBundleJsonPath = require.resolve('@vaadin/bundles/vaadin-bundle.json');
+        vaadinBundleJson = JSON.parse(readFileSync(vaadinBundleJsonPath, {encoding: 'utf8'}));
+      } catch (e: unknown) {
+        if (typeof e === 'object' && (e as {code: string}).code === 'MODULE_NOT_FOUND') {
+          vaadinBundleJson = {packages: {}};
+          console.info(`@vaadin/bundles npm package is not found, ${disabledMessage}`);
+          return false;
+        } else {
+          throw e;
+        }
       }
-
-      return true;
-    },
-    async config(config) {
-      vaadinBundleJson = JSON.parse(
-        await readFile(vaadinBundleJsonPath!, {encoding: 'utf8'})
-      );
 
       const versionMismatches: Array<{name: string, bundledVersion: string, installedVersion: string}> = [];
       for (const [name, packageInfo] of Object.entries(vaadinBundleJson.packages)) {
@@ -232,14 +222,14 @@ function vaadinBundlesPlugin(): PluginOption {
         try {
           const { version: bundledVersion } = packageInfo;
           const installedPackageJsonFile = path.resolve(modulesDirectory, name, 'package.json');
-          const packageJson = JSON.parse(await readFile(installedPackageJsonFile, { encoding: 'utf8' }));
+          const packageJson = JSON.parse(readFileSync(installedPackageJsonFile, {encoding: 'utf8'}));
           installedVersion = packageJson.version;
           if (installedVersion && installedVersion !== bundledVersion) {
             versionMismatches.push({
               name,
               bundledVersion,
               installedVersion
-            })
+            });
           }
         } catch (_) {
           // ignore package not found
@@ -251,23 +241,17 @@ function vaadinBundlesPlugin(): PluginOption {
         vaadinBundleJson = {packages: {}};
         return config;
       }
-
-      return mergeConfig(config, {
+    },
+    async config(config) {
+      return mergeConfig({
         optimizeDeps: {
-          include: [
-            // Happen to fail dedupe in Vite pre-bundling
-            '@polymer/iron-meta',
-            '@polymer/iron-meta/iron-meta.js',
-          ],
           exclude: [
             // Vaadin bundle
             '@vaadin/bundles',
-            ...Object.keys(vaadinBundleJson.packages),
-            // Known small packages
-            '@vaadin/router',
+            ...Object.keys(vaadinBundleJson.packages)
           ]
         }
-      });
+      }, config);
     },
     load(rawId) {
       const [path, params] = rawId.split('?');
@@ -366,6 +350,9 @@ export const vaadinConfig: UserConfigFn = (env) => {
         // Pre-scan entrypoints in Vite to avoid reloading on first open
         'generated/vaadin.ts'
       ],
+      exclude: [
+        '@vaadin/router'
+      ]
     },
     plugins: [
       !devMode && brotli(),
