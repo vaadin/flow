@@ -36,6 +36,7 @@ import org.springframework.web.util.pattern.PathPatternParser;
 
 import dev.hilla.auth.CsrfChecker;
 import dev.hilla.auth.EndpointAccessChecker;
+import dev.hilla.push.PushEndpointHandler;
 
 /**
  * A configuration class for customizing the {@link EndpointController} class.
@@ -237,4 +238,12 @@ public class EndpointControllerConfiguration {
         return new EndpointInvoker(applicationContext, vaadinEndpointMapper,
                 explicitNullableTypeChecker, servletContext, endpointRegistry);
     }
+
+    @Bean
+    public PushEndpointHandler createHandler(ObjectMapper objectMapper,
+            EndpointRegistry endpointRegistry,
+            EndpointInvoker endpointInvoker) {
+        return new PushEndpointHandler(objectMapper, endpointInvoker);
+    }
+
 }
