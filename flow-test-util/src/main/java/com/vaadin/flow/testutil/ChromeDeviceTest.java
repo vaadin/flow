@@ -17,6 +17,7 @@ package com.vaadin.flow.testutil;
 
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +28,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.experimental.categories.Category;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.MutableCapabilities;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -88,12 +90,13 @@ public class ChromeDeviceTest extends ViewOrUITest {
         WebDriver driver;
         if (Browser.CHROME == getRunLocallyBrowser()) {
             driver = new ChromeDriver(chromeOptions);
-            devTools = new DevToolsWrapper(driver);
         } else {
             URL remoteURL = new URL(getHubURL());
             driver = new RemoteWebDriver(remoteURL, chromeOptions);
-            devTools = new DevToolsWrapper((RemoteWebDriver) driver, remoteURL);
+            setDevToolsRuntimeCapabilities((RemoteWebDriver) driver, remoteURL);
         }
+
+        devTools = new DevToolsWrapper(driver);
 
         setDriver(TestBench.createDriver(driver));
     }
@@ -186,5 +189,31 @@ public class ChromeDeviceTest extends ViewOrUITest {
                                 + "  navigator.serviceWorker.ready,"
                                 + "  timeout])"
                                 + ".then(result => done(!!result));"));
+    }
+
+    /**
+     * Sets the `se:cdp` and `se:cdpVersion` capabilities for the remote web driver.
+     * Note that the capabilities are set at runtime because they depend on the session id
+     * that becomes only available after the driver is initialized.
+     * Without these capabilities, Selenium cannot establish a connection with DevTools.
+     */
+    private void setDevToolsRuntimeCapabilities(RemoteWebDriver driver, URL remoteUrl) throws RuntimeException {
+        try {
+            Field capabilitiesField = RemoteWebDriver.class
+                    .getDeclaredField("capabilities");
+            capabilitiesField.setAccessible(true);
+
+            String sessionId = driver.getSessionId().toString();
+            String devtoolsUrl = String.format("ws://%s:%s/devtools/%s/page",
+                    remoteUrl.getHost(), remoteUrl.getPort(), sessionId);
+
+            MutableCapabilities mutableCapabilities = (MutableCapabilities) capabilitiesField
+                    .get(driver);
+            mutableCapabilities.setCapability("se:cdp", devtoolsUrl);
+            mutableCapabilities.setCapability("se:cdpVersion",
+                    mutableCapabilities.getBrowserVersion());
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to set DevTools capabilities for RemoteWebDriver");
+        }
     }
 }

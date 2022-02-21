@@ -15,13 +15,10 @@
  */
 package com.vaadin.flow.testutil;
 
-import java.lang.reflect.Field;
-import java.net.URL;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Optional;
 
-import org.openqa.selenium.MutableCapabilities;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.devtools.Connection;
 import org.openqa.selenium.devtools.DevTools;
@@ -43,29 +40,6 @@ public class DevToolsWrapper {
 
     public DevToolsWrapper(WebDriver driver) {
         this.driver = driver;
-    }
-
-    public DevToolsWrapper(RemoteWebDriver driver, URL remoteURL) {
-        this.driver = driver;
-
-        try {
-            Field capabilitiesField = RemoteWebDriver.class
-                    .getDeclaredField("capabilities");
-            capabilitiesField.setAccessible(true);
-
-            String sessionId = driver.getSessionId().toString();
-            String devtoolsUrl = String.format("ws://%s:%s/devtools/%s/page",
-                    remoteURL.getHost(), remoteURL.getPort(), sessionId);
-
-            MutableCapabilities mutableCapabilities = (MutableCapabilities) capabilitiesField
-                    .get(driver);
-            mutableCapabilities.setCapability("se:cdp", devtoolsUrl);
-            mutableCapabilities.setCapability("se:cdpVersion",
-                    mutableCapabilities.getBrowserVersion());
-        } catch (Exception e) {
-            System.err.println(
-                    "Failed to spoof RemoteWebDriver capabilities :sadpanda:");
-        }
     }
 
     /**
@@ -98,7 +72,7 @@ public class DevToolsWrapper {
     /**
      * Creates a custom DevTools CDP connection if there is not one yet.
      *
-     * Note, there is already a CDP connection provided by {@class DevTools} but
+     * Note, there is already a CDP connection provided by {@link DevTools} but
      * it allows sending commands only to the page session whereas we need to
      * also send commands to service workers. Therefore a custom connection is
      * necessary.
