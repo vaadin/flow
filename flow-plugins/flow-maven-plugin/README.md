@@ -10,15 +10,6 @@ be copied into the `node_modules` folder.
 file.
 * `package.json` and `webpack.generated.json` will be updated.
 
-##### `prepare-frontend` configuration options
-* **webpackTemplate** `String` - Copy the `webapp.config.js` from the specified URL if missing. Default is
-     the template provided by this plugin. Set it to empty string to disable
-     the feature.
-
-* **webpackGeneratedTemplate** `String` - Copy the `webapp.generated.js` from the specified URL. Default is the
-     template provided by this plugin. Set it to empty string to disable the
-     feature.
-
 ### `build-frontend` goal
 Goal that builds the frontend bundle.
 

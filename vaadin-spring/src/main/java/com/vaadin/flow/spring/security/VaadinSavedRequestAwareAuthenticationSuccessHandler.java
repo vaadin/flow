@@ -22,7 +22,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.auth.ViewAccessChecker;
 
 import org.springframework.security.core.Authentication;
