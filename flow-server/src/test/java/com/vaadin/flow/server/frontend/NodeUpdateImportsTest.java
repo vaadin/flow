@@ -18,7 +18,6 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.net.URLClassLoader;
 import java.nio.charset.Charset;

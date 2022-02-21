@@ -6,18 +6,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.PwaConfiguration;
-import com.vaadin.flow.server.frontend.scanner.samples.pwa.AnotherAppShellWithPwa;
-import com.vaadin.flow.server.frontend.scanner.samples.pwa.AppShellWithPwa;
-import com.vaadin.flow.server.frontend.scanner.samples.pwa.AppShellWithoutPwa;
-import com.vaadin.flow.server.frontend.scanner.samples.pwa.NonAppShellWithPwa;
-
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
 
 public class FullScannerPwaTest extends AbstractScannerPwaTest {
     private ClassFinder finder = Mockito.mock(ClassFinder.class);
