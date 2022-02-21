@@ -378,7 +378,7 @@ public class TaskUpdatePackages extends NodeUpdater {
         Optional<String> platformVersion = Platform.getVaadinVersion();
         if (platformVersion.isPresent() && nodeModulesFolder.exists()) {
             JsonObject vaadinJsonContents = getVaadinJsonContents();
-            // If no record of previous version, version is considered updated;
+            // If no record of previous version, version is considered updated
             if (!vaadinJsonContents.hasKey(NodeUpdater.VAADIN_VERSION)) {
                 return true;
             }
