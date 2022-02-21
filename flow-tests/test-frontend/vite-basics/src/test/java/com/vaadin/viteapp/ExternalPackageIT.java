@@ -1,6 +1,5 @@
 package com.vaadin.viteapp;
 
-import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.component.html.testbench.ParagraphElement;
 import com.vaadin.viteapp.views.empty.MainView;
