@@ -5,7 +5,6 @@ import javax.servlet.http.HttpSession;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.WrappedHttpSession;
-import com.vaadin.flow.server.WrappedSession;
 
 import org.junit.After;
 import org.junit.Assert;
