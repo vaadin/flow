@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.resolution.declarations.ResolvedEnumConstantDeclaration;
 import com.github.javaparser.resolution.types.ResolvedReferenceType;
+
 import dev.hilla.ExplicitNullableTypeChecker;
 import io.swagger.v3.oas.models.media.ArraySchema;
 import io.swagger.v3.oas.models.media.BooleanSchema;
@@ -136,6 +137,10 @@ class SchemaResolver {
             return createNullableWrapper(createEnumTypeSchema());
         }
 
+        if (type.isFlux()) {
+            return createNullableWrapper(createFluxSchema());
+        }
+
         return createNullableWrapper(createUserBeanSchema());
     }
 
@@ -211,9 +216,19 @@ class SchemaResolver {
         return new ObjectSchema();
     }
 
+    private Schema createFluxSchema() {
+        Schema subTypeSchema = new SchemaResolver(
+                type.getTypeArguments().get(0), usedTypes).resolve();
+        ArraySchema arr = new ArraySchema();
+        arr.setItems(subTypeSchema);
+        arr.addExtension("x-flux", true);
+        return arr;
+    }
+
     private boolean isRequired() {
         return (nodeAnnotations != null
                 && ExplicitNullableTypeChecker.isRequired(nodeAnnotations))
                 || type.isRequired();
     }
+
 }
