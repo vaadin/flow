@@ -207,7 +207,7 @@ function vaadinBundlesPlugin(): PluginOption {
   }
 
   return {
-    name: 'vaadin-bundle',
+    name: 'vaadin:bundles',
     enforce: 'pre',
     apply(config, {command}) {
       if (command !== "serve") return false;
