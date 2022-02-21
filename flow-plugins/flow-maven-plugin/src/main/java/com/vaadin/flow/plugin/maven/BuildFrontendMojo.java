@@ -115,7 +115,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
         BuildFrontendUtil.updateBuildFile(this);
 
         long ms = (System.nanoTime() - start) / 1000000;
-        getLog().info("update-frontend took " + ms + "ms.");
+        getLog().info("Build frontend completed in " + ms + " ms.");
     }
 
     @Override
