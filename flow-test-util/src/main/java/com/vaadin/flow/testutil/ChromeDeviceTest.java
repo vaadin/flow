@@ -192,12 +192,14 @@ public class ChromeDeviceTest extends ViewOrUITest {
     }
 
     /**
-     * Sets the `se:cdp` and `se:cdpVersion` capabilities for the remote web driver.
-     * Note that the capabilities are set at runtime because they depend on the session id
-     * that becomes only available after the driver is initialized.
-     * Without these capabilities, Selenium cannot establish a connection with DevTools.
+     * Sets the `se:cdp` and `se:cdpVersion` capabilities for the remote web
+     * driver. Note that the capabilities are set at runtime because they depend
+     * on the session id that becomes only available after the driver is
+     * initialized. Without these capabilities, Selenium cannot establish a
+     * connection with DevTools.
      */
-    private void setDevToolsRuntimeCapabilities(RemoteWebDriver driver, URL remoteUrl) throws RuntimeException {
+    private void setDevToolsRuntimeCapabilities(RemoteWebDriver driver,
+            URL remoteUrl) throws RuntimeException {
         try {
             Field capabilitiesField = RemoteWebDriver.class
                     .getDeclaredField("capabilities");
@@ -213,7 +215,8 @@ public class ChromeDeviceTest extends ViewOrUITest {
             mutableCapabilities.setCapability("se:cdpVersion",
                     mutableCapabilities.getBrowserVersion());
         } catch (Exception e) {
-            throw new RuntimeException("Failed to set DevTools capabilities for RemoteWebDriver");
+            throw new RuntimeException(
+                    "Failed to set DevTools capabilities for RemoteWebDriver");
         }
     }
 }
