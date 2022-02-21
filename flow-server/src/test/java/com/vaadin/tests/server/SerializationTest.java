@@ -9,8 +9,6 @@ import java.io.Serializable;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
-import junit.framework.TestCase;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;

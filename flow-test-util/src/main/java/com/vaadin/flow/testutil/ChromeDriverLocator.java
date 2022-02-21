@@ -17,11 +17,6 @@
 package com.vaadin.flow.testutil;
 
 import java.io.File;
-import java.io.UncheckedIOException;
-import java.nio.file.FileVisitOption;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.function.BiPredicate;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
 

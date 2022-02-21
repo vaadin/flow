@@ -17,7 +17,6 @@ package com.vaadin.flow.connect;
 
 import java.util.regex.Pattern;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
