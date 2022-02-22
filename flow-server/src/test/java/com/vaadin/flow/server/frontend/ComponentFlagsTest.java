@@ -147,6 +147,6 @@ public class ComponentFlagsTest extends NodeUpdateTestUtil {
         return new TaskUpdateImports(classFinder,
                 getScanner(classFinder, featureFlags), finder -> null, tmpRoot,
                 generatedPath, frontendDirectory, null, null, false, TARGET,
-                true, featureFlags);
+                true, false, featureFlags);
     }
 }
