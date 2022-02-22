@@ -95,7 +95,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 FrontendDependenciesScanner scanner, File npmDirectory,
                 File tokenFile, boolean productionMode) {
             super(frontendDirectory, npmDirectory, generatedPath, tokenFile,
-                    productionMode);
+                    productionMode, false);
             this.scanner = scanner;
             finder = classFinder;
         }

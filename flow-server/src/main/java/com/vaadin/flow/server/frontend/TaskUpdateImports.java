@@ -76,7 +76,8 @@ public class TaskUpdateImports extends NodeUpdater {
     private final JsonObject tokenFileData;
 
     private final boolean enablePnpm;
-    private boolean productionMode;
+    private final boolean productionMode;
+    private final boolean useLegacyV14Bootstrap;
 
     private class UpdateMainImportsFile extends AbstractUpdateImports {
         private static final String EXPORT_MODULES_DEF = "export declare const addCssBlock: (block: string, before?: boolean) => void;";
@@ -88,9 +89,10 @@ public class TaskUpdateImports extends NodeUpdater {
 
         UpdateMainImportsFile(ClassFinder classFinder, File frontendDirectory,
                 File npmDirectory, File generatedDirectory,
-                File fallBackImports, File tokenFile, boolean productionMode) {
+                File fallBackImports, File tokenFile, boolean productionMode,
+                boolean useLegacyV14Bootstrap) {
             super(frontendDirectory, npmDirectory, generatedDirectory,
-                    tokenFile, productionMode);
+                    tokenFile, productionMode, useLegacyV14Bootstrap);
             generatedFlowImports = new File(generatedDirectory, IMPORTS_NAME);
             generatedFlowDefinitions = new File(generatedDirectory,
                     IMPORTS_D_TS_NAME);
@@ -150,6 +152,12 @@ public class TaskUpdateImports extends NodeUpdater {
                         && !"".equals(themeDef.getName());
                 // There is no application theme in use, write theme includes
                 // here. Otherwise they are written by the theme
+                if (useLegacyV14Bootstrap && hasApplicationTheme) {
+                    lines.add("import {applyTheme} from 'generated/theme.js';");
+                    lines.add("if (window.Vaadin.theme.flowBootstrap) {");
+                    lines.add("  applyTheme(document);");
+                    lines.add("}");
+                }
                 if (!theme.getHeaderInlineContents().isEmpty()) {
                     lines.add("");
                     if (hasApplicationTheme) {
@@ -233,10 +241,10 @@ public class TaskUpdateImports extends NodeUpdater {
 
         UpdateFallBackImportsFile(ClassFinder classFinder,
                 File frontendDirectory, File npmDirectory,
-                File generatedDirectory, File tokenFile,
-                boolean productionMode) {
+                File generatedDirectory, File tokenFile, boolean productionMode,
+                boolean useLegacyV14Bootstrap) {
             super(frontendDirectory, npmDirectory, generatedDirectory,
-                    tokenFile, productionMode);
+                    tokenFile, productionMode, useLegacyV14Bootstrap);
             generatedFallBack = new File(generatedDirectory,
                     FrontendUtils.FALLBACK_IMPORTS_NAME);
             finder = classFinder;
@@ -353,7 +361,7 @@ public class TaskUpdateImports extends NodeUpdater {
             File npmFolder, File generatedPath, File frontendDirectory,
             File tokenFile, JsonObject tokenFileData, boolean enablePnpm,
             String buildDir, boolean productionMode,
-            FeatureFlags featureFlags) {
+            boolean useLegacyV14Bootstrap, FeatureFlags featureFlags) {
         super(finder, frontendDepScanner, npmFolder, generatedPath, null,
                 buildDir, featureFlags);
         this.frontendDirectory = frontendDirectory;
@@ -362,6 +370,7 @@ public class TaskUpdateImports extends NodeUpdater {
         this.tokenFileData = tokenFileData;
         this.enablePnpm = enablePnpm;
         this.productionMode = productionMode;
+        this.useLegacyV14Bootstrap = useLegacyV14Bootstrap;
     }
 
     @Override
@@ -370,7 +379,7 @@ public class TaskUpdateImports extends NodeUpdater {
         if (fallbackScanner != null) {
             UpdateFallBackImportsFile fallBackUpdate = new UpdateFallBackImportsFile(
                     finder, frontendDirectory, npmFolder, generatedFolder,
-                    tokenFile, productionMode);
+                    tokenFile, productionMode, useLegacyV14Bootstrap);
             fallBackUpdate.run();
             fallBack = fallBackUpdate.getGeneratedFallbackFile();
             updateBuildFile(fallBackUpdate);
@@ -378,7 +387,7 @@ public class TaskUpdateImports extends NodeUpdater {
 
         UpdateMainImportsFile mainUpdate = new UpdateMainImportsFile(finder,
                 frontendDirectory, npmFolder, generatedFolder, fallBack,
-                tokenFile, productionMode);
+                tokenFile, productionMode, useLegacyV14Bootstrap);
         mainUpdate.run();
     }
 

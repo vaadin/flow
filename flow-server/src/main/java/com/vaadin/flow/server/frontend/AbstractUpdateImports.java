@@ -95,15 +95,19 @@ abstract class AbstractUpdateImports implements Runnable {
 
     private final File tokenFile;
 
-    private boolean productionMode;
+    private final boolean productionMode;
+
+    protected final boolean useLegacyV14Bootstrap;
 
     AbstractUpdateImports(File frontendDirectory, File npmDirectory,
-            File generatedDirectory, File tokenFile, boolean productionMode) {
+            File generatedDirectory, File tokenFile, boolean productionMode,
+            boolean useLegacyV14Bootstrap) {
         frontendDir = frontendDirectory;
         npmDir = npmDirectory;
         generatedDir = generatedDirectory;
         this.tokenFile = tokenFile;
         this.productionMode = productionMode;
+        this.useLegacyV14Bootstrap = useLegacyV14Bootstrap;
     }
 
     @Override
@@ -113,7 +117,7 @@ abstract class AbstractUpdateImports implements Runnable {
         lines.addAll(getExportLines());
         lines.addAll(getThemeLines());
         lines.addAll(getCssLines());
-        if (!productionMode) {
+        if (!productionMode && useLegacyV14Bootstrap) {
             // This is only needed for v14bootstrap mode
             lines.add(TaskGenerateBootstrap.DEVMODE_GIZMO_IMPORT);
         }
