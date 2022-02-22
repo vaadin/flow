@@ -50,48 +50,6 @@ console.debug = () => {};
 
 function buildSWPlugin(): PluginOption {
   let config: ResolvedConfig;
-  let watcher: chokidar.FSWatcher;
-
-  async function build() {
-    const includedPluginNames = [
-      'alias',
-      'vite:resolve',
-      'vite:esbuild',
-      'rollup-plugin-dynamic-import-variables',
-      'vite:esbuild-transpile',
-      'vite:terser',
-    ]
-    const rollupPlugins: rollup.Plugin[] = config.plugins.filter((p) => {
-      return includedPluginNames.includes(p.name)
-    });
-    rollupPlugins.push(
-      replace({
-        'process.env.NODE_ENV': JSON.stringify(config.mode),
-        ...config.define
-      })
-    );
-
-    const rollupOutput: rollup.OutputOptions = {
-      file: path.resolve(frontendBundleFolder, 'sw.js'),
-      format: 'es',
-      exports: 'none',
-      sourcemap: config.command === 'serve' || config.build.sourcemap,
-      inlineDynamicImports: true,
-    }
-
-    const rollupConfig: rollup.RollupOptions = {
-      input: path.resolve(settings.clientServiceWorkerSource),
-      output: rollupOutput,
-      plugins: rollupPlugins,
-    }
-
-    const bundle = await rollup.rollup(rollupConfig);
-    try {
-      await bundle.write(rollupOutput);
-    } finally {
-      await bundle.close();
-    }
-  }
 
   return {
     name: 'vaadin:build-sw',
@@ -100,26 +58,45 @@ function buildSWPlugin(): PluginOption {
       config = resolvedConfig;
     },
     async buildStart() {
-      await build();
+      const includedPluginNames = [
+        'alias',
+        'vite:resolve',
+        'vite:esbuild',
+        'rollup-plugin-dynamic-import-variables',
+        'vite:esbuild-transpile',
+        'vite:terser',
+      ]
+      const rollupPlugins: rollup.Plugin[] = config.plugins.filter((p) => {
+        return includedPluginNames.includes(p.name)
+      });
+      rollupPlugins.push(
+        replace({
+          'process.env.NODE_ENV': JSON.stringify(config.mode),
+          ...config.define,
+        })
+      );
 
-      if (config.command === 'serve') {
-        watcher = chokidar.watch(path.resolve(settings.clientServiceWorkerSource), {
-          ignoreInitial: true,
-        });
-        watcher.on('all', async () => {
-          try {
-            await build();
-          } catch (error) {
-            console.error(error);
-          }
-        });
+      const rollupOutput: rollup.OutputOptions = {
+        file: path.resolve(frontendBundleFolder, 'sw.js'),
+        format: 'es',
+        exports: 'none',
+        sourcemap: config.command === 'serve' || config.build.sourcemap,
+        inlineDynamicImports: true,
+      }
+
+      const rollupConfig: rollup.RollupOptions = {
+        input: path.resolve(settings.clientServiceWorkerSource),
+        output: rollupOutput,
+        plugins: rollupPlugins,
+      }
+
+      const bundle = await rollup.rollup(rollupConfig);
+      try {
+        await bundle.write(rollupOutput);
+      } finally {
+        await bundle.close();
       }
     },
-    buildEnd() {
-      if (watcher) {
-        watcher.close();
-      }
-    }
   }
 }
 
