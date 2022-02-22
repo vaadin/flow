@@ -178,6 +178,12 @@ export const vaadinConfig: UserConfigFn = (env) => {
         allow: allowedFrontendFolders,
       }
     },
+    optimizeDeps: {
+      entries: [
+        // Pre-scan entrypoints in Vite to avoid reloading on first open
+        'generated/vaadin.ts'
+      ]
+    },
     build: {
       outDir: frontendBundleFolder,
       assetsDir: 'VAADIN/build',
