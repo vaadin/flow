@@ -215,6 +215,27 @@ public class StaticFileServerTest implements Serializable {
         }
     }
 
+    @Test
+    public void getRequestFilename_shouldAlwaysBeResolvedAsRootResourceForServiceWorkerRequest() {
+        for (String swFile : new String[] { "/sw.js", "/sw.js.gz" }) {
+            Assert.assertEquals(swFile, getRequestFilename("", "", swFile));
+            Assert.assertEquals(swFile, getRequestFilename("", "/foo", swFile));
+            Assert.assertEquals(swFile,
+                    getRequestFilename("", "/foo/bar", swFile));
+            Assert.assertEquals(swFile, getRequestFilename("/ctx", "", swFile));
+            Assert.assertEquals(swFile,
+                    getRequestFilename("/ctx", "/foo", swFile));
+            Assert.assertEquals(swFile,
+                    getRequestFilename("/ctx", "/foo/bar", swFile));
+            Assert.assertEquals(swFile,
+                    getRequestFilename("/ctx/sub", "", swFile));
+            Assert.assertEquals(swFile,
+                    getRequestFilename("/ctx/sub", "/foo", swFile));
+            Assert.assertEquals(swFile,
+                    getRequestFilename("/ctx/sub", "/foo/bar", swFile));
+        }
+    }
+
     private String getRequestFilename(String encodedContextPath,
             String servletPath, String pathInfo) {
         setupRequestURI(encodedContextPath, servletPath, pathInfo);
