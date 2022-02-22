@@ -1,0 +1,43 @@
+{
+  "packages": {
+    "@testscope/all": {
+      "version": "0.1.0",
+      "exposes": {
+        "./all.js": {
+          "exports": []
+        },
+        ".": {
+          "exports": [
+            {
+              "source": "@testscope/all/all.js"
+            }
+          ]
+        }
+      }
+    },
+    "@testscope/button": {
+      "version": "1.0.0-alpha1",
+      "exposes": {
+        "./testscope-button.js": {
+          "exports": [
+            {
+              "source": "@testscope/button/src/testscope-button.js"
+            }
+          ]
+        },
+        "./src/testscope-button.js": {
+          "exports": [
+            "Button"
+          ]
+        },
+        ".": {
+          "exports": [
+            {
+              "source": "@testscope/button/testscope-button.js"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
