@@ -141,9 +141,6 @@ function vaadinBundlesPlugin(): PluginOption {
 
   let vaadinBundleJson: BundleJson;
 
-  function resolveVaadinBundleJsonPath() {
-  }
-
   function parseModuleId(id: string): { packageName: string, modulePath: string } {
     const [scope, scopedPackageName] = id.split('/', 3);
     const packageName = scope.startsWith('@') ? `${scope}/${scopedPackageName}` : scope;
