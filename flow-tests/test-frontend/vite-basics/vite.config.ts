@@ -15,11 +15,15 @@ function dumpOptimizeDepsPlugin(): PluginOption {
     configResolved(_config) {
       config = _config;
     },
-    transformIndexHtml: html => {
-      return html.replace('</head>', `  <script>
-    window.ViteConfigOptimizeDeps = ${JSON.stringify(config.optimizeDeps)};
-  </script>
-</head>`);
+    transformIndexHtml(html) {
+      return [
+        {
+          injectTo: 'head',
+          tag: 'script',
+          children: `window.ViteConfigOptimizeDeps = ${JSON.stringify(config.optimizeDeps)};`
+        }
+      ]
+    }
     }
   }
 }
