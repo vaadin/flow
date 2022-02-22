@@ -211,7 +211,6 @@
                             <containerIncludeJarPattern>^$
                             </containerIncludeJarPattern>
                         </webAppConfig>
-                        <scanIntervalSeconds>-1</scanIntervalSeconds>
                         <httpConnector>
                             <port>${server.port}</port>
                         </httpConnector>
