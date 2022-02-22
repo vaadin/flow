@@ -56,6 +56,7 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.TaskRunNpmInstall;
+import com.vaadin.flow.server.frontend.TaskRunNpmInstall.Stats;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import org.apache.commons.io.FileUtils;
@@ -218,14 +219,15 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
 
             long ms = (System.nanoTime() - start) / 1000000;
             getLogger().info("Started {}. Time: {}ms", getServerName(), ms);
+            Stats npmStats = TaskRunNpmInstall.getLastInstallStats();
             DevModeUsageStatistics.collectEvent(
                     StatisticsConstants.EVENT_PACKAGEMANAGER_INSTALL_TIME_PREFIX
-                            + TaskRunNpmInstall.lastInstallPackageManager,
-                    TaskRunNpmInstall.lastInstallTimeMs);
+                            + npmStats.getPackageManager(),
+                    npmStats.getInstallTimeMs());
             DevModeUsageStatistics.collectEvent(
                     StatisticsConstants.EVENT_PACKAGEMANAGER_CLEANUP_TIME_PREFIX
-                            + TaskRunNpmInstall.lastInstallPackageManager,
-                    TaskRunNpmInstall.lastCleanupTimeMs);
+                            + npmStats.getPackageManager(),
+                    npmStats.getCleanupTimeMs());
             DevModeUsageStatistics.collectEvent(
                     StatisticsConstants.EVENT_DEV_SERVER_START_PREFIX
                             + getServerName(),

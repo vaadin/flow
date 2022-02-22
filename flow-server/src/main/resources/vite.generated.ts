@@ -15,6 +15,7 @@ import {injectManifest} from 'workbox-build';
 
 import * as rollup from 'rollup';
 import brotli from 'rollup-plugin-brotli';
+import replace from '@rollup/plugin-replace';
 import checker from 'vite-plugin-checker';
 
 const appShellUrl = '.';
@@ -47,13 +48,12 @@ const themeOptions = {
 console.trace = () => {};
 console.debug = () => {};
 
-function transpileSWPlugin(): PluginOption {
+function buildSWPlugin(): PluginOption {
   let config: ResolvedConfig;
 
   return {
-    name: 'vaadin:transpile-sw',
+    name: 'vaadin:build-sw',
     enforce: 'post',
-    apply: 'build',
     async configResolved(resolvedConfig) {
       config = resolvedConfig;
     },
@@ -62,26 +62,39 @@ function transpileSWPlugin(): PluginOption {
         'alias',
         'vite:resolve',
         'vite:esbuild',
-        'replace',
-        'vite:define',
         'rollup-plugin-dynamic-import-variables',
         'vite:esbuild-transpile',
         'vite:terser',
       ]
-      const plugins = config.plugins.filter((p) => includedPluginNames.includes(p.name))
-      const bundle = await rollup.rollup({
-        input: path.resolve(settings.clientServiceWorkerSource),
-        plugins,
-      })
-      try {
-        await bundle.write({
-          format: 'es',
-          exports: 'none',
-          inlineDynamicImports: true,
-          file: path.resolve(frontendBundleFolder, 'sw.js'),
+      const rollupPlugins: rollup.Plugin[] = config.plugins.filter((p) => {
+        return includedPluginNames.includes(p.name)
+      });
+      rollupPlugins.push(
+        replace({
+          'process.env.NODE_ENV': JSON.stringify(config.mode),
+          ...config.define,
         })
+      );
+
+      const rollupOutput: rollup.OutputOptions = {
+        file: path.resolve(frontendBundleFolder, 'sw.js'),
+        format: 'es',
+        exports: 'none',
+        sourcemap: config.command === 'serve' || config.build.sourcemap,
+        inlineDynamicImports: true,
+      }
+
+      const rollupConfig: rollup.RollupOptions = {
+        input: path.resolve(settings.clientServiceWorkerSource),
+        output: rollupOutput,
+        plugins: rollupPlugins,
+      }
+
+      const bundle = await rollup.rollup(rollupConfig);
+      try {
+        await bundle.write(rollupOutput);
       } finally {
-        await bundle.close()
+        await bundle.close();
       }
     },
   }
@@ -316,12 +329,19 @@ export const vaadinConfig: UserConfigFn = (env) => {
       preserveSymlinks: true,
     },
     define: {
-      OFFLINE_PATH: settings.offlinePath
+      OFFLINE_PATH: settings.offlinePath,
+      VITE_ENABLED: 'true'
     },
     server: {
       fs: {
         allow: allowedFrontendFolders,
       }
+    },
+    optimizeDeps: {
+      entries: [
+        // Pre-scan entrypoints in Vite to avoid reloading on first open
+        'generated/vaadin.ts'
+      ]
     },
     build: {
       outDir: frontendBundleFolder,
@@ -344,7 +364,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
     plugins: [
       !devMode && brotli(),
       devMode && vaadinBundlesPlugin(),
-      settings.offlineEnabled && transpileSWPlugin(),
+      settings.offlineEnabled && buildSWPlugin(),
       settings.offlineEnabled && injectManifestToSWPlugin(),
       {
         name: 'vaadin:custom-theme',

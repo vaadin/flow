@@ -24,6 +24,8 @@ import org.openqa.selenium.JavascriptExecutor;
 import com.vaadin.flow.testutil.ChromeDeviceTest;
 
 public class MainIT extends ChromeDeviceTest {
+    final String VITE_PING_PATH = "/VAADIN/__vite_ping";
+
     @Before
     public void init() {
         getDevTools().setCacheDisabled(true);
@@ -33,50 +35,67 @@ public class MainIT extends ChromeDeviceTest {
     public void openHomePage_pageIsLoaded() {
         openPage("/");
 
-        Assert.assertTrue("Should load the app theme", isAppThemeLoaded());
+        checkLogsForErrors(msg -> !msg.contains("Failed to load"));
 
         WebElement h1 = $("h1").first();
         Assert.assertEquals(h1.getText(), "Home Page");
 
-        checkLogsForErrors(msg -> !msg.contains("Failed to load"));
+        Assert.assertTrue("Should load the app theme", isAppThemeLoaded());
+    }
+
+    @Test
+    public void openHomePage_setOffline_vitePingRequestIsRejected() {
+        openPage("/");
+
+        Assert.assertTrue("Should allow Vite ping requests when online",
+                sendVitePingRequest());
+
+        getDevTools().setOfflineEnabled(true);
+
+        Assert.assertFalse("Should reject Vite ping requests when offline",
+                sendVitePingRequest());
     }
 
     @Test
     public void openHomePage_setOfflineAndReload_pageIsLoadedFromCache() {
         openPage("/");
-        setOfflineAndReload();
+        getDevTools().setOfflineEnabled(true);
+        reloadPage();
 
-        Assert.assertTrue("Should load the app theme", isAppThemeLoaded());
+        checkLogsForErrors(msg -> msg.contains(VITE_PING_PATH)
+                || !msg.contains("Failed to load"));
 
         WebElement h1 = $("h1").first();
         Assert.assertEquals(h1.getText(), "Home Page");
 
-        checkLogsForErrors(msg -> !msg.contains("Failed to load"));
+        Assert.assertTrue("Should load the app theme", isAppThemeLoaded());
     }
 
     @Test
     public void openAboutPage_pageIsLoaded() {
         openPage("/about");
 
-        Assert.assertTrue("Should load the app theme", isAppThemeLoaded());
+        checkLogsForErrors(msg -> !msg.contains("Failed to load"));
 
         WebElement h1 = $("h1").first();
         Assert.assertEquals(h1.getText(), "About Page");
 
-        checkLogsForErrors(msg -> !msg.contains("Failed to load"));
+        Assert.assertTrue("Should load the app theme", isAppThemeLoaded());
     }
 
     @Test
     public void openAboutPage_setOfflineAndReload_pageIsLoadedFromCache() {
         openPage("/about");
-        setOfflineAndReload();
+        getDevTools().setOfflineEnabled(true);
+        reloadPage();
 
-        Assert.assertTrue("Should load the app theme", isAppThemeLoaded());
+        checkLogsForErrors(msg -> msg.contains(VITE_PING_PATH)
+                || !msg.contains("Failed to load"));
 
         WebElement h1 = $("h1").first();
         Assert.assertEquals(h1.getText(), "About Page");
 
-        checkLogsForErrors(msg -> !msg.contains("Failed to load"));
+        Assert.assertTrue("Should load the app theme", isAppThemeLoaded());
     }
 
     private Boolean isAppThemeLoaded() {
@@ -85,8 +104,17 @@ public class MainIT extends ChromeDeviceTest {
                         + "window.Vaadin.theme.injectedGlobalCss.length !== 0");
     }
 
-    private void setOfflineAndReload() {
-        getDevTools().setOfflineEnabled(true);
+    private Boolean sendVitePingRequest() {
+        return (Boolean) ((JavascriptExecutor) getDriver())
+                .executeAsyncScript(
+                        "const done = arguments[arguments.length - 1];"
+                                + "fetch(arguments[0])"
+                                + "  .then((response) => done(response.ok))"
+                                + "  .catch(() => done(false))",
+                        VITE_PING_PATH);
+    }
+
+    private void reloadPage() {
         executeScript("window.location.reload()");
         waitUntil(webDriver -> ((JavascriptExecutor) driver)
                 .executeScript("return document.readyState")
@@ -95,6 +123,10 @@ public class MainIT extends ChromeDeviceTest {
 
     private void openPage(String url) {
         getDriver().get(getRootURL() + url);
+        waitForDevServer();
         waitForServiceWorkerReady();
+        // Now that the SW is ready, reload the page
+        // to fill the SW runtime cache with dev resources.
+        reloadPage();
     }
 }

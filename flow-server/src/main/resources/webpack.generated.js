@@ -165,6 +165,7 @@ const createServiceWorkerPlugin = function () {
     ],
     webpackCompilationPlugins: [
       new DefinePlugin({
+        VITE_ENABLED: 'false',
         OFFLINE_PATH: JSON.stringify(offlinePath)
       })
     ]
@@ -235,7 +236,7 @@ module.exports = {
     client: false, // disable wds client as we handle reloads and errors better
     // webpack-dev-server serves ./, webpack-generated, and java webapp
     static: [outputFolder, path.resolve(__dirname, 'src', 'main', 'webapp')],
-    onAfterSetupMiddleware: function (devServer) {
+    setupMiddlewares: function (middlewares, devServer) {
       devServer.app.get(`/assetsByChunkName`, function (req, res) {
         res.json(stats.assetsByChunkName);
       });
@@ -244,6 +245,7 @@ module.exports = {
         console.log("Stopped 'webpack-dev-server'");
         process.exit(0);
       });
+      return middlewares;
     }
   },
 
