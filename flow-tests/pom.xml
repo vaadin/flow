@@ -207,10 +207,10 @@
                         </execution>
                     </executions>
                     <configuration>
-                        <webAppConfig>
+                        <webApp>
                             <containerIncludeJarPattern>^$
                             </containerIncludeJarPattern>
-                        </webAppConfig>
+                        </webApp>
                         <httpConnector>
                             <port>${server.port}</port>
                         </httpConnector>
