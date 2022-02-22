@@ -239,8 +239,10 @@ function vaadinBundlesPlugin(): PluginOption {
         console.info(`@vaadin/bundles has version mismatches with installed packages, ${disabledMessage}`);
         console.info(`Packages with version mismatches: ${JSON.stringify(versionMismatches, undefined, 2)}`);
         vaadinBundleJson = {packages: {}};
-        return config;
+        return false;
       }
+
+      return true;
     },
     async config(config) {
       return mergeConfig({
