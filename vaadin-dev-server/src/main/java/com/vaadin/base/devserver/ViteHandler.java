@@ -135,6 +135,12 @@ public final class ViteHandler extends AbstractDevServerRunner {
                     method);
         }
 
+        if ("/sw.js".equals(path)) {
+            return super.prepareConnection(
+                getContextPath() + "/" + VAADIN_MAPPING + "sw.js",
+                method);
+        }
+
         return super.prepareConnection(getContextPath() + path, method);
     }
 

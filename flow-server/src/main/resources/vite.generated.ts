@@ -50,9 +50,8 @@ console.debug = () => {};
 
 function buildSWPlugin(): PluginOption {
   let config: ResolvedConfig;
-  let watcher: chokidar.FSWatcher;
 
-  async function build() {
+  async function build(action: 'generate' | 'write') {
     const includedPluginNames = [
       'alias',
       'vite:resolve',
@@ -61,33 +60,30 @@ function buildSWPlugin(): PluginOption {
       'vite:esbuild-transpile',
       'vite:terser',
     ]
-    const rollupPlugins: rollup.Plugin[] = config.plugins.filter((p) => {
+    const plugins: rollup.Plugin[] = config.plugins.filter((p) => {
       return includedPluginNames.includes(p.name)
     });
-    rollupPlugins.push(
+    plugins.push(
       replace({
         'process.env.NODE_ENV': JSON.stringify(config.mode),
-        ...config.define
+        ...config.define,
+        preventAssignment: true
       })
     );
 
-    const rollupOutput: rollup.OutputOptions = {
-      file: path.resolve(frontendBundleFolder, 'sw.js'),
-      format: 'es',
-      exports: 'none',
-      sourcemap: config.command === 'serve' || config.build.sourcemap,
-      inlineDynamicImports: true,
-    }
-
-    const rollupConfig: rollup.RollupOptions = {
+    const bundle = await rollup.rollup({
       input: path.resolve(settings.clientServiceWorkerSource),
-      output: rollupOutput,
-      plugins: rollupPlugins,
-    }
+      plugins
+    });
 
-    const bundle = await rollup.rollup(rollupConfig);
     try {
-      await bundle.write(rollupOutput);
+      return await bundle[action]({
+        file: path.resolve(frontendBundleFolder, 'sw.js'),
+        format: 'es',
+        exports: 'none',
+        sourcemap: config.command === 'serve' || config.build.sourcemap,
+        inlineDynamicImports: true,
+      });
     } finally {
       await bundle.close();
     }
@@ -100,26 +96,23 @@ function buildSWPlugin(): PluginOption {
       config = resolvedConfig;
     },
     async buildStart() {
-      await build();
-
-      if (config.command === 'serve') {
-        watcher = chokidar.watch(path.resolve(settings.clientServiceWorkerSource), {
-          ignoreInitial: true,
-        });
-        watcher.on('all', async () => {
-          try {
-            await build();
-          } catch (error) {
-            console.error(error);
-          }
-        });
+      await build('write');
+    },
+    async load(id) {
+      if (id.endsWith('sw.js')) {
+        return '';
       }
     },
-    buildEnd() {
-      if (watcher) {
-        watcher.close();
+    async transform(_code, id) {
+      if (id.endsWith('sw.js')) {
+        const { output } = await build('generate');
+
+        return {
+          code: output[0].code,
+          map: output[0].map
+        }
       }
-    }
+    },
   }
 }
 
@@ -223,6 +216,11 @@ export const vaadinConfig: UserConfigFn = (env) => {
         input: {
           indexhtml: path.resolve(frontendFolder, 'index.html')
         }
+      }
+    },
+    optimizeDeps: {
+      exclude: {
+
       }
     },
     plugins: [
