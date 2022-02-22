@@ -85,7 +85,8 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
         ClassFinder classFinder = getClassFinder();
         updater = new TaskUpdateImports(classFinder, getScanner(classFinder),
                 finder -> null, tmpRoot, generatedPath, frontendDirectory, null,
-                null, false, TARGET, true, Mockito.mock(FeatureFlags.class)) {
+                null, false, TARGET, true, false,
+                Mockito.mock(FeatureFlags.class)) {
             @Override
             Logger log() {
                 return logger;

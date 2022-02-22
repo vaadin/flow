@@ -123,7 +123,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 finder -> new FrontendDependenciesScannerFactory()
                         .createScanner(true, finder, true),
                 tmpRoot, generatedPath, frontendDirectory, tokenFile,
-                fallBackData, false, TARGET, true,
+                fallBackData, false, TARGET, true, false,
                 Mockito.mock(FeatureFlags.class)) {
             @Override
             Logger log() {
@@ -262,7 +262,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 finder -> new FrontendDependenciesScannerFactory()
                         .createScanner(true, finder, true),
                 tmpRoot, generatedPath, frontendDirectory, tokenFile, null,
-                false, TARGET, true, Mockito.mock(FeatureFlags.class)) {
+                false, TARGET, true, false, Mockito.mock(FeatureFlags.class)) {
             @Override
             Logger log() {
                 return logger;
@@ -332,7 +332,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 new FrontendDependenciesScannerFactory().createScanner(false,
                         classFinder, true),
                 finder -> null, tmpRoot, generatedPath, frontendDirectory,
-                tokenFile, null, false, TARGET, true,
+                tokenFile, null, false, TARGET, true, false,
                 Mockito.mock(FeatureFlags.class)) {
             @Override
             Logger log() {
@@ -378,7 +378,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 new FrontendDependenciesScannerFactory().createScanner(false,
                         classFinder, true),
                 finder -> null, tmpRoot, generatedPath, frontendDirectory,
-                tokenFile, null, false, TARGET, true,
+                tokenFile, null, false, TARGET, true, false,
                 Mockito.mock(FeatureFlags.class)) {
             @Override
             Logger log() {
@@ -415,7 +415,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 finder -> new FrontendDependenciesScannerFactory()
                         .createScanner(true, finder, true),
                 tmpRoot, generatedPath, frontendDirectory, tokenFile,
-                fallBackData, false, TARGET, true,
+                fallBackData, false, TARGET, true, false,
                 Mockito.mock(FeatureFlags.class)) {
             @Override
             Logger log() {
