@@ -152,19 +152,16 @@ public class TaskUpdateImports extends NodeUpdater {
                         && !"".equals(themeDef.getName());
                 // There is no application theme in use, write theme includes
                 // here. Otherwise they are written by the theme
+                if (useLegacyV14Bootstrap && hasApplicationTheme) {
+                    lines.add("import {applyTheme} from 'generated/theme.js';");
+                    lines.add("if (window.Vaadin.theme.flowBootstrap) {");
+                    lines.add("  applyTheme(document);");
+                    lines.add("}");
+                }
                 if (!theme.getHeaderInlineContents().isEmpty()) {
                     lines.add("");
                     if (hasApplicationTheme) {
-                        if (useLegacyV14Bootstrap) {
-                            lines.add(
-                                    "import {applyTheme} from 'generated/theme.js';");
-                            lines.add(
-                                    "if (window.Vaadin.theme.flowBootstrap) {");
-                            lines.add("  applyTheme(document);");
-                            lines.add("}");
-                        } else {
-                            lines.add("// Handled in the application theme");
-                        }
+                        lines.add("// Handled in the application theme");
                     }
                     theme.getHeaderInlineContents()
                             .forEach(html -> addLines(lines,
