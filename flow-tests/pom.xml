@@ -220,28 +220,13 @@
                         <systemProperties>
                             <!-- All system props are defined here as they need to be overridden
                                  in all modules so no non-standard value leaks to another module -->
-                            <force>true</force>
-                            <systemProperty>
-                                <name>vaadin.reuseDevServer</name>
-                                <value>${vaadin.reuseDevServer}</value>
-                            </systemProperty>
-                            <systemProperty>
-                                <name>vaadin.devmode.liveReload.enabled</name>
-                                <value>${vaadin.devmode.liveReload.enabled}</value>
-                            </systemProperty>
-                            <systemProperty>
-                                <name>vaadin.allow.appshell.annotations</name>
-                                <value>${vaadin.allow.appshell.annotations}</value>
-                            </systemProperty>
-                            <systemProperty>
-                                <name>jetty.scantrigger</name>
-                                <value>${jetty.scantrigger}</value>
-                            </systemProperty>
+                            <vaadin.reuseDevServer>${vaadin.reuseDevServer}</vaadin.reuseDevServer>
+                            <vaadin.devmode.liveReload.enabled>${vaadin.devmode.liveReload.enabled}</vaadin.devmode.liveReload.enabled>
+                            <vaadin.allow.appshell.annotations>${vaadin.allow.appshell.annotations}</vaadin.allow.appshell.annotations>
+
+                            <jetty.scantrigger>${jetty.scantrigger}</jetty.scantrigger>
                             <!-- Allow test clients not on localhost to connect to Vite-->
-                            <systemProperty>
-                                <name>vaadin.devmode.vite.options</name>
-                                <value>${vaadin.devmode.vite.options}</value>
-                            </systemProperty>
+                            <vaadin.devmode.vite.options>${vaadin.devmode.vite.options}</vaadin.devmode.vite.options>
                         </systemProperties>
                     </configuration>
                 </plugin>

@@ -89,14 +89,10 @@
                         <artifactId>jetty-maven-plugin</artifactId>
                         <configuration>
                             <systemProperties>
-                                <systemProperty>
-                                    <!-- make sure we do not leave webpack-dev-server running after IT -->
-                                    <name>vaadin.reuseDevServer</name>
-                                    <value>false</value>
-                                </systemProperty>
+                                <vaadin.reuseDevServer>false</vaadin.reuseDevServer>
                             </systemProperties>
                         </configuration>
-                    </plugin>                    
+                    </plugin>
                 </plugins>
             </build>
         </profile>
