@@ -35,6 +35,7 @@ public class FeatureIT extends ChromeBrowserTest {
 
         gizmo.expand();
 
+        // disable the feature
         gizmo.$(NativeButtonElement.class).id("features").click();
         gizmo.$(TestBenchElement.class)
                 .id("feature-toggle-viteForFrontendBuild").click();
@@ -42,6 +43,15 @@ public class FeatureIT extends ChromeBrowserTest {
         try {
             $(NativeButtonElement.class).id("check").click();
 
+            Assert.assertEquals(
+                    "Feature file exists with properties: com.vaadin.experimental.viteForFrontendBuild",
+                    $(H2Element.class).id("value").getText());
+
+            // disable the feature via the gizmo
+            gizmo.expand();
+            gizmo.$(NativeButtonElement.class).id("features").click();
+            gizmo.$(TestBenchElement.class)
+                    .id("feature-toggle-viteForFrontendBuild").click();
             Assert.assertEquals(
                     "Feature file exists with properties: com.vaadin.experimental.viteForFrontendBuild",
                     $(H2Element.class).id("value").getText());
