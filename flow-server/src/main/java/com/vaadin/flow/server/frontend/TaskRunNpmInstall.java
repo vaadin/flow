@@ -63,7 +63,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
         private String packageManager = "";
 
         /** Create an instance. */
-        public Stats() {
+        private Stats() {
         }
 
         /**
