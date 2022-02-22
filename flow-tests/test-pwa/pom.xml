@@ -43,9 +43,10 @@
                 <version>${jetty.version}</version>
                 <configuration>
                     <webApp>
-                        <baseResource implementation="org.eclipse.jetty.util.resource.ResourceCollection">
-                            <resourcesAsCSV>${project.basedir}/public,${project.basedir}/src/main/webapp</resourcesAsCSV>
-                        </baseResource>
+                        <resourceBases>
+                            <resourceBase>${project.basedir}/public</resourceBase>
+                            <resourceBase>${project.basedir}/src/main/webapp</resourceBase>
+                        </resourceBases>
                     </webApp>
                 </configuration>
 
