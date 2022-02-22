@@ -8,7 +8,7 @@ import { overrideVaadinConfig } from './vite.generated';
  * Dumps effective contents of config.optimizeDeps for tests
  */
 function dumpOptimizeDepsPlugin(): PluginOption {
-  let config
+  let config;
 
   return {
     name: 'dump-optimize-deps',
@@ -22,8 +22,7 @@ function dumpOptimizeDepsPlugin(): PluginOption {
           tag: 'script',
           children: `window.ViteConfigOptimizeDeps = ${JSON.stringify(config.optimizeDeps)};`
         }
-      ]
-    }
+      ];
     }
   }
 }
