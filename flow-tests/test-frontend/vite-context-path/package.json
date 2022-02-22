@@ -5,16 +5,13 @@
     "@polymer/polymer": "3.4.1",
     "@testscope/all": "../vite-test-assets/packages/@testscope/all",
     "@testscope/button": "../vite-test-assets/packages/@testscope/button",
-    "@vaadin/bundles": "../vite-test-assets/packages/@vaadin/bundles",
+    "@vaadin/bundles": "../vite-test-assets/packages/@vaadin/bundles-old",
     "@vaadin/common-frontend": "0.0.17",
     "@vaadin/flow-frontend": "./target/flow-frontend",
     "@vaadin/router": "1.7.4",
     "@vaadin/vaadin-lumo-styles": "22.0.0-alpha9",
     "construct-style-sheets-polyfill": "3.0.4",
-    "copy-to-clipboard": "^3.3.1",
-    "lit": "2.0.0",
-    "package-outside-npm": "file:package-outside-npm",
-    "package2-outside-npm": "./package2-outside-npm"
+    "lit": "2.1.4"
   },
   "devDependencies": {
     "@vaadin/application-theme-plugin": "./target/plugins/application-theme-plugin",
@@ -38,7 +35,7 @@
       "@vaadin/router": "1.7.4",
       "@vaadin/vaadin-lumo-styles": "22.0.0-alpha9",
       "construct-style-sheets-polyfill": "3.0.4",
-      "lit": "2.0.0"
+      "lit": "2.1.4"
     },
     "devDependencies": {
       "glob": "7.1.6",
@@ -51,6 +48,6 @@
       "workbox-core": "6.4.2",
       "workbox-precaching": "6.4.2"
     },
-    "hash": "1fbd15f1fc5035e3b4c52bd7b61168316b3b8ea359e30c73c01d39373962b5da"
+    "hash": "9e28d81c2b643176481210207d77fc2f89c0285e989d5f672a7f710434fb06fb"
   }
 }
