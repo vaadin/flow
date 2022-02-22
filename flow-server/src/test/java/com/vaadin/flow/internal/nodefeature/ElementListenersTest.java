@@ -342,6 +342,22 @@ public class ElementListenersTest
         registration.synchronizeProperty("");
     }
 
+    @Test
+    public void eventDataKeyNotPresentNotFail() {
+        AtomicInteger eventCount = new AtomicInteger();
+        DomListenerRegistration registration = ns.add("foo",
+                e -> eventCount.incrementAndGet());
+        registration.setFilter("filterKey");
+
+        ns.fireEvent(createEvent("foo"));
+        Assert.assertEquals(0, eventCount.get());
+
+        JsonObject eventData = Json.createObject();
+        eventData.put("filterKey", true);
+        ns.fireEvent(new DomEvent(new Element("element"), "foo", eventData));
+        Assert.assertEquals(1, eventCount.get());
+    }
+
     // Helper for accessing package private API from other tests
     public static Set<String> getExpressions(
             ElementListenerMap elementListenerMap, String eventName) {
