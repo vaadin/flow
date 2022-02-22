@@ -35,7 +35,7 @@ public class FeatureIT extends ChromeBrowserTest {
 
         gizmo.expand();
 
-        // disable the feature
+        // enable the feature
         gizmo.$(NativeButtonElement.class).id("features").click();
         gizmo.$(TestBenchElement.class)
                 .id("feature-toggle-viteForFrontendBuild").click();
