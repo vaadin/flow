@@ -34,6 +34,7 @@
                 <module>vite-production</module>
                 <module>vite-context-path/pom-production.xml</module>
                 <module>vite-context-path</module>
+                <module>vite-pwa</module>
                 <module>vite-pwa-disabled-offline</module>
                 <module>vite-pwa-disabled-offline/pom-production.xml</module>
                 <module>vite-pwa-production</module>

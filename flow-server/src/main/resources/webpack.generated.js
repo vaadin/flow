@@ -165,6 +165,7 @@ const createServiceWorkerPlugin = function () {
     ],
     webpackCompilationPlugins: [
       new DefinePlugin({
+        VITE_ENABLED: 'false',
         OFFLINE_PATH: JSON.stringify(offlinePath)
       })
     ]
