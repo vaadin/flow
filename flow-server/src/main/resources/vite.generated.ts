@@ -13,7 +13,6 @@ import { UserConfigFn, defineConfig, mergeConfig, PluginOption, ResolvedConfig }
 import { injectManifest } from 'workbox-build';
 
 import * as rollup from 'rollup';
-import chokidar from 'chokidar';
 import brotli from 'rollup-plugin-brotli';
 import replace from '@rollup/plugin-replace';
 import checker from 'vite-plugin-checker';
