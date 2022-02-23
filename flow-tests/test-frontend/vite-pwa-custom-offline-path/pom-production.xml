@@ -8,7 +8,7 @@
         <artifactId>test-frontend</artifactId>
         <version>23.1-SNAPSHOT</version>
     </parent>
-    <artifactId>vite-pwa-production-custom-offline-path</artifactId>
+    <artifactId>vite-pwa-custom-offline-path-production</artifactId>
     <name>Vite PWA app with a custom offline path (production mode)</name>
     <packaging>war</packaging>
 
