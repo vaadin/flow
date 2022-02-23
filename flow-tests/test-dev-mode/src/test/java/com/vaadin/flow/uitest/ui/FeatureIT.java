@@ -31,36 +31,40 @@ public class FeatureIT extends ChromeBrowserTest {
         open();
         Assert.assertEquals("Feature file missing",
                 $(H2Element.class).id("value").getText());
-        DevModeGizmoElement gizmo = $(DevModeGizmoElement.class).waitForFirst();
-
-        gizmo.expand();
 
         // enable the feature
-        gizmo.$(NativeButtonElement.class).id("features").click();
-        gizmo.$(TestBenchElement.class)
-                .id("feature-toggle-viteForFrontendBuild").click();
+        toggleViteFeature(false);
 
         try {
             $(NativeButtonElement.class).id("check").click();
-
             Assert.assertEquals(
                     "Feature file exists with properties: com.vaadin.experimental.viteForFrontendBuild",
                     $(H2Element.class).id("value").getText());
 
-            // disable the feature via the gizmo
-            gizmo.expand();
-            gizmo.$(NativeButtonElement.class).id("features").click();
-            gizmo.$(TestBenchElement.class)
-                    .id("feature-toggle-viteForFrontendBuild").click();
-            Assert.assertEquals(
-                    "Feature file exists with properties: com.vaadin.experimental.viteForFrontendBuild",
+            // disable the feature
+            toggleViteFeature(true);
+
+            $(NativeButtonElement.class).id("check").click();
+            Assert.assertEquals("Feature file exists with properties:",
                     $(H2Element.class).id("value").getText());
         } finally {
             $(NativeButtonElement.class).id("remove").click();
-
             Assert.assertEquals("Feature file missing",
                     $(H2Element.class).id("value").getText());
         }
     }
 
+    private void toggleViteFeature(boolean expectedInitialState) {
+        DevModeGizmoElement gizmo = $(DevModeGizmoElement.class).waitForFirst();
+        gizmo.expand();
+        gizmo.$(NativeButtonElement.class).id("features").click();
+        TestBenchElement toggleButton = gizmo.$(TestBenchElement.class)
+                .id("feature-toggle-viteForFrontendBuild");
+        String checked = getCommandExecutor().executeScript(
+                "return arguments[0].checked", toggleButton).toString();
+        Assert.assertEquals(
+                "Toggle button state expected " + expectedInitialState,
+                Boolean.toString(expectedInitialState), checked);
+        toggleButton.click();
+    }
 }
