@@ -86,7 +86,7 @@ jobs:
             ARGS="-pl ${{matrix.args}}"
           cmd="mvn -B -T 1C $ARGS"
           set -x -e -o pipefail
-          (echo $cmd -T 1C verify || echo $cmd clean verify -U) | tee mvn-unit-tests-${{matrix.current}}.out
+          ($cmd -T 1C verify || $cmd clean verify -U) | tee mvn-unit-tests-${{matrix.current}}.out
       - name: Set build status flag
         id: set-failure
         if: ${{ failure() || cancelled() }}
