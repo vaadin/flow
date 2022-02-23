@@ -12,7 +12,6 @@
 
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
-        <vaadin.reuseDevServer>true</vaadin.reuseDevServer>
     </properties>
 
     <dependencies>

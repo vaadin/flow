@@ -87,11 +87,6 @@
                     <plugin>
                         <groupId>org.eclipse.jetty</groupId>
                         <artifactId>jetty-maven-plugin</artifactId>
-                        <configuration>
-                            <systemProperties>
-                                <vaadin.reuseDevServer>false</vaadin.reuseDevServer>
-                            </systemProperties>
-                        </configuration>
                     </plugin>
                 </plugins>
             </build>
