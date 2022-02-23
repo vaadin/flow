@@ -1,0 +1,74 @@
+version: 2.1
+orbs:
+  browser-tools: circleci/browser-tools@1.2.3
+jobs:
+  run-unit-tests:
+    parallelism: 4
+    docker:
+      - image: cimg/openjdk:11.0
+    steps:
+      - checkout
+      - run:
+          name: Install Tools
+          command: /home/circleci/project/.circleci/support.sh install-tools
+      - run:
+          name: Run Unit Tests
+          command:  |
+            echo ">>> Building flow .... " >&2
+            mvn -B -q -DnewVersion=999.99-SNAPSHOT versions:set  -T 1C
+            mvn -B -DskipTests install -T 2C -q
+            echo ">>> Testing Modules" >&2
+            T=`/home/circleci/project/scripts/computeMatrix.js list-unit-modules`
+            T=`echo "$T" | circleci tests split`
+            echo "---- Selected" >&2
+            echo "$T" >&2
+            mvn test -V -B -e -q \
+              -pl $(echo "$T" | tr '\n' ',')
+      - run:
+          name: Save test results
+          command: |
+            mkdir -p test-results
+            find . -type f -regex ".*/target/.*-reports/.*xml" -exec cp '{}' test-results ';'
+          when: always
+      - store_test_results:
+          path: test-results
+  # run-it-tests:
+  #   parallelism: 6
+  #   docker:
+  #     - image: cimg/openjdk:11.0
+  #   steps:
+  #     - checkout
+  #     - browser-tools/install-chrome
+  #     - browser-tools/install-chromedriver
+  #     - run:
+  #         name: Install Tools
+  #         command: /home/circleci/project/.circleci/support.sh install-tools
+  #     - run:
+  #         name: Run Integration Tests
+  #         command:  |
+  #           echo ">>> Building flow .... " >&2
+  #           mvn -B -q -DnewVersion=999.99-SNAPSHOT versions:set  -T 1C
+  #           mvn -B -DskipTests install -T 2C -q
+  #           mvn -B -q install -DskipITs -pl flow-tests/test-fusion-csrf
+  #           echo ">>> Testing Modules" >&2
+  #           T=`/home/circleci/project/.circleci/support.sh get-it-modules`
+  #           T=`echo "$T" | circleci tests split`
+  #           echo "---- Selected" >&2
+  #           echo "$T" >&2
+  #           mvn clean verify -V -B -e -q \
+  #             -Dcom.vaadin.testbench.Parameters.testsInParallel=4 \
+  #             -pl $(echo "$T" | tr '\n' ',')
+  #     - run:
+  #         name: Save test results
+  #         command: |
+  #           mkdir -p test-results
+  #           find . -type f -regex ".*/target/.*-reports/.*xml" -exec cp '{}' test-results ';'
+  #         when: always
+  #     - store_test_results:
+  #         path: test-results
+workflows:
+  build-and-test:
+    jobs:
+      - run-unit-tests
+      # - run-it-tests
+

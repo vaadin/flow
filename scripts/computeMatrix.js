@@ -533,12 +533,21 @@ async function main() {
     [...xmlSucceed, ...txtTests].forEach(f => fs.existsSync(f) && fs.unlinkSync(f));
   } else if (action == 'test-results') {
     await printTestResults();
+  } else if (action == 'list-unit-modules') {
+    let modules = getModules('');
+    modules = grep(modules, globalExclusions);
+    console.log(modules);
+  } else if (action == 'list-it-modules') {
+    let modules = getModulesRecursive('flow-tests');
+    modules = grep(modules, globalExclusions);
+    console.log(modules);
   } else {
     console.log(`
 Usage:
   ${program} action parameters [keys]
 
 Actions
+  list-it-modules    list IT modules under flow-tests
   set-version        replace versions in all pom files of the project
   unit-tests         outputs the JSON matrix for unit-tests
   it-tests           outputs the JSON matrix for it-tests
