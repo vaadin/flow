@@ -28,11 +28,11 @@ import java.lang.annotation.Target;
  * <p>
  * The {@code value} property defines the name of the application theme. When
  * the theme is present inside the project, it maps to the {@code
- * frontend/theme/<application-theme-name>}/ folder or alternatively to a folder
- * inside the static resources of a jar file, like {@code
- * src/main/resources/META-INF/resources/theme/<application-theme-name>/}. The
- * application theme is always based on Lumo theme and this is the recommended
- * way to theme applications starting from Flow 6.0 and Vaadin 19.
+ * frontend/themes/&#60application-theme-name&#62}/ folder or alternatively to a
+ * folder inside the static resources of a jar file, like {@code
+ * src/main/resources/META-INF/resources/themes/&#60application-theme-name&#62/}
+ * . The application theme is always based on Lumo theme and this is the
+ * recommended way to theme applications starting from Flow 6.0 and Vaadin 19.
  * <p>
  * Alternatively , if instead of Lumo theme the Material theme or another "old
  * style custom theme" is to be used, that can be specified with the {@code
