@@ -396,7 +396,7 @@ public class ResponseWriter implements Serializable {
     /**
      * Check if it is ok to serve the requested file from the classpath.
      * <p>
-     * ClassLoader is applicable for use when we are in NPM mode and are serving
+     * ClassLoader is applicable for use when we are in npm mode and are serving
      * from the VAADIN/build folder with no folder changes in path.
      *
      * @param filenameWithPath

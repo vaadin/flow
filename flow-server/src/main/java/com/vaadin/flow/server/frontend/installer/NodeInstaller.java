@@ -178,8 +178,8 @@ public class NodeInstaller {
         if (PROVIDED_VERSION.equals(npmVersion)) {
             if (Integer.parseInt(
                     nodeVersion.replace("v", "").split("[.]")[0]) < 4) {
-                throw new InstallationException("NPM version is '" + npmVersion
-                        + "' but Node didn't include NPM prior to v4.0.0");
+                throw new InstallationException("npm version is '" + npmVersion
+                        + "' but Node didn't include npm prior to v4.0.0");
             }
             return true;
         }
@@ -187,7 +187,7 @@ public class NodeInstaller {
     }
 
     /**
-     * Install node and NPM.
+     * Install node and npm.
      *
      * @throws InstallationException
      *             exception thrown when installation fails
@@ -309,7 +309,7 @@ public class NodeInstaller {
 
     private void extractUnixNpm(InstallData data, File destinationDirectory)
             throws IOException {
-        getLogger().info("Extracting NPM");
+        getLogger().info("Extracting npm");
         File tmpNodeModulesDir = new File(data.getTmpDirectory(),
                 data.getNodeFilename() + File.separator + "lib" + File.separator
                         + FrontendUtils.NODE_MODULES);
@@ -351,7 +351,7 @@ public class NodeInstaller {
         copyNodeBinaryToDestination(nodeBinary, destination);
 
         if (npmProvided()) {
-            getLogger().info("Extracting NPM");
+            getLogger().info("Extracting npm");
             File tmpNodeModulesDir = new File(data.getTmpDirectory(),
                     data.getNodeFilename() + File.separator
                             + FrontendUtils.NODE_MODULES);

@@ -147,7 +147,7 @@ public class FrontendUtils {
     public static final String SERVICE_WORKER_SRC_JS = "sw.js";
 
     /**
-     * The NPM package name that will be used for the javascript files present
+     * The npm package name that will be used for the javascript files present
      * in jar resources that will to be copied to the npm folder so as they are
      * accessible to webpack.
      */

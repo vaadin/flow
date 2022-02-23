@@ -451,7 +451,7 @@ public class FrontendTools {
                     nodeCommands.getSecond()));
         }
         if (file == null && alternativeDirGetter != null) {
-            getLogger().info("Couldn't find {}. Installing Node and NPM to {}.",
+            getLogger().info("Couldn't find {}. Installing Node and npm to {}.",
                     nodeCommands.getFirst(), getAlternativeDir());
             file = new File(installNode(nodeVersion, nodeDownloadRoot));
         }

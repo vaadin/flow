@@ -189,7 +189,7 @@ public abstract class AbstractNodeUpdatePackagesTest
                 getScanner(classFinder), baseDir, generatedDir, resourcesDir,
                 false, true, TARGET, featureFlags);
         packageUpdater.execute();
-        Assert.assertFalse("NPM package-lock should be removed for pnpm",
+        Assert.assertFalse("npm package-lock should be removed for pnpm",
                 packageLock.exists());
     }
 
