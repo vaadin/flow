@@ -30,9 +30,12 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 
 import org.jsoup.nodes.Attribute;
+import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.parser.Tag;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.webcomponent.WebComponentUI;
@@ -44,6 +47,7 @@ import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.PwaRegistry;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
@@ -53,6 +57,7 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
+import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.server.frontend.FrontendUtils.EXPORT_CHUNK;
 import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -98,12 +103,63 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
     private static class WebComponentBootstrapPageBuilder
             extends BootstrapPageBuilder {
         @Override
+        public Document getBootstrapPage(BootstrapContext context) {
+            VaadinService service = context.getSession().getService();
+            VaadinRequest request = context.getRequest();
+
+            if (FeatureFlags.get(service.getContext())
+                    .isEnabled(FeatureFlags.VITE)) {
+                JsonObject initialUIDL = getInitialUidl(context.getUI());
+
+                Document document = new Document("");
+                Element html = document.appendElement("html");
+                Element head = html.appendElement("head");
+
+                if (context.getPushMode().isEnabled()) {
+                    head.appendChild(createJavaScriptModuleElement(
+                            getPushScript(context)));
+                }
+
+                head.appendChild(getBootstrapScript(initialUIDL, context));
+                head.appendChild(createInlineJavaScriptElement(
+                        "window.JSCompiler_renameProperty = function(a) { return a; }"));
+                head.appendChild(createJavaScriptModuleElement(
+                        service.getContextRootRelativePath(request)
+                                + VAADIN_MAPPING + "@vite/client"));
+                head.appendChild(createJavaScriptModuleElement(
+                        service.getContextRootRelativePath(request)
+                                + VAADIN_MAPPING
+                                + "generated/vaadin-web-component.ts"));
+                head.appendChild(createJavaScriptModuleElement(
+                        getClientEngineUrl(context)));
+
+                return document;
+            }
+
+            return super.getBootstrapPage(context);
+        }
+
+        @Override
         protected List<String> getChunkKeys(JsonObject chunks) {
             if (chunks.hasKey(EXPORT_CHUNK)) {
                 return Collections.singletonList(EXPORT_CHUNK);
             } else {
                 return super.getChunkKeys(chunks);
             }
+        }
+
+        private static Element createJavaScriptModuleElement(String src) {
+            Element element = new Element(Tag.valueOf("script"), "");
+            element.attr("defer", true);
+            element.attr("type", "module");
+            element.attr("src", src);
+            return element;
+        }
+
+        private Element createInlineJavaScriptElement(String content) {
+            Element wrapper = new Element(Tag.valueOf("script"), "");
+            wrapper.appendChild(new DataNode(content));
+            return wrapper;
         }
     }
 
@@ -223,6 +279,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         String serviceUrl = getServiceUrl(request, response);
 
         Document document = getPageBuilder().getBootstrapPage(context);
+
         writeBootstrapPage(response, document.head(), serviceUrl);
         return true;
     }

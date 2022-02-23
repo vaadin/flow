@@ -200,6 +200,7 @@ public class FrontendUtils {
      * Vaadin app.
      */
     public static final String BOOTSTRAP_FILE_NAME = "vaadin.ts";
+    public static final String WEB_COMPONENT_BOOTSTRAP_FILE_NAME = "vaadin-web-component.ts";
 
     /**
      * File name of the feature flags file that is generated in frontend

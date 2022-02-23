@@ -515,7 +515,7 @@ public class NodeTasks implements FallibleCommand {
 
         /**
          * Uses globally installed pnpm tool for frontend packages installation.
-         * 
+         *
          * @param useGlobalPnpm
          *            uses globally installed pnpm instead of default one, see
          *            {@link FrontendTools#DEFAULT_PNPM_VERSION}.
@@ -613,7 +613,7 @@ public class NodeTasks implements FallibleCommand {
 
         /**
          * Get the output directory for webpack output.
-         * 
+         *
          * @return webpackOutputDirectory
          */
         public File getWebappResourcesDirectory() {
@@ -622,7 +622,7 @@ public class NodeTasks implements FallibleCommand {
 
         /**
          * Get the defined frontend directory.
-         * 
+         *
          * @return frontendDirectory
          */
         public File getFrontendDirectory() {
@@ -696,6 +696,7 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateOpenAPI.class,
             TaskGenerateEndpoint.class,
             TaskGenerateBootstrap.class,
+            TaskGenerateWebComponentBootstrap.class,
             TaskGenerateFeatureFlags.class,
             TaskInstallWebpackPlugins.class,
             TaskUpdatePackages.class,
@@ -792,6 +793,11 @@ public class NodeTasks implements FallibleCommand {
 
             commands.add(new TaskGenerateBootstrap(frontendDependencies,
                     builder.frontendDirectory, builder.productionMode));
+
+            commands.add(new TaskGenerateWebComponentBootstrap(
+                    builder.frontendDirectory,
+                    new File(builder.generatedFolder, IMPORTS_NAME),
+                    new File(builder.npmFolder, builder.buildDirectory)));
 
             commands.add(new TaskGenerateFeatureFlags(builder.frontendDirectory,
                     featureFlags));
