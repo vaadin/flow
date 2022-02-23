@@ -773,7 +773,7 @@ public class VaadinServletContextInitializer
     }
 
     /**
-     * For NPM we scan all packages. For performance reasons and due to problems
+     * For npm we scan all packages. For performance reasons and due to problems
      * with atmosphere we skip known packaged from our resources collection.
      */
     private static class CustomResourceLoader

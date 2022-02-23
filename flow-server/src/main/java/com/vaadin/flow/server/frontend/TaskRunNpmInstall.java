@@ -138,7 +138,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
      *            package-updater instance used for checking if previous
      *            execution modified the package.json file
      * @param enablePnpm
-     *            whether PNPM should be used instead of NPM
+     *            whether pnpm should be used instead of npm
      * @param requireHomeNodeExec
      *            whether vaadin home node executable has to be used
      * @param nodeVersion
