@@ -60,8 +60,9 @@ public class FeatureIT extends ChromeBrowserTest {
         gizmo.$(NativeButtonElement.class).id("features").click();
         TestBenchElement toggleButton = gizmo.$(TestBenchElement.class)
                 .id("feature-toggle-viteForFrontendBuild");
-        String checked = getCommandExecutor().executeScript(
-                "return arguments[0].checked", toggleButton).toString();
+        String checked = getCommandExecutor()
+                .executeScript("return arguments[0].checked", toggleButton)
+                .toString();
         Assert.assertEquals(
                 "Toggle button state expected " + expectedInitialState,
                 Boolean.toString(expectedInitialState), checked);
