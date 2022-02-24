@@ -15,7 +15,8 @@ jobs:
           name: Run Unit Tests
           command:  |
             echo ">>> Building flow .... " >&2
-            mvn -B -q -DnewVersion=999.99-SNAPSHOT versions:set  -T 1C
+            /home/circleci/project/scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
+            # mvn -B -q -DnewVersion=999.99-SNAPSHOT versions:set  -T 1C
             mvn -B -DskipTests install -T 2C -q
             echo ">>> Testing Modules" >&2
             T=`/home/circleci/project/scripts/computeMatrix.js list-unit-modules`
@@ -32,43 +33,49 @@ jobs:
           when: always
       - store_test_results:
           path: test-results
-  # run-it-tests:
-  #   parallelism: 6
-  #   docker:
-  #     - image: cimg/openjdk:11.0
-  #   steps:
-  #     - checkout
-  #     - browser-tools/install-chrome
-  #     - browser-tools/install-chromedriver
-  #     - run:
-  #         name: Install Tools
-  #         command: /home/circleci/project/.circleci/support.sh install-tools
-  #     - run:
-  #         name: Run Integration Tests
-  #         command:  |
-  #           echo ">>> Building flow .... " >&2
-  #           mvn -B -q -DnewVersion=999.99-SNAPSHOT versions:set  -T 1C
-  #           mvn -B -DskipTests install -T 2C -q
-  #           mvn -B -q install -DskipITs -pl flow-tests/test-fusion-csrf
-  #           echo ">>> Testing Modules" >&2
-  #           T=`/home/circleci/project/.circleci/support.sh get-it-modules`
-  #           T=`echo "$T" | circleci tests split`
-  #           echo "---- Selected" >&2
-  #           echo "$T" >&2
-  #           mvn clean verify -V -B -e -q \
-  #             -Dcom.vaadin.testbench.Parameters.testsInParallel=4 \
-  #             -pl $(echo "$T" | tr '\n' ',')
-  #     - run:
-  #         name: Save test results
-  #         command: |
-  #           mkdir -p test-results
-  #           find . -type f -regex ".*/target/.*-reports/.*xml" -exec cp '{}' test-results ';'
-  #         when: always
-  #     - store_test_results:
-  #         path: test-results
+  run-it-tests:
+    parallelism: 9
+    docker:
+      - image: cimg/openjdk:11.0
+    steps:
+      - checkout
+      - browser-tools/install-chrome
+      - browser-tools/install-chromedriver
+      - run:
+          name: Install Tools
+          command: /home/circleci/project/.circleci/support.sh install-tools
+      - run:
+          name: Run Integration Tests
+          command:  |
+            echo ">>> Setting version .... " >&2
+            time /home/circleci/project/scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
+            mvn -B -q -DnewVersion=999.99-SNAPSHOT versions:set  -T 1C
+            echo ">>> Building flow .... " >&2
+            time mvn -B -q -DskipTests install -T 2C
+            echo ">>> Building shared modules .... " >&2
+            time mvn -B -q install -DskipTests -Pit-shared-modules,it-shared-spring-modules -amd -pl flow-tests
+            echo ">>> Testing Modules" >&2
+            T=`/home/circleci/project/scripts/computeMatrix.js list-it-modules`
+            T=`echo "$T" | circleci tests split`
+            echo "---- Selected" >&2
+            echo "$T" >&2
+            mvn verify -V -B -e -fae \
+              -Dcom.vaadin.testbench.Parameters.testsInParallel=4 \
+              -Dfailsafe.rerunFailingTestsCount=2 \
+              -Dmaven.wagon.httpconnectionManager.ttlSeconds=25 \
+              -Dmaven.wagon.http.retryHandler.count=3
+              -pl $(echo "$T" | tr '\n' ',')
+      - run:
+          name: Save test results
+          command: |
+            mkdir -p test-results
+            find . -type f -regex ".*/target/.*-reports/.*xml" -exec cp '{}' test-results ';'
+          when: always
+      - store_test_results:
+          path: test-results
 workflows:
   build-and-test:
     jobs:
       - run-unit-tests
-      # - run-it-tests
+      - run-it-tests
 
