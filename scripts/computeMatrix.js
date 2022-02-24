@@ -509,6 +509,7 @@ async function printTestResults() {
 async function main() {
   const versionRegx= /--version=(.*)/;
   const parallelRegx= /--parallel=(\d+)/;
+  const nodeRegx= /--node=(\d+)/;
   const program = process.argv[1].replace(/.*\//, '');
   const action = process.argv[2];
   const parameter = process.argv[3];
@@ -536,11 +537,11 @@ async function main() {
   } else if (action == 'list-unit-modules') {
     let modules = getModules('');
     modules = grep(modules, globalExclusions);
-    console.log(modules);
+    console.log(modules.join('\n'));
   } else if (action == 'list-it-modules') {
     let modules = getModulesRecursive('flow-tests');
     modules = grep(modules, globalExclusions);
-    console.log(modules);
+    console.log(modules.join('\n'));
   } else {
     console.log(`
 Usage:
@@ -557,6 +558,7 @@ Actions
 Parameters
   --version=xxx      the version to set
   --parallel=N       number of items for the matrix
+  --node=N           list only modules for the given module
 
 Keys
   A comma separated list of keys for the matrix object.
