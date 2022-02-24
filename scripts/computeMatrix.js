@@ -319,7 +319,7 @@ function objectToString(object, keys) {
 }
 
 /**
- * Print the matrix strategy in GH-actions syntax
+ * Print the matrix strategy in GH-actions syntax to stderr
  */
 function printStrategy(object) {
   const json = [];
@@ -509,24 +509,39 @@ async function printTestResults() {
 async function main() {
   const versionRegx= /--version=(.*)/;
   const parallelRegx= /--parallel=(\d+)/;
-  const nodeRegx= /--node=(\d+)/;
-  const program = process.argv[1].replace(/.*\//, '');
-  const action = process.argv[2];
-  const parameter = process.argv[3];
-  const keys = process.argv.slice(4);
+  const nodeRegx= /--container=(\d+)/;
+  let program, action, version, parallel, container;
+  const keys = [];
+  process.argv.forEach((a, i) => {
+    if (i == 1) {
+      program = a.replace(/.*\//, '');
+    } else if (i == 2){
+      action = a;
+    } else if (/^--/.test(a)) {
+      if (versionRegx.test(a)) {
+        version = a.replace(versionRegx, '$1');
+      } else if (parallelRegx.test(a)) {
+        parallel = a.replace(parallelRegx, '$1');
+      } else if (nodeRegx.test(a)) {
+        container = a.replace(nodeRegx, '$1');
+      }
+    } else {
+      keys.push(a);
+    }
+  });
 
-  if (action == 'set-version' && versionRegx.test(parameter)) {
-    setVersion(parameter.replace(versionRegx, '$1'));
-  } else if (action == 'unit-tests' && parallelRegx.test(parameter)) {
-    const object = getParts(action, '', parameter.replace(parallelRegx, '$1'));
-    printStrategy(object);
-    const json = objectToString(object, keys);
-    console.log(json);
-  } else if (action == 'it-tests' && parallelRegx.test(parameter)) {
-    const object = getParts(action, 'flow-tests', parameter.replace(parallelRegx, '$1'));
-    printStrategy(object);
-    const json = objectToString(object, keys);
-    console.log(json);
+  if (action == 'set-version' && version) {
+    setVersion(version);
+  } else if (action == 'unit-tests' || action == 'it-tests' && parallel) {
+    const object = getParts(action, action == 'it-tests' ? 'flow-tests' : '', parallel);
+    if (container !== undefined) {
+      const o = object[container];
+      console.log('-pl ' + (o.module ? `${o.module} -Dit.test=${o.args}` : o.args));
+    } else {
+      printStrategy(object);
+      const json = objectToString(object, keys);
+      console.log(json);
+    }
   } else if (action == 'clean-success') {
     const xmlSucceed = getFiles([], '.', /(surefire|failsafe)-reports\//)
       .filter(f => !fs.readFileSync(f).toString().match(/<stackTrace>/));
@@ -534,14 +549,6 @@ async function main() {
     [...xmlSucceed, ...txtTests].forEach(f => fs.existsSync(f) && fs.unlinkSync(f));
   } else if (action == 'test-results') {
     await printTestResults();
-  } else if (action == 'list-unit-modules') {
-    let modules = getModules('');
-    modules = grep(modules, globalExclusions);
-    console.log(modules.join('\n'));
-  } else if (action == 'list-it-modules') {
-    let modules = getModulesRecursive('flow-tests');
-    modules = grep(modules, globalExclusions);
-    console.log(modules.join('\n'));
   } else {
     console.log(`
 Usage:
@@ -558,7 +565,7 @@ Actions
 Parameters
   --version=xxx      the version to set
   --parallel=N       number of items for the matrix
-  --node=N           list only modules for the given module
+  --container=N      list only modules for the given container number
 
 Keys
   A comma separated list of keys for the matrix object.

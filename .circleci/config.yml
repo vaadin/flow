@@ -20,12 +20,10 @@ jobs:
       - run:
           name: Run Unit Tests
           command:  |
-            T=`/home/circleci/project/scripts/computeMatrix.js list-unit-modules`
-            T=`echo "$T" | circleci tests split`
-            echo "---- Selected" >&2
-            echo "$T" >&2
-            echo mvn test -V -B -e -q \
-              -pl $(echo "$T" | tr '\n' ',')
+            args=`/home/circleci/project/scripts/computeMatrix.js unit-tests --parallel=$CIRCLE_NODE_TOTAL --container=$CIRCLE_NODE_INDEX`
+            set -x
+            mvn test -V -B -e -q \
+              $args
       - run:
           name: Save test results
           command: |
@@ -61,17 +59,14 @@ jobs:
           name: Run Integration Tests
           command:  |
             echo ">>> Testing Modules" >&2
-            T=`/home/circleci/project/scripts/computeMatrix.js list-it-modules`
-            T=`echo "$T" | circleci tests split`
-            echo "---- Selected" >&2
-            echo "$T" >&2
+            args=`/home/circleci/project/scripts/computeMatrix.js it-tests --parallel=$CIRCLE_NODE_TOTAL --container=$CIRCLE_NODE_INDEX`
             set -x
             mvn verify -V -B -e -fae \
               -Dcom.vaadin.testbench.Parameters.testsInParallel=4 \
               -Dfailsafe.rerunFailingTestsCount=2 \
               -Dmaven.wagon.httpconnectionManager.ttlSeconds=25 \
               -Dmaven.wagon.http.retryHandler.count=3 \
-              -pl $(echo "$T" | tr '\n' ',')
+              $args
       - run:
           name: Save test results
           command: |
