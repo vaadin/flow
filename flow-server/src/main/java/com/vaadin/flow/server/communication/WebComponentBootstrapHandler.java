@@ -29,6 +29,7 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
+import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
@@ -41,6 +42,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.webcomponent.WebComponentUI;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.internal.JsonUtils;
+import com.vaadin.flow.server.BootstrapException;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.HandlerHelper;
@@ -50,6 +52,7 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 
@@ -57,7 +60,6 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
-import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.server.frontend.FrontendUtils.EXPORT_CHUNK;
 import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -105,35 +107,26 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         @Override
         public Document getBootstrapPage(BootstrapContext context) {
             VaadinService service = context.getSession().getService();
-            VaadinRequest request = context.getRequest();
 
-            if (FeatureFlags.get(service.getContext())
-                    .isEnabled(FeatureFlags.VITE)) {
-                JsonObject initialUIDL = getInitialUidl(context.getUI());
+            if (FeatureFlags.get(service.getContext()).isEnabled(FeatureFlags.VITE)) {
+                try {
+                    Document document = Jsoup.parse(FrontendUtils.getWebComponentHtmlContent(service));
+                    Element head = document.head();
+                    JsonObject initialUIDL = getInitialUidl(context.getUI());
 
-                Document document = new Document("");
-                Element html = document.appendElement("html");
-                Element head = html.appendElement("head");
+                    head.prependChild(createInlineJavaScriptElement(
+                            "window.JSCompiler_renameProperty = function(a) { return a; }"));
 
-                if (context.getPushMode().isEnabled()) {
-                    head.appendChild(createJavaScriptModuleElement(
-                            getPushScript(context)));
+                    head.appendChild(getBootstrapScript(initialUIDL, context));
+
+                    if (context.getPushMode().isEnabled()) {
+                        head.appendChild(createJavaScriptModuleElement(getPushScript(context)));
+                    }
+
+                    return document;
+                } catch (IOException e) {
+                    throw new BootstrapException("Unable to read the web-component.html file.", e);
                 }
-
-                head.appendChild(getBootstrapScript(initialUIDL, context));
-                head.appendChild(createInlineJavaScriptElement(
-                        "window.JSCompiler_renameProperty = function(a) { return a; }"));
-                head.appendChild(createJavaScriptModuleElement(
-                        service.getContextRootRelativePath(request)
-                                + VAADIN_MAPPING + "@vite/client"));
-                head.appendChild(createJavaScriptModuleElement(
-                        service.getContextRootRelativePath(request)
-                                + VAADIN_MAPPING
-                                + "generated/vaadin-web-component.ts"));
-                head.appendChild(createJavaScriptModuleElement(
-                        getClientEngineUrl(context)));
-
-                return document;
             }
 
             return super.getBootstrapPage(context);

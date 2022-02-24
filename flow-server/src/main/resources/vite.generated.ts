@@ -344,7 +344,8 @@ export const vaadinConfig: UserConfigFn = (env) => {
       assetsDir: 'VAADIN/build',
       rollupOptions: {
         input: {
-          indexhtml: path.resolve(frontendFolder, 'index.html')
+          indexhtml: path.resolve(frontendFolder, 'index.html'),
+          webcomponenthtml: path.resolve(frontendFolder, 'web-component.html')
         }
       }
     },
@@ -385,7 +386,37 @@ export const vaadinConfig: UserConfigFn = (env) => {
         }
       },
       {
-        name: 'vaadin:inject-entrypoint-script',
+        name: 'vaadin:inject-scripts-to-web-component-html',
+        transformIndexHtml: {
+          enforce: 'pre',
+          transform(_html, { path, server }) {
+            if (path !== '/web-component.html') {
+              return;
+            }
+
+            if (devMode) {
+              const basePath = server?.config.base ?? '';
+              return [
+                {
+                  tag: 'script',
+                  attrs: { type: 'module', src: `${basePath}generated/vaadin-web-component.ts` },
+                  injectTo: 'head'
+                }
+              ]
+            }
+
+            return [
+              {
+                tag: 'script',
+                attrs: { type: 'module', src: `./generated/vaadin-web-component.ts` },
+                injectTo: 'head'
+              }
+            ]
+          }
+        }
+      },
+      {
+        name: 'vaadin:inject-scripts-to-index-html',
         transformIndexHtml: {
           enforce: 'pre',
           transform(_html, { path, server }) {

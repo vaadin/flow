@@ -696,6 +696,7 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateOpenAPI.class,
             TaskGenerateEndpoint.class,
             TaskGenerateBootstrap.class,
+            TaskGenerateWebComponentHtml.class,
             TaskGenerateWebComponentBootstrap.class,
             TaskGenerateFeatureFlags.class,
             TaskInstallWebpackPlugins.class,
@@ -792,12 +793,12 @@ public class NodeTasks implements FallibleCommand {
             }
 
             commands.add(new TaskGenerateBootstrap(frontendDependencies,
-                    builder.frontendDirectory, builder.productionMode));
+            builder.frontendDirectory, builder.productionMode));
 
+            commands.add(new TaskGenerateWebComponentHtml(builder.frontendDirectory));
             commands.add(new TaskGenerateWebComponentBootstrap(
                     builder.frontendDirectory,
-                    new File(builder.generatedFolder, IMPORTS_NAME),
-                    new File(builder.npmFolder, builder.buildDirectory)));
+                    new File(builder.generatedFolder, IMPORTS_NAME)));
 
             commands.add(new TaskGenerateFeatureFlags(builder.frontendDirectory,
                     featureFlags));

@@ -36,43 +36,36 @@ public class TaskGenerateWebComponentBootstrap
 
     private final File frontendGeneratedDirectory;
     private final File generatedImports;
-    private final File buildDirectory;
 
     /**
-     * Create a task to generate <code>index.js</code> if necessary.
+     * Create a task to generate <code>vaadin-web-component.js</code> if necessary.
      *
      * @param frontendDirectory
      *            frontend directory is to check if the file already exists
      *            there.
      * @param generatedImports
      *            the flow generated imports file to include in the
-     *            <code>index.js</code>
-     * @param outputDirectory
-     *            the build output directory
+     *            <code>vaadin-web-component.js</code>
      */
     TaskGenerateWebComponentBootstrap(File frontendDirectory,
-            File generatedImports, File buildDirectory) {
+            File generatedImports) {
         this.frontendGeneratedDirectory = new File(frontendDirectory,
                 GENERATED);
         this.generatedImports = generatedImports;
-        this.buildDirectory = buildDirectory;
     }
 
     @Override
     protected String getFileContent() {
         List<String> lines = new ArrayList<>();
-        // lines.add("import '@vaadin/flow-frontend/FlowClient';");
-        String relativizedImport = ensureValidRelativePath(
-                FrontendUtils.getUnixRelativePath(buildDirectory.toPath(),
-                        generatedImports.toPath()));
 
-        relativizedImport = relativizedImport
-                // replace `./` with `../../target/` to make it work
-                .replaceFirst("^./", "../../" + buildDirectory.getName() + "/")
-                // remove extension
-                .replaceFirst("\\.(ts|js)$", "");
+        String generatedImportsRelativePath = FrontendUtils.getUnixRelativePath(
+            frontendGeneratedDirectory.toPath(),
+            generatedImports.toPath()
+        ).replaceFirst("\\.(js|ts)$", "");
 
-        lines.add(String.format("import '%s';%n", relativizedImport));
+        lines.add(String.format("import '%s';", generatedImportsRelativePath));
+        lines.add("import { init } from '@vaadin/flow-frontend/FlowClient';");
+        lines.add("init();");
 
         return String.join(System.lineSeparator(), lines);
     }
@@ -86,20 +79,5 @@ public class TaskGenerateWebComponentBootstrap
     @Override
     protected boolean shouldGenerate() {
         return true;
-    }
-
-    /**
-     * Ensure that the given relative path is valid as an import path. NOTE:
-     * expose only for testing purpose.
-     *
-     * @param relativePath
-     *            given relative path
-     * @return valid import path
-     */
-    static String ensureValidRelativePath(String relativePath) {
-        if (!relativePath.startsWith(".")) {
-            relativePath = "./" + relativePath;
-        }
-        return relativePath;
     }
 }
