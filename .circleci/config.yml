@@ -3,7 +3,7 @@ orbs:
   browser-tools: circleci/browser-tools@1.2.3
 jobs:
   run-unit-tests:
-    parallelism: 4
+    parallelism: 1
     docker:
       - image: cimg/openjdk:11.0
     steps:
