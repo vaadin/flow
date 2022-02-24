@@ -18,6 +18,7 @@ package com.vaadin.flow.connect;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 import org.junit.Test;
+import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 public class AppViewIT extends ChromeBrowserTest {
@@ -30,6 +31,7 @@ public class AppViewIT extends ChromeBrowserTest {
     @Test
     public void endpointUsingJava17FeaturesWorks() {
         open();
+        waitForElementPresent(By.id("name"));
         WebElement input = $("input").id("name");
         input.sendKeys("John");
 
