@@ -45,7 +45,7 @@ jobs:
           name: Install Tools
           command: /home/circleci/project/.circleci/support.sh install-tools
       - run:
-          name: Run Integration Tests
+          name: Build Modules
           command:  |
             echo ">>> Setting version .... " >&2
             time /home/circleci/project/scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
@@ -54,16 +54,25 @@ jobs:
             time mvn -B -q -DskipTests install -T 2C
             echo ">>> Building shared modules .... " >&2
             time mvn -B -q install -DskipTests -Pit-shared-modules,it-shared-spring-modules -amd -pl flow-tests
+      - run:
+          name: Run Integration Tests
+          command:  |
             echo ">>> Testing Modules" >&2
             T=`/home/circleci/project/scripts/computeMatrix.js list-it-modules`
             T=`echo "$T" | circleci tests split`
             echo "---- Selected" >&2
             echo "$T" >&2
+            echo mvn verify -V -B -e -fae \
+              -Dcom.vaadin.testbench.Parameters.testsInParallel=4 \
+              -Dfailsafe.rerunFailingTestsCount=2 \
+              -Dmaven.wagon.httpconnectionManager.ttlSeconds=25 \
+              -Dmaven.wagon.http.retryHandler.count=3 \
+              -pl $(echo "$T" | tr '\n' ',') >&2
             mvn verify -V -B -e -fae \
               -Dcom.vaadin.testbench.Parameters.testsInParallel=4 \
               -Dfailsafe.rerunFailingTestsCount=2 \
               -Dmaven.wagon.httpconnectionManager.ttlSeconds=25 \
-              -Dmaven.wagon.http.retryHandler.count=3
+              -Dmaven.wagon.http.retryHandler.count=3 \
               -pl $(echo "$T" | tr '\n' ',')
       - run:
           name: Save test results
