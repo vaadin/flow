@@ -171,12 +171,12 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         // {@link #refreshTransients(WrappedSession, VaadinService)}. It happens
         // when the session is deserialized and container decides that it's
         // expired. Such session is not known to anyone (except deserializer)
-        // and nothins should be done with it: just return immediately.
+        // and nothing should be done with it: just return immediately.
         //
-        // Be aware that not initialized session doesn't have the
+        // Be aware that a non-initialized session doesn't have the
         // correct/expected state: it has no lock, service, session, etc.
         if (!isInitialized()) {
-            getLogger().warn(
+            getLogger().debug(
                     "A VaadinSession instance not associated to any service is getting unbound. "
                             + "Session destroy events will not be fired and UIs in the session will not get detached. "
                             + "This might happen if a session is deserialized but never used before it expires.");
