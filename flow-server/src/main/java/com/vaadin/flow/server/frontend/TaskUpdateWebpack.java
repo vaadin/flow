@@ -34,8 +34,10 @@ import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.PwaConfiguration;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.BOOTSTRAP_FILE_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.WEB_COMPONENT_BOOTSTRAP_FILE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
+import static com.vaadin.flow.server.frontend.FrontendUtils.WEB_COMPONENT_HTML;
 import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC;
 import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC_JS;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
@@ -188,8 +190,12 @@ public class TaskUpdateWebpack implements FallibleCommand {
                         Boolean.toString(!useV14Bootstrapping)),
                 new Pair<>("const clientSideIndexHTML",
                         "'./" + INDEX_HTML + "'"),
+                new Pair<>("const clientSideWebComponentHTML",
+                        "'./" + WEB_COMPONENT_HTML + "'"),
                 new Pair<>("const clientSideIndexEntryPoint",
                         getClientEntryPoint()),
+                new Pair<>("const clientSideWebComponentEntryPoint",
+                        getClientWebComponentEntryPoint()),
                 new Pair<>("const pwaEnabled",
                         Boolean.toString(pwaConfiguration.isEnabled())),
                 new Pair<>("const offlineEnabled",
@@ -209,6 +215,12 @@ public class TaskUpdateWebpack implements FallibleCommand {
         return String.format("path.resolve(__dirname, '%s', '%s', '%s');",
                 getEscapedRelativeWebpackPath(frontendDirectory), GENERATED,
                 BOOTSTRAP_FILE_NAME);
+    }
+
+    private String getClientWebComponentEntryPoint() {
+        return String.format("path.resolve(__dirname, '%s', '%s', '%s');",
+                getEscapedRelativeWebpackPath(frontendDirectory), GENERATED,
+                WEB_COMPONENT_BOOTSTRAP_FILE_NAME);
     }
 
     private String getClientServiceWorker() {

@@ -314,9 +314,9 @@ public class FrontendUtils {
     public static final String FALLBACK = "fallback";
 
     /**
-     * The entry-point key used for the exported bundle.
+     * The entry-point key used for the exported web component bundle.
      */
-    public static final String EXPORT_CHUNK = "export";
+    public static final String WEB_COMPONENT_CHUNK = "webcomponent";
 
     /**
      * A key in a Json object for css imports data.
