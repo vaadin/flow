@@ -1615,8 +1615,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         // Parameter appended to JS to bypass caches after version upgrade.
         String versionQueryParam = "?v=" + Version.getFullVersion();
         // Load client-side dependencies for push support
-        String pushJSPath = context.getService()
-                .getContextRootRelativePath(request);
+        String pushJSPath = BootstrapHandlerHelper.getServiceUrl(request) + "/";
 
         if (request.getService().getDeploymentConfiguration()
                 .isProductionMode()) {
