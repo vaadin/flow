@@ -112,15 +112,26 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 try {
                     Document document = Jsoup.parse(FrontendUtils.getWebComponentHtmlContent(service));
                     Element head = document.head();
+
+                    // Specify the application ID for scripts of the web-component.html
+                    document.head()
+                        .select("script[src]")
+                        .attr("data-app-id", context.getUI().getInternals().getAppId());
+
+                    // Fixes basic auth in Safari #6560
+                    document.head()
+                        .select("script[src], link[href]")
+                        .attr("crossorigin", "true");
+
                     JsonObject initialUIDL = getInitialUidl(context.getUI());
 
                     head.prependChild(createInlineJavaScriptElement(
                             "window.JSCompiler_renameProperty = function(a) { return a; }"));
 
-                    head.appendChild(getBootstrapScript(initialUIDL, context));
+                    head.prependChild(getBootstrapScript(initialUIDL, context));
 
                     if (context.getPushMode().isEnabled()) {
-                        head.appendChild(createJavaScriptModuleElement(getPushScript(context)));
+                        head.prependChild(createJavaScriptModuleElement(getPushScript(context)));
                     }
 
                     return document;
@@ -445,8 +456,9 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
             if (attribute.getValue() == null) {
                 writer.append("''");
             } else {
+                String name = attribute.getKey();
                 String path = attribute.getValue();
-                if ("src".equals(attribute.getKey())) {
+                if (name.matches("^(src|href)$")) {
                     path = modifyPath(basePath, path);
                 }
                 writer.append("\"").append(path).append("\"");
