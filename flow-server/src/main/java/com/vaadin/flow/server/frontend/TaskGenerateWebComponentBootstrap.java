@@ -38,7 +38,8 @@ public class TaskGenerateWebComponentBootstrap
     private final File generatedImports;
 
     /**
-     * Create a task to generate <code>vaadin-web-component.js</code> if necessary.
+     * Create a task to generate <code>vaadin-web-component.js</code> if
+     * necessary.
      *
      * @param frontendDirectory
      *            frontend directory is to check if the file already exists
@@ -58,10 +59,10 @@ public class TaskGenerateWebComponentBootstrap
     protected String getFileContent() {
         List<String> lines = new ArrayList<>();
 
-        String generatedImportsRelativePath = FrontendUtils.getUnixRelativePath(
-            frontendGeneratedDirectory.toPath(),
-            generatedImports.toPath()
-        ).replaceFirst("\\.(js|ts)$", "");
+        String generatedImportsRelativePath = FrontendUtils
+                .getUnixRelativePath(frontendGeneratedDirectory.toPath(),
+                        generatedImports.toPath())
+                .replaceFirst("\\.(js|ts)$", "");
 
         lines.add(String.format("import '%s';", generatedImportsRelativePath));
         lines.add("import { init } from '@vaadin/flow-frontend/FlowClient';");

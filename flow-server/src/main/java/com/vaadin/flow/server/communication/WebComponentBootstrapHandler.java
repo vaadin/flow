@@ -108,37 +108,41 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         public Document getBootstrapPage(BootstrapContext context) {
             VaadinService service = context.getSession().getService();
 
-            if (FeatureFlags.get(service.getContext()).isEnabled(FeatureFlags.VITE)) {
+            if (FeatureFlags.get(service.getContext())
+                    .isEnabled(FeatureFlags.VITE)) {
                 try {
-                    Document document = Jsoup.parse(FrontendUtils.getWebComponentHtmlContent(service));
+                    Document document = Jsoup.parse(
+                            FrontendUtils.getWebComponentHtmlContent(service));
                     Element head = document.head();
 
-                    // Specify the application ID for scripts of the web-component.html
-                    document.head()
-                        .select("script[src]")
-                        .attr("data-app-id", context.getUI().getInternals().getAppId());
+                    // Specify the application ID for scripts of the
+                    // web-component.html
+                    document.head().select("script[src]").attr("data-app-id",
+                            context.getUI().getInternals().getAppId());
 
                     // Fixes basic auth in Safari #6560
-                    document.head()
-                        .select("script[src], link[href]")
-                        .attr("crossorigin", "true");
+                    document.head().select("script[src], link[href]")
+                            .attr("crossorigin", "true");
 
                     JsonObject initialUIDL = getInitialUidl(context.getUI());
 
                     head.prependChild(createInlineJavaScriptElement(
                             "window.JSCompiler_renameProperty = function(a) { return a; }"));
 
-                    head.prependChild(createInlineJavaScriptElement(
-                        "//<![CDATA[\n" + getBootstrapJS(initialUIDL, context) + "//]]>"
-                    ));
+                    head.prependChild(
+                            createInlineJavaScriptElement("//<![CDATA[\n"
+                                    + getBootstrapJS(initialUIDL, context)
+                                    + "//]]>"));
 
                     if (context.getPushMode().isEnabled()) {
-                        head.prependChild(createJavaScriptModuleElement(getPushScript(context)));
+                        head.prependChild(createJavaScriptModuleElement(
+                                getPushScript(context)));
                     }
 
                     return document;
                 } catch (IOException e) {
-                    throw new BootstrapException("Unable to read the web-component.html file.", e);
+                    throw new BootstrapException(
+                            "Unable to read the web-component.html file.", e);
                 }
             }
 

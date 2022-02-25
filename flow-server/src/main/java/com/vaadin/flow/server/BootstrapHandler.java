@@ -938,7 +938,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         private void appendNpmBundle(Element head, VaadinService service,
                 BootstrapContext context) throws IOException {
             if (FeatureFlags.get(service.getContext())
-            .isEnabled(FeatureFlags.VITE)) {
+                    .isEnabled(FeatureFlags.VITE)) {
 
                 if (!service.getDeploymentConfiguration().isProductionMode()) {
                     Element script = createJavaScriptModuleElement(

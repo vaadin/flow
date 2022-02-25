@@ -793,9 +793,10 @@ public class NodeTasks implements FallibleCommand {
             }
 
             commands.add(new TaskGenerateBootstrap(frontendDependencies,
-            builder.frontendDirectory, builder.productionMode));
+                    builder.frontendDirectory, builder.productionMode));
 
-            commands.add(new TaskGenerateWebComponentHtml(builder.frontendDirectory));
+            commands.add(new TaskGenerateWebComponentHtml(
+                    builder.frontendDirectory));
             commands.add(new TaskGenerateWebComponentBootstrap(
                     builder.frontendDirectory,
                     new File(builder.generatedFolder, IMPORTS_NAME)));
