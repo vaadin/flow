@@ -733,8 +733,16 @@ public class NodeTasks implements FallibleCommand {
             if (builder.generateEmbeddableWebComponents) {
                 FrontendWebComponentGenerator generator = new FrontendWebComponentGenerator(
                         classFinder);
-                generator.generateWebComponents(builder.generatedFolder,
+                Set<File> webComponents = generator.generateWebComponents(builder.generatedFolder,
                         frontendDependencies.getThemeDefinition());
+
+                if (webComponents.size() > 0) {
+                    commands.add(new TaskGenerateWebComponentHtml(
+                        builder.frontendDirectory));
+                    commands.add(new TaskGenerateWebComponentBootstrap(
+                            builder.frontendDirectory,
+                            new File(builder.generatedFolder, IMPORTS_NAME)));
+                }
             }
 
             TaskUpdatePackages packageUpdater = null;
@@ -794,12 +802,6 @@ public class NodeTasks implements FallibleCommand {
 
             commands.add(new TaskGenerateBootstrap(frontendDependencies,
                     builder.frontendDirectory, builder.productionMode));
-
-            commands.add(new TaskGenerateWebComponentHtml(
-                    builder.frontendDirectory));
-            commands.add(new TaskGenerateWebComponentBootstrap(
-                    builder.frontendDirectory,
-                    new File(builder.generatedFolder, IMPORTS_NAME)));
 
             commands.add(new TaskGenerateFeatureFlags(builder.frontendDirectory,
                     featureFlags));
