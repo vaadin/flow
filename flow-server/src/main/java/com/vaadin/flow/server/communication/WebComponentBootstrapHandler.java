@@ -128,7 +128,9 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                     head.prependChild(createInlineJavaScriptElement(
                             "window.JSCompiler_renameProperty = function(a) { return a; }"));
 
-                    head.prependChild(getBootstrapScript(initialUIDL, context));
+                    head.prependChild(createInlineJavaScriptElement(
+                        "//<![CDATA[\n" + getBootstrapJS(initialUIDL, context) + "//]]>"
+                    ));
 
                     if (context.getPushMode().isEnabled()) {
                         head.prependChild(createJavaScriptModuleElement(getPushScript(context)));

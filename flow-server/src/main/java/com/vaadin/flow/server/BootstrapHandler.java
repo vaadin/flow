@@ -937,6 +937,42 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         private void appendNpmBundle(Element head, VaadinService service,
                 BootstrapContext context) throws IOException {
+            if (FeatureFlags.get(service.getContext())
+            .isEnabled(FeatureFlags.VITE)) {
+
+                if (!service.getDeploymentConfiguration().isProductionMode()) {
+                    Element script = createJavaScriptModuleElement(
+                            "VAADIN/@vite/client", false);
+                    head.appendChild(script);
+                    return;
+                }
+
+                // Get the index.html to get vite generated bundles
+                String index = FrontendUtils.getIndexHtmlContent(service);
+
+                // Get and add all javascriptbundles
+                Matcher scriptMatcher = Pattern
+                        .compile("src=\\\"VAADIN\\/build\\/(.*\\.js)\\\"")
+                        .matcher(index);
+                while (scriptMatcher.find()) {
+                    Element script = createJavaScriptModuleElement(
+                            "VAADIN/build/" + scriptMatcher.group(1), false);
+                    head.appendChild(script.attr("async", true)
+                            // Fixes basic auth in Safari #6560
+                            .attr("crossorigin", true));
+                }
+
+                // Get and add all css bundle links
+                Matcher cssMatcher = Pattern
+                        .compile("href=\\\"VAADIN\\/build\\/(.*\\.css)\\\"")
+                        .matcher(index);
+                while (cssMatcher.find()) {
+                    Element link = createStylesheetElement(
+                            "VAADIN/build/" + cssMatcher.group(1));
+                    head.appendChild(link);
+                }
+                return;
+            }
             String content = FrontendUtils.getStatsAssetsByChunkName(service);
             if (content == null) {
                 StringBuilder message = new StringBuilder(
@@ -1010,7 +1046,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return "";
         }
 
-        protected String getClientEngineUrl(BootstrapContext context) {
+        private String getClientEngineUrl(BootstrapContext context) {
             // use nocache version of client engine if it
             // has been compiled by SDM or eclipse
             // In production mode, this should really be loaded by the static
@@ -1199,13 +1235,13 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     "You have to enable javascript in your browser to use this web site.");
         }
 
-        protected Element getBootstrapScript(JsonValue initialUIDL,
+        private Element getBootstrapScript(JsonValue initialUIDL,
                 BootstrapContext context) {
             return createInlineJavaScriptElement("//<![CDATA[\n"
                     + getBootstrapJS(initialUIDL, context) + "//]]>");
         }
 
-        private String getBootstrapJS() {
+        protected String getBootstrapJS() {
             if (BOOTSTRAP_JS.isEmpty()) {
                 throw new BootstrapException(
                         "BootstrapHandler.js has not been loaded during initialization");
@@ -1213,7 +1249,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return BOOTSTRAP_JS;
         }
 
-        private String getBootstrapJS(JsonValue initialUIDL,
+        protected String getBootstrapJS(JsonValue initialUIDL,
                 BootstrapContext context) {
             boolean productionMode = context.getSession().getConfiguration()
                     .isProductionMode();
