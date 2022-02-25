@@ -8,6 +8,8 @@ jobs:
       - image: cimg/openjdk:11.0
     steps:
       - checkout
+      - browser-tools/install-chrome
+      - browser-tools/install-chromedriver
       - run:
           name: Install Tools
           command: /home/circleci/project/.circleci/support.sh install-tools
