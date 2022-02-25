@@ -117,11 +117,11 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
 
                     // Specify the application ID for scripts of the
                     // web-component.html
-                    document.head().select("script[src]").attr("data-app-id",
+                    head.select("script[src]").attr("data-app-id",
                             context.getUI().getInternals().getAppId());
 
                     // Fixes basic auth in Safari #6560
-                    document.head().select("script[src], link[href]")
+                    head.select("script[src], link[href]")
                             .attr("crossorigin", "true");
 
                     JsonObject initialUIDL = getInitialUidl(context.getUI());
