@@ -36,13 +36,11 @@ public class TaskGenerateWebComponentHtml extends AbstractTaskClientGenerator {
     private File webComponentHtml;
 
     /**
-     * Create a task to generate <code>index.html</code> if necessary.
+     * Create a task to generate <code>web-component.html</code> if necessary.
      *
      * @param frontendDirectory
      *            frontend directory is to check if the file already exists
      *            there.
-     * @param outputDirectory
-     *            the output directory of the generated file
      */
     TaskGenerateWebComponentHtml(File frontendDirectory) {
         webComponentHtml = new File(frontendDirectory, WEB_COMPONENT_HTML);
