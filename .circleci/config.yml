@@ -17,13 +17,16 @@ jobs:
             echo ">>> Building flow .... " >&2
             mvn -B -q -DnewVersion=999.99-SNAPSHOT versions:set  -T 1C
             mvn -B -DskipTests install -T 2C -q
-            echo ">>> Testing Modules" >&2
-            T=`/home/circleci/project/scripts/computeMatrix.js list-unit-modules`
-            T=`echo "$T" | circleci tests split`
-            echo "---- Selected" >&2
-            echo "$T" >&2
-            mvn test -V -B -e -q \
-              -pl $(echo "$T" | tr '\n' ',')
+            # echo ">>> Testing Modules" >&2
+            # T=`/home/circleci/project/scripts/computeMatrix.js list-unit-modules`
+            # T=`echo "$T" | circleci tests split`
+            # echo "---- Selected" >&2
+            # echo "$T" >&2
+            # mvn test -V -B -e -q \
+            #  -pl $(echo "$T" | tr '\n' ',')
+            mvn -B -T 1C -pl \
+              flow-client,flow-server,vaadin-dev-server,fusion-endpoint,flow-data,flow,flow-polymer-template,flow-lit-template,flow-push,flow-html-components,flow-html-components-testbench,flow-dnd,flow-test-util,flow-server-production-mode,flow-plugins,flow-test-generic,flow-bom,flow-jandex,vaadin-spring \
+              verify  
       - run:
           name: Save test results
           command: |
