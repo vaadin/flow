@@ -40,6 +40,8 @@
                 <module>vite-pwa-disabled-offline</module>
                 <module>vite-pwa-disabled-offline/pom-production.xml</module>
                 <module>vite-pwa-production</module>
+                <module>vite-embedded</module>
+                <module>vite-embedded/pom-production.xml</module>
                 <!-- npm and pnpm dev mode and prod mode -->
                 <!-- run production build before dev build as dev build has npm i in thread -->
                 <module>test-npm/pom-production.xml</module>
