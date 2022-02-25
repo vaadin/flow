@@ -117,7 +117,8 @@ public class RequestUtil {
      */
     public boolean isAnonymousRoute(HttpServletRequest request) {
         String vaadinMapping = configurationProperties.getUrlMapping();
-        String requestedPath = getRequestPathInsideContext(request);
+        String requestedPath = HandlerHelper
+                .getRequestPathInsideContext(request);
         Optional<String> maybePath = HandlerHelper
                 .getPathIfInsideServlet(vaadinMapping, requestedPath);
         if (!maybePath.isPresent()) {
@@ -203,25 +204,6 @@ public class RequestUtil {
 
     private Logger getLogger() {
         return LoggerFactory.getLogger(getClass());
-    }
-
-    private static String getRequestPathInsideContext(
-            HttpServletRequest request) {
-        String servletPath = request.getServletPath();
-        String pathInfo = request.getPathInfo();
-        String url = "";
-        if (servletPath != null) {
-            if (servletPath.startsWith("/")) {
-                // This SHOULD always be true...
-                url += servletPath.substring(1);
-            } else {
-                url += servletPath;
-            }
-        }
-        if (pathInfo != null) {
-            url += pathInfo;
-        }
-        return url;
     }
 
 }
