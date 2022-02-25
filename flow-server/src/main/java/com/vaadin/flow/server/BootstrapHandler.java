@@ -94,7 +94,7 @@ import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
 
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
-import static com.vaadin.flow.server.frontend.FrontendUtils.WEB_COMPONENT_CHUNK;
+import static com.vaadin.flow.server.frontend.FrontendUtils.EXPORT_CHUNK;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -1030,7 +1030,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             // include all chunks but the one used for exported
             // components.
             return Arrays.stream(chunks.keys())
-                    .filter(s -> !WEB_COMPONENT_CHUNK.equals(s))
+                    .filter(s -> !EXPORT_CHUNK.equals(s))
                     .collect(Collectors.toList());
         }
 
