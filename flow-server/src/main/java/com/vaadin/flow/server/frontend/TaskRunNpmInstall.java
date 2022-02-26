@@ -138,7 +138,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
      *            package-updater instance used for checking if previous
      *            execution modified the package.json file
      * @param enablePnpm
-     *            whether PNPM should be used instead of NPM
+     *            whether pnpm should be used instead of npm
      * @param requireHomeNodeExec
      *            whether vaadin home node executable has to be used
      * @param nodeVersion
@@ -177,19 +177,9 @@ public class TaskRunNpmInstall implements FallibleCommand {
     public void execute() throws ExecutionFailedException {
         String toolName = enablePnpm ? "pnpm" : "npm";
         if (packageUpdater.modified || shouldRunNpmInstall()) {
-            // Log a stronger request for patience if package-lock.json is
-            // missing as "npm install" in this case can take minutes
-            // https://github.com/vaadin/flow/issues/12825
-            File packageLockFile = packageUpdater.getPackageLockFile();
             packageUpdater.log().info("Running `" + toolName + " install` to "
                     + "resolve and optionally download frontend dependencies. "
                     + "This may take a moment, please stand by...");
-            if (!enablePnpm && !packageLockFile.exists()) {
-                packageUpdater.log().warn("Missing package-lock.json may cause "
-                        + "npm package installation to take several minutes; "
-                        + "it is recommended to keep this file persistently "
-                        + "in your project");
-            }
             runNpmInstall();
 
             updateLocalHash();
@@ -358,6 +348,18 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
         logger.info("using '{}' for frontend package installation",
                 String.join(" ", npmInstallCommand));
+
+        // Log a stronger request for patience if package-lock.json is
+        // missing as "npm install" in this case can take minutes
+        // https://github.com/vaadin/flow/issues/12825
+        File packageLockFile = packageUpdater.getPackageLockFile();
+        if (!enablePnpm && !packageLockFile.exists()) {
+            packageUpdater.log().warn("package-lock.json is missing from this "
+                    + "project. This may cause the npm package installation to "
+                    + "take several minutes. It is recommended to keep the "
+                    + "package-lock.json file persistently in your project. "
+                    + "Please stand by...");
+        }
 
         Process process = null;
         try {

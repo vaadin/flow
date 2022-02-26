@@ -250,7 +250,7 @@ public final class Constants implements Serializable {
 
     /**
      * Location for the frontend resources in jar files for compatibility mode
-     * (also obsolete but supported for NPM mode).
+     * (also obsolete but supported for npm mode).
      */
     public static final String COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT = "META-INF/resources/frontend";
 

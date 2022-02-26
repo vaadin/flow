@@ -1,35 +1,40 @@
 package com.vaadin.flow.spring.security;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.lang.reflect.Method;
 import java.util.Collections;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import com.vaadin.flow.server.HandlerHelper.RequestType;
+import com.vaadin.flow.spring.SpringBootAutoConfiguration;
+import com.vaadin.flow.spring.SpringSecurityAutoConfiguration;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.jackson.JacksonProperties;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.savedrequest.SavedRequest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import com.vaadin.flow.server.HandlerHelper.RequestType;
-import com.vaadin.flow.spring.SpringBootAutoConfiguration;
-import com.vaadin.flow.spring.SpringSecurityAutoConfiguration;
 import dev.hilla.Endpoint;
-import dev.hilla.EndpointRegistry;
 import dev.hilla.EndpointControllerConfiguration;
 import dev.hilla.EndpointProperties;
+import dev.hilla.EndpointRegistry;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { EndpointProperties.class })
 @ContextConfiguration(classes = { EndpointControllerConfiguration.class,
         SpringBootAutoConfiguration.class,
-        SpringSecurityAutoConfiguration.class })
+        SpringSecurityAutoConfiguration.class,
+        Jackson2ObjectMapperBuilder.class, JacksonProperties.class })
 public class VaadinDefaultRequestCacheTest {
 
     @Autowired
