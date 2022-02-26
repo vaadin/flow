@@ -16,13 +16,6 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.nio.file.Files;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
 
 import com.vaadin.flow.server.ExecutionFailedException;
 
