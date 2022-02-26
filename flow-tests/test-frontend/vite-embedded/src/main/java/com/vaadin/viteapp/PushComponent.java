@@ -37,7 +37,8 @@ public class PushComponent extends Div {
         }
 
         @Override
-        protected void configureInstance(WebComponent<PushComponent> webComponent,
+        protected void configureInstance(
+                WebComponent<PushComponent> webComponent,
                 PushComponent component) {
         }
     }

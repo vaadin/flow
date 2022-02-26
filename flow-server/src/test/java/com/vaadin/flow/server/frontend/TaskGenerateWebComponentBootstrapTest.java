@@ -51,11 +51,13 @@ public class TaskGenerateWebComponentBootstrapTest {
         generatedImports = new File(generatedFolder,
                 "flow-generated-imports.js");
         generatedImports.createNewFile();
-        taskGenerateWebComponentBootstrap = new TaskGenerateWebComponentBootstrap(frontendDirectory, generatedImports);
+        taskGenerateWebComponentBootstrap = new TaskGenerateWebComponentBootstrap(
+                frontendDirectory, generatedImports);
     }
 
     @Test
-    public void should_importGeneratedImports() throws ExecutionFailedException {
+    public void should_importGeneratedImports()
+            throws ExecutionFailedException {
         taskGenerateWebComponentBootstrap.execute();
         String content = taskGenerateWebComponentBootstrap.getFileContent();
         Assert.assertTrue(content.contains(
@@ -63,11 +65,12 @@ public class TaskGenerateWebComponentBootstrapTest {
     }
 
     @Test
-    public void should_importAndInitializeFlowClient() throws ExecutionFailedException {
+    public void should_importAndInitializeFlowClient()
+            throws ExecutionFailedException {
         taskGenerateWebComponentBootstrap.execute();
         String content = taskGenerateWebComponentBootstrap.getFileContent();
         Assert.assertTrue(content.contains(
                 "import { init } from '@vaadin/flow-frontend/FlowClient';\n"
-                + "init()"));
+                        + "init()"));
     }
 }

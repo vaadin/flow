@@ -38,7 +38,8 @@ public class TaskGenerateWebComponentHtmlTest {
     @Before
     public void setup() throws IOException {
         frontendFolder = temporaryFolder.newFolder();
-        taskGenerateWebComponentHtml = new TaskGenerateWebComponentHtml(frontendFolder);
+        taskGenerateWebComponentHtml = new TaskGenerateWebComponentHtml(
+                frontendFolder);
     }
 
     @Test
@@ -61,12 +62,13 @@ public class TaskGenerateWebComponentHtmlTest {
         Assert.assertFalse(
                 "Should not generate web-component.html while it exists in the frontend folder",
                 taskGenerateWebComponentHtml.shouldGenerate());
-        Assert.assertEquals("",
-                IOUtils.toString(webComponentHtml.toURI(), StandardCharsets.UTF_8));
+        Assert.assertEquals("", IOUtils.toString(webComponentHtml.toURI(),
+                StandardCharsets.UTF_8));
     }
 
     @Test
-    public void should_generateWebComponentHtml_webComponentHtmlNotExist() throws Exception {
+    public void should_generateWebComponentHtml_webComponentHtmlNotExist()
+            throws Exception {
         String defaultContent = IOUtils.toString(
                 getClass().getResourceAsStream(WEB_COMPONENT_HTML),
                 StandardCharsets.UTF_8);
