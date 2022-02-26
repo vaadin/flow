@@ -1149,7 +1149,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     context.getPwaRegistry().orElse(null));
         }
 
-        private Element createInlineJavaScriptElement(
+        protected Element createInlineJavaScriptElement(
                 String javaScriptContents) {
             // defer makes no sense without src:
             // https://developer.mozilla.org/en/docs/Web/HTML/Element/script
@@ -1158,17 +1158,17 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return wrapper;
         }
 
-        private static Element createJavaScriptElement(String sourceUrl,
+        protected static Element createJavaScriptElement(String sourceUrl,
                 boolean defer) {
             return createJavaScriptElement(sourceUrl, defer, "text/javascript");
         }
 
-        private static Element createJavaScriptModuleElement(String sourceUrl,
+        protected static Element createJavaScriptModuleElement(String sourceUrl,
                 boolean defer) {
             return createJavaScriptElement(sourceUrl, defer, "module");
         }
 
-        private static Element createJavaScriptElement(String sourceUrl,
+        protected static Element createJavaScriptElement(String sourceUrl,
                 boolean defer, String type) {
             Element jsElement = new Element(Tag.valueOf(SCRIPT_TAG), "")
                     .attr("type", type).attr(DEFER_ATTRIBUTE, defer);
@@ -1178,7 +1178,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return jsElement;
         }
 
-        private static Element createJavaScriptElement(String sourceUrl) {
+        protected static Element createJavaScriptElement(String sourceUrl) {
             return createJavaScriptElement(sourceUrl, true);
         }
 
@@ -1235,13 +1235,13 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     "You have to enable javascript in your browser to use this web site.");
         }
 
-        private Element getBootstrapScript(JsonValue initialUIDL,
+        protected Element getBootstrapScript(JsonValue initialUIDL,
                 BootstrapContext context) {
             return createInlineJavaScriptElement("//<![CDATA[\n"
                     + getBootstrapJS(initialUIDL, context) + "//]]>");
         }
 
-        protected String getBootstrapJS() {
+        private String getBootstrapJS() {
             if (BOOTSTRAP_JS.isEmpty()) {
                 throw new BootstrapException(
                         "BootstrapHandler.js has not been loaded during initialization");
@@ -1249,7 +1249,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return BOOTSTRAP_JS;
         }
 
-        protected String getBootstrapJS(JsonValue initialUIDL,
+        private String getBootstrapJS(JsonValue initialUIDL,
                 BootstrapContext context) {
             boolean productionMode = context.getSession().getConfiguration()
                     .isProductionMode();

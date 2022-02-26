@@ -120,7 +120,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                     head.select("script[src]").attr("data-app-id",
                             context.getUI().getInternals().getAppId());
 
-                    // Fixes basic auth in Safari #6560
+                    // Add `crossorigin` to fix basic auth in Safari #6560
                     head.select("script[src], link[href]").attr("crossorigin",
                             "true");
 
@@ -129,14 +129,11 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                     head.prependChild(createInlineJavaScriptElement(
                             "window.JSCompiler_renameProperty = function(a) { return a; }"));
 
-                    head.prependChild(
-                            createInlineJavaScriptElement("//<![CDATA[\n"
-                                    + getBootstrapJS(initialUIDL, context)
-                                    + "//]]>"));
+                    head.prependChild(getBootstrapScript(initialUIDL, context));
 
                     if (context.getPushMode().isEnabled()) {
                         head.prependChild(createJavaScriptModuleElement(
-                                getPushScript(context)));
+                                getPushScript(context), true));
                     }
 
                     return document;
@@ -156,20 +153,6 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
             } else {
                 return super.getChunkKeys(chunks);
             }
-        }
-
-        private static Element createJavaScriptModuleElement(String src) {
-            Element element = new Element(Tag.valueOf("script"), "");
-            element.attr("defer", true);
-            element.attr("type", "module");
-            element.attr("src", src);
-            return element;
-        }
-
-        private Element createInlineJavaScriptElement(String content) {
-            Element wrapper = new Element(Tag.valueOf("script"), "");
-            wrapper.appendChild(new DataNode(content));
-            return wrapper;
         }
     }
 
