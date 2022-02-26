@@ -121,8 +121,8 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                             context.getUI().getInternals().getAppId());
 
                     // Fixes basic auth in Safari #6560
-                    head.select("script[src], link[href]")
-                            .attr("crossorigin", "true");
+                    head.select("script[src], link[href]").attr("crossorigin",
+                            "true");
 
                     JsonObject initialUIDL = getInitialUidl(context.getUI());
 

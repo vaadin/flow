@@ -39,7 +39,7 @@ public class MyComponentIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void embeddedComponentIsLoaded() {
+    public void componentIsLoaded() {
         checkLogsForErrors();
 
         TestBenchElement myComponent = $("my-component").first();
@@ -48,7 +48,7 @@ public class MyComponentIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void themeIsAppliedToEmbeddedComponent() {
+    public void themeIsAppliedToComponent() {
         checkLogsForErrors();
 
         TestBenchElement myComponent = $("my-component").first();

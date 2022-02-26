@@ -323,14 +323,6 @@ export const vaadinConfig: UserConfigFn = (env) => {
     runWatchDog(process.env.watchDogPort);
   }
 
-  const rollupInput: Record<string, string> = {
-    indexhtml: path.resolve(frontendFolder, 'index.html')
-  }
-
-  if (hasExportedWebComponents) {
-    rollupInput.webcomponenthtml = path.resolve(frontendFolder, 'web-component.html');
-  }
-
   return {
     root: 'frontend',
     base: '',
@@ -354,7 +346,13 @@ export const vaadinConfig: UserConfigFn = (env) => {
       outDir: frontendBundleFolder,
       assetsDir: 'VAADIN/build',
       rollupOptions: {
-        input: rollupInput
+        input: {
+          indexhtml: path.resolve(frontendFolder, 'index.html'),
+
+          ...hasExportedWebComponents
+            ? { webcomponenthtml: path.resolve(frontendFolder, 'web-component.html') }
+            : {}
+        }
       }
     },
     optimizeDeps: {
