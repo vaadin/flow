@@ -5,7 +5,7 @@
  * This file will be overwritten on every run. Any custom changes should be made to vite.config.ts
  */
 import path from 'path';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import * as net from 'net';
 
 import { processThemeResources } from '@vaadin/application-theme-plugin/theme-handle.js';
@@ -43,6 +43,8 @@ const themeOptions = {
   projectStaticAssetsOutputFolder: path.resolve(__dirname, settings.staticOutput),
   frontendGeneratedFolder: path.resolve(frontendFolder, settings.generatedFolder)
 };
+
+const hasExportedWebComponents = existsSync(path.resolve(__dirname, 'web-component.html'));
 
 // Block debug and trace logs.
 console.trace = () => {};
@@ -320,6 +322,15 @@ export const vaadinConfig: UserConfigFn = (env) => {
     // vite when it exits or crashes.
     runWatchDog(process.env.watchDogPort);
   }
+
+  const rollupInput: Record<string, string> = {
+    indexhtml: path.resolve(frontendFolder, 'index.html')
+  }
+
+  if (hasExportedWebComponents) {
+    rollupInput.webcomponenthtml = path.resolve(frontendFolder, 'web-component.html');
+  }
+
   return {
     root: 'frontend',
     base: '',
@@ -343,10 +354,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
       outDir: frontendBundleFolder,
       assetsDir: 'VAADIN/build',
       rollupOptions: {
-        input: {
-          indexhtml: path.resolve(frontendFolder, 'index.html'),
-          webcomponenthtml: path.resolve(frontendFolder, 'web-component.html')
-        }
+        input: rollupInput
       }
     },
     optimizeDeps: {
