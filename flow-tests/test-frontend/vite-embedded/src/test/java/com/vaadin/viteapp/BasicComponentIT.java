@@ -18,41 +18,34 @@ package com.vaadin.viteapp;
 import org.junit.Assert;
 import org.junit.Test;
 
-import io.github.bonigarcia.wdm.WebDriverManager;
-
 import org.junit.Before;
-import org.junit.BeforeClass;
 
 import com.vaadin.testbench.TestBenchElement;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.flow.testutil.ChromeDeviceTest;
 
-public class MyComponentIT extends ChromeBrowserTest {
-    @BeforeClass
-    public static void driver() {
-        WebDriverManager.chromedriver().setup();
-    }
-
+public class BasicComponentIT extends ChromeDeviceTest {
     @Before
     public void init() {
-        getDriver().get(getRootURL() + "/my-component.html");
+        getDriver().get(getRootURL());
         waitForDevServer();
+        getDriver().get(getRootURL() + "/basic-component.html");
     }
 
     @Test
     public void componentIsLoaded() {
         checkLogsForErrors();
 
-        TestBenchElement myComponent = $("my-component").first();
-        TestBenchElement h1 = myComponent.$("h1").first();
-        Assert.assertEquals("My Component", h1.getText());
+        TestBenchElement component = $("basic-component").first();
+        TestBenchElement h1 = component.$("h1").first();
+        Assert.assertEquals("Basic Component", h1.getText());
     }
 
     @Test
     public void themeIsAppliedToComponent() {
         checkLogsForErrors();
 
-        TestBenchElement myComponent = $("my-component").first();
-        TestBenchElement h1 = myComponent.$("h1").first();
+        TestBenchElement component = $("basic-component").first();
+        TestBenchElement h1 = component.$("h1").first();
         Assert.assertEquals("rgba(255, 0, 0, 1)", h1.getCssValue("color"));
     }
 }

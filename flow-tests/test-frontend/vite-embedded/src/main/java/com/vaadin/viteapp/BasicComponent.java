@@ -21,22 +21,22 @@ import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.theme.Theme;
 
-public class MyComponent extends Div {
+public class BasicComponent extends Div {
     @Theme("my-theme")
-    public static class Exporter extends WebComponentExporter<MyComponent> {
+    public static class Exporter extends WebComponentExporter<BasicComponent> {
         public Exporter() {
-            super("my-component");
+            super("basic-component");
         }
 
         @Override
-        protected void configureInstance(WebComponent<MyComponent> webComponent,
-                MyComponent component) {
+        protected void configureInstance(WebComponent<BasicComponent> webComponent,
+                BasicComponent component) {
         }
     }
 
-    public MyComponent() {
+    public BasicComponent() {
         H1 h1 = new H1();
-        h1.setText("My Component");
+        h1.setText("Basic Component");
         add(h1);
     }
 }
