@@ -30,6 +30,15 @@ jobs:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-
+      - name: Show Info
+        run: |
+          dpkg -l | grep chrome
+          cat /etc/lsb-release
+          type google-chrome
+          google-chrome --version
+          find /sys/devices/system/cpu/cpu0
+          cat /proc/cpuinfo
+          google-chrome &
       - name: Set flow version to 999.99-SNAPSHOT
         run: |
           ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
