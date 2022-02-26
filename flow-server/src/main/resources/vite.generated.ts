@@ -44,7 +44,7 @@ const themeOptions = {
   frontendGeneratedFolder: path.resolve(frontendFolder, settings.generatedFolder)
 };
 
-const hasExportedWebComponents = existsSync(path.resolve(__dirname, 'web-component.html'));
+const hasExportedWebComponents = existsSync(path.resolve(frontendFolder, 'web-component.html'));
 
 // Block debug and trace logs.
 console.trace = () => {};
