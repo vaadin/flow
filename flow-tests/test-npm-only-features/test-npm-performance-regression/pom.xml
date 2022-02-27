@@ -95,18 +95,9 @@
                     <systemProperties>
                         <!-- Configure sl4j SimpleLogger to log to temporary
                         file with millisecond timestamps -->
-                        <systemProperty>
-                            <name>org.slf4j.simpleLogger.logFile</name>
-                            <value>${server.log.location}</value>
-                        </systemProperty>
-                        <systemProperty>
-                            <name>org.slf4j.simpleLogger.defaultLogLevel</name>
-                            <value>info</value>
-                        </systemProperty>
-                        <systemProperty>
-                            <name>org.slf4j.simpleLogger.showDateTime</name>
-                            <value>true</value>
-                        </systemProperty>
+                        <org.slf4j.simpleLogger.logFile>${server.log.location}</org.slf4j.simpleLogger.logFile>
+                        <org.slf4j.simpleLogger.defaultLogLevel>info</org.slf4j.simpleLogger.defaultLogLevel>
+                        <org.slf4j.simpleLogger.showDateTime>true</org.slf4j.simpleLogger.showDateTime>
                     </systemProperties>
                 </configuration>
                 <executions>
