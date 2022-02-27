@@ -31,6 +31,8 @@ import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
+import static com.vaadin.flow.server.frontend.FrontendUtils.WEB_COMPONENT_HTML;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -129,15 +131,15 @@ public final class ViteHandler extends AbstractDevServerRunner {
     @Override
     public HttpURLConnection prepareConnection(String path, String method)
             throws IOException {
-        if ("/index.html".equals(path)) {
+        if (path.equals("/" + INDEX_HTML)) {
             return super.prepareConnection(
-                    getContextPath() + "/" + VAADIN_MAPPING + "index.html",
+                    getContextPath() + "/" + VAADIN_MAPPING + INDEX_HTML,
                     method);
         }
 
-        if ("/web-component.html".equals(path)) {
+        if (path.equals("/" + WEB_COMPONENT_HTML)) {
             return super.prepareConnection(getContextPath() + "/"
-                    + VAADIN_MAPPING + "web-component.html", method);
+                    + VAADIN_MAPPING + WEB_COMPONENT_HTML, method);
         }
 
         return super.prepareConnection(getContextPath() + path, method);
