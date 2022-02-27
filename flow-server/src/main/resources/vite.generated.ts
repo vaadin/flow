@@ -391,8 +391,8 @@ export const vaadinConfig: UserConfigFn = (env) => {
           }
         }
       },
-      {
-        name: 'vaadin:inject-scripts-to-web-component-html',
+      hasExportedWebComponents && {
+        name: 'vaadin:inject-entrypoints-to-web-component-html',
         transformIndexHtml: {
           enforce: 'pre',
           transform(_html, { path, server }) {
@@ -400,21 +400,14 @@ export const vaadinConfig: UserConfigFn = (env) => {
               return;
             }
 
-            if (devMode) {
-              const basePath = server?.config.base ?? '';
-              return [
-                {
-                  tag: 'script',
-                  attrs: { type: 'module', src: `${basePath}generated/vaadin-web-component.ts` },
-                  injectTo: 'head'
-                }
-              ]
-            }
+            const basePath = devMode
+              ? server?.config.base ?? ''
+              : './'
 
             return [
               {
                 tag: 'script',
-                attrs: { type: 'module', src: `./generated/vaadin-web-component.ts` },
+                attrs: { type: 'module', src: `${basePath}generated/vaadin-web-component.ts` },
                 injectTo: 'head'
               }
             ]
@@ -422,7 +415,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
         }
       },
       {
-        name: 'vaadin:inject-scripts-to-index-html',
+        name: 'vaadin:inject-entrypoints-to-index-html',
         transformIndexHtml: {
           enforce: 'pre',
           transform(_html, { path, server }) {

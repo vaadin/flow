@@ -38,7 +38,7 @@ public class TaskGenerateWebComponentBootstrap
     private final File generatedImports;
 
     /**
-     * Create a task to generate <code>vaadin-web-component.js</code> if
+     * Create a task to generate <code>vaadin-web-component.ts</code> if
      * necessary.
      *
      * @param frontendDirectory
@@ -46,7 +46,7 @@ public class TaskGenerateWebComponentBootstrap
      *            there.
      * @param generatedImports
      *            the flow generated imports file to include in the
-     *            <code>vaadin-web-component.js</code>
+     *            <code>vaadin-web-component.ts</code>
      */
     TaskGenerateWebComponentBootstrap(File frontendDirectory,
             File generatedImports) {
