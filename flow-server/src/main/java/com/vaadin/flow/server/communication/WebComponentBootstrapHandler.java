@@ -272,7 +272,6 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         String serviceUrl = getServiceUrl(request, response);
 
         Document document = getPageBuilder().getBootstrapPage(context);
-
         writeBootstrapPage(response, document.head(), serviceUrl);
         return true;
     }
