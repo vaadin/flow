@@ -433,6 +433,9 @@ public class TaskRunNpmInstall implements FallibleCommand {
                         .getJsonFileContent(
                                 new File(packageFolder, "package.json"));
                 if (!containsPostinstallScript(packageJson)) {
+                    logger.debug(
+                            "Skipping postinstall for '{}' as no postinstall script was found in the package.json",
+                            postinstallPackage);
                     continue;
                 }
             } catch (IOException ioe) {
