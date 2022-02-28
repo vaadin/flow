@@ -446,8 +446,8 @@
                 <module>test-spring</module>
                 <module>test-spring-boot-contextpath</module>
 
-                <module>test-ts-services</module>
-                <module>test-ts-services-custom-client</module>
+                <module>test-endpoints</module>
+                <module>test-endpoints-custom-client</module>
                 <module>test-mvc-without-endpoints</module>
 
                 <module>test-spring-security-flow</module>
