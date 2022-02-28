@@ -137,19 +137,29 @@ public class TaskUpdatePackages extends NodeUpdater {
         final JsonObject versionsJson = Json.parse(FileUtils.readFileToString(
                 generatedVersionsFile, StandardCharsets.UTF_8));
 
-        if (versionsJson != null) {
-            JsonObject overridesSection = getOverridesSection(packageJson);
-            final JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
-            for (String dependency : versionsJson.keys()) {
-                if (!overridesSection.hasKey(dependency)
-                        && dependencies.hasKey(dependency)
-                        && !isInternalPseudoDependency(
-                                versionsJson.getString(dependency))) {
-                    overridesSection.put(dependency, "$" + dependency);
-                    versionLockingUpdated = true;
-                }
+        JsonObject overridesSection = getOverridesSection(packageJson);
+        final JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
+        final JsonObject devDependencies = packageJson
+                .getObject(DEV_DEPENDENCIES);
+        for (String dependency : versionsJson.keys()) {
+            if (!overridesSection.hasKey(dependency)
+                    && (dependencies.hasKey(dependency)
+                            || devDependencies.hasKey(dependency))
+                    && !isInternalPseudoDependency(
+                            versionsJson.getString(dependency))) {
+                overridesSection.put(dependency, "$" + dependency);
+                versionLockingUpdated = true;
             }
         }
+        for (String dependency : overridesSection.keys()) {
+            if (!dependencies.hasKey(dependency)
+                    && !devDependencies.hasKey(dependency)
+                    && overridesSection.getString(dependency).startsWith("$")) {
+                overridesSection.remove(dependency);
+                versionLockingUpdated = true;
+            }
+        }
+
         return versionLockingUpdated;
     }
 
@@ -223,19 +233,17 @@ public class TaskUpdatePackages extends NodeUpdater {
          */
         List<String> pinnedPlatformDependencies = new ArrayList<>();
         final JsonObject platformPinnedDependencies = getPlatformPinnedDependencies();
-        if (platformPinnedDependencies != null) {
-            for (String key : platformPinnedDependencies.keys()) {
-                // need to double check that not overriding a scanned
-                // dependency since add-ons should be able to downgrade
-                // version through exclusion
-                if (!applicationDependencies.containsKey(key)
-                        && pinPlatformDependency(packageJson,
-                                platformPinnedDependencies, key)) {
-                    added++;
-                }
-                // make sure platform pinned dependency is not cleared
-                pinnedPlatformDependencies.add(key);
+        for (String key : platformPinnedDependencies.keys()) {
+            // need to double check that not overriding a scanned
+            // dependency since add-ons should be able to downgrade
+            // version through exclusion
+            if (!applicationDependencies.containsKey(key)
+                    && pinPlatformDependency(packageJson,
+                            platformPinnedDependencies, key)) {
+                added++;
             }
+            // make sure platform pinned dependency is not cleared
+            pinnedPlatformDependencies.add(key);
         }
 
         if (added > 0) {
