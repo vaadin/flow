@@ -55,9 +55,9 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <webAppConfig>
+                    <webApp>
                         <contextPath>/custom-context-router</contextPath>
-                    </webAppConfig>
+                    </webApp>
                 </configuration>
             </plugin>
             <plugin>
