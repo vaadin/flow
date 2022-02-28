@@ -424,6 +424,12 @@ public class MockServletServiceSessionSetup {
 
     public VaadinRequest createRequest(MockServletServiceSessionSetup mocks,
             String path, String queryString) {
+        return createRequest(mocks, path, "", queryString);
+    }
+
+    public VaadinRequest createRequest(MockServletServiceSessionSetup mocks,
+            String path, String servletPath, String queryString) {
+
         QueryParameters queryParams = QueryParameters.fromString(queryString);
         Map<String, List<String>> params = queryParams.getParameters();
         HttpServletRequest httpServletRequest = Mockito
@@ -437,7 +443,7 @@ public class MockServletServiceSessionSetup {
 
             @Override
             public String getServletPath() {
-                return "";
+                return servletPath;
             }
 
             @Override
@@ -456,7 +462,7 @@ public class MockServletServiceSessionSetup {
             @Override
             public StringBuffer getRequestURL() {
                 return new StringBuffer(
-                        "http://localhost:8888" + getPathInfo());
+                        "http://localhost:8888" + servletPath + getPathInfo());
             }
         };
     }
