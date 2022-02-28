@@ -188,8 +188,8 @@ public abstract class NodeUpdater implements FallibleCommand {
      * Gets the platform pinned versions that are not overridden by the user in
      * package.json.
      *
-     * @return JsonObject with the dependencies or empty JsonObject if file
-     *         doesn't exist
+     * @return {@code JsonObject} with the dependencies or empty
+     *         {@code JsonObject} if file doesn't exist
      * @throws IOException
      *             when versions file could not be read
      */

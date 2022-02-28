@@ -152,8 +152,8 @@ public class TaskUpdatePackages extends NodeUpdater {
             }
         }
         for (String dependency : overridesSection.keys()) {
-            if (!(dependencies.hasKey(dependency)
-                    || devDependencies.hasKey(dependency))
+            if (!dependencies.hasKey(dependency)
+                    && !devDependencies.hasKey(dependency)
                     && overridesSection.getString(dependency).startsWith("$")) {
                 overridesSection.remove(dependency);
                 versionLockingUpdated = true;
