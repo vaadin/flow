@@ -24,4 +24,18 @@ public class ThemeIT extends ViteDevModeIT {
         Assert.assertEquals("Theme rule should not have been added to <head>",
                 0, styleTagsWithString.size());
     }
+
+    @Test
+    public void cssImportAnnotation() {
+        String bodyBackground = (String) executeScript(
+                "return getComputedStyle(document.body).backgroundColor");
+        Assert.assertEquals("rgb(211, 211, 211)", bodyBackground);
+    }
+
+    @Test
+    public void cssImportAnnotationForComponent() {
+        String fieldBackground = (String) executeScript(
+                "return getComputedStyle(document.querySelector('#themedfield')).backgroundColor");
+        Assert.assertEquals("rgb(173, 216, 230)", fieldBackground);
+    }
 }

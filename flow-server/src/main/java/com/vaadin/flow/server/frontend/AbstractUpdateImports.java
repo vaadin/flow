@@ -71,14 +71,15 @@ abstract class AbstractUpdateImports implements Runnable {
             + " document.head[before ? 'insertBefore' : 'appendChild'](tpl.content, document.head.firstChild);\n"
             + "};";
 
-    private static final String CSS_IMPORT = "import $css_%d from '%s';";
+    private static final String CSS_IMPORT = "import $cssFromFile_%d from '%s';%n" //
+            + "const $css_%d = typeof $cssFromFile_%d  === 'string' ? unsafeCSS($cssFromFile_%d) : $cssFromFile_%d;";
     private static final String CSS_PRE = CSS_IMPORT + "%n" + "addCssBlock(`";
     private static final String CSS_POST = "`);";
     private static final String CSS_BASIC_TPL = CSS_PRE
             + "<style%s>${$css_%d}</style>" + CSS_POST;
-    private static final String THEMABLE_MIXIN_IMPORT = "import { css, registerStyles } from '@vaadin/vaadin-themable-mixin';";
+    private static final String THEMABLE_MIXIN_IMPORT = "import { css, unsafeCSS, registerStyles } from '@vaadin/vaadin-themable-mixin';";
     private static final String REGISTER_STYLES_FOR_TEMPLATE = CSS_IMPORT + "%n"
-            + "registerStyles('%s', css`${$css_%d}`%s);";
+            + "registerStyles('%s', $css_%d%s);";
 
     private static final String IMPORT_TEMPLATE = "import '%s';";
 
@@ -513,13 +514,13 @@ abstract class AbstractUpdateImports implements Runnable {
                     ? cssData.getThemefor()
                     : "";
             addLines(lines, String.format(REGISTER_STYLES_FOR_TEMPLATE, i,
-                    cssImport, themeFor, i, optionals));
+                    cssImport, i, i, i, i, themeFor, i, optionals));
         } else {
             String include = cssData.getInclude() != null
                     ? " include=\"" + cssData.getInclude() + "\""
                     : "";
-            addLines(lines,
-                    String.format(CSS_BASIC_TPL, i, cssImport, include, i));
+            addLines(lines, String.format(CSS_BASIC_TPL, i, cssImport, i, i, i,
+                    i, include, i));
         }
         return found;
     }
