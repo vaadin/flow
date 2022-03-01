@@ -221,13 +221,12 @@ class MiscSingleModuleTest : AbstractGradleTest() {
     fun testSpringProjectProductionMode() {
 
         val springBootVersion = "2.2.4.RELEASE"
-        val springVersion = "17.0-SNAPSHOT"
 
         testProject.buildFile.writeText(
             """
             plugins {
                 id 'org.springframework.boot' version '$springBootVersion'
-                id 'io.spring.dependency-management' version '1.0.9.RELEASE'
+                id 'io.spring.dependency-management' version '1.0.11.RELEASE'
                 id 'java'
                 id("com.vaadin")
             }
@@ -247,7 +246,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             
             dependencies {
                 implementation('com.vaadin:flow:$flowVersion')
-                implementation('com.vaadin:vaadin-spring:$springVersion')
+                implementation('com.vaadin:vaadin-spring:$flowVersion')
                 implementation('org.springframework.boot:spring-boot-starter-web:$springBootVersion')
                 developmentOnly 'org.springframework.boot:spring-boot-devtools'
                 testImplementation('org.springframework.boot:spring-boot-starter-test') {

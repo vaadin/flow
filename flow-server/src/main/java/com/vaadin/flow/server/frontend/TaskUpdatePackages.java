@@ -139,12 +139,9 @@ public class TaskUpdatePackages extends NodeUpdater {
 
         JsonObject overridesSection = getOverridesSection(packageJson);
         final JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
-        final JsonObject devDependencies = packageJson
-                .getObject(DEV_DEPENDENCIES);
         for (String dependency : versionsJson.keys()) {
             if (!overridesSection.hasKey(dependency)
-                    && (dependencies.hasKey(dependency)
-                            || devDependencies.hasKey(dependency))
+                    && dependencies.hasKey(dependency)
                     && !isInternalPseudoDependency(
                             versionsJson.getString(dependency))) {
                 overridesSection.put(dependency, "$" + dependency);
@@ -153,7 +150,6 @@ public class TaskUpdatePackages extends NodeUpdater {
         }
         for (String dependency : overridesSection.keys()) {
             if (!dependencies.hasKey(dependency)
-                    && !devDependencies.hasKey(dependency)
                     && overridesSection.getString(dependency).startsWith("$")) {
                 overridesSection.remove(dependency);
                 versionLockingUpdated = true;
