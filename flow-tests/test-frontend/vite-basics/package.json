@@ -10,13 +10,15 @@
     "@vaadin/flow-frontend": "./target/flow-frontend",
     "@vaadin/router": "1.7.4",
     "@vaadin/vaadin-lumo-styles": "22.0.0-alpha9",
+    "@vaadin/vaadin-text-field": "22.0.0-alpha9",
     "construct-style-sheets-polyfill": "3.0.4",
     "copy-to-clipboard": "^3.3.1",
-    "lit": "2.0.0",
+    "lit": "2.1.4",
     "package-outside-npm": "file:package-outside-npm",
     "package2-outside-npm": "./package2-outside-npm"
   },
   "devDependencies": {
+    "@rollup/plugin-replace": "3.1.0",
     "@vaadin/application-theme-plugin": "./target/plugins/application-theme-plugin",
     "@vaadin/build-status-plugin": "./target/plugins/build-status-plugin",
     "@vaadin/theme-live-reload-plugin": "./target/plugins/theme-live-reload-plugin",
@@ -37,10 +39,12 @@
       "@vaadin/common-frontend": "0.0.17",
       "@vaadin/router": "1.7.4",
       "@vaadin/vaadin-lumo-styles": "22.0.0-alpha9",
+      "@vaadin/vaadin-text-field": "22.0.0-alpha9",
       "construct-style-sheets-polyfill": "3.0.4",
-      "lit": "2.0.0"
+      "lit": "2.1.4"
     },
     "devDependencies": {
+      "@rollup/plugin-replace": "3.1.0",
       "glob": "7.1.6",
       "mkdirp": "1.0.4",
       "rollup-plugin-brotli": "3.1.0",
@@ -51,6 +55,30 @@
       "workbox-core": "6.4.2",
       "workbox-precaching": "6.4.2"
     },
-    "hash": "1fbd15f1fc5035e3b4c52bd7b61168316b3b8ea359e30c73c01d39373962b5da"
+    "hash": "a7eca1c52a990494443679351b12088160f1fb9f37356bbfe42416b751e63a60"
+  },
+  "overrides": {
+    "@polymer/polymer": "$@polymer/polymer",
+    "@testscope/all": "$@testscope/all",
+    "@testscope/button": "$@testscope/button",
+    "@vaadin/bundles": "$@vaadin/bundles",
+    "@vaadin/common-frontend": "$@vaadin/common-frontend",
+    "@vaadin/router": "$@vaadin/router",
+    "@vaadin/vaadin-lumo-styles": "$@vaadin/vaadin-lumo-styles",
+    "construct-style-sheets-polyfill": "$construct-style-sheets-polyfill",
+    "copy-to-clipboard": "$copy-to-clipboard",
+    "lit": "$lit",
+    "package-outside-npm": "$package-outside-npm",
+    "package2-outside-npm": "$package2-outside-npm",
+    "glob": "$glob",
+    "mkdirp": "$mkdirp",
+    "rollup-plugin-brotli": "$rollup-plugin-brotli",
+    "typescript": "$typescript",
+    "vite": "$vite",
+    "vite-plugin-checker": "$vite-plugin-checker",
+    "workbox-build": "$workbox-build",
+    "workbox-core": "$workbox-core",
+    "workbox-precaching": "$workbox-precaching",
+    "@rollup/plugin-replace": "$@rollup/plugin-replace"
   }
 }
