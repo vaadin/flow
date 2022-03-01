@@ -72,14 +72,14 @@ abstract class AbstractUpdateImports implements Runnable {
             + "};";
 
     private static final String CSS_IMPORT = "import $cssFromFile_%d from '%s';%n" //
-            + "const $css_%d = typeof $cssFromFile_%d  === 'string' ? unsafeCSS($cssFromFile_%d) : $cssFromFile_%d;";
+            + "const $css_%1$d = typeof $cssFromFile_%1$d  === 'string' ? unsafeCSS($cssFromFile_%1$d) : $cssFromFile_%1$d;";
     private static final String CSS_PRE = CSS_IMPORT + "%n" + "addCssBlock(`";
     private static final String CSS_POST = "`);";
     private static final String CSS_BASIC_TPL = CSS_PRE
-            + "<style%s>${$css_%d}</style>" + CSS_POST;
+            + "<style%s>${$css_%1$d}</style>" + CSS_POST;
     private static final String THEMABLE_MIXIN_IMPORT = "import { css, unsafeCSS, registerStyles } from '@vaadin/vaadin-themable-mixin';";
     private static final String REGISTER_STYLES_FOR_TEMPLATE = CSS_IMPORT + "%n"
-            + "registerStyles('%s', $css_%d%s);";
+            + "registerStyles('%s', $css_%1$d%s);";
 
     private static final String IMPORT_TEMPLATE = "import '%s';";
 
@@ -514,13 +514,13 @@ abstract class AbstractUpdateImports implements Runnable {
                     ? cssData.getThemefor()
                     : "";
             addLines(lines, String.format(REGISTER_STYLES_FOR_TEMPLATE, i,
-                    cssImport, i, i, i, i, themeFor, i, optionals));
+                    cssImport, themeFor, optionals));
         } else {
             String include = cssData.getInclude() != null
                     ? " include=\"" + cssData.getInclude() + "\""
                     : "";
-            addLines(lines, String.format(CSS_BASIC_TPL, i, cssImport, i, i, i,
-                    i, include, i));
+            addLines(lines,
+                    String.format(CSS_BASIC_TPL, i, cssImport, include));
         }
         return found;
     }
