@@ -10,8 +10,8 @@ import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Paragraph;
-import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.uitest.ui.dependencies.ThemableTextField;
 
 @Route("")
 @JsModule("./jsonloader.js")
@@ -77,8 +77,7 @@ public class MainView extends Div {
         add(outsideStatus);
 
         add(new HtmlComponent("testscope-button"));
-        TextField textField = new TextField(
-                "This whole field is themed lightblue using @CssImport");
+        ThemableTextField textField = new ThemableTextField();
         textField.setId("themedfield");
         add(textField);
     }

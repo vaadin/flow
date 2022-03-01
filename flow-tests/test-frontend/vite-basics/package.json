@@ -7,17 +7,10 @@
     "@testscope/button": "../vite-test-assets/packages/@testscope/button",
     "@vaadin/bundles": "../vite-test-assets/packages/@vaadin/bundles",
     "@vaadin/common-frontend": "0.0.17",
-    "@vaadin/email-field": "23.0.0",
     "@vaadin/flow-frontend": "./target/flow-frontend",
-    "@vaadin/integer-field": "23.0.0",
-    "@vaadin/number-field": "23.0.0",
-    "@vaadin/password-field": "23.0.0",
-    "@vaadin/polymer-legacy-adapter": "23.0.0",
     "@vaadin/router": "1.7.4",
-    "@vaadin/text-area": "23.0.0",
-    "@vaadin/text-field": "23.0.0",
     "@vaadin/vaadin-lumo-styles": "22.0.0-alpha9",
-    "@vaadin/vaadin-text-field": "23.0.0",
+    "@vaadin/vaadin-text-field": "22.0.0-alpha9",
     "construct-style-sheets-polyfill": "3.0.4",
     "copy-to-clipboard": "^3.3.1",
     "lit": "2.1.4",
@@ -44,16 +37,9 @@
     "dependencies": {
       "@polymer/polymer": "3.4.1",
       "@vaadin/common-frontend": "0.0.17",
-      "@vaadin/email-field": "23.0.0",
-      "@vaadin/integer-field": "23.0.0",
-      "@vaadin/number-field": "23.0.0",
-      "@vaadin/password-field": "23.0.0",
-      "@vaadin/polymer-legacy-adapter": "23.0.0",
       "@vaadin/router": "1.7.4",
-      "@vaadin/text-area": "23.0.0",
-      "@vaadin/text-field": "23.0.0",
       "@vaadin/vaadin-lumo-styles": "22.0.0-alpha9",
-      "@vaadin/vaadin-text-field": "23.0.0",
+      "@vaadin/vaadin-text-field": "22.0.0-alpha9",
       "construct-style-sheets-polyfill": "3.0.4",
       "lit": "2.1.4"
     },
@@ -69,7 +55,7 @@
       "workbox-core": "6.4.2",
       "workbox-precaching": "6.4.2"
     },
-    "hash": "67703421159c666486fd6c0ce2938d5f06f34d171161729a93cb25aa57655f4b"
+    "hash": "a7eca1c52a990494443679351b12088160f1fb9f37356bbfe42416b751e63a60"
   },
   "overrides": {
     "@polymer/polymer": "$@polymer/polymer",
