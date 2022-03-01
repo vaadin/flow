@@ -12,6 +12,7 @@ import java.util.zip.ZipOutputStream;
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
+import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -89,6 +90,15 @@ public class NodeInstallerTest {
             }
         }
 
+        // add a file to node/node_modules_npm that should be cleaned out
+        File nodeDirectory = new File(targetDir, "node");
+        File nodeModulesDirectory = new File(nodeDirectory, "node_modules");
+        File npmDirectory = new File(nodeModulesDirectory, "npm");
+        File garbage = new File(npmDirectory, "garbage");
+        FileUtils.forceMkdir(npmDirectory);
+        Assert.assertTrue("garbage file should be created",
+                garbage.createNewFile());
+
         NodeInstaller nodeInstaller = new NodeInstaller(targetDir,
                 Collections.emptyList())
                         .setNodeVersion(FrontendTools.DEFAULT_NODE_VERSION)
@@ -105,5 +115,7 @@ public class NodeInstallerTest {
                 new File(targetDir, "node/" + nodeExec).exists());
         Assert.assertTrue("npm should have been copied to node_modules",
                 new File(targetDir, "node/node_modules/npm/bin/npm").exists());
+        Assert.assertFalse("old npm files should have been removed",
+                garbage.exists());
     }
 }

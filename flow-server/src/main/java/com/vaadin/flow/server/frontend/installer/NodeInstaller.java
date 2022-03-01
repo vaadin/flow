@@ -316,6 +316,13 @@ public class NodeInstaller {
         File nodeModulesDirectory = new File(destinationDirectory,
                 FrontendUtils.NODE_MODULES);
         File npmDirectory = new File(nodeModulesDirectory, "npm");
+
+        // delete old node_modules directory to not end up with corrupted
+        // combination of two npm versions in node_modules/npm during upgrade
+        if (nodeModulesDirectory.exists()) {
+            FileUtils.deleteDirectory(nodeModulesDirectory);
+        }
+
         FileUtils.copyDirectory(tmpNodeModulesDir, nodeModulesDirectory);
         // create a copy of the npm scripts next to the node executable
         for (String script : Arrays.asList("npm", "npm.cmd")) {
@@ -357,6 +364,12 @@ public class NodeInstaller {
                             + FrontendUtils.NODE_MODULES);
             File nodeModulesDirectory = new File(destinationDirectory,
                     FrontendUtils.NODE_MODULES);
+            // delete old node_modules directory to not end up with corrupted
+            // combination of two npm versions in node_modules/npm during
+            // upgrade
+            if (nodeModulesDirectory.exists()) {
+                FileUtils.deleteDirectory(nodeModulesDirectory);
+            }
             FileUtils.copyDirectory(tmpNodeModulesDir, nodeModulesDirectory);
         }
         deleteTempDirectory(data.getTmpDirectory());
