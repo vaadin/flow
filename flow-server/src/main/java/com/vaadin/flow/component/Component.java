@@ -676,4 +676,11 @@ public abstract class Component
         }
         return locale;
     }
+
+    /**
+     * Scrolls the current component into the visible area of the browser window.
+     */
+    public void scrollIntoView() {
+        getElement().callJsFunction("scrollIntoView");
+    }
 }
