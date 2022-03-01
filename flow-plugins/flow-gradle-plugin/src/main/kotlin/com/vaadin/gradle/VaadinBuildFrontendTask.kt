@@ -68,8 +68,6 @@ public open class VaadinBuildFrontendTask : DefaultTask() {
         val tokenFile = BuildFrontendUtil.getTokenFile(adapter)
         check(tokenFile.exists()) { "token file $tokenFile doesn't exist!" }
 
-        BuildFrontendUtil.updateBuildFile(adapter)
-
         BuildFrontendUtil.runNodeUpdater(adapter)
 
         if (adapter.generateBundle()) {
@@ -77,5 +75,7 @@ public open class VaadinBuildFrontendTask : DefaultTask() {
         } else {
             logger.info("Not running webpack since generateBundle is false")
         }
+
+        BuildFrontendUtil.updateBuildFile(adapter)
     }
 }
