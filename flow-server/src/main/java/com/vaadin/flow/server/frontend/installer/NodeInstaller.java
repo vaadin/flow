@@ -365,7 +365,8 @@ public class NodeInstaller {
             File nodeModulesDirectory = new File(destinationDirectory,
                     FrontendUtils.NODE_MODULES);
             // delete old node_modules directory to not end up with corrupted
-            // combination of two npm versions in node_modules/npm during upgrade
+            // combination of two npm versions in node_modules/npm during
+            // upgrade
             if (nodeModulesDirectory.exists()) {
                 FileUtils.deleteDirectory(nodeModulesDirectory);
             }
