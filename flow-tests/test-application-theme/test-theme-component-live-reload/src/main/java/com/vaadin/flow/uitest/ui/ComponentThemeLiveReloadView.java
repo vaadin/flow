@@ -23,6 +23,7 @@ import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.flow.uitest.ui.dependencies.ThemableTextField;
 
 @Route(value = "com.vaadin.flow.uitest.ui.ComponentThemeLiveReloadView", layout = ViewTestLayout.class)
 public class ComponentThemeLiveReloadView extends Div {
@@ -35,7 +36,7 @@ public class ComponentThemeLiveReloadView extends Div {
     private final Span attachIdLabel = new Span();
 
     public ComponentThemeLiveReloadView() {
-        TestThemedTextField testThemedTextField = new TestThemedTextField();
+        ThemableTextField testThemedTextField = new ThemableTextField();
         testThemedTextField.withId(THEMED_COMPONENT_ID);
         add(testThemedTextField);
 

@@ -1,10 +1,9 @@
 package com.vaadin.viteapp.views.empty;
 
 import com.vaadin.experimental.FeatureFlags;
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
@@ -12,12 +11,15 @@ import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.uitest.ui.dependencies.ThemableTextField;
 
 @Route("")
 @JsModule("./jsonloader.js")
 @JsModule("package-outside-npm/index.js")
 @JsModule("package2-outside-npm/index.js")
 @JsModule("./testscopebuttonloader.js")
+@CssImport(value = "./cssimport-textfield.css", themeFor = "vaadin-text-field")
+@CssImport(value = "./cssimport.css")
 public class MainView extends Div {
 
     public static final String LOAD_AND_SHOW_JSON = "loadAndShowJson";
@@ -75,6 +77,9 @@ public class MainView extends Div {
         add(outsideStatus);
 
         add(new HtmlComponent("testscope-button"));
+        ThemableTextField textField = new ThemableTextField();
+        textField.setId("themedfield");
+        add(textField);
     }
 
 }
