@@ -13,22 +13,20 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui;
+package com.vaadin.flow.uitest.ui.dependencies;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 
-import com.vaadin.flow.uitest.ui.dependencies.TestVersion;
-
 /**
- * Custom vaadin text field for testing component theming live reload.
+ * Custom vaadin text field for testing component theming.
  */
 @JsModule("@vaadin/vaadin-text-field/vaadin-text-field.js")
 @Tag("vaadin-text-field")
 @NpmPackage(value = "@vaadin/vaadin-text-field", version = TestVersion.VAADIN)
-public class TestThemedTextField extends Component {
+public class ThemableTextField extends Component {
 
     /**
      * Set the component id.
