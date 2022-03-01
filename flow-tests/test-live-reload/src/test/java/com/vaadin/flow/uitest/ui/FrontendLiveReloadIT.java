@@ -15,19 +15,17 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import net.jcip.annotations.NotThreadSafe;
+import com.vaadin.testbench.TestBenchElement;
+
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.testcategory.SlowTests;
-import com.vaadin.testbench.TestBenchElement;
+import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
-@Category(SlowTests.class)
 public class FrontendLiveReloadIT extends AbstractLiveReloadIT {
 
     @After
@@ -81,10 +79,12 @@ public class FrontendLiveReloadIT extends AbstractLiveReloadIT {
         insertWebpackError.click();
 
         // then: an error box is shown
+        testBench().disableWaitForVaadin();
         waitForElementPresent(By.className("v-system-error"));
 
         // when: the error is corrected
         resetFrontend();
+        testBench().enableWaitForVaadin();
 
         // then: the error box is not shown and the view is reloaded
         waitForElementNotPresent(By.className("v-system-error"));
