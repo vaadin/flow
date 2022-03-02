@@ -452,9 +452,11 @@
 
                 <module>test-spring-security-flow</module>
                 <module>test-spring-security-flow-contextpath</module>
+                <module>test-spring-security-flow-urlmapping</module>
                 <module>test-spring-security-fusion</module>
                 <module>test-spring-security-fusion-jwt</module>
                 <module>test-spring-security-fusion-contextpath</module>
+                <module>test-spring-security-fusion-urlmapping</module>
 
                 <module>test-spring-boot-only-prepare</module>
                 <module>test-spring-white-list</module>

@@ -96,24 +96,45 @@ public class RequestUtilTest {
     public void testRootRequest_init_customMapping() {
         Mockito.when(vaadinConfigurationProperties.getUrlMapping())
                 .thenReturn("/bar/*");
-        Assert.assertTrue(requestUtil.isFrameworkInternalRequest(
-                createRequest("/bar", RequestType.INIT)));
+        MockHttpServletRequest request = createRequest("/", RequestType.INIT);
+        request.setServletPath("/bar");
+        Assert.assertTrue(requestUtil.isFrameworkInternalRequest(request));
+
+        request = createRequest("", RequestType.INIT);
+        request.setServletPath("/bar");
+        Assert.assertTrue(requestUtil.isFrameworkInternalRequest(request));
+
+        request = createRequest(null, RequestType.INIT);
+        request.setServletPath("/bar");
+        Assert.assertTrue(requestUtil.isFrameworkInternalRequest(request));
+
     }
 
     @Test
     public void testRootRequest_other_customMapping() {
         Mockito.when(vaadinConfigurationProperties.getUrlMapping())
                 .thenReturn("/bar/*");
-        Assert.assertFalse(requestUtil
-                .isFrameworkInternalRequest(createRequest("/bar", null)));
+        MockHttpServletRequest request = createRequest("/", null);
+        request.setServletPath("/bar");
+        Assert.assertFalse(requestUtil.isFrameworkInternalRequest(request));
+
+        request = createRequest("", null);
+        request.setServletPath("/bar");
+        Assert.assertFalse(requestUtil.isFrameworkInternalRequest(request));
+
+        request = createRequest(null, null);
+        request.setServletPath("/bar");
+        Assert.assertFalse(requestUtil.isFrameworkInternalRequest(request));
     }
 
     @Test
     public void testSubRequest_init_customMapping() {
         Mockito.when(vaadinConfigurationProperties.getUrlMapping())
                 .thenReturn("/bar/*");
-        Assert.assertFalse(requestUtil.isFrameworkInternalRequest(
-                createRequest("/bar/foo", RequestType.INIT)));
+        MockHttpServletRequest request = createRequest("/foo",
+                RequestType.INIT);
+        request.setServletPath("/bar");
+        Assert.assertFalse(requestUtil.isFrameworkInternalRequest(request));
     }
 
     @Test
@@ -128,8 +149,9 @@ public class RequestUtilTest {
     public void testSubRequest_other_customMapping() {
         Mockito.when(vaadinConfigurationProperties.getUrlMapping())
                 .thenReturn("/bar/*");
-        Assert.assertFalse(requestUtil
-                .isFrameworkInternalRequest(createRequest("/bar/foo", null)));
+        MockHttpServletRequest request = createRequest("/foo", null);
+        request.setServletPath("/bar");
+        Assert.assertFalse(requestUtil.isFrameworkInternalRequest(request));
     }
 
     @Test
@@ -215,6 +237,14 @@ public class RequestUtilTest {
         request.setServletPath("/foo/");
         Assert.assertTrue(requestUtil.isAnonymousRoute(request));
 
+        request = createRequest("");
+        request.setServletPath("/foo/");
+        Assert.assertTrue(requestUtil.isAnonymousRoute(request));
+
+        request = createRequest("/");
+        request.setServletPath("/foo/");
+        Assert.assertTrue(requestUtil.isAnonymousRoute(request));
+
         request = createRequest("other");
         request.setServletPath("/foo/");
         Assert.assertTrue(requestUtil.isAnonymousRoute(request));
@@ -262,6 +292,55 @@ public class RequestUtilTest {
         request = createRequest("other");
         request.setServletPath("/");
         Assert.assertFalse(requestUtil.isAnonymousRoute(request));
+    }
+
+    @Test
+    public void testApplyUrlMapping_fooMappedServlet_prependMapping() {
+        Mockito.when(vaadinConfigurationProperties.getUrlMapping())
+                .thenReturn("/foo/*");
+        Assert.assertEquals("/foo/bar", requestUtil.applyUrlMapping("bar"));
+        Assert.assertEquals("/foo/bar", requestUtil.applyUrlMapping("/bar"));
+        Assert.assertEquals("/foo/bar/", requestUtil.applyUrlMapping("bar/"));
+        Assert.assertEquals("/foo/bar/", requestUtil.applyUrlMapping("/bar/"));
+        Assert.assertEquals("/foo/bar/baz",
+                requestUtil.applyUrlMapping("bar/baz"));
+        Assert.assertEquals("/foo/bar/baz",
+                requestUtil.applyUrlMapping("/bar/baz"));
+        Assert.assertEquals("/foo/", requestUtil.applyUrlMapping(""));
+        Assert.assertEquals("/foo/", requestUtil.applyUrlMapping("/"));
+        Assert.assertEquals("/foo/", requestUtil.applyUrlMapping(null));
+    }
+
+    @Test
+    public void testApplyUrlMapping_rootMappedServlet_prependMapping() {
+        Mockito.when(vaadinConfigurationProperties.getUrlMapping())
+                .thenReturn("/*");
+        Assert.assertEquals("/bar", requestUtil.applyUrlMapping("bar"));
+        Assert.assertEquals("/bar", requestUtil.applyUrlMapping("/bar"));
+        Assert.assertEquals("/bar/", requestUtil.applyUrlMapping("bar/"));
+        Assert.assertEquals("/bar/", requestUtil.applyUrlMapping("/bar/"));
+        Assert.assertEquals("/bar/baz", requestUtil.applyUrlMapping("bar/baz"));
+        Assert.assertEquals("/bar/baz",
+                requestUtil.applyUrlMapping("/bar/baz"));
+        Assert.assertEquals("/", requestUtil.applyUrlMapping(""));
+        Assert.assertEquals("/", requestUtil.applyUrlMapping("/"));
+        Assert.assertEquals("/", requestUtil.applyUrlMapping(null));
+    }
+
+    @Test
+    public void testApplyUrlMapping_nullMappedServlet_prependMapping() {
+        Mockito.when(vaadinConfigurationProperties.getUrlMapping())
+                .thenReturn(null);
+        Assert.assertEquals("/bar", requestUtil.applyUrlMapping("bar"));
+        Assert.assertEquals("/bar", requestUtil.applyUrlMapping("/bar"));
+        Assert.assertEquals("/bar/", requestUtil.applyUrlMapping("bar/"));
+        Assert.assertEquals("/bar/", requestUtil.applyUrlMapping("/bar/"));
+        Assert.assertEquals("/bar/baz", requestUtil.applyUrlMapping("bar/baz"));
+        Assert.assertEquals("/bar/baz",
+                requestUtil.applyUrlMapping("/bar/baz"));
+        Assert.assertEquals("/", requestUtil.applyUrlMapping(""));
+        Assert.assertEquals("/", requestUtil.applyUrlMapping("/"));
+        Assert.assertEquals("/", requestUtil.applyUrlMapping(null));
     }
 
     private SpringServlet setupMockServlet() {
