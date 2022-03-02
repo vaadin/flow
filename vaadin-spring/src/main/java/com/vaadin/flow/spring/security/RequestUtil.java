@@ -117,7 +117,8 @@ public class RequestUtil {
      */
     public boolean isAnonymousRoute(HttpServletRequest request) {
         String vaadinMapping = configurationProperties.getUrlMapping();
-        String requestedPath = getRequestPathInsideContext(request);
+        String requestedPath = HandlerHelper
+                .getRequestPathInsideContext(request);
         Optional<String> maybePath = HandlerHelper
                 .getPathIfInsideServlet(vaadinMapping, requestedPath);
         if (!maybePath.isPresent()) {
@@ -159,22 +160,50 @@ public class RequestUtil {
         return result;
     }
 
-    private Logger getLogger() {
-        return LoggerFactory.getLogger(getClass());
+    String getUrlMapping() {
+        return configurationProperties.getUrlMapping();
     }
 
-    private static String getRequestPathInsideContext(
-            HttpServletRequest request) {
-        String servletPath = request.getServletPath();
-        String pathInfo = request.getPathInfo();
-        String url = "";
-        if (servletPath != null) {
-            url += servletPath;
+    /**
+     * Prepends to the given {@code path} with the configured url mapping.
+     *
+     * A {@literal null} path is treated as empty string; the same applies for
+     * url mapping.
+     *
+     * @return the path with prepended url mapping.
+     * @see VaadinConfigurationProperties#getUrlMapping()
+     */
+    String applyUrlMapping(String path) {
+        return applyUrlMapping(configurationProperties.getUrlMapping(), path);
+    }
+
+    /**
+     * Prepends to the given {@code path} with the servlet path prefix from
+     * input url mapping.
+     *
+     * A {@literal null} path is treated as empty string; the same applies for
+     * url mapping.
+     *
+     * @return the path with prepended url mapping.
+     * @see VaadinConfigurationProperties#getUrlMapping()
+     */
+    static String applyUrlMapping(String urlMapping, String path) {
+        if (urlMapping == null) {
+            urlMapping = "";
+        } else {
+            // remove potential / or /* at the end of the mapping
+            urlMapping = urlMapping.replaceFirst("/\\*?$", "");
         }
-        if (pathInfo != null) {
-            url += pathInfo;
+        if (path == null) {
+            path = "";
+        } else if (path.startsWith("/")) {
+            path = path.substring(1);
         }
-        return url;
+        return urlMapping + "/" + path;
+    }
+
+    private Logger getLogger() {
+        return LoggerFactory.getLogger(getClass());
     }
 
 }
