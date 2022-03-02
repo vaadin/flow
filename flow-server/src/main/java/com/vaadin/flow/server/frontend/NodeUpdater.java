@@ -400,7 +400,7 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         defaults.put("typescript", "4.5.3");
 
-        final String WORKBOX_VERSION = "6.4.2";
+        final String WORKBOX_VERSION = "6.5.0";
 
         if (featureFlags.isEnabled(FeatureFlags.VITE)) {
             defaults.put("vite", "v2.8.2");
