@@ -2703,6 +2703,12 @@ public interface Key extends Serializable {
     Key SUSPEND = Key.of("Suspend");
 
     /**
+     * This value is reserved for corner cases of no key value present in event
+     * e.g. when browser autosuggest is used.
+     */
+    Key NONE = Key.of("None");
+
+    /**
      * Returns a {@link Key} instance for a printable representation of the key.
      * <p>
      * The optional {@code additionalKeys} parameter can be used to create an
@@ -2719,9 +2725,8 @@ public interface Key extends Serializable {
      * @return the {@link Key} instance
      */
     static Key of(String key, String... additionalKeys) {
-        Objects.requireNonNull(key);
-        if ("".equals(key)) {
-            throw new IllegalArgumentException("'key' cannot be empty");
+        if (key == null || "".equals(key)) {
+            return NONE;
         }
         List<String> keys = new ArrayList<>(additionalKeys.length + 1);
         keys.add(key);
