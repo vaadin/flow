@@ -435,8 +435,10 @@ public class FrontendUtils {
             String path = environment.get(pathEnvVar);
             if (path == null || path.isEmpty()) {
                 path = commandPath;
-            } else if (!path.contains(commandPath)) {
-                path += File.pathSeparatorChar + commandPath;
+            } else {
+                // Ensure that a custom node is first in the path so it is used
+                // e.g. for postinstall scripts that run "node something"
+                path = commandPath + File.pathSeparatorChar + path;
             }
             environment.put(pathEnvVar, path);
         }
