@@ -104,15 +104,16 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         DeploymentConfiguration config = session.getConfiguration();
         IndexHtmlResponse indexHtmlResponse;
 
+        VaadinService service = request.getService();
         Document indexDocument = config.isProductionMode()
-                ? getCachedIndexHtmlDocument(request.getService())
-                : getIndexHtmlDocument(request.getService());
+                ? getCachedIndexHtmlDocument(service)
+                : getIndexHtmlDocument(service);
 
         prependBaseHref(request, indexDocument);
 
         JsonObject initialJson = Json.createObject();
 
-        if (request.getService().getBootstrapInitialPredicate()
+        if (service.getBootstrapInitialPredicate()
                 .includeInitialUidl(request)) {
             includeInitialUidl(initialJson, session, request, response);
 
@@ -143,7 +144,10 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         }
 
         // modify the page based on the @PWA annotation
-        setupPwa(indexDocument, session.getService());
+        if (!FeatureFlags.get(service.getContext())
+                .isEnabled(FeatureFlags.VITE)) {
+            setupPwa(indexDocument, session.getService());
+        }
 
         // modify the page based on the @Meta, @ViewPort, @BodySize and @Inline
         // annotations
@@ -155,7 +159,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         storeAppShellTitleToUI(indexDocument);
 
         // modify the page based on registered IndexHtmlRequestListener:s
-        request.getService().modifyIndexHtmlResponse(indexHtmlResponse);
+        service.modifyIndexHtmlResponse(indexHtmlResponse);
 
         if (config.isDevModeGizmoEnabled()) {
             addDevmodeGizmo(indexDocument, config, session, request);
