@@ -54,11 +54,31 @@ public abstract class AbstractIT extends ChromeBrowserTest {
         });
     }
 
+    /**
+     * Base path for Vaadin Servlet URL mapping, as defined in
+     * {@literal vaadin.urlMapping} configuration property.
+     *
+     * For example, for {@code vaadin.urlMapping=/vaadin/*} return value should
+     * be {@code /vaadin}, without ending slash.
+     *
+     * Default value is {@literal blank}, relative to the default {@code /*}
+     * mapping.
+     *
+     * @return base path for Vaadin Servlet URL mapping.
+     */
+    protected String getUrlMappingBasePath() {
+        return "";
+    }
+
     protected void open(String path) {
         open(path, getDriver());
     }
 
     protected void open(String path, WebDriver driver) {
+        driver.get(getRootURL() + getUrlMappingBasePath() + "/" + path);
+    }
+
+    protected void openResource(String path) {
         driver.get(getRootURL() + "/" + path);
     }
 
@@ -115,6 +135,11 @@ public abstract class AbstractIT extends ChromeBrowserTest {
     }
 
     protected void assertPathShown(String path) {
+        waitUntil(driver -> driver.getCurrentUrl()
+                .equals(getRootURL() + getUrlMappingBasePath() + "/" + path));
+    }
+
+    protected void assertResourceShown(String path) {
         waitUntil(driver -> driver.getCurrentUrl()
                 .equals(getRootURL() + "/" + path));
     }

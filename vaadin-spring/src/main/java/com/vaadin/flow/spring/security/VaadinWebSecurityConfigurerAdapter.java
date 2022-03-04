@@ -19,9 +19,14 @@ import javax.crypto.SecretKey;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -54,6 +59,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.auth.ViewAccessChecker;
+import com.vaadin.flow.spring.VaadinConfigurationProperties;
 import com.vaadin.flow.spring.security.stateless.VaadinStatelessSecurityConfigurer;
 
 /**
@@ -99,7 +105,8 @@ public abstract class VaadinWebSecurityConfigurerAdapter
      */
     @Override
     public void configure(WebSecurity web) throws Exception {
-        web.ignoring().requestMatchers(getDefaultWebSecurityIgnoreMatcher());
+        web.ignoring().requestMatchers(getDefaultWebSecurityIgnoreMatcher(
+                requestUtil.getUrlMapping()));
     }
 
     @Override
@@ -141,8 +148,8 @@ public abstract class VaadinWebSecurityConfigurerAdapter
                 .permitAll();
         // Public routes are OK to access
         urlRegistry.requestMatchers(requestUtil::isAnonymousRoute).permitAll();
-        urlRegistry.requestMatchers(getDefaultHttpSecurityPermitMatcher())
-                .permitAll();
+        urlRegistry.requestMatchers(getDefaultHttpSecurityPermitMatcher(
+                requestUtil.getUrlMapping())).permitAll();
 
         // all other requests require authentication
         urlRegistry.anyRequest().authenticated();
@@ -154,25 +161,72 @@ public abstract class VaadinWebSecurityConfigurerAdapter
     /**
      * Matcher for framework internal requests.
      *
+     * Assumes Vaadin servlet to be mapped on root path ({@literal /*}).
+     * 
      * @return default {@link HttpSecurity} bypass matcher
      */
     public static RequestMatcher getDefaultHttpSecurityPermitMatcher() {
-        Stream<String> flowProvided = Stream
-                .of(HandlerHelper.getPublicResourcesRequiringSecurityContext());
-        Stream<String> other = Stream.of("/vaadinServlet/**");
+        return getDefaultHttpSecurityPermitMatcher("/*");
+    }
 
-        return new OrRequestMatcher(Stream.concat(flowProvided, other)
+    /**
+     * Matcher for framework internal requests, with Vaadin servlet mapped on
+     * the given path.
+     *
+     * @param urlMapping
+     *            url mapping for the Vaadin servlet.
+     * @return default {@link HttpSecurity} bypass matcher
+     */
+    public static RequestMatcher getDefaultHttpSecurityPermitMatcher(
+            String urlMapping) {
+        Objects.requireNonNull(urlMapping,
+                "Vaadin servlet url mapping is required");
+        Stream.Builder<String> paths = Stream.builder();
+        Stream.of(HandlerHelper.getPublicResourcesRequiringSecurityContext())
+                .map(path -> RequestUtil.applyUrlMapping(urlMapping, path))
+                .forEach(paths::add);
+
+        String mappedRoot = RequestUtil.applyUrlMapping(urlMapping, "");
+        if ("/".equals(mappedRoot)) {
+            // Permit should be needed only on /vaadinServlet/, not on sub paths
+            // The '**' suffix is left for backward compatibility.
+            // Should we remove it?
+            paths.add("/vaadinServlet/**");
+        } else {
+            // We need only to permit root of the mapping because other Vaadin
+            // public urls and resources are already permitted
+            paths.add(mappedRoot);
+        }
+        return new OrRequestMatcher(paths.build()
                 .map(AntPathRequestMatcher::new).collect(Collectors.toList()));
     }
 
     /**
      * Matcher for Vaadin static (public) resources.
      *
+     * Assumes Vaadin servlet to be mapped on root path ({@literal /*}).
+     * 
      * @return default {@link WebSecurity} ignore matcher
      */
     public static RequestMatcher getDefaultWebSecurityIgnoreMatcher() {
+        return getDefaultWebSecurityIgnoreMatcher("/*");
+    }
+
+    /**
+     * Matcher for Vaadin static (public) resources, with Vaadin servlet mapped
+     * on the given path.
+     *
+     * Assumes Vaadin servlet to be mapped on root path ({@literal /*}).
+     *
+     * @return default {@link WebSecurity} ignore matcher
+     */
+    public static RequestMatcher getDefaultWebSecurityIgnoreMatcher(
+            String urlMapping) {
+        Objects.requireNonNull(urlMapping,
+                "Vaadin servlet url mapping is required");
         return new OrRequestMatcher(Stream
                 .of(HandlerHelper.getPublicResources())
+                .map(path -> RequestUtil.applyUrlMapping(urlMapping, path))
                 .map(AntPathRequestMatcher::new).collect(Collectors.toList()));
     }
 
@@ -213,6 +267,7 @@ public abstract class VaadinWebSecurityConfigurerAdapter
      */
     protected void setLoginView(HttpSecurity http, String fusionLoginViewPath,
             String logoutUrl) throws Exception {
+        fusionLoginViewPath = applyUrlMapping(fusionLoginViewPath);
         FormLoginConfigurer<HttpSecurity> formLogin = http.formLogin();
         formLogin.loginPage(fusionLoginViewPath).permitAll();
         formLogin.successHandler(
@@ -268,6 +323,7 @@ public abstract class VaadinWebSecurityConfigurerAdapter
         if (!loginPath.startsWith("/")) {
             loginPath = "/" + loginPath;
         }
+        loginPath = applyUrlMapping(loginPath);
 
         // Actually set it up
         FormLoginConfigurer<HttpSecurity> formLogin = http.formLogin();
@@ -325,9 +381,25 @@ public abstract class VaadinWebSecurityConfigurerAdapter
                 .and().issuer(issuer).expiresIn(expiresIn);
     }
 
+    /**
+     * Helper method to prepend configured servlet path to the given path.
+     *
+     * Path will always be considered as relative to servlet path, even if it
+     * starts with a slash character.
+     * 
+     * @param path
+     *            path to be prefixed with servlet path
+     * @return the input path prepended by servlet path.
+     */
+    protected String applyUrlMapping(String path) {
+        return requestUtil.applyUrlMapping(path);
+    }
+
     private VaadinSavedRequestAwareAuthenticationSuccessHandler getVaadinSavedRequestAwareAuthenticationSuccessHandler(
             HttpSecurity http) {
         VaadinSavedRequestAwareAuthenticationSuccessHandler vaadinSavedRequestAwareAuthenticationSuccessHandler = new VaadinSavedRequestAwareAuthenticationSuccessHandler();
+        vaadinSavedRequestAwareAuthenticationSuccessHandler
+                .setDefaultTargetUrl(applyUrlMapping(""));
         RequestCache requestCache = http.getSharedObject(RequestCache.class);
         if (requestCache != null) {
             vaadinSavedRequestAwareAuthenticationSuccessHandler
