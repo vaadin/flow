@@ -19,10 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Optional;
-import java.util.Set;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.DataNode;
@@ -69,30 +66,6 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
     private static final String SCRIPT = "script";
     private static final String SCRIPT_INITIAL = "initial";
-    private static final Set<String> nonHtmlFetchDests;
-    static {
-        // Full list at
-        // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-Fetch-Dest
-        Set<String> dests = new HashSet<>();
-        dests.add("audio");
-        dests.add("audioworklet");
-        dests.add("font");
-        dests.add("image");
-        dests.add("manifest");
-        dests.add("paintworklet");
-        dests.add("script"); // NOSONAR
-        dests.add("serviceworker");
-        dests.add("sharedworker");
-        dests.add("style");
-        dests.add("track");
-        dests.add("video");
-        dests.add("worker");
-        dests.add("xslt");
-
-        // "empty" requests are used when service worker caches / so they need
-        // to be allowed
-        nonHtmlFetchDests = Collections.unmodifiableSet(dests);
-    }
 
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
@@ -254,35 +227,11 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
     @Override
     protected boolean canHandleRequest(VaadinRequest request) {
-        return isRequestForHtml(request)
+        return BootstrapHandler.isRequestForHtml(request)
                 && !BootstrapHandler.isFrameworkInternalRequest(request)
                 && !BootstrapHandler.isVaadinStaticFileRequest(request)
                 && request.getService().getBootstrapUrlPredicate()
                         .isValidUrl(request);
-    }
-
-    /**
-     * Checks if the request is potentially a request for an HTML page.
-     * 
-     * @param request
-     *            the request to check
-     * @return {@code true} if the request is potentially for HTML,
-     *         {@code false} if it is certain that it is a request for a script,
-     *         image or something else
-     */
-    protected boolean isRequestForHtml(VaadinRequest request) {
-        if (request.getHeader(SERVICE_WORKER_HEADER) != null) {
-            return false;
-        }
-        String fetchDest = request.getHeader("Sec-Fetch-Dest");
-        if (fetchDest == null) {
-            // Old browsers do not send the header at all
-            return true;
-        }
-        if (nonHtmlFetchDests.contains(fetchDest)) {
-            return false;
-        }
-        return true;
     }
 
     @Override

@@ -21,10 +21,13 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -56,6 +59,35 @@ public class HandlerHelper implements Serializable {
 
     private static final Pattern PARENT_DIRECTORY_REGEX = Pattern
             .compile("(/|\\\\)\\.\\.(/|\\\\)?", Pattern.CASE_INSENSITIVE);
+
+    private static final String SERVICE_WORKER_HEADER = "Service-Worker";
+    private static final String FETCH_DEST_HEADER = "Sec-Fetch-Dest";
+
+    private static final Set<String> nonHtmlFetchDests;
+
+    static {
+        // Full list at
+        // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-Fetch-Dest
+        Set<String> dests = new HashSet<>();
+        dests.add("audio");
+        dests.add("audioworklet");
+        dests.add("font");
+        dests.add("image");
+        dests.add("manifest");
+        dests.add("paintworklet");
+        dests.add("script"); // NOSONAR
+        dests.add("serviceworker");
+        dests.add("sharedworker");
+        dests.add("style");
+        dests.add("track");
+        dests.add("video");
+        dests.add("worker");
+        dests.add("xslt");
+
+        // "empty" requests are used when service worker caches / so they need
+        // to be allowed
+        nonHtmlFetchDests = Collections.unmodifiableSet(dests);
+    }
 
     /**
      * Framework internal enum for tracking the type of a request.
@@ -133,6 +165,30 @@ public class HandlerHelper implements Serializable {
     }
 
     /**
+     * Checks if the request is potentially a request for an HTML page.
+     *
+     * @param request
+     *            the request to check
+     * @return {@code true} if the request is potentially for HTML,
+     *         {@code false} if it is certain that it is a request for a script,
+     *         image or something else
+     */
+    public static boolean isRequestForHtml(VaadinRequest request) {
+        if (request.getHeader(SERVICE_WORKER_HEADER) != null) {
+            return false;
+        }
+        String fetchDest = request.getHeader(FETCH_DEST_HEADER);
+        if (fetchDest == null) {
+            // Old browsers do not send the header at all
+            return true;
+        }
+        if (nonHtmlFetchDests.contains(fetchDest)) {
+            return false;
+        }
+        return true;
+    }
+
+    /**
      * Checks whether the request is an internal request.
      *
      * The requests listed in {@link RequestType} are considered internal as
@@ -161,7 +217,7 @@ public class HandlerHelper implements Serializable {
         /*
          * According to the spec, pathInfo should be null but not all servers
          * implement it like that...
-         * 
+         *
          * Additionally the spring servlet is mapped as /vaadinServlet right now
          * it seems but requests are sent to /vaadinServlet/, causing a "/" path
          * info
@@ -206,7 +262,7 @@ public class HandlerHelper implements Serializable {
     /**
      * Returns the rest of the path after the servlet mapping part, if the
      * requested path targets a path inside the servlet.
-     * 
+     *
      * @param servletMappingPath
      *            the servlet mapping from the servlet configuration
      * @param requestedPath
@@ -299,7 +355,7 @@ public class HandlerHelper implements Serializable {
 
     /**
      * Returns the requested path inside the context root.
-     * 
+     *
      * @param request
      *            the servlet request
      * @return the path inside the context root, not including the slash after

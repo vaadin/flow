@@ -106,8 +106,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class BootstrapHandler extends SynchronizedRequestHandler {
 
-    public static final String SERVICE_WORKER_HEADER = "Service-Worker";
-
     private static final CharSequence GWT_STAT_EVENTS_JS = "if (typeof window.__gwtStatsEvent != 'function') {"
             + "window.Vaadin.Flow.gwtStatsEvents = [];"
             + "window.__gwtStatsEvent = function(event) {"
@@ -278,7 +276,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         /**
          * Should custom theme be initialized.
-         * 
+         *
          * @return true if theme should be initialized
          */
         public boolean isInitTheme() {
@@ -287,7 +285,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         /**
          * Set if custom theme should be initialized.
-         * 
+         *
          * @param initTheme
          *            enable or disable theme initialisation
          */
@@ -511,16 +509,27 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             // an internal request
             return false;
         }
-        if (request.getHeader(SERVICE_WORKER_HEADER) != null) {
-            return false;
-        }
 
         if (isVaadinStaticFileRequest(request)) {
             // Do not allow routes inside /VAADIN/
             return false;
         }
 
+        if (!isRequestForHtml(request)) {
+            return false;
+        }
+
         return super.canHandleRequest(request);
+    }
+
+    /**
+     * See {@link HandlerHelper#isRequestForHtml(VaadinRequest)}.
+     *
+     * @param request the request to check
+     * @return See {@link HandlerHelper#isRequestForHtml(VaadinRequest)}.
+     */
+    public static boolean isRequestForHtml(VaadinRequest request) {
+        return HandlerHelper.isRequestForHtml(request);
     }
 
     /**
