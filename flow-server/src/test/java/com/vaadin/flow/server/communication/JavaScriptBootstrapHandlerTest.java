@@ -206,6 +206,24 @@ public class JavaScriptBootstrapHandlerTest {
     }
 
     @Test
+    public void should_respondPushScript_when_nonRootServletPath()
+            throws Exception {
+        mocks.getDeploymentConfiguration().setPushMode(PushMode.AUTOMATIC);
+
+        VaadinRequest request = mocks.createRequest(mocks, "/", "/vaadin/",
+                "v-r=init&foo&location=");
+        jsInitHandler.handleRequest(session, request, response);
+
+        Assert.assertEquals(200, response.getErrorCode());
+        Assert.assertEquals("application/json", response.getContentType());
+        JsonObject json = Json.parse(response.getPayload());
+
+        // Using regex, because version depends on the build
+        Assert.assertTrue(json.getString("pushScript").matches(
+                "^\\./VAADIN/static/push/vaadinPush\\.js\\?v=[\\w\\.\\-]+$"));
+    }
+
+    @Test
     public void should_invoke_modifyPushConfiguration() throws Exception {
         AppShellRegistry registry = Mockito.mock(AppShellRegistry.class);
         mocks.setAppShellRegistry(registry);
