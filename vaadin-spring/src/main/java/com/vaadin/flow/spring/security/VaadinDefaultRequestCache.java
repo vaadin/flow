@@ -18,6 +18,8 @@ package com.vaadin.flow.spring.security;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.vaadin.flow.server.HandlerHelper;
+
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
@@ -60,11 +62,20 @@ public class VaadinDefaultRequestCache implements RequestCache {
         if (isServiceWorkerInitiated(request)) {
             return;
         }
+        if (isErrorRequest(request)) {
+            return;
+        }
 
         LoggerFactory.getLogger(getClass())
                 .debug("Saving request to " + request.getRequestURI());
 
         delegateRequestCache.saveRequest(request, response);
+    }
+
+    private boolean isErrorRequest(HttpServletRequest request) {
+        String pathInContext = HandlerHelper
+                .getRequestPathInsideContext(request);
+        return "error".equals(pathInContext);
     }
 
     @Override
