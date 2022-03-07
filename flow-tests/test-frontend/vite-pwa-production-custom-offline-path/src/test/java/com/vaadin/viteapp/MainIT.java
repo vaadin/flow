@@ -27,6 +27,7 @@ public class MainIT extends ChromeDeviceTest {
     @Before
     public void init() {
         open();
+        waitForServiceWorkerReady();
         setCacheDisabled(true);
     }
 
