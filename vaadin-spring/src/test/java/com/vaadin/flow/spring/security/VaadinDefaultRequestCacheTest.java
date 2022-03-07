@@ -71,6 +71,16 @@ public class VaadinDefaultRequestCacheTest {
         Assert.assertNull(cache.getRequest(request, response));
     }
 
+    @Test
+    public void errorRequestNotSaved() {
+        HttpServletRequest request = RequestUtilTest.createRequest("error",
+                null);
+        HttpServletResponse response = createResponse();
+        Assert.assertFalse(requestUtil.isFrameworkInternalRequest(request));
+        cache.saveRequest(request, response);
+        Assert.assertNull(cache.getRequest(request, response));
+    }
+
     @Endpoint
     public static class FakeEndpoint {
         public void fakeMethod() {
