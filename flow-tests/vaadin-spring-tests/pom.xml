@@ -332,6 +332,18 @@
             </modules>
         </profile>
         <profile>
+            <id>java17</id>
+            <activation>
+                <jdk>[17,)</jdk>
+                <property>
+                    <name>!skipTests</name>
+                </property>
+            </activation>
+            <modules>
+                <module>test-endpoints-latest-java</module>
+            </modules>
+        </profile>
+        <profile>
             <id>validation</id>
             <properties>
                 <maven.javadoc.skip>true</maven.javadoc.skip>
