@@ -40,6 +40,7 @@ import org.junit.Test;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.data.binder.BeanBinderTest.RequiredConstraints.SubConstraint;
 import com.vaadin.flow.data.binder.BeanBinderTest.RequiredConstraints.SubSubConstraint;
+import com.vaadin.flow.data.binder.testcomponents.TestSelectComponent;
 import com.vaadin.flow.data.binder.testcomponents.TestTextField;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.tests.data.bean.BeanToValidate;
@@ -51,6 +52,7 @@ public class BeanBinderTest
     }
 
     private class TestClass {
+        private TestSelectComponent<TestEnum> enums;
         private TestTextField number = new TestTextField();
     }
 
@@ -200,6 +202,34 @@ public class BeanBinderTest
     @After
     public void tearDown() {
         UI.setCurrent(null);
+    }
+
+    @Test
+    public void bindInstanceFields_parameters_type_erased() {
+        Binder<TestBean> otherBinder = new Binder<>(TestBean.class);
+        TestClass testClass = new TestClass();
+        otherBinder.forField(testClass.number)
+                .withConverter(new StringToIntegerConverter("")).bind("number");
+
+        // Should correctly bind the enum field without throwing
+        otherBinder.bindInstanceFields(testClass);
+        testSerialization(otherBinder);
+    }
+
+    @Test
+    public void bindInstanceFields_automatically_binds_incomplete_forMemberField_bindings() {
+        Binder<TestBean> otherBinder = new Binder<>(TestBean.class);
+        TestClass testClass = new TestClass();
+
+        otherBinder.forMemberField(testClass.number)
+                .withConverter(new StringToIntegerConverter(""));
+        otherBinder.bindInstanceFields(testClass);
+
+        TestBean bean = new TestBean();
+        otherBinder.setBean(bean);
+        testClass.number.setValue("50");
+        assertEquals(50, bean.number);
+        testSerialization(otherBinder);
     }
 
     @Test(expected = IllegalStateException.class)
