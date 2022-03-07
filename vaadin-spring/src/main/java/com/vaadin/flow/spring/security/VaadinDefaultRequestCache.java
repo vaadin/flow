@@ -22,6 +22,7 @@ import com.vaadin.flow.server.HandlerHelper;
 
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.savedrequest.SavedRequest;
@@ -47,6 +48,9 @@ public class VaadinDefaultRequestCache implements RequestCache {
 
     @Autowired
     private RequestUtil requestUtil;
+
+    @Value("${server.error.path:/error}")
+    private String configuredErrorPath;
 
     private RequestCache delegateRequestCache = new HttpSessionRequestCache();
 
@@ -75,7 +79,11 @@ public class VaadinDefaultRequestCache implements RequestCache {
     private boolean isErrorRequest(HttpServletRequest request) {
         String pathInContext = HandlerHelper
                 .getRequestPathInsideContext(request);
-        return "error".equals(pathInContext);
+        String errorPath = configuredErrorPath;
+        if (errorPath.startsWith("/")) {
+            errorPath = errorPath.substring(1);
+        }
+        return errorPath.equals(pathInContext);
     }
 
     @Override
