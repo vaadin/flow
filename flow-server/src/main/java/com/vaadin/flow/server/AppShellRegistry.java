@@ -64,7 +64,8 @@ public class AppShellRegistry implements Serializable {
             + "%nPlease, configure the page in %s, and remove the `PageConfigurator` from: %n - %s%n";
 
     private static final String ERROR_LINE = "  - %s from %s";
-    private static final String ERROR_MULTIPLE_SHELL = "%n%nUnable to find a single class implementing `AppShellConfigurator` from the following candidates:%n  %s%n  %s%n";
+    private static final String ERROR_MULTIPLE_SHELL = "%n%nMultiple classes implementing `AppShellConfigurator` were found. However, only a single class implementing `AppShellConfigurator` is allowed."
+            + "%n%nUnable to find a single class implementing `AppShellConfigurator` from the following candidates:%n  %s%n  %s%n";
 
     private static final String ERROR_MULTIPLE_ANNOTATION = "%n%s is not a repeatable annotation type.%n";
 
