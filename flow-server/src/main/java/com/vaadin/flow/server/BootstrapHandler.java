@@ -525,7 +525,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     /**
      * See {@link HandlerHelper#isRequestForHtml(VaadinRequest)}.
      *
-     * @param request the request to check
+     * @param request
+     *            the request to check
      * @return See {@link HandlerHelper#isRequestForHtml(VaadinRequest)}.
      */
     public static boolean isRequestForHtml(VaadinRequest request) {

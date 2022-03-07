@@ -1467,8 +1467,10 @@ public class BootstrapHandlerTest {
         HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
         Mockito.doAnswer(invocation -> "").when(request).getServletPath();
         if (pathInfo != null) {
-            Mockito.doAnswer(invocation -> pathInfo).when(request).getPathInfo();
-            Mockito.doAnswer(invocation -> new StringBuffer(pathInfo)).when(request).getRequestURL();
+            Mockito.doAnswer(invocation -> pathInfo).when(request)
+                    .getPathInfo();
+            Mockito.doAnswer(invocation -> new StringBuffer(pathInfo))
+                    .when(request).getRequestURL();
         }
         return request;
     }
@@ -1603,7 +1605,6 @@ public class BootstrapHandlerTest {
         Assert.assertTrue(bootstrapHandler.canHandleRequest(request));
     }
 
-
     @Test
     public void canHandleRequest_allow_oldBrowser() {
         BootstrapHandler bootstrapHandler = new BootstrapHandler();
@@ -1638,7 +1639,6 @@ public class BootstrapHandlerTest {
         Assert.assertTrue(bootstrapHandler.canHandleRequest(
                 createRequestWithDestination("/", "empty", "same-origin")));
     }
-
 
     private VaadinServletRequest createRequestWithDestination(String pathInfo,
             String fetchDest, String fetchMode) {
