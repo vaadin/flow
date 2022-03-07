@@ -51,9 +51,6 @@ public class SpringBootAutoConfiguration {
     @Autowired
     private WebApplicationContext context;
 
-    @Autowired
-    private VaadinConfigurationProperties configurationProperties;
-
     /**
      * Creates a {@link ServletContextInitializer} instance.
      *
@@ -68,11 +65,16 @@ public class SpringBootAutoConfiguration {
      * Creates a {@link ServletRegistrationBean} instance with Spring aware
      * Vaadin servlet.
      *
+     * @param multipartConfig
+     *            multipart configuration, if available
+     * @param configurationProperties
+     *            the vaadin configuration properties
      * @return a custom ServletRegistrationBean instance
      */
     @Bean
     public ServletRegistrationBean<SpringServlet> servletRegistrationBean(
-            ObjectProvider<MultipartConfigElement> multipartConfig) {
+            ObjectProvider<MultipartConfigElement> multipartConfig,
+            VaadinConfigurationProperties configurationProperties) {
         String mapping = configurationProperties.getUrlMapping();
         Map<String, String> initParameters = new HashMap<>();
         boolean rootMapping = RootMappedCondition.isRootMapping(mapping);
