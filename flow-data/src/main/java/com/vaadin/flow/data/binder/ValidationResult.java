@@ -34,7 +34,7 @@ public interface ValidationResult extends Serializable {
 
     /**
      * Simple validation result implementation.
-     * 
+     *
      * @author Vaadin Ltd
      * @since 1.0
      *
@@ -91,7 +91,7 @@ public interface ValidationResult extends Serializable {
      *
      * @return optional error level; error level is present for validation
      *         results that have not passed validation
-     * 
+     *
      */
     Optional<ErrorLevel> getErrorLevel();
 
@@ -100,7 +100,7 @@ public interface ValidationResult extends Serializable {
      * <p>
      * <strong>Note:</strong> By default {@link ErrorLevel#INFO} and
      * {@link ErrorLevel#WARNING} are not considered to be errors.
-     * 
+     *
      * @return <code>true</code> if the result denotes an error,
      *         <code>false</code> otherwise
      */
@@ -139,7 +139,7 @@ public interface ValidationResult extends Serializable {
      * Creates the validation result with the given {@code errorMessage} and
      * {@code errorLevel}. Results with {@link ErrorLevel} of {@code INFO} or
      * {@code WARNING} are not errors by default.
-     * 
+     *
      * @see #ok()
      * @see #error(String)
      *

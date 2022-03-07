@@ -25,7 +25,7 @@ import com.vaadin.flow.component.UI;
  * is invoked.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
- * 
+ *
  * @author Vaadin Ltd
  * @since 1.0.
  *
@@ -37,7 +37,7 @@ public class ExecutionContext implements Serializable {
 
     /**
      * Creates a new, immutable context.
-     * 
+     *
      * @param ui
      *            The UI associated with the execution
      * @param clientSideInitialized
@@ -53,7 +53,7 @@ public class ExecutionContext implements Serializable {
 
     /**
      * Gets the UI associated with the execution.
-     * 
+     *
      * @return the UI, not <code>null</code>
      */
     public UI getUI() {
@@ -63,7 +63,7 @@ public class ExecutionContext implements Serializable {
     /**
      * Gets whether the client side is being initialized as part of the server
      * response.
-     * 
+     *
      * @return <code>true</code> if the client side is already initialized,
      *         <code>false</code> if it is being initialized as part of the
      *         current response

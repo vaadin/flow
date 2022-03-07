@@ -28,7 +28,7 @@ import com.vaadin.flow.dom.Element;
  * Initialize a lit template element with data.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
- * 
+ *
  * @author Vaadin Ltd
  * @since
  *
@@ -41,7 +41,7 @@ public class InjectableLitElementInitializer
 
     /**
      * Creates an initializer for the {@code element}.
-     * 
+     *
      * @param element
      *            element to initialize
      * @param templateClass

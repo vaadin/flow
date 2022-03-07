@@ -108,7 +108,7 @@ public class TemplateDataAnalyzer {
 
     /**
      * Immutable parser data which may be stored in cache.
-     * 
+     *
      * Use {@link ParserData} instead.
      */
     @Deprecated

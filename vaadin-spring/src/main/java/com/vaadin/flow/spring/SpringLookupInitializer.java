@@ -39,7 +39,7 @@ import com.vaadin.flow.server.VaadinServletContext;
 
 /**
  * Spring aware {@link LookupInitializer} implementation.
- * 
+ *
  * @author Vaadin Ltd
  * @since
  *
@@ -177,7 +177,7 @@ public class SpringLookupInitializer extends LookupInitializer {
 
     /**
      * Gets a {@link WebApplicationContext} instance for the {@code context}.
-     * 
+     *
      * @param context
      *            a Vaadin context
      * @return a {@link WebApplicationContext} instance for the {@code context}

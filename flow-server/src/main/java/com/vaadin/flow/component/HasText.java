@@ -34,7 +34,7 @@ public interface HasText extends HasElement {
 
     /**
      * Represents <code>"white-space"</code> style values.
-     * 
+     *
      * @author Vaadin Ltd
      * @since
      *
@@ -68,7 +68,7 @@ public interface HasText extends HasElement {
         PRE_LINE,
         /**
          * The behavior is identical to that of pre-wrap, except that:
-         * 
+         *
          * <ul>
          * <li>Any sequence of preserved white space always takes up space,
          * including at the end of the line.
@@ -128,7 +128,7 @@ public interface HasText extends HasElement {
 
     /**
      * Sets the given {@code value} as {@code "white-space"} style value.
-     * 
+     *
      * @param value
      *            the {@code "white-space"} style value, not {@code null}
      */
@@ -143,7 +143,7 @@ public interface HasText extends HasElement {
      * The default value is {@literal WhiteSpace#NORMAL}. If the
      * {@code "white-space"} style value is non standard then {@code null} is
      * returned.
-     * 
+     *
      * @return the {@code "white-space"} style value, may be {@code null}
      */
     default WhiteSpace getWhiteSpace() {

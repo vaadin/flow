@@ -26,7 +26,7 @@ public class StorageUtil {
 
     /**
      * Gets an item value from the local storage.
-     * 
+     *
      * @param key
      *            the item key
      * @return the value of the item

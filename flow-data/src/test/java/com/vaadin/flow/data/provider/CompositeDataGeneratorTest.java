@@ -31,7 +31,7 @@ import elemental.json.JsonObject;
 import static org.junit.Assert.assertEquals;
 
 /**
- * 
+ *
  * @author Vaadin Ltd
  * @since 1.0.
  */

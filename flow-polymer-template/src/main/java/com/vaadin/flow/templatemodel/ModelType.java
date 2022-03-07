@@ -30,13 +30,13 @@ import elemental.json.JsonValue;
  * {@link TemplateModel} type and should therefore be immutable to prevent race
  * conditions. The root type for a model can be found using
  * {@link ModelDescriptor#get(Class)}.
- * 
+ *
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 1.0
- * 
+ *
  * @deprecated Template model and model types are not supported for lit
  *             template, but you can use {@code @Id} mapping and the component
  *             API or the element API with property synchronization instead.

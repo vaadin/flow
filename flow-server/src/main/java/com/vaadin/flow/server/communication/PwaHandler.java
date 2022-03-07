@@ -56,7 +56,7 @@ public class PwaHandler implements RequestHandler {
 
     /**
      * Creates PwaHandler from {@link PwaRegistry} getter.
-     * 
+     *
      * @param pwaRegistryGetter
      *            PWA registry getter
      *

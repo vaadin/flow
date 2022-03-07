@@ -109,7 +109,7 @@ public class DefaultDeploymentConfiguration
 
     /**
      * Create a new deployment configuration instance.
-     * 
+     *
      * @param parentConfig
      *            a parent application configuration
      * @param systemPropertyBaseClass

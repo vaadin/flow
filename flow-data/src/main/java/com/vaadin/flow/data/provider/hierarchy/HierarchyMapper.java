@@ -87,7 +87,7 @@ public class HierarchyMapper<T, F> implements Serializable {
 
     /**
      * Returns the size of root level.
-     * 
+     *
      * @return the amount of available root data
      */
     public int getRootSize() {
@@ -393,7 +393,7 @@ public class HierarchyMapper<T, F> implements Serializable {
 
     /**
      * Returns depth of item in the tree starting from zero representing a root.
-     * 
+     *
      * @param item
      *            Target item
      * @return depth of item in the tree or -1 if item is null
@@ -621,7 +621,7 @@ public class HierarchyMapper<T, F> implements Serializable {
 
     /**
      * Returns true if there is any expanded items.
-     * 
+     *
      * @return {@code true} if there is any expanded items.
      */
     public boolean hasExpandedItems() {

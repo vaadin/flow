@@ -116,7 +116,7 @@ public class StateTree implements NodeOwner {
         /**
          * Checks whether the entry's execution consumer can be run with the
          * given {@link UI}.
-         * 
+         *
          * @param ui
          *            the given to execute the entry with
          * @return whether the entry may be executed with the given {@code ui}

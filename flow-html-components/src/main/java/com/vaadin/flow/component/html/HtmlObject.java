@@ -30,7 +30,7 @@ import com.vaadin.flow.server.StreamResource;
 
 /**
  * Component representing a <code>&lt;object&gt;</code> element.
- * 
+ *
  * @author Vaadin Ltd
  * @since
  *
@@ -54,11 +54,11 @@ public class HtmlObject extends HtmlContainer implements
     /**
      * Creates a new <code>&lt;object&gt;</code> component with given data and
      * type attribute values.
-     * 
+     *
      * @see #setData(String)
      * @see #setType(String)
      *
-     * 
+     *
      * @param data
      *            a data attribute value
      * @param type
@@ -72,12 +72,12 @@ public class HtmlObject extends HtmlContainer implements
     /**
      * Creates a new <code>&lt;object&gt;</code> component with given data, type
      * attribute values and and "param" components.
-     * 
+     *
      * @see #setData(String)
      * @see #setType(String)
      * @see #add(Component...)
      *
-     * 
+     *
      * @param data
      *            a data attribute value
      * @param type
@@ -111,12 +111,12 @@ public class HtmlObject extends HtmlContainer implements
     /**
      * Creates a new <code>&lt;object&gt;</code> component with given data
      * resource, type value and "param" components.
-     * 
+     *
      * @see #setData(String)
      * @see #setType(String)
      * @see #add(Component...)
      *
-     * 
+     *
      * @param data
      *            a data attribute value
      * @param type
@@ -134,11 +134,11 @@ public class HtmlObject extends HtmlContainer implements
     /**
      * Creates a new <code>&lt;object&gt;</code> component with given data and
      * "param" components.
-     * 
+     *
      * @see #setData(String)
      * @see #add(Component...)
-     * 
-     * 
+     *
+     *
      * @param data
      *            a data attribute value
      * @param params
@@ -181,7 +181,7 @@ public class HtmlObject extends HtmlContainer implements
 
     /**
      * Sets the "data" attribute value.
-     * 
+     *
      * @param data
      *            a "data" attribute value
      */
@@ -191,7 +191,7 @@ public class HtmlObject extends HtmlContainer implements
 
     /**
      * Sets the {@link StreamResource} URL as "data" attribute value .
-     * 
+     *
      * @param data
      *            a "data" attribute value,, not {@code null}
      */
@@ -201,9 +201,9 @@ public class HtmlObject extends HtmlContainer implements
 
     /**
      * Gets the "data" attribute value.
-     * 
+     *
      * @return the "data" attribute value
-     * 
+     *
      * @see #setData(String)
      * @see #setData(AbstractStreamResource)
      */
@@ -213,7 +213,7 @@ public class HtmlObject extends HtmlContainer implements
 
     /**
      * Sets the "type" attribute value.
-     * 
+     *
      * @param type
      *            a "type" attribute value
      */
@@ -223,9 +223,9 @@ public class HtmlObject extends HtmlContainer implements
 
     /**
      * Gets the "type" attribute value.
-     * 
+     *
      * @see #setType(String)
-     * 
+     *
      * @return the "type" attribute value
      */
     public Optional<String> getType() {

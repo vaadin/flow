@@ -304,7 +304,7 @@ public class ElementUtil {
     /**
      * Sets whether or not the element should inherit or not inherit its
      * parent's inert state. Default value is {@code false}.
-     * 
+     *
      * @param element
      *            the element to update
      * @param ignoreParentInert

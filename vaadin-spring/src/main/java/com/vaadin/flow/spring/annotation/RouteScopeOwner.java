@@ -32,7 +32,7 @@ import com.vaadin.flow.router.RouterLayout;
  * <p>
  * Owner is a router component. A {@link Route @Route}, or a
  * {@link RouterLayout}, or a {@link HasErrorParameter}.
- * 
+ *
  * @author Vaadin Ltd
  * @since
  *

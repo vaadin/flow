@@ -29,7 +29,7 @@ import elemental.json.JsonObject;
  * <p>
  * It is used by components that need to add and remove DataGenerators
  * dynamically, or that support multiple layers of data generation.
- * 
+ *
  * @author Vaadin Ltd
  * @since 1.0.
  *
@@ -71,7 +71,7 @@ public class CompositeDataGenerator<T>
 
     /**
      * Removes the DataGenerator from the list, destroying its data.
-     * 
+     *
      * @param generator
      *            the data generator to remove
      */

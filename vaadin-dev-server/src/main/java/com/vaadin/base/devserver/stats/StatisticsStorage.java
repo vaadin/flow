@@ -71,7 +71,7 @@ public class StatisticsStorage {
 
     /**
      * Runs the given command with the store locked.
-     * 
+     *
      * @param whenLocked
      *            the command to run
      */
@@ -83,7 +83,7 @@ public class StatisticsStorage {
 
     /**
      * Updates the store in a safe way.
-     * 
+     *
      * @param updater
      *            the update logic which receives a global and a project
      *            specific container to update
@@ -111,7 +111,7 @@ public class StatisticsStorage {
 
     /**
      * Reads all data from the statistics file.
-     * 
+     *
      * @return
      *
      * @see #getUsageStatisticsFile()
@@ -124,7 +124,7 @@ public class StatisticsStorage {
 
     /**
      * Reads the active project data from the statistics file.
-     * 
+     *
      * @return
      *
      * @see #getUsageStatisticsFile()
@@ -136,7 +136,7 @@ public class StatisticsStorage {
 
     /**
      * Read the data from local project statistics file.
-     * 
+     *
      * @return
      *
      * @see #getUsageStatisticsFile()

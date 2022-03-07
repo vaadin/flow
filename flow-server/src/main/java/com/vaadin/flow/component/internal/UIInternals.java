@@ -84,7 +84,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Holds UI-specific methods and data which are intended for internal use by the
  * framework.
- * 
+ *
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -1108,7 +1108,7 @@ public class UIInternals implements Serializable {
 
     /**
      * Get the active modal component if modal components set.
-     * 
+     *
      * @return the current active modal component
      */
     public Component getActiveModalComponent() {

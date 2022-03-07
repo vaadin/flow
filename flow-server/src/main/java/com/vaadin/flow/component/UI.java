@@ -1250,7 +1250,7 @@ public class UI extends Component
      * When the modal component is removed the UI and its other children are no
      * longer inert, unless there was another component added as modal before.
      *
-     * 
+     *
      * @param component
      *            the modal component to add
      * @see #setChildComponentModal(Component, boolean)
@@ -1263,7 +1263,7 @@ public class UI extends Component
     /**
      * Makes the child component modal or modeless. The component needs to be a
      * child of this UI. By default all child components are modeless.
-     * 
+     *
      * @param childComponent
      *            the child component to change state for
      * @param modal
@@ -1293,7 +1293,7 @@ public class UI extends Component
 
     /**
      * Check if UI has a defined modal component.
-     * 
+     *
      * @return {@code true} if a modal component has been set
      */
     public boolean hasModalComponent() {
@@ -1307,7 +1307,7 @@ public class UI extends Component
      * This is meant to be used with components that are not added as part of a
      * layout, like dialog, so that they are interactive when a modal component
      * opens up an overlay component.
-     * 
+     *
      * @param component
      *            component to add to modal component
      */

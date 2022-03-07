@@ -27,7 +27,7 @@ public class StatisticsContainer {
 
     /**
      * Wraps the given json with this API.
-     * 
+     *
      * @param json
      *            the json to wrap
      */
@@ -91,7 +91,7 @@ public class StatisticsContainer {
      * <li><code>name_max</code> The maximum value</li>
      * <li><code>name_count</code> Number of values collected</li>
      * </ul>
-     * 
+     *
      * @param name
      *            Name of the field to update.
      * @param newValue
@@ -128,7 +128,7 @@ public class StatisticsContainer {
 
     /**
      * Returns the given field value as a string.
-     * 
+     *
      * @param name
      *            name of the field to get
      * @return the value of the field as a string
@@ -139,7 +139,7 @@ public class StatisticsContainer {
 
     /**
      * Returns the given field value as an integer.
-     * 
+     *
      * @param name
      *            name of the field to get
      * @return the value of the field as an integer, 0 if missing or not an

@@ -32,7 +32,7 @@ import com.vaadin.flow.router.RouterLayout;
 /**
  * Handles navigation events by rendering a contained NavigationState in the
  * target UI.
- * 
+ *
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *

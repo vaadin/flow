@@ -37,8 +37,8 @@ import com.vaadin.flow.dom.ThemeList;
  * {@link ErrorLevel#WARNING} the element will get the "theme"="warning"
  * attribute and value in HTML.
  * </ul>
- * 
- * 
+ *
+ *
  * @author Vaadin Ltd
  * @since
  *
@@ -82,7 +82,7 @@ public class DefaultBinderValidationErrorHandler
 
     /**
      * Gets the theme name for the {@code ErrorLevel}.
-     * 
+     *
      * @param errorLevel
      *            the error level
      * @return a theme name for the error level
@@ -93,7 +93,7 @@ public class DefaultBinderValidationErrorHandler
 
     /**
      * Gets themes for the {@code field}.
-     * 
+     *
      * @param field
      *            a field
      * @return an optional theme list, or an empty optional if the {@code field}
@@ -112,7 +112,7 @@ public class DefaultBinderValidationErrorHandler
 
     /**
      * Clears error theme for the {@code field}.
-     * 
+     *
      * @param field
      *            a feild
      */
@@ -123,7 +123,7 @@ public class DefaultBinderValidationErrorHandler
 
     /**
      * Sets error theme for the {@code field} based on {@code result}.
-     * 
+     *
      * @param field
      *            a field
      * @param result

@@ -40,7 +40,7 @@ import elemental.json.JsonValue;
 
 /**
  * HierarchicalCommunicationController controls all the communication to client.
- * 
+ *
  * @param <T>
  *            the target bean type
  * @since 1.2
@@ -82,7 +82,7 @@ public class HierarchicalCommunicationController<T> implements Serializable {
     /**
      * Constructs communication controller with support for hierarchical data
      * structure.
-     * 
+     *
      * @param parentKey
      *            parent key or null if root
      * @param keyMapper

@@ -29,7 +29,7 @@ public final class StreamingStartEventImpl extends AbstractStreamingEvent
 
     /**
      * Streaming start event constructor.
-     * 
+     *
      * @param filename
      *            filename
      * @param type
@@ -49,7 +49,7 @@ public final class StreamingStartEventImpl extends AbstractStreamingEvent
 
     /**
      * Get if stream resource should be unregistered.
-     * 
+     *
      * @return true if stream variable should be unregistered
      */
     public boolean isDisposed() {

@@ -61,7 +61,7 @@ public @interface PropertyId {
 
     /**
      * Returns the name of the property.
-     * 
+     *
      * @return the proeprty name
      */
     String value();

@@ -161,7 +161,7 @@ public class HandlerHelper implements Serializable {
         /*
          * According to the spec, pathInfo should be null but not all servers
          * implement it like that...
-         * 
+         *
          * Additionally the spring servlet is mapped as /vaadinServlet right now
          * it seems but requests are sent to /vaadinServlet/, causing a "/" path
          * info
@@ -206,7 +206,7 @@ public class HandlerHelper implements Serializable {
     /**
      * Returns the rest of the path after the servlet mapping part, if the
      * requested path targets a path inside the servlet.
-     * 
+     *
      * @param servletMappingPath
      *            the servlet mapping from the servlet configuration
      * @param requestedPath
@@ -299,7 +299,7 @@ public class HandlerHelper implements Serializable {
 
     /**
      * Returns the requested path inside the context root.
-     * 
+     *
      * @param request
      *            the servlet request
      * @return the path inside the context root, not including the slash after

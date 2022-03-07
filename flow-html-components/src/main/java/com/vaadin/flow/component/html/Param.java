@@ -25,9 +25,9 @@ import com.vaadin.flow.component.Tag;
 /**
  * Component representing a <code>&lt;param&gt;</code> element for
  * <code>&lt;param&gt;</code> element.
- * 
+ *
  * @see HtmlObject
- * 
+ *
  * @author Vaadin Ltd
  * @since
  *
@@ -53,7 +53,7 @@ public class Param extends HtmlComponent {
      *
      * @see #setName(String)
      * @see #setValue(String)
-     * 
+     *
      * @param name
      *            a name attribute value
      * @param value
@@ -66,7 +66,7 @@ public class Param extends HtmlComponent {
 
     /**
      * Sets a "value" attribute.
-     * 
+     *
      * @param value
      *            "value" attribute value
      */
@@ -76,7 +76,7 @@ public class Param extends HtmlComponent {
 
     /**
      * Sets a "name" attribute value.
-     * 
+     *
      * @param name
      *            a "name" attribute value
      */
@@ -86,9 +86,9 @@ public class Param extends HtmlComponent {
 
     /**
      * Gets the "name" attribute value.
-     * 
+     *
      * @see #setName(String)
-     * 
+     *
      * @return the "name" attribute value
      */
     public String getName() {
@@ -97,9 +97,9 @@ public class Param extends HtmlComponent {
 
     /**
      * Gets the "value" attribute.
-     * 
+     *
      * @see #setValue(String)
-     * 
+     *
      * @return the "value" attribute value
      */
     public Optional<String> getValue() {

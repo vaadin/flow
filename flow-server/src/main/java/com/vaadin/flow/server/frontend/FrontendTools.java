@@ -197,7 +197,7 @@ public class FrontendTools {
     /**
      * Creates an instance using the the given project directory and application
      * configuration.
-     * 
+     *
      * @param projectRoot
      *            the project root directory
      * @param applicationConfiguration
@@ -1131,10 +1131,10 @@ public class FrontendTools {
 
     /**
      * Gets a path to the used node binary.
-     * 
+     *
      * The return value can be used when executing node commands, as the first
      * part of a process builder command.
-     * 
+     *
      * @return the path to the node binary
      */
     public String getNodeBinary() {

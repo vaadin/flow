@@ -90,7 +90,7 @@ public class ListAddChange<T extends Serializable>
     /**
      * Gets a copy of the change with the same data except a list of new
      * {@code items}.
-     * 
+     *
      * @param items
      *            new list of items
      * @return a copy of the change based on new items

@@ -110,7 +110,7 @@ public enum ValueChangeMode {
      * Applies the value change timeout of the given mode on the registration of
      * the DOM event listener that synchronizes. It has any effect only for
      * {@link #LAZY}, or {@link #TIMEOUT}.
-     * 
+     *
      * @see HasValueChangeMode#getValueChangeTimeout()
      * @see AbstractSinglePropertyField#getSynchronizationRegistration()
      *

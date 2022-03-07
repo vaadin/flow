@@ -158,7 +158,7 @@ public abstract class VaadinWebSecurityConfigurerAdapter
      * Matcher for framework internal requests.
      *
      * Assumes Vaadin servlet to be mapped on root path ({@literal /*}).
-     * 
+     *
      * @return default {@link HttpSecurity} bypass matcher
      */
     public static RequestMatcher getDefaultHttpSecurityPermitMatcher() {
@@ -201,7 +201,7 @@ public abstract class VaadinWebSecurityConfigurerAdapter
      * Matcher for Vaadin static (public) resources.
      *
      * Assumes Vaadin servlet to be mapped on root path ({@literal /*}).
-     * 
+     *
      * @return default {@link WebSecurity} ignore matcher
      */
     public static RequestMatcher getDefaultWebSecurityIgnoreMatcher() {
@@ -384,7 +384,7 @@ public abstract class VaadinWebSecurityConfigurerAdapter
      *
      * Path will always be considered as relative to servlet path, even if it
      * starts with a slash character.
-     * 
+     *
      * @param path
      *            path to be prefixed with servlet path
      * @return the input path prepended by servlet path.

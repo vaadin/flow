@@ -278,7 +278,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         /**
          * Should custom theme be initialized.
-         * 
+         *
          * @return true if theme should be initialized
          */
         public boolean isInitTheme() {
@@ -287,7 +287,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         /**
          * Set if custom theme should be initialized.
-         * 
+         *
          * @param initTheme
          *            enable or disable theme initialisation
          */

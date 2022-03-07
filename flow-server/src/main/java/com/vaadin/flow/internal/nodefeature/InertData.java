@@ -77,7 +77,7 @@ public class InertData extends ServerSideFeature {
     /**
      * Sets whether or not the node should ignore parent's inert state or not.
      * By default the parent state is inherited {@code false}.
-     * 
+     *
      * @param ignoreParentInert
      *            {@code true} for ignoring {@code false} for not
      */
@@ -91,7 +91,7 @@ public class InertData extends ServerSideFeature {
     /**
      * Sets whether the node itself is inert. By default the node is not inert,
      * unless parent is inert and inhering parent inert is not blocked.
-     * 
+     *
      * @param inertSelf
      *            {@code} true for setting the node explicitly inert,
      *            {@code false} for not
@@ -146,7 +146,7 @@ public class InertData extends ServerSideFeature {
      * Returns whether this node is explicitly inert and if not, then checks
      * parents for the same. The returned value has been updated when the most
      * recent changes have been written to the client side.
-     * 
+     *
      * @return {@code true} for inert, {@code false} for not
      */
     public boolean isInert() {

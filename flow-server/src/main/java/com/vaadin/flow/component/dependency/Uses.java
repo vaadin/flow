@@ -42,7 +42,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * we recommend you to use {@code LitTemplate} instead. Read more details from
  * <a href= "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the
  * Vaadin blog.</a>
- * 
+ *
  *
  * @author Vaadin Ltd
  * @since 1.0

@@ -46,7 +46,7 @@ import com.vaadin.flow.spring.scopes.VaadinRouteScope;
  * preserved as long as the owner component remains in the navigation chain. It
  * means that the bean may be preserved even if the navigation target is changed
  * (but the "initial" calculated owner is still in the navigation chain).
- * 
+ *
  * @author Vaadin Ltd
  * @since
  *

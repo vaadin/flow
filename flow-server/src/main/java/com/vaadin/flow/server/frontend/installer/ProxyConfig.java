@@ -178,7 +178,7 @@ public class ProxyConfig {
 
         /**
          * Construct a Proxy object out of a proxy url.
-         * 
+         *
          * @param id
          *            proxy id
          * @param proxyUrl

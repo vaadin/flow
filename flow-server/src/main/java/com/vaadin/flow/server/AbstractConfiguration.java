@@ -27,7 +27,7 @@ import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_USE_V14_BO
 /**
  * Defines a base contract for configuration (e.g. on an application level,
  * servlet level,...).
- * 
+ *
  * @author Vaadin Ltd
  * @since
  *
@@ -180,7 +180,7 @@ public interface AbstractConfiguration extends Serializable {
      * Gets the folder where resource sources are stored.
      * <p>
      * Only available in development mode.
-     * 
+     *
      * @return the folder where resources are stored, typically
      *         {@code src/main/resources}.
      */

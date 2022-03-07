@@ -26,7 +26,7 @@ import com.vaadin.flow.dom.Element;
  * Initialize a polymer template element with data.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
- * 
+ *
  * @author Vaadin Ltd
  * @since
  * @deprecated {@code InjectableLitElementInitializer} should be used for Lit
@@ -45,7 +45,7 @@ public class InjectablePolymerElementInitializer
 
     /**
      * Creates an initializer for the {@code element}.
-     * 
+     *
      * @param element
      *            element to initialize
      * @param templateClass

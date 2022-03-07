@@ -22,7 +22,7 @@ import com.vaadin.flow.router.internal.RouteUtil;
 
 /**
  * Default implementation for {@link RoutePathProvider}.
- * 
+ *
  * @author Vaadin Ltd
  * @since
  *

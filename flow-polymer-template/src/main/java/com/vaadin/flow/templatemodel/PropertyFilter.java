@@ -22,7 +22,7 @@ import java.util.function.Predicate;
  *
  * @author Vaadin Ltd
  * @since 1.0
- * 
+ *
  * @deprecated This functionality is internal and bound to template model which
  *             is not supported for lit template. Polymer template support is
  *             deprecated - we recommend you to use {@code LitTemplate} instead.
@@ -116,7 +116,7 @@ public class PropertyFilter implements Predicate<String> {
      * Get the full path prefix of this property filter. The prefix is
      * accumulated when constructing new property filters from outer filters and
      * scope names.
-     * 
+     *
      * @return the prefix string of this filter
      */
     public String getPrefix() {

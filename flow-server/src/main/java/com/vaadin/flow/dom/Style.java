@@ -43,7 +43,7 @@ public interface Style extends Serializable {
      * <p>
      * Both camelCased (e.g. <code>fontFamily</code>) and dash-separated (e.g.
      * <code>font-family</code> versions are supported.
-     * 
+     *
      * @param name
      *            the style property name as camelCase, not <code>null</code>
      * @param value

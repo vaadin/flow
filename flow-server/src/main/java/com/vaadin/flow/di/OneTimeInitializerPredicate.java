@@ -33,7 +33,7 @@ import javax.servlet.ServletContainerInitializer;
  * need to store additional data between calls which is excessive if the
  * {@link ServletContainerInitializer#onStartup(java.util.Set, javax.servlet.ServletContext)}
  * is executed only once.
- * 
+ *
  * @author Vaadin Ltd
  * @since
  *
@@ -46,7 +46,7 @@ public interface OneTimeInitializerPredicate {
      * the previous state on
      * {@link ServletContainerInitializer#onStartup(java.util.Set, javax.servlet.ServletContext)}
      * call.
-     * 
+     *
      * @return {@code true} if {@link ServletContainerInitializer}s are executed
      *         only once, {@code false} otherwise
      */

@@ -35,7 +35,7 @@ public final class CssData implements Serializable {
 
     /**
      * The value getter.
-     * 
+     *
      * @return value
      */
     public String getValue() {
@@ -44,7 +44,7 @@ public final class CssData implements Serializable {
 
     /**
      * The id getter.
-     * 
+     *
      * @return id
      */
     public String getId() {
@@ -53,7 +53,7 @@ public final class CssData implements Serializable {
 
     /**
      * The include getter.
-     * 
+     *
      * @return include
      */
     public String getInclude() {
@@ -62,7 +62,7 @@ public final class CssData implements Serializable {
 
     /**
      * The themefor getter.
-     * 
+     *
      * @return themefor
      */
     public String getThemefor() {

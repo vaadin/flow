@@ -33,7 +33,7 @@ public class Pair<U extends Serializable, V extends Serializable>
 
     /**
      * Creates a new pair.
-     * 
+     *
      * @param u
      *            the value of the first component
      * @param v
@@ -46,7 +46,7 @@ public class Pair<U extends Serializable, V extends Serializable>
 
     /**
      * Gets the first component of the pair.
-     * 
+     *
      * @return the first component of the pair
      */
     public U getFirst() {
@@ -55,7 +55,7 @@ public class Pair<U extends Serializable, V extends Serializable>
 
     /**
      * Gets the second component of the pair.
-     * 
+     *
      * @return the second component of the pair
      */
     public V getSecond() {

@@ -768,7 +768,7 @@ public class ReflectTools implements Serializable {
     /**
      * Checks whether the {@code element} has annotation whose FQN is
      * {@code annotationFqn}.
-     * 
+     *
      * @param element
      *            annotated element (field, method, etc.)
      * @param annotationFqn
@@ -784,7 +784,7 @@ public class ReflectTools implements Serializable {
     /**
      * Checks whether the {@code element} has annotation whose simple name is
      * {@code simpleName}.
-     * 
+     *
      * @param element
      *            annotated element (field, method, etc.)
      * @param simpleName
@@ -800,7 +800,7 @@ public class ReflectTools implements Serializable {
 
     /**
      * Gets the annotation method return value.
-     * 
+     *
      * @param annotation
      *            the annotation
      * @param methodName
@@ -825,7 +825,7 @@ public class ReflectTools implements Serializable {
 
     /**
      * Gets annotation of {@code element} whose FQN is {@code annotationFqn}.
-     * 
+     *
      * @param element
      *            annotated element (field, method, etc.)
      * @param annotationFqn
@@ -846,7 +846,7 @@ public class ReflectTools implements Serializable {
     /**
      * Check if a class can be instantiated via its default constructor via
      * reflection.
-     * 
+     *
      * @param clazz
      *            the class to check
      * @return true if the class can be instantiated, otherwise false

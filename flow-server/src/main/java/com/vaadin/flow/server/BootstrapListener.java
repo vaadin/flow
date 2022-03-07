@@ -29,7 +29,7 @@ import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
  * <p>
  * BootstrapListeners are registered using the {@link ServiceInitEvent} during
  * the initialization of the application.
- * 
+ *
  * @see ServiceInitEvent#addBootstrapListener(BootstrapListener)
  *
  * @deprecated Since 3.0, this API is deprecated in favor of

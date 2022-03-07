@@ -120,7 +120,7 @@ public class Query<T, F> implements Serializable {
      * Vaadin asks data from the backend in paged manner. This shorthand
      * calculates the page index for backends using paged data access, such as
      * Spring Data repositores.
-     * 
+     *
      * @return the zero-based page index
      */
     public int getPage() {
@@ -133,7 +133,7 @@ public class Query<T, F> implements Serializable {
      * <p>
      * Vaadin asks data from the backend in paged manner. This is an alias for
      * {@link #getLimit()}.
-     * 
+     *
      * @return the page size used for data access
      */
     public int getPageSize() {
@@ -197,7 +197,7 @@ public class Query<T, F> implements Serializable {
     /**
      * Gets the requested range end. This is a shorthand for
      * {@code getOffset() + getLimit()} where the end is exclusive.
-     * 
+     *
      * @return the requested range end
      */
     public int getRequestedRangeEnd() {

@@ -126,7 +126,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
     /**
      * Craete an instance that waits for the given task to complete before
      * starting or connecting to the server.
-     * 
+     *
      * @param lookup
      *            a lookup instance
      * @param runningPort
@@ -241,7 +241,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
 
     /**
      * Validates that the needed server binary and config file(s) are available.
-     * 
+     *
      * @throws ExecutionFailedException
      *             if there is a problem
      */
@@ -298,7 +298,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
 
     /**
      * Gets the commands to run to start the dev server.
-     * 
+     *
      * @param tools
      *            the frontend tools object
      */
@@ -333,7 +333,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
 
     /**
      * Starts the dev server and returns the started process.
-     * 
+     *
      * @return the started process or {@code null} if no process was started
      */
     protected Process doStartDevServer() {
@@ -363,10 +363,10 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
              * that the DevModeHandler is created. There is no way to store it
              * in the servlet container, and we do not want to save it in the
              * global JVM.
-             * 
+             *
              * We instruct the JVM to stop the server daemon when the JVM stops,
              * to avoid leaving daemons running in the system.
-             * 
+             *
              * NOTE: that in the corner case that the JVM crashes or it is
              * killed the daemon will be kept running. But anyways it will also
              * happens if the system was configured to be stop the daemon when
@@ -417,7 +417,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
 
     /**
      * Gets the server watch dog.
-     * 
+     *
      * @return the watch dog
      */
     protected DevServerWatchDog getWatchDog() {
@@ -440,7 +440,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
 
     /**
      * Gets the application configuration.
-     * 
+     *
      * @return the application configuration
      */
     protected ApplicationConfiguration getApplicationConfiguration() {
@@ -449,7 +449,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
 
     /**
      * Check the connection to the dev server.
-     * 
+     *
      * @return {@code true} if the dev server is responding correctly,
      *         {@code false} otherwise
      */
