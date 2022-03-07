@@ -428,6 +428,22 @@ public class TaskRunNpmInstall implements FallibleCommand {
             if (!packageFolder.exists()) {
                 continue;
             }
+            try {
+                JsonObject packageJson = TaskGeneratePackageJson
+                        .getJsonFileContent(
+                                new File(packageFolder, "package.json"));
+                if (!containsPostinstallScript(packageJson)) {
+                    logger.debug(
+                            "Skipping postinstall for '{}' as no postinstall script was found in the package.json",
+                            postinstallPackage);
+                    continue;
+                }
+            } catch (IOException ioe) {
+                logger.error(
+                        "Couldn't read package.json for {}. Skipping postinstall",
+                        ioe);
+                continue;
+            }
 
             logger.debug("Running postinstall for '{}'", postinstallPackage);
             try {
@@ -447,6 +463,11 @@ public class TaskRunNpmInstall implements FallibleCommand {
         lastInstallStats.installTimeMs = System.currentTimeMillis() - startTime;
         lastInstallStats.packageManager = enablePnpm ? "pnpm" : "npm";
 
+    }
+
+    private boolean containsPostinstallScript(JsonObject packageJson) {
+        return packageJson != null && packageJson.hasKey("scripts")
+                && packageJson.getObject("scripts").hasKey("postinstall");
     }
 
     private Process runNpmCommand(List<String> command, File workingDirectory)
