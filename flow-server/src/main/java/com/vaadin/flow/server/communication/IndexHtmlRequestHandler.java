@@ -144,8 +144,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         }
 
         // modify the page based on the @PWA annotation
-        if (!FeatureFlags.get(service.getContext())
-                .isEnabled(FeatureFlags.VITE)) {
+        if (!FeatureFlags.get(service.getContext()).isEnabled(FeatureFlags.VITE)
+                && !config.isProductionMode()) {
             setupPwa(indexDocument, session.getService());
         }
 

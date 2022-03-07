@@ -708,7 +708,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             }
 
             if (!FeatureFlags.get(context.getService().getContext())
-                    .isEnabled(FeatureFlags.VITE)) {
+                    .isEnabled(FeatureFlags.VITE)
+                    && !config.isProductionMode()) {
                 setupPwa(document, context);
             }
 
