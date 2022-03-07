@@ -709,7 +709,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
             if (!FeatureFlags.get(context.getService().getContext())
                     .isEnabled(FeatureFlags.VITE)
-                    && !config.isProductionMode()) {
+                    || config.isProductionMode()) {
                 setupPwa(document, context);
             }
 
