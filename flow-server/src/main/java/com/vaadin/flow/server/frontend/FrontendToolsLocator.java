@@ -210,12 +210,14 @@ public class FrontendToolsLocator implements Serializable {
             return null;
         }
         if (!commandResult.stderr.isEmpty()) {
+            // "npm -v" can output deprecation warnings to stderr but it still
+            // works
             if (log().isDebugEnabled()) {
-                log().debug("Command '{}' has non-empty stderr:\n'{}'",
+                log().debug(
+                        "Command '{}' has non-empty stderr but assuming this is fine:\n'{}'",
                         commandResult.command,
                         String.join("\n", commandResult.stderr));
             }
-            return null;
         }
         return commandResult;
     }
