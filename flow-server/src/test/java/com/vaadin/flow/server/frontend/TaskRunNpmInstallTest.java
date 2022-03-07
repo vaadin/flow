@@ -56,6 +56,7 @@ import org.slf4j.LoggerFactory;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import net.jcip.annotations.NotThreadSafe;
+import org.slf4j.event.Level;
 
 @NotThreadSafe
 @Category(SlowTests.class)
@@ -353,6 +354,34 @@ public class TaskRunNpmInstallTest {
         FileUtils.write(packageJsonFile, packageJson.toJson(),
                 StandardCharsets.UTF_8);
 
+    }
+
+    @Test
+    public void runNpmInstall_noPostinstallScript_postIntstallNotExecuted()
+            throws IOException, ExecutionFailedException {
+        setupEsbuildAndFooInstallation();
+
+        // Remove postinstall script from "esbuild"
+        File esbuildPackageJson = new File(
+                new File(getNodeUpdater().nodeModulesFolder.getParentFile(),
+                        "fake-esbuild"),
+                "package.json");
+        JsonObject esbuildPackageJsonContents = Json.parse(IOUtils.toString(
+                getClass().getResourceAsStream(
+                        "fake-package-with-postinstall.json"),
+                StandardCharsets.UTF_8));
+        esbuildPackageJsonContents.getObject("scripts").remove("postinstall");
+        FileUtils.write(esbuildPackageJson, esbuildPackageJsonContents.toJson(),
+                StandardCharsets.UTF_8);
+
+        logger = new MockLogger();
+        Assert.assertTrue(logger.isDebugEnabled());
+        task.execute();
+
+        Assert.assertFalse(
+                "esbuild without postinstall should not have been executed",
+                ((MockLogger) logger).getLogs()
+                        .contains("Running postinstall for 'esbuild'"));
     }
 
     @Test
