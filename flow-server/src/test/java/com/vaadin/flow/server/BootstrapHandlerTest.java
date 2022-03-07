@@ -1574,7 +1574,7 @@ public class BootstrapHandlerTest {
         BootstrapHandler bootstrapHandler = new BootstrapHandler();
         VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
 
-        Mockito.when(request.getHeader(BootstrapHandler.SERVICE_WORKER_HEADER))
+        Mockito.when(request.getHeader(HandlerHelper.SERVICE_WORKER_HEADER))
                 .thenReturn("script");
 
         Assert.assertFalse(bootstrapHandler.canHandleRequest(request));
@@ -1585,10 +1585,57 @@ public class BootstrapHandlerTest {
         BootstrapHandler bootstrapHandler = new BootstrapHandler();
         VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
 
-        Mockito.when(request.getHeader(BootstrapHandler.SERVICE_WORKER_HEADER))
+        Mockito.when(request.getHeader(HandlerHelper.SERVICE_WORKER_HEADER))
                 .thenReturn(null);
 
         Assert.assertTrue(bootstrapHandler.canHandleRequest(request));
+    }
+
+
+    @Test
+    public void canHandleRequest_allow_oldBrowser() {
+        Assert.assertTrue(indexHtmlRequestHandler.canHandleRequest(
+                createRequestWithDestination("/", null, null)));
+    }
+
+    @Test
+    public void canHandleRequest_handle_indexHtmlRequest() {
+        Assert.assertTrue(indexHtmlRequestHandler.canHandleRequest(
+                createRequestWithDestination("/", "document", "navigate")));
+    }
+
+    @Test
+    public void canHandleRequest_doNotHandle_scriptRequest() {
+        Assert.assertFalse(indexHtmlRequestHandler.canHandleRequest(
+                createRequestWithDestination("/", "script", "no-cors")));
+    }
+
+    @Test
+    public void canHandleRequest_doNotHandle_imageRequest() {
+        Assert.assertFalse(indexHtmlRequestHandler.canHandleRequest(
+                createRequestWithDestination("/", "image", "no-cors")));
+    }
+
+    @Test
+    public void canHandleRequest_handle_serviceWorkerDocumentRequest() {
+        Assert.assertTrue(indexHtmlRequestHandler.canHandleRequest(
+                createRequestWithDestination("/", "empty", "same-origin")));
+    }
+
+
+    private VaadinServletRequest createRequestWithDestination(String pathInfo,
+            String fetchDest, String fetchMode) {
+        VaadinServletRequest req = createVaadinRequest(pathInfo);
+        Mockito.when(req.getHeader(Mockito.anyString())).thenAnswer(arg -> {
+            if ("Sec-Fetch-Dest".equals(arg.getArgument(0))) {
+                return fetchDest;
+            } else if ("Sec-Fetch-Mode".equals(arg.getArgument(0))) {
+                return fetchMode;
+            }
+            return null;
+        });
+
+        return req;
     }
 
     @Test

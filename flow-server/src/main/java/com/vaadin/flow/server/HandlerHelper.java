@@ -60,8 +60,8 @@ public class HandlerHelper implements Serializable {
     private static final Pattern PARENT_DIRECTORY_REGEX = Pattern
             .compile("(/|\\\\)\\.\\.(/|\\\\)?", Pattern.CASE_INSENSITIVE);
 
-    private static final String SERVICE_WORKER_HEADER = "Service-Worker";
-    private static final String FETCH_DEST_HEADER = "Sec-Fetch-Dest";
+    public static final String SERVICE_WORKER_HEADER = "Service-Worker";
+    public static final String FETCH_DEST_HEADER = "Sec-Fetch-Dest";
 
     private static final Set<String> nonHtmlFetchDests;
 
