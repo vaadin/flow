@@ -214,6 +214,8 @@ public abstract class VaadinWebSecurityConfigurerAdapter
      *
      * Assumes Vaadin servlet to be mapped on root path ({@literal /*}).
      *
+     * @param urlMapping
+     *            the url mapping for the Vaadin servlet
      * @return default {@link WebSecurity} ignore matcher
      */
     public static RequestMatcher getDefaultWebSecurityIgnoreMatcher(
