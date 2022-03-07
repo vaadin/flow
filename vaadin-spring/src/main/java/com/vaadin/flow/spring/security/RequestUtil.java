@@ -44,13 +44,16 @@ public class RequestUtil {
     @Autowired
     private ServletRegistrationBean<SpringServlet> springServletRegistration;
 
+    /**
+     * Initializes the util class.
+     */
     @PostConstruct
     public void init() {
         try {
             endpointUtil = applicationContext.getBean(EndpointUtil.class);
-        } catch (NoClassDefFoundError e) {
+        } catch (NoClassDefFoundError e) { // NOSONAR
             // Presumable Fusion is not on the classpath
-        } catch (Exception e) {
+        } catch (Exception e) { // NOSONAR
             // Presumable Fusion is not on the classpath
         }
 
