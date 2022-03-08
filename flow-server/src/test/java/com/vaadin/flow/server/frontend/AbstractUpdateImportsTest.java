@@ -31,6 +31,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -323,9 +325,9 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         expectedLines.add(
                 "registerStyles('', $css_4, {include: 'bar', moduleId: 'baz'});");
         expectedLines.add(
-                "registerStyles('foo-bar', $css_5, {moduleId: 'flow_css_mod'});");
+                "registerStyles('foo-bar', $css_5, {moduleId: 'flow_css_mod_5'});");
         expectedLines.add(
-                "registerStyles('foo-bar', $css_6, {include: 'bar', moduleId: 'flow_css_mod'});");
+                "registerStyles('foo-bar', $css_6, {include: 'bar', moduleId: 'flow_css_mod_6'});");
 
         expectedLines.add("import 'generated-modules-foo';");
         expectedLines.add("import 'generated-modules-bar';");
@@ -338,6 +340,17 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                             + updater.resultingLines,
                     updater.resultingLines.contains(line));
         }
+
+        // All generated module ids are distinct
+        Pattern moduleIdPattern = Pattern
+                .compile(".*moduleId: '(flow_css_mod_[^']*)'.*");
+        List<String> moduleIds = updater.resultingLines.stream()
+                .map(moduleIdPattern::matcher).filter(Matcher::matches)
+                .map(m -> m.group(1)).collect(Collectors.toList());
+        long uniqueModuleIds = moduleIds.stream().distinct().count();
+        Assert.assertTrue("expected modules", moduleIds.size() > 0);
+        Assert.assertEquals("duplicates in generated " + moduleIds,
+                moduleIds.size(), uniqueModuleIds);
 
         String output = logger.getLogs();
 

@@ -497,7 +497,7 @@ abstract class AbstractUpdateImports implements Runnable {
         if (cssData.getId() != null) {
             optionalsMap.put("moduleId", cssData.getId());
         } else if (cssData.getThemefor() != null) {
-            optionalsMap.put("moduleId", getThemeIdPrefix());
+            optionalsMap.put("moduleId", getThemeIdPrefix() + "_" + i);
         }
         String optionals = "";
         if (!optionalsMap.isEmpty()) {
