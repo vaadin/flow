@@ -707,7 +707,11 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                         .exportUsageStatisticsToDocument(document);
             }
 
-            setupPwa(document, context);
+            if (!FeatureFlags.get(context.getService().getContext())
+                    .isEnabled(FeatureFlags.VITE)
+                    || config.isProductionMode()) {
+                setupPwa(document, context);
+            }
 
             if (!config.isProductionMode()) {
                 showWebpackErrors(context.getService(), document);
