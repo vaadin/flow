@@ -32,7 +32,7 @@ import com.vaadin.flow.server.VaadinContext;
  * {@link LookupServletContainerInitializer} completed.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
- * 
+ *
  * @author Vaadin Ltd
  * @since
  *
@@ -43,7 +43,7 @@ class DeferredServletContextInitializers {
      * A callback which will be called to run
      * {@link ServletContainerInitializer} logic once a {@link ServletContext}
      * is initialized with {@link Lookup}.
-     * 
+     *
      * @author Vaadin Ltd
      * @since
      *
@@ -52,7 +52,7 @@ class DeferredServletContextInitializers {
         /**
          * Runs {@link ServletContainerInitializer} logic with the provided
          * {@code context}.
-         * 
+         *
          * @param context
          *            a ServletContext for the initializer
          * @throws ServletException
@@ -65,7 +65,7 @@ class DeferredServletContextInitializers {
 
     /**
      * Adds deferred initializer.
-     * 
+     *
      * @param initializer
      *            an initializer
      */
@@ -75,7 +75,7 @@ class DeferredServletContextInitializers {
 
     /**
      * Runs all collected initializers.
-     * 
+     *
      * @param context
      *            a ServletContext for initializers
      * @throws ServletException

@@ -23,7 +23,7 @@ import java.lang.annotation.Target;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 
 /**
- * 
+ *
  * This class here is for testing purpose: it's impossible to test polymer
  * templates related code which has not been moved to a separate module.
  */

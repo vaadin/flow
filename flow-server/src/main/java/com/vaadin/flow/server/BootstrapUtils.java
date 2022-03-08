@@ -266,7 +266,7 @@ class BootstrapUtils {
      * defined.
      * <p>
      * This method is only valid for V14 bootstrapping
-     * 
+     *
      * @param ui
      *            the UI for which to do the lookup, not <code>null</code>
      * @param request

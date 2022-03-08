@@ -161,7 +161,7 @@ public interface HasHierarchicalDataProvider<T> extends Serializable {
      * <em>NOTE:</em> This method is here for backwards compatibility, but the
      * implementation for it will most likely throw if the data provider is not
      * a {@link HierarchicalDataProvider}.
-     * 
+     *
      * @param dataProvider
      *            the data provider, not null
      * @deprecated Use {@link #setDataProvider(HierarchicalDataProvider)}
@@ -173,7 +173,7 @@ public interface HasHierarchicalDataProvider<T> extends Serializable {
     /**
      * Sets the hierarchical data provider for this listing. The data provider
      * provides the items and the hierarchy as needed.
-     * 
+     *
      * @param hierarchicalDataProvider
      *            the hierarchical data provider to use, not {@code null}
      */

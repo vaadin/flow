@@ -87,7 +87,7 @@ public interface TemplateParser {
      * <p>
      * To be able to create a parser which can be provided as SPI use
      * {@link Instantiator} to create the factory and then get a parser from it:
-     * 
+     *
      * <pre>
      * <code>
      * Instantiator instantiator = ...;
@@ -96,7 +96,7 @@ public interface TemplateParser {
      * </code>
      * </pre>
      * <p>
-     * 
+     *
      * @author Vaadin Ltd
      * @since
      *
@@ -105,7 +105,7 @@ public interface TemplateParser {
 
         /**
          * Creates a template parser instance.
-         * 
+         *
          * @return a template parser instance
          */
         public TemplateParser createParser() {

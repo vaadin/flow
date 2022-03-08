@@ -22,7 +22,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * 
+ *
  * This class here is for testing purpose: it's impossible to test polymer
  * templates related code which has not been moved to a separate module.
  */

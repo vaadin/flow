@@ -19,7 +19,7 @@ import com.vaadin.flow.server.VaadinContext;
 
 /**
  * A factory for {@link ApplicationConfiguration}.
- * 
+ *
  * @author Vaadin Ltd
  * @since
  *
@@ -29,7 +29,7 @@ public interface ApplicationConfigurationFactory {
     /**
      * Creates a new instance of {@link ApplicationConfiguration} for the given
      * {@code context}.
-     * 
+     *
      * @param context
      *            the context to create a configuration for
      * @return the configuration created based on the {@code context}

@@ -45,7 +45,7 @@ public class LocaleChangeEvent extends EventObject {
 
     /**
      * Get the new locale that was set.
-     * 
+     *
      * @return set locale
      */
     public Locale getLocale() {
@@ -54,7 +54,7 @@ public class LocaleChangeEvent extends EventObject {
 
     /**
      * Returns the UI where the locale changed in.
-     * 
+     *
      * @return the ui
      */
     public UI getUI() {

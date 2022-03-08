@@ -67,7 +67,7 @@ public interface BinderContext {
      *            predicate to filter strategies using type {@code T}.
      * @param <T>
      *            the array type
-     * 
+     *
      * @return collection of filtered strategies
      */
     <T extends BindingStrategy<?>> JsArray<T> getStrategies(

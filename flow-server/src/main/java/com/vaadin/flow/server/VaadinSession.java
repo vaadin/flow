@@ -1122,7 +1122,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * {@link #refreshTransients(WrappedSession, VaadinService)} has been called
      * for it. If the session is just created or deserialized but not yet in
      * real use then it's not initialized and it's state is incomplete.
-     * 
+     *
      * @return whether the session is initialized
      */
     private boolean isInitialized() {

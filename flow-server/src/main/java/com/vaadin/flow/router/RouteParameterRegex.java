@@ -42,7 +42,7 @@ public class RouteParameterRegex implements Serializable {
 
     /**
      * Gets the regex used for the given parameterType.
-     * 
+     *
      * @param parameterType
      *            type of the parameter.
      * @return the regex matching the type.
@@ -61,7 +61,7 @@ public class RouteParameterRegex implements Serializable {
 
     /**
      * Gets the type of the parameter for the given regex.
-     * 
+     *
      * @param regex
      *            the regex.
      * @return the type of the parameter.
@@ -80,7 +80,7 @@ public class RouteParameterRegex implements Serializable {
 
     /**
      * Gets the name representation of the regex.
-     * 
+     *
      * @param regex
      *            the regex.
      * @return the name of the parameter type represented by the regex.

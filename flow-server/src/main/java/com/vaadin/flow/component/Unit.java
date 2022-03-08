@@ -105,10 +105,10 @@ public enum Unit {
 
     /**
      * Gives size unit of the css string representing a size.
-     * 
+     *
      * @param cssSize
      *            Css compliant size string such as "50px".
-     * 
+     *
      * @return A Optional unit.
      */
     public static Optional<Unit> getUnit(String cssSize) {
@@ -126,10 +126,10 @@ public enum Unit {
 
     /**
      * Gives size component as float of the css string representing a size.
-     * 
+     *
      * @param cssSize
      *            Css compliant size string such as "50px".
-     * 
+     *
      * @return Size as float, 0 if string contained only the unit.
      */
     public static float getSize(String cssSize) {

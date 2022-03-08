@@ -151,7 +151,7 @@ public class VaadinConfigurationProperties {
      * server might be incorrectly handled by
      * {@link com.vaadin.flow.spring.security.VaadinWebSecurityConfigurerAdapter}
      * and access to a public view will be denied instead of allowed.
-     * 
+     *
      * @param loadOnStartup
      *            {@code true} to load the servlet on startup, {@code false}
      *            otherwise
@@ -175,7 +175,7 @@ public class VaadinConfigurationProperties {
     /**
      * Sets whether a browser should be launched on startup when in development
      * mode.
-     * 
+     *
      * @param launchBrowser
      *            {@code true} to launch a browser on startup when in
      *            development mode, {@code false} otherwise

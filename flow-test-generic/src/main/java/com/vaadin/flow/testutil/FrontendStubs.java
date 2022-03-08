@@ -127,7 +127,7 @@ public class FrontendStubs {
      * Creates a stub webpack-dev-server able to output a ready string, sleep
      * for a while and output arguments passed to a file, so as tests can check
      * it.
-     * 
+     *
      * @param readyString
      *            string to output
      * @param milliSecondsToRun

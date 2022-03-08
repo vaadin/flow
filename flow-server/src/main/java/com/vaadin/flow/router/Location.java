@@ -75,7 +75,7 @@ public class Location implements Serializable {
      * A possible "/" prefix of the location is ignored and a <code>null</code>
      * location is interpreted as <code>""</code>
      *
-     * 
+     *
      * @param location
      *            the relative location or <code>null</code> which is
      *            interpreted as <code>""</code>

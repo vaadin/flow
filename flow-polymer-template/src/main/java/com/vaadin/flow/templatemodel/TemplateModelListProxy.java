@@ -32,7 +32,7 @@ import com.vaadin.flow.internal.nodefeature.ModelList;
  * @since 1.0
  * @param <T>
  *            the type of items in the list
- * 
+ *
  * @deprecated This functionality is internal and bound to template model which
  *             is not supported for lit template. Polymer template support is
  *             deprecated - we recommend you to use {@code LitTemplate} instead.

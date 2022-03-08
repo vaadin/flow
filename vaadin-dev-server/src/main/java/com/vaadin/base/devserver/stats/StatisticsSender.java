@@ -43,7 +43,7 @@ public class StatisticsSender {
 
     /**
      * Creates a new instance connected to the given storage.
-     * 
+     *
      * @param storage
      *            the storage to use
      */
@@ -173,7 +173,7 @@ public class StatisticsSender {
 
     /**
      * Send data in the background if needed.
-     * 
+     *
      * @param json
      *            The json returned by {@link StatisticsStorage#read()}
      */
@@ -197,10 +197,10 @@ public class StatisticsSender {
      * <p>
      * Reads the current data and posts it to given URL. Updates or replaces the
      * local data according to the response.
-     * 
+     *
      * @param json
      *            The json returned by {@link StatisticsStorage#read()}
-     * 
+     *
      * @see #postData(String, JsonNode)
      */
     String sendStatistics(ObjectNode json) {

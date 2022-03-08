@@ -28,7 +28,7 @@ public class FeatureFlagMessage implements Serializable {
 
     /**
      * Creates a new message with the given features.
-     * 
+     *
      * @param features
      *            the features
      */

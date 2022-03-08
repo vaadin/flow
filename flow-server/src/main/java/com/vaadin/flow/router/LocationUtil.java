@@ -77,7 +77,7 @@ public class LocationUtil {
      * Parses the given path to parts split by the path separator, ignoring the
      * query string and fragment if either present. The path is verified with
      * {@link #verifyRelativePath(String)}.
-     * 
+     *
      * @param path
      *            the path to parse
      * @return tha path split into parts
@@ -111,7 +111,7 @@ public class LocationUtil {
 
     /**
      * Handles given location when it is either {@code null} or starts with "/".
-     * 
+     *
      * @param location
      *            the location to handle
      * @return the cleaned up location, not {@code null}
@@ -128,7 +128,7 @@ public class LocationUtil {
 
     /**
      * Parses query parameters from the given location.
-     * 
+     *
      * @param location
      *            the location to parse the query parameters from
      * @return the query parameters

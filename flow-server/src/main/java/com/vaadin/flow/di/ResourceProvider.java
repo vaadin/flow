@@ -26,7 +26,7 @@ import java.util.List;
  * This is SPI to access resources available at runtime. Depending on the web
  * container this can be an application classpath only or bundles which are
  * identified by the provided context.
- * 
+ *
  * @author Vaadin Ltd
  * @since
  *
@@ -40,7 +40,7 @@ public interface ResourceProvider {
      * If the provider doesn't contain any information about application bundle
      * or there is no resource with the given path then this method returns
      * {@code null}.
-     * 
+     *
      * @param path
      *            the resource path
      * @return an URL of the resource, may be {@code null}
@@ -54,7 +54,7 @@ public interface ResourceProvider {
      * If the provider doesn't contain any information about application bundle
      * or there is no resource with the given path then this method returns an
      * empty list.
-     * 
+     *
      * @param path
      *            the resource path
      * @return a list of URLs of the resources or an empty list if resources are
@@ -66,7 +66,7 @@ public interface ResourceProvider {
 
     /**
      * Gets "flow-client" bundle resource identified by the {@code path}.
-     * 
+     *
      * @param path
      *            the resource path
      * @return an URL of the resource, may be {@code null}
@@ -76,7 +76,7 @@ public interface ResourceProvider {
     /**
      * Gets "flow-client" bundle resource content identified by the
      * {@code path}.
-     * 
+     *
      * @param path
      *            the resource path
      * @return an URL of the resource, may be {@code null}

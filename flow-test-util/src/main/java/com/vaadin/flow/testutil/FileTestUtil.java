@@ -9,7 +9,7 @@ public class FileTestUtil {
 
     /**
      * Waits for the given file to be present for up to 5 minutes.
-     * 
+     *
      * @param file
      *            the file to wait for
      */
@@ -34,7 +34,7 @@ public class FileTestUtil {
 
     /**
      * Asserts the given file is a directory.
-     * 
+     *
      * @param file
      *            the file to check
      * @param errorMessage
@@ -47,7 +47,7 @@ public class FileTestUtil {
 
     /**
      * Asserts the given file is a symlink.
-     * 
+     *
      * @param file
      *            the file to check
      * @param errorMessage

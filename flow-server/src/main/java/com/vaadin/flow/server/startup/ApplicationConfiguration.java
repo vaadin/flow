@@ -32,7 +32,7 @@ import com.vaadin.flow.server.frontend.FallbackChunk;
  * Configuration is based on {@link VaadinContext} which provides application
  * level data in contrast to {@link DeploymentConfiguration} which provides a
  * {@link Servlet} level configuration.
- * 
+ *
  * @author Vaadin Ltd
  * @since
  *
@@ -41,7 +41,7 @@ public interface ApplicationConfiguration extends AbstractConfiguration {
 
     /**
      * Gets a configuration instance for the given {code context}.
-     * 
+     *
      * @param context
      *            the context to get the configuration for
      * @return the application level configuration for the given {@code context}
@@ -79,7 +79,7 @@ public interface ApplicationConfiguration extends AbstractConfiguration {
 
     /**
      * The context which the configuration is based on.
-     * 
+     *
      * @return the vaadin context
      */
     VaadinContext getContext();
@@ -87,7 +87,7 @@ public interface ApplicationConfiguration extends AbstractConfiguration {
     /**
      * Gets a fallback chunk for the application or {@code null} if it's not
      * available.
-     * 
+     *
      * @return the application fallback chunk, may be {@code null}.
      */
     FallbackChunk getFallbackChunk();

@@ -90,7 +90,7 @@ public enum EffectAllowed {
     /**
      * Parses effect allowed from the given non-null string or throws an illegal
      * argument exception if fails to parse it.
-     * 
+     *
      * @param string
      *            the string to parse
      * @return the matching effect allowed

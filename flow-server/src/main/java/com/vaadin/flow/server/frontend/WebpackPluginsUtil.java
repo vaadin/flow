@@ -81,7 +81,7 @@ class WebpackPluginsUtil {
 
     /**
      * Load and parse the requested Json file.
-     * 
+     *
      * @param jsonFilePath
      *            path to json file
      * @return parsed Json for file if found
@@ -113,7 +113,7 @@ class WebpackPluginsUtil {
 
     /**
      * Get URL for given resource.
-     * 
+     *
      * @param resource
      *            resource to get URL for
      * @return resource URL
@@ -125,7 +125,7 @@ class WebpackPluginsUtil {
 
     /**
      * Get stream for resource.
-     * 
+     *
      * @param resource
      *            resource stream
      * @return input stream for resource

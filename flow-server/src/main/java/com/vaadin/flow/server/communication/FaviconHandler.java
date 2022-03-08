@@ -32,7 +32,7 @@ import com.vaadin.flow.server.VaadinSession;
  * resource if servlet mapping is "/*".
  * <p>
  * For internal use only. May be renamed or removed in a future release.
- * 
+ *
  * @author Vaadin Ltd
  * @since 1.0
  */

@@ -68,7 +68,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
         /**
          * Gets the time spent running {@code npm install}.
-         * 
+         *
          * @return the time in milliseconds
          */
         public long getInstallTimeMs() {
@@ -77,7 +77,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
         /**
          * Gets the time spent doing cleanup before {@code npm install}.
-         * 
+         *
          * @return the time in milliseconds
          */
         public long getCleanupTimeMs() {
@@ -86,7 +86,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
         /**
          * Gets the package manager used for installation.
-         * 
+         *
          * @return the name of the package manager
          */
         public String getPackageManager() {
@@ -197,11 +197,11 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
     /**
      * Updates
-     * 
+     *
      * <pre>
      * node_modules/.vaadin/vaadin.json
      * </pre>
-     * 
+     *
      * with package.json hash and the platform version.
      * <p>
      * This is for handling updated package to the code repository by another
@@ -633,7 +633,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
     /**
      * Returns timing information for the last operation.
-     * 
+     *
      * @return timing information
      */
     public static Stats getLastInstallStats() {

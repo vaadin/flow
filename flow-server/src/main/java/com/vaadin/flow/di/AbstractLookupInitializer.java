@@ -37,7 +37,7 @@ import com.vaadin.flow.server.startup.LookupServletContainerInitializer;
  * implement own way to set up {@link Lookup} and make it available via
  * {@link VaadinContext#getAttribute(Class)}.
  * </ul>
- * 
+ *
  * The first case allows to customize {@link Lookup} creation and initialization
  * in case when it's not possible to prevent
  * {@link LookupServletContainerInitializer} execution (any container which
@@ -61,7 +61,7 @@ import com.vaadin.flow.server.startup.LookupServletContainerInitializer;
  * the developers for the framework support (the main usecase here is Spring
  * add-on).
  * </ul>
- * 
+ *
  * @author Vaadin Ltd
  * @since
  *
@@ -88,7 +88,7 @@ public interface AbstractLookupInitializer {
      * The provided {@code services} map contains service implementations found
      * in application classpath using {@code @HandlesTypes} annotation declared
      * for {@link LookupServletContainerInitializer}.
-     * 
+     *
      * @param context
      *            a Vaadin context to run initialization for
      * @param services

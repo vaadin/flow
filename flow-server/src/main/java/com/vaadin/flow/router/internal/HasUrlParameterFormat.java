@@ -60,7 +60,7 @@ public class HasUrlParameterFormat implements Serializable {
      * Gets the template for the given url base by appending the parameter
      * according to the given navigationTarget if it's implementing
      * {@link HasUrlParameter}
-     * 
+     *
      * @param urlBase
      *            url base.
      * @param navigationTarget
@@ -95,7 +95,7 @@ public class HasUrlParameterFormat implements Serializable {
     /**
      * Gets the url base without the parameter for the given template and
      * navigation target implementing * {@link HasUrlParameter}.
-     * 
+     *
      * @param template
      *            the template.
      * @return the url base excluding the parameter placeholder.
@@ -110,7 +110,7 @@ public class HasUrlParameterFormat implements Serializable {
 
     /**
      * Gets the final url by appending the given parameters.
-     * 
+     *
      * @param url
      *            url base.
      * @param parameters
@@ -153,7 +153,7 @@ public class HasUrlParameterFormat implements Serializable {
     /**
      * Transform the {@link HasUrlParameter} values into a
      * {@link RouteParameters} object.
-     * 
+     *
      * @param parametersList
      *            the list of values.
      * @param <T>
@@ -182,7 +182,7 @@ public class HasUrlParameterFormat implements Serializable {
     /**
      * Gets the values for the {@link HasUrlParameter} from the specified route
      * parameters.
-     * 
+     *
      * @param parameters
      *            route parameter.
      * @return HasUrlParameter compatible values.
@@ -206,7 +206,7 @@ public class HasUrlParameterFormat implements Serializable {
 
     /**
      * Gets the types of the parameters from string format.
-     * 
+     *
      * @param types
      *            the input string format types.
      * @return the class types of the parameters.
@@ -219,7 +219,7 @@ public class HasUrlParameterFormat implements Serializable {
     /**
      * Verify whether the navigationTarget has mandatory parameter and complies
      * with the given parameter values.
-     * 
+     *
      * @param navigationTarget
      *            navigation target.
      * @param parameters

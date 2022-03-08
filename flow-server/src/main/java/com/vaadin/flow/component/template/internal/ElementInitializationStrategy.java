@@ -22,7 +22,7 @@ import com.vaadin.flow.dom.Element;
  * element.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
- * 
+ *
  * @author Vaadin Ltd
  * @since
  *
@@ -33,7 +33,7 @@ interface ElementInitializationStrategy {
     /**
      * Initializes the {@code element} with template attribute {@code name} and
      * its {@code value}.
-     * 
+     *
      * @param element
      *            the element to initialize
      * @param name

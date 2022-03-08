@@ -37,7 +37,7 @@ public class RouteParam extends Pair<String, String> {
 
     /**
      * Gets the name of the parameter.
-     * 
+     *
      * @return the name of the parameter.
      */
     public String getName() {
@@ -46,7 +46,7 @@ public class RouteParam extends Pair<String, String> {
 
     /**
      * Gets the value of the parameter.
-     * 
+     *
      * @return the value of the parameter.
      */
     public String getValue() {

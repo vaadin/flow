@@ -422,7 +422,7 @@ public class RouteUtil {
     /**
      * Updates route registry as necessary when classes have been added /
      * modified / deleted.
-     * 
+     *
      * @param registry
      *            route registry
      * @param addedClasses

@@ -54,7 +54,7 @@ public class LitTemplateInitializer {
      *            a template to initialize
      * @param service
      *            the related service
-     * 
+     *
      * @see VaadinService
      * @see LitTemplateParserFactory
      * @see Instantiator

@@ -60,7 +60,7 @@ public class AccessAnnotationChecker implements Serializable {
      * {@link HttpServletRequest#getUserPrincipal()} and
      * {@link HttpServletRequest#isUserInRole(String)} has access to the given
      * method.
-     * 
+     *
      * @param method
      *            the method to check access to
      * @return {@code true} if the user has access to the given method,
@@ -80,7 +80,7 @@ public class AccessAnnotationChecker implements Serializable {
      * {@link HttpServletRequest#getUserPrincipal()} and
      * {@link HttpServletRequest#isUserInRole(String)} has access to the given
      * class.
-     * 
+     *
      * @param cls
      *            the class to check access to
      * @return {@code true} if the user has access to the given method,
@@ -96,12 +96,12 @@ public class AccessAnnotationChecker implements Serializable {
     }
 
     /**
-     * 
+     *
      * Checks if the user defined by the request (using
      * {@link HttpServletRequest#getUserPrincipal()} and
      * {@link HttpServletRequest#isUserInRole(String)} has access to the given
      * method.
-     * 
+     *
      * @param method
      *            the method to check access to
      * @param request
@@ -118,12 +118,12 @@ public class AccessAnnotationChecker implements Serializable {
     }
 
     /**
-     * 
+     *
      * Checks if the user defined by the request (using
      * {@link HttpServletRequest#getUserPrincipal()} and
      * {@link HttpServletRequest#isUserInRole(String)} has access to the given
      * class.
-     * 
+     *
      * @param cls
      *            the class to check access to
      * @param request
@@ -142,7 +142,7 @@ public class AccessAnnotationChecker implements Serializable {
     /**
      * Checks if the user defined by the given {@link Principal} and role
      * checker has access to the given method.
-     * 
+     *
      * @param method
      *            the method to check access to
      * @param principal
@@ -160,7 +160,7 @@ public class AccessAnnotationChecker implements Serializable {
     /**
      * Checks if the user defined by the given {@link Principal} and role
      * checker has access to the given class.
-     * 
+     *
      * @param cls
      *            the class to check access to
      * @param principal

@@ -43,7 +43,7 @@ public interface HasHelper extends HasElement {
      * Example: a text "The password must contain numbers" for the
      * PasswordField.
      * </p>
-     * 
+     *
      * <p>
      * In case both {@link #setHelperText(String)} and
      * {@link #setHelperComponent(Component)} are used, only the element defined
@@ -64,11 +64,11 @@ public interface HasHelper extends HasElement {
      * that can be used, e.g., to inform to the users which values it expects.
      * Example: a component that shows the password strength for the
      * PasswordField.
-     * 
+     *
      * @param component
      *            the component to set, can be {@code null} to remove existing
      *            helper component
-     * 
+     *
      * @see #setHelperText(String)
      */
     default void setHelperComponent(Component component) {
@@ -84,7 +84,7 @@ public interface HasHelper extends HasElement {
 
     /**
      * Gets the component in the helper slot of this field.
-     * 
+     *
      * @return the helper component of this field, or {@code null} if no helper
      *         component has been set
      * @see #setHelperComponent(Component)

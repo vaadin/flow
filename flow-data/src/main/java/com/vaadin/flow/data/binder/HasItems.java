@@ -28,7 +28,7 @@ import java.util.stream.Stream;
  * {@link com.vaadin.flow.data.provider.HasListDataView},
  * {@link com.vaadin.flow.data.provider.HasLazyDataView} and
  * {@link com.vaadin.flow.data.provider.HasDataView} in the components.
- * 
+ *
  * @param <T>
  *            the type of the displayed item
  * @since 1.0

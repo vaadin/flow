@@ -23,7 +23,7 @@ import com.vaadin.flow.router.RouteParameters;
 /**
  * Contains the information resulted from searching a route target using a
  * navigation url as input.
- * 
+ *
  * The result of the search contains the target itself if found, and the url
  * parameter values extracted from the input path according with the route
  * configuration.
@@ -50,7 +50,7 @@ public class NavigationRouteTarget implements Serializable {
 
     /**
      * Gets whether this search result instance contains a navigation target.
-     * 
+     *
      * @return true if this search result instance contains a navigation target,
      *         otherwise false.
      */
@@ -60,7 +60,7 @@ public class NavigationRouteTarget implements Serializable {
 
     /**
      * Gets the input path for the search.
-     * 
+     *
      * @return the input path for the search.
      */
     public String getPath() {
@@ -69,7 +69,7 @@ public class NavigationRouteTarget implements Serializable {
 
     /**
      * Gets the route target.
-     * 
+     *
      * @return the route target.
      */
     public RouteTarget getRouteTarget() {
@@ -78,7 +78,7 @@ public class NavigationRouteTarget implements Serializable {
 
     /**
      * Gets the route parameters for this search response.
-     * 
+     *
      * @return the route parameters for this search response.
      */
     public RouteParameters getRouteParameters() {

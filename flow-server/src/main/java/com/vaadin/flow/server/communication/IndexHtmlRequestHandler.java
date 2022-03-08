@@ -263,7 +263,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
     /**
      * Checks if the request is potentially a request for an HTML page.
-     * 
+     *
      * @param request
      *            the request to check
      * @return {@code true} if the request is potentially for HTML,

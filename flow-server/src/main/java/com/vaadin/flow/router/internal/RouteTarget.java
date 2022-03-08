@@ -87,7 +87,7 @@ public class RouteTarget implements Serializable {
 
     /**
      * Get the parent layout chain.
-     * 
+     *
      * @return parent layout chain
      */
     public List<Class<? extends RouterLayout>> getParentLayouts() {

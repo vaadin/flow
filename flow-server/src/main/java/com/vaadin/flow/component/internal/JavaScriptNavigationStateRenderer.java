@@ -33,7 +33,7 @@ import com.vaadin.flow.router.internal.NavigationStateRenderer;
 /**
  * Handle navigation events in relation to the client side bootstrap UI
  * {@link JavaScriptBootstrapUI}.
- * 
+ *
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
@@ -63,7 +63,7 @@ class JavaScriptNavigationStateRenderer extends NavigationStateRenderer {
 
     /**
      * Gets the client forward route.
-     * 
+     *
      * @return the client forward route.
      */
     public String getClientForwardRoute() {
