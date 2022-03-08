@@ -89,7 +89,7 @@ public interface HasLazyDataView<T, F, V extends LazyDataView<T>>
      * later on fetched with {@link #getLazyDataView()}. For using in-memory
      * data, like {@link java.util.Collection}, use
      * {@link HasListDataView#setItems(Collection)} instead.
-     * 
+     *
      * @param fetchCallback
      *            function that returns a stream of items from the back end for
      *            a query
@@ -115,7 +115,7 @@ public interface HasLazyDataView<T, F, V extends LazyDataView<T>>
      * later on fetched with {@link #getLazyDataView()}. For using in-memory
      * data, like {@link java.util.Collection}, use
      * {@link HasListDataView#setItems(Collection)} instead.
-     * 
+     *
      * @param dataProvider
      *            BackEndDataProvider instance
      * @return LazyDataView instance for further configuration

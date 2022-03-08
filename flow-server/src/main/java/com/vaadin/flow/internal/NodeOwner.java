@@ -59,7 +59,7 @@ public interface NodeOwner extends Serializable {
 
     /**
      * Check if given node is registered to this node owner.
-     * 
+     *
      * @param node
      *            node to check registration status for
      * @return true if node is registered

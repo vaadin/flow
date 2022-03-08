@@ -47,7 +47,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
 /**
  * Default implementation of {@link ApplicationConfigurationFactory}.
- * 
+ *
  * @author Vaadin Ltd
  * @since
  *
@@ -129,7 +129,7 @@ public class DefaultApplicationConfigurationFactory
 
     /**
      * Creates application configuration instance based on provided data.
-     * 
+     *
      * @param context
      *            the Vaadin context, not {@code null}
      * @param chunk
@@ -158,7 +158,7 @@ public class DefaultApplicationConfigurationFactory
      * by the same {@link ClassLoader}. But in OSGi "flow-server" module classes
      * can't be used to get Web Application resources since they are in
      * different bundles.
-     * 
+     *
      * @param context
      *            a VaadinContext which may provide information how to get token
      *            file for the web application

@@ -71,7 +71,7 @@ public @interface EnableVaadin {
      * <p>
      * If packages are not specified then default Spring Boot application
      * package is used.
-     * 
+     *
      * @return the base packages to scan
      */
     String[] value() default {};

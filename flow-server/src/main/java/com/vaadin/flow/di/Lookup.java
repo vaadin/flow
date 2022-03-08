@@ -53,7 +53,7 @@ import com.vaadin.flow.server.VaadinServlet;
  * <p>
  * This is the code which one may use to get the application {@link Lookup}
  * instance:
- * 
+ *
  * <pre>
  * <code>
  *     VaadinContext context = ...;
@@ -63,8 +63,8 @@ import com.vaadin.flow.server.VaadinServlet;
  * <p>
  * This SPI is mostly for internal framework usage since {@link Instantiator}
  * provides all required services for the application developer.
- * 
- * 
+ *
+ *
  * @see Instantiator
  * @author Vaadin Ltd
  * @since
@@ -76,12 +76,12 @@ public interface Lookup {
      * <p>
      * The {@code serviceClass} is usually an interface (though it doesn't have
      * to be) and the returned value is some implementation of this interface.
-     * 
+     *
      * @param <T>
      *            a service type
      * @param serviceClass
      *            a service SPI class
-     * 
+     *
      * @see Lookup#lookupAll(Class)
      * @return a service which implements the {@code serviceClass}, may be
      *         {@code null} if no services are registered for this SPI
@@ -111,7 +111,7 @@ public interface Lookup {
      * <p>
      * This method may be used to create a temporary lookup which then can be
      * used to extend an existing lookup via {@link #compose(Lookup, Lookup)}.
-     * 
+     *
      * @param <T>
      *            the service type
      * @param service
@@ -163,7 +163,7 @@ public interface Lookup {
      * The resulting lookup is intended to be a "temporary" (short living)
      * lookup to extend an existing lookup with some additional data which is
      * required only in some isolated object.
-     * 
+     *
      * @param lookup1
      *            the first lookup to compose
      * @param lookup2

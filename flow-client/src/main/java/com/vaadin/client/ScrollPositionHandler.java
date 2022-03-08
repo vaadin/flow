@@ -410,7 +410,7 @@ public class ScrollPositionHandler {
 
     /**
      * Gets the scroll position of the page as an array.
-     * 
+     *
      * @return an array containing scroll position x (left) and y (top) in order
      */
     public static native double[] getScrollPosition()

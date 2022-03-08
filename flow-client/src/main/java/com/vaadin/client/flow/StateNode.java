@@ -325,7 +325,7 @@ public class StateNode {
 
     /**
      * Removes the {@code object} from the stored data.
-     * 
+     *
      * @param object
      *            the object to remove
      * @param <T>

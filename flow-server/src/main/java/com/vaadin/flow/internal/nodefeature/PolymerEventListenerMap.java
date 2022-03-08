@@ -61,7 +61,7 @@ public class PolymerEventListenerMap extends NodeMap {
 
     /**
      * Adds a listener for a event created from a template method.
-     * 
+     *
      * @param methodName
      *            the name of the method
      * @param eventDataExpressions

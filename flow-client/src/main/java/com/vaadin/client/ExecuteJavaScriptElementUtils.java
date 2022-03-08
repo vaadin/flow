@@ -197,7 +197,7 @@ public final class ExecuteJavaScriptElementUtils {
 
     /**
      * Invoke {@link ScrollPositionHandler#afterServerNavigation(JsonObject)}.
-     * 
+     *
      * @param registry
      *            the registry
      * @param state

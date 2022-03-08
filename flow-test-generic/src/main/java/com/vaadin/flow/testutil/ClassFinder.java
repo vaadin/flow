@@ -39,7 +39,7 @@ import static org.junit.Assert.assertNotNull;
 
 /**
  * Superclass for testing classes which need to scan project's classpath.
- * 
+ *
  * @author Vaadin Ltd
  *
  */

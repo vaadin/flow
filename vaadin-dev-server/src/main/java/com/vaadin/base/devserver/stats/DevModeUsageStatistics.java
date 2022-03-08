@@ -46,7 +46,7 @@ public class DevModeUsageStatistics {
 
     /**
      * Creates the instance.
-     * 
+     *
      * @param projectFolder
      *            the project root folder
      * @param storage
@@ -60,7 +60,7 @@ public class DevModeUsageStatistics {
 
     /**
      * Gets the singleton instance.
-     * 
+     *
      * @return the singleton instance
      */
     static DevModeUsageStatistics get() {
@@ -78,7 +78,7 @@ public class DevModeUsageStatistics {
      *            the statistics storage to use
      * @param sender
      *            the statistics sender to use
-     * 
+     *
      * @return the created instance or {@code null} if telemetry is not used
      */
     public static DevModeUsageStatistics init(String projectFolder,
@@ -129,7 +129,7 @@ public class DevModeUsageStatistics {
 
     /**
      * Stores telemetry data received from the browser.
-     * 
+     *
      * @param data
      *            the data from the browser
      */

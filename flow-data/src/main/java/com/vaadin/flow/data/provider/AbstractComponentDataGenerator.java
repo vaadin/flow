@@ -27,8 +27,8 @@ import com.vaadin.flow.internal.StateTree;
 /**
  * Abstract class used as base for DataGenerators that need to manage the
  * lifecycle of components, according to what items are requested or destroyed.
- * 
- * 
+ *
+ *
  * @author Vaadin Ltd
  * @since 1.0.
  *
@@ -74,14 +74,14 @@ public abstract class AbstractComponentDataGenerator<T>
 
     /**
      * Gets the element where the generated components will be attached to.
-     * 
+     *
      * @return the container
      */
     protected abstract Element getContainer();
 
     /**
      * Creates a new component based on the provided item.
-     * 
+     *
      * @param item
      *            the data item, possibly <code>null</code>
      * @return a {@link Component} which represents the provided item
@@ -92,7 +92,7 @@ public abstract class AbstractComponentDataGenerator<T>
      * Updates an existing component after the item has been updated. By
      * default, it creates a new component instance via
      * {@link #createComponent(Object)}.
-     * 
+     *
      * @param currentComponent
      *            the current component used to represent the item, not
      *            <code>null</code>
@@ -108,7 +108,7 @@ public abstract class AbstractComponentDataGenerator<T>
     /**
      * Gets a unique key for a given item. Items with the same keys are
      * considered equal.
-     * 
+     *
      * @param item
      *            the model item
      * @return a unique key for the item
@@ -118,7 +118,7 @@ public abstract class AbstractComponentDataGenerator<T>
     /**
      * Appends the component to the container and registers it for future use
      * during the lifecycle of the generator.
-     * 
+     *
      * @param itemKey
      *            the key of the model item
      * @param component

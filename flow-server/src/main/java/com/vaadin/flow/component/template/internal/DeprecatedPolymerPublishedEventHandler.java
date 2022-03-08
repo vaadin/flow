@@ -27,7 +27,7 @@ import elemental.json.JsonValue;
  * Service for injecting the polymer event handler when the module is available.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
- * 
+ *
  * @author Vaadin Ltd
  * @since
  *

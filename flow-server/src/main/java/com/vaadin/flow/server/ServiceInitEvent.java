@@ -99,7 +99,7 @@ public class ServiceInitEvent extends EventObject {
     /**
      * Adds a new Index HTML request listener that will be used by this service.
      * The ordering of multiple added bootstrap listeners is not guaranteed.
-     * 
+     *
      * @param indexHtmlRequestListener
      *            the Index HTML request listener to be added.
      */

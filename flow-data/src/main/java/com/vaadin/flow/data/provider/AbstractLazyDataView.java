@@ -68,7 +68,7 @@ public abstract class AbstractLazyDataView<T> extends AbstractDataView<T>
      * carelessly. Use
      * {@link com.vaadin.flow.component.UI#beforeClientResponse(Component, SerializableConsumer)}
      * to access items that will be fetched later on.
-     * 
+     *
      * @param index
      *            the index of the item to get
      * @return item on index

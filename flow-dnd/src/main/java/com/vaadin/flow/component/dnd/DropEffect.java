@@ -46,7 +46,7 @@ public enum DropEffect {
 
     /**
      * Parses drop effect from given non-null string.
-     * 
+     *
      * @param string
      *            the string to parse
      * @return the matching drop effect

@@ -155,7 +155,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         MatcherAssert.assertThat(mainContent, CoreMatchers.containsString(
                 "import $cssFromFile_5 from 'Frontend/foo.css';"));
         MatcherAssert.assertThat(mainContent, CoreMatchers.containsString(
-                "registerStyles('foo-bar', $css_5, {moduleId: 'flow_css_mod'});"));
+                "registerStyles('foo-bar', $css_5, {moduleId: 'flow_css_mod_5'});"));
 
         // Contains theme imports
         MatcherAssert.assertThat(mainContent, CoreMatchers.containsString(
@@ -211,7 +211,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         MatcherAssert.assertThat(fallBackContent, CoreMatchers.containsString(
                 "import $cssFromFile_0 from 'Frontend/b-css.css';"));
         MatcherAssert.assertThat(fallBackContent, CoreMatchers.containsString(
-                "registerStyles('extra-foo', $css_2, {include: 'extra-bar', moduleId: 'fallback_flow_css_mod'});"));
+                "registerStyles('extra-foo', $css_2, {include: 'extra-bar', moduleId: 'fallback_flow_css_mod_2'});"));
 
         // Does not contains JS module imports
         MatcherAssert.assertThat(fallBackContent, CoreMatchers.not(CoreMatchers

@@ -43,7 +43,7 @@ public interface LitTemplateParser {
      * <p>
      * To be able to create a parser which can be provided as SPI use
      * {@link Instantiator} to create the factory and then get a parser from it:
-     * 
+     *
      * <pre>
      * <code>
      * Instantiator instantiator = ...;
@@ -52,7 +52,7 @@ public interface LitTemplateParser {
      * </code>
      * </pre>
      * <p>
-     * 
+     *
      * @author Vaadin Ltd
      * @see LitTemplateParser
      * @since
@@ -62,7 +62,7 @@ public interface LitTemplateParser {
 
         /**
          * Creates a Lit template parser instance.
-         * 
+         *
          * @return a lit template parser instance
          */
         public LitTemplateParser createParser() {

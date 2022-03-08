@@ -26,7 +26,7 @@ import com.vaadin.flow.server.startup.DefaultApplicationConfigurationFactory;
 
 /**
  * Passes Spring application properties to the Vaadin application configuration.
- * 
+ *
  * @author Vaadin Ltd
  * @since
  *

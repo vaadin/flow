@@ -58,7 +58,7 @@ public class ShortcutEvent extends EventObject implements Serializable {
 
     /**
      * Component which listened for the shortcut.
-     * 
+     *
      * @return listening {@link Component}
      */
     @Override
@@ -68,7 +68,7 @@ public class ShortcutEvent extends EventObject implements Serializable {
 
     /**
      * Component which owns the shortcut.
-     * 
+     *
      * @return owning {@link Component}
      */
     public Component getLifecycleOwner() {
@@ -78,7 +78,7 @@ public class ShortcutEvent extends EventObject implements Serializable {
     /**
      * Primary {@link Key} that triggered the shortcut. Primary key can be
      * anything that is not a {@link KeyModifier}.
-     * 
+     *
      * @return primary key
      */
     public Key getKey() {
@@ -88,7 +88,7 @@ public class ShortcutEvent extends EventObject implements Serializable {
     /**
      * Set of {@link KeyModifier KeyModifiers} that, in combination with the
      * primary key, triggered the shortcut.
-     * 
+     *
      * @return set of key modifiers
      */
     public Set<KeyModifier> getKeyModifiers() {

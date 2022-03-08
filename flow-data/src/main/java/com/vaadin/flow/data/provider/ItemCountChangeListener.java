@@ -28,7 +28,7 @@ import java.io.Serializable;
  * will only receive one event. For example, this code will trigger only one
  * {@link #itemCountChanged(ItemCountChangeEvent)} method call, although there
  * are two methods called which cause the item count change:
- * 
+ *
  * <pre>
  * {@code
  * dataView.addItemCountChangeListener(listener);

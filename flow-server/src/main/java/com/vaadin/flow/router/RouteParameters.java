@@ -41,7 +41,7 @@ public final class RouteParameters implements Serializable {
 
     /**
      * Creates a RouteParameters container using the given map as argument.
-     * 
+     *
      * @param params
      *            parameters mapping containing the parameter names mapping
      *            their values.
@@ -77,7 +77,7 @@ public final class RouteParameters implements Serializable {
 
     /**
      * Creates a RouteParameters instance using only one parameter.
-     * 
+     *
      * @param name
      *            the name of the parameter.
      * @param value
@@ -89,7 +89,7 @@ public final class RouteParameters implements Serializable {
 
     /**
      * Creates an empty RouteParameters instance.
-     * 
+     *
      * @return an empty instance of RouteParameters.
      */
     public static RouteParameters empty() {
@@ -98,7 +98,7 @@ public final class RouteParameters implements Serializable {
 
     /**
      * Gets the available parameter names.
-     * 
+     *
      * @return the available parameter names.
      */
     public Set<String> getParameterNames() {
@@ -107,7 +107,7 @@ public final class RouteParameters implements Serializable {
 
     /**
      * Gets the string representation of a parameter.
-     * 
+     *
      * @param parameterName
      *            the name of the parameter.
      * @return an {@link Optional} {@link String} representation of the

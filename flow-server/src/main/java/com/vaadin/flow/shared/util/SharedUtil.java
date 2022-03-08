@@ -313,7 +313,7 @@ public class SharedUtil implements Serializable {
     /**
      * Prepend the given url with the prefix if it is not absolute and doesn't
      * have a protocol.
-     * 
+     *
      * @param url
      *            url to check
      * @param prefix

@@ -81,7 +81,7 @@ public class BrowserLauncher {
 
     /**
      * Launch a local browser using the given location URL.
-     * 
+     *
      * @param location
      *            the URL to open
      */
@@ -93,7 +93,7 @@ public class BrowserLauncher {
      * Launch a local browser using the given location URL.
      * <p>
      * If opening a browser fails, log the given text instead.
-     * 
+     *
      * @param location
      *            the URL to open
      * @param alternativeText

@@ -26,7 +26,7 @@ import com.vaadin.flow.server.VaadinContext;
  * available.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
- * 
+ *
  * @author Vaadin Ltd
  * @since
  *
@@ -36,7 +36,7 @@ public interface ApplicationClassLoaderAccess {
 
     /**
      * Gets the web application classloader.
-     * 
+     *
      * @return the web application classloader.
      */
     ClassLoader getClassloader();

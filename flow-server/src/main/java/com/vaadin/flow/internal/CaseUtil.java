@@ -19,7 +19,7 @@ import java.util.Locale;
 
 /**
  * Utilities related to various case operations.
- * 
+ *
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *

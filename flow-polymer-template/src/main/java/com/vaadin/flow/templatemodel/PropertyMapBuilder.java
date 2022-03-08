@@ -38,7 +38,7 @@ import com.vaadin.flow.templatemodel.BeanModelType.BeanModelTypeProperty;
  *
  * @author Vaadin Ltd
  * @since 1.0.
- * 
+ *
  * @deprecated This functionality is internal and bound to template model which
  *             is not supported for lit template. Polymer template support is
  *             deprecated - we recommend you to use {@code LitTemplate} instead.

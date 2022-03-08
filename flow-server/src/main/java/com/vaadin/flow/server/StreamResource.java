@@ -235,7 +235,7 @@ public class StreamResource extends AbstractStreamResource {
     /**
      * Sets the value of a generic response header. If the header had already
      * been set, the new value overwrites the previous one.
-     * 
+     *
      * @param name
      *            a header name
      * @param value
@@ -252,7 +252,7 @@ public class StreamResource extends AbstractStreamResource {
 
     /**
      * Gets the value for header {@code name} set for the resource.
-     * 
+     *
      * @param name
      *            name of header to get value for
      * @return an optional with header value, or an empty optional if it has not
@@ -270,7 +270,7 @@ public class StreamResource extends AbstractStreamResource {
      * <p>
      * This method doesn't return headers which are set via explicit setters
      * like {@link #setContentType(String)} and {@link #setCacheTime(long)}.
-     * 
+     *
      * @return a map of headers and their values
      */
     public Map<String, String> getHeaders() {

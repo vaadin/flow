@@ -178,7 +178,7 @@ public class InMemoryDataProviderHelpers {
      *            the data provider object type
      * @param <V>
      *            the provided value type
-     * 
+     *
      * @return the created predicate
      */
     public static <T, V> SerializablePredicate<T> createValueProviderFilter(

@@ -434,7 +434,7 @@ public class RouteConfiguration implements Serializable {
 
     /**
      * Gets the route template for the given target.
-     * 
+     *
      * @param navigationTarget
      *            target class.
      * @return main template for the given target.
@@ -495,7 +495,7 @@ public class RouteConfiguration implements Serializable {
     /**
      * Gets the url which navigates to given navigationTarget using given
      * parameters.
-     * 
+     *
      * @param navigationTarget
      *            navigation target.
      * @param parameters

@@ -30,7 +30,7 @@ import elemental.json.JsonObject;
  * method.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
- * 
+ *
  * @author Vaadin Ltd
  * @since 1.0
  *
@@ -39,14 +39,14 @@ public interface RpcInvocationHandler extends Serializable {
 
     /**
      * Gets unique RPC type which this handler is applicable for.
-     * 
+     *
      * @return the unique rpc type
      */
     String getRpcType();
 
     /**
      * Handles RPC data {@code invocationJson} using {@code ui} as a context.
-     * 
+     *
      * @param ui
      *            the UI to handle against, not {@code null}
      * @param invocationJson

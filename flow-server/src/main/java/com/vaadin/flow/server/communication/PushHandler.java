@@ -76,7 +76,7 @@ public class PushHandler {
 
         /**
          * The callback method.
-         * 
+         *
          * @param resource
          *            the Atmosphere resource
          * @param ui
@@ -323,7 +323,7 @@ public class PushHandler {
          * VaadinService:handleRequest (via several interim calls), another is
          * directly from Atmosphere (PushAtmosphereHandler,
          * AtmosphereResourceListener::onDisconnect).
-         * 
+         *
          * In the first case everything will be cleaned up out of the box. In
          * the second case "clear" should be done here otherwise instances will
          * stay in the threads.

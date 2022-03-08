@@ -29,7 +29,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * Generate <code>index.html</code> if it is missing in frontend folder.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
- * 
+ *
  * @since 3.0
  */
 public class TaskGenerateServiceWorker extends AbstractTaskClientGenerator {
@@ -39,7 +39,7 @@ public class TaskGenerateServiceWorker extends AbstractTaskClientGenerator {
 
     /**
      * Create a task to generate <code>sw.ts</code> if necessary.
-     * 
+     *
      * @param frontendDirectory
      *            frontend directory is to check if the file already exists
      *            there.

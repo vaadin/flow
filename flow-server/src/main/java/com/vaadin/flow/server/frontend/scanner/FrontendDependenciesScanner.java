@@ -83,7 +83,7 @@ public interface FrontendDependenciesScanner extends Serializable {
          * @param featureFlags
          *            available feature flags and their status
          * @return a scanner implementation strategy
-         * 
+         *
          */
         public FrontendDependenciesScanner createScanner(
                 boolean allDependenciesScan, ClassFinder finder,

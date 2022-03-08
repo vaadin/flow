@@ -20,11 +20,11 @@ import java.util.Collections;
 import java.util.Map;
 
 /**
- * 
+ *
  * Immutable parser data which may be stored in cache.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
- * 
+ *
  * @author Vaadin Ltd
  * @since
  *
@@ -66,7 +66,7 @@ public class ParserData {
 
     /**
      * Gets template element data (attribute values).
-     * 
+     *
      * @param id
      *            the id of the element
      * @return template data

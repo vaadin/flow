@@ -37,7 +37,7 @@ import com.vaadin.flow.internal.StateNode;
  *
  * @author Vaadin Ltd
  * @since 1.0
- * 
+ *
  * @deprecated Polymer template support is deprecated - we recommend you to use
  *             {@code LitTemplate} instead. Read more details from <a href=
  *             "https://vaadin.com/blog/future-of-html-templates-in-vaadin">the

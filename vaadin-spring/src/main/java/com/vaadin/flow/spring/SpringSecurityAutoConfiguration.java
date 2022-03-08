@@ -41,7 +41,7 @@ public class SpringSecurityAutoConfiguration {
 
     /**
      * Makes the default request cache available for security configuration.
-     * 
+     *
      * @return the default request cache
      */
     @Bean
@@ -52,7 +52,7 @@ public class SpringSecurityAutoConfiguration {
     /**
      * Makes the default view access check initializer available for security
      * configuration.
-     * 
+     *
      * @return the default access check initializer
      */
     @Bean
@@ -63,7 +63,7 @@ public class SpringSecurityAutoConfiguration {
     /**
      * Makes the default view access checker available for security
      * configuration.
-     * 
+     *
      * @return the default view access checker
      */
     @Bean
@@ -77,7 +77,7 @@ public class SpringSecurityAutoConfiguration {
      * <p>
      * Fusion makes this bean available by default but if Fusion is excluded
      * from the project, we make it available here
-     * 
+     *
      * @return the default access annotation checker
      */
     @Bean

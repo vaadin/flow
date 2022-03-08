@@ -60,7 +60,7 @@ public class UrlUtil {
      * <p>
      * The following characters are not escaped:
      * {@literal A-Za-z0-9;,/?:@&=+$-_.!~*'()#}
-     * 
+     *
      * @param uri
      *            the uri to encode
      */
@@ -86,7 +86,7 @@ public class UrlUtil {
      * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent
      * <p>
      * The following characters are not escaped: {@literal A-Za-z0-9-_.!~*'()}
-     * 
+     *
      * @param path
      *            the path to encode
      */

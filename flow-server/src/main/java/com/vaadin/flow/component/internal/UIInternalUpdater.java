@@ -33,7 +33,7 @@ public interface UIInternalUpdater extends Serializable {
 
     /**
      * Update root element of the given UI.
-     * 
+     *
      * @param ui
      *            the UI to be updated
      * @param oldRoot
@@ -56,7 +56,7 @@ public interface UIInternalUpdater extends Serializable {
 
     /**
      * Move all the children from the old UI to the new UI.
-     * 
+     *
      * @param oldUI
      *            the old UI whose children will be transferred to new UI
      * @param newUI
