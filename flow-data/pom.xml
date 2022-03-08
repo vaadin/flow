@@ -20,7 +20,7 @@
         <dependency>
             <groupId>jakarta.validation</groupId>
             <artifactId>jakarta.validation-api</artifactId>
-            <version>${validation.api.version}</version>
+            <version>${jakarta.validation.version}</version>
         </dependency>
         <dependency>
             <groupId>jakarta.servlet</groupId>

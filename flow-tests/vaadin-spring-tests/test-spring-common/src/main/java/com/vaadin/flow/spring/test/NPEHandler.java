@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.spring.test;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.slf4j.LoggerFactory;
 
