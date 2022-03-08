@@ -15,6 +15,10 @@
   },
   "devDependencies": {
     "@rollup/plugin-replace": "3.1.0",
+    "@vaadin/application-theme-plugin": "./target/plugins/application-theme-plugin",
+    "@vaadin/build-status-plugin": "./target/plugins/build-status-plugin",
+    "@vaadin/theme-live-reload-plugin": "./target/plugins/theme-live-reload-plugin",
+    "@vaadin/theme-loader": "./target/plugins/theme-loader",
     "glob": "7.1.6",
     "mkdirp": "1.0.4",
     "rollup-plugin-brotli": "3.1.0",
@@ -46,6 +50,6 @@
       "workbox-core": "6.5.0",
       "workbox-precaching": "6.5.0"
     },
-    "hash": "2f0778de78a17895482dc488fe09ae07ca8ee40f4411f14d843d561a392e11af"
+    "hash": "1e31a4fa455a28cb71fc3cabeab64c3db97c05e1e1d2efdece3649e613be5481"
   }
 }

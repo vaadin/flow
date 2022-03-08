@@ -37,13 +37,10 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
 
     private File configFolder;
     private String buildFolder;
-    private String generatedFolder;
 
-    TaskUpdateVite(File configFolder, String buildFolder,
-            String generatedFolder) {
+    TaskUpdateVite(File configFolder, String buildFolder) {
         this.configFolder = configFolder;
         this.buildFolder = buildFolder;
-        this.generatedFolder = generatedFolder;
     }
 
     @Override
@@ -83,7 +80,7 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
                 .replace("#settingsImport#",
                         "./" + buildFolder + "/"
                                 + TaskUpdateSettingsFile.DEV_SETTINGS_FILE)
-                .replace("#generatedFolder#", "./" + generatedFolder);
+                .replace("#buildFolder#", "./" + buildFolder);
         FileUtils.write(generatedConfigFile, template, StandardCharsets.UTF_8);
         log().debug("Created vite generated configuration file: '{}'",
                 generatedConfigFile);

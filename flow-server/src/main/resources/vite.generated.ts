@@ -8,7 +8,7 @@ import path from 'path';
 import { readFileSync } from 'fs';
 import * as net from 'net';
 
-import { processThemeResources } from '#generatedFolder#/plugins/application-theme-plugin/theme-handle';
+import { processThemeResources } from '#buildFolder#/plugins/application-theme-plugin/theme-handle';
 import settings from '#settingsImport#';
 import { defineConfig, mergeConfig, PluginOption, ResolvedConfig, UserConfigFn } from 'vite';
 import { injectManifest } from 'workbox-build';

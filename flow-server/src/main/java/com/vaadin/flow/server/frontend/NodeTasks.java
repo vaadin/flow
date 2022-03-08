@@ -754,7 +754,7 @@ public class NodeTasks implements FallibleCommand {
                         builder.postinstallPackages));
 
                 commands.add(new TaskInstallWebpackPlugins(
-                        builder.frontendGeneratedFolder));
+                        new File(builder.npmFolder, builder.buildDirectory)));
             }
 
         }
@@ -822,10 +822,7 @@ public class NodeTasks implements FallibleCommand {
             }
             commands.add(new TaskUpdateSettingsFile(builder, themeName, pwa));
             commands.add(new TaskUpdateVite(builder.npmFolder,
-                    builder.buildDirectory,
-                    FrontendUtils.getUnixPath(builder.npmFolder.toPath()
-                            .relativize(builder.frontendGeneratedFolder
-                                    .toPath()))));
+                    builder.buildDirectory));
         } else if (builder.enableWebpackConfigUpdate) {
             PwaConfiguration pwaConfiguration = frontendDependencies
                     .getPwaConfiguration();

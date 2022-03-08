@@ -47,16 +47,18 @@ const serviceWorkerPath = 'sw.js';
 // file which is used by flow to read templates for server `@Id` binding
 const statsFile = `${confFolder}/stats.json`;
 
+const buildDirectory = '[to-be-generated-by-flow]';
+
 // Flow plugins
-const BuildStatusPlugin = require(frontendGeneratedFolder + '/plugins/build-status-plugin');
-const ThemeLiveReloadPlugin = require(frontendGeneratedFolder + '/plugins/theme-live-reload-plugin');
+const BuildStatusPlugin = require(buildDirectory + '/plugins/build-status-plugin');
+const ThemeLiveReloadPlugin = require(buildDirectory + '/plugins/theme-live-reload-plugin');
 const {
   ApplicationThemePlugin,
   processThemeResources,
   extractThemeName,
   findParentThemes
-} = require(frontendGeneratedFolder + '/plugins/application-theme-plugin');
-const themeLoader = frontendGeneratedFolder + '/plugins/theme-loader';
+} = require(buildDirectory + '/plugins/application-theme-plugin');
+const themeLoader = buildDirectory + '/plugins/theme-loader';
 
 // Folders in the project which can contain static assets.
 const projectStaticAssetsFolders = [
