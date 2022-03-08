@@ -65,7 +65,7 @@ public class AppShellRegistry implements Serializable {
 
     private static final String ERROR_LINE = "  - %s from %s";
     private static final String ERROR_MULTIPLE_SHELL = "%n%nMultiple classes implementing `AppShellConfigurator` were found. However, only a single class implementing `AppShellConfigurator` is allowed."
-            + "%n%nUnable to find a single class implementing `AppShellConfigurator` from the following candidates:%n  %s%n  %s%n";
+            + "%nRemove \"implements AppShellConfigurator\" from all but one of the following classes::%n  %s%n  %s%n";
 
     private static final String ERROR_MULTIPLE_ANNOTATION = "%n%s is not a repeatable annotation type.%n";
 
