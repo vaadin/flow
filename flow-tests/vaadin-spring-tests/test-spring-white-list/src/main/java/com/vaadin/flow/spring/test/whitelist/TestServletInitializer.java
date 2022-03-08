@@ -26,7 +26,6 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.A
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableAuthorizationServer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
-import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 
 /**
  * The entry point of the Spring Boot application.
@@ -59,9 +58,4 @@ public class TestServletInitializer implements AuthorizationServerConfigurer {
         // doesn't need any impl
     }
 
-    @Bean(name = "multipartResolver")
-    public CommonsMultipartResolver multipartResolver() {
-        CommonsMultipartResolver multipartResolver = new CommonsMultipartResolver();
-        return multipartResolver;
-    }
 }
