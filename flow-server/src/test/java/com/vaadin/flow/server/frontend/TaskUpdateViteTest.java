@@ -29,7 +29,7 @@ public class TaskUpdateViteTest {
     @Test
     public void generatedTemplate_correctSettingsPath() throws IOException {
         TaskUpdateVite task = new TaskUpdateVite(temporaryFolder.getRoot(),
-                "build");
+                "build", "frontend/generated");
         task.execute();
 
         File configFile = new File(temporaryFolder.getRoot(),
@@ -49,7 +49,8 @@ public class TaskUpdateViteTest {
         final String importString = "Hello Fake configuration";
         FileUtils.write(configFile, importString, StandardCharsets.UTF_8);
 
-        new TaskUpdateVite(temporaryFolder.getRoot(), "build").execute();
+        new TaskUpdateVite(temporaryFolder.getRoot(), "build",
+                "frontend/generated").execute();
 
         String template = IOUtils.toString(configFile.toURI(),
                 StandardCharsets.UTF_8);
@@ -67,7 +68,8 @@ public class TaskUpdateViteTest {
         FileUtils.write(generatedConfigFile, importString,
                 StandardCharsets.UTF_8);
 
-        new TaskUpdateVite(temporaryFolder.getRoot(), "build").execute();
+        new TaskUpdateVite(temporaryFolder.getRoot(), "build",
+                "frontend/generated").execute();
 
         String template = IOUtils.toString(generatedConfigFile.toURI(),
                 StandardCharsets.UTF_8);
@@ -80,7 +82,7 @@ public class TaskUpdateViteTest {
     public void usedSettings_matchThoseCreatedToSettingsFile()
             throws IOException {
         TaskUpdateVite task = new TaskUpdateVite(temporaryFolder.getRoot(),
-                "build");
+                "build", "frontend/generated");
         task.execute();
 
         File generatedConfigFile = new File(temporaryFolder.getRoot(),

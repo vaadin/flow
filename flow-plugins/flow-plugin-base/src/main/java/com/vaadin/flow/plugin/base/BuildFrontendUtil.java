@@ -154,6 +154,7 @@ public class BuildFrontendUtil {
                         .createMissingPackageJson(true)
                         .enableImportsUpdate(false).enablePackagesUpdate(false)
                         .runNpmInstall(false)
+                        .withFrontendGeneratedFolder(adapter.generatedTsFolder())
                         .withNodeVersion(adapter.nodeVersion())
                         .withNodeDownloadRoot(nodeDownloadRootURI)
                         .setNodeAutoUpdate(adapter.nodeAutoUpdate())
