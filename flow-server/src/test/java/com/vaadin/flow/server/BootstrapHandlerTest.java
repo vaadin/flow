@@ -1588,7 +1588,7 @@ public class BootstrapHandlerTest {
         BootstrapHandler bootstrapHandler = new BootstrapHandler();
         VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
 
-        Mockito.when(request.getHeader(HandlerHelper.SERVICE_WORKER_HEADER))
+        Mockito.when(request.getHeader(BootstrapHandler.SERVICE_WORKER_HEADER))
                 .thenReturn("script");
 
         Assert.assertFalse(bootstrapHandler.canHandleRequest(request));
@@ -1599,7 +1599,7 @@ public class BootstrapHandlerTest {
         BootstrapHandler bootstrapHandler = new BootstrapHandler();
         VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
 
-        Mockito.when(request.getHeader(HandlerHelper.SERVICE_WORKER_HEADER))
+        Mockito.when(request.getHeader(BootstrapHandler.SERVICE_WORKER_HEADER))
                 .thenReturn(null);
 
         Assert.assertTrue(bootstrapHandler.canHandleRequest(request));

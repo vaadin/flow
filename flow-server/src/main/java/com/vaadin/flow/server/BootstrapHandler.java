@@ -106,6 +106,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class BootstrapHandler extends SynchronizedRequestHandler {
 
+    public static final String SERVICE_WORKER_HEADER = "Service-Worker";
+
     private static final CharSequence GWT_STAT_EVENTS_JS = "if (typeof window.__gwtStatsEvent != 'function') {"
             + "window.Vaadin.Flow.gwtStatsEvents = [];"
             + "window.__gwtStatsEvent = function(event) {"
@@ -515,22 +517,11 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return false;
         }
 
-        if (!isRequestForHtml(request)) {
+        if (!HandlerHelper.isRequestForHtml(request)) {
             return false;
         }
 
         return super.canHandleRequest(request);
-    }
-
-    /**
-     * See {@link HandlerHelper#isRequestForHtml(VaadinRequest)}.
-     *
-     * @param request
-     *            the request to check
-     * @return See {@link HandlerHelper#isRequestForHtml(VaadinRequest)}.
-     */
-    public static boolean isRequestForHtml(VaadinRequest request) {
-        return HandlerHelper.isRequestForHtml(request);
     }
 
     /**

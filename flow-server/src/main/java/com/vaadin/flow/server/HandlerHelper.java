@@ -60,8 +60,7 @@ public class HandlerHelper implements Serializable {
     private static final Pattern PARENT_DIRECTORY_REGEX = Pattern
             .compile("(/|\\\\)\\.\\.(/|\\\\)?", Pattern.CASE_INSENSITIVE);
 
-    public static final String SERVICE_WORKER_HEADER = "Service-Worker";
-    public static final String FETCH_DEST_HEADER = "Sec-Fetch-Dest";
+    private static final String FETCH_DEST_HEADER = "Sec-Fetch-Dest";
 
     private static final Set<String> nonHtmlFetchDests;
 
@@ -174,7 +173,7 @@ public class HandlerHelper implements Serializable {
      *         image or something else
      */
     public static boolean isRequestForHtml(VaadinRequest request) {
-        if (request.getHeader(SERVICE_WORKER_HEADER) != null) {
+        if (request.getHeader(BootstrapHandler.SERVICE_WORKER_HEADER) != null) {
             return false;
         }
         String fetchDest = request.getHeader(FETCH_DEST_HEADER);

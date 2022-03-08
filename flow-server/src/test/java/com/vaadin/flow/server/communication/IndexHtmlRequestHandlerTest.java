@@ -878,7 +878,7 @@ public class IndexHtmlRequestHandlerTest {
 
         VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
 
-        Mockito.when(request.getHeader(HandlerHelper.SERVICE_WORKER_HEADER))
+        Mockito.when(request.getHeader(BootstrapHandler.SERVICE_WORKER_HEADER))
                 .thenReturn("script");
 
         Assert.assertFalse(bootstrapHandler.canHandleRequest(request));
