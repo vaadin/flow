@@ -12,9 +12,6 @@
     <name>Flow Data</name>
     <packaging>jar</packaging>
 
-    <properties>
-        <javax.validation.version>2.0.1.Final</javax.validation.version>
-    </properties>
     <dependencies>
 
         <dependency>
