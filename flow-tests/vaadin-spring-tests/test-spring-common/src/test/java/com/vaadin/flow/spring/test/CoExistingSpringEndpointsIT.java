@@ -17,9 +17,10 @@ package com.vaadin.flow.spring.test;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
 
+@Category(SpringBootOnly.class)
 public class CoExistingSpringEndpointsIT extends AbstractSpringTest {
 
     @Override
