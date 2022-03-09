@@ -469,11 +469,13 @@ public class FrontendUtils {
 
     /**
      * Gets the content of the <code>frontend/index.html</code> file which is
-     * served by webpack-dev-server in dev-mode and read from classpath in
-     * production mode. NOTE: In dev mode, the file content file is fetched via
-     * webpack http request. So that we don't need to have a separate
-     * index.html's content watcher, auto-reloading will work automatically,
-     * like other files managed by webpack in `frontend/` folder.
+     * served by webpack or vite in dev-mode and read from classpath in
+     * production mode.
+     * <p>
+     * NOTE: In dev mode, the file content is fetched using an http request so
+     * that we don't need to have a separate index.html's content watcher.
+     * Auto-reloading will work automatically, like other files managed by
+     * webpack in `frontend/` folder.
      *
      * @param service
      *            the vaadin service
@@ -490,11 +492,13 @@ public class FrontendUtils {
 
     /**
      * Gets the content of the <code>frontend/web-component.html</code> file
-     * which is served by webpack-dev-server in dev-mode and read from classpath
-     * in production mode. NOTE: In dev mode, the file content file is fetched
-     * via webpack http request. So that we don't need to have a separate
-     * web-component.html's content watcher, auto-reloading will work
-     * automatically, like other files managed by webpack in `frontend/` folder.
+     * which is served by webpack or vite in dev-mode and read from classpath in
+     * production mode.
+     * <p>
+     * NOTE: In dev mode, the file content is fetched using an http request so
+     * that we don't need to have a separate web-component.html's content
+     * watcher. Auto-reloading will work automatically, like other files managed
+     * by webpack in `frontend/` folder.
      *
      * @param service
      *            the vaadin service
