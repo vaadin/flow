@@ -41,5 +41,7 @@ public class ScrollableView extends Div {
             add(div);
         }
 
+        getComponentAt(500).scrollIntoView();
+
     }
 }

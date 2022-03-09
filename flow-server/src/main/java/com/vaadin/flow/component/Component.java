@@ -682,6 +682,6 @@ public abstract class Component
      * window.
      */
     public void scrollIntoView() {
-        getElement().callJsFunction("scrollIntoView");
+        getElement().scrollIntoView();
     }
 }

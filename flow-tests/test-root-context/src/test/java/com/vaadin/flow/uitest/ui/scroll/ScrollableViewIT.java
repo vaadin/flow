@@ -36,6 +36,8 @@ public class ScrollableViewIT extends ChromeBrowserTest {
 
     @Test
     public void scrollIntoView() {
+        Assert.assertTrue(getScrollY() != 0);
+        scrollBy(0, -getScrollY());
         Assert.assertTrue(getScrollY() == 0);
         findElement(By.id("button")).click();
         Assert.assertTrue(getScrollY() > 0);
