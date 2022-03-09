@@ -427,8 +427,8 @@ public class VaadinAppShellInitializerTest {
     @Test
     public void should_throw_when_multipleAppShell() throws Exception {
         exception.expect(InvalidApplicationConfigurationException.class);
-        exception
-                .expectMessage(containsString("Multiple classes implementing `AppShellConfigurator` were found"));
+        exception.expectMessage(containsString(
+                "Multiple classes implementing `AppShellConfigurator` were found"));
 
         classes.add(MyAppShellWithoutAnnotations.class);
         classes.add(MyAppShellWithMultipleAnnotations.class);
