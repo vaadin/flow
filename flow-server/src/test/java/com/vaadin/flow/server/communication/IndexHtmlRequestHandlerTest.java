@@ -53,7 +53,6 @@ import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
-import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
