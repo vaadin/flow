@@ -143,9 +143,9 @@ public class AppViewIT extends AbstractIT {
     public void redirect_to_resource_after_login() {
         String contents = "Secret document for admin";
         String path = "admin-only/secret.txt";
-        open(path);
+        openResource(path);
         loginAdmin();
-        assertPathShown(path);
+        assertResourceShown(path);
         String result = getDriver().getPageSource();
         Assert.assertTrue(result.contains(contents));
     }
@@ -164,18 +164,18 @@ public class AppViewIT extends AbstractIT {
         String contents = "Secret document for all logged in users";
         String path = "all-logged-in/secret.txt";
 
-        open(path);
+        openResource(path);
         assertLoginViewShown();
         loginUser();
         assertPageContains(contents);
         logout();
 
-        open(path);
+        openResource(path);
         loginAdmin();
         assertPageContains(contents);
         logout();
 
-        open(path);
+        openResource(path);
         assertLoginViewShown();
     }
 
@@ -183,19 +183,19 @@ public class AppViewIT extends AbstractIT {
     public void access_restricted_to_admin() {
         String contents = "Secret document for admin";
         String path = "admin-only/secret.txt";
-        open(path);
+        openResource(path);
         assertLoginViewShown();
         loginUser();
-        open(path);
+        openResource(path);
         assertForbiddenPage();
         logout();
 
-        open(path);
+        openResource(path);
         loginAdmin();
         String adminResult = getDriver().getPageSource();
         Assert.assertTrue(adminResult.contains(contents));
         logout();
-        open(path);
+        openResource(path);
         assertLoginViewShown();
     }
 
@@ -214,13 +214,13 @@ public class AppViewIT extends AbstractIT {
 
     @Test
     public void public_app_resources_available_for_all() {
-        open("public/public.txt");
+        openResource("public/public.txt");
         String shouldBeTextFile = getDriver().getPageSource();
         Assert.assertTrue(
                 shouldBeTextFile.contains("Public document for all users"));
         open("login");
         loginUser();
-        open("public/public.txt");
+        openResource("public/public.txt");
         shouldBeTextFile = getDriver().getPageSource();
         Assert.assertTrue(
                 shouldBeTextFile.contains("Public document for all users"));

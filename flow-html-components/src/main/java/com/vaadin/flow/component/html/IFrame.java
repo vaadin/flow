@@ -120,7 +120,7 @@ public class IFrame extends HtmlComponent {
 
     /**
      * Creates a new iframe with a source URL.
-     * 
+     *
      * @param src
      *            Source URL
      */
@@ -132,7 +132,7 @@ public class IFrame extends HtmlComponent {
      * Sets the source of the iframe. If the contents at the src of the IFrame
      * has changed and you want to refresh it in the user's browser, the src
      * does not to be reset. In this case use the #reload() method.
-     * 
+     *
      * @param src
      *            Source URL.
      */
@@ -142,7 +142,7 @@ public class IFrame extends HtmlComponent {
 
     /**
      * Gets the source of the iframe.
-     * 
+     *
      * @return the source of the iframe.
      */
     public String getSrc() {
@@ -151,7 +151,7 @@ public class IFrame extends HtmlComponent {
 
     /**
      * Sets the srcdoc of the iframe.
-     * 
+     *
      * @param srcdoc
      *            srcdoc URL.
      */
@@ -161,7 +161,7 @@ public class IFrame extends HtmlComponent {
 
     /**
      * Gets the srcdoc of the iframe.
-     * 
+     *
      * @return the srcdoc of the iframe.
      */
     public Optional<String> getSrcdoc() {
@@ -184,7 +184,7 @@ public class IFrame extends HtmlComponent {
 
     /**
      * Gets the value of allow attribute.
-     * 
+     *
      * @return the currently applied allow value.
      */
     public Optional<String> getAllow() {
@@ -193,7 +193,7 @@ public class IFrame extends HtmlComponent {
 
     /**
      * Sets the name attribute.
-     * 
+     *
      * @param name
      *            the value for the name attribute.
      */
@@ -203,7 +203,7 @@ public class IFrame extends HtmlComponent {
 
     /**
      * Gets the name attribute.
-     * 
+     *
      * @return the name attribute.
      */
     public Optional<String> getName() {
@@ -213,7 +213,7 @@ public class IFrame extends HtmlComponent {
     /**
      * Sets the importance attribute to the specified {@link ImportanceType}
      * value.
-     * 
+     *
      * @param importance
      *            {@link ImportanceType} value.
      *
@@ -225,7 +225,7 @@ public class IFrame extends HtmlComponent {
 
     /**
      * Gets the importance attribute value.
-     * 
+     *
      * @return the importance value.
      *
      * @see ImportanceType
@@ -237,7 +237,7 @@ public class IFrame extends HtmlComponent {
 
     /**
      * Sets the sandbox attribute to the given {@link SandboxType}s.
-     * 
+     *
      * @param types
      *            {@link SandboxType}s.
      */
@@ -259,7 +259,7 @@ public class IFrame extends HtmlComponent {
 
     /**
      * Gets the list of sandbox attribute values.
-     * 
+     *
      * @return the current {@link SandboxType}s.
      */
     public Optional<SandboxType[]> getSandbox() {

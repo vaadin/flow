@@ -68,7 +68,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
         /**
          * Gets the time spent running {@code npm install}.
-         * 
+         *
          * @return the time in milliseconds
          */
         public long getInstallTimeMs() {
@@ -77,7 +77,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
         /**
          * Gets the time spent doing cleanup before {@code npm install}.
-         * 
+         *
          * @return the time in milliseconds
          */
         public long getCleanupTimeMs() {
@@ -86,7 +86,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
         /**
          * Gets the package manager used for installation.
-         * 
+         *
          * @return the name of the package manager
          */
         public String getPackageManager() {
@@ -138,7 +138,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
      *            package-updater instance used for checking if previous
      *            execution modified the package.json file
      * @param enablePnpm
-     *            whether PNPM should be used instead of NPM
+     *            whether pnpm should be used instead of npm
      * @param requireHomeNodeExec
      *            whether vaadin home node executable has to be used
      * @param nodeVersion
@@ -177,19 +177,9 @@ public class TaskRunNpmInstall implements FallibleCommand {
     public void execute() throws ExecutionFailedException {
         String toolName = enablePnpm ? "pnpm" : "npm";
         if (packageUpdater.modified || shouldRunNpmInstall()) {
-            // Log a stronger request for patience if package-lock.json is
-            // missing as "npm install" in this case can take minutes
-            // https://github.com/vaadin/flow/issues/12825
-            File packageLockFile = packageUpdater.getPackageLockFile();
             packageUpdater.log().info("Running `" + toolName + " install` to "
                     + "resolve and optionally download frontend dependencies. "
                     + "This may take a moment, please stand by...");
-            if (!enablePnpm && !packageLockFile.exists()) {
-                packageUpdater.log().warn("Missing package-lock.json may cause "
-                        + "npm package installation to take several minutes; "
-                        + "it is recommended to keep this file persistently "
-                        + "in your project");
-            }
             runNpmInstall();
 
             updateLocalHash();
@@ -207,11 +197,11 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
     /**
      * Updates
-     * 
+     *
      * <pre>
      * node_modules/.vaadin/vaadin.json
      * </pre>
-     * 
+     *
      * with package.json hash and the platform version.
      * <p>
      * This is for handling updated package to the code repository by another
@@ -359,6 +349,18 @@ public class TaskRunNpmInstall implements FallibleCommand {
         logger.info("using '{}' for frontend package installation",
                 String.join(" ", npmInstallCommand));
 
+        // Log a stronger request for patience if package-lock.json is
+        // missing as "npm install" in this case can take minutes
+        // https://github.com/vaadin/flow/issues/12825
+        File packageLockFile = packageUpdater.getPackageLockFile();
+        if (!enablePnpm && !packageLockFile.exists()) {
+            packageUpdater.log().warn("package-lock.json is missing from this "
+                    + "project. This may cause the npm package installation to "
+                    + "take several minutes. It is recommended to keep the "
+                    + "package-lock.json file persistently in your project. "
+                    + "Please stand by...");
+        }
+
         Process process = null;
         try {
             process = runNpmCommand(npmInstallCommand,
@@ -426,6 +428,22 @@ public class TaskRunNpmInstall implements FallibleCommand {
             if (!packageFolder.exists()) {
                 continue;
             }
+            try {
+                JsonObject packageJson = TaskGeneratePackageJson
+                        .getJsonFileContent(
+                                new File(packageFolder, "package.json"));
+                if (!containsPostinstallScript(packageJson)) {
+                    logger.debug(
+                            "Skipping postinstall for '{}' as no postinstall script was found in the package.json",
+                            postinstallPackage);
+                    continue;
+                }
+            } catch (IOException ioe) {
+                logger.error(
+                        "Couldn't read package.json for {}. Skipping postinstall",
+                        ioe);
+                continue;
+            }
 
             logger.debug("Running postinstall for '{}'", postinstallPackage);
             try {
@@ -445,6 +463,11 @@ public class TaskRunNpmInstall implements FallibleCommand {
         lastInstallStats.installTimeMs = System.currentTimeMillis() - startTime;
         lastInstallStats.packageManager = enablePnpm ? "pnpm" : "npm";
 
+    }
+
+    private boolean containsPostinstallScript(JsonObject packageJson) {
+        return packageJson != null && packageJson.hasKey("scripts")
+                && packageJson.getObject("scripts").hasKey("postinstall");
     }
 
     private Process runNpmCommand(List<String> command, File workingDirectory)
@@ -610,7 +633,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
     /**
      * Returns timing information for the last operation.
-     * 
+     *
      * @return timing information
      */
     public static Stats getLastInstallStats() {

@@ -959,7 +959,7 @@ public class StateNode implements Serializable {
      * The inert state is only updated when the changes are written to the
      * client side, but the inert state is not sent to the client side - it is a
      * server side feature only.
-     * 
+     *
      * @return {@code true} if the node is inert, {@code false} if not
      * @see InertData
      */

@@ -34,7 +34,7 @@ import elemental.json.JsonValue;
  * For objects without inner properties, like Strings, a property called
  * {@code value} is created in the model, so it can be accessed via
  * {@code [[item.value]]} in the template.
- * 
+ *
  * @author Vaadin Ltd.
  * @since 1.2
  *

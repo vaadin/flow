@@ -351,7 +351,7 @@ public class DataCommunicator<T> implements Serializable {
      * <p>
      * Note: This works only with Grid component. If set to true, Push needs to
      * be enabled and set to PushMode.AUTOMATIC in order this to work.
-     * 
+     *
      * @param executor
      *            The Executor used for async updates.
      */

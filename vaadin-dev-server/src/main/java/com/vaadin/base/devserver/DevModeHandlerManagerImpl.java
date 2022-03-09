@@ -39,7 +39,7 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
 
     /*
      * Attribute key for storing Dev Mode Handler startup flag.
-     * 
+     *
      * If presented in Servlet Context, shows the Dev Mode Handler already
      * started / become starting. This attribute helps to avoid Dev Mode running
      * twice.

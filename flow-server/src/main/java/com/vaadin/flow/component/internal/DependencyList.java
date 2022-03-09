@@ -34,7 +34,7 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * and included on the client side.
  * <p>
  * Tracks previously sent URLs and doesn't send them again.
- * 
+ *
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *

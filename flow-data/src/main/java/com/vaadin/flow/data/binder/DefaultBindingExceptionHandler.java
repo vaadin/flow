@@ -32,7 +32,7 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
  * {@code "label"} and {@code "id"} property values and if they are not
  * available it tries dump all the attributes and properties in dev mode. The
  * exception is not produced if the element has no any attribute or property.
- * 
+ *
  * @author Vaadin Ltd
  * @since
  *

@@ -188,7 +188,8 @@ public abstract class NodeUpdater implements FallibleCommand {
      * Gets the platform pinned versions that are not overridden by the user in
      * package.json.
      *
-     * @return json object with the dependencies or {@code null}
+     * @return {@code JsonObject} with the dependencies or empty
+     *         {@code JsonObject} if file doesn't exist
      * @throws IOException
      *             when versions file could not be read
      */
@@ -198,20 +199,16 @@ public abstract class NodeUpdater implements FallibleCommand {
             log().info("Couldn't find {} file to pin dependency versions."
                     + " Transitive dependencies won't be pinned for pnpm.",
                     Constants.VAADIN_VERSIONS_JSON);
+            return Json.createObject();
         }
 
-        JsonObject versionsJson = null;
-        try (InputStream content = resource == null ? null
-                : resource.openStream()) {
-
-            if (content != null) {
-                VersionsJsonConverter convert = new VersionsJsonConverter(
-                        Json.parse(IOUtils.toString(content,
-                                StandardCharsets.UTF_8)));
-                versionsJson = convert.getConvertedJson();
-                versionsJson = new VersionsJsonFilter(getPackageJson(),
-                        DEPENDENCIES).getFilteredVersions(versionsJson);
-            }
+        JsonObject versionsJson;
+        try (InputStream content = resource.openStream()) {
+            VersionsJsonConverter convert = new VersionsJsonConverter(Json
+                    .parse(IOUtils.toString(content, StandardCharsets.UTF_8)));
+            versionsJson = convert.getConvertedJson();
+            versionsJson = new VersionsJsonFilter(getPackageJson(),
+                    DEPENDENCIES).getFilteredVersions(versionsJson);
         }
         return versionsJson;
     }
@@ -403,10 +400,10 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         defaults.put("typescript", "4.5.3");
 
-        final String WORKBOX_VERSION = "6.4.2";
+        final String WORKBOX_VERSION = "6.5.0";
 
         if (featureFlags.isEnabled(FeatureFlags.VITE)) {
-            defaults.put("vite", "v2.8.2");
+            defaults.put("vite", "v2.8.6");
             defaults.put("@rollup/plugin-replace", "3.1.0");
             defaults.put("rollup-plugin-brotli", "3.1.0");
             defaults.put("vite-plugin-checker", "0.3.4");

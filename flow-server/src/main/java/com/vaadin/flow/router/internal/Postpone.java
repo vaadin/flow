@@ -21,7 +21,7 @@ import java.util.Deque;
 
 /**
  * Container class for containing left over listeners on postponed navigation.
- * 
+ *
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -39,7 +39,7 @@ public class Postpone implements Serializable {
 
     /**
      * Set any remaining {@link BeforeLeaveHandler}s to be continued from.
-     * 
+     *
      * @param beforeLeave
      *            listeners to continue calling
      * @return uncalled listeners to continue from
@@ -63,7 +63,7 @@ public class Postpone implements Serializable {
 
     /**
      * Get {@link BeforeLeaveHandler}s that have been left over from a postpone.
-     * 
+     *
      * @return remaining BeforeLeaveObservers or empty ArrayDeque
      */
     public Deque<BeforeLeaveHandler> getLeaveObservers() {
@@ -72,7 +72,7 @@ public class Postpone implements Serializable {
 
     /**
      * Get {@link BeforeEnterHandler}s that have been left over from a postpone.
-     * 
+     *
      * @return remaining BeforeNavigationObservers or empty ArrayDeque
      */
     public Deque<BeforeEnterHandler> getNavigationObservers() {

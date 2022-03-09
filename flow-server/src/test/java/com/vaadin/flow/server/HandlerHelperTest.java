@@ -120,7 +120,7 @@ public class HandlerHelperTest {
                 HandlerHelper.isFrameworkInternalRequest("/foo/*", request));
         Assert.assertTrue(
                 HandlerHelper.isFrameworkInternalRequest("/hello", request));
-        Assert.assertFalse(
+        Assert.assertTrue(
                 HandlerHelper.isFrameworkInternalRequest("/hello/*", request));
     }
 
@@ -290,6 +290,10 @@ public class HandlerHelperTest {
                 HandlerHelper.getPathIfInsideServlet(servletMapping, "bar"));
         Assert.assertEquals(Optional.empty(),
                 HandlerHelper.getPathIfInsideServlet(servletMapping, "/bar"));
+        Assert.assertEquals(Optional.of(""),
+                HandlerHelper.getPathIfInsideServlet(servletMapping, "foo"));
+        Assert.assertEquals(Optional.of(""),
+                HandlerHelper.getPathIfInsideServlet(servletMapping, "foo/"));
         Assert.assertEquals(Optional.of(""),
                 HandlerHelper.getPathIfInsideServlet(servletMapping, "/foo"));
         Assert.assertEquals(Optional.empty(),

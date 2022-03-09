@@ -49,21 +49,21 @@ public @interface Inline {
 
     /**
      * Classpath file to inline into target element.
-     * 
+     *
      * @return file to inline
      */
     String value();
 
     /**
      * Target element to inline file contents to.
-     * 
+     *
      * @return inline target
      */
     TargetElement target() default TargetElement.HEAD;
 
     /**
      * Inline position of element. Default appends to target element.
-     * 
+     *
      * @return inline position
      */
     Position position() default Position.APPEND;
@@ -71,7 +71,7 @@ public @interface Inline {
     /**
      * The element type to inline as. Default is automatic which tries to figure
      * out the correct type by file ending.
-     * 
+     *
      * @return inline element type
      */
     Wrapping wrapping() default Wrapping.AUTOMATIC;

@@ -182,7 +182,7 @@ public class DomEvent extends EventObject {
      * The returned element is the same as {@link #getSource()} <em>only if</em>
      * the event originated from that element on the browser (and not from its
      * child).
-     * 
+     *
      * @return the element that corresponds to {@code event.target} or an empty
      *         optional
      * @since 9.0
@@ -203,7 +203,7 @@ public class DomEvent extends EventObject {
      * <p>
      * In case you want the {@code event.target} element, use
      * {@link #getEventTarget()} instead.
-     * 
+     *
      * @param eventDataExpression
      *            the expression that was executed on the client to retrieve the
      *            element, not <code>null</code>

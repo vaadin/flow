@@ -27,7 +27,7 @@ public final class StreamingProgressEventImpl extends AbstractStreamingEvent
 
     /**
      * Streaming progress event constructor.
-     * 
+     *
      * @param filename
      *            filename
      * @param type

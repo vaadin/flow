@@ -24,9 +24,9 @@ import com.vaadin.flow.component.webcomponent.PropertyConfiguration;
 import com.vaadin.flow.function.SerializableBiConsumer;
 
 /**
- * 
+ *
  * For internal use only. May be renamed or removed in a future release.
- * 
+ *
  * @param <C>
  *            type of the exported {@code component}
  * @param <P>

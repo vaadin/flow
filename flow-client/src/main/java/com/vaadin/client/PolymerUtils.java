@@ -356,7 +356,7 @@ public final class PolymerUtils {
 
     /**
      * Gets the first parent node that also has a DOM Node attached to it.
-     * 
+     *
      * @param node
      *            the node
      * @return the first parent node with a DOM Node, or <code>null</code> if
@@ -381,7 +381,7 @@ public final class PolymerUtils {
     /*-{
         var isP2Element = (typeof $wnd.Polymer === 'function') && $wnd.Polymer.Element && htmlNode instanceof $wnd.Polymer.Element;
         var isP3Element = htmlNode.constructor.polymerElementVersion !== undefined;
-    
+
         return (isP2Element || isP3Element);
     }-*/;
 
@@ -396,7 +396,7 @@ public final class PolymerUtils {
      *            HTML element to check
      * @return {@code true} if the {@code htmlNode} can become a polymer 2
      *         element
-     * 
+     *
      * @deprecated This is not in use anywhere and can be removed
      */
     @Deprecated
@@ -416,7 +416,7 @@ public final class PolymerUtils {
      *
      * @see <a href=
      *      "https://developer.mozilla.org/en-US/docs/Web/Web_Components/Shadow_DOM">https://developer.mozilla.org/en-US/docs/Web/Web_Components/Shadow_DOM</a>
-     * 
+     *
      * @deprecated This is not in use anywhere and can be removed
      */
     @Deprecated
@@ -437,7 +437,7 @@ public final class PolymerUtils {
      *
      * @see <a href=
      *      "http://html5index.org/Shadow%20DOM%20-%20ShadowRoot.html">http://html5index.org/Shadow%20DOM%20-%20ShadowRoot.html</a>
-     * 
+     *
      * @deprecated This is not in use anywhere and can be removed
      */
     @Deprecated
@@ -490,7 +490,7 @@ public final class PolymerUtils {
      * @param tag
      *            the required tag name
      * @return {@code true} if the node has required tag name
-     * 
+     *
      * @deprecated Use the generic {@link ElementUtil#hasTag(Node, String)}
      *             instead
      */
@@ -635,7 +635,7 @@ public final class PolymerUtils {
 
     /**
      * Sets a property to an element by using the Polymer {@code set} method.
-     * 
+     *
      * @param element
      *            the element to set the property to
      * @param path
@@ -651,7 +651,7 @@ public final class PolymerUtils {
 
     /**
      * Returns true if and only if the element has a shadow root ancestor.
-     * 
+     *
      * @param element
      *            the element to test
      * @return whether the element is in a shadow root

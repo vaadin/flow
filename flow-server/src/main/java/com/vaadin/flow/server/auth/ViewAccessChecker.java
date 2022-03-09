@@ -54,7 +54,7 @@ public class ViewAccessChecker implements BeforeEnterListener {
     /**
      * Creates an instance and enables access checker depending on the given
      * flag.
-     * 
+     *
      * @param enabled
      *            {@code false} for disabling the access checker, {@code
      * true} for enabling the access checker.
@@ -70,7 +70,7 @@ public class ViewAccessChecker implements BeforeEnterListener {
      * Note that the access checker is disabled by default and can be enabled
      * using {@link #enable()}. You should also set the login view to use using
      * {@link #setLoginView(Class)} or {@link #setLoginView(String)}
-     * 
+     *
      * @param accessAnnotationChecker
      *            the checker to use
      */
@@ -96,7 +96,7 @@ public class ViewAccessChecker implements BeforeEnterListener {
      * <p>
      * Note that the access checker needs to be separately enabled using
      * {@link #enable()}
-     * 
+     *
      * @param loginView
      *            the Flow view to use as login view
      */
@@ -112,7 +112,7 @@ public class ViewAccessChecker implements BeforeEnterListener {
      * <p>
      * Note that the access checker needs to be separately enabled using
      * {@link #enable()}
-     * 
+     *
      * @param loginUrl
      *            the frontend view to use as login view
      */

@@ -4,6 +4,8 @@ import java.util.stream.Collectors;
 
 import javax.servlet.ServletContext;
 
+import com.vaadin.flow.spring.RootMappedCondition;
+import com.vaadin.flow.spring.VaadinConfigurationProperties;
 import com.vaadin.flow.spring.flowsecurity.data.UserInfo;
 import com.vaadin.flow.spring.flowsecurity.data.UserInfoRepository;
 import com.vaadin.flow.spring.flowsecurity.views.LoginView;
@@ -34,13 +36,22 @@ public class SecurityConfig extends VaadinWebSecurityConfigurerAdapter {
     @Autowired
     private ServletContext servletContext;
 
+    @Autowired
+    private VaadinConfigurationProperties vaadinConfigurationProperties;
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
     }
 
     public String getLogoutSuccessUrl() {
-        String logoutSuccessUrl = "/";
+        String logoutSuccessUrl;
+        String mapping = vaadinConfigurationProperties.getUrlMapping();
+        if (RootMappedCondition.isRootMapping(mapping)) {
+            logoutSuccessUrl = "/";
+        } else {
+            logoutSuccessUrl = mapping.replaceFirst("/\\*$", "/");
+        }
         String contextPath = servletContext.getContextPath();
         if (!"".equals(contextPath)) {
             logoutSuccessUrl = contextPath + logoutSuccessUrl;

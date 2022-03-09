@@ -318,7 +318,7 @@ public interface InMemoryDataProvider<T> extends
      *            not <code>null</code>
      * @param <Q>
      *            the filter type
-     * 
+     *
      * @return a data provider that filters accordingly, not <code>null</code>
      */
     default <Q> DataProvider<T, Q> filteringBy(
@@ -350,7 +350,7 @@ public interface InMemoryDataProvider<T> extends
      *            the provided value type
      * @param <Q>
      *            the filter type
-     * 
+     *
      * @return a data provider that filters accordingly, not <code>null</code>
      */
     default <V, Q> DataProvider<T, Q> filteringBy(

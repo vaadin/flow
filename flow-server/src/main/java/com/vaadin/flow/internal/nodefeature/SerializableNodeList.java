@@ -24,7 +24,7 @@ import com.vaadin.flow.internal.StateNode;
  * <p>
  * For a {@link NodeList} containing {@link StateNode}s, use
  * {@link StateNodeNodeList}.
- * 
+ *
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *

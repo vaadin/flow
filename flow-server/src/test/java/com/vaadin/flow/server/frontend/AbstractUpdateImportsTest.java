@@ -31,6 +31,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -308,25 +310,24 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         expectedLines.add("import 'unresolved/component';");
 
         expectedLines.add(
-                "import $css_0 from '@vaadin/vaadin-mixed-component/bar.css';");
-        expectedLines.add("import $css_1 from 'Frontend/foo.css';");
-        expectedLines.add("import $css_2 from 'Frontend/foo.css';");
-        expectedLines.add("import $css_3 from 'Frontend/foo.css';");
-        expectedLines.add("import $css_4 from 'Frontend/foo.css';");
-        expectedLines.add("import $css_5 from 'Frontend/foo.css';");
-        expectedLines.add("import $css_6 from 'Frontend/foo.css';");
+                "import $cssFromFile_0 from '@vaadin/vaadin-mixed-component/bar.css';");
+        expectedLines.add("import $cssFromFile_1 from 'Frontend/foo.css';");
+        expectedLines.add("import $cssFromFile_2 from 'Frontend/foo.css';");
+        expectedLines.add("import $cssFromFile_3 from 'Frontend/foo.css';");
+        expectedLines.add("import $cssFromFile_4 from 'Frontend/foo.css';");
+        expectedLines.add("import $cssFromFile_5 from 'Frontend/foo.css';");
+        expectedLines.add("import $cssFromFile_6 from 'Frontend/foo.css';");
         expectedLines.add("addCssBlock(`<style>${$css_0}</style>`);");
         expectedLines.add("addCssBlock(`<style>${$css_1}</style>`);");
         expectedLines.add(
                 "addCssBlock(`<style include=\"bar\">${$css_2}</style>`);");
-        expectedLines
-                .add("registerStyles('', css`${$css_3}`, {moduleId: 'baz'});");
+        expectedLines.add("registerStyles('', $css_3, {moduleId: 'baz'});");
         expectedLines.add(
-                "registerStyles('', css`${$css_4}`, {include: 'bar', moduleId: 'baz'});");
+                "registerStyles('', $css_4, {include: 'bar', moduleId: 'baz'});");
         expectedLines.add(
-                "registerStyles('foo-bar', css`${$css_5}`, {moduleId: 'flow_css_mod'});");
+                "registerStyles('foo-bar', $css_5, {moduleId: 'flow_css_mod_5'});");
         expectedLines.add(
-                "registerStyles('foo-bar', css`${$css_6}`, {include: 'bar', moduleId: 'flow_css_mod'});");
+                "registerStyles('foo-bar', $css_6, {include: 'bar', moduleId: 'flow_css_mod_6'});");
 
         expectedLines.add("import 'generated-modules-foo';");
         expectedLines.add("import 'generated-modules-bar';");
@@ -339,6 +340,17 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                             + updater.resultingLines,
                     updater.resultingLines.contains(line));
         }
+
+        // All generated module ids are distinct
+        Pattern moduleIdPattern = Pattern
+                .compile(".*moduleId: '(flow_css_mod_[^']*)'.*");
+        List<String> moduleIds = updater.resultingLines.stream()
+                .map(moduleIdPattern::matcher).filter(Matcher::matches)
+                .map(m -> m.group(1)).collect(Collectors.toList());
+        long uniqueModuleIds = moduleIds.stream().distinct().count();
+        Assert.assertTrue("expected modules", moduleIds.size() > 0);
+        Assert.assertEquals("duplicates in generated " + moduleIds,
+                moduleIds.size(), uniqueModuleIds);
 
         String output = logger.getLogs();
 

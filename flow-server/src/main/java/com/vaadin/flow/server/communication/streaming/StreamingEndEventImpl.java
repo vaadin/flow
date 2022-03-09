@@ -27,7 +27,7 @@ public final class StreamingEndEventImpl extends AbstractStreamingEvent
 
     /**
      * End event constructor.
-     * 
+     *
      * @param filename
      *            filename
      * @param type

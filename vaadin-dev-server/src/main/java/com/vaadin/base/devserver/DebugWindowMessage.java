@@ -27,7 +27,7 @@ public class DebugWindowMessage implements Serializable {
 
     /**
      * Creates a new instance.
-     * 
+     *
      * @param command
      *            the command to send
      * @param data

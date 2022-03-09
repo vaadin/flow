@@ -147,7 +147,7 @@ public class FrontendUtils {
     public static final String SERVICE_WORKER_SRC_JS = "sw.js";
 
     /**
-     * The NPM package name that will be used for the javascript files present
+     * The npm package name that will be used for the javascript files present
      * in jar resources that will to be copied to the npm folder so as they are
      * accessible to webpack.
      */
@@ -447,8 +447,10 @@ public class FrontendUtils {
             String path = environment.get(pathEnvVar);
             if (path == null || path.isEmpty()) {
                 path = commandPath;
-            } else if (!path.contains(commandPath)) {
-                path += File.pathSeparatorChar + commandPath;
+            } else {
+                // Ensure that a custom node is first in the path so it is used
+                // e.g. for postinstall scripts that run "node something"
+                path = commandPath + File.pathSeparatorChar + path;
             }
             environment.put(pathEnvVar, path);
         }

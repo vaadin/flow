@@ -30,7 +30,7 @@ public class SelectElement extends TestBenchElement {
 
     /**
      * Selects the first option matching the given text.
-     * 
+     *
      * @param text
      *            the text of the option to select
      */
@@ -52,7 +52,7 @@ public class SelectElement extends TestBenchElement {
      * Selects the option with the given value.
      * <p>
      * To select based on the visible text, use {@link #selectByText(String)}.
-     * 
+     *
      * @param value
      *            the value to select
      */
@@ -64,7 +64,7 @@ public class SelectElement extends TestBenchElement {
      * Gets the value of the currently selected option.
      * <p>
      * To get the visible text, use {@link #getSelectedText()}.
-     * 
+     *
      * @return the value of the current option
      */
     public String getValue() {

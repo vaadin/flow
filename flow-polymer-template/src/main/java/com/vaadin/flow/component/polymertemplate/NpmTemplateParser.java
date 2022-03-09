@@ -57,7 +57,7 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * @since 2.0
  *
  * @see BundleParser
- * 
+ *
  * @deprecated Use {@code LitTemplateParserImpl} class for {@code LitTemplate}
  *             components. Polymer template support is deprecated - we recommend
  *             you to use {@code LitTemplate} instead. Read more details from

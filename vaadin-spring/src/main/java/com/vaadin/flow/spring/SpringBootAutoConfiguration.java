@@ -15,9 +15,11 @@
  */
 package com.vaadin.flow.spring;
 
+import javax.servlet.MultipartConfigElement;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -49,9 +51,6 @@ public class SpringBootAutoConfiguration {
     @Autowired
     private WebApplicationContext context;
 
-    @Autowired
-    private VaadinConfigurationProperties configurationProperties;
-
     /**
      * Creates a {@link ServletContextInitializer} instance.
      *
@@ -66,10 +65,16 @@ public class SpringBootAutoConfiguration {
      * Creates a {@link ServletRegistrationBean} instance with Spring aware
      * Vaadin servlet.
      *
+     * @param multipartConfig
+     *            multipart configuration, if available
+     * @param configurationProperties
+     *            the vaadin configuration properties
      * @return a custom ServletRegistrationBean instance
      */
     @Bean
-    public ServletRegistrationBean<SpringServlet> servletRegistrationBean() {
+    public ServletRegistrationBean<SpringServlet> servletRegistrationBean(
+            ObjectProvider<MultipartConfigElement> multipartConfig,
+            VaadinConfigurationProperties configurationProperties) {
         String mapping = configurationProperties.getUrlMapping();
         Map<String, String> initParameters = new HashMap<>();
         boolean rootMapping = RootMappedCondition.isRootMapping(mapping);
@@ -83,6 +88,11 @@ public class SpringBootAutoConfiguration {
                 .setAsyncSupported(configurationProperties.isAsyncSupported());
         registration.setName(
                 ClassUtils.getShortNameAsProperty(SpringServlet.class));
+        // Setup multi part form processing for non root servlet mapping to be
+        // able to process Hilla login out of the box
+        if (!rootMapping) {
+            multipartConfig.ifAvailable(registration::setMultipartConfig);
+        }
         registration.setLoadOnStartup(
                 configurationProperties.isLoadOnStartup() ? 1 : -1);
         return registration;

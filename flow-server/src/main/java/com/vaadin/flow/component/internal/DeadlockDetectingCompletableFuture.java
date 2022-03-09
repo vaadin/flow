@@ -32,7 +32,7 @@ import com.vaadin.flow.server.VaadinSession;
  * Throwing is unfortunately only practical for this immediate instance, but
  * there isn't any sensible way of also intercepting for instances derived using
  * e.g. <code>thenAccept</code>.
- * 
+ *
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *

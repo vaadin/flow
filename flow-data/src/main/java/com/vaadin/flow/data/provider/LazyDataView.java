@@ -82,7 +82,7 @@ public interface LazyDataView<T> extends DataView<T> {
      * Gets the item count estimate increase - how much the item count estimate
      * is increased once the previous item count estimate has been reached. The
      * default value depends on the component.
-     * 
+     *
      * @return the item count estimate increase
      * @see #setItemCountEstimateIncrease(int)
      */

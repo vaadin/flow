@@ -42,7 +42,7 @@ public class Option extends HtmlComponent implements HasText {
 
     /**
      * Sets the model value of the option.
-     * 
+     *
      * @param value
      *            the model value
      */
@@ -52,7 +52,7 @@ public class Option extends HtmlComponent implements HasText {
 
     /**
      * Gets the model value of the option.
-     * 
+     *
      * @return the model value
      */
     public String getValue() {

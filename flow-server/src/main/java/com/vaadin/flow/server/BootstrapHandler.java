@@ -688,7 +688,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             // bootstrap mode and for exported webcomponents; set a flag in
             // the DOM only if initialization is needed.
             if (config.useV14Bootstrap() && context.isInitTheme()) {
-                head.prependElement("script").attr("type", "text/javascript")
+                head.prependElement(SCRIPT_TAG).attr("type", "text/javascript")
                         .appendChild(new DataNode(
                                 "window.Vaadin = window.Vaadin || {}; window.Vaadin.theme = window.Vaadin.theme || {};"
                                         + "window.Vaadin.theme.flowBootstrap = true;"));
@@ -1615,8 +1615,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         // Parameter appended to JS to bypass caches after version upgrade.
         String versionQueryParam = "?v=" + Version.getFullVersion();
         // Load client-side dependencies for push support
-        String pushJSPath = context.getService()
-                .getContextRootRelativePath(request);
+        String pushJSPath = BootstrapHandlerHelper.getServiceUrl(request) + "/";
 
         if (request.getService().getDeploymentConfiguration()
                 .isProductionMode()) {

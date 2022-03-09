@@ -140,18 +140,14 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                 mavenCentral()
                 maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
             }
-            def jettyVersion = "9.4.20.v20190813"
+            def jettyVersion = "10.0.8"
             dependencies {
                 compile("com.vaadin:flow:$flowVersion")
                 compile("org.slf4j:slf4j-simple:1.7.30")
                 compile("javax.servlet:javax.servlet-api:3.1.0")
 
-                compile("org.eclipse.jetty:jetty-continuation:${"$"}{jettyVersion}")
                 compile("org.eclipse.jetty:jetty-server:${"$"}{jettyVersion}")
-                compile("org.eclipse.jetty.websocket:websocket-server:${"$"}{jettyVersion}")
-                compile("org.eclipse.jetty.websocket:javax-websocket-server-impl:${"$"}{jettyVersion}") {
-                    exclude(module: "javax.websocket-client-api")
-                }
+                compile("org.eclipse.jetty.websocket:websocket-jetty-server:${"$"}{jettyVersion}")
             }
         """.trimIndent()
         )
@@ -221,13 +217,12 @@ class MiscSingleModuleTest : AbstractGradleTest() {
     fun testSpringProjectProductionMode() {
 
         val springBootVersion = "2.2.4.RELEASE"
-        val springVersion = "17.0-SNAPSHOT"
 
         testProject.buildFile.writeText(
             """
             plugins {
                 id 'org.springframework.boot' version '$springBootVersion'
-                id 'io.spring.dependency-management' version '1.0.9.RELEASE'
+                id 'io.spring.dependency-management' version '1.0.11.RELEASE'
                 id 'java'
                 id("com.vaadin")
             }
@@ -247,7 +242,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             
             dependencies {
                 implementation('com.vaadin:flow:$flowVersion')
-                implementation('com.vaadin:vaadin-spring:$springVersion')
+                implementation('com.vaadin:vaadin-spring:$flowVersion')
                 implementation('org.springframework.boot:spring-boot-starter-web:$springBootVersion')
                 developmentOnly 'org.springframework.boot:spring-boot-devtools'
                 testImplementation('org.springframework.boot:spring-boot-starter-test') {

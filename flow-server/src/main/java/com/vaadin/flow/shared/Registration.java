@@ -35,7 +35,7 @@ public interface Registration extends Serializable {
      * Removes the associated listener from the event source.
      * <p>
      * The {@code remove} method called after removal does nothing.
-     * 
+     *
      * @see #once(Command)
      */
     void remove();

@@ -372,13 +372,13 @@ public class Binder<BEAN> implements Serializable {
          * TextField nameField = new TextField();
          * binder.forField(nameField).bindReadOnly(Person::getName);
          * </pre>
-         * 
+         *
          * <strong>Note:</strong> the field will be marked as readonly by
          * invoking {@link HasValue#setReadOnly}.
          * <p>
          * This is a shorthand for {@link #bind(ValueProvider, Setter)} method
          * called with {@code null} setter.
-         * 
+         *
          * @see #bind(ValueProvider, Setter)
          *
          * @param getter
@@ -442,7 +442,7 @@ public class Binder<BEAN> implements Serializable {
          * <p>
          * <strong>Note:</strong> the field will be marked as readonly by
          * invoking {@link HasValue#setReadOnly}.
-         * 
+         *
          * @see #bind(String)
          *
          * @param propertyName
@@ -3409,7 +3409,7 @@ public class Binder<BEAN> implements Serializable {
     /**
      * Control whether validators including bean level validators are disabled
      * or enabled globally for this Binder.
-     * 
+     *
      * @param validatorsDisabled
      *            Boolean value.
      */
@@ -3420,7 +3420,7 @@ public class Binder<BEAN> implements Serializable {
     /**
      * Returns if the validators including bean level validators are disabled or
      * enabled for this Binder.
-     * 
+     *
      * @return Boolean value
      */
     public boolean isValidatorsDisabled() {
@@ -3439,11 +3439,11 @@ public class Binder<BEAN> implements Serializable {
      * <p>
      * {@link DefaultBindingExceptionHandler} instance is used if the handler is
      * not explicitly set.
-     * 
-     * 
+     *
+     *
      * @see BindingExceptionHandler
      * @see DefaultBindingExceptionHandler
-     * 
+     *
      * @param handler
      *            the exception handler, not {@code null}
      */
@@ -3457,7 +3457,7 @@ public class Binder<BEAN> implements Serializable {
      * If none has been set with
      * {@link #setBindingExceptionHandler(BindingExceptionHandler)}, the default
      * implementation is returned.
-     * 
+     *
      * @return the exception handler, not {@code null}
      */
     public BindingExceptionHandler getBindingExceptionHandler() {

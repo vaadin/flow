@@ -41,7 +41,7 @@ import elemental.json.JsonValue;
  * @since 1.0
  * @param <T>
  *            the proxy type used by the bean type of this type
- * 
+ *
  * @deprecated Template model and polymer template support is deprecated - we
  *             recommend you to use {@code LitTemplate} instead. Read more
  *             details from <a href=

@@ -36,7 +36,7 @@ import elemental.json.JsonValue;
  * available in {@link Lookup} in an OSGi container.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
- * 
+ *
  * @since
  */
 // This is OSGi specific annotation for the class which may be used without

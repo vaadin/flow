@@ -370,7 +370,7 @@ public interface HasSize extends HasElement {
 
     /**
      * Utility method for internal use.
-     * 
+     *
      * @param size
      *            Size
      * @param unit

@@ -20,7 +20,7 @@ import com.vaadin.flow.component.page.AppShellConfigurator;
 /**
  * Checks whether the provided class is an {@link AppShellConfigurator} eligible
  * for the web application.
- * 
+ *
  * @author Vaadin Ltd
  * @since
  *

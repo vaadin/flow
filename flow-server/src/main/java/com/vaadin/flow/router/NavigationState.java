@@ -84,7 +84,7 @@ public class NavigationState implements Serializable {
 
     /**
      * Gets the route target for this navigation state.
-     * 
+     *
      * @return the route target to navigate to.
      */
     public RouteTarget getRouteTarget() {
@@ -137,7 +137,7 @@ public class NavigationState implements Serializable {
 
     /**
      * Gets the route parameters map.
-     * 
+     *
      * @return route parameters.
      */
     public RouteParameters getRouteParameters() {

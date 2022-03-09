@@ -775,7 +775,7 @@ public class ShortcutRegistration implements Registration, Serializable {
 
     /**
      * Get the sent listenOn event data or initialize new listenOn data.
-     * 
+     *
      * @param listenOn
      *            component to listen events on
      * @return set with already executed expressions.

@@ -33,7 +33,7 @@ public abstract class AbstractDeploymentConfiguration extends
 
     /**
      * Creates a new configuration based on {@code properties}.
-     * 
+     *
      * @param properties
      *            configuration properties
      */

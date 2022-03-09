@@ -82,7 +82,7 @@ public class AbstractParallelTestBenchTest extends TestBenchHelpers {
     /**
      * Allows modifying the chrome options to be used when running on a local
      * Chrome.
-     * 
+     *
      * @param chromeOptions
      *            chrome options to use when running on a local Chrome
      */

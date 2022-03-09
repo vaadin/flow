@@ -321,11 +321,11 @@ public class ServerRpcHandler implements Serializable {
         }
 
         if (rpcRequest.isResynchronize()) {
-            getLogger().warn("Resynchronizing UI by client's request. Under "
-                    + "normal operations this should not happen and may "
-                    + "indicate a bug in Vaadin platform. If you see this "
-                    + "message regularly please open a bug report at "
-                    + "https://github.com/vaadin/flow/issues");
+            getLogger().warn("Resynchronizing UI by client's request. "
+                    + "A network message was lost before reaching the client and the client is reloading the full UI state. "
+                    + "This typically happens because of a bad network connection with packet loss or because of some part of"
+                    + " the network infrastructure (load balancer, proxy) terminating a push (websocket or long-polling) connection."
+                    + " If you are using push with a proxy, make sure the push timeout is set to be smaller than the proxy connection timeout");
 
             // Run detach listeners and re-attach all nodes again to the
             // state tree, in order to send changes for a full re-build of

@@ -22,7 +22,7 @@ import com.vaadin.flow.internal.StateNode;
  * element.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
- * 
+ *
  * @author Vaadin Ltd
  * @since 1.0
  *
@@ -31,7 +31,7 @@ public class ShadowRootHost extends ServerSideFeature {
 
     /**
      * Creates a new instance of the feature for the given {@code node}.
-     * 
+     *
      * @param node
      *            the node to create the feature for
      */
@@ -41,7 +41,7 @@ public class ShadowRootHost extends ServerSideFeature {
 
     /**
      * Gets the host state node of the shadow root node.
-     * 
+     *
      * @return the host element node
      */
     public StateNode getHost() {

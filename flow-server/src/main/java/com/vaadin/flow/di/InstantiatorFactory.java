@@ -19,7 +19,7 @@ import com.vaadin.flow.server.VaadinService;
 
 /**
  * A factory for an {@link Instantiator}.
- * 
+ *
  * @author Vaadin Ltd
  * @since
  *
@@ -28,7 +28,7 @@ public interface InstantiatorFactory {
 
     /**
      * Create an {@link Instantiator} using the provided {@code service}.
-     * 
+     *
      * @param service
      *            a {@code VaadinService} to create an {@code Instantiator} for
      * @return an instantiator for the service or null if this factory is not

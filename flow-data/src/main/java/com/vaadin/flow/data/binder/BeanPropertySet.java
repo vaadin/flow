@@ -514,7 +514,7 @@ public class BeanPropertySet<T> implements PropertySet<T> {
 
     /**
      * Gets the bean type of this bean property set.
-     * 
+     *
      * @return the bean type of this bean property set
      */
     public Class<T> getBeanType() {

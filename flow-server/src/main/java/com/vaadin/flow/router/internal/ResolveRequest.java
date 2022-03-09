@@ -23,7 +23,7 @@ import com.vaadin.flow.router.Router;
 
 /**
  * An object used to encapsulate data used in resolving routing requests.
- * 
+ *
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *

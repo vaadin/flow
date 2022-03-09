@@ -189,7 +189,7 @@ public abstract class BeforeEvent extends EventObject {
 
     /**
      * Gets the unknown reroute.
-     * 
+     *
      * @return the unknown reroute.
      */
     public String getUnknownReroute() {
@@ -699,7 +699,7 @@ public abstract class BeforeEvent extends EventObject {
 
     /**
      * Gets the reroute url.
-     * 
+     *
      * @return the reroute url.
      * @throws NullPointerException
      *             if no reroute target is set. Check
@@ -720,7 +720,7 @@ public abstract class BeforeEvent extends EventObject {
 
     /**
      * Gets the route parameters associated with this event.
-     * 
+     *
      * @return route parameters retrieved from the navigation url.
      */
     public RouteParameters getRouteParameters() {

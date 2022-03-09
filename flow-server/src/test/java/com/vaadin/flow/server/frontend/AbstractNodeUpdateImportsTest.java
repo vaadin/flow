@@ -122,27 +122,26 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
         expectedLines.add("import 'unresolved/component';");
 
         expectedLines.add(
-                "import $css_0 from '@vaadin/vaadin-mixed-component/bar.css'");
-        expectedLines.add("import $css_1 from 'Frontend/foo.css';");
-        expectedLines.add("import $css_2 from 'Frontend/foo.css';");
-        expectedLines.add("import $css_3 from 'Frontend/foo.css';");
-        expectedLines.add("import $css_4 from 'Frontend/foo.css';");
-        expectedLines.add("import $css_5 from 'Frontend/foo.css';");
-        expectedLines.add("import $css_6 from 'Frontend/foo.css';");
+                "import $cssFromFile_0 from '@vaadin/vaadin-mixed-component/bar.css'");
+        expectedLines.add("import $cssFromFile_1 from 'Frontend/foo.css';");
+        expectedLines.add("import $cssFromFile_2 from 'Frontend/foo.css';");
+        expectedLines.add("import $cssFromFile_3 from 'Frontend/foo.css';");
+        expectedLines.add("import $cssFromFile_4 from 'Frontend/foo.css';");
+        expectedLines.add("import $cssFromFile_5 from 'Frontend/foo.css';");
+        expectedLines.add("import $cssFromFile_6 from 'Frontend/foo.css';");
         expectedLines.add(
-                "import { css, registerStyles } from '@vaadin/vaadin-themable-mixin';");
+                "import { css, unsafeCSS, registerStyles } from '@vaadin/vaadin-themable-mixin';");
         expectedLines.add("addCssBlock(`<style>${$css_0}</style>`);");
         expectedLines.add("addCssBlock(`<style>${$css_1}</style>`);");
         expectedLines.add(
                 "addCssBlock(`<style include=\"bar\">${$css_2}</style>`);");
-        expectedLines
-                .add("registerStyles('', css`${$css_3}`, {moduleId: 'baz'});");
+        expectedLines.add("registerStyles('', $css_3, {moduleId: 'baz'});");
         expectedLines.add(
-                "registerStyles('', css`${$css_4}`, {include: 'bar', moduleId: 'baz'});");
+                "registerStyles('', $css_4, {include: 'bar', moduleId: 'baz'});");
         expectedLines.add(
-                "registerStyles('foo-bar', css`${$css_5}`, {moduleId: 'flow_css_mod'});");
+                "registerStyles('foo-bar', $css_5, {moduleId: 'flow_css_mod_5'});");
         expectedLines.add(
-                "registerStyles('foo-bar', css`${$css_6}`, {include: 'bar', moduleId: 'flow_css_mod'});");
+                "registerStyles('foo-bar', $css_6, {include: 'bar', moduleId: 'flow_css_mod_6'});");
 
         assertFalse(importsFile.exists());
 

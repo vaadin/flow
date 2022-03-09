@@ -29,14 +29,14 @@ public interface JsonSerializable extends Serializable {
 
     /**
      * Converts this object to its JSON format.
-     * 
+     *
      * @return the JSON representation of the object
      */
     JsonObject toJson();
 
     /**
      * Sets the JSON object data into the Java object.
-     * 
+     *
      * @param value
      *            the JSON representation of the object
      * @return this instance, for method chaining

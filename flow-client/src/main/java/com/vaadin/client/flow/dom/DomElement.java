@@ -191,7 +191,7 @@ public interface DomElement extends DomNode {
 
     /**
      * Removes an attribute from this node.
-     * 
+     *
      * @param name
      *            the attribute name
      */

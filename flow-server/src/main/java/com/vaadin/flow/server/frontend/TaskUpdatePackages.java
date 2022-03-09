@@ -137,20 +137,47 @@ public class TaskUpdatePackages extends NodeUpdater {
         final JsonObject versionsJson = Json.parse(FileUtils.readFileToString(
                 generatedVersionsFile, StandardCharsets.UTF_8));
 
-        if (versionsJson != null) {
-            JsonObject overridesSection = getOverridesSection(packageJson);
-            final JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
-            for (String dependency : versionsJson.keys()) {
-                if (!overridesSection.hasKey(dependency)
-                        && dependencies.hasKey(dependency)
-                        && !isInternalPseudoDependency(
-                                versionsJson.getString(dependency))) {
-                    overridesSection.put(dependency, "$" + dependency);
-                    versionLockingUpdated = true;
-                }
+        JsonObject overridesSection = getOverridesSection(packageJson);
+        final JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
+        for (String dependency : versionsJson.keys()) {
+            if (!overridesSection.hasKey(dependency)
+                    && shouldLockDependencyVersion(dependency, dependencies,
+                            versionsJson)) {
+                overridesSection.put(dependency, "$" + dependency);
+                versionLockingUpdated = true;
             }
         }
+        final JsonObject devDependencies = packageJson
+                .getObject(DEV_DEPENDENCIES);
+        for (String dependency : overridesSection.keys()) {
+            if (!dependencies.hasKey(dependency)
+                    && !devDependencies.hasKey(dependency)
+                    && overridesSection.getString(dependency).startsWith("$")) {
+                overridesSection.remove(dependency);
+                versionLockingUpdated = true;
+            }
+        }
+
         return versionLockingUpdated;
+    }
+
+    private boolean shouldLockDependencyVersion(String dependency,
+            JsonObject projectDependencies, JsonObject versionsJson) {
+        String platformDefinedVersion = versionsJson.getString(dependency);
+
+        if (isInternalPseudoDependency(platformDefinedVersion)) {
+            return false;
+        }
+
+        if (projectDependencies.hasKey(dependency)) {
+            return true;
+        }
+
+        if ("chokidar".equals(dependency)) {
+            // Explicitly lock this to avoid getting chokidar 2 with issues
+            return true;
+        }
+        return false;
     }
 
     private boolean isInternalPseudoDependency(String dependencyVersion) {
@@ -223,19 +250,17 @@ public class TaskUpdatePackages extends NodeUpdater {
          */
         List<String> pinnedPlatformDependencies = new ArrayList<>();
         final JsonObject platformPinnedDependencies = getPlatformPinnedDependencies();
-        if (platformPinnedDependencies != null) {
-            for (String key : platformPinnedDependencies.keys()) {
-                // need to double check that not overriding a scanned
-                // dependency since add-ons should be able to downgrade
-                // version through exclusion
-                if (!applicationDependencies.containsKey(key)
-                        && pinPlatformDependency(packageJson,
-                                platformPinnedDependencies, key)) {
-                    added++;
-                }
-                // make sure platform pinned dependency is not cleared
-                pinnedPlatformDependencies.add(key);
+        for (String key : platformPinnedDependencies.keys()) {
+            // need to double check that not overriding a scanned
+            // dependency since add-ons should be able to downgrade
+            // version through exclusion
+            if (!applicationDependencies.containsKey(key)
+                    && pinPlatformDependency(packageJson,
+                            platformPinnedDependencies, key)) {
+                added++;
             }
+            // make sure platform pinned dependency is not cleared
+            pinnedPlatformDependencies.add(key);
         }
 
         if (added > 0) {

@@ -135,7 +135,7 @@ public class DataChangeEvent<T> extends EventObject {
      * This method can only be called from within an event listener otherwise it
      * throws an {@link IllegalStateException}. Calling it will remove the
      * current event listener so no further events are passed to it.
-     * 
+     *
      * @throws IllegalStateException
      *             if the method is called outside of the event listener.
      */

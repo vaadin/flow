@@ -24,7 +24,7 @@ import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
 
 /**
  * Provides a configuration based on string properties.
- * 
+ *
  * @author Vaadin Ltd
  * @since
  *
@@ -36,7 +36,7 @@ public abstract class AbstractPropertyConfiguration
 
     /**
      * Creates a new instance with given {@code properties}.
-     * 
+     *
      * @param properties
      *            configuration properties
      */
@@ -88,7 +88,7 @@ public abstract class AbstractPropertyConfiguration
 
     /**
      * Gets unmodifiable underlying properties.
-     * 
+     *
      * @return the properties map
      */
     protected Map<String, String> getProperties() {
@@ -143,7 +143,7 @@ public abstract class AbstractPropertyConfiguration
 
     /**
      * Gets application property value using the {@code valueProvider}.
-     * 
+     *
      * @param valueProvider
      *            a value provider for the property
      * @param propertyName

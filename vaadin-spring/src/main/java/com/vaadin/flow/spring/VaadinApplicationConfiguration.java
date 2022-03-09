@@ -28,7 +28,7 @@ import com.vaadin.flow.spring.SpringLookupInitializer.SpringApplicationContextIn
  * <p>
  * Registers a default {@link ApplicationConfigurationFactory} for Vaadin web
  * application if there is no developer provided factory available.
- * 
+ *
  * @author Vaadin Ltd
  * @since
  *
@@ -39,7 +39,7 @@ public class VaadinApplicationConfiguration {
     /**
      * Creates a default {@link ApplicationConfigurationFactory} bean in case
      * there is no developer provided bean.
-     * 
+     *
      * @return the default application configuration factory
      */
     @Bean
@@ -51,7 +51,7 @@ public class VaadinApplicationConfiguration {
     /**
      * Creates an application context initializer for lookup initializer
      * {@link SpringLookupInitializer}.
-     * 
+     *
      * @return an application context initializer
      */
     @Bean

@@ -39,7 +39,7 @@ import java.lang.annotation.Target;
  *
  * @author Vaadin Ltd
  * @since 1.0
- * 
+ *
  * @deprecated Template model and polymer template support is deprecated - we
  *             recommend you to use {@code LitTemplate} instead. Read more
  *             details from <a href=

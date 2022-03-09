@@ -163,7 +163,7 @@ public class DevServerOutputTracker {
     /**
      * Creates a new finder that scans for the given success and/or failure
      * pattern.
-     * 
+     *
      * @param inputStream
      *            the stream to scan
      * @param success
@@ -197,7 +197,7 @@ public class DevServerOutputTracker {
 
     /**
      * Blocks until the first match is found and the callback has been run.
-     * 
+     *
      * @param timeoutInSeconds
      *            the maximum number of seconds to wait
      * @throws InterruptedException
