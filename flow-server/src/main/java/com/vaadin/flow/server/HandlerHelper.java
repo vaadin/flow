@@ -21,13 +21,10 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -59,34 +56,6 @@ public class HandlerHelper implements Serializable {
 
     private static final Pattern PARENT_DIRECTORY_REGEX = Pattern
             .compile("(/|\\\\)\\.\\.(/|\\\\)?", Pattern.CASE_INSENSITIVE);
-
-    private static final String FETCH_DEST_HEADER = "Sec-Fetch-Dest";
-
-    private static final Set<String> nonHtmlFetchDests;
-
-    static {
-        // Full list at
-        // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-Fetch-Dest
-        Set<String> dests = new HashSet<>();
-        dests.add("audio");
-        dests.add("audioworklet");
-        dests.add("font");
-        dests.add("image");
-        dests.add("manifest");
-        dests.add("paintworklet");
-        dests.add("script"); // NOSONAR
-        dests.add("serviceworker");
-        dests.add("sharedworker");
-        dests.add("style");
-        dests.add("track");
-        dests.add("video");
-        dests.add("worker");
-        dests.add("xslt");
-
-        // "empty" requests are used when service worker caches / so they need
-        // to be allowed
-        nonHtmlFetchDests = Collections.unmodifiableSet(dests);
-    }
 
     /**
      * Framework internal enum for tracking the type of a request.
@@ -161,30 +130,6 @@ public class HandlerHelper implements Serializable {
             RequestType requestType) {
         return requestType.getIdentifier().equals(request
                 .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER));
-    }
-
-    /**
-     * Checks if the request is potentially a request for an HTML page.
-     *
-     * @param request
-     *            the request to check
-     * @return {@code true} if the request is potentially for HTML,
-     *         {@code false} if it is certain that it is a request for a script,
-     *         image or something else
-     */
-    public static boolean isRequestForHtml(VaadinRequest request) {
-        if (request.getHeader(BootstrapHandler.SERVICE_WORKER_HEADER) != null) {
-            return false;
-        }
-        String fetchDest = request.getHeader(FETCH_DEST_HEADER);
-        if (fetchDest == null) {
-            // Old browsers do not send the header at all
-            return true;
-        }
-        if (nonHtmlFetchDests.contains(fetchDest)) {
-            return false;
-        }
-        return true;
     }
 
     /**
