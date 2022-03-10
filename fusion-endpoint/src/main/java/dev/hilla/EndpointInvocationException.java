@@ -28,7 +28,7 @@ public abstract class EndpointInvocationException extends Exception {
 
         /**
          * Creates a new instance.
-         * 
+         *
          * @param message
          *            the message to pass to the client
          */
@@ -46,7 +46,7 @@ public abstract class EndpointInvocationException extends Exception {
 
         /**
          * Creates a new instance.
-         * 
+         *
          * @param message
          *            the message to pass to the client
          */
@@ -65,7 +65,7 @@ public abstract class EndpointInvocationException extends Exception {
 
         /**
          * Creates a new instance.
-         * 
+         *
          * @param message
          *            the message to pass to the client
          */
@@ -77,7 +77,7 @@ public abstract class EndpointInvocationException extends Exception {
 
     /**
      * Creates a new instance..
-     * 
+     *
      * @param errorMessage
      *            an additional message passed to the client side
      */
@@ -87,7 +87,7 @@ public abstract class EndpointInvocationException extends Exception {
 
     /**
      * Returns the additional message that is passed to the client side.
-     * 
+     *
      * @return the error message or {@code null} if no error message was
      *         provided
      */
