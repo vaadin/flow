@@ -89,7 +89,7 @@
         <hibernate.validator.version>6.2.2.Final</hibernate.validator.version>
         <slf4j.version>1.7.36</slf4j.version>
         <polymer.version>2.6.1</polymer.version>
-        <jackson.version>2.13.1</jackson.version>
+        <jackson.version>2.13.2</jackson.version>
         <javax.validation.version>2.0.1.Final</javax.validation.version>
         <javax.annotation.api.version>1.3.2</javax.annotation.api.version>
         <jaxb.version>2.3.6</jaxb.version>
