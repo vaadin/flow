@@ -39,13 +39,14 @@ public class ModalDialogIT extends ChromeBrowserTest {
         validateLatestShortcutEvent(0, ModalDialogView.UI_BUTTON);
         listenToButtonShortcutOnUI();
         pressShortcutKey(getDialogInput());
-        // no event occurred since shortcut is listened on ui which is inert
-        validateLatestShortcutEvent(0, ModalDialogView.UI_BUTTON);
+        // event occurred since when a shortcut is registered on UI, it is
+        // listened on the topmost modal component instead.
+        validateLatestShortcutEvent(1, ModalDialogView.DIALOG_BUTTON);
 
         closeDialog();
         pressShortcutKey(
                 $(NativeButtonElement.class).id(ModalDialogView.UI_BUTTON));
-        validateLatestShortcutEvent(1, ModalDialogView.UI_BUTTON);
+        validateLatestShortcutEvent(2, ModalDialogView.UI_BUTTON);
     }
 
     @Test
