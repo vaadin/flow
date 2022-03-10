@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
+import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableSupplier;
@@ -534,6 +535,14 @@ public class ShortcutRegistration implements Registration, Serializable {
         Component component = listenOnComponents[listenOnIndex];
         assert component != null;
 
+        if (component instanceof UI) {
+            UIInternals uiInternals = ((UI) component).getInternals();
+            if (uiInternals.hasModalComponent()) {
+                component = uiInternals.getActiveModalComponent();
+            }
+        }
+        final Component source = component;
+
         if (shortcutListenerRegistrations == null) {
             shortcutListenerRegistrations = new CompoundRegistration[listenOnComponents.length];
         }
@@ -543,8 +552,7 @@ public class ShortcutRegistration implements Registration, Serializable {
                 shortcutListenerRegistrations[listenOnIndex] = new CompoundRegistration();
                 Registration keyDownRegistration = ComponentUtil.addListener(
                         component, KeyDownEvent.class,
-                        event -> fireShortcutEvent(component),
-                        domRegistration -> {
+                        event -> fireShortcutEvent(source), domRegistration -> {
                             shortcutListenerRegistrations[listenOnIndex]
                                     .addRegistration(domRegistration);
                             configureHandlerListenerRegistration(listenOnIndex);
