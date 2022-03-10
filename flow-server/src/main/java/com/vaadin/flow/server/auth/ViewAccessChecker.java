@@ -15,15 +15,20 @@
  */
 package com.vaadin.flow.server.auth;
 
+import java.security.Principal;
+import java.util.function.Function;
+
 import javax.servlet.http.HttpServletRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.server.VaadinServletRequest;
+import com.vaadin.flow.server.auth.AccessAnnotationChecker;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Checks access to views using an {@link AccessAnnotationChecker}.
@@ -159,7 +164,8 @@ public class ViewAccessChecker implements BeforeEnterListener {
             return;
         }
         boolean hasAccess = accessAnnotationChecker.hasAccess(targetView,
-                httpServletRequest);
+                getPrincipal(httpServletRequest),
+                getRoleChecker(httpServletRequest));
 
         if (hasAccess) {
             getLogger().debug("Allowed access to view {}",
@@ -189,6 +195,37 @@ public class ViewAccessChecker implements BeforeEnterListener {
             beforeEnterEvent.rerouteToError(NotFoundException.class,
                     "Access denied");
         }
+    }
+
+    /**
+     * Gets the principal for the current user.
+     *
+     * @param httpServletRequest
+     *            the current HTTP request, if available.
+     * @return the principal, typically a user id
+     */
+    protected Principal getPrincipal(HttpServletRequest httpServletRequest) {
+        if (httpServletRequest == null) {
+            return null;
+        }
+
+        return httpServletRequest.getUserPrincipal();
+    }
+
+    /**
+     * Gets a function for checking if the current user has a given role.
+     *
+     * @param httpServletRequest
+     *            the current HTTP request, if available.
+     * @return a function for checking roles for the current user
+     */
+    protected Function<String, Boolean> getRoleChecker(
+            HttpServletRequest httpServletRequest) {
+        if (httpServletRequest == null) {
+            return role -> false;
+        }
+
+        return httpServletRequest::isUserInRole;
     }
 
     private boolean isProductionMode(BeforeEnterEvent beforeEnterEvent) {
