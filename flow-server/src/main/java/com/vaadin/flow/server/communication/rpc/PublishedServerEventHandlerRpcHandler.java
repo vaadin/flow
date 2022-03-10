@@ -72,7 +72,7 @@ public class PublishedServerEventHandlerRpcHandler
     }
 
     @Override
-    protected boolean allowInert() {
+    protected boolean allowInert(StateNode node) {
         return true;
     }
 

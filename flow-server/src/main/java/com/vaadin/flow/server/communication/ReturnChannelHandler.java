@@ -79,6 +79,16 @@ public class ReturnChannelHandler extends AbstractRpcInvocationHandler {
         return Optional.empty();
     }
 
+    @Override
+    protected boolean allowInert(StateNode node) {
+        // Allow calls if a return channel has been registered for the node.
+        final Optional<ReturnChannelMap> returnChannelMap = node
+                .getFeatureIfInitialized(ReturnChannelMap.class);
+        return returnChannelMap.isPresent()
+                ? returnChannelMap.get().hasChannels()
+                : false;
+    }
+
     private static Logger getLogger() {
         return LoggerFactory.getLogger(ReturnChannelHandler.class.getName());
     }
