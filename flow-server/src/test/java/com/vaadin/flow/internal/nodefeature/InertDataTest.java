@@ -50,6 +50,24 @@ public class InertDataTest extends AbstractNodeFeatureTest<InertData> {
     }
 
     @Test
+    public void inertData_hasShadowRoot_handlesInertCheck() {
+        parent = createNode(null);
+        StateNode shadow = new StateNode(ElementChildrenList.class,
+                ShadowRootHost.class);
+        parent.getFeature(ElementChildrenList.class).add(0, shadow);
+
+        grandchild = createNode(shadow);
+
+        final InertData parentFeature = parent.getFeature(InertData.class);
+        parentFeature.setInertSelf(true);
+        parentFeature.generateChangesFromEmpty();
+
+        Assert.assertTrue(parentFeature.isInert());
+        Assert.assertFalse(grandchild.getFeatureIfInitialized(InertData.class)
+                .isPresent());
+    }
+
+    @Test
     public void inertData_inheritingInert_allPermutations() {
         final InertData childFeature = child.getFeature(InertData.class);
         childFeature.setIgnoreParentInert(true);
