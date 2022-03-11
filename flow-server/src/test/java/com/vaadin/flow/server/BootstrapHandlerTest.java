@@ -1451,13 +1451,27 @@ public class BootstrapHandlerTest {
     }
 
     private VaadinServletRequest createVaadinRequest() {
-        HttpServletRequest request = createRequest();
+        return createVaadinRequest(null);
+    }
+
+    private VaadinServletRequest createVaadinRequest(String pathInfo) {
+        HttpServletRequest request = createRequest(pathInfo);
         return new VaadinServletRequest(request, service);
     }
 
     private HttpServletRequest createRequest() {
+        return createRequest(null);
+    }
+
+    private HttpServletRequest createRequest(String pathInfo) {
         HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
         Mockito.doAnswer(invocation -> "").when(request).getServletPath();
+        if (pathInfo != null) {
+            Mockito.doAnswer(invocation -> pathInfo).when(request)
+                    .getPathInfo();
+            Mockito.doAnswer(invocation -> new StringBuffer(pathInfo))
+                    .when(request).getRequestURL();
+        }
         return request;
     }
 
@@ -1589,6 +1603,56 @@ public class BootstrapHandlerTest {
                 .thenReturn(null);
 
         Assert.assertTrue(bootstrapHandler.canHandleRequest(request));
+    }
+
+    @Test
+    public void canHandleRequest_allow_oldBrowser() {
+        BootstrapHandler bootstrapHandler = new BootstrapHandler();
+        Assert.assertTrue(bootstrapHandler.canHandleRequest(
+                createRequestWithDestination("/", null, null)));
+    }
+
+    @Test
+    public void canHandleRequest_handle_indexHtmlRequest() {
+        BootstrapHandler bootstrapHandler = new BootstrapHandler();
+        Assert.assertTrue(bootstrapHandler.canHandleRequest(
+                createRequestWithDestination("/", "document", "navigate")));
+    }
+
+    @Test
+    public void canHandleRequest_doNotHandle_scriptRequest() {
+        BootstrapHandler bootstrapHandler = new BootstrapHandler();
+        Assert.assertFalse(bootstrapHandler.canHandleRequest(
+                createRequestWithDestination("/", "script", "no-cors")));
+    }
+
+    @Test
+    public void canHandleRequest_doNotHandle_imageRequest() {
+        BootstrapHandler bootstrapHandler = new BootstrapHandler();
+        Assert.assertFalse(bootstrapHandler.canHandleRequest(
+                createRequestWithDestination("/", "image", "no-cors")));
+    }
+
+    @Test
+    public void canHandleRequest_handle_serviceWorkerDocumentRequest() {
+        BootstrapHandler bootstrapHandler = new BootstrapHandler();
+        Assert.assertTrue(bootstrapHandler.canHandleRequest(
+                createRequestWithDestination("/", "empty", "same-origin")));
+    }
+
+    private VaadinServletRequest createRequestWithDestination(String pathInfo,
+            String fetchDest, String fetchMode) {
+        VaadinServletRequest req = createVaadinRequest(pathInfo);
+        Mockito.when(req.getHeader(Mockito.anyString())).thenAnswer(arg -> {
+            if ("Sec-Fetch-Dest".equals(arg.getArgument(0))) {
+                return fetchDest;
+            } else if ("Sec-Fetch-Mode".equals(arg.getArgument(0))) {
+                return fetchMode;
+            }
+            return null;
+        });
+
+        return req;
     }
 
     @Test
