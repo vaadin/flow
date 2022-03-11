@@ -19,6 +19,11 @@ import javax.servlet.http.HttpServletRequest;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServletRequest;
+import com.vaadin.flow.server.VaadinServletService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,8 +60,8 @@ import dev.hilla.auth.EndpointAccessChecker;
 @RestController
 @Import({ EndpointControllerConfiguration.class, EndpointProperties.class })
 @ConditionalOnBean(annotation = Endpoint.class)
-@NpmPackage(value = "@hilla/frontend", version = "0.0.19")
-@NpmPackage(value = "@hilla/form", version = "0.0.19")
+@NpmPackage(value = "@hilla/frontend", version = "1.0.1")
+@NpmPackage(value = "@hilla/form", version = "1.0.1")
 public class EndpointController {
     static final String ENDPOINT_METHODS = "/{endpoint}/{method}";
 
@@ -139,7 +144,19 @@ public class EndpointController {
                             EndpointAccessChecker.ACCESS_DENIED_MSG));
         }
 
-        return endpointInvoker.invoke(endpointName, methodName, body, request);
+        try {
+            // Put a VaadinRequest in the instances object so as the request is
+            // available in the end-point method
+            VaadinServletService service = (VaadinServletService) VaadinService
+                    .getCurrent();
+            CurrentInstance.set(VaadinRequest.class,
+                    new VaadinServletRequest(request, service));
+            return endpointInvoker.invoke(endpointName, methodName, body,
+                    request.getUserPrincipal(), request::isUserInRole);
+        } finally {
+            CurrentInstance.set(VaadinRequest.class, null);
+        }
+
     }
 
 }
