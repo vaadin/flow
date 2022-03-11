@@ -61,7 +61,7 @@ public abstract class AbstractRpcInvocationHandler
                     + "the client side for an inactive (disabled or invisible) node id='{}'",
                     getClass().getName(), node.getId());
             return Optional.empty();
-        } else if (!allowInert() && node.isInert()) {
+        } else if (!allowInert(node) && node.isInert()) {
             getLogger().trace(
                     "Ignored RPC for invocation handler '{}' from "
                             + "the client side for an inert node id='{}'",
@@ -72,7 +72,7 @@ public abstract class AbstractRpcInvocationHandler
         }
     }
 
-    protected boolean allowInert() {
+    protected boolean allowInert(StateNode node) {
         return false;
     }
 
