@@ -58,10 +58,12 @@ public class ModalDialogIT extends ChromeBrowserTest {
         // shortcuts on view should not trigger while dialog is open
         pressShortcutKey(
                 $(NativeButtonElement.class).id(ModalDialogView.UI_BUTTON));
+        Assert.assertTrue("No event should be logged",
+                eventLog.$(DivElement.class).all().isEmpty());
 
         closeDialog();
 
-        // shortcuts on view should not trigger when dialog has been closed
+        // shortcuts on view should trigger when dialog has been closed
         pressShortcutKey(
                 $(NativeButtonElement.class).id(ModalDialogView.UI_BUTTON));
         validateLatestShortcutEvent(0, ModalDialogView.UI_BUTTON);
