@@ -29,23 +29,30 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
+import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attribute;
+import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.parser.Tag;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.webcomponent.WebComponentUI;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.internal.JsonUtils;
+import com.vaadin.flow.server.BootstrapException;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.PwaRegistry;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 
@@ -97,6 +104,48 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
 
     private static class WebComponentBootstrapPageBuilder
             extends BootstrapPageBuilder {
+        @Override
+        public Document getBootstrapPage(BootstrapContext context) {
+            VaadinService service = context.getSession().getService();
+
+            if (FeatureFlags.get(service.getContext())
+                    .isEnabled(FeatureFlags.VITE)) {
+                try {
+                    Document document = Jsoup.parse(
+                            FrontendUtils.getWebComponentHtmlContent(service));
+                    Element head = document.head();
+
+                    // Specify the application ID for scripts of the
+                    // web-component.html
+                    head.select("script[src]").attr("data-app-id",
+                            context.getUI().getInternals().getAppId());
+
+                    // Add `crossorigin` to fix basic auth in Safari #6560
+                    head.select("script[src], link[href]").attr("crossorigin",
+                            "true");
+
+                    JsonObject initialUIDL = getInitialUidl(context.getUI());
+
+                    head.prependChild(createInlineJavaScriptElement(
+                            "window.JSCompiler_renameProperty = function(a) { return a; }"));
+
+                    head.prependChild(getBootstrapScript(initialUIDL, context));
+
+                    if (context.getPushMode().isEnabled()) {
+                        head.prependChild(createJavaScriptModuleElement(
+                                getPushScript(context), true));
+                    }
+
+                    return document;
+                } catch (IOException e) {
+                    throw new BootstrapException(
+                            "Unable to read the web-component.html file.", e);
+                }
+            }
+
+            return super.getBootstrapPage(context);
+        }
+
         @Override
         protected List<String> getChunkKeys(JsonObject chunks) {
             if (chunks.hasKey(EXPORT_CHUNK)) {
@@ -395,8 +444,9 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
             if (attribute.getValue() == null) {
                 writer.append("''");
             } else {
+                String name = attribute.getKey();
                 String path = attribute.getValue();
-                if ("src".equals(attribute.getKey())) {
+                if (name.matches("^(src|href)$")) {
                     path = modifyPath(basePath, path);
                 }
                 writer.append("\"").append(path).append("\"");

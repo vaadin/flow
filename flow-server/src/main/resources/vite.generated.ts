@@ -5,7 +5,7 @@
  * This file will be overwritten on every run. Any custom changes should be made to vite.config.ts
  */
 import path from 'path';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import * as net from 'net';
 
 import { processThemeResources } from '@vaadin/application-theme-plugin/theme-handle.js';
@@ -43,6 +43,8 @@ const themeOptions = {
   projectStaticAssetsOutputFolder: path.resolve(__dirname, settings.staticOutput),
   frontendGeneratedFolder: path.resolve(frontendFolder, settings.generatedFolder)
 };
+
+const hasExportedWebComponents = existsSync(path.resolve(frontendFolder, 'web-component.html'));
 
 // Block debug and trace logs.
 console.trace = () => {};
@@ -320,6 +322,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
     // vite when it exits or crashes.
     runWatchDog(process.env.watchDogPort);
   }
+
   return {
     root: 'frontend',
     base: '',
@@ -344,7 +347,11 @@ export const vaadinConfig: UserConfigFn = (env) => {
       assetsDir: 'VAADIN/build',
       rollupOptions: {
         input: {
-          indexhtml: path.resolve(frontendFolder, 'index.html')
+          indexhtml: path.resolve(frontendFolder, 'index.html'),
+
+          ...hasExportedWebComponents
+            ? { webcomponenthtml: path.resolve(frontendFolder, 'web-component.html') }
+            : {}
         }
       }
     },
@@ -384,8 +391,31 @@ export const vaadinConfig: UserConfigFn = (env) => {
           }
         }
       },
+      hasExportedWebComponents && {
+        name: 'vaadin:inject-entrypoints-to-web-component-html',
+        transformIndexHtml: {
+          enforce: 'pre',
+          transform(_html, { path, server }) {
+            if (path !== '/web-component.html') {
+              return;
+            }
+
+            const basePath = devMode
+              ? server?.config.base ?? ''
+              : './'
+
+            return [
+              {
+                tag: 'script',
+                attrs: { type: 'module', src: `${basePath}generated/vaadin-web-component.ts` },
+                injectTo: 'head'
+              }
+            ]
+          }
+        }
+      },
       {
-        name: 'vaadin:inject-entrypoint-script',
+        name: 'vaadin:inject-entrypoints-to-index-html',
         transformIndexHtml: {
           enforce: 'pre',
           transform(_html, { path, server }) {
