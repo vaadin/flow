@@ -40,8 +40,7 @@ public class DummyOAuth2Server {
                         AuthorizationGrantType.AUTHORIZATION_CODE)
                 .redirectUri("http://127.0.0.1:8080/oauth/authorize")
                 .redirectUri("http://127.0.0.1:8080/authorized")
-                .scope(OidcScopes.OPENID)
-                .build();
+                .scope(OidcScopes.OPENID).build();
         return new InMemoryRegisteredClientRepository(registeredClient);
     }
 
