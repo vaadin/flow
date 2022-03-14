@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
+import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableSupplier;
@@ -531,8 +532,7 @@ public class ShortcutRegistration implements Registration, Serializable {
     }
 
     private void updateHandlerListenerRegistration(int listenOnIndex) {
-        Component component = listenOnComponents[listenOnIndex];
-        assert component != null;
+        final Component component = getComponentEventSource(listenOnIndex);
 
         if (shortcutListenerRegistrations == null) {
             shortcutListenerRegistrations = new CompoundRegistration[listenOnComponents.length];
@@ -556,6 +556,30 @@ public class ShortcutRegistration implements Registration, Serializable {
         } else {
             configureHandlerListenerRegistration(listenOnIndex);
         }
+    }
+
+    private Component getComponentEventSource(int listenOnIndex) {
+        Component component = listenOnComponents[listenOnIndex];
+        assert component != null;
+
+        if (component instanceof UI) {
+            UIInternals uiInternals = ((UI) component).getInternals();
+            // Shortcut events go to UI by default, which will be inert from
+            // receiving RPCs if there is an active modal component. In this
+            // case, check if the owner component is a child of the modal
+            // component, and if so, send via the modal component.
+            if (uiInternals.hasModalComponent()) {
+                Optional<Component> maybeAncestor = Optional.of(lifecycleOwner);
+                while (maybeAncestor.isPresent()) {
+                    Component ancestor = maybeAncestor.get();
+                    if (ancestor == uiInternals.getActiveModalComponent()) {
+                        return ancestor;
+                    }
+                    maybeAncestor = ancestor.getParent();
+                }
+            }
+        }
+        return component;
     }
 
     private void fireShortcutEvent(Component component) {

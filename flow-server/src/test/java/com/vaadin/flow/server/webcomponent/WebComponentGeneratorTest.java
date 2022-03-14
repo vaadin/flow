@@ -180,8 +180,10 @@ public class WebComponentGeneratorTest {
                         "", false, "my-theme");
         // make sure that the test works on windows machines:
         module = module.replace("\r", "");
-        MatcherAssert.assertThat(module, startsWith("import {applyTheme} from '"
-                + "generated/theme';\n\nclass Tag extends " + "HTMLElement {"));
+        MatcherAssert.assertThat(module,
+                startsWith("import {applyTheme} from '"
+                        + "/generated/theme';\n\nclass Tag extends "
+                        + "HTMLElement {"));
         MatcherAssert.assertThat(module, containsString("style.innerHTML = `\n" //
                 + "      :host {\n" //
                 + "        position: relative;\n" //

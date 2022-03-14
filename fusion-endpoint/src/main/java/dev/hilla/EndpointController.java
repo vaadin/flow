@@ -17,8 +17,14 @@ package dev.hilla;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServletRequest;
+import com.vaadin.flow.server.VaadinServletService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,8 +39,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import dev.hilla.EndpointInvocationException.EndpointAccessDeniedException;
+import dev.hilla.EndpointInvocationException.EndpointBadRequestException;
+import dev.hilla.EndpointInvocationException.EndpointInternalException;
+import dev.hilla.EndpointInvocationException.EndpointNotFoundException;
 import dev.hilla.auth.CsrfChecker;
 import dev.hilla.auth.EndpointAccessChecker;
+import dev.hilla.exception.EndpointException;
 
 /**
  * The controller that is responsible for processing Vaadin endpoint requests.
@@ -139,7 +150,53 @@ public class EndpointController {
                             EndpointAccessChecker.ACCESS_DENIED_MSG));
         }
 
-        return endpointInvoker.invoke(endpointName, methodName, body, request);
+        try {
+            // Put a VaadinRequest in the instances object so as the request is
+            // available in the end-point method
+            VaadinServletService service = (VaadinServletService) VaadinService
+                    .getCurrent();
+            CurrentInstance.set(VaadinRequest.class,
+                    new VaadinServletRequest(request, service));
+            Object returnValue = endpointInvoker.invoke(endpointName,
+                    methodName, body, request.getUserPrincipal(),
+                    request::isUserInRole);
+            try {
+                return ResponseEntity
+                        .ok(endpointInvoker.writeValueAsString(returnValue));
+            } catch (JsonProcessingException e) {
+                String errorMessage = String.format(
+                        "Failed to serialize endpoint '%s' method '%s' response. "
+                                + "Double check method's return type or specify a custom mapper bean with qualifier '%s'",
+                        endpointName, methodName,
+                        EndpointController.VAADIN_ENDPOINT_MAPPER_BEAN_QUALIFIER);
+                getLogger().error(errorMessage, e);
+                throw new EndpointInternalException(errorMessage);
+            }
+        } catch (EndpointException e) {
+            try {
+                return ResponseEntity.badRequest().body(endpointInvoker
+                        .createResponseErrorObject(e.getSerializationData()));
+            } catch (JsonProcessingException ee) {
+                String errorMessage = String.format(
+                        "Failed to serialize error object for endpoint exception. ");
+                getLogger().error(errorMessage, e);
+                return ResponseEntity.internalServerError().body(errorMessage);
+            }
+        } catch (EndpointNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (EndpointAccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                    endpointInvoker.createResponseErrorObject(e.getMessage()));
+        } catch (EndpointBadRequestException e) {
+            return ResponseEntity.badRequest().body(
+                    endpointInvoker.createResponseErrorObject(e.getMessage()));
+        } catch (EndpointInternalException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                    endpointInvoker.createResponseErrorObject(e.getMessage()));
+        } finally {
+            CurrentInstance.set(VaadinRequest.class, null);
+        }
+
     }
 
 }
