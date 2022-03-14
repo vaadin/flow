@@ -502,6 +502,7 @@ public class ShortcutRegistrationTest {
         when(modal.getUI()).thenReturn(Optional.of(ui));
         when(modal.getEventBus()).thenReturn(new ComponentEventBus(modal));
         when(modal.getElement()).thenReturn(new Element("tag"));
+        when(modal.isVisible()).thenReturn(true);
 
         UIInternals uiInternals = Mockito.mock(UIInternals.class);
         Mockito.when(uiInternals.hasModalComponent()).thenReturn(true);
@@ -515,8 +516,7 @@ public class ShortcutRegistrationTest {
                 Key.KEY_A);
 
         mockLifecycle(true);
-        Mockito.when(lifecycleOwner.getParent())
-                .thenReturn(Optional.of(new FakeComponent()));
+        Mockito.when(lifecycleOwner.getParent()).thenReturn(Optional.of(modal));
 
         clientResponse(listenOn);
 
