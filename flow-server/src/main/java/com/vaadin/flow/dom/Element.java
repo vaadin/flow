@@ -1603,4 +1603,19 @@ public class Element extends Node<Element> {
         }
     }
 
+    /**
+     * Executes the similarly named DOM method on the client side.
+     *
+     * @see <a href=
+     *      "https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView">Mozilla
+     *      docs</a>
+     * @return the element
+     */
+    public Element scrollIntoView() {
+        // for an unknown reason, needs to be called deferred to work on a newly
+        // created element
+        executeJs(
+                "var el = this; setTimeout(function() {el.scrollIntoView();}, 0);");
+        return getSelf();
+    }
 }
