@@ -63,6 +63,7 @@ public class BrowserDetailsTest extends TestCase {
     private static final String SAFARI10_WINDOWS = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/603.3.8 (KHTML, like Gecko) Version/10.1.2 Safari/603.3.8";
     private static final String SAFARI11_MAC = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_4) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/11.1 Safari/605.1.15";
     private static final String SAFARI13_MAC = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_2) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.4 Safari/605.1.15";
+    private static final String SAFARI14_MAC = "Mozilla/5.0 (Macintosh; Intel Mac OS X 11_6_2) AppleWebKit/611.3.10.1.5 (KHTML, like Gecko) Version/14.1.2 Safari/611.3.10.1.5";
 
     private static final String IPHONE_IOS_5_1 = "Mozilla/5.0 (iPhone; CPU iPhone OS 5_1 like Mac OS X) AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 Mobile/9B179 Safari/7534.48.3";
     private static final String IPHONE_IOS_4_0 = "Mozilla/5.0 (iPhone; U; CPU iPhone OS 4_0 like Mac OS X; en-us) AppleWebKit/532.9 (KHTML, like Gecko) Version/4.0.5 Mobile/8A293 Safari/6531.22.7";
@@ -559,7 +560,8 @@ public class BrowserDetailsTest extends TestCase {
         assertTooOld(EDGE_18);
         assertTooOld(SAFARI11_MAC);
         assertNotTooOld(EDGE_79);
-        assertNotTooOld(SAFARI13_MAC);
+        assertTooOld(SAFARI13_MAC);
+        assertNotTooOld(SAFARI14_MAC);
     }
 
     public void testEclipseMac_safari91() {
