@@ -606,13 +606,12 @@ public class BrowserDetails implements Serializable {
         if (isEdge() && getBrowserMajorVersion() < 79) {
             return true;
         }
-        // Safari 13+
-        if (isSafari() && getBrowserMajorVersion() < 13) {
-            if (getOperatingSystemMajorVersion() > 14) {
-                return false;
-            }
-            if (getOperatingSystemMajorVersion() == 14
-                    && getOperatingSystemMinorVersion() >= 7) {
+        // Safari 14+
+        if (isSafari() && getBrowserMajorVersion() < 14) {
+            if (isIPhone() && (getOperatingSystemMajorVersion() > 14
+                    || (getOperatingSystemMajorVersion() == 14
+                            && getOperatingSystemMinorVersion() >= 7))) {
+                // #11654
                 return false;
             }
             return true;
