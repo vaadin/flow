@@ -82,7 +82,8 @@ public class WidgetUtil {
      *
      * @param url
      *            a string with the URL to check
-     * @return {@literal true} if the url is absolute, otherwise {@literal false}.
+     * @return {@literal true} if the url is absolute, otherwise
+     *         {@literal false}.
      */
     public static native boolean isAbsoluteUrl(String url)
     /*-{
