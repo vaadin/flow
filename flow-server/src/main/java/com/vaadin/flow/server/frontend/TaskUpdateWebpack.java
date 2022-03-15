@@ -199,8 +199,11 @@ public class TaskUpdateWebpack implements FallibleCommand {
                         formatPathResolve(getEscapedRelativeWebpackPath(
                                 flowResourcesFolder))),
                 new Pair<>("const projectStaticAssetsOutputFolder",
+                        formatPathResolve(
+                                getEscapedRelativeWebpackPath(resourceFolder))),
+                new Pair<>("const buildDirectory",
                         formatPathResolve(getEscapedRelativeWebpackPath(
-                                resourceFolder))));
+                                Paths.get(buildFolder)))));
     }
 
     private String getClientEntryPoint() {
