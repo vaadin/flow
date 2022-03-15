@@ -12,16 +12,6 @@ const { DefinePlugin } = require('webpack');
 const ExtraWatchWebpackPlugin = require('extra-watch-webpack-plugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 
-// Flow plugins
-const BuildStatusPlugin = require('@vaadin/build-status-plugin');
-const ThemeLiveReloadPlugin = require('@vaadin/theme-live-reload-plugin');
-const {
-  ApplicationThemePlugin,
-  processThemeResources,
-  extractThemeName,
-  findParentThemes
-} = require('@vaadin/application-theme-plugin');
-
 const path = require('path');
 
 // this matches /themes/my-theme/ and is used to check css url handling and file path build.
@@ -56,6 +46,19 @@ const confFolder = path.resolve(mavenOutputFolderForResourceFiles, config);
 const serviceWorkerPath = 'sw.js';
 // file which is used by flow to read templates for server `@Id` binding
 const statsFile = `${confFolder}/stats.json`;
+
+const buildDirectory = '[to-be-generated-by-flow]';
+
+// Flow plugins
+const BuildStatusPlugin = require(buildDirectory + '/plugins/build-status-plugin');
+const ThemeLiveReloadPlugin = require(buildDirectory + '/plugins/theme-live-reload-plugin');
+const {
+  ApplicationThemePlugin,
+  processThemeResources,
+  extractThemeName,
+  findParentThemes
+} = require(buildDirectory + '/plugins/application-theme-plugin');
+const themeLoader = buildDirectory + '/plugins/theme-loader';
 
 // Folders in the project which can contain static assets.
 const projectStaticAssetsFolders = [
@@ -287,7 +290,7 @@ module.exports = {
           {
             // theme-loader will change any url starting with './' to start with 'VAADIN/static' instead
             // NOTE! this loader should be here so it's run before css-loader as loaders are applied Right-To-Left
-            loader: '@vaadin/theme-loader',
+            loader: themeLoader,
             options: {
               devMode: devMode
             }
