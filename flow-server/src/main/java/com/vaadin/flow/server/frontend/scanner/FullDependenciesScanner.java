@@ -107,6 +107,8 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
      *            whether we are in V14 bootstrap mode
      * @param featureFlags
      *            available feature flags and their status
+     * @param fallback
+     *            whether dependency scanner is used as fallback
      */
     FullDependenciesScanner(ClassFinder finder, boolean useV14Bootstrap,
             FeatureFlags featureFlags, boolean fallback) {
@@ -126,6 +128,8 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
      *            whether we are in V14 bootstrap mode
      * @param featureFlags
      *            available feature flags and their status
+     * @param fallback
+     *            whether dependency scanner is used as fallback
      */
     FullDependenciesScanner(ClassFinder finder,
             SerializableBiFunction<Class<?>, Class<? extends Annotation>, List<? extends Annotation>> annotationFinder,
@@ -250,13 +254,13 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                     logs.add(value + " " + version + " " + clazz.getName());
                     if (result.containsKey(value)
                             && !result.get(value).equals(version)) {
-                        String foundVersions = "[" + version + ", "
-                                + result.get(value) + "]";
                         if (!fallback) {
                             // Only log warning if full scanner is not used as
                             // fallback scanner. For fallback the bytecode
                             // scanner will have informed about multiple
                             // versions
+                            String foundVersions = "[" + result.get(value)
+                                    + ", " + version + "]";
                             getLogger().warn(
                                     "Multiple npm versions for {} found:  {}. First version found '{}' will be considered.",
                                     value, foundVersions, result.get(value));
