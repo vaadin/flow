@@ -15,7 +15,7 @@ import org.springframework.web.socket.handler.ConcurrentWebSocketSessionDecorato
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import dev.hilla.EndpointInvoker;
-import dev.hilla.push.messages.fromclient.AbstractMessage;
+import dev.hilla.push.messages.fromclient.AbstractServerMessage;
 import dev.hilla.push.messages.fromclient.PushCloseMessage;
 import dev.hilla.push.messages.fromclient.PushConnectMessage;
 import dev.hilla.push.messages.toclient.AbstractClientMessage;
@@ -57,8 +57,8 @@ public class PushEndpointHandler extends TextWebSocketHandler {
                 .getAttributes()
                 .get(ConcurrentWebSocketSessionDecorator.class.getName());
         String text = textMessage.getPayload();
-        AbstractMessage message = objectMapper.readValue(text,
-                AbstractMessage.class);
+        AbstractServerMessage message = objectMapper.readValue(text,
+                AbstractServerMessage.class);
         if (message instanceof PushConnectMessage) {
             handleConnect((PushConnectMessage) message, threadSafeSession);
         } else if (message instanceof PushCloseMessage) {
@@ -86,7 +86,8 @@ public class PushEndpointHandler extends TextWebSocketHandler {
                     role -> false);
             Disposable closeHandler = result.subscribe(item -> {
                 try {
-                    send(threadSafeSession, new ClientMessageUpdate(message.getId(), item));
+                    send(threadSafeSession,
+                            new ClientMessageUpdate(message.getId(), item));
                 } catch (IOException e) {
                     if (!isBrokenPipe(e)) {
                         throw new RuntimeException(e);
@@ -96,7 +97,8 @@ public class PushEndpointHandler extends TextWebSocketHandler {
             }, error -> {
                 closeHandlers.remove(message.getId());
                 try {
-                    send(threadSafeSession, new ClientMessageError(message.getId()));
+                    send(threadSafeSession,
+                            new ClientMessageError(message.getId()));
                 } catch (IOException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
@@ -110,7 +112,8 @@ public class PushEndpointHandler extends TextWebSocketHandler {
                 closeHandlers.remove(message.getId());
                 // when done
                 try {
-                    send(threadSafeSession, new ClientMessageComplete(message.getId()));
+                    send(threadSafeSession,
+                            new ClientMessageComplete(message.getId()));
                 } catch (IOException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
@@ -125,9 +128,10 @@ public class PushEndpointHandler extends TextWebSocketHandler {
 
     }
 
-    private void send(WebSocketSession threadSafeSession, AbstractClientMessage message) throws IOException {
-        threadSafeSession.sendMessage(new TextMessage(
-                objectMapper.writeValueAsString(message)));
+    private void send(WebSocketSession threadSafeSession,
+            AbstractClientMessage message) throws IOException {
+        threadSafeSession.sendMessage(
+                new TextMessage(objectMapper.writeValueAsString(message)));
     }
 
     private void handleClose(PushCloseMessage message,

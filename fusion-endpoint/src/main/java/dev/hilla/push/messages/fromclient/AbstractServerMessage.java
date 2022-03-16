@@ -7,7 +7,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @JsonSubTypes({
         @JsonSubTypes.Type(value = PushConnectMessage.class, name = "connect"),
         @JsonSubTypes.Type(value = PushCloseMessage.class, name = "close") })
-public abstract class AbstractMessage {
+public abstract class AbstractServerMessage {
 
     private String id;
 

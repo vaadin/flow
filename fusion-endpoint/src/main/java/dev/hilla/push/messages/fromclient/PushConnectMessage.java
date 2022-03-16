@@ -2,7 +2,7 @@ package dev.hilla.push.messages.fromclient;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-public class PushConnectMessage extends AbstractMessage {
+public class PushConnectMessage extends AbstractServerMessage {
 
     private String endpointName, methodName;
     private ObjectNode params;

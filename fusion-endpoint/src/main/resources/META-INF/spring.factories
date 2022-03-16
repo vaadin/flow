@@ -1,1 +1,2 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=dev.hilla.EndpointController,dev.hilla.push.PushEndpointConfigurer
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=dev.hilla.EndpointController,dev.hilla.push.PushEndpointConfigurer,dev.hilla.push.RSocketController
+org.springframework.context.ApplicationListener=dev.hilla.push.RSocketEnabler
