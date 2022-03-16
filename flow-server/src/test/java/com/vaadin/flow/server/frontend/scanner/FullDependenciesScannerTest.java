@@ -309,7 +309,7 @@ public class FullDependenciesScannerTest {
                     }
                     Assert.fail();
                     return null;
-                }, false, null);
+                }, false, null, false);
 
         List<String> modules = scanner.getModules();
         Assert.assertEquals(25, modules.size());
@@ -383,7 +383,7 @@ public class FullDependenciesScannerTest {
 
         return new FullDependenciesScanner(finder,
                 (type, annotation) -> findAnnotations(type, annotationType),
-                false, null);
+                false, null, false);
     }
 
     private FullDependenciesScanner setUpThemeScanner(
@@ -404,7 +404,7 @@ public class FullDependenciesScannerTest {
                 .thenReturn(noThemeClasses);
 
         return new FullDependenciesScanner(finder, annotationFinder, false,
-                null) {
+                null, false) {
             @Override
             protected Class<? extends AbstractTheme> getLumoTheme() {
                 return FakeLumoTheme.class;

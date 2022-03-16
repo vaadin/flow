@@ -938,7 +938,7 @@ public class NodeTasks implements FallibleCommand {
             return new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
                     .createScanner(true, finder,
                             builder.generateEmbeddableWebComponents,
-                            builder.useLegacyV14Bootstrap, featureFlags);
+                            builder.useLegacyV14Bootstrap, featureFlags, true);
         } else {
             return null;
         }
