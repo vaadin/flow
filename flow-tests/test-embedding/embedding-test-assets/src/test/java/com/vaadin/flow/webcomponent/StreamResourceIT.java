@@ -17,6 +17,7 @@ package com.vaadin.flow.webcomponent;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.openqa.selenium.By;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
@@ -31,6 +32,8 @@ public class StreamResourceIT extends ChromeBrowserTest {
     @Test
     public void absoluteUrlsAreNotModified() {
         open();
+
+        waitForElementVisible(By.tagName("vaadin-stream-resource"));
 
         TestBenchElement downloadLink = $("vaadin-stream-resource").first()
                 .$("a").id("absoluteLink");
@@ -48,6 +51,8 @@ public class StreamResourceIT extends ChromeBrowserTest {
     public void schemaLessUrlsAreNotModified() {
         open();
 
+        waitForElementVisible(By.tagName("vaadin-stream-resource"));
+
         TestBenchElement downloadLink = $("vaadin-stream-resource").first()
                 .$("a").id("schemalessLink");
 
@@ -63,6 +68,8 @@ public class StreamResourceIT extends ChromeBrowserTest {
     @Test
     public void relativeUrlsArePrefixedWithServiceUrl() {
         open();
+
+        waitForElementVisible(By.tagName("vaadin-stream-resource"));
 
         TestBenchElement downloadLink = $("vaadin-stream-resource").first()
                 .$("a").id("relativeLink");
