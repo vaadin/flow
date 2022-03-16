@@ -1501,7 +1501,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                                 + attribute + "' but it has no "
                                 + NodeProperties.URI_ATTRIBUTE + " key";
                 String uri = object.getString(NodeProperties.URI_ATTRIBUTE);
-                if (configuration.isWebComponentMode()) {
+                if (configuration.isWebComponentMode()
+                        && !WidgetUtil.isAbsoluteUrl(uri)) {
                     String baseUri = configuration.getServiceUrl();
                     baseUri = baseUri.endsWith("/") ? baseUri : baseUri + "/";
                     WidgetUtil.updateAttribute(element, attribute,
