@@ -57,6 +57,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     private static final String COULD_NOT_LOAD_ERROR_MSG = "Could not load annotation class ";
 
     private static final String VALUE = "value";
+    private static final String VERSION = "version";
 
     private ThemeDefinition themeDefinition;
     private AbstractTheme themeInstance;
@@ -70,15 +71,21 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
 
     private final SerializableBiFunction<Class<?>, Class<? extends Annotation>, List<? extends Annotation>> annotationFinder;
 
+    private final boolean fallback;
+
     /**
      * Creates a new scanner instance which discovers all dependencies in the
      * classpath.
      *
      * @param finder
      *            a class finder
+     * @param fallback
+     *            whether FullDependenciesScanner is used as fallback
+     * @param finder
+     *            a class finder
      */
-    FullDependenciesScanner(ClassFinder finder) {
-        this(finder, AnnotationReader::getAnnotationsFor);
+    FullDependenciesScanner(ClassFinder finder, boolean fallback) {
+        this(finder, AnnotationReader::getAnnotationsFor, fallback);
     }
 
     /**
@@ -89,10 +96,16 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
      *            a class finder
      * @param annotationFinder
      *            a strategy to discover class annotations
+     * @param fallback
+     *            whether dependency scanner is used as fallback
      */
     FullDependenciesScanner(ClassFinder finder,
-            SerializableBiFunction<Class<?>, Class<? extends Annotation>, List<? extends Annotation>> annotationFinder) {
+            SerializableBiFunction<Class<?>, Class<? extends Annotation>, List<? extends Annotation>> annotationFinder,
+            boolean fallback) {
         super(finder);
+
+        this.fallback = fallback;
+
         long start = System.currentTimeMillis();
         this.annotationFinder = annotationFinder;
         try {
@@ -191,12 +204,28 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                 classes.add(clazz.getName());
                 List<? extends Annotation> packageAnnotations = annotationFinder
                         .apply(clazz, loadedAnnotation);
-                packageAnnotations.forEach(pckg -> {
-                    String value = invokeAnnotationMethodAsString(pckg, VALUE);
-                    String vers = invokeAnnotationMethodAsString(pckg,
-                            "version");
-                    logs.add(value + " " + vers + " " + clazz.getName());
-                    result.put(value, vers);
+                packageAnnotations.forEach(annotation -> {
+                    String value = invokeAnnotationMethodAsString(annotation,
+                            VALUE);
+                    String version = invokeAnnotationMethodAsString(annotation,
+                            VERSION);
+                    logs.add(value + " " + version + " " + clazz.getName());
+                    if (result.containsKey(value)
+                            && !result.get(value).equals(version)) {
+                        if (!fallback) {
+                            // Only log warning if full scanner is not used as
+                            // fallback scanner. For fallback the bytecode
+                            // scanner will have informed about multiple
+                            // versions
+                            String foundVersions = "[" + result.get(value)
+                                    + ", " + version + "]";
+                            getLogger().warn(
+                                    "Multiple npm versions for {} found:  {}. First version found '{}' will be considered.",
+                                    value, foundVersions, result.get(value));
+                        }
+                    } else {
+                        result.put(value, version);
+                    }
                 });
             }
             debug("npm dependencies", logs);
