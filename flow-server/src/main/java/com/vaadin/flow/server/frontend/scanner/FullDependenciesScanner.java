@@ -81,8 +81,6 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
      *            a class finder
      * @param fallback
      *            whether FullDependenciesScanner is used as fallback
-     * @param finder
-     *            a class finder
      */
     FullDependenciesScanner(ClassFinder finder, boolean fallback) {
         this(finder, AnnotationReader::getAnnotationsFor, fallback);
