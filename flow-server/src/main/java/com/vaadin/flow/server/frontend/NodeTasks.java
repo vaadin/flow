@@ -443,7 +443,7 @@ public class NodeTasks implements FallibleCommand {
 
             frontendDependencies = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
                     .createScanner(!builder.useByteCodeScanner, classFinder,
-                            builder.generateEmbeddableWebComponents);
+                            builder.generateEmbeddableWebComponents, false);
 
             if (builder.generateEmbeddableWebComponents) {
                 FrontendWebComponentGenerator generator = new FrontendWebComponentGenerator(
@@ -517,7 +517,7 @@ public class NodeTasks implements FallibleCommand {
         if (builder.useByteCodeScanner) {
             return new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
                     .createScanner(true, finder,
-                            builder.generateEmbeddableWebComponents);
+                            builder.generateEmbeddableWebComponents, true);
         } else {
             return null;
         }
