@@ -75,6 +75,22 @@ public class WidgetUtil {
     }
 
     /**
+     * Detects if an URL is absolute.
+     *
+     * URLs wihtout schema but starting with double slashes (e.g. //myhost/path}
+     * are considered absolute.
+     *
+     * @param url
+     *            a string with the URL to check
+     * @return {@literal true} if the url is absolute, otherwise
+     *         {@literal false}.
+     */
+    public static native boolean isAbsoluteUrl(String url)
+    /*-{
+        return !!url.match(/^(?:[a-zA-Z]+:)?\/\//);
+    }-*/;
+
+    /**
      * Anything in, anything out. It's JavaScript after all. This method just
      * makes the Java compiler accept the fact.
      *
