@@ -35,6 +35,7 @@ import javax.validation.constraints.Size;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.vaadin.flow.component.UI;
@@ -44,6 +45,7 @@ import com.vaadin.flow.data.binder.testcomponents.TestSelectComponent;
 import com.vaadin.flow.data.binder.testcomponents.TestTextField;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.tests.data.bean.BeanToValidate;
+import com.vaadin.flow.tests.data.bean.Person;
 
 public class BeanBinderTest
         extends BinderTestBase<Binder<BeanToValidate>, BeanToValidate> {
@@ -240,9 +242,12 @@ public class BeanBinderTest
         otherBinder.forField(testClass.number)
                 .withConverter(new StringToIntegerConverter(""));
 
+        // bindInstanceFields does not throw exceptions for incomplete bindings
+        // because bindings they can be completed after the call.
+        otherBinder.bindInstanceFields(testClass);
         // Should throw an IllegalStateException since the binding for number is
         // not completed with bind
-        otherBinder.bindInstanceFields(testClass);
+        otherBinder.setBean(new TestBean());
     }
 
     @Test(expected = IllegalStateException.class)
