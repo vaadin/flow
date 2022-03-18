@@ -61,7 +61,7 @@ import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
  */
 public class FrontendTools {
 
-    public static final String DEFAULT_NODE_VERSION = "v16.14.0";
+    public static final String DEFAULT_NODE_VERSION = "v16.14.2";
     /**
      * This is the version shipped with the default Node version.
      */
