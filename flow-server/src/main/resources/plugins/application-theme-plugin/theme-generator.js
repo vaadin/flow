@@ -145,7 +145,7 @@ function generateThemeFile(themeFolder, themeName, themeProperties, productionMo
   const lumoImports = themeProperties.lumoImports || ['color', 'typography'];
   if (lumoImports && lumoImports.length > 0) {
     lumoImports.forEach((lumoImport) => {
-      imports.push(`import { ${lumoImport} } from '@vaadin/vaadin-lumo-styles/${lumoImport}.css';\n`);
+      imports.push(`import { ${lumoImport} } from '@vaadin/vaadin-lumo-styles/${lumoImport}.js';\n`);
     });
 
     lumoImports.forEach((lumoImport) => {
