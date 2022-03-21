@@ -61,11 +61,16 @@ import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
  */
 public class FrontendTools {
 
-    public static final String DEFAULT_NODE_VERSION = "v16.14.0";
+    /**
+     * This is the version that is installed if there is no node installed or
+     * the installed version is older than {@link #SUPPORTED_NODE_VERSION}, i.e.
+     * {@value #SUPPORTED_NODE_VERSION}.
+     */
+    public static final String DEFAULT_NODE_VERSION = "v16.14.2";
     /**
      * This is the version shipped with the default Node version.
      */
-    public static final String DEFAULT_NPM_VERSION = "8.3.1";
+    public static final String DEFAULT_NPM_VERSION = "8.5.0";
 
     public static final String DEFAULT_PNPM_VERSION = "5.18.10";
 
