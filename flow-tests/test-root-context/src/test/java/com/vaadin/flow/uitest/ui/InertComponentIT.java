@@ -96,7 +96,8 @@ public class InertComponentIT extends ChromeBrowserTest {
 
         waitForElementPresent(By.id(ModalDialogView.OPEN_MODAL_BUTTON));
 
-        Assert.assertNotNull(findElement(By.id(ModalDialogView.OPEN_MODAL_BUTTON)));
+        Assert.assertNotNull(
+                findElement(By.id(ModalDialogView.OPEN_MODAL_BUTTON)));
     }
 
     private Optional<NativeButtonElement> getNewModalBoxButton() {
