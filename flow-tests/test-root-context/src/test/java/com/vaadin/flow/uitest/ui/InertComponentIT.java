@@ -7,6 +7,7 @@ import java.util.stream.Stream;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 
 import com.vaadin.flow.component.html.testbench.AnchorElement;
@@ -77,7 +78,7 @@ public class InertComponentIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void modalComponentAdded_routerLinkClicked_noNavigation() {
+    public void modalComponentAdded_routerLinkClicked_navigation() {
         open();
 
         final long initialBoxCount = getBoxCount();
@@ -93,8 +94,10 @@ public class InertComponentIT extends ChromeBrowserTest {
 
         linkToAnotherPage.get().click();
 
-        validateBoxCount(initialBoxCount + 1,
-                "Expected to stay on the same page.");
+        waitForElementPresent(By.id(ModalDialogView.OPEN_MODAL_BUTTON));
+
+        Assert.assertNotNull(
+                findElement(By.id(ModalDialogView.OPEN_MODAL_BUTTON)));
     }
 
     private Optional<NativeButtonElement> getNewModalBoxButton() {
