@@ -24,7 +24,6 @@ import com.vaadin.flow.component.page.History.HistoryStateChangeHandler;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.shared.JsonConstants;
-import org.slf4j.LoggerFactory;
 
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
@@ -62,20 +61,6 @@ public class NavigationRpcHandler implements RpcInvocationHandler {
             NavigationTrigger trigger = triggeredByLink
                     ? NavigationTrigger.ROUTER_LINK
                     : NavigationTrigger.HISTORY;
-            // When the UI is made inert, all router link navigation is
-            // ignored. For the part of the UI that is not inert, navigation
-            // could be allowed by using something else than router links (with
-            // server side listeners).
-            // Blocking browser history back / forward navigation is not done
-            // as it would be dubious and even impossible on the client side.
-            if (trigger == NavigationTrigger.ROUTER_LINK
-                    && ui.getElement().getNode().isInert()) {
-                LoggerFactory.getLogger(NavigationRpcHandler.class.getName())
-                        .trace("Ignored router link click for location '{}' because the UI is inert.",
-                                location);
-                return Optional.empty();
-            }
-
             HistoryStateChangeEvent event = new HistoryStateChangeEvent(history,
                     state, new Location(location), trigger);
             historyStateChangeHandler.onHistoryStateChange(event);
