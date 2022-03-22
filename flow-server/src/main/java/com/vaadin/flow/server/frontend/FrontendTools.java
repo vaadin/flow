@@ -64,7 +64,7 @@ public class FrontendTools {
     /**
      * This is the version that is installed if there is no node installed or
      * the installed version is older than {@link #SUPPORTED_NODE_VERSION}, i.e.
-     * {@value #SUPPORTED_NODE_VERSION}.
+     * {@value #SUPPORTED_NODE_MAJOR_VERSION}.{@value #SUPPORTED_NODE_MINOR_VERSION}.
      */
     public static final String DEFAULT_NODE_VERSION = "v16.14.2";
     /**
