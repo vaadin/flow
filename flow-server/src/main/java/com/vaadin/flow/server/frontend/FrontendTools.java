@@ -1092,7 +1092,7 @@ public class FrontendTools {
             pnpmCommand = getNpmCliToolExecutable(BuildTool.NPX, "--yes",
                     "--quiet", "pnpm");
             if (!validatePnpmVersion(pnpmCommand)) {
-                new IllegalStateException(
+                throw new IllegalStateException(
                         "Found too old globally installed 'pnpm'. Please upgrade 'pnpm' to at least "
                                 + SUPPORTED_PNPM_VERSION.getFullVersion());
             }
