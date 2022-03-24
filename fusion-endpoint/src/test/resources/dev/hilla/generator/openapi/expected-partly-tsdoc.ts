@@ -7,7 +7,7 @@
  */
 
 // @ts-ignore
-import client from './connect-client.default';
+import client, { subscribe, Subscription } from './connect-client.default';
 import type ComplexRequest from './ComplexRequest';
 import type ComplexResponse from './ComplexResponse';
 

@@ -5,7 +5,7 @@
  */
 
 // @ts-ignore
-import client from './connect-client.default';
+import client, { subscribe, Subscription } from './connect-client.default';
 
 function _shouldBeDisplayed1(): Promise<void> {
   return client.call('DenyAllEndpoint', 'shouldBeDisplayed1');

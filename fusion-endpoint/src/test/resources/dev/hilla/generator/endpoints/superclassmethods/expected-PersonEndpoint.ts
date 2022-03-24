@@ -5,7 +5,7 @@
  */
 
 // @ts-ignore
-import client from './connect-client.default';
+import client, { subscribe, Subscription } from './connect-client.default';
 import type Person from './dev/hilla/generator/endpoints/superclassmethods/PersonEndpoint/Person';
 
 function _delete(

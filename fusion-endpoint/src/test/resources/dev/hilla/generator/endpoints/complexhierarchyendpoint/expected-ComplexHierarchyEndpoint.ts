@@ -5,7 +5,7 @@
  */
 
 // @ts-ignore
-import client from './connect-client.default';
+import client, { subscribe, Subscription } from './connect-client.default';
 import type Model from './dev/hilla/generator/endpoints/complexhierarchymodel/Model';
 
 function _getModel(): Promise<Model | undefined> {

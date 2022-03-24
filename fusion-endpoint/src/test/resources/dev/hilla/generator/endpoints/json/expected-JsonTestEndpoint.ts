@@ -7,7 +7,7 @@
  */
 
 // @ts-ignore
-import client from './connect-client.default';
+import client, { subscribe, Subscription } from './connect-client.default';
 import type Version from './com/fasterxml/jackson/core/Version';
 import type Status from './dev/hilla/generator/endpoints/json/JsonTestEndpoint/Status';
 import type User from './dev/hilla/generator/endpoints/json/JsonTestEndpoint/User';

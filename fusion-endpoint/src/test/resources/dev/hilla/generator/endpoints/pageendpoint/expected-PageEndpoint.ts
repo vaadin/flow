@@ -4,7 +4,7 @@
 * @module PageEndpoint
 */
 // @ts-ignore
-import client from './connect-client.default';
+import client, { subscribe, Subscription } from './connect-client.default';
 import type Foo from './dev/hilla/generator/endpoints/pageendpoint/PageEndpoint/Foo';
 function _getPageOfObjects(): Promise<Array<Foo | undefined> | undefined> {
   return client.call (

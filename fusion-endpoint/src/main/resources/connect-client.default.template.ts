@@ -74,7 +74,7 @@ export function getCsrfTokenHeadersForEndpointRequest(doc: Document) {
 
 /** End of copying */
 
-const client = new ConnectClient({ prefix: 'connect' });
+const client = new ConnectClient({prefix: '{{PREFIX}}'});
 export default client;
 
 interface AbstractMessage {

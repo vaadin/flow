@@ -36,7 +36,7 @@ So `// @ts-ignore` is used for now to mute this error. The consequences are:
 - We don’t export the `__client` from here, only use it in the implementation.
 
 }}// @ts-ignore
-import client,{ subscribe, Subscription }  from '{{vaadinConnectDefaultClientPath}}';
+import client, { subscribe, Subscription } from '{{vaadinConnectDefaultClientPath}}';
 
 {{#each imports}}
 import type {{~#importAs}} {{importAs}}{{/importAs}}{{~^importAs}} {{className}}{{/importAs}} from '{{importPath}}';

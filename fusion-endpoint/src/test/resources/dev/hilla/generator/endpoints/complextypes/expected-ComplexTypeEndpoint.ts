@@ -5,7 +5,7 @@
  */
 
 // @ts-ignore
-import client from './connect-client.default';
+import client, { subscribe, Subscription } from './connect-client.default';
 import type ComplexTypeModel from './dev/hilla/generator/endpoints/complextypes/ComplexTypeEndpoint/ComplexTypeModel';
 
 function _getComplexTypeModel(

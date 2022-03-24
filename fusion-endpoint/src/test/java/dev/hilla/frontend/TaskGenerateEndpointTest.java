@@ -56,7 +56,7 @@ public class TaskGenerateEndpointTest {
 
         String output = FileUtils.readFileToString(client, "UTF-8");
         assertTrue(output
-                .contains("import {ConnectClient} from '@hilla/frontend';"));
+                .contains("import { ConnectClient } from '@hilla/frontend';"));
         assertTrue(output.contains(
                 "const client = new ConnectClient({prefix: 'connect'});"));
         assertTrue(output.contains("export default client;"));
@@ -86,9 +86,9 @@ public class TaskGenerateEndpointTest {
 
         String outputEndpoinTs1 = FileUtils.readFileToString(ts1, "UTF-8");
         String outputEndpoinTs2 = FileUtils.readFileToString(ts2, "UTF-8");
-        assertThat(outputEndpoinTs1,
-                containsString("import client from '../connect-client'"));
-        assertThat(outputEndpoinTs2,
-                containsString("import client from '../connect-client'"));
+        assertThat(outputEndpoinTs1, containsString(
+                "import client, { subscribe, Subscription } from '../connect-client'"));
+        assertThat(outputEndpoinTs2, containsString(
+                "import client, { subscribe, Subscription } from '../connect-client'"));
     }
 }

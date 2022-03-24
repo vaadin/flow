@@ -7,7 +7,7 @@
  */
 
 // @ts-ignore
-import client from './connect-client.default';
+import client, { subscribe, Subscription } from './connect-client.default';
 
 function _delete(): Promise<void> {
   return client.call('ReservedWordMethodEndpoint', 'delete');
