@@ -68,7 +68,7 @@ public class TaskGenerateWebComponentBootstrap
         lines.add("import { init } from '@vaadin/flow-frontend/FlowClient';");
         lines.add("init();");
 
-        return String.join(System.lineSeparator(), lines);
+        return String.join("\n", lines);
     }
 
     @Override
