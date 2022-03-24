@@ -504,14 +504,14 @@ public class TaskRunNpmInstall implements FallibleCommand {
             return;
         }
 
-        String pnpmFileName = "pnpmfile.js";
+        String pnpmFileName = ".pnpmfile.cjs";
         final List<String> pnpmExecutable = tools.getSuitablePnpm();
         pnpmExecutable.add("--version");
         try {
             final FrontendVersion pnpmVersion = FrontendUtils.getVersion("pnpm",
                     pnpmExecutable);
-            if (pnpmVersion.isNewerThan(new FrontendVersion("6.0"))) {
-                pnpmFileName = ".pnpmfile.cjs";
+            if (pnpmVersion.isOlderThan(new FrontendVersion("6.0"))) {
+                pnpmFileName = "pnpmfile.js";
             }
         } catch (FrontendUtils.UnknownVersionException e) {
             packageUpdater.log().error("Failed to determine pnpm version", e);
