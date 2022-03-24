@@ -172,9 +172,15 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         task.execute();
 
         File file = new File(getNodeUpdater().npmFolder, "pnpmfile.js");
-        Assert.assertTrue(file.exists());
-        String content = FileUtils.readFileToString(file,
-                StandardCharsets.UTF_8);
+        File cjsFile = new File(getNodeUpdater().npmFolder, ".pnpmfile.cjs");
+        Assert.assertTrue(file.exists() || cjsFile.exists());
+        String content;
+        if (file.exists()) {
+            content = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
+        } else {
+            content = FileUtils.readFileToString(cjsFile,
+                    StandardCharsets.UTF_8);
+        }
         MatcherAssert.assertThat(content,
                 CoreMatchers.containsString("JSON.parse(fs.readFileSync"));
     }
@@ -188,9 +194,15 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         task.execute();
 
         File file = new File(getNodeUpdater().npmFolder, "pnpmfile.js");
-        Assert.assertTrue(file.exists());
-        String content = FileUtils.readFileToString(file,
-                StandardCharsets.UTF_8);
+        File cjsFile = new File(getNodeUpdater().npmFolder, ".pnpmfile.cjs");
+        Assert.assertTrue(file.exists() || cjsFile.exists());
+        String content;
+        if (file.exists()) {
+            content = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
+        } else {
+            content = FileUtils.readFileToString(cjsFile,
+                    StandardCharsets.UTF_8);
+        }
         MatcherAssert.assertThat(content,
                 CoreMatchers.containsString("JSON.parse(fs.readFileSync"));
     }
