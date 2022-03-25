@@ -167,7 +167,8 @@ public final class EngineIoHandler
         public void close() {
             try {
                 mSession.close();
-            } catch (IOException ignore) {
+            } catch (IOException ignore) { // NOSONAR
+                // Ignore this as done in the engine.io example
             }
         }
 

@@ -71,7 +71,7 @@ public class PushMessageHandler {
         if (message instanceof SubscribeMessage) {
             handleSubscribe((SubscribeMessage) message, sender);
         } else if (message instanceof UnsubscribeMessage) {
-            handleClose((UnsubscribeMessage) message, sender);
+            handleClose((UnsubscribeMessage) message);
         } else {
             throw new IllegalArgumentException(
                     "Unknown message type: " + message.getClass().getName());
@@ -150,8 +150,7 @@ public class PushMessageHandler {
 
     }
 
-    private void handleClose(UnsubscribeMessage message,
-            Consumer<AbstractClientMessage> sender) {
+    private void handleClose(UnsubscribeMessage message) {
         Disposable closeHandler = closeHandlers.remove(message.getId());
         if (closeHandler == null) {
             getLogger().warn("Trying to close an unknown flux with id "
