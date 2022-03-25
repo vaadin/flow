@@ -583,6 +583,7 @@ export class VaadinDevmodeGizmo extends LitElement {
         display: flex;
         align-items: center;
         gap: 1rem;
+        padding-bottom: 0.5em;
       }
 
       .message .message-details {
