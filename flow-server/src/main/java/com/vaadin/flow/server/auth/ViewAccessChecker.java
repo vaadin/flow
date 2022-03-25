@@ -189,9 +189,9 @@ public class ViewAccessChecker implements BeforeEnterListener {
             // Intentionally does not reveal if the route exists
             beforeEnterEvent.rerouteToError(NotFoundException.class);
         } else {
-            String errorMsg = "Access denied.";
+            String errorMsg = "Access denied";
             if (isImplicitlyDenyAllAnnotated(targetView)) {
-                errorMsg += " Consider adding one of the following annotations "
+                errorMsg += ". Consider adding one of the following annotations "
                         + "to make the view accessible: @AnonymousAllowed, "
                         + "@PermitAll, @RolesAllowed.";
             }
