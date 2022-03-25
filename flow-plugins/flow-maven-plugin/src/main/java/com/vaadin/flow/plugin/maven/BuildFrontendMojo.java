@@ -54,7 +54,7 @@ import com.vaadin.flow.theme.Theme;
  *
  * @since 2.0
  */
-@Mojo(name = "build-frontend", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
+@Mojo(name = "build-frontend", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PROCESS_CLASSES)
 public class BuildFrontendMojo extends FlowModeAbstractMojo
         implements PluginAdapterBuild {
 
