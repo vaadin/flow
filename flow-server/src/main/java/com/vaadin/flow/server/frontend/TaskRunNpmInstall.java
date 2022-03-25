@@ -275,9 +275,21 @@ public class TaskRunNpmInstall implements FallibleCommand {
         long startTime = System.currentTimeMillis();
 
         Logger logger = packageUpdater.log();
+
+        String baseDir = packageUpdater.npmFolder.getAbsolutePath();
+
+        FrontendToolsSettings settings = new FrontendToolsSettings(baseDir,
+                () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
+        settings.setNodeDownloadRoot(nodeDownloadRoot);
+        settings.setForceAlternativeNode(requireHomeNodeExec);
+        settings.setUseGlobalPnpm(useGlobalPnpm);
+        settings.setAutoUpdate(autoUpdate);
+        settings.setNodeVersion(nodeVersion);
+        FrontendTools tools = new FrontendTools(settings);
+
         if (enablePnpm) {
             try {
-                createPnpmFile(packageUpdater.versionsPath);
+                createPnpmFile(packageUpdater.versionsPath, tools);
             } catch (IOException exception) {
                 throw new ExecutionFailedException(
                         "Failed to read frontend version data from vaadin-core "
@@ -295,16 +307,6 @@ public class TaskRunNpmInstall implements FallibleCommand {
             }
         }
 
-        String baseDir = packageUpdater.npmFolder.getAbsolutePath();
-
-        FrontendToolsSettings settings = new FrontendToolsSettings(baseDir,
-                () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
-        settings.setNodeDownloadRoot(nodeDownloadRoot);
-        settings.setForceAlternativeNode(requireHomeNodeExec);
-        settings.setUseGlobalPnpm(useGlobalPnpm);
-        settings.setAutoUpdate(autoUpdate);
-        settings.setNodeVersion(nodeVersion);
-        FrontendTools tools = new FrontendTools(settings);
         List<String> npmExecutable;
         List<String> npmInstallCommand;
         List<String> postinstallCommand;
@@ -496,13 +498,27 @@ public class TaskRunNpmInstall implements FallibleCommand {
      * not supposed that it can be modified by the user. This is done in the
      * same way as for webpack.generated.js.
      */
-    private void createPnpmFile(String versionsPath) throws IOException {
+    private void createPnpmFile(String versionsPath, FrontendTools tools)
+            throws IOException {
         if (versionsPath == null) {
             return;
         }
 
+        String pnpmFileName = ".pnpmfile.cjs";
+        final List<String> pnpmExecutable = tools.getSuitablePnpm();
+        pnpmExecutable.add("--version");
+        try {
+            final FrontendVersion pnpmVersion = FrontendUtils.getVersion("pnpm",
+                    pnpmExecutable);
+            if (pnpmVersion.isOlderThan(new FrontendVersion("6.0"))) {
+                pnpmFileName = "pnpmfile.js";
+            }
+        } catch (FrontendUtils.UnknownVersionException e) {
+            packageUpdater.log().error("Failed to determine pnpm version", e);
+        }
+
         File pnpmFile = new File(packageUpdater.npmFolder.getAbsolutePath(),
-                "pnpmfile.js");
+                pnpmFileName);
         try (InputStream content = TaskRunNpmInstall.class
                 .getResourceAsStream("/pnpmfile.js")) {
             if (content == null) {
