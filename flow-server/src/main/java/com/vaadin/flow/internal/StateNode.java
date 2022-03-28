@@ -705,6 +705,7 @@ public class StateNode implements Serializable {
         // not done inside loop to please Sonarcube
         forEachChild(stack::addFirst);
         StateNode previousParent = this;
+        Set<StateNode> childrenAdded = new HashSet<>();
 
         while (!stack.isEmpty()) {
             StateNode current = stack.getFirst();
@@ -712,8 +713,11 @@ public class StateNode implements Serializable {
             if (current == previousParent) {
                 visitor.accept(stack.removeFirst());
                 previousParent = current.getParent();
+            } else if (childrenAdded.contains(current)) {
+                previousParent = current;
             } else {
                 current.forEachChild(stack::addFirst);
+                childrenAdded.add(current);
                 previousParent = current;
             }
         }
