@@ -16,6 +16,7 @@
 
 package com.vaadin.flow.internal;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -292,6 +293,35 @@ public class StateNodeTest {
         root.visitNodeTreeBottomUp(node -> Assert.assertEquals(
                 ((Integer) ((TestStateNode) node).getData()),
                 data.removeLast()));
+    }
+
+    @Test
+    public void nodeTreeOnAttach_bottomUpTraversing_brokenParentInChildDoesNotEndInLoop()
+            throws NoSuchFieldException, IllegalAccessException {
+        // Set data is used to track the node during debug see
+        // TestStateNode.toString
+        TestStateNode root = new TestStateNode();
+        root.setData(0);
+        List<Integer> count = new ArrayList<>();
+
+        final Field parent = StateNode.class.getDeclaredField("parent");
+        parent.setAccessible(true);
+
+        TestStateNode childOfRoot = new TestStateNode();
+        childOfRoot.setData(1);
+
+        TestStateNode child = new TestStateNode();
+        child.setData(2);
+        setParent(child, childOfRoot);
+
+        parent.set(child, null);
+
+        setParent(childOfRoot, root);
+
+        root.visitNodeTreeBottomUp(node -> count.add(1));
+
+        Assert.assertEquals("Each node should be visited once", 3,
+                count.size());
     }
 
     @Test
