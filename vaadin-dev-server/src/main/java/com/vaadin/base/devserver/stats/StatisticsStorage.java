@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.vaadin.flow.server.Command;
 
@@ -148,10 +147,8 @@ public class StatisticsStorage {
             if (file.exists()) {
                 return (ObjectNode) JsonHelpers.getJsonMapper().readTree(file);
             }
-        } catch (JsonProcessingException e) {
+        } catch (Exception e) {
             getLogger().debug("Failed to parse json", e);
-        } catch (IOException e) {
-            getLogger().debug("Failed to read json", e);
         }
 
         // Empty node if nothing is found
