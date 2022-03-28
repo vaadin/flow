@@ -86,7 +86,7 @@ public class DevModeInitializerTestBase extends AbstractDevModeTest {
                 .lookup(EndpointGeneratorTaskFactory.class);
         Mockito.doReturn(taskGenerateEndpoint)
                 .when(endpointGeneratorTaskFactory)
-                .createTaskGenerateEndpoint(any(), any(), any(), any());
+                .createTaskGenerateEndpoint(any(), any(), any(), any(), any());
         Mockito.doReturn(taskGenerateOpenAPI).when(endpointGeneratorTaskFactory)
                 .createTaskGenerateOpenAPI(any(), any(), any(), any());
 
