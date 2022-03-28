@@ -322,7 +322,7 @@ public class NodeTasksTest {
         Mockito.doReturn(mockGenerateOpenAPI).when(endpointGeneratorFactory)
                 .createTaskGenerateOpenAPI(any(), any(), any(), any());
         Mockito.doReturn(mockGenerateEndpoint).when(endpointGeneratorFactory)
-                .createTaskGenerateEndpoint(any(), any(), any(), any());
+                .createTaskGenerateEndpoint(any(), any(), any(), any(), any());
         Mockito.doReturn(endpointGeneratorFactory).when(mockedLookup)
                 .lookup(EndpointGeneratorTaskFactory.class);
 
@@ -341,7 +341,7 @@ public class NodeTasksTest {
 
         Mockito.verify(endpointGeneratorFactory,
                 withHillaTask ? never() : times(1))
-                .createTaskGenerateEndpoint(any(), any(), any(), any());
+                .createTaskGenerateEndpoint(any(), any(), any(), any(), any());
         Mockito.verify(endpointGeneratorFactory,
                 withHillaTask ? never() : times(1))
                 .createTaskGenerateOpenAPI(any(), any(), any(), any());

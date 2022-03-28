@@ -12,22 +12,24 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
+import com.vaadin.experimental.FeatureFlags;
+
+import org.apache.commons.lang3.StringUtils;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.rules.TemporaryFolder;
+import org.mockito.Mockito;
+
 import dev.hilla.Endpoint;
 import dev.hilla.EndpointExposed;
 import dev.hilla.generator.MainGenerator;
 import dev.hilla.generator.OpenAPIConfiguration;
 import dev.hilla.generator.OpenAPIObjectGenerator;
 import dev.hilla.generator.OpenAPISpecGenerator;
-import io.swagger.v3.oas.models.OpenAPI;
-import org.apache.commons.lang3.StringUtils;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.rules.TemporaryFolder;
-
 import dev.hilla.utils.TestUtils;
-
 import elemental.json.Json;
 import elemental.json.JsonObject;
+import io.swagger.v3.oas.models.OpenAPI;
 
 public abstract class AbstractEndpointGeneratorBaseTest {
 
@@ -73,8 +75,8 @@ public abstract class AbstractEndpointGeneratorBaseTest {
     }
 
     protected void generateTsEndpoints() {
-        new MainGenerator(openApiJsonOutput.toFile(), outputDirectory.getRoot())
-                .start();
+        new MainGenerator(openApiJsonOutput.toFile(), outputDirectory.getRoot(),
+                Mockito.mock(FeatureFlags.class)).start();
     }
 
     protected OpenAPI getOpenApiObject() {

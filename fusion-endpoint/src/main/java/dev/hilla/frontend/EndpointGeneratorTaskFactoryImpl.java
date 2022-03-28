@@ -18,6 +18,7 @@ package dev.hilla.frontend;
 import java.io.File;
 import java.util.Objects;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.TaskGenerateEndpoint;
 import com.vaadin.flow.server.frontend.TaskGenerateOpenAPI;
@@ -32,13 +33,13 @@ public class EndpointGeneratorTaskFactoryImpl
     @Override
     public TaskGenerateEndpoint createTaskGenerateEndpoint(
             File applicationProperties, File openApi, File outputFolder,
-            File frontendDirectory) {
+            File frontendDirectory, FeatureFlags featureFlags) {
         Objects.requireNonNull(openApi,
                 "Vaadin OpenAPI file should not be null.");
         Objects.requireNonNull(outputFolder,
                 "Vaadin output folder should not be null.");
         return new TaskGenerateEndpointImpl(applicationProperties, openApi,
-                outputFolder, frontendDirectory);
+                outputFolder, frontendDirectory, featureFlags);
     }
 
     @Override

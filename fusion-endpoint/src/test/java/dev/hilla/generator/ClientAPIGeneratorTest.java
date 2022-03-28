@@ -20,21 +20,26 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Properties;
 
+import com.vaadin.experimental.FeatureFlags;
+
 import dev.hilla.utils.TestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.Mockito;
 
 public class ClientAPIGeneratorTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
+    private FeatureFlags featureFlags = Mockito.mock(FeatureFlags.class);
 
     @Test
     public void relativizeEndpointPrefixWithUrlMapping_Should_workWithBothDefaultValues() {
         ClientAPIGenerator generator = new ClientAPIGenerator(
-                temporaryFolder.getRoot().toPath(), new Properties());
+                temporaryFolder.getRoot().toPath(), new Properties(),
+                featureFlags);
         String result = generator.relativizeEndpointPrefixWithUrlMapping(
                 ClientAPIGenerator.DEFAULT_PREFIX, "/*");
         Assert.assertEquals("connect", result);
@@ -43,7 +48,8 @@ public class ClientAPIGeneratorTest {
     @Test
     public void relativizeEndpointPrefixWithUrlMapping_should_workWithCustomUrlMappingAndCustomEndpointPrefix() {
         ClientAPIGenerator generator = new ClientAPIGenerator(
-                temporaryFolder.getRoot().toPath(), new Properties());
+                temporaryFolder.getRoot().toPath(), new Properties(),
+                featureFlags);
         String result = generator.relativizeEndpointPrefixWithUrlMapping(
                 "/my-connect", "/myapp/*");
         Assert.assertEquals("../my-connect", result);
@@ -52,7 +58,8 @@ public class ClientAPIGeneratorTest {
     @Test
     public void relativizeEndpointPrefixWithUrlMapping_should_workWithCustomUrlMappingAndDefaultEndpointPrefix() {
         ClientAPIGenerator generator = new ClientAPIGenerator(
-                temporaryFolder.getRoot().toPath(), new Properties());
+                temporaryFolder.getRoot().toPath(), new Properties(),
+                featureFlags);
         String result = generator.relativizeEndpointPrefixWithUrlMapping(
                 ClientAPIGenerator.DEFAULT_PREFIX, "/myapp/*");
         Assert.assertEquals("../connect", result);
@@ -61,7 +68,8 @@ public class ClientAPIGeneratorTest {
     @Test
     public void relativizeEndpointPrefixWithUrlMapping_should_workWithDefaultUrlMappingAndCustomEndpointPrefix() {
         ClientAPIGenerator generator = new ClientAPIGenerator(
-                temporaryFolder.getRoot().toPath(), new Properties());
+                temporaryFolder.getRoot().toPath(), new Properties(),
+                featureFlags);
         String result = generator
                 .relativizeEndpointPrefixWithUrlMapping("/my-connect", "/*");
         Assert.assertEquals("my-connect", result);
@@ -70,7 +78,8 @@ public class ClientAPIGeneratorTest {
     @Test
     public void relativizeEndpointPrefixWithUrlMapping_Should_WorkWithMultipleLevelUrlMappingAndCustomEndpointPrefix() {
         ClientAPIGenerator generator = new ClientAPIGenerator(
-                temporaryFolder.getRoot().toPath(), new Properties());
+                temporaryFolder.getRoot().toPath(), new Properties(),
+                featureFlags);
         String result = generator.relativizeEndpointPrefixWithUrlMapping(
                 "/my-connect", "/myapp/yourapp/*");
         Assert.assertEquals("../../my-connect", result);
@@ -79,7 +88,8 @@ public class ClientAPIGeneratorTest {
     @Test
     public void relativizeEndpointPrefixWithUrlMapping_Should_WorkWithMultipleLevelUrlMappingAndMultipleLevelEndpointPrefix() {
         ClientAPIGenerator generator = new ClientAPIGenerator(
-                temporaryFolder.getRoot().toPath(), new Properties());
+                temporaryFolder.getRoot().toPath(), new Properties(),
+                featureFlags);
         String result = generator.relativizeEndpointPrefixWithUrlMapping(
                 "/my-connect/your-connect", "/myapp/yourapp/*");
         Assert.assertEquals("../../my-connect/your-connect", result);
@@ -92,7 +102,8 @@ public class ClientAPIGeneratorTest {
                 temporaryFolder.getRoot().toPath(),
                 TestUtils.readProperties(getClass()
                         .getResource("application.properties.for.testing")
-                        .getPath()));
+                        .getPath()),
+                featureFlags);
 
         generator.generate();
 
@@ -110,7 +121,8 @@ public class ClientAPIGeneratorTest {
     public void should_GenerateConnectClientDefault_When_NoApplicationPropertiesInput()
             throws Exception {
         ClientAPIGenerator generator = new ClientAPIGenerator(
-                temporaryFolder.getRoot().toPath(), new Properties());
+                temporaryFolder.getRoot().toPath(), new Properties(),
+                featureFlags);
 
         generator.generate();
 

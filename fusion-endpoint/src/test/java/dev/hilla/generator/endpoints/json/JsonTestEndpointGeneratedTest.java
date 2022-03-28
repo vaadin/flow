@@ -16,24 +16,29 @@
 
 package dev.hilla.generator.endpoints.json;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.util.Arrays;
 import java.util.Properties;
 
 import com.fasterxml.jackson.core.Version;
-import org.junit.Test;
+import com.vaadin.experimental.FeatureFlags;
 
+import org.junit.Test;
+import org.mockito.Mockito;
+
+import dev.hilla.generator.ClientAPIGenerator;
 import dev.hilla.generator.MainGenerator;
 import dev.hilla.generator.OpenAPISpecGenerator;
-import dev.hilla.generator.ClientAPIGenerator;
 import dev.hilla.generator.endpoints.AbstractEndpointGenerationTest;
 import dev.hilla.utils.TestUtils;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 public class JsonTestEndpointGeneratedTest
         extends AbstractEndpointGenerationTest {
+
+    private FeatureFlags featureFlags = Mockito.mock(FeatureFlags.class);
 
     public JsonTestEndpointGeneratedTest() {
         super(Arrays.asList(JsonTestEndpoint.class, Version.class));
@@ -51,7 +56,7 @@ public class JsonTestEndpointGeneratedTest
                 openApiJsonOutput);
 
         new MainGenerator(openApiJsonOutput.toFile(), outputDirectory.getRoot(),
-                customConnectClientPath).start();
+                customConnectClientPath, featureFlags).start();
 
         getTsFiles(outputDirectory.getRoot()).stream().map(File::toPath)
                 .map(this::readFile).forEach(fileContents -> assertTrue(
@@ -69,7 +74,8 @@ public class JsonTestEndpointGeneratedTest
                         "expected-openapi-custom-application-properties.json")
                 .getPath());
 
-        new MainGenerator(openApiFile, nonExistingOutputDirectory).start();
+        new MainGenerator(openApiFile, nonExistingOutputDirectory, featureFlags)
+                .start();
 
         assertTrue(nonExistingOutputDirectory.isDirectory());
         assertFalse(getTsFiles(nonExistingOutputDirectory).isEmpty());

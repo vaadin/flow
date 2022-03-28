@@ -6,20 +6,16 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import javax.servlet.ServletContext;
-
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.vaadin.experimental.FeatureFlags;
-import com.vaadin.flow.server.VaadinServletContext;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import dev.hilla.ConditionalOnFeatureFlag;
 import dev.hilla.EndpointInvocationException.EndpointAccessDeniedException;
 import dev.hilla.EndpointInvocationException.EndpointBadRequestException;
 import dev.hilla.EndpointInvocationException.EndpointInternalException;
@@ -40,13 +36,12 @@ import reactor.core.publisher.Flux;
  * returned from endpoints.
  */
 @Service
+@ConditionalOnFeatureFlag(PushMessageHandler.PUSH_FEATURE_FLAG)
 public class PushMessageHandler {
 
+    static final String PUSH_FEATURE_FLAG = "hillaPush";
     private final EndpointInvoker endpointInvoker;
     private Map<String, Disposable> closeHandlers = new ConcurrentHashMap<>();
-
-    @Autowired
-    private ServletContext servletContext;
 
     /**
      * Creates the instance.
@@ -80,16 +75,6 @@ public class PushMessageHandler {
 
     private void handleSubscribe(SubscribeMessage message,
             Consumer<AbstractClientMessage> sender) {
-        FeatureFlags featureFlags = FeatureFlags
-                .get(new VaadinServletContext(servletContext));
-        if (!featureFlags.isEnabled(FeatureFlags.HILLA_PUSH)) {
-            String msg = featureFlags
-                    .getEnableHelperMessage(FeatureFlags.HILLA_PUSH);
-            getLogger().error(msg);
-            sender.accept(new ClientMessageError(message.getId(), msg));
-            return;
-
-        }
         if (endpointInvoker.getReturnType(message.getEndpointName(),
                 message.getMethodName()) != Flux.class) {
             sender.accept(new ClientMessageError(message.getId(),

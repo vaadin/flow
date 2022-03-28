@@ -18,6 +18,8 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 
+import com.vaadin.experimental.FeatureFlags;
+
 /**
  * A factory for creating Vaadin Endpoint generator tasks.
  * <p>
@@ -39,10 +41,13 @@ public interface EndpointGeneratorTaskFactory {
      *            the output folder. not {@code null}
      * @param frontendDirectory
      *            the frontend folder.
+     * @param featureFlags
+     *            the feature flags
      * @return an endpoint tasks for generating TypeScript files for endpoints.
      */
     TaskGenerateEndpoint createTaskGenerateEndpoint(File applicationProperties,
-            File openApi, File outputFolder, File frontendDirectory);
+            File openApi, File outputFolder, File frontendDirectory,
+            FeatureFlags featureFlags);
 
     /**
      * Create a task for generating OpenAPI spec.

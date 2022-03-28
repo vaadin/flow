@@ -1,10 +1,12 @@
 package dev.hilla.push;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vaadin.flow.component.dependency.NpmPackage;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import dev.hilla.ConditionalOnFeatureFlag;
 import dev.hilla.EndpointInvoker;
 import io.socket.engineio.server.EngineIoServer;
 import io.socket.socketio.server.SocketIoServer;
@@ -13,6 +15,8 @@ import io.socket.socketio.server.SocketIoServer;
  * Defines the beans needed for push in Hilla.
  */
 @Configuration
+@ConditionalOnFeatureFlag(PushMessageHandler.PUSH_FEATURE_FLAG)
+@NpmPackage(value = "socket.io-client", version = "4.4.1")
 public class SocketIoConfigurer {
 
     @Bean

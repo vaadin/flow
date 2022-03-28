@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import dev.hilla.ConditionalOnFeatureFlag;
 import dev.hilla.push.messages.fromclient.AbstractServerMessage;
 import dev.hilla.push.messages.toclient.AbstractClientMessage;
 import io.socket.socketio.server.SocketIoNamespace;
@@ -22,6 +23,7 @@ import io.socket.socketio.server.SocketIoSocket;
  */
 @Service
 @NpmPackage(value = "socket.io-client", version = "4.4.1")
+@ConditionalOnFeatureFlag(PushMessageHandler.PUSH_FEATURE_FLAG)
 public class SocketIoHandler {
 
     /**

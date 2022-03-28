@@ -29,6 +29,7 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static dev.hilla.generator.MainGenerator.TS;
@@ -53,6 +54,7 @@ public class ClientAPIGenerator {
             .getLogger(ClientAPIGenerator.class);
     private final String endpointPrefix;
     private final Path outputFilePath;
+    private FeatureFlags featureFlags;
 
     /**
      * Creates the generator, getting the data needed for the generation out of
@@ -64,7 +66,8 @@ public class ClientAPIGenerator {
      *            the directory to generate the default client into
      */
     public ClientAPIGenerator(Path outputDirectory,
-            Properties applicationProperties) {
+            Properties applicationProperties, FeatureFlags featureFlags) {
+        this.featureFlags = featureFlags;
         final String prefix = (String) applicationProperties
                 .getOrDefault(PREFIX, DEFAULT_PREFIX);
         final String urlMapping = (String) applicationProperties
@@ -94,10 +97,13 @@ public class ClientAPIGenerator {
     }
 
     private String getDefaultClientTsTemplate() {
+        String templateName = "connect-client.default.template.ts";
+        if (featureFlags.isEnabled(FeatureFlags.HILLA_PUSH)) {
+            templateName = "connect-client.hillapush.template.ts";
+        }
         try (BufferedReader bufferedReader = new BufferedReader(
-                new InputStreamReader(
-                        getClass().getClassLoader().getResourceAsStream(
-                                "connect-client.default.template.ts"),
+                new InputStreamReader(getClass().getClassLoader()
+                        .getResourceAsStream(templateName),
                         StandardCharsets.UTF_8))) {
             return bufferedReader.lines().collect(Collectors.joining("\n"));
         } catch (IOException e) {

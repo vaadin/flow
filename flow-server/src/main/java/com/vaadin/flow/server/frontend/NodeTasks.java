@@ -797,7 +797,7 @@ public class NodeTasks implements FallibleCommand {
                 if (builder.endpointSourceFolder != null
                         && builder.endpointSourceFolder.exists()
                         && builder.endpointGeneratedOpenAPIFile != null) {
-                    addEndpointServicesTasks(builder);
+                    addEndpointServicesTasks(builder, featureFlags);
                 }
             }
 
@@ -907,7 +907,8 @@ public class NodeTasks implements FallibleCommand {
         }
     }
 
-    private void addEndpointServicesTasks(Builder builder) {
+    private void addEndpointServicesTasks(Builder builder,
+            FeatureFlags featureFlags) {
         Lookup lookup = builder.lookup;
         EndpointGeneratorTaskFactory endpointGeneratorTaskFactory = lookup
                 .lookup(EndpointGeneratorTaskFactory.class);
@@ -926,7 +927,7 @@ public class NodeTasks implements FallibleCommand {
                                 builder.applicationProperties,
                                 builder.endpointGeneratedOpenAPIFile,
                                 builder.frontendGeneratedFolder,
-                                builder.frontendDirectory);
+                                builder.frontendDirectory, featureFlags);
                 commands.add(taskGenerateEndpoint);
             }
         }

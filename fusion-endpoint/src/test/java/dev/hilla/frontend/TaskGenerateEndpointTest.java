@@ -1,8 +1,14 @@
 package dev.hilla.frontend;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.IOException;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.server.frontend.TaskGenerateEndpoint;
 
 import org.apache.commons.io.FileUtils;
@@ -10,11 +16,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import org.mockito.Mockito;
 
 public class TaskGenerateEndpointTest {
 
@@ -25,6 +27,7 @@ public class TaskGenerateEndpointTest {
     private File properties;
     private File outputDirectory;
     private File openApiJson;
+    private FeatureFlags featureFlags = Mockito.mock(FeatureFlags.class);
 
     @Before
     public void setUp() throws IOException {
@@ -47,7 +50,7 @@ public class TaskGenerateEndpointTest {
         assertFalse(client.exists());
 
         taskGenerateFusion = new TaskGenerateEndpointImpl(properties,
-                openApiJson, outputDirectory, frontendDirectory);
+                openApiJson, outputDirectory, frontendDirectory, featureFlags);
         taskGenerateFusion.execute();
 
         assertTrue(ts1.exists());
@@ -77,7 +80,7 @@ public class TaskGenerateEndpointTest {
         assertTrue(customConnectClient.exists());
 
         taskGenerateFusion = new TaskGenerateEndpointImpl(properties,
-                openApiJson, outputDirectory, frontendDirectory);
+                openApiJson, outputDirectory, frontendDirectory, featureFlags);
         taskGenerateFusion.execute();
 
         assertTrue(ts1.exists());

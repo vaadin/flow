@@ -18,10 +18,12 @@ package dev.hilla.frontend;
 import java.io.File;
 import java.util.Objects;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.TaskGenerateEndpoint;
-import dev.hilla.generator.MainGenerator;
+
 import dev.hilla.generator.ClientAPIGenerator;
+import dev.hilla.generator.MainGenerator;
 
 /**
  * Starts the generation of TS files for endpoints.
@@ -32,10 +34,13 @@ public class TaskGenerateEndpointImpl extends AbstractTaskEndpointGenerator
     private final File frontendDirectory;
     private final File openApi;
     private final File outputFolder;
+    private FeatureFlags featureFlags;
 
     TaskGenerateEndpointImpl(File applicationProperties, File openApi,
-            File outputFolder, File frontendDirectory) {
+            File outputFolder, File frontendDirectory,
+            FeatureFlags featureFlags) {
         super(applicationProperties);
+        this.featureFlags = featureFlags;
         Objects.requireNonNull(openApi,
                 "Vaadin OpenAPI file should not be null.");
         Objects.requireNonNull(outputFolder,
@@ -54,6 +59,6 @@ public class TaskGenerateEndpointImpl extends AbstractTaskEndpointGenerator
                 : null;
 
         new MainGenerator(openApi, outputFolder, readApplicationProperties(),
-                customName).start();
+                customName, featureFlags).start();
     }
 }

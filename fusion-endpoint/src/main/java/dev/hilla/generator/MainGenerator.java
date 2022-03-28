@@ -20,6 +20,8 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 
+import com.vaadin.experimental.FeatureFlags;
+
 import dev.hilla.generator.typescript.CodeGenerator;
 import io.swagger.codegen.v3.config.CodegenConfigurator;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -39,6 +41,7 @@ public class MainGenerator {
     private final ClientAPIGenerator clientGenerator;
     private final GenerationOutputDirectory outputDirectory;
     private final OpenAPIParser parser;
+    private FeatureFlags featureFlags;
 
     /**
      * Initializes the generator.
@@ -47,9 +50,12 @@ public class MainGenerator {
      *            the api spec file to analyze
      * @param outputDirectory
      *            the directory to generate the files into
+     * @param featureFlags
+     *            the feature flags
      */
-    public MainGenerator(File openApiJsonFile, File outputDirectory) {
-        this(openApiJsonFile, outputDirectory, null, null);
+    public MainGenerator(File openApiJsonFile, File outputDirectory,
+            FeatureFlags featureFlags) {
+        this(openApiJsonFile, outputDirectory, null, null, featureFlags);
     }
 
     /**
@@ -62,10 +68,12 @@ public class MainGenerator {
      * @param properties
      *            the properties with the data required for the Client API file
      *            generation
+     * @param featureFlags
+     *            the feature flags
      */
     public MainGenerator(File openApiJsonFile, File outputDirectory,
-            Properties properties) {
-        this(openApiJsonFile, outputDirectory, properties, null);
+            Properties properties, FeatureFlags featureFlags) {
+        this(openApiJsonFile, outputDirectory, properties, null, featureFlags);
     }
 
     /**
@@ -78,10 +86,13 @@ public class MainGenerator {
      * @param defaultClientPath
      *            the path of the default Client API file which is imported in
      *            the generated files.
+     * @param featureFlags
+     *            the feature flags
      */
     public MainGenerator(File openApiJsonFile, File outputDirectory,
-            String defaultClientPath) {
-        this(openApiJsonFile, outputDirectory, null, defaultClientPath);
+            String defaultClientPath, FeatureFlags featureFlags) {
+        this(openApiJsonFile, outputDirectory, null, defaultClientPath,
+                featureFlags);
     }
 
     /**
@@ -97,9 +108,13 @@ public class MainGenerator {
      * @param defaultClientPath
      *            the path of the default Client API file which is imported in
      *            the generated files.
+     * @param featureFlags
+     *            the feature flags
      */
     public MainGenerator(File openApiJsonFile, File outputDirectory,
-            Properties properties, String defaultClientPath) {
+            Properties properties, String defaultClientPath,
+            FeatureFlags featureFlags) {
+        this.featureFlags = featureFlags;
         Objects.requireNonNull(openApiJsonFile);
         Objects.requireNonNull(outputDirectory);
 
@@ -110,7 +125,7 @@ public class MainGenerator {
                 : null;
         clientGenerator = properties != null
                 ? new ClientAPIGenerator(this.outputDirectory.toPath(),
-                        properties)
+                        properties, featureFlags)
                 : null;
         barrelGenerator = new BarrelGenerator(this.outputDirectory.toPath());
     }
