@@ -44,7 +44,7 @@ public open class VaadinBuildFrontendTask : DefaultTask() {
 
         // we need the flow-build-info.json to be created, which is what the vaadinPrepareFrontend task does
         dependsOn("vaadinPrepareFrontend")
-        // Maven's task run in the LifecyclePhase.PREPARE_PACKAGE phase
+        // Maven's task run in the LifecyclePhase.PROCESS_CLASSES phase
 
         // We need access to the produced classes, to be able to analyze e.g.
         // @CssImport annotations used by the project.
