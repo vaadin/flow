@@ -305,6 +305,8 @@ public class TaskRunNpmInstall implements FallibleCommand {
         settings.setAutoUpdate(autoUpdate);
         settings.setNodeVersion(nodeVersion);
         FrontendTools tools = new FrontendTools(settings);
+        tools.validateNodeAndNpmVersion();
+
         List<String> npmExecutable;
         List<String> npmInstallCommand;
         List<String> postinstallCommand;
