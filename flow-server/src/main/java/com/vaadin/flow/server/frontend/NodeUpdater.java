@@ -297,11 +297,11 @@ public abstract class NodeUpdater implements FallibleCommand {
                 + (npmFolder.toPath().relativize(targetFolder) + "/")
                         .replace('\\', '/');
 
-        // Clean  previously installed plugins
+        // Clean previously installed plugins
         for (String depKey : devDependencies.keys()) {
             String depVersion = devDependencies.getString(depKey);
-            if (depKey.startsWith(atVaadinPrefix) && depVersion.startsWith(
-                    pluginTargetPrefix)) {
+            if (depKey.startsWith(atVaadinPrefix)
+                    && depVersion.startsWith(pluginTargetPrefix)) {
                 devDependencies.remove(depKey);
             }
         }
