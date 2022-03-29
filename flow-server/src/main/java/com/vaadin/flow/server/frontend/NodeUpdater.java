@@ -25,7 +25,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -274,7 +273,7 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         addDefaultObjects(packageJson);
         addVaadinDefaultsToJson(packageJson);
-        addWebpackPlugins(packageJson);
+        removeWebpackPlugins(packageJson);
 
         return packageJson;
     }
@@ -284,40 +283,26 @@ public abstract class NodeUpdater implements FallibleCommand {
         computeIfAbsent(json, DEV_DEPENDENCIES, Json::createObject);
     }
 
-    private void addWebpackPlugins(JsonObject packageJson) {
-        final List<String> plugins = WebpackPluginsUtil.getPlugins();
-
+    private void removeWebpackPlugins(JsonObject packageJson) {
         Path targetFolder = Paths.get(npmFolder.toString(), buildDir,
                 WebpackPluginsUtil.PLUGIN_TARGET);
 
-        JsonObject devDependencies;
-        if (packageJson.hasKey(DEV_DEPENDENCIES)) {
-            devDependencies = packageJson.getObject(DEV_DEPENDENCIES);
-        } else {
-            devDependencies = Json.createObject();
-            packageJson.put(DEV_DEPENDENCIES, devDependencies);
+        if (!packageJson.hasKey(DEV_DEPENDENCIES)) {
+            return;
         }
+        JsonObject devDependencies = packageJson.getObject(DEV_DEPENDENCIES);
 
         String atVaadinPrefix = "@vaadin/";
         String pluginTargetPrefix = "./"
                 + (npmFolder.toPath().relativize(targetFolder) + "/")
                         .replace('\\', '/');
-        plugins.stream().filter(plugin -> targetFolder.toFile().exists())
-                .forEach(plugin -> {
-                    String pluginTarget = pluginTargetPrefix + plugin;
-                    devDependencies.put(atVaadinPrefix + plugin, pluginTarget);
-                });
 
-        // Remove plugins previously installed but no longer needed
+        // Clean  previously installed plugins
         for (String depKey : devDependencies.keys()) {
             String depVersion = devDependencies.getString(depKey);
-            if (depKey.startsWith(atVaadinPrefix)
-                    && depVersion.startsWith(pluginTargetPrefix)) {
-                final String pluginName = depKey
-                        .substring(atVaadinPrefix.length());
-                if (!plugins.contains(pluginName)) {
-                    devDependencies.remove(depKey);
-                }
+            if (depKey.startsWith(atVaadinPrefix) && depVersion.startsWith(
+                    pluginTargetPrefix)) {
+                devDependencies.remove(depKey);
             }
         }
     }
