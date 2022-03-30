@@ -107,9 +107,9 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>com.vaadin.external.json</groupId>
-            <artifactId>json</artifactId>
-            <version>0.0.20080701</version>
+            <groupId>com.vaadin.external.google</groupId>
+            <artifactId>android-json</artifactId>
+            <version>0.0.20131108.vaadin1</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
