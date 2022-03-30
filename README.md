@@ -8,7 +8,7 @@ Vaadin Flow
 
 **To contribute, first refer to [Contribution Guide](/CONTRIBUTING.md) for general instructions and requirements for contributing code to Flow.**
 
-**For issues related to [Vaadin Fusion](https://vaadin.com/hilla), please refer to the https://github.com/vaadin/fusion repository.**
+**For issues related to [Hilla](https://hilla.dev/), please refer to the https://github.com/vaadin/hilla repository.**
 
 Join Vaadin Flow community chat in https://discord.gg/MYFq5RTbBn
 
