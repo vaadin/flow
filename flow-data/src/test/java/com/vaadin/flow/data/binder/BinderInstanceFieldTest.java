@@ -650,4 +650,58 @@ public class BinderInstanceFieldTest {
         // thrown later if the binding is not completed)
         binder.bindInstanceFields(form);
     }
+
+    @Test
+    public void bindInstanceFields_customBindingAfterInvoke_automaticBindingOverwritten() {
+        BindOnlyOneField form = new BindOnlyOneField();
+        form.firstName = new TestTextField();
+        Binder<Person> binder = new Binder<>(Person.class);
+
+        binder.bindInstanceFields(form);
+        Binder.BindingBuilder<Person, String> binding = binder
+                .forField(form.firstName)
+                .withConverter(str -> str.substring(str.length() / 2),
+                        str -> str + str);
+        binding.bind(Person::getFirstName, Person::setFirstName);
+
+        Person person = new Person();
+        person.setFirstName("Hello!");
+        binder.setBean(person);
+        Assert.assertEquals("Hello!Hello!", form.firstName.getValue());
+    }
+
+    @Test
+    public void bindInstanceFields_incompleteBindingBoundAfterInvoke_automaticBindingOverwritten() {
+        BindOnlyOneField form = new BindOnlyOneField();
+        form.firstName = new TestTextField();
+        Binder<Person> binder = new Binder<>(Person.class);
+
+        Binder.BindingBuilder<Person, String> binding = binder
+                .forField(form.firstName)
+                .withConverter(str -> str.substring(str.length() / 2),
+                        str -> str + str);
+        binder.bindInstanceFields(form);
+        binding.bind(Person::getFirstName, Person::setFirstName);
+
+        Person person = new Person();
+        person.setFirstName("Hello!");
+        binder.setBean(person);
+        Assert.assertEquals("Hello!Hello!", form.firstName.getValue());
+    }
+
+    @Test
+    public void bindInstanceFields_incompleteBinding_fieldIgnored() {
+        BindOnlyOneField form = new BindOnlyOneField();
+        form.firstName = new TestTextField();
+        Binder<Person> binder = new Binder<>(Person.class);
+
+        binder.forField(form.firstName).withConverter(
+                str -> str.substring(str.length() / 2), str -> str + str);
+        binder.bindInstanceFields(form);
+
+        Assert.assertFalse(
+                "Expecting incomplete binding to be ignored by Binder, but field was bound",
+                binder.getBinding("firstName").isPresent());
+    }
+
 }

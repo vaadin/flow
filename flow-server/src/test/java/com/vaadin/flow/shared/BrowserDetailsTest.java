@@ -90,6 +90,13 @@ public class BrowserDetailsTest extends TestCase {
 
     private static final String GOOGLE_APP_IPHONE_14_7 = "Mozilla/5.0 (iPhone; CPU iPhone OS 14_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) GSA/117.0.321844219 Mobile/15E148 Safari/604.1";
 
+    // Version 100 Strings
+    private static final String CHROME100_WINDOWS = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4844.84 Safari/537.36";
+    private static final String FIREFOX_100_WIN64 = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:100.0) Gecko/20100101 Firefox/100.0";
+    private static final String FIREFOX_100_WIN32 = "Mozilla/5.0 (Windows NT 10.0; rv:100.0) Gecko/20100101 Firefox/100.0";
+    private static final String FIREFOX_100_MACOS = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:100.0) Gecko/20100101 Firefox/100.0";
+    private static final String FIREFOX_100_LINUX = "Mozilla/5.0 (X11; Linux x86_64; rv:100.0) Gecko/20100101 Firefox/100.0";
+
     public void testSafari3() {
         BrowserDetails bd = new BrowserDetails(SAFARI3_WINDOWS);
         assertWebKit(bd);
@@ -266,6 +273,56 @@ public class BrowserDetailsTest extends TestCase {
         assertEngineVersion(bd, 537.36f);
         assertChromeOS(bd, 6457, 31);
 
+    }
+
+    public void testChrome100Windows() {
+        BrowserDetails bd = new BrowserDetails(CHROME100_WINDOWS);
+        assertWebKit(bd);
+        assertChrome(bd);
+        assertBrowserMajorVersion(bd, 100);
+        assertBrowserMinorVersion(bd, 0);
+        assertEngineVersion(bd, 537.36f);
+        assertWindows(bd);
+    }
+
+    public void testFirefox100Windows() {
+        BrowserDetails bd = new BrowserDetails(FIREFOX_100_WIN64);
+        assertGecko(bd);
+        assertFirefox(bd);
+        assertBrowserMajorVersion(bd, 100);
+        assertBrowserMinorVersion(bd, 0);
+        assertEngineVersion(bd, 100.0f);
+        assertWindows(bd);
+    }
+
+    public void testFirefox100Windows32() {
+        BrowserDetails bd = new BrowserDetails(FIREFOX_100_WIN32);
+        assertGecko(bd);
+        assertFirefox(bd);
+        assertBrowserMajorVersion(bd, 100);
+        assertBrowserMinorVersion(bd, 0);
+        assertEngineVersion(bd, 100.0f);
+        assertWindows(bd);
+    }
+
+    public void testFirefox100MacOs() {
+        BrowserDetails bd = new BrowserDetails(FIREFOX_100_MACOS);
+        assertGecko(bd);
+        assertFirefox(bd);
+        assertBrowserMajorVersion(bd, 100);
+        assertBrowserMinorVersion(bd, 0);
+        assertEngineVersion(bd, 100.0f);
+        assertMacOSX(bd);
+    }
+
+    public void testFirefox100Linux() {
+        BrowserDetails bd = new BrowserDetails(FIREFOX_100_LINUX);
+        assertGecko(bd);
+        assertFirefox(bd);
+        assertBrowserMajorVersion(bd, 100);
+        assertBrowserMinorVersion(bd, 0);
+        assertEngineVersion(bd, 100.0f);
+        assertLinux(bd);
     }
 
     public void testFirefox3() {

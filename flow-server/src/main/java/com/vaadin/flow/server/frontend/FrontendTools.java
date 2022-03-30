@@ -1086,12 +1086,16 @@ public class FrontendTools {
                             "Found too old globally installed 'pnpm'. Please upgrade 'pnpm' to at least "
                                     + SUPPORTED_PNPM_VERSION.getFullVersion()));
         } else {
-            // install pnpm version < 6.0.0, later requires ensuring
-            // NodeJS >= 12.17 and doesn't support Node 10,
+            // install latest pnpm version as the minimum node requirement is
+            // now at nodejs 16.14.0
             // see https://pnpm.io/installation#compatibility
-            final String pnpmSpecifier = "pnpm@" + DEFAULT_PNPM_VERSION;
             pnpmCommand = getNpmCliToolExecutable(BuildTool.NPX, "--yes",
-                    "--quiet", pnpmSpecifier);
+                    "--quiet", "pnpm");
+            if (!validatePnpmVersion(pnpmCommand)) {
+                throw new IllegalStateException(
+                        "Found too old globally installed 'pnpm'. Please upgrade 'pnpm' to at least "
+                                + SUPPORTED_PNPM_VERSION.getFullVersion());
+            }
         }
         return pnpmCommand;
     }

@@ -94,7 +94,7 @@ public class TaskInstallWebpackPluginsTest {
     }
 
     @Test
-    public void pluginsAddedToPackageJson() throws IOException {
+    public void pluginsNotAddedToPackageJson() throws IOException {
         File resourceFolder = temporaryFolder.newFolder();
         ClassFinder finder = Mockito.mock(ClassFinder.class);
         NodeUpdater nodeUpdater = new NodeUpdater(finder,
@@ -114,16 +114,8 @@ public class TaskInstallWebpackPluginsTest {
         final JsonObject devDependencies = packageJson
                 .getObject(DEV_DEPENDENCIES);
         for (String plugin : WebpackPluginsUtil.getPlugins()) {
-            Assert.assertTrue("packageJson is missing " + plugin,
+            Assert.assertFalse("Plugin " + plugin + " added to packageJson",
                     devDependencies.hasKey("@vaadin/" + plugin));
-
-            final String pluginFolder = "./" + rootFolder.toPath()
-                    .relativize(getPluginFolder(plugin).toPath()).toString()
-                    .replace('\\', '/');
-
-            Assert.assertEquals("Plugin is pointing to wrong directory",
-                    pluginFolder,
-                    devDependencies.getString("@vaadin/" + plugin));
         }
     }
 
