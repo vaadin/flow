@@ -238,7 +238,7 @@ public class NodeUpdaterTest {
     }
 
     @Test
-    public void removedDisusedPlugins() throws IOException {
+    public void removedAllOldAndExistingPlugins() throws IOException {
         File packageJson = new File(npmFolder, "package.json");
         FileWriter packageJsonWriter = new FileWriter(packageJson);
         packageJsonWriter.write("{\"devDependencies\": {"
@@ -249,7 +249,7 @@ public class NodeUpdaterTest {
         JsonObject actualDevDeps = nodeUpdater.getPackageJson()
                 .getObject(NodeUpdater.DEV_DEPENDENCIES);
         Assert.assertFalse(actualDevDeps.hasKey("some-old-plugin"));
-        Assert.assertTrue(
+        Assert.assertFalse(
                 actualDevDeps.hasKey("@vaadin/application-theme-plugin"));
     }
 
