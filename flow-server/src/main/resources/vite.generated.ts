@@ -338,6 +338,9 @@ export const vaadinConfig: UserConfigFn = (env) => {
       VITE_ENABLED: 'true'
     },
     server: {
+      hmr: {
+        port: false
+      },
       fs: {
         allow: allowedFrontendFolders
       }
