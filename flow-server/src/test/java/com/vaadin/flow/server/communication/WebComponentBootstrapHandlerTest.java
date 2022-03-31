@@ -21,11 +21,13 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
+import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -36,12 +38,10 @@ import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.PwaIcon;
 import com.vaadin.flow.server.PwaRegistry;
-import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
@@ -143,8 +143,7 @@ public class WebComponentBootstrapHandlerTest {
     }
 
     @Test
-    public void writeBootstrapPage_noPWA()
-            throws IOException, ServiceException {
+    public void writeBootstrapPage_noPWA() throws IOException {
         TestWebComponentBootstrapHandler handler = new TestWebComponentBootstrapHandler();
 
         PwaRegistry registry = Mockito.mock(PwaRegistry.class);
@@ -200,7 +199,7 @@ public class WebComponentBootstrapHandlerTest {
 
     @Test
     public void writeBootstrapPage_scriptGuadedAndGizmoDisabled()
-            throws IOException, ServiceException {
+            throws IOException {
         TestWebComponentBootstrapHandler handler = new TestWebComponentBootstrapHandler();
         VaadinServletService service = new MockVaadinServletService();
 
@@ -233,8 +232,11 @@ public class WebComponentBootstrapHandlerTest {
         Assert.assertTrue(guardIndex > scriptIndex);
 
         int createScriptIndex = result
-                .indexOf("document.createElement('script')");
+                .lastIndexOf("document.createElement('script')");
         Assert.assertTrue(createScriptIndex > guardIndex);
+        Assert.assertEquals("expected  script creation for head and export", 2,
+                StringUtils.countMatches(result,
+                        "document.createElement('script')"));
 
         Assert.assertTrue(
                 result.contains("\\\"devmodeGizmoEnabled\\\": false"));
@@ -251,7 +253,7 @@ public class WebComponentBootstrapHandlerTest {
         VaadinResponse response = getMockResponse(stream);
         handler.writeBootstrapPage("", response, head, "");
 
-        String resultingScript = stream.toString(StandardCharsets.UTF_8.name());
+        stream.toString(StandardCharsets.UTF_8.name());
     }
 
     @Test
@@ -271,8 +273,7 @@ public class WebComponentBootstrapHandlerTest {
     }
 
     @Test
-    public void writeBootstrapPage_withExportChunk()
-            throws IOException, ServiceException {
+    public void writeBootstrapPage_withExportChunk() throws IOException {
         TestWebComponentBootstrapHandler handler = new TestWebComponentBootstrapHandler();
         VaadinServletService service = new MockVaadinServletService();
 
@@ -303,8 +304,8 @@ public class WebComponentBootstrapHandlerTest {
     }
 
     @Test
-    public void writeBootstrapPage_noExportChunk()
-            throws IOException, ServiceException {
+    @Ignore("Ignored until it is known how the bootstrap is compiled in ts mode")
+    public void writeBootstrapPage_noExportChunk() throws IOException {
         TestWebComponentBootstrapHandler handler = new TestWebComponentBootstrapHandler();
         VaadinServletService service = new MockVaadinServletService();
 
@@ -364,9 +365,6 @@ public class WebComponentBootstrapHandlerTest {
 
         Mockito.when(lookup.lookup(ResourceProvider.class))
                 .thenReturn(provider);
-
-        Class<? extends VaadinServlet> servletClass = service.getServlet()
-                .getClass();
 
         Mockito.when(provider.getApplicationResource(Mockito.anyString()))
                 .thenAnswer(answer -> WebComponentBootstrapHandlerTest.class
