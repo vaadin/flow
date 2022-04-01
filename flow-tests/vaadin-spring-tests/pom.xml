@@ -38,7 +38,7 @@
                         <artifactId>logback-classic</artifactId>
                     </exclusion>
                 </exclusions>
-                <version>${spring-boot.version}</version>
+                <version>${spring.boot.version}</version>
             </dependency>
 
             <dependency>
@@ -52,7 +52,7 @@
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
-                <version>${spring-boot.version}</version>
+                <version>${spring.boot.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
