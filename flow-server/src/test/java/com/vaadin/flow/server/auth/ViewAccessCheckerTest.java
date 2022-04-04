@@ -346,7 +346,7 @@ public class ViewAccessCheckerTest {
                         + "@PermitAll, @RolesAllowed.",
                 result.getRerouteErrorMessage());
     }
-    
+
     @Test
     public void openingNoAnnotationViewDoesNotShowAnyReasonAndHintInProductionMode() {
         Result result = checkAccess(NoAnnotationView.class, User.NORMAL_USER,
@@ -354,7 +354,7 @@ public class ViewAccessCheckerTest {
         Assert.assertEquals(NotFoundException.class, result.getRerouteError());
         Assert.assertEquals("", result.getRerouteErrorMessage());
     }
-    
+
     @Test
     public void redirectWhenNoLoginSet() throws Exception {
         resetLoginView();
