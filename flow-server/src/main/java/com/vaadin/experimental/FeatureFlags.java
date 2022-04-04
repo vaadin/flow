@@ -83,6 +83,7 @@ public class FeatureFlags implements Serializable {
         features.add(new Feature(EXAMPLE));
         features.add(new Feature(VITE));
         features.add(new Feature(MAP_COMPONENT));
+        features.add(new Feature(SPREADSHEET_COMPONENT));
         loadProperties();
     }
 
