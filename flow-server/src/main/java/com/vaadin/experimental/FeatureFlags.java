@@ -60,7 +60,10 @@ public class FeatureFlags implements Serializable {
             "Map component (Pro)", "mapComponent",
             "https://github.com/vaadin/platform/issues/2611", true,
             "com.vaadin.flow.component.map.Map");
-
+    public static final Feature SPREADSHEET_COMPONENT = new Feature(
+            "Spreadsheet component (Pro)", "spreadsheetComponent",
+            "https://github.com/vaadin/platform/issues/2027", true,
+            "com.vaadin.flow.component.spreadsheet.Spreadsheet");
     private List<Feature> features = new ArrayList<>();
 
     File propertiesFolder = null;
@@ -80,6 +83,7 @@ public class FeatureFlags implements Serializable {
         features.add(new Feature(EXAMPLE));
         features.add(new Feature(VITE));
         features.add(new Feature(MAP_COMPONENT));
+        features.add(new Feature(SPREADSHEET_COMPONENT));
         loadProperties();
     }
 
