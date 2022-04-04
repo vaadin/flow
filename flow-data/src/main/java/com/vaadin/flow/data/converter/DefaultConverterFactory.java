@@ -40,7 +40,7 @@ public enum DefaultConverterFactory implements ConverterFactory {
 
     INSTANCE;
 
-    @SuppressWarnings("rawtypes")
+    @SuppressWarnings({ "rawtypes", "ImmutableEnumChecker" })
     private final Map<Key, SerializableSupplier<? extends Converter>> converterMap = new HashMap<>();
 
     DefaultConverterFactory() {
