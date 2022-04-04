@@ -28,6 +28,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 
 public class ThemedTemplateIT extends ChromeBrowserTest {
 
@@ -36,22 +37,22 @@ public class ThemedTemplateIT extends ChromeBrowserTest {
         open();
 
         // check that all imported templates are available in the DOM
-        WebElement template = findElement(By.tagName("themed-template"));
+        TestBenchElement template = $("themed-template").first();
 
         Assert.assertTrue("The main template has no simple child Div inside it",
-                isPresentInShadowRoot(template, By.id("div")));
+                template.$("*").attributeContains("id", "div").exists());
         Assert.assertTrue(
                 "The main template has no sub template which is imported by "
                         + "relative URL referring to the resource in the same folder",
-                isPresentInShadowRoot(template, By.id("relative1")));
+                template.$("*").attributeContains("id", "relative1").exists());
         Assert.assertTrue(
                 "The main template has no sub template which is imported by "
                         + "relative URL referring to the resource in the parent folder",
-                isPresentInShadowRoot(template, By.id("relative2")));
+                template.$("*").attributeContains("id", "relative2").exists());
         Assert.assertTrue(
                 "The main template has no sub template which is imported by "
                         + "absolute URL",
-                isPresentInShadowRoot(template, By.id("absolute")));
+                template.$("*").attributeContains("id", "absolute").exists());
 
         WebElement head = findElement(By.tagName("head"));
         List<WebElement> links = head.findElements(By.tagName("link"));

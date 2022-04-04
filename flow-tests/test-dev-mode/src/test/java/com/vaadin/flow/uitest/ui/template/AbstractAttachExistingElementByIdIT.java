@@ -47,10 +47,10 @@ public abstract class AbstractAttachExistingElementByIdIT
     }
 
     protected WebElement getInput(String id) {
-        return getInShadowRoot(findElement(By.id(id)), By.id("input"));
+        return $(TestBenchElement.class).id(id).$(TestBenchElement.class).id("input");
     }
 
     protected WebElement getLabel(String id) {
-        return getInShadowRoot(findElement(By.id(id)), By.id("label"));
+        return $(TestBenchElement.class).id(id).$(TestBenchElement.class).id("label");
     }
 }
