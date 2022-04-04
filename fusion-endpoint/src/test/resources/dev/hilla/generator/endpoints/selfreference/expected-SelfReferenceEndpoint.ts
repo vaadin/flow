@@ -5,7 +5,8 @@
  */
 
 // @ts-ignore
-import client, { subscribe, Subscription } from './connect-client.default';
+import client from './connect-client.default';
+import { Subscription } from '@hilla/frontend';
 import type SelfReference from './dev/hilla/generator/endpoints/selfreference/SelfReference';
 
 function _getModel(): Promise<SelfReference | undefined> {

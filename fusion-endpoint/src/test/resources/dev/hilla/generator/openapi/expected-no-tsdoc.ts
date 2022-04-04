@@ -7,7 +7,8 @@
  */
 
 // @ts-ignore
-import client, { subscribe, Subscription } from './connect-client.default';
+import client from './connect-client.default';
+import { Subscription } from '@hilla/frontend';
 
 function _getAllUsers(): Promise<void> {
   return client.call('GeneratorTestClass', 'getAllUsers', undefined, {requireCredentials: false});

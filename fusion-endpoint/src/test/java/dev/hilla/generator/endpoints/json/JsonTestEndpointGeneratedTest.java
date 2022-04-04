@@ -43,7 +43,7 @@ public class JsonTestEndpointGeneratedTest
     public void should_GenerateJsClassWithCustomClientPath_When_CustomClientPathGiven() {
         String customConnectClientPath = "../my-connect-client.js";
         String expectedImport = String.format(
-                "import client, { subscribe, Subscription } from '%s';",
+                "import client from '%s';",
                 customConnectClientPath);
 
         new OpenAPISpecGenerator(new Properties()).generateOpenApiSpec(
@@ -87,7 +87,7 @@ public class JsonTestEndpointGeneratedTest
     @Test
     public void should_GenerateOpenApi_When_NoApplicationPropertiesInput() {
         String expectedImport = String.format(
-                "import client, { subscribe, Subscription } from '%s';",
+                "import client from '%s';",
                 ClientAPIGenerator.CONNECT_CLIENT_IMPORT_PATH);
         verifyGenerationFully(null,
                 getClass().getResource("expected-openapi.json"));

@@ -4,7 +4,8 @@
 * @module MappedTypeEndpoint
 */
 // @ts-ignore
-import client, { subscribe, Subscription } from './connect-client.default';
+import client from './connect-client.default';
+import { Subscription } from '@hilla/frontend';
 import type Pageable from './dev/hilla/mappedtypes/Pageable';
 function _getPageable(): Promise<Pageable | undefined> {
   return client.call (

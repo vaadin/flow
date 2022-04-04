@@ -5,7 +5,8 @@
  */
 
 // @ts-ignore
-import client, { subscribe, Subscription } from './connect-client.default';
+import client from './connect-client.default';
+import { Subscription } from '@hilla/frontend';
 
 function _shouldBeDisplayed1(): Promise<void> {
   return client.call('DenyAllEndpoint', 'shouldBeDisplayed1');

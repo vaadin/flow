@@ -7,7 +7,8 @@
  */
 
 // @ts-ignore
-import client, { subscribe, Subscription } from './connect-client.default';
+import client from './connect-client.default';
+import { Subscription } from '@hilla/frontend';
 
 function _delete(): Promise<void> {
   return client.call('ReservedWordMethodEndpoint', 'delete');

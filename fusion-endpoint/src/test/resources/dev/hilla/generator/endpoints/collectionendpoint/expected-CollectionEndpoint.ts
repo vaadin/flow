@@ -5,7 +5,9 @@
  */
 
 // @ts-ignore
-import client, { subscribe, Subscription } from './connect-client.default';
+import client from './connect-client.default';
+import { Subscription } from '@hilla/frontend';
+
 import type Collection from './dev/hilla/generator/endpoints/collectionendpoint/CollectionEndpoint/Collection';
 
 /**

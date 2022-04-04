@@ -36,7 +36,8 @@ So `// @ts-ignore` is used for now to mute this error. The consequences are:
 - We don’t export the `__client` from here, only use it in the implementation.
 
 }}// @ts-ignore
-import client, { subscribe, Subscription } from '{{vaadinConnectDefaultClientPath}}';
+import client from '{{vaadinConnectDefaultClientPath}}';
+import { Subscription } from '@hilla/frontend';
 
 {{#each imports}}
 import type {{~#importAs}} {{importAs}}{{/importAs}}{{~^importAs}} {{className}}{{/importAs}} from '{{importPath}}';
@@ -70,7 +71,7 @@ Promise<{{!
 {
 {{=<% %>=}}
 <%#vendorExtensions.x-vaadin-connect-subscribe%>
-  return subscribe('<%vendorExtensions.x-vaadin-connect-endpoint-name%>', '<%vendorExtensions.x-vaadin-connect-method-name%>',{<%#each bodyParam.vendorExtensions.x-vaadin-connect-parameters%><%!
+  return client.subscribe('<%vendorExtensions.x-vaadin-connect-endpoint-name%>', '<%vendorExtensions.x-vaadin-connect-method-name%>',{<%#each bodyParam.vendorExtensions.x-vaadin-connect-parameters%><%!
       %><%name%><%#if @last%><%else%>, <%/if%><%!
     %><%/each%>});
 <%/vendorExtensions.x-vaadin-connect-subscribe%>
