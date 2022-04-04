@@ -3251,6 +3251,10 @@ public class Binder<BEAN> implements Serializable {
      *
      * By default, returns a factory capable of handling standard converters.
      *
+     * Subclasses can override this method to provide additional or customized
+     * conversion rules by creating a completely new factory implementation or
+     * composing with the default one.
+     *
      * @return an instance of {@link ConverterFactory}, never {@literal null}.
      */
     protected ConverterFactory getConverterFactory() {
