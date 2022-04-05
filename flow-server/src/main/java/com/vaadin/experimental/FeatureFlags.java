@@ -60,13 +60,13 @@ public class FeatureFlags implements Serializable {
             "Map component (Pro)", "mapComponent",
             "https://github.com/vaadin/platform/issues/2611", true,
             "com.vaadin.flow.component.map.Map");
-            public static final Feature SPREADSHEET_COMPONENT = new Feature(
-                "Spreadsheet component (Pro)", "spreadsheetComponent",
-                "https://github.com/vaadin/platform/issues/2027", true,
-                "com.vaadin.flow.component.spreadsheet.Spreadsheet");
-                public static final Feature HILLA_PUSH = new Feature(
-                        "Push support in Hilla", "hillaPush",
-                        "https://github.com/vaadin/hilla/issues/56", true, null);
+    public static final Feature SPREADSHEET_COMPONENT = new Feature(
+            "Spreadsheet component (Pro)", "spreadsheetComponent",
+            "https://github.com/vaadin/platform/issues/2027", true,
+            "com.vaadin.flow.component.spreadsheet.Spreadsheet");
+    public static final Feature HILLA_PUSH = new Feature(
+            "Push support in Hilla", "hillaPush",
+            "https://github.com/vaadin/hilla/issues/56", true, null);
     private List<Feature> features = new ArrayList<>();
 
     File propertiesFolder = null;
