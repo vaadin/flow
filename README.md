@@ -4,11 +4,11 @@ Vaadin Flow
 ======
 *[Vaadin Flow](https://vaadin.com/flow) is the Java framework of Vaadin Platform for building modern web sites that look great, perform well and make you and your users happy.*
 
-**For instructions about developing web applications with Vaadin Flow**, please refer to [the starter packs for Vaadin 14 with Flow](https://vaadin.com/start) or [the documentation](https://vaadin.com/docs/flow/Overview.html).
+**For instructions about developing web applications with Vaadin Flow**, please refer to [the documentation](https://vaadin.com/docs/latest/flow/overview).
 
 **To contribute, first refer to [Contribution Guide](/CONTRIBUTING.md) for general instructions and requirements for contributing code to Flow.**
 
-**For issues related to [Vaadin Fusion](https://vaadin.com/fusion), please refer to the https://github.com/vaadin/fusion repository.**
+**For issues related to [Hilla](https://hilla.dev/), please refer to the https://github.com/vaadin/hilla repository.**
 
 Join Vaadin Flow community chat in https://discord.gg/MYFq5RTbBn
 

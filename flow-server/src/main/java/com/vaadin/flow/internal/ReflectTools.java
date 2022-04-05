@@ -592,6 +592,30 @@ public class ReflectTools implements Serializable {
     }
 
     /**
+     * Finds the Class type for all parameters defined by the generic interface
+     * class extended by given class if exists.
+     *
+     * @param clazz
+     *            class that should extend interface
+     * @param interfaceType
+     *            class type of interface to get generic for
+     * @return List of Class if found else empty List, never {@literal null}
+     */
+    public static List<Class<?>> getGenericInterfaceTypes(Class<?> clazz,
+            Class<?> interfaceType) {
+        return Stream.of(interfaceType.getTypeParameters())
+                .map(typeParam -> GenericTypeReflector.getTypeParameter(clazz,
+                        typeParam))
+                .map(type -> {
+                    if (type instanceof Class
+                            || type instanceof ParameterizedType) {
+                        return GenericTypeReflector.erase(type);
+                    }
+                    return null;
+                }).collect(Collectors.toList());
+    }
+
+    /**
      * Finds a getter for a property in a bean type.
      *
      * @param beanClass
