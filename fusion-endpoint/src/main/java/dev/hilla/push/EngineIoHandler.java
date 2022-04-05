@@ -6,6 +6,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletContextListener;
+import javax.servlet.annotation.WebListener;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -28,14 +31,16 @@ import org.springframework.web.socket.server.HandshakeInterceptor;
 import io.socket.engineio.server.EngineIoServer;
 import io.socket.engineio.server.EngineIoWebSocket;
 import io.socket.engineio.server.utils.ParseQS;
+import reactor.core.scheduler.Schedulers;
 
 /**
  * Sets up handles for both http and websocket for engine.io, the low level
  * transport mechansim for socket.io.
  */
 @Controller
-public final class EngineIoHandler
-        implements HandshakeInterceptor, WebSocketHandler {
+@WebListener
+public final class EngineIoHandler implements HandshakeInterceptor,
+        WebSocketHandler, ServletContextListener {
 
     private static final String ATTRIBUTE_ENGINEIO_BRIDGE = "engineIo.bridge";
     private static final String ATTRIBUTE_ENGINEIO_QUERY = "engineIo.query";
@@ -197,5 +202,17 @@ public final class EngineIoHandler
         public Map<String, List<String>> getConnectionHeaders() {
             return mHeaders;
         }
+    }
+
+    @Override
+    public void contextInitialized(ServletContextEvent sce) {
+    }
+
+    @Override
+    public void contextDestroyed(ServletContextEvent sce) {
+        // Cleanup socket.io
+        mEngineIoServer.shutdown();
+        // Cleanup project reactor schedulers
+        Schedulers.shutdownNow();
     }
 }
