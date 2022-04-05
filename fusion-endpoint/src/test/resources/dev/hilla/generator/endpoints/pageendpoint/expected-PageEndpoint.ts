@@ -5,6 +5,7 @@
 */
 // @ts-ignore
 import client from './connect-client.default';
+// @ts-ignore
 import { Subscription } from '@hilla/frontend';
 import type Foo from './dev/hilla/generator/endpoints/pageendpoint/PageEndpoint/Foo';
 function _getPageOfObjects(): Promise<Array<Foo | undefined> | undefined> {

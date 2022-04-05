@@ -5,6 +5,7 @@
 */
 // @ts-ignore
 import client from './connect-client.default';
+// @ts-ignore
 import { Subscription } from '@hilla/frontend';
 import type Pageable from './dev/hilla/mappedtypes/Pageable';
 function _getPageable(): Promise<Pageable | undefined> {

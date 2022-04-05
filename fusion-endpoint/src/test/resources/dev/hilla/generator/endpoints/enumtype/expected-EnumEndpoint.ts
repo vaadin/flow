@@ -6,6 +6,7 @@
 
 // @ts-ignore
 import client from './connect-client.default';
+// @ts-ignore
 import { Subscription } from '@hilla/frontend';
 import type MyEnum from './dev/hilla/generator/endpoints/enumtype/EnumEndpoint/MyEnum';
 

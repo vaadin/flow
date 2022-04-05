@@ -8,6 +8,7 @@
 
 // @ts-ignore
 import client from './connect-client.default';
+// @ts-ignore
 import { Subscription } from '@hilla/frontend';
 
 function _anonymousAllowed(): Promise<void> {

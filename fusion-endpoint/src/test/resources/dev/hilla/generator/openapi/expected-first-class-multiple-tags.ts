@@ -6,6 +6,7 @@
 
 // @ts-ignore
 import client from './connect-client.default';
+// @ts-ignore
 import { Subscription } from '@hilla/frontend';
 import type User from './User';
 
