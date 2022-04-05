@@ -16,23 +16,15 @@
 package com.vaadin.flow.connect;
 
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.router.BeforeEvent;
-import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.WildcardParameter;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 
-@Route(value = "")
+@Route(value = "flux")
 @AnonymousAllowed
-public class MainView extends Div implements HasUrlParameter<String> {
+public class FluxView extends Div {
 
-    public MainView() {
-        add(new TestComponent());
+    public FluxView() {
+        add(new FluxComponent());
     }
 
-    @Override
-    public void setParameter(BeforeEvent event,
-            @WildcardParameter String parameter) {
-        // no op. Implement HasUrlParameter to test deeper levels of url.
-    }
 }
