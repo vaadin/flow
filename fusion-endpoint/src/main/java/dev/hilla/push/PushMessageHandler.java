@@ -16,6 +16,7 @@ import com.vaadin.flow.server.VaadinServletContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -107,7 +108,12 @@ public class PushMessageHandler {
 
         Authentication authentication = SecurityContextHolder.getContext()
                 .getAuthentication();
-        Principal principal = authentication;
+        Principal principal;
+        if (authentication instanceof AnonymousAuthenticationToken) {
+            principal = null;
+        } else {
+            principal = authentication;
+        }
         Function<String, Boolean> isInRole = role -> {
             return authentication.getAuthorities().stream()
                     .anyMatch(grantedAuthority -> grantedAuthority
