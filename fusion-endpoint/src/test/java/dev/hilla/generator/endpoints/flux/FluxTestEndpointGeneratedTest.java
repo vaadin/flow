@@ -23,14 +23,14 @@ import org.junit.Test;
 import dev.hilla.generator.endpoints.AbstractEndpointGenerationTest;
 
 public class FluxTestEndpointGeneratedTest
-                extends AbstractEndpointGenerationTest {
+        extends AbstractEndpointGenerationTest {
 
-        public FluxTestEndpointGeneratedTest() {
-                super(Arrays.asList(FluxTestEndpoint.class));
-        }
+    public FluxTestEndpointGeneratedTest() {
+        super(Arrays.asList(FluxTestEndpoint.class));
+    }
 
-        @Test
-        public void shouldGenerateSubscriptionForFlux() {
-                verifyOpenApiObjectAndGeneratedTs();
-        }
+    @Test
+    public void shouldGenerateSubscriptionForFlux() {
+        verifyOpenApiObjectAndGeneratedTs();
+    }
 }

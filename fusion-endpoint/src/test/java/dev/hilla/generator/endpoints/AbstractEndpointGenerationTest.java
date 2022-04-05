@@ -428,10 +428,10 @@ public abstract class AbstractEndpointGenerationTest
                                 .isAssignableFrom(expectedSchemaClass)));
             } else if (actualSchema instanceof ArraySchema) {
                 if (expectedSchemaClass == Flux.class) {
-                        assertSchema(((ArraySchema) actualSchema).getItems(),
-                                typeArguments.values().iterator().next(),
-                                typeArguments);
-                }else                 if (expectedSchemaClass.isArray()) {
+                    assertSchema(((ArraySchema) actualSchema).getItems(),
+                            typeArguments.values().iterator().next(),
+                            typeArguments);
+                } else if (expectedSchemaClass.isArray()) {
                     assertSchema(((ArraySchema) actualSchema).getItems(),
                             expectedSchemaClass.getComponentType(),
                             typeArguments);
