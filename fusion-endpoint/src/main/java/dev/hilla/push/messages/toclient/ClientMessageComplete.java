@@ -8,10 +8,6 @@ public class ClientMessageComplete extends AbstractClientMessage {
         super(id);
     }
 
-    public boolean isDone() {
-        return true;
-    }
-
     @Override
     public String toString() {
         return "ClientMessageComplete  [id=" + getId() + "]";
