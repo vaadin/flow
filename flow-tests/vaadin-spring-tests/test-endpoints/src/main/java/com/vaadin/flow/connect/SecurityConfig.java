@@ -13,9 +13,7 @@ public class SecurityConfig extends VaadinWebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        // http.authorizeRequests().antMatchers("/flux").permitAll().antMatchers("/").permitAll();
         super.configure(http);
-        // Use default spring login form
         http.csrf().ignoringAntMatchers("/login");
         setLoginView(http, "/login");
     }
