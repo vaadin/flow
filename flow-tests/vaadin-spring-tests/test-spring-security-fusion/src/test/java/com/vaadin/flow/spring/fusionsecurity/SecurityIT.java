@@ -394,11 +394,7 @@ public class SecurityIT extends ChromeBrowserTest {
         String timeBefore = getPublicView().findElement(By.id("time"))
                 .getText();
         Assert.assertNotNull(timeBefore);
-        try {
-            getPublicView().callFunction("updateTime");
-        } catch (StaleElementReferenceException e) {
-            // Page reload causes the exception, ignore
-        }
+        executeScript("document.querySelector('public-view').updateTime()");
         String timeAfter = getPublicView().findElement(By.id("time")).getText();
         Assert.assertNotNull(timeAfter);
         Assert.assertNotEquals(timeAfter, timeBefore);
