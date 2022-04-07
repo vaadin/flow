@@ -607,7 +607,7 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
             String response) throws Exception {
         try {
             HttpServer httpServer = HttpServer
-                    .create(new InetSocketAddress(port), 0);
+                    .create(new InetSocketAddress("localhost", 0), 0);
             httpServer.createContext("/", exchange -> {
                 exchange.sendResponseHeaders(status, response.length());
                 exchange.getResponseBody().write(response.getBytes());
