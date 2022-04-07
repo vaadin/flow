@@ -25,6 +25,8 @@ import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 
+import org.slf4j.LoggerFactory;
+
 /**
  * Calculate the available port range for linux system or the default fixed
  * range if ip_local_port_range not defined.
@@ -67,6 +69,8 @@ public class LinuxEphemeralPortRangeDetector
             lowPort = Integer.parseInt(split[0]);
             highPort = Integer.parseInt(split[1]);
         } catch (IOException | NullPointerException ignore) {
+            LoggerFactory.getLogger("PortRangeDetector")
+                    .trace("Failed to read input", ignore);
         }
         firstEphemeralPort = lowPort;
         lastEphemeralPort = highPort;

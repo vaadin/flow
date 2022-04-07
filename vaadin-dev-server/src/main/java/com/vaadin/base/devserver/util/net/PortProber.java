@@ -23,6 +23,9 @@ import java.net.ServerSocket;
 import java.net.UnknownHostException;
 import java.util.Random;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.server.frontend.installer.Platform;
 
 /**
@@ -124,21 +127,35 @@ public class PortProber {
     }
 
     private static int checkPortIsFree(int port) {
+        int validPort = -1;
         try (ServerSocket socket = new ServerSocket()) {
             socket.setReuseAddress(true);
             socket.bind(new InetSocketAddress("localhost", port));
 
-            return socket.getLocalPort();
+            validPort = socket.getLocalPort();
         } catch (IOException e) {
+            // Can not bind port as it is in use
+            getLogger().trace("Port '{}' in use for localhost.", port);
+            return -1;
         }
         try (ServerSocket ipv4socket = new ServerSocket()) {
             ipv4socket.bind(new InetSocketAddress(ipv4All, port));
         } catch (IOException e) {
+            // Can not bind port as it is in use in an ipv4 interface
+            getLogger().trace("Port '{}' in use for ipv4 interface.", port);
+            return -1;
         }
         try (ServerSocket ipv6socket = new ServerSocket()) {
             ipv6socket.bind(new InetSocketAddress(ipv6All, port));
         } catch (IOException e) {
+            // Can not bind port as it is in use in an ipv6 interface
+            getLogger().trace("Port '{}' in use for ipv6 interface.", port);
+            return -1;
         }
-        return -1;
+        return validPort;
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(PortProber.class);
     }
 }
