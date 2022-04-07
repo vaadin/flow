@@ -86,6 +86,11 @@ public class BrowserDetailsTest extends TestCase {
 
     private static final String EDGE_18 = "Mozilla/5.0 (Windows NT 10.0; Win64; x64; ServiceUI 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.140 Safari/537.36 Edge/18.17763";
     private static final String EDGE_79 = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/79.0.3945.130 Safari/537.36 Edg/79.0.309.71";
+    private static final String EDGE_100 = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.60 Safari/537.36 Edg/100.0.1185.29";
+
+    private static final String EDGE_99_MAC = "Mozilla/5.0 (Macintosh; Intel Mac OS X 12_3_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.75 Safari/537.36 Edg/99.0.1150.36";
+    private static final String EDGE_97_ANDROID = "Mozilla/5.0 (Linux; Android 10; Pixel 3 XL) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.79 Mobile Safari/537.36 EdgA/97.0.1072.69";
+    private static final String EDGE_97_IOS = "Mozilla/5.0 (iPhone; CPU iPhone OS 15_4_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/15.0 EdgiOS/97.1072.69 Mobile/15E148 Safari/605.1.15";
 
     private static final String GOOGLE_APP_IPHONE_14_7 = "Mozilla/5.0 (iPhone; CPU iPhone OS 14_7 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) GSA/117.0.321844219 Mobile/15E148 Safari/604.1";
 
@@ -551,6 +556,38 @@ public class BrowserDetailsTest extends TestCase {
         assertBrowserMajorVersion(bd, 12);
         assertBrowserMinorVersion(bd, 10240);
         assertWindows(bd, false);
+    }
+
+    public void testEdgeWindows11() {
+        BrowserDetails bd = new BrowserDetails(EDGE_100);
+        assertEdge(bd);
+        assertBrowserMajorVersion(bd, 100);
+        assertBrowserMinorVersion(bd, 0);
+        assertWindows(bd, false);
+    }
+
+    public void testEdgeMac() {
+        BrowserDetails bd = new BrowserDetails(EDGE_99_MAC);
+        assertEdge(bd);
+        assertBrowserMajorVersion(bd, 99);
+        assertBrowserMinorVersion(bd, 0);
+        assertMacOSX(bd);
+    }
+
+    public void testEdgeAndroid() {
+        BrowserDetails bd = new BrowserDetails(EDGE_97_ANDROID);
+        assertEdge(bd);
+        assertBrowserMajorVersion(bd, 97);
+        assertBrowserMinorVersion(bd, 0);
+        assertAndroid(bd, 10, -1);
+    }
+
+    public void testEdgeIOS() {
+        BrowserDetails bd = new BrowserDetails(EDGE_97_IOS);
+        assertEdge(bd);
+        assertBrowserMajorVersion(bd, 97);
+        assertBrowserMinorVersion(bd, 1072);
+        assertIPhone(bd);
     }
 
     public void testTooOldBrowsers() {
