@@ -52,6 +52,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.sun.net.httpserver.HttpServer;
+
+import com.vaadin.base.devserver.util.net.PortProber;
 import com.vaadin.base.devserver.startup.AbstractDevModeTest;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
@@ -606,8 +608,8 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
     public static HttpServer createStubWebpackTcpListener(int port, int status,
             String response) throws Exception {
         try {
-            HttpServer httpServer = HttpServer
-                    .create(new InetSocketAddress("localhost", 0), 0);
+            HttpServer httpServer = HttpServer.create(new InetSocketAddress(
+                    port >= 0 ? port : PortProber.findFreePort()), 0);
             httpServer.createContext("/", exchange -> {
                 exchange.sendResponseHeaders(status, response.length());
                 exchange.getResponseBody().write(response.getBytes());

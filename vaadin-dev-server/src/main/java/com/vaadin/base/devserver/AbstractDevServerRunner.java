@@ -41,6 +41,7 @@ import javax.servlet.http.HttpServletResponse;
 import com.vaadin.base.devserver.DevServerOutputTracker.Result;
 import com.vaadin.base.devserver.stats.DevModeUsageStatistics;
 import com.vaadin.base.devserver.stats.StatisticsConstants;
+import com.vaadin.base.devserver.util.net.PortProber;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
@@ -495,13 +496,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
      * @return a port number which is not busy
      */
     static int getFreePort() {
-        try (ServerSocket s = new ServerSocket(0)) {
-            s.setReuseAddress(true);
-            return s.getLocalPort();
-        } catch (IOException e) {
-            throw new IllegalStateException(
-                    "Unable to find a free port for running the dev server", e);
-        }
+        return PortProber.findFreePort();
     }
 
     /**
