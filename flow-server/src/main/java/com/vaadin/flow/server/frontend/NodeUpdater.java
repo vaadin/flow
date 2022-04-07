@@ -388,7 +388,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         final String WORKBOX_VERSION = "6.5.0";
 
         if (featureFlags.isEnabled(FeatureFlags.VITE)) {
-            defaults.put("vite", "v2.8.6");
+            defaults.put("vite", "v2.9.1");
             defaults.put("rollup-plugin-brotli", "3.1.0");
             defaults.put("vite-plugin-checker", "0.3.4");
             defaults.put("mkdirp", "1.0.4"); // for application-theme-plugin
