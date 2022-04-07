@@ -122,7 +122,12 @@
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
         </dependency>
-
+        <!-- Overrides the dependency version of httpclient -->
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.15</version>
+        </dependency>
         <!-- TESTING DEPENDENCIES -->
         <dependency>
             <groupId>org.hsqldb</groupId>
