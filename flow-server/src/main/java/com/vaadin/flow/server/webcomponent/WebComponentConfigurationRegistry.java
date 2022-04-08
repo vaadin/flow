@@ -244,7 +244,7 @@ public class WebComponentConfigurationRegistry implements Serializable {
      *
      * @return copy of shadow dom elements
      */
-    public List<Element> getShadowDomElements() {
+    public List<Element> getChildElements() {
         lock();
         try {
             if (bootstrapElements != null) {

@@ -98,6 +98,8 @@ public abstract class WebComponentExporter<C extends Component>
 
     private boolean isConfigureInstanceCall;
 
+    private boolean shadowRoot = true;
+
     /**
      * Creates a new {@code WebComponentExporter} instance and configures the
      * tag name of the web component created based on this exporter.
@@ -123,6 +125,11 @@ public abstract class WebComponentExporter<C extends Component>
                     getClass().getName(),
                     WebComponentExporter.class.getSimpleName()));
         }
+    }
+
+    protected WebComponentExporter(String tag, boolean shadowRoot) {
+        this(tag);
+        this.shadowRoot = shadowRoot;
     }
 
     private <P extends Serializable> PropertyConfiguration<C, P> addProperty(
@@ -293,6 +300,10 @@ public abstract class WebComponentExporter<C extends Component>
         return tag;
     }
 
+    public boolean isShadowRoot() {
+        return shadowRoot;
+    }
+
     private static boolean isSupportedType(Class clazz) {
         return SUPPORTED_TYPES.contains(clazz);
     }
@@ -407,6 +418,11 @@ public abstract class WebComponentExporter<C extends Component>
         @Override
         public String getTag() {
             return this.exporter.getTag();
+        }
+
+        @Override
+        public boolean isShadowRoot() {
+            return this.exporter.isShadowRoot();
         }
 
         @Override

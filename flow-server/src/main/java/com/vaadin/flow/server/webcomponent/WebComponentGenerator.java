@@ -146,7 +146,8 @@ public class WebComponentGenerator {
                 .getPropertyDataSet();
 
         Map<String, String> replacements = getReplacementsMap(
-                webComponentConfiguration.getTag(), propertyDataSet,
+                webComponentConfiguration.getTag(),
+                webComponentConfiguration.isShadowRoot(), propertyDataSet,
                 frontendURI, generateUiImport, themeName);
 
         String template = getTemplate(compatibilityMode);
@@ -158,6 +159,7 @@ public class WebComponentGenerator {
     }
 
     static Map<String, String> getReplacementsMap(String tag,
+            boolean shadowRoot,
             Set<PropertyData<? extends Serializable>> propertyDataSet,
             String frontendURI, boolean generateUiImport, String themeName) {
         Map<String, String> replacements = new HashMap<>();
@@ -190,6 +192,7 @@ public class WebComponentGenerator {
                         ? "<link rel='import' href='web-component-ui.html'>"
                         : "");
 
+        replacements.put("UseShadowRoot", Boolean.toString(shadowRoot));
         return replacements;
     }
 

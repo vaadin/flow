@@ -114,4 +114,6 @@ public interface WebComponentConfiguration<C extends Component>
      * @return web component exporter class
      */
     Class<? extends WebComponentExporter<C>> getExporterClass();
+
+    boolean isShadowRoot();
 }

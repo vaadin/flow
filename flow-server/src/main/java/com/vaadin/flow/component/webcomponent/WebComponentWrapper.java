@@ -65,8 +65,14 @@ public class WebComponentWrapper extends Component {
                 "Parameter 'binding' must not be null!");
 
         webComponentBinding = binding;
-        getElement().attachShadow()
-                .appendChild(webComponentBinding.getComponent().getElement());
+        if (binding.isShadowRoot()) {
+            getElement().attachShadow().appendChild(
+                    webComponentBinding.getComponent().getElement());
+        } else {
+            getElement().appendChild(
+                    webComponentBinding.getComponent().getElement());
+        }
+
     }
 
     /**

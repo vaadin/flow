@@ -47,7 +47,7 @@ public class WebComponentGeneratorTest {
         MyComponentExporter exporter = new MyComponentExporter();
 
         Map<String, String> replacementsMap = WebComponentGenerator
-                .getReplacementsMap("my-component",
+                .getReplacementsMap("my-component", true,
                         new WebComponentExporter.WebComponentConfigurationFactory()
                                 .create(exporter).getPropertyDataSet(),
                         "/foo", generateUi, null);

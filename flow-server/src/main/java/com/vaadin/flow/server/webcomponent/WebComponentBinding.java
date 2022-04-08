@@ -49,6 +49,7 @@ public final class WebComponentBinding<C extends Component>
         implements Serializable {
     private C component;
     private HashMap<String, PropertyBinding<? extends Serializable>> properties = new HashMap<>();
+    private boolean shadowRoot;
 
     /**
      * Constructs a new {@code WebComponentBinding}. The bound {@link Component}
@@ -322,5 +323,9 @@ public final class WebComponentBinding<C extends Component>
             }
             return false;
         }
+    }
+
+    public boolean isShadowRoot() {
+        return false;
     }
 }

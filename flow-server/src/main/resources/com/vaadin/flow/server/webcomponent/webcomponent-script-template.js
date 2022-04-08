@@ -4,16 +4,21 @@ _ThemeImport_class _TagCamel_ extends HTMLElement {
     this._propertyUpdatedFromServer = {};
     this.$ = {};
     this.initDefaults();
-    var shadow = this.attachShadow({ mode: "open" });
-    var style = document.createElement("style");
-    style.innerHTML = `
-      :host {
-        position: relative;
-        display: inline-block;
-      }
-    `;
-    _ApplyTheme_shadow.appendChild(style);
-    shadow.appendChild(document.createElement("slot"));
+    if (_UseShadowRoot_) {
+      var shadow = this.attachShadow({ mode: "open" });
+      var style = document.createElement("style");
+      style.innerHTML = `
+        :host {
+          position: relative;
+          display: inline-block;
+        }
+      `;
+      _ApplyTheme_shadow.appendChild(style);
+      shadow.appendChild(document.createElement("slot"));
+    } else {
+      this.style.position = 'relative';
+      this.style.display = 'inline-block';
+    }
 
     var self = this;
     /* Set initial property values from attributes */
