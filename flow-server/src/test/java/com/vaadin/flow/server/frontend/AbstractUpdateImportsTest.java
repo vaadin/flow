@@ -49,11 +49,11 @@ import org.slf4j.Logger;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.frontend.NodeTestComponents.SimpleCssImport;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.CssData;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
@@ -77,6 +77,12 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
+
+    @Route(value = "simplecss")
+    @CssImport("./foo.css")
+    public static class SimpleCssImport extends Component {
+
+    }
 
     private File tmpRoot;
     private File generatedPath;
