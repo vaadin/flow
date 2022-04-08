@@ -6,8 +6,8 @@ import java.nio.charset.Charset;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.sun.net.httpserver.HttpServer;
 
-import com.vaadin.base.devserver.util.net.PortProber;
 import com.vaadin.flow.testutil.TestUtils;
+import com.vaadin.flow.testutil.net.PortProber;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.After;

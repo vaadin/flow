@@ -14,7 +14,7 @@
 // KIND, either express or implied.  See the License for the
 // specific language governing permissions and limitations
 // under the License.
-package com.vaadin.base.devserver.util.net;
+package com.vaadin.flow.testutil.net;
 
 import java.io.BufferedReader;
 import java.io.File;

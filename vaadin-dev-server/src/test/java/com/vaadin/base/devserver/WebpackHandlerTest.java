@@ -53,7 +53,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.sun.net.httpserver.HttpServer;
 
-import com.vaadin.base.devserver.util.net.PortProber;
 import com.vaadin.base.devserver.startup.AbstractDevModeTest;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
@@ -62,6 +61,8 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.testutil.net.PortProber;
+
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.Matchers;
