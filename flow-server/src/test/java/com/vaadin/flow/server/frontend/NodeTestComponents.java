@@ -111,6 +111,11 @@ public class NodeTestComponents extends NodeUpdateTestUtil {
     public static class FlatImport extends Component {
     }
 
+    @CssImport("./foo.css")
+    public static class SimpleCssImport extends Component {
+
+    }
+
     @JsModule("@vaadin/vaadin-mixed-component/src/vaadin-mixed-component.js")
     @JsModule("@vaadin/vaadin-mixed-component/src/vaadin-something-else.js")
     @JsModule("@vaadin/vaadin-mixed-component/src/vaadin-something-else")

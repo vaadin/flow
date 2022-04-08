@@ -53,6 +53,7 @@ import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.frontend.NodeTestComponents.SimpleCssImport;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.CssData;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
@@ -434,6 +435,23 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         NodeTestComponents.TranslatedImports translatedImports;
         NodeTestComponents.LocalP3Template localP3Template;
         NodeTestComponents.JavaScriptOrder javaScriptOrder;
+    }
+
+    @Test
+    public void plainCssImportWorks() throws MalformedURLException {
+        Class<?>[] testClasses = { SimpleCssImport.class };
+        ClassFinder classFinder = getClassFinder(testClasses);
+
+        updater = new UpdateImports(classFinder, getScanner(classFinder),
+                tmpRoot, new File(tmpRoot, TOKEN_FILE), true);
+        updater.run();
+
+        Assert.assertTrue("Should import unsafeCSS",
+                updater.getCssLines().stream()
+                        .anyMatch(line -> line.matches("import.*unsafeCSS.*")));
+        Assert.assertTrue("Should use unsafeCSS",
+                updater.getCssLines().stream().anyMatch(line -> line
+                        .matches(".*unsafeCSS\\(\\$cssFromFile_.*")));
     }
 
     @Test
