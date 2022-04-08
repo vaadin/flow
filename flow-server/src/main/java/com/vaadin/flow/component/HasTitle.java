@@ -18,15 +18,18 @@ package com.vaadin.flow.component;
 import java.util.Optional;
 
 /**
- * A title, better known as a tool-tip is a textual hint that is displayed by browsers when the mouse pointer
- * is hovering over it; note that this implies that mobile browsers will not display this.
+ * A title, better known as a tool-tip is a textual hint that is displayed by
+ * browsers when the mouse pointer is hovering over it; note that this implies
+ * that mobile browsers will not display this.
  *
- * Also, for accessibility reasons, relying on the title attribute is currently discouraged as many user
- * agents do not expose the attribute in an accessible manner as required by this specification (e.g., requiring
- * a pointing device such as a mouse to cause a tooltip to appear, which excludes keyboard-only users and
- * touch-only users, such as anyone with a modern phone or tablet).
+ * Also, for accessibility reasons, relying on the title attribute is currently
+ * discouraged as many user agents do not expose the attribute in an accessible
+ * manner as required by this specification (e.g., requiring a pointing device
+ * such as a mouse to cause a tooltip to appear, which excludes keyboard-only
+ * users and touch-only users, such as anyone with a modern phone or tablet).
  *
- * Any HTML element may have the 'title' attribute specified on it, see https://html.spec.whatwg.org/multipage/dom.html#global-attributes .
+ * Any HTML element may have the 'title' attribute specified on it, see
+ * https://html.spec.whatwg.org/multipage/dom.html#global-attributes .
  */
 public interface HasTitle extends HasElement {
     /**
@@ -39,7 +42,8 @@ public interface HasTitle extends HasElement {
      *            previously set title
      */
     default void setTitle(String title) {
-        final PropertyDescriptor<String, Optional<String>> titleDescriptor = PropertyDescriptors.optionalAttributeWithDefault("title", "");
+        final PropertyDescriptor<String, Optional<String>> titleDescriptor = PropertyDescriptors
+                .optionalAttributeWithDefault("title", "");
         titleDescriptor.set(getElement(), title);
     }
 
@@ -51,8 +55,9 @@ public interface HasTitle extends HasElement {
      * @return an optional title, or an empty optional if no title has been set
      *
      */
-    default Optional<String> getTitle(){
-        final PropertyDescriptor<String, Optional<String>> titleDescriptor = PropertyDescriptors.optionalAttributeWithDefault("title", "");
+    default Optional<String> getTitle() {
+        final PropertyDescriptor<String, Optional<String>> titleDescriptor = PropertyDescriptors
+                .optionalAttributeWithDefault("title", "");
         return titleDescriptor.get(getElement());
     }
 }
