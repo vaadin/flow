@@ -55,6 +55,7 @@ public class ScopesIT extends AbstractSpringTest {
     @Test
     public void checkUiScope() throws Exception {
         getDriver().get(getTestURL() + "ui-scope");
+        waitForDevServer();
 
         String mainId = findElement(By.id("main")).getText();
 
