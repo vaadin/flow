@@ -90,7 +90,7 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}</version>
+            <version>${jackson.databind.version}</version>
         </dependency>
 
         <!-- Jsoup for BootstrapHandler, Template, ... -->
@@ -139,7 +139,12 @@
             <artifactId>httpclient</artifactId>
             <version>4.5.13</version>
         </dependency>
-
+        <!-- Overrides the dependency version of httpclient -->
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.15</version>
+        </dependency>
         <!-- TESTING DEPENDENCIES -->
         <dependency>
             <groupId>com.vaadin</groupId>
