@@ -138,10 +138,12 @@
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
             <version>4.5.13</version>
-            <exclusion>
-                <groupId>commons-codec</groupId>
-                <artifactId>commons-codec</artifactId>
-            </exclusion>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-codec</groupId>
+                    <artifactId>commons-codec</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- Overrides the dependency version of httpclient -->
         <dependency>
