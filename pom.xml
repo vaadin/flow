@@ -85,7 +85,7 @@
         <!-- Dependencies -->
         <spring.version>5.3.18</spring.version>
         <spring.boot.version>2.6.6</spring.boot.version>
-        <gwt.version>2.8.2</gwt.version>
+        <gwt.version>2.9.0</gwt.version>
         <hibernate.validator.version>6.2.3.Final</hibernate.validator.version>
         <slf4j.version>1.7.36</slf4j.version>
         <polymer.version>2.6.1</polymer.version>
@@ -132,7 +132,7 @@
 
         <!-- This property is needed to allow some Win-specific unit tests -->
         <!-- to be disabled via system property in CI until they got fixed -->
-        <exclude.windows.failed.tests></exclude.windows.failed.tests>
+        <exclude.windows.failed.tests/>
 
         <testListener>com.vaadin.flow.testutil.CurrentInstanceCleaner</testListener>
 
@@ -591,7 +591,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <ignore></ignore>
+                                        <ignore/>
                                     </action>
                                 </pluginExecution>
                                 <pluginExecution>
@@ -604,7 +604,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <ignore></ignore>
+                                        <ignore/>
                                     </action>
                                 </pluginExecution>
                                 <pluginExecution>
@@ -617,7 +617,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <ignore></ignore>
+                                        <ignore/>
                                     </action>
                                 </pluginExecution>
                             </pluginExecutions>
@@ -685,15 +685,15 @@
         <profile>
             <id>all-tests</id>
             <properties>
-                <groups></groups>
-                <excludedGroups></excludedGroups>
+                <groups/>
+                <excludedGroups/>
             </properties>
         </profile>
         <profile>
             <id>slow-tests</id>
             <properties>
                 <groups>com.vaadin.flow.testcategory.SlowTests</groups>
-                <excludedGroups></excludedGroups>
+                <excludedGroups/>
             </properties>
         </profile>
         <profile>
@@ -703,9 +703,9 @@
                 <sonar.organization>vaadin</sonar.organization>
                 <sonar.host.url>https://sonarcloud.io</sonar.host.url>
                 <!-- override properties for legacy sonar instance -->
-                <sonar.analysis.mode></sonar.analysis.mode>
-                <sonar.issuesReport.console.enable></sonar.issuesReport.console.enable>
-                <sonar.issuesReport.html.enable></sonar.issuesReport.html.enable>
+                <sonar.analysis.mode/>
+                <sonar.issuesReport.console.enable/>
+                <sonar.issuesReport.html.enable/>
             </properties>
         </profile>
     </profiles>
