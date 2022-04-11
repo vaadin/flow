@@ -58,7 +58,7 @@ public class FeatureFlags implements Serializable {
             "https://github.com/vaadin/platform/issues/2448", true, null);
     public static final Feature MAP_COMPONENT = new Feature(
             "Map component (Pro)", "mapComponent",
-            "https://github.com/vaadin/platform/issues/2611", true,
+            "https://vaadin.com/docs/latest/ds/components/map", true,
             "com.vaadin.flow.component.map.Map");
 
     private List<Feature> features = new ArrayList<>();
