@@ -105,16 +105,18 @@ public class MapSyncRpcHandler extends AbstractRpcInvocationHandler {
         } else {
             final Logger logger = LoggerFactory
                     .getLogger(MapSyncRpcHandler.class);
-            if (node.getFeatureIfInitialized(ElementPropertyMap.class)
-                    .map(feat -> feat.getProperty(property))
-                    .orElse(null) != null) {
+            Optional<Serializable> featureProperty =
+                    node.getFeatureIfInitialized(ElementPropertyMap.class)
+                        .map(feat -> feat.getProperty(property));
+            if (featureProperty.isPresent()) {
                 logger.warn(
                         "Property update request for disabled element is received from the client side. "
                                 + "The property is '{}'. Request is ignored.",
                         property);
             } else {
                 logger.debug(
-                        "Ignored property '{}' change for disabled element. Most likely client sent the default value as no value has been set for the property.",
+                        "Ignored property '{}' change for disabled element. Most likely client sent the "
+                                + "default value as no value has been set for the property.",
                         property);
             }
         }
