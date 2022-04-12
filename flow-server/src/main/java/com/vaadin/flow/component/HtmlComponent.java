@@ -27,9 +27,6 @@ import com.vaadin.flow.dom.Element;
  * @since 1.0
  */
 public class HtmlComponent extends Component implements HasSize, HasStyle {
-    private static final PropertyDescriptor<String, Optional<String>> titleDescriptor = PropertyDescriptors
-            .optionalAttributeWithDefault("title", "");
-
     /**
      * Creates a component with the element type based on the {@link Tag}
      * annotation of the sub class.
