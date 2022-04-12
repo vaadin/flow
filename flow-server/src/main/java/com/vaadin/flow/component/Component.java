@@ -49,7 +49,7 @@ import com.vaadin.flow.shared.Registration;
  * @since 1.0
  */
 public abstract class Component
-        implements HasElement, AttachNotifier, DetachNotifier {
+        implements HasElement, HasTitle, AttachNotifier, DetachNotifier {
 
     /**
      * Encapsulates data required for mapping a new component instance to an

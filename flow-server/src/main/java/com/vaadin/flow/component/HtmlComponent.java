@@ -27,9 +27,6 @@ import com.vaadin.flow.dom.Element;
  * @since 1.0
  */
 public class HtmlComponent extends Component implements HasSize, HasStyle {
-    private static final PropertyDescriptor<String, Optional<String>> titleDescriptor = PropertyDescriptors
-            .optionalAttributeWithDefault("title", "");
-
     /**
      * Creates a component with the element type based on the {@link Tag}
      * annotation of the sub class.
@@ -49,30 +46,4 @@ public class HtmlComponent extends Component implements HasSize, HasStyle {
     public HtmlComponent(String tagName) {
         super(new Element(tagName));
     }
-
-    /**
-     * Sets the title of this component. Browsers typically use the title to
-     * show a tooltip when hovering an element or any descendant without a title
-     * value of its own.
-     *
-     * @param title
-     *            the title value to set, or <code>""</code> to remove any
-     *            previously set title
-     */
-    public void setTitle(String title) {
-        set(titleDescriptor, title);
-    }
-
-    /**
-     * Gets the title of this component.
-     *
-     * @see #setTitle(String)
-     *
-     * @return an optional title, or an empty optional if no title has been set
-     *
-     */
-    public Optional<String> getTitle() {
-        return get(titleDescriptor);
-    }
-
 }
