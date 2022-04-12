@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Calculate the available port range for linux system or the default fixed
- * range if ip_local_port_range not defined.
+ * range if ip_local_port_range is not defined.
  * <p>
  * Derived from SeleniumHQ / selenium
  * <p>

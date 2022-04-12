@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.server.frontend.installer.Platform;
 
 /**
- * Class for determining a free localhost port that is no used by any ipv4 or
+ * Class for determining a free localhost port that is not used by any ipv4 or
  * ipv6 interfaces.
  * <p>
  * Derived from SeleniumHQ / selenium

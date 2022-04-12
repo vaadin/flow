@@ -17,7 +17,7 @@
 package com.vaadin.flow.testutil.net;
 
 /**
- * Fixed port range for when a defined can not be calculated used.
+ * Fixed port range for when a defined can not be calculated.
  * <p>
  * Derived from SeleniumHQ / selenium
  * <p>

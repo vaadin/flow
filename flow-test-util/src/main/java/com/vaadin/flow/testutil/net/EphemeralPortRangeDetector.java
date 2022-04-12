@@ -40,7 +40,7 @@ public interface EphemeralPortRangeDetector {
     /**
      * Returns the last port that could be searched for free ports
      *
-     * @return The first port that may be free
+     * @return The last port that may be free
      */
     int getHighestEphemeralPort();
 
