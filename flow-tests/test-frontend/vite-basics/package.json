@@ -13,7 +13,7 @@
     "@vaadin/vaadin-text-field": "22.0.0-alpha9",
     "construct-style-sheets-polyfill": "3.0.4",
     "copy-to-clipboard": "^3.3.1",
-    "lit": "2.1.4",
+    "lit": "2.2.1",
     "package-outside-npm": "file:package-outside-npm",
     "package2-outside-npm": "./package2-outside-npm"
   },
