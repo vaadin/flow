@@ -105,9 +105,9 @@ public class MapSyncRpcHandler extends AbstractRpcInvocationHandler {
         } else {
             final Logger logger = LoggerFactory
                     .getLogger(MapSyncRpcHandler.class);
-            Optional<Serializable> featureProperty =
-                    node.getFeatureIfInitialized(ElementPropertyMap.class)
-                        .map(feat -> feat.getProperty(property));
+            Optional<Serializable> featureProperty = node
+                    .getFeatureIfInitialized(ElementPropertyMap.class)
+                    .map(feat -> feat.getProperty(property));
             if (featureProperty.isPresent()) {
                 logger.warn(
                         "Property update request for disabled element is received from the client side. "

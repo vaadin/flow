@@ -381,15 +381,15 @@ public class MapSyncRpcHandlerTest {
         ElementPropertyMap map = mock(ElementPropertyMap.class);
         when(map.getProperty(anyString())).thenReturn(null);
         StateNode disabledNode = mock(StateNode.class);
-        when(disabledNode.getFeatureIfInitialized(ElementPropertyMap
-                .class)).thenReturn(Optional.of(map));
+        when(disabledNode.getFeatureIfInitialized(ElementPropertyMap.class))
+                .thenReturn(Optional.of(map));
         when(disabledNode.isEnabled()).thenReturn(false);
 
         Logger logger = spy(Logger.class);
-        try (MockedStatic<LoggerFactory> mockedLoggerFactory =
-                mockStatic(LoggerFactory.class)) {
-            mockedLoggerFactory.when(() -> LoggerFactory
-                            .getLogger(MapSyncRpcHandler.class))
+        try (MockedStatic<LoggerFactory> mockedLoggerFactory = mockStatic(
+                LoggerFactory.class)) {
+            mockedLoggerFactory.when(
+                    () -> LoggerFactory.getLogger(MapSyncRpcHandler.class))
                     .thenReturn(logger);
 
             new MapSyncRpcHandler().handleNode(disabledNode,
@@ -407,15 +407,15 @@ public class MapSyncRpcHandlerTest {
         ElementPropertyMap map = mock(ElementPropertyMap.class);
         when(map.getProperty(anyString())).thenReturn(NEW_VALUE);
         StateNode disabledNode = mock(StateNode.class);
-        when(disabledNode.getFeatureIfInitialized(ElementPropertyMap
-                .class)).thenReturn(Optional.of(map));
+        when(disabledNode.getFeatureIfInitialized(ElementPropertyMap.class))
+                .thenReturn(Optional.of(map));
         when(disabledNode.isEnabled()).thenReturn(false);
 
         Logger logger = spy(Logger.class);
-        try (MockedStatic<LoggerFactory> mockedLoggerFactory =
-                mockStatic(LoggerFactory.class)) {
-            mockedLoggerFactory.when(() -> LoggerFactory
-                            .getLogger(MapSyncRpcHandler.class))
+        try (MockedStatic<LoggerFactory> mockedLoggerFactory = mockStatic(
+                LoggerFactory.class)) {
+            mockedLoggerFactory.when(
+                    () -> LoggerFactory.getLogger(MapSyncRpcHandler.class))
                     .thenReturn(logger);
 
             new MapSyncRpcHandler().handleNode(disabledNode,
