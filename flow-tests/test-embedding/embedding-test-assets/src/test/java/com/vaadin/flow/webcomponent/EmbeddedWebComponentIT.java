@@ -41,9 +41,6 @@ public class EmbeddedWebComponentIT extends ChromeBrowserTest
 
         TestBenchElement webComponent = $("client-select").first();
 
-        Assert.assertTrue(
-                webComponent.getText().trim().startsWith("Web Component"));
-
         // Selection is visibly changed and event manually dispatched
         // as else the change is not seen.
         getCommandExecutor().executeScript(

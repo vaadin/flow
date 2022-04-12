@@ -85,11 +85,12 @@
         <!-- Dependencies -->
         <spring.version>5.3.18</spring.version>
         <spring.boot.version>2.6.6</spring.boot.version>
-        <gwt.version>2.8.2</gwt.version>
+        <gwt.version>2.9.0</gwt.version>
         <hibernate.validator.version>6.2.3.Final</hibernate.validator.version>
         <slf4j.version>1.7.36</slf4j.version>
         <polymer.version>2.6.1</polymer.version>
         <jackson.version>2.13.2</jackson.version>
+        <jackson.databind.version>2.13.2.2</jackson.databind.version>
         <javax.validation.version>2.0.1.Final</javax.validation.version>
         <javax.annotation.api.version>1.3.2</javax.annotation.api.version>
         <jaxb.version>2.3.6</jaxb.version>
@@ -104,7 +105,8 @@
         <maven.clean.plugin.version>3.1.0</maven.clean.plugin.version>
         <maven.exec.plugin.version>1.6.0</maven.exec.plugin.version>
         <testbench.version>8.0.0</testbench.version>
-        <jetty.version>10.0.8</jetty.version>
+        <webdrivermanager.version>5.1.1</webdrivermanager.version>
+        <jetty.version>10.0.9</jetty.version>
         <properties-maven-plugin.version>1.0.0</properties-maven-plugin.version>
 
         <!-- Frontend -->
@@ -131,7 +133,7 @@
 
         <!-- This property is needed to allow some Win-specific unit tests -->
         <!-- to be disabled via system property in CI until they got fixed -->
-        <exclude.windows.failed.tests></exclude.windows.failed.tests>
+        <exclude.windows.failed.tests/>
 
         <testListener>com.vaadin.flow.testutil.CurrentInstanceCleaner</testListener>
 
@@ -426,7 +428,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-report-plugin</artifactId>
-                <version>3.0.0-M5</version>
+                <version>3.0.0-M6</version>
                 <executions>
                     <execution>
                         <id>unit-tests-report</id>
@@ -590,7 +592,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <ignore></ignore>
+                                        <ignore/>
                                     </action>
                                 </pluginExecution>
                                 <pluginExecution>
@@ -603,7 +605,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <ignore></ignore>
+                                        <ignore/>
                                     </action>
                                 </pluginExecution>
                                 <pluginExecution>
@@ -616,7 +618,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <ignore></ignore>
+                                        <ignore/>
                                     </action>
                                 </pluginExecution>
                             </pluginExecutions>
@@ -684,15 +686,15 @@
         <profile>
             <id>all-tests</id>
             <properties>
-                <groups></groups>
-                <excludedGroups></excludedGroups>
+                <groups/>
+                <excludedGroups/>
             </properties>
         </profile>
         <profile>
             <id>slow-tests</id>
             <properties>
                 <groups>com.vaadin.flow.testcategory.SlowTests</groups>
-                <excludedGroups></excludedGroups>
+                <excludedGroups/>
             </properties>
         </profile>
         <profile>
@@ -702,9 +704,9 @@
                 <sonar.organization>vaadin</sonar.organization>
                 <sonar.host.url>https://sonarcloud.io</sonar.host.url>
                 <!-- override properties for legacy sonar instance -->
-                <sonar.analysis.mode></sonar.analysis.mode>
-                <sonar.issuesReport.console.enable></sonar.issuesReport.console.enable>
-                <sonar.issuesReport.html.enable></sonar.issuesReport.html.enable>
+                <sonar.analysis.mode/>
+                <sonar.issuesReport.console.enable/>
+                <sonar.issuesReport.html.enable/>
             </properties>
         </profile>
     </profiles>

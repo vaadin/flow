@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.server.auth;
 
+import javax.annotation.security.DenyAll;
+import javax.annotation.security.PermitAll;
+import javax.annotation.security.RolesAllowed;
 import javax.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -175,7 +178,7 @@ public class ViewAccessChecker implements BeforeEnterListener {
             if (loginView != null) {
                 beforeEnterEvent.forwardTo(loginView);
             } else {
-                // Prevent the view from being ceated
+                // Prevent the view from being created
                 beforeEnterEvent.rerouteToError(NotFoundException.class);
 
                 if (loginUrl != null) {
@@ -186,14 +189,25 @@ public class ViewAccessChecker implements BeforeEnterListener {
             // Intentionally does not reveal if the route exists
             beforeEnterEvent.rerouteToError(NotFoundException.class);
         } else {
-            beforeEnterEvent.rerouteToError(NotFoundException.class,
-                    "Access denied");
+            String errorMsg = "Access denied";
+            if (isImplicitlyDenyAllAnnotated(targetView)) {
+                errorMsg += ". Consider adding one of the following annotations "
+                        + "to make the view accessible: @AnonymousAllowed, "
+                        + "@PermitAll, @RolesAllowed.";
+            }
+            beforeEnterEvent.rerouteToError(NotFoundException.class, errorMsg);
         }
     }
 
     private boolean isProductionMode(BeforeEnterEvent beforeEnterEvent) {
         return beforeEnterEvent.getUI().getSession().getConfiguration()
                 .isProductionMode();
+    }
+
+    private boolean isImplicitlyDenyAllAnnotated(Class<?> targetView) {
+        return !(targetView.isAnnotationPresent(DenyAll.class)
+                || targetView.isAnnotationPresent(PermitAll.class)
+                || targetView.isAnnotationPresent(RolesAllowed.class));
     }
 
     private Logger getLogger() {
