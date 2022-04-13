@@ -9,8 +9,8 @@
     "@vaadin/common-frontend": "0.0.17",
     "@vaadin/flow-frontend": "./target/flow-frontend",
     "@vaadin/router": "1.7.4",
-    "@vaadin/vaadin-lumo-styles": "23.0.4",
-    "@vaadin/vaadin-text-field": "23.0.4",
+    "@vaadin/vaadin-lumo-styles": "23.0.5",
+    "@vaadin/vaadin-text-field": "23.0.5",
     "construct-style-sheets-polyfill": "3.1.0",
     "copy-to-clipboard": "^3.3.1",
     "lit": "2.2.1",
@@ -34,8 +34,8 @@
       "@polymer/polymer": "3.4.1",
       "@vaadin/common-frontend": "0.0.17",
       "@vaadin/router": "1.7.4",
-      "@vaadin/vaadin-lumo-styles": "23.0.4",
-      "@vaadin/vaadin-text-field": "23.0.4",
+      "@vaadin/vaadin-lumo-styles": "23.0.5",
+      "@vaadin/vaadin-text-field": "23.0.5",
       "construct-style-sheets-polyfill": "3.1.0",
       "lit": "2.2.1"
     },
@@ -51,7 +51,7 @@
       "workbox-core": "6.5.0",
       "workbox-precaching": "6.5.0"
     },
-    "hash": "ad245de5039a9aaf557c24e64ad34e494b87815955108021f32eff30d72882a9"
+    "hash": "dd7f6135a76ebc56eb1e8ea8fa1edf4d0fcf546debe19df1e7e4b25cbf6cbb0c"
   },
   "overrides": {
     "@polymer/polymer": "$@polymer/polymer",

@@ -5,7 +5,7 @@ specifiers:
   '@vaadin/common-frontend': 0.0.17
   '@vaadin/flow-frontend': ./target/flow-frontend
   '@vaadin/router': 1.7.4
-  '@vaadin/vaadin-text-field': 23.0.4
+  '@vaadin/vaadin-text-field': 23.0.5
   chokidar: ^3.5.0
   compression-webpack-plugin: 4.0.1
   construct-style-sheets-polyfill: 3.1.0
@@ -34,7 +34,7 @@ dependencies:
   '@vaadin/common-frontend': 0.0.17_lit@2.2.1
   '@vaadin/flow-frontend': link:target/flow-frontend
   '@vaadin/router': 1.7.4
-  '@vaadin/vaadin-text-field': 23.0.4
+  '@vaadin/vaadin-text-field': 23.0.5
   construct-style-sheets-polyfill: 3.1.0
   lit: 2.2.1
 
@@ -1650,8 +1650,8 @@ packages:
       '@vaadin/vaadin-themable-mixin': 23.0.5
     dev: false
 
-  /@vaadin/vaadin-text-field/23.0.4:
-    resolution: {integrity: sha512-yagkAzcsgIQvqp1PClzRmEyp/GE3ghziL3U0BJRbFOAEj5/6qIo95GXqJlH1SHTNj1HrkIlAnDHtsucosrkK1g==}
+  /@vaadin/vaadin-text-field/23.0.5:
+    resolution: {integrity: sha512-1FQKT3v4UyPbnSqSiPE6haKQnYIBdysr4JG+ch0d2K5TnvIfkaXeHfbLK9+S9gpRICLMxiGKBeqkDy4fwpW05A==}
     dependencies:
       '@polymer/polymer': 3.4.1
       '@vaadin/email-field': 23.0.5
