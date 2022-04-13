@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.function.Consumer;
 
 import com.vaadin.flow.testcategory.ChromeTests;
+import com.vaadin.flow.testutil.net.PortProber;
 import com.vaadin.testbench.TestBench;
 import com.vaadin.testbench.parallel.Browser;
 
@@ -35,7 +36,6 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeDriverService;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.net.PortProber;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -126,38 +126,11 @@ public class ChromeBrowserTest extends ViewOrUITest {
         ChromeOptions headlessOptions = createHeadlessChromeOptions();
         optionsUpdater.accept(headlessOptions);
 
-        int port = findFreePort();
+        int port = PortProber.findFreePort();
         ChromeDriverService service = new ChromeDriverService.Builder()
                 .usingPort(port).build();
         ChromeDriver chromeDriver = new ChromeDriver(service, headlessOptions);
         return TestBench.createDriver(chromeDriver);
-    }
-
-    private static int findFreePort() {
-        for (int i = 0; i < 10; i++) {
-            int port = PortProber.findFreePort();
-
-            // PortProber.checkPortIsFree checks "localhost" but we also need to
-            // check both
-            // ipv4 and ipv6 for all interfaces
-            try (ServerSocket ipv4socket = new ServerSocket()) {
-                ipv4socket.bind(new InetSocketAddress(ipv4All, port));
-            } catch (IOException e) {
-                System.err.println("Not using port " + port
-                        + " even though Selenium says it is free because binding to 0.0.0.0 fails");
-                continue;
-            }
-            try (ServerSocket ipv6socket = new ServerSocket()) {
-                ipv6socket.bind(new InetSocketAddress(ipv6All, port));
-            } catch (IOException e) {
-                System.err.println("Not using port " + port
-                        + " even though Selenium says it is free because binding to ::0 fails");
-                continue;
-            }
-            return port;
-        }
-        throw new RuntimeException("Unable to find free port");
-
     }
 
     @Override
