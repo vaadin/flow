@@ -82,31 +82,38 @@ async function getCommit(commitURL){
 
 async function filterCommits(commits){
   for (let commit of commits) {
-    let target = false;
-    let picked = false;
     for (let label of commit.labels){
+      let target = false;
+      let picked = false;
+	  let branch;
+	  let mergedLabel;
+	  let manualLabel;
+
       if(label.name.includes("target/")){
         target = true;
+        branch = /target\/(.*)/.exec(label.name);
+        mergedLabel = `cherry-picked-${branch[1]}`;
+        manualLabel = `need to pick manually ${branch[1]}`;
+
+		commit.labels.forEach(la => {
+          if(la.name === mergedLabel || la.name === manualLabel){
+            picked = true;
+          }
+		});
       }
-      if(label.name.includes("cherry-picked") || label.name.includes("need to pick manually")){
-        picked = true;
+
+      if(target === true && picked === false){
+        let singleCommit = await getCommit(commit.url);    
+
+        console.log(commit.number, commit.user.login, commit.url, commit.merge_commit_sha, branch[1], singleCommit.merged_by.login);
+        arrPR.push(commit.number);
+        arrSHA.push(commit.merge_commit_sha);
+        arrURL.push(commit.url);
+        arrBranch.push(branch[1]);
+        arrTitle.push(`${commit.title} (#${commit.number}) (CP: ${branch[1]})`);
+        arrUser.push(`@${commit.user.login}`);
+        arrMergedBy.push(`@${singleCommit.merged_by.login}`);  
       }
-    }
-    if(target === true && picked === false){
-      let singleCommit = await getCommit(commit.url);
-      commit.labels.forEach(label => {
-        let branch = /target\/(.*)/.exec(label.name);
-        if (branch){
-          console.log(commit.number, commit.user.login, commit.url, commit.merge_commit_sha, branch[1], singleCommit.merged_by.login);
-          arrPR.push(commit.number);
-          arrSHA.push(commit.merge_commit_sha);
-          arrURL.push(commit.url);
-          arrBranch.push(branch[1]);
-          arrTitle.push(`${commit.title} (#${commit.number}) (CP: ${branch[1]})`);
-          arrUser.push(`@${commit.user.login}`);
-          arrMergedBy.push(`@${singleCommit.merged_by.login}`);
-        }
-      })
     }
   }
 }
@@ -207,7 +214,7 @@ async function createPR(title, head, base){
 async function main(){
   let allCommits = await getAllCommits();
   await filterCommits(allCommits);
-  await cherryPickCommits();
+//  await cherryPickCommits();
 
 }
 
