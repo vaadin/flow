@@ -2129,6 +2129,23 @@ public class Binder<BEAN> implements Serializable {
     }
 
     /**
+     * Update the field values by invoking their corresponding getter functions
+     * in the bean that is currently associated with this binder.
+     * <p>
+     * If no bean is currently associated with this binder (using
+     * {@link #setBean(Object)}), the bound fields will be cleared.
+     *
+     * @see #setBean(Object)
+     * @see #readBean(Object)
+     * @see #writeBean(Object)
+     * @see #writeBeanIfValid(Object)
+     *
+     */
+    public void updateFields() {
+        readBean(bean);
+    }
+
+    /**
      * Writes changes from the bound fields to the given bean if all validators
      * (binding and bean level) pass.
      * <p>

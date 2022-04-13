@@ -1429,6 +1429,12 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
         assertEquals("Name should be read again from the item",
                 item.getFirstName(), nameField.getValue());
+
+        item.setFirstName("bar");
+        binder.updateFields();
+
+        assertEquals("Name should be read again from the item",
+                item.getFirstName(), nameField.getValue());
     }
 
     @Test(expected = IllegalStateException.class)
