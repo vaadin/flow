@@ -29,9 +29,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
-
-import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
+import java.util.stream.Collectors;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.dependency.JsModule;
@@ -43,6 +41,13 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
+import com.vaadin.pro.licensechecker.LicenseChecker;
+import com.vaadin.pro.licensechecker.LocalProKey;
+import com.vaadin.pro.licensechecker.Product;
+
+import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -271,7 +276,7 @@ public class TaskUpdateImports extends NodeUpdater {
             LinkedHashSet<String> set = new LinkedHashSet<>(
                     fallbackScanner.getModules());
             set.removeAll(frontDeps.getModules());
-            return new ArrayList<String>(set);
+            return filter(new ArrayList<String>(set));
         }
 
         @Override
@@ -279,7 +284,7 @@ public class TaskUpdateImports extends NodeUpdater {
             LinkedHashSet<String> set = new LinkedHashSet<>(
                     fallbackScanner.getScripts());
             set.removeAll(frontDeps.getScripts());
-            return set;
+            return filter(set);
         }
 
         @Override
@@ -475,6 +480,27 @@ public class TaskUpdateImports extends NodeUpdater {
         return array;
     }
 
+    private List<String> filter(List<String> modules) {
+        if (!productionMode) {
+            return modules;
+        }
+
+        return modules
+                .stream().filter(module -> CvdlProducts
+                        .includeInFallbackBundle(module, nodeModulesFolder))
+                .collect(Collectors.toList());
+    }
+
+    private Set<String> filter(Set<String> modules) {
+        if (!productionMode) {
+            return modules;
+        }
+        return modules
+                .stream().filter(module -> CvdlProducts
+                        .includeInFallbackBundle(module, nodeModulesFolder))
+                .collect(Collectors.toSet());
+    }
+
     private JsonArray makeFallbackCssImports(AbstractUpdateImports updater) {
         JsonArray array = Json.createArray();
         Set<CssData> css = updater.getCss();
@@ -514,7 +540,7 @@ public class TaskUpdateImports extends NodeUpdater {
         return String.format(
                 "If the build fails, check that npm packages are installed.\n\n"
                         + "  To fix the build remove `%s` and `node_modules` directory to reset modules.\n"
-                        + "  In addition you may run `%s install` to fix `node_modules` tree structure.%s",
+                        + "  In addition you may run `%s install` to fix `node_modules` töree structure.%s",
                 lockFile, command, note);
     }
 

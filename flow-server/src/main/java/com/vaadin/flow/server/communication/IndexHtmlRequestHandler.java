@@ -77,15 +77,16 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         DeploymentConfiguration config = session.getConfiguration();
         IndexHtmlResponse indexHtmlResponse;
 
+        VaadinService service = request.getService();
         Document indexDocument = config.isProductionMode()
-                ? getCachedIndexHtmlDocument(request.getService())
-                : getIndexHtmlDocument(request.getService());
+                ? getCachedIndexHtmlDocument(service)
+                : getIndexHtmlDocument(service);
 
         prependBaseHref(request, indexDocument);
 
         JsonObject initialJson = Json.createObject();
 
-        if (request.getService().getBootstrapInitialPredicate()
+        if (service.getBootstrapInitialPredicate()
                 .includeInitialUidl(request)) {
             includeInitialUidl(initialJson, session, request, response);
 
@@ -128,11 +129,16 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         storeAppShellTitleToUI(indexDocument);
 
         // modify the page based on registered IndexHtmlRequestListener:s
-        request.getService().modifyIndexHtmlResponse(indexHtmlResponse);
+        service.modifyIndexHtmlResponse(indexHtmlResponse);
 
         if (config.isDevModeGizmoEnabled()) {
             addDevmodeGizmo(indexDocument, config, session, request);
             catchErrorsInDevMode(indexDocument);
+
+            if (getFeatureFlags(service)
+                    .isEnabled(FeatureFlags.NEW_LICENSE_CHECKER)) {
+                addLicenseChecker(indexDocument);
+            }
         }
 
         try {
@@ -146,9 +152,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     }
 
     private void catchErrorsInDevMode(Document indexDocument) {
-        Element elm = new Element(SCRIPT);
-        elm.attr(SCRIPT_INITIAL, "");
-        elm.appendChild(new DataNode("" + //
+        addScript(indexDocument, "" + //
                 "window.Vaadin = window.Vaadin || {};" + //
                 "window.Vaadin.ConsoleErrors = window.Vaadin.ConsoleErrors || [];"
                 + //
@@ -167,7 +171,23 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 "window.addEventListener('unhandledrejection', e => {" + //
                 "    window.Vaadin.ConsoleErrors.push([e.reason]);" + //
                 "});" //
-        ));
+        );
+    }
+
+    private void addLicenseChecker(Document indexDocument) {
+        addScript(indexDocument, "" + //
+                "window.Vaadin = window.Vaadin || {};" + //
+                "window.Vaadin.VaadinLicenseChecker = {" + //
+                "  maybeCheck: (productInfo) => {" + //
+                "    window.Vaadin.devModeGizmo.checkLicense(productInfo);" + //
+                "  }" + //
+                "};");
+    }
+
+    private void addScript(Document indexDocument, String script) {
+        Element elm = new Element(SCRIPT);
+        elm.attr(SCRIPT_INITIAL, "");
+        elm.appendChild(new DataNode(script));
         indexDocument.head().insertChildren(0, elm);
     }
 
@@ -269,8 +289,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         String index = FrontendUtils.getIndexHtmlContent(service);
         if (index != null) {
             Document indexHtmlDocument = Jsoup.parse(index);
-            if (FeatureFlags.get(service.getContext())
-                    .isEnabled(FeatureFlags.VITE)) {
+            if (getFeatureFlags(service).isEnabled(FeatureFlags.VITE)) {
                 modifyIndexHtmlForVite(indexHtmlDocument);
             }
             return indexHtmlDocument;
@@ -291,6 +310,10 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                         + "using client side bootstrapping.",
                 indexHtmlFilePath);
         throw new IOException(message);
+    }
+
+    private static FeatureFlags getFeatureFlags(VaadinService service) {
+        return FeatureFlags.get(service.getContext());
     }
 
     private static void modifyIndexHtmlForVite(Document indexHtmlDocument) {

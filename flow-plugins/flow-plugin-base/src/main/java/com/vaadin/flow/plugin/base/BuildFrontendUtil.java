@@ -16,7 +16,9 @@
 package com.vaadin.flow.plugin.base;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -25,31 +27,40 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeoutException;
 
-import org.apache.commons.io.FileUtils;
-import org.slf4j.LoggerFactory;
-import org.zeroturnaround.exec.InvalidExitValueException;
-import org.zeroturnaround.exec.ProcessExecutor;
-
+import com.fasterxml.jackson.annotation.JsonFormat.Feature;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.server.frontend.CvdlProducts;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendToolsSettings;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
+import com.vaadin.flow.server.frontend.TaskUpdateImports;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.scanner.ReflectionsClassFinder;
 import com.vaadin.flow.utils.FlowFileUtils;
+import com.vaadin.pro.licensechecker.LicenseChecker;
+import com.vaadin.pro.licensechecker.Product;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.zeroturnaround.exec.InvalidExitValueException;
+import org.zeroturnaround.exec.ProcessExecutor;
 
 import elemental.json.Json;
+import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
 
@@ -361,13 +372,7 @@ public class BuildFrontendUtil {
      */
     public static void runFrontendBuild(PluginAdapterBase adapter)
             throws TimeoutException, URISyntaxException {
-        ClassFinder classFinder = adapter.getClassFinder();
-
-        Lookup lookup = adapter.createLookup(classFinder);
-
-        final FeatureFlags featureFlags = new FeatureFlags(lookup);
-        featureFlags.setPropertiesLocation(adapter.javaResourceFolder());
-
+        FeatureFlags featureFlags = getFeatureFlags(adapter);
         FrontendToolsSettings settings = getFrontendToolsSettings(adapter);
         FrontendTools tools = new FrontendTools(settings);
         tools.validateNodeAndNpmVersion();
@@ -467,6 +472,83 @@ public class BuildFrontendUtil {
                     String.format("Failed to run %s due to an error", toolName),
                     e);
         }
+
+        // Check License
+        validateLicenses(adapter);
+    }
+
+    private static void validateLicenses(PluginAdapterBase adapter) {
+        File nodeModulesFolder = new File(adapter.npmFolder(),
+                FrontendUtils.NODE_MODULES);
+        FeatureFlags featureFlags = getFeatureFlags(adapter);
+        if (!featureFlags.isEnabled(FeatureFlags.NEW_LICENSE_CHECKER)) {
+            return;
+        }
+
+        File outputFolder = adapter.webpackOutputDirectory();
+        File statsFile = new File(adapter.servletResourceOutputDirectory(),
+                Constants.VAADIN_CONFIGURATION + "/stats.json");
+
+        if (!statsFile.exists()) {
+            throw new RuntimeException(
+                    "Stats file " + statsFile + " does not exist");
+        }
+        List<Product> commercialComponents = findComponents(nodeModulesFolder,
+                statsFile);
+
+        for (Product component : commercialComponents) {
+            try {
+                LicenseChecker.checkLicense(component.getName(),
+                        component.getVersion());
+            } catch (Exception e) {
+                try {
+                    getLogger().debug(
+                            "License check for {} failed. Invalidating output",
+                            component);
+
+                    FileUtils.deleteDirectory(outputFolder);
+                } catch (IOException e1) {
+                    getLogger().debug("Failed to remove {}", outputFolder);
+                }
+                throw e;
+            }
+        }
+
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(BuildFrontendUtil.class);
+    }
+
+    private static List<Product> findComponents(File nodeModulesFolder,
+            File statsFile) {
+        List<Product> components = new ArrayList<>();
+        try (InputStream in = new FileInputStream(statsFile)) {
+            String contents = IOUtils.toString(in, StandardCharsets.UTF_8);
+            JsonArray npmModules = Json.parse(contents).getArray("npmModules");
+            for (int i = 0; i < npmModules.length(); i++) {
+                String npmModule = npmModules.getString(i);
+                Product product = CvdlProducts
+                        .getProductIfCvdl(nodeModulesFolder, npmModule);
+                if (product != null) {
+                    components.add(product);
+                }
+            }
+            return components;
+        } catch (Exception e) {
+            throw new RuntimeException("Error reading file " + statsFile, e);
+        }
+
+    }
+
+    private static FeatureFlags getFeatureFlags(PluginAdapterBase adapter) {
+        ClassFinder classFinder = adapter.getClassFinder();
+
+        Lookup lookup = adapter.createLookup(classFinder);
+
+        final FeatureFlags featureFlags = new FeatureFlags(lookup);
+        featureFlags.setPropertiesLocation(adapter.javaResourceFolder());
+        return featureFlags;
     }
 
     /**

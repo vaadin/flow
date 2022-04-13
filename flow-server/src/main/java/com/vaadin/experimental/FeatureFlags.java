@@ -67,6 +67,9 @@ public class FeatureFlags implements Serializable {
     public static final Feature HILLA_PUSH = new Feature(
             "Push support in Hilla", "hillaPush",
             "https://github.com/vaadin/hilla/issues/56", true, null);
+    public static final Feature NEW_LICENSE_CHECKER = new Feature(
+            "New license checker", "newLicenseChecker",
+            "https://github.com/vaadin/platform/issues/2938", false, null);
     private List<Feature> features = new ArrayList<>();
 
     File propertiesFolder = null;
@@ -88,6 +91,7 @@ public class FeatureFlags implements Serializable {
         features.add(new Feature(MAP_COMPONENT));
         features.add(new Feature(SPREADSHEET_COMPONENT));
         features.add(new Feature(HILLA_PUSH));
+        features.add(new Feature(NEW_LICENSE_CHECKER));
         loadProperties();
     }
 
