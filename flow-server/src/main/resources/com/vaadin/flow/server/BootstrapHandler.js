@@ -41,6 +41,8 @@
    */
   window.Vaadin = window.Vaadin || {};
   window.Vaadin.Flow = window.Vaadin.Flow || {};
+  window.Vaadin.Flow.clients = window.Vaadin.Flow.clients || {};
+  window.Vaadin.Flow.pendingStartup = window.Vaadin.Flow.pendingStartup || {};
 
   /*
    * Needed for wrapping custom javascript functionality in the components (i.e. connectors)
@@ -59,10 +61,7 @@ Please submit an issue to https://github.com/vaadin/flow-components/issues/new/c
     }
   };
 
-  if (!window.Vaadin.Flow.clients) {
-    window.Vaadin.Flow.clients = {};
-
-    window.Vaadin.Flow.pendingStartup = {};
+  if (!window.Vaadin.Flow.initApplication) {
     window.Vaadin.Flow.initApplication = function(appId, config) {
       var testbenchId = appId.replace(/-\d+$/, '');
       
