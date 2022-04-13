@@ -19,17 +19,19 @@ import java.lang.management.ManagementFactory;
 import java.util.List;
 import java.util.function.Consumer;
 
+import com.vaadin.flow.testcategory.ChromeTests;
+import com.vaadin.flow.testutil.net.PortProber;
+import com.vaadin.testbench.TestBench;
+import com.vaadin.testbench.parallel.Browser;
+
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.experimental.categories.Category;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeDriverService;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.DesiredCapabilities;
-
-import com.vaadin.flow.testcategory.ChromeTests;
-import com.vaadin.testbench.TestBench;
-import com.vaadin.testbench.parallel.Browser;
 
 /**
  * Base class for TestBench tests to run locally in the Chrome browser.
@@ -87,7 +89,12 @@ public class ChromeBrowserTest extends ViewOrUITest {
             Consumer<ChromeOptions> optionsUpdater) {
         ChromeOptions headlessOptions = createHeadlessChromeOptions();
         optionsUpdater.accept(headlessOptions);
-        return TestBench.createDriver(new ChromeDriver(headlessOptions));
+
+        int port = PortProber.findFreePort();
+        ChromeDriverService service = new ChromeDriverService.Builder()
+                .usingPort(port).build();
+        ChromeDriver chromeDriver = new ChromeDriver(service, headlessOptions);
+        return TestBench.createDriver(chromeDriver);
     }
 
     @Override

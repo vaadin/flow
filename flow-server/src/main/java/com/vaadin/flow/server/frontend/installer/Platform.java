@@ -169,10 +169,19 @@ public class Platform {
     /**
      * Check if platform is mac.
      *
-     * @return true is mac
+     * @return true if mac
      */
     public boolean isMac() {
         return os == OS.MAC;
+    }
+
+    /**
+     * Check if platform is linux.
+     *
+     * @return true if linux
+     */
+    public boolean isLinux() {
+        return os == OS.LINUX;
     }
 
     /**
