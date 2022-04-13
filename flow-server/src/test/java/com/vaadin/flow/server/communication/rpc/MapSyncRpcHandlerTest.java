@@ -16,6 +16,7 @@
 package com.vaadin.flow.server.communication.rpc;
 
 import java.io.Serializable;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -42,6 +43,17 @@ import com.vaadin.flow.shared.JsonConstants;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
+import org.mockito.MockedStatic;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class MapSyncRpcHandlerTest {
 
@@ -361,6 +373,58 @@ public class MapSyncRpcHandlerTest {
 
         Assert.assertEquals(1, deferredUpdateInvocations.get());
         Assert.assertEquals(TEST_PROPERTY, deferredKey.get());
+    }
+
+    @Test
+    public void handleNode_stateNodePropertyDefaultValueNotSet_doesNotWarnForUnsetDisabledPropertyChange() {
+
+        ElementPropertyMap map = mock(ElementPropertyMap.class);
+        when(map.getProperty(anyString())).thenReturn(null);
+        StateNode disabledNode = mock(StateNode.class);
+        when(disabledNode.getFeatureIfInitialized(ElementPropertyMap.class))
+                .thenReturn(Optional.of(map));
+        when(disabledNode.isEnabled()).thenReturn(false);
+
+        Logger logger = spy(Logger.class);
+        try (MockedStatic<LoggerFactory> mockedLoggerFactory = mockStatic(
+                LoggerFactory.class)) {
+            mockedLoggerFactory.when(
+                    () -> LoggerFactory.getLogger(MapSyncRpcHandler.class))
+                    .thenReturn(logger);
+
+            new MapSyncRpcHandler().handleNode(disabledNode,
+                    createSyncPropertyInvocation(disabledNode, TEST_PROPERTY,
+                            NEW_VALUE));
+
+            verify(logger, times(0)).warn(anyString(), anyString());
+            verify(logger, times(1)).debug(anyString(), anyString());
+        }
+    }
+
+    @Test
+    public void handleNode_stateNodePropertyDefaultValueSet_warnsForSetDisabledPropertyChange() {
+
+        ElementPropertyMap map = mock(ElementPropertyMap.class);
+        when(map.getProperty(anyString())).thenReturn(NEW_VALUE);
+        StateNode disabledNode = mock(StateNode.class);
+        when(disabledNode.getFeatureIfInitialized(ElementPropertyMap.class))
+                .thenReturn(Optional.of(map));
+        when(disabledNode.isEnabled()).thenReturn(false);
+
+        Logger logger = spy(Logger.class);
+        try (MockedStatic<LoggerFactory> mockedLoggerFactory = mockStatic(
+                LoggerFactory.class)) {
+            mockedLoggerFactory.when(
+                    () -> LoggerFactory.getLogger(MapSyncRpcHandler.class))
+                    .thenReturn(logger);
+
+            new MapSyncRpcHandler().handleNode(disabledNode,
+                    createSyncPropertyInvocation(disabledNode, TEST_PROPERTY,
+                            NEW_VALUE));
+
+            verify(logger, times(1)).warn(anyString(), anyString());
+            verify(logger, times(0)).debug(anyString(), anyString());
+        }
     }
 
     private static void sendSynchronizePropertyEvent(Element element, UI ui,
