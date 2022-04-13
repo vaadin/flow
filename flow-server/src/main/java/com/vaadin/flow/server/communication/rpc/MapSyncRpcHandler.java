@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
@@ -105,17 +106,29 @@ public class MapSyncRpcHandler extends AbstractRpcInvocationHandler {
             return enqueuePropertyUpdate(node, invocationJson, feature,
                     property);
         } else if (DisabledUpdateMode.ALWAYS.equals(updateMode)) {
-            LoggerFactory.getLogger(MapSyncRpcHandler.class)
-                    .trace("Property update request for disabled element is received from the client side. "
+            LoggerFactory.getLogger(MapSyncRpcHandler.class).trace(
+                    "Property update request for disabled element is received from the client side. "
                             + "Change will be applied since the property '{}' always allows its update.",
-                            property);
+                    property);
             return enqueuePropertyUpdate(node, invocationJson, feature,
                     property);
         } else {
-            LoggerFactory.getLogger(MapSyncRpcHandler.class)
-                    .warn("Property update request for disabled element is received from the client side. "
-                            + "The property is '{}'. Request is ignored.",
-                            property);
+            final Logger logger = LoggerFactory
+                    .getLogger(MapSyncRpcHandler.class);
+            Optional<Serializable> featureProperty = node
+                    .getFeatureIfInitialized(ElementPropertyMap.class)
+                    .map(feat -> feat.getProperty(property));
+            if (featureProperty.isPresent()) {
+                logger.warn(
+                        "Property update request for disabled element is received from the client side. "
+                                + "The property is '{}'. Request is ignored.",
+                        property);
+            } else {
+                logger.debug(
+                        "Ignored property '{}' change for disabled element. Most likely client sent the "
+                                + "default value as no value has been set for the property.",
+                        property);
+            }
         }
         return Optional.empty();
     }
