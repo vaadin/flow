@@ -49,14 +49,19 @@ window.Vaadin = {Flow: {devServerIsNotLoaded: true}};
 
 const delay = 200;
 const poll = () => {
-  fetch(window.location.href, {headers: {'X-DevModePoll': 'true'}}).then(response => {
-    if (response.headers.has("X-DevModePending")) {
-      setTimeout(poll, delay);
-    } else {
-      // App ready
-      document.location.reload();
-    }
-  })};
+  try {
+    fetch(window.location.href, { headers: { 'X-DevModePoll': 'true' } }).then(response => {
+      if (response.headers.has("X-DevModePending")) {
+        setTimeout(poll, delay);
+      } else {
+        // App ready
+        document.location.reload();
+      }
+    })
+  } catch (e) {
+    setTimeout(poll, delay);
+  }
+};
 
 setTimeout(poll, delay);
 
