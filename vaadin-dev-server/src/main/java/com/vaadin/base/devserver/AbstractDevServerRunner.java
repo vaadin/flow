@@ -317,14 +317,14 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
      */
     protected void updateServerStartupEnvironment(FrontendTools frontendTools,
             Map<String, String> environment) {
-        try {
-            environment.put("watchDogHost",
-                    InetAddress.getLocalHost().getHostAddress());
-        } catch (UnknownHostException ex) {
-            environment.put("watchDogHost", "localhost");
-        }
+        environment.put("watchDogHost", getLoopbackAddress().getHostAddress());
         environment.put("watchDogPort",
                 Integer.toString(getWatchDog().getWatchDogPort()));
+    }
+
+    // visible for tests
+    InetAddress getLoopbackAddress() {
+        return InetAddress.getLoopbackAddress();
     }
 
     /**
