@@ -18,7 +18,7 @@ import brotli from 'rollup-plugin-brotli';
 import replace from '@rollup/plugin-replace';
 import checker from 'vite-plugin-checker';
 
-const appShellUrl = '.'
+const appShellUrl = '.';
 
 const frontendFolder = path.resolve(__dirname, settings.frontendFolder);
 const themeFolder = path.resolve(frontendFolder, settings.themeFolder);
@@ -330,7 +330,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
     resolve: {
       alias: [
         { find: 'themes', replacement: (importee: string) => {
-            if(existsSync(path.resolve(themeResourceFolder, importee))){
+            if (existsSync(path.resolve(themeResourceFolder, importee))) {
               return path.resolve(themeResourceFolder, settings.themeFolder);
             }
             return themeFolder;
