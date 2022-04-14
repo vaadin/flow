@@ -2055,6 +2055,7 @@ public class Binder<BEAN> implements Serializable {
      * @see #readBean(Object)
      * @see #writeBean(Object)
      * @see #writeBeanIfValid(Object)
+     * @see #refreshFields()
      *
      * @param bean
      *            the bean to edit, or {@code null} to remove a currently bound
@@ -2141,7 +2142,7 @@ public class Binder<BEAN> implements Serializable {
      * @see #writeBeanIfValid(Object)
      *
      */
-    public void updateFields() {
+    public void refreshFields() {
         readBean(bean);
     }
 
