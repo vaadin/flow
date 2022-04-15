@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
@@ -102,10 +103,22 @@ public class MapSyncRpcHandler extends AbstractRpcInvocationHandler {
             return enqueuePropertyUpdate(node, invocationJson, feature,
                     property);
         } else {
-            LoggerFactory.getLogger(MapSyncRpcHandler.class).warn(
-                    "Property update request for disabled element is received from the client side. "
-                            + "The property is '{}'. Request is ignored.",
-                    property);
+            final Logger logger = LoggerFactory
+                    .getLogger(MapSyncRpcHandler.class);
+            Optional<Serializable> featureProperty = node
+                    .getFeatureIfInitialized(ElementPropertyMap.class)
+                    .map(feat -> feat.getProperty(property));
+            if (featureProperty.isPresent()) {
+                logger.warn(
+                        "Property update request for disabled element is received from the client side. "
+                                + "The property is '{}'. Request is ignored.",
+                        property);
+            } else {
+                logger.debug(
+                        "Ignored property '{}' change for disabled element. Most likely client sent the "
+                                + "default value as no value has been set for the property.",
+                        property);
+            }
         }
         return Optional.empty();
     }

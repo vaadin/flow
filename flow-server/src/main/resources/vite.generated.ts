@@ -289,20 +289,20 @@ function updateTheme(contextPath: string) {
   }
 }
 
-function runWatchDog(watchDogPort) {
+function runWatchDog(watchDogPort, watchDogHost) {
   const client = net.Socket();
   client.setEncoding('utf8');
-  client.on('error', function () {
-    console.log('Watchdog connection error. Terminating vite process...');
+  client.on('error', function (err) {
+    console.log('Watchdog connection error. Terminating vite process...', err);
     client.destroy();
     process.exit(0);
   });
   client.on('close', function () {
     client.destroy();
-    runWatchDog(watchDogPort);
+    runWatchDog(watchDogPort, watchDogHost);
   });
 
-  client.connect(watchDogPort, 'localhost');
+  client.connect(watchDogPort, watchDogHost || 'localhost');
 }
 
 let spaMiddlewareForceRemoved = false;
@@ -320,7 +320,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
   if (devMode && process.env.watchDogPort) {
     // Open a connection with the Java dev-mode handler in order to finish
     // vite when it exits or crashes.
-    runWatchDog(process.env.watchDogPort);
+    runWatchDog(process.env.watchDogPort, process.env.watchDogHost);
   }
 
   return {
