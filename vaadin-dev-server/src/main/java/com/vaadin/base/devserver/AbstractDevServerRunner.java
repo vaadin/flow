@@ -20,8 +20,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.net.HttpURLConnection;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
 import java.util.List;
@@ -315,8 +317,14 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
      */
     protected void updateServerStartupEnvironment(FrontendTools frontendTools,
             Map<String, String> environment) {
+        environment.put("watchDogHost", getLoopbackAddress().getHostAddress());
         environment.put("watchDogPort",
                 Integer.toString(getWatchDog().getWatchDogPort()));
+    }
+
+    // visible for tests
+    InetAddress getLoopbackAddress() {
+        return InetAddress.getLoopbackAddress();
     }
 
     /**
