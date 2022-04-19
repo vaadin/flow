@@ -2130,14 +2130,14 @@ public class Binder<BEAN> implements Serializable {
     }
 
     /**
-     * Refreshes the fields values by reading them again from
-     * the currently associated bean via invoking their 
-     * corresponding value provider methods. 
+     * Refreshes the fields values by reading them again from the currently
+     * associated bean via invoking their corresponding value provider methods.
      * <p>
      * If no bean is currently associated with this binder
-     * ({@link #setBean(Object)} has not been called before
-     * invoking this method), the bound fields will be cleared.
+     * ({@link #setBean(Object)} has not been called before invoking this
+     * method), the bound fields will be cleared.
      * <p>
+     *
      * @see #setBean(Object)
      * @see #readBean(Object)
      * @see #writeBean(Object)
