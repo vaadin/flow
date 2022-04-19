@@ -2,7 +2,7 @@ name: Flow Validation
 on:
   push:
     branches: [master, '9.0']
-  pull_request_target:
+  pull_request:
     types: [opened, synchronize, reopened]
   workflow_dispatch:
 jobs:
