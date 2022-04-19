@@ -9,8 +9,8 @@
     "@vaadin/common-frontend": "0.0.17",
     "@vaadin/flow-frontend": "./target/flow-frontend",
     "@vaadin/router": "1.7.4",
-    "@vaadin/vaadin-lumo-styles": "23.0.5",
-    "@vaadin/vaadin-text-field": "23.0.5",
+    "@vaadin/vaadin-lumo-styles": "23.1.0-alpha2",
+    "@vaadin/vaadin-text-field": "23.1.0-alpha2",
     "construct-style-sheets-polyfill": "3.1.0",
     "lit": "2.2.1"
   },
@@ -31,8 +31,8 @@
       "@polymer/polymer": "3.4.1",
       "@vaadin/common-frontend": "0.0.17",
       "@vaadin/router": "1.7.4",
-      "@vaadin/vaadin-lumo-styles": "23.0.5",
-      "@vaadin/vaadin-text-field": "23.0.5",
+      "@vaadin/vaadin-lumo-styles": "23.1.0-alpha2",
+      "@vaadin/vaadin-text-field": "23.1.0-alpha2",
       "construct-style-sheets-polyfill": "3.1.0",
       "lit": "2.2.1"
     },
@@ -48,6 +48,6 @@
       "workbox-core": "6.5.0",
       "workbox-precaching": "6.5.0"
     },
-    "hash": "56108e0d8643845ed17834d480124af3e84badaeb14d6f6a45dccd82ec46ae4e"
+    "hash": "2d41b5c074c90501f8097addcd698a739fb108199a62aa25f7ac04aec797d4d8"
   }
 }
