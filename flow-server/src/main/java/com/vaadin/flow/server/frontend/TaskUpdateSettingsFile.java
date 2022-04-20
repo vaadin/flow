@@ -48,7 +48,7 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
     public static final String DEV_SETTINGS_FILE = "vaadin-dev-server-settings.json";
     File npmFolder;
     File frontendDirectory;
-    File generatedFolder;
+    File flowResourcesFolder;
     File webappResourcesDirectory;
     String buildDirectory;
     String themeName;
@@ -58,7 +58,7 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
             PwaConfiguration pwaConfiguration) {
         this.npmFolder = builder.getNpmFolder();
         this.frontendDirectory = builder.getFrontendDirectory();
-        this.generatedFolder = builder.getGeneratedFolder();
+        this.flowResourcesFolder = builder.getFlowResourcesFolder();
         this.webappResourcesDirectory = builder.getWebappResourcesDirectory();
         this.buildDirectory = builder.getBuildDirectory();
         this.themeName = themeName;
@@ -75,7 +75,7 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
                 FrontendUtils.getUnixPath(frontendDirectory.toPath()));
         settings.put("themeFolder", "themes");
         settings.put("themeResourceFolder",
-                FrontendUtils.getUnixPath(generatedFolder.toPath()));
+                FrontendUtils.getUnixPath(flowResourcesFolder.toPath()));
         String webappResources;
         if (webappResourcesDirectory == null) {
             webappResources = combinePath(buildDirectory, "classes",

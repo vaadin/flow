@@ -519,7 +519,7 @@ public class NodeTasks implements FallibleCommand {
 
         /**
          * Uses globally installed pnpm tool for frontend packages installation.
-         * 
+         *
          * @param useGlobalPnpm
          *            uses globally installed pnpm instead of default one, see
          *            {@link FrontendTools#DEFAULT_PNPM_VERSION}.
@@ -617,7 +617,7 @@ public class NodeTasks implements FallibleCommand {
 
         /**
          * Get the output directory for webpack output.
-         * 
+         *
          * @return webpackOutputDirectory
          */
         public File getWebappResourcesDirectory() {
@@ -626,7 +626,7 @@ public class NodeTasks implements FallibleCommand {
 
         /**
          * Get the defined frontend directory.
-         * 
+         *
          * @return frontendDirectory
          */
         public File getFrontendDirectory() {
@@ -665,6 +665,10 @@ public class NodeTasks implements FallibleCommand {
                 featureFlags.setPropertiesLocation(javaResourceFolder);
             }
             return featureFlags;
+        }
+
+        public File getFlowResourcesFolder() {
+            return flowResourcesFolder;
         }
     }
 
