@@ -79,6 +79,10 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.base\\.devserver\\.DevServerWatchDog",
                 "com\\.vaadin\\.base\\.devserver\\.DevServerWatchDog\\$WatchDogServer",
                 "com\\.vaadin\\.base\\.devserver\\.util\\.BrowserLauncher",
+                "com\\.vaadin\\.base\\.devserver\\.util\\.net\\.PortProber",
+                "com\\.vaadin\\.base\\.devserver\\.util\\.net\\.FixedIANAPortRange",
+                "com\\.vaadin\\.base\\.devserver\\.util\\.net\\.EphemeralPortRangeDetector",
+                "com\\.vaadin\\.base\\.devserver\\.util\\.net\\.LinuxEphemeralPortRangeDetector",
                 "com\\.vaadin\\.flow\\.data\\.provider\\.InMemoryDataProviderHelpers",
                 "com\\.vaadin\\.flow\\.di\\.InstantiatorFactory",
                 "com\\.vaadin\\.flow\\.di\\.Lookup(\\$.*)?",
@@ -206,6 +210,11 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.Task.*",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.AbstractTaskClientGenerator",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.EndpointGeneratorTaskFactory",
+
+                // Flow client classes
+                "com\\.vaadin\\.client\\..*",
+                "com\\.vaadin\\.flow\\.linker\\.ClientEngineLinker",
+                "com\\.vaadin\\.flow\\.linker\\.ClientEngineLinker\\$Script",
 
                 // Node downloader classes
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.DefaultArchiveExtractor",

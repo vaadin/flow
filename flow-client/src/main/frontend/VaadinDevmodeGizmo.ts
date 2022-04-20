@@ -1038,7 +1038,7 @@ export class VaadinDevmodeGizmo extends LitElement {
         MessageType.WARNING,
         'Java live reload unavailable',
         'Live reload for Java changes is currently not set up. Find out how to make use of this functionality to boost your workflow.',
-        'https://vaadin.com/docs/live-reload',
+        'https://vaadin.com/docs/latest/flow/configuration/live-reload',
         'liveReloadUnavailable'
       );
     }

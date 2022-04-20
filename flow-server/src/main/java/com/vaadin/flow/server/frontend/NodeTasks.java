@@ -678,6 +678,10 @@ public class NodeTasks implements FallibleCommand {
             this.postinstallPackages = postinstallPackages;
             return this;
         }
+
+        public File getFlowResourcesFolder() {
+            return flowResourcesFolder;
+        }
     }
 
     // @formatter:off
