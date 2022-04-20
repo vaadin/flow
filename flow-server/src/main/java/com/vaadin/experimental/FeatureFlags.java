@@ -64,6 +64,9 @@ public class FeatureFlags implements Serializable {
             "Spreadsheet component (Pro)", "spreadsheetComponent",
             "https://github.com/vaadin/platform/issues/2027", true,
             "com.vaadin.flow.component.spreadsheet.Spreadsheet");
+    public static final Feature HILLA_PUSH = new Feature(
+            "Push support in Hilla", "hillaPush",
+            "https://github.com/vaadin/hilla/issues/56", true, null);
     private List<Feature> features = new ArrayList<>();
 
     File propertiesFolder = null;
@@ -84,6 +87,7 @@ public class FeatureFlags implements Serializable {
         features.add(new Feature(VITE));
         features.add(new Feature(MAP_COMPONENT));
         features.add(new Feature(SPREADSHEET_COMPONENT));
+        features.add(new Feature(HILLA_PUSH));
         loadProperties();
     }
 
@@ -324,6 +328,13 @@ public class FeatureFlags implements Serializable {
 
     private boolean isDevelopmentMode() {
         return configuration != null && !configuration.isProductionMode();
+    }
+
+    public String getEnableHelperMessage(Feature feature) {
+        return feature.getTitle()
+                + " is not enabled. Enable it in the debug window or by adding "
+                + getPropertyName(feature.getId())
+                + "=true to src/main/resources/" + PROPERTIES_FILENAME;
     }
 
     private Logger getLogger() {
