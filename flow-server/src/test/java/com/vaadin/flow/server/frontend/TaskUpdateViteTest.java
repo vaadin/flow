@@ -92,6 +92,7 @@ public class TaskUpdateViteTest {
                 Mockito.mock(Lookup.class), temporaryFolder.getRoot(),
                 temporaryFolder.newFolder("generated"),
                 temporaryFolder.newFolder("frontend"), "target");
+        builder.withFlowResourcesFolder(temporaryFolder.newFolder("resources"));
 
         TaskUpdateSettingsFile updateSettings = new TaskUpdateSettingsFile(
                 builder, "theme", new PwaConfiguration());

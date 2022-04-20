@@ -23,6 +23,7 @@ const frontendFolder = path.resolve(__dirname, settings.frontendFolder);
 const themeFolder = path.resolve(frontendFolder, settings.themeFolder);
 const frontendBundleFolder = path.resolve(__dirname, settings.frontendBundleOutput);
 const addonFrontendFolder = path.resolve(__dirname, settings.addonFrontendFolder);
+const themeResourceFolder = path.resolve(__dirname, settings.themeResourceFolder);
 
 const projectStaticAssetsFolders = [
   path.resolve(__dirname, 'src', 'main', 'resources', 'META-INF', 'resources'),
@@ -37,7 +38,7 @@ const themeOptions = {
   devMode: false,
   // The following matches folder 'target/flow-frontend/themes/'
   // (not 'frontend/themes') for theme in JAR that is copied there
-  themeResourceFolder: path.resolve(__dirname, settings.themeResourceFolder),
+  themeResourceFolder: path.resolve(themeResourceFolder, settings.themeFolder),
   themeProjectFolders: themeProjectFolders,
   projectStaticAssetsOutputFolder: path.resolve(__dirname, settings.staticOutput),
   frontendGeneratedFolder: path.resolve(frontendFolder, settings.generatedFolder)
@@ -311,10 +312,16 @@ export const vaadinConfig: UserConfigFn = (env) => {
     root: 'frontend',
     base: '',
     resolve: {
-      alias: {
-        themes: themeFolder,
-        Frontend: frontendFolder
-      },
+      alias: [
+        { find: 'themes', replacement: (importee: string) => {
+            if (existsSync(path.resolve(themeResourceFolder, importee))) {
+              return path.resolve(themeResourceFolder, settings.themeFolder);
+            }
+            return themeFolder;
+          }
+        },
+        { find: 'Frontend', replacement: frontendFolder }
+      ],
       preserveSymlinks: true
     },
     define: {

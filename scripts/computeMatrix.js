@@ -50,6 +50,7 @@ const moduleWeights = {
   'flow-tests/test-embedding/test-embedding-reusable-theme': { pos: 3, weight: 2 },
   'flow-tests/test-multi-war/deployment': { pos: 3, weight: 2 },
   'flow-tests/test-application-theme/test-theme-reusable': { pos: 3, weight: 2 },
+  'flow-tests/test-application-theme/test-theme-reusable-vite': { pos: 3, weight: 2 },
   'flow-tests/test-frontend/vite-production': { pos: 3, weight: 2 },
   'flow-tests/test-frontend/vite-test-assets': { pos: 3 },
   'flow-tests/vaadin-spring-tests/test-spring-boot': { pos: 4, weight: 4 },
