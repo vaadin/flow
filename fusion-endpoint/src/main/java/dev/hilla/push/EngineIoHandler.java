@@ -6,9 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-import javax.servlet.annotation.WebListener;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -38,9 +35,8 @@ import reactor.core.scheduler.Schedulers;
  * transport mechansim for socket.io.
  */
 @Controller
-@WebListener
-public final class EngineIoHandler implements HandshakeInterceptor,
-        WebSocketHandler, ServletContextListener {
+public final class EngineIoHandler
+        implements HandshakeInterceptor, WebSocketHandler {
 
     private static final String ATTRIBUTE_ENGINEIO_BRIDGE = "engineIo.bridge";
     private static final String ATTRIBUTE_ENGINEIO_QUERY = "engineIo.query";
@@ -204,15 +200,11 @@ public final class EngineIoHandler implements HandshakeInterceptor,
         }
     }
 
-    @Override
-    public void contextInitialized(ServletContextEvent sce) {
-    }
-
-    @Override
-    public void contextDestroyed(ServletContextEvent sce) {
+    public void cleanup() {
         // Cleanup socket.io
         mEngineIoServer.shutdown();
         // Cleanup project reactor schedulers
         Schedulers.shutdownNow();
     }
+
 }
