@@ -27,6 +27,7 @@
             <modules>
                 <module>test-theme-reusable</module>
                 <module>test-reusable-as-parent</module>
+                <module>test-theme-reusable-vite</module>
                 <module>test-theme-live-reload</module>
                 <module>test-theme-component-live-reload</module>
             </modules>
