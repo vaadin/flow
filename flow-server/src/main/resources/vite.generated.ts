@@ -5,7 +5,7 @@
  * This file will be overwritten on every run. Any custom changes should be made to vite.config.ts
  */
 import path from 'path';
-import { readFileSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import * as net from 'net';
 
 import { processThemeResources } from '#buildFolder#/plugins/application-theme-plugin/theme-handle';
