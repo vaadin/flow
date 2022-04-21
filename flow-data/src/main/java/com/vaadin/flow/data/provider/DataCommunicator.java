@@ -1003,7 +1003,7 @@ public class DataCommunicator<T> implements Serializable {
 
                 stream = streamBuilder.build();
             } else {
-                stream = doFetchFromDataProvider(offset, pageSize);
+                stream = doFetchFromDataProvider(offset, limit);
             }
             limit = pages * pageSize;
         } else {
