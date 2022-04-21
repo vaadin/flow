@@ -14,7 +14,7 @@
     "url": "https://github.com/vaadin/flow/issues"
   },
   "dependencies": {
-    "mkdirp": "0.5.5",
+    "mkdirp": "0.5.6",
     "glob": "7.2.0"
   },
   "files": [
