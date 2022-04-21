@@ -1195,13 +1195,13 @@ public class DataCommunicatorTest {
     }
 
     @Test
-    public void fetchFromProvider_limitLessThanPageSize_singleQuery() {
+    public void fetchFromProvider_limitLessThanPageSize_singleQuery_fetchedLessThanPage() {
         AbstractDataProvider<Item, Object> dataProvider = createDataProvider(
                 100);
         dataProvider = Mockito.spy(dataProvider);
 
         dataCommunicator.setDataProvider(dataProvider, null);
-        Stream<Item> stream = dataCommunicator.fetchFromProvider(10, 40);
+        Stream<Item> stream = dataCommunicator.fetchFromProvider(10, 42);
 
         ArgumentCaptor<Query> queryCaptor = ArgumentCaptor
                 .forClass(Query.class);
@@ -1209,16 +1209,16 @@ public class DataCommunicatorTest {
         Mockito.verify(dataProvider).fetch(queryCaptor.capture());
 
         List<Item> items = stream.collect(Collectors.toList());
-        Assert.assertEquals(50, items.size());
+        Assert.assertEquals(42, items.size());
 
-        Assert.assertEquals(IntStream.range(10, 60).mapToObj(Item::new)
+        Assert.assertEquals(IntStream.range(10, 52).mapToObj(Item::new)
                 .collect(Collectors.toList()), items);
 
         Query query = queryCaptor.getValue();
         Assert.assertEquals(10, query.getOffset());
-        Assert.assertEquals(50, query.getLimit());
+        Assert.assertEquals(42, query.getLimit());
         Assert.assertEquals(0, query.getPage());
-        Assert.assertEquals(50, query.getPageSize());
+        Assert.assertEquals(42, query.getPageSize());
     }
 
     @Test
