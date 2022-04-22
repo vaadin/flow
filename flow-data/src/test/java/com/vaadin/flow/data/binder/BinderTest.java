@@ -1766,6 +1766,27 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     }
 
     @Test
+    public void validationShouldNotRunTwiceWhenWriting() {
+        TestTextField nameField = new TestTextField();
+        AtomicInteger count = new AtomicInteger(0);
+        binder.forField(nameField).withValidator((value, context) -> {
+            count.incrementAndGet();
+            if (value.equals("Mike")) {
+                return ValidationResult.ok();
+            } else {
+                return ValidationResult.error("value must be Mike");
+            }
+        }).bind(Person::getFirstName, Person::setFirstName);
+        binder.readBean(item);
+        nameField.setValue("Mike");
+        try {
+            binder.writeBean(item);
+        } catch (ValidationException e) {
+        }
+        assertTrue("Validation should be run only once",1 == count.get());
+    }
+
+    @Test
     public void setValidationErrorHandler_handlerIsSet_handlerMethodsAreCalled() {
         TestTextField testField = new TestTextField();
 
