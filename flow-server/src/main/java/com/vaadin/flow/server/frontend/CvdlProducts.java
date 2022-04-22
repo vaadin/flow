@@ -32,6 +32,9 @@ public class CvdlProducts {
     public static Product getProductIfCvdl(File nodeModules, String npmModule) {
         File packageJsonFile = new File(new File(nodeModules, npmModule),
                 "package.json");
+        if (!packageJsonFile.exists()) {
+            return null;
+        }
 
         try {
             JsonObject packageJson = Json.parse(FileUtils
