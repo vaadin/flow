@@ -172,11 +172,72 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
         Objects.requireNonNull(url, "pathString must not be null.");
         final Optional<Class<? extends Component>> target = getConfiguration()
                 .getTarget(url);
-        if (target.isPresent()) {
+        if (target.isPresent() && !parentContainsExactMatch(url)) {
             return target;
         }
 
         return getParentRegistry().getNavigationTarget(url);
+    }
+
+    /**
+     * When session registry contains a matching route, check if it is not an
+     * exact match and parenmt registry contains an exact or closer match.
+     *
+     * @param url
+     *            url to check for exact match
+     * @return true if parent has exact match, but this registry doesn't
+     */
+    private boolean parentContainsExactMatch(String url) {
+        final List<RouteData> parentRoutes = getParentRegistry()
+                .getRegisteredRoutes();
+        final List<RouteData> registeredRoutes = getRegisteredRoutes();
+
+        // Remove any routes coming from parent registry
+        registeredRoutes.removeAll(parentRoutes);
+
+        boolean noLocalMatch = registeredRoutes.stream()
+                .noneMatch(data -> data.getTemplate().equals(url));
+        boolean parentMatch = parentRoutes.stream()
+                .anyMatch(data -> data.getTemplate().equals(url));
+
+        final boolean parentExactMatch = noLocalMatch && parentMatch;
+        if (!parentExactMatch) {
+            final List<String> segments = PathUtil.getSegmentsList(url);
+            final int parentHighestMatch = parentRoutes.stream()
+                    .mapToInt(data -> equalParts(segments,
+                            PathUtil.getSegmentsList(data.getTemplate())))
+                    .max().orElse(0);
+
+            final int registryHighestMatch = registeredRoutes.stream()
+                    .mapToInt(data -> equalParts(segments,
+                            PathUtil.getSegmentsList(data.getTemplate())))
+                    .max().orElse(0);
+            return parentHighestMatch > registryHighestMatch;
+        }
+        return parentExactMatch;
+    }
+
+    /**
+     * Check for how many parts match.
+     *
+     * @param urlParts
+     *            url segment parts list
+     * @param target
+     *            route target segments list
+     * @return amount of matching segments from the start
+     */
+    private int equalParts(List<String> urlParts, List<String> target) {
+        int maxSize = urlParts.size() > target.size() ? target.size()
+                : urlParts.size();
+        int matches = 0;
+        for (int i = 0; i < maxSize; i++) {
+            if (urlParts.get(i).equals(target.get(i))) {
+                matches++;
+            } else {
+                break;
+            }
+        }
+        return matches;
     }
 
     @Override
