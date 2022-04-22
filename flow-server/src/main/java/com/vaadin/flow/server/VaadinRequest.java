@@ -16,9 +16,7 @@
 
 package com.vaadin.flow.server;
 
-import javax.servlet.ServletRequest;
 import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -140,7 +138,7 @@ public interface VaadinRequest {
      * Returns the portion of the request URI that indicates the context of the
      * request. The context path always comes first in a request URI.
      *
-     * @see HttpServletRequest#getContextPath()
+     * @see javax.servlet.http.HttpServletRequest#getContextPath()
      *
      * @return a String specifying the portion of the request URI that indicates
      *         the context of the request
@@ -152,7 +150,7 @@ public interface VaadinRequest {
      * no session.
      *
      * @see WrappedSession
-     * @see HttpServletRequest#getSession()
+     * @see javax.servlet.http.HttpServletRequest#getSession()
      *
      * @return the wrapped session for this request
      */
@@ -168,7 +166,7 @@ public interface VaadinRequest {
      *            there's no current session
      *
      * @see WrappedSession
-     * @see HttpServletRequest#getSession(boolean)
+     * @see javax.servlet.http.HttpServletRequest#getSession(boolean)
      *
      * @return the wrapped session for this request
      */
@@ -192,7 +190,7 @@ public interface VaadinRequest {
      *
      * @return the preferred Locale
      *
-     * @see ServletRequest#getLocale()
+     * @see javax.servlet.ServletRequest#getLocale()
      */
     Locale getLocale();
 
@@ -203,7 +201,7 @@ public interface VaadinRequest {
      * @return a string containing the IP address, or <code>null</code> if the
      *         address is not available
      *
-     * @see ServletRequest#getRemoteAddr()
+     * @see javax.servlet.ServletRequest#getRemoteAddr()
      */
     String getRemoteAddr();
 
@@ -213,20 +211,20 @@ public interface VaadinRequest {
      *
      * @return a boolean indicating if the request is secure
      *
-     * @see ServletRequest#isSecure()
+     * @see javax.servlet.ServletRequest#isSecure()
      */
     boolean isSecure();
 
     /**
      * Gets the value of a request header, e.g. a http header for a
-     * {@link HttpServletRequest}.
+     * {@link javax.servlet.http.HttpServletRequest}.
      *
      * @param headerName
      *            the name of the header
      * @return the header value, or <code>null</code> if the header is not
      *         present in the request
      *
-     * @see HttpServletRequest#getHeader(String)
+     * @see javax.servlet.http.HttpServletRequest#getHeader(String)
      */
     String getHeader(String headerName);
 
@@ -247,7 +245,7 @@ public interface VaadinRequest {
      * @return an array of all the <code>Cookies</code> included with this
      *         request, or <code>null</code> if the request has no cookies
      *
-     * @see HttpServletRequest#getCookies()
+     * @see javax.servlet.http.HttpServletRequest#getCookies()
      */
     Cookie[] getCookies();
 
@@ -260,7 +258,7 @@ public interface VaadinRequest {
      * @return a string indicating the authentication scheme, or
      *         <code>null</code> if the request was not authenticated.
      *
-     * @see HttpServletRequest#getAuthType()
+     * @see javax.servlet.http.HttpServletRequest#getAuthType()
      */
     String getAuthType();
 
@@ -273,7 +271,7 @@ public interface VaadinRequest {
      * @return a String specifying the login of the user making this request, or
      *         <code>null</code> if the user login is not known.
      *
-     * @see HttpServletRequest#getRemoteUser()
+     * @see javax.servlet.http.HttpServletRequest#getRemoteUser()
      */
     String getRemoteUser();
 
@@ -286,7 +284,7 @@ public interface VaadinRequest {
      *         user making this request; <code>null</code> if the user has not
      *         been authenticated
      *
-     * @see HttpServletRequest#getUserPrincipal()
+     * @see javax.servlet.http.HttpServletRequest#getUserPrincipal()
      */
     Principal getUserPrincipal();
 
@@ -302,7 +300,7 @@ public interface VaadinRequest {
      *         to a given role; <code>false</code> if the user has not been
      *         authenticated
      *
-     * @see HttpServletRequest#isUserInRole(String)
+     * @see javax.servlet.http.HttpServletRequest#isUserInRole(String)
      */
     boolean isUserInRole(String role);
 
@@ -314,7 +312,7 @@ public interface VaadinRequest {
      * @param name
      *            a String specifying the name of the attribute to remove
      *
-     * @see ServletRequest#removeAttribute(String)
+     * @see javax.servlet.ServletRequest#removeAttribute(String)
      */
     void removeAttribute(String name);
 
@@ -326,7 +324,7 @@ public interface VaadinRequest {
      * @return an Enumeration of strings containing the names of the request's
      *         attributes
      *
-     * @see ServletRequest#getAttributeNames()
+     * @see javax.servlet.ServletRequest#getAttributeNames()
      */
     Enumeration<String> getAttributeNames();
 
@@ -339,7 +337,7 @@ public interface VaadinRequest {
      *
      * @return an Enumeration of preferred Locale objects for the client
      *
-     * @see HttpServletRequest#getLocales()
+     * @see javax.servlet.http.HttpServletRequest#getLocales()
      */
     Enumeration<Locale> getLocales();
 
@@ -352,7 +350,7 @@ public interface VaadinRequest {
      * @return a String containing the fully qualified name of the client, or
      *         <code>null</code> if the information is not available.
      *
-     * @see HttpServletRequest#getRemoteHost()
+     * @see javax.servlet.http.HttpServletRequest#getRemoteHost()
      */
     String getRemoteHost();
 
@@ -363,7 +361,7 @@ public interface VaadinRequest {
      * @return an integer specifying the port number, or -1 if the information
      *         is not available.
      *
-     * @see ServletRequest#getRemotePort()
+     * @see javax.servlet.ServletRequest#getRemotePort()
      */
     int getRemotePort();
 
@@ -375,7 +373,7 @@ public interface VaadinRequest {
      * @return a String containing the name of the character encoding, or null
      *         if the request does not specify a character encoding
      *
-     * @see ServletRequest#getCharacterEncoding()
+     * @see javax.servlet.ServletRequest#getCharacterEncoding()
      */
     String getCharacterEncoding();
 
@@ -396,7 +394,7 @@ public interface VaadinRequest {
      * @throws IOException
      *             if an input or output exception occurred
      *
-     * @see ServletRequest#getReader()
+     * @see javax.servlet.ServletRequest#getReader()
      */
     BufferedReader getReader() throws IOException;
 
@@ -407,7 +405,7 @@ public interface VaadinRequest {
      * @return a String specifying the name of the method with which this
      *         request was made
      *
-     * @see HttpServletRequest#getMethod()
+     * @see javax.servlet.http.HttpServletRequest#getMethod()
      */
     String getMethod();
 
@@ -430,7 +428,7 @@ public interface VaadinRequest {
      *         GMT, or -1 if the named header was not included with the request
      * @throws IllegalArgumentException
      *             If the header value can't be converted to a date
-     * @see HttpServletRequest#getDateHeader(String)
+     * @see javax.servlet.http.HttpServletRequest#getDateHeader(String)
      */
     long getDateHeader(String name);
 
@@ -444,7 +442,7 @@ public interface VaadinRequest {
      * @return an enumeration of all the header names sent with this request; if
      *         the request has no headers, an empty enumeration; if the
      *         implementation does not allow this method, <code>null</code>
-     * @see HttpServletRequest#getHeaderNames()
+     * @see javax.servlet.http.HttpServletRequest#getHeaderNames()
      */
     Enumeration<String> getHeaderNames();
 
@@ -470,7 +468,7 @@ public interface VaadinRequest {
      *         the request does not have any headers of that name return an
      *         empty enumeration. If the header information is not available,
      *         return <code>null</code>
-     * @see HttpServletRequest#getHeaders(String)
+     * @see javax.servlet.http.HttpServletRequest#getHeaders(String)
      */
     Enumeration<String> getHeaders(String name);
 
