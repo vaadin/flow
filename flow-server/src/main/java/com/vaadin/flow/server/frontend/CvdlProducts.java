@@ -106,7 +106,7 @@ public class CvdlProducts {
 
     private static String getNpmModule(String module) {
         // npm modules are either @org/pkg or pkg
-        String[] parts = module.split("/");
+        String[] parts = module.split("/", -1);
         if (parts.length < 2) {
             // What would this be?
             return null;
