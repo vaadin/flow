@@ -20,6 +20,7 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.PollEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.JsonConstants;
@@ -61,7 +62,8 @@ public abstract class AbstractRpcInvocationHandler
                     + "the client side for an inactive (disabled or invisible) node id='{}'",
                     getClass().getName(), node.getId());
             return Optional.empty();
-        } else if (!allowInert(node) && node.isInert()) {
+        } else if (!ignoreInertForRpcInvocation(ui, invocationJson)
+                && !allowInert(node) && node.isInert()) {
             getLogger().trace(
                     "Ignored RPC for invocation handler '{}' from "
                             + "the client side for an inert node id='{}'",
@@ -70,6 +72,29 @@ public abstract class AbstractRpcInvocationHandler
         } else {
             return handleNode(node, invocationJson);
         }
+    }
+
+    /**
+     * Specifies whether inert status should be ignored for an RPC invocation or
+     * not. For example, if push is enabled, polling events should still be
+     * handled, while ignoring other requests.
+     *
+     * @param ui
+     *            the current UI instance
+     * @param invocationJson
+     *            the JsonObject containing invocation properties
+     * @return a boolean indicating that the inert status should be ignored for
+     *         the current invocation or not.
+     */
+    protected boolean ignoreInertForRpcInvocation(UI ui,
+            JsonObject invocationJson) {
+        return isPollEventInvocation(invocationJson);
+    }
+
+    private boolean isPollEventInvocation(JsonObject invocationJson) {
+        return invocationJson.hasKey(JsonConstants.RPC_EVENT_TYPE)
+                && PollEvent.DOM_EVENT_NAME.equalsIgnoreCase(
+                        invocationJson.getString(JsonConstants.RPC_EVENT_TYPE));
     }
 
     protected boolean allowInert(StateNode node) {
