@@ -38,6 +38,7 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 
 import com.vaadin.pro.licensechecker.Product;
+import com.vaadin.pro.licensechecker.BuildType;
 import com.vaadin.pro.licensechecker.LicenseChecker;
 
 /**
@@ -191,7 +192,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
             try {
                 LicenseChecker.checkLicense(product.getName(),
-                        product.getVersion(), keyUrl -> {
+                        product.getVersion(), BuildType.DEVELOPMENT, keyUrl -> {
                             send(resource, "license-check-nokey",
                                     new ProductAndMessage(product, keyUrl));
                         });
