@@ -1,8 +1,10 @@
 package com.vaadin.base.devserver;
 
+import java.io.Serializable;
+
 import com.vaadin.pro.licensechecker.Product;
 
-public class ProductAndMessage {
+public class ProductAndMessage implements Serializable {
     private Product product;
     private String message;
 
