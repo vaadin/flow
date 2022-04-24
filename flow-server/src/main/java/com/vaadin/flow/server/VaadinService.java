@@ -42,6 +42,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
@@ -2063,6 +2064,7 @@ public abstract class VaadinService implements Serializable {
                     try {
                         pendingAccess.get();
 
+                    } catch (CancellationException ignored) {
                     } catch (Exception exception) {
                         pendingAccess.handleError(exception);
                     }
