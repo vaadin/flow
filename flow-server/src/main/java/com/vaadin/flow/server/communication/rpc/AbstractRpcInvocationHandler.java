@@ -17,8 +17,8 @@ package com.vaadin.flow.server.communication.rpc;
 
 import java.util.Optional;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.server.VaadinService;
 
 import com.vaadin.flow.component.PollEvent;
 import com.vaadin.flow.component.UI;
@@ -26,6 +26,9 @@ import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.JsonConstants;
 
 import elemental.json.JsonObject;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Abstract invocation handler implementation with common methods.
@@ -76,8 +79,8 @@ public abstract class AbstractRpcInvocationHandler
 
     /**
      * Specifies whether inert status should be ignored for an RPC invocation or
-     * not. For example, if push is enabled, polling events should still be
-     * handled, while ignoring other requests.
+     * not. The default behaviour is to let the polling events be handled, while
+     * ignoring other requests.
      *
      * @param ui
      *            the current UI instance
@@ -88,13 +91,94 @@ public abstract class AbstractRpcInvocationHandler
      */
     protected boolean ignoreInertForRpcInvocation(UI ui,
             JsonObject invocationJson) {
-        return isPollEventInvocation(invocationJson);
+
+        if (!isPollEventInvocation(invocationJson)) {
+            return false;
+        }
+
+        if (!isPollingEnabledForUI(ui)) {
+            StringBuilder warning = new StringBuilder(
+                    "Ignoring Poll RPC for UI that does not have polling enabled.");
+            if (!VaadinService.getCurrent().getDeploymentConfiguration()
+                    .isProductionMode() && ui.getUIId() > 0) {
+                warning.append(" UI id: '{}'");
+            }
+            getLogger().warn(warning.toString(), ui.getUIId());
+            return false;
+        }
+
+        if (!isLegitimatePollEventInvocation(ui, invocationJson)) {
+            getLogger().warn("Ignoring Poll RPC for illegitimate invocation.");
+            return false;
+        }
+
+        return true;
     }
 
     private boolean isPollEventInvocation(JsonObject invocationJson) {
         return invocationJson.hasKey(JsonConstants.RPC_EVENT_TYPE)
                 && PollEvent.DOM_EVENT_NAME.equalsIgnoreCase(
                         invocationJson.getString(JsonConstants.RPC_EVENT_TYPE));
+    }
+
+    private boolean isPollingEnabledForUI(UI ui) {
+        return ui.getPollInterval() > 0
+                && ComponentUtil.hasEventListener(ui, PollEvent.class);
+    }
+
+    /**
+     * This method checks that a legitimate Poll Rpc invocation properties
+     * should contain only the following three <b>allowed</b> keys along with
+     * their values and nothing less or more:
+     * <ul>
+     * <li>{@link com.vaadin.flow.shared.JsonConstants#RPC_TYPE}</li>
+     * <li>{@link com.vaadin.flow.shared.JsonConstants#RPC_NODE}</li>
+     * <li>{@link com.vaadin.flow.shared.JsonConstants#RPC_EVENT_TYPE}</li>
+     * </ul>
+     * <p>
+     * As Rpc invocations of type polling would still be handled even while the
+     * UI is inert (due to server-modality) this will make sure that the request
+     * does not include any extra malicious payloads.
+     * <p>
+     * This method checks the existence of first two allowed keys as the
+     * {@link #isPollEventInvocation(JsonObject)} had already checked for the
+     * existence of the
+     * {@link com.vaadin.flow.shared.JsonConstants#RPC_EVENT_TYPE} before this
+     * method is called.
+     *
+     * @see #ignoreInertForRpcInvocation(UI, JsonObject)
+     *
+     * @param ui
+     *            the UI instance which the Rpc event is coming from.
+     * @param invocationJson
+     *            the Rpc invocation payload as Json.
+     * @return a boolean indicating whether the invocationJson is legitimate in
+     *         accordance with the UI instance.
+     */
+    private boolean isLegitimatePollEventInvocation(UI ui,
+            JsonObject invocationJson) {
+        int allowedKeysSize = 3;
+        String[] invocationKeys = invocationJson.keys();
+        if (invocationKeys == null
+                || invocationKeys.length != allowedKeysSize) {
+            return false;
+        }
+
+        if (!invocationJson.hasKey(JsonConstants.RPC_TYPE)) {
+            return false;
+        }
+        String type = invocationJson.getString(JsonConstants.RPC_TYPE);
+        if (type == null || !type.equals(JsonConstants.RPC_TYPE_EVENT)) {
+            return false;
+        }
+
+        if (!invocationJson.hasKey(JsonConstants.RPC_NODE)) {
+            return false;
+        }
+        StateNode node = ui.getInternals().getStateTree()
+                .getNodeById(getNodeId(invocationJson));
+        // Polling events should target only the root component in a UI:
+        return node.getParent() == null;
     }
 
     protected boolean allowInert(StateNode node) {

@@ -369,6 +369,24 @@ public class ComponentUtil {
     }
 
     /**
+     * Queries the given component whether a listener has been registered for
+     * the given event type or not. This method delegates the query to the
+     * component and simply returns the result of
+     * {@link com.vaadin.flow.component.Component#hasListener(Class)}.
+     *
+     * @param component
+     *            the component to which the listener(s) are registered.
+     * @param eventType
+     *            the event type for which the listener(s) are registered.
+     * @return a boolean indicating whether at least one listener registered to
+     *         the component for the given event type.
+     */
+    public static <T extends ComponentEvent<?>> boolean hasEventListener(
+            Component component, Class<? extends T> eventType) {
+        return component.getEventBus().hasListener(eventType);
+    }
+
+    /**
      * Dispatches the event to all listeners registered for the event type.
      *
      * @see Component#fireEvent(ComponentEvent)
