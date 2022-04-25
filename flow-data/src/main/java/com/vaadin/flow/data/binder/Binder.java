@@ -2258,12 +2258,12 @@ public class Binder<BEAN> implements Serializable {
                     currentBindings);
 
             // Field level validation can be skipped as it was done already
-            boolean validatorsInUse = isValidatorsDisabled();
+            boolean validatorsNotInUse = isValidatorsDisabled();
             setValidatorsDisabled(true);
             currentBindings
                     .forEach(binding -> ((BindingImpl<BEAN, ?, ?>) binding)
                             .writeFieldValue(bean));
-            setValidatorsDisabled(validatorsInUse);
+            setValidatorsDisabled(validatorsNotInUse);
 
             // Now run bean level validation against the updated bean
             binderResults = validateBean(bean);
