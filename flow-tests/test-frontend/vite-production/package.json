@@ -9,13 +9,14 @@
     "@vaadin/common-frontend": "0.0.17",
     "@vaadin/flow-frontend": "./target/flow-frontend",
     "@vaadin/router": "1.7.4",
-    "@vaadin/vaadin-lumo-styles": "22.0.0-alpha9",
-    "@vaadin/vaadin-text-field": "22.0.0-alpha9",
+    "@vaadin/vaadin-lumo-styles": "23.1.0-alpha2",
+    "@vaadin/vaadin-text-field": "23.1.0-alpha2",
     "construct-style-sheets-polyfill": "3.1.0",
     "lit": "2.2.1"
   },
   "devDependencies": {
     "@rollup/plugin-replace": "3.1.0",
+    "async": "3.2.2",
     "glob": "7.1.6",
     "mkdirp": "1.0.4",
     "rollup-plugin-brotli": "3.1.0",
@@ -31,13 +32,14 @@
       "@polymer/polymer": "3.4.1",
       "@vaadin/common-frontend": "0.0.17",
       "@vaadin/router": "1.7.4",
-      "@vaadin/vaadin-lumo-styles": "22.0.0-alpha9",
-      "@vaadin/vaadin-text-field": "22.0.0-alpha9",
+      "@vaadin/vaadin-lumo-styles": "23.1.0-alpha2",
+      "@vaadin/vaadin-text-field": "23.1.0-alpha2",
       "construct-style-sheets-polyfill": "3.1.0",
       "lit": "2.2.1"
     },
     "devDependencies": {
       "@rollup/plugin-replace": "3.1.0",
+      "async": "3.2.2",
       "glob": "7.1.6",
       "mkdirp": "1.0.4",
       "rollup-plugin-brotli": "3.1.0",
@@ -48,6 +50,6 @@
       "workbox-core": "6.5.0",
       "workbox-precaching": "6.5.0"
     },
-    "hash": "af12711c4e2de4d6188584a6a09ea146d8feaa0273d808ce6b82e9f62e6d8026"
+    "hash": "f2fa734df59ae2432dff7a0c3c8f8ded1b6961558b0d1338719bd98428336d20"
   }
 }
