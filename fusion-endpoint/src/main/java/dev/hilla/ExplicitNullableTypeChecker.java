@@ -27,6 +27,8 @@ import java.util.stream.Stream;
 
 import com.github.javaparser.ast.expr.AnnotationExpr;
 
+import org.springframework.lang.NonNullApi;
+
 /**
  * A checker for TypeScript null compatibility in Vaadin endpoint methods
  * parameter and return types.
@@ -66,13 +68,26 @@ public class ExplicitNullableTypeChecker {
      * Checks if the parsed node should be required (not nullable) in the
      * generated Typescript code based on the list of annotations.
      *
+     * @param requiredByContext
+     *            {@code true} if the context of the node defines that the node
+     *            is required
      * @param annotations
      *            a list of node annotations to check
      * @return a result of check
      */
-    public static boolean isRequired(List<AnnotationExpr> annotations) {
+    public static boolean isRequired(boolean requiredByContext,
+            List<AnnotationExpr> annotations) {
+        if (requiredByContext) {
+            return !hasAnnotation(annotations, "nullable");
+        }
+
+        return hasAnnotation(annotations, "nonnull");
+    }
+
+    private static boolean hasAnnotation(List<AnnotationExpr> annotations,
+            String annotationName) {
         return annotations != null && annotations.stream()
-                .anyMatch(annotation -> "nonnull".equalsIgnoreCase(
+                .anyMatch(annotation -> annotationName.equalsIgnoreCase(
                         annotation.getName().getIdentifier()));
     }
 

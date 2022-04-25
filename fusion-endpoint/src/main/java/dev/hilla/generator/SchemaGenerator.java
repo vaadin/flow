@@ -64,14 +64,14 @@ class SchemaGenerator {
     }
 
     Schema createSingleSchema(String fullQualifiedName,
-            TypeDeclaration<?> typeDeclaration) {
+            TypeDeclaration<?> typeDeclaration, boolean requiredByContext) {
         Optional<String> description = typeDeclaration.getJavadoc()
                 .map(javadoc -> javadoc.getDescription().toText());
         Schema schema = new ObjectSchema();
         schema.setName(fullQualifiedName);
         description.ifPresent(schema::setDescription);
         Map<String, Schema> properties = getPropertiesFromClassDeclaration(
-                typeDeclaration);
+                typeDeclaration, requiredByContext);
         schema.properties(properties);
         List<String> requiredList = properties.entrySet().stream()
                 .filter(stringSchemaEntry -> GeneratorUtils
@@ -85,19 +85,20 @@ class SchemaGenerator {
     }
 
     Schema toSchema(Type javaType, List<AnnotationExpr> annotations,
-            String description) {
+            String description, boolean requiredByContext) {
         try {
             GeneratorType generatorType;
             ResolvedType mappedType = openApiObjectGenerator
                     .toMappedType(javaType);
             if (mappedType != null) {
-                generatorType = new GeneratorType(mappedType);
+                generatorType = new GeneratorType(mappedType,
+                        requiredByContext);
             } else {
-                generatorType = new GeneratorType(javaType);
+                generatorType = new GeneratorType(javaType, requiredByContext);
             }
 
-            Schema schema = openApiObjectGenerator
-                    .parseResolvedTypeToSchema(generatorType, annotations);
+            Schema schema = openApiObjectGenerator.parseResolvedTypeToSchema(
+                    generatorType, annotations, requiredByContext);
             if (GeneratorUtils.isNotBlank(description)) {
                 schema.setDescription(description);
             }
@@ -110,7 +111,8 @@ class SchemaGenerator {
         return new ObjectSchema();
     }
 
-    Schema createSingleSchemaFromResolvedType(GeneratorType type) {
+    Schema createSingleSchemaFromResolvedType(GeneratorType type,
+            boolean requiredByContext) {
         ResolvedReferenceType resolvedReferenceType = type.asResolvedType()
                 .asReferenceType();
 
@@ -145,7 +147,10 @@ class SchemaGenerator {
                 fieldType = mappedType;
             }
             Schema subtype = openApiObjectGenerator
-                    .parseResolvedTypeToSchema(new GeneratorType(fieldType))
+                    .parseResolvedTypeToSchema(
+                            new GeneratorType(fieldType,
+                                    type.isRequiredByContext()),
+                            requiredByContext)
                     // Field is already checked to be optional, so we don't need
                     // it to be nullable
                     .nullable(null);
@@ -202,7 +207,7 @@ class SchemaGenerator {
     }
 
     private Map<String, Schema> getPropertiesFromClassDeclaration(
-            TypeDeclaration<?> typeDeclaration) {
+            TypeDeclaration<?> typeDeclaration, boolean requiredByContext) {
         Map<String, Schema> properties = new LinkedHashMap<>();
         for (FieldDeclaration field : typeDeclaration.getFields()) {
             if (field.isTransient() || field.isStatic()
@@ -213,7 +218,8 @@ class SchemaGenerator {
                     .map(javadoc -> javadoc.getDescription().toText());
             field.getVariables().forEach(variableDeclarator -> {
                 Schema propertySchema = toSchema(variableDeclarator.getType(),
-                        field.getAnnotations(), fieldDescription.orElse(""));
+                        field.getAnnotations(), fieldDescription.orElse(""),
+                        requiredByContext);
                 if (GeneratorUtils.isNotBlank(propertySchema.get$ref())) {
                     // Schema extensions, e. g., `x-annotations` we use, are
                     // not supported for the Reference Object Schema.
