@@ -33,10 +33,18 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 public class AbstractRpcInvocationHandlerTest {
 
@@ -54,29 +62,12 @@ public class AbstractRpcInvocationHandlerTest {
         protected Optional<Runnable> handleNode(StateNode node,
                 JsonObject invocationJson) {
             this.node = node;
-            return Optional.empty();
+            return Optional.of(() -> {
+            });
         }
     }
 
     private TestRpcInvocationHandler handler = new TestRpcInvocationHandler();
-
-    private static class NonEmptyRpcInvocationHandler
-            extends AbstractRpcInvocationHandler {
-
-        @Override
-        protected Optional<Runnable> handleNode(StateNode node,
-                JsonObject invocationJson) {
-            return Optional.of(() -> {
-            });
-        }
-
-        @Override
-        public String getRpcType() {
-            return null;
-        }
-    }
-
-    private AbstractRpcInvocationHandler nonEmptyHandler = new NonEmptyRpcInvocationHandler();
 
     private VaadinServletService vaadinService;
     private DeploymentConfiguration deploymentConfiguration;
@@ -136,8 +127,7 @@ public class AbstractRpcInvocationHandlerTest {
 
         UI ui = createInertUIWithPollListener();
         JsonObject invocationJson = createNonPollingRpcInvocationPayload(ui);
-        Optional<Runnable> runnable = nonEmptyHandler.handle(ui,
-                invocationJson);
+        Optional<Runnable> runnable = handler.handle(ui, invocationJson);
 
         Assert.assertEquals(Optional.empty(), runnable);
     }
@@ -149,22 +139,21 @@ public class AbstractRpcInvocationHandlerTest {
 
         JsonObject invocationJson = createLegitimatePollingRpcInvocationPayload(
                 ui);
-        Optional<Runnable> runnable = nonEmptyHandler.handle(ui,
-                invocationJson);
+        Optional<Runnable> runnable = handler.handle(ui, invocationJson);
         Assert.assertEquals(Optional.empty(), runnable);
 
         Registration listener = ui.addPollListener(event -> {
         });
-        runnable = nonEmptyHandler.handle(ui, invocationJson);
+        runnable = handler.handle(ui, invocationJson);
         Assert.assertEquals(Optional.empty(), runnable);
 
         ui.setPollInterval(0);
-        runnable = nonEmptyHandler.handle(ui, invocationJson);
+        runnable = handler.handle(ui, invocationJson);
         Assert.assertEquals(Optional.empty(), runnable);
 
         listener.remove();
         ui.setPollInterval(5000);
-        runnable = nonEmptyHandler.handle(ui, invocationJson);
+        runnable = handler.handle(ui, invocationJson);
         Assert.assertEquals(Optional.empty(), runnable);
     }
 
@@ -174,8 +163,7 @@ public class AbstractRpcInvocationHandlerTest {
         UI ui = createInertUIWithPollListener();
         JsonObject invocationJson = createLegitimatePollingRpcInvocationPayload(
                 ui);
-        Optional<Runnable> runnable = nonEmptyHandler.handle(ui,
-                invocationJson);
+        Optional<Runnable> runnable = handler.handle(ui, invocationJson);
 
         Assert.assertNotEquals(Optional.empty(), runnable);
     }
@@ -186,8 +174,7 @@ public class AbstractRpcInvocationHandlerTest {
         UI ui = createInertUIWithPollListener();
         JsonObject invocationJson = createIllegitimatePayloadKeysPollingRpcInvocationPayload(
                 ui);
-        Optional<Runnable> runnable = nonEmptyHandler.handle(ui,
-                invocationJson);
+        Optional<Runnable> runnable = handler.handle(ui, invocationJson);
 
         Assert.assertEquals(Optional.empty(), runnable);
     }
@@ -198,8 +185,7 @@ public class AbstractRpcInvocationHandlerTest {
         UI ui = createInertUIWithPollListener();
         JsonObject invocationJson = createIllegitimatePayloadWithGreaterSizePollingRpcInvocationPayload(
                 ui);
-        Optional<Runnable> runnable = nonEmptyHandler.handle(ui,
-                invocationJson);
+        Optional<Runnable> runnable = handler.handle(ui, invocationJson);
 
         Assert.assertEquals(Optional.empty(), runnable);
     }
@@ -210,8 +196,7 @@ public class AbstractRpcInvocationHandlerTest {
         UI ui = createInertUIWithPollListener();
         JsonObject invocationJson = createIllegitimatePayloadWithSmallerSizePollingRpcInvocationPayload(
                 ui);
-        Optional<Runnable> runnable = nonEmptyHandler.handle(ui,
-                invocationJson);
+        Optional<Runnable> runnable = handler.handle(ui, invocationJson);
 
         Assert.assertEquals(Optional.empty(), runnable);
     }
@@ -223,7 +208,7 @@ public class AbstractRpcInvocationHandlerTest {
         JsonObject invocationJson = createIllegitimatePayloadNoNodeKeyForPollingRpcInvocationPayload(
                 ui);
         Assert.assertThrows(AssertionError.class,
-                () -> nonEmptyHandler.handle(ui, invocationJson));
+                () -> handler.handle(ui, invocationJson));
     }
 
     @Test
@@ -232,10 +217,97 @@ public class AbstractRpcInvocationHandlerTest {
         UI ui = createInertUIWithPollListener();
         JsonObject invocationJson = createIllegitimatePayloadWithNonRootNodePollingRpcInvocationPayload(
                 ui);
-        Optional<Runnable> runnable = nonEmptyHandler.handle(ui,
-                invocationJson);
+        Optional<Runnable> runnable = handler.handle(ui, invocationJson);
 
         Assert.assertEquals(Optional.empty(), runnable);
+    }
+
+    @Test
+    public void inertUIWithoutPollListenerInProdMode_passingLegitimatePollingPayload_doesNotLogIgnoredPayloadInDebugLevel() {
+
+        Logger logger = spy(Logger.class);
+        try (MockedStatic<LoggerFactory> mockedLoggerFactory = mockStatic(
+                LoggerFactory.class)) {
+            mockedLoggerFactory
+                    .when(() -> LoggerFactory.getLogger(
+                            AbstractRpcInvocationHandler.class.getName()))
+                    .thenReturn(logger);
+            Mockito.when(deploymentConfiguration.isProductionMode())
+                    .thenReturn(true);
+
+            UI ui = createInertUI();
+            JsonObject invocationJson = createLegitimatePollingRpcInvocationPayload(
+                    ui);
+            handler.handle(ui, invocationJson);
+
+            verify(logger, times(1)).warn(anyString());
+            verify(logger, times(0)).debug(anyString(), (Object) any());
+        }
+    }
+
+    @Test
+    public void inertUIWithoutPollListenerInDevMode_passingLegitimatePollingPayload_logsIgnoredPayloadInDebugLevel() {
+
+        Logger logger = spy(Logger.class);
+        try (MockedStatic<LoggerFactory> mockedLoggerFactory = mockStatic(
+                LoggerFactory.class)) {
+            mockedLoggerFactory
+                    .when(() -> LoggerFactory.getLogger(
+                            AbstractRpcInvocationHandler.class.getName()))
+                    .thenReturn(logger);
+
+            UI ui = createInertUI();
+            JsonObject invocationJson = createLegitimatePollingRpcInvocationPayload(
+                    ui);
+            handler.handle(ui, invocationJson);
+
+            verify(logger, times(1)).warn(anyString());
+            verify(logger, times(1)).debug(anyString(), (Object) any());
+        }
+    }
+
+    @Test
+    public void inertUIWithPollListenerInProdMode_passingIllegitimatePollingPayload_doesNotLogIgnoredPayloadInDebugLevel() {
+
+        Logger logger = spy(Logger.class);
+        try (MockedStatic<LoggerFactory> mockedLoggerFactory = mockStatic(
+                LoggerFactory.class)) {
+            mockedLoggerFactory
+                    .when(() -> LoggerFactory.getLogger(
+                            AbstractRpcInvocationHandler.class.getName()))
+                    .thenReturn(logger);
+            Mockito.when(deploymentConfiguration.isProductionMode())
+                    .thenReturn(true);
+
+            UI ui = createInertUIWithPollListener();
+            JsonObject invocationJson = createIllegitimatePayloadKeysPollingRpcInvocationPayload(
+                    ui);
+            handler.handle(ui, invocationJson);
+
+            verify(logger, times(1)).warn(anyString());
+            verify(logger, times(0)).debug(anyString(), (Object) any());
+        }
+    }
+
+    @Test
+    public void inertUIWithPollListenerInDevMode_passingIllegitimatePollingPayload_logsIgnoredPayloadInDebugLevel() {
+
+        Logger logger = spy(Logger.class);
+        try (MockedStatic<LoggerFactory> mockedLoggerFactory = mockStatic(
+                LoggerFactory.class)) {
+            mockedLoggerFactory
+                    .when(() -> LoggerFactory.getLogger(
+                            AbstractRpcInvocationHandler.class.getName()))
+                    .thenReturn(logger);
+
+            UI ui = createInertUIWithPollListener();
+            JsonObject invocationJson = createIllegitimatePayloadKeysPollingRpcInvocationPayload(
+                    ui);
+            handler.handle(ui, invocationJson);
+
+            verify(logger, times(1)).warn(anyString());
+            verify(logger, times(1)).debug(anyString(), (Object) any());
+        }
     }
 
     private Element createRpcInvocationData(UI ui,

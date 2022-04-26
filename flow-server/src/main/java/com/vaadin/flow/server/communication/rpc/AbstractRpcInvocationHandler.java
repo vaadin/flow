@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server.communication.rpc;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 import com.vaadin.flow.component.ComponentUtil;
@@ -97,18 +99,22 @@ public abstract class AbstractRpcInvocationHandler
         }
 
         if (!isPollingEnabledForUI(ui)) {
-            StringBuilder warning = new StringBuilder(
+            getLogger().warn(
                     "Ignoring Poll RPC for UI that does not have polling enabled.");
             if (!VaadinService.getCurrent().getDeploymentConfiguration()
-                    .isProductionMode() && ui.getUIId() > 0) {
-                warning.append(" UI id: '{}'");
+                    .isProductionMode()) {
+                getLogger().debug("Ignored payload:\n{}", invocationJson);
             }
-            getLogger().warn(warning.toString(), ui.getUIId());
             return false;
         }
 
         if (!isLegitimatePollEventInvocation(ui, invocationJson)) {
-            getLogger().warn("Ignoring Poll RPC for illegitimate invocation.");
+            getLogger().warn(
+                    "Ignoring Poll RPC for illegitimate invocation payload.");
+            if (!VaadinService.getCurrent().getDeploymentConfiguration()
+                    .isProductionMode()) {
+                getLogger().debug("Ignored payload:\n{}", invocationJson);
+            }
             return false;
         }
 
@@ -157,7 +163,8 @@ public abstract class AbstractRpcInvocationHandler
      */
     private boolean isLegitimatePollEventInvocation(UI ui,
             JsonObject invocationJson) {
-        List<String> allowedKeys = Arrays.asList(new String[]{JsonConstants.RPC_TYPE, JsonConstants.RPC_NODE, JsonConstants.RPC_EVENT_TYPE});
+        List<String> allowedKeys = Arrays.asList(JsonConstants.RPC_TYPE,
+                JsonConstants.RPC_NODE, JsonConstants.RPC_EVENT_TYPE);
         List<String> invocationKeys = Arrays.asList(invocationJson.keys());
         if (!allowedKeys.containsAll(invocationKeys)) {
             return false;
@@ -166,12 +173,14 @@ public abstract class AbstractRpcInvocationHandler
         if (!invocationJson.hasKey(JsonConstants.RPC_TYPE)) {
             return false;
         }
-        String type = invocationJson.getString(JsonConstants.RPC_TYPE);
-        if (type == null || !type.equals(JsonConstants.RPC_TYPE_EVENT)) {
+        if (!JsonConstants.RPC_TYPE_EVENT
+                .equals(invocationJson.getString(JsonConstants.RPC_TYPE))) {
             return false;
         }
 
         // Polling events should target only the root component in a UI:
+        StateNode node = ui.getInternals().getStateTree()
+                .getNodeById(getNodeId(invocationJson));
         return node.equals(ui.getElement().getNode());
     }
 
