@@ -512,11 +512,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         }
     }
 
-    /**
-     * Get the listening port of the dev server.
-     *
-     * @return the listening port
-     */
+    @Override
     public int getPort() {
         return port;
     }
