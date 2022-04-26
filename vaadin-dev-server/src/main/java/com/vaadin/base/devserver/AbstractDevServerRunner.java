@@ -555,9 +555,10 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
     }
 
     /**
-     * Get the listening port of the dev server.
-     *
-     * @return the listening port
+     * Waits for the dev server to start.
+     * <p>
+     * Suspends the caller's thread until the dev mode server is started (or
+     * failed to start).
      */
     public void waitForDevServer() {
         devServerStartFuture.join();
