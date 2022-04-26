@@ -1021,6 +1021,80 @@ public class SessionRouteRegistryTest {
         Assert.assertEquals("", url.get());
     }
 
+    @Test
+    public void sessionScopeContainsTemplateRoute_applicationRegistryExactMatchIsReturned() {
+        registry.setRoute(":first/:second", Templated.class,
+                Collections.emptyList());
+        registry.setRoute("other/view", NonTemplated.class,
+                Collections.emptyList());
+
+        SessionRouteRegistry sessionRegistry = getRegistry(session);
+        Assert.assertEquals("ApplicationRegisty Templated should be found.",
+                Templated.class,
+                sessionRegistry.getNavigationTarget("oh/my").get());
+        Assert.assertEquals("ApplicationRegistry NonTemplated should be found",
+                NonTemplated.class,
+                sessionRegistry.getNavigationTarget("other/view").get());
+
+        sessionRegistry.setRoute(":one/:two", Secondary.class,
+                Collections.emptyList());
+
+        Assert.assertEquals(
+                "SessionRegistry should override ApplicationRegistry Templated",
+                Secondary.class,
+                sessionRegistry.getNavigationTarget("oh/my").get());
+
+        Assert.assertEquals(
+                "ApplicationRegistry exact match should be returned instead of SessionRegistry wildcard match",
+                NonTemplated.class,
+                sessionRegistry.getNavigationTarget("other/view").get());
+
+        sessionRegistry.setRoute("other/:one", MyRoute.class,
+                Collections.emptyList());
+
+        Assert.assertEquals(
+                "ApplicationRegistry exact match should be returned instead of any SessionRegistry wildcard match",
+                NonTemplated.class,
+                sessionRegistry.getNavigationTarget("other/view").get());
+        Assert.assertEquals(
+                "SessionRegistry best match with least wildcards should be returned",
+                MyRoute.class,
+                sessionRegistry.getNavigationTarget("other/plank").get());
+
+    }
+
+    @Test
+    public void sessionScopeContainsTemplateRoute_applicationRegistryBetterMatchIsReturned() {
+        registry.setRoute("other/view/parent", NonTemplated.class,
+                Collections.emptyList());
+        registry.setRoute("other/alias/:extra?", Templated.class,
+                Collections.emptyList());
+
+        SessionRouteRegistry sessionRegistry = getRegistry(session);
+        sessionRegistry.setRoute("other/view/:session", MyRoute.class,
+                Collections.emptyList());
+        sessionRegistry.setRoute("other/:match/:session?", Secondary.class,
+                Collections.emptyList());
+
+        Assert.assertEquals(
+                "MyRoute should be selected as the matching parts are equal",
+                MyRoute.class,
+                sessionRegistry.getNavigationTarget("other/view/offset").get());
+        Assert.assertEquals(
+                "Exact macth in ApplicationRegistry should be selected",
+                NonTemplated.class,
+                sessionRegistry.getNavigationTarget("other/view/parent").get());
+        Assert.assertEquals(
+                "Closer macth in ApplicationRegistry should be selected",
+                Templated.class,
+                sessionRegistry.getNavigationTarget("other/alias").get());
+        Assert.assertEquals(
+                "Closer macth in ApplicationRegistry should be selected",
+                Templated.class,
+                sessionRegistry.getNavigationTarget("other/alias/extra").get());
+
+    }
+
     private <T> T serializeAndDeserialize(T instance) throws Throwable {
         ByteArrayOutputStream bs = new ByteArrayOutputStream();
         ObjectOutputStream out = new ObjectOutputStream(bs);
@@ -1098,6 +1172,16 @@ public class SessionRouteRegistryTest {
     @RouteAlias("")
     private static class ParameterizedRouteWithRootAlias extends Component {
 
+    }
+
+    @Route(":first/:second")
+    @Tag("div")
+    public static class Templated extends Component {
+    }
+
+    @Route("other/view")
+    @Tag("div")
+    public static class NonTemplated extends Component {
     }
 
     /**
