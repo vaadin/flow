@@ -16,7 +16,6 @@
 package com.vaadin.flow.server.communication;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
 
 import java.io.BufferedWriter;
@@ -42,6 +41,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.server.ErrorEvent;
+import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.NoInputStreamException;
 import com.vaadin.flow.server.NoOutputStreamException;
 import com.vaadin.flow.server.StreamReceiver;
@@ -448,7 +448,7 @@ public class StreamReceiverHandler implements Serializable {
                 }
             }
         } else {
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
         }
     }
 

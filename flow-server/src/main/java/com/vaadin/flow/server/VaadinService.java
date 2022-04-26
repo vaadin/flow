@@ -18,7 +18,6 @@ package com.vaadin.flow.server;
 
 import javax.servlet.Servlet;
 import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletResponse;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -1570,7 +1569,7 @@ public abstract class VaadinService implements Serializable {
             }
 
             // Request not handled by any RequestHandler
-            response.sendError(HttpServletResponse.SC_NOT_FOUND,
+            response.sendError(HttpStatusCode.NOT_FOUND.getCode(),
                     "Request was not handled by any registered handler.");
 
         } catch (final SessionExpiredException e) {
@@ -1725,7 +1724,7 @@ public abstract class VaadinService implements Serializable {
                 // (https://github.com/vaadin/framework/issues/4167)
                 response.setHeader("Content-Type", "text/plain");
 
-                response.sendError(HttpServletResponse.SC_FORBIDDEN,
+                response.sendError(HttpStatusCode.FORBIDDEN.getCode(),
                         "Session expired");
             }
         } catch (IOException e) {

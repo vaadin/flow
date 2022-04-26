@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.router;
 
-import javax.servlet.http.HttpServletResponse;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -61,6 +59,7 @@ import com.vaadin.flow.router.RouterTest.CombinedObserverTarget.Leave;
 import com.vaadin.flow.router.internal.DefaultErrorHandler;
 import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import com.vaadin.flow.router.internal.RouteUtil;
+import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
@@ -780,7 +779,7 @@ public class RouterTest extends RoutingTestBase {
         public int setErrorParameter(BeforeEnterEvent event,
                 ErrorParameter<NotFoundException> parameter) {
             getElement().setText(EXCEPTION_TEXT);
-            return HttpServletResponse.SC_NOT_FOUND;
+            return HttpStatusCode.NOT_FOUND.getCode();
         }
     }
 
@@ -791,7 +790,7 @@ public class RouterTest extends RoutingTestBase {
         public int setErrorParameter(BeforeEnterEvent event,
                 ErrorParameter<NotFoundException> parameter) {
             getElement().setText(EXCEPTION_TEXT);
-            return HttpServletResponse.SC_NOT_FOUND;
+            return HttpStatusCode.NOT_FOUND.getCode();
         }
     }
 
@@ -803,7 +802,7 @@ public class RouterTest extends RoutingTestBase {
         public int setErrorParameter(BeforeEnterEvent event,
                 ErrorParameter<NotFoundException> parameter) {
             getElement().setText(EXCEPTION_TEXT);
-            return HttpServletResponse.SC_NOT_FOUND;
+            return HttpStatusCode.NOT_FOUND.getCode();
         }
     }
 
@@ -814,7 +813,7 @@ public class RouterTest extends RoutingTestBase {
         public int setErrorParameter(BeforeEnterEvent event,
                 ErrorParameter<NotFoundException> parameter) {
             getElement().setText(EXCEPTION_TEXT);
-            return HttpServletResponse.SC_NOT_FOUND;
+            return HttpStatusCode.NOT_FOUND.getCode();
         }
     }
 
@@ -827,7 +826,7 @@ public class RouterTest extends RoutingTestBase {
         public int setErrorParameter(BeforeEnterEvent event,
                 ErrorParameter<NotFoundException> parameter) {
             trigger = event.getTrigger();
-            return HttpServletResponse.SC_NOT_FOUND;
+            return HttpStatusCode.NOT_FOUND.getCode();
         }
     }
 
@@ -926,7 +925,7 @@ public class RouterTest extends RoutingTestBase {
             } else {
                 getElement().setText("Illegal argument exception.");
             }
-            return HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+            return HttpStatusCode.INTERNAL_SERVER_ERROR.getCode();
         }
     }
 
@@ -1940,7 +1939,7 @@ public class RouterTest extends RoutingTestBase {
 
         Assert.assertEquals(
                 "Routing with mismatching parameters should have failed -",
-                HttpServletResponse.SC_INTERNAL_SERVER_ERROR, result);
+                HttpStatusCode.INTERNAL_SERVER_ERROR.getCode(), result);
         String message = "No route 'param' accepting the parameters [hello] was found.";
         String exceptionText = String.format(EXCEPTION_WRAPPER_MESSAGE,
                 locationString, message);
@@ -1992,7 +1991,7 @@ public class RouterTest extends RoutingTestBase {
 
         Assert.assertEquals(
                 "Routing with mismatching parameters should have failed -",
-                HttpServletResponse.SC_INTERNAL_SERVER_ERROR, result);
+                HttpStatusCode.INTERNAL_SERVER_ERROR.getCode(), result);
         String message = "Given route parameter 'class java.lang.Long' is of the wrong type. Required 'class java.lang.String'.";
         String exceptionText = String.format(EXCEPTION_WRAPPER_MESSAGE,
                 locationString, message);
@@ -2012,7 +2011,7 @@ public class RouterTest extends RoutingTestBase {
 
         Assert.assertEquals(
                 "Routing with mismatching parameters should have failed -",
-                HttpServletResponse.SC_INTERNAL_SERVER_ERROR, result);
+                HttpStatusCode.INTERNAL_SERVER_ERROR.getCode(), result);
         String message = "No route 'param' accepting the parameters [this, must, work] was found.";
         String exceptionText = String.format(EXCEPTION_WRAPPER_MESSAGE,
                 locationString, message);
@@ -2032,7 +2031,7 @@ public class RouterTest extends RoutingTestBase {
 
         Assert.assertEquals(
                 "Routing with mismatching parameters should have failed -",
-                HttpServletResponse.SC_INTERNAL_SERVER_ERROR, result);
+                HttpStatusCode.INTERNAL_SERVER_ERROR.getCode(), result);
         String message = "No route 'param' accepting the parameters [this, must, work] was found.";
         String exceptionText = String.format(EXCEPTION_WRAPPER_MESSAGE,
                 locationString, message);
@@ -2126,7 +2125,7 @@ public class RouterTest extends RoutingTestBase {
 
         setNavigationTargets(FooNavigationTarget.class);
 
-        Assert.assertEquals(HttpServletResponse.SC_NOT_FOUND, router.navigate(
+        Assert.assertEquals(HttpStatusCode.NOT_FOUND.getCode(), router.navigate(
                 ui, new Location(""), NavigationTrigger.PROGRAMMATIC));
     }
 
@@ -2260,7 +2259,7 @@ public class RouterTest extends RoutingTestBase {
                 NavigationTrigger.PROGRAMMATIC);
 
         Assert.assertEquals("Non existent route should have returned.",
-                HttpServletResponse.SC_NOT_FOUND, result);
+                HttpStatusCode.NOT_FOUND.getCode(), result);
 
         String message = String.format(
                 "Invalid wildcard parameter in class %s. Only String is supported for wildcard parameters.",
@@ -2285,7 +2284,7 @@ public class RouterTest extends RoutingTestBase {
                 NavigationTrigger.PROGRAMMATIC);
 
         Assert.assertEquals("Non existent route should have returned.",
-                HttpServletResponse.SC_NOT_FOUND, result);
+                HttpStatusCode.NOT_FOUND.getCode(), result);
 
         String exceptionText1 = String.format("Could not navigate to '%s'",
                 locationString);
@@ -2307,7 +2306,7 @@ public class RouterTest extends RoutingTestBase {
         int result = router.navigate(ui, new Location(locationString),
                 NavigationTrigger.PROGRAMMATIC);
         Assert.assertEquals("Non existent route should have returned.",
-                HttpServletResponse.SC_NOT_FOUND, result);
+                HttpStatusCode.NOT_FOUND.getCode(), result);
 
         Assert.assertEquals("Expected event amount was wrong", 1,
                 ErrorTarget.events.size());
@@ -2327,7 +2326,7 @@ public class RouterTest extends RoutingTestBase {
         int result = router.navigate(ui, new Location("exception"),
                 NavigationTrigger.PROGRAMMATIC);
         Assert.assertEquals("Non existent route should have returned.",
-                HttpServletResponse.SC_INTERNAL_SERVER_ERROR, result);
+                HttpStatusCode.INTERNAL_SERVER_ERROR.getCode(), result);
     }
 
     @Test
@@ -2354,7 +2353,7 @@ public class RouterTest extends RoutingTestBase {
         @Override
         public int setErrorParameter(BeforeEnterEvent event,
                 ErrorParameter<NullPointerException> parameter) {
-            return HttpServletResponse.SC_UNAUTHORIZED;
+            return HttpStatusCode.UNAUTHORIZED.getCode();
         }
     }
 
@@ -2365,7 +2364,7 @@ public class RouterTest extends RoutingTestBase {
         @Override
         public int setErrorParameter(BeforeEnterEvent event,
                 ErrorParameter<NullPointerException> parameter) {
-            return HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+            return HttpStatusCode.INTERNAL_SERVER_ERROR.getCode();
         }
     }
 
@@ -2379,7 +2378,7 @@ public class RouterTest extends RoutingTestBase {
                 NavigationTrigger.PROGRAMMATIC);
         Assert.assertEquals(
                 "Null pointer should return the server error of the custom implementation.",
-                HttpServletResponse.SC_INTERNAL_SERVER_ERROR, result);
+                HttpStatusCode.INTERNAL_SERVER_ERROR.getCode(), result);
 
         Assert.assertEquals(
                 "Expected the extending class to be used instead of the super class",
@@ -2405,7 +2404,7 @@ public class RouterTest extends RoutingTestBase {
         int result = router.navigate(ui, new Location("exception"),
                 NavigationTrigger.PROGRAMMATIC);
         Assert.assertEquals("Non existent route should have returned.",
-                HttpServletResponse.SC_NOT_FOUND, result);
+                HttpStatusCode.NOT_FOUND.getCode(), result);
 
         Assert.assertEquals(
                 "Expected the extending class to be used instead of the super class",
@@ -2423,7 +2422,7 @@ public class RouterTest extends RoutingTestBase {
         int result = router.navigate(ui, new Location("exception"),
                 NavigationTrigger.PROGRAMMATIC);
         Assert.assertEquals("Non existent route should have returned.",
-                HttpServletResponse.SC_NOT_FOUND, result);
+                HttpStatusCode.NOT_FOUND.getCode(), result);
 
         Assert.assertEquals(
                 "Expected the extending class to be used instead of the super class",
@@ -2443,7 +2442,7 @@ public class RouterTest extends RoutingTestBase {
         int result = router.navigate(ui, new Location("exception"),
                 NavigationTrigger.PROGRAMMATIC);
         Assert.assertEquals("Non existent route should have returned.",
-                HttpServletResponse.SC_NOT_FOUND, result);
+                HttpStatusCode.NOT_FOUND.getCode(), result);
 
         Component parenComponent = ComponentUtil
                 .findParentComponent(ui.getElement().getChild(0)).get();
@@ -2468,7 +2467,7 @@ public class RouterTest extends RoutingTestBase {
                 NavigationTrigger.PROGRAMMATIC);
 
         Assert.assertEquals("Target should have rerouted to exception target.",
-                HttpServletResponse.SC_INTERNAL_SERVER_ERROR, result);
+                HttpStatusCode.INTERNAL_SERVER_ERROR.getCode(), result);
 
         Assert.assertEquals(IllegalTarget.class, getUIComponent());
 
@@ -2490,7 +2489,7 @@ public class RouterTest extends RoutingTestBase {
                 NavigationTrigger.PROGRAMMATIC);
 
         Assert.assertEquals("Target should have rerouted to exception target.",
-                HttpServletResponse.SC_INTERNAL_SERVER_ERROR, result);
+                HttpStatusCode.INTERNAL_SERVER_ERROR.getCode(), result);
 
         Assert.assertEquals(IllegalTarget.class, getUIComponent());
 
@@ -2516,7 +2515,7 @@ public class RouterTest extends RoutingTestBase {
         int result = router.navigate(ui, new Location("toNotFound/error"),
                 NavigationTrigger.PROGRAMMATIC);
         Assert.assertEquals("Target should have rerouted to exception target.",
-                HttpServletResponse.SC_NOT_FOUND, result);
+                HttpStatusCode.NOT_FOUND.getCode(), result);
 
         Assert.assertEquals(RouteNotFoundError.class, getUIComponent());
     }
@@ -2557,10 +2556,10 @@ public class RouterTest extends RoutingTestBase {
 
         Assert.assertEquals(
                 "Target should have failed on an internal exception.",
-                HttpServletResponse.SC_INTERNAL_SERVER_ERROR, result);
+                HttpStatusCode.INTERNAL_SERVER_ERROR.getCode(), result);
 
         String validationMessage = String.format(
-                "Error state code must be a valid HttpServletResponse value. Received invalid value of '%s' for '%s'",
+                "Error state code must be a valid HttpStatusCode value. Received invalid value of '%s' for '%s'",
                 0, FaultyErrorView.class.getName());
 
         String errorMessage = String.format(
@@ -2670,7 +2669,7 @@ public class RouterTest extends RoutingTestBase {
                 NavigationTrigger.PROGRAMMATIC);
 
         Assert.assertEquals("First transition failed",
-                HttpServletResponse.SC_OK, status1);
+                HttpStatusCode.OK.getCode(), status1);
         Assert.assertEquals(PostponingAndResumingNavigationTarget.class,
                 getUIComponent());
 
@@ -2680,7 +2679,7 @@ public class RouterTest extends RoutingTestBase {
         int status2 = router.navigate(ui, new Location(""),
                 NavigationTrigger.PROGRAMMATIC);
         Assert.assertEquals("Second transition failed",
-                HttpServletResponse.SC_OK, status2);
+                HttpStatusCode.OK.getCode(), status2);
 
         Assert.assertEquals(RootNavigationTarget.class, getUIComponent());
         Assert.assertEquals(
@@ -2703,14 +2702,14 @@ public class RouterTest extends RoutingTestBase {
                 NavigationTrigger.PROGRAMMATIC);
 
         Assert.assertEquals("First transition failed",
-                HttpServletResponse.SC_OK, status1);
+                HttpStatusCode.OK.getCode(), status1);
         Assert.assertEquals(PostponingForeverNavigationTarget.class,
                 getUIComponent());
 
         int status2 = router.navigate(ui, new Location(""),
                 NavigationTrigger.PROGRAMMATIC);
         Assert.assertEquals("Second transition failed",
-                HttpServletResponse.SC_OK, status2);
+                HttpStatusCode.OK.getCode(), status2);
 
         Assert.assertEquals(PostponingForeverNavigationTarget.class,
                 getUIComponent());
@@ -2744,15 +2743,15 @@ public class RouterTest extends RoutingTestBase {
                 NavigationTrigger.PROGRAMMATIC);
 
         Assert.assertEquals("First transition failed",
-                HttpServletResponse.SC_OK, status1);
+                HttpStatusCode.OK.getCode(), status1);
         Assert.assertEquals(FooBarNavigationTarget.class, getUIComponent());
 
         event.postpone().proceed();
 
         Assert.assertEquals("Second transition failed",
-                HttpServletResponse.SC_OK, status2);
+                HttpStatusCode.OK.getCode(), status2);
         Assert.assertEquals("Third transition failed",
-                HttpServletResponse.SC_OK, status3);
+                HttpStatusCode.OK.getCode(), status3);
 
         Assert.assertEquals(FooBarNavigationTarget.class, getUIComponent());
         Assert.assertEquals("Expected event amount was wrong", 2,
@@ -2772,14 +2771,14 @@ public class RouterTest extends RoutingTestBase {
                 NavigationTrigger.PROGRAMMATIC);
 
         Assert.assertEquals("First transition failed",
-                HttpServletResponse.SC_OK, status1);
+                HttpStatusCode.OK.getCode(), status1);
         Assert.assertEquals(PostponingAndResumingCompoundNavigationTarget.class,
                 getUIComponent());
 
         int status2 = router.navigate(ui, new Location(""),
                 NavigationTrigger.PROGRAMMATIC);
         Assert.assertEquals("Second transition failed",
-                HttpServletResponse.SC_OK, status2);
+                HttpStatusCode.OK.getCode(), status2);
 
         Assert.assertNotNull(
                 PostponingAndResumingCompoundNavigationTarget.postpone);
@@ -3186,7 +3185,7 @@ public class RouterTest extends RoutingTestBase {
         int result = router.navigate(ui, new Location("programmatic"),
                 NavigationTrigger.PROGRAMMATIC);
         Assert.assertEquals("Non existent route should have returned.",
-                HttpServletResponse.SC_NOT_FOUND, result);
+                HttpStatusCode.NOT_FOUND.getCode(), result);
 
         Assert.assertEquals(NavigationTrigger.PROGRAMMATIC,
                 FileNotFound.trigger);
