@@ -155,7 +155,7 @@ public abstract class AbstractDevModeTest {
 
     protected static void waitForDevServer(DevModeHandler devModeHandler) {
         Assert.assertNotNull(devModeHandler);
-        devModeHandler.waitForDevServer();
+        ((AbstractDevServerRunner) (devModeHandler)).waitForDevServer();
     }
 
     protected static boolean hasDevServerProcess(

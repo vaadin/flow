@@ -554,7 +554,11 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         return new File(System.getProperty("java.io.tmpdir"), uniqueUid);
     }
 
-    @Override
+    /**
+     * Get the listening port of the dev server.
+     *
+     * @return the listening port
+     */
     public void waitForDevServer() {
         devServerStartFuture.join();
     }
