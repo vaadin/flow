@@ -15,14 +15,12 @@
  */
 package com.vaadin.flow.data.binder;
 
-import javax.validation.metadata.BeanDescriptor;
-import javax.validation.metadata.ConstraintDescriptor;
-import javax.validation.metadata.PropertyDescriptor;
-
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.data.binder.BeanPropertySet.NestedBeanPropertyDefinition;
+import com.vaadin.flow.data.validator.AbstractBeanValidator;
 import com.vaadin.flow.data.validator.BeanValidator;
-import com.vaadin.flow.internal.BeanUtil;
+import com.vaadin.flow.data.validator.JakartaBeanValidator;
+import com.vaadin.flow.data.validator.JEEValidationHelper;
 
 /**
  * Binder that uses reflection based on the provided bean type to resolve bean
@@ -78,7 +76,7 @@ public class BeanValidationBinder<BEAN> extends Binder<BEAN> {
     public BeanValidationBinder(Class<BEAN> beanType,
             boolean scanNestedDefinitions) {
         super(beanType, scanNestedDefinitions);
-        if (!BeanUtil.checkBeanValidationAvailable()) {
+        if (!JEEValidationHelper.checkBeanValidationAvailable()) {
             throw new IllegalStateException(BeanValidationBinder.class
                     .getSimpleName()
                     + " cannot be used because a JSR-303 Bean Validation "
@@ -123,8 +121,9 @@ public class BeanValidationBinder<BEAN> extends Binder<BEAN> {
             BindingBuilder<BEAN, ?> binding,
             PropertyDefinition<BEAN, ?> definition) {
         Class<?> actualBeanType = findBeanType(beanType, definition);
-        BeanValidator validator = new BeanValidator(actualBeanType,
-                definition.getTopLevelName());
+        AbstractBeanValidator<?> validator = JEEValidationHelper
+                .beanValidatorFactory()
+                .apply(actualBeanType, definition.getTopLevelName());
         if (requiredConfigurator != null) {
             configureRequired(binding, definition, validator);
         }
@@ -154,18 +153,12 @@ public class BeanValidationBinder<BEAN> extends Binder<BEAN> {
     }
 
     private void configureRequired(BindingBuilder<BEAN, ?> binding,
-            PropertyDefinition<BEAN, ?> definition, BeanValidator validator) {
+            PropertyDefinition<BEAN, ?> definition,
+            AbstractBeanValidator<?> validator) {
         assert requiredConfigurator != null;
-        Class<?> propertyHolderType = definition.getPropertyHolderType();
-        BeanDescriptor descriptor = validator.getJavaxBeanValidator()
-                .getConstraintsForClass(propertyHolderType);
-        PropertyDescriptor propertyDescriptor = descriptor
-                .getConstraintsForProperty(definition.getTopLevelName());
-        if (propertyDescriptor == null) {
-            return;
-        }
-        if (propertyDescriptor.getConstraintDescriptors().stream()
-                .map(ConstraintDescriptor::getAnnotation)
+        if (validator
+                .extractConstraints(definition.getPropertyHolderType(),
+                        definition.getTopLevelName())
                 .anyMatch(constraint -> requiredConfigurator.test(constraint,
                         binding))) {
             binding.getField().setRequiredIndicatorVisible(true);

@@ -2,6 +2,7 @@ package com.vaadin.flow.tests.data;
 
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.stream.Stream;
 
 import com.vaadin.flow.data.binder.HasDataProvider;
 import com.vaadin.flow.data.provider.DataProvider;
@@ -13,6 +14,15 @@ import org.junit.Test;
 import static org.junit.Assert.assertNotNull;
 
 public class DataSerializableTest extends ClassesSerializableTest {
+
+    @Override
+    protected Stream<String> getExcludedPatterns() {
+        // JakartaBeanValidator is excluded by default because Jakarta
+        // Validation dependency is added only on flow-data module, so remove it
+        // from exclude list in order to check it is serializable
+        return super.getExcludedPatterns().filter(
+                pattern -> !pattern.endsWith(".JakartaBeanValidator.*"));
+    }
 
     /*
      * AbstractDataProvider.addDataProviderListener may return a Registration

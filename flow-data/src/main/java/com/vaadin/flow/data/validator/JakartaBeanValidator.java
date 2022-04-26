@@ -13,16 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.data.validator;
-
-import javax.validation.ConstraintViolation;
-import javax.validation.MessageInterpolator.Context;
-import javax.validation.Validation;
-import javax.validation.ValidatorFactory;
-import javax.validation.metadata.BeanDescriptor;
-import javax.validation.metadata.ConstraintDescriptor;
-import javax.validation.metadata.PropertyDescriptor;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
@@ -30,10 +21,18 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.MessageInterpolator;
+import jakarta.validation.Validation;
+import jakarta.validation.ValidatorFactory;
+import jakarta.validation.metadata.BeanDescriptor;
+import jakarta.validation.metadata.ConstraintDescriptor;
+import jakarta.validation.metadata.PropertyDescriptor;
+
 import com.vaadin.flow.internal.BeanUtil;
 
 /**
- * A {@code Validator} using the JSR-303 (javax.validation) annotation-based
+ * A {@code Validator} using the JSR-303 (jakarta.validation) annotation-based
  * bean validation mechanism. Values passed to this validator are compared
  * against the constraints, if any, specified by annotations on the
  * corresponding bean property.
@@ -41,17 +40,18 @@ import com.vaadin.flow.internal.BeanUtil;
  * Note that a JSR-303 implementation (for instance
  * <a href="http://hibernate.org/validator/">Hibernate Validator</a> or
  * <a href="http://bval.apache.org/">Apache BVal</a>) must be present on the
- * project classpath when using bean validation. Specification versions 1.0 and
- * 1.1 are supported.
+ * project classpath when using bean validation. Specification versions 3.0 are
+ * supported.
  *
  * @author Vaadin Ltd
- * @since 1.0.
+ * @since
  *
  */
-public class BeanValidator
+public class JakartaBeanValidator
         extends AbstractBeanValidator<ConstraintViolation<?>> {
 
-    private static final class ContextImpl implements Context, Serializable {
+    private static final class ContextImpl
+            implements MessageInterpolator.Context, Serializable {
 
         private final ConstraintViolation<?> violation;
 
@@ -89,20 +89,13 @@ public class BeanValidator
      *             if {@link BeanUtil#checkBeanValidationAvailable()} returns
      *             false
      */
-    public BeanValidator(Class<?> beanType, String propertyName) {
+    public JakartaBeanValidator(Class<?> beanType, String propertyName) {
         super(beanType, propertyName);
-        if (!JEEValidationHelper.JAVAX_BEAN_VALIDATION_AVAILABLE) {
+        if (!JEEValidationHelper.JAKARTA_BEAN_VALIDATION_AVAILABLE) {
             throw new IllegalStateException("Cannot create a "
-                    + BeanValidator.class.getSimpleName()
+                    + JakartaBeanValidator.class.getSimpleName()
                     + ": a JSR-303 Bean Validation implementation not found on the classpath");
         }
-    }
-
-    @Override
-    protected Set<? extends ConstraintViolation<?>> applyValidations(
-            Class<?> beanType, String propertyName, Object value) {
-        return getJavaxBeanValidator().validateValue(beanType, propertyName,
-                value);
     }
 
     @Override
@@ -117,6 +110,13 @@ public class BeanValidator
         }
         return propertyDescriptor.getConstraintDescriptors().stream()
                 .map(ConstraintDescriptor::getAnnotation);
+    }
+
+    @Override
+    protected Set<? extends ConstraintViolation<?>> applyValidations(
+            Class<?> beanType, String propertyName, Object value) {
+        return getJavaxBeanValidator().validateValue(beanType, propertyName,
+                value);
     }
 
     /**
@@ -134,7 +134,7 @@ public class BeanValidator
      *
      * @return the validator to use
      */
-    public javax.validation.Validator getJavaxBeanValidator() {
+    public jakarta.validation.Validator getJavaxBeanValidator() {
         return getJavaxBeanValidatorFactory().getValidator();
     }
 
@@ -163,7 +163,8 @@ public class BeanValidator
      *            the constraint violation
      * @return the message interpolation context
      */
-    protected Context createContext(ConstraintViolation<?> violation) {
+    protected MessageInterpolator.Context createContext(
+            ConstraintViolation<?> violation) {
         return new ContextImpl(violation);
     }
 
@@ -177,4 +178,5 @@ public class BeanValidator
             return Validation.buildDefaultValidatorFactory();
         }
     }
+
 }

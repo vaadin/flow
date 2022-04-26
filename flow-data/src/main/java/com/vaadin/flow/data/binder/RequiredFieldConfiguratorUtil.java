@@ -20,8 +20,6 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.function.Predicate;
 
-import javax.validation.constraints.Size;
-
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.data.binder.Binder.BindingBuilder;
 import com.vaadin.flow.data.binder.Binder.BindingBuilderImpl;
@@ -43,12 +41,14 @@ public class RequiredFieldConfiguratorUtil {
 
     /**
      * Checks whether the given object would be considered empty according to
-     * the {@link Size} constraint.
+     * JSR-303 Bean Validation {@code Size} constraint.
      *
      * @param value
      *            the value to check
      * @return true if the value is supported by the size constraint, otherwise
      *         <code>false</code>
+     * @see javax.validation.constraints.Size
+     * @see jakarta.validation.constraints.Size
      */
     public static boolean hasZeroSize(Object value) {
         if (value instanceof CharSequence) {

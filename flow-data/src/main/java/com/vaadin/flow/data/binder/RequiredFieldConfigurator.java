@@ -18,13 +18,11 @@ package com.vaadin.flow.data.binder;
 import java.lang.annotation.Annotation;
 import java.util.Objects;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
-
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.data.binder.Binder.BindingBuilder;
+import com.vaadin.flow.data.validator.JEEValidationHelper;
 import com.vaadin.flow.function.SerializableBiPredicate;
+import com.vaadin.flow.internal.ReflectTools;
 
 /**
  * This interface represents a predicate which returns {@code true} if bound
@@ -46,7 +44,7 @@ public interface RequiredFieldConfigurator
      * for a property where the default value is <code>null</code>.
      */
     RequiredFieldConfigurator NOT_NULL = (annotation,
-            binding) -> annotation.annotationType().equals(NotNull.class)
+            binding) -> JEEValidationHelper.isNotNullConstraint(annotation)
                     && RequiredFieldConfiguratorUtil.testConvertedDefaultValue(
                             binding, Objects::isNull);
 
@@ -55,9 +53,7 @@ public interface RequiredFieldConfigurator
      * for a property where the default value is empty.
      */
     RequiredFieldConfigurator NOT_EMPTY = (annotation,
-            binding) -> (annotation.annotationType().equals(NotEmpty.class)
-                    || annotation.annotationType().getName().equals(
-                            "org.hibernate.validator.constraints.NotEmpty"))
+            binding) -> JEEValidationHelper.isNotEmptyConstraint(annotation)
                     && RequiredFieldConfiguratorUtil.testConvertedDefaultValue(
                             binding,
                             RequiredFieldConfiguratorUtil::hasZeroSize);
@@ -68,8 +64,9 @@ public interface RequiredFieldConfigurator
      * value is 0.
      */
     RequiredFieldConfigurator SIZE = (annotation,
-            binding) -> annotation.annotationType().equals(Size.class)
-                    && ((Size) annotation).min() > 0
+            binding) -> JEEValidationHelper.isSizeConstraint(annotation)
+                    && (Integer) ReflectTools
+                            .getAnnotationMethodValue(annotation, "min") > 0
                     && RequiredFieldConfiguratorUtil.testConvertedDefaultValue(
                             binding,
                             RequiredFieldConfiguratorUtil::hasZeroSize);

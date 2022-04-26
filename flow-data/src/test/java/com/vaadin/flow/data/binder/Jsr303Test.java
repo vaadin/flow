@@ -15,24 +15,23 @@
  */
 package com.vaadin.flow.data.binder;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.net.URLClassLoader;
 
-import javax.validation.Validation;
-
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.data.binder.testcomponents.TestTextField;
+import com.vaadin.flow.data.validator.JEEValidationHelper;
 import com.vaadin.flow.internal.BeanUtil;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.tests.data.bean.BeanToValidate;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Vaadin Ltd
@@ -55,8 +54,7 @@ public class Jsr303Test {
                     vaadinPackagePrefix.lastIndexOf('.'));
             if (name.equals(UnitTest.class.getName())) {
                 super.loadClass(name);
-            } else if (name
-                    .startsWith(Validation.class.getPackage().getName())) {
+            } else if (name.matches("^(javax|jakarta)\\.validation\\..*")) {
                 throw new ClassNotFoundException();
             } else if (name.startsWith(vaadinPackagePrefix)) {
                 String path = name.replace('.', '/').concat(".class");
@@ -113,11 +111,36 @@ public class Jsr303Test {
 
     }
 
+    public static class JEEValidationHelperTest implements UnitTest {
+
+        @Override
+        public void execute() {
+            try {
+                JEEValidationHelper.beanValidatorFactory();
+                Assert.fail("Expecting an IllegalStateException to be thrown");
+            } catch (IllegalStateException ignore) {
+                // an exception has to be thrown
+            }
+        }
+    }
+
     @Test
     public void beanBinderWithoutJsr303() throws ClassNotFoundException,
             NoSuchMethodException, SecurityException, InstantiationException,
             IllegalAccessException, IllegalArgumentException,
             InvocationTargetException, IOException, InterruptedException {
+        try (URLClassLoader loader = new TestClassLoader()) {
+            Class<?> clazz = loader
+                    .loadClass(JEEValidationHelperTest.class.getName());
+            UnitTest test = (UnitTest) clazz.newInstance();
+            test.execute();
+        }
+    }
+
+    @Test
+    public void JEEValidationHelper_beanValidatorFactory_shouldFailWithoutJsr303()
+            throws IOException, ClassNotFoundException, InstantiationException,
+            IllegalAccessException {
         try (URLClassLoader loader = new TestClassLoader()) {
             Class<?> clazz = loader.loadClass(Jsr303UnitTest.class.getName());
             UnitTest test = (UnitTest) clazz.newInstance();

@@ -62,6 +62,11 @@ public abstract class ClassesSerializableTest extends ClassFinder {
     protected Stream<String> getExcludedPatterns() {
         return Stream.of(
                 "com\\.vaadin\\.flow\\.data\\.validator\\.BeanValidator\\$LazyFactoryInitializer",
+                "com\\.vaadin\\.flow\\.data\\.validator\\.JakartaBeanValidator\\$LazyFactoryInitializer",
+                // Exclude JakartaBeanValidator because Jakarta Validation
+                // dependency is declared only on flow-data module as optional
+                "com\\.vaadin\\.flow\\.data\\.validator\\.JakartaBeanValidator.*",
+                "com\\.vaadin\\.flow\\.data\\.validator\\.JEEValidationHelper",
                 "com\\.vaadin\\.flow\\.internal\\.BeanUtil\\$LazyValidationAvailability",
                 ".*\\.slf4j\\..*", ".*\\.testbench\\..*", ".*\\.testutil\\..*",
                 // Various utils with inner classes
