@@ -20,8 +20,6 @@ import java.util.List;
 import java.util.Optional;
 
 import com.vaadin.flow.component.ComponentUtil;
-import com.vaadin.flow.server.VaadinService;
-
 import com.vaadin.flow.component.PollEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.StateNode;
@@ -97,20 +95,14 @@ public abstract class AbstractRpcInvocationHandler
         if (!isPollingEnabledForUI(ui)) {
             getLogger().warn(
                     "Ignoring Poll RPC for UI that does not have polling enabled.");
-            if (!VaadinService.getCurrent().getDeploymentConfiguration()
-                    .isProductionMode()) {
-                getLogger().debug("Ignored payload:\n{}", invocationJson);
-            }
+            getLogger().debug("Ignored payload:\n{}", invocationJson);
             return false;
         }
 
         if (!isLegitimatePollEventInvocation(ui, invocationJson)) {
             getLogger().warn(
                     "Ignoring Poll RPC for illegitimate invocation payload.");
-            if (!VaadinService.getCurrent().getDeploymentConfiguration()
-                    .isProductionMode()) {
-                getLogger().debug("Ignored payload:\n{}", invocationJson);
-            }
+            getLogger().debug("Ignored payload:\n{}", invocationJson);
             return false;
         }
 

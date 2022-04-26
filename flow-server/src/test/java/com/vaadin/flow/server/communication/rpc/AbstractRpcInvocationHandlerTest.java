@@ -23,19 +23,14 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.dom.ElementUtil;
-import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.mockito.MockedStatic;
-import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,23 +63,6 @@ public class AbstractRpcInvocationHandlerTest {
     }
 
     private TestRpcInvocationHandler handler = new TestRpcInvocationHandler();
-
-    private VaadinServletService vaadinService;
-    private DeploymentConfiguration deploymentConfiguration;
-
-    @Before
-    public void init() {
-
-        deploymentConfiguration = Mockito.mock(DeploymentConfiguration.class);
-        Mockito.when(deploymentConfiguration.isProductionMode())
-                .thenReturn(false);
-
-        vaadinService = Mockito.mock(VaadinServletService.class);
-        Mockito.when(vaadinService.getDeploymentConfiguration())
-                .thenReturn(deploymentConfiguration);
-
-        VaadinService.setCurrent(vaadinService);
-    }
 
     @Test
     public void handleVisibleAndEnabledNode_nodeIsHandled() {
@@ -223,30 +201,7 @@ public class AbstractRpcInvocationHandlerTest {
     }
 
     @Test
-    public void inertUIWithoutPollListenerInProdMode_passingLegitimatePollingPayload_doesNotLogIgnoredPayloadInDebugLevel() {
-
-        Logger logger = spy(Logger.class);
-        try (MockedStatic<LoggerFactory> mockedLoggerFactory = mockStatic(
-                LoggerFactory.class)) {
-            mockedLoggerFactory
-                    .when(() -> LoggerFactory.getLogger(
-                            AbstractRpcInvocationHandler.class.getName()))
-                    .thenReturn(logger);
-            Mockito.when(deploymentConfiguration.isProductionMode())
-                    .thenReturn(true);
-
-            UI ui = createInertUI();
-            JsonObject invocationJson = createLegitimatePollingRpcInvocationPayload(
-                    ui);
-            handler.handle(ui, invocationJson);
-
-            verify(logger, times(1)).warn(anyString());
-            verify(logger, times(0)).debug(anyString(), (Object) any());
-        }
-    }
-
-    @Test
-    public void inertUIWithoutPollListenerInDevMode_passingLegitimatePollingPayload_logsIgnoredPayloadInDebugLevel() {
+    public void inertUIWithoutPollListener_passingLegitimatePollingPayload_logsIgnoredPayloadInDebugLevel() {
 
         Logger logger = spy(Logger.class);
         try (MockedStatic<LoggerFactory> mockedLoggerFactory = mockStatic(
@@ -267,30 +222,7 @@ public class AbstractRpcInvocationHandlerTest {
     }
 
     @Test
-    public void inertUIWithPollListenerInProdMode_passingIllegitimatePollingPayload_doesNotLogIgnoredPayloadInDebugLevel() {
-
-        Logger logger = spy(Logger.class);
-        try (MockedStatic<LoggerFactory> mockedLoggerFactory = mockStatic(
-                LoggerFactory.class)) {
-            mockedLoggerFactory
-                    .when(() -> LoggerFactory.getLogger(
-                            AbstractRpcInvocationHandler.class.getName()))
-                    .thenReturn(logger);
-            Mockito.when(deploymentConfiguration.isProductionMode())
-                    .thenReturn(true);
-
-            UI ui = createInertUIWithPollListener();
-            JsonObject invocationJson = createIllegitimatePayloadKeysPollingRpcInvocationPayload(
-                    ui);
-            handler.handle(ui, invocationJson);
-
-            verify(logger, times(1)).warn(anyString());
-            verify(logger, times(0)).debug(anyString(), (Object) any());
-        }
-    }
-
-    @Test
-    public void inertUIWithPollListenerInDevMode_passingIllegitimatePollingPayload_logsIgnoredPayloadInDebugLevel() {
+    public void inertUIWithPollListener_passingIllegitimatePollingPayload_logsIgnoredPayloadInDebugLevel() {
 
         Logger logger = spy(Logger.class);
         try (MockedStatic<LoggerFactory> mockedLoggerFactory = mockStatic(
