@@ -67,8 +67,7 @@ public abstract class AbstractRpcInvocationHandler
                     + "the client side for an inactive (disabled or invisible) node id='{}'",
                     getClass().getName(), node.getId());
             return Optional.empty();
-        } else if (!ignoreInertForRpcInvocation(ui, invocationJson)
-                && !allowInert(node) && node.isInert()) {
+        } else if (!allowInert(ui, invocationJson) && node.isInert()) {
             getLogger().trace(
                     "Ignored RPC for invocation handler '{}' from "
                             + "the client side for an inert node id='{}'",
@@ -80,19 +79,16 @@ public abstract class AbstractRpcInvocationHandler
     }
 
     /**
-     * Specifies whether inert status should be ignored for an RPC invocation or
-     * not. The default behaviour is to let the polling events be handled, while
-     * ignoring other requests.
+     * Checks whether a Poll RPC invocation is valid or not.
      *
      * @param ui
      *            the current UI instance
      * @param invocationJson
      *            the JsonObject containing invocation properties
-     * @return a boolean indicating that the inert status should be ignored for
-     *         the current invocation or not.
+     * @return a boolean indicating that the Poll RPC invocation is valid or
+     *         not.
      */
-    protected boolean ignoreInertForRpcInvocation(UI ui,
-            JsonObject invocationJson) {
+    private boolean isValidPollInvocation(UI ui, JsonObject invocationJson) {
 
         if (!isPollEventInvocation(invocationJson)) {
             return false;
@@ -152,7 +148,7 @@ public abstract class AbstractRpcInvocationHandler
      * {@link com.vaadin.flow.shared.JsonConstants#RPC_EVENT_TYPE} before this
      * method is called.
      *
-     * @see #ignoreInertForRpcInvocation(UI, JsonObject)
+     * @see #isValidPollInvocation(UI, JsonObject)
      *
      * @param ui
      *            the UI instance which the Rpc event is coming from.
@@ -184,8 +180,20 @@ public abstract class AbstractRpcInvocationHandler
         return node.equals(ui.getElement().getNode());
     }
 
-    protected boolean allowInert(StateNode node) {
-        return false;
+    /**
+     * Specifies whether inert status should be ignored for an RPC invocation or
+     * not. The default behaviour is to let the polling events be handled, while
+     * ignoring other requests.
+     *
+     * @param ui
+     *            the UI instance that RPC invocation originated from.
+     * @param invocationJson
+     *            the JsonObject containing invocation properties.
+     * @return a boolean indicating that the inert status should be ignored for
+     *         the current invocation or not.
+     */
+    protected boolean allowInert(UI ui, JsonObject invocationJson) {
+        return isValidPollInvocation(ui, invocationJson);
     }
 
     /**

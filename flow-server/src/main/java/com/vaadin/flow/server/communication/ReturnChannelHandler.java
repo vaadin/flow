@@ -20,6 +20,7 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelMap;
@@ -80,10 +81,16 @@ public class ReturnChannelHandler extends AbstractRpcInvocationHandler {
     }
 
     @Override
-    protected boolean allowInert(StateNode node) {
+    protected boolean allowInert(UI ui, JsonObject invocationJson) {
+        StateNode node = ui.getInternals().getStateTree()
+                .getNodeById(getNodeId(invocationJson));
         // Allow calls if a return channel has been registered for the node.
         return node.getFeatureIfInitialized(ReturnChannelMap.class)
                 .map(ReturnChannelMap::hasChannels).orElse(false);
+    }
+
+    private static int getNodeId(JsonObject invocationJson) {
+        return (int) invocationJson.getNumber(JsonConstants.RPC_NODE);
     }
 
     private static Logger getLogger() {
