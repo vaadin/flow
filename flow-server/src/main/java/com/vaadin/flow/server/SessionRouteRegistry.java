@@ -181,7 +181,7 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
 
     /**
      * When session registry contains a matching route, check if it is not an
-     * exact match and parenmt registry contains an exact or closer match.
+     * exact match and parent registry contains an exact or closer match.
      *
      * @param url
      *            url to check for exact match
@@ -227,8 +227,7 @@ public class SessionRouteRegistry extends AbstractRouteRegistry {
      * @return amount of matching segments from the start
      */
     private int equalParts(List<String> urlParts, List<String> target) {
-        int maxSize = urlParts.size() > target.size() ? target.size()
-                : urlParts.size();
+        int maxSize = Math.min(urlParts.size(), target.size());
         int matches = 0;
         for (int i = 0; i < maxSize; i++) {
             if (urlParts.get(i).equals(target.get(i))) {
