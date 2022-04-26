@@ -157,10 +157,9 @@ public abstract class AbstractRpcInvocationHandler
      */
     private boolean isLegitimatePollEventInvocation(UI ui,
             JsonObject invocationJson) {
-        int allowedKeysSize = 3;
-        String[] invocationKeys = invocationJson.keys();
-        if (invocationKeys == null
-                || invocationKeys.length != allowedKeysSize) {
+        List<String> allowedKeys = Arrays.asList(new String[]{JsonConstants.RPC_TYPE, JsonConstants.RPC_NODE, JsonConstants.RPC_EVENT_TYPE});
+        List<String> invocationKeys = Arrays.asList(invocationJson.keys());
+        if (!allowedKeys.containsAll(invocationKeys)) {
             return false;
         }
 
@@ -172,13 +171,8 @@ public abstract class AbstractRpcInvocationHandler
             return false;
         }
 
-        if (!invocationJson.hasKey(JsonConstants.RPC_NODE)) {
-            return false;
-        }
-        StateNode node = ui.getInternals().getStateTree()
-                .getNodeById(getNodeId(invocationJson));
         // Polling events should target only the root component in a UI:
-        return node.getParent() == null;
+        return node.equals(ui.getElement().getNode());
     }
 
     protected boolean allowInert(StateNode node) {
