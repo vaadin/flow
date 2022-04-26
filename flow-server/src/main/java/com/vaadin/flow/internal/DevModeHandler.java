@@ -71,4 +71,19 @@ public interface DevModeHandler extends RequestHandler {
      * @return the project root folder
      */
     File getProjectRoot();
+
+    /**
+     * Get the listening port of the dev server.
+     *
+     * @return the listening port
+     */
+    int getPort();
+
+    /**
+     * Waits for the dev server to start.
+     * <p>
+     * Suspends the caller's thread until the dev mode server is started (or
+     * failed to start).
+     */
+    void waitForDevServer();
 }

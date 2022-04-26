@@ -137,7 +137,7 @@ public abstract class AbstractDevModeTest {
     }
 
     protected int getDevServerPort() {
-        return ((AbstractDevServerRunner) handler).getPort();
+        return handler.getPort();
     }
 
     protected void waitForDevServer() {
@@ -155,7 +155,7 @@ public abstract class AbstractDevModeTest {
 
     protected static void waitForDevServer(DevModeHandler devModeHandler) {
         Assert.assertNotNull(devModeHandler);
-        ((AbstractDevServerRunner) (devModeHandler)).waitForDevServer();
+        devModeHandler.waitForDevServer();
     }
 
     protected static boolean hasDevServerProcess(
