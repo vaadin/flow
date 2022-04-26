@@ -1433,38 +1433,35 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
 
     @Test
     public void refreshFields_beforeSettingBean_clearsTheFields() {
-        binder.bind(nameField,
-                Person::getFirstName, Person::setFirstName);
+        binder.bind(nameField, Person::getFirstName, Person::setFirstName);
 
-        assertEquals("Name field should be empty",
-                "", nameField.getValue());
+        assertEquals("Name field should be empty", "", nameField.getValue());
 
         binder.readBean(item);
 
-        assertEquals("Name should be read from the item",
-                item.getFirstName(), nameField.getValue());
+        assertEquals("Name should be read from the item", item.getFirstName(),
+                nameField.getValue());
 
         item.setFirstName("bar");
         binder.refreshFields();
 
-        assertEquals("Name field should be cleared since bean is not set",
-                 "", nameField.getValue());
+        assertEquals("Name field should be cleared since bean is not set", "",
+                nameField.getValue());
     }
 
     @Test
     public void refreshFields_afterSettingBean_readValuesfromBeanAgain() {
-        binder.bind(nameField,
-                Person::getFirstName, Person::setFirstName);
+        binder.bind(nameField, Person::getFirstName, Person::setFirstName);
 
-        assertEquals("Name field should be empty",
-                "", nameField.getValue());
+        assertEquals("Name field should be empty", "", nameField.getValue());
 
         binder.readBean(item);
 
-        assertEquals("Name should be read from the item",
-                item.getFirstName(), nameField.getValue());
+        assertEquals("Name should be read from the item", item.getFirstName(),
+                nameField.getValue());
 
-        binder.setBean(item); // refreshFields would read the values again from bean
+        binder.setBean(item); // refreshFields would read the values again from
+                              // bean
         item.setFirstName("bar");
         binder.refreshFields();
 
