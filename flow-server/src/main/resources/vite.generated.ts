@@ -346,7 +346,11 @@ export const vaadinConfig: UserConfigFn = (env) => {
         // Pre-scan entrypoints in Vite to avoid reloading on first open
         'generated/vaadin.ts'
       ],
-      exclude: ['@vaadin/router']
+      exclude: [
+        '@vaadin/router',
+        '@vaadin/vaadin-license-checker',
+        '@vaadin/vaadin-usage-statistics',
+      ]
     },
     plugins: [
       !devMode && brotli(),
