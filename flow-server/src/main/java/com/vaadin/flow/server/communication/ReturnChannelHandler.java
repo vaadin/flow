@@ -89,10 +89,6 @@ public class ReturnChannelHandler extends AbstractRpcInvocationHandler {
                 .map(ReturnChannelMap::hasChannels).orElse(false);
     }
 
-    private static int getNodeId(JsonObject invocationJson) {
-        return (int) invocationJson.getNumber(JsonConstants.RPC_NODE);
-    }
-
     private static Logger getLogger() {
         return LoggerFactory.getLogger(ReturnChannelHandler.class.getName());
     }

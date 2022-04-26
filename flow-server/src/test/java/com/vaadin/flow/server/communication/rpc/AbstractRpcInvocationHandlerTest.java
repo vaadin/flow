@@ -183,8 +183,7 @@ public class AbstractRpcInvocationHandlerTest {
     public void inertUIWithPollListener_passingIllegitimateNoNodeKeyForPollingPayload_throwsAssertionError() {
 
         UI ui = createInertUIWithPollListener();
-        JsonObject invocationJson = createIllegitimatePayloadNoNodeKeyForPollingRpcInvocationPayload(
-                ui);
+        JsonObject invocationJson = createIllegitimatePayloadNoNodeKeyForPollingRpcInvocationPayload();
         Assert.assertThrows(AssertionError.class,
                 () -> handler.handle(ui, invocationJson));
     }
@@ -309,8 +308,7 @@ public class AbstractRpcInvocationHandlerTest {
         return payload;
     }
 
-    private JsonObject createIllegitimatePayloadNoNodeKeyForPollingRpcInvocationPayload(
-            UI ui) {
+    private JsonObject createIllegitimatePayloadNoNodeKeyForPollingRpcInvocationPayload() {
         JsonObject payload = Json.createObject();
         payload.put(JsonConstants.RPC_TYPE, JsonConstants.RPC_TYPE_EVENT);
         payload.put(JsonConstants.CHANGE_TYPE, "change");

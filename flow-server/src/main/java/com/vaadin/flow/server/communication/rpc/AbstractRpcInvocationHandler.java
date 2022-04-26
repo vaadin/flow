@@ -206,7 +206,7 @@ public abstract class AbstractRpcInvocationHandler
                 .getLogger(AbstractRpcInvocationHandler.class.getName());
     }
 
-    private static int getNodeId(JsonObject invocationJson) {
+    protected static int getNodeId(JsonObject invocationJson) {
         return (int) invocationJson.getNumber(JsonConstants.RPC_NODE);
     }
 }
