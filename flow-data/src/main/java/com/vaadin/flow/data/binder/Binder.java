@@ -2263,7 +2263,7 @@ public class Binder<BEAN> implements Serializable {
             currentBindings
                     .forEach(binding -> ((BindingImpl<BEAN, ?, ?>) binding)
                             .writeFieldValue(bean));
-            setValidatorsDisabled(validatorsNotInUse);
+            setValidatorsDisabled(validatorsDisabledStatus);
 
             // Now run bean level validation against the updated bean
             binderResults = validateBean(bean);
