@@ -540,7 +540,8 @@ public class FrontendTools {
             if (installedNodeVersion.isOlderThan(SUPPORTED_NODE_VERSION)) {
                 getLogger().info(
                         "{} Node.js version {} is older than the required minimum version {}. Using Node.js from {}.",
-                        nodeExecutable.getPath().startsWith(baseDir) ? "The project-specific"
+                        nodeExecutable.getPath().startsWith(baseDir)
+                                ? "The project-specific"
                                 : "The globally installed",
                         installedNodeVersion.getFullVersion(),
                         SUPPORTED_NODE_VERSION.getFullVersion(),
