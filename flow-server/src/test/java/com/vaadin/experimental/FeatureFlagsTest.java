@@ -62,7 +62,11 @@ public class FeatureFlagsTest {
 
         mockResourcesLocation();
     }
-
+    @Test
+    public void failedTest() throws IOException {
+            Assert.assertFalse("MUST FAIL !!!! ", true);
+    }
+    
     @Test
     public void propertiesLoaded() throws IOException {
         Assert.assertFalse("Feature should be initially disabled",
