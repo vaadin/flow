@@ -419,6 +419,27 @@ public class ExplicitNullableTypeCheckerTest {
                 Company.class, false));
     }
 
+    @Test
+    public void should_ReturnNull_When_GivenNullAndNotRequiredByContext() {
+        Assert.assertNotNull(explicitNullableTypeChecker.checkValueForType(null,
+                Employee.class, false));
+    }
+
+    @Test
+    public void should_ReturnError_When_GivenNullAndRequiredByContext() {
+        Assert.assertNotNull(explicitNullableTypeChecker.checkValueForType(null,
+                Employee.class, true));
+    }
+
+    @Test
+    public void should_ReturnError_When_GivenNestedNullAndRequiredByContext() {
+        Employee employee = new Employee();
+        employee.setId(12);
+        employee.setCompany(null);
+        Assert.assertNotNull(explicitNullableTypeChecker
+                .checkValueForType(employee, Employee.class, true));
+    }
+
     public List<String> parametrizedListMethod(String... args) {
         final List<String> list = new ArrayList<String>();
         for (String arg : args) {
