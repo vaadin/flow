@@ -1785,8 +1785,8 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
             binder.writeBean(item);
         } catch (ValidationException e) {
         }
-        assertEquals("Validation should be run only once for writing the bean", 2,
-                count.get());
+        assertEquals("Validation should be run only once for writing the bean",
+                2, count.get());
     }
 
     @Test
