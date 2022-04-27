@@ -733,8 +733,8 @@ public class FrontendToolsTest {
                 "Unexpected exception message content '"
                         + exception.getMessage() + "'",
                 exception.getMessage().contains(
-                        "Vaadin application is configured to use globally installed "
-                                + "pnpm ('pnpm.global=true'), but no pnpm tool has been found "
+                        "Vaadin is configured to use a globally installed "
+                                + "pnpm ('pnpm.global=true'), but pnpm was not found "
                                 + "on your system."));
     }
 
