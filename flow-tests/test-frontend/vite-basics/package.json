@@ -19,7 +19,6 @@
   },
   "devDependencies": {
     "@rollup/plugin-replace": "3.1.0",
-    "async": "3.2.2",
     "glob": "7.1.6",
     "mkdirp": "1.0.4",
     "rollup-plugin-brotli": "3.1.0",
@@ -42,7 +41,6 @@
     },
     "devDependencies": {
       "@rollup/plugin-replace": "3.1.0",
-      "async": "3.2.2",
       "glob": "7.1.6",
       "mkdirp": "1.0.4",
       "rollup-plugin-brotli": "3.1.0",
@@ -53,7 +51,7 @@
       "workbox-core": "6.5.0",
       "workbox-precaching": "6.5.0"
     },
-    "hash": "44f86e6049ac654c8a85a7d04f95147e2f087973a41b2d8f806009b624948c02"
+    "hash": "dc4619814206e4dc257425a00b057ad9a9cff83a993020e0c534d1c4aedbcbde"
   },
   "overrides": {
     "@polymer/polymer": "$@polymer/polymer",
