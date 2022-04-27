@@ -1,10 +1,12 @@
 name: Flow Validation
 on:
   push:
-    branches: [master, '9.0']
+    branches: [master, '23.1', '23.0', '9.0']
+  workflow_dispatch:
   pull_request:
     types: [opened, synchronize, reopened]
-  workflow_dispatch:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
 jobs:
   build:
     timeout-minutes: 15
@@ -13,11 +15,22 @@ jobs:
       matrix-unit: ${{ steps.set-matrix.outputs.matrix-unit }}
       matrix-it: ${{ steps.set-matrix.outputs.matrix-it }}
     steps:
+      - uses: actions-cool/check-user-permission@v2
+        id: check
+        with:
+          require: 'write'
       - name: Check Secrets
         run: |
+          [ "${{ steps.check.outputs.require-result }}" != "true" ] \
+            && echo "::error::!! NO USER PERMISSIONS FOR RUNNING VALIDATION: Check if the PR is from an external contributor !!" \
+            && exit 1 || exit 0
           TB_LICENSE="${{secrets.TB_LICENSE}}"
-          [ -z "$TB_LICENSE" ] && echo "::error::!! ERROR NO TB_LICENSE: Check if the PR is from an external contributor !!" && exit 1 || exit 0
+          [ -z "$TB_LICENSE" ] \
+            && echo "::error::!! ERROR NO TB_LICENSE: Check that this repo has a valid TB_LICENSE secret !!" \
+            && exit 1 || exit 0
       - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
       - uses: actions/setup-node@v2
         with:
           node-version: '16.0'
@@ -61,6 +74,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
       - uses: actions/setup-java@v2
         with:
           java-version: '11'
@@ -109,6 +124,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
       - uses: actions/setup-node@v2
         with:
           node-version: '16'
