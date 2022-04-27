@@ -55,7 +55,7 @@ const manipulate = (element: Element, productAndMessage: ProductAndMessage) => {
         "<a href='https:$1'>https:$1</a>"
       );
 
-  element.outerHTML = `<no-license style="display: flex; align-items:center;text-align:center;justify-content:center;"><div>${htmlMessage}</div></no-license>`;
+  element.outerHTML = `<no-license style="display:flex;align-items:center;text-align:center;justify-content:center;"><div>${htmlMessage}</div></no-license>`;
 };
 
 const orgDefine = window.customElements.define.bind(window.customElements);

@@ -175,6 +175,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     }
 
     private void addLicenseChecker(Document indexDocument) {
+        // maybeCheck is invoked by the WC license checker
         addScript(indexDocument, "" + //
                 "window.Vaadin = window.Vaadin || {};" + //
                 "window.Vaadin.VaadinLicenseChecker = {" + //

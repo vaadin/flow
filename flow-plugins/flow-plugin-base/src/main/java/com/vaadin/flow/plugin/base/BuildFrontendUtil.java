@@ -493,8 +493,8 @@ public class BuildFrontendUtil {
             throw new RuntimeException(
                     "Stats file " + statsFile + " does not exist");
         }
-        List<Product> commercialComponents = findComponents(nodeModulesFolder,
-                statsFile);
+        List<Product> commercialComponents = findCommercialComponents(
+                nodeModulesFolder, statsFile);
 
         for (Product component : commercialComponents) {
             try {
@@ -520,8 +520,8 @@ public class BuildFrontendUtil {
         return LoggerFactory.getLogger(BuildFrontendUtil.class);
     }
 
-    private static List<Product> findComponents(File nodeModulesFolder,
-            File statsFile) {
+    private static List<Product> findCommercialComponents(
+            File nodeModulesFolder, File statsFile) {
         List<Product> components = new ArrayList<>();
         try (InputStream in = new FileInputStream(statsFile)) {
             String contents = IOUtils.toString(in, StandardCharsets.UTF_8);
