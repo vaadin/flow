@@ -15,12 +15,12 @@
  */
 package com.vaadin.client.flow.binding;
 
+import java.util.LinkedHashMap;
 import java.util.function.Consumer;
 
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsMap;
 import com.vaadin.client.flow.collection.JsSet;
-import com.vaadin.client.flow.collection.JsWeakMap;
 import com.vaadin.flow.shared.JsonConstants;
 
 import elemental.dom.Node;
@@ -36,8 +36,7 @@ import elemental.util.Timer;
  */
 public class Debouncer {
 
-    private static final JsWeakMap<Node, JsMap<String, JsMap<Double, Debouncer>>> debouncers = JsCollections
-            .weakMap();
+    private static final LinkedHashMap<Node, JsMap<String, JsMap<Double, Debouncer>>> debouncers = new LinkedHashMap<>();
 
     private final double timeout;
     private final Node element;
@@ -127,7 +126,7 @@ public class Debouncer {
             elementMap.delete(identifier);
 
             if (elementMap.isEmpty()) {
-                debouncers.delete(element);
+            	debouncers.remove(element);
             }
         }
     }
@@ -151,7 +150,7 @@ public class Debouncer {
                 .get(element);
         if (elementMap == null) {
             elementMap = JsCollections.map();
-            debouncers.set(element, elementMap);
+            debouncers.put(element, elementMap);
         }
 
         JsMap<Double, Debouncer> identifierMap = elementMap.get(identifier);
@@ -168,8 +167,30 @@ public class Debouncer {
 
         return debouncer;
     }
+    
+    private static native void nativeConsoleLog( String s ) 
+    /*-{ console.log( s ); }-*/;
 
 	public static void flushAll() {
-		// TODO
+		int size = debouncers.size();
+		nativeConsoleLog("Debouncers: " + size);
+		debouncers.forEach((Node str, JsMap<String, JsMap<Double, Debouncer>> jsmap) -> {
+			
+			nativeConsoleLog("jsmap: " + jsmap.size());
+			jsmap.mapValues().forEach(value -> {
+				nativeConsoleLog("value: " + value.size());
+				value.mapValues().forEach(debouncer -> {
+					nativeConsoleLog("Flushing... " + debouncer.identifier);
+					debouncer.lastCommand.accept(null);
+					if(debouncer.idleTimer != null) {
+						debouncer.idleTimer.cancel();
+					}
+					if(debouncer.intermediateTimer != null) {
+						debouncer.intermediateTimer.cancel();
+					}
+				});
+			});
+		});
+		debouncers.clear();
 	}
 }
