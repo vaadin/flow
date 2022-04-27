@@ -1779,12 +1779,14 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         }).bind(Person::getFirstName, Person::setFirstName);
         binder.readBean(item);
         nameField.setValue("Mike");
-        assertEquals("Validation should be run only once for value change", 1, count.get());
+        assertEquals("Validation should be run only once for value change", 1,
+                count.get());
         try {
             binder.writeBean(item);
         } catch (ValidationException e) {
         }
-        assertEquals("Validation should be run only once for writing the bean", 2, count.get());
+        assertEquals("Validation should be run only once for writing the bean", 2,
+                count.get());
     }
 
     @Test
