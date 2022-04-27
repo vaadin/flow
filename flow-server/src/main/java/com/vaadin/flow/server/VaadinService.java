@@ -16,9 +16,6 @@
 
 package com.vaadin.flow.server;
 
-import javax.servlet.Servlet;
-import javax.servlet.ServletContext;
-
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -467,7 +464,7 @@ public abstract class VaadinService implements Serializable {
      * @param resourceName
      *            a String specifying the name of a file
      * @return a String specifying the file's MIME type
-     * @see ServletContext#getMimeType(String)
+     * @see javax.servlet.ServletContext#getMimeType(String)
      */
     public abstract String getMimeType(String resourceName);
 
@@ -2098,7 +2095,7 @@ public abstract class VaadinService implements Serializable {
      * this service.
      *
      * @see #addServiceDestroyListener(ServiceDestroyListener)
-     * @see Servlet#destroy()
+     * @see javax.servlet.Servlet#destroy()
      */
     public void destroy() {
         ServiceDestroyEvent event = new ServiceDestroyEvent(this);
