@@ -102,7 +102,7 @@
                                     <type>jar</type>
                                     <overWrite>true</overWrite>
                                     <outputDirectory>${build.directory}/jakarta-validation</outputDirectory>
-                                    <destFileName>jakarta-validation.jar</destFileName>
+                                    <destFileName>jakarta-hibernate-validator.jar</destFileName>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>
@@ -137,7 +137,7 @@
                                 <exclude>**/NotEmptyTest.java</exclude>
                             </excludes>
                             <additionalClasspathElements>
-                                <additionalClasspathElement>${build.directory}/jakarta-validation/jakarta-validation.jar</additionalClasspathElement>
+                                <additionalClasspathElement>${build.directory}/jakarta-validation/jakarta-hibernate-validator.jar</additionalClasspathElement>
                             </additionalClasspathElements>
                             <classpathDependencyExcludes>
                                 <classpathDependencyExclude>
