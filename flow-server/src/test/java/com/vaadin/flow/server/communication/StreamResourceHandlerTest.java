@@ -17,7 +17,6 @@ package com.vaadin.flow.server.communication;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -26,6 +25,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.InputStreamFactory;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
@@ -68,7 +68,7 @@ public class StreamResourceHandlerTest {
             // Ignore exception, it's expected. We need to check the status
         }
         Mockito.verify(response)
-                .setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                .setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
     }
 
     @Test
@@ -84,7 +84,7 @@ public class StreamResourceHandlerTest {
             // Ignore exception, it's expected. We need to check the status
         }
         Mockito.verify(response)
-                .setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                .setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
     }
 
     @Test
@@ -104,7 +104,7 @@ public class StreamResourceHandlerTest {
             // Ignore exception, it's expected. We need to check the status
         }
         Mockito.verify(response)
-                .setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                .setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
     }
 
     @Test

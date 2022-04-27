@@ -16,14 +16,13 @@
 
 package com.vaadin.flow.server.communication;
 
-import javax.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
+import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.SessionExpiredHandler;
 import com.vaadin.flow.server.SynchronizedRequestHandler;
 import com.vaadin.flow.server.VaadinRequest;
@@ -76,7 +75,7 @@ public class HeartbeatHandler extends SynchronizedRequestHandler
             // (https://github.com/vaadin/framework/issues/4167)
             response.setHeader("Content-Type", "text/plain");
         } else {
-            response.sendError(HttpServletResponse.SC_NOT_FOUND,
+            response.sendError(HttpStatusCode.NOT_FOUND.getCode(),
                     "UI not found");
         }
 
@@ -97,7 +96,8 @@ public class HeartbeatHandler extends SynchronizedRequestHandler
             return false;
         }
 
-        response.sendError(HttpServletResponse.SC_FORBIDDEN, "Session expired");
+        response.sendError(HttpStatusCode.FORBIDDEN.getCode(),
+                "Session expired");
         return true;
     }
 }

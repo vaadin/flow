@@ -137,7 +137,7 @@ public abstract class AbstractDevModeTest {
     }
 
     protected int getDevServerPort() {
-        return ((AbstractDevServerRunner) handler).getPort();
+        return handler.getPort();
     }
 
     protected void waitForDevServer() {

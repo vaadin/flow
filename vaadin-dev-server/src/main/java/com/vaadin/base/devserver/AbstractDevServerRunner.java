@@ -23,7 +23,6 @@ import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.URL;
-import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
 import java.util.List;
@@ -50,6 +49,7 @@ import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.HandlerHelper;
+import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.StaticFileServer;
 import com.vaadin.flow.server.VaadinRequest;
@@ -512,11 +512,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         }
     }
 
-    /**
-     * Get the listening port of the dev server.
-     *
-     * @return the listening port
-     */
+    @Override
     public int getPort() {
         return port;
     }
@@ -687,7 +683,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
                         .find()) {
             getLogger().info("Blocked attempt to access file: {}",
                     requestFilename);
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.setStatus(HttpStatusCode.FORBIDDEN.getCode());
             return true;
         }
 
