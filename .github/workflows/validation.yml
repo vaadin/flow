@@ -5,6 +5,7 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
   workflow_dispatch:
+  pull_request_target:
 jobs:
   build:
     timeout-minutes: 15
