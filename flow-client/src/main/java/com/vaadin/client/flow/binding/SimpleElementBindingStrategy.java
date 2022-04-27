@@ -1305,9 +1305,16 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         boolean sendNow = resolveFilters(element, type, expressionSettings,
                 eventData, sendCommand);
+        
 
         if (sendNow) {
             // Send if there were not filters or at least one matched
+        	
+        	// TODO SHOULDN'T WE PUSH ALL QUEUED EVENTS HERE?
+        	// OTHERWISE EVENTS ARE RETURNED IN INVALIDID ORDER -> CRITICAL BUG
+        	// SOMETHING LIKE DRAFTED METHOD BELOW (WIHTOUT IMPL)
+        	Debouncer.flushAll();
+        	
             sendCommand.accept(null);
         }
     }
