@@ -363,7 +363,7 @@ public class OpenAPIObjectGenerator {
                         .anyMatch(annotation -> NonNullApi.class.getSimpleName()
                                 .equals(annotation.getName().getIdentifier()));
                 if (nonNullApiAnnotation) {
-                    nonNullApiPackages.add( pkgDecl.getNameAsString());
+                    nonNullApiPackages.add(pkgDecl.getNameAsString());
                 }
             }
         });
