@@ -4,6 +4,7 @@ import { classMap } from 'lit/directives/class-map.js';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { copy } from './copy-to-clipboard.js';
+import { licenseCheckFailed, licenseCheckNoKey, licenseCheckOk, Product } from './License';
 
 interface ServerInfo {
   vaadinVersion: string;
@@ -98,6 +99,12 @@ export class Connection extends Object {
       if (this.status === ConnectionStatus.ACTIVE) {
         this.onReload();
       }
+    } else if (json.command === 'license-check-ok') {
+      licenseCheckOk(json.data);
+    } else if (json.command === 'license-check-failed') {
+      licenseCheckFailed(json.data);
+    } else if (json.command === 'license-check-nokey') {
+      licenseCheckNoKey(json.data);
     } else {
       this.onMessage(json);
     }
@@ -139,6 +146,9 @@ export class Connection extends Object {
   }
   sendTelemetry(browserData: any) {
     this.send('reportTelemetry', { browserData });
+  }
+  sendLicenseCheck(product: Product) {
+    this.send('checkLicense', product);
   }
 }
 
@@ -1159,6 +1169,14 @@ export class VaadinDevmodeGizmo extends LitElement {
       this.log(MessageType.LOG, this.splashMessage);
     }
     this.showSplashMessage(undefined);
+  }
+
+  checkLicense(productInfo: Product) {
+    if (this.frontendConnection) {
+      this.frontendConnection.sendLicenseCheck(productInfo);
+    } else {
+      licenseCheckFailed({ message: 'Internal error: no connection', product: productInfo });
+    }
   }
 
   log(type: MessageType, message: string, details?: string, link?: string) {
