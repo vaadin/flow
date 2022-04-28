@@ -64,7 +64,8 @@ import dev.hilla.exception.EndpointException;
  * parameter types should also correspond for the request to be successful.
  */
 @RestController
-@Import({ EndpointControllerConfiguration.class, EndpointProperties.class })
+@Import({ EndpointControllerConfiguration.class, EndpointProperties.class,
+        HillaConfigurationProperties.class })
 @NpmPackage(value = "@hilla/frontend", version = "1.1.0-alpha3")
 @NpmPackage(value = "@hilla/form", version = "1.1.0-alpha3")
 public class EndpointController {

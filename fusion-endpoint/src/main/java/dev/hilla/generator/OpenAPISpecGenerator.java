@@ -47,6 +47,7 @@ public class OpenAPISpecGenerator {
     public static final String DEFAULT_APPLICATION_TITLE = "Vaadin application";
     public static final String DEFAULT_APPLICATION_API_VERSION = "0.0.1";
     public static final String DEFAULT_PREFIX = "/connect";
+    public static final String HILLA_GLOBAL_NONNULL = "hilla.global-nonnull";
 
     private static final Logger log = LoggerFactory
             .getLogger(OpenAPISpecGenerator.class);
@@ -125,7 +126,9 @@ public class OpenAPISpecGenerator {
         String applicationApiVersion = (String) applicationProperties
                 .getOrDefault(APPLICATION_API_VERSION,
                         DEFAULT_APPLICATION_API_VERSION);
+        boolean globalNonnull = Boolean.valueOf((String) applicationProperties
+                .getOrDefault(HILLA_GLOBAL_NONNULL, "false"));
         return new OpenAPIConfiguration(applicationTitle, applicationApiVersion,
-                server + prefix, serverDescription);
+                server + prefix, serverDescription, globalNonnull);
     }
 }

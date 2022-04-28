@@ -233,8 +233,10 @@ public class EndpointControllerConfiguration {
             ApplicationContext applicationContext,
             @Autowired(required = false) @Qualifier(EndpointController.VAADIN_ENDPOINT_MAPPER_BEAN_QUALIFIER) ObjectMapper vaadinEndpointMapper,
             ExplicitNullableTypeChecker explicitNullableTypeChecker,
-            ServletContext servletContext, EndpointRegistry endpointRegistry) {
+            ServletContext servletContext, EndpointRegistry endpointRegistry,
+            HillaConfigurationProperties hillaConfigurationProperties) {
         return new EndpointInvoker(applicationContext, vaadinEndpointMapper,
-                explicitNullableTypeChecker, servletContext, endpointRegistry);
+                explicitNullableTypeChecker, servletContext, endpointRegistry,
+                hillaConfigurationProperties);
     }
 }

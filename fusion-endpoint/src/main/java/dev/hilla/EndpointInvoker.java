@@ -69,8 +69,8 @@ public class EndpointInvoker {
             .buildDefaultValidatorFactory().getValidator();
     private final ExplicitNullableTypeChecker explicitNullableTypeChecker;
     private final ApplicationContext applicationContext;
-
-    EndpointRegistry endpointRegistry;
+    private final HillaConfigurationProperties hillaConfigurationProperties;
+    private final EndpointRegistry endpointRegistry;
 
     private static EndpointTransferMapper endpointTransferMapper = new EndpointTransferMapper();
 
@@ -95,11 +95,14 @@ public class EndpointInvoker {
      *            the servlet context
      * @param endpointRegistry
      *            the registry used to store endpoint information
+     * @param hillaConfigurationProperties
+     *            the Hilla configuration properties
      */
     public EndpointInvoker(ApplicationContext applicationContext,
             ObjectMapper vaadinEndpointMapper,
             ExplicitNullableTypeChecker explicitNullableTypeChecker,
-            ServletContext servletContext, EndpointRegistry endpointRegistry) {
+            ServletContext servletContext, EndpointRegistry endpointRegistry,
+            HillaConfigurationProperties hillaConfigurationProperties) {
         this.applicationContext = applicationContext;
         this.servletContext = servletContext;
         this.vaadinEndpointMapper = vaadinEndpointMapper != null
@@ -107,7 +110,7 @@ public class EndpointInvoker {
                 : createVaadinConnectObjectMapper(applicationContext);
         this.explicitNullableTypeChecker = explicitNullableTypeChecker;
         this.endpointRegistry = endpointRegistry;
-
+        this.hillaConfigurationProperties = hillaConfigurationProperties;
     }
 
     private static Logger getLogger() {
@@ -246,10 +249,13 @@ public class EndpointInvoker {
 
         returnValue = endpointTransferMapper.toTransferType(returnValue);
 
+        boolean requiredByContext = hillaConfigurationProperties
+                .isGlobalNonnull()
+                || isNonNullApi(
+                        methodToInvoke.getDeclaringClass().getPackage());
         String implicitNullError = this.explicitNullableTypeChecker
                 .checkValueForAnnotatedElement(returnValue, methodToInvoke,
-                        isNonNullApi(methodToInvoke.getDeclaringClass()
-                                .getPackage()));
+                        requiredByContext);
         if (implicitNullError != null) {
             String errorMessage = String.format(
                     "Unexpected return value in endpoint '%s' method '%s'. %s",

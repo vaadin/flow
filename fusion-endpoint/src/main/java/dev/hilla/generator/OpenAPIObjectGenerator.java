@@ -72,6 +72,7 @@ import com.github.javaparser.utils.SourceRoot.Callback;
 import dev.hilla.Endpoint;
 import dev.hilla.EndpointExposed;
 import dev.hilla.EndpointNameChecker;
+import dev.hilla.HillaConfigurationProperties;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.Operation;
@@ -130,6 +131,7 @@ public class OpenAPIObjectGenerator {
     private static EndpointTransferMapper endpointTransferMapper = new EndpointTransferMapper();
     private CombinedTypeSolver typeSolver;
     private Set<String> nonNullApiPackages = new HashSet<>();
+    private boolean globalNonnull;
 
     private static Logger getLogger() {
         return LoggerFactory.getLogger(OpenAPIObjectGenerator.class);
@@ -606,7 +608,7 @@ public class OpenAPIObjectGenerator {
             CompilationUnit compilationUnit) {
         Map<String, PathItem> newPathItems = new HashMap<>();
         Collection<MethodDeclaration> methods = typeDeclaration.getMethods();
-        boolean nonNullApi = hasNonNullApi(compilationUnit);
+        boolean requiredByContext = isRequiredByContext(compilationUnit);
         for (MethodDeclaration methodDeclaration : methods) {
             if (isAccessForbidden(typeDeclaration, methodDeclaration)) {
                 continue;
@@ -616,11 +618,11 @@ public class OpenAPIObjectGenerator {
             Operation post = createPostOperation(methodDeclaration);
             if (methodDeclaration.getParameters().isNonEmpty()) {
                 post.setRequestBody(createRequestBody(methodDeclaration,
-                        resolvedTypeParametersMap, nonNullApi));
+                        resolvedTypeParametersMap, requiredByContext));
             }
 
             ApiResponses responses = createApiResponses(methodDeclaration,
-                    resolvedTypeParametersMap, nonNullApi);
+                    resolvedTypeParametersMap, requiredByContext);
             post.setResponses(responses);
             post.tags(Collections.singletonList(tagName));
             PathItem pathItem = new PathItem().post(post);
@@ -644,7 +646,11 @@ public class OpenAPIObjectGenerator {
         return newPathItems;
     }
 
-    private boolean hasNonNullApi(CompilationUnit compilationUnit) {
+    private boolean isRequiredByContext(CompilationUnit compilationUnit) {
+        if (configuration.isGlobalNonnull()) {
+            return true;
+        }
+
         Optional<PackageDeclaration> maybePkg = compilationUnit
                 .getPackageDeclaration();
         if (!maybePkg.isPresent()) {
@@ -685,9 +691,10 @@ public class OpenAPIObjectGenerator {
 
     private ApiResponses createApiResponses(MethodDeclaration methodDeclaration,
             ResolvedTypeParametersMap resolvedTypeParametersMap,
-            boolean nonNullApi) {
+            boolean requiredByContext) {
         ApiResponse successfulResponse = createApiSuccessfulResponse(
-                methodDeclaration, resolvedTypeParametersMap, nonNullApi);
+                methodDeclaration, resolvedTypeParametersMap,
+                requiredByContext);
         ApiResponses responses = new ApiResponses();
         responses.addApiResponse("200", successfulResponse);
         return responses;
@@ -696,7 +703,7 @@ public class OpenAPIObjectGenerator {
     private ApiResponse createApiSuccessfulResponse(
             MethodDeclaration methodDeclaration,
             ResolvedTypeParametersMap resolvedTypeParametersMap,
-            boolean nonNullApi) {
+            boolean requiredByContext) {
         Content successfulContent = new Content();
         // "description" is a REQUIRED property of Response
         ApiResponse successfulResponse = new ApiResponse().description("");
@@ -710,7 +717,7 @@ public class OpenAPIObjectGenerator {
         });
         if (!methodDeclaration.getType().isVoidType()) {
             MediaType mediaItem = createReturnMediaType(methodDeclaration,
-                    resolvedTypeParametersMap, nonNullApi);
+                    resolvedTypeParametersMap, requiredByContext);
             successfulContent.addMediaType("application/json", mediaItem);
             successfulResponse.content(successfulContent);
         }

@@ -85,7 +85,7 @@ public abstract class AbstractEndpointGeneratorBaseTest {
         generator.addSourcePath(javaSourcePath);
 
         generator.setOpenApiConfiguration(new OpenAPIConfiguration("Test title",
-                "0.0.1", "https://server.test", "Test description"));
+                "0.0.1", "https://server.test", "Test description", false));
 
         return generator.getOpenApi();
     }

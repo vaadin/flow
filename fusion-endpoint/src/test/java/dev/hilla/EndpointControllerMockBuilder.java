@@ -52,9 +52,9 @@ public class EndpointControllerMockBuilder {
         ServletContext servletContext = Mockito.mock(ServletContext.class);
         Mockito.when(csrfChecker.validateCsrfTokenInRequest(Mockito.any()))
                 .thenReturn(true);
-        EndpointInvoker invoker = Mockito
-                .spy(new EndpointInvoker(applicationContext, objectMapper,
-                        explicitNullableTypeChecker, servletContext, registry));
+        EndpointInvoker invoker = Mockito.spy(new EndpointInvoker(
+                applicationContext, objectMapper, explicitNullableTypeChecker,
+                servletContext, registry, new HillaConfigurationProperties()));
         EndpointController controller = Mockito.spy(new EndpointController(
                 applicationContext, registry, invoker, csrfChecker));
         Mockito.doReturn(mock(EndpointAccessChecker.class)).when(invoker)

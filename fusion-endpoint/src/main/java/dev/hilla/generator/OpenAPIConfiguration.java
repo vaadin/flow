@@ -24,6 +24,7 @@ public class OpenAPIConfiguration {
     private final String applicationApiVersion;
     private final String serverUrl;
     private final String serverDescription;
+    private boolean globalNonnull;
 
     /**
      * Create a new OpenApi configuration.
@@ -36,14 +37,17 @@ public class OpenAPIConfiguration {
      *            Base url of the application
      * @param serverDescription
      *            Description of the server
+     * @param globalNonnull
+     *            whether to assume @Nonnull for all types
      */
     public OpenAPIConfiguration(String applicationTitle,
             String applicationApiVersion, String serverUrl,
-            String serverDescription) {
+            String serverDescription, boolean globalNonnull) {
         this.applicationTitle = applicationTitle;
         this.applicationApiVersion = applicationApiVersion;
         this.serverUrl = serverUrl;
         this.serverDescription = serverDescription;
+        this.globalNonnull = globalNonnull;
     }
 
     /**
@@ -82,4 +86,12 @@ public class OpenAPIConfiguration {
         return serverDescription;
     }
 
+    /**
+     * Returns whether to assume @Nonnull for all types
+     *
+     * @return true to assume {@code @Nonnull}, false otherwise
+     */
+    public boolean isGlobalNonnull() {
+        return globalNonnull;
+    }
 }

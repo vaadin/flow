@@ -802,7 +802,8 @@ public class EndpointControllerTest {
 
         EndpointInvoker invoker = new EndpointInvoker(contextMock, null,
                 mock(ExplicitNullableTypeChecker.class),
-                mock(ServletContext.class), registry);
+                mock(ServletContext.class), registry,
+                new HillaConfigurationProperties());
         new EndpointController(contextMock, registry, invoker, null);
 
         verify(contextMock, never()).getBean(ObjectMapper.class);
@@ -837,7 +838,8 @@ public class EndpointControllerTest {
                 mock(EndpointNameChecker.class));
         EndpointInvoker invoker = new EndpointInvoker(contextMock, null,
                 mock(ExplicitNullableTypeChecker.class),
-                mock(ServletContext.class), registry);
+                mock(ServletContext.class), registry,
+                new HillaConfigurationProperties());
         new EndpointController(contextMock, registry, invoker, null);
 
         verify(contextMock, never()).getBean(ObjectMapper.class);
@@ -1258,10 +1260,10 @@ public class EndpointControllerTest {
                 endpoint);
         EndpointRegistry registry = new EndpointRegistry(endpointNameChecker);
 
-        EndpointInvoker invoker = Mockito
-                .spy(new EndpointInvoker(mockApplicationContext,
-                        vaadinEndpointMapper, explicitNullableTypeChecker,
-                        mock(ServletContext.class), registry));
+        EndpointInvoker invoker = Mockito.spy(new EndpointInvoker(
+                mockApplicationContext, vaadinEndpointMapper,
+                explicitNullableTypeChecker, mock(ServletContext.class),
+                registry, new HillaConfigurationProperties()));
 
         Mockito.doReturn(accessChecker).when(invoker).getAccessChecker();
 
