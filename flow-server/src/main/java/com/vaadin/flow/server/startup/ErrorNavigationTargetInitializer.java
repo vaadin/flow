@@ -40,9 +40,8 @@ public class ErrorNavigationTargetInitializer
     @SuppressWarnings("unchecked")
     @Override
     public void initialize(Set<Class<?>> classSet, VaadinContext context) {
-        if (classSet == null) {
-            classSet = new HashSet<>();
-        }
+        classSet = AbstractAnnotationValidator
+                .removeHandleTypesSelfReferences(classSet, this);
         Set<Class<? extends Component>> routes = classSet.stream()
                 // Liberty 18 also includes the interface itself in the set...
                 .filter(clazz -> clazz != HasErrorParameter.class)
