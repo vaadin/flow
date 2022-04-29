@@ -24,10 +24,21 @@ import javax.validation.Validator;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.core.JacksonException;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.ser.std.ArraySerializerBase;
+import com.fasterxml.jackson.databind.ser.std.NumberSerializer;
+import com.fasterxml.jackson.databind.ser.std.ObjectArraySerializer;
 import com.googlecode.gentyref.GenericTypeReflector;
 import com.vaadin.flow.server.VaadinServletContext;
 
@@ -175,6 +186,7 @@ public class EndpointInvoker {
             objectMapper.setVisibility(PropertyAccessor.ALL,
                     JsonAutoDetect.Visibility.ANY);
         }
+        objectMapper.registerModule(new ByteArrayModule());
         return objectMapper;
     }
 
