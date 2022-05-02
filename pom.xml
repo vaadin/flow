@@ -68,8 +68,9 @@
             https://maven.vaadin.com/vaadin-addons
         </flow.addons.repo.url>
 
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.release>11</maven.compiler.release>
+        <maven.compiler.source>${maven.compiler.release}</maven.compiler.source>
+        <maven.compiler.target>${maven.compiler.release}</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8
         </project.reporting.outputEncoding>
@@ -83,13 +84,14 @@
         <failOnMissingWebXml>false</failOnMissingWebXml>
 
         <!-- Dependencies -->
-        <spring.version>5.3.18</spring.version>
-        <spring.boot.version>2.6.7</spring.boot.version>
+        <spring.version>5.3.19</spring.version>
+        <spring.boot.version>2.6.6</spring.boot.version>
         <gwt.version>2.8.2</gwt.version>
         <hibernate.validator.version>6.2.1.Final</hibernate.validator.version>
         <slf4j.version>1.7.35</slf4j.version>
         <polymer.version>2.6.1</polymer.version>
-        <jackson.version>2.13.1</jackson.version>
+        <jackson.version>2.13.2</jackson.version>
+        <jackson.databind.version>2.13.2.2</jackson.databind.version>
         <javax.validation.version>2.0.1.Final</javax.validation.version>
         <javax.annotation.api.version>1.3.2</javax.annotation.api.version>
         <jaxb.version>2.3.6</jaxb.version>
@@ -569,6 +571,24 @@
                             <exclude>${exclude.windows.failed.it.tests}</exclude>
                         </excludes>
                     </configuration>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.sun.xml.bind</groupId>
+                            <artifactId>jaxb-impl</artifactId>
+                            <version>${jaxb.version}</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+                <plugin>
+                    <groupId>com.github.siom79.japicmp</groupId>
+                    <artifactId>japicmp-maven-plugin</artifactId>
+                    <dependencies>
+                        <dependency>
+                            <groupId>javax.activation</groupId>
+                            <artifactId>javax.activation-api</artifactId>
+                            <version>1.2.0</version>
+                        </dependency>
+                    </dependencies>
                 </plugin>
                 <!--This plugin's configuration is used to store Eclipse
                     m2e settings only. It has no influence on the Maven build itself. -->
@@ -641,45 +661,6 @@
             <properties>
                 <maven.javadoc.skip>false</maven.javadoc.skip>
             </properties>
-        </profile>
-        <profile>
-            <id>java11</id>
-            <activation>
-                <jdk>[9,)</jdk>
-            </activation>
-            <properties>
-                <maven.compiler.release>8</maven.compiler.release>
-            </properties>
-            <build>
-                <pluginManagement>
-                    <plugins>
-                        <plugin>
-                            <artifactId>maven-surefire-plugin</artifactId>
-                        </plugin>
-                        <plugin>
-                            <artifactId>maven-failsafe-plugin</artifactId>
-                            <dependencies>
-                                <dependency>
-                                    <groupId>com.sun.xml.bind</groupId>
-                                    <artifactId>jaxb-impl</artifactId>
-                                    <version>${jaxb.version}</version>
-                                </dependency>
-                            </dependencies>
-                        </plugin>
-                        <plugin>
-                            <groupId>com.github.siom79.japicmp</groupId>
-                            <artifactId>japicmp-maven-plugin</artifactId>
-                            <dependencies>
-                                <dependency>
-                                    <groupId>javax.activation</groupId>
-                                    <artifactId>javax.activation-api</artifactId>
-                                    <version>1.2.0</version>
-                                    </dependency>
-                            </dependencies>
-                        </plugin>
-                    </plugins>
-                </pluginManagement>
-            </build>
         </profile>
         <profile>
             <id>all-tests</id>

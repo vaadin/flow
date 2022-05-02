@@ -15,6 +15,8 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.flow.utils.LookupImpl;
 
 public class BuildFrontendUtilTest {
 
@@ -40,6 +42,9 @@ public class BuildFrontendUtilTest {
         Mockito.when(adapter.npmFolder()).thenReturn(baseDir);
         Mockito.when(adapter.projectBaseDirectory())
                 .thenReturn(tmpDir.getRoot().toPath());
+        ClassFinder classFinder = Mockito.mock(ClassFinder.class);
+        Mockito.when(adapter.createLookup(Mockito.any()))
+                .thenReturn(new LookupImpl(classFinder));
 
         FrontendTools tools = Mockito.mock(FrontendTools.class);
 
