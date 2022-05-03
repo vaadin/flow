@@ -32,6 +32,7 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
+import com.vaadin.pro.licensechecker.LicenseChecker;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -93,6 +94,10 @@ public class FeatureFlags implements Serializable {
         features.add(new Feature(HILLA_PUSH));
         features.add(new Feature(NEW_LICENSE_CHECKER));
         loadProperties();
+
+        if (isEnabled(NEW_LICENSE_CHECKER)) {
+            LicenseChecker.setStrictOffline(true);
+        }
     }
 
     /**
