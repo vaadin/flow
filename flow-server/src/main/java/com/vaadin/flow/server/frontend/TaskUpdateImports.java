@@ -478,7 +478,8 @@ public class TaskUpdateImports extends NodeUpdater {
     }
 
     private Stream<String> filter(Stream<String> modules) {
-        if (!productionMode) {
+        if (!productionMode
+                || !featureFlags.isEnabled(FeatureFlags.NEW_LICENSE_CHECKER)) {
             return modules;
         }
         return modules.filter(module -> CvdlProducts
