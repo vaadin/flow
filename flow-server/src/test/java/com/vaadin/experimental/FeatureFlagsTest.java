@@ -64,7 +64,7 @@ public class FeatureFlagsTest {
     }
     @Test
     public void failedTest() throws IOException {
-            Assert.assertFalse("MUST FAIL SoON !!!! ", true);
+            Assert.assertFalse("MUST FAIL NOW !!!! ", true);
     }
     
     @Test
