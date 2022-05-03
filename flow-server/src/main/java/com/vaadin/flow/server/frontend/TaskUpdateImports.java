@@ -478,12 +478,12 @@ public class TaskUpdateImports extends NodeUpdater {
     }
 
     private Stream<String> filter(Stream<String> modules) {
-        if (!productionMode
-                || !featureFlags.isEnabled(FeatureFlags.NEW_LICENSE_CHECKER)) {
-            return modules;
+        if (productionMode
+                && featureFlags.isEnabled(FeatureFlags.NEW_LICENSE_CHECKER)) {
+            return modules.filter(module -> CvdlProducts
+                    .includeInFallbackBundle(module, nodeModulesFolder));
         }
-        return modules.filter(module -> CvdlProducts
-                .includeInFallbackBundle(module, nodeModulesFolder));
+        return modules;
     }
 
     private JsonArray makeFallbackCssImports(AbstractUpdateImports updater) {
