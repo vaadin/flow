@@ -29,6 +29,9 @@ import com.vaadin.base.devserver.stats.DevModeUsageStatistics;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.pro.licensechecker.BuildType;
+import com.vaadin.pro.licensechecker.LicenseChecker;
+import com.vaadin.pro.licensechecker.Product;
 
 import org.atmosphere.cpr.AtmosphereResource;
 import org.slf4j.Logger;
@@ -36,9 +39,6 @@ import org.slf4j.LoggerFactory;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-
-import com.vaadin.pro.licensechecker.Product;
-import com.vaadin.pro.licensechecker.LicenseChecker;
 
 /**
  * {@link BrowserLiveReload} implementation class.
@@ -191,7 +191,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
             try {
                 LicenseChecker.checkLicense(product.getName(),
-                        product.getVersion(), keyUrl -> {
+                        product.getVersion(), BuildType.DEVELOPMENT, keyUrl -> {
                             send(resource, "license-check-nokey",
                                     new ProductAndMessage(product, keyUrl));
                         });
