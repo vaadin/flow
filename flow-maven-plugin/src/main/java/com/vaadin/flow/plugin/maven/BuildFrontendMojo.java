@@ -53,6 +53,7 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.theme.Theme;
+import com.vaadin.pro.licensechecker.BuildType;
 import com.vaadin.pro.licensechecker.LicenseChecker;
 import com.vaadin.pro.licensechecker.Product;
 
@@ -282,7 +283,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
         for (Product component : commercialComponents) {
             try {
                 LicenseChecker.checkLicense(component.getName(),
-                        component.getVersion());
+                        component.getVersion(), BuildType.PRODUCTION);
             } catch (Exception e) {
                 try {
                     getLogger().debug(
