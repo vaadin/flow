@@ -138,7 +138,7 @@ public class AbstractDeploymentConfigurationTest {
         }
 
         @Override
-        public boolean isDevModeGizmoEnabled() {
+        public boolean isDevToolsEnabled() {
             return false;
         }
 

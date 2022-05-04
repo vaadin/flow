@@ -1,7 +1,7 @@
 package com.vaadin.viteapp;
 
 import com.vaadin.flow.component.html.testbench.ParagraphElement;
-import com.vaadin.flow.testutil.DevModeGizmoElement;
+import com.vaadin.flow.testutil.DevToolsElement;
 import com.vaadin.testbench.TestBenchElement;
 import com.vaadin.viteapp.views.empty.MainView;
 
@@ -37,10 +37,11 @@ public class BasicsIT extends ViteDevModeIT {
 
     @Test
     public void debugWindowShown() {
-        DevModeGizmoElement gizmo = $(DevModeGizmoElement.class).waitForFirst();
-        gizmo.expand();
-        Assert.assertNotNull(gizmo.$("div").attributeContains("class", "window")
-                .attributeContains("class", "visible").waitForFirst());
+        DevToolsElement devTools = $(DevToolsElement.class).waitForFirst();
+        devTools.expand();
+        Assert.assertNotNull(
+                devTools.$("div").attributeContains("class", "window")
+                        .attributeContains("class", "visible").waitForFirst());
     }
 
     @Test
