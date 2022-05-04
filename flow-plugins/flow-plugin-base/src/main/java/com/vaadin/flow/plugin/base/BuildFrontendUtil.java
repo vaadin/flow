@@ -49,6 +49,7 @@ import com.vaadin.flow.server.frontend.TaskUpdateImports;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.scanner.ReflectionsClassFinder;
 import com.vaadin.flow.utils.FlowFileUtils;
+import com.vaadin.pro.licensechecker.BuildType;
 import com.vaadin.pro.licensechecker.LicenseChecker;
 import com.vaadin.pro.licensechecker.Product;
 
@@ -499,7 +500,7 @@ public class BuildFrontendUtil {
         for (Product component : commercialComponents) {
             try {
                 LicenseChecker.checkLicense(component.getName(),
-                        component.getVersion());
+                        component.getVersion(), BuildType.PRODUCTION);
             } catch (Exception e) {
                 try {
                     getLogger().debug(
