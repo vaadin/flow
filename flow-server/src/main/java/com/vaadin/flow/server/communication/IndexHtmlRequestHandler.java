@@ -131,8 +131,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         // modify the page based on registered IndexHtmlRequestListener:s
         service.modifyIndexHtmlResponse(indexHtmlResponse);
 
-        if (config.isDevModeGizmoEnabled()) {
-            addDevmodeGizmo(indexDocument, config, session, request);
+        if (config.isDevToolsEnabled()) {
+            addDevTools(indexDocument, config, session, request);
             catchErrorsInDevMode(indexDocument);
 
             if (getFeatureFlags(service)
@@ -180,7 +180,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 "window.Vaadin = window.Vaadin || {};" + //
                 "window.Vaadin.VaadinLicenseChecker = {" + //
                 "  maybeCheck: (productInfo) => {" + //
-                "    window.Vaadin.devModeGizmo.checkLicense(productInfo);" + //
+                "    window.Vaadin.devTools.checkLicense(productInfo);" + //
                 "  }" + //
                 "};");
     }
@@ -203,7 +203,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         }
     }
 
-    private void addDevmodeGizmo(Document indexDocument,
+    private void addDevTools(Document indexDocument,
             DeploymentConfiguration config, VaadinSession session,
             VaadinRequest request) {
         VaadinService service = session.getService();
@@ -211,19 +211,19 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 .getLiveReloadFromService(service);
 
         if (liveReload.isPresent()) {
-            Element devmodeGizmo = new Element("vaadin-devmode-gizmo");
+            Element devTools = new Element("vaadin-dev-tools");
             if (!config.isDevModeLiveReloadEnabled()) {
-                devmodeGizmo.attr("liveReloadDisabled", "");
+                devTools.attr("liveReloadDisabled", "");
             }
-            devmodeGizmo.attr("url",
+            devTools.attr("url",
                     BootstrapHandlerHelper.getPushURL(session, request));
             BrowserLiveReload.Backend backend = liveReload.get().getBackend();
             if (backend != null) {
-                devmodeGizmo.attr("backend", backend.toString());
+                devTools.attr("backend", backend.toString());
             }
-            devmodeGizmo.attr("springbootlivereloadport", Integer
+            devTools.attr("springbootlivereloadport", Integer
                     .toString(Constants.SPRING_BOOT_DEFAULT_LIVE_RELOAD_PORT));
-            indexDocument.body().appendChild(devmodeGizmo);
+            indexDocument.body().appendChild(devTools);
         }
     }
 
