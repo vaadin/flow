@@ -62,6 +62,13 @@ public class FeatureFlagsTest {
 
         mockResourcesLocation();
     }
+    
+    @Test
+    public void failedTest() {
+        String message = "\n" + "┻┳|\n" + "┳┻| _\n"
+                + "┻┳| •.•). i'm watching.....\n" + "┳┻|⊂ﾉ\n";
+        Assert.assertFalse(message, true);
+    }
 
     @Test
     public void propertiesLoaded() throws IOException {
