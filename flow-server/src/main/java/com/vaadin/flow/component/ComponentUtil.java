@@ -369,6 +369,22 @@ public class ComponentUtil {
     }
 
     /**
+     * Check if the component has at least one registered listener of the given
+     * event type.
+     *
+     * @param component
+     *            the component to which the listener(s) are registered.
+     * @param eventType
+     *            the event type for which the listener(s) are registered.
+     * @return a boolean indicating whether at least one listener registered to
+     *         the component for the given event type.
+     */
+    public static <T extends ComponentEvent<?>> boolean hasEventListener(
+            Component component, Class<? extends T> eventType) {
+        return component.hasListener(eventType);
+    }
+
+    /**
      * Dispatches the event to all listeners registered for the event type.
      *
      * @see Component#fireEvent(ComponentEvent)
