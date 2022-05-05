@@ -62,7 +62,7 @@ public class FeatureFlagsTest {
 
         mockResourcesLocation();
     }
-    
+
     @Test
     public void failedTest() {
         String message = "\n" + "┻┳|\n" + "┳┻| _\n"
