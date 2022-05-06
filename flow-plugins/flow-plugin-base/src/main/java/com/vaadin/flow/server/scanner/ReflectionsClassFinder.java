@@ -48,8 +48,7 @@ public class ReflectionsClassFinder implements ClassFinder {
      */
     public ReflectionsClassFinder(URL... urls) {
         classLoader = new URLClassLoader(urls,
-                Thread.currentThread().getContextClassLoader()); //
-        // NOSONAR
+                Thread.currentThread().getContextClassLoader());
         ConfigurationBuilder configurationBuilder = new ConfigurationBuilder()
                 .addClassLoaders(classLoader).setExpandSuperTypes(false)
                 .addUrls(urls);
