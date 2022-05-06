@@ -54,14 +54,14 @@ public class LookupImpl implements Lookup {
 
     @Override
     public <T> List<T> lookupAll(Class<T> serviceClass) {
-        Set<?> subTypes = classFinder.getSubTypesOf(serviceClass);
+        Set<Class<? extends T>> subTypes = classFinder
+                .getSubTypesOf(serviceClass);
         List<T> result = new ArrayList<>(subTypes.size());
-        for (Object clazz : subTypes) {
-            if (!ReflectTools.isInstantiableService((Class<?>) clazz)) {
+        for (Class<? extends T> clazz : subTypes) {
+            if (!ReflectTools.isInstantiableService(clazz)) {
                 continue;
             }
-            result.add(serviceClass
-                    .cast(ReflectTools.createInstance((Class<?>) clazz)));
+            result.add(ReflectTools.createInstance(clazz));
         }
         return result;
     }
