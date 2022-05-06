@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component;
 
+import com.vaadin.flow.shared.Registration;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -70,5 +71,21 @@ public class ComponentUtilTest {
         Assert.assertNull(
                 "Storage should be cleared after removing the last attribute",
                 component.attributes);
+    }
+
+    @Test
+    public void addListenerToComponent_hasListener_returnsTrue() {
+        Assert.assertFalse(
+                ComponentUtil.hasEventListener(component, PollEvent.class));
+
+        Registration listener = ComponentUtil.addListener(component,
+                PollEvent.class, event -> {
+                });
+        Assert.assertTrue(
+                ComponentUtil.hasEventListener(component, PollEvent.class));
+
+        listener.remove();
+        Assert.assertFalse(
+                ComponentUtil.hasEventListener(component, PollEvent.class));
     }
 }

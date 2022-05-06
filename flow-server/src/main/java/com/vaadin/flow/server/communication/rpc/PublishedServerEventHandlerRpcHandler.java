@@ -72,7 +72,7 @@ public class PublishedServerEventHandlerRpcHandler
     }
 
     @Override
-    protected boolean allowInert(StateNode node) {
+    protected boolean allowInert(UI ui, JsonObject invocationJson) {
         return true;
     }
 

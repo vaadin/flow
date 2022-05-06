@@ -1431,6 +1431,44 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
                 item.getFirstName(), nameField.getValue());
     }
 
+    @Test
+    public void refreshFields_beforeSettingBean_clearsTheFields() {
+        binder.bind(nameField, Person::getFirstName, Person::setFirstName);
+
+        assertEquals("Name field should be empty", "", nameField.getValue());
+
+        binder.readBean(item);
+
+        assertEquals("Name should be read from the item", item.getFirstName(),
+                nameField.getValue());
+
+        item.setFirstName("bar");
+        binder.refreshFields();
+
+        assertEquals("Name field should be cleared since bean is not set", "",
+                nameField.getValue());
+    }
+
+    @Test
+    public void refreshFields_afterSettingBean_readValuesfromBeanAgain() {
+        binder.bind(nameField, Person::getFirstName, Person::setFirstName);
+
+        assertEquals("Name field should be empty", "", nameField.getValue());
+
+        binder.readBean(item);
+
+        assertEquals("Name should be read from the item", item.getFirstName(),
+                nameField.getValue());
+
+        binder.setBean(item); // refreshFields would read the values again from
+                              // bean
+        item.setFirstName("bar");
+        binder.refreshFields();
+
+        assertEquals("Name should be read again from the item",
+                item.getFirstName(), nameField.getValue());
+    }
+
     @Test(expected = IllegalStateException.class)
     public void bindWithNullSetterSetReadWrite() {
         Binding<Person, String> binding = binder.bind(nameField,
@@ -1763,6 +1801,30 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         assertEquals(3, count.get());
 
         assertEquals(new Double(2000), item.getSalaryDouble());
+    }
+
+    @Test
+    public void validationShouldNotRunTwiceWhenWriting() {
+        TestTextField nameField = new TestTextField();
+        AtomicInteger count = new AtomicInteger(0);
+        binder.forField(nameField).withValidator((value, context) -> {
+            count.incrementAndGet();
+            if (value.equals("Mike")) {
+                return ValidationResult.ok();
+            } else {
+                return ValidationResult.error("value must be Mike");
+            }
+        }).bind(Person::getFirstName, Person::setFirstName);
+        binder.readBean(item);
+        nameField.setValue("Mike");
+        assertEquals("Validation should be run only once for value change", 1,
+                count.get());
+        try {
+            binder.writeBean(item);
+        } catch (ValidationException e) {
+        }
+        assertEquals("Validation should be run only once for writing the bean",
+                2, count.get());
     }
 
     @Test

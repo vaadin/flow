@@ -15,10 +15,9 @@
  */
 package com.vaadin.flow.server.communication;
 
-import javax.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
 
+import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.RequestHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
@@ -46,7 +45,7 @@ public class FaviconHandler implements RequestHandler {
                 && httpRequest.getServletPath().isEmpty()
                 && "/favicon.ico".equals(httpRequest.getPathInfo());
         if (isFavicon) {
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            response.setStatus(HttpStatusCode.NOT_FOUND.getCode());
         }
         return isFavicon;
     }
