@@ -126,7 +126,7 @@ public class EndpointWithRestControllerTest {
         try {
             String result = callEndpointMethod("getByteArray");
             assertNotNull(result);
-            assertEquals("[1, 2, 3, 4]", result);
+            assertEquals("[1,2,3,4]", result);
             assertNotEquals("", result);
             assertNotEquals("AQIDBA==", result);
             assertNotEquals(
