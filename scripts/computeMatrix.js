@@ -431,6 +431,7 @@ function computeTestStats() {
       const errors = parseInt(res[3]);
       const failed = fails + errors;
       const skips = parseInt(res[4]);
+	  console.log(`current class is ${classes[name]}`);
       const module = classes[name].module;
       stats[name] = {secs, tests, fails, failed, errors, skips, module};
       res = regexTest.exec(res[7]);
