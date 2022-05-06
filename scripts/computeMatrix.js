@@ -431,7 +431,7 @@ function computeTestStats() {
       const errors = parseInt(res[3]);
       const failed = fails + errors;
       const skips = parseInt(res[4]);
-      const module = classes[name].module;
+      const module = classes[name] ? classes[name].module : 'Unknown Module';
       stats[name] = {secs, tests, fails, failed, errors, skips, module};
       res = regexTest.exec(res[7]);
     }
