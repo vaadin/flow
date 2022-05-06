@@ -26,7 +26,7 @@ public class ByteArrayModule extends SimpleModule {
         addDeserializer(byte[].class, new ByteArrayDeSerializer());
     }
 
-    private class ByteArraySerializer extends JsonSerializer<byte[]> {
+    private static class ByteArraySerializer extends JsonSerializer<byte[]> {
 
         @Override
         public void serialize(byte[] value, JsonGenerator jgen,
@@ -39,7 +39,7 @@ public class ByteArrayModule extends SimpleModule {
         }
     }
 
-    private class ByteArrayDeSerializer extends JsonDeserializer<byte[]> {
+    private static class ByteArrayDeSerializer extends JsonDeserializer<byte[]> {
 
         @Override
         public byte[] deserialize(JsonParser jp, DeserializationContext ctxt)
