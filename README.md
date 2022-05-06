@@ -16,8 +16,3 @@ Since [Vaadin platform 23.0](https://github.com/vaadin/platform), Flow major and
 
 | Branch | [Platform Version](https://github.com/vaadin/platform/releases) | [Flow Version](https://github.com/vaadin/flow/releases) |
 |--------|-----------------------------------------------------------------|---------------------------------------------------------|
-|  1.0   |  10 (LTS)                                                       |  1.0                                                    |
-|  2.7   |  14.8.x (LTS)                                                   |  2.7.x                                                  |
-|  9.0   |  22.0.x                                                         |  9.x                                                    |
-|  23.0  |  23.0.x (LATEST)                                                |  23.0                                                   |
-|  master|  23.1 (NEXT)                                                    |  23.1                                                   |
