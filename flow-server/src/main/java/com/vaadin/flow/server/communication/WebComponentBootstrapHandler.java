@@ -123,6 +123,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 head.select("script[src], link[href]").attr("crossorigin",
                         "true");
 
+                setupCss(head, context, false);
                 if (FeatureFlags.get(service.getContext())
                         .isEnabled(FeatureFlags.VITE)) {
                     // A workaround for

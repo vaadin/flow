@@ -861,7 +861,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         private List<Element> setupDocumentHead(Element head,
                 BootstrapContext context) {
             setupMetaAndTitle(head, context);
-            setupCss(head, context);
+            setupCss(head, context, true);
 
             JsonObject initialUIDL = getInitialUidl(context.getUI());
             Map<LoadMode, JsonArray> dependenciesToProcessOnServer = popDependenciesToProcessOnServer(
@@ -1158,13 +1158,28 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return null;
         }
 
-        private void setupCss(Element head, BootstrapContext context) {
+        /**
+         * Append styles for the body element (if requested) and for error
+         * dialogs.
+         *
+         * @param head
+         *            the head element
+         * @param context
+         *            the bootstrap context
+         * @param includeBodyStyles
+         *            true to include body styles, false to exclude them
+         */
+        protected void setupCss(Element head, BootstrapContext context,
+                boolean includeBodyStyles) {
             Element styles = head.appendElement("style").attr("type",
                     CSS_TYPE_ATTRIBUTE_VALUE);
-            // Add any body style that is defined for the application using
-            // @BodySize
-            String bodySizeContent = BootstrapUtils.getBodySizeContent(context);
-            styles.appendText(bodySizeContent);
+            if (includeBodyStyles) {
+                // Add any body style that is defined for the application using
+                // @BodySize
+                String bodySizeContent = BootstrapUtils
+                        .getBodySizeContent(context);
+                styles.appendText(bodySizeContent);
+            }
 
             // Basic reconnect and system error dialog styles just to make them
             // visible and outside of normal flow
