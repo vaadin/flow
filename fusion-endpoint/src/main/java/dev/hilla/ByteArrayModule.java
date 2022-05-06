@@ -39,7 +39,8 @@ public class ByteArrayModule extends SimpleModule {
         }
     }
 
-    private static class ByteArrayDeSerializer extends JsonDeserializer<byte[]> {
+    private static class ByteArrayDeSerializer
+            extends JsonDeserializer<byte[]> {
 
         @Override
         public byte[] deserialize(JsonParser jp, DeserializationContext ctxt)
