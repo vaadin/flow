@@ -47,11 +47,6 @@ import com.vaadin.flow.component.Component;
  * {@link com.vaadin.flow.component.dependency.JavaScript} and
  * {@link com.vaadin.flow.component.dependency.CssImport}.
  * <p>
- * NOTE: while this annotation is not inherited using the
- * {@link Inherited @Inherited} annotation, the annotations of the possible
- * parent components or implemented interfaces are read when sending the
- * dependencies to the browser.
- * <p>
  * NOTE: Currently all frontend resources are bundled together into one big
  * bundle. This means, that JavaScript files loaded by one class will be present
  * on a view constructed by another class. For example, if there are two classes
