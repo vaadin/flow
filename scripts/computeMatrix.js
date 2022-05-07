@@ -126,7 +126,7 @@ const reservedContainers = Object.keys(moduleWeights).filter(k => moduleWeights[
 
 // Using regex to avoid having to run `npm install` for xml libs.
 const regexComment = /<!--[\s\S]+?-->/gm;
-const regexModule = /([\s\S]*?)<module>\s*([\d\w\-\/]+)\s*<\/module>([\s\S]*)/;
+const regexModule = /([\s\S]*?)<module>\s*([\d\w\-\/\.]+)\s*<\/module>([\s\S]*)/;
 const regexVersion = '(<version>)(VERSION)(</version>)';
 
 /**
@@ -367,7 +367,13 @@ function secs2Weight(secs) {
  * Compute module weights by parsing mvn outputs
  */
 function computeResultWeights(suite, prefix, weights) {
-  let modules = prefix ? getModulesRecursive(prefix) : getModules();
+  // All modules in the project
+  let modules = getModulesRecursive(prefix);
+  // Remove flow-tests because they are handled separately
+  if (prefix !== 'flow-tests') {
+    modules = modules.filter(module => !/^flow-tests/.test(module));
+  }
+
   const exclusions = Object.keys(moduleSplits).filter(module => modules.includes(module));
   modules = grep(modules, [...globalExclusions, ...exclusions]);
   const poms = modules.map(m => /.*\.xml$/.test(m) ? m : `${m}/pom.xml`);
