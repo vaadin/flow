@@ -52,7 +52,7 @@
     "xhr-mock": "2.5.0"
   },
   "dependencies": {
-    "@vaadin/common-frontend": "0.0.16",
+    "@vaadin/common-frontend": "0.0.17",
     "lit": "2.2.1"
   }
 }
