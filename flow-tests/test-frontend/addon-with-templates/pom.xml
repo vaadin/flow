@@ -7,9 +7,9 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>test-frontend</artifactId>
-        <version>23.1-SNAPSHOT</version>
+        <version>23.2-SNAPSHOT</version>
     </parent>
-	
+
     <artifactId>addon-with-templates</artifactId>
     <name>Add-on containing a Lit template-based component</name>
 
