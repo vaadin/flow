@@ -19,16 +19,21 @@ const globalExclusions = ['flow-tests/servlet-containers/tomcat9', 'flow-tests/s
 //  - flow-tests/test-live-reload
 //  - flow-tests/test-dev-mode
 // Containers 2 & 3:
-//  Tests that need shared modules, see validation.yml to see how they are generated before running ITs
+//  Tests that need shared modules, check validation.yml to see how they are generated before running ITs
 // Containers 4, 5 & 6:
 //  Spring tests, they need also spring shared modules to be generated in validation.yml
 const moduleWeights = {
-  'flow-client': { weight: 6 },
-  'flow-server': { weight: 4 },
-  'vaadin-dev-server': { weight: 3 },
+  'flow-client': { weight: 8 },
+  'flow-server': { weight: 6 },
+  'vaadin-dev-server': { weight: 5 },
   'fusion-endpoint': { weight: 2 },
   'flow-data': { weight: 2 },
+  'flow-plugins/flow-maven-plugin': { weight: 5 },
+  'flow-plugins/flow-gradle-plugin': { weight: 6 },
+  'flow-bom': { weight: 2},
 
+  'flow-tests/test-multi-war/test-war2': { pos: 1, weight: 2 },
+  'flow-tests/test-memory-leaks': {pos:1},
   'flow-tests/test-embedding/test-embedding-application-theme': { pos: 1, weight: 4 },
   'flow-tests/test-application-theme/test-theme-live-reload': { pos: 1, weight: 3 },
   'flow-tests/test-npm-only-features/test-npm-performance-regression': { pos: 1, weight: 3 },
@@ -62,22 +67,22 @@ const moduleWeights = {
   'flow-tests/vaadin-spring-tests/test-spring-security-flow': { pos: 5, weight: 5 },
   'flow-tests/vaadin-spring-tests/test-spring-security-flow-contextpath': { pos: 5, weight: 4 },
   'flow-tests/vaadin-spring-tests/test-spring-security-flow-urlmapping': { pos: 5, weight: 4 },
-  'flow-tests/vaadin-spring-tests/test-spring-security-fusion': { pos: 5, weight: 4 },
-  'flow-tests/vaadin-spring-tests/test-spring-security-fusion-contextpath': { pos: 5, weight: 4 },
-  'flow-tests/vaadin-spring-tests/test-spring-security-fusion-urlmapping': { pos: 5, weight: 4 },
-  'flow-tests/vaadin-spring-tests/test-spring-security-fusion-jwt': { pos: 5, weight: 4 },
-  'flow-tests/vaadin-spring-tests/test-spring': { pos: 6, weight: 3 },
-  'flow-tests/vaadin-spring-tests/test-endpoints': { pos: 6, weight: 3 },
-  'flow-tests/vaadin-spring-tests/test-endpoints-custom-client': { pos: 6, weight: 2 },
-  'flow-tests/vaadin-spring-tests/test-mvc-without-endpoints': { pos: 6, weight: 2 },
-  'flow-tests/test-router-custom-context': { weight: 7 },
-  'flow-tests/test-pwa-disabled-offline': { weight: 5 },
+  'flow-tests/vaadin-spring-tests/test-spring-security-fusion': { pos: 6, weight: 4 },
+  'flow-tests/vaadin-spring-tests/test-spring-security-fusion-contextpath': { pos: 6, weight: 4 },
+  'flow-tests/vaadin-spring-tests/test-spring-security-fusion-urlmapping': { pos: 6, weight: 4 },
+  'flow-tests/vaadin-spring-tests/test-spring-security-fusion-jwt': { pos: 6, weight: 4 },
+  'flow-tests/vaadin-spring-tests/test-spring': { pos: 5, weight: 3 },
+  'flow-tests/vaadin-spring-tests/test-endpoints': { pos: 5, weight: 3 },
+  'flow-tests/vaadin-spring-tests/test-endpoints-custom-client': { pos: 5, weight: 2 },
+  'flow-tests/vaadin-spring-tests/test-mvc-without-endpoints': { pos: 5, weight: 2 },
+  'flow-tests/test-router-custom-context': { weight: 6 },
+  'flow-tests/test-pwa-disabled-offline': { weight: 7 },
   'flow-tests/test-ccdm-flow-navigation': { weight: 5 },
-  'flow-tests/test-pwa': { weight: 5 },
-  'flow-tests/test-ccdm': { weight: 4 },
+  'flow-tests/test-pwa': { weight: 7 },
+  'flow-tests/test-ccdm': { weight: 8 },
   'flow-tests/test-dev-mode': { weight: 4 },
-  'flow-tests/test-pwa/pom-production.xml': { weight: 4 },
-  'flow-tests/test-frontend/vite-pwa-disabled-offline': { weight: 3 },
+  'flow-tests/test-pwa/pom-production.xml': { weight: 3 },
+  'flow-tests/test-frontend/vite-pwa-disabled-offline': { weight: 5 },
   'flow-tests/test-servlet': { weight: 3 },
   'flow-tests/test-root-ui-context': { weight: 3 },
   'flow-tests/test-npm-only-features/test-npm-no-buildmojo': { weight: 3 },
@@ -96,12 +101,18 @@ const moduleWeights = {
   'flow-tests/test-embedding/test-embedding-theme-variant': { weight: 2 },
   'flow-tests/test-npm-only-features/test-npm-general': { weight: 2 },
   'flow-tests/test-misc': { weight: 2 },
-  'flow-tests/test-multi-war/test-war2': { weight: 2 },
   'flow-tests/test-theme-no-polymer': { weight: 2 },
   'flow-tests/test-frontend/vite-pwa-production-custom-offline-path': { weight: 2 },
   'flow-tests/test-multi-war/test-war1': { weight: 2 },
   'flow-tests/test-frontend/vite-pwa-production': { weight: 2 },
   'flow-tests/test-frontend/vite-pwa-disabled-offline/pom-production.xml': { weight: 2 },
+  'flow-tests/test-frontend/vite-pwa-custom-offline-path/pom-production.xml': { weight: 2 },
+  'flow-tests/vaadin-spring-tests/test-endpoints-latest-java': { weight: 3 },
+  'flow-tests/test-frontend/vite-pwa-custom-offline-path': { weight: 3 },
+  'flow-tests/vaadin-spring-tests/test-spring-common': { weight: 2 },
+  'flow-tests/test-frontend/vite-pwa': { weight: 5 },
+  'flow-tests/test-frontend/vite-embedded/pom-production.xml': { weight: 2 },
+  'flow-tests/test-frontend/vite-embedded': { weight: 2 },
 
   'RemoveRoutersLayoutContentIT': {weight: 2},
   'BrowserWindowResizeIT': {weight: 2},
@@ -209,7 +220,7 @@ function grep(array, exclude) {
 }
 
 function sumWeights(items, slowMap) {
-  return items.reduce((prev, curr) => prev + (slowMap[curr] && slowMap[curr].weight || 1), 0);
+  return items.reduce((prev, curr) => prev + (slowMap[curr] && slowMap[curr].weight || 1), 0);
 }
 
 /**
