@@ -250,9 +250,56 @@
                             </sources>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>detect-chromedriver-version</id>
+                        <phase>generate-test-resources</phase>
+                        <goals>
+                            <goal>bsh-property</goal>
+                        </goals>
+                        <configuration>
+                            <source>
+                                import io.github.bonigarcia.wdm.WebDriverManager;
+                                WebDriverManager manager = WebDriverManager.chromedriver();
+                                manager.setup();
+                                internJsonChromeDriverVersion = manager.getDownloadedDriverVersion();
+                            </source>
+                            <properties>
+                                <property>internJsonChromeDriverVersion</property>
+                            </properties>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>setup-intern-json</id>
+                        <goals>
+                            <goal>add-test-resource</goal>
+                        </goals>
+                        <configuration>
+                            <resources>
+                                <resource>
+                                    <directory>${project.basedir}/src/test/npm</directory>
+                                    <includes>
+                                        <include>intern.json</include>
+                                    </includes>
+                                    <filtering>true</filtering>
+                                    <targetPath>${project.basedir}</targetPath>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
                 </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>io.github.bonigarcia</groupId>
+                        <artifactId>webdrivermanager</artifactId>
+                        <version>${webdrivermanager.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>com.vaadin</groupId>
+                        <artifactId>vaadin-testbench-core</artifactId>
+                        <version>${testbench.version}</version>
+                    </dependency>
+                </dependencies>
             </plugin>
-
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
