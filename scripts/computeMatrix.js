@@ -234,7 +234,6 @@ function getFasterSlice(item, parts, slowMap, reserved) {
       return !reserved.includes(idx + 1) && previous && sumWeights(previous, slowMap) < sumWeights(current, slowMap) ? previous : current;
     })
 }
-let a;
 
 /**
  * splits an array of modules in the desired slices based on weights defined in a map
@@ -262,7 +261,6 @@ function splitArray(array, slices, slowMap) {
     }
   }
 
-  a = true;
   for (i = 0; i < items.length; i++) {
     const item = items[i];
     getFasterSlice(item, parts, slowMap, reserved).push(item);
