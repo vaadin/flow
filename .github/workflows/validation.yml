@@ -55,8 +55,8 @@ jobs:
           eval $cmd -T 2C -q || eval $cmd
       - name: Save workspace
         run: |
-          tar cf workspace.tar -C ~/ .m2
-          tar rf workspace.tar `find . -name target -o -name "pom*xml"`
+          tar cf workspace.tar -C ~/ $(cd ~/ && echo .m2/repository/com/vaadin/*/999.99-SNAPSHOT)
+          tar rf workspace.tar $(find . -d -name target)
       - uses: actions/upload-artifact@v3
         with:
           name: saved-workspace
@@ -93,7 +93,7 @@ jobs:
         run: |
           set -x
           tar xf workspace.tar
-          rm -rf ~/.m2 && mv -f .m2 ~/
+          tar cf - .m2 | (cd ~ && tar xf -)
       - name: Unit Test
         run: |
           echo Running TESTS: ${{ strategy.job-index }} ${{matrix.module}} ${{ matrix.args }}
@@ -156,7 +156,7 @@ jobs:
       - name: Restore Workspace
         run: |
           tar xf workspace.tar
-          rm -rf ~/.m2 && mv -f .m2 ~/
+          tar cf - .m2 | (cd ~ && tar xf -)
       - name: Set TB License
         run: |
           TB_LICENSE=${{secrets.TB_LICENSE}}
