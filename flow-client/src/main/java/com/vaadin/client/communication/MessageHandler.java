@@ -566,13 +566,6 @@ public class MessageHandler {
     }
 
     private void forceMessageHandling() {
-        // Clear previous request if it exists. Otherwise resyncrhonize can
-        // trigger
-        // "Trying to start a new request while another is active" exception and
-        // fail.
-        if (registry.getRequestResponseTracker().hasActiveRequest()) {
-            registry.getRequestResponseTracker().endRequest();
-        }
         if (!responseHandlingLocks.isEmpty()) {
             // Lock which was never release -> bug in locker or things just
             // too slow
@@ -588,7 +581,17 @@ public class MessageHandler {
                     + " from the server");
 
         }
-        if (!handlePendingMessages() && !pendingUIDLMessages.isEmpty()) {
+        boolean needsResynchronize = !handlePendingMessages()
+                && !pendingUIDLMessages.isEmpty();
+        if (needsResynchronize) {
+            // Clear previous request if it exists. Otherwise resyncrhonize can
+            // trigger
+            // "Trying to start a new request while another is active" exception
+            // and fail.
+            if (registry.getRequestResponseTracker().hasActiveRequest()) {
+                registry.getRequestResponseTracker().endRequest(false);
+            }
+
             // There are messages but the next id was not found, likely it
             // has been lost
             // Drop pending messages and resynchronize
