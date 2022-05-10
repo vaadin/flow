@@ -13,6 +13,7 @@ public class ServerInfoTest {
         ServerInfo serverInfo = new ServerInfo();
         var productNames = List.of("Vaadin", "Hilla");
         // This test is more to prevent regressions
-        assertTrue("Product name should be there by default", productNames.contains(serverInfo.getProductName()));
+        assertTrue("Product name should be there by default",
+                productNames.contains(serverInfo.getProductName()));
     }
 }

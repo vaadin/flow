@@ -63,9 +63,11 @@ public class ServerInfo implements Serializable {
 
     private String fetchProductName() {
         try {
-            // This class belongs to fusion-endpoint and is not available in Flow projects.
-            // By checking for its availability, we can show the right project name in the Vaadin devmode gizmo
-            Class.forName("dev.hilla.EndpointController", false, getClass().getClassLoader());
+            // This class belongs to fusion-endpoint and is not available in
+            // Flow projects. By checking for its availability, we can show the
+            // right project name in the Vaadin devmode gizmo
+            Class.forName("dev.hilla.EndpointController", false,
+                    getClass().getClassLoader());
             return "Hilla";
         } catch (ClassNotFoundException e) {
             return "Vaadin";
