@@ -11,6 +11,7 @@ interface ServerInfo {
   flowVersion: string;
   javaVersion: string;
   osVersion: string;
+  productName: string;
 }
 
 interface Feature {
@@ -929,7 +930,13 @@ export class VaadinDevmodeGizmo extends LitElement {
   private activeTab: string = 'log';
 
   @state()
-  private serverInfo: ServerInfo = { flowVersion: '', vaadinVersion: '', javaVersion: '', osVersion: '' };
+  private serverInfo: ServerInfo = {
+    flowVersion: '',
+    vaadinVersion: '',
+    javaVersion: '',
+    osVersion: '',
+    productName: ''
+  };
 
   @state()
   private features: Feature[] = [];
@@ -1456,7 +1463,7 @@ export class VaadinDevmodeGizmo extends LitElement {
     return html`<div class="info-tray">
       <button class="button copy" @click=${this.copyInfoToClipboard}>Copy</button>
       <dl>
-        <dt>Vaadin</dt>
+        <dt>${this.serverInfo.productName}</dt>
         <dd>${this.serverInfo.vaadinVersion}</dd>
         <dt>Flow</dt>
         <dd>${this.serverInfo.flowVersion}</dd>
