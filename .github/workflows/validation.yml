@@ -29,14 +29,14 @@ jobs:
       - uses: actions/checkout@v2
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: '16.0'
       - uses: actions/setup-java@v3
         with:
           java-version: '11'
           distribution: 'temurin'
-      - uses: actions/cache@v1
+      - uses: actions/cache@v3
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
@@ -57,7 +57,7 @@ jobs:
         run: |
           tar cf workspace.tar -C ~/ .m2
           tar rf workspace.tar `find . -name target -o -name "pom*xml"`
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: saved-workspace
           path: workspace.tar
@@ -78,12 +78,12 @@ jobs:
         with:
           java-version: '11'
           distribution: 'temurin'
-      - uses: actions/cache@v1
+      - uses: actions/cache@v3
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: saved-workspace
       - name: Restore Workspace
@@ -104,7 +104,7 @@ jobs:
         id: set-failure
         if: ${{ failure() || cancelled() }}
         run: echo "::set-output name=failure::true"
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         if: ${{ failure() || success() }}
         with:
           name: saved-outputs
@@ -124,10 +124,10 @@ jobs:
       - uses: actions/checkout@v2
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: '16'
-      - uses: pnpm/action-setup@v2.0.1
+      - uses: pnpm/action-setup@v2
         with:
           version: '5.15.0'
       - name: Set up JDK 17
@@ -135,7 +135,7 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-      - uses: actions/cache@v1
+      - uses: actions/cache@v3
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
@@ -144,7 +144,7 @@ jobs:
         with:
           chrome-version: stable
       - uses: nanasess/setup-chromedriver@master
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: saved-workspace
       - name: Restore Workspace
@@ -178,7 +178,7 @@ jobs:
         id: set-failure
         if: ${{ failure() || cancelled() }}
         run: echo "::set-output name=failure::true"
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         if: ${{ failure() || success() }}
         with:
           name: saved-outputs
@@ -194,7 +194,7 @@ jobs:
       - uses: actions/checkout@v2
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-      - uses: actions/download-artifact@v2
+      - uses: actions/download-artifact@v3
         with:
           name: saved-outputs
       - name: Publish Unit Test Results
@@ -212,7 +212,7 @@ jobs:
         run: |
           ./scripts/computeMatrix.js test-results
           ./scripts/computeMatrix.js clean-success
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         if: ${{ always() }}
         with:
           name: test-reports
