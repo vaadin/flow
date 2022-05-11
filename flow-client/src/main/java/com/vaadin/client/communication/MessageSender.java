@@ -46,6 +46,8 @@ public class MessageSender {
     private final Registry registry;
     private final PushConnectionFactory pushConnectionFactory;
 
+    private boolean resynchronizeRequested = false;
+
     /**
      * Creates a new instance connected to the given registry.
      *
@@ -88,7 +90,7 @@ public class MessageSender {
     private void doSendInvocationsToServer() {
 
         ServerRpcQueue serverRpcQueue = registry.getServerRpcQueue();
-        if (serverRpcQueue.isEmpty()) {
+        if (serverRpcQueue.isEmpty() && !resynchronizeRequested) {
             return;
         }
 
@@ -96,7 +98,7 @@ public class MessageSender {
         JsonArray reqJson = serverRpcQueue.toJson();
         serverRpcQueue.clear();
 
-        if (reqJson.length() == 0) {
+        if (reqJson.length() == 0 && !resynchronizeRequested) {
             // Nothing to send, all invocations were filtered out (for
             // non-existing connectors)
             Console.warn(
@@ -105,6 +107,12 @@ public class MessageSender {
         }
 
         JsonObject extraJson = Json.createObject();
+        if (resynchronizeRequested) {
+            getMessageHandler().onResynchronize();
+            Console.log("Resynchronizing from server");
+            extraJson.put(ApplicationConstants.RESYNCHRONIZE_ID, true);
+            resynchronizeRequested = false;
+        }
         if (showLoadingIndicator) {
             ConnectionIndicator.setState(ConnectionIndicator.LOADING);
         }
@@ -218,10 +226,9 @@ public class MessageSender {
      * state from the server
      */
     public void resynchronize() {
-        Console.log("Resynchronizing from server");
-        JsonObject resyncParam = Json.createObject();
-        resyncParam.put(ApplicationConstants.RESYNCHRONIZE_ID, true);
-        send(Json.createArray(), resyncParam);
+        Console.log("Resynchronize from server requested");
+        resynchronizeRequested = true;
+        sendInvocationsToServer();
     }
 
     /**
