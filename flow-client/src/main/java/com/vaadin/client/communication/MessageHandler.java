@@ -66,6 +66,8 @@ public class MessageHandler {
      */
     private static final int UNDEFINED_SYNC_ID = -1;
 
+    private boolean resyncInProgress;
+
     /**
      * If responseHandlingLocks contains any objects, response handling is
      * suspended until the collection is empty or a timeout has occurred.
@@ -217,7 +219,17 @@ public class MessageHandler {
     protected void handleJSON(final ValueMap valueMap) {
         final int serverId = getServerId(valueMap);
 
-        if (isResynchronize(valueMap) && !isNextExpectedMessage(serverId)) {
+        boolean hasResynchronize = isResynchronize(valueMap);
+
+        if (!hasResynchronize && resyncInProgress) {
+            Console.warn(
+                    "Dropping the response of a request before a resync request.");
+            return;
+        }
+
+        resyncInProgress = false;
+
+        if (hasResynchronize && !isNextExpectedMessage(serverId)) {
             // Resynchronize request. We must remove any old pending
             // messages and ensure this is handled next. Otherwise we
             // would keep waiting for an older message forever (if this
@@ -820,4 +832,7 @@ public class MessageHandler {
         this.nextResponseSessionExpiredHandler = nextResponseSessionExpiredHandler;
     }
 
+    public void onResynchronize() {
+        resyncInProgress = true;
+    }
 }
