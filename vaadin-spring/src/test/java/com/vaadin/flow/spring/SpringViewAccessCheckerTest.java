@@ -25,7 +25,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 @SpringBootTest(classes = { SpringViewAccessChecker.class })
-public class SpringViewAccessCheckerTest {
+class SpringViewAccessCheckerTest {
 
     @MockBean
     private AccessAnnotationChecker annotationChecker;
@@ -40,7 +40,7 @@ public class SpringViewAccessCheckerTest {
     }
 
     @Test
-    public void viewAccessControlWorksWithoutRequest() {
+    void viewAccessControlWorksWithoutRequest() {
         checker.enable();
         AtomicBoolean accessChecked = new AtomicBoolean(false);
 
