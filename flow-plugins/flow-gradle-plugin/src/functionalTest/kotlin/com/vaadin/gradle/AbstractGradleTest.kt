@@ -27,7 +27,7 @@ import java.io.File
  */
 abstract class AbstractGradleTest {
 
-    val flowVersion = System.getenv("vaadin.version").takeUnless { it.isNullOrEmpty() } ?: "23.1-SNAPSHOT"
+    val flowVersion = System.getenv("vaadin.version").takeUnless { it.isNullOrEmpty() } ?: "23.2-SNAPSHOT"
 
     /**
      * The testing Gradle project. Automatically deleted after every test.

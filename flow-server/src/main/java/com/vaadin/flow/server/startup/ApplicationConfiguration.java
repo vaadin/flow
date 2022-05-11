@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.Servlet;
-
 import java.util.Enumeration;
 
 import com.vaadin.flow.di.Lookup;
@@ -31,7 +29,7 @@ import com.vaadin.flow.server.frontend.FallbackChunk;
  * <p>
  * Configuration is based on {@link VaadinContext} which provides application
  * level data in contrast to {@link DeploymentConfiguration} which provides a
- * {@link Servlet} level configuration.
+ * container level configuration (e.g. Servlet).
  *
  * @author Vaadin Ltd
  * @since

@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-project</artifactId>
-        <version>23.1-SNAPSHOT</version>
+        <version>23.2-SNAPSHOT</version>
     </parent>
     <artifactId>flow-client</artifactId>
     <name>Flow Client</name>
@@ -20,7 +20,9 @@
         <skipTsTests>${skipTests}</skipTsTests>
         <org.eclipse.equinox.common.version>3.14.100</org.eclipse.equinox.common.version>
         <org.eclipse.core.runtime.version>3.20.100</org.eclipse.core.runtime.version>
+        <maven.compiler.release>8</maven.compiler.release>
         <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
         <testListener></testListener>
     </properties>
 

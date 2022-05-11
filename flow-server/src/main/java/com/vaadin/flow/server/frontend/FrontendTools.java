@@ -50,7 +50,7 @@ import static com.vaadin.flow.server.InitParameters.NODE_DOWNLOAD_ROOT;
 import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
 
 /**
- * Provides access to frontend tools (node.js and npm, pnpm) and optionally
+ * Provides access to frontend tools (Node.js and npm, pnpm) and optionally
  * installs the tools if needed.
  * <p>
  * <b>WARNING:</b> This class is intended for internal usage only. May be
@@ -66,11 +66,11 @@ public class FrontendTools {
      * the installed version is older than {@link #SUPPORTED_NODE_VERSION}, i.e.
      * {@value #SUPPORTED_NODE_MAJOR_VERSION}.{@value #SUPPORTED_NODE_MINOR_VERSION}.
      */
-    public static final String DEFAULT_NODE_VERSION = "v16.14.2";
+    public static final String DEFAULT_NODE_VERSION = "v16.15.0";
     /**
      * This is the version shipped with the default Node version.
      */
-    public static final String DEFAULT_NPM_VERSION = "8.5.0";
+    public static final String DEFAULT_NPM_VERSION = "8.5.5";
 
     public static final String DEFAULT_PNPM_VERSION = "5.18.10";
 
@@ -81,15 +81,15 @@ public class FrontendTools {
     private static final String MSG_SUFFIX = "%n======================================================================================================%n";
 
     private static final String PNPM_NOT_FOUND = MSG_PREFIX
-            + "%nVaadin application is configured to use globally installed pnpm ('pnpm.global=true'), but no pnpm tool has been found on your system."
-            + "%nPlease install pnpm tool following the instruction given here https://pnpm.io/installation, "
-            + "%nor let Vaadin use the default pnpm version by excluding 'pnpm.global' (or setting it to false) from configuration."
+            + "%nVaadin is configured to use a globally installed pnpm ('pnpm.global=true'), but pnpm was not found on your system."
+            + "%nInstall pnpm by following the instruction at https://pnpm.io/installation "
+            + "%nor exclude 'pnpm.global' from the configuration or set it to false."
             + MSG_SUFFIX;
 
     private static final String LOCAL_NODE_NOT_FOUND = MSG_PREFIX
-            + "%nVaadin requires node.js & npm to be installed. The %s directory already contains 'node' but it's either not a file "
-            + "or not a 'node' executable. Please check %s directory and clean up it: remove '%s'."
-            + "%n then please run the app or maven goal again." + MSG_SUFFIX;
+            + "%nVaadin requires Node.js and npm to be installed. The %s directory already contains 'node' but it's either not a file "
+            + "or not a 'node' executable. Please check the %s directory and clean it up: remove '%s'."
+            + "%n then run the application or Maven goal again." + MSG_SUFFIX;
 
     private static final String BAD_VERSION = MSG_PREFIX
             + "%nYour installed '%s' version (%s) is known to have problems." //
@@ -287,12 +287,12 @@ public class FrontendTools {
      *            they are not found globally or in the {@code baseDir}, may be
      *            {@code null}
      * @param nodeVersion
-     *            The node.js version to be used when node.js is installed
+     *            The Node.js version to be used when Node.js is installed
      *            automatically by Vaadin, for example <code>"v16.0.0"</code>.
      *            Use {@value #DEFAULT_NODE_VERSION} by default.
      * @param nodeDownloadRoot
-     *            Download node.js from this URL. Handy in heavily firewalled
-     *            corporate environments where the node.js download can be
+     *            Download Node.js from this URL. Handy in heavily firewalled
+     *            corporate environments where the Node.js download can be
      *            provided from an intranet mirror. Use
      *            {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT} by default.
      * @deprecated use
@@ -323,12 +323,12 @@ public class FrontendTools {
      *            they are not found globally or in the {@code baseDir}, may be
      *            {@code null}
      * @param nodeVersion
-     *            The node.js version to be used when node.js is installed
+     *            The Node.js version to be used when Node.js is installed
      *            automatically by Vaadin, for example <code>"v16.0.0"</code>.
      *            Use {@value #DEFAULT_NODE_VERSION} by default.
      * @param nodeDownloadRoot
-     *            Download node.js from this URL. Handy in heavily firewalled
-     *            corporate environments where the node.js download can be
+     *            Download Node.js from this URL. Handy in heavily firewalled
+     *            corporate environments where the Node.js download can be
      *            provided from an intranet mirror. Use
      *            {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT} by default.
      * @param forceAlternativeNode
@@ -365,12 +365,12 @@ public class FrontendTools {
      *            they are not found globally or in the {@code baseDir}, may be
      *            {@code null}
      * @param nodeVersion
-     *            The node.js version to be used when node.js is installed
+     *            The Node.js version to be used when Node.js is installed
      *            automatically by Vaadin, for example <code>"v16.0.0"</code>.
      *            Use {@value #DEFAULT_NODE_VERSION} by default.
      * @param nodeDownloadRoot
-     *            Download node.js from this URL. Handy in heavily firewalled
-     *            corporate environments where the node.js download can be
+     *            Download Node.js from this URL. Handy in heavily firewalled
+     *            corporate environments where the Node.js download can be
      *            provided from an intranet mirror. Use
      *            {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT} by default.
      * @param forceAlternativeNode
@@ -539,9 +539,10 @@ public class FrontendTools {
 
             if (installedNodeVersion.isOlderThan(SUPPORTED_NODE_VERSION)) {
                 getLogger().info(
-                        "{} node version {} is older than {}. Using node from {}.",
-                        nodeExecutable.getPath().startsWith(baseDir) ? "Project"
-                                : "Globally",
+                        "{} Node.js version {} is older than the required minimum version {}. Using Node.js from {}.",
+                        nodeExecutable.getPath().startsWith(baseDir)
+                                ? "The project-specific"
+                                : "The globally installed",
                         installedNodeVersion.getFullVersion(),
                         SUPPORTED_NODE_VERSION.getFullVersion(),
                         alternativeDirGetter.get());
