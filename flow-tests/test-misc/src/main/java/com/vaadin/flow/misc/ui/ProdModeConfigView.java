@@ -32,11 +32,11 @@ public class ProdModeConfigView extends Div {
                         .isDevModeLiveReloadEnabled()));
         devModeLiveReloadEnabled.setId("devModeLiveReloadEnabled");
 
-        Paragraph devModeGizmoEnabled = new Paragraph(
+        Paragraph devToolsEnabled = new Paragraph(
                 String.valueOf(VaadinService.getCurrent()
-                        .getDeploymentConfiguration().isDevModeGizmoEnabled()));
-        devModeGizmoEnabled.setId("devModeGizmoEnabled");
+                        .getDeploymentConfiguration().isDevToolsEnabled()));
+        devToolsEnabled.setId("devToolsEnabled");
 
-        add(productionMode, devModeLiveReloadEnabled, devModeGizmoEnabled);
+        add(productionMode, devModeLiveReloadEnabled, devToolsEnabled);
     }
 }

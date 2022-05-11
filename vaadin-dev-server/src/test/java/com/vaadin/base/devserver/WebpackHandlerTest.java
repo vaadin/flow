@@ -448,10 +448,10 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
     }
 
     @Test
-    public void serveDevModeRequest_uriForDevmodeGizmo_goesToWebpack()
+    public void serveDevModeRequest_uriForDevTools_goesToWebpack()
             throws Exception {
         HttpServletRequest request = prepareRequest(
-                "/VAADIN/build/vaadin-devmodeGizmo-f679dbf313191ec3d018.cache.js");
+                "/VAADIN/build/vaadin-dev-tools-f679dbf313191ec3d018.cache.js");
         HttpServletResponse response = prepareResponse();
 
         final String globalResponse = "{ \"sw.js\": "
@@ -469,7 +469,7 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
     public void serveDevModeRequest_uriWithScriptInjected_returnsImmediatelyAndSetsForbiddenStatus()
             throws Exception {
         HttpServletRequest request = prepareRequest(
-                "/VAADIN/build/vaadin-devmodeGizmo-f679dbf313191ec3d018.cache%3f%22onload=%22alert(1)");
+                "/VAADIN/build/vaadin-dev-tools-f679dbf313191ec3d018.cache%3f%22onload=%22alert(1)");
         HttpServletResponse response = prepareResponse();
 
         final String globalResponse = "{ \"sw.js\": "
