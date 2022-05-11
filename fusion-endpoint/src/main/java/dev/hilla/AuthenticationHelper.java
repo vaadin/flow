@@ -34,9 +34,13 @@ public class AuthenticationHelper {
      * @return a function for checking if the given user has the given role
      */
     public static Function<String, Boolean> getSecurityHolderRoleChecker() {
-        return role -> getSecurityHolderAuthentication().getAuthorities()
-                .stream().anyMatch(grantedAuthority -> grantedAuthority
-                        .getAuthority().equals("ROLE_" + role));
+        Authentication authentication = getSecurityHolderAuthentication();
+        if (authentication == null) {
+            return role -> false;
+        }
+        return role -> authentication.getAuthorities().stream()
+                .anyMatch(grantedAuthority -> grantedAuthority.getAuthority()
+                        .equals("ROLE_" + role));
     }
 
 }
