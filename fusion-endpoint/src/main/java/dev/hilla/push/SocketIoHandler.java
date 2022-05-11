@@ -4,7 +4,6 @@ import java.util.function.Consumer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vaadin.flow.component.dependency.NpmPackage;
 
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -67,12 +66,16 @@ public class SocketIoHandler {
                                 .debug("Received push message from the client: "
                                         + message);
                     }
-                    pushMessageHandler.handleMessage(message, sender);
+                    pushMessageHandler.handleMessage(socket.getId(), message,
+                            sender);
                 } catch (JsonProcessingException e1) {
                     getLogger().warn(
                             "Unexpected problem when receiving push message",
                             e1);
                 }
+            });
+            socket.on("disconnect", ev -> {
+                pushMessageHandler.handleBrowserDisconnect(socket.getId());
             });
         });
     }

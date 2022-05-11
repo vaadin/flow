@@ -1,7 +1,7 @@
 package dev.hilla.push;
 
 import java.security.Principal;
-import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -44,8 +44,15 @@ import reactor.core.publisher.Flux;
 public class PushMessageHandler {
 
     static final String PUSH_FEATURE_FLAG = "hillaPush";
+
     private final EndpointInvoker endpointInvoker;
-    Map<String, Disposable> closeHandlers = new ConcurrentHashMap<>();
+
+    /*
+     * Maps from connection id to subscription id inside that connection to the
+     * actual objects so that we can clean up everything related to a connection
+     * id on disconnect
+     */
+    ConcurrentHashMap<String, ConcurrentHashMap<String, Disposable>> fluxSubscriptionDisposables = new ConcurrentHashMap<>();
 
     @Autowired
     private ServletContext servletContext;
@@ -63,38 +70,45 @@ public class PushMessageHandler {
     /**
      * Handles the message.
      *
+     * @param connectionId
+     *            an id uniquely identifying the underlying (shared) connection
      * @param message
      *            the message from the client
      * @param sender
      *            a method that sends a message back to the client
      */
-    public void handleMessage(AbstractServerMessage message,
+    public void handleMessage(String connectionId,
+            AbstractServerMessage message,
             Consumer<AbstractClientMessage> sender) {
         if (message instanceof SubscribeMessage) {
-            handleSubscribe((SubscribeMessage) message, sender);
+            handleBrowserSubscribe(connectionId, (SubscribeMessage) message,
+                    sender);
         } else if (message instanceof UnsubscribeMessage) {
-            handleClose((UnsubscribeMessage) message);
+            handleBrowserUnsubscribe(connectionId,
+                    (UnsubscribeMessage) message);
         } else {
             throw new IllegalArgumentException(
                     "Unknown message type: " + message.getClass().getName());
         }
     }
 
-    private void handleSubscribe(SubscribeMessage message,
-            Consumer<AbstractClientMessage> sender) {
+    private void handleBrowserSubscribe(String connectionId,
+            SubscribeMessage message, Consumer<AbstractClientMessage> sender) {
+        String fluxId = message.getId();
+
         FeatureFlags featureFlags = FeatureFlags
                 .get(new VaadinServletContext(servletContext));
         if (!featureFlags.isEnabled(FeatureFlags.HILLA_PUSH)) {
             String msg = featureFlags
                     .getEnableHelperMessage(FeatureFlags.HILLA_PUSH);
             getLogger().error(msg);
-            sender.accept(new ClientMessageError(message.getId(), msg));
+            sender.accept(new ClientMessageError(fluxId, msg));
             return;
 
         }
         if (endpointInvoker.getReturnType(message.getEndpointName(),
                 message.getMethodName()) != Flux.class) {
-            sender.accept(new ClientMessageError(message.getId(),
+            sender.accept(new ClientMessageError(fluxId,
                     "Method " + message.getEndpointName() + "/"
                             + message.getMethodName()
                             + " is not a Flux method"));
@@ -113,31 +127,33 @@ public class PushMessageHandler {
                 .getSecurityHolderRoleChecker();
 
         try {
-            Flux<?> result = (Flux<?>) endpointInvoker.invoke(
+            Flux<?> flux = (Flux<?>) endpointInvoker.invoke(
                     message.getEndpointName(), message.getMethodName(),
                     paramsObject, principal, isInRole);
-            Disposable closeHandler = result.subscribe(item -> {
-                send(sender, new ClientMessageUpdate(message.getId(), item));
+            Disposable endpointFluxSubscriber = flux.subscribe(item -> {
+                send(sender, new ClientMessageUpdate(fluxId, item));
             }, error -> {
                 // An exception was thrown from the Flux
-                closeHandlers.remove(message.getId());
-                send(sender, new ClientMessageError(message.getId(),
-                        "Exception in Flux"));
+                disposeSubscriptionInfo(connectionId, fluxId);
+                send(sender,
+                        new ClientMessageError(fluxId, "Exception in Flux"));
                 getLogger().error("Exception in Flux", error);
             }, () -> {
                 // Flux completed
-                closeHandlers.remove(message.getId());
-                send(sender, new ClientMessageComplete(message.getId()));
+                disposeSubscriptionInfo(connectionId, fluxId);
+                send(sender, new ClientMessageComplete(fluxId));
             });
-            closeHandlers.put(message.getId(), closeHandler);
+            fluxSubscriptionDisposables
+                    .computeIfAbsent(connectionId,
+                            id -> new ConcurrentHashMap<>())
+                    .put(fluxId, endpointFluxSubscriber);
+
         } catch (EndpointNotFoundException e) {
-            sender.accept(new ClientMessageError(message.getId(),
-                    "No such endpoint"));
+            sender.accept(new ClientMessageError(fluxId, "No such endpoint"));
             return;
         } catch (EndpointAccessDeniedException | EndpointBadRequestException
                 | EndpointInternalException e) {
-            sender.accept(
-                    new ClientMessageError(message.getId(), e.getMessage()));
+            sender.accept(new ClientMessageError(fluxId, e.getMessage()));
             return;
         }
 
@@ -149,14 +165,62 @@ public class PushMessageHandler {
 
     }
 
-    private void handleClose(UnsubscribeMessage message) {
-        Disposable closeHandler = closeHandlers.remove(message.getId());
-        if (closeHandler == null) {
-            getLogger().warn("Trying to close an unknown flux with id "
-                    + message.getId());
-            return;
+    public void handleBrowserDisconnect(String connectionId) {
+        disposeConnectionInfo(connectionId);
+    }
+
+    private void handleBrowserUnsubscribe(String connectionId,
+            UnsubscribeMessage message) {
+        String fluxId = message.getId();
+        disposeSubscriptionInfo(connectionId, fluxId);
+    }
+
+    /**
+     * Removes all stored data related to the given connection. Disposes any
+     * active subscriptions.
+     *
+     * @param connectionId
+     *            the connection id
+     */
+    private void disposeConnectionInfo(String connectionId) {
+        ConcurrentHashMap<String, Disposable> fluxMap = fluxSubscriptionDisposables
+                .remove(connectionId);
+        if (fluxMap != null) {
+            fluxMap.forEach((cid, fluxSubscriptionDisposable) -> {
+                dispose(fluxSubscriptionDisposable);
+            });
         }
-        closeHandler.dispose();
+    }
+
+    /**
+     * Removes all stored data related to the given subscription in the given
+     * connection.
+     *
+     * @param connectionId
+     *            the connection id
+     * @param subscriptionId
+     *            the subscription id
+     */
+    private void disposeSubscriptionInfo(String connectionId,
+            String subscriptionId) {
+        ConcurrentHashMap<String, Disposable> fluxMap = fluxSubscriptionDisposables
+                .get(connectionId);
+        if (fluxMap != null) {
+            Disposable subscriptionInfo = fluxMap.remove(subscriptionId);
+            if (fluxMap.isEmpty()) {
+                // Remove the map unless somebody else already added something
+                // there
+                fluxSubscriptionDisposables.remove(connectionId, fluxMap);
+            }
+
+            if (subscriptionInfo != null) {
+                dispose(subscriptionInfo);
+            }
+        }
+    }
+
+    private void dispose(Disposable fluxSubscriptionDisposable) {
+        fluxSubscriptionDisposable.dispose();
     }
 
     private Logger getLogger() {
