@@ -108,7 +108,7 @@ public class MessageSender {
 
         JsonObject extraJson = Json.createObject();
         if (resynchronizeRequested) {
-            getMessageHandler().onResynchronize();
+            registry.getMessageHandler().onResynchronize();
             Console.log("Resynchronizing from server");
             extraJson.put(ApplicationConstants.RESYNCHRONIZE_ID, true);
             resynchronizeRequested = false;
