@@ -15,11 +15,14 @@
  */
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.annotation.HandlesTypes;
-
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.servlet.annotation.HandlesTypes;
 
 import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.component.page.Inline;
@@ -39,8 +42,8 @@ public class AnnotationValidator extends AbstractAnnotationValidator
         implements VaadinServletContextStartupInitializer {
 
     @Override
-    public void initialize(Set<Class<?>> classSet, VaadinContext context) {
-        validateClasses(classSet);
+    public void initialize(Set<Class<?>> classes, VaadinContext context) {
+        validateClasses(removeHandleTypesSelfReferences(classes, this));
     }
 
     @Override
