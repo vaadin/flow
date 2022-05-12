@@ -10,6 +10,7 @@ import com.vaadin.client.UILifecycle;
 import com.vaadin.client.UILifecycle.UIState;
 import com.vaadin.client.ValueMap;
 import com.vaadin.client.communication.MessageHandler;
+import com.vaadin.client.communication.MessageSender;
 import com.vaadin.client.communication.RequestResponseTracker;
 import com.vaadin.client.communication.ServerRpcQueue;
 
