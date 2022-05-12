@@ -271,7 +271,7 @@ public class MessageSender {
         }
     }
 
-    boolean isResynchronizeRequested{
+    boolean isResynchronizeRequested() {
         return resynchronizeRequested;
     }
 }
