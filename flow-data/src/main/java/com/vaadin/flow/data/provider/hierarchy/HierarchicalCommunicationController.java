@@ -287,7 +287,7 @@ public class HierarchicalCommunicationController<T> implements Serializable {
             }
 
             // Finally clear any passivated items that have now been confirmed
-            oldActive.removeAll(newActiveKeyOrder);
+            newActiveKeyOrder.forEach(oldActive::remove);
             if (!oldActive.isEmpty()) {
                 passivatedByUpdate.put(Integer.valueOf(updateId), oldActive);
             }
