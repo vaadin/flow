@@ -20,6 +20,7 @@ import com.google.web.bindery.event.shared.Event;
 import com.google.web.bindery.event.shared.EventBus;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
+import com.vaadin.client.communication.MessageSender.ResynchronizationState;
 import com.vaadin.client.ConnectionIndicator;
 import com.vaadin.client.Registry;
 import com.vaadin.client.gwt.com.google.web.bindery.event.shared.SimpleEventBus;
