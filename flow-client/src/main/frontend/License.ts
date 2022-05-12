@@ -58,24 +58,27 @@ const manipulate = (element: Element, productAndMessage: ProductAndMessage) => {
   element.outerHTML = `<no-license style="display:flex;align-items:center;text-align:center;justify-content:center;"><div>${htmlMessage}</div></no-license>`;
 };
 
-const orgDefine = window.customElements.define.bind(window.customElements);
 const missingLicense: { [key: string]: ProductAndMessage } = {};
 
-customElements.define = (name, constructor, options) => {
-  const orgCallback = constructor.prototype.connectedCallback;
+/* eslint-disable func-names */
+const overrideCustomElementsDefine = () => {
+  const { define } = window.customElements;
 
-  // eslint-disable-next-line func-names
-  constructor.prototype.connectedCallback = function () {
-    const productInfo = missingLicense[this.tagName.toLowerCase()];
+  window.customElements.define = function (name, constructor, options) {
+    const { cvdlName, connectedCallback } = constructor.prototype;
+
+    const productInfo = cvdlName && missingLicense[cvdlName.toLowerCase()];
     if (productInfo) {
-      setTimeout(() => manipulate(this, productInfo), manipulateTimeout);
+      constructor.prototype.connectedCallback = function () {
+        setTimeout(() => manipulate(this, productInfo), manipulateTimeout);
+        connectedCallback.call(this);
+      };
     }
-    if (orgCallback) {
-      orgCallback.call(this);
-    }
+
+    define.call(this, name, constructor, options);
   };
-  orgDefine(name, constructor, options);
 };
+/* eslint-enable func-names */
 
 export const licenseCheckOk = (data: Product) => {
   // eslint-disable-next-line no-console
@@ -106,3 +109,5 @@ export const licenseCheckNoKey = (data: ProductAndMessage) => {
     setTimeout(() => manipulate(element, missingLicense[tag]), manipulateTimeout);
   });
 };
+
+overrideCustomElementsDefine();
