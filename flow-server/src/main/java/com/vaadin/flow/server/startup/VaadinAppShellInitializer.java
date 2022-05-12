@@ -76,7 +76,8 @@ public class VaadinAppShellInitializer
 
     @Override
     public void initialize(Set<Class<?>> classes, VaadinContext context) {
-        init(classes, context);
+        init(AbstractAnnotationValidator
+                .removeHandleTypesSelfReferences(classes, this), context);
     }
 
     /**
@@ -126,8 +127,6 @@ public class VaadinAppShellInitializer
         List<String> offendingAnnotations = new ArrayList<>();
 
         classes.stream()
-                // do not include the interface itself. Fix for Open Liberty
-                .filter(clazz -> clazz != AppShellConfigurator.class)
                 // sort classes by putting the app shell in first position
                 .sorted((a, b) -> registry.isShell(a) ? -1
                         : registry.isShell(b) ? 1 : 0)
@@ -164,8 +163,6 @@ public class VaadinAppShellInitializer
 
         List<String> classesImplementingPageConfigurator = classes.stream()
                 .filter(clz -> PageConfigurator.class.isAssignableFrom(clz))
-                // do not include the interface itself. Fix for Open Liberty
-                .filter(clazz -> clazz != PageConfigurator.class)
                 .map(Class::getName).collect(Collectors.toList());
 
         if (!classesImplementingPageConfigurator.isEmpty()) {

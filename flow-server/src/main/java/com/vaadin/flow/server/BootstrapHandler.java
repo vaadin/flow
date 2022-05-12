@@ -1401,14 +1401,15 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     versionInfo.put("atmosphereVersion", atmosphereVersion);
                 }
                 appConfig.put("versionInfo", versionInfo);
-                appConfig.put(ApplicationConstants.DEVMODE_GIZMO_ENABLED,
-                        deploymentConfiguration.isDevModeGizmoEnabled());
+                appConfig.put(ApplicationConstants.DEV_TOOLS_ENABLED,
+                        deploymentConfiguration.isDevToolsEnabled());
 
                 VaadinService service = session.getService();
                 Optional<BrowserLiveReload> liveReload = BrowserLiveReloadAccessor
                         .getLiveReloadFromService(service);
 
-                // With V15+ bootstrap, gizmo is added to generated index.html
+                // With V15+ bootstrap, dev tools is added to generated
+                // index.html
                 if (liveReload.isPresent()
                         && deploymentConfiguration.useV14Bootstrap()) {
                     appConfig.put("liveReloadUrl", BootstrapHandlerHelper

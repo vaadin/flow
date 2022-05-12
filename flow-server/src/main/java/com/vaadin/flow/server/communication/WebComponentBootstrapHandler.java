@@ -239,7 +239,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 .collect(JsonUtils.asArray());
         config.put("webcomponents", tags);
 
-        config.put(ApplicationConstants.DEVMODE_GIZMO_ENABLED, false);
+        config.put(ApplicationConstants.DEV_TOOLS_ENABLED, false);
 
         return context;
     }

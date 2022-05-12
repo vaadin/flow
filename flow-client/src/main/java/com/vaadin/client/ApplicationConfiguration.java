@@ -45,7 +45,7 @@ public class ApplicationConfiguration {
     private String atmosphereJSVersion;
     private String[] exportedWebComponents;
 
-    private boolean devmodeGizmoEnabled;
+    private boolean devToolsEnabled;
     private String liveReloadUrl;
     private String liveReloadBackend;
     private String springBootLiveReloadPort;
@@ -360,23 +360,23 @@ public class ApplicationConfiguration {
     }
 
     /**
-     * Gets if development mode gizmo should be added to the page.
+     * Gets if development tools should be added to the page.
      *
-     * @return whether development mode gizmo should be added
+     * @return whether development tools should be added
      */
-    public boolean isDevmodeGizmoEnabled() {
-        return devmodeGizmoEnabled;
+    public boolean isDevToolsEnabled() {
+        return devToolsEnabled;
     }
 
     /**
      *
-     * Sets if development mode gizmo should be added to the page.
+     * Sets if development tools should be added to the page.
      *
-     * @param devmodeGizmoEnabled
-     *            whether development mode gizmo should be added
+     * @param devToolsEnabled
+     *            whether development tools should be added
      */
-    public void setDevmodeGizmoEnabled(boolean devmodeGizmoEnabled) {
-        this.devmodeGizmoEnabled = devmodeGizmoEnabled;
+    public void setDevToolsEnabled(boolean devToolsEnabled) {
+        this.devToolsEnabled = devToolsEnabled;
     }
 
     /**
