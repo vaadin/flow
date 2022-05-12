@@ -223,7 +223,7 @@ public class MessageHandler {
 
         if (!hasResynchronize && resyncInProgress) {
             Console.warn(
-                    "Dropping the response of a request before a resync request.");
+                    "Ignoring message from the server as a resync request is ongoing.");
             return;
         }
 
