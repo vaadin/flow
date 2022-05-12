@@ -270,4 +270,8 @@ public class MessageSender {
             // Do nothing as they will arrive eventually
         }
     }
+
+    boolean isResynchronizeRequested{
+        return resynchronizeRequested;
+    }
 }
