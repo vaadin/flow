@@ -299,9 +299,8 @@ public interface DeploymentConfiguration
     /**
      * Checks if dev mode live reload is enabled or not.
      * <p>
-     * Note that if the dev mode gizmo is disabled
-     * ({@link #isDevModeGizmoEnabled()} returns {@code false}), the live reload
-     * will be disabled as well.
+     * Note that if the dev tools are disabled ({@link #isDevToolsEnabled()}
+     * returns {@code false}), the live reload will be disabled as well.
      *
      * @return {@code true} if dev mode live reload is enabled, {@code false}
      *         otherwise
@@ -309,13 +308,11 @@ public interface DeploymentConfiguration
     boolean isDevModeLiveReloadEnabled();
 
     /**
-     * Checks if dev mode gizmo (debug window) is enabled or not. It is always
-     * disabled in production mode. In development mode, it is enabled by
-     * default.
+     * Checks if dev tools are enabled or not. They is always disabled in
+     * production mode. In development mode, it is enabled by default.
      *
-     * @return {@code true} if dev mode gizmo is enabled, {@code false}
-     *         otherwise
+     * @return {@code true} if dev tools are enabled, {@code false} otherwise
      */
-    boolean isDevModeGizmoEnabled();
+    boolean isDevToolsEnabled();
 
 }
