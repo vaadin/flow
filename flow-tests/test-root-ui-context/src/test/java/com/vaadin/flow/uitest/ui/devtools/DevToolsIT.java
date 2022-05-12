@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui.gizmo;
+package com.vaadin.flow.uitest.ui.devtools;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -21,22 +21,21 @@ import org.openqa.selenium.By;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-public class DevModeGizmoIT extends ChromeBrowserTest {
+public class DevToolsIT extends ChromeBrowserTest {
 
     @Override
     protected String getTestPath() {
-        return "/view-disabled-gizmo/com.vaadin.flow.uitest.gizmo.DevModeGizmoView";
+        return "/view-disabled-dev-tools/com.vaadin.flow.uitest.devtools.DevToolsView";
     }
 
     @Test
-    public void devMode_devModeGizmo_disabled_shouldNotRenderDevModeGizmo() {
+    public void devMode_devTools_disabled_shouldNotRenderDevTools() {
         open();
-        Assert.assertTrue(
-                "No dev mode gizmo popup expected when it is disabled",
-                findElements(By.tagName("vaadin-devmode-gizmo")).isEmpty());
+        Assert.assertTrue("No dev tools popup expected when it is disabled",
+                findElements(By.tagName("vaadin-dev-tools")).isEmpty());
 
         Assert.assertTrue(
-                "Live reload is expected to be disabled when the gizmo "
+                "Live reload is expected to be disabled when dev tools are "
                         + "disabled",
                 findElements(By.id("vaadin-live-reload-indicator")).isEmpty());
     }

@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.flow.testutil.DevModeGizmoElement;
+import com.vaadin.flow.testutil.DevToolsElement;
 import com.vaadin.testbench.TestBenchElement;
 
 import net.jcip.annotations.NotThreadSafe;
@@ -33,23 +33,22 @@ public class JavaLiveReloadIT extends AbstractLiveReloadIT {
 
         // Upon opening, the LiveReloadUI should show the indicator but not the
         // message window
-        DevModeGizmoElement liveReload = $(DevModeGizmoElement.class)
-                .waitForFirst();
+        DevToolsElement devTools = $(DevToolsElement.class).waitForFirst();
 
-        TestBenchElement window = liveReload.$("*")
+        TestBenchElement window = devTools.$("*")
                 .attributeContains("class", "window").first();
         Assert.assertFalse(window.isDisplayed());
 
         // After clicking the icon in the indicator, the live-reload message
         // window should appear
-        WebElement liveReloadIcon = liveReload.$("*")
-                .attributeContains("class", "gizmo").first();
+        WebElement liveReloadIcon = devTools.$("*")
+                .attributeContains("class", "dev-tools").first();
         liveReloadIcon.click();
 
-        waitForElementPresent(By.tagName("vaadin-devmode-gizmo"));
+        waitForElementPresent(By.tagName("vaadin-dev-tools"));
 
-        WebElement window2 = liveReload.$("*")
-                .attributeContains("class", "gizmo").first();
+        WebElement window2 = devTools.$("*")
+                .attributeContains("class", "dev-tools").first();
         Assert.assertTrue(window2.isDisplayed());
     }
 
@@ -63,22 +62,21 @@ public class JavaLiveReloadIT extends AbstractLiveReloadIT {
 
         waitForLiveReload();
 
-        DevModeGizmoElement liveReload = $(DevModeGizmoElement.class)
-                .waitForFirst();
-        WebElement gizmo1 = liveReload.$("*")
-                .attributeContains("class", "gizmo").first();
+        DevToolsElement liveReload = $(DevToolsElement.class).waitForFirst();
+        WebElement devTools1 = liveReload.$("*")
+                .attributeContains("class", "dev-tools").first();
 
-        Assert.assertTrue(gizmo1.getAttribute("class").contains("active"));
+        Assert.assertTrue(devTools1.getAttribute("class").contains("active"));
 
         findElement(By.tagName("body")).click();
 
-        DevModeGizmoElement liveReload2 = $(DevModeGizmoElement.class)
-                .waitForFirst();
+        DevToolsElement liveReload2 = $(DevToolsElement.class).waitForFirst();
         Assert.assertNotNull(liveReload2);
-        WebElement gizmo2 = liveReload2.$("*")
-                .attributeContains("class", "gizmo").first();
-        Assert.assertFalse(gizmo2.getAttribute("class").contains("active"));
-        Assert.assertTrue(gizmo2.getAttribute("class").contains("gizmo"));
+        WebElement devTools2 = liveReload2.$("*")
+                .attributeContains("class", "dev-tools").first();
+        Assert.assertFalse(devTools2.getAttribute("class").contains("active"));
+        Assert.assertTrue(
+                devTools2.getAttribute("class").contains("dev-tools"));
     }
 
     @Test
@@ -86,9 +84,9 @@ public class JavaLiveReloadIT extends AbstractLiveReloadIT {
         open();
 
         // given: live reload is deactivated
-        DevModeGizmoElement gizmo = $(DevModeGizmoElement.class).waitForFirst();
+        DevToolsElement devTools = $(DevToolsElement.class).waitForFirst();
 
-        gizmo.setLiveReload(false);
+        devTools.setLiveReload(false);
 
         // when: live reload is triggered
         WebElement liveReloadTrigger = findElement(
@@ -96,11 +94,11 @@ public class JavaLiveReloadIT extends AbstractLiveReloadIT {
         liveReloadTrigger.click();
 
         // then: page is not reloaded
-        DevModeGizmoElement liveReload2 = $(DevModeGizmoElement.class)
-                .waitForFirst();
-        WebElement gizmo2 = liveReload2.$("*")
-                .attributeContains("class", "gizmo").first();
-        Assert.assertFalse(gizmo2.getAttribute("class").contains("active"));
-        Assert.assertTrue(gizmo2.getAttribute("class").contains("gizmo"));
+        DevToolsElement liveReload2 = $(DevToolsElement.class).waitForFirst();
+        WebElement devTools2 = liveReload2.$("*")
+                .attributeContains("class", "dev-tools").first();
+        Assert.assertFalse(devTools2.getAttribute("class").contains("active"));
+        Assert.assertTrue(
+                devTools2.getAttribute("class").contains("dev-tools"));
     }
 }

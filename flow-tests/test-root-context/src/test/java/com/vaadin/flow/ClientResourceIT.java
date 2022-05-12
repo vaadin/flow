@@ -31,15 +31,15 @@ public class ClientResourceIT extends ChromeBrowserTest {
     public void clientResourcesAreNotExposed() throws IOException {
         assertResourceIsUnavailable("frontend/Flow.js");
         assertResourceIsUnavailable("frontend/Flow.js.map");
-        assertResourceIsUnavailable("frontend/VaadinDevmodeGizmo.js.map");
-        assertResourceIsUnavailable("frontend/VaadinDevmodeGizmo.d.ts");
+        assertResourceIsUnavailable("frontend/vaadin-dev-tools.js.map");
+        assertResourceIsUnavailable("frontend/vaadin-dev-tools.d.ts");
         assertResourceIsUnavailable("frontend/FlowBootstrap.d.ts");
         assertResourceIsUnavailable("frontend/index.js");
         assertResourceIsUnavailable("frontend/Flow.d.ts");
         assertResourceIsUnavailable("frontend/index.js.map");
         assertResourceIsUnavailable("frontend/index.d.ts");
         assertResourceIsUnavailable("frontend/FlowClient.d.ts");
-        assertResourceIsUnavailable("frontend/VaadinDevmodeGizmo.js");
+        assertResourceIsUnavailable("frontend/vaadin-dev-tools.js");
         assertResourceIsUnavailable("frontend/copy-to-clipboard.js");
         assertResourceIsUnavailable("frontend/FlowClient.js");
     }
