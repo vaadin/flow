@@ -66,8 +66,6 @@ public class MessageHandler {
      */
     private static final int UNDEFINED_SYNC_ID = -1;
 
-    private boolean resyncInProgress;
-
     /**
      * If responseHandlingLocks contains any objects, response handling is
      * suspended until the collection is empty or a timeout has occurred.
@@ -221,13 +219,15 @@ public class MessageHandler {
 
         boolean hasResynchronize = isResynchronize(valueMap);
 
-        if (!hasResynchronize && resyncInProgress) {
+        if (!hasResynchronize && registry.getMessageSender()
+                .getResynchronizationState() == ResynchronizationState.WAITING_FOR_RESPONSE) {
             Console.warn(
                     "Ignoring message from the server as a resync request is ongoing.");
             return;
         }
 
-        resyncInProgress = false;
+        registry.getMessageSender()
+                .setResynchronizationState(ResynchronizationState.NOT_ACTIVE);
 
         if (hasResynchronize && !isNextExpectedMessage(serverId)) {
             // Resynchronize request. We must remove any old pending
@@ -830,9 +830,5 @@ public class MessageHandler {
     public void setNextResponseSessionExpiredHandler(
             Command nextResponseSessionExpiredHandler) {
         this.nextResponseSessionExpiredHandler = nextResponseSessionExpiredHandler;
-    }
-
-    public void onResynchronize() {
-        resyncInProgress = true;
     }
 }
