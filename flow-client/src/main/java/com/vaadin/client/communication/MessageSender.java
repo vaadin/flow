@@ -37,6 +37,10 @@ import elemental.json.JsonValue;
  */
 public class MessageSender {
 
+    public enum ResynchronizationState {
+        NOT_ACTIVE, SEND_TO_SERVER, WAITING_FOR_RESPONSE
+    }
+
     /**
      * Counter for the messages send to the server. First sent message has id 0.
      */
@@ -46,7 +50,7 @@ public class MessageSender {
     private final Registry registry;
     private final PushConnectionFactory pushConnectionFactory;
 
-    private boolean resynchronizeRequested = false;
+    private ResynchronizationState resynchronizationState = ResynchronizationState.NOT_ACTIVE;
 
     /**
      * Creates a new instance connected to the given registry.
@@ -90,7 +94,8 @@ public class MessageSender {
     private void doSendInvocationsToServer() {
 
         ServerRpcQueue serverRpcQueue = registry.getServerRpcQueue();
-        if (serverRpcQueue.isEmpty() && !resynchronizeRequested) {
+        if (serverRpcQueue.isEmpty()
+                && resynchronizationState != ResynchronizationState.SEND_TO_SERVER) {
             return;
         }
 
@@ -98,7 +103,8 @@ public class MessageSender {
         JsonArray reqJson = serverRpcQueue.toJson();
         serverRpcQueue.clear();
 
-        if (reqJson.length() == 0 && !resynchronizeRequested) {
+        if (reqJson.length() == 0
+                && resynchronizationState != ResynchronizationState.SEND_TO_SERVER) {
             // Nothing to send, all invocations were filtered out (for
             // non-existing connectors)
             Console.warn(
@@ -107,11 +113,10 @@ public class MessageSender {
         }
 
         JsonObject extraJson = Json.createObject();
-        if (resynchronizeRequested) {
-            registry.getMessageHandler().onResynchronize();
+        if (resynchronizationState == ResynchronizationState.SEND_TO_SERVER) {
+            resynchronizationState = ResynchronizationState.WAITING_FOR_RESPONSE;
             Console.log("Resynchronizing from server");
             extraJson.put(ApplicationConstants.RESYNCHRONIZE_ID, true);
-            resynchronizeRequested = false;
         }
         if (showLoadingIndicator) {
             ConnectionIndicator.setState(ConnectionIndicator.LOADING);
@@ -271,7 +276,11 @@ public class MessageSender {
         }
     }
 
-    boolean isResynchronizeRequested() {
-        return resynchronizeRequested;
+    void setResynchronizationState(ResynchronizationState state) {
+        resynchronizationState = state;
+    }
+
+    ResynchronizationState getResynchronizationState() {
+        return resynchronizationState;
     }
 }
