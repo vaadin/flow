@@ -15,18 +15,23 @@
  */
 package com.vaadin.flow.server.auth;
 
+import java.security.Principal;
+import java.util.function.Function;
+
 import javax.annotation.security.DenyAll;
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
-import javax.servlet.http.HttpServletRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import javax.servlet.http.HttpSession;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.NotFoundException;
+import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServletRequest;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Checks access to views using an {@link AccessAnnotationChecker}.
@@ -141,28 +146,20 @@ public class ViewAccessChecker implements BeforeEnterListener {
             return;
         }
         Class<?> targetView = beforeEnterEvent.getNavigationTarget();
+        VaadinRequest request = VaadinRequest.getCurrent();
 
-        VaadinServletRequest vaadinServletRequest = VaadinServletRequest
-                .getCurrent();
-        if (vaadinServletRequest == null) {
-            // This is in a background thread and we cannot access the request
-            // to check access
-            getLogger().warn("Preventing navigation to " + targetView.getName()
-                    + " because no HTTP request is available for checking access.");
-            beforeEnterEvent.rerouteToError(NotFoundException.class);
-            return;
-        }
+        Principal principal = getPrincipal(request);
+        Function<String, Boolean> rolesChecker = getRolesChecker(request);
 
-        HttpServletRequest httpServletRequest = vaadinServletRequest
-                .getHttpServletRequest();
         getLogger().debug("Checking access for view {}", targetView.getName());
         if (loginView != null && targetView == loginView) {
             getLogger().debug("Allowing access for login view {}",
                     targetView.getName());
             return;
         }
+
         boolean hasAccess = accessAnnotationChecker.hasAccess(targetView,
-                httpServletRequest);
+                principal, rolesChecker);
 
         if (hasAccess) {
             getLogger().debug("Allowed access to view {}",
@@ -171,10 +168,23 @@ public class ViewAccessChecker implements BeforeEnterListener {
         }
 
         getLogger().debug("Denied access to view {}", targetView.getName());
-        if (httpServletRequest.getUserPrincipal() == null) {
-            httpServletRequest.getSession()
-                    .setAttribute(SESSION_STORED_REDIRECT, beforeEnterEvent
-                            .getLocation().getPathWithQueryParameters());
+        if (principal == null) {
+            HttpSession session = (request instanceof VaadinServletRequest)
+                    ? ((VaadinServletRequest) request).getSession()
+                    : null;
+            if (session != null) {
+                session.setAttribute(SESSION_STORED_REDIRECT, beforeEnterEvent
+                        .getLocation().getPathWithQueryParameters());
+            } else {
+                if (request == null) {
+                    getLogger().debug(
+                            "Unable to store redirect in session because no request is available");
+                } else {
+                    getLogger().debug(
+                            "Unable to store redirect in session because request is of type {}",
+                            request.getClass().getName());
+                }
+            }
             if (loginView != null) {
                 beforeEnterEvent.forwardTo(loginView);
             } else {
@@ -197,6 +207,40 @@ public class ViewAccessChecker implements BeforeEnterListener {
             }
             beforeEnterEvent.rerouteToError(NotFoundException.class, errorMsg);
         }
+    }
+
+    /**
+     * Gets a function for checking roles for the currently logged in user.
+     *
+     * @param request
+     *            the current request or {@code null} if no request is in
+     *            progress (e.g. in a background thread)
+     * @return a function which takes a role name and returns {@code true} if
+     *         the user is included in that role
+     */
+    protected Function<String, Boolean> getRolesChecker(VaadinRequest request) {
+        if (request == null) {
+            return role -> false;
+        }
+
+        return request::isUserInRole;
+    }
+
+    /**
+     * Gets the principal for the currently logged in user.
+     *
+     * @param request
+     *            the current request or {@code null} if no request is in
+     *            progress (e.g. in a background thread)
+     * @return a representation of the currently logged in user or {@code null}
+     *         if no user is currently logged in
+     *
+     */
+    protected Principal getPrincipal(VaadinRequest request) {
+        if (request == null) {
+            return null;
+        }
+        return request.getUserPrincipal();
     }
 
     private boolean isProductionMode(BeforeEnterEvent beforeEnterEvent) {
