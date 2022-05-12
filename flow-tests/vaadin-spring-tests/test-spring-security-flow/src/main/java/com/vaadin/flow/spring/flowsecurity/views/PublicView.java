@@ -1,5 +1,7 @@
 package com.vaadin.flow.spring.flowsecurity.views;
 
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Paragraph;
@@ -12,6 +14,8 @@ import com.vaadin.flow.server.auth.AnonymousAllowed;
 @PageTitle("Public View")
 @AnonymousAllowed
 public class PublicView extends FlexLayout {
+
+    public static final String BACKGROUND_NAVIGATION_ID = "backgroundNavi";
 
     public PublicView() {
         setFlexDirection(FlexDirection.COLUMN);
@@ -26,6 +30,23 @@ public class PublicView extends FlexLayout {
         add(image);
         add(new Paragraph(
                 "We are very great and have great amounts of money."));
+
+        Button backgroundNavigation = new Button(
+                "Navigate to admin view in 1 second", e -> {
+                    UI ui = e.getSource().getUI().get();
+                    new Thread(() -> {
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e1) {
+                        }
+                        ui.access(() -> {
+                            ui.navigate(AdminView.class);
+                        });
+
+                    }).start();
+                });
+        backgroundNavigation.setId(BACKGROUND_NAVIGATION_ID);
+        add(backgroundNavigation);
     }
 
 }
