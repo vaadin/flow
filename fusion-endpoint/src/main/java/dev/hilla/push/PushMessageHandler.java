@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import dev.hilla.AuthenticationHelper;
+import dev.hilla.AuthenticationUtil;
 import dev.hilla.ConditionalOnFeatureFlag;
 import dev.hilla.EndpointInvocationException.EndpointAccessDeniedException;
 import dev.hilla.EndpointInvocationException.EndpointBadRequestException;
@@ -107,9 +107,9 @@ public class PushMessageHandler {
             paramsObject.set(i + "", paramsArray.get(i));
         }
 
-        Principal principal = AuthenticationHelper
+        Principal principal = AuthenticationUtil
                 .getSecurityHolderAuthentication();
-        Function<String, Boolean> isInRole = AuthenticationHelper
+        Function<String, Boolean> isInRole = AuthenticationUtil
                 .getSecurityHolderRoleChecker();
 
         try {

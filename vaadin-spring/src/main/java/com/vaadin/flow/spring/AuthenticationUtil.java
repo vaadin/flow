@@ -1,4 +1,4 @@
-package dev.hilla;
+package com.vaadin.flow.spring;
 
 import java.util.function.Function;
 
@@ -9,7 +9,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 /**
  * Helpers for authentication related tasks.
  */
-public class AuthenticationHelper {
+public class AuthenticationUtil {
 
     /**
      * Gets the authenticated user from the Spring SecurityContextHolder.
@@ -42,5 +42,4 @@ public class AuthenticationHelper {
                 .anyMatch(grantedAuthority -> grantedAuthority.getAuthority()
                         .equals("ROLE_" + role));
     }
-
 }

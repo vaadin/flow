@@ -29,7 +29,7 @@ public class SpringViewAccessChecker extends ViewAccessChecker {
     @Override
     protected Principal getPrincipal(VaadinRequest request) {
         if (request == null) {
-            return AuthenticationHelper.getSecurityHolderAuthentication();
+            return AuthenticationUtil.getSecurityHolderAuthentication();
         }
         return super.getPrincipal(request);
     }
@@ -37,7 +37,7 @@ public class SpringViewAccessChecker extends ViewAccessChecker {
     @Override
     protected Function<String, Boolean> getRolesChecker(VaadinRequest request) {
         if (request == null) {
-            return AuthenticationHelper.getSecurityHolderRoleChecker();
+            return AuthenticationUtil.getSecurityHolderRoleChecker();
         }
         return super.getRolesChecker(request);
     }
