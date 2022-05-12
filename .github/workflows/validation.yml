@@ -99,7 +99,7 @@ jobs:
             ARGS="-pl ${{matrix.args}}"
           cmd="mvn -B -ntp -T 1C $ARGS"
           set -x -e -o pipefail
-          ($cmd -T 1C verify || $cmd clean verify -U) | tee mvn-unit-tests-${{matrix.current}}.out
+          $cmd verify | tee mvn-unit-tests-${{matrix.current}}.out
       - name: Set build status flag
         id: set-failure
         if: ${{ failure() || cancelled() }}
@@ -160,11 +160,11 @@ jobs:
         run: |
           if [ ${{matrix.current}} -eq 2 -o ${{matrix.current}} -eq 3 ]; then
             cmd="mvn install -B -ntp -DskipTests -Pit-shared-modules -amd -pl flow-tests"
-            $cmd -T 1C || $cmd
+            $cmd -T 1C
           fi
           if [ ${{matrix.current}} -eq 4 -o ${{matrix.current}} -eq 5 -o ${{matrix.current}} -eq 6 ]; then
             cmd="mvn install -B -ntp -DskipTests -Pit-shared-spring-modules -amd -pl flow-tests"
-            $cmd -T 1C || $cmd
+            $cmd -T 1C
           fi
       - name: Run ITs
         run: |
