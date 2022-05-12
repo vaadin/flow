@@ -74,6 +74,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
+import org.slf4j.LoggerFactory;
 
 import net.jcip.annotations.NotThreadSafe;
 
@@ -602,8 +603,20 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
 
     private int prepareHttpServer(int port, int status, String response)
             throws Exception {
-        httpServer = createStubWebpackTcpListener(port, status, response);
-        return httpServer.getAddress().getPort();
+        int i = 0;
+        while (true) {
+            try {
+                httpServer = createStubWebpackTcpListener(port, status,
+                        response);
+                return httpServer.getAddress().getPort();
+            } catch (Exception e) {
+                if (i++ >= 5) {
+                    throw e;
+                }
+                LoggerFactory.getLogger(getClass())
+                        .warn("error creating http server", e);
+            }
+        }
     }
 
     public static HttpServer createStubWebpackTcpListener(int port, int status,
