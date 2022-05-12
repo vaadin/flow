@@ -29,6 +29,7 @@ public class GwtDomApiTest extends ClientEngineTestBase {
                 set(RequestResponseTracker.class,
                         new RequestResponseTracker(this));
                 set(MessageHandler.class, new MessageHandler(this));
+                set(MessageSender.class, new MessageSender(this));
                 set(ServerRpcQueue.class, new ServerRpcQueue(this));
                 set(DependencyLoader.class, new DependencyLoader(this));
                 set(ResourceLoader.class, new ResourceLoader(this, false));
