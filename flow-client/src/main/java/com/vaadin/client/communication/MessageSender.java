@@ -232,7 +232,7 @@ public class MessageSender {
      */
     public void resynchronize() {
         Console.log("Resynchronize from server requested");
-        resynchronizeRequested = true;
+        resynchronizationState = ResynchronizationState.SEND_TO_SERVER;
         sendInvocationsToServer();
     }
 
