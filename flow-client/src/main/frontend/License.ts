@@ -67,7 +67,7 @@ const overrideCustomElementsDefine = () => {
   window.customElements.define = function (name, constructor, options) {
     const { cvdlName, connectedCallback } = constructor.prototype;
 
-    const productInfo = cvdlName ?? missingLicense[cvdlName.toLowerCase()];
+    const productInfo = cvdlName && missingLicense[cvdlName.toLowerCase()];
     if (productInfo) {
       constructor.prototype.connectedCallback = function () {
         setTimeout(() => manipulate(this, productInfo), manipulateTimeout);
