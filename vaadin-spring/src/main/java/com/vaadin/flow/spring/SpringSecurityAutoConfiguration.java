@@ -67,8 +67,9 @@ public class SpringSecurityAutoConfiguration {
      * @return the default view access checker
      */
     @Bean
-    public ViewAccessChecker viewAccessChecker() {
-        return new ViewAccessChecker(false);
+    public ViewAccessChecker viewAccessChecker(
+            AccessAnnotationChecker accessAnnotationChecker) {
+        return new SpringViewAccessChecker(accessAnnotationChecker);
     }
 
     /**
