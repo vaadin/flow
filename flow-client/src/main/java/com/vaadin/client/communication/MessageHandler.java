@@ -27,6 +27,7 @@ import com.vaadin.client.Registry;
 import com.vaadin.client.UILifecycle.UIState;
 import com.vaadin.client.ValueMap;
 import com.vaadin.client.WidgetUtil;
+import com.vaadin.client.communication.MessageSender.ResynchronizationState;
 import com.vaadin.client.flow.ConstantPool;
 import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.StateTree;
