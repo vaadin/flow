@@ -48,7 +48,7 @@ import elemental.json.impl.JsonUtil;
  *
  * @since 9.0
  */
-@Mojo(name = "clean-frontend", defaultPhase = LifecyclePhase.CLEAN)
+@Mojo(name = "clean-frontend", defaultPhase = LifecyclePhase.PRE_CLEAN)
 public class CleanFrontendMojo extends FlowModeAbstractMojo {
 
     public static final String VAADIN = "vaadin";
