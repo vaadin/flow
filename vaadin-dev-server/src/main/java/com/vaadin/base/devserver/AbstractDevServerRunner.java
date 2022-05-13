@@ -671,7 +671,8 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
     public boolean serveDevModeRequest(HttpServletRequest request,
             HttpServletResponse response) throws IOException {
         // Do not serve requests if dev server starting or failed to start.
-        if (isDevServerFailedToStart.get() || !devServerStartFuture.isDone()) {
+        if (isDevServerFailedToStart.get() || !devServerStartFuture.isDone()
+                || devServerStartFuture.isCompletedExceptionally()) {
             return false;
         }
         // Since we have 'publicPath=/VAADIN/' in the dev server config,
