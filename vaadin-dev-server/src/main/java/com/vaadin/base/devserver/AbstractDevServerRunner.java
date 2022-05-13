@@ -175,7 +175,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         }
     }
 
-    private void doStartDevModeServer() throws ExecutionFailedException {
+    void doStartDevModeServer() throws ExecutionFailedException {
         // If port is defined, means that the dev server is already running
         if (port > 0) {
             if (!checkConnection()) {
