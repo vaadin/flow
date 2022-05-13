@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.button.testbench.ButtonElement;
 import com.vaadin.flow.component.upload.testbench.UploadElement;
+import com.vaadin.flow.spring.flowsecurity.views.PublicView;
 import com.vaadin.testbench.TestBenchElement;
 
 import org.apache.commons.io.IOUtils;
@@ -245,6 +246,29 @@ public class AppViewIT extends AbstractIT {
                 text.getText());
         Assert.assertTrue(img.getPropertyString("src")
                 .contains("/VAADIN/dynamic/resource/"));
+    }
+
+    @Test
+    public void navigate_in_thread_without_access() {
+        open("");
+        $(ButtonElement.class).id(PublicView.BACKGROUND_NAVIGATION_ID).click();
+
+        // This waits for longer than the delay in the UI so we do not need a
+        // separate
+        // sleep
+        assertLoginViewShown();
+    }
+
+    @Test
+    public void navigate_in_thread_with_access() {
+        open("login");
+        loginAdmin();
+        $(ButtonElement.class).id(PublicView.BACKGROUND_NAVIGATION_ID).click();
+
+        // This waits for longer than the delay in the UI so we do not need a
+        // separate
+        // sleep
+        assertAdminPageShown(ADMIN_FULLNAME);
     }
 
     private void navigateTo(String path) {

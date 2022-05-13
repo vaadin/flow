@@ -199,9 +199,8 @@ public class ApplicationConstants implements Serializable {
     public static final String DEBUG_WINDOW_CONNECTION = "debug_window";
 
     /**
-     * Boolean client configuration parameter enabling the development mode
-     * gizmo.
+     * Boolean client configuration parameter enabling the development tools.
      */
-    public static final String DEVMODE_GIZMO_ENABLED = "devmodeGizmoEnabled";
+    public static final String DEV_TOOLS_ENABLED = "devToolsEnabled";
 
 }

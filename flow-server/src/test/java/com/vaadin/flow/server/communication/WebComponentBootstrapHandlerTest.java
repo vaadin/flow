@@ -199,7 +199,7 @@ public class WebComponentBootstrapHandlerTest {
     }
 
     @Test
-    public void writeBootstrapPage_scriptGuadedAndGizmoDisabled()
+    public void writeBootstrapPage_scriptGuardedAndDevToolsDisabled()
             throws IOException, ServiceException {
         TestWebComponentBootstrapHandler handler = new TestWebComponentBootstrapHandler();
         VaadinServletService service = new MockVaadinServletService();
@@ -236,8 +236,7 @@ public class WebComponentBootstrapHandlerTest {
                 .indexOf("document.createElement('script')");
         Assert.assertTrue(createScriptIndex > guardIndex);
 
-        Assert.assertTrue(
-                result.contains("\\\"devmodeGizmoEnabled\\\": false"));
+        Assert.assertTrue(result.contains("\\\"devToolsEnabled\\\": false"));
     }
 
     @Test
