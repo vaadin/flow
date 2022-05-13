@@ -1,4 +1,4 @@
-const manipulateTimeout = 1000;
+const noLicenseFallbackTimeout = 1000;
 
 export interface Product {
   name: string;
@@ -11,17 +11,17 @@ export interface ProductAndMessage {
   product: Product;
 }
 
-export const findAll = (element: Element | ShadowRoot | Document, tag: string): Element[] => {
-  const lightDom = Array.from(element.querySelectorAll(tag));
+export const findAll = (element: Element | ShadowRoot | Document, tags: string[]): Element[] => {
+  const lightDom = Array.from(element.querySelectorAll(tags.join(', ')));
   const shadowDom = Array.from(element.querySelectorAll('*'))
     .filter((e) => e.shadowRoot)
-    .flatMap((e) => findAll(e.shadowRoot!, tag));
+    .flatMap((e) => findAll(e.shadowRoot!, tags));
   return [...lightDom, ...shadowDom];
 };
 
 let licenseCheckListener = false;
 
-const manipulate = (element: Element, productAndMessage: ProductAndMessage) => {
+const showNoLicenseFallback = (element: Element, productAndMessage: ProductAndMessage) => {
   if (!licenseCheckListener) {
     // When a license check has succeeded, refresh so that all elements are properly shown again
     window.addEventListener(
@@ -40,11 +40,11 @@ const manipulate = (element: Element, productAndMessage: ProductAndMessage) => {
     if (overlay.shadowRoot) {
       const defaultSlot = overlay.shadowRoot.querySelector('slot:not([name])');
       if (defaultSlot && defaultSlot.assignedElements().length > 0) {
-        manipulate(defaultSlot.assignedElements()[0], productAndMessage);
+        showNoLicenseFallback(defaultSlot.assignedElements()[0], productAndMessage);
         return;
       }
     }
-    manipulate(overlay, productAndMessage);
+    showNoLicenseFallback(overlay, productAndMessage);
     return;
   }
 
@@ -58,24 +58,40 @@ const manipulate = (element: Element, productAndMessage: ProductAndMessage) => {
   element.outerHTML = `<no-license style="display:flex;align-items:center;text-align:center;justify-content:center;"><div>${htmlMessage}</div></no-license>`;
 };
 
-const orgDefine = window.customElements.define.bind(window.customElements);
-const missingLicense: { [key: string]: ProductAndMessage } = {};
+const productTagNames: Record<string, string[]> = {};
+const productMissingLicense: Record<string, ProductAndMessage> = {};
 
-customElements.define = (name, constructor, options) => {
-  const orgCallback = constructor.prototype.connectedCallback;
+/* eslint-disable func-names */
+const overrideCustomElementsDefine = () => {
+  const { define } = window.customElements;
 
-  // eslint-disable-next-line func-names
-  constructor.prototype.connectedCallback = function () {
-    const productInfo = missingLicense[this.tagName.toLowerCase()];
-    if (productInfo) {
-      setTimeout(() => manipulate(this, productInfo), manipulateTimeout);
+  window.customElements.define = function (
+    tagName,
+    constructor: CustomElementConstructor & { cvdlName?: string },
+    options
+  ) {
+    const { cvdlName } = constructor;
+    if (cvdlName) {
+      productTagNames[cvdlName] = productTagNames[cvdlName] ?? [];
+      productTagNames[cvdlName].push(tagName);
+
+      const productInfo = productMissingLicense[cvdlName];
+      if (productInfo) {
+        const { connectedCallback } = constructor.prototype;
+        constructor.prototype.connectedCallback = function () {
+          setTimeout(() => showNoLicenseFallback(this, productInfo), noLicenseFallbackTimeout);
+
+          if (connectedCallback) {
+            connectedCallback.call(this);
+          }
+        };
+      }
     }
-    if (orgCallback) {
-      orgCallback.call(this);
-    }
+
+    define.call(this, tagName, constructor, options);
   };
-  orgDefine(name, constructor, options);
 };
+/* eslint-enable func-names */
 
 export const licenseCheckOk = (data: Product) => {
   // eslint-disable-next-line no-console
@@ -83,26 +99,34 @@ export const licenseCheckOk = (data: Product) => {
 };
 
 export const licenseCheckFailed = (data: ProductAndMessage) => {
-  const tag = data.product.name;
-  missingLicense[tag] = data;
+  const productName = data.product.name;
+  productMissingLicense[productName] = data;
   // eslint-disable-next-line no-console
-  console.error('License check failed for ', tag);
+  console.error('License check failed for ', productName);
 
-  findAll(document, tag).forEach((element) => {
-    setTimeout(() => manipulate(element, missingLicense[tag]), manipulateTimeout);
-  });
+  const tags = productTagNames[productName];
+  if (tags?.length > 0) {
+    findAll(document, tags).forEach((element) => {
+      setTimeout(() => showNoLicenseFallback(element, productMissingLicense[productName]), noLicenseFallbackTimeout);
+    });
+  }
 };
 
 export const licenseCheckNoKey = (data: ProductAndMessage) => {
   const keyUrl = data.message;
 
-  const tag = data.product.name;
+  const productName = data.product.name;
   data.messageHtml = `No license found. <a target=_blank onclick="javascript:window.open(this.href);return false;" href="${keyUrl}">Go here to start a trial or retrieve your license.</a>`;
-  missingLicense[tag] = data;
+  productMissingLicense[productName] = data;
   // eslint-disable-next-line no-console
-  console.error('No license found when checking ', tag);
+  console.error('No license found when checking ', productName);
 
-  findAll(document, tag).forEach((element) => {
-    setTimeout(() => manipulate(element, missingLicense[tag]), manipulateTimeout);
-  });
+  const tags = productTagNames[productName];
+  if (tags?.length > 0) {
+    findAll(document, tags).forEach((element) => {
+      setTimeout(() => showNoLicenseFallback(element, productMissingLicense[productName]), noLicenseFallbackTimeout);
+    });
+  }
 };
+
+overrideCustomElementsDefine();
