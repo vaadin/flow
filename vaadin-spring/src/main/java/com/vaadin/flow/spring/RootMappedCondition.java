@@ -38,7 +38,7 @@ import com.vaadin.flow.server.VaadinServlet;
  */
 public class RootMappedCondition implements Condition {
 
-    public static final String URL_MAPPING_PROPERTY = "vaadin.urlMapping";
+    public static final String URL_MAPPING_PROPERTY = "vaadin.url-mapping";
 
     @Override
     public boolean matches(ConditionContext context,
