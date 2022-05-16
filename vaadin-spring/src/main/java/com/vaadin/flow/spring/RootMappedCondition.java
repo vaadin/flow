@@ -15,12 +15,17 @@
  */
 package com.vaadin.flow.spring;
 
-import org.springframework.context.annotation.Condition;
-import org.springframework.context.annotation.ConditionContext;
-import org.springframework.core.type.AnnotatedTypeMetadata;
-import org.springframework.web.servlet.DispatcherServlet;
+import java.lang.reflect.InvocationTargetException;
 
 import com.vaadin.flow.server.VaadinServlet;
+
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.ListableBeanFactory;
+import org.springframework.context.annotation.Condition;
+import org.springframework.context.annotation.ConditionContext;
+import org.springframework.core.env.Environment;
+import org.springframework.core.type.AnnotatedTypeMetadata;
+import org.springframework.web.servlet.DispatcherServlet;
 
 /**
  * Condition to check whether the Vaadin servlet is mapped to the root
@@ -43,8 +48,43 @@ public class RootMappedCondition implements Condition {
     @Override
     public boolean matches(ConditionContext context,
             AnnotatedTypeMetadata metadata) {
-        return isRootMapping(
-                context.getEnvironment().getProperty(URL_MAPPING_PROPERTY));
+
+        String urlMapping = getUrlMapping(context.getBeanFactory(),
+                context.getEnvironment());
+        return isRootMapping(urlMapping);
+    }
+
+    /**
+     * Gets the url mapping in a way compatible with both plain Spring and
+     * Spring Boot.
+     *
+     * This is a helper needed only when VaadinConfigurationProperties is not
+     * available for injection, e.g. in a condition.
+     *
+     * @param beanFactory
+     *            the bean factory
+     * @param environment
+     *            the application environment
+     * @return the url mapping or null if none is defined
+     */
+    public static String getUrlMapping(ListableBeanFactory beanFactory,
+            Environment environment) {
+        if (SpringUtil.isSpringBoot()) {
+            try {
+                return (String) Class.forName(
+                        "com.vaadin.flow.spring.VaadinConfigurationProperties")
+                        .getMethod("getUrlMapping", Environment.class)
+                        .invoke(null, environment);
+            } catch (IllegalAccessException | IllegalArgumentException
+                    | InvocationTargetException | NoSuchMethodException
+                    | SecurityException | ClassNotFoundException e) {
+                LoggerFactory.getLogger(RootMappedCondition.class)
+                        .error("Unable to find urlMapping from properties", e);
+                return null;
+            }
+        } else {
+            return environment.getProperty(URL_MAPPING_PROPERTY);
+        }
     }
 
     /**

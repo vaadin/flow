@@ -20,6 +20,8 @@ import java.util.Collections;
 import java.util.List;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.bind.Binder;
+import org.springframework.core.env.Environment;
 
 /**
  * Configuration properties for Vaadin Spring Boot.
@@ -30,6 +32,22 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  */
 @ConfigurationProperties(prefix = "vaadin")
 public class VaadinConfigurationProperties {
+
+    /**
+     * Gets the url mapping using the given environment.
+     *
+     * This is a helper needed only when VaadinConfigurationProperties is not
+     * available for injection, e.g. in a condition.
+     *
+     * @param environment
+     *            the application environment
+     * @return the url mapping or null if none is defined
+     */
+    public static String getUrlMapping(Environment environment) {
+        return Binder.get(environment)
+                .bind("vaadin", VaadinConfigurationProperties.class)
+                .map(conf -> conf.getUrlMapping()).orElse(null);
+    }
 
     /**
      * Base URL mapping of the Vaadin servlet.

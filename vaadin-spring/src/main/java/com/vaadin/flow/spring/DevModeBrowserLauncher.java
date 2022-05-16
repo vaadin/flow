@@ -99,8 +99,9 @@ public class DevModeBrowserLauncher
         String host = "http://localhost:" + port;
 
         String path = "/";
-        String vaadinServletMapping = app.getEnvironment()
-                .getProperty("vaadin.urlMapping");
+        String vaadinServletMapping = RootMappedCondition
+                .getUrlMapping(app.getBeanFactory(), app.getEnvironment());
+
         ServletContext servletContext = app.getServletContext();
         if (servletContext != null) {
             String contextPath = servletContext.getContextPath();
