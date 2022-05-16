@@ -31,21 +31,19 @@ import java.io.Serializable;
  * <li><b>sessionExpiredURL</b> = null</li>
  * <li><b>sessionExpiredNotificationEnabled</b> = false</li>
  * <li><b>sessionExpiredCaption</b> = "Session Expired"</li>
- * <li><b>sessionExpiredMessage</b> = "Take note of any unsaved data, and
- * <u>click here</u> or press ESC key to continue."</li>
+ * <li><b>sessionExpiredMessage</b> = "Take note of any unsaved data, and click
+ * here or press ESC key to continue."</li>
  * <li><b>internalErrorURL</b> = null</li>
  * <li><b>internalErrorNotificationEnabled</b> = true</li>
  * <li><b>internalErrorCaption</b> = "Internal error"</li>
- * <li><b>internalErrorMessage</b> = "Please notify the administrator.<br>
- * Take note of any unsaved data, and <u>click here</u> or press ESC to
- * continue."</li>
+ * <li><b>internalErrorMessage</b> = "Please notify the administrator. Take note
+ * of any unsaved data, and click here or press ESC to continue."</li>
  * <li><b>cookiesDisabledURL</b> = null</li>
  * <li><b>cookiesDisabledNotificationEnabled</b> = true</li>
  * <li><b>cookiesDisabledCaption</b> = "Cookies disabled"</li>
  * <li><b>cookiesDisabledMessage</b> = "This application requires cookies to
- * function.<br>
- * Please enable cookies in your browser and <u>click here</u> or press ESC to
- * try again.</li>
+ * function. Please enable cookies in your browser and click here or press ESC
+ * to try again.</li>
  * </ul>
  *
  * @since 1.0
@@ -54,17 +52,17 @@ public class SystemMessages implements Serializable {
     protected String sessionExpiredURL = null;
     protected boolean sessionExpiredNotificationEnabled = false;
     protected String sessionExpiredCaption = "Session Expired";
-    protected String sessionExpiredMessage = "Take note of any unsaved data, and <u>click here</u> or press ESC key to continue.";
+    protected String sessionExpiredMessage = "Take note of any unsaved data, and click here or press ESC key to continue.";
 
     protected String internalErrorURL = null;
     protected boolean internalErrorNotificationEnabled = true;
     protected String internalErrorCaption = "Internal error";
-    protected String internalErrorMessage = "Please notify the administrator.<br>Take note of any unsaved data, and <u>click here</u> or press ESC to continue.";
+    protected String internalErrorMessage = "Please notify the administrator. Take note of any unsaved data, and click here or press ESC to continue.";
 
     protected String cookiesDisabledURL = null;
     protected boolean cookiesDisabledNotificationEnabled = true;
     protected String cookiesDisabledCaption = "Cookies disabled";
-    protected String cookiesDisabledMessage = "This application requires cookies to function.<br>Please enable cookies in your browser and <u>click here</u> or press ESC to try again.";
+    protected String cookiesDisabledMessage = "This application requires cookies to function. Please enable cookies in your browser and click here or press ESC to try again.";
 
     /**
      * Private constructor
