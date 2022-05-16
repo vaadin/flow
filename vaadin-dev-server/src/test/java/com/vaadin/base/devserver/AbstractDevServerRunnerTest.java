@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
@@ -25,7 +24,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.vaadin.base.devserver.startup.AbstractDevModeTest;
 import com.vaadin.flow.internal.DevModeHandler;
-import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendToolsSettings;
 
@@ -56,6 +55,10 @@ public class AbstractDevServerRunnerTest extends AbstractDevModeTest {
         @Override
         protected String getServerName() {
             return "Dummy server";
+        }
+
+        @Override
+        void doStartDevModeServer() throws ExecutionFailedException {
         }
 
         @Override
@@ -114,7 +117,8 @@ public class AbstractDevServerRunnerTest extends AbstractDevModeTest {
                     requestedPath.set((String) invocation.getArguments()[0]);
                     return Mockito.mock(HttpURLConnection.class);
                 });
-        devServer.serveDevModeRequest(request, response);
+        Assert.assertTrue("Dev server should have served the resource",
+                devServer.serveDevModeRequest(request, response));
         Assert.assertEquals("foo%20bar", requestedPath.get());
 
     }
