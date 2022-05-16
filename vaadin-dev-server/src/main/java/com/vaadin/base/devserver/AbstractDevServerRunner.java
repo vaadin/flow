@@ -175,7 +175,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         }
     }
 
-    private void doStartDevModeServer() throws ExecutionFailedException {
+    void doStartDevModeServer() throws ExecutionFailedException {
         // If port is defined, means that the dev server is already running
         if (port > 0) {
             if (!checkConnection()) {
@@ -671,7 +671,8 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
     public boolean serveDevModeRequest(HttpServletRequest request,
             HttpServletResponse response) throws IOException {
         // Do not serve requests if dev server starting or failed to start.
-        if (isDevServerFailedToStart.get() || !devServerStartFuture.isDone()) {
+        if (isDevServerFailedToStart.get() || !devServerStartFuture.isDone()
+                || devServerStartFuture.isCompletedExceptionally()) {
             return false;
         }
         // Since we have 'publicPath=/VAADIN/' in the dev server config,
