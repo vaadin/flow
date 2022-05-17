@@ -16,7 +16,6 @@
 
 package com.vaadin.flow.server;
 
-import javax.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -560,7 +559,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      * Warning: This assumes that the VaadinRequest is targeted for a
      * VaadinServlet and does no further checks to validate this. You want to
      * use
-     * {@link HandlerHelper#isFrameworkInternalRequest(String, HttpServletRequest)}
+     * {@link HandlerHelper#isFrameworkInternalRequest(String, javax.servlet.http.HttpServletRequest)}
      * instead.
      * <p>
      * This is public only so that
@@ -1387,14 +1386,15 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     versionInfo.put("atmosphereVersion", atmosphereVersion);
                 }
                 appConfig.put("versionInfo", versionInfo);
-                appConfig.put(ApplicationConstants.DEVMODE_GIZMO_ENABLED,
-                        deploymentConfiguration.isDevModeGizmoEnabled());
+                appConfig.put(ApplicationConstants.DEV_TOOLS_ENABLED,
+                        deploymentConfiguration.isDevToolsEnabled());
 
                 VaadinService service = session.getService();
                 Optional<BrowserLiveReload> liveReload = BrowserLiveReloadAccessor
                         .getLiveReloadFromService(service);
 
-                // With V15+ bootstrap, gizmo is added to generated index.html
+                // With V15+ bootstrap, dev tools is added to generated
+                // index.html
                 if (liveReload.isPresent()
                         && deploymentConfiguration.useV14Bootstrap()) {
                     appConfig.put("liveReloadUrl", BootstrapHandlerHelper

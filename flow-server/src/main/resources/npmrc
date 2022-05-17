@@ -4,3 +4,4 @@
 # This file sets the default parameters for manual `pnpm install`.
 #
 shamefully-hoist=true
+strict-peer-dependencies=false

@@ -17,7 +17,7 @@ package com.vaadin.flow.uitest.ui;
 
 import net.jcip.annotations.NotThreadSafe;
 
-import com.vaadin.flow.testutil.DevModeGizmoElement;
+import com.vaadin.flow.testutil.DevToolsElement;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -31,8 +31,7 @@ public class PreserveOnRefreshLiveReloadIT extends AbstractLiveReloadIT {
     public void notificationShownWhenLoadingPreserveOnRefreshView() {
         open();
 
-        DevModeGizmoElement liveReload = $(DevModeGizmoElement.class)
-                .waitForFirst();
+        DevToolsElement liveReload = $(DevToolsElement.class).waitForFirst();
         WebElement messageDetails = liveReload.$("*")
                 .attributeContains("class", "warning").first();
         Assert.assertTrue(

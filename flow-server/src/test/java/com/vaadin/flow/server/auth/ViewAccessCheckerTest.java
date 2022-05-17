@@ -68,14 +68,6 @@ public class ViewAccessCheckerTest {
     }
 
     @Test
-    public void cannotUseWithoutServlet() {
-        Result request = setupRequest(AnonymousAllowedView.class, null, true);
-        CurrentInstance.clearAll();
-        this.viewAccessChecker.beforeEnter(request.event);
-        Assert.assertEquals(NotFoundException.class, request.getRerouteError());
-    }
-
-    @Test
     public void anonymousAccessToAnonymousViewAllowed() {
         Result result = checkAccess(AnonymousAllowedView.class, null);
         Assert.assertTrue(result.wasTargetViewRendered());
@@ -336,6 +328,26 @@ public class ViewAccessCheckerTest {
     }
 
     @Test
+    public void openingNoAnnotationViewShowsReasonAndHintInDevelopmentMode() {
+        Result result = checkAccess(NoAnnotationView.class, User.NORMAL_USER,
+                false);
+        Assert.assertEquals(NotFoundException.class, result.getRerouteError());
+        Assert.assertEquals(
+                "Access denied. Consider adding one of the following annotations "
+                        + "to make the view accessible: @AnonymousAllowed, "
+                        + "@PermitAll, @RolesAllowed.",
+                result.getRerouteErrorMessage());
+    }
+
+    @Test
+    public void openingNoAnnotationViewDoesNotShowAnyReasonAndHintInProductionMode() {
+        Result result = checkAccess(NoAnnotationView.class, User.NORMAL_USER,
+                true);
+        Assert.assertEquals(NotFoundException.class, result.getRerouteError());
+        Assert.assertEquals("", result.getRerouteErrorMessage());
+    }
+
+    @Test
     public void redirectWhenNoLoginSet() throws Exception {
         resetLoginView();
         Result result = checkAccess(RolesAllowedAdminView.class, null);
@@ -436,7 +448,8 @@ public class ViewAccessCheckerTest {
     public void loggedInUserRoleAccess_to_noAnnotationPermitAllByGrandParentView_allowed() {
         Result result = checkAccess(
                 NoAnnotationPermitAllByGrandParentView.class, User.NORMAL_USER);
-        Assert.assertTrue(result.wasTargetViewRendered());
+        Assert.assertTrue("Target view should have been rendered",
+                result.wasTargetViewRendered());
     }
 
     @Test
@@ -640,6 +653,13 @@ public class ViewAccessCheckerTest {
                 .createRequest(principal, roles);
         Mockito.when(vaadinServletRequest.getHttpServletRequest())
                 .thenReturn(httpServletRequest);
+        Mockito.when(vaadinServletRequest.getUserPrincipal())
+                .thenAnswer(anasert -> httpServletRequest.getUserPrincipal());
+        Mockito.when(vaadinServletRequest.isUserInRole(Mockito.any()))
+                .thenAnswer(answer -> httpServletRequest
+                        .isUserInRole(answer.getArgument(0)));
+        Mockito.when(vaadinServletRequest.getSession())
+                .thenAnswer(answer -> httpServletRequest.getSession());
         CurrentInstance.set(VaadinRequest.class, vaadinServletRequest);
 
         Router router = Mockito.mock(Router.class);

@@ -13,7 +13,6 @@ _ThemeImport_class _TagCamel_ extends HTMLElement {
       }
     `;
     _ApplyTheme_shadow.appendChild(style);
-    shadow.appendChild(document.createElement("slot"));
 
     var self = this;
     /* Set initial property values from attributes */

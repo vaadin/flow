@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>vaadin-spring-tests</artifactId>
-        <version>23.1-SNAPSHOT</version>
+        <version>23.2-SNAPSHOT</version>
     </parent>
     <artifactId>vaadin-test-spring-common</artifactId>
     <name>Flow Spring Common UI components</name>
@@ -49,7 +49,7 @@
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-oauth2-authorization-server</artifactId>
-            <version>0.2.2</version>
+            <version>0.2.3</version>
         </dependency>
 
         <dependency>

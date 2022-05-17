@@ -6,7 +6,7 @@
     <artifactId>flow-project</artifactId>
     <name>Flow</name>
     <packaging>pom</packaging>
-    <version>23.1-SNAPSHOT</version>
+    <version>23.2-SNAPSHOT</version>
 
     <parent>
         <groupId>com.vaadin</groupId>
@@ -68,8 +68,9 @@
             https://maven.vaadin.com/vaadin-addons
         </flow.addons.repo.url>
 
-        <maven.compiler.source>11</maven.compiler.source>
-        <maven.compiler.target>11</maven.compiler.target>
+        <maven.compiler.release>11</maven.compiler.release>
+        <maven.compiler.source>${maven.compiler.release}</maven.compiler.source>
+        <maven.compiler.target>${maven.compiler.release}</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8
         </project.reporting.outputEncoding>
@@ -83,13 +84,15 @@
         <failOnMissingWebXml>false</failOnMissingWebXml>
 
         <!-- Dependencies -->
-        <spring.version>5.3.17</spring.version>
-        <spring.boot.version>2.6.5</spring.boot.version>
-        <gwt.version>2.8.2</gwt.version>
+        <spring.version>5.3.20</spring.version>
+        <spring.boot.version>2.6.7</spring.boot.version>
+        <spring.security.version>5.6.3</spring.security.version>
+        <gwt.version>2.9.0</gwt.version>
         <hibernate.validator.version>6.2.3.Final</hibernate.validator.version>
         <slf4j.version>1.7.36</slf4j.version>
         <polymer.version>2.6.1</polymer.version>
         <jackson.version>2.13.2</jackson.version>
+        <jackson.databind.version>2.13.2.2</jackson.databind.version>
         <javax.validation.version>2.0.1.Final</javax.validation.version>
         <javax.annotation.api.version>1.3.2</javax.annotation.api.version>
         <jaxb.version>2.3.6</jaxb.version>
@@ -101,10 +104,11 @@
         <maven.war.plugin.version>3.3.2</maven.war.plugin.version>
         <maven.deploy.plugin.version>2.8.2</maven.deploy.plugin.version>
         <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
-        <maven.clean.plugin.version>3.1.0</maven.clean.plugin.version>
+        <maven.clean.plugin.version>3.2.0</maven.clean.plugin.version>
         <maven.exec.plugin.version>1.6.0</maven.exec.plugin.version>
         <testbench.version>8.0.0</testbench.version>
-        <jetty.version>10.0.8</jetty.version>
+        <webdrivermanager.version>5.1.1</webdrivermanager.version>
+        <jetty.version>10.0.9</jetty.version>
         <properties-maven-plugin.version>1.0.0</properties-maven-plugin.version>
 
         <!-- Frontend -->
@@ -131,7 +135,7 @@
 
         <!-- This property is needed to allow some Win-specific unit tests -->
         <!-- to be disabled via system property in CI until they got fixed -->
-        <exclude.windows.failed.tests></exclude.windows.failed.tests>
+        <exclude.windows.failed.tests/>
 
         <testListener>com.vaadin.flow.testutil.CurrentInstanceCleaner</testListener>
 
@@ -232,7 +236,14 @@
             <dependency>
                 <groupId>net.bytebuddy</groupId>
                 <artifactId>byte-buddy</artifactId>
-                <version>1.12.8</version>
+                <version>1.12.10</version>
+            </dependency>
+            <dependency>
+                <groupId>io.projectreactor</groupId>
+                <artifactId>reactor-bom</artifactId>
+                <version>2020.0.19</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
 
 
@@ -250,12 +261,12 @@
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
-                <version>4.4.0</version>
+                <version>4.5.1</version>
             </dependency>
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-inline</artifactId>
-                <version>4.4.0</version>
+                <version>4.5.1</version>
             </dependency>
             <dependency>
                 <groupId>org.hamcrest</groupId>
@@ -330,7 +341,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.3.2</version>
+                <version>3.4.0</version>
                 <executions>
                     <execution>
                         <id>attach-javadocs</id>
@@ -426,7 +437,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-report-plugin</artifactId>
-                <version>3.0.0-M5</version>
+                <version>3.0.0-M6</version>
                 <executions>
                     <execution>
                         <id>unit-tests-report</id>
@@ -569,6 +580,24 @@
                             <exclude>${exclude.windows.failed.it.tests}</exclude>
                         </excludes>
                     </configuration>
+                    <dependencies>
+                        <dependency>
+                            <groupId>com.sun.xml.bind</groupId>
+                            <artifactId>jaxb-impl</artifactId>
+                            <version>${jaxb.version}</version>
+                        </dependency>
+                    </dependencies>
+                </plugin>
+                <plugin>
+                    <groupId>com.github.siom79.japicmp</groupId>
+                    <artifactId>japicmp-maven-plugin</artifactId>
+                    <dependencies>
+                        <dependency>
+                            <groupId>javax.activation</groupId>
+                            <artifactId>javax.activation-api</artifactId>
+                            <version>1.2.0</version>
+                        </dependency>
+                    </dependencies>
                 </plugin>
                 <!--This plugin's configuration is used to store Eclipse
                     m2e settings only. It has no influence on the Maven build itself. -->
@@ -590,7 +619,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <ignore></ignore>
+                                        <ignore/>
                                     </action>
                                 </pluginExecution>
                                 <pluginExecution>
@@ -603,7 +632,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <ignore></ignore>
+                                        <ignore/>
                                     </action>
                                 </pluginExecution>
                                 <pluginExecution>
@@ -616,7 +645,7 @@
                                         </goals>
                                     </pluginExecutionFilter>
                                     <action>
-                                        <ignore></ignore>
+                                        <ignore/>
                                     </action>
                                 </pluginExecution>
                             </pluginExecutions>
@@ -643,56 +672,17 @@
             </properties>
         </profile>
         <profile>
-            <id>java11</id>
-            <activation>
-                <jdk>[9,)</jdk>
-            </activation>
-            <properties>
-                <maven.compiler.release>8</maven.compiler.release>
-            </properties>
-            <build>
-                <pluginManagement>
-                    <plugins>
-                        <plugin>
-                            <artifactId>maven-surefire-plugin</artifactId>
-                        </plugin>
-                        <plugin>
-                            <artifactId>maven-failsafe-plugin</artifactId>
-                            <dependencies>
-                                <dependency>
-                                    <groupId>com.sun.xml.bind</groupId>
-                                    <artifactId>jaxb-impl</artifactId>
-                                    <version>${jaxb.version}</version>
-                                </dependency>
-                            </dependencies>
-                        </plugin>
-                        <plugin>
-                            <groupId>com.github.siom79.japicmp</groupId>
-                            <artifactId>japicmp-maven-plugin</artifactId>
-                            <dependencies>
-                                <dependency>
-                                    <groupId>javax.activation</groupId>
-                                    <artifactId>javax.activation-api</artifactId>
-                                    <version>1.2.0</version>
-                                    </dependency>
-                            </dependencies>
-                        </plugin>
-                    </plugins>
-                </pluginManagement>
-            </build>
-        </profile>
-        <profile>
             <id>all-tests</id>
             <properties>
-                <groups></groups>
-                <excludedGroups></excludedGroups>
+                <groups/>
+                <excludedGroups/>
             </properties>
         </profile>
         <profile>
             <id>slow-tests</id>
             <properties>
                 <groups>com.vaadin.flow.testcategory.SlowTests</groups>
-                <excludedGroups></excludedGroups>
+                <excludedGroups/>
             </properties>
         </profile>
         <profile>
@@ -702,9 +692,9 @@
                 <sonar.organization>vaadin</sonar.organization>
                 <sonar.host.url>https://sonarcloud.io</sonar.host.url>
                 <!-- override properties for legacy sonar instance -->
-                <sonar.analysis.mode></sonar.analysis.mode>
-                <sonar.issuesReport.console.enable></sonar.issuesReport.console.enable>
-                <sonar.issuesReport.html.enable></sonar.issuesReport.html.enable>
+                <sonar.analysis.mode/>
+                <sonar.issuesReport.console.enable/>
+                <sonar.issuesReport.html.enable/>
             </properties>
         </profile>
     </profiles>

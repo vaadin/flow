@@ -41,16 +41,12 @@ import com.vaadin.flow.shared.communication.PushMode;
 public class DefaultDeploymentConfiguration
         extends PropertyDeploymentConfiguration {
 
-    public static final String NOT_PRODUCTION_MODE_INFO = "\nVaadin is running in DEBUG MODE.\n"
-            + "When deploying application for production, remember to disable debug features. See more from https://vaadin.com/docs/";
+    public static final String NOT_PRODUCTION_MODE_INFO = "\nVaadin is running in DEVELOPMENT mode - do not use for production deployments.";
 
-    public static final String NOT_PRODUCTION_MODE_WARNING = "\nWARNING: Vaadin is running in DEBUG MODE with debug features enabled, but with a prebuild frontend bundle (production ready).\n"
-            + "When deploying application for production, disable debug features by enabling production mode!\n"
-            + "See more from https://vaadin.com/docs/latest/flow/production/overview";
+    public static final String NOT_PRODUCTION_MODE_WARNING = "\nWARNING: Vaadin is running in DEVELOPMENT mode - do not use for production deployments.";
 
     public static final String WARNING_V14_BOOTSTRAP = "Using deprecated Vaadin 14 bootstrap mode.\n"
-            + "Client-side views written in TypeScript are not supported. Vaadin 15+ enables client-side and server-side views.\n"
-            + "See https://vaadin.com/docs/v15/flow/typescript/starting-the-app.html for more information.";
+            + "Client-side views written in TypeScript are not supported.";
 
     private static final String DEPLOYMENT_WARNINGS = "Following issues were discovered with deployment configuration:";
 

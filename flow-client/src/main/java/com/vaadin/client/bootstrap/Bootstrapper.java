@@ -166,8 +166,8 @@ public class Bootstrapper implements EntryPoint {
         conf.setExportedWebComponents(
                 jsoConfiguration.getConfigStringArray("webcomponents"));
 
-        conf.setDevmodeGizmoEnabled(jsoConfiguration
-                .getConfigBoolean(ApplicationConstants.DEVMODE_GIZMO_ENABLED));
+        conf.setDevToolsEnabled(jsoConfiguration
+                .getConfigBoolean(ApplicationConstants.DEV_TOOLS_ENABLED));
         conf.setLiveReloadUrl(
                 jsoConfiguration.getConfigString("liveReloadUrl"));
         conf.setLiveReloadBackend(

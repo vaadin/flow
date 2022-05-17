@@ -16,12 +16,12 @@
 package com.vaadin.flow.server.communication;
 
 import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
 
+import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceWriter;
 import com.vaadin.flow.server.VaadinRequest;
@@ -75,7 +75,7 @@ public class StreamResourceHandler implements Serializable {
                         "Stream resource produces null input stream");
             }
         } catch (Exception exception) {
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
             throw exception;
 
         } finally {
@@ -90,7 +90,7 @@ public class StreamResourceHandler implements Serializable {
             outputStream = response.getOutputStream();
             writer.accept(outputStream, session);
         } catch (Exception exception) {
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
             throw exception;
         } finally {
             if (outputStream != null) {

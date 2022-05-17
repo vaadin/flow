@@ -15,22 +15,17 @@
  */
 package com.vaadin.flow.data.binder;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import javax.validation.constraints.Digits;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-
-import javax.validation.constraints.Digits;
-import javax.validation.constraints.Max;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -44,6 +39,11 @@ import com.vaadin.flow.data.binder.testcomponents.TestSelectComponent;
 import com.vaadin.flow.data.binder.testcomponents.TestTextField;
 import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.tests.data.bean.BeanToValidate;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 public class BeanBinderTest
         extends BinderTestBase<Binder<BeanToValidate>, BeanToValidate> {
@@ -240,9 +240,12 @@ public class BeanBinderTest
         otherBinder.forField(testClass.number)
                 .withConverter(new StringToIntegerConverter(""));
 
+        // bindInstanceFields does not throw exceptions for incomplete bindings
+        // because bindings they can be completed after the call.
+        otherBinder.bindInstanceFields(testClass);
         // Should throw an IllegalStateException since the binding for number is
         // not completed with bind
-        otherBinder.bindInstanceFields(testClass);
+        otherBinder.setBean(new TestBean());
     }
 
     @Test(expected = IllegalStateException.class)

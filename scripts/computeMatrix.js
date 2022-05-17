@@ -4,7 +4,7 @@ const fs = require("fs");
 
 /****************** START CONFIG */
 // Do not run the following modules except 'flow-tests' that is handled separatelly in this script
-const globalExclusions = ['flow-tests', 'flow-tests/servlet-containers/tomcat9', 'flow-tests/servlet-containers/tomcat85'];
+const globalExclusions = ['flow-tests/servlet-containers/tomcat9', 'flow-tests/servlet-containers/tomcat85'];
 
 // Set modules or tests weights and fixed slice position for better distribution
 //  weight: it's time in half-minutes, default 1 = 30secs
@@ -19,16 +19,21 @@ const globalExclusions = ['flow-tests', 'flow-tests/servlet-containers/tomcat9',
 //  - flow-tests/test-live-reload
 //  - flow-tests/test-dev-mode
 // Containers 2 & 3:
-//  Tests that need shared modules, see validation.yml to see how they are generated before running ITs
+//  Tests that need shared modules, check validation.yml to see how they are generated before running ITs
 // Containers 4, 5 & 6:
 //  Spring tests, they need also spring shared modules to be generated in validation.yml
 const moduleWeights = {
-  'flow-client': { weight: 6 },
-  'flow-server': { weight: 4 },
-  'vaadin-dev-server': { weight: 3 },
+  'flow-client': { weight: 8 },
+  'flow-server': { weight: 6 },
+  'vaadin-dev-server': { weight: 5 },
   'fusion-endpoint': { weight: 2 },
   'flow-data': { weight: 2 },
+  'flow-plugins/flow-maven-plugin': { weight: 5 },
+  'flow-plugins/flow-gradle-plugin': { weight: 6 },
+  'flow-bom': { weight: 2},
 
+  'flow-tests/test-multi-war/test-war2': { pos: 1, weight: 2 },
+  'flow-tests/test-memory-leaks': {pos:1},
   'flow-tests/test-embedding/test-embedding-application-theme': { pos: 1, weight: 4 },
   'flow-tests/test-application-theme/test-theme-live-reload': { pos: 1, weight: 3 },
   'flow-tests/test-npm-only-features/test-npm-performance-regression': { pos: 1, weight: 3 },
@@ -50,6 +55,7 @@ const moduleWeights = {
   'flow-tests/test-embedding/test-embedding-reusable-theme': { pos: 3, weight: 2 },
   'flow-tests/test-multi-war/deployment': { pos: 3, weight: 2 },
   'flow-tests/test-application-theme/test-theme-reusable': { pos: 3, weight: 2 },
+  'flow-tests/test-application-theme/test-theme-reusable-vite': { pos: 3, weight: 2 },
   'flow-tests/test-frontend/vite-production': { pos: 3, weight: 2 },
   'flow-tests/test-frontend/vite-test-assets': { pos: 3 },
   'flow-tests/vaadin-spring-tests/test-spring-boot': { pos: 4, weight: 4 },
@@ -61,22 +67,22 @@ const moduleWeights = {
   'flow-tests/vaadin-spring-tests/test-spring-security-flow': { pos: 5, weight: 5 },
   'flow-tests/vaadin-spring-tests/test-spring-security-flow-contextpath': { pos: 5, weight: 4 },
   'flow-tests/vaadin-spring-tests/test-spring-security-flow-urlmapping': { pos: 5, weight: 4 },
-  'flow-tests/vaadin-spring-tests/test-spring-security-fusion': { pos: 5, weight: 4 },
-  'flow-tests/vaadin-spring-tests/test-spring-security-fusion-contextpath': { pos: 5, weight: 4 },
-  'flow-tests/vaadin-spring-tests/test-spring-security-fusion-urlmapping': { pos: 5, weight: 4 },
-  'flow-tests/vaadin-spring-tests/test-spring-security-fusion-jwt': { pos: 5, weight: 4 },
-  'flow-tests/vaadin-spring-tests/test-spring': { pos: 6, weight: 3 },
-  'flow-tests/vaadin-spring-tests/test-endpoints': { pos: 6, weight: 3 },
-  'flow-tests/vaadin-spring-tests/test-endpoints-custom-client': { pos: 6, weight: 2 },
-  'flow-tests/vaadin-spring-tests/test-mvc-without-endpoints': { pos: 6, weight: 2 },
-  'flow-tests/test-router-custom-context': { weight: 7 },
-  'flow-tests/test-pwa-disabled-offline': { weight: 5 },
+  'flow-tests/vaadin-spring-tests/test-spring-security-fusion': { pos: 6, weight: 4 },
+  'flow-tests/vaadin-spring-tests/test-spring-security-fusion-contextpath': { pos: 6, weight: 4 },
+  'flow-tests/vaadin-spring-tests/test-spring-security-fusion-urlmapping': { pos: 6, weight: 4 },
+  'flow-tests/vaadin-spring-tests/test-spring-security-fusion-jwt': { pos: 6, weight: 4 },
+  'flow-tests/vaadin-spring-tests/test-spring': { pos: 5, weight: 3 },
+  'flow-tests/vaadin-spring-tests/test-endpoints': { pos: 5, weight: 3 },
+  'flow-tests/vaadin-spring-tests/test-endpoints-custom-client': { pos: 5, weight: 2 },
+  'flow-tests/vaadin-spring-tests/test-mvc-without-endpoints': { pos: 5, weight: 2 },
+  'flow-tests/test-router-custom-context': { weight: 6 },
+  'flow-tests/test-pwa-disabled-offline': { weight: 7 },
   'flow-tests/test-ccdm-flow-navigation': { weight: 5 },
-  'flow-tests/test-pwa': { weight: 5 },
-  'flow-tests/test-ccdm': { weight: 4 },
+  'flow-tests/test-pwa': { weight: 7 },
+  'flow-tests/test-ccdm': { weight: 8 },
   'flow-tests/test-dev-mode': { weight: 4 },
-  'flow-tests/test-pwa/pom-production.xml': { weight: 4 },
-  'flow-tests/test-frontend/vite-pwa-disabled-offline': { weight: 3 },
+  'flow-tests/test-pwa/pom-production.xml': { weight: 3 },
+  'flow-tests/test-frontend/vite-pwa-disabled-offline': { weight: 5 },
   'flow-tests/test-servlet': { weight: 3 },
   'flow-tests/test-root-ui-context': { weight: 3 },
   'flow-tests/test-npm-only-features/test-npm-no-buildmojo': { weight: 3 },
@@ -95,12 +101,18 @@ const moduleWeights = {
   'flow-tests/test-embedding/test-embedding-theme-variant': { weight: 2 },
   'flow-tests/test-npm-only-features/test-npm-general': { weight: 2 },
   'flow-tests/test-misc': { weight: 2 },
-  'flow-tests/test-multi-war/test-war2': { weight: 2 },
   'flow-tests/test-theme-no-polymer': { weight: 2 },
   'flow-tests/test-frontend/vite-pwa-production-custom-offline-path': { weight: 2 },
   'flow-tests/test-multi-war/test-war1': { weight: 2 },
   'flow-tests/test-frontend/vite-pwa-production': { weight: 2 },
   'flow-tests/test-frontend/vite-pwa-disabled-offline/pom-production.xml': { weight: 2 },
+  'flow-tests/test-frontend/vite-pwa-custom-offline-path/pom-production.xml': { weight: 2 },
+  'flow-tests/vaadin-spring-tests/test-endpoints-latest-java': { weight: 3 },
+  'flow-tests/test-frontend/vite-pwa-custom-offline-path': { weight: 3 },
+  'flow-tests/vaadin-spring-tests/test-spring-common': { weight: 2 },
+  'flow-tests/test-frontend/vite-pwa': { weight: 5 },
+  'flow-tests/test-frontend/vite-embedded/pom-production.xml': { weight: 2 },
+  'flow-tests/test-frontend/vite-embedded': { weight: 2 },
 
   'RemoveRoutersLayoutContentIT': {weight: 2},
   'BrowserWindowResizeIT': {weight: 2},
@@ -125,7 +137,7 @@ const reservedContainers = Object.keys(moduleWeights).filter(k => moduleWeights[
 
 // Using regex to avoid having to run `npm install` for xml libs.
 const regexComment = /<!--[\s\S]+?-->/gm;
-const regexModule = /([\s\S]*?)<module>([\s\S]*?)<\/module>([\s\S]*)/;
+const regexModule = /([\s\S]*?)<module>\s*([\d\w\-\/\.]+)\s*<\/module>([\s\S]*)/;
 const regexVersion = '(<version>)(VERSION)(</version>)';
 
 /**
@@ -208,7 +220,7 @@ function grep(array, exclude) {
 }
 
 function sumWeights(items, slowMap) {
-  return items.reduce((prev, curr) => prev + (slowMap[curr] && slowMap[curr].weight || 1), 0);
+  return items.reduce((prev, curr) => prev + (slowMap[curr] && slowMap[curr].weight || 1), 0);
 }
 
 /**
@@ -222,7 +234,6 @@ function getFasterSlice(item, parts, slowMap, reserved) {
       return !reserved.includes(idx + 1) && previous && sumWeights(previous, slowMap) < sumWeights(current, slowMap) ? previous : current;
     })
 }
-let a;
 
 /**
  * splits an array of modules in the desired slices based on weights defined in a map
@@ -250,7 +261,6 @@ function splitArray(array, slices, slowMap) {
     }
   }
 
-  a = true;
   for (i = 0; i < items.length; i++) {
     const item = items[i];
     getFasterSlice(item, parts, slowMap, reserved).push(item);
@@ -281,7 +291,12 @@ function toObject(parts, suite, module, prevIdx) {
  * the object json for actions
  */
 function getParts(suite, prefix, slices) {
-  let modules = prefix ? getModulesRecursive(prefix) : getModules();
+  // All modules in the project
+  let modules = getModulesRecursive(prefix);
+  // Remove flow-tests because they are handled separately
+  if (prefix !== 'flow-tests') {
+    modules = modules.filter(module => !/^flow-tests/.test(module));
+  }
 
   const exclusions = Object.keys(moduleSplits).filter(module => modules.includes(module));
   modules = grep(modules, [...globalExclusions, ...exclusions]);
@@ -361,7 +376,13 @@ function secs2Weight(secs) {
  * Compute module weights by parsing mvn outputs
  */
 function computeResultWeights(suite, prefix, weights) {
-  let modules = prefix ? getModulesRecursive(prefix) : getModules();
+  // All modules in the project
+  let modules = getModulesRecursive(prefix);
+  // Remove flow-tests because they are handled separately
+  if (prefix !== 'flow-tests') {
+    modules = modules.filter(module => !/^flow-tests/.test(module));
+  }
+
   const exclusions = Object.keys(moduleSplits).filter(module => modules.includes(module));
   modules = grep(modules, [...globalExclusions, ...exclusions]);
   const poms = modules.map(m => /.*\.xml$/.test(m) ? m : `${m}/pom.xml`);
@@ -425,7 +446,7 @@ function computeTestStats() {
       const errors = parseInt(res[3]);
       const failed = fails + errors;
       const skips = parseInt(res[4]);
-      const module = classes[name].module;
+      const module = classes[name] ? classes[name].module : 'Unknown Module';
       stats[name] = {secs, tests, fails, failed, errors, skips, module};
       res = regexTest.exec(res[7]);
     }

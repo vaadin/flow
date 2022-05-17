@@ -10,9 +10,7 @@ Prerequisites:
   * Linux: Use package manager e.g. `sudo apt install npm` 
 
 As opposed to the older version of Gradle plugin, the new plugin doesn't create
-projects any more. We plan to support Gradle projects via [vaadin.com/start](https://vaadin.com/start)
-at some point. In the meantime, refer to project examples that you can use
-as a basis for your Vaadin modules:
+projects any more. You can obtain a project example from:
 
 * [Basic WAR project](https://github.com/vaadin/base-starter-gradle)
 * [Spring Boot project](https://github.com/vaadin/base-starter-spring-gradle)

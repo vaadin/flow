@@ -5,12 +5,12 @@
  * This file will be overwritten on every run. Any custom changes should be made to vite.config.ts
  */
 import path from 'path';
-import { readFileSync, existsSync } from 'fs';
+import { readFileSync, existsSync, writeFileSync } from 'fs';
 import * as net from 'net';
 
 import { processThemeResources } from '#buildFolder#/plugins/application-theme-plugin/theme-handle';
 import settings from '#settingsImport#';
-import { defineConfig, mergeConfig, PluginOption, ResolvedConfig, UserConfigFn } from 'vite';
+import { defineConfig, mergeConfig, PluginOption, ResolvedConfig, UserConfigFn, OutputOptions, AssetInfo, ChunkInfo } from 'vite';
 import { injectManifest } from 'workbox-build';
 
 import * as rollup from 'rollup';
@@ -24,6 +24,8 @@ const frontendFolder = path.resolve(__dirname, settings.frontendFolder);
 const themeFolder = path.resolve(frontendFolder, settings.themeFolder);
 const frontendBundleFolder = path.resolve(__dirname, settings.frontendBundleOutput);
 const addonFrontendFolder = path.resolve(__dirname, settings.addonFrontendFolder);
+const themeResourceFolder = path.resolve(__dirname, settings.themeResourceFolder);
+const statsFile = path.resolve(frontendBundleFolder, '..', 'config', 'stats.json');
 
 const projectStaticAssetsFolders = [
   path.resolve(__dirname, 'src', 'main', 'resources', 'META-INF', 'resources'),
@@ -38,7 +40,7 @@ const themeOptions = {
   devMode: false,
   // The following matches folder 'target/flow-frontend/themes/'
   // (not 'frontend/themes') for theme in JAR that is copied there
-  themeResourceFolder: path.resolve(__dirname, settings.themeResourceFolder),
+  themeResourceFolder: path.resolve(themeResourceFolder, settings.themeFolder),
   themeProjectFolders: themeProjectFolders,
   projectStaticAssetsOutputFolder: path.resolve(__dirname, settings.staticOutput),
   frontendGeneratedFolder: path.resolve(frontendFolder, settings.generatedFolder)
@@ -131,6 +133,30 @@ function injectManifestToSWPlugin(): PluginOption {
   };
 }
 
+function statsExtracterPlugin(): PluginOption {
+  return {
+    name: 'vaadin:stats',
+    enforce: 'post',
+    async writeBundle(options: OutputOptions, bundle: { [fileName: string]: AssetInfo | ChunkInfo }) {
+      const modules = Object.values(bundle).flatMap((b) => (b.modules ? Object.keys(b.modules) : []));
+      const nodeModulesFolders = modules.filter((id) => id.includes('node_modules'));
+      const npmModules = nodeModulesFolders
+        .map((id) => id.replace(/.*node_modules./, ''))
+        .map((id) => {
+          const parts = id.split('/');
+          if (id.startsWith('@')) {
+            return parts[0] + '/' + parts[1];
+          } else {
+            return parts[0];
+          }
+        })
+        .sort()
+        .filter((value, index, self) => self.indexOf(value) === index);
+
+      writeFileSync(statsFile, JSON.stringify({ npmModules }, null, 1));
+    }
+  };
+}
 function vaadinBundlesPlugin(): PluginOption {
   type ExportInfo =
     | string
@@ -289,20 +315,20 @@ function updateTheme(contextPath: string) {
   }
 }
 
-function runWatchDog(watchDogPort) {
+function runWatchDog(watchDogPort, watchDogHost) {
   const client = net.Socket();
   client.setEncoding('utf8');
-  client.on('error', function () {
-    console.log('Watchdog connection error. Terminating vite process...');
+  client.on('error', function (err) {
+    console.log('Watchdog connection error. Terminating vite process...', err);
     client.destroy();
     process.exit(0);
   });
   client.on('close', function () {
     client.destroy();
-    runWatchDog(watchDogPort);
+    runWatchDog(watchDogPort, watchDogHost);
   });
 
-  client.connect(watchDogPort, 'localhost');
+  client.connect(watchDogPort, watchDogHost || 'localhost');
 }
 
 let spaMiddlewareForceRemoved = false;
@@ -320,17 +346,23 @@ export const vaadinConfig: UserConfigFn = (env) => {
   if (devMode && process.env.watchDogPort) {
     // Open a connection with the Java dev-mode handler in order to finish
     // vite when it exits or crashes.
-    runWatchDog(process.env.watchDogPort);
+    runWatchDog(process.env.watchDogPort, process.env.watchDogHost);
   }
 
   return {
     root: 'frontend',
     base: '',
     resolve: {
-      alias: {
-        themes: themeFolder,
-        Frontend: frontendFolder
-      },
+      alias: [
+        { find: 'themes', replacement: (importee: string) => {
+            if (existsSync(path.resolve(themeResourceFolder, importee))) {
+              return path.resolve(themeResourceFolder, settings.themeFolder);
+            }
+            return themeFolder;
+          }
+        },
+        { find: 'Frontend', replacement: frontendFolder }
+      ],
       preserveSymlinks: true
     },
     define: {
@@ -360,13 +392,18 @@ export const vaadinConfig: UserConfigFn = (env) => {
         // Pre-scan entrypoints in Vite to avoid reloading on first open
         'generated/vaadin.ts'
       ],
-      exclude: ['@vaadin/router']
+      exclude: [
+        '@vaadin/router',
+        '@vaadin/vaadin-license-checker',
+        '@vaadin/vaadin-usage-statistics',
+      ]
     },
     plugins: [
       !devMode && brotli(),
       devMode && vaadinBundlesPlugin(),
       settings.offlineEnabled && buildSWPlugin(),
       settings.offlineEnabled && injectManifestToSWPlugin(),
+      !devMode && statsExtracterPlugin(),
       {
         name: 'vaadin:custom-theme',
         config() {

@@ -76,7 +76,8 @@ public class VaadinAppShellInitializer
 
     @Override
     public void initialize(Set<Class<?>> classes, VaadinContext context) {
-        init(classes, context);
+        init(AbstractAnnotationValidator
+                .removeHandleTypesSelfReferences(classes, this), context);
     }
 
     /**
