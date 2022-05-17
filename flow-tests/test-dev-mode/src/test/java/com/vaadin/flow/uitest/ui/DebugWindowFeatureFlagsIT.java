@@ -4,7 +4,7 @@ import java.util.List;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import com.vaadin.flow.testutil.DevModeGizmoElement;
+import com.vaadin.flow.testutil.DevToolsElement;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -18,7 +18,7 @@ public class DebugWindowFeatureFlagsIT extends ChromeBrowserTest {
     @Test
     public void exampleFeatureFlagNotShown() {
         open();
-        DevModeGizmoElement debugWindow = $(DevModeGizmoElement.class).first();
+        DevToolsElement debugWindow = $(DevToolsElement.class).first();
         debugWindow.expand();
         debugWindow.showExperimentalFeatures();
         List<String> features = debugWindow.listExperimentalFeatures();

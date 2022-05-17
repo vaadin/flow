@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.util.List;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import com.vaadin.flow.testutil.DevModeGizmoElement;
+import com.vaadin.flow.testutil.DevToolsElement;
 
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -70,10 +70,10 @@ public class DependencyIT extends ChromeBrowserTest {
         open();
         findElement(By.id("loadUnavailableResources")).click();
 
-        DevModeGizmoElement gizmo = $(DevModeGizmoElement.class).first();
-        gizmo.waitForErrorMessage(s -> s.startsWith("Error loading http://")
+        DevToolsElement devTools = $(DevToolsElement.class).first();
+        devTools.waitForErrorMessage(s -> s.startsWith("Error loading http://")
                 && s.endsWith("/not-found.css"));
-        gizmo.waitForErrorMessage(s -> s.startsWith("Error loading http://")
+        devTools.waitForErrorMessage(s -> s.startsWith("Error loading http://")
                 && s.endsWith("/not-found.js"));
     }
 

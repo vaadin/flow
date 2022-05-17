@@ -74,6 +74,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
+import org.slf4j.LoggerFactory;
 
 import net.jcip.annotations.NotThreadSafe;
 
@@ -448,10 +449,10 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
     }
 
     @Test
-    public void serveDevModeRequest_uriForDevmodeGizmo_goesToWebpack()
+    public void serveDevModeRequest_uriForDevTools_goesToWebpack()
             throws Exception {
         HttpServletRequest request = prepareRequest(
-                "/VAADIN/build/vaadin-devmodeGizmo-f679dbf313191ec3d018.cache.js");
+                "/VAADIN/build/vaadin-dev-tools-f679dbf313191ec3d018.cache.js");
         HttpServletResponse response = prepareResponse();
 
         final String globalResponse = "{ \"sw.js\": "
@@ -469,7 +470,7 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
     public void serveDevModeRequest_uriWithScriptInjected_returnsImmediatelyAndSetsForbiddenStatus()
             throws Exception {
         HttpServletRequest request = prepareRequest(
-                "/VAADIN/build/vaadin-devmodeGizmo-f679dbf313191ec3d018.cache%3f%22onload=%22alert(1)");
+                "/VAADIN/build/vaadin-dev-tools-f679dbf313191ec3d018.cache%3f%22onload=%22alert(1)");
         HttpServletResponse response = prepareResponse();
 
         final String globalResponse = "{ \"sw.js\": "
@@ -602,8 +603,20 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
 
     private int prepareHttpServer(int port, int status, String response)
             throws Exception {
-        httpServer = createStubWebpackTcpListener(port, status, response);
-        return httpServer.getAddress().getPort();
+        int i = 0;
+        while (true) {
+            try {
+                httpServer = createStubWebpackTcpListener(port, status,
+                        response);
+                return httpServer.getAddress().getPort();
+            } catch (Exception e) {
+                if (i++ >= 5) {
+                    throw e;
+                }
+                LoggerFactory.getLogger(getClass())
+                        .warn("error creating http server", e);
+            }
+        }
     }
 
     public static HttpServer createStubWebpackTcpListener(int port, int status,
