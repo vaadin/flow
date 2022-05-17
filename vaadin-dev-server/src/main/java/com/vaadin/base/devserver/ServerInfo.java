@@ -29,6 +29,7 @@ public class ServerInfo implements Serializable {
     private final String vaadinVersion;
     private final String javaVersion;
     private final String osVersion;
+    private final String productName;
 
     /**
      * Creates a new instance.
@@ -38,7 +39,7 @@ public class ServerInfo implements Serializable {
         this.vaadinVersion = fetchVaadinVersion();
         this.javaVersion = fetchJavaVersion();
         this.osVersion = fetchOperatingSystem();
-
+        this.productName = fetchProductName();
     }
 
     private String fetchJavaVersion() {
@@ -60,6 +61,19 @@ public class ServerInfo implements Serializable {
         return Platform.getVaadinVersion().orElse("?");
     }
 
+    private String fetchProductName() {
+        try {
+            // This class belongs to fusion-endpoint and is not available in
+            // Flow projects. By checking for its availability, we can show the
+            // right project name in the Vaadin devmode gizmo
+            Class.forName("dev.hilla.EndpointController", false,
+                    getClass().getClassLoader());
+            return "Hilla";
+        } catch (ClassNotFoundException e) {
+            return "Vaadin";
+        }
+    }
+
     public String getFlowVersion() {
         return flowVersion;
     }
@@ -74,5 +88,9 @@ public class ServerInfo implements Serializable {
 
     public String getOsVersion() {
         return osVersion;
+    }
+
+    public String getProductName() {
+        return productName;
     }
 }
