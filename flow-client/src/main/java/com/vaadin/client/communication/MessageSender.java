@@ -231,9 +231,9 @@ public class MessageSender {
      * state from the server
      */
     public void resynchronize() {
-        Console.log("Resynchronize from server requested");
-        resynchronizationState = ResynchronizationState.SEND_TO_SERVER;
-        sendInvocationsToServer();
+        if (requestResynchronize()) {
+            sendInvocationsToServer();
+        }
     }
 
     /**
@@ -276,8 +276,29 @@ public class MessageSender {
         }
     }
 
-    void setResynchronizationState(ResynchronizationState state) {
-        resynchronizationState = state;
+    /**
+     * Modifies the resynchronize state to indicate that resynchronization is desired
+     *
+     * @return true if the resynchronize request still needs to be sent; false otherwise
+     */
+    boolean requestResynchronize() {
+        switch (resynchronizationState) {
+            case NOT_ACTIVE:
+                Console.log("Resynchronize from server requested");
+                resynchronizationState = ResynchronizationState.SEND_TO_SERVER;
+                return true;
+            case SEND_TO_SERVER:
+                // Resynchronize has already been requested, but hasn't been sent yet
+                return true;
+            case WAITING_FOR_RESPONSE:
+            default:
+                // Resynchronize has already been requested, but response hasn't been received yet
+                return false;
+        }
+    }
+
+    void clearResynchronizationState() {
+        resynchronizationState = ResynchronizationState.NOT_ACTIVE;
     }
 
     ResynchronizationState getResynchronizationState() {
