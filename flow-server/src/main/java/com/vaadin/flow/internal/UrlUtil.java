@@ -20,6 +20,11 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
+import javax.servlet.http.HttpServletRequest;
+
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinServletRequest;
+
 /**
  * Internal utility class for URL handling.
  * <p>
@@ -102,4 +107,41 @@ public class UrlUtil {
         }
     }
 
+    /**
+     * Gets the path info for a /VAADIN/something request.
+     *
+     * @param request
+     *            the servlet request
+     * @return the path info starting with /VAADIN/
+     */
+    public static String getStaticVaadinPathInfo(VaadinRequest request) {
+        if (request instanceof VaadinServletRequest) {
+            return getStaticVaadinPathInfo(
+                    ((VaadinServletRequest) request).getHttpServletRequest());
+        }
+
+        return request.getPathInfo();
+    }
+
+    /**
+     * Gets the path info for a /VAADIN/something request.
+     *
+     * @param request
+     *            the servlet request
+     * @return the path info starting with /VAADIN/
+     */
+    public static String getStaticVaadinPathInfo(HttpServletRequest request) {
+        String pathInfo = request.getPathInfo();
+        if (pathInfo == null) {
+            return null;
+        }
+
+        if ("/VAADIN".equals(request.getServletPath())) {
+            // If the servlet is deployed with a separate /VAADIN/* mapping, we
+            // need to add the missing /VAADIN/
+            String prefix = pathInfo.startsWith("/") ? "/VAADIN" : "/VAADIN/";
+            pathInfo = prefix + pathInfo;
+        }
+        return pathInfo;
+    }
 }

@@ -677,14 +677,9 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         }
         // Since we have 'publicPath=/VAADIN/' in the dev server config,
         // a valid request for the dev server should start with '/VAADIN/'
-        String requestFilename = request.getPathInfo();
-        if ("/VAADIN".equals(request.getServletPath())) {
-            // If the servlet is deployed with a separate /VAADIN/* mapping, we
-            // need to add the missing /VAADIN/
-            String prefix = requestFilename.startsWith("/") ? "/VAADIN"
-                    : "/VAADIN/";
-            requestFilename = prefix + requestFilename;
-        }
+
+        String requestFilename = UrlUtil.getStaticVaadinPathInfo(request);
+
         if (HandlerHelper.isPathUnsafe(requestFilename)
                 || WEBPACK_ILLEGAL_CHAR_PATTERN.matcher(requestFilename).find())
 
