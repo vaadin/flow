@@ -78,11 +78,16 @@ public class SpringBootAutoConfiguration {
         String mapping = configurationProperties.getUrlMapping();
         Map<String, String> initParameters = new HashMap<>();
         boolean rootMapping = RootMappedCondition.isRootMapping(mapping);
+        String[] urlMappings;
         if (rootMapping) {
-            mapping = VaadinServletConfiguration.VAADIN_SERVLET_MAPPING;
+            urlMappings = new String[] {
+                    VaadinServletConfiguration.VAADIN_SERVLET_MAPPING,
+                    "/VAADIN/*" };
+        } else {
+            urlMappings = new String[] { mapping };
         }
         ServletRegistrationBean<SpringServlet> registration = new ServletRegistrationBean<>(
-                new SpringServlet(context, rootMapping), mapping);
+                new SpringServlet(context, rootMapping), urlMappings);
         registration.setInitParameters(initParameters);
         registration
                 .setAsyncSupported(configurationProperties.isAsyncSupported());

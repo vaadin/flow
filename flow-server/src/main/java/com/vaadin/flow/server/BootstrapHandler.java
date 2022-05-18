@@ -1009,8 +1009,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                         .compile("src=\\\"VAADIN\\/build\\/(.*\\.js)\\\"")
                         .matcher(index);
                 while (scriptMatcher.find()) {
-                    Element script = createJavaScriptModuleElement(
-                            "VAADIN/build/" + scriptMatcher.group(1), false);
+                    Element script = createJavaScriptModuleElement(context
+                            .getUriResolver().resolveVaadinUri("context://"
+                                    + "VAADIN/build/" + scriptMatcher.group(1)),
+                            false);
                     head.appendChild(script.attr("async", true)
                             // Fixes basic auth in Safari #6560
                             .attr("crossorigin", true));
@@ -1021,8 +1023,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                         .compile("href=\\\"VAADIN\\/build\\/(.*\\.css)\\\"")
                         .matcher(index);
                 while (cssMatcher.find()) {
-                    Element link = createStylesheetElement(
-                            "VAADIN/build/" + cssMatcher.group(1));
+                    Element link = createStylesheetElement(context
+                            .getUriResolver().resolveVaadinUri("context://"
+                                    + "VAADIN/build/" + cssMatcher.group(1)));
                     head.appendChild(link);
                 }
                 return;
@@ -1670,7 +1673,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         // Parameter appended to JS to bypass caches after version upgrade.
         String versionQueryParam = "?v=" + Version.getFullVersion();
         // Load client-side dependencies for push support
-        String pushJSPath = BootstrapHandlerHelper.getServiceUrl(request) + "/";
+        String pushJSPath = context.getService()
+                .getContextRootRelativePath(request);
 
         if (request.getService().getDeploymentConfiguration()
                 .isProductionMode()) {
