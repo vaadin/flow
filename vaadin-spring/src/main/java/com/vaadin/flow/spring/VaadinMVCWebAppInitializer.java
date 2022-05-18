@@ -79,10 +79,10 @@ public abstract class VaadinMVCWebAppInitializer
         if (rootMapping) {
             registration.addMapping(
                     VaadinServletConfiguration.VAADIN_SERVLET_MAPPING);
-            registration.addMapping("/VAADIN/*");
         } else {
             registration.addMapping(mapping);
         }
+        registration.addMapping("/VAADIN/*");
 
         registration.setAsyncSupported(
                 Boolean.TRUE.toString().equals(env.getProperty(
