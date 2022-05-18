@@ -100,7 +100,7 @@ public class DevModeBrowserLauncher
 
         String path = "/";
         String vaadinServletMapping = RootMappedCondition
-                .getUrlMapping(app.getBeanFactory(), app.getEnvironment());
+                .getUrlMapping(app.getEnvironment());
 
         ServletContext servletContext = app.getServletContext();
         if (servletContext != null) {

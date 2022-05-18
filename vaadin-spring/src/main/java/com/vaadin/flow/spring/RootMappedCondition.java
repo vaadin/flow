@@ -20,7 +20,6 @@ import java.lang.reflect.InvocationTargetException;
 import com.vaadin.flow.server.VaadinServlet;
 
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.ListableBeanFactory;
 import org.springframework.context.annotation.Condition;
 import org.springframework.context.annotation.ConditionContext;
 import org.springframework.core.env.Environment;
@@ -49,8 +48,7 @@ public class RootMappedCondition implements Condition {
     public boolean matches(ConditionContext context,
             AnnotatedTypeMetadata metadata) {
 
-        String urlMapping = getUrlMapping(context.getBeanFactory(),
-                context.getEnvironment());
+        String urlMapping = getUrlMapping(context.getEnvironment());
         return isRootMapping(urlMapping);
     }
 
@@ -61,14 +59,11 @@ public class RootMappedCondition implements Condition {
      * This is a helper needed only when VaadinConfigurationProperties is not
      * available for injection, e.g. in a condition.
      *
-     * @param beanFactory
-     *            the bean factory
      * @param environment
      *            the application environment
      * @return the url mapping or null if none is defined
      */
-    public static String getUrlMapping(ListableBeanFactory beanFactory,
-            Environment environment) {
+    public static String getUrlMapping(Environment environment) {
         if (SpringUtil.isSpringBoot()) {
             try {
                 return (String) Class.forName(

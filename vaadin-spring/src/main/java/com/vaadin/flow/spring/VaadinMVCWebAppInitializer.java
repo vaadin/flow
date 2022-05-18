@@ -56,8 +56,7 @@ public abstract class VaadinMVCWebAppInitializer
         context.refresh();
 
         Environment env = context.getBean(Environment.class);
-        String mapping = RootMappedCondition
-                .getUrlMapping(context.getBeanFactory(), env);
+        String mapping = RootMappedCondition.getUrlMapping(env);
         if (mapping == null) {
             mapping = "/*";
         }
