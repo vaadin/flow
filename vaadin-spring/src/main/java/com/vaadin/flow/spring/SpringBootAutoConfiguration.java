@@ -84,7 +84,7 @@ public class SpringBootAutoConfiguration {
                     VaadinServletConfiguration.VAADIN_SERVLET_MAPPING,
                     "/VAADIN/*" };
         } else {
-            urlMappings = new String[] { mapping };
+            urlMappings = new String[] { mapping, "/VAADIN/*" };
         }
         ServletRegistrationBean<SpringServlet> registration = new ServletRegistrationBean<>(
                 new SpringServlet(context, rootMapping), urlMappings);
