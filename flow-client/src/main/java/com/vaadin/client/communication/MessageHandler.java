@@ -608,7 +608,8 @@ public class MessageHandler {
                 registry.getRequestResponseTracker().endRequest();
             }
 
-            // Call resynchronize to make sure a resynchronize request is sent in
+            // Call resynchronize to make sure a resynchronize request is sent
+            // in
             // case endRequest did not already do this.
             registry.getMessageSender().resynchronize();
         }
