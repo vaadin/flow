@@ -56,9 +56,6 @@ public class RootMappedCondition implements Condition {
      * Gets the url mapping in a way compatible with both plain Spring and
      * Spring Boot.
      *
-     * This is a helper needed only when VaadinConfigurationProperties is not
-     * available for injection, e.g. in a condition.
-     *
      * @param environment
      *            the application environment
      * @return the url mapping or null if none is defined

@@ -36,8 +36,8 @@ public class VaadinConfigurationProperties {
     /**
      * Gets the url mapping using the given environment.
      *
-     * This is a helper needed only when VaadinConfigurationProperties is not
-     * available for injection, e.g. in a condition.
+     * This is needed only when VaadinConfigurationProperties is not available
+     * for injection, e.g. in a condition.
      *
      * @param environment
      *            the application environment
