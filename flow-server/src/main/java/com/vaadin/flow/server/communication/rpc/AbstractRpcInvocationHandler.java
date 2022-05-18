@@ -44,12 +44,12 @@ public abstract class AbstractRpcInvocationHandler
         StateNode node = ui.getInternals().getStateTree()
                 .getNodeById(getNodeId(invocationJson));
         if (node == null) {
-            getLogger().warn("Got an RPC for non-existent node: {}",
+            getLogger().debug("Ignoring RPC for non-existent node: {}",
                     getNodeId(invocationJson));
             return Optional.empty();
         }
         if (!node.isAttached()) {
-            getLogger().warn("Got an RPC for detached node: {}",
+            getLogger().debug("Ignoring RPC for detached node: {}",
                     getNodeId(invocationJson));
             return Optional.empty();
         }
