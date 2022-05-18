@@ -23,7 +23,6 @@ import java.nio.charset.StandardCharsets;
 import javax.servlet.http.HttpServletRequest;
 
 import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.flow.server.VaadinServletRequest;
 
 /**
  * Internal utility class for URL handling.
@@ -115,9 +114,8 @@ public class UrlUtil {
      * @return the path info starting with /VAADIN/
      */
     public static String getStaticVaadinPathInfo(VaadinRequest request) {
-        if (request instanceof VaadinServletRequest) {
-            return getStaticVaadinPathInfo(
-                    ((VaadinServletRequest) request).getHttpServletRequest());
+        if (request instanceof HttpServletRequest) {
+            return getStaticVaadinPathInfo(((HttpServletRequest) request));
         }
 
         return request.getPathInfo();
