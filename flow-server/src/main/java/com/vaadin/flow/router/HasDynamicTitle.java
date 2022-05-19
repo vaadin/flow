@@ -23,6 +23,13 @@ import java.io.Serializable;
  * <p>
  * NOTE: It is not legal for a class to both implement {@link HasDynamicTitle}
  * and have a {@link PageTitle} annotation.
+ * <p>
+ * NOTE: {@link HasDynamicTitle#getPageTitle HasDynamicTitle.getPageTitle()} is
+ * called after the {@link AfterNavigationEvent} has completed. If the title is
+ * only available during the {@link AfterNavigationEvent}, then rather than
+ * using {@link HasDynamicTitle}, update the title from within the
+ * {@link AfterNavigationEvent} listener using
+ * {@code UI.getCurrent().getPage().setTitle("dynamic title")}.
  *
  * @author Vaadin Ltd
  * @since 1.0.
