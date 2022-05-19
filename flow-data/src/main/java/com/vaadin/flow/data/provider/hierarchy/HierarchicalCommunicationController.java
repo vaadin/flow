@@ -287,6 +287,13 @@ public class HierarchicalCommunicationController<T> implements Serializable {
             }
 
             // Finally clear any passivated items that have now been confirmed
+            /*
+             * Due to the implementation of Set#removeAll, if the size of 
+             * newActiveKeyOrder is bigger than oldActive's size, then 
+             * calling oldActive.removeAll(newActiveKeyOrder) would end 
+             * up calling contains for all of newActiveKeyOrder items 
+             * which is a slow operation on lists. The following avoids that:
+             */
             newActiveKeyOrder.forEach(oldActive::remove);
             if (!oldActive.isEmpty()) {
                 passivatedByUpdate.put(Integer.valueOf(updateId), oldActive);
