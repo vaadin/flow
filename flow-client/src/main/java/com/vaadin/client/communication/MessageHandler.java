@@ -27,6 +27,7 @@ import com.vaadin.client.Registry;
 import com.vaadin.client.UILifecycle.UIState;
 import com.vaadin.client.ValueMap;
 import com.vaadin.client.WidgetUtil;
+import com.vaadin.client.communication.MessageSender.ResynchronizationState;
 import com.vaadin.client.flow.ConstantPool;
 import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.StateTree;
@@ -217,7 +218,18 @@ public class MessageHandler {
     protected void handleJSON(final ValueMap valueMap) {
         final int serverId = getServerId(valueMap);
 
-        if (isResynchronize(valueMap) && !isNextExpectedMessage(serverId)) {
+        boolean hasResynchronize = isResynchronize(valueMap);
+
+        if (!hasResynchronize && registry.getMessageSender()
+                .getResynchronizationState() == ResynchronizationState.WAITING_FOR_RESPONSE) {
+            Console.warn(
+                    "Ignoring message from the server as a resync request is ongoing.");
+            return;
+        }
+
+        registry.getMessageSender().clearResynchronizationState();
+
+        if (hasResynchronize && !isNextExpectedMessage(serverId)) {
             // Resynchronize request. We must remove any old pending
             // messages and ensure this is handled next. Otherwise we
             // would keep waiting for an older message forever (if this
@@ -566,13 +578,6 @@ public class MessageHandler {
     }
 
     private void forceMessageHandling() {
-        // Clear previous request if it exists. Otherwise resyncrhonize can
-        // trigger
-        // "Trying to start a new request while another is active" exception and
-        // fail.
-        if (registry.getRequestResponseTracker().hasActiveRequest()) {
-            registry.getRequestResponseTracker().endRequest();
-        }
         if (!responseHandlingLocks.isEmpty()) {
             // Lock which was never release -> bug in locker or things just
             // too slow
@@ -593,6 +598,19 @@ public class MessageHandler {
             // has been lost
             // Drop pending messages and resynchronize
             pendingUIDLMessages.clear();
+
+            // Inform the message sender that resynchronize is desired already
+            // since endRequest may already send out a next request
+            registry.getMessageSender().requestResynchronize();
+
+            // Clear previous request if it exists.
+            if (registry.getRequestResponseTracker().hasActiveRequest()) {
+                registry.getRequestResponseTracker().endRequest();
+            }
+
+            // Call resynchronize to make sure a resynchronize request is sent
+            // in
+            // case endRequest did not already do this.
             registry.getMessageSender().resynchronize();
         }
     }
@@ -819,5 +837,4 @@ public class MessageHandler {
             Command nextResponseSessionExpiredHandler) {
         this.nextResponseSessionExpiredHandler = nextResponseSessionExpiredHandler;
     }
-
 }
