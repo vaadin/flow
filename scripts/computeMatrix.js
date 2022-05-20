@@ -335,7 +335,6 @@ function objectToString(object, keys) {
  * Print the matrix strategy in GH-actions syntax
  */
 function printStrategy(object) {
-  const json = [];
   const o = object.map(o => {
     return {
       matrix: [o.suite, ...o.matrix, o.weight],
