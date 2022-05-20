@@ -131,9 +131,6 @@ const moduleSplits = {
 }
 /****************** END CONFIG */
 
-// List of containers that are reserved, so that they are no selected for other tests
-const reservedContainers = Object.keys(moduleWeights).filter(k => moduleWeights[k].pos).map(k => moduleWeights[k].pos);
-
 // Using regex to avoid having to run `npm install` for xml libs.
 const regexComment = /<!--[\s\S]+?-->/gm;
 const regexModule = /([\s\S]*?)<module>\s*([\d\w\-\/\.]+)\s*<\/module>([\s\S]*)/;
