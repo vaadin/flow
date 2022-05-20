@@ -142,10 +142,8 @@ public class PushMessageHandler {
                 disposeSubscriptionInfo(connectionId, fluxId);
                 send(sender, new ClientMessageComplete(fluxId));
             });
-            fluxSubscriptionDisposables
-                    .computeIfAbsent(connectionId,
-                            id -> new ConcurrentHashMap<>())
-                    .put(fluxId, endpointFluxSubscriber);
+            fluxSubscriptionDisposables.get(connectionId).put(fluxId,
+                    endpointFluxSubscriber);
 
         } catch (EndpointNotFoundException e) {
             sender.accept(new ClientMessageError(fluxId, "No such endpoint"));

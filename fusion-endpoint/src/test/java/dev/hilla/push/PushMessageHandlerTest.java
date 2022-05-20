@@ -3,6 +3,7 @@ package dev.hilla.push;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -39,6 +40,7 @@ import dev.hilla.push.messages.toclient.AbstractClientMessage;
 import dev.hilla.push.messages.toclient.ClientMessageComplete;
 import dev.hilla.push.messages.toclient.ClientMessageError;
 import dev.hilla.push.messages.toclient.ClientMessageUpdate;
+import net.jcip.annotations.NotThreadSafe;
 import reactor.core.Disposable;
 import reactor.core.publisher.Flux;
 
@@ -49,14 +51,13 @@ import reactor.core.publisher.Flux;
 @ContextConfiguration(classes = EndpointControllerConfiguration.class)
 @RunWith(SpringRunner.class)
 @TestPropertySource(properties = "dev.hilla.FeatureFlagCondition.alwaysEnable=true")
+@NotThreadSafe
 public class PushMessageHandlerTest {
 
     private static final String ENDPOINT_NAME = "TestEndpoint";
     private static final String FLUX_METHOD = "testFlux";
     private static final String INFINITE_FLUX_METHOD = "testInfiniteFlux";
     private static final String FLUX_WITH_EXCEPTION_METHOD = "testFluxWithException";
-
-    private static final String CONNECTION_ID = "cid";
 
     @Autowired
     private PushMessageHandler pushMessageHandler;
@@ -70,6 +71,8 @@ public class PushMessageHandlerTest {
     @Autowired
     private ObjectMapper objectMapper;
     private List<AbstractClientMessage> unexpectedMessages = new ArrayList<>();
+
+    private String connectionId;
 
     @Before
     public void setup() throws Exception {
@@ -112,6 +115,10 @@ public class PushMessageHandlerTest {
                     }
                     return null;
                 });
+
+        connectionId = UUID.randomUUID().toString();
+        pushMessageHandler.fluxSubscriptionDisposables = new ConcurrentHashMap<>();
+        pushMessageHandler.handleBrowserConnect(connectionId);
     }
 
     @After
@@ -133,20 +140,22 @@ public class PushMessageHandlerTest {
 
     @Test
     public void fluxSubscription_canSubscribe() {
-        Assert.assertEquals(0,
-                pushMessageHandler.fluxSubscriptionDisposables.size());
+        Assert.assertEquals(0, pushMessageHandler.fluxSubscriptionDisposables
+                .get(connectionId).size());
         SubscribeMessage message = createInfiniteFluxSubscribe();
-        pushMessageHandler.handleMessage(CONNECTION_ID, message,
+        pushMessageHandler.handleMessage(connectionId, message,
                 ignoreUpdateMessages());
         Assert.assertEquals(1,
                 pushMessageHandler.fluxSubscriptionDisposables.size());
+        Assert.assertEquals(1, pushMessageHandler.fluxSubscriptionDisposables
+                .get(connectionId).size());
     }
 
     @Test
     public void fluxSubscription_receivesMessage() throws Exception {
         SubscribeMessage subscribeMessage = createFluxSubscribe();
         CompletableFuture<ClientMessageUpdate> clientMessageWrapper = new CompletableFuture<>();
-        pushMessageHandler.handleMessage(CONNECTION_ID, subscribeMessage,
+        pushMessageHandler.handleMessage(connectionId, subscribeMessage,
                 msg -> {
                     if (msg instanceof ClientMessageUpdate) {
                         clientMessageWrapper
@@ -169,7 +178,7 @@ public class PushMessageHandlerTest {
             throws Exception {
         SubscribeMessage subscribeMessage = createFluxSubscribe();
         CompletableFuture<ClientMessageComplete> clientMessageWrapper = new CompletableFuture<>();
-        pushMessageHandler.handleMessage(CONNECTION_ID, subscribeMessage,
+        pushMessageHandler.handleMessage(connectionId, subscribeMessage,
                 msg -> {
                     if (msg instanceof ClientMessageUpdate) {
                         // Ignore for this test
@@ -190,7 +199,7 @@ public class PushMessageHandlerTest {
     public void fluxSubscription_exceptionDeliveredToClient() throws Exception {
         SubscribeMessage subscribeMessage = createFluxWithExceptionSubscribe();
         CompletableFuture<ClientMessageError> clientMessageWrapper = new CompletableFuture<>();
-        pushMessageHandler.handleMessage(CONNECTION_ID, subscribeMessage,
+        pushMessageHandler.handleMessage(connectionId, subscribeMessage,
                 msg -> {
                     if (msg instanceof ClientMessageError) {
                         clientMessageWrapper.complete((ClientMessageError) msg);
@@ -209,7 +218,7 @@ public class PushMessageHandlerTest {
     public void fluxSubscription_browserUnsubscribesCleansUp()
             throws Exception {
         SubscribeMessage subscribeMessage = createInfiniteFluxSubscribe();
-        pushMessageHandler.handleMessage(CONNECTION_ID, subscribeMessage,
+        pushMessageHandler.handleMessage(connectionId, subscribeMessage,
                 ignoreUpdateMessages());
 
         Assert.assertEquals(1,
@@ -217,32 +226,32 @@ public class PushMessageHandlerTest {
 
         UnsubscribeMessage unsubscribeMessage = new UnsubscribeMessage();
         unsubscribeMessage.setId(subscribeMessage.getId());
-        pushMessageHandler.handleMessage(CONNECTION_ID, unsubscribeMessage,
+        pushMessageHandler.handleMessage(connectionId, unsubscribeMessage,
                 ignoreAll());
         Assert.assertEquals(List.of(), unexpectedMessages);
         Assert.assertEquals(1,
                 pushMessageHandler.fluxSubscriptionDisposables.size());
         Assert.assertTrue(pushMessageHandler.fluxSubscriptionDisposables
-                .get(CONNECTION_ID).isEmpty());
+                .get(connectionId).isEmpty());
     }
 
     @Test
     public void fluxSubscription_browserDisconnectCleansUp() throws Exception {
         SubscribeMessage subscribeMessage = createInfiniteFluxSubscribe();
-        pushMessageHandler.handleMessage(CONNECTION_ID, subscribeMessage,
+        pushMessageHandler.handleMessage(connectionId, subscribeMessage,
                 ignoreUpdateMessages());
         SubscribeMessage subscribeMessage2 = createInfiniteFluxSubscribe();
         subscribeMessage2.setId("2");
-        pushMessageHandler.handleMessage(CONNECTION_ID, subscribeMessage2,
+        pushMessageHandler.handleMessage(connectionId, subscribeMessage2,
                 ignoreUpdateMessages());
 
         Assert.assertEquals(1,
                 pushMessageHandler.fluxSubscriptionDisposables.size());
         ConcurrentHashMap<String, Disposable> subscriptions = pushMessageHandler.fluxSubscriptionDisposables
-                .get(CONNECTION_ID);
+                .get(connectionId);
         Assert.assertEquals(2, subscriptions.size());
 
-        pushMessageHandler.handleBrowserDisconnect(CONNECTION_ID);
+        pushMessageHandler.handleBrowserDisconnect(connectionId);
         Assert.assertEquals(0,
                 pushMessageHandler.fluxSubscriptionDisposables.size());
     }
@@ -257,7 +266,6 @@ public class PushMessageHandlerTest {
     }
 
     private Consumer<AbstractClientMessage> ignore(Class<?>... toIgnore) {
-        List<AbstractClientMessage> unexpectedMessages = new ArrayList<>();
         return msg -> {
             for (Class<?> c : toIgnore) {
                 if (c == msg.getClass()) {
@@ -271,7 +279,7 @@ public class PushMessageHandlerTest {
 
     private SubscribeMessage createFluxSubscribe() {
         SubscribeMessage subscribeMessage = new SubscribeMessage();
-        subscribeMessage.setId(CONNECTION_ID);
+        subscribeMessage.setId(connectionId);
         subscribeMessage.setEndpointName(ENDPOINT_NAME);
         subscribeMessage.setMethodName(FLUX_METHOD);
         subscribeMessage.setParams(objectMapper.createArrayNode());
@@ -280,7 +288,7 @@ public class PushMessageHandlerTest {
 
     private SubscribeMessage createInfiniteFluxSubscribe() {
         SubscribeMessage subscribeMessage = new SubscribeMessage();
-        subscribeMessage.setId(CONNECTION_ID);
+        subscribeMessage.setId(connectionId);
         subscribeMessage.setEndpointName(ENDPOINT_NAME);
         subscribeMessage.setMethodName(INFINITE_FLUX_METHOD);
         subscribeMessage.setParams(objectMapper.createArrayNode());
@@ -289,7 +297,7 @@ public class PushMessageHandlerTest {
 
     private SubscribeMessage createFluxWithExceptionSubscribe() {
         SubscribeMessage subscribeMessage = new SubscribeMessage();
-        subscribeMessage.setId(CONNECTION_ID);
+        subscribeMessage.setId(connectionId);
         subscribeMessage.setEndpointName(ENDPOINT_NAME);
         subscribeMessage.setMethodName(FLUX_WITH_EXCEPTION_METHOD);
         subscribeMessage.setParams(objectMapper.createArrayNode());
