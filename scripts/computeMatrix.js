@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-const exec = require('util').promisify(require('child_process').exec);
 const fs = require("fs");
 
 /****************** START CONFIG */
