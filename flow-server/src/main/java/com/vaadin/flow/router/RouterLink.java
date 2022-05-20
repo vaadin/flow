@@ -101,9 +101,9 @@ public class RouterLink extends Component implements HasText, HasComponents,
      * @param <C>
      *            navigation target type
      */
-    public <T, C extends Component & HasUrlParameter<T>> RouterLink(Class<? extends C> navigationTarget, T parameter) {
-        this(navigationTarget,
-                HasUrlParameterFormat.getParameters(parameter));
+    public <T, C extends Component & HasUrlParameter<T>> RouterLink(
+            Class<? extends C> navigationTarget, T parameter) {
+        this(navigationTarget, HasUrlParameterFormat.getParameters(parameter));
     }
 
     /**
@@ -137,7 +137,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      *            route parameters for navigation target
      */
     public RouterLink(Class<? extends Component> navigationTarget,
-                      RouteParameters parameters) {
+            RouteParameters parameters) {
         this();
         setRoute(getRouter(), navigationTarget, parameters);
     }
@@ -171,7 +171,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      *             if navigation target requires parameters
      */
     public RouterLink(Router router,
-                      Class<? extends Component> navigationTarget)
+            Class<? extends Component> navigationTarget)
             throws IllegalArgumentException {
         this(router, navigationTarget, RouteParameters.empty());
     }
@@ -211,8 +211,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
      *            navigation target type
      */
     public <T, C extends Component & HasUrlParameter<T>> RouterLink(
-            Router router, Class<? extends C> navigationTarget,
-            T parameter) {
+            Router router, Class<? extends C> navigationTarget, T parameter) {
         this(router, navigationTarget,
                 HasUrlParameterFormat.getParameters(parameter));
     }
@@ -253,8 +252,8 @@ public class RouterLink extends Component implements HasText, HasComponents,
      *            route parameters for navigation target
      */
     public RouterLink(Router router,
-                      Class<? extends Component> navigationTarget,
-                      RouteParameters parameters) {
+            Class<? extends Component> navigationTarget,
+            RouteParameters parameters) {
         this();
         setRoute(router, navigationTarget, parameters);
     }

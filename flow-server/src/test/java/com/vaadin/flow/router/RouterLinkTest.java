@@ -156,8 +156,7 @@ public class RouterLinkTest extends HasCurrentService {
 
         Assert.assertTrue(link.getElement().hasAttribute("href"));
 
-        Assert.assertEquals("foo",
-                link.getElement().getAttribute("href"));
+        Assert.assertEquals("foo", link.getElement().getAttribute("href"));
     }
 
     @Test
@@ -175,7 +174,8 @@ public class RouterLinkTest extends HasCurrentService {
 
     @Test
     public void createRouterLink_withTargetViewWithRouteParametersNoText() {
-        RouteParameters routeParameters = HasUrlParameterFormat.getParameters("something");
+        RouteParameters routeParameters = HasUrlParameterFormat
+                .getParameters("something");
         RouterLink link = new RouterLink(TestView.class, routeParameters);
         Assert.assertEquals("", link.getText());
         Assert.assertTrue(link.getElement()
@@ -196,14 +196,12 @@ public class RouterLinkTest extends HasCurrentService {
 
         Assert.assertTrue(link.getElement().hasAttribute("href"));
 
-        Assert.assertEquals("foo",
-                link.getElement().getAttribute("href"));
+        Assert.assertEquals("foo", link.getElement().getAttribute("href"));
     }
 
     @Test
     public void createRouterLink_explicitRouterWithTargetViewWithParameterNoText() {
-        RouterLink link = new RouterLink(router,
-                TestView.class, "something");
+        RouterLink link = new RouterLink(router, TestView.class, "something");
         Assert.assertEquals("", link.getText());
         Assert.assertTrue(link.getElement()
                 .hasAttribute(ApplicationConstants.ROUTER_LINK_ATTRIBUTE));
@@ -216,8 +214,10 @@ public class RouterLinkTest extends HasCurrentService {
 
     @Test
     public void createRouterLink_explicitRouterWithTargetViewWithRouteParametersNoText() {
-        RouteParameters routeParameters = HasUrlParameterFormat.getParameters("something");
-        RouterLink link = new RouterLink(router, TestView.class, routeParameters);
+        RouteParameters routeParameters = HasUrlParameterFormat
+                .getParameters("something");
+        RouterLink link = new RouterLink(router, TestView.class,
+                routeParameters);
         Assert.assertEquals("", link.getText());
         Assert.assertTrue(link.getElement()
                 .hasAttribute(ApplicationConstants.ROUTER_LINK_ATTRIBUTE));
@@ -227,7 +227,6 @@ public class RouterLinkTest extends HasCurrentService {
         Assert.assertEquals("bar/something",
                 link.getElement().getAttribute("href"));
     }
-
 
     @Test
     public void createReconfigureRouterLink_implicitCurrentVaadinServiceRouter() {
