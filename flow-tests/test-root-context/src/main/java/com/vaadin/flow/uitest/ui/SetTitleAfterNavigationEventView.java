@@ -24,10 +24,10 @@ public class SetTitleAfterNavigationEventView extends AbstractDivView
 
     @Override
     public void afterNavigation(AfterNavigationEvent event) {
+        title = "my-changed-title-after-AfterNavigationEvent";
         LoggerFactory
                 .getLogger(SetTitleAfterNavigationEventView.class.getName())
                 .debug("AfterNavigationEvent listener called. The current title value is = "
                         + title);
-        title = "my-changed-title-after-AfterNavigationEvent";
     }
 }
