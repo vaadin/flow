@@ -174,7 +174,7 @@ function getFiles(files, folder, pattern) {
   fs.readdirSync(folder).forEach(file => {
     file = folder + '/' + file;
     if (fs.lstatSync(file).isDirectory()) {
-      files.concat(getFiles(files, file, pattern))
+      getFiles(files, file, pattern)
     } else if (pattern.test(file)) {
       files.push(file);
     }
