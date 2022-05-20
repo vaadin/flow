@@ -249,11 +249,11 @@ function splitArray(array, slices, slowMap) {
     .sort((a,b) => slowMap[b].weight - slowMap[a].weight)
     .filter(e => items.includes(e));
 
-  for (i = 0; i < slows.length; i++) {
+  for (let i = 0; i < slows.length; i++) {
     const item = slows[i];
     if (items.includes(item)) {
       getFasterSlice(item, parts, slowMap, reserved).push(item);
-      items.splice(items.indexOf(item), 1)
+      items.splice(items.indexOf(item), 1);
     }
   }
 
