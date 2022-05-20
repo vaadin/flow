@@ -19,6 +19,8 @@ import com.google.gwt.core.client.Scheduler;
 import com.google.web.bindery.event.shared.Event;
 import com.google.web.bindery.event.shared.EventBus;
 import com.google.web.bindery.event.shared.HandlerRegistration;
+
+import com.vaadin.client.communication.MessageSender.ResynchronizationState;
 import com.vaadin.client.Registry;
 import com.vaadin.client.gwt.com.google.web.bindery.event.shared.SimpleEventBus;
 
@@ -106,8 +108,10 @@ public class RequestResponseTracker {
         // the call.
         hasActiveRequest = false;
 
-        if (registry.getUILifecycle().isRunning()
-                && registry.getServerRpcQueue().isFlushPending()) {
+        if ((registry.getUILifecycle().isRunning()
+                && registry.getServerRpcQueue().isFlushPending())
+                || registry.getMessageSender()
+                        .getResynchronizationState() == ResynchronizationState.SEND_TO_SERVER) {
             // Send the pending RPCs immediately.
             // This might be an unnecessary optimization as ServerRpcQueue has a
             // finally scheduled command which trigger the send if we do not do
