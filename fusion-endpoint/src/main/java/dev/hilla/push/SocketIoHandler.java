@@ -40,6 +40,7 @@ public class SocketIoHandler {
         SocketIoNamespace hillaNamespace = socketIoServer.namespace("hilla");
         hillaNamespace.on("connection", event -> {
             SocketIoSocket socket = (SocketIoSocket) event[0];
+            pushMessageHandler.handleBrowserConnect(socket.getId());
 
             Consumer<AbstractClientMessage> sender = message -> {
                 try {

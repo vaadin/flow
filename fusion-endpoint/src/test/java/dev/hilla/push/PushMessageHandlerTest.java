@@ -220,8 +220,10 @@ public class PushMessageHandlerTest {
         pushMessageHandler.handleMessage(CONNECTION_ID, unsubscribeMessage,
                 ignoreAll());
         Assert.assertEquals(List.of(), unexpectedMessages);
-        Assert.assertEquals(0,
+        Assert.assertEquals(1,
                 pushMessageHandler.fluxSubscriptionDisposables.size());
+        Assert.assertTrue(pushMessageHandler.fluxSubscriptionDisposables
+                .get(CONNECTION_ID).isEmpty());
     }
 
     @Test

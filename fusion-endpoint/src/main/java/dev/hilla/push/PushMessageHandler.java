@@ -1,7 +1,6 @@
 package dev.hilla.push;
 
 import java.security.Principal;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -165,6 +164,28 @@ public class PushMessageHandler {
 
     }
 
+    /**
+     * Called when the browser establishes a new connection.
+     *
+     * Only ever called once for the same connectionId parameter.
+     *
+     * @param connectionId
+     *            the id of the connection
+     */
+    public void handleBrowserConnect(String connectionId) {
+        fluxSubscriptionDisposables.put(connectionId,
+                new ConcurrentHashMap<>());
+    }
+
+    /**
+     * Called when the browser connection has been lost.
+     *
+     * Only ever called once for the same connectionId parameter. The same
+     * connectionId parameter will never be used after this call.
+     *
+     * @param connectionId
+     *            the id of the connection
+     */
     public void handleBrowserDisconnect(String connectionId) {
         disposeConnectionInfo(connectionId);
     }
@@ -207,12 +228,6 @@ public class PushMessageHandler {
                 .get(connectionId);
         if (fluxMap != null) {
             Disposable subscriptionInfo = fluxMap.remove(subscriptionId);
-            if (fluxMap.isEmpty()) {
-                // Remove the map unless somebody else already added something
-                // there
-                fluxSubscriptionDisposables.remove(connectionId, fluxMap);
-            }
-
             if (subscriptionInfo != null) {
                 dispose(subscriptionInfo);
             }
