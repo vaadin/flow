@@ -385,7 +385,7 @@ function computeResultWeights(suite, prefix, weights) {
   const logs = getFiles([], '.', RegExp(`mvn-${suite}.*out$`));
   const regexStatus = /\[INFO\] (.*?) ([\. ]*)(SUCCESS|FAILURE) \[ *([\d:\.]+) (\w+)\]([\s\S]*)/;
   weights = weights || {};
-  stats = {};
+  const stats = {};
 
   logs.forEach(f => {
     const content = fs.readFileSync(f).toString();
@@ -515,7 +515,7 @@ async function printTestResults() {
       console.log(`${k} ${totalSecs} secs. ${totalWeight} weight\n  `
         + moduleStats[k].map(o => `'${o.mod}': {secs: ${o.secs}, weight: ${o.weight}},`).join('\n  '));
     }
-  })
+  });
 
   // print stats of test classes
   console.log(testStats);
