@@ -303,8 +303,8 @@ public class WebComponentBootstrapHandlerTest {
     }
 
     @Test
-    @Ignore("Ignored until it is known how the bootstrap is compiled in ts mode")
-    public void writeBootstrapPage_noExportChunk() throws IOException {
+    public void writeBootstrapPage_alwaysExpectExportChunk()
+            throws IOException {
         TestWebComponentBootstrapHandler handler = new TestWebComponentBootstrapHandler();
         VaadinServletService service = new MockVaadinServletService();
 
@@ -329,10 +329,10 @@ public class WebComponentBootstrapHandlerTest {
 
         handler.synchronizedHandleRequest(session, request, response);
 
-        // no "export" chunk, expect "bundle" in result instead
         String result = stream.toString(StandardCharsets.UTF_8.name());
+        // always expect "export" chunk:
         Assert.assertTrue(
-                result.contains("VAADIN/build/vaadin-bundle-1111.cache.js"));
+                result.contains("VAADIN/build/vaadin-export-2222.cache.js"));
     }
 
     private VaadinRequest mockRequest(boolean hasConfig) {
