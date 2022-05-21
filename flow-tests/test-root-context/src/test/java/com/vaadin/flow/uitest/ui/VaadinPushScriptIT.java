@@ -61,9 +61,10 @@ public class VaadinPushScriptIT extends ChromeBrowserTest {
 
         Assert.assertNotNull(ApplicationConstants.VAADIN_PUSH_DEBUG_JS
                 + " script not loaded by page", pushScriptUrl);
-        Assert.assertTrue("Push script not relative to Vaadin servlet mapping",
-                pushScriptUrl.startsWith("http://localhost:8888/"
-                        + ApplicationConstants.VAADIN_PUSH_DEBUG_JS));
+        Assert.assertTrue(
+                "Push script not relative to context root: " + pushScriptUrl,
+                pushScriptUrl.contains(
+                        ":8888/" + ApplicationConstants.VAADIN_PUSH_DEBUG_JS));
     }
 
 }
