@@ -29,7 +29,7 @@ import com.vaadin.flow.shared.communication.PushMode;
 
 import static com.vaadin.flow.server.InitParameters.BUILD_FOLDER;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_CLOSE_IDLE_SESSIONS;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_ENABLE_GIZMO;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_ENABLE_DEV_TOOLS;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_ENABLE_LIVE_RELOAD;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
@@ -273,16 +273,16 @@ public class PropertyDeploymentConfiguration
 
     @Override
     public boolean isDevModeLiveReloadEnabled() {
-        return isDevModeGizmoEnabled() && getBooleanProperty(
+        return isDevToolsEnabled() && getBooleanProperty(
                 SERVLET_PARAMETER_DEVMODE_ENABLE_LIVE_RELOAD, true);
     }
 
     @Override
-    public boolean isDevModeGizmoEnabled() {
+    public boolean isDevToolsEnabled() {
         return !isProductionMode()
-                && getBooleanProperty(SERVLET_PARAMETER_DEVMODE_ENABLE_GIZMO,
-                        true)
-                && enableDevServer(); // gizmo excluded from prod bundle
+                && getBooleanProperty(
+                        SERVLET_PARAMETER_DEVMODE_ENABLE_DEV_TOOLS, true)
+                && enableDevServer(); // dev tools excluded from prod bundle
     }
 
     /**

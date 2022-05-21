@@ -20,9 +20,9 @@ import javax.servlet.annotation.WebServlet;
 
 import com.vaadin.flow.server.VaadinServlet;
 
-// Custom servlet for disabled dev gizmo test
+// Custom servlet for disabled dev tools test
 @WebServlet(asyncSupported = true, urlPatterns = {
-        "/view-disabled-gizmo/*" }, initParams = {
-                @WebInitParam(name = "devmode.gizmo.enabled", value = "false") })
-public class DevModeGizmoDisabledServlet extends VaadinServlet {
+        "/view-disabled-dev-tools/*" }, initParams = {
+                @WebInitParam(name = "devmode.devtools.enabled", value = "false") })
+public class DevToolsDisabledServlet extends VaadinServlet {
 }

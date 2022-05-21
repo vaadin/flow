@@ -99,7 +99,7 @@ public class PushHandlerTest {
                 .getDeploymentConfiguration();
         deploymentConfiguration.setProductionMode(false);
         deploymentConfiguration.setDevModeLiveReloadEnabled(true);
-        deploymentConfiguration.setDevModeGizmoEnabled(true);
+        deploymentConfiguration.setDevToolsEnabled(true);
 
         ApplicationConfiguration applicationConfiguration = Mockito
                 .mock(ApplicationConfiguration.class);
@@ -136,7 +136,7 @@ public class PushHandlerTest {
                 .getDeploymentConfiguration();
         deploymentConfiguration.setProductionMode(false);
         deploymentConfiguration.setDevModeLiveReloadEnabled(true);
-        deploymentConfiguration.setDevModeGizmoEnabled(true);
+        deploymentConfiguration.setDevToolsEnabled(true);
 
         VaadinContext context = service.getContext();
         mockBrowserLiveReloadImpl(context);

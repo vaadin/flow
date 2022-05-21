@@ -120,7 +120,7 @@ abstract class AbstractUpdateImports implements Runnable {
         lines.addAll(getCssLines());
         if (!productionMode && useLegacyV14Bootstrap) {
             // This is only needed for v14bootstrap mode
-            lines.add(TaskGenerateBootstrap.DEVMODE_GIZMO_IMPORT);
+            lines.add(TaskGenerateBootstrap.DEV_TOOLS_IMPORT);
         }
         collectModules(lines);
 

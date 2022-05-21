@@ -98,23 +98,23 @@ public class ApplicationConnection {
             Console.log(
                     "Vaadin application servlet version: " + servletVersion);
 
-            if (applicationConfiguration.isDevmodeGizmoEnabled()
+            if (applicationConfiguration.isDevToolsEnabled()
                     && applicationConfiguration.getLiveReloadUrl() != null) {
-                Element devmodeGizmo = Browser.getDocument()
-                        .createElement("vaadin-devmode-gizmo");
-                DomApi.wrap(devmodeGizmo).setAttribute("url",
+                Element devTools = Browser.getDocument()
+                        .createElement("vaadin-dev-tools");
+                DomApi.wrap(devTools).setAttribute("url",
                         applicationConfiguration.getLiveReloadUrl());
                 if (applicationConfiguration.getLiveReloadBackend() != null) {
-                    DomApi.wrap(devmodeGizmo).setAttribute("backend",
+                    DomApi.wrap(devTools).setAttribute("backend",
                             applicationConfiguration.getLiveReloadBackend());
                 }
                 if (applicationConfiguration
                         .getSpringBootLiveReloadPort() != null) {
-                    DomApi.wrap(devmodeGizmo).setAttribute(
+                    DomApi.wrap(devTools).setAttribute(
                             "springbootlivereloadport", applicationConfiguration
                                     .getSpringBootLiveReloadPort());
                 }
-                DomApi.wrap(body).appendChild(devmodeGizmo);
+                DomApi.wrap(body).appendChild(devTools);
             }
         }
 

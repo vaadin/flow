@@ -45,15 +45,15 @@ public class ProdModeConfigIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void prodMode_devModeGizmo_alwaysDisabled_shouldNotRenderGizmoPopup() {
+    public void prodMode_devTools_alwaysDisabled_shouldNotRenderDevToolsPopup() {
         open();
 
         Assert.assertEquals(
-                "devModeGizmoEnabled is supposed to be false "
+                "devToolsEnabled is supposed to be false "
                         + "by default in production mode",
-                "false", findElement(By.id("devModeGizmoEnabled")).getText());
+                "false", findElement(By.id("devToolsEnabled")).getText());
 
         Assert.assertTrue(
-                findElements(By.tagName("vaadin-devmode-gizmo")).isEmpty());
+                findElements(By.tagName("vaadin-dev-tools")).isEmpty());
     }
 }
