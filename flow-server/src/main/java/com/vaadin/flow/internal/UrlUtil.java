@@ -111,7 +111,7 @@ public class UrlUtil {
      *
      * @param request
      *            the servlet request
-     * @return the path info starting with /VAADIN/
+     * @return the path info starting with /VAADIN/ or <code>null</code> if no path information is available
      */
     public static String getStaticVaadinPathInfo(VaadinRequest request) {
         if (request instanceof HttpServletRequest) {
@@ -126,7 +126,7 @@ public class UrlUtil {
      *
      * @param request
      *            the servlet request
-     * @return the path info starting with /VAADIN/
+     * @return the path info starting with /VAADIN/ or <code>null</code> if no path information is available
      */
     public static String getStaticVaadinPathInfo(HttpServletRequest request) {
         String pathInfo = request.getPathInfo();
