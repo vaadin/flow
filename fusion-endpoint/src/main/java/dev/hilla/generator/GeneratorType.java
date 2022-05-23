@@ -35,6 +35,7 @@ import com.github.javaparser.resolution.types.ResolvedReferenceType;
 import com.github.javaparser.resolution.types.ResolvedType;
 import com.github.javaparser.utils.Pair;
 
+import dev.hilla.EndpointSubscription;
 import dev.hilla.ExplicitNullableTypeChecker;
 import reactor.core.publisher.Flux;
 
@@ -121,6 +122,11 @@ class GeneratorType {
 
     boolean isFlux() {
         return resolvedType.isReferenceType() && isAssignableType(Flux.class);
+    }
+
+    boolean isEndpointSubscription() {
+        return resolvedType.isReferenceType()
+                && isAssignableType(EndpointSubscription.class);
     }
 
     boolean isPrimitive() {
