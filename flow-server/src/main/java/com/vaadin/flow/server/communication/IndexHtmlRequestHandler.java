@@ -83,6 +83,10 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 : getIndexHtmlDocument(service);
 
         prependBaseHref(request, indexDocument);
+        String contextRootRelativePath = request.getService()
+                .getContextRootRelativePath(request);
+        rewriteBundleImportToContextRoot(indexDocument,
+                contextRootRelativePath);
 
         JsonObject initialJson = Json.createObject();
 
@@ -277,6 +281,16 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             indexDocument.head().prependElement("base").attr("href", baseHref);
         } else {
             base.first().attr("href", baseHref);
+        }
+    }
+
+    private static void rewriteBundleImportToContextRoot(Document indexDocument,
+            String contextRootRelativePath) {
+        Elements bundleScripts = indexDocument.head()
+                .getElementsByAttributeValueStarting("src", "VAADIN/");
+        for (Element bundleScript : bundleScripts) {
+            bundleScript.attr("src", bundleScript.attr("src").replaceFirst(
+                    "VAADIN", contextRootRelativePath + "VAADIN"));
         }
     }
 

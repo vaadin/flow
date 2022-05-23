@@ -26,6 +26,14 @@ public class ViewTitleIT extends ChromeBrowserTest {
     }
 
     @Test
+    public void testSetTitleAfterNavigationEvent() {
+        open();
+        openView("SetTitleAfterNavigationEventView");
+
+        verifyTitle("my-changed-title-after-AfterNavigationEvent");
+    }
+
+    @Test
     public void testViewTitleAnnotation() {
         open();
         openView("TitleView");

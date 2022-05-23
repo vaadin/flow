@@ -26,6 +26,7 @@ import javax.servlet.ServletRegistration.Dynamic;
 
 import com.vaadin.flow.server.Constants;
 
+import org.atmosphere.cpr.ApplicationConfig;
 import org.springframework.core.env.Environment;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.WebApplicationInitializer;
@@ -72,12 +73,26 @@ public abstract class VaadinMVCWebAppInitializer
             Dynamic dispatcherRegistration = servletContext
                     .addServlet("dispatcher", new DispatcherServlet(context));
             dispatcherRegistration.addMapping("/*");
-            mapping = VaadinServletConfiguration.VAADIN_SERVLET_MAPPING;
             initParameters.put(Constants.SERVLET_PARAMETER_PUSH_URL,
                     makeContextRelative(mapping.replace("*", "")));
         }
-        registration.setInitParameters(initParameters);
+        if (rootMapping) {
+            mapping = VaadinServletConfiguration.VAADIN_SERVLET_MAPPING;
+        }
         registration.addMapping(mapping);
+        registration.addMapping("/VAADIN/*");
+
+        /*
+         * Tell Atmosphere which servlet to use for the push endpoint. Servlet
+         * mappings are returned as a Set from at least Tomcat so even if
+         * Atmosphere always picks the first, it might end up using /VAADIN/*
+         * and websockets will fail.
+         */
+        initParameters.put(ApplicationConfig.JSR356_MAPPING_PATH,
+                mapping.replace("/*", ""));
+
+        registration.setInitParameters(initParameters);
+
         registration.setAsyncSupported(
                 Boolean.TRUE.toString().equals(env.getProperty(
                         "vaadin.asyncSupported", Boolean.TRUE.toString())));
