@@ -19,6 +19,7 @@ import javax.servlet.MultipartConfigElement;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.atmosphere.cpr.ApplicationConfig;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
@@ -80,12 +81,19 @@ public class SpringBootAutoConfiguration {
         boolean rootMapping = RootMappedCondition.isRootMapping(mapping);
         String[] urlMappings;
         if (rootMapping) {
-            urlMappings = new String[] {
-                    VaadinServletConfiguration.VAADIN_SERVLET_MAPPING,
-                    "/VAADIN/*" };
-        } else {
-            urlMappings = new String[] { mapping, "/VAADIN/*" };
+            mapping = VaadinServletConfiguration.VAADIN_SERVLET_MAPPING;
         }
+
+        urlMappings = new String[] { mapping, "/VAADIN/*" };
+        /*
+         * Tell Atmosphere which servlet to use for the push endpoint. Servlet
+         * mappings are returned as a Set from at least Tomcat so even if
+         * Atmosphere always picks the first, it might end up using /VAADIN/*
+         * and websockets will fail.
+         */
+        initParameters.put(ApplicationConfig.JSR356_MAPPING_PATH,
+                mapping.replace("/*", ""));
+
         ServletRegistrationBean<SpringServlet> registration = new ServletRegistrationBean<>(
                 new SpringServlet(context, rootMapping), urlMappings);
         registration.setInitParameters(initParameters);
