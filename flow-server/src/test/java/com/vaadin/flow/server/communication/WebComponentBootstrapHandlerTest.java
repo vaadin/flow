@@ -302,39 +302,6 @@ public class WebComponentBootstrapHandlerTest {
                 result.contains("VAADIN/build/vaadin-bundle-1111.cache.js"));
     }
 
-    @Test
-    public void writeBootstrapPage_alwaysExpectExportChunk()
-            throws IOException {
-        TestWebComponentBootstrapHandler handler = new TestWebComponentBootstrapHandler();
-        VaadinServletService service = new MockVaadinServletService();
-
-        initLookup(service);
-
-        VaadinSession session = new MockVaadinSession(service);
-        session.lock();
-        session.setConfiguration(service.getDeploymentConfiguration());
-        MockDeploymentConfiguration config = (MockDeploymentConfiguration) service
-                .getDeploymentConfiguration();
-        config.setApplicationOrSystemProperty(SERVLET_PARAMETER_STATISTICS_JSON,
-                VAADIN_SERVLET_RESOURCES + "config/stats_no_export.json");
-        config.setEnableDevServer(false);
-
-        VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
-        Mockito.when(request.getService()).thenReturn(service);
-        Mockito.when(request.getServletPath()).thenReturn("/");
-        VaadinResponse response = getMockResponse(null);
-
-        ByteArrayOutputStream stream = new ByteArrayOutputStream();
-        Mockito.when(response.getOutputStream()).thenReturn(stream);
-
-        handler.synchronizedHandleRequest(session, request, response);
-
-        String result = stream.toString(StandardCharsets.UTF_8.name());
-        // always expect "export" chunk:
-        Assert.assertTrue(
-                result.contains("VAADIN/build/vaadin-export-2222.cache.js"));
-    }
-
     private VaadinRequest mockRequest(boolean hasConfig) {
         VaadinContext context = Mockito.mock(VaadinContext.class);
         VaadinService service = Mockito.mock(VaadinService.class);
