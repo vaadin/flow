@@ -128,7 +128,7 @@ public class ChromeBrowserTest extends ViewOrUITest {
 
         int port = PortProber.findFreePort();
         ChromeDriverService service = new ChromeDriverService.Builder()
-                .usingPort(port).build();
+                .usingPort(port).withSilent(true).build();
         ChromeDriver chromeDriver = new ChromeDriver(service, headlessOptions);
         return TestBench.createDriver(chromeDriver);
     }
