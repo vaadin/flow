@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-const exec = require('util').promisify(require('child_process').exec);
 const fs = require("fs");
 
 /****************** START CONFIG */
@@ -132,9 +131,6 @@ const moduleSplits = {
 }
 /****************** END CONFIG */
 
-// List of containers that are reserved, so that they are no selected for other tests
-const reservedContainers = Object.keys(moduleWeights).filter(k => moduleWeights[k].pos).map(k => moduleWeights[k].pos);
-
 // Using regex to avoid having to run `npm install` for xml libs.
 const regexComment = /<!--[\s\S]+?-->/gm;
 const regexModule = /([\s\S]*?)<module>\s*([\d\w\-\/\.]+)\s*<\/module>([\s\S]*)/;
@@ -178,7 +174,7 @@ function getFiles(files, folder, pattern) {
   fs.readdirSync(folder).forEach(file => {
     file = folder + '/' + file;
     if (fs.lstatSync(file).isDirectory()) {
-      files.concat(getFiles(files, file, pattern))
+      getFiles(files, file, pattern)
     } else if (pattern.test(file)) {
       files.push(file);
     }
@@ -253,11 +249,11 @@ function splitArray(array, slices, slowMap) {
     .sort((a,b) => slowMap[b].weight - slowMap[a].weight)
     .filter(e => items.includes(e));
 
-  for (i = 0; i < slows.length; i++) {
+  for (let i = 0; i < slows.length; i++) {
     const item = slows[i];
     if (items.includes(item)) {
       getFasterSlice(item, parts, slowMap, reserved).push(item);
-      items.splice(items.indexOf(item), 1)
+      items.splice(items.indexOf(item), 1);
     }
   }
 
@@ -339,7 +335,6 @@ function objectToString(object, keys) {
  * Print the matrix strategy in GH-actions syntax
  */
 function printStrategy(object) {
-  const json = [];
   const o = object.map(o => {
     return {
       matrix: [o.suite, ...o.matrix, o.weight],
@@ -390,7 +385,7 @@ function computeResultWeights(suite, prefix, weights) {
   const logs = getFiles([], '.', RegExp(`mvn-${suite}.*out$`));
   const regexStatus = /\[INFO\] (.*?) ([\. ]*)(SUCCESS|FAILURE) \[ *([\d:\.]+) (\w+)\]([\s\S]*)/;
   weights = weights || {};
-  stats = {};
+  const stats = {};
 
   logs.forEach(f => {
     const content = fs.readFileSync(f).toString();
@@ -520,7 +515,7 @@ async function printTestResults() {
       console.log(`${k} ${totalSecs} secs. ${totalWeight} weight\n  `
         + moduleStats[k].map(o => `'${o.mod}': {secs: ${o.secs}, weight: ${o.weight}},`).join('\n  '));
     }
-  })
+  });
 
   // print stats of test classes
   console.log(testStats);

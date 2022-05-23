@@ -15,14 +15,16 @@
  */
 package com.vaadin.flow.spring;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRegistration.Dynamic;
-
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
+
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRegistration.Dynamic;
+
+import com.vaadin.flow.server.Constants;
 
 import org.springframework.core.env.Environment;
 import org.springframework.util.ClassUtils;
@@ -30,8 +32,6 @@ import org.springframework.web.WebApplicationInitializer;
 import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
-
-import com.vaadin.flow.server.Constants;
 
 /**
  * Abstract Vaadin Spring MVC {@link WebApplicationInitializer}.
@@ -56,8 +56,10 @@ public abstract class VaadinMVCWebAppInitializer
         context.refresh();
 
         Environment env = context.getBean(Environment.class);
-        String mapping = env
-                .getProperty(RootMappedCondition.URL_MAPPING_PROPERTY, "/*");
+        String mapping = RootMappedCondition.getUrlMapping(env);
+        if (mapping == null) {
+            mapping = "/*";
+        }
 
         boolean rootMapping = RootMappedCondition.isRootMapping(mapping);
 

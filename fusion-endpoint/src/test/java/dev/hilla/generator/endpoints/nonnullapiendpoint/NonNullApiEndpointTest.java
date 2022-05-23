@@ -13,16 +13,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.plugin.maven;
+package dev.hilla.generator.endpoints.nonnullapiendpoint;
 
-import org.apache.maven.plugins.annotations.LifecyclePhase;
-import org.apache.maven.plugins.annotations.Mojo;
+import java.util.Collections;
 
-/**
- * This is the hidden `vaadin:dance` to clean up the frontend files.
- *
- * @since
- */
-@Mojo(name = "dance", defaultPhase = LifecyclePhase.PRE_CLEAN)
-public class FrontendDanceMojo extends CleanFrontendMojo {
+import org.junit.Test;
+
+import dev.hilla.generator.endpoints.AbstractEndpointGenerationTest;
+
+public class NonNullApiEndpointTest extends AbstractEndpointGenerationTest {
+
+    public NonNullApiEndpointTest() {
+        super(Collections.singletonList(NonNullApiEndpoint.class));
+    }
+
+    @Test
+    public void notNullApiAffectsTheWholePackage() {
+        verifyOpenApiObjectAndGeneratedTs();
+    }
 }
