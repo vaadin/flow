@@ -35,7 +35,7 @@
       "@vaadin/vaadin-lumo-styles": "23.1.0-alpha2",
       "@vaadin/vaadin-text-field": "23.1.0-alpha2",
       "construct-style-sheets-polyfill": "3.1.0",
-      "lit": "2.2.1"
+      "lit": "2.2.3"
     },
     "devDependencies": {
       "@rollup/plugin-replace": "3.1.0",
@@ -50,6 +50,6 @@
       "workbox-core": "6.5.0",
       "workbox-precaching": "6.5.0"
     },
-    "hash": "f2fa734df59ae2432dff7a0c3c8f8ded1b6961558b0d1338719bd98428336d20"
+    "hash": "52606a45917f697898a2ce2257a6e7c00b99d7d3d3dae9f5f09ecf179858bc49"
   }
 }
