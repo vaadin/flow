@@ -677,11 +677,13 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         }
         // Since we have 'publicPath=/VAADIN/' in the dev server config,
         // a valid request for the dev server should start with '/VAADIN/'
-        String requestFilename = request.getPathInfo();
+
+        String requestFilename = UrlUtil.getStaticVaadinPathInfo(request);
 
         if (HandlerHelper.isPathUnsafe(requestFilename)
-                || WEBPACK_ILLEGAL_CHAR_PATTERN.matcher(requestFilename)
-                        .find()) {
+                || WEBPACK_ILLEGAL_CHAR_PATTERN.matcher(requestFilename).find())
+
+        {
             getLogger().info("Blocked attempt to access file: {}",
                     requestFilename);
             response.setStatus(HttpStatusCode.FORBIDDEN.getCode());
