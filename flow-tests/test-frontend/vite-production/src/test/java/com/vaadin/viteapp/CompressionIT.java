@@ -40,7 +40,7 @@ public class CompressionIT {
     private String getJsBundleName() throws Exception {
         String indexHtml = IOUtils.toString(
                 new URL(getRootURL() + "/index.html"), StandardCharsets.UTF_8);
-        Pattern p = Pattern.compile(".* src=\"VAADIN/build/([^\"]*).*",
+        Pattern p = Pattern.compile(".* src=\"./VAADIN/build/([^\"]*).*",
                 Pattern.DOTALL);
 
         Matcher m = p.matcher(indexHtml);

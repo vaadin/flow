@@ -192,6 +192,9 @@ public abstract class VaadinWebSecurityConfigurerAdapter
             // We need only to permit root of the mapping because other Vaadin
             // public urls and resources are already permitted
             paths.add(mappedRoot);
+            // When using an url path, static resources are still fetched from
+            // /VAADIN/ in the context root
+            paths.add("/VAADIN/**");
         }
         return new OrRequestMatcher(paths.build()
                 .map(AntPathRequestMatcher::new).collect(Collectors.toList()));
