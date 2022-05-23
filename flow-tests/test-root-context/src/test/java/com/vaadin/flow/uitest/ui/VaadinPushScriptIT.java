@@ -34,7 +34,7 @@ public class VaadinPushScriptIT extends ChromeBrowserTest {
         getDriver().get(
                 getRootURL() + "/view/" + PushSettingsView.class.getName());
         waitForDevServer();
-        assertThatPushScriptUrlIsRelativeToUrlMapping(
+        assertThatPushScriptUrlIsRelativeToContextRoot(
                 findElement(By.tagName("body")));
     }
 
@@ -46,11 +46,11 @@ public class VaadinPushScriptIT extends ChromeBrowserTest {
                 getRootURL() + "/view/" + ActivatePushView.class.getName());
         waitForDevServer();
 
-        assertThatPushScriptUrlIsRelativeToUrlMapping(
+        assertThatPushScriptUrlIsRelativeToContextRoot(
                 findElement(By.tagName("head")));
     }
 
-    private void assertThatPushScriptUrlIsRelativeToUrlMapping(
+    private void assertThatPushScriptUrlIsRelativeToContextRoot(
             WebElement scriptContainer) {
         String pushScriptUrl = scriptContainer
                 .findElements(By.tagName("script")).stream()
@@ -61,9 +61,10 @@ public class VaadinPushScriptIT extends ChromeBrowserTest {
 
         Assert.assertNotNull(ApplicationConstants.VAADIN_PUSH_DEBUG_JS
                 + " script not loaded by page", pushScriptUrl);
-        Assert.assertTrue("Push script not relative to Vaadin servlet mapping",
+        Assert.assertTrue(
+                "Push script not relative to context root: " + pushScriptUrl,
                 pushScriptUrl.contains(
-                        "/view/" + ApplicationConstants.VAADIN_PUSH_DEBUG_JS));
+                        ":8888/" + ApplicationConstants.VAADIN_PUSH_DEBUG_JS));
     }
 
 }

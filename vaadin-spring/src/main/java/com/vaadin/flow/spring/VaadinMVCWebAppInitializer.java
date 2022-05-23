@@ -72,12 +72,18 @@ public abstract class VaadinMVCWebAppInitializer
             Dynamic dispatcherRegistration = servletContext
                     .addServlet("dispatcher", new DispatcherServlet(context));
             dispatcherRegistration.addMapping("/*");
-            mapping = VaadinServletConfiguration.VAADIN_SERVLET_MAPPING;
             initParameters.put(Constants.SERVLET_PARAMETER_PUSH_URL,
                     makeContextRelative(mapping.replace("*", "")));
         }
         registration.setInitParameters(initParameters);
-        registration.addMapping(mapping);
+        if (rootMapping) {
+            registration.addMapping(
+                    VaadinServletConfiguration.VAADIN_SERVLET_MAPPING);
+        } else {
+            registration.addMapping(mapping);
+        }
+        registration.addMapping("/VAADIN/*");
+
         registration.setAsyncSupported(
                 Boolean.TRUE.toString().equals(env.getProperty(
                         "vaadin.asyncSupported", Boolean.TRUE.toString())));
