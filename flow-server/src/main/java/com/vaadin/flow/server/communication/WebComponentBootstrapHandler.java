@@ -60,7 +60,6 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.EXPORT_CHUNK;
 import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -108,50 +107,46 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         public Document getBootstrapPage(BootstrapContext context) {
             VaadinService service = context.getSession().getService();
 
-            if (FeatureFlags.get(service.getContext())
-                    .isEnabled(FeatureFlags.VITE)) {
-                try {
-                    Document document = Jsoup.parse(
-                            FrontendUtils.getWebComponentHtmlContent(service));
-                    Element head = document.head();
+            try {
+                JsonObject initialUIDL = getInitialUidl(context.getUI());
 
-                    // Specify the application ID for scripts of the
-                    // web-component.html
-                    head.select("script[src]").attr("data-app-id",
-                            context.getUI().getInternals().getAppId());
+                Document document = Jsoup.parse(
+                        FrontendUtils.getWebComponentHtmlContent(service));
+                Element head = document.head();
 
-                    // Add `crossorigin` to fix basic auth in Safari #6560
-                    head.select("script[src], link[href]").attr("crossorigin",
-                            "true");
+                // The application ID is needed for the Flow client to connect
+                // to the server.
+                head.select("script[src]").attr("data-app-id",
+                        context.getUI().getInternals().getAppId());
 
-                    JsonObject initialUIDL = getInitialUidl(context.getUI());
+                // Fixes basic auth in Safari #6560
+                head.select("script[src], link[href]").attr("crossorigin",
+                        "true");
 
+                setupCss(head, context, false);
+                if (FeatureFlags.get(service.getContext())
+                        .isEnabled(FeatureFlags.VITE)) {
+                    // A workaround for
+                    // https://github.com/vitejs/vite/issues/5142
                     head.prependChild(createInlineJavaScriptElement(
                             "window.JSCompiler_renameProperty = function(a) { return a; }"));
-
-                    head.prependChild(getBootstrapScript(initialUIDL, context));
-
-                    if (context.getPushMode().isEnabled()) {
-                        head.prependChild(createJavaScriptModuleElement(
-                                getPushScript(context), true));
-                    }
-
-                    return document;
-                } catch (IOException e) {
-                    throw new BootstrapException(
-                            "Unable to read the web-component.html file.", e);
+                } else {
+                    // A workaround for HtmlWebpackPlugin that doesn't support
+                    // `scriptLoading: module` for Webpack 4.
+                    head.select("script[src]").attr("type", "module");
                 }
-            }
 
-            return super.getBootstrapPage(context);
-        }
+                head.prependChild(getBootstrapScript(initialUIDL, context));
 
-        @Override
-        protected List<String> getChunkKeys(JsonObject chunks) {
-            if (chunks.hasKey(EXPORT_CHUNK)) {
-                return Collections.singletonList(EXPORT_CHUNK);
-            } else {
-                return super.getChunkKeys(chunks);
+                if (context.getPushMode().isEnabled()) {
+                    head.prependChild(createJavaScriptModuleElement(
+                            getPushScript(context), true));
+                }
+
+                return document;
+            } catch (IOException e) {
+                throw new BootstrapException(
+                        "Unable to read the web-component.html file.", e);
             }
         }
     }
