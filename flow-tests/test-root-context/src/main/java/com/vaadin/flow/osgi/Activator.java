@@ -225,7 +225,10 @@ public class Activator {
                 HttpWhiteboardConstants.HTTP_WHITEBOARD_SERVLET_ASYNC_SUPPORTED,
                 true);
         properties.put(HttpWhiteboardConstants.HTTP_WHITEBOARD_SERVLET_PATTERN,
-                mapping);
+                // Adds serve static files from VAADIN in the context root
+                // for non-root servlet mapping.
+                // see https://github.com/vaadin/flow/issues/13769
+                new String[] { mapping, "/VAADIN/*" });
         return properties;
     }
 
