@@ -90,6 +90,9 @@
         <slf4j.version>1.7.32</slf4j.version>
         <polymer.version>2.6.1</polymer.version>
         <apache.httpclient.version>4.5.13</apache.httpclient.version>
+        <jackson.databind.version>2.13.3</jackson.databind.version>
+        <guava.version>31.1-jre</guava.version>
+        <bouncycastle.version>1.70</bouncycastle.version>
 
         <!-- Plugins -->
         <frontend.maven.plugin.version>1.5</frontend.maven.plugin.version>
