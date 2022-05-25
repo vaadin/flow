@@ -374,9 +374,9 @@ export const vaadinConfig: UserConfigFn = (env) => {
     root: 'frontend',
     base: '',
     resolve: {
-      alias: [
-        { find: 'Frontend', replacement: frontendFolder },
-      ],
+      alias: {
+        Frontend: frontendFolder
+      },
       preserveSymlinks: true
     },
     define: {
