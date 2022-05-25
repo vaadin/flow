@@ -302,16 +302,37 @@ export { ${exports.map((binding) => `${binding} as ${binding}`).join(', ')} };`;
   };
 }
 
-function updateTheme(contextPath: string) {
-  const themePath = path.resolve(themeFolder);
-  if (contextPath.startsWith(themePath)) {
-    const changed = path.relative(themePath, contextPath);
-
-    console.debug('Theme file changed', changed);
-
-    if (changed.startsWith(settings.themeName)) {
+function themePlugin(): PluginOption {
+  return {
+    name: 'vaadin:theme',
+    config() {
       processThemeResources(themeOptions, console);
-    }
+    },
+    handleHotUpdate(context) {
+      const contextPath = path.resolve(context.file);
+      const themePath = path.resolve(themeFolder);
+      if (contextPath.startsWith(themePath)) {
+        const changed = path.relative(themePath, contextPath);
+
+        console.debug('Theme file changed', changed);
+
+        if (changed.startsWith(settings.themeName)) {
+          processThemeResources(themeOptions, console);
+        }
+      }
+    },
+    async resolveId(id) {
+      if (!id.startsWith(settings.themeFolder)) {
+        return;
+      }
+
+      for (const location of [themeResourceFolder, frontendFolder]) {
+        const result = await this.resolve(path.resolve(location, id));
+        if (result) {
+          return result;
+        }
+      }
+    },
   }
 }
 
@@ -354,20 +375,6 @@ export const vaadinConfig: UserConfigFn = (env) => {
     base: '',
     resolve: {
       alias: [
-        {
-          find: 'themes',
-          replacement: settings.themeFolder,
-          customResolver: {
-            async resolveId(id) {
-              for (const location of [themeResourceFolder, frontendFolder]) {
-                const result = await this.resolve(path.resolve(location, id));
-                if (result) {
-                  return result;
-                }
-              }
-            }
-          }
-        },
         { find: 'Frontend', replacement: frontendFolder },
       ],
       preserveSymlinks: true
@@ -411,15 +418,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
       settings.offlineEnabled && buildSWPlugin(),
       settings.offlineEnabled && injectManifestToSWPlugin(),
       !devMode && statsExtracterPlugin(),
-      {
-        name: 'vaadin:custom-theme',
-        config() {
-          processThemeResources(themeOptions, console);
-        },
-        handleHotUpdate(context) {
-          updateTheme(path.resolve(context.file));
-        }
-      },
+      themePlugin(),
       {
         name: 'vaadin:force-remove-spa-middleware',
         transformIndexHtml: {
