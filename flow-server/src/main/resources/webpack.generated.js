@@ -111,13 +111,18 @@ if (watchDogPort) {
 const webPackEntries = {};
 if (useClientSideIndexFileForBootstrapping) {
   webPackEntries.bundle = clientSideIndexEntryPoint;
+  const dirName = path.dirname(fileNameOfTheFlowGeneratedMainEntryPoint);
+  const baseName = path.basename(fileNameOfTheFlowGeneratedMainEntryPoint, '.js');
+  if (
+    fs
+      .readdirSync(dirName)
+      .filter((fileName) => !fileName.startsWith(baseName) && fileName.endsWith('.js') && fileName.includes('-')).length
+  ) {
+    // if there are vaadin exported views, add a second entry
+    webPackEntries.export = fileNameOfTheFlowGeneratedMainEntryPoint;
+  }
 } else {
   webPackEntries.bundle = fileNameOfTheFlowGeneratedMainEntryPoint;
-}
-
-const hasExportedWebComponents = fs.existsSync(path.resolve(frontendFolder, 'web-component.html'));
-if (hasExportedWebComponents) {
-  webPackEntries.export = path.resolve(frontendGeneratedFolder, 'vaadin-web-component.ts');
 }
 
 const appShellUrl = '.';
@@ -371,15 +376,6 @@ module.exports = {
         inject: 'head',
         scriptLoading: 'defer',
         chunks: ['bundle']
-      }),
-
-    hasExportedWebComponents &&
-      new HtmlWebpackPlugin({
-        template: './web-component.html',
-        filename: 'web-component.html',
-        inject: 'head',
-        scriptLoading: 'defer',
-        chunks: ['export']
       }),
 
     // Service worker for offline
