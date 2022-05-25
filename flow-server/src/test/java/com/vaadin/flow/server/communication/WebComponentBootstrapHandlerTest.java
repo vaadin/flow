@@ -21,13 +21,11 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
-import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -38,10 +36,12 @@ import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.PwaIcon;
 import com.vaadin.flow.server.PwaRegistry;
+import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
@@ -143,7 +143,8 @@ public class WebComponentBootstrapHandlerTest {
     }
 
     @Test
-    public void writeBootstrapPage_noPWA() throws IOException {
+    public void writeBootstrapPage_noPWA()
+            throws IOException, ServiceException {
         TestWebComponentBootstrapHandler handler = new TestWebComponentBootstrapHandler();
 
         PwaRegistry registry = Mockito.mock(PwaRegistry.class);
@@ -199,7 +200,7 @@ public class WebComponentBootstrapHandlerTest {
 
     @Test
     public void writeBootstrapPage_scriptGuardedAndDevToolsDisabled()
-            throws IOException {
+            throws IOException, ServiceException {
         TestWebComponentBootstrapHandler handler = new TestWebComponentBootstrapHandler();
         VaadinServletService service = new MockVaadinServletService();
 
@@ -232,11 +233,8 @@ public class WebComponentBootstrapHandlerTest {
         Assert.assertTrue(guardIndex > scriptIndex);
 
         int createScriptIndex = result
-                .lastIndexOf("document.createElement('script')");
+                .indexOf("document.createElement('script')");
         Assert.assertTrue(createScriptIndex > guardIndex);
-        Assert.assertEquals("expected  script creation for head and export", 2,
-                StringUtils.countMatches(result,
-                        "document.createElement('script')"));
 
         Assert.assertTrue(result.contains("\\\"devToolsEnabled\\\": false"));
     }
@@ -252,7 +250,7 @@ public class WebComponentBootstrapHandlerTest {
         VaadinResponse response = getMockResponse(stream);
         handler.writeBootstrapPage("", response, head, "");
 
-        stream.toString(StandardCharsets.UTF_8.name());
+        String resultingScript = stream.toString(StandardCharsets.UTF_8.name());
     }
 
     @Test
@@ -272,7 +270,8 @@ public class WebComponentBootstrapHandlerTest {
     }
 
     @Test
-    public void writeBootstrapPage_withExportChunk() throws IOException {
+    public void writeBootstrapPage_withExportChunk()
+            throws IOException, ServiceException {
         TestWebComponentBootstrapHandler handler = new TestWebComponentBootstrapHandler();
         VaadinServletService service = new MockVaadinServletService();
 
@@ -299,6 +298,39 @@ public class WebComponentBootstrapHandlerTest {
         Assert.assertTrue(
                 result.contains("VAADIN/build/vaadin-export-2222.cache.js"));
         Assert.assertFalse(
+                result.contains("VAADIN/build/vaadin-bundle-1111.cache.js"));
+    }
+
+    @Test
+    public void writeBootstrapPage_noExportChunk()
+            throws IOException, ServiceException {
+        TestWebComponentBootstrapHandler handler = new TestWebComponentBootstrapHandler();
+        VaadinServletService service = new MockVaadinServletService();
+
+        initLookup(service);
+
+        VaadinSession session = new MockVaadinSession(service);
+        session.lock();
+        session.setConfiguration(service.getDeploymentConfiguration());
+        MockDeploymentConfiguration config = (MockDeploymentConfiguration) service
+                .getDeploymentConfiguration();
+        config.setApplicationOrSystemProperty(SERVLET_PARAMETER_STATISTICS_JSON,
+                VAADIN_SERVLET_RESOURCES + "config/stats_no_export.json");
+        config.setEnableDevServer(false);
+
+        VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
+        Mockito.when(request.getService()).thenReturn(service);
+        Mockito.when(request.getServletPath()).thenReturn("/");
+        VaadinResponse response = getMockResponse(null);
+
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        Mockito.when(response.getOutputStream()).thenReturn(stream);
+
+        handler.synchronizedHandleRequest(session, request, response);
+
+        // no "export" chunk, expect "bundle" in result instead
+        String result = stream.toString(StandardCharsets.UTF_8.name());
+        Assert.assertTrue(
                 result.contains("VAADIN/build/vaadin-bundle-1111.cache.js"));
     }
 
@@ -331,6 +363,9 @@ public class WebComponentBootstrapHandlerTest {
 
         Mockito.when(lookup.lookup(ResourceProvider.class))
                 .thenReturn(provider);
+
+        Class<? extends VaadinServlet> servletClass = service.getServlet()
+                .getClass();
 
         Mockito.when(provider.getApplicationResource(Mockito.anyString()))
                 .thenAnswer(answer -> WebComponentBootstrapHandlerTest.class
