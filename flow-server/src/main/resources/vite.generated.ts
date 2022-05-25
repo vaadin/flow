@@ -9,7 +9,7 @@ import * as net from 'net';
 
 import { processThemeResources } from '@vaadin/application-theme-plugin/theme-handle.js';
 import settings from '#settingsImport#';
-import { UserConfigFn, defineConfig, HtmlTagDescriptor, mergeConfig } from 'vite';
+import { UserConfigFn, defineConfig, HtmlTagDescriptor, mergeConfig, PluginOption } from 'vite';
 import { injectManifest } from 'workbox-build';
 
 import brotli from 'rollup-plugin-brotli';
@@ -45,16 +45,37 @@ const themeOptions = {
 console.trace = () => {};
 console.debug = () => {};
 
-function updateTheme(contextPath: string) {
-  const themePath = path.resolve(themeFolder);
-  if (contextPath.startsWith(themePath)) {
-    const changed = path.relative(themePath, contextPath);
-
-    console.debug('Theme file changed', changed);
-
-    if (changed.startsWith(settings.themeName)) {
+function themePlugin(): PluginOption {
+  return {
+    name: 'vaadin:theme',
+    config() {
       processThemeResources(themeOptions, console);
-    }
+    },
+    handleHotUpdate(context) {
+      const contextPath = path.resolve(context.file);
+      const themePath = path.resolve(themeFolder);
+      if (contextPath.startsWith(themePath)) {
+        const changed = path.relative(themePath, contextPath);
+
+        console.debug('Theme file changed', changed);
+
+        if (changed.startsWith(settings.themeName)) {
+          processThemeResources(themeOptions, console);
+        }
+      }
+    },
+    async resolveId(id) {
+      if (!id.startsWith(settings.themeFolder)) {
+        return;
+      }
+
+      for (const location of [themeResourceFolder, frontendFolder]) {
+        const result = await this.resolve(path.resolve(location, id));
+        if (result) {
+          return result;
+        }
+      }
+    },
   }
 }
 
@@ -97,16 +118,9 @@ export const vaadinConfig: UserConfigFn = (env) => {
     root: 'frontend',
     base: basePath,
     resolve: {
-      alias: [
-        { find: 'themes', replacement: (importee: string) => {
-            if (existsSync(path.resolve(themeResourceFolder, importee))) {
-              return path.resolve(themeResourceFolder, settings.themeFolder);
-            }
-            return themeFolder;
-          }
-        },
-        { find: 'Frontend', replacement: frontendFolder }
-      ],
+      alias: {
+        Frontend: frontendFolder
+      }
     },
     define: {
       // should be settings.offlinePath after manifests are fixed
@@ -179,15 +193,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
           });
         }
       },
-      {
-        name: 'custom-theme',
-        config() {
-          processThemeResources(themeOptions, console);
-        },
-        handleHotUpdate(context) {
-          updateTheme(path.resolve(context.file));
-        }
-      },
+      themePlugin(),
       {
         name: 'inject-entrypoint-script',
         transformIndexHtml: {
