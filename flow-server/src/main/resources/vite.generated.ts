@@ -354,14 +354,21 @@ export const vaadinConfig: UserConfigFn = (env) => {
     base: '',
     resolve: {
       alias: [
-        { find: 'themes', replacement: (importee: string) => {
-            if (existsSync(path.resolve(themeResourceFolder, importee))) {
-              return path.resolve(themeResourceFolder, settings.themeFolder);
+        {
+          find: 'themes',
+          replacement: settings.themeFolder,
+          customResolver: {
+            async resolveId(id) {
+              for (const location of [themeResourceFolder, frontendFolder]) {
+                const result = await this.resolve(path.resolve(location, id));
+                if (result) {
+                  return result;
+                }
+              }
             }
-            return themeFolder;
           }
         },
-        { find: 'Frontend', replacement: frontendFolder }
+        { find: 'Frontend', replacement: frontendFolder },
       ],
       preserveSymlinks: true
     },
