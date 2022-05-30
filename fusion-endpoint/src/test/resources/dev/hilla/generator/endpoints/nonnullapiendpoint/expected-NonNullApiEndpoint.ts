@@ -7,7 +7,7 @@
 import client from './connect-client.default';
 // @ts-ignore
 import {
-  Subscription
+    EndpointRequestInit, Subscription
 }
 from '@hilla/frontend';
 function _helloFlux (
@@ -21,30 +21,33 @@ Subscription<string> {
   );
 }
 function _helloNestedTypes (
-  param: Record<string, Array<string>>
+  param: Record<string, Array<string>>,
+  endpointRequestInit?: EndpointRequestInit
 ): Promise<Record<string, Array<Record<string, string>>>> {
   return client.call (
     'NonNullApiEndpoint', 'helloNestedTypes', {
       param
-    }
+    }, endpointRequestInit
   );
 }
 function _helloNullable (
-  hello: string | undefined
+  hello: string | undefined,
+  endpointRequestInit?: EndpointRequestInit
 ): Promise<string | undefined> {
   return client.call (
     'NonNullApiEndpoint', 'helloNullable', {
       hello
-    }
+    }, endpointRequestInit
   );
 }
 function _hello (
-  hello: string
+  hello: string,
+  endpointRequestInit?: EndpointRequestInit
 ): Promise<string> {
   return client.call (
     'NonNullApiEndpoint', 'hello', {
       hello
-    }
+    }, endpointRequestInit
   );
 }
 export {

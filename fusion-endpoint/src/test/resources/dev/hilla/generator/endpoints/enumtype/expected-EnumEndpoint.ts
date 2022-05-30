@@ -7,29 +7,32 @@
 // @ts-ignore
 import client from './connect-client.default';
 // @ts-ignore
-import { Subscription } from '@hilla/frontend';
+import { EndpointRequestInit, Subscription } from '@hilla/frontend';
 import type MyEnum from './dev/hilla/generator/endpoints/enumtype/EnumEndpoint/MyEnum';
 
 function _echoEnum(
-    value: MyEnum | undefined
+    value: MyEnum | undefined,
+    endpointRequestInit?: EndpointRequestInit
 ): Promise<MyEnum | undefined> {
-  return client.call('EnumEndpoint', 'echoEnum', {value});
+  return client.call('EnumEndpoint', 'echoEnum', {value}, endpointRequestInit);
 }
 
 function _echoListEnum(
-    enumList: Array<MyEnum | undefined> | undefined
+    enumList: Array<MyEnum | undefined> | undefined,
+    endpointRequestInit?: EndpointRequestInit
 ): Promise<Array<MyEnum | undefined> | undefined> {
-  return client.call('EnumEndpoint', 'echoListEnum', {enumList});
+  return client.call('EnumEndpoint', 'echoListEnum', {enumList}, endpointRequestInit);
 }
 
-function _getEnum(): Promise<MyEnum | undefined> {
-  return client.call('EnumEndpoint', 'getEnum');
+function _getEnum(endpointRequestInit?: EndpointRequestInit): Promise<MyEnum | undefined> {
+  return client.call('EnumEndpoint', 'getEnum', {}, endpointRequestInit);
 }
 
 function _setEnum(
-    value: MyEnum | undefined
+    value: MyEnum | undefined,
+    endpointRequestInit?: EndpointRequestInit
 ): Promise<void> {
-  return client.call('EnumEndpoint', 'setEnum', {value});
+  return client.call('EnumEndpoint', 'setEnum', {value}, endpointRequestInit);
 }
 
 export {
