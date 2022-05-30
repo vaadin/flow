@@ -65,28 +65,6 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
     private final Map<String, HierarchicalCommunicationController<T>> dataControllers = new HashMap<>();
 
-    private class KeyMapperWrapper<V> extends KeyMapper<T> {
-
-        private T object;
-
-        @Override
-        public String key(T o) {
-            this.object = o;
-            try {
-                return super.key(o);
-            } finally {
-                this.object = null;
-            }
-        }
-
-        @Override
-        protected String createKey() {
-            return Optional.ofNullable(uniqueKeyProviderSupplier.get())
-                    .map(provider -> provider.apply(object))
-                    .orElse(super.createKey());
-        }
-    }
-
     private final KeyMapperWrapper<T> keyMapperWrapper;
 
     /**
@@ -123,9 +101,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     }
 
     private void generateTreeData(T item, JsonObject jsonObject) {
-        Optional.ofNullable(getParentItem(item))
-                .ifPresent(parent -> jsonObject.put("parentUniqueKey",
-                        keyMapperWrapper.key(parent)));
+        Optional.ofNullable(getParentItem(item)).ifPresent(parent -> jsonObject
+                .put("parentUniqueKey", keyMapperWrapper.key(parent)));
     }
 
     private void requestFlush(HierarchicalUpdate update) {
@@ -562,6 +539,39 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         JsonObject json = Json.createObject();
         json.put("key", getKeyMapper().key(item));
         return json;
+    }
+
+    /**
+     * KeyMapper extension delegating row key creation to the
+     * <code>uniqueKeyProviderSupplier</code> passed to the hierarchical data
+     * communicator constructor from the component.
+     * </p>
+     * If <code>uniqueKeyProviderSupplier</code> is not present, this class uses
+     * {@link KeyMapper#createKey()} for key creation.
+     *
+     * @param <V>
+     *            the bean type
+     */
+    private class KeyMapperWrapper<V> extends KeyMapper<T> {
+
+        private T object;
+
+        @Override
+        public String key(T o) {
+            this.object = o;
+            try {
+                return super.key(o);
+            } finally {
+                this.object = null;
+            }
+        }
+
+        @Override
+        protected String createKey() {
+            return Optional.ofNullable(uniqueKeyProviderSupplier.get())
+                    .map(provider -> provider.apply(object))
+                    .orElse(super.createKey());
+        }
     }
 
 }
