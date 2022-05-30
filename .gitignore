@@ -50,6 +50,7 @@ flow-tests/**/package.json
 flow-tests/**/webpack*.js
 flow-tests/**/tsconfig.json
 flow-tests/**/pnpm-lock.yaml
+flow-tests/**/index.html
 yarn.lock
 
 flow-client/src/main/frontend/FlowClient.js

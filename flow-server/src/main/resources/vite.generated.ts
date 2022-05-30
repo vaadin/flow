@@ -9,7 +9,7 @@ import * as net from 'net';
 
 import { processThemeResources } from '@vaadin/application-theme-plugin/theme-handle.js';
 import settings from '#settingsImport#';
-import { UserConfigFn, defineConfig, HtmlTagDescriptor, mergeConfig } from 'vite';
+import { UserConfigFn, defineConfig, HtmlTagDescriptor, mergeConfig, PluginOption } from 'vite';
 import { injectManifest } from 'workbox-build';
 
 import brotli from 'rollup-plugin-brotli';
@@ -20,6 +20,7 @@ const frontendFolder = path.resolve(__dirname, settings.frontendFolder);
 const themeFolder = path.resolve(frontendFolder, settings.themeFolder);
 const frontendBundleFolder = path.resolve(__dirname, settings.frontendBundleOutput);
 const addonFrontendFolder = path.resolve(__dirname, settings.addonFrontendFolder);
+const themeResourceFolder = path.resolve(__dirname, settings.themeResourceFolder);
 
 const projectStaticAssetsFolders = [
   path.resolve(__dirname, 'src', 'main', 'resources', 'META-INF', 'resources'),
@@ -34,7 +35,7 @@ const themeOptions = {
   devMode: false,
   // The following matches folder 'target/flow-frontend/themes/'
   // (not 'frontend/themes') for theme in JAR that is copied there
-  themeResourceFolder: path.resolve(__dirname, settings.themeResourceFolder),
+  themeResourceFolder: path.resolve(themeResourceFolder, settings.themeFolder),
   themeProjectFolders: themeProjectFolders,
   projectStaticAssetsOutputFolder: path.resolve(__dirname, settings.staticOutput),
   frontendGeneratedFolder: path.resolve(frontendFolder, settings.generatedFolder)
@@ -44,16 +45,37 @@ const themeOptions = {
 console.trace = () => {};
 console.debug = () => {};
 
-function updateTheme(contextPath: string) {
-  const themePath = path.resolve(themeFolder);
-  if (contextPath.startsWith(themePath)) {
-    const changed = path.relative(themePath, contextPath);
-
-    console.debug('Theme file changed', changed);
-
-    if (changed.startsWith(settings.themeName)) {
+function themePlugin(): PluginOption {
+  return {
+    name: 'vaadin:theme',
+    config() {
       processThemeResources(themeOptions, console);
-    }
+    },
+    handleHotUpdate(context) {
+      const contextPath = path.resolve(context.file);
+      const themePath = path.resolve(themeFolder);
+      if (contextPath.startsWith(themePath)) {
+        const changed = path.relative(themePath, contextPath);
+
+        console.debug('Theme file changed', changed);
+
+        if (changed.startsWith(settings.themeName)) {
+          processThemeResources(themeOptions, console);
+        }
+      }
+    },
+    async resolveId(id) {
+      if (!id.startsWith(settings.themeFolder)) {
+        return;
+      }
+
+      for (const location of [themeResourceFolder, frontendFolder]) {
+        const result = await this.resolve(path.resolve(location, id));
+        if (result) {
+          return result;
+        }
+      }
+    },
   }
 }
 
@@ -97,7 +119,6 @@ export const vaadinConfig: UserConfigFn = (env) => {
     base: basePath,
     resolve: {
       alias: {
-        themes: themeFolder,
         Frontend: frontendFolder
       }
     },
@@ -172,15 +193,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
           });
         }
       },
-      {
-        name: 'custom-theme',
-        config() {
-          processThemeResources(themeOptions, console);
-        },
-        handleHotUpdate(context) {
-          updateTheme(path.resolve(context.file));
-        }
-      },
+      themePlugin(),
       {
         name: 'inject-entrypoint-script',
         transformIndexHtml: {
