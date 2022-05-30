@@ -38,7 +38,7 @@ So `// @ts-ignore` is used for now to mute this error. The consequences are:
 }}// @ts-ignore
 import client from '{{vaadinConnectDefaultClientPath}}';
 // @ts-ignore
-import { Subscription } from '@hilla/frontend';
+import { EndpointRequestInit, Subscription } from '@hilla/frontend';
 
 {{#each imports}}
 import type {{~#importAs}} {{importAs}}{{/importAs}}{{~^importAs}} {{className}}{{/importAs}} from '{{importPath}}';
@@ -53,13 +53,13 @@ import type {{~#importAs}} {{importAs}}{{/importAs}}{{~^importAs}} {{className}}
  }}{{#each bodyParam.vendorExtensions.x-vaadin-connect-parameters}}
  * @param {{name}}{{#description}} {{description}}{{/description}}{{!
  }}{{/each}}
- * @param fetchOptions an optional RequestInit object that will be passed to the fetch() internally
+ * @param endpointRequestInit an optional object containing additional parameters for the request
  *{{#responses}}{{#message}} {{message}}{{/message}}{{/responses}}
  */{{/vendorExtensions.x-vaadin-connect-show-tsdoc}}
 function _{{vendorExtensions.x-vaadin-connect-method-name}}({{!
  }}{{#each bodyParam.vendorExtensions.x-vaadin-connect-parameters}}
  {{name}}{{^required}}?{{/required}}: {{{getClassNameFromImports type ../../imports}}},
- {{/each}}fetchOptions?: RequestInit): {{#vendorExtensions.x-vaadin-connect-subscribe}}
+ {{/each}}endpointRequestInit?: EndpointRequestInit): {{#vendorExtensions.x-vaadin-connect-subscribe}}
 {{!
 }}{{{getClassNameFromImports vendorExtensions.x-vaadin-connect-subscribe-return-type ../../../imports}}}{{!
 }}
@@ -85,7 +85,7 @@ Promise<{{!
      %><%name%><%#if @last%><%else%>, <%/if%><%!
    %><%/each%><%!
    %>}<%!
-   %>, fetchOptions<%!
+   %>, endpointRequestInit<%!
  %>);
 <%/vendorExtensions.x-vaadin-connect-subscribe%>
 }
