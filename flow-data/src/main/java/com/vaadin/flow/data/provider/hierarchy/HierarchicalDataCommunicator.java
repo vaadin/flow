@@ -65,7 +65,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
     private final Map<String, HierarchicalCommunicationController<T>> dataControllers = new HashMap<>();
 
-    private KeyMapper<T> uniqueKeyMapper = new KeyMapper<T>() {
+    private class KeyMapperWrapper<V> extends KeyMapper<T> {
 
         private T object;
 
@@ -85,7 +85,9 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
                     .map(provider -> provider.apply(object))
                     .orElse(super.createKey());
         }
-    };
+    }
+
+    private final KeyMapperWrapper<T> keyMapperWrapper;
 
     /**
      * Construct a new hierarchical data communicator backed by a
@@ -113,7 +115,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         this.stateNode = stateNode;
         this.uniqueKeyProviderSupplier = uniqueKeyProviderSupplier;
 
-        setKeyMapper(uniqueKeyMapper);
+        keyMapperWrapper = new KeyMapperWrapper<>();
+        setKeyMapper(keyMapperWrapper);
 
         dataGenerator.addDataGenerator(this::generateTreeData);
         setDataProvider(new TreeDataProvider<>(new TreeData<>()), null);
@@ -122,7 +125,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     private void generateTreeData(T item, JsonObject jsonObject) {
         Optional.ofNullable(getParentItem(item))
                 .ifPresent(parent -> jsonObject.put("parentUniqueKey",
-                        uniqueKeyProviderSupplier.get().apply(parent)));
+                        keyMapperWrapper.key(parent)));
     }
 
     private void requestFlush(HierarchicalUpdate update) {
@@ -180,7 +183,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         if (event.isRefreshChildren()) {
             T item = event.getItem();
             if (isExpanded(item)) {
-                String parentKey = uniqueKeyProviderSupplier.get().apply(item);
+                String parentKey = keyMapperWrapper.key(item);
 
                 if (!dataControllers.containsKey(parentKey)) {
                     setParentRequestedRange(0, mapper.countChildItems(item),
@@ -205,7 +208,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     }
 
     public void setParentRequestedRange(int start, int length, T parentItem) {
-        String parentKey = uniqueKeyProviderSupplier.get().apply(parentItem);
+        String parentKey = keyMapperWrapper.key(parentItem);
 
         HierarchicalCommunicationController<T> controller = dataControllers
                 .computeIfAbsent(parentKey,
