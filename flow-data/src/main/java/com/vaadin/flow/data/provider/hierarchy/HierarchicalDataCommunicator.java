@@ -545,7 +545,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * KeyMapper extension delegating row key creation to the
      * <code>uniqueKeyProviderSupplier</code> passed to the hierarchical data
      * communicator constructor from the component.
-     * </p>
+     * <p>
      * If <code>uniqueKeyProviderSupplier</code> is not present, this class uses
      * {@link KeyMapper#createKey()} for key creation.
      *
