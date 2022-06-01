@@ -31,17 +31,17 @@ import static com.vaadin.flow.uitest.ui.theme.ParentThemeView.MY_POLYMER_ID;
 import static com.vaadin.flow.uitest.ui.theme.ParentThemeView.OCTOPUSS_ID;
 
 public class ParentThemeIT extends ChromeBrowserTest {
-    private final Pattern BODY_IMAGE_PATTERN = Pattern.compile(("url\\(\"" + getRootURL()
-        + "/VAADIN/build/bg(.*)\\.jpg\"\\)").replaceAll("/",
-            "\\\\/"));
+    private final Pattern BODY_IMAGE_PATTERN = Pattern.compile(
+            ("url\\(\"" + getRootURL() + "/VAADIN/build/bg(.*)\\.jpg\"\\)")
+                    .replaceAll("/", "\\\\/"));
 
-    private final Pattern BUTTERFLY_IMAGE_PATTERN = Pattern.compile(("url\\(\"" + getRootURL()
-        + "/VAADIN/build/gobo(.*)\\.png\"\\)").replaceAll("/",
-            "\\\\/"));
+    private final Pattern BUTTERFLY_IMAGE_PATTERN = Pattern.compile(
+            ("url\\(\"" + getRootURL() + "/VAADIN/build/gobo(.*)\\.png\"\\)")
+                    .replaceAll("/", "\\\\/"));
 
-    private final Pattern OCTOPUSS_IMAGE_PATTERN = Pattern.compile(("url\\(\"" + getRootURL()
-        + "/VAADIN/build/viking(.*)\\.png\"\\)").replaceAll("/",
-            "\\\\/"));
+    private final Pattern OCTOPUSS_IMAGE_PATTERN = Pattern.compile(
+            ("url\\(\"" + getRootURL() + "/VAADIN/build/viking(.*)\\.png\"\\)")
+                    .replaceAll("/", "\\\\/"));
 
     @Test
     public void childTheme_overridesParentTheme() {
