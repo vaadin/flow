@@ -180,9 +180,7 @@ function vaadinBundlesPlugin(): PluginOption {
 
   const disabledMessage = 'Vaadin component dependency bundles are disabled.';
 
-  const modulesDirectory = path.resolve(__dirname, 'node_modules');
-  // always refine path to comply with URI path separator (forward slash) for requested resources:
-  const modulesDirPathSepRefined = path.sep === '/' ? modulesDirectory : modulesDirectory.replace(/\\/g, '/');
+  const modulesDirectory = path.resolve(__dirname, 'node_modules').replace(/\\/g, '/');
 
   let vaadinBundleJson: BundleJson;
 
