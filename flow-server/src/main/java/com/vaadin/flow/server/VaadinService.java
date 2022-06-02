@@ -1772,8 +1772,9 @@ public abstract class VaadinService implements Serializable {
      *            null then the browser will refresh the current page.
      * @param querySelector
      *            Query selector to find the element under which the error will
-     *            be added . If element is not found or the selector is
-     *            {@code null}, body will be used
+     *            be added. If the element is not found the message is not
+     *            shown. If the selector is {@code null}, the body element is
+     *            used.
      * @return A JSON string to be sent to the client
      */
     public static String createCriticalNotificationJSON(String caption,
