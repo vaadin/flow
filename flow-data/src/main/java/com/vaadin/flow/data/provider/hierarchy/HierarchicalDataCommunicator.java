@@ -65,8 +65,6 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
     private final Map<String, HierarchicalCommunicationController<T>> dataControllers = new HashMap<>();
 
-    private final KeyMapperWrapper<T> keyMapperWrapper;
-
     /**
      * Construct a new hierarchical data communicator backed by a
      * {@link TreeDataProvider}.
@@ -93,7 +91,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         this.stateNode = stateNode;
         this.uniqueKeyProviderSupplier = uniqueKeyProviderSupplier;
 
-        keyMapperWrapper = new KeyMapperWrapper<>();
+        KeyMapperWrapper<T> keyMapperWrapper = new KeyMapperWrapper<>();
         setKeyMapper(keyMapperWrapper);
 
         dataGenerator.addDataGenerator(this::generateTreeData);
@@ -102,7 +100,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
     private void generateTreeData(T item, JsonObject jsonObject) {
         Optional.ofNullable(getParentItem(item)).ifPresent(parent -> jsonObject
-                .put("parentUniqueKey", keyMapperWrapper.key(parent)));
+                .put("parentUniqueKey", getKeyMapper().key(parent)));
     }
 
     private void requestFlush(HierarchicalUpdate update) {
@@ -160,7 +158,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         if (event.isRefreshChildren()) {
             T item = event.getItem();
             if (isExpanded(item)) {
-                String parentKey = keyMapperWrapper.key(item);
+                String parentKey = getKeyMapper().key(item);
 
                 if (!dataControllers.containsKey(parentKey)) {
                     setParentRequestedRange(0, mapper.countChildItems(item),
@@ -185,7 +183,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     }
 
     public void setParentRequestedRange(int start, int length, T parentItem) {
-        String parentKey = keyMapperWrapper.key(parentItem);
+        String parentKey = getKeyMapper().key(parentItem);
 
         HierarchicalCommunicationController<T> controller = dataControllers
                 .computeIfAbsent(parentKey,
