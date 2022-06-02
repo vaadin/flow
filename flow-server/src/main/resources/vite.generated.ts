@@ -140,7 +140,7 @@ function vaadinBundlesPlugin(): PluginOption {
 
   const disabledMessage = 'Vaadin component dependency bundles are disabled.';
 
-  const modulesDirectory = path.posix.resolve(__dirname, 'node_modules');
+  const modulesDirectory = path.resolve(__dirname, 'node_modules').replace(/\\/g, '/');
 
   let vaadinBundleJson: BundleJson;
 
