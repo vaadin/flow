@@ -285,7 +285,7 @@ function vaadinBundlesPlugin(): PluginOption {
     },
     load(rawId) {
       const [path, params] = rawId.split('?');
-      if (!path.startsWith(modulesDirPathSepRefined)) return;
+      if (!path.startsWith(modulesDirectory)) return;
 
       const id = path.substring(modulesDirectory.length + 1);
       const exports = getExports(id);
