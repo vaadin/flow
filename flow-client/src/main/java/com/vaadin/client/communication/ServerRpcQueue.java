@@ -18,6 +18,7 @@ package com.vaadin.client.communication;
 import com.google.gwt.core.client.Scheduler;
 import com.vaadin.client.Console;
 import com.vaadin.client.Registry;
+import com.vaadin.client.flow.binding.Debouncer;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -103,6 +104,12 @@ public class ServerRpcQueue {
         if (isFlushScheduled() || isEmpty()) {
             return;
         }
+        
+    	// TODO SHOULDN'T WE PUSH ALL QUEUED EVENTS HERE?
+    	// OTHERWISE EVENTS ARE RETURNED IN INVALIDID ORDER -> CRITICAL BUG
+    	// SOMETHING LIKE DRAFTED METHOD BELOW (WIHTOUT IMPL)
+    	Debouncer.flushAll();
+        
         flushPending = true;
 
         doFlushStrategy = this::doFlush;
