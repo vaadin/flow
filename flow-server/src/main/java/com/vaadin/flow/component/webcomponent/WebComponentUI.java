@@ -271,7 +271,7 @@ public class WebComponentUI extends UI {
     }
 
     @Override
-    public void navigate(Class<? extends Component> navigationTarget) {
+    public <T extends Component> Optional<T> navigate(Class<T> navigationTarget) {
         throw new UnsupportedOperationException(NO_NAVIGATION);
     }
 

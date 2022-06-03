@@ -845,9 +845,34 @@ public class UI extends Component
      *             navigationTarget.
      * @see #navigate(Class, Object)
      * @see #navigate(Class, RouteParameters)
+     * @return the view target instance, if navigation actaully happened
      */
-    public void navigate(Class<? extends Component> navigationTarget) {
+    public <T extends Component> Optional<T> navigate(Class<T> navigationTarget) {
         navigate(navigationTarget, RouteParameters.empty());
+        List<HasElement> activeRouterTargetsChain = getInternals().getActiveRouterTargetsChain();
+        for(HasElement element : activeRouterTargetsChain) {
+            if (navigationTarget.isAssignableFrom(element.getClass())) {
+                return Optional.of((T) element);
+            }
+        }
+        return Optional.empty();
+    }
+
+    /**
+     * Alternative version without Optional (that I'm allergic to :-) )
+     * @param navigationTarget
+     * @return
+     * @param <T>
+     */
+    public <T extends Component> T navigateTo(Class<T> navigationTarget) {
+        navigate(navigationTarget, RouteParameters.empty());
+        List<HasElement> activeRouterTargetsChain = getInternals().getActiveRouterTargetsChain();
+        for(HasElement element : activeRouterTargetsChain) {
+            if (navigationTarget.isAssignableFrom(element.getClass())) {
+                return (T) element;
+            }
+        }
+        return null;
     }
 
     /**
