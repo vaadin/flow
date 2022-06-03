@@ -28,12 +28,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.ComponentEventListener;
-import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableComparator;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.function.ValueProvider;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.tests.data.bean.Item;
 import org.junit.Assert;
 import org.junit.Before;
@@ -292,11 +292,29 @@ public class AbstractListDataViewTest {
     public void setIdentifierProvider_firesIdentifierProviderChangeEvent() {
         ComponentEventListener mockEventListener = Mockito
                 .mock(ComponentEventListener.class);
-        ComponentUtil.addListener(component,
-                IdentifierProviderChangeEvent.class, mockEventListener);
+        beanDataView.addIdentifierProviderChangeListener(mockEventListener);
         beanDataView.setIdentifierProvider(Item::getId);
 
         Mockito.verify(mockEventListener, Mockito.times(1))
+                .onComponentEvent(Mockito.any());
+    }
+
+    @Test(expected = NullPointerException.class)
+    public void addIdentifierProviderChangeListener_doesNotAcceptNull() {
+        beanDataView.addIdentifierProviderChangeListener(null);
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @Test()
+    public void addIdentifierProviderChangeListener_removeListener_listenerIsNotNotified() {
+        ComponentEventListener mockEventListener = Mockito
+                .mock(ComponentEventListener.class);
+        Registration registration = beanDataView
+                .addIdentifierProviderChangeListener(mockEventListener);
+        registration.remove();
+        beanDataView.setIdentifierProvider(Item::getId);
+
+        Mockito.verify(mockEventListener, Mockito.times(0))
                 .onComponentEvent(Mockito.any());
     }
 

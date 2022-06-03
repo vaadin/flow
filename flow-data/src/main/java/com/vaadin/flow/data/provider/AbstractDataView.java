@@ -164,6 +164,28 @@ public abstract class AbstractDataView<T> implements DataView<T> {
         }
     }
 
+    /**
+     * Add an identifier provider change listener that is fired when a custom
+     * identifier provider is set with
+     * {@link #setIdentifierProvider(IdentifierProvider)}.
+     * <p>
+     * Can be used by components to get notified that a new identifier provider
+     * has been set through the data view.
+     *
+     * @param listener
+     *            identifier provider change listener to register
+     * @return registration for removing the listener
+     */
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public Registration addIdentifierProviderChangeListener(
+            ComponentEventListener<IdentifierProviderChangeEvent<T, ?>> listener) {
+        Objects.requireNonNull(listener,
+                "IdentifierProviderChangeListener cannot be null");
+        return ComponentUtil.addListener(component,
+                IdentifierProviderChangeEvent.class,
+                (ComponentEventListener) listener);
+    }
+
     protected boolean equals(T item, T compareTo) {
         return Objects.equals(
                 Objects.requireNonNull(getIdentifierProvider().apply(item),
