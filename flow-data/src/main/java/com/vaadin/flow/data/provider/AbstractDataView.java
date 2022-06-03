@@ -143,6 +143,8 @@ public abstract class AbstractDataView<T> implements DataView<T> {
                 "Item identity provider cannot be null");
         ComponentUtil.setData(component, IdentifierProvider.class,
                 identifierProvider);
+        ComponentUtil.fireEvent(component, new IdentifierProviderChangeEvent<>(
+                component, identifierProvider));
     }
 
     @SuppressWarnings("unchecked")

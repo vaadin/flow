@@ -27,6 +27,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.component.ComponentEventListener;
+import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableComparator;
@@ -283,6 +285,19 @@ public class AbstractListDataViewTest {
 
         Assert.assertTrue(
                 beanDataView.contains(new Item(4L, "non present", "descr1")));
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @Test
+    public void setIdentifierProvider_firesIdentifierProviderChangeEvent() {
+        ComponentEventListener mockEventListener = Mockito
+                .mock(ComponentEventListener.class);
+        ComponentUtil.addListener(component,
+                IdentifierProviderChangeEvent.class, mockEventListener);
+        beanDataView.setIdentifierProvider(Item::getId);
+
+        Mockito.verify(mockEventListener, Mockito.times(1))
+                .onComponentEvent(Mockito.any());
     }
 
     @Test
