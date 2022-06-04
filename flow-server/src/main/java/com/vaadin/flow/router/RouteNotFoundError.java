@@ -127,7 +127,7 @@ public class RouteNotFoundError extends Component
     }
 
     private Element routeTemplateToHtml(String routeTemplate,
-                                        Class<? extends Component> navigationTarget) {
+            Class<? extends Component> navigationTarget) {
         String text = routeTemplate;
         if (text == null || text.isEmpty()) {
             text = "<root>";
