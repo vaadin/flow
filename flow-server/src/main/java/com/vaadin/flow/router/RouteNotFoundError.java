@@ -136,8 +136,7 @@ public class RouteNotFoundError extends Component
         if (!routeTemplate.contains(":")) {
             return elementAsLink(routeTemplate, text);
         } else {
-            Class<? extends Component> target = navigationTarget;
-            if (ParameterDeserializer.isAnnotatedParameter(target,
+            if (ParameterDeserializer.isAnnotatedParameter(navigationTarget,
                     OptionalParameter.class)) {
                 text += " (supports optional parameter)";
             } else {
