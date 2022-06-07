@@ -81,7 +81,8 @@ public class PwaTestIT extends ChromeDeviceTest {
                 By.xpath("//link[@rel='apple-touch-icon'][@sizes][@href]")), 1);
 
         checkIcons(head.findElements(By.xpath(
-                "//link[@rel='apple-touch-startup-image'][@sizes][@href]")), 26);
+                "//link[@rel='apple-touch-startup-image'][@sizes][@href]")),
+                26);
 
         // test web manifest
         List<WebElement> elements = head
