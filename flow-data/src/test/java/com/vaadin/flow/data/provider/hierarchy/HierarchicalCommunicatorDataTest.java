@@ -15,6 +15,17 @@
  */
 package com.vaadin.flow.data.provider.hierarchy;
 
+import java.io.Serializable;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.IntStream;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.data.provider.CompositeDataGenerator;
 import com.vaadin.flow.data.provider.DataCommunicatorTest;
@@ -24,6 +35,7 @@ import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
+
 import elemental.json.JsonValue;
 import org.junit.Assert;
 import org.junit.Before;
@@ -76,6 +88,7 @@ public class HierarchicalCommunicatorDataTest {
     private HierarchicalDataCommunicator<Item> communicator;
     private TreeData<Item> treeData;
     private MockUI ui;
+    private Element element;
 
     private static class UpdateQueue implements HierarchicalUpdate {
         @Override
@@ -126,7 +139,7 @@ public class HierarchicalCommunicatorDataTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         ui = new MockUI();
-        Element element = new Element("div");
+        element = new Element("div");
         ui.getElement().appendChild(element);
 
         treeData = new TreeData<>();
@@ -166,6 +179,47 @@ public class HierarchicalCommunicatorDataTest {
         fakeClientCommunication();
 
         Assert.assertSame(updatedLeaf, communicator.getKeyMapper().get(key));
+    }
+
+    @Test
+    public void uniqueKeyProviderIsSet_keysGeneratedByProvider() {
+        communicator = new HierarchicalDataCommunicator<Item>(
+                Mockito.mock(CompositeDataGenerator.class), arrayUpdater,
+                json -> {
+                }, element.getNode(), () -> item -> item.value);
+        communicator.setDataProvider(dataProvider, null);
+        // expand test items to force key calculation
+        communicator.expand(ROOT);
+        communicator.expand(FOLDER);
+        // this is needed to force key calculation for leaf item
+        communicator.setParentRequestedRange(0, 50, LEAF);
+        fakeClientCommunication();
+
+        Arrays.asList("ROOT", "FOLDER", "LEAF")
+                .forEach(key -> Assert.assertNotNull("Expected key '" + key
+                        + "' to be generated when unique key provider used",
+                        communicator.getKeyMapper().get(key)));
+    }
+
+    @Test
+    public void uniqueKeyProviderIsNotSet_keysGeneratedByKeyMapper() {
+        communicator = new HierarchicalDataCommunicator<Item>(
+                Mockito.mock(CompositeDataGenerator.class), arrayUpdater,
+                json -> {
+                }, element.getNode(), () -> null);
+        communicator.setDataProvider(dataProvider, null);
+        // expand test items to force key calculation
+        communicator.expand(ROOT);
+        communicator.expand(FOLDER);
+        // this is needed to force key calculation for leaf item
+        communicator.setParentRequestedRange(0, 50, LEAF);
+        fakeClientCommunication();
+
+        // key mapper should generate keys 1,2,3
+        IntStream.range(1, 4).mapToObj(String::valueOf)
+                .forEach(i -> Assert.assertNotNull("Expected key '" + i
+                        + "' to be generated when unique key provider is not set",
+                        communicator.getKeyMapper().get(i)));
     }
 
     private void fakeClientCommunication() {
