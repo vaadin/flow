@@ -20,7 +20,10 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
@@ -99,25 +102,34 @@ public class RouteNotFoundError extends Component
     private String getRoutes(BeforeEnterEvent event) {
         List<RouteData> routes = event.getSource().getRegistry()
                 .getRegisteredRoutes();
+        Map<String, Class<? extends Component>> routeTemplates = new TreeMap<>();
 
-        return routes.stream()
-                .sorted((route1, route2) -> route1.getTemplate()
-                        .compareTo(route2.getTemplate()))
-                .map(this::routeToHtml).map(Element::outerHtml)
+        for (RouteData route : routes) {
+            routeTemplates.put(route.getTemplate(),
+                    route.getNavigationTarget());
+            route.getRouteAliases().forEach(alias -> routeTemplates
+                    .put(alias.getTemplate(), alias.getNavigationTarget()));
+        }
+
+        List<Element> routeElements = new ArrayList<>();
+        routeTemplates.forEach(
+                (k, v) -> routeElements.add(routeTemplateToHtml(k, v)));
+
+        return routeElements.stream().map(Element::outerHtml)
                 .collect(Collectors.joining());
     }
 
-    private Element routeToHtml(RouteData route) {
-        String text = route.getTemplate();
+    private Element routeTemplateToHtml(String routeTemplate,
+            Class<? extends Component> navigationTarget) {
+        String text = routeTemplate;
         if (text == null || text.isEmpty()) {
             text = "<root>";
         }
 
-        if (!route.getTemplate().contains(":")) {
-            return elementAsLink(route.getTemplate(), text);
+        if (!routeTemplate.contains(":")) {
+            return elementAsLink(routeTemplate, text);
         } else {
-            Class<? extends Component> target = route.getNavigationTarget();
-            if (ParameterDeserializer.isAnnotatedParameter(target,
+            if (ParameterDeserializer.isAnnotatedParameter(navigationTarget,
                     OptionalParameter.class)) {
                 text += " (supports optional parameter)";
             } else {
