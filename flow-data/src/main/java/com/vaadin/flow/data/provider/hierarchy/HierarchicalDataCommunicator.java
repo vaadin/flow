@@ -65,28 +65,6 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
     private final Map<String, HierarchicalCommunicationController<T>> dataControllers = new HashMap<>();
 
-    private KeyMapper<T> uniqueKeyMapper = new KeyMapper<T>() {
-
-        private T object;
-
-        @Override
-        public String key(T o) {
-            this.object = o;
-            try {
-                return super.key(o);
-            } finally {
-                this.object = null;
-            }
-        }
-
-        @Override
-        protected String createKey() {
-            return Optional.ofNullable(uniqueKeyProviderSupplier.get())
-                    .map(provider -> provider.apply(object))
-                    .orElse(super.createKey());
-        }
-    };
-
     /**
      * Construct a new hierarchical data communicator backed by a
      * {@link TreeDataProvider}.
@@ -113,16 +91,16 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         this.stateNode = stateNode;
         this.uniqueKeyProviderSupplier = uniqueKeyProviderSupplier;
 
-        setKeyMapper(uniqueKeyMapper);
+        KeyMapperWrapper<T> keyMapperWrapper = new KeyMapperWrapper<>();
+        setKeyMapper(keyMapperWrapper);
 
         dataGenerator.addDataGenerator(this::generateTreeData);
         setDataProvider(new TreeDataProvider<>(new TreeData<>()), null);
     }
 
     private void generateTreeData(T item, JsonObject jsonObject) {
-        Optional.ofNullable(getParentItem(item))
-                .ifPresent(parent -> jsonObject.put("parentUniqueKey",
-                        uniqueKeyProviderSupplier.get().apply(parent)));
+        Optional.ofNullable(getParentItem(item)).ifPresent(parent -> jsonObject
+                .put("parentUniqueKey", getKeyMapper().key(parent)));
     }
 
     private void requestFlush(HierarchicalUpdate update) {
@@ -180,7 +158,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         if (event.isRefreshChildren()) {
             T item = event.getItem();
             if (isExpanded(item)) {
-                String parentKey = uniqueKeyProviderSupplier.get().apply(item);
+                String parentKey = getKeyMapper().key(item);
 
                 if (!dataControllers.containsKey(parentKey)) {
                     setParentRequestedRange(0, mapper.countChildItems(item),
@@ -205,7 +183,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     }
 
     public void setParentRequestedRange(int start, int length, T parentItem) {
-        String parentKey = uniqueKeyProviderSupplier.get().apply(parentItem);
+        String parentKey = getKeyMapper().key(parentItem);
 
         HierarchicalCommunicationController<T> controller = dataControllers
                 .computeIfAbsent(parentKey,
@@ -559,6 +537,39 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         JsonObject json = Json.createObject();
         json.put("key", getKeyMapper().key(item));
         return json;
+    }
+
+    /**
+     * KeyMapper extension delegating row key creation to the
+     * <code>uniqueKeyProviderSupplier</code> passed to the hierarchical data
+     * communicator constructor from the component.
+     * <p>
+     * If <code>uniqueKeyProviderSupplier</code> is not present, this class uses
+     * {@link KeyMapper#createKey()} for key creation.
+     *
+     * @param <V>
+     *            the bean type
+     */
+    private class KeyMapperWrapper<V> extends KeyMapper<T> {
+
+        private T object;
+
+        @Override
+        public String key(T o) {
+            this.object = o;
+            try {
+                return super.key(o);
+            } finally {
+                this.object = null;
+            }
+        }
+
+        @Override
+        protected String createKey() {
+            return Optional.ofNullable(uniqueKeyProviderSupplier.get())
+                    .map(provider -> provider.apply(object))
+                    .orElse(super.createKey());
+        }
     }
 
 }
