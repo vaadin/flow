@@ -834,6 +834,11 @@ public class UI extends Component
      * <p>
      * Besides the navigation to the {@code location} this method also updates
      * the browser location (and page history).
+     * <p>
+     * If the view change actually happens (e.g. the view itself doesn't cancel
+     * the navigation), all navigation listeners are notified and a reference of
+     * the new view is returned for additional configuration.
+     *
      *
      * @param navigationTarget
      *            navigation target to navigate to
@@ -845,34 +850,24 @@ public class UI extends Component
      *             navigationTarget.
      * @see #navigate(Class, Object)
      * @see #navigate(Class, RouteParameters)
-     * @return the view target instance, if navigation actaully happened
+     * @return the view target instance, if navigation actually happened
      */
-    public <T extends Component> Optional<T> navigate(Class<T> navigationTarget) {
+    public <T extends Component> Optional<T> navigate(
+            Class<T> navigationTarget) {
         navigate(navigationTarget, RouteParameters.empty());
-        List<HasElement> activeRouterTargetsChain = getInternals().getActiveRouterTargetsChain();
-        for(HasElement element : activeRouterTargetsChain) {
+        return findCurrentNavigationTarget(navigationTarget);
+    }
+
+    private <T extends Component> Optional<T> findCurrentNavigationTarget(
+            Class<T> navigationTarget) {
+        List<HasElement> activeRouterTargetsChain = getInternals()
+                .getActiveRouterTargetsChain();
+        for (HasElement element : activeRouterTargetsChain) {
             if (navigationTarget.isAssignableFrom(element.getClass())) {
                 return Optional.of((T) element);
             }
         }
         return Optional.empty();
-    }
-
-    /**
-     * Alternative version without Optional (that I'm allergic to :-) )
-     * @param navigationTarget
-     * @return
-     * @param <T>
-     */
-    public <T extends Component> T navigateTo(Class<T> navigationTarget) {
-        navigate(navigationTarget, RouteParameters.empty());
-        List<HasElement> activeRouterTargetsChain = getInternals().getActiveRouterTargetsChain();
-        for(HasElement element : activeRouterTargetsChain) {
-            if (navigationTarget.isAssignableFrom(element.getClass())) {
-                return (T) element;
-            }
-        }
-        return null;
     }
 
     /**
@@ -886,6 +881,10 @@ public class UI extends Component
      * Note! A {@code null} parameter will be handled the same as
      * navigate(navigationTarget) and will throw an exception if HasUrlParameter
      * is not @OptionalParameter or @WildcardParameter.
+     * <p>
+     * If the view change actually happens (e.g. the view itself doesn't cancel
+     * the navigation), all navigation listeners are notified and a reference of
+     * the new view is returned for additional configuration.
      *
      * @param navigationTarget
      *            navigation target to navigate to
@@ -895,6 +894,7 @@ public class UI extends Component
      *            url parameter type
      * @param <C>
      *            navigation target type
+     * @return the view target instance, if navigation actually happened
      * @throws IllegalArgumentException
      *             if a {@code null} parameter is given while navigationTarget's
      *             parameter is not annotated with @OptionalParameter
@@ -903,10 +903,12 @@ public class UI extends Component
      *             in case there is no route defined for the given
      *             navigationTarget matching the parameters.
      */
-    public <T, C extends Component & HasUrlParameter<T>> void navigate(
+    @SuppressWarnings("unchecked")
+    public <T, C extends Component & HasUrlParameter<T>> Optional<C> navigate(
             Class<? extends C> navigationTarget, T parameter) {
         navigate(navigationTarget,
                 HasUrlParameterFormat.getParameters(parameter));
+        return (Optional<C>) findCurrentNavigationTarget(navigationTarget);
     }
 
     /**
@@ -919,11 +921,16 @@ public class UI extends Component
      * <p>
      * Besides the navigation to the {@code location} this method also updates
      * the browser location (and page history).
+     * <p>
+     * If the view change actually happens (e.g. the view itself doesn't cancel
+     * the navigation), all navigation listeners are notified and a reference of
+     * the new view is returned for additional configuration.
      *
      * @param navigationTarget
      *            navigation target to navigate to.
      * @param parameters
      *            parameters to pass to view.
+     * @return the view target instance, if navigation actually happened
      * @throws IllegalArgumentException
      *             if navigationTarget is a {@link HasUrlParameter} with a
      *             mandatory parameter, but parameters argument doesn't provide
@@ -932,11 +939,12 @@ public class UI extends Component
      *             in case there is no route defined for the given
      *             navigationTarget matching the parameters.
      */
-    public void navigate(Class<? extends Component> navigationTarget,
+    public <T extends Component> Optional<T> navigate(Class<T> navigationTarget,
             RouteParameters parameters) {
         RouteConfiguration configuration = RouteConfiguration
                 .forRegistry(getInternals().getRouter().getRegistry());
         navigate(configuration.getUrl(navigationTarget, parameters));
+        return findCurrentNavigationTarget(navigationTarget);
     }
 
     /**
