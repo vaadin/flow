@@ -848,9 +848,9 @@ public class UI extends Component
      * @throws NotFoundException
      *             in case there is no route defined for the given
      *             navigationTarget.
+     * @return the view instance, if navigation actually happened
      * @see #navigate(Class, Object)
      * @see #navigate(Class, RouteParameters)
-     * @return the view target instance, if navigation actually happened
      */
     public <T extends Component> Optional<T> navigate(
             Class<T> navigationTarget) {
@@ -894,7 +894,7 @@ public class UI extends Component
      *            url parameter type
      * @param <C>
      *            navigation target type
-     * @return the view target instance, if navigation actually happened
+     * @return the view instance, if navigation actually happened
      * @throws IllegalArgumentException
      *             if a {@code null} parameter is given while navigationTarget's
      *             parameter is not annotated with @OptionalParameter
@@ -930,7 +930,7 @@ public class UI extends Component
      *            navigation target to navigate to.
      * @param parameters
      *            parameters to pass to view.
-     * @return the view target instance, if navigation actually happened
+     * @return the view instance, if navigation actually happened
      * @throws IllegalArgumentException
      *             if navigationTarget is a {@link HasUrlParameter} with a
      *             mandatory parameter, but parameters argument doesn't provide
