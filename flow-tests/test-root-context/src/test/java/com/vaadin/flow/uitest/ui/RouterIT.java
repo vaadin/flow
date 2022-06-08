@@ -88,6 +88,14 @@ public class RouterIT extends ChromeBrowserTest {
 
         Assert.assertTrue(getDriver().getPageSource()
                 .contains("Could not navigate to 'exception'"));
+
+        Assert.assertTrue(getDriver().getPageSource()
+                .contains(RouterTestServlet.AliasLayout.class
+                        .getAnnotation(Route.class).value()));
+
+        Assert.assertTrue(getDriver().getPageSource()
+                .contains(RouterTestServlet.AliasLayout.class
+                        .getAnnotation(RouteAlias.class).value()));
     }
 
     @Test
