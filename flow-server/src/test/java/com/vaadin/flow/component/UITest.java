@@ -328,9 +328,11 @@ public class UITest {
         UI ui = new UI();
         initUI(ui, "", null);
 
-        ui.navigate(FooBarParamNavigationTarget.class,
+        Optional<FooBarParamNavigationTarget> newView = ui.navigate(FooBarParamNavigationTarget.class,
                 new RouteParameters(new RouteParam("fooParam", "flu"),
                         new RouteParam("barParam", "beer")));
+        
+        assertEquals(FooBarParamNavigationTarget.class, newView.get().getClass());
 
         assertEquals("foo/flu/beer/bar",
                 ui.getInternals().getActiveViewLocation().getPath());

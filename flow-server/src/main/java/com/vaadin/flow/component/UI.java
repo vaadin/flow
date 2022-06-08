@@ -854,8 +854,7 @@ public class UI extends Component
      */
     public <T extends Component> Optional<T> navigate(
             Class<T> navigationTarget) {
-        navigate(navigationTarget, RouteParameters.empty());
-        return findCurrentNavigationTarget(navigationTarget);
+        return navigate(navigationTarget, RouteParameters.empty());
     }
 
     private <T extends Component> Optional<T> findCurrentNavigationTarget(
