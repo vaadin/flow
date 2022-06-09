@@ -966,6 +966,14 @@ public class Binder<BEAN> implements Serializable {
             }
             this.binding = binding;
 
+            if (field instanceof HasValidator) {
+                HasValidator<FIELDVALUE> f = (HasValidator<FIELDVALUE>) field;
+                if (!Validator.alwaysPass().equals(f.getDefaultValidator())) {
+                    f.addValidationStatusListener(
+                            event -> this.binding.validate());
+                }
+            }
+
             return binding;
         }
 

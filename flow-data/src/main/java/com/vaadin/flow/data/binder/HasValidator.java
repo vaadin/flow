@@ -17,6 +17,9 @@ package com.vaadin.flow.data.binder;
 
 import java.io.Serializable;
 
+import com.vaadin.flow.function.ValueProvider;
+import com.vaadin.flow.shared.Registration;
+
 /**
  * A generic interface for field components and other user interface objects
  * that have a user-editable value that should be validated.
@@ -40,5 +43,21 @@ public interface HasValidator<V> extends Serializable {
      */
     default Validator<V> getDefaultValidator() {
         return Validator.alwaysPass();
+    }
+
+    /**
+     * Enables the implementing components to announce changes in their
+     * validation status to the observers.
+     *
+     * @see com.vaadin.flow.data.binder.Binder.BindingBuilderImpl#bind(ValueProvider,
+     *      Setter)
+     * @since 23.2 ??
+     *
+     * @return Registration of the added listener.
+     */
+    default Registration addValidationStatusListener(
+            ValidationStatusListener<V> listener) {
+        throw new RuntimeException(
+                "The default implementation should be overridden.");
     }
 }
