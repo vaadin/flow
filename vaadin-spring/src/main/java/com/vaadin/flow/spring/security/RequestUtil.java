@@ -86,7 +86,7 @@ public class RequestUtil {
      *         {@code false} otherwise
      */
     public boolean isAnonymousEndpoint(HttpServletRequest request) {
-        if (endpointRequestUtil!= null) {
+        if (endpointRequestUtil != null) {
             return endpointRequestUtil.isAnonymousEndpoint(request);
         }
         return false;
