@@ -415,26 +415,21 @@ public class TaskRunNpmInstall implements FallibleCommand {
         }
 
         List<String> postinstallPackages = new ArrayList<>();
+        postinstallPackages.add(".");
         postinstallPackages.add("esbuild");
         postinstallPackages.add("@vaadin/vaadin-usage-statistics");
         postinstallPackages.addAll(additionalPostinstallPackages);
 
         for (String postinstallPackage : postinstallPackages) {
-            if (postinstallPackage.trim().equals("")) {
+            File packageJsonFile = getPackageJsonForModule(postinstallPackage);
+            if (packageJsonFile == null || !packageJsonFile.exists()) {
                 continue;
             }
+            File packageFolder = packageJsonFile.getParentFile();
 
-            // Execute "npm run postinstall" in the desired folders in
-            // node_modules
-            File packageFolder = new File(packageUpdater.nodeModulesFolder,
-                    postinstallPackage);
-            if (!packageFolder.exists()) {
-                continue;
-            }
             try {
                 JsonObject packageJson = TaskGeneratePackageJson
-                        .getJsonFileContent(
-                                new File(packageFolder, "package.json"));
+                        .getJsonFileContent(packageJsonFile);
                 if (!containsPostinstallScript(packageJson)) {
                     logger.debug(
                             "Skipping postinstall for '{}' as no postinstall script was found in the package.json",
@@ -465,6 +460,20 @@ public class TaskRunNpmInstall implements FallibleCommand {
         }
         lastInstallStats.installTimeMs = System.currentTimeMillis() - startTime;
         lastInstallStats.packageManager = enablePnpm ? "pnpm" : "npm";
+
+    }
+
+    private File getPackageJsonForModule(String module) {
+        if (module.trim().equals("")) {
+            return null;
+        }
+        if (module.equals(".")) {
+            // The location of the project package.json
+            return new File(packageUpdater.npmFolder, "package.json");
+        }
+
+        return new File(new File(packageUpdater.nodeModulesFolder, module),
+                "package.json");
 
     }
 
