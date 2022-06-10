@@ -61,8 +61,10 @@ public class PwaRegistry implements Serializable {
     private static final String META_INF_RESOURCES = "/META-INF/resources";
     private static final String HEADLESS_PROPERTY = "java.awt.headless";
     private static final String APPLE_STARTUP_IMAGE = "apple-touch-startup-image";
-    private static final String APPLE_IMAGE_MEDIA = "(device-width: %dpx) and (device-height: %dpx) "
-            + "and (-webkit-device-pixel-ratio: %d)";
+    private static final String APPLE_IMAGE_MEDIA = "screen and (device-width: %dpx) and (device-height: %dpx)"
+            + " and (-webkit-device-pixel-ratio: %d) and (orientation: %s)";
+    private static final String ORIENTATION_PORTRAIT = "portrait";
+    private static final String ORIENTATION_LANDSCAPE = "landscape";
     public static final String WORKBOX_FOLDER = "VAADIN/static/server/workbox/";
     private static final String WORKBOX_CACHE_FORMAT = "{ url: '%s', revision: '%s' }";
 
@@ -494,25 +496,124 @@ public class PwaRegistry implements Serializable {
                 "apple-touch-icon", ""));
 
         // IOS device specific splash screens
-        // iPhone X (1125px x 2436px)
+        // iPad Pro 12.9 Portrait:
+        icons.add(new PwaIcon(2048, 2732, baseName, PwaIcon.Domain.HEADER,
+                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
+                        1024, 1366, 2, ORIENTATION_PORTRAIT)));
+        // iPad Pro 12.9 Landscape:
+        icons.add(new PwaIcon(2732, 2048, baseName, PwaIcon.Domain.HEADER,
+                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
+                        1024, 1366, 2, ORIENTATION_LANDSCAPE)));
+
+        // iPad Pro 11, 10.5 Portrait:
+        icons.add(new PwaIcon(1668, 2388, baseName, PwaIcon.Domain.HEADER,
+                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
+                        834, 1194, 2, ORIENTATION_PORTRAIT)));
+        // iPad Pro 11, 10.5 Landscape:
+        icons.add(new PwaIcon(2388, 1668, baseName, PwaIcon.Domain.HEADER,
+                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
+                        834, 1194, 2, ORIENTATION_LANDSCAPE)));
+
+        // iPad Air 10.5 Portrait:
+        icons.add(new PwaIcon(1668, 2224, baseName, PwaIcon.Domain.HEADER,
+                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
+                        834, 1112, 2, ORIENTATION_PORTRAIT)));
+        // iPad Air 10.5 Landscape:
+        icons.add(new PwaIcon(2224, 1668, baseName, PwaIcon.Domain.HEADER,
+                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
+                        834, 1112, 2, ORIENTATION_LANDSCAPE)));
+
+        // iPad 10.2 Portrait:
+        icons.add(new PwaIcon(1620, 2160, baseName, PwaIcon.Domain.HEADER,
+                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
+                        768, 1024, 2, ORIENTATION_PORTRAIT)));
+        // iPad 10.2 Landscape:
+        icons.add(new PwaIcon(2160, 1620, baseName, PwaIcon.Domain.HEADER,
+                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
+                        768, 1024, 2, ORIENTATION_LANDSCAPE)));
+
+        // iPad Pro 9.7, iPad Air 9.7, iPad 9.7, iPad mini 7.9 portrait
+        icons.add(new PwaIcon(1536, 2048, baseName, PwaIcon.Domain.HEADER,
+                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
+                        768, 1024, 2, ORIENTATION_PORTRAIT)));
+        // iPad Pro 9.7, iPad Air 9.7, iPad 9.7, iPad mini 7.9 landscape
+        icons.add(new PwaIcon(2048, 1536, baseName, PwaIcon.Domain.HEADER,
+                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
+                        768, 1024, 2, ORIENTATION_LANDSCAPE)));
+
+        // iPhone 13 Pro Max, iPhone 12 Pro Max portrait
+        icons.add(new PwaIcon(1284, 2778, baseName, PwaIcon.Domain.HEADER,
+                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
+                        428, 926, 3, ORIENTATION_PORTRAIT)));
+        // iPhone 13 Pro Max, iPhone 12 Pro Max landscape
+        icons.add(new PwaIcon(2778, 1284, baseName, PwaIcon.Domain.HEADER,
+                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
+                        428, 926, 3, ORIENTATION_LANDSCAPE)));
+
+        // iPhone 13 Pro, iPhone 13, iPhone 12 Pro, iPhone 12 portrait
+        icons.add(new PwaIcon(1170, 2532, baseName, PwaIcon.Domain.HEADER,
+                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
+                        390, 844, 3, ORIENTATION_PORTRAIT)));
+        // iPhone 13 Pro, iPhone 13, iPhone 12 Pro, iPhone 12 landscape
+        icons.add(new PwaIcon(2532, 1170, baseName, PwaIcon.Domain.HEADER,
+                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
+                        390, 844, 3, ORIENTATION_LANDSCAPE)));
+
+        // iPhone 13 Mini, iPhone 12 Mini, iPhone 11 Pro, iPhone XS, iPhone X
+        // portrait
         icons.add(new PwaIcon(1125, 2436, baseName, PwaIcon.Domain.HEADER,
-                false, APPLE_STARTUP_IMAGE,
-                String.format(APPLE_IMAGE_MEDIA, 375, 812, 3)));
+                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
+                        375, 812, 3, ORIENTATION_PORTRAIT)));
+        // iPhone 13 Mini, iPhone 12 Mini, iPhone 11 Pro, iPhone XS, iPhone X
+        // landscape
+        icons.add(new PwaIcon(2436, 1125, baseName, PwaIcon.Domain.HEADER,
+                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
+                        375, 812, 3, ORIENTATION_LANDSCAPE)));
 
-        // iPhone 8, 7, 6s, 6 (750px x 1334px)
-        icons.add(new PwaIcon(750, 1334, baseName, PwaIcon.Domain.HEADER, false,
-                APPLE_STARTUP_IMAGE,
-                String.format(APPLE_IMAGE_MEDIA, 375, 667, 2)));
+        // iPhone 11 Pro Max, iPhone XS Max portrait
+        icons.add(new PwaIcon(1242, 2688, baseName, PwaIcon.Domain.HEADER,
+                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
+                        414, 896, 3, ORIENTATION_PORTRAIT)));
+        // iPhone 11 Pro Max, iPhone XS Max landscape
+        icons.add(new PwaIcon(2688, 1242, baseName, PwaIcon.Domain.HEADER,
+                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
+                        414, 896, 3, ORIENTATION_LANDSCAPE)));
 
-        // iPhone 8 Plus, 7 Plus, 6s Plus, 6 Plus (1242px x 2208px)
+        // iPhone 11, iPhone XR portrait
+        icons.add(new PwaIcon(828, 1792, baseName, PwaIcon.Domain.HEADER, false,
+                APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA, 414, 896,
+                        2, ORIENTATION_PORTRAIT)));
+        // iPhone 11, iPhone XR landscape
+        icons.add(new PwaIcon(1792, 828, baseName, PwaIcon.Domain.HEADER, false,
+                APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA, 414, 896,
+                        2, ORIENTATION_LANDSCAPE)));
+
+        // iPhone 8 Plus, 7 Plus, 6s Plus, 6 Plus portrait
         icons.add(new PwaIcon(1242, 2208, baseName, PwaIcon.Domain.HEADER,
-                false, APPLE_STARTUP_IMAGE,
-                String.format(APPLE_IMAGE_MEDIA, 414, 763, 3)));
+                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
+                        414, 736, 3, ORIENTATION_PORTRAIT)));
+        // iPhone 8 Plus, 7 Plus, 6s Plus, 6 Plus landscape
+        icons.add(new PwaIcon(2208, 1242, baseName, PwaIcon.Domain.HEADER,
+                false, APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA,
+                        414, 736, 3, ORIENTATION_LANDSCAPE)));
 
-        // iPhone 5 (640px x 1136px)
+        // iPhone 8, 7, 6s, 6, SE 4.7 portrait
+        icons.add(new PwaIcon(750, 1334, baseName, PwaIcon.Domain.HEADER, false,
+                APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA, 375, 667,
+                        2, ORIENTATION_PORTRAIT)));
+        // iPhone 8, 7, 6s, 6, SE 4.7 landscape
+        icons.add(new PwaIcon(1334, 750, baseName, PwaIcon.Domain.HEADER, false,
+                APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA, 375, 667,
+                        2, ORIENTATION_LANDSCAPE)));
+
+        // iPhone 5, SE 4, iPod touch 5th Gen and later portrait
         icons.add(new PwaIcon(640, 1136, baseName, PwaIcon.Domain.HEADER, false,
-                APPLE_STARTUP_IMAGE,
-                String.format(APPLE_IMAGE_MEDIA, 320, 568, 2)));
+                APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA, 320, 568,
+                        2, ORIENTATION_PORTRAIT)));
+        // iPhone 5, SE 4, iPod touch 5th Gen and later landscape
+        icons.add(new PwaIcon(1136, 640, baseName, PwaIcon.Domain.HEADER, false,
+                APPLE_STARTUP_IMAGE, String.format(APPLE_IMAGE_MEDIA, 320, 568,
+                        2, ORIENTATION_LANDSCAPE)));
 
         return icons;
     }
