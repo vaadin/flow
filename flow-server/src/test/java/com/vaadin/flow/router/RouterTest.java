@@ -1656,7 +1656,8 @@ public class RouterTest extends RoutingTestBase {
 
         router.navigate(ui, new Location("foo/bar"),
                 NavigationTrigger.PROGRAMMATIC);
-        Assert.assertEquals(FooBarNavigationTarget.class, getUIComponentClass());
+        Assert.assertEquals(FooBarNavigationTarget.class,
+                getUIComponentClass());
     }
 
     @Test
@@ -1848,7 +1849,8 @@ public class RouterTest extends RoutingTestBase {
         Assert.assertEquals("Expected event amount was wrong", 1,
                 FooBarNavigationTarget.events.size());
 
-        Assert.assertEquals(FooBarNavigationTarget.class, getUIComponentClass());
+        Assert.assertEquals(FooBarNavigationTarget.class,
+                getUIComponentClass());
 
         Assert.assertEquals(BeforeEnterEvent.class,
                 ReroutingNavigationTarget.events.get(0).getClass());
@@ -2744,7 +2746,8 @@ public class RouterTest extends RoutingTestBase {
 
         Assert.assertEquals("First transition failed",
                 HttpStatusCode.OK.getCode(), status1);
-        Assert.assertEquals(FooBarNavigationTarget.class, getUIComponentClass());
+        Assert.assertEquals(FooBarNavigationTarget.class,
+                getUIComponentClass());
 
         event.postpone().proceed();
 
@@ -2753,7 +2756,8 @@ public class RouterTest extends RoutingTestBase {
         Assert.assertEquals("Third transition failed",
                 HttpStatusCode.OK.getCode(), status3);
 
-        Assert.assertEquals(FooBarNavigationTarget.class, getUIComponentClass());
+        Assert.assertEquals(FooBarNavigationTarget.class,
+                getUIComponentClass());
         Assert.assertEquals("Expected event amount was wrong", 2,
                 PostponingFirstTimeNavigationTarget.events.size());
 
@@ -3120,7 +3124,8 @@ public class RouterTest extends RoutingTestBase {
         setNavigationTargets(RootNavigationTarget.class,
                 FooNavigationTarget.class, FooBarNavigationTarget.class);
 
-        Optional<RootNavigationTarget> target = ui.navigate(RootNavigationTarget.class);
+        Optional<RootNavigationTarget> target = ui
+                .navigate(RootNavigationTarget.class);
         Assert.assertEquals(getUIComponent(), target.get());
         Assert.assertEquals(RootNavigationTarget.class, getUIComponentClass());
 
@@ -3128,7 +3133,8 @@ public class RouterTest extends RoutingTestBase {
         Assert.assertEquals(FooNavigationTarget.class, getUIComponentClass());
 
         ui.navigate(FooBarNavigationTarget.class);
-        Assert.assertEquals(FooBarNavigationTarget.class, getUIComponentClass());
+        Assert.assertEquals(FooBarNavigationTarget.class,
+                getUIComponentClass());
     }
 
     @Test // #3616
@@ -3137,11 +3143,12 @@ public class RouterTest extends RoutingTestBase {
         setNavigationTargets(RouteWithParameter.class, BooleanParameter.class,
                 WildParameter.class, OptionalParameter.class);
 
-        Optional<RouteWithParameter> newView = ui.navigate(RouteWithParameter.class, "Parameter");
-        Assert.assertEquals(
-        		ComponentUtil.findParentComponent(ui.getElement().getChild(0)).get(), 
-        		newView.get());
-        
+        Optional<RouteWithParameter> newView = ui
+                .navigate(RouteWithParameter.class, "Parameter");
+        Assert.assertEquals(ComponentUtil
+                .findParentComponent(ui.getElement().getChild(0)).get(),
+                newView.get());
+
         Assert.assertEquals(RouteWithParameter.class, getUIComponentClass());
         Assert.assertEquals("Before navigation event was wrong.", "Parameter",
                 RouteWithParameter.param);
@@ -3150,7 +3157,8 @@ public class RouterTest extends RoutingTestBase {
         Assert.assertEquals(OptionalParameter.class, getUIComponentClass());
         Assert.assertEquals("Before navigation event was wrong.", "optional",
                 OptionalParameter.param);
-        Optional<OptionalParameter> target = ui.navigate(OptionalParameter.class);
+        Optional<OptionalParameter> target = ui
+                .navigate(OptionalParameter.class);
         Assert.assertEquals(getUIComponent(), target.get());
         Assert.assertEquals(OptionalParameter.class, getUIComponentClass());
         Assert.assertEquals("Before navigation event was wrong.", null,
@@ -4037,9 +4045,9 @@ public class RouterTest extends RoutingTestBase {
     private Class<? extends Component> getUIComponentClass() {
         return getUIComponent().getClass();
     }
-    
+
     private Component getUIComponent() {
-    	return ComponentUtil.findParentComponent(ui.getElement().getChild(0))
+        return ComponentUtil.findParentComponent(ui.getElement().getChild(0))
                 .get();
     }
 
