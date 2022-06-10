@@ -192,6 +192,15 @@ public class PwaIcon implements Serializable {
     }
 
     /**
+     * Gets the value of the {@literal rel} attribute.
+     *
+     * @return value of the {@literal rel} attribute
+     */
+    String getRel() {
+        return attributes.get("rel");
+    }
+
+    /**
      * Gets the icon {@link Domain}.
      *
      * @return the domain of the icon
