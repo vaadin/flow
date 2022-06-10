@@ -14,16 +14,17 @@
  * the License.
  */
 
-package com.vaadin.flow.server.hilla;
+package com.vaadin.flow.internal.hilla;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.Serializable;
-import java.lang.reflect.Method;
-import java.util.Optional;
 
 /**
  * A container for utility methods related with Hilla endpoints.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
+ * @author Vaadin Ltd
  * @since 23.2
  */
 public interface EndpointRequestUtil extends Serializable {

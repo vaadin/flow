@@ -20,7 +20,7 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Optional;
 
-import com.vaadin.flow.server.hilla.EndpointRequestUtil;
+import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import dev.hilla.auth.EndpointAccessChecker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.server.PathContainer;
