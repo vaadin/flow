@@ -596,8 +596,7 @@ public class MessageHandler {
             }
 
             // Call resynchronize to make sure a resynchronize request is sent
-            // in
-            // case endRequest did not already do this.
+            // in case endRequest did not already do this.
             registry.getMessageSender().resynchronize();
         }
     }
