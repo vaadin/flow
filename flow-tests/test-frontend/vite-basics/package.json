@@ -1,6 +1,9 @@
 {
   "name": "no-name",
   "license": "UNLICENSED",
+  "scripts": {
+    "postinstall": "node -e \"fs.writeFileSync('target/classes/main.postinstall', 'hello')\""
+  },
   "dependencies": {
     "@polymer/polymer": "3.4.1",
     "@testscope/all": "../vite-test-assets/packages/@testscope/all",
