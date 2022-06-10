@@ -375,7 +375,7 @@ public class BuildFrontendUtil {
             throws TimeoutException, URISyntaxException {
         FeatureFlags featureFlags = getFeatureFlags(adapter);
 
-        if (featureFlags.isEnabled(FeatureFlags.NEW_LICENSE_CHECKER)) {
+        if (featureFlags.isEnabled(FeatureFlags.OFFLINE_LICENSE_CHECKER)) {
             LicenseChecker.setStrictOffline(true);
         }
 
@@ -486,10 +486,6 @@ public class BuildFrontendUtil {
     private static void validateLicenses(PluginAdapterBase adapter) {
         File nodeModulesFolder = new File(adapter.npmFolder(),
                 FrontendUtils.NODE_MODULES);
-        FeatureFlags featureFlags = getFeatureFlags(adapter);
-        if (!featureFlags.isEnabled(FeatureFlags.NEW_LICENSE_CHECKER)) {
-            return;
-        }
 
         File outputFolder = adapter.webpackOutputDirectory();
         File statsFile = new File(adapter.servletResourceOutputDirectory(),

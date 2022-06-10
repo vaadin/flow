@@ -99,6 +99,8 @@ public class IndexHtmlRequestHandlerTest {
     private String springTokenHeaderName = "x-CSRF-TOKEN";
     private String springTokenParamName = SPRING_CSRF_ATTRIBUTE_IN_SESSION;
 
+    private int expectedScriptsTagsOnBootstrapPage = 3;
+
     @Before
     public void setUp() throws Exception {
         mocks = new MockServletServiceSessionSetup();
@@ -310,9 +312,12 @@ public class IndexHtmlRequestHandlerTest {
                 .toString(StandardCharsets.UTF_8.name());
         Document document = Jsoup.parse(indexHtml);
         Elements scripts = document.head().getElementsByTag("script");
-        Assert.assertEquals(3, scripts.size());
-        Assert.assertEquals("testing.1", scripts.get(1).attr("src"));
-        Assert.assertEquals("testing.2", scripts.get(2).attr("src"));
+        int expectedScripts = 4;
+        Assert.assertEquals(expectedScripts, scripts.size());
+        Assert.assertEquals("testing.1",
+                scripts.get(expectedScripts - 2).attr("src"));
+        Assert.assertEquals("testing.2",
+                scripts.get(expectedScripts - 1).attr("src"));
     }
 
     @Test
@@ -327,8 +332,9 @@ public class IndexHtmlRequestHandlerTest {
         Document document = Jsoup.parse(indexHtml);
 
         Elements scripts = document.head().getElementsByTag("script");
-        Assert.assertEquals(2, scripts.size());
-        Element initialUidlScript = scripts.get(1);
+        Assert.assertEquals(expectedScriptsTagsOnBootstrapPage, scripts.size());
+        Element initialUidlScript = scripts
+                .get(expectedScriptsTagsOnBootstrapPage - 1);
         Assert.assertEquals("", initialUidlScript.attr("initial"));
         Assert.assertTrue(
                 initialUidlScript.toString().contains("Could not navigate"));
@@ -347,8 +353,9 @@ public class IndexHtmlRequestHandlerTest {
         Document document = Jsoup.parse(indexHtml);
 
         Elements scripts = document.head().getElementsByTag("script");
-        Assert.assertEquals(2, scripts.size());
-        Element initialUidlScript = scripts.get(1);
+        Assert.assertEquals(expectedScriptsTagsOnBootstrapPage, scripts.size());
+        Element initialUidlScript = scripts
+                .get(expectedScriptsTagsOnBootstrapPage - 1);
 
         Assert.assertEquals(
                 "window.Vaadin = window.Vaadin || {};window.Vaadin.TypeScript= {};",
@@ -375,8 +382,9 @@ public class IndexHtmlRequestHandlerTest {
         Document document = Jsoup.parse(indexHtml);
 
         Elements scripts = document.head().getElementsByTag("script");
-        Assert.assertEquals(2, scripts.size());
-        Element initialUidlScript = scripts.get(1);
+        Assert.assertEquals(expectedScriptsTagsOnBootstrapPage, scripts.size());
+        Element initialUidlScript = scripts
+                .get(expectedScriptsTagsOnBootstrapPage - 1);
         Assert.assertEquals("", initialUidlScript.attr("initial"));
         String scriptContent = initialUidlScript.toString();
         Assert.assertTrue(scriptContent.contains("Could not navigate"));
@@ -402,8 +410,9 @@ public class IndexHtmlRequestHandlerTest {
         Document document = Jsoup.parse(indexHtml);
 
         Elements scripts = document.head().getElementsByTag("script");
-        Assert.assertEquals(2, scripts.size());
-        Element initialUidlScript = scripts.get(1);
+        Assert.assertEquals(expectedScriptsTagsOnBootstrapPage, scripts.size());
+        Element initialUidlScript = scripts
+                .get(expectedScriptsTagsOnBootstrapPage - 1);
         Assert.assertEquals(
                 "window.Vaadin = window.Vaadin || {};window.Vaadin.TypeScript= {};",
                 initialUidlScript.childNode(0).toString());
@@ -466,8 +475,9 @@ public class IndexHtmlRequestHandlerTest {
         Document document = Jsoup.parse(indexHtml);
 
         Elements scripts = document.head().getElementsByTag("script");
-        Assert.assertEquals(2, scripts.size());
-        Element initialUidlScript = scripts.get(1);
+        Assert.assertEquals(expectedScriptsTagsOnBootstrapPage, scripts.size());
+        Element initialUidlScript = scripts
+                .get(expectedScriptsTagsOnBootstrapPage - 1);
         Assert.assertFalse(initialUidlScript.childNode(0).toString()
                 .contains("window.Vaadin = {Flow: {\"csrfToken\":"));
         Assert.assertEquals("", initialUidlScript.attr("initial"));
