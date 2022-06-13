@@ -139,10 +139,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             addDevTools(indexDocument, config, session, request);
             catchErrorsInDevMode(indexDocument);
 
-            if (getFeatureFlags(service)
-                    .isEnabled(FeatureFlags.NEW_LICENSE_CHECKER)) {
-                addLicenseChecker(indexDocument);
-            }
+            addLicenseChecker(indexDocument);
         }
 
         try {
