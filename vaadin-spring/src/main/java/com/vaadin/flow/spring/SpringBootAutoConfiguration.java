@@ -80,8 +80,13 @@ public class SpringBootAutoConfiguration {
         Map<String, String> initParameters = new HashMap<>();
         boolean rootMapping = RootMappedCondition.isRootMapping(mapping);
         String[] urlMappings;
+        String pushRegistrationPath;
+
         if (rootMapping) {
             mapping = VaadinServletConfiguration.VAADIN_SERVLET_MAPPING;
+            pushRegistrationPath = "";
+        } else {
+            pushRegistrationPath = mapping.replace("/*", "");
         }
 
         urlMappings = new String[] { mapping, "/VAADIN/*" };
@@ -92,7 +97,7 @@ public class SpringBootAutoConfiguration {
          * and websockets will fail.
          */
         initParameters.put(ApplicationConfig.JSR356_MAPPING_PATH,
-                mapping.replace("/*", ""));
+                pushRegistrationPath);
 
         ServletRegistrationBean<SpringServlet> registration = new ServletRegistrationBean<>(
                 new SpringServlet(context, rootMapping), urlMappings);
