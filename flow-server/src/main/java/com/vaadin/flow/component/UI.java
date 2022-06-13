@@ -862,8 +862,7 @@ public class UI extends Component
      *
      * @hidden
      */
-    public <T extends Component> void navigate$$bridge(
-            Class<T> navigationTarget) {
+    public void navigate$$bridge(Class<? extends Component> navigationTarget) {
         navigate(navigationTarget);
     }
 
@@ -971,8 +970,8 @@ public class UI extends Component
      *
      * @hidden
      */
-    public <T extends Component> void navigate$$bridge(
-            Class<T> navigationTarget, RouteParameters parameters) {
+    public void navigate$$bridge(Class<? extends Component> navigationTarget,
+            RouteParameters parameters) {
         navigate(navigationTarget, parameters);
     }
 
