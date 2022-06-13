@@ -72,7 +72,8 @@ public class PwaTestIT extends ChromeBrowserTest {
                 By.xpath("//link[@rel='apple-touch-icon'][@sizes][@href]")), 1);
 
         checkIcons(head.findElements(By.xpath(
-                "//link[@rel='apple-touch-startup-image'][@sizes][@href]")), 4);
+                "//link[@rel='apple-touch-startup-image'][@sizes][@href]")),
+                26);
 
         // test web manifest
         List<WebElement> elements = head
