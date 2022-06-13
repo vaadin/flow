@@ -1178,6 +1178,15 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 head.appendElement(META_TAG)
                         .attr("name", "apple-mobile-web-app-capable")
                         .attr(CONTENT_ATTRIBUTE, "yes");
+                head.appendElement(META_TAG)
+                        .attr("name", "mobile-web-app-capable")
+                        .attr(CONTENT_ATTRIBUTE, "yes");
+                head.appendElement(META_TAG)
+                        .attr("name", "apple-touch-fullscreen")
+                        .attr(CONTENT_ATTRIBUTE, "yes");
+                head.appendElement(META_TAG)
+                        .attr("name", "apple-mobile-web-app-title")
+                        .attr(CONTENT_ATTRIBUTE, config.getShortName());
 
                 // Theme color
                 head.appendElement(META_TAG).attr("name", "theme-color")
