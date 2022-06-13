@@ -856,16 +856,16 @@ public class UI extends Component
             Class<T> navigationTarget) {
         return navigate(navigationTarget, RouteParameters.empty());
     }
-    
+
     /**
      * For backwards compatibility, to be removed in V24
+     *
      * @hidden
      */
     public <T extends Component> void navigate$$bridge(
             Class<T> navigationTarget) {
         navigate(navigationTarget);
     }
-
 
     private <T extends Component> Optional<T> findCurrentNavigationTarget(
             Class<T> navigationTarget) {
@@ -919,16 +919,16 @@ public class UI extends Component
                 HasUrlParameterFormat.getParameters(parameter));
         return (Optional<C>) findCurrentNavigationTarget(navigationTarget);
     }
-    
+
     /**
      * For backwards compatibility, to be removed in V24
+     *
      * @hidden
      */
     public <T, C extends Component & HasUrlParameter<T>> void navigate$$bridge(
             Class<? extends C> navigationTarget, T parameter) {
         navigate(navigationTarget, parameter);
     }
-
 
     /**
      * Updates this UI to show the view corresponding to the given navigation
@@ -968,14 +968,14 @@ public class UI extends Component
 
     /**
      * For backwards compatibility, to be removed in V24
+     *
      * @hidden
      */
-    public <T extends Component> void navigate$$bridge(Class<T> navigationTarget,
-            RouteParameters parameters) {
-    	navigate(navigationTarget, parameters);
+    public <T extends Component> void navigate$$bridge(
+            Class<T> navigationTarget, RouteParameters parameters) {
+        navigate(navigationTarget, parameters);
     }
 
-    
     /**
      * Updates this UI to show the view corresponding to the given location. The
      * location must be a relative path without any ".." segments.
