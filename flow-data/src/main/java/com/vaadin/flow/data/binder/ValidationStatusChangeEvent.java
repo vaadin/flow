@@ -21,10 +21,10 @@ import java.io.Serializable;
 
 /**
  * The event to be processed when
- * {@link ValidationStatusListener#validationStatusChanged(ValidationStatusChangeEvent)}
+ * {@link ValidationStatusChangeListener#validationStatusChanged(ValidationStatusChangeEvent)}
  * invoked.
  *
- * @since 23.2 ??
+ * @since 23.2
  *
  * @param <V>
  *            the value type
