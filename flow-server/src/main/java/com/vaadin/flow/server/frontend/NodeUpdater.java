@@ -135,7 +135,7 @@ public abstract class NodeUpdater implements FallibleCommand {
     /**
      * Gets the platform pinned versions that are not overridden by the user in
      * package.json.
-     * 
+     *
      * @return json object with the dependencies or {@code null}
      * @throws IOException
      *             when versions file could not be read
@@ -305,9 +305,9 @@ public abstract class NodeUpdater implements FallibleCommand {
     static Map<String, String> getDefaultDevDependencies() {
         Map<String, String> defaults = new HashMap<>();
 
-        defaults.put("webpack", "4.42.0");
-        defaults.put("webpack-cli", "3.3.11");
-        defaults.put("webpack-dev-server", "3.11.0");
+        defaults.put("webpack", "4.46.0");
+        defaults.put("webpack-cli", "4.10.0");
+        defaults.put("webpack-dev-server", "4.9.2");
         defaults.put("webpack-babel-multi-target-plugin", "2.5.0");
         // Defining loader until a resolution exists to issue
         // https://github.com/DanielSchaffer/webpack-babel-multi-target-plugin/issues/94
