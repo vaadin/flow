@@ -253,7 +253,7 @@ class GeneratorType {
                                 (argument, parameterPair) -> new GeneratorType(
                                         argument, parameterPair.b,
                                         requiredByContext))
-                                                .collect(Collectors.toList());
+                                .collect(Collectors.toList());
                     }).orElseGet(this::getTypeArgumentsFallback);
         }
 

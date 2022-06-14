@@ -92,7 +92,7 @@ public class ReconnectConfiguration {
     public String getDialogTextGaveUp() {
         return getProperty(
                 ReconnectDialogConfigurationMap.DIALOG_TEXT_GAVE_UP_KEY)
-                        .getValueOrDefault(null);
+                .getValueOrDefault(null);
     }
 
     /**
@@ -104,8 +104,8 @@ public class ReconnectConfiguration {
     public int getReconnectAttempts() {
         return getProperty(
                 ReconnectDialogConfigurationMap.RECONNECT_ATTEMPTS_KEY)
-                        .getValueOrDefault(
-                                ReconnectDialogConfigurationMap.RECONNECT_ATTEMPTS_DEFAULT);
+                .getValueOrDefault(
+                        ReconnectDialogConfigurationMap.RECONNECT_ATTEMPTS_DEFAULT);
     }
 
     /**
@@ -116,7 +116,7 @@ public class ReconnectConfiguration {
     public int getReconnectInterval() {
         return getProperty(
                 ReconnectDialogConfigurationMap.RECONNECT_INTERVAL_KEY)
-                        .getValueOrDefault(
-                                ReconnectDialogConfigurationMap.RECONNECT_INTERVAL_DEFAULT);
+                .getValueOrDefault(
+                        ReconnectDialogConfigurationMap.RECONNECT_INTERVAL_DEFAULT);
     }
 }

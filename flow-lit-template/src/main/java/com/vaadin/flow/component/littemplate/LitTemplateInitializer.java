@@ -109,7 +109,7 @@ public class LitTemplateInitializer {
                         tag,
                         element -> new InjectableLitElementInitializer(element,
                                 templateClass)
-                                        .accept(parserData.getAttributes(id))));
+                                .accept(parserData.getAttributes(id))));
     }
 
 }

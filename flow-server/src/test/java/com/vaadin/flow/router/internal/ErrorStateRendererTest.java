@@ -133,7 +133,7 @@ public class ErrorStateRendererTest {
 
         NavigationState state = new NavigationStateBuilder(
                 ui.getInternals().getRouter())
-                        .withTarget(InfiniteLoopErrorTarget.class).build();
+                .withTarget(InfiniteLoopErrorTarget.class).build();
         ErrorStateRenderer renderer = new ErrorStateRenderer(state);
 
         RouteConfiguration
@@ -156,7 +156,7 @@ public class ErrorStateRendererTest {
 
         NavigationState state = new NavigationStateBuilder(
                 ui.getInternals().getRouter())
-                        .withTarget(InfiniteLoopNPEView.class).build();
+                .withTarget(InfiniteLoopNPEView.class).build();
         NavigationStateRenderer renderer = new NavigationStateRenderer(state);
 
         RouteConfiguration
@@ -192,7 +192,7 @@ public class ErrorStateRendererTest {
 
         NavigationState state = new NavigationStateBuilder(
                 ui.getInternals().getRouter())
-                        .withTarget(HappyPathErrorTarget.class).build();
+                .withTarget(HappyPathErrorTarget.class).build();
         ErrorStateRenderer renderer = new ErrorStateRenderer(state);
 
         RouteConfiguration
