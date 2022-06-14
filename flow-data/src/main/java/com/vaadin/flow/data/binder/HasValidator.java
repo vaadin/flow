@@ -49,9 +49,9 @@ public interface HasValidator<V> extends Serializable {
      * Enables the implementing components to announce changes in their
      * validation status to the observers.
      *
-     * @implNote This method should be overridden by the implementing classes
-     *           e.g. components, to enable the {@link Binder} subscribing for
-     *           their validation change events and revalidate.
+     * <strong>Note:</strong> This method should be overridden by the
+     * implementing classes e.g. components, to enable the {@link Binder}
+     * subscribing for their validation change events and revalidate.
      *
      * @see com.vaadin.flow.data.binder.Binder.BindingBuilderImpl#bind(ValueProvider,
      *      Setter)
