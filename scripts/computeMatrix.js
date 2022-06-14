@@ -48,6 +48,7 @@ const moduleWeights = {
   'flow-tests/test-frontend/test-pnpm/pom-production.xml': { pos: 2, weight: 2 },
   'flow-tests/test-ccdm-flow-navigation/pom-production.xml': { pos: 2, weight: 2 },
   'flow-tests/test-application-theme/test-reusable-as-parent': { pos: 2, weight: 2 },
+  'flow-tests/test-application-theme/test-reusable-as-parent-vite': { pos: 2, weight: 2 },
   'flow-tests/test-live-reload': { pos: 3, weight: 3 },
   'flow-tests/test-embedding/test-embedding-generic': { pos: 3, weight: 3 },
   'flow-tests/test-mixed/pom-npm-production.xml': { pos: 3, weight: 3 },

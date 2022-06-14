@@ -204,7 +204,7 @@ public class DevModeInitializer implements Serializable {
         // This needs to be set as there is no "current service" available in
         // this call
         FeatureFlags featureFlags = FeatureFlags.get(context);
-        if (featureFlags.isEnabled(FeatureFlags.NEW_LICENSE_CHECKER)) {
+        if (featureFlags.isEnabled(FeatureFlags.OFFLINE_LICENSE_CHECKER)) {
             LicenseChecker.setStrictOffline(true);
         }
 
