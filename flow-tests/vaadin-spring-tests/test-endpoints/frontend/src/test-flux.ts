@@ -1,4 +1,4 @@
-import { EndpointRequestInit, Subscription } from '@hilla/frontend';
+import { Subscription } from '@hilla/frontend';
 import { LitElement, html } from 'lit';
 import { customElement, query } from 'lit/decorators.js';
 import { FluxEndpoint } from '../generated/endpoints';
