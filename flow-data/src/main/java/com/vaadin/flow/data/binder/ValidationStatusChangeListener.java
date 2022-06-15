@@ -19,13 +19,11 @@ import java.io.Serializable;
 
 /**
  * The listener interface for receiving {@link ValidationStatusChangeEvent}
- * events. The classes that are interested in processing a Validation status
- * changed event of field components e.g.
- * {@link com.vaadin.flow.data.binder.Binder.BindingBuilderImpl}, register
- * implementation of this interface via
+ * events. The classes that are interested in processing validation status
+ * changed events of field components e.g. {@code BindingBuilder}, should
+ * register implementation of this interface via
  * {@link HasValidator#addValidationStatusChangeListener(ValidationStatusChangeListener)}
- * which are called whenever such event is fired by the component class, e.g.
- * {@code datePicker}.
+ * which are called whenever such event is fired by the component.
  *
  * @since 23.2
  *

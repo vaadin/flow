@@ -49,6 +49,12 @@ public class TestHasValidatorDatePicker {
                         listener -> listener.validationStatusChanged(event));
             }
         }
+
+        public ValidationResult customValidation(LocalDate value,
+                ValueContext context) {
+            return validationStatus ? ValidationResult.ok()
+                    : ValidationResult.error(INVALID_DATE_FORMAT);
+        }
     }
 
     public static class DataPickerHasValidatorOverridden

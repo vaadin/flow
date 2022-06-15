@@ -40,33 +40,36 @@ public class BinderValidationStatusChangeListenerTest
     }
 
     @Test
-    public void fieldWithHasValidatorDefaults_bindIsCalled_addValidationStatusListenerIsNotCalled() {
+    public void fieldWithHasValidatorDefaults_bindIsCalled_addValidationStatusListenerIsCalled() {
         var field = Mockito.spy(
                 TestHasValidatorDatePicker.DatePickerHasValidatorDefaults.class);
-        Assert.assertEquals(Validator.alwaysPass(),
-                field.getDefaultValidator());
         binder.bind(field, BIRTH_DATE_PROPERTY);
-        Mockito.verify(field, Mockito.times(0))
+        Mockito.verify(field, Mockito.times(1))
                 .addValidationStatusChangeListener(Mockito.any());
     }
 
     @Test
-    public void fieldWithHasValidatorOnlyAddListenerOverridden_bindIsCalled_addValidationStatusListenerIsNotCalled() {
+    public void fieldWithHasValidatorOnlyGetDefaultValidatorOverridden_bindIsCalled_addValidationStatusListenerIsCalled() {
+        var field = Mockito.spy(
+                TestHasValidatorDatePicker.DataPickerHasValidatorGetDefaultValidatorOverridden.class);
+        binder.bind(field, BIRTH_DATE_PROPERTY);
+        Mockito.verify(field, Mockito.times(1))
+                .addValidationStatusChangeListener(Mockito.any());
+    }
+
+    @Test
+    public void fieldWithHasValidatorOnlyAddListenerOverridden_bindIsCalled_addValidationStatusListenerIsCalled() {
         var field = Mockito.spy(
                 TestHasValidatorDatePicker.DataPickerHasValidatorAddListenerOverridden.class);
-        Assert.assertEquals(Validator.alwaysPass(),
-                field.getDefaultValidator());
         binder.bind(field, BIRTH_DATE_PROPERTY);
-        Mockito.verify(field, Mockito.times(0))
+        Mockito.verify(field, Mockito.times(1))
                 .addValidationStatusChangeListener(Mockito.any());
     }
 
     @Test
-    public void fieldWithHasValidatorFullyOverridden_bindIsCalled_binderAddsValidationStatusChangeListenerToField() {
+    public void fieldWithHasValidatorFullyOverridden_bindIsCalled_addValidationStatusChangeListenerIsCalled() {
         var field = Mockito.spy(
                 TestHasValidatorDatePicker.DataPickerHasValidatorOverridden.class);
-        Assert.assertNotEquals(Validator.alwaysPass(),
-                field.getDefaultValidator());
         binder.bind(field, BIRTH_DATE_PROPERTY);
         Mockito.verify(field, Mockito.times(1))
                 .addValidationStatusChangeListener(Mockito.any());
@@ -95,6 +98,33 @@ public class BinderValidationStatusChangeListenerTest
 
         field.fireValidationStatusChangeEvent(true);
         Assert.assertEquals(0, componentErrors.size());
+        Assert.assertNull(componentErrors.get(field));
+    }
+
+    @Test
+    public void fieldWithHasValidatorOnlyAddListenerOverriddenAndCustomValidation_fieldValidationStatusChangesToFalse_binderHandleErrorIsCalled() {
+        var field = new TestHasValidatorDatePicker.DataPickerHasValidatorAddListenerOverridden();
+        binder.forField(field).withValidator(field::customValidation)
+                .bind(BIRTH_DATE_PROPERTY);
+
+        field.fireValidationStatusChangeEvent(false);
+        Assert.assertEquals(1, componentErrors.size());
+        Assert.assertEquals(INVALID_DATE_FORMAT, componentErrors.get(field));
+    }
+
+    @Test
+    public void fieldWithHasValidatorOnlyAddListenerOverriddenAndCustomValidation_fieldValidationStatusChangesToTrue_binderClearErrorIsCalled() {
+        var field = new TestHasValidatorDatePicker.DataPickerHasValidatorAddListenerOverridden();
+        binder.forField(field).withValidator(field::customValidation)
+                .bind(BIRTH_DATE_PROPERTY);
+
+        field.fireValidationStatusChangeEvent(false);
+        Assert.assertEquals(1, componentErrors.size());
+        Assert.assertEquals(INVALID_DATE_FORMAT, componentErrors.get(field));
+
+        field.fireValidationStatusChangeEvent(true);
+        Assert.assertEquals(0, componentErrors.size());
+        Assert.assertNull(componentErrors.get(field));
     }
 
 }
