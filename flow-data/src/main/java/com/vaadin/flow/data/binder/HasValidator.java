@@ -69,7 +69,6 @@ public interface HasValidator<V> extends Serializable {
      * converter including {@link HasValidator#getDefaultValidator()}.
      *
      * <pre>
-     * {@code
      * &#64;Tag("date-picker-demo")
      * public class DatePickerDemo implements HasValidator&lt;LocalDate&gt; {
      *
@@ -116,7 +115,6 @@ public interface HasValidator<V> extends Serializable {
      *                     listener -> listener.validationStatusChanged(event));
      *         }
      *     }
-     * }
      * }
      * </pre>
      *
