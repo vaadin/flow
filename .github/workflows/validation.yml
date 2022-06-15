@@ -7,7 +7,7 @@ on:
     types: [opened, synchronize, reopened]
 jobs:
   build:
-    timeout-minutes: 20
+    timeout-minutes: 15
     runs-on: ubuntu-latest
     outputs:
       matrix-unit: ${{ steps.set-matrix.outputs.matrix-unit }}
