@@ -72,11 +72,29 @@
             <artifactId>asm</artifactId>
             <scope>provided</scope>
         </dependency>
+        <!-- Workaround for https://github.com/eclipse-equinox/equinox.bundles/issues/54-->
+        <!-- Override org.osgi:org.osgi.service.prefs because it has a different group ID-->
+        <!-- Otherwise it throws: Failed to collect dependencies at org.eclipse.platform:org.eclipse.core.resources:jar:3.12.0 -> -->
+        <!-- org.eclipse.platform:org.eclipse.core.expressions:jar:3.5.100 -> org.eclipse.platform:org.eclipse.core.runtime:jar:3.20.100 -> -->
+        <!-- org.eclipse.platform:org.eclipse.equinox.preferences:jar:3.10.0 -> org.osgi.service:org.osgi.service.prefs:jar:[1.1.0,1.2.0)-->
+        <!-- No versions available for org.osgi.service:org.osgi.service.prefs:jar:[1.1.0,1.2.0) within specified range -->
+        <dependency>
+            <groupId>org.osgi</groupId>
+            <artifactId>org.osgi.service.prefs</artifactId>
+            <version>1.1.2</version>
+        </dependency>
         <dependency>
             <groupId>org.eclipse.platform</groupId>
             <artifactId>org.eclipse.core.resources</artifactId>
             <version>3.12.0</version>
             <scope>test</scope>
+            <exclusions>
+                <!-- -->
+                <exclusion>
+                    <groupId>org.osgi.service</groupId>
+                    <artifactId>org.osgi.service.prefs</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- Force Java8 compatible package -->
@@ -91,6 +109,12 @@
             <artifactId>org.eclipse.core.contenttype</artifactId>
             <version>3.7.1000</version>
             <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.osgi.service</groupId>
+                    <artifactId>org.osgi.service.prefs</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
     </dependencies>
