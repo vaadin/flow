@@ -108,8 +108,8 @@ public interface HasValidator<V> extends Serializable {
      *
      *     private void fireValidationStatusChangeEvent(
      *             boolean newValidationStatus) {
-     *         if (validationStatus != newValidationStatus) {
-     *             validationStatus = newValidationStatus;
+     *         if (this.clientSideValid != newValidationStatus) {
+     *             this.clientSideValid = newValidationStatus;
      *             var event = new ValidationStatusChangeEvent&lt;&gt;(this,
      *                     newValidationStatus);
      *             validationStatusListeners.forEach(
