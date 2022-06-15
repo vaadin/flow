@@ -56,7 +56,7 @@ public interface HasValidator<V> extends Serializable {
      * <p>
      * This method primarily designed for notifying the Binding about the
      * validation status changes of a bound component at the client-side.
-     * WebComponents such as {@code <vaadin-date-picker>} or any other component
+     * WebComponents such as {@code &lt;vaadin-date-picker&gt;} or any other component
      * that accept a formatted text as input should be able to communicate their
      * invalid status to their server-side instance, and a bound server-side
      * component instance must notify its binding about this validation status
@@ -64,9 +64,10 @@ public interface HasValidator<V> extends Serializable {
      * validators and convertors get executed one of which is the default
      * validator provided by {@link HasValidator#getDefaultValidator()}. Thus,
      * In order for the binding to be able to show/clear errors for its
-     * associated bound field, It is important that implementing components take
+     * associated bound field, it is important that implementing components take
      * that validation status into account while implementing any validator and
-     * converter including {@link HasValidator#getDefaultValidator()}.
+     * converter including {@link HasValidator#getDefaultValidator()}. Here is a
+     * example:
      *
      * <pre>
      * &#64;Tag("date-picker-demo")
