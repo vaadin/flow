@@ -99,7 +99,7 @@ public interface HasValidator<V> extends Serializable {
      *     public Registration addValidationStatusChangeListener(
      *             ValidationStatusChangeListener&lt;LocalDate&gt; listener) {
      *         validationStatusListeners.add(listener);
-     *         return () -> validationStatusListeners.remove(listener);
+     *         return () -&gt; validationStatusListeners.remove(listener);
      *     }
      *
      *     // Each web-component has a way to communicate its validation status
@@ -113,7 +113,7 @@ public interface HasValidator<V> extends Serializable {
      *             var event = new ValidationStatusChangeEvent&lt;&gt;(this,
      *                     newValidationStatus);
      *             validationStatusListeners.forEach(
-     *                     listener -> listener.validationStatusChanged(event));
+     *                     listener -&gt; listener.validationStatusChanged(event));
      *         }
      *     }
      * }
