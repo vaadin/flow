@@ -63,7 +63,7 @@ jobs:
           path: workspace.tar
   unit-tests:
     needs: build
-    timeout-minutes: 15
+    timeout-minutes: 20
     outputs:
       failure: ${{steps.set-failure.outputs.failure}}
     strategy:
