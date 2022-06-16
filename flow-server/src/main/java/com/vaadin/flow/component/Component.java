@@ -684,4 +684,26 @@ public abstract class Component
     public void scrollIntoView() {
         getElement().scrollIntoView();
     }
+    
+    /**
+     * Finds a component of given type from the parents of this component.
+     *
+     * @param componentType the class of the component to search for
+     * @return the component as Optional or empty Optional if a parent of given type is not found
+     * @param <T> the type of the component to return
+     */
+    @SuppressWarnings("unchecked")
+	public <T extends Component> Optional<T> findParent(Class<T> componentType) {
+        Optional<Component> parent = getParent();
+        while (parent.isPresent()) {
+            Component component = parent.get();
+            if (componentType.isAssignableFrom(component.getClass())) {
+                return Optional.of((T) component);
+            } else {
+                parent = component.getParent();
+            }
+        }
+        return Optional.empty();
+    }
+    
 }
