@@ -697,7 +697,7 @@ public abstract class Component
      *            the type of the component to return
      */
     @SuppressWarnings("unchecked")
-    public <T extends Component> Optional<T> findParent(
+    public <T> Optional<T> findParent(
             Class<T> componentType) {
         Optional<Component> parent = getParent();
         while (parent.isPresent()) {
