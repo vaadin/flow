@@ -47,7 +47,7 @@ public interface HasValidator<V> extends Serializable {
 
     /**
      * Enables the implementing components to notify changes in their validation
-     * status to the observers. This method is
+     * status to the observers.
      * <p>
      * <strong>Note:</strong> This method can be overridden by the
      * implementing classes e.g. components, to enable the associated
