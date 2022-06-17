@@ -1,11 +1,6 @@
 package com.vaadin.flow.spring.security;
 
-import java.util.Collections;
-import java.util.Map;
-import java.util.Optional;
-
-import javax.annotation.security.RolesAllowed;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.router.Route;
@@ -17,28 +12,34 @@ import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.shared.ApplicationConstants;
-import com.vaadin.flow.spring.SpringBootAutoConfiguration;
-import com.vaadin.flow.spring.SpringSecurityAutoConfiguration;
-import com.vaadin.flow.spring.SpringServlet;
-import com.vaadin.flow.spring.SpringVaadinServletService;
-import com.vaadin.flow.spring.VaadinConfigurationProperties;
-
+import com.vaadin.flow.spring.*;
+import dev.hilla.EndpointControllerConfiguration;
+import dev.hilla.EndpointProperties;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.jackson.JacksonProperties;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
+import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import javax.annotation.security.RolesAllowed;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Optional;
+
 @RunWith(SpringRunner.class)
-@SpringBootTest()
-@ContextConfiguration(classes = { SpringBootAutoConfiguration.class,
-        SpringSecurityAutoConfiguration.class })
+@SpringBootTest(classes = { EndpointProperties.class })
+@ContextConfiguration(classes = { EndpointControllerConfiguration.class,
+        SpringBootAutoConfiguration.class,
+        SpringSecurityAutoConfiguration.class, ObjectMapper.class,
+        Jackson2ObjectMapperBuilder.class, JacksonProperties.class })
 public class RequestUtilTest {
 
     @Autowired

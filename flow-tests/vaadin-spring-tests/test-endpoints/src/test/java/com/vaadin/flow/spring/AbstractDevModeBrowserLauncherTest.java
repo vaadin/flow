@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.spring;
 
+import dev.hilla.EndpointControllerConfiguration;
+import dev.hilla.EndpointProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.jackson.JacksonProperties;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -22,9 +24,11 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.web.context.support.GenericWebApplicationContext;
 
-@SpringBootTest()
-@ContextConfiguration(classes = { SpringBootAutoConfiguration.class,
-        SpringSecurityAutoConfiguration.class })
+@SpringBootTest(classes = { EndpointProperties.class })
+@ContextConfiguration(classes = { EndpointControllerConfiguration.class,
+        SpringBootAutoConfiguration.class,
+        SpringSecurityAutoConfiguration.class,
+        Jackson2ObjectMapperBuilder.class, JacksonProperties.class })
 public abstract class AbstractDevModeBrowserLauncherTest {
 
     @Autowired
