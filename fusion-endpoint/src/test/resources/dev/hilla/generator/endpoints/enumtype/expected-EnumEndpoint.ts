@@ -12,27 +12,27 @@ import type MyEnum from './dev/hilla/generator/endpoints/enumtype/EnumEndpoint/M
 
 function _echoEnum(
     value: MyEnum | undefined,
-    endpointRequestInit?: EndpointRequestInit
+    init?: EndpointRequestInit
 ): Promise<MyEnum | undefined> {
-  return client.call('EnumEndpoint', 'echoEnum', {value}, endpointRequestInit);
+  return client.call('EnumEndpoint', 'echoEnum', {value}, init);
 }
 
 function _echoListEnum(
     enumList: Array<MyEnum | undefined> | undefined,
-    endpointRequestInit?: EndpointRequestInit
+    init?: EndpointRequestInit
 ): Promise<Array<MyEnum | undefined> | undefined> {
-  return client.call('EnumEndpoint', 'echoListEnum', {enumList}, endpointRequestInit);
+  return client.call('EnumEndpoint', 'echoListEnum', {enumList}, init);
 }
 
-function _getEnum(endpointRequestInit?: EndpointRequestInit): Promise<MyEnum | undefined> {
-  return client.call('EnumEndpoint', 'getEnum', {}, endpointRequestInit);
+function _getEnum(init?: EndpointRequestInit): Promise<MyEnum | undefined> {
+  return client.call('EnumEndpoint', 'getEnum', {}, init);
 }
 
 function _setEnum(
     value: MyEnum | undefined,
-    endpointRequestInit?: EndpointRequestInit
+    init?: EndpointRequestInit
 ): Promise<void> {
-  return client.call('EnumEndpoint', 'setEnum', {value}, endpointRequestInit);
+  return client.call('EnumEndpoint', 'setEnum', {value}, init);
 }
 
 export {

@@ -12,44 +12,44 @@ import type Person from './dev/hilla/generator/endpoints/superclassmethods/Perso
 
 function _delete(
   id: number | undefined,
-  endpointRequestInit?: EndpointRequestInit
+  init?: EndpointRequestInit
 ): Promise<void> {
-  return client.call('PersonEndpoint', 'delete', {id}, endpointRequestInit);
+  return client.call('PersonEndpoint', 'delete', {id}, init);
 }
 
 function _getNonNullablePage(
   pageSize: number,
   pageNumber: number,
   parameters: Record<string, Person> | undefined,
-  endpointRequestInit?: EndpointRequestInit
+  init?: EndpointRequestInit
 ): Promise<Array<Person> | undefined> {
-  return client.call('PersonEndpoint', 'getNonNullablePage', {pageSize, pageNumber, parameters}, endpointRequestInit);
+  return client.call('PersonEndpoint', 'getNonNullablePage', {pageSize, pageNumber, parameters}, init);
 }
 
 function _get(
   id: number | undefined,
-  endpointRequestInit?: EndpointRequestInit
+  init?: EndpointRequestInit
 ): Promise<Person | undefined> {
-  return client.call('PersonEndpoint', 'get', {id}, endpointRequestInit);
+  return client.call('PersonEndpoint', 'get', {id}, init);
 }
 
 function _getPage(
   pageSize: number,
   pageNumber: number,
-  endpointRequestInit?: EndpointRequestInit
+  init?: EndpointRequestInit
 ): Promise<Array<Person | undefined> | undefined> {
-  return client.call('PersonEndpoint', 'getPage', {pageSize, pageNumber}, endpointRequestInit);
+  return client.call('PersonEndpoint', 'getPage', {pageSize, pageNumber}, init);
 }
 
-function _size(endpointRequestInit?: EndpointRequestInit): Promise<number> {
-  return client.call('PersonEndpoint', 'size', {}, endpointRequestInit);
+function _size(init?: EndpointRequestInit): Promise<number> {
+  return client.call('PersonEndpoint', 'size', {}, init);
 }
 
 function _update (
   entity: Person | undefined,
-  endpointRequestInit?: EndpointRequestInit
+  init?: EndpointRequestInit
 ): Promise<Person | undefined> {
-  return client.call('PersonEndpoint', 'update', {entity}, endpointRequestInit);
+  return client.call('PersonEndpoint', 'update', {entity}, init);
 }
 
 export {

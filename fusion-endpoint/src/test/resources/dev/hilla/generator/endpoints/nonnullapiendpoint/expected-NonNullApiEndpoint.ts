@@ -22,32 +22,32 @@ Subscription<string> {
 }
 function _helloNestedTypes (
   param: Record<string, Array<string>>,
-  endpointRequestInit?: EndpointRequestInit
+  init?: EndpointRequestInit
 ): Promise<Record<string, Array<Record<string, string>>>> {
   return client.call (
     'NonNullApiEndpoint', 'helloNestedTypes', {
       param
-    }, endpointRequestInit
+    }, init
   );
 }
 function _helloNullable (
   hello: string | undefined,
-  endpointRequestInit?: EndpointRequestInit
+  init?: EndpointRequestInit
 ): Promise<string | undefined> {
   return client.call (
     'NonNullApiEndpoint', 'helloNullable', {
       hello
-    }, endpointRequestInit
+    }, init
   );
 }
 function _hello (
   hello: string,
-  endpointRequestInit?: EndpointRequestInit
+  init?: EndpointRequestInit
 ): Promise<string> {
   return client.call (
     'NonNullApiEndpoint', 'hello', {
       hello
-    }, endpointRequestInit
+    }, init
   );
 }
 export {

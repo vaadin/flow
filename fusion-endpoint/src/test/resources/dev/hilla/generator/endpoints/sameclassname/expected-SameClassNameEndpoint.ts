@@ -13,34 +13,34 @@ import type SubpackageSameClassNameModel from './dev/hilla/generator/endpoints/s
 
 function _getMyClass(
   sameClassNameModel: Array<SubpackageSameClassNameModel | undefined> | undefined,
-  endpointRequestInit?: EndpointRequestInit
+  init?: EndpointRequestInit
 ): Promise<SameClassNameModel | undefined> {
-  return client.call('SameClassNameEndpoint', 'getMyClass', {sameClassNameModel}, endpointRequestInit);
+  return client.call('SameClassNameEndpoint', 'getMyClass', {sameClassNameModel}, init);
 }
 
 function _getSubpackageModelList(
   sameClassNameModel: Record<string, SubpackageSameClassNameModel | undefined> | undefined,
-  endpointRequestInit?: EndpointRequestInit
+  init?: EndpointRequestInit
 ): Promise<Array<SubpackageSameClassNameModel | undefined> | undefined> {
-  return client.call('SameClassNameEndpoint', 'getSubpackageModelList', {sameClassNameModel}, endpointRequestInit);
+  return client.call('SameClassNameEndpoint', 'getSubpackageModelList', {sameClassNameModel}, init);
 }
 
 function _getSubpackageModelMap(
   sameClassNameModel: Record<string, SameClassNameModel | undefined> | undefined,
-  endpointRequestInit?: EndpointRequestInit
+  init?: EndpointRequestInit
 ): Promise<Record<string, SubpackageSameClassNameModel | undefined> | undefined> {
-  return client.call('SameClassNameEndpoint', 'getSubpackageModelMap', {sameClassNameModel}, endpointRequestInit);
+  return client.call('SameClassNameEndpoint', 'getSubpackageModelMap', {sameClassNameModel}, init);
 }
 
-function _getSubpackageModel(endpointRequestInit?: EndpointRequestInit): Promise<SubpackageSameClassNameModel | undefined> {
-  return client.call('SameClassNameEndpoint', 'getSubpackageModel', {}, endpointRequestInit);
+function _getSubpackageModel(init?: EndpointRequestInit): Promise<SubpackageSameClassNameModel | undefined> {
+  return client.call('SameClassNameEndpoint', 'getSubpackageModel', {}, init);
 }
 
 function _setSubpackageModel(
   model: SubpackageSameClassNameModel | undefined,
-  endpointRequestInit?: EndpointRequestInit
+  init?: EndpointRequestInit
 ): Promise<void> {
-  return client.call('SameClassNameEndpoint', 'setSubpackageModel', {model}, endpointRequestInit);
+  return client.call('SameClassNameEndpoint', 'setSubpackageModel', {model}, init);
 }
 
 export {

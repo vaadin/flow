@@ -13,9 +13,9 @@ import type ParentModel from './dev/hilla/generator/endpoints/inheritedmodel/Inh
 
 function _getParentModel(
  child: ChildModel | undefined,
- endpointRequestInit?: EndpointRequestInit
+ init?: EndpointRequestInit
 ): Promise<ParentModel | undefined> {
-  return client.call('InheritedModelEndpoint', 'getParentModel', {child}, endpointRequestInit);
+  return client.call('InheritedModelEndpoint', 'getParentModel', {child}, init);
 }
 
 export {

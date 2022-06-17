@@ -14,41 +14,41 @@ import type ModelFromDifferentPackage from './dev/hilla/generator/endpoints/mode
 
 function _getAccountByGroups(
   groups: Array<Group | undefined> | undefined,
-  endpointRequestInit?: EndpointRequestInit
+  init?: EndpointRequestInit
 ): Promise<Account | undefined> {
-  return client.call('ModelEndpoint', 'getAccountByGroups', {groups}, endpointRequestInit);
+  return client.call('ModelEndpoint', 'getAccountByGroups', {groups}, init);
 }
 
 /**
  * Get account by username.
  *
  * @param userName username of the account
- * @param endpointRequestInit an optional object containing additional parameters for the request
+ * @param init an optional object containing additional parameters for the request
  * Return the account with given userName
  */
 function _getAccountByUserName(
   userName: string | undefined,
-  endpointRequestInit?: EndpointRequestInit
+  init?: EndpointRequestInit
 ): Promise<Account | undefined> {
-  return client.call('ModelEndpoint', 'getAccountByUserName', {userName}, endpointRequestInit);
+  return client.call('ModelEndpoint', 'getAccountByUserName', {userName}, init);
 }
 
-function _getArrayOfAccount (endpointRequestInit?: EndpointRequestInit): Promise<Array<Account | undefined> | undefined> {
-  return client.call('ModelEndpoint', 'getArrayOfAccount', {}, endpointRequestInit);
+function _getArrayOfAccount (init?: EndpointRequestInit): Promise<Array<Account | undefined> | undefined> {
+  return client.call('ModelEndpoint', 'getArrayOfAccount', {}, init);
 }
 
-function _getMapGroups(endpointRequestInit?: EndpointRequestInit): Promise<Record<string, Group | undefined> | undefined> {
-  return client.call('ModelEndpoint', 'getMapGroups', {}, endpointRequestInit);
+function _getMapGroups(init?: EndpointRequestInit): Promise<Record<string, Group | undefined> | undefined> {
+  return client.call('ModelEndpoint', 'getMapGroups', {}, init);
 }
 
 /**
  * The import path of this model should be correct.
  *
- * @param endpointRequestInit an optional object containing additional parameters for the request
+ * @param init an optional object containing additional parameters for the request
  *
  */
-function _getModelFromDifferentPackage(endpointRequestInit?: EndpointRequestInit): Promise<ModelFromDifferentPackage | undefined> {
-  return client.call('ModelEndpoint', 'getModelFromDifferentPackage', {}, endpointRequestInit);
+function _getModelFromDifferentPackage(init?: EndpointRequestInit): Promise<ModelFromDifferentPackage | undefined> {
+  return client.call('ModelEndpoint', 'getModelFromDifferentPackage', {}, init);
 }
 
 export {
