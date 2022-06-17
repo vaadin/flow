@@ -121,7 +121,7 @@ public interface HasValidator<V> extends Serializable {
      *
      * @see com.vaadin.flow.data.binder.Binder.BindingBuilderImpl#bind(ValueProvider,
      *      Setter)
-     * @since 23.2
+     * @since 2.7
      *
      * @return Registration of the added listener.
      */
