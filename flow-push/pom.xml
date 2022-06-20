@@ -51,6 +51,7 @@
                 </executions>
                 <configuration>
                     <sourceDirectory>${pushDirectory}</sourceDirectory>
+                    <jswarn>false</jswarn>
                     <includes>
                         <include>vaadinPush.js</include>
                     </includes>
