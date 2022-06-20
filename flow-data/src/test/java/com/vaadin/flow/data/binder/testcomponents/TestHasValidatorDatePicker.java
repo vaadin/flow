@@ -43,8 +43,8 @@ public class TestHasValidatorDatePicker {
                 boolean newValidationStatus) {
             if (validationStatus != newValidationStatus) {
                 validationStatus = newValidationStatus;
-                var event = new ValidationStatusChangeEvent<>(this,
-                        newValidationStatus);
+                ValidationStatusChangeEvent<LocalDate> event = new ValidationStatusChangeEvent<>(
+                        this, newValidationStatus);
                 validationStatusListeners.forEach(
                         listener -> listener.validationStatusChanged(event));
             }
