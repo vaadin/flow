@@ -25,7 +25,6 @@ const moduleWeights = {
   'flow-client': { weight: 8 },
   'flow-server': { weight: 6 },
   'vaadin-dev-server': { weight: 5 },
-  'fusion-endpoint': { weight: 2 },
   'flow-data': { weight: 2 },
   'flow-plugins/flow-maven-plugin': { weight: 5 },
   'flow-plugins/flow-gradle-plugin': { weight: 6 },
