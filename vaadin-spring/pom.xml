@@ -33,12 +33,6 @@
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>fusion-endpoint</artifactId>
-            <version>${project.version}</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.vaadin</groupId>
             <artifactId>vaadin-dev-server</artifactId>
             <version>${project.version}</version>
             <scope>provided</scope>
