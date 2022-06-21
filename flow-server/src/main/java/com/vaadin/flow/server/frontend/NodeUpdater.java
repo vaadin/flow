@@ -216,8 +216,8 @@ public abstract class NodeUpdater implements FallibleCommand {
         URL commVersionsResource = finder
                 .getResource(Constants.VAADIN_VERSIONS_JSON);
         if (commVersionsResource == null) {
-            log().info(
-                    "Couldn't find {} file to pin dependency versions for commercial components."
+            log().trace(
+                    "{} file is not present in the classpath, so cannot pin dependency versions for commercial components."
                             + " Transitive dependencies won't be pinned for npm/pnpm.",
                     Constants.VAADIN_VERSIONS_JSON);
             return versionsJson;
