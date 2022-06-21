@@ -1816,8 +1816,6 @@ public class BootstrapHandlerTest {
         Mockito.when(vaadinContext.getAttribute(FeatureFlags.class))
                 .thenReturn(featureFlags);
 
-        featureFlags.setEnabled(FeatureFlags.VITE.getId(), true);
-
         Mockito.when(configuration.isProductionMode())
                 .thenReturn(productionMode);
     }

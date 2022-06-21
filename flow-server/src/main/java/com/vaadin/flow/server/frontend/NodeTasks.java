@@ -825,7 +825,7 @@ public class NodeTasks implements FallibleCommand {
                     builder.flowResourcesFolder, builder.localResourcesFolder));
         }
 
-        if (featureFlags.isEnabled(FeatureFlags.VITE)) {
+        if (!featureFlags.isEnabled(FeatureFlags.WEBPACK)) {
             String themeName = "";
             PwaConfiguration pwa;
             if (frontendDependencies != null) {
@@ -883,7 +883,7 @@ public class NodeTasks implements FallibleCommand {
                 new File(builder.generatedFolder, IMPORTS_NAME),
                 buildDirectory);
         commands.add(taskGenerateIndexTs);
-        if (builder.getFeatureFlags().isEnabled(FeatureFlags.VITE)
+        if (!builder.getFeatureFlags().isEnabled(FeatureFlags.WEBPACK)
                 && !builder.productionMode) {
             commands.add(
                     new TaskGenerateViteDevMode(builder.frontendDirectory));

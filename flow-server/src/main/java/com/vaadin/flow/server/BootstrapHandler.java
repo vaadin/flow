@@ -994,8 +994,52 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         private void appendNpmBundle(Element head, VaadinService service,
                 BootstrapContext context) throws IOException {
             if (FeatureFlags.get(service.getContext())
-                    .isEnabled(FeatureFlags.VITE)) {
-
+                    .isEnabled(FeatureFlags.WEBPACK)) {
+                String content = FrontendUtils.getStatsAssetsByChunkName(service);
+                if (content == null) {
+                    StringBuilder message = new StringBuilder(
+                            "The stats file from webpack (stats.json) was not found.\n");
+                    if (service.getDeploymentConfiguration().isProductionMode()) {
+                        message.append(
+                                "The application is running in production mode.");
+                        message.append(
+                                "Verify that build-frontend task has executed successfully and that stats.json is on the classpath.");
+                        message.append(
+                                "Or switch application to development mode.");
+                    } else if (!service.getDeploymentConfiguration()
+                            .enableDevServer()) {
+                        message.append(
+                                "Dev server is disabled for the application.");
+                        message.append(
+                                "Verify that build-frontend task has executed successfully and that stats.json is on the classpath.");
+                    } else {
+                        message.append(
+                                "This typically mean that you have started the application without executing the 'prepare-frontend' Maven target.\n");
+                        message.append(
+                                "If you are using Spring Boot and are launching the Application class directly, ");
+                        message.append(
+                                "you need to run \"mvn install\" once first or launch the application using \"mvn spring-boot:run\"");
+                    }
+                    throw new IOException(message.toString());
+                }
+                JsonObject chunks = Json.parse(content);
+                for (String key : getChunkKeys(chunks)) {
+                    String chunkName;
+                    if (chunks.get(key).getType().equals(JsonType.ARRAY)) {
+                        chunkName = getArrayChunkName(chunks, key);
+                    } else {
+                        chunkName = chunks.getString(key);
+                    }
+                    Element script = createJavaScriptModuleElement("./" + chunkName,
+                            false);
+                    head.appendChild(script
+                            .attr("data-app-id",
+                                    context.getUI().getInternals().getAppId())
+                            // Fixes basic auth in Safari #6560
+                            .attr("crossorigin", true));
+                }
+            } else {
+                // Use Vite
                 if (!service.getDeploymentConfiguration().isProductionMode()) {
                     Element script = createJavaScriptModuleElement(
                             "VAADIN/@vite/client", false);
@@ -1012,8 +1056,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                         .matcher(index);
                 while (scriptMatcher.find()) {
                     Element script = createJavaScriptModuleElement(context
-                            .getUriResolver().resolveVaadinUri("context://"
-                                    + "VAADIN/build/" + scriptMatcher.group(1)),
+                                    .getUriResolver().resolveVaadinUri("context://"
+                                                                       + "VAADIN/build/" + scriptMatcher.group(1)),
                             false);
                     head.appendChild(script.attr("async", true)
                             // Fixes basic auth in Safari #6560
@@ -1027,53 +1071,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 while (cssMatcher.find()) {
                     Element link = createStylesheetElement(context
                             .getUriResolver().resolveVaadinUri("context://"
-                                    + "VAADIN/build/" + cssMatcher.group(1)));
+                                                               + "VAADIN/build/" + cssMatcher.group(1)));
                     head.appendChild(link);
                 }
-                return;
-            }
-            String content = FrontendUtils.getStatsAssetsByChunkName(service);
-            if (content == null) {
-                StringBuilder message = new StringBuilder(
-                        "The stats file from webpack (stats.json) was not found.\n");
-                if (service.getDeploymentConfiguration().isProductionMode()) {
-                    message.append(
-                            "The application is running in production mode.");
-                    message.append(
-                            "Verify that build-frontend task has executed successfully and that stats.json is on the classpath.");
-                    message.append(
-                            "Or switch application to development mode.");
-                } else if (!service.getDeploymentConfiguration()
-                        .enableDevServer()) {
-                    message.append(
-                            "Dev server is disabled for the application.");
-                    message.append(
-                            "Verify that build-frontend task has executed successfully and that stats.json is on the classpath.");
-                } else {
-                    message.append(
-                            "This typically mean that you have started the application without executing the 'prepare-frontend' Maven target.\n");
-                    message.append(
-                            "If you are using Spring Boot and are launching the Application class directly, ");
-                    message.append(
-                            "you need to run \"mvn install\" once first or launch the application using \"mvn spring-boot:run\"");
-                }
-                throw new IOException(message.toString());
-            }
-            JsonObject chunks = Json.parse(content);
-            for (String key : getChunkKeys(chunks)) {
-                String chunkName;
-                if (chunks.get(key).getType().equals(JsonType.ARRAY)) {
-                    chunkName = getArrayChunkName(chunks, key);
-                } else {
-                    chunkName = chunks.getString(key);
-                }
-                Element script = createJavaScriptModuleElement("./" + chunkName,
-                        false);
-                head.appendChild(script
-                        .attr("data-app-id",
-                                context.getUI().getInternals().getAppId())
-                        // Fixes basic auth in Safari #6560
-                        .attr("crossorigin", true));
             }
         }
 

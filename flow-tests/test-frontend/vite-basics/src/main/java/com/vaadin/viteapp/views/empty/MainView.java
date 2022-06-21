@@ -58,10 +58,10 @@ public class MainView extends Div {
 
         final Paragraph viteStatus = new Paragraph(
                 "Vite feature is "
-                        + FeatureFlags
+                        + !FeatureFlags
                                 .get(UI.getCurrent().getSession().getService()
                                         .getContext())
-                                .isEnabled(FeatureFlags.VITE));
+                                .isEnabled(FeatureFlags.WEBPACK));
         viteStatus.setId("status");
         add(viteStatus);
 

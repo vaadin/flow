@@ -328,7 +328,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         String index = FrontendUtils.getIndexHtmlContent(service);
         if (index != null) {
             Document indexHtmlDocument = Jsoup.parse(index);
-            if (getFeatureFlags(service).isEnabled(FeatureFlags.VITE)) {
+            if (!getFeatureFlags(service).isEnabled(FeatureFlags.WEBPACK)) {
                 modifyIndexHtmlForVite(indexHtmlDocument);
             }
             return indexHtmlDocument;
