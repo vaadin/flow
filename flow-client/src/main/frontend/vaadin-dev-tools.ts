@@ -138,8 +138,14 @@ export class Connection extends Object {
   }
 
   private send(command: string, data: any) {
-    const message = { command, data };
-    this.webSocket!.send(JSON.stringify(message));
+    const message = JSON.stringify({ command, data });
+    if (!this.webSocket) {
+      console.error(`Unable to send message ${command}. No websocket is available`);
+    } else if (this.webSocket.readyState !== WebSocket.OPEN) {
+      this.webSocket.addEventListener('open', () => this.webSocket!.send(message));
+    } else {
+      this.webSocket.send(message);
+    }
   }
 
   setFeature(featureId: string, enabled: boolean) {
