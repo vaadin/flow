@@ -59,19 +59,6 @@ public class CvdlProducts {
             if (packageJson.hasKey(CVDL_PACKAGE_KEY)) {
                 return new Product(packageJson.getString(CVDL_PACKAGE_KEY),
                         packageJson.getString("version"));
-            } else if (packageJson.hasKey("license")) {
-                String packageName = packageJson.getString("name");
-                String license = packageJson.getString("license");
-                if (packageName.startsWith("@vaadin/") && license
-                        .startsWith("https://raw.githubusercontent.com")) {
-                    // Free components have "Apache-2.0"
-                    String cvdlName = packageName;
-                    cvdlName = cvdlName.replace("@", "");
-                    cvdlName = cvdlName.replace("/", "-");
-                    cvdlName = cvdlName.replace("charts", "chart");
-                    return new Product(cvdlName,
-                            packageJson.getString("version"));
-                }
             }
             return null;
         } catch (IOException e) {
