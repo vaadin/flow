@@ -39,7 +39,9 @@ import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
 import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
+import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.Attributes;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.shared.Registration;
@@ -600,6 +602,33 @@ public class ComponentUtil {
     public static <T> T getData(Component component, Class<T> type) {
         return getData(component,
                 (attributes, ignore) -> attributes.getAttribute(type), type);
+    }
+
+    /**
+     * Gets the router instance for the given component.
+     *
+     * Falls back to the router for the currently active VaadinService if the
+     * component is not attached.
+     *
+     * @return a router instance
+     * @throws IllegalStateException
+     *             if no router instance is available
+     */
+    public static Router getRouter(HasElement component) {
+        Router router = null;
+        if (component.getElement().getNode().isAttached()) {
+            StateTree tree = (StateTree) component.getElement().getNode()
+                    .getOwner();
+            router = tree.getUI().getInternals().getRouter();
+        }
+        if (router == null) {
+            router = VaadinService.getCurrent().getRouter();
+        }
+        if (router == null) {
+            throw new IllegalStateException(
+                    "Implicit router instance is not available.");
+        }
+        return router;
     }
 
 }
