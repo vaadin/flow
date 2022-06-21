@@ -181,9 +181,17 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 "window.Vaadin = window.Vaadin || {};" + //
                 "window.Vaadin.VaadinLicenseChecker = {" + //
                 "  maybeCheck: (productInfo) => {" + //
-                "    window.Vaadin.devTools.checkLicense(productInfo);" + //
+                // This disables the license check that the web components are still using
                 "  }" + //
+                "};" + //
+                "window.Vaadin.devTools = window.Vaadin.devTools || {};" +
+                "window.Vaadin.devTools.definedCustomElements = window.Vaadin.devTools.definedCustomElements || [];" + //
+                "const { define } = window.customElements;" + //
+                "window.customElements.define = function (tagName, constructor, options) {" + //
+                "define.call(this, tagName, constructor, options);" + //
+                "window.Vaadin.devTools.definedCustomElements.push(tagName);" + //
                 "};");
+
     }
 
     private void addScript(Document indexDocument, String script) {
