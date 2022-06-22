@@ -226,4 +226,10 @@ public class QueryParameters implements Serializable {
                     "Unable to decode parameter: " + parameter, e);
         }
     }
+    
+    @Override
+    public String toString() {
+    	return getQueryString();
+    }
+    
 }
