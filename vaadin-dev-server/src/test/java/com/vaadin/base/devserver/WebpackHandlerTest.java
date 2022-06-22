@@ -115,7 +115,7 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
         waitForDevServer();
         assertTrue(new File(baseDir,
                 FrontendUtils.DEFAULT_NODE_DIR + WEBPACK_TEST_OUT_FILE)
-                        .canRead());
+                .canRead());
         assertNull(handler.getFailedOutput());
         assertTrue(0 < getDevServerPort());
         Thread.sleep(150); // NOSONAR
@@ -196,7 +196,7 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
         waitForDevServer();
         assertFalse(new File(baseDir,
                 FrontendUtils.DEFAULT_NODE_DIR + WEBPACK_TEST_OUT_FILE)
-                        .canRead());
+                .canRead());
     }
 
     @Test

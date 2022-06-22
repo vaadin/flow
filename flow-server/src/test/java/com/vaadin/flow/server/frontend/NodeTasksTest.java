@@ -212,7 +212,7 @@ public class NodeTasksTest {
         builder.build().execute();
         Assert.assertTrue(new File(userDir, Paths
                 .get(TARGET, DEFAULT_GENERATED_DIR, IMPORTS_NAME).toString())
-                        .exists());
+                .exists());
     }
 
     @Test

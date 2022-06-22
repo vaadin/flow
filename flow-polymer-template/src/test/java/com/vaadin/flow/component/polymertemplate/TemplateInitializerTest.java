@@ -121,7 +121,7 @@ public class TemplateInitializerTest {
     public void twoWayBindingPaths() {
         Set<String> twoWayBindingPaths = new TemplateInitializer(
                 new OutsideTemplateClass(), templateParser, service)
-                        .getTwoWayBindingPaths();
+                .getTwoWayBindingPaths();
 
         Assert.assertEquals(
                 new HashSet<>(Arrays.asList("twoWay", "two.way", "withEvent")),
