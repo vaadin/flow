@@ -52,59 +52,6 @@ public class SpringServletTest {
         Assert.assertEquals(PushMode.MANUAL, pushMode);
     }
 
-    @Test
-    public void pushURL_rootMapping_isPrefixedWithContextVaadinMapping()
-            throws ServletException {
-        VaadinService service = SpringInstantiatorTest.getService(context,
-                new Properties(), true);
-        Assert.assertEquals("context://vaadinServlet/",
-                service.getDeploymentConfiguration().getPushURL());
-    }
-
-    @Test
-    public void pushURL_rootMappingAndCustomURLWithoutPrecedingSlash_isPrefixedWithContextVaadinMapping()
-            throws ServletException {
-        final Properties configProperties = new Properties();
-        configProperties.setProperty("pushURL", "customUrl");
-        VaadinService service = SpringInstantiatorTest.getService(context,
-                configProperties, true);
-        Assert.assertEquals("context://vaadinServlet/customUrl",
-                service.getDeploymentConfiguration().getPushURL());
-    }
-
-    @Test
-    public void pushURL_rootMappingAndCustomURLWithPrecedingSlash_isPrefixedWithContextVaadinMapping()
-            throws ServletException {
-        final Properties configProperties = new Properties();
-        configProperties.setProperty("pushURL", "/customUrl");
-        VaadinService service = SpringInstantiatorTest.getService(context,
-                configProperties, true);
-        Assert.assertEquals("context://vaadinServlet/customUrl",
-                service.getDeploymentConfiguration().getPushURL());
-    }
-
-    @Test
-    public void pushURL_rootMappingAndCustomURLWithContextVaadinServletPrefix_isNotAdditionallyPrefixed()
-            throws ServletException {
-        final Properties properties = new Properties();
-        properties.setProperty("pushURL", "context://vaadinServlet/customUrl");
-        VaadinService service = SpringInstantiatorTest.getService(context,
-                properties, true);
-        Assert.assertEquals("context://vaadinServlet/customUrl",
-                service.getDeploymentConfiguration().getPushURL());
-    }
-
-    @Test
-    public void pushURL_rootMappingAndCustomURLWithVaadinServletPrefix_isNotAdditionallyPrefixed()
-            throws ServletException {
-        final Properties properties = new Properties();
-        properties.setProperty("pushURL", "/vaadinServlet/customUrl");
-        VaadinService service = SpringInstantiatorTest.getService(context,
-                properties, true);
-        Assert.assertEquals("context://vaadinServlet/customUrl",
-                service.getDeploymentConfiguration().getPushURL());
-    }
-
     // #662
     @Test
     public void fallbackChunk_givenInInitParameter_passedOnToDeploymentConfiguration()
