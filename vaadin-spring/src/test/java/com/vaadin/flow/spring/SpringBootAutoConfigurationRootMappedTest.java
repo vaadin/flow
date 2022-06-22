@@ -28,10 +28,7 @@ public class SpringBootAutoConfigurationRootMappedTest {
                 Set.of(VaadinServletConfiguration.VAADIN_SERVLET_MAPPING,
                         "/VAADIN/*"),
                 servletRegistrationBean.getUrlMappings());
-        Assert.assertEquals(
-                VaadinServletConfiguration.VAADIN_SERVLET_MAPPING.replace("/*",
-                        ""),
-                servletRegistrationBean.getInitParameters()
-                        .get(ApplicationConfig.JSR356_MAPPING_PATH));
+        Assert.assertEquals("", servletRegistrationBean.getInitParameters()
+                .get(ApplicationConfig.JSR356_MAPPING_PATH));
     }
 }
