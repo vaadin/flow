@@ -437,28 +437,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <!-- Output surefire reports in html (useful when using GH actions) -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-report-plugin</artifactId>
-                <version>3.0.0-M6</version>
-                <executions>
-                    <execution>
-                        <id>unit-tests-report</id>
-                        <phase>test</phase>
-                        <goals>
-                            <goal>report-only</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>integration-tests-report</id>
-                        <phase>post-integration-test</phase>
-                        <goals>
-                            <goal>failsafe-report-only</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
         <pluginManagement>
             <plugins>
@@ -702,14 +680,4 @@
             </properties>
         </profile>
     </profiles>
-    <reporting>
-        <plugins>
-            <!-- Needed for surefire-report -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jxr-plugin</artifactId>
-                <version>3.2.0</version>
-            </plugin>
-        </plugins>
-    </reporting>
 </project>
