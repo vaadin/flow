@@ -478,8 +478,7 @@ public class TaskUpdateImports extends NodeUpdater {
     }
 
     private Stream<String> filter(Stream<String> modules) {
-        if (productionMode
-                && featureFlags.isEnabled(FeatureFlags.NEW_LICENSE_CHECKER)) {
+        if (productionMode) {
             return modules.filter(module -> CvdlProducts
                     .includeInFallbackBundle(module, nodeModulesFolder));
         }

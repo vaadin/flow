@@ -1,6 +1,5 @@
 package com.vaadin.flow.spring.security;
 
-import java.lang.reflect.Method;
 import java.util.Collections;
 
 import javax.servlet.http.HttpServletRequest;
@@ -15,32 +14,21 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.jackson.JacksonProperties;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.savedrequest.SavedRequest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import dev.hilla.Endpoint;
-import dev.hilla.EndpointControllerConfiguration;
-import dev.hilla.EndpointProperties;
-import dev.hilla.EndpointRegistry;
-
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { EndpointProperties.class })
-@ContextConfiguration(classes = { EndpointControllerConfiguration.class,
-        SpringBootAutoConfiguration.class,
-        SpringSecurityAutoConfiguration.class,
-        Jackson2ObjectMapperBuilder.class, JacksonProperties.class })
+@SpringBootTest()
+@ContextConfiguration(classes = { SpringBootAutoConfiguration.class,
+        SpringSecurityAutoConfiguration.class })
 public class VaadinDefaultRequestCacheTest {
 
     @Autowired
     VaadinDefaultRequestCache cache;
-    @Autowired
-    EndpointRegistry endpointRegistry;
     @Autowired
     RequestUtil requestUtil;
 
@@ -82,26 +70,6 @@ public class VaadinDefaultRequestCacheTest {
                 null);
         HttpServletResponse response = createResponse();
         Assert.assertFalse(requestUtil.isFrameworkInternalRequest(request));
-        cache.saveRequest(request, response);
-        Assert.assertNull(cache.getRequest(request, response));
-    }
-
-    @Endpoint
-    public static class FakeEndpoint {
-        public void fakeMethod() {
-        }
-    }
-
-    @Test
-    public void endpointRequestNotSaved() throws Exception {
-        HttpServletRequest request = RequestUtilTest
-                .createRequest("/connect/fakeendpoint/fakemethod");
-        HttpServletResponse response = createResponse();
-        Method registerMethod = EndpointRegistry.class
-                .getDeclaredMethod("registerEndpoint", Object.class);
-        registerMethod.setAccessible(true);
-        registerMethod.invoke(endpointRegistry, new FakeEndpoint());
-
         cache.saveRequest(request, response);
         Assert.assertNull(cache.getRequest(request, response));
     }

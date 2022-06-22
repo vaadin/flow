@@ -67,8 +67,8 @@ public class FeatureFlags implements Serializable {
     public static final Feature HILLA_PUSH = new Feature(
             "Push support in Hilla", "hillaPush",
             "https://github.com/vaadin/hilla/issues/56", true, null);
-    public static final Feature NEW_LICENSE_CHECKER = new Feature(
-            "New license checker", "newLicenseChecker",
+    public static final Feature OFFLINE_LICENSE_CHECKER = new Feature(
+            "Offline license checker", "newLicenseChecker",
             "https://github.com/vaadin/platform/issues/2938", false, null);
     public static final Feature COLLABORATION_ENGINE_BACKEND = new Feature(
             "Collaboration Engine backend for clustering support",
@@ -95,7 +95,7 @@ public class FeatureFlags implements Serializable {
         features.add(new Feature(MAP_COMPONENT));
         features.add(new Feature(SPREADSHEET_COMPONENT));
         features.add(new Feature(HILLA_PUSH));
-        features.add(new Feature(NEW_LICENSE_CHECKER));
+        features.add(new Feature(OFFLINE_LICENSE_CHECKER));
         features.add(new Feature(COLLABORATION_ENGINE_BACKEND));
         loadProperties();
     }

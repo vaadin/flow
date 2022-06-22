@@ -27,7 +27,6 @@ import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
-import dev.hilla.frontend.EndpointGeneratorTaskFactoryImpl;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
@@ -66,7 +65,7 @@ public class DevModeEndpointTest extends AbstractDevModeTest {
         ServletRegistration vaadinServletRegistration = Mockito
                 .mock(ServletRegistration.class);
 
-        Mockito.doReturn(new EndpointGeneratorTaskFactoryImpl()).when(lookup)
+        Mockito.doReturn(new TestEndpointGeneratorTaskFactory()).when(lookup)
                 .lookup(EndpointGeneratorTaskFactory.class);
 
         ResourceProvider resourceProvider = Mockito
