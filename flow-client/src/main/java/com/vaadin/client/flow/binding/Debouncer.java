@@ -20,6 +20,7 @@ import java.util.function.Consumer;
 
 import com.vaadin.client.flow.collection.JsCollections;
 import com.vaadin.client.flow.collection.JsMap;
+import com.vaadin.client.flow.collection.JsMap.ForEachCallback;
 import com.vaadin.client.flow.collection.JsSet;
 import com.vaadin.flow.shared.JsonConstants;
 
@@ -36,7 +37,7 @@ import elemental.util.Timer;
  */
 public class Debouncer {
 
-    private static final LinkedHashMap<Node, JsMap<String, JsMap<Double, Debouncer>>> debouncers = new LinkedHashMap<>();
+    private static final JsMap<Node, JsMap<String, JsMap<Double, Debouncer>>> debouncers = new JsMap<>();
 
     private final double timeout;
     private final Node element;
@@ -126,7 +127,7 @@ public class Debouncer {
             elementMap.delete(identifier);
 
             if (elementMap.isEmpty()) {
-            	debouncers.remove(element);
+            	debouncers.delete(element);
             }
         }
     }
@@ -150,7 +151,7 @@ public class Debouncer {
                 .get(element);
         if (elementMap == null) {
             elementMap = JsCollections.map();
-            debouncers.put(element, elementMap);
+            debouncers.set(element, elementMap);
         }
 
         JsMap<Double, Debouncer> identifierMap = elementMap.get(identifier);
@@ -174,23 +175,28 @@ public class Debouncer {
 	public static void flushAll() {
 		int size = debouncers.size();
 		nativeConsoleLog("Debouncers: " + size);
-		debouncers.forEach((Node str, JsMap<String, JsMap<Double, Debouncer>> jsmap) -> {
+		
+		debouncers.forEach(new ForEachCallback<Node, JsMap<String,JsMap<Double,Debouncer>>>() {
 			
-			nativeConsoleLog("jsmap: " + jsmap.size());
-			jsmap.mapValues().forEach(value -> {
-				nativeConsoleLog("value: " + value.size());
-				value.mapValues().forEach(debouncer -> {
-					nativeConsoleLog("Flushing... " + debouncer.identifier);
-					debouncer.lastCommand.accept(null);
-					if(debouncer.idleTimer != null) {
-						debouncer.idleTimer.cancel();
-					}
-					if(debouncer.intermediateTimer != null) {
-						debouncer.intermediateTimer.cancel();
-					}
+			@Override
+			public void accept(JsMap<String, JsMap<Double, Debouncer>> jsmap, Node key) {
+				nativeConsoleLog("jsmap: " + jsmap.size());
+				jsmap.mapValues().forEach(value -> {
+					nativeConsoleLog("value: " + value.size());
+					value.mapValues().forEach(debouncer -> {
+						nativeConsoleLog("Flushing... " + debouncer.identifier);
+						debouncer.lastCommand.accept(null);
+						if(debouncer.idleTimer != null) {
+							debouncer.idleTimer.cancel();
+						}
+						if(debouncer.intermediateTimer != null) {
+							debouncer.intermediateTimer.cancel();
+						}
+					});
 				});
-			});
+			}
 		});
+		
 		debouncers.clear();
 	}
 }
