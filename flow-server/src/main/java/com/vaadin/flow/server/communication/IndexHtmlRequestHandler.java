@@ -181,14 +181,16 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 "window.Vaadin = window.Vaadin || {};" + //
                 "window.Vaadin.VaadinLicenseChecker = {" + //
                 "  maybeCheck: (productInfo) => {" + //
-                // This disables the license check that the web components are still using
+                // This disables the license check that the web components are
+                // still using
                 "  }" + //
                 "};" + //
-                "window.Vaadin.devTools = window.Vaadin.devTools || {};" +
-                "window.Vaadin.devTools.definedCustomElements = window.Vaadin.devTools.definedCustomElements || [];" + //
+                "window.Vaadin.devTools = window.Vaadin.devTools || {};"
+                + "window.Vaadin.devTools.definedCustomElements = window.Vaadin.devTools.definedCustomElements || [];"
+                + //
                 "const { define } = window.customElements;" + //
-                "window.customElements.define = function (tagName, constructor, options) {" + //
-                "define.call(this, tagName, constructor, options);" + //
+                "window.customElements.define = function (tagName, ...args) {" + //
+                "define.call(this, tagName, ...args);" + //
                 "window.Vaadin.devTools.definedCustomElements.push(tagName);" + //
                 "};");
 

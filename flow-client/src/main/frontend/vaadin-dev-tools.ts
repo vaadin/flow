@@ -1118,11 +1118,10 @@ export class VaadinDevTools extends LitElement {
       10
     );
 
-    if ((window as any).Vaadin) {
-      const existing = (window as any).Vaadin.devTools;
-      (window as any).Vaadin.devTools = this;
-      Object.assign((window as any).Vaadin.devTools, existing);
-    }
+    const windowAny = window as any;
+    windowAny.Vaadin = windowAny.Vaadin || {};
+    windowAny.Vaadin.devTools = Object.assign(this, windowAny.Vaadin.devTools);
+
     licenseInit();
   }
   format(o: any): string {
