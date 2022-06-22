@@ -226,10 +226,28 @@ public class QueryParameters implements Serializable {
                     "Unable to decode parameter: " + parameter, e);
         }
     }
-    
+
     @Override
     public String toString() {
-    	return getQueryString();
+        return getQueryString();
     }
-    
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this)
+            return true;
+
+        if (obj instanceof QueryParameters) {
+            QueryParameters o = (QueryParameters) obj;
+            return parameters.equals(o.parameters);
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        return parameters.hashCode();
+    }
+
 }
