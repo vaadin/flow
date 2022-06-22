@@ -610,7 +610,9 @@ public class ComponentUtil {
      * Falls back to the router for the currently active VaadinService if the
      * component is not attached.
      *
-     * @param component component for which the requested router instance serves navigation
+     * @param component
+     *            component for which the requested router instance serves
+     *            navigation
      * @return a router instance
      * @throws IllegalStateException
      *             if no router instance is available
