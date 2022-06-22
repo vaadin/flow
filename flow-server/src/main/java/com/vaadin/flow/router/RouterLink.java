@@ -19,6 +19,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.Focusable;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.HasStyle;
@@ -435,20 +436,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
     }
 
     private Router getRouter() {
-        Router router = null;
-        if (getElement().getNode().isAttached()) {
-            StateTree tree = (StateTree) getElement().getNode().getOwner();
-            router = tree.getUI().getInternals().getRouter();
-        }
-        if (router == null) {
-            router = VaadinService.getCurrent().getRouter();
-        }
-        if (router == null) {
-            throw new IllegalStateException(
-                    "Implicit router instance is not available. "
-                            + "Use overloaded method with explicit router parameter.");
-        }
-        return router;
+        return ComponentUtil.getRouter(this);
     }
 
     /**

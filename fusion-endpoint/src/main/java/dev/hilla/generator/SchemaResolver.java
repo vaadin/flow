@@ -221,7 +221,7 @@ class SchemaResolver {
     private Schema createFluxSchema() {
         Schema subTypeSchema = new SchemaResolver(
                 type.getTypeArguments().get(0), usedTypes, requiredByContext)
-                        .resolve();
+                .resolve();
         ArraySchema arr = new ArraySchema();
         arr.setItems(subTypeSchema);
         arr.addExtension("x-flux", true);

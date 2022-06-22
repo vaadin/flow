@@ -22,14 +22,9 @@ import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.web.context.support.GenericWebApplicationContext;
 
-import dev.hilla.EndpointControllerConfiguration;
-import dev.hilla.EndpointProperties;
-
-@SpringBootTest(classes = { EndpointProperties.class })
-@ContextConfiguration(classes = { EndpointControllerConfiguration.class,
-        SpringBootAutoConfiguration.class,
-        SpringSecurityAutoConfiguration.class,
-        Jackson2ObjectMapperBuilder.class, JacksonProperties.class })
+@SpringBootTest()
+@ContextConfiguration(classes = { SpringBootAutoConfiguration.class,
+        SpringSecurityAutoConfiguration.class })
 public abstract class AbstractDevModeBrowserLauncherTest {
 
     @Autowired

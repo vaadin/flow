@@ -102,7 +102,7 @@ public final class EngineIoHandler
             CloseStatus closeStatus) {
         ((EngineIoSpringWebSocket) webSocketSession.getAttributes()
                 .get(ATTRIBUTE_ENGINEIO_BRIDGE))
-                        .afterConnectionClosed(closeStatus);
+                .afterConnectionClosed(closeStatus);
     }
 
     @Override
@@ -114,7 +114,7 @@ public final class EngineIoHandler
         try {
             ((EngineIoSpringWebSocket) webSocketSession.getAttributes()
                     .get(ATTRIBUTE_ENGINEIO_BRIDGE))
-                            .handleMessage(webSocketMessage);
+                    .handleMessage(webSocketMessage);
         } finally {
             SecurityContextHolder.clearContext();
         }
@@ -125,7 +125,7 @@ public final class EngineIoHandler
             Throwable throwable) {
         ((EngineIoSpringWebSocket) webSocketSession.getAttributes()
                 .get(ATTRIBUTE_ENGINEIO_BRIDGE))
-                        .handleTransportError(throwable);
+                .handleTransportError(throwable);
     }
 
     private static final class EngineIoSpringWebSocket
