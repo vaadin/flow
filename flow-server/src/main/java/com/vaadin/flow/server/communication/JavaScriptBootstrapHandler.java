@@ -31,6 +31,7 @@ import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.router.InvalidLocationException;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.LocationUtil;
+import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.HandlerHelper;
@@ -90,9 +91,32 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
         }
 
         private static Location initRoute(VaadinRequest request) {
+            // This can be called in two ways:
+            // 1. From the JS during the second phase of a two phase init. In
+            // this case, the
+            // location is included in the REQUEST_LOCATION_PARAMETER and the
+            // request always
+            // goes to the servlet path
+            // 2. During the first request if eagerServerLoad is enabled. In
+            // this case, the
+            // location comes from the pathinfo + query parameters in the
+            // request
             String pathAndParams = request.getParameter(
                     ApplicationConstants.REQUEST_LOCATION_PARAMETER);
-            return new Location(pathAndParams);
+            if (pathAndParams != null) {
+                return new Location(pathAndParams);
+            }
+
+            // Case 2, use the request
+            if (request instanceof VaadinServletRequest) {
+                return new Location(request.getPathInfo(),
+                        QueryParameters
+                                .fromString(((VaadinServletRequest) request)
+                                        .getQueryString()));
+            } else {
+                return new Location(request.getPathInfo(),
+                        QueryParameters.empty());
+            }
         }
 
     }
