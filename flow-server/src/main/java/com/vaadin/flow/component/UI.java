@@ -974,7 +974,7 @@ public class UI extends Component
             RouteParameters parameters) {
         navigate(navigationTarget, parameters);
     }
-    
+
     /**
      * Updates this UI to show the view corresponding to the given navigation
      * target with the specified parameter. The parameter needs to be the same
@@ -1012,18 +1012,20 @@ public class UI extends Component
      */
     @SuppressWarnings("unchecked")
     public <T, C extends Component & HasUrlParameter<T>> Optional<C> navigate(
-            Class<? extends C> navigationTarget, T parameter, QueryParameters queryParameters) {
-    	
+            Class<? extends C> navigationTarget, T parameter,
+            QueryParameters queryParameters) {
+
         RouteConfiguration configuration = RouteConfiguration
                 .forRegistry(getInternals().getRouter().getRegistry());
-        RouteParameters parameters = HasUrlParameterFormat.getParameters(parameter);
-		String url = configuration.getUrl(navigationTarget, parameters);
+        RouteParameters parameters = HasUrlParameterFormat
+                .getParameters(parameter);
+        String url = configuration.getUrl(navigationTarget, parameters);
         getInternals().getRouter().navigate(this,
                 new Location(url, queryParameters),
                 NavigationTrigger.UI_NAVIGATE);
         return (Optional<C>) findCurrentNavigationTarget(navigationTarget);
     }
-    
+
     /**
      * Updates this UI to show the view corresponding to the given navigation
      * target with the specified parameter. The parameter needs to be the same
@@ -1057,11 +1059,13 @@ public class UI extends Component
      */
     @SuppressWarnings("unchecked")
     public <T extends Component> Optional<T> navigate(
-            Class<? extends T> navigationTarget, QueryParameters queryParameters) {
-    	
+            Class<? extends T> navigationTarget,
+            QueryParameters queryParameters) {
+
         RouteConfiguration configuration = RouteConfiguration
                 .forRegistry(getInternals().getRouter().getRegistry());
-		String url = configuration.getUrl(navigationTarget, RouteParameters.empty());
+        String url = configuration.getUrl(navigationTarget,
+                RouteParameters.empty());
         getInternals().getRouter().navigate(this,
                 new Location(url, queryParameters),
                 NavigationTrigger.UI_NAVIGATE);

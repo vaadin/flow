@@ -55,7 +55,7 @@ public class QueryParameters implements Serializable {
                                 entry -> Collections.unmodifiableList(
                                         new ArrayList<>(entry.getValue())))));
     }
- 
+
     /**
      * Creates an empty query parameters information.
      *
@@ -105,12 +105,14 @@ public class QueryParameters implements Serializable {
     /**
      * Creates parameters from given key-value pair.
      *
-     * @param key the name of the parameter
-     * @param value the value
+     * @param key
+     *            the name of the parameter
+     * @param value
+     *            the value
      * @return query parameters information
      */
     public static QueryParameters of(String key, String value) {
-    	return simple(Collections.singletonMap(key, value));
+        return simple(Collections.singletonMap(key, value));
     }
 
     /**
