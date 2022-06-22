@@ -62,7 +62,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-public class NodeTasksTest {
+public class NodeTasksWebpackTest {
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -75,12 +75,21 @@ public class NodeTasksTest {
 
     private String userDir;
 
+    private File propertiesDir;
+
     @Before
-    public void setup() {
+    public void setup() throws Exception {
         userDir = temporaryFolder.getRoot().getAbsolutePath();
         System.setProperty(USER_DIR, userDir);
         System.clearProperty(PARAM_FRONTEND_DIR);
         System.clearProperty(PARAM_GENERATED_DIR);
+
+        propertiesDir = temporaryFolder.newFolder();
+
+        FileUtils.write(
+                new File(propertiesDir, FeatureFlags.PROPERTIES_FILENAME),
+                "com.vaadin.experimental.webpackForFrontendBuild=true\n",
+                StandardCharsets.UTF_8);
     }
 
     @BeforeClass
@@ -109,7 +118,8 @@ public class NodeTasksTest {
 
         Builder builder = new Builder(mockedLookup, new File(userDir), TARGET)
                 .enablePackagesUpdate(false).enableImportsUpdate(true)
-                .runNpmInstall(false).withEmbeddableWebComponents(false);
+                .runNpmInstall(false).withEmbeddableWebComponents(false)
+                .setJavaResourceFolder(propertiesDir);
 
         assertEquals(1, finder.getAnnotatedClasses(JsModule.class).size());
         assertEquals(1, finder.getAnnotatedClasses(JavaScript.class).size());
@@ -134,10 +144,10 @@ public class NodeTasksTest {
         Class<?>[] classes = { FlagView.class,
                 ExampleExperimentalComponent.class };
 
-        File propertiesDir = temporaryFolder.newFolder();
         FileUtils.write(
                 new File(propertiesDir, FeatureFlags.PROPERTIES_FILENAME),
-                "com.vaadin.experimental.exampleFeatureFlag=true\n",
+                "com.vaadin.experimental.exampleFeatureFlag=true\n" +
+                "com.vaadin.experimental.webpackForFrontendBuild=true\n",
                 StandardCharsets.UTF_8);
 
         Lookup mockedLookup = Mockito.mock(Lookup.class);
@@ -171,7 +181,8 @@ public class NodeTasksTest {
                 .when(mockedLookup).lookup(ClassFinder.class);
         Builder builder = new Builder(mockedLookup, new File(userDir), TARGET)
                 .enablePackagesUpdate(false).enableImportsUpdate(true)
-                .runNpmInstall(false).withEmbeddableWebComponents(false);
+                .runNpmInstall(false).withEmbeddableWebComponents(false)
+                .setJavaResourceFolder(propertiesDir);
 
         Assert.assertEquals(
                 new File(userDir, DEFAULT_FRONTEND_DIR).getAbsolutePath(),
@@ -197,7 +208,8 @@ public class NodeTasksTest {
                 .when(mockedLookup).lookup(ClassFinder.class);
         Builder builder = new Builder(mockedLookup, new File(userDir), TARGET)
                 .enablePackagesUpdate(false).enableImportsUpdate(true)
-                .runNpmInstall(false).withEmbeddableWebComponents(false);
+                .runNpmInstall(false).withEmbeddableWebComponents(false)
+                .setJavaResourceFolder(propertiesDir);
 
         Assert.assertEquals(
                 new File(userDir, DEFAULT_FRONTEND_DIR).getAbsolutePath(),
@@ -226,7 +238,8 @@ public class NodeTasksTest {
                 .when(mockedLookup).lookup(ClassFinder.class);
         Builder builder = new Builder(mockedLookup, new File(userDir), TARGET)
                 .enablePackagesUpdate(false).enableImportsUpdate(true)
-                .runNpmInstall(false).withEmbeddableWebComponents(false);
+                .runNpmInstall(false).withEmbeddableWebComponents(false)
+                .setJavaResourceFolder(propertiesDir);
 
         Assert.assertEquals(
                 new File(userDir, "my_custom_sources_folder").getAbsolutePath(),
@@ -260,7 +273,8 @@ public class NodeTasksTest {
                 .withFlowResourcesFolder(
                         new File(userDir, TARGET + "flow-frontend"))
                 .withFrontendGeneratedFolder(new File(userDir,
-                        DEFAULT_PROJECT_FRONTEND_GENERATED_DIR));
+                        DEFAULT_PROJECT_FRONTEND_GENERATED_DIR))
+                .setJavaResourceFolder(propertiesDir);
         builder.build().execute();
         String webpackGeneratedContent = Files
                 .lines(new File(userDir, WEBPACK_GENERATED).toPath())
@@ -281,7 +295,8 @@ public class NodeTasksTest {
         Builder builder = new Builder(mockedLookup, new File(userDir), TARGET)
                 .enablePackagesUpdate(false).useV14Bootstrap(true)
                 .enableImportsUpdate(true).runNpmInstall(false)
-                .withEmbeddableWebComponents(false).useV14Bootstrap(false);
+                .withEmbeddableWebComponents(false).useV14Bootstrap(false)
+                .setJavaResourceFolder(propertiesDir);
         builder.build().execute();
 
         Assert.assertTrue(new File(userDir, "tsconfig.json").exists());
@@ -311,7 +326,8 @@ public class NodeTasksTest {
                 .runNpmInstall(false).withEmbeddableWebComponents(false)
                 .withFrontendGeneratedFolder(new File(userDir))
                 .withEndpointSourceFolder(new File(userDir))
-                .withEndpointGeneratedOpenAPIFile(new File(userDir));
+                .withEndpointGeneratedOpenAPIFile(new File(userDir))
+                .setJavaResourceFolder(propertiesDir);
 
         EndpointGeneratorTaskFactory endpointGeneratorFactory = mock(
                 EndpointGeneratorTaskFactory.class);
