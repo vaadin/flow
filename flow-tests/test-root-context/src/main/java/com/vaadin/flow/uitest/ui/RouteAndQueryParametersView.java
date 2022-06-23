@@ -39,12 +39,21 @@ public class RouteAndQueryParametersView extends Div
         paramView.setId("paramView");
         add(paramView);
 
-        NativeButton nativeButton = new NativeButton("Go");
+        NativeButton nativeButton = new NativeButton("Navigate with both");
+        nativeButton.setId("both");
         nativeButton.addClickListener(e -> {
             UI.getCurrent().navigate(RouteAndQueryParametersView.class, 5,
                     QueryParameters.of("foo", "bar"));
         });
         add(nativeButton);
+
+        NativeButton withQueryParametersOnly = new NativeButton("Navigate with qp");
+        nativeButton.setId("qponly");
+        withQueryParametersOnly.addClickListener(e -> {
+            UI.getCurrent().navigate(RouteAndQueryParametersView.class,
+                    QueryParameters.of("foo", "bar"));
+        });
+        add(withQueryParametersOnly);
 
     }
 
@@ -53,7 +62,7 @@ public class RouteAndQueryParametersView extends Div
             @OptionalParameter Integer parameter) {
         String queryString = event.getLocation().getQueryParameters()
                 .getQueryString();
-        paramView.setText("route parameter: " + parameter + ", query string="
+        paramView.setText("route parameter: " + parameter + ", query string:"
                 + queryString);
 
     }
