@@ -183,15 +183,7 @@ public abstract class VaadinWebSecurityConfigurerAdapter
                 .forEach(paths::add);
 
         String mappedRoot = RequestUtil.applyUrlMapping(urlMapping, "");
-        if ("/".equals(mappedRoot)) {
-            // Permit should be needed only on /vaadinServlet/, not on sub paths
-            // The '**' suffix is left for backward compatibility.
-            // Should we remove it?
-            paths.add("/vaadinServlet/**");
-        } else {
-            // We need only to permit root of the mapping because other Vaadin
-            // public urls and resources are already permitted
-            paths.add(mappedRoot);
+        if (!"/".equals(mappedRoot)) {
             // When using an url path, static resources are still fetched from
             // /VAADIN/ in the context root
             paths.add("/VAADIN/**");

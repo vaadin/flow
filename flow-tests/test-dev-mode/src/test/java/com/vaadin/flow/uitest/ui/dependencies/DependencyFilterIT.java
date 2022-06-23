@@ -21,7 +21,7 @@ public class DependencyFilterIT extends ChromeBrowserTest {
 
         List<String> testMessages = findElements(
                 By.className("dependenciesTest")).stream()
-                        .map(WebElement::getText).collect(Collectors.toList());
+                .map(WebElement::getText).collect(Collectors.toList());
 
         boolean found = testMessages.stream()
                 .anyMatch(message -> message.equals("eager.js"));

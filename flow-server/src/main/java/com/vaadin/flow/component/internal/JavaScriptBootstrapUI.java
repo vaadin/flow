@@ -259,7 +259,7 @@ public class JavaScriptBootstrapUI extends UI {
         if (clientViewNavigationState == null) {
             clientViewNavigationState = new NavigationStateBuilder(
                     getInternals().getRouter())
-                            .withTarget(ClientViewPlaceholder.class).build();
+                    .withTarget(ClientViewPlaceholder.class).build();
         }
         // Passing the `clientViewLocation` to make sure that the navigation
         // events contain the correct location that we are navigating to.
