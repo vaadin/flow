@@ -49,7 +49,7 @@ public class RouteAndQueryParametersView extends Div
 
         NativeButton withQueryParametersOnly = new NativeButton(
                 "Navigate with qp");
-        nativeButton.setId("qponly");
+        withQueryParametersOnly.setId("qponly");
         withQueryParametersOnly.addClickListener(e -> {
             UI.getCurrent().navigate(RouteAndQueryParametersView.class,
                     QueryParameters.of("foo", "bar"));
