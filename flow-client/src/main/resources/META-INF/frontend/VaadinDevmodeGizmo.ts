@@ -3,7 +3,7 @@ import { nothing } from 'lit-html';
 import { classMap } from 'lit-html/directives/class-map.js';
 // @ts-ignore
 import { copy } from './copy-to-clipboard.js';
-import { licenseCheckFailed, licenseCheckNoKey, licenseCheckOk, Product } from './License';
+import { licenseCheckFailed, licenseCheckNoKey, licenseCheckOk, Product, licenseInit } from './License';
 
 interface ServerInfo {
   vaadinVersion: string;
@@ -810,6 +810,8 @@ export class VaadinDevmodeGizmo extends LitElement {
     const windowAny = window as any;
     windowAny.Vaadin = windowAny.Vaadin || {};
     windowAny.Vaadin.devTools = Object.assign(this, windowAny.Vaadin.devTools);
+
+    licenseInit();
   }
 
   format(o: any): string {
