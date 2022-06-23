@@ -93,7 +93,7 @@ public class TaskUpdatePackagesNpmTest {
         generatedPath.mkdir();
         versionJsonFile = new File(npmFolder, "versions.json");
         finder = Mockito.mock(ClassFinder.class);
-        Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
+        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
                 .thenReturn(versionJsonFile.toURI().toURL());
 
         packageJson = new File(npmFolder, PACKAGE_JSON);
@@ -185,14 +185,14 @@ public class TaskUpdatePackagesNpmTest {
     @Test
     public void npmIsInUse_noPlatformVersionJsonPresent_noFailure()
             throws IOException {
-        Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
+        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
                 .thenReturn(null);
         final TaskUpdatePackages task = createTask(
                 createApplicationDependencies());
         task.execute();
         Assert.assertTrue("Updates not picked", task.modified);
 
-        Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
+        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
                 .thenReturn(versionJsonFile.toURI().toURL());
         JsonObject dependencies = getOrCreatePackageJson()
                 .getObject(DEPENDENCIES);
@@ -203,11 +203,11 @@ public class TaskUpdatePackagesNpmTest {
     @Test
     public void npmIsInUse_platformVersionsJsonAdded_versionsPinned()
             throws IOException {
-        Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
+        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
                 .thenReturn(null);
         createTask(createApplicationDependencies()).execute();
 
-        Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
+        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
                 .thenReturn(versionJsonFile.toURI().toURL());
         final String newVersion = "20.0.0";
         createVaadinVersionsJson(newVersion, newVersion, newVersion);
@@ -660,7 +660,7 @@ public class TaskUpdatePackagesNpmTest {
 
     private void verifyPlatformDependenciesAreAdded(boolean enablePnpm)
             throws IOException {
-        Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
+        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
                 .thenReturn(versionJsonFile.toURI().toURL());
         final String newVersion = "20.0.0";
         createVaadinVersionsJson(newVersion, newVersion, newVersion);
