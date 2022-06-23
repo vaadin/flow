@@ -254,7 +254,7 @@ public class NodeTasksViteTest {
                         .exists());
     }
 
-    @Ignore("useClientSideIndexFileForBootstrapping is not written to vite config, bug?")
+    @Ignore("Vite doesn't take into account v14 bootstrapping")
     @Test
     public void should_SetIsClientBootstrapMode_When_EnableClientSideBootstrapMode()
             throws ExecutionFailedException, IOException {

@@ -26,6 +26,7 @@ import org.hamcrest.MatcherAssert;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -54,7 +55,7 @@ import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_STATISTICS
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 
-public class WebComponentBootstrapHandlerTest {
+public class WebComponentBootstrapHandlerViteTest {
 
     private static class TestWebComponentBootstrapHandler
             extends WebComponentBootstrapHandler {
@@ -198,6 +199,7 @@ public class WebComponentBootstrapHandlerTest {
                 CoreMatchers.not(CoreMatchers.containsString("baz")));
     }
 
+    @Ignore
     @Test
     public void writeBootstrapPage_scriptGuardedAndDevToolsDisabled()
             throws IOException, ServiceException {
@@ -268,6 +270,7 @@ public class WebComponentBootstrapHandlerTest {
         Assert.assertTrue(handler.canHandleRequest(request));
     }
 
+    @Ignore
     @Test
     public void writeBootstrapPage_withExportChunk()
             throws IOException, ServiceException {
@@ -300,6 +303,7 @@ public class WebComponentBootstrapHandlerTest {
                 result.contains("VAADIN/build/vaadin-bundle-1111.cache.js"));
     }
 
+    @Ignore
     @Test
     public void writeBootstrapPage_noExportChunk()
             throws IOException, ServiceException {
@@ -363,11 +367,8 @@ public class WebComponentBootstrapHandlerTest {
         Mockito.when(lookup.lookup(ResourceProvider.class))
                 .thenReturn(provider);
 
-        Class<? extends VaadinServlet> servletClass = service.getServlet()
-                .getClass();
-
         Mockito.when(provider.getApplicationResource(Mockito.anyString()))
-                .thenAnswer(answer -> WebComponentBootstrapHandlerTest.class
+                .thenAnswer(answer -> WebComponentBootstrapHandlerViteTest.class
                         .getClassLoader().getResource(answer.getArgument(0)));
 
         Mockito.when(provider.getClientResourceAsStream(
