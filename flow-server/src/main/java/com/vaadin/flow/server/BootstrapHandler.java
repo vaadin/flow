@@ -78,6 +78,7 @@ import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.LocationUtil;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
+import com.vaadin.flow.server.communication.IndexHtmlRequestHandler;
 import com.vaadin.flow.server.communication.PushConnectionFactory;
 import com.vaadin.flow.server.communication.UidlWriter;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -759,6 +760,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             if (!config.isProductionMode()) {
                 UsageStatisticsExporter
                         .exportUsageStatisticsToDocument(document);
+                IndexHtmlRequestHandler.addLicenseChecker(document);
             }
 
             setupPwa(document, context);

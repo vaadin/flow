@@ -60,54 +60,63 @@ const showNoLicenseFallback = (element: Element, productAndMessage: ProductAndMe
 
 const productTagNames: Record<string, string[]> = {};
 const productMissingLicense: Record<string, ProductAndMessage> = {};
+const productCheckOk: Record<string, boolean> = {};
 
-/* eslint-disable func-names */
-const overrideCustomElementsDefine = () => {
-  const { define } = window.customElements;
-
-  window.customElements.define = function (
-    tagName,
-    constructor: CustomElementConstructor & { cvdlName?: string },
-    options
-  ) {
-    const { cvdlName } = constructor;
-    if (cvdlName) {
-      productTagNames[cvdlName] = productTagNames[cvdlName] ?? [];
-      productTagNames[cvdlName].push(tagName);
-
-      const productInfo = productMissingLicense[cvdlName];
-      if (productInfo) {
-        const { connectedCallback } = constructor.prototype;
-        constructor.prototype.connectedCallback = function () {
-          setTimeout(() => showNoLicenseFallback(this, productInfo), noLicenseFallbackTimeout);
-
-          if (connectedCallback) {
-            connectedCallback.call(this);
-          }
-        };
-      }
-    }
-
-    define.call(this, tagName, constructor, options);
-  };
+const key = (product: Product): string => {
+  return `${product.name}_${product.version}`;
 };
-/* eslint-enable func-names */
+
+const checkLicenseIfNeeded = (tagName: string) => {
+  const constructor: CustomElementConstructor & { cvdlName?: string } & { version?: string } = customElements.get(
+    tagName
+  )!;
+  const { cvdlName, version } = constructor;
+  if (cvdlName && version) {
+    const product: Product = { name: cvdlName, version };
+    productTagNames[cvdlName] = productTagNames[cvdlName] ?? [];
+    productTagNames[cvdlName].push(tagName);
+
+    const { connectedCallback } = constructor.prototype;
+    constructor.prototype.connectedCallback = function () {
+      const failedLicenseCheck = productMissingLicense[key(product)];
+      if (failedLicenseCheck) {
+        // Has been checked and the check failed
+        setTimeout(() => showNoLicenseFallback(this, failedLicenseCheck), noLicenseFallbackTimeout);
+      }
+      if (connectedCallback) {
+        connectedCallback.call(this);
+      }
+    };
+
+    if (productMissingLicense[key(product)] || productCheckOk[key(product)]) {
+      // Already checked
+    } else {
+      // Has not been checked
+      (window as any).Vaadin.devTools.checkLicense(product);
+    }
+  }
+};
 
 export const licenseCheckOk = (data: Product) => {
+  productCheckOk[key(data)] = true;
+
   // eslint-disable-next-line no-console
   console.debug('License check ok for ', data);
 };
 
 export const licenseCheckFailed = (data: ProductAndMessage) => {
   const productName = data.product.name;
-  productMissingLicense[productName] = data;
+  productMissingLicense[key(data.product)] = data;
   // eslint-disable-next-line no-console
   console.error('License check failed for ', productName);
 
   const tags = productTagNames[productName];
   if (tags?.length > 0) {
     findAll(document, tags).forEach((element) => {
-      setTimeout(() => showNoLicenseFallback(element, productMissingLicense[productName]), noLicenseFallbackTimeout);
+      setTimeout(
+        () => showNoLicenseFallback(element, productMissingLicense[key(data.product)]),
+        noLicenseFallbackTimeout
+      );
     });
   }
 };
@@ -117,16 +126,31 @@ export const licenseCheckNoKey = (data: ProductAndMessage) => {
 
   const productName = data.product.name;
   data.messageHtml = `No license found. <a target=_blank onclick="javascript:window.open(this.href);return false;" href="${keyUrl}">Go here to start a trial or retrieve your license.</a>`;
-  productMissingLicense[productName] = data;
+  productMissingLicense[key(data.product)] = data;
   // eslint-disable-next-line no-console
   console.error('No license found when checking ', productName);
 
   const tags = productTagNames[productName];
   if (tags?.length > 0) {
     findAll(document, tags).forEach((element) => {
-      setTimeout(() => showNoLicenseFallback(element, productMissingLicense[productName]), noLicenseFallbackTimeout);
+      setTimeout(
+        () => showNoLicenseFallback(element, productMissingLicense[key(data.product)]),
+        noLicenseFallbackTimeout
+      );
     });
   }
 };
 
-overrideCustomElementsDefine();
+export const licenseInit = () => {
+  // Process already registered elements
+  (window as any).Vaadin.devTools.definedCustomElements.forEach((tagName: string) => {
+    checkLicenseIfNeeded(tagName);
+  });
+
+  // Handle new elements directly
+  (window as any).Vaadin.devTools.definedCustomElements = {
+    push: (tagName: string) => {
+      checkLicenseIfNeeded(tagName);
+    }
+  };
+};
