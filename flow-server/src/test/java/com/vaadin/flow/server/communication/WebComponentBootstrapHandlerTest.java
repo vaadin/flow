@@ -203,7 +203,6 @@ public class WebComponentBootstrapHandlerTest {
             throws IOException, ServiceException {
         TestWebComponentBootstrapHandler handler = new TestWebComponentBootstrapHandler();
         VaadinServletService service = new MockVaadinServletService();
-
         initLookup(service);
 
         VaadinSession session = new MockVaadinSession(service);
@@ -232,8 +231,8 @@ public class WebComponentBootstrapHandlerTest {
                 "if (!hasScript(\"/VAADIN/build/vaadin-export-2222.cache.js\")) {");
         Assert.assertTrue(guardIndex > scriptIndex);
 
-        int createScriptIndex = result
-                .indexOf("ocument.createElement('script');headElem.setAttribute('type'");
+        int createScriptIndex = result.indexOf(
+                "ocument.createElement('script');headElem.setAttribute('type'");
         Assert.assertTrue(createScriptIndex > guardIndex);
 
         Assert.assertTrue(result.contains("\\\"devToolsEnabled\\\": false"));
