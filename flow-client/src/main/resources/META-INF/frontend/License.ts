@@ -55,13 +55,10 @@ const showNoLicenseFallback = (element: Element, productAndMessage: ProductAndMe
           "<a href='https:$1'>https:$1</a>"
       );
 
-  if (element.isConnected) {
-    element.outerHTML = `<no-license style="display:flex;align-items:center;text-align:center;justify-content:center;"><div>${htmlMessage}</div></no-license>`;
-  }
+  element.outerHTML = `<no-license style="display:flex;align-items:center;text-align:center;justify-content:center;"><div>${htmlMessage}</div></no-license>`;
 };
 
 const productTagNames: Record<string, string[]> = {};
-const productChecking: Record<string, boolean> = {};
 const productMissingLicense: Record<string, ProductAndMessage> = {};
 const productCheckOk: Record<string, boolean> = {};
 
@@ -69,28 +66,34 @@ const key = (product: Product): string => {
   return `${product.name}_${product.version}`;
 };
 
-const checkLicenseIfNeeded = (cvdlElement: Element) => {
-  const { cvdlName, version } = cvdlElement.constructor as CustomElementConstructor & {
-    cvdlName: string;
-    version: string;
-  };
-  const product: Product = { name: cvdlName, version };
-  const tagName = cvdlElement.tagName.toLowerCase();
-  productTagNames[cvdlName] = productTagNames[cvdlName] ?? [];
-  productTagNames[cvdlName].push(tagName);
+const checkLicenseIfNeeded = (tagName: string) => {
+  const constructor: CustomElementConstructor & { cvdlName?: string } & { version?: string } = customElements.get(
+      tagName
+  )!;
+  const { cvdlName, version } = constructor;
+  if (cvdlName && version) {
+    const product: Product = { name: cvdlName, version };
+    productTagNames[cvdlName] = productTagNames[cvdlName] ?? [];
+    productTagNames[cvdlName].push(tagName);
 
-  const failedLicenseCheck = productMissingLicense[key(product)];
-  if (failedLicenseCheck) {
-    // Has been checked and the check failed
-    setTimeout(() => showNoLicenseFallback(cvdlElement, failedLicenseCheck), noLicenseFallbackTimeout);
-  }
+    const { connectedCallback } = constructor.prototype;
+    constructor.prototype.connectedCallback = function () {
+      const failedLicenseCheck = productMissingLicense[key(product)];
+      if (failedLicenseCheck) {
+        // Has been checked and the check failed
+        setTimeout(() => showNoLicenseFallback(this, failedLicenseCheck), noLicenseFallbackTimeout);
+      }
+      if (connectedCallback) {
+        connectedCallback.call(this);
+      }
+    };
 
-  if (productMissingLicense[key(product)] || productCheckOk[key(product)]) {
-    // Already checked
-  } else if (!productChecking[key(product)]) {
-    // Has not been checked
-    productChecking[key(product)] = true;
-    (window as any).Vaadin.devTools.checkLicense(product);
+    if (productMissingLicense[key(product)] || productCheckOk[key(product)]) {
+      // Already checked
+    } else {
+      // Has not been checked
+      (window as any).Vaadin.devTools.checkLicense(product);
+    }
   }
 };
 
@@ -98,14 +101,14 @@ export const licenseCheckOk = (data: Product) => {
   productCheckOk[key(data)] = true;
 
   // eslint-disable-next-line no-console
-  console.debug('License check ok for', data);
+  console.debug('License check ok for ', data);
 };
 
 export const licenseCheckFailed = (data: ProductAndMessage) => {
   const productName = data.product.name;
   productMissingLicense[key(data.product)] = data;
   // eslint-disable-next-line no-console
-  console.error('License check failed for', productName);
+  console.error('License check failed for ', productName);
 
   const tags = productTagNames[productName];
   if (tags?.length > 0) {
@@ -125,7 +128,7 @@ export const licenseCheckNoKey = (data: ProductAndMessage) => {
   data.messageHtml = `No license found. <a target=_blank onclick="javascript:window.open(this.href);return false;" href="${keyUrl}">Go here to start a trial or retrieve your license.</a>`;
   productMissingLicense[key(data.product)] = data;
   // eslint-disable-next-line no-console
-  console.error('No license found when checking', productName);
+  console.error('No license found when checking ', productName);
 
   const tags = productTagNames[productName];
   if (tags?.length > 0) {
@@ -140,14 +143,14 @@ export const licenseCheckNoKey = (data: ProductAndMessage) => {
 
 export const licenseInit = () => {
   // Process already registered elements
-  (window as any).Vaadin.devTools.createdCvdlElements.forEach((element: Element) => {
-    checkLicenseIfNeeded(element);
+  (window as any).Vaadin.devTools.definedCustomElements.forEach((tagName: string) => {
+    checkLicenseIfNeeded(tagName);
   });
 
   // Handle new elements directly
-  (window as any).Vaadin.devTools.createdCvdlElements = {
-    push: (element: Element) => {
-      checkLicenseIfNeeded(element);
+  (window as any).Vaadin.devTools.definedCustomElements = {
+    push: (tagName: string) => {
+      checkLicenseIfNeeded(tagName);
     }
   };
 };

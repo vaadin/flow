@@ -1,5 +1,5 @@
 import {css, html, LitElement, property} from 'lit-element';
-import { licenseCheckFailed, licenseCheckNoKey, licenseCheckOk, Product } from './License';
+import { licenseCheckFailed, licenseCheckNoKey, licenseCheckOk, Product, licenseInit } from './License';
 
 /* tslint:disable: no-console max-classes-per-file */
 
@@ -756,6 +756,8 @@ export class VaadinDevmodeGizmo extends LitElement {
     if ((window as any).Vaadin && (window as any).Vaadin.Flow) {
       (window as any).Vaadin.Flow.devModeGizmo = this;
     }
+
+    licenseInit();
   }
 
   disconnectedCallback() {
