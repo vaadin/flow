@@ -76,18 +76,19 @@ const checkLicenseIfNeeded = (tagName: string) => {
     productTagNames[cvdlName] = productTagNames[cvdlName] ?? [];
     productTagNames[cvdlName].push(tagName);
 
-    const failedLicenseCheck = productMissingLicense[cvdlName];
-    if (failedLicenseCheck) {
-      // Has been checked and the check failed
-      const { connectedCallback } = constructor.prototype;
-      constructor.prototype.connectedCallback = function () {
+    const { connectedCallback } = constructor.prototype;
+    constructor.prototype.connectedCallback = function () {
+      const failedLicenseCheck = productMissingLicense[key(product)];
+      if (failedLicenseCheck) {
+        // Has been checked and the check failed
         setTimeout(() => showNoLicenseFallback(this, failedLicenseCheck), noLicenseFallbackTimeout);
+      }
+      if (connectedCallback) {
+        connectedCallback.call(this);
+      }
+    };
 
-        if (connectedCallback) {
-          connectedCallback.call(this);
-        }
-      };
-    } else if (productCheckOk[key(product)]) {
+    if (productMissingLicense[key(product)] || productCheckOk[key(product)]) {
       // Already checked
     } else {
       // Has not been checked
@@ -105,14 +106,17 @@ export const licenseCheckOk = (data: Product) => {
 
 export const licenseCheckFailed = (data: ProductAndMessage) => {
   const productName = data.product.name;
-  productMissingLicense[productName] = data;
+  productMissingLicense[key(data.product)] = data;
   // eslint-disable-next-line no-console
   console.error('License check failed for ', productName);
 
   const tags = productTagNames[productName];
   if (tags?.length > 0) {
     findAll(document, tags).forEach((element) => {
-      setTimeout(() => showNoLicenseFallback(element, productMissingLicense[productName]), noLicenseFallbackTimeout);
+      setTimeout(
+        () => showNoLicenseFallback(element, productMissingLicense[key(data.product)]),
+        noLicenseFallbackTimeout
+      );
     });
   }
 };
@@ -122,14 +126,17 @@ export const licenseCheckNoKey = (data: ProductAndMessage) => {
 
   const productName = data.product.name;
   data.messageHtml = `No license found. <a target=_blank onclick="javascript:window.open(this.href);return false;" href="${keyUrl}">Go here to start a trial or retrieve your license.</a>`;
-  productMissingLicense[productName] = data;
+  productMissingLicense[key(data.product)] = data;
   // eslint-disable-next-line no-console
   console.error('No license found when checking ', productName);
 
   const tags = productTagNames[productName];
   if (tags?.length > 0) {
     findAll(document, tags).forEach((element) => {
-      setTimeout(() => showNoLicenseFallback(element, productMissingLicense[productName]), noLicenseFallbackTimeout);
+      setTimeout(
+        () => showNoLicenseFallback(element, productMissingLicense[key(data.product)]),
+        noLicenseFallbackTimeout
+      );
     });
   }
 };
