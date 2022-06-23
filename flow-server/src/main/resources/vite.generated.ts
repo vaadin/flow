@@ -75,8 +75,11 @@ function buildSWPlugin(): PluginOption {
       });
       rollupPlugins.push(
         replace({
-          'process.env.NODE_ENV': JSON.stringify(config.mode),
-          ...config.define
+          values: {
+            'process.env.NODE_ENV': JSON.stringify(config.mode),
+            ...config.define
+          },
+          preventAssignment: true
         })
       );
 
