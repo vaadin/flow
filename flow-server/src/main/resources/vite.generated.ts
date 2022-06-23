@@ -413,6 +413,10 @@ export const vaadinConfig: UserConfigFn = (env) => {
         '@vaadin/router',
         '@vaadin/vaadin-license-checker',
         '@vaadin/vaadin-usage-statistics',
+        'workbox-core',
+        'workbox-precaching',
+        'workbox-routing',
+        'workbox-strategies'
       ]
     },
     plugins: [
