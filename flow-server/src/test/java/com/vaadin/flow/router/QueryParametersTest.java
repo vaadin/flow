@@ -224,7 +224,7 @@ public class QueryParametersTest {
     @Test
     public void toStringValidation() {
         String toString = QueryParameters.of("foo", "bar").toString();
-        Assert.assertEquals("foo=bar", toString);
+        Assert.assertEquals("QueryParameters(foo=bar)", toString);
     }
 
     @Test

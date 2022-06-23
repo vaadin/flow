@@ -229,7 +229,7 @@ public class QueryParameters implements Serializable {
 
     @Override
     public String toString() {
-        return getQueryString();
+        return "QueryParameters(" + getQueryString() + ")";
     }
 
     @Override
