@@ -84,6 +84,7 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.VaadinInitializerException;
+import com.vaadin.pro.licensechecker.LicenseChecker;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -202,8 +203,12 @@ public class DevModeInitializer implements Serializable {
         }
         // This needs to be set as there is no "current service" available in
         // this call
-        FeatureFlags.get(context)
-                .setPropertiesLocation(config.getJavaResourceFolder());
+        FeatureFlags featureFlags = FeatureFlags.get(context);
+        if (featureFlags.isEnabled(FeatureFlags.OFFLINE_LICENSE_CHECKER)) {
+            LicenseChecker.setStrictOffline(true);
+        }
+
+        featureFlags.setPropertiesLocation(config.getJavaResourceFolder());
 
         String baseDir = config.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
                 null);
@@ -347,7 +352,7 @@ public class DevModeInitializer implements Serializable {
 
         Lookup devServerLookup = Lookup.compose(lookup,
                 Lookup.of(config, ApplicationConfiguration.class));
-        if (FeatureFlags.get(context).isEnabled(FeatureFlags.VITE)) {
+        if (featureFlags.isEnabled(FeatureFlags.VITE)) {
             return new ViteHandler(devServerLookup, 0, builder.getNpmFolder(),
                     nodeTasksFuture);
         } else {

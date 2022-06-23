@@ -23,7 +23,6 @@ import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.URL;
-import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
 import java.util.List;
@@ -50,6 +49,7 @@ import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.HandlerHelper;
+import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.StaticFileServer;
 import com.vaadin.flow.server.VaadinRequest;
@@ -175,7 +175,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         }
     }
 
-    private void doStartDevModeServer() throws ExecutionFailedException {
+    void doStartDevModeServer() throws ExecutionFailedException {
         // If port is defined, means that the dev server is already running
         if (port > 0) {
             if (!checkConnection()) {
@@ -512,11 +512,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         }
     }
 
-    /**
-     * Get the listening port of the dev server.
-     *
-     * @return the listening port
-     */
+    @Override
     public int getPort() {
         return port;
     }
@@ -675,19 +671,22 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
     public boolean serveDevModeRequest(HttpServletRequest request,
             HttpServletResponse response) throws IOException {
         // Do not serve requests if dev server starting or failed to start.
-        if (isDevServerFailedToStart.get() || !devServerStartFuture.isDone()) {
+        if (isDevServerFailedToStart.get() || !devServerStartFuture.isDone()
+                || devServerStartFuture.isCompletedExceptionally()) {
             return false;
         }
         // Since we have 'publicPath=/VAADIN/' in the dev server config,
         // a valid request for the dev server should start with '/VAADIN/'
-        String requestFilename = request.getPathInfo();
+
+        String requestFilename = UrlUtil.getStaticVaadinPathInfo(request);
 
         if (HandlerHelper.isPathUnsafe(requestFilename)
-                || WEBPACK_ILLEGAL_CHAR_PATTERN.matcher(requestFilename)
-                        .find()) {
+                || WEBPACK_ILLEGAL_CHAR_PATTERN.matcher(requestFilename).find())
+
+        {
             getLogger().info("Blocked attempt to access file: {}",
                     requestFilename);
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.setStatus(HttpStatusCode.FORBIDDEN.getCode());
             return true;
         }
 

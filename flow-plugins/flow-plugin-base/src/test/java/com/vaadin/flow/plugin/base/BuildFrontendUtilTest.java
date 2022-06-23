@@ -1,20 +1,26 @@
 package com.vaadin.flow.plugin.base;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
+import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
+
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.flow.utils.LookupImpl;
 
 public class BuildFrontendUtilTest {
 
@@ -40,6 +46,9 @@ public class BuildFrontendUtilTest {
         Mockito.when(adapter.npmFolder()).thenReturn(baseDir);
         Mockito.when(adapter.projectBaseDirectory())
                 .thenReturn(tmpDir.getRoot().toPath());
+        ClassFinder classFinder = Mockito.mock(ClassFinder.class);
+        Mockito.when(adapter.createLookup(Mockito.any()))
+                .thenReturn(new LookupImpl(classFinder));
 
         FrontendTools tools = Mockito.mock(FrontendTools.class);
 
@@ -55,10 +64,19 @@ public class BuildFrontendUtilTest {
         Mockito.when(tools.getNodeExecutable())
                 .thenReturn(fakeNode.getAbsolutePath());
 
+        File resourceOutput = new File(baseDir, "resOut");
+        Mockito.when(adapter.servletResourceOutputDirectory())
+                .thenReturn(resourceOutput);
         Map<String, String> environment = new HashMap<>();
         environment.put("NODE_OPTIONS", "expected");
         Mockito.when(tools.getWebpackNodeEnvironment()).thenReturn(environment);
 
+        File statsJson = new File(new File(resourceOutput, "config"),
+                "stats.json");
+        statsJson.getParentFile().mkdirs();
+        try (FileOutputStream out = new FileOutputStream(statsJson)) {
+            IOUtils.write("{\"npmModules\":[]}", out, StandardCharsets.UTF_8);
+        }
         // then
         BuildFrontendUtil.runWebpack(adapter, tools);
 

@@ -16,10 +16,6 @@
 
 package com.vaadin.flow.server;
 
-import javax.servlet.Servlet;
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletResponse;
-
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,6 +38,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.Set;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
@@ -468,7 +465,7 @@ public abstract class VaadinService implements Serializable {
      * @param resourceName
      *            a String specifying the name of a file
      * @return a String specifying the file's MIME type
-     * @see ServletContext#getMimeType(String)
+     * @see javax.servlet.ServletContext#getMimeType(String)
      */
     public abstract String getMimeType(String resourceName);
 
@@ -1570,7 +1567,7 @@ public abstract class VaadinService implements Serializable {
             }
 
             // Request not handled by any RequestHandler
-            response.sendError(HttpServletResponse.SC_NOT_FOUND,
+            response.sendError(HttpStatusCode.NOT_FOUND.getCode(),
                     "Request was not handled by any registered handler.");
 
         } catch (final SessionExpiredException e) {
@@ -1725,7 +1722,7 @@ public abstract class VaadinService implements Serializable {
                 // (https://github.com/vaadin/framework/issues/4167)
                 response.setHeader("Content-Type", "text/plain");
 
-                response.sendError(HttpServletResponse.SC_FORBIDDEN,
+                response.sendError(HttpStatusCode.FORBIDDEN.getCode(),
                         "Session expired");
             }
         } catch (IOException e) {
@@ -1775,8 +1772,9 @@ public abstract class VaadinService implements Serializable {
      *            null then the browser will refresh the current page.
      * @param querySelector
      *            Query selector to find the element under which the error will
-     *            be added . If element is not found or the selector is
-     *            {@code null}, body will be used
+     *            be added. If the element is not found the message is not
+     *            shown. If the selector is {@code null}, the body element is
+     *            used.
      * @return A JSON string to be sent to the client
      */
     public static String createCriticalNotificationJSON(String caption,
@@ -2063,6 +2061,10 @@ public abstract class VaadinService implements Serializable {
                     try {
                         pendingAccess.get();
 
+                    } catch (CancellationException ignored) { // NOSONAR
+                        // Ignore canceled UI access tasks exceptions and don't
+                        // let it to be processed by the error handler and shown
+                        // on the UI
                     } catch (Exception exception) {
                         pendingAccess.handleError(exception);
                     }
@@ -2099,7 +2101,7 @@ public abstract class VaadinService implements Serializable {
      * this service.
      *
      * @see #addServiceDestroyListener(ServiceDestroyListener)
-     * @see Servlet#destroy()
+     * @see javax.servlet.Servlet#destroy()
      */
     public void destroy() {
         ServiceDestroyEvent event = new ServiceDestroyEvent(this);

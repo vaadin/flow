@@ -1,6 +1,9 @@
 {
   "name": "no-name",
   "license": "UNLICENSED",
+  "scripts": {
+    "postinstall": "node -e \"fs.writeFileSync('target/classes/main.postinstall', 'hello')\""
+  },
   "dependencies": {
     "@polymer/polymer": "3.4.1",
     "@testscope/all": "../vite-test-assets/packages/@testscope/all",
@@ -13,7 +16,7 @@
     "@vaadin/vaadin-text-field": "23.1.0-alpha2",
     "construct-style-sheets-polyfill": "3.1.0",
     "copy-to-clipboard": "^3.3.1",
-    "lit": "2.2.1",
+    "lit": "2.2.3",
     "package-outside-npm": "file:package-outside-npm",
     "package2-outside-npm": "./package2-outside-npm"
   },
@@ -38,7 +41,7 @@
       "@vaadin/vaadin-lumo-styles": "23.1.0-alpha2",
       "@vaadin/vaadin-text-field": "23.1.0-alpha2",
       "construct-style-sheets-polyfill": "3.1.0",
-      "lit": "2.2.1"
+      "lit": "2.2.3"
     },
     "devDependencies": {
       "@rollup/plugin-replace": "3.1.0",
@@ -53,7 +56,7 @@
       "workbox-core": "6.5.0",
       "workbox-precaching": "6.5.0"
     },
-    "hash": "44f86e6049ac654c8a85a7d04f95147e2f087973a41b2d8f806009b624948c02"
+    "hash": "326cdb17f33a5fb847cf1929884b868f408be79cae3e727a78d317c32cd26978"
   },
   "overrides": {
     "@polymer/polymer": "$@polymer/polymer",

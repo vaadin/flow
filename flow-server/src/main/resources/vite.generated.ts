@@ -5,12 +5,12 @@
  * This file will be overwritten on every run. Any custom changes should be made to vite.config.ts
  */
 import path from 'path';
-import { readFileSync, existsSync } from 'fs';
+import { readFileSync, existsSync, writeFileSync } from 'fs';
 import * as net from 'net';
 
 import { processThemeResources } from '#buildFolder#/plugins/application-theme-plugin/theme-handle';
 import settings from '#settingsImport#';
-import { defineConfig, mergeConfig, PluginOption, ResolvedConfig, UserConfigFn } from 'vite';
+import { defineConfig, mergeConfig, PluginOption, ResolvedConfig, UserConfigFn, OutputOptions, AssetInfo, ChunkInfo } from 'vite';
 import { injectManifest } from 'workbox-build';
 
 import * as rollup from 'rollup';
@@ -25,6 +25,7 @@ const themeFolder = path.resolve(frontendFolder, settings.themeFolder);
 const frontendBundleFolder = path.resolve(__dirname, settings.frontendBundleOutput);
 const addonFrontendFolder = path.resolve(__dirname, settings.addonFrontendFolder);
 const themeResourceFolder = path.resolve(__dirname, settings.themeResourceFolder);
+const statsFile = path.resolve(frontendBundleFolder, '..', 'config', 'stats.json');
 
 const projectStaticAssetsFolders = [
   path.resolve(__dirname, 'src', 'main', 'resources', 'META-INF', 'resources'),
@@ -132,6 +133,30 @@ function injectManifestToSWPlugin(): PluginOption {
   };
 }
 
+function statsExtracterPlugin(): PluginOption {
+  return {
+    name: 'vaadin:stats',
+    enforce: 'post',
+    async writeBundle(options: OutputOptions, bundle: { [fileName: string]: AssetInfo | ChunkInfo }) {
+      const modules = Object.values(bundle).flatMap((b) => (b.modules ? Object.keys(b.modules) : []));
+      const nodeModulesFolders = modules.filter((id) => id.includes('node_modules'));
+      const npmModules = nodeModulesFolders
+        .map((id) => id.replace(/.*node_modules./, ''))
+        .map((id) => {
+          const parts = id.split('/');
+          if (id.startsWith('@')) {
+            return parts[0] + '/' + parts[1];
+          } else {
+            return parts[0];
+          }
+        })
+        .sort()
+        .filter((value, index, self) => self.indexOf(value) === index);
+
+      writeFileSync(statsFile, JSON.stringify({ npmModules }, null, 1));
+    }
+  };
+}
 function vaadinBundlesPlugin(): PluginOption {
   type ExportInfo =
     | string
@@ -155,7 +180,7 @@ function vaadinBundlesPlugin(): PluginOption {
 
   const disabledMessage = 'Vaadin component dependency bundles are disabled.';
 
-  const modulesDirectory = path.posix.resolve(__dirname, 'node_modules');
+  const modulesDirectory = path.resolve(__dirname, 'node_modules').replace(/\\/g, '/');
 
   let vaadinBundleJson: BundleJson;
 
@@ -277,16 +302,37 @@ export { ${exports.map((binding) => `${binding} as ${binding}`).join(', ')} };`;
   };
 }
 
-function updateTheme(contextPath: string) {
-  const themePath = path.resolve(themeFolder);
-  if (contextPath.startsWith(themePath)) {
-    const changed = path.relative(themePath, contextPath);
-
-    console.debug('Theme file changed', changed);
-
-    if (changed.startsWith(settings.themeName)) {
+function themePlugin(): PluginOption {
+  return {
+    name: 'vaadin:theme',
+    config() {
       processThemeResources(themeOptions, console);
-    }
+    },
+    handleHotUpdate(context) {
+      const contextPath = path.resolve(context.file);
+      const themePath = path.resolve(themeFolder);
+      if (contextPath.startsWith(themePath)) {
+        const changed = path.relative(themePath, contextPath);
+
+        console.debug('Theme file changed', changed);
+
+        if (changed.startsWith(settings.themeName)) {
+          processThemeResources(themeOptions, console);
+        }
+      }
+    },
+    async resolveId(id) {
+      if (!id.startsWith(settings.themeFolder)) {
+        return;
+      }
+
+      for (const location of [themeResourceFolder, frontendFolder]) {
+        const result = await this.resolve(path.resolve(location, id));
+        if (result) {
+          return result;
+        }
+      }
+    },
   }
 }
 
@@ -328,16 +374,9 @@ export const vaadinConfig: UserConfigFn = (env) => {
     root: 'frontend',
     base: '',
     resolve: {
-      alias: [
-        { find: 'themes', replacement: (importee: string) => {
-            if (existsSync(path.resolve(themeResourceFolder, importee))) {
-              return path.resolve(themeResourceFolder, settings.themeFolder);
-            }
-            return themeFolder;
-          }
-        },
-        { find: 'Frontend', replacement: frontendFolder }
-      ],
+      alias: {
+        Frontend: frontendFolder
+      },
       preserveSymlinks: true
     },
     define: {
@@ -367,22 +406,19 @@ export const vaadinConfig: UserConfigFn = (env) => {
         // Pre-scan entrypoints in Vite to avoid reloading on first open
         'generated/vaadin.ts'
       ],
-      exclude: ['@vaadin/router']
+      exclude: [
+        '@vaadin/router',
+        '@vaadin/vaadin-license-checker',
+        '@vaadin/vaadin-usage-statistics',
+      ]
     },
     plugins: [
       !devMode && brotli(),
       devMode && vaadinBundlesPlugin(),
       settings.offlineEnabled && buildSWPlugin(),
       settings.offlineEnabled && injectManifestToSWPlugin(),
-      {
-        name: 'vaadin:custom-theme',
-        config() {
-          processThemeResources(themeOptions, console);
-        },
-        handleHotUpdate(context) {
-          updateTheme(path.resolve(context.file));
-        }
-      },
+      !devMode && statsExtracterPlugin(),
+      themePlugin(),
       {
         name: 'vaadin:force-remove-spa-middleware',
         transformIndexHtml: {

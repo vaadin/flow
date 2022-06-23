@@ -8,11 +8,11 @@ import com.vaadin.testbench.ElementQuery;
 import com.vaadin.testbench.TestBenchElement;
 import com.vaadin.testbench.elementsbase.Element;
 
-@Element("vaadin-devmode-gizmo")
-public class DevModeGizmoElement extends TestBenchElement {
+@Element("vaadin-dev-tools")
+public class DevToolsElement extends TestBenchElement {
 
     private TestBenchElement getIcon() {
-        return $("*").attributeContains("class", "gizmo").first();
+        return $("*").attributeContains("class", "dev-tools").first();
     }
 
     private List<TestBenchElement> getLogDivs(boolean onlyError) {

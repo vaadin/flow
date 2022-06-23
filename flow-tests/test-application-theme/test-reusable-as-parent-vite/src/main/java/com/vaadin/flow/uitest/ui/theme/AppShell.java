@@ -13,16 +13,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.servlet;
 
-import javax.servlet.annotation.WebInitParam;
-import javax.servlet.annotation.WebServlet;
+package com.vaadin.flow.uitest.ui.theme;
 
-import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.theme.Theme;
 
-// Custom servlet for disabled dev gizmo test
-@WebServlet(asyncSupported = true, urlPatterns = {
-        "/view-disabled-gizmo/*" }, initParams = {
-                @WebInitParam(name = "devmode.gizmo.enabled", value = "false") })
-public class DevModeGizmoDisabledServlet extends VaadinServlet {
+@Theme(value = "child-theme")
+public class AppShell implements AppShellConfigurator {
 }

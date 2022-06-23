@@ -21,7 +21,7 @@ import org.junit.Test;
 import com.vaadin.flow.component.html.testbench.H2Element;
 import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import com.vaadin.flow.testutil.DevModeGizmoElement;
+import com.vaadin.flow.testutil.DevToolsElement;
 import com.vaadin.testbench.TestBenchElement;
 
 public class FeatureIT extends ChromeBrowserTest {
@@ -55,10 +55,10 @@ public class FeatureIT extends ChromeBrowserTest {
     }
 
     private void toggleViteFeature(boolean expectedInitialState) {
-        DevModeGizmoElement gizmo = $(DevModeGizmoElement.class).waitForFirst();
-        gizmo.expand();
-        gizmo.$(NativeButtonElement.class).id("features").click();
-        TestBenchElement toggleButton = gizmo.$(TestBenchElement.class)
+        DevToolsElement devTools = $(DevToolsElement.class).waitForFirst();
+        devTools.expand();
+        devTools.$(NativeButtonElement.class).id("features").click();
+        TestBenchElement toggleButton = devTools.$(TestBenchElement.class)
                 .id("feature-toggle-viteForFrontendBuild");
         String checked = getCommandExecutor()
                 .executeScript("return arguments[0].checked", toggleButton)

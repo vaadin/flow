@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.server.communication;
 
-import javax.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
@@ -31,6 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
+import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.SynchronizedRequestHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
@@ -140,7 +139,7 @@ public class WebComponentProvider extends SynchronizedRequestHandler {
             IOUtils.write(generated, response.getOutputStream(),
                     StandardCharsets.UTF_8);
         } else {
-            response.sendError(HttpServletResponse.SC_NOT_FOUND,
+            response.sendError(HttpStatusCode.NOT_FOUND.getCode(),
                     "No web component for " + Optional
                             .ofNullable(componentInfo.tag).orElse("<null>"));
         }

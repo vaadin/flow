@@ -29,9 +29,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
-
-import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.dependency.JsModule;
@@ -43,6 +42,9 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
+
+import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -271,7 +273,7 @@ public class TaskUpdateImports extends NodeUpdater {
             LinkedHashSet<String> set = new LinkedHashSet<>(
                     fallbackScanner.getModules());
             set.removeAll(frontDeps.getModules());
-            return new ArrayList<String>(set);
+            return filter(set.stream()).collect(Collectors.toList());
         }
 
         @Override
@@ -279,7 +281,7 @@ public class TaskUpdateImports extends NodeUpdater {
             LinkedHashSet<String> set = new LinkedHashSet<>(
                     fallbackScanner.getScripts());
             set.removeAll(frontDeps.getScripts());
-            return set;
+            return filter(set.stream()).collect(Collectors.toSet());
         }
 
         @Override
@@ -473,6 +475,14 @@ public class TaskUpdateImports extends NodeUpdater {
 
         }
         return array;
+    }
+
+    private Stream<String> filter(Stream<String> modules) {
+        if (productionMode) {
+            return modules.filter(module -> CvdlProducts
+                    .includeInFallbackBundle(module, nodeModulesFolder));
+        }
+        return modules;
     }
 
     private JsonArray makeFallbackCssImports(AbstractUpdateImports updater) {

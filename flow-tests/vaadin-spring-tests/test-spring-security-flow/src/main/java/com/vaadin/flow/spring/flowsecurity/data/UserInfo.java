@@ -11,11 +11,14 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 
+import org.hibernate.annotations.Type;
+
 @Entity
 public class UserInfo {
 
     @Id
     @GeneratedValue
+    @Type(type = "uuid-char")
     private UUID id;
 
     private String username;

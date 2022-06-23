@@ -4,12 +4,14 @@ import { classMap } from 'lit/directives/class-map.js';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { copy } from './copy-to-clipboard.js';
+import { licenseCheckFailed, licenseCheckNoKey, licenseCheckOk, Product } from './License';
 
 interface ServerInfo {
   vaadinVersion: string;
   flowVersion: string;
   javaVersion: string;
   osVersion: string;
+  productName: string;
 }
 
 interface Feature {
@@ -98,6 +100,12 @@ export class Connection extends Object {
       if (this.status === ConnectionStatus.ACTIVE) {
         this.onReload();
       }
+    } else if (json.command === 'license-check-ok') {
+      licenseCheckOk(json.data);
+    } else if (json.command === 'license-check-failed') {
+      licenseCheckFailed(json.data);
+    } else if (json.command === 'license-check-nokey') {
+      licenseCheckNoKey(json.data);
     } else {
       this.onMessage(json);
     }
@@ -130,8 +138,15 @@ export class Connection extends Object {
   }
 
   private send(command: string, data: any) {
-    const message = { command, data };
-    this.webSocket!.send(JSON.stringify(message));
+    const message = JSON.stringify({ command, data });
+    if (!this.webSocket) {
+      // eslint-disable-next-line no-console
+      console.error(`Unable to send message ${command}. No websocket is available`);
+    } else if (this.webSocket.readyState !== WebSocket.OPEN) {
+      this.webSocket.addEventListener('open', () => this.webSocket!.send(message));
+    } else {
+      this.webSocket.send(message);
+    }
   }
 
   setFeature(featureId: string, enabled: boolean) {
@@ -139,6 +154,9 @@ export class Connection extends Object {
   }
   sendTelemetry(browserData: any) {
     this.send('reportTelemetry', { browserData });
+  }
+  sendLicenseCheck(product: Product) {
+    this.send('checkLicense', product);
   }
 }
 
@@ -160,7 +178,7 @@ interface Message {
   deleted: boolean;
 }
 
-export class VaadinDevmodeGizmo extends LitElement {
+export class VaadinDevTools extends LitElement {
   static BLUE_HSL = css`206, 100%, 70%`;
   static GREEN_HSL = css`145, 80%, 42%`;
   static GREY_HSL = css`0, 0%, 50%`;
@@ -171,46 +189,46 @@ export class VaadinDevmodeGizmo extends LitElement {
   static get styles() {
     return css`
       :host {
-        --gizmo-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell,
+        --dev-tools-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell,
           'Helvetica Neue', sans-serif;
-        --gizmo-font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
+        --dev-tools-font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
           monospace;
 
-        --gizmo-font-size: 0.8125rem;
-        --gizmo-font-size-small: 0.75rem;
+        --dev-tools-font-size: 0.8125rem;
+        --dev-tools-font-size-small: 0.75rem;
 
-        --gizmo-text-color: rgba(255, 255, 255, 0.8);
-        --gizmo-text-color-secondary: rgba(255, 255, 255, 0.65);
-        --gizmo-text-color-emphasis: rgba(255, 255, 255, 0.95);
-        --gizmo-text-color-active: rgba(255, 255, 255, 1);
+        --dev-tools-text-color: rgba(255, 255, 255, 0.8);
+        --dev-tools-text-color-secondary: rgba(255, 255, 255, 0.65);
+        --dev-tools-text-color-emphasis: rgba(255, 255, 255, 0.95);
+        --dev-tools-text-color-active: rgba(255, 255, 255, 1);
 
-        --gizmo-background-color-inactive: rgba(45, 45, 45, 0.25);
-        --gizmo-background-color-active: rgba(45, 45, 45, 0.98);
-        --gizmo-background-color-active-blurred: rgba(45, 45, 45, 0.85);
+        --dev-tools-background-color-inactive: rgba(45, 45, 45, 0.25);
+        --dev-tools-background-color-active: rgba(45, 45, 45, 0.98);
+        --dev-tools-background-color-active-blurred: rgba(45, 45, 45, 0.85);
 
-        --gizmo-border-radius: 0.5rem;
-        --gizmo-box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05), 0 4px 12px -2px rgba(0, 0, 0, 0.4);
+        --dev-tools-border-radius: 0.5rem;
+        --dev-tools-box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05), 0 4px 12px -2px rgba(0, 0, 0, 0.4);
 
-        --gizmo-blue-hsl: ${this.BLUE_HSL};
-        --gizmo-blue-color: hsl(var(--gizmo-blue-hsl));
-        --gizmo-green-hsl: ${this.GREEN_HSL};
-        --gizmo-green-color: hsl(var(--gizmo-green-hsl));
-        --gizmo-grey-hsl: ${this.GREY_HSL};
-        --gizmo-grey-color: hsl(var(--gizmo-grey-hsl));
-        --gizmo-yellow-hsl: ${this.YELLOW_HSL};
-        --gizmo-yellow-color: hsl(var(--gizmo-yellow-hsl));
-        --gizmo-red-hsl: ${this.RED_HSL};
-        --gizmo-red-color: hsl(var(--gizmo-red-hsl));
+        --dev-tools-blue-hsl: ${this.BLUE_HSL};
+        --dev-tools-blue-color: hsl(var(--dev-tools-blue-hsl));
+        --dev-tools-green-hsl: ${this.GREEN_HSL};
+        --dev-tools-green-color: hsl(var(--dev-tools-green-hsl));
+        --dev-tools-grey-hsl: ${this.GREY_HSL};
+        --dev-tools-grey-color: hsl(var(--dev-tools-grey-hsl));
+        --dev-tools-yellow-hsl: ${this.YELLOW_HSL};
+        --dev-tools-yellow-color: hsl(var(--dev-tools-yellow-hsl));
+        --dev-tools-red-hsl: ${this.RED_HSL};
+        --dev-tools-red-color: hsl(var(--dev-tools-red-hsl));
 
         /* Needs to be in ms, used in JavaScript as well */
-        --gizmo-transition-duration: 180ms;
+        --dev-tools-transition-duration: 180ms;
 
         all: initial;
 
         direction: ltr;
         cursor: default;
-        font: normal 400 var(--gizmo-font-size) / 1.125rem var(--gizmo-font-family);
-        color: var(--gizmo-text-color);
+        font: normal 400 var(--dev-tools-font-size) / 1.125rem var(--dev-tools-font-family);
+        color: var(--dev-tools-text-color);
         -webkit-user-select: none;
         -moz-user-select: none;
         user-select: none;
@@ -227,7 +245,7 @@ export class VaadinDevmodeGizmo extends LitElement {
         align-items: flex-end;
       }
 
-      .gizmo {
+      .dev-tools {
         pointer-events: auto;
         display: flex;
         align-items: center;
@@ -241,62 +259,62 @@ export class VaadinDevmodeGizmo extends LitElement {
         border-radius: 0.5rem;
         padding: 0.375rem;
         box-sizing: border-box;
-        background-color: var(--gizmo-background-color-inactive);
+        background-color: var(--dev-tools-background-color-inactive);
         box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05);
-        color: var(--gizmo-text-color);
-        transition: var(--gizmo-transition-duration);
+        color: var(--dev-tools-text-color);
+        transition: var(--dev-tools-transition-duration);
         white-space: nowrap;
         line-height: 1rem;
       }
 
-      .gizmo:hover,
-      .gizmo.active {
-        background-color: var(--gizmo-background-color-active);
-        box-shadow: var(--gizmo-box-shadow);
+      .dev-tools:hover,
+      .dev-tools.active {
+        background-color: var(--dev-tools-background-color-active);
+        box-shadow: var(--dev-tools-box-shadow);
       }
 
-      .gizmo.active {
+      .dev-tools.active {
         max-width: calc(100% - 1rem);
       }
 
-      .gizmo .gizmo-icon {
+      .dev-tools .dev-tools-icon {
         flex: none;
         pointer-events: none;
         display: inline-block;
         width: 1rem;
         height: 1rem;
         fill: #fff;
-        transition: var(--gizmo-transition-duration);
+        transition: var(--dev-tools-transition-duration);
         margin: 0;
       }
 
-      .gizmo.active .gizmo-icon {
+      .dev-tools.active .dev-tools-icon {
         opacity: 0;
         position: absolute;
         transform: scale(0.5);
       }
 
-      .gizmo .status-blip {
+      .dev-tools .status-blip {
         flex: none;
         display: block;
         width: 6px;
         height: 6px;
         border-radius: 50%;
         z-index: 20001;
-        background: var(--gizmo-grey-color);
+        background: var(--dev-tools-grey-color);
         position: absolute;
         top: -1px;
         right: -1px;
       }
 
-      .gizmo .status-description {
+      .dev-tools .status-description {
         overflow: hidden;
         text-overflow: ellipsis;
         padding: 0 0.25rem;
       }
 
-      .gizmo.error {
-        background-color: hsla(var(--gizmo-red-hsl), 0.15);
+      .dev-tools.error {
+        background-color: hsla(var(--dev-tools-red-hsl), 0.15);
         animation: bounce 0.5s;
         animation-iteration-count: 2;
       }
@@ -320,7 +338,7 @@ export class VaadinDevmodeGizmo extends LitElement {
         height: 18px;
         border-radius: 9px;
         background-color: rgba(255, 255, 255, 0.3);
-        transition: var(--gizmo-transition-duration);
+        transition: var(--dev-tools-transition-duration);
         margin-right: 0.5rem;
       }
 
@@ -331,7 +349,7 @@ export class VaadinDevmodeGizmo extends LitElement {
       }
 
       .switch input:focus-visible ~ .slider {
-        box-shadow: 0 0 0 2px var(--gizmo-background-color-active), 0 0 0 4px var(--gizmo-blue-color);
+        box-shadow: 0 0 0 2px var(--dev-tools-background-color-active), 0 0 0 4px var(--dev-tools-blue-color);
       }
 
       .switch .slider::before {
@@ -341,12 +359,12 @@ export class VaadinDevmodeGizmo extends LitElement {
         width: 14px;
         height: 14px;
         background-color: #fff;
-        transition: var(--gizmo-transition-duration);
+        transition: var(--dev-tools-transition-duration);
         border-radius: 50%;
       }
 
       .switch input:checked + .slider {
-        background-color: var(--gizmo-green-color);
+        background-color: var(--dev-tools-green-color);
       }
 
       .switch input:checked + .slider::before {
@@ -354,7 +372,7 @@ export class VaadinDevmodeGizmo extends LitElement {
       }
 
       .switch input:disabled + .slider::before {
-        background-color: var(--gizmo-grey-color);
+        background-color: var(--dev-tools-grey-color);
       }
 
       .window.hidden {
@@ -369,32 +387,32 @@ export class VaadinDevmodeGizmo extends LitElement {
         pointer-events: auto;
       }
 
-      .window.visible ~ .gizmo {
+      .window.visible ~ .dev-tools {
         opacity: 0;
         pointer-events: none;
       }
 
-      .window.visible ~ .gizmo .gizmo-icon,
-      .window.visible ~ .gizmo .status-blip {
+      .window.visible ~ .dev-tools .dev-tools-icon,
+      .window.visible ~ .dev-tools .status-blip {
         transition: none;
         opacity: 0;
       }
 
       .window {
-        border-radius: var(--gizmo-border-radius);
+        border-radius: var(--dev-tools-border-radius);
         overflow: hidden;
         margin: 0.5rem;
         width: 30rem;
         max-width: calc(100% - 1rem);
         max-height: calc(100vh - 1rem);
         flex-shrink: 1;
-        background-color: var(--gizmo-background-color-active);
-        color: var(--gizmo-text-color);
-        transition: var(--gizmo-transition-duration);
+        background-color: var(--dev-tools-background-color-active);
+        color: var(--dev-tools-text-color);
+        transition: var(--dev-tools-transition-duration);
         transform-origin: bottom right;
         display: flex;
         flex-direction: column;
-        box-shadow: var(--gizmo-box-shadow);
+        box-shadow: var(--dev-tools-box-shadow);
         outline: none;
       }
 
@@ -410,9 +428,9 @@ export class VaadinDevmodeGizmo extends LitElement {
       }
 
       .tab {
-        color: var(--gizmo-text-color-secondary);
+        color: var(--dev-tools-text-color-secondary);
         font: inherit;
-        font-size: var(--gizmo-font-size-small);
+        font-size: var(--dev-tools-font-size-small);
         font-weight: 500;
         line-height: 1;
         padding: 0.25rem 0.375rem;
@@ -420,12 +438,12 @@ export class VaadinDevmodeGizmo extends LitElement {
         border: none;
         margin: 0;
         border-radius: 0.25rem;
-        transition: var(--gizmo-transition-duration);
+        transition: var(--dev-tools-transition-duration);
       }
 
       .tab:hover,
       .tab.active {
-        color: var(--gizmo-text-color-active);
+        color: var(--dev-tools-text-color-active);
       }
 
       .tab.active {
@@ -434,7 +452,7 @@ export class VaadinDevmodeGizmo extends LitElement {
 
       .tab.unreadErrors::after {
         content: '•';
-        color: hsl(var(--gizmo-red-hsl));
+        color: hsl(var(--dev-tools-red-hsl));
         font-size: 1.5rem;
         position: absolute;
         transform: translate(0, -50%);
@@ -442,19 +460,19 @@ export class VaadinDevmodeGizmo extends LitElement {
 
       .ahreflike {
         font-weight: 500;
-        color: var(--gizmo-text-color-secondary);
+        color: var(--dev-tools-text-color-secondary);
         text-decoration: underline;
         cursor: pointer;
       }
 
       .ahreflike:hover {
-        color: var(--gizmo-text-color-emphasis);
+        color: var(--dev-tools-text-color-emphasis);
       }
 
       .button {
         all: initial;
         font-family: inherit;
-        font-size: var(--gizmo-font-size-small);
+        font-size: var(--dev-tools-font-size-small);
         line-height: 1;
         white-space: nowrap;
         background-color: rgba(0, 0, 0, 0.2);
@@ -466,7 +484,7 @@ export class VaadinDevmodeGizmo extends LitElement {
 
       .button:focus,
       .button:hover {
-        color: var(--gizmo-text-color-emphasis);
+        color: var(--dev-tools-text-color-emphasis);
       }
 
       .minimize-button {
@@ -490,15 +508,15 @@ export class VaadinDevmodeGizmo extends LitElement {
       }
 
       .message.information {
-        --gizmo-notification-color: var(--gizmo-blue-color);
+        --dev-tools-notification-color: var(--dev-tools-blue-color);
       }
 
       .message.warning {
-        --gizmo-notification-color: var(--gizmo-yellow-color);
+        --dev-tools-notification-color: var(--dev-tools-yellow-color);
       }
 
       .message.error {
-        --gizmo-notification-color: var(--gizmo-red-color);
+        --dev-tools-notification-color: var(--dev-tools-red-color);
       }
 
       .message {
@@ -526,7 +544,7 @@ export class VaadinDevmodeGizmo extends LitElement {
       }
 
       .message.log {
-        color: var(--gizmo-text-color-secondary);
+        color: var(--dev-tools-text-color-secondary);
       }
 
       .message:not(.log) .message-heading {
@@ -534,7 +552,7 @@ export class VaadinDevmodeGizmo extends LitElement {
       }
 
       .message.has-details .message-heading {
-        color: var(--gizmo-text-color-emphasis);
+        color: var(--dev-tools-text-color-emphasis);
         font-weight: 600;
       }
 
@@ -556,27 +574,27 @@ export class VaadinDevmodeGizmo extends LitElement {
       .message.information .message-heading::before {
         content: 'i';
         border-color: currentColor;
-        color: var(--gizmo-notification-color);
+        color: var(--dev-tools-notification-color);
       }
 
       .message.warning .message-heading::before,
       .message.error .message-heading::before {
         content: '!';
-        color: var(--gizmo-background-color-active);
-        background-color: var(--gizmo-notification-color);
+        color: var(--dev-tools-background-color-active);
+        background-color: var(--dev-tools-notification-color);
       }
 
       .features-tray {
         padding: 0.75rem;
         flex: auto;
         overflow: auto;
-        animation: fade-in var(--gizmo-transition-duration) ease-in;
+        animation: fade-in var(--dev-tools-transition-duration) ease-in;
         user-select: text;
       }
 
       .features-tray p {
         margin-top: 0;
-        color: var(--gizmo-text-color-secondary);
+        color: var(--dev-tools-text-color-secondary);
       }
 
       .features-tray .feature {
@@ -588,7 +606,7 @@ export class VaadinDevmodeGizmo extends LitElement {
 
       .message .message-details {
         font-weight: 400;
-        color: var(--gizmo-text-color-secondary);
+        color: var(--dev-tools-text-color-secondary);
         margin: 0.25rem 0;
       }
 
@@ -604,7 +622,7 @@ export class VaadinDevmodeGizmo extends LitElement {
       }
 
       .message .persist {
-        color: var(--gizmo-text-color-secondary);
+        color: var(--dev-tools-text-color-secondary);
         white-space: nowrap;
         margin: 0.375rem 0;
         display: flex;
@@ -638,7 +656,7 @@ export class VaadinDevmodeGizmo extends LitElement {
         position: absolute;
         width: 0.75em;
         height: 0.25em;
-        border: 2px solid var(--gizmo-background-color-active);
+        border: 2px solid var(--dev-tools-background-color-active);
         border-width: 0 0 2px 2px;
         transform: translate(0.05em, -0.05em) rotate(-45deg) scale(0.8, 0.9);
       }
@@ -650,11 +668,11 @@ export class VaadinDevmodeGizmo extends LitElement {
         align-items: center;
         padding: 0 0.25rem;
         margin-left: 0.5rem;
-        color: var(--gizmo-text-color-secondary);
+        color: var(--dev-tools-text-color-secondary);
       }
 
       .message .dismiss-message:hover {
-        color: var(--gizmo-text-color);
+        color: var(--dev-tools-text-color);
       }
 
       .notification-tray {
@@ -671,22 +689,22 @@ export class VaadinDevmodeGizmo extends LitElement {
 
       .notification-tray .message {
         pointer-events: auto;
-        background-color: var(--gizmo-background-color-active);
-        color: var(--gizmo-text-color);
+        background-color: var(--dev-tools-background-color-active);
+        color: var(--dev-tools-text-color);
         max-width: 30rem;
         box-sizing: border-box;
-        border-radius: var(--gizmo-border-radius);
+        border-radius: var(--dev-tools-border-radius);
         margin-top: 0.5rem;
-        transition: var(--gizmo-transition-duration);
+        transition: var(--dev-tools-transition-duration);
         transform-origin: bottom right;
-        animation: slideIn var(--gizmo-transition-duration);
-        box-shadow: var(--gizmo-box-shadow);
+        animation: slideIn var(--dev-tools-transition-duration);
+        box-shadow: var(--dev-tools-box-shadow);
         padding-top: 0.25rem;
         padding-bottom: 0.25rem;
       }
 
       .notification-tray .message.animate-out {
-        animation: slideOut forwards var(--gizmo-transition-duration);
+        animation: slideOut forwards var(--dev-tools-transition-duration);
       }
 
       .notification-tray .message .message-details {
@@ -702,24 +720,24 @@ export class VaadinDevmodeGizmo extends LitElement {
       }
 
       .message-tray .message {
-        animation: fade-in var(--gizmo-transition-duration) ease-in;
+        animation: fade-in var(--dev-tools-transition-duration) ease-in;
         padding-left: 2.25rem;
       }
 
       .message-tray .message.warning {
-        background-color: hsla(var(--gizmo-yellow-hsl), 0.09);
+        background-color: hsla(var(--dev-tools-yellow-hsl), 0.09);
       }
 
       .message-tray .message.error {
-        background-color: hsla(var(--gizmo-red-hsl), 0.09);
+        background-color: hsla(var(--dev-tools-red-hsl), 0.09);
       }
 
       .message-tray .message.error .message-heading {
-        color: hsl(var(--gizmo-red-hsl));
+        color: hsl(var(--dev-tools-red-hsl));
       }
 
       .message-tray .message.warning .message-heading {
-        color: hsl(var(--gizmo-yellow-hsl));
+        color: hsl(var(--dev-tools-yellow-hsl));
       }
 
       .message-tray .message + .message {
@@ -736,7 +754,7 @@ export class VaadinDevmodeGizmo extends LitElement {
         position: relative;
         flex: auto;
         overflow: auto;
-        animation: fade-in var(--gizmo-transition-duration) ease-in;
+        animation: fade-in var(--dev-tools-transition-duration) ease-in;
         user-select: text;
       }
 
@@ -750,7 +768,7 @@ export class VaadinDevmodeGizmo extends LitElement {
 
       .info-tray dt {
         grid-column: 1;
-        color: var(--gizmo-text-color-emphasis);
+        color: var(--dev-tools-text-color-emphasis);
       }
 
       .info-tray dt:not(:first-child)::before {
@@ -829,7 +847,7 @@ export class VaadinDevmodeGizmo extends LitElement {
         }
         50% {
           transform: scale(1.5);
-          background-color: hsla(var(--gizmo-red-hsl), 1);
+          background-color: hsla(var(--dev-tools-red-hsl), 1);
         }
         100% {
           transform: scale(1);
@@ -837,16 +855,16 @@ export class VaadinDevmodeGizmo extends LitElement {
       }
 
       @supports (backdrop-filter: blur(1px)) {
-        .gizmo,
+        .dev-tools,
         .window,
         .notification-tray .message {
           backdrop-filter: blur(8px);
         }
-        .gizmo:hover,
-        .gizmo.active,
+        .dev-tools:hover,
+        .dev-tools.active,
         .window,
         .notification-tray .message {
-          background-color: var(--gizmo-background-color-active-blurred);
+          background-color: var(--dev-tools-background-color-active-blurred);
         }
       }
     `;
@@ -869,12 +887,12 @@ export class VaadinDevmodeGizmo extends LitElement {
   };
 
   static get isActive() {
-    const active = window.sessionStorage.getItem(VaadinDevmodeGizmo.ACTIVE_KEY_IN_SESSION_STORAGE);
+    const active = window.sessionStorage.getItem(VaadinDevTools.ACTIVE_KEY_IN_SESSION_STORAGE);
     return active === null || active !== 'false';
   }
 
   static notificationDismissed(persistentId: string) {
-    const shown = window.localStorage.getItem(VaadinDevmodeGizmo.DISMISSED_NOTIFICATIONS_IN_LOCAL_STORAGE);
+    const shown = window.localStorage.getItem(VaadinDevTools.DISMISSED_NOTIFICATIONS_IN_LOCAL_STORAGE);
     return shown !== null && shown.includes(persistentId);
   }
 
@@ -919,7 +937,13 @@ export class VaadinDevmodeGizmo extends LitElement {
   private activeTab: string = 'log';
 
   @state()
-  private serverInfo: ServerInfo = { flowVersion: '', vaadinVersion: '', javaVersion: '', osVersion: '' };
+  private serverInfo: ServerInfo = {
+    flowVersion: '',
+    vaadinVersion: '',
+    javaVersion: '',
+    osVersion: '',
+    productName: ''
+  };
 
   @state()
   private features: Feature[] = [];
@@ -969,17 +993,17 @@ export class VaadinDevmodeGizmo extends LitElement {
         return;
       }
       this.showSplashMessage('Reloading…');
-      const lastReload = window.sessionStorage.getItem(VaadinDevmodeGizmo.TRIGGERED_COUNT_KEY_IN_SESSION_STORAGE);
+      const lastReload = window.sessionStorage.getItem(VaadinDevTools.TRIGGERED_COUNT_KEY_IN_SESSION_STORAGE);
       const nextReload = lastReload ? parseInt(lastReload, 10) + 1 : 1;
-      window.sessionStorage.setItem(VaadinDevmodeGizmo.TRIGGERED_COUNT_KEY_IN_SESSION_STORAGE, nextReload.toString());
-      window.sessionStorage.setItem(VaadinDevmodeGizmo.TRIGGERED_KEY_IN_SESSION_STORAGE, 'true');
+      window.sessionStorage.setItem(VaadinDevTools.TRIGGERED_COUNT_KEY_IN_SESSION_STORAGE, nextReload.toString());
+      window.sessionStorage.setItem(VaadinDevTools.TRIGGERED_KEY_IN_SESSION_STORAGE, 'true');
       window.location.reload();
     };
 
     const frontendConnection = new Connection(this.getDedicatedWebSocketUrl());
     frontendConnection.onHandshake = () => {
       this.log(MessageType.LOG, 'Vaadin development mode initialized');
-      if (!VaadinDevmodeGizmo.isActive) {
+      if (!VaadinDevTools.isActive) {
         frontendConnection.setActive(false);
       }
       this.elementTelemetry();
@@ -1002,16 +1026,16 @@ export class VaadinDevmodeGizmo extends LitElement {
     this.frontendConnection = frontendConnection;
 
     let javaConnection: Connection;
-    if (this.backend === VaadinDevmodeGizmo.SPRING_BOOT_DEVTOOLS && this.springBootLiveReloadPort) {
+    if (this.backend === VaadinDevTools.SPRING_BOOT_DEVTOOLS && this.springBootLiveReloadPort) {
       javaConnection = new Connection(this.getSpringBootWebSocketUrl(window.location));
       javaConnection.onHandshake = () => {
-        if (!VaadinDevmodeGizmo.isActive) {
+        if (!VaadinDevTools.isActive) {
           javaConnection.setActive(false);
         }
       };
       javaConnection.onReload = onReload;
       javaConnection.onConnectionError = onConnectionError;
-    } else if (this.backend === VaadinDevmodeGizmo.JREBEL || this.backend === VaadinDevmodeGizmo.HOTSWAP_AGENT) {
+    } else if (this.backend === VaadinDevTools.JREBEL || this.backend === VaadinDevTools.HOTSWAP_AGENT) {
       javaConnection = frontendConnection;
     } else {
       javaConnection = new Connection(undefined);
@@ -1027,7 +1051,7 @@ export class VaadinDevmodeGizmo extends LitElement {
       if (this.backend) {
         this.log(
           MessageType.INFORMATION,
-          `Java live reload available: ${VaadinDevmodeGizmo.BACKEND_DISPLAY_NAME[this.backend]}`
+          `Java live reload available: ${VaadinDevTools.BACKEND_DISPLAY_NAME[this.backend]}`
         );
       }
     };
@@ -1086,23 +1110,23 @@ export class VaadinDevmodeGizmo extends LitElement {
     document.body.addEventListener('click', this.disableEventListener);
     this.openWebSocketConnection();
 
-    const lastReload = window.sessionStorage.getItem(VaadinDevmodeGizmo.TRIGGERED_KEY_IN_SESSION_STORAGE);
+    const lastReload = window.sessionStorage.getItem(VaadinDevTools.TRIGGERED_KEY_IN_SESSION_STORAGE);
     if (lastReload) {
       const now = new Date();
       const reloaded = `${`0${now.getHours()}`.slice(-2)}:${`0${now.getMinutes()}`.slice(
         -2
       )}:${`0${now.getSeconds()}`.slice(-2)}`;
       this.showSplashMessage(`Page reloaded at ${reloaded}`);
-      window.sessionStorage.removeItem(VaadinDevmodeGizmo.TRIGGERED_KEY_IN_SESSION_STORAGE);
+      window.sessionStorage.removeItem(VaadinDevTools.TRIGGERED_KEY_IN_SESSION_STORAGE);
     }
 
     this.transitionDuration = parseInt(
-      window.getComputedStyle(this).getPropertyValue('--gizmo-transition-duration'),
+      window.getComputedStyle(this).getPropertyValue('--dev-tools-transition-duration'),
       10
     );
 
     if ((window as any).Vaadin) {
-      (window as any).Vaadin.devModeGizmo = this;
+      (window as any).Vaadin.devTools = this;
     }
   }
   format(o: any): string {
@@ -1149,7 +1173,7 @@ export class VaadinDevmodeGizmo extends LitElement {
         // automatically move notification to message tray after a certain amount of time
         setTimeout(() => {
           this.demoteSplashMessage();
-        }, VaadinDevmodeGizmo.AUTO_DEMOTE_NOTIFICATION_DELAY);
+        }, VaadinDevTools.AUTO_DEMOTE_NOTIFICATION_DELAY);
       }
     }
   }
@@ -1159,6 +1183,14 @@ export class VaadinDevmodeGizmo extends LitElement {
       this.log(MessageType.LOG, this.splashMessage);
     }
     this.showSplashMessage(undefined);
+  }
+
+  checkLicense(productInfo: Product) {
+    if (this.frontendConnection) {
+      this.frontendConnection.sendLicenseCheck(productInfo);
+    } else {
+      licenseCheckFailed({ message: 'Internal error: no connection', product: productInfo });
+    }
   }
 
   log(type: MessageType, message: string, details?: string, link?: string) {
@@ -1173,7 +1205,7 @@ export class VaadinDevmodeGizmo extends LitElement {
       dontShowAgain: false,
       deleted: false
     });
-    while (this.messages.length > VaadinDevmodeGizmo.MAX_LOG_ROWS) {
+    while (this.messages.length > VaadinDevTools.MAX_LOG_ROWS) {
       this.messages.shift();
     }
     this.requestUpdate();
@@ -1190,7 +1222,7 @@ export class VaadinDevmodeGizmo extends LitElement {
   }
 
   showNotification(type: MessageType, message: string, details?: string, link?: string, persistentId?: string) {
-    if (persistentId === undefined || !VaadinDevmodeGizmo.notificationDismissed(persistentId!)) {
+    if (persistentId === undefined || !VaadinDevTools.notificationDismissed(persistentId!)) {
       // Do not open persistent message if another is already visible with the same persistentId
       const matchingVisibleNotifications = this.notifications
         .filter((notification) => notification.persistentId === persistentId)
@@ -1214,7 +1246,7 @@ export class VaadinDevmodeGizmo extends LitElement {
       if (link === undefined) {
         setTimeout(() => {
           this.dismissNotification(id);
-        }, VaadinDevmodeGizmo.AUTO_DEMOTE_NOTIFICATION_DELAY);
+        }, VaadinDevTools.AUTO_DEMOTE_NOTIFICATION_DELAY);
       }
       this.requestUpdate();
     } else {
@@ -1231,11 +1263,11 @@ export class VaadinDevmodeGizmo extends LitElement {
       if (
         notification.dontShowAgain &&
         notification.persistentId &&
-        !VaadinDevmodeGizmo.notificationDismissed(notification.persistentId)
+        !VaadinDevTools.notificationDismissed(notification.persistentId)
       ) {
-        let dismissed = window.localStorage.getItem(VaadinDevmodeGizmo.DISMISSED_NOTIFICATIONS_IN_LOCAL_STORAGE);
+        let dismissed = window.localStorage.getItem(VaadinDevTools.DISMISSED_NOTIFICATIONS_IN_LOCAL_STORAGE);
         dismissed = dismissed === null ? notification.persistentId : `${dismissed},${notification.persistentId}`;
-        window.localStorage.setItem(VaadinDevmodeGizmo.DISMISSED_NOTIFICATIONS_IN_LOCAL_STORAGE, dismissed);
+        window.localStorage.setItem(VaadinDevTools.DISMISSED_NOTIFICATIONS_IN_LOCAL_STORAGE, dismissed);
       }
 
       notification.deleted = true;
@@ -1277,18 +1309,18 @@ export class VaadinDevmodeGizmo extends LitElement {
   setActive(yes: boolean) {
     this.frontendConnection?.setActive(yes);
     this.javaConnection?.setActive(yes);
-    window.sessionStorage.setItem(VaadinDevmodeGizmo.ACTIVE_KEY_IN_SESSION_STORAGE, yes ? 'true' : 'false');
+    window.sessionStorage.setItem(VaadinDevTools.ACTIVE_KEY_IN_SESSION_STORAGE, yes ? 'true' : 'false');
   }
 
   getStatusColor(status: ConnectionStatus | undefined) {
     if (status === ConnectionStatus.ACTIVE) {
-      return css`hsl(${VaadinDevmodeGizmo.GREEN_HSL})`;
+      return css`hsl(${VaadinDevTools.GREEN_HSL})`;
     } else if (status === ConnectionStatus.INACTIVE) {
-      return css`hsl(${VaadinDevmodeGizmo.GREY_HSL})`;
+      return css`hsl(${VaadinDevTools.GREY_HSL})`;
     } else if (status === ConnectionStatus.UNAVAILABLE) {
-      return css`hsl(${VaadinDevmodeGizmo.YELLOW_HSL})`;
+      return css`hsl(${VaadinDevTools.YELLOW_HSL})`;
     } else if (status === ConnectionStatus.ERROR) {
-      return css`hsl(${VaadinDevmodeGizmo.RED_HSL})`;
+      return css`hsl(${VaadinDevTools.RED_HSL})`;
     } else {
       return css`none`;
     }
@@ -1368,7 +1400,7 @@ export class VaadinDevmodeGizmo extends LitElement {
 
       <div class="notification-tray">${this.notifications.map((msg) => this.renderMessage(msg))}</div>
       <div
-        class="gizmo ${this.splashMessage ? 'active' : ''}${this.unreadErrors ? ' error' : ''}"
+        class="dev-tools ${this.splashMessage ? 'active' : ''}${this.unreadErrors ? ' error' : ''}"
         @click=${() => this.toggleExpanded()}
       >
         ${this.unreadErrors
@@ -1379,7 +1411,7 @@ export class VaadinDevmodeGizmo extends LitElement {
               width="16"
               xmlns="http://www.w3.org/2000/svg"
               xmlns:xlink="http://www.w3.org/1999/xlink"
-              class="gizmo-icon error"
+              class="dev-tools-icon error"
             >
               <clipPath id="a"><path d="m0 0h16v16h-16z" /></clipPath>
               <g clip-path="url(#a)">
@@ -1399,7 +1431,7 @@ export class VaadinDevmodeGizmo extends LitElement {
               viewBox="0 0 16 17"
               width="16"
               xmlns="http://www.w3.org/2000/svg"
-              class="gizmo-icon logo"
+              class="dev-tools-icon logo"
             >
               <g fill="#fff">
                 <path
@@ -1438,7 +1470,7 @@ export class VaadinDevmodeGizmo extends LitElement {
     return html`<div class="info-tray">
       <button class="button copy" @click=${this.copyInfoToClipboard}>Copy</button>
       <dl>
-        <dt>Vaadin</dt>
+        <dt>${this.serverInfo.productName}</dt>
         <dd>${this.serverInfo.vaadinVersion}</dd>
         <dt>Flow</dt>
         <dd>${this.serverInfo.flowVersion}</dd>
@@ -1466,7 +1498,7 @@ export class VaadinDevmodeGizmo extends LitElement {
           </label>
         </dt>
         <dd class="live-reload-status" style="--status-color: ${this.getStatusColor(this.javaStatus)}">
-          Java ${this.javaStatus} ${this.backend ? `(${VaadinDevmodeGizmo.BACKEND_DISPLAY_NAME[this.backend]})` : ''}
+          Java ${this.javaStatus} ${this.backend ? `(${VaadinDevTools.BACKEND_DISPLAY_NAME[this.backend]})` : ''}
         </dd>
         <dd class="live-reload-status" style="--status-color: ${this.getStatusColor(this.frontendStatus)}">
           Front end ${this.frontendStatus}
@@ -1533,6 +1565,6 @@ export class VaadinDevmodeGizmo extends LitElement {
   }
 }
 
-if (customElements.get('vaadin-devmode-gizmo') === undefined) {
-  customElements.define('vaadin-devmode-gizmo', VaadinDevmodeGizmo);
+if (customElements.get('vaadin-dev-tools') === undefined) {
+  customElements.define('vaadin-dev-tools', VaadinDevTools);
 }

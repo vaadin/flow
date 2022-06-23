@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-project</artifactId>
-        <version>23.1-SNAPSHOT</version>
+        <version>23.2-SNAPSHOT</version>
     </parent>
     <artifactId>vaadin-dev-server</artifactId>
     <name>Vaadin Development Mode Server</name>
@@ -23,6 +23,10 @@
             <artifactId>flow-server</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>license-checker</artifactId>
+        </dependency>
 
 
         <!-- API dependencies -->
@@ -38,13 +42,6 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-test-util</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>fusion-endpoint</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>

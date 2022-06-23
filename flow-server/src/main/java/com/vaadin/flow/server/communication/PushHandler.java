@@ -589,7 +589,7 @@ public class PushHandler {
             Optional<BrowserLiveReload> liveReload = BrowserLiveReloadAccessor
                     .getLiveReloadFromService(service);
             if (liveReload.isPresent()) {
-                liveReload.get().onMessage(msg);
+                liveReload.get().onMessage(request.resource(), msg);
             } else {
                 getLogger().error(
                         "Received message for debug window but there is no debug window connection available");

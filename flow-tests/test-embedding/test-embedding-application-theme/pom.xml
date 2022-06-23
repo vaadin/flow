@@ -19,7 +19,7 @@
     <parent>
         <artifactId>test-embedding</artifactId>
         <groupId>com.vaadin</groupId>
-        <version>23.1-SNAPSHOT</version>
+        <version>23.2-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -36,6 +36,7 @@
             <groupId>com.vaadin</groupId>
             <artifactId>flow-html-components-testbench</artifactId>
             <version>${project.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>

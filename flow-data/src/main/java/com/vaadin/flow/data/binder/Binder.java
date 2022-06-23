@@ -318,6 +318,11 @@ public class Binder<BEAN> implements Serializable {
          * If the Binder is already bound to some bean, the newly bound field is
          * associated with the corresponding bean property as described above.
          * <p>
+         * If the bound field implements {@link HasValidator}, then the binding
+         * instance returned by this method will subscribe for field's
+         * {@code ValidationStatusChangeEvent}s and will {@code validate} itself
+         * upon receiving them.
+         * <p>
          * The getter and setter can be arbitrary functions, for instance
          * implementing user-defined conversion or validation. However, in the
          * most basic use case you can simply pass a pair of method references
@@ -965,6 +970,12 @@ public class Binder<BEAN> implements Serializable {
                 getBinder().incompleteBindings.remove(getField());
             }
             this.binding = binding;
+
+            if (field instanceof HasValidator) {
+                HasValidator<FIELDVALUE> hasValidatorField = (HasValidator<FIELDVALUE>) field;
+                hasValidatorField.addValidationStatusChangeListener(
+                        event -> this.binding.validate());
+            }
 
             return binding;
         }
@@ -1814,9 +1825,9 @@ public class Binder<BEAN> implements Serializable {
 
         return createBinding(field, createNullRepresentationAdapter(field),
                 this::handleValidationStatus)
-                        .withValidator(field instanceof HasValidator
-                                ? ((HasValidator) field).getDefaultValidator()
-                                : Validator.alwaysPass());
+                .withValidator(field instanceof HasValidator
+                        ? ((HasValidator) field).getDefaultValidator()
+                        : Validator.alwaysPass());
     }
 
     /**
@@ -2055,6 +2066,7 @@ public class Binder<BEAN> implements Serializable {
      * @see #readBean(Object)
      * @see #writeBean(Object)
      * @see #writeBeanIfValid(Object)
+     * @see #refreshFields()
      *
      * @param bean
      *            the bean to edit, or {@code null} to remove a currently bound
@@ -2126,6 +2138,24 @@ public class Binder<BEAN> implements Serializable {
                     BinderValidationStatus.createUnresolvedStatus(this));
             fireStatusChangeEvent(false);
         }
+    }
+
+    /**
+     * Refreshes the fields values by reading them again from the currently
+     * associated bean via invoking their corresponding value provider methods.
+     * <p>
+     * If no bean is currently associated with this binder
+     * ({@link #setBean(Object)} has not been called before invoking this
+     * method), the bound fields will be cleared.
+     * <p>
+     *
+     * @see #setBean(Object)
+     * @see #readBean(Object)
+     * @see #writeBean(Object)
+     * @see #writeBeanIfValid(Object)
+     */
+    public void refreshFields() {
+        readBean(bean);
     }
 
     /**
@@ -2257,9 +2287,14 @@ public class Binder<BEAN> implements Serializable {
             Map<Binding<BEAN, ?>, Object> oldValues = getBeanState(bean,
                     currentBindings);
 
+            // Field level validation can be skipped as it was done already
+            boolean validatorsDisabledStatus = isValidatorsDisabled();
+            setValidatorsDisabled(true);
             currentBindings
                     .forEach(binding -> ((BindingImpl<BEAN, ?, ?>) binding)
                             .writeFieldValue(bean));
+            setValidatorsDisabled(validatorsDisabledStatus);
+
             // Now run bean level validation against the updated bean
             binderResults = validateBean(bean);
             if (binderResults.stream().anyMatch(ValidationResult::isError)) {

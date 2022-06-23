@@ -15,23 +15,24 @@
  */
 package com.vaadin.flow.spring;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRegistration.Dynamic;
-
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRegistration.Dynamic;
+
+import com.vaadin.flow.server.Constants;
+
+import org.atmosphere.cpr.ApplicationConfig;
 import org.springframework.core.env.Environment;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.WebApplicationInitializer;
 import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
-
-import com.vaadin.flow.server.Constants;
 
 /**
  * Abstract Vaadin Spring MVC {@link WebApplicationInitializer}.
@@ -56,8 +57,11 @@ public abstract class VaadinMVCWebAppInitializer
         context.refresh();
 
         Environment env = context.getBean(Environment.class);
-        String mapping = env
-                .getProperty(RootMappedCondition.URL_MAPPING_PROPERTY, "/*");
+        String mapping = RootMappedCondition.getUrlMapping(env);
+        if (mapping == null) {
+            mapping = "/*";
+        }
+        String pushRegistrationPath;
 
         boolean rootMapping = RootMappedCondition.isRootMapping(mapping);
 
@@ -71,11 +75,25 @@ public abstract class VaadinMVCWebAppInitializer
                     .addServlet("dispatcher", new DispatcherServlet(context));
             dispatcherRegistration.addMapping("/*");
             mapping = VaadinServletConfiguration.VAADIN_SERVLET_MAPPING;
-            initParameters.put(Constants.SERVLET_PARAMETER_PUSH_URL,
-                    makeContextRelative(mapping.replace("*", "")));
+            pushRegistrationPath = "";
+        } else {
+            pushRegistrationPath = mapping.replace("/*", "");
         }
-        registration.setInitParameters(initParameters);
+
         registration.addMapping(mapping);
+        registration.addMapping("/VAADIN/*");
+
+        /*
+         * Tell Atmosphere which servlet to use for the push endpoint. Servlet
+         * mappings are returned as a Set from at least Tomcat so even if
+         * Atmosphere always picks the first, it might end up using /VAADIN/*
+         * and websockets will fail.
+         */
+        initParameters.put(ApplicationConfig.JSR356_MAPPING_PATH,
+                pushRegistrationPath);
+
+        registration.setInitParameters(initParameters);
+
         registration.setAsyncSupported(
                 Boolean.TRUE.toString().equals(env.getProperty(
                         "vaadin.asyncSupported", Boolean.TRUE.toString())));

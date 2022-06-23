@@ -369,7 +369,7 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         defaults.put("@polymer/polymer", POLYMER_VERSION);
 
-        defaults.put("lit", "2.2.1");
+        defaults.put("lit", "2.2.3");
 
         // Constructable style sheets is only implemented for chrome,
         // polyfill needed for FireFox et.al. at the moment
@@ -396,12 +396,12 @@ public abstract class NodeUpdater implements FallibleCommand {
             defaults.put("workbox-build", WORKBOX_VERSION);
         } else {
             // Webpack plugins and helpers
-            defaults.put("esbuild-loader", "2.15.1");
+            defaults.put("esbuild-loader", "2.19.0");
             defaults.put("html-webpack-plugin", "4.5.1");
             defaults.put("fork-ts-checker-webpack-plugin", "6.2.1");
             defaults.put("webpack", "4.46.0");
-            defaults.put("webpack-cli", "4.9.2");
-            defaults.put("webpack-dev-server", "4.8.1");
+            defaults.put("webpack-cli", "4.10.0");
+            defaults.put("webpack-dev-server", "4.9.2");
             defaults.put("compression-webpack-plugin", "4.0.1");
             defaults.put("extra-watch-webpack-plugin", "1.0.3");
             defaults.put("webpack-merge", "4.2.2");

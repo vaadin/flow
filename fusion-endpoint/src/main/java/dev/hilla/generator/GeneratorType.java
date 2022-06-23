@@ -19,6 +19,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
@@ -28,6 +29,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.resolution.declarations.ResolvedTypeParameterDeclaration;
 import com.github.javaparser.resolution.types.ResolvedPrimitiveType;
@@ -35,6 +37,7 @@ import com.github.javaparser.resolution.types.ResolvedReferenceType;
 import com.github.javaparser.resolution.types.ResolvedType;
 import com.github.javaparser.utils.Pair;
 
+import dev.hilla.EndpointSubscription;
 import dev.hilla.ExplicitNullableTypeChecker;
 import reactor.core.publisher.Flux;
 
@@ -44,23 +47,28 @@ class GeneratorType {
     private final Type type;
     private final ResolvedType resolvedType;
     private final boolean isResolvable;
+    private final boolean requiredByContext;
 
-    GeneratorType(Type type) {
+    GeneratorType(Type type, boolean requiredByContext) {
         this.type = type;
         this.resolvedType = type.resolve();
         isResolvable = true;
+        this.requiredByContext = requiredByContext;
     }
 
-    GeneratorType(ResolvedType resolvedType) {
+    GeneratorType(ResolvedType resolvedType, boolean requiredByContext) {
         this.type = null;
         this.resolvedType = resolvedType;
         isResolvable = true;
+        this.requiredByContext = requiredByContext;
     }
 
-    GeneratorType(Type type, ResolvedType resolvedType) {
+    GeneratorType(Type type, ResolvedType resolvedType,
+            boolean requiredByContext) {
         this.type = type;
         this.resolvedType = resolvedType;
         isResolvable = false;
+        this.requiredByContext = requiredByContext;
     }
 
     boolean hasType() {
@@ -123,6 +131,11 @@ class GeneratorType {
         return resolvedType.isReferenceType() && isAssignableType(Flux.class);
     }
 
+    boolean isEndpointSubscription() {
+        return resolvedType.isReferenceType()
+                && isAssignableType(EndpointSubscription.class);
+    }
+
     boolean isPrimitive() {
         return resolvedType.isPrimitive();
     }
@@ -131,9 +144,24 @@ class GeneratorType {
         return resolvedType.isReferenceType();
     }
 
-    boolean isRequired() {
-        return isPrimitive() || hasType() && ExplicitNullableTypeChecker
-                .isRequired(type.getAnnotations());
+    boolean isRequired(List<AnnotationExpr> additionalAnnotations) {
+        if (isPrimitive()) {
+            return true;
+        }
+        if (!hasType()) {
+            return false;
+        }
+        List<AnnotationExpr> allAnnotations = new ArrayList<>();
+        List<AnnotationExpr> typeAnnotations = type.getAnnotations();
+        if (typeAnnotations != null) {
+            allAnnotations.addAll(typeAnnotations);
+        }
+        if (additionalAnnotations != null) {
+            allAnnotations.addAll(additionalAnnotations);
+        }
+
+        return hasType() && ExplicitNullableTypeChecker
+                .isRequired(requiredByContext, allAnnotations);
     }
 
     boolean isString() {
@@ -195,14 +223,16 @@ class GeneratorType {
             Type componentType = type.asArrayType().getComponentType();
 
             if (isResolvable) {
-                return new GeneratorType(componentType);
+                return new GeneratorType(componentType, requiredByContext);
             }
 
             return new GeneratorType(componentType,
-                    resolvedType.asArrayType().getComponentType());
+                    resolvedType.asArrayType().getComponentType(),
+                    requiredByContext);
         }
 
-        return new GeneratorType(resolvedType.asArrayType().getComponentType());
+        return new GeneratorType(resolvedType.asArrayType().getComponentType(),
+                requiredByContext);
     }
 
     List<GeneratorType> getTypeArguments() {
@@ -211,7 +241,8 @@ class GeneratorType {
                     .map(typeArguments -> {
                         if (isResolvable) {
                             return typeArguments.stream()
-                                    .map(GeneratorType::new)
+                                    .map(type -> new GeneratorType(type,
+                                            requiredByContext))
                                     .collect(Collectors.toList());
                         }
 
@@ -220,8 +251,9 @@ class GeneratorType {
 
                         return zip(typeArguments, typeParameters,
                                 (argument, parameterPair) -> new GeneratorType(
-                                        argument, parameterPair.b))
-                                                .collect(Collectors.toList());
+                                        argument, parameterPair.b,
+                                        requiredByContext))
+                                .collect(Collectors.toList());
                     }).orElseGet(this::getTypeArgumentsFallback);
         }
 
@@ -231,12 +263,17 @@ class GeneratorType {
     private List<GeneratorType> getTypeArgumentsFallback() {
         return resolvedType.asReferenceType().getTypeParametersMap().stream()
                 .filter(Objects::nonNull)
-                .map(parameter -> new GeneratorType(parameter.b))
+                .map(parameter -> new GeneratorType(parameter.b,
+                        requiredByContext))
                 .collect(Collectors.toList());
     }
 
     private boolean isType(ResolvedReferenceType type, Class<?>... classes) {
         return Arrays.stream(classes).map(Class::getName).anyMatch(
                 className -> className.equals(type.getQualifiedName()));
+    }
+
+    boolean isRequiredByContext() {
+        return requiredByContext;
     }
 }

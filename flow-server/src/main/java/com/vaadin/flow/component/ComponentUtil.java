@@ -39,7 +39,9 @@ import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
 import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
+import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.Attributes;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.shared.Registration;
@@ -369,6 +371,22 @@ public class ComponentUtil {
     }
 
     /**
+     * Check if the component has at least one registered listener of the given
+     * event type.
+     *
+     * @param component
+     *            the component to which the listener(s) are registered.
+     * @param eventType
+     *            the event type for which the listener(s) are registered.
+     * @return a boolean indicating whether at least one listener registered to
+     *         the component for the given event type.
+     */
+    public static <T extends ComponentEvent<?>> boolean hasEventListener(
+            Component component, Class<? extends T> eventType) {
+        return component.hasListener(eventType);
+    }
+
+    /**
      * Dispatches the event to all listeners registered for the event type.
      *
      * @see Component#fireEvent(ComponentEvent)
@@ -584,6 +602,36 @@ public class ComponentUtil {
     public static <T> T getData(Component component, Class<T> type) {
         return getData(component,
                 (attributes, ignore) -> attributes.getAttribute(type), type);
+    }
+
+    /**
+     * Gets the router instance for the given component.
+     *
+     * Falls back to the router for the currently active VaadinService if the
+     * component is not attached.
+     *
+     * @param component
+     *            component for which the requested router instance serves
+     *            navigation
+     * @return a router instance
+     * @throws IllegalStateException
+     *             if no router instance is available
+     */
+    public static Router getRouter(HasElement component) {
+        Router router = null;
+        if (component.getElement().getNode().isAttached()) {
+            StateTree tree = (StateTree) component.getElement().getNode()
+                    .getOwner();
+            router = tree.getUI().getInternals().getRouter();
+        }
+        if (router == null) {
+            router = VaadinService.getCurrent().getRouter();
+        }
+        if (router == null) {
+            throw new IllegalStateException(
+                    "Implicit router instance is not available.");
+        }
+        return router;
     }
 
 }
