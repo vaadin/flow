@@ -26,15 +26,12 @@ public class RouteAndQueryParametersIT extends ChromeBrowserTest {
     @Test
     public void testNavigationWithBothRouteAndQueryParameters() {
         open();
-        
-        Assert.assertFalse(
-                getDriver().getPageSource().contains("foo=bar"));
 
-        
+        Assert.assertFalse(getDriver().getPageSource().contains("foo=bar"));
+
         findElement(By.tagName("button")).click();
-        
-        Assert.assertTrue(
-                getDriver().getPageSource()
+
+        Assert.assertTrue(getDriver().getPageSource()
                 .contains("route parameter: 5, query string=foo=bar"));
 
     }

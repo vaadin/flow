@@ -28,28 +28,33 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.RouteAndQueryParametersView", layout = ViewTestLayout.class)
-public class RouteAndQueryParametersView extends Div implements HasUrlParameter<Integer> {
-	static final String REQUEST_PARAM_NAME = "testRequestParam";
+public class RouteAndQueryParametersView extends Div
+        implements HasUrlParameter<Integer> {
+    static final String REQUEST_PARAM_NAME = "testRequestParam";
 
-	private final Paragraph paramView;
+    private final Paragraph paramView;
 
-	public RouteAndQueryParametersView() {
-		paramView = new Paragraph("No input");
-		paramView.setId("paramView");
-		add(paramView);
+    public RouteAndQueryParametersView() {
+        paramView = new Paragraph("No input");
+        paramView.setId("paramView");
+        add(paramView);
 
-		NativeButton nativeButton = new NativeButton("Go");
-		nativeButton.addClickListener(e -> {
-			UI.getCurrent().navigate(RouteAndQueryParametersView.class, 5, QueryParameters.of("foo", "bar"));
-		});
-		add(nativeButton);
+        NativeButton nativeButton = new NativeButton("Go");
+        nativeButton.addClickListener(e -> {
+            UI.getCurrent().navigate(RouteAndQueryParametersView.class, 5,
+                    QueryParameters.of("foo", "bar"));
+        });
+        add(nativeButton);
 
-	}
+    }
 
-	@Override
-	public void setParameter(BeforeEvent event, @OptionalParameter Integer parameter) {
-		String queryString = event.getLocation().getQueryParameters().getQueryString();
-        paramView.setText("route parameter: " + parameter + ", query string=" + queryString);
+    @Override
+    public void setParameter(BeforeEvent event,
+            @OptionalParameter Integer parameter) {
+        String queryString = event.getLocation().getQueryParameters()
+                .getQueryString();
+        paramView.setText("route parameter: " + parameter + ", query string="
+                + queryString);
 
-	}
+    }
 }
