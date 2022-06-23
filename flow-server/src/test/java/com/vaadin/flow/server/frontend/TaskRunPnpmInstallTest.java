@@ -488,11 +488,12 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         final VersionsJsonFilter versionsJsonFilter = new VersionsJsonFilter(
                 Json.parse(packageJsonContent), NodeUpdater.DEPENDENCIES);
         // Platform defines a pinned version
-        TaskRunNpmInstall task = createTask(
-                versionsJsonFilter.getFilteredVersions(
+        TaskRunNpmInstall task = createTask(versionsJsonFilter
+                .getFilteredVersions(
                         Json.parse("{ \"@vaadin/vaadin-overlay\":\""
-                                + PINNED_VERSION + "\"}"))
-                        .toJson());
+                                + PINNED_VERSION + "\"}"),
+                        "test-versions.json")
+                .toJson());
         task.execute();
 
         File overlayPackageJson = new File(getNodeUpdater().nodeModulesFolder,
@@ -535,11 +536,12 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         final VersionsJsonFilter versionsJsonFilter = new VersionsJsonFilter(
                 Json.parse(packageJsonContent), NodeUpdater.DEPENDENCIES);
         // Platform defines a pinned version
-        TaskRunNpmInstall task = createTask(
-                versionsJsonFilter.getFilteredVersions(
+        TaskRunNpmInstall task = createTask(versionsJsonFilter
+                .getFilteredVersions(
                         Json.parse("{ \"@vaadin/vaadin-overlay\":\""
-                                + PINNED_VERSION + "\"}"))
-                        .toJson());
+                                + PINNED_VERSION + "\"}"),
+                        "test-versions.json")
+                .toJson());
         task.execute();
 
         File overlayPackageJson = new File(getNodeUpdater().nodeModulesFolder,
@@ -616,7 +618,8 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     private JsonObject getGeneratedVersionsContent(File versions)
             throws IOException {
         ClassFinder classFinder = getClassFinder();
-        Mockito.when(classFinder.getResource(Constants.VAADIN_VERSIONS_JSON))
+        Mockito.when(
+                classFinder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
                 .thenReturn(versions.toURI().toURL());
 
         TaskRunNpmInstall task = new TaskRunNpmInstall(getClassFinder(),
