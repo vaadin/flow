@@ -233,7 +233,7 @@ public class WebComponentBootstrapHandlerTest {
         Assert.assertTrue(guardIndex > scriptIndex);
 
         int createScriptIndex = result
-                .indexOf("document.createElement('script')");
+                .indexOf("ocument.createElement('script');headElem.setAttribute('type'");
         Assert.assertTrue(createScriptIndex > guardIndex);
 
         Assert.assertTrue(result.contains("\\\"devToolsEnabled\\\": false"));
