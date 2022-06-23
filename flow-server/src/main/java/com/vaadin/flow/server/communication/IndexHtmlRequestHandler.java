@@ -175,7 +175,11 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         );
     }
 
-    private void addLicenseChecker(Document indexDocument) {
+    /**
+     * Adds the needed overrides for the license checker to work when in
+     * development mode.
+     */
+    public static void addLicenseChecker(Document indexDocument) {
         // maybeCheck is invoked by the WC license checker
         addScript(indexDocument, "" + //
                 "window.Vaadin = window.Vaadin || {};" + //
@@ -196,7 +200,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
     }
 
-    private void addScript(Document indexDocument, String script) {
+    private static void addScript(Document indexDocument, String script) {
         Element elm = new Element(SCRIPT);
         elm.attr(SCRIPT_INITIAL, "");
         elm.appendChild(new DataNode(script));
