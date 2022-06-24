@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEB_COMPONENT_BOOTSTRAP_FILE_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
 
 /**
  * A task for generating the bootstrap file for exported web components
@@ -41,17 +40,16 @@ public class TaskGenerateWebComponentBootstrap
      * Create a task to generate <code>vaadin-web-component.ts</code> if
      * necessary.
      *
-     * @param frontendDirectory
-     *            frontend directory is to check if the file already exists
-     *            there.
+     * @param frontendGeneratedDirectory
+     *            the folder with frontend auto-generated file to check if the
+     *            file already exists there.
      * @param generatedImports
      *            the flow generated imports file to include in the
      *            <code>vaadin-web-component.ts</code>
      */
-    TaskGenerateWebComponentBootstrap(File frontendDirectory,
+    TaskGenerateWebComponentBootstrap(File frontendGeneratedDirectory,
             File generatedImports) {
-        this.frontendGeneratedDirectory = new File(frontendDirectory,
-                GENERATED);
+        this.frontendGeneratedDirectory = frontendGeneratedDirectory;
         this.generatedImports = generatedImports;
     }
 

@@ -745,7 +745,7 @@ public class NodeTasks implements FallibleCommand {
                     commands.add(new TaskGenerateWebComponentHtml(
                             builder.frontendDirectory));
                     commands.add(new TaskGenerateWebComponentBootstrap(
-                            builder.frontendDirectory,
+                            builder.frontendGeneratedFolder,
                             new File(builder.generatedFolder, IMPORTS_NAME)));
                 }
             }
@@ -806,10 +806,11 @@ public class NodeTasks implements FallibleCommand {
             }
 
             commands.add(new TaskGenerateBootstrap(frontendDependencies,
-                    builder.frontendDirectory, builder.productionMode));
+                    builder.frontendDirectory, builder.frontendGeneratedFolder,
+                    builder.productionMode));
 
-            commands.add(new TaskGenerateFeatureFlags(builder.frontendDirectory,
-                    featureFlags));
+            commands.add(new TaskGenerateFeatureFlags(
+                    builder.frontendGeneratedFolder, featureFlags));
         }
 
         if (builder.jarFiles != null && builder.flowResourcesFolder != null) {
@@ -879,7 +880,7 @@ public class NodeTasks implements FallibleCommand {
         File buildDirectory = new File(builder.npmFolder,
                 builder.buildDirectory);
         TaskGenerateIndexTs taskGenerateIndexTs = new TaskGenerateIndexTs(
-                builder.frontendDirectory,
+                builder.frontendDirectory, builder.frontendGeneratedFolder,
                 new File(builder.generatedFolder, IMPORTS_NAME),
                 buildDirectory);
         commands.add(taskGenerateIndexTs);

@@ -31,6 +31,7 @@ import org.mockito.Mockito;
 import java.io.File;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
+import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
 
 public class TaskGenerateFeatureFlagsTest {
 
@@ -47,10 +48,11 @@ public class TaskGenerateFeatureFlagsTest {
                 .mock(ApplicationConfiguration.class);
         context.setAttribute(ApplicationConfiguration.class, configuration);
 
-        File frontendFolder = temporaryFolder.newFolder(FRONTEND);
+        File frontendGeneratedFolder = temporaryFolder.newFolder(FRONTEND,
+                GENERATED);
         featureFlags = FeatureFlags.get(context);
-        taskGenerateFeatureFlags = new TaskGenerateFeatureFlags(frontendFolder,
-                featureFlags);
+        taskGenerateFeatureFlags = new TaskGenerateFeatureFlags(
+                frontendGeneratedFolder, featureFlags);
     }
 
     @Test
