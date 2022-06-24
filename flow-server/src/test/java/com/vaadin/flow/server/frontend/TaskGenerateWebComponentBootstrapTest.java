@@ -16,6 +16,7 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
+import java.io.IOException;
 
 import com.vaadin.flow.server.ExecutionFailedException;
 
@@ -28,24 +29,26 @@ import org.junit.rules.TemporaryFolder;
 import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
 
 public class TaskGenerateWebComponentBootstrapTest {
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-    private File frontendDirectory;
+    private File frontendGeneratedDirectory;
     private File generatedImports;
     private TaskGenerateWebComponentBootstrap taskGenerateWebComponentBootstrap;
 
     @Before
     public void setup() throws Exception {
-        frontendDirectory = temporaryFolder.newFolder(DEFAULT_FRONTEND_DIR);
+        frontendGeneratedDirectory = temporaryFolder
+                .newFolder(DEFAULT_FRONTEND_DIR, GENERATED);
         File generatedFolder = temporaryFolder.newFolder(TARGET, FRONTEND);
         generatedImports = new File(generatedFolder,
                 "flow-generated-imports.js");
         generatedImports.createNewFile();
         taskGenerateWebComponentBootstrap = new TaskGenerateWebComponentBootstrap(
-                frontendDirectory, generatedImports);
+                frontendGeneratedDirectory, generatedImports);
     }
 
     @Test
@@ -55,6 +58,19 @@ public class TaskGenerateWebComponentBootstrapTest {
         String content = taskGenerateWebComponentBootstrap.getFileContent();
         Assert.assertTrue(content.contains(
                 "import '../../target/frontend/flow-generated-imports'"));
+    }
+
+    @Test
+    public void should_importGeneratedImports_customFrontendGeneratedDirectory()
+            throws ExecutionFailedException, IOException {
+        frontendGeneratedDirectory = temporaryFolder.newFolder("src", "main",
+                FRONTEND, GENERATED);
+        taskGenerateWebComponentBootstrap = new TaskGenerateWebComponentBootstrap(
+                frontendGeneratedDirectory, generatedImports);
+        taskGenerateWebComponentBootstrap.execute();
+        String content = taskGenerateWebComponentBootstrap.getFileContent();
+        Assert.assertTrue(content.contains(
+                "import '../../../../target/frontend/flow-generated-imports'"));
     }
 
     @Test

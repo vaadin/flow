@@ -39,7 +39,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class TaskGenerateIndexTs extends AbstractTaskClientGenerator {
 
     private final File frontendDirectory;
-    private File generatedImports;
+    private final File frontendGeneratedDirectory;
+    private final File generatedImports;
     private final File buildDirectory;
 
     /**
@@ -51,20 +52,20 @@ public class TaskGenerateIndexTs extends AbstractTaskClientGenerator {
      * @param generatedImports
      *            the flow generated imports file to include in the
      *            <code>index.js</code>
-     * @param outputDirectory
+     * @param buildDirectory
      *            the build output directory
      */
-    TaskGenerateIndexTs(File frontendDirectory, File generatedImports,
-            File buildDirectory) {
+    TaskGenerateIndexTs(File frontendDirectory, File frontendGeneratedDirectory,
+            File generatedImports, File buildDirectory) {
         this.frontendDirectory = frontendDirectory;
+        this.frontendGeneratedDirectory = frontendGeneratedDirectory;
         this.generatedImports = generatedImports;
         this.buildDirectory = buildDirectory;
     }
 
     @Override
     protected File getGeneratedFile() {
-        return new File(new File(frontendDirectory, FrontendUtils.GENERATED),
-                INDEX_TS);
+        return new File(frontendGeneratedDirectory, INDEX_TS);
     }
 
     @Override
@@ -86,9 +87,12 @@ public class TaskGenerateIndexTs extends AbstractTaskClientGenerator {
                 FrontendUtils.getUnixRelativePath(buildDirectory.toPath(),
                         generatedImports.toPath()));
 
+        String generatedToBuildRelativePath = FrontendUtils.getUnixRelativePath(
+                getGeneratedFile().getParentFile().toPath(),
+                buildDirectory.toPath());
         relativizedImport = relativizedImport
                 // replace `./` with `../../target/` to make it work
-                .replaceFirst("^./", "../../" + buildDirectory.getName() + "/")
+                .replaceFirst("^./", generatedToBuildRelativePath + "/")
                 // remove extension
                 .replaceFirst("\\.(ts|js)$", "");
 

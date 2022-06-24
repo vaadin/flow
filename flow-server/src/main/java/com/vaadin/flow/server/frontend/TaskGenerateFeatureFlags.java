@@ -15,13 +15,13 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import com.vaadin.experimental.FeatureFlags;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.*;
+import com.vaadin.experimental.FeatureFlags;
+
+import static com.vaadin.flow.server.frontend.FrontendUtils.FEATURE_FLAGS_FILE_NAME;
 
 /**
  * A task for generating the feature flags file
@@ -36,10 +36,9 @@ public class TaskGenerateFeatureFlags extends AbstractTaskClientGenerator {
     private final File frontendGeneratedDirectory;
     private final FeatureFlags featureFlags;
 
-    TaskGenerateFeatureFlags(File frontendDirectory,
+    TaskGenerateFeatureFlags(File frontendGeneratedDirectory,
             FeatureFlags featureFlags) {
-        this.frontendGeneratedDirectory = new File(frontendDirectory,
-                GENERATED);
+        this.frontendGeneratedDirectory = frontendGeneratedDirectory;
         this.featureFlags = featureFlags;
     }
 

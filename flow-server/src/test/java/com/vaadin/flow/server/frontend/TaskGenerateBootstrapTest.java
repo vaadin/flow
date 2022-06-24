@@ -37,6 +37,7 @@ import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
+import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FEATURE_FLAGS_FILE_NAME;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.getClassFinder;
@@ -50,6 +51,7 @@ public class TaskGenerateBootstrapTest {
 
     private FrontendDependenciesScanner frontDeps;
     private File frontendFolder;
+    private File frontendGeneratedFolder;
     private TaskGenerateBootstrap taskGenerateBootstrap;
 
     @Before
@@ -59,8 +61,10 @@ public class TaskGenerateBootstrapTest {
                         Collections.singleton(this.getClass())), false);
 
         frontendFolder = temporaryFolder.newFolder(FRONTEND);
+        frontendGeneratedFolder = temporaryFolder.newFolder(FRONTEND,
+                GENERATED);
         taskGenerateBootstrap = new TaskGenerateBootstrap(frontDeps,
-                frontendFolder, true);
+                frontendFolder, frontendGeneratedFolder, true);
     }
 
     @Test
@@ -83,7 +87,7 @@ public class TaskGenerateBootstrapTest {
     public void should_importDevTools_inDevMode()
             throws ExecutionFailedException {
         taskGenerateBootstrap = new TaskGenerateBootstrap(frontDeps,
-                frontendFolder, false);
+                frontendFolder, frontendGeneratedFolder, false);
         taskGenerateBootstrap.execute();
         String content = taskGenerateBootstrap.getFileContent();
         Assert.assertTrue(content.contains(DEV_TOOLS_IMPORT));
@@ -99,6 +103,20 @@ public class TaskGenerateBootstrapTest {
     }
 
     @Test
+    public void should_importFrontendIndexTS_customFrontendFolder()
+            throws ExecutionFailedException, IOException {
+        frontendFolder = temporaryFolder.newFolder("src", "main", FRONTEND);
+        taskGenerateBootstrap = new TaskGenerateBootstrap(frontDeps,
+                frontendFolder, frontendGeneratedFolder, true);
+
+        new File(frontendFolder, INDEX_TS).createNewFile();
+        taskGenerateBootstrap.execute();
+        String content = taskGenerateBootstrap.getFileContent();
+        Assert.assertTrue(
+                content.contains("import '../../src/main/frontend/index';"));
+    }
+
+    @Test
     public void should_importFeatureFlagTS() throws ExecutionFailedException {
         taskGenerateBootstrap.execute();
         String content = taskGenerateBootstrap.getFileContent();
@@ -110,7 +128,7 @@ public class TaskGenerateBootstrapTest {
     public void should_load_AppTheme()
             throws MalformedURLException, ExecutionFailedException {
         taskGenerateBootstrap = new TaskGenerateBootstrap(getThemedDependency(),
-                frontendFolder, true);
+                frontendFolder, frontendGeneratedFolder, true);
         taskGenerateBootstrap.execute();
         String content = taskGenerateBootstrap.getFileContent();
 

@@ -34,7 +34,6 @@ import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.PwaConfiguration;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.BOOTSTRAP_FILE_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
 import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC;
 import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC_JS;
@@ -209,8 +208,13 @@ public class TaskUpdateWebpack implements FallibleCommand {
     }
 
     private String getClientEntryPoint() {
-        return String.format("path.resolve(__dirname, '%s', '%s', '%s');",
-                getEscapedRelativeWebpackPath(frontendDirectory), GENERATED,
+        /*
+         * return String.format("path.resolve(__dirname, '%s', '%s', '%s');",
+         * getEscapedRelativeWebpackPath(frontendDirectory), GENERATED,
+         * BOOTSTRAP_FILE_NAME);
+         */
+        return String.format("path.resolve(__dirname, '%s',  '%s');",
+                getEscapedRelativeWebpackPath(frontendGeneratedFolder),
                 BOOTSTRAP_FILE_NAME);
     }
 

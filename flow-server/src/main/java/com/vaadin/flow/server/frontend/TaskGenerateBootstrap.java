@@ -47,12 +47,12 @@ public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
     private boolean productionMode;
 
     TaskGenerateBootstrap(FrontendDependenciesScanner frontDeps,
-            File frontendDirectory, boolean productionMode) {
+            File frontendDirectory, File frontendGeneratedDirectory,
+            boolean productionMode) {
         this.frontDeps = frontDeps;
         this.frontendDirectory = frontendDirectory;
         this.productionMode = productionMode;
-        this.frontendGeneratedDirectory = new File(frontendDirectory,
-                GENERATED);
+        this.frontendGeneratedDirectory = frontendGeneratedDirectory;
     }
 
     @Override
@@ -82,7 +82,9 @@ public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
         boolean hasCustomIndexFile = new File(frontendDirectory, INDEX_TS)
                 .exists() || new File(frontendDirectory, INDEX_JS).exists();
         if (hasCustomIndexFile) {
-            return "../index";
+            return FrontendUtils.getUnixRelativePath(
+                    frontendGeneratedDirectory.toPath(),
+                    frontendDirectory.toPath()) + "/index";
         } else {
             return "./index";
         }
