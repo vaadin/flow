@@ -40,6 +40,7 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import elemental.json.JsonObject;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
@@ -745,7 +746,7 @@ public class NodeTasks implements FallibleCommand {
                     commands.add(new TaskGenerateWebComponentHtml(
                             builder.frontendDirectory));
                     commands.add(new TaskGenerateWebComponentBootstrap(
-                            builder.frontendGeneratedFolder,
+                            frontendGeneratedFolderOrDefault(builder),
                             new File(builder.generatedFolder, IMPORTS_NAME)));
                 }
             }
@@ -806,11 +807,12 @@ public class NodeTasks implements FallibleCommand {
             }
 
             commands.add(new TaskGenerateBootstrap(frontendDependencies,
-                    builder.frontendDirectory, builder.frontendGeneratedFolder,
+                    builder.frontendDirectory,
+                    frontendGeneratedFolderOrDefault(builder),
                     builder.productionMode));
 
             commands.add(new TaskGenerateFeatureFlags(
-                    builder.frontendGeneratedFolder, featureFlags));
+                    frontendGeneratedFolderOrDefault(builder), featureFlags));
         }
 
         if (builder.jarFiles != null && builder.flowResourcesFolder != null) {
@@ -847,7 +849,7 @@ public class NodeTasks implements FallibleCommand {
                     builder.resourceOutputDirectory,
                     new File(builder.generatedFolder, IMPORTS_NAME),
                     builder.useLegacyV14Bootstrap, builder.flowResourcesFolder,
-                    pwaConfiguration, builder.frontendGeneratedFolder,
+                    pwaConfiguration, frontendGeneratedFolderOrDefault(builder),
                     builder.buildDirectory));
         }
 
@@ -864,13 +866,19 @@ public class NodeTasks implements FallibleCommand {
             commands.add(new TaskUpdateThemeImport(builder.npmFolder,
                     frontendDependencies.getThemeDefinition(),
                     builder.frontendDirectory,
-                    builder.frontendGeneratedFolder));
+                    frontendGeneratedFolderOrDefault(builder)));
         }
 
         if (builder.copyTemplates) {
             commands.add(new TaskCopyTemplateFiles(classFinder,
                     builder.npmFolder, builder.resourceOutputDirectory));
         }
+    }
+
+    private File frontendGeneratedFolderOrDefault(Builder builder) {
+        return builder.frontendGeneratedFolder != null
+                ? builder.frontendGeneratedFolder
+                : new File(builder.frontendDirectory, GENERATED);
     }
 
     private void addBootstrapTasks(Builder builder) {
@@ -880,7 +888,8 @@ public class NodeTasks implements FallibleCommand {
         File buildDirectory = new File(builder.npmFolder,
                 builder.buildDirectory);
         TaskGenerateIndexTs taskGenerateIndexTs = new TaskGenerateIndexTs(
-                builder.frontendDirectory, builder.frontendGeneratedFolder,
+                builder.frontendDirectory,
+                frontendGeneratedFolderOrDefault(builder),
                 new File(builder.generatedFolder, IMPORTS_NAME),
                 buildDirectory);
         commands.add(taskGenerateIndexTs);
