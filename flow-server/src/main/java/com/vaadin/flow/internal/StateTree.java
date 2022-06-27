@@ -123,13 +123,17 @@ public class StateTree implements NodeOwner {
          *         instance
          */
         private boolean canExecute(UI ui) {
+            return canExecute(ui.getInternals().getStateTree());
+        }
+
+        boolean canExecute(NodeOwner stateTree) {
             if (originalOwner instanceof NullOwner) {
                 // the node has not been attached initially
                 return true;
             }
             // if node has been attached initially then it's tree has to be the
             // same
-            return ui.getInternals().getStateTree() == originalOwner;
+            return stateTree == originalOwner;
         }
 
         public StateNode getStateNode() {
@@ -145,13 +149,14 @@ public class StateTree implements NodeOwner {
      * A registration object for removing a task registered for execution before
      * the client response.
      */
-    @FunctionalInterface
     public interface ExecutionRegistration extends Registration {
         /**
          * Removes the associated task from the execution queue.
          */
         @Override
         void remove();
+
+        boolean canExecute();
     }
 
     private Set<StateNode> dirtyNodes = new LinkedHashSet<>();

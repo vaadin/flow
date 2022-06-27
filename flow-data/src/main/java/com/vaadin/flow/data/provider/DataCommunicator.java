@@ -42,12 +42,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableComparator;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableSupplier;
-import com.vaadin.flow.internal.ExecutionContext;
-import com.vaadin.flow.internal.JsonUtils;
-import com.vaadin.flow.internal.NodeOwner;
-import com.vaadin.flow.internal.Range;
-import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.internal.StateTree;
+import com.vaadin.flow.internal.*;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
 
@@ -117,7 +112,9 @@ public class DataCommunicator<T> implements Serializable {
     private HashSet<T> updatedData = new HashSet<>();
 
     private SerializableConsumer<ExecutionContext> flushRequest;
+    private StateTree.ExecutionRegistration flushRequestRegistration;
     private SerializableConsumer<ExecutionContext> flushUpdatedDataRequest;
+    private StateTree.ExecutionRegistration flushUpdatedDataRequestRegistration;
 
     private CallbackDataProvider.CountCallback<T, ?> countCallback;
     private int itemCountEstimate = -1;
@@ -1093,7 +1090,12 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     private void requestFlush(boolean forced) {
+        if (flushRequestRegistration != null
+                && !flushRequestRegistration.canExecute()) {
+            flushRequest = null;
+        }
         if ((flushRequest == null || forced) && fetchEnabled) {
+            flushRequestRegistration = null;
             flushRequest = context -> {
                 if (!context.isClientSideInitialized()) {
                     reset();
@@ -1102,19 +1104,27 @@ public class DataCommunicator<T> implements Serializable {
                 flush();
                 flushRequest = null;
             };
-            stateNode.runWhenAttached(ui -> ui.getInternals().getStateTree()
+            stateNode.runWhenAttached(ui -> flushRequestRegistration = ui
+                    .getInternals().getStateTree()
                     .beforeClientResponse(stateNode, flushRequest));
         }
     }
 
     private void requestFlushUpdatedData() {
+        if (flushUpdatedDataRequestRegistration != null
+                && !flushUpdatedDataRequestRegistration.canExecute()) {
+            flushUpdatedDataRequest = null;
+        }
         if (flushUpdatedDataRequest == null) {
+            flushUpdatedDataRequestRegistration = null;
             flushUpdatedDataRequest = context -> {
                 flushUpdatedData();
                 flushUpdatedDataRequest = null;
             };
-            stateNode.runWhenAttached(ui -> ui.getInternals().getStateTree()
-                    .beforeClientResponse(stateNode, flushUpdatedDataRequest));
+            stateNode.runWhenAttached(
+                    ui -> flushUpdatedDataRequestRegistration = ui
+                            .getInternals().getStateTree().beforeClientResponse(
+                                    stateNode, flushUpdatedDataRequest));
         }
     }
 

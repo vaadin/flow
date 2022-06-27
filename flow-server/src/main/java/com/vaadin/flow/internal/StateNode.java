@@ -1093,7 +1093,17 @@ public class StateNode implements Serializable {
         List<BeforeClientResponseEntry> localEntries = beforeClientResponseEntries;
         localEntries.add(entry);
 
-        return () -> localEntries.remove(entry);
+        return new ExecutionRegistration() {
+            @Override
+            public void remove() {
+                localEntries.remove(entry);
+            }
+
+            @Override
+            public boolean canExecute() {
+                return entry.canExecute(getOwner());
+            }
+        };
     }
 
     /**
