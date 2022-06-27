@@ -89,7 +89,8 @@ public class NodeUpdatePackagesNpmVersionLockingTest
                 StandardCharsets.UTF_8);
         // @formatter:on
 
-        Mockito.when(classFinder.getResource(Constants.VAADIN_VERSIONS_JSON))
+        Mockito.when(
+                classFinder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
                 .thenReturn(versions.toURI().toURL());
     }
 

@@ -83,8 +83,8 @@ public class VersionsJsonFilterTest {
 
         VersionsJsonFilter filter = new VersionsJsonFilter(Json.parse(pkgJson),
                 depKey);
-        JsonObject filteredJson = filter
-                .getFilteredVersions(Json.parse(versions));
+        JsonObject filteredJson = filter.getFilteredVersions(
+                Json.parse(versions), "versions/versions.json");
         Assert.assertTrue(filteredJson.hasKey("@vaadin/vaadin-progress-bar"));
         Assert.assertTrue(filteredJson.hasKey("@vaadin/vaadin-upload"));
         Assert.assertTrue(filteredJson.hasKey("@polymer/iron-list"));
@@ -108,8 +108,8 @@ public class VersionsJsonFilterTest {
 
         VersionsJsonFilter filter = new VersionsJsonFilter(Json.parse(pkgJson),
                 depKey);
-        JsonObject filteredJson = filter
-                .getFilteredVersions(Json.parse(versions));
+        JsonObject filteredJson = filter.getFilteredVersions(
+                Json.parse(versions), "versions/user_versions.json");
         List<String> expectedKeys = Arrays.asList("@vaadin/vaadin-notification",
                 "@vaadin/vaadin-overlay", "@vaadin/vaadin-select",
                 "@vaadin/vaadin-split-layout", "@vaadin/vaadin-tabs");
@@ -156,8 +156,8 @@ public class VersionsJsonFilterTest {
 
         VersionsJsonFilter filter = new VersionsJsonFilter(Json.parse(pkgJson),
                 depKey);
-        JsonObject filteredJson = filter
-                .getFilteredVersions(Json.parse(versions));
+        JsonObject filteredJson = filter.getFilteredVersions(
+                Json.parse(versions), "versions/versions.json");
         Assert.assertTrue(filteredJson.hasKey("@vaadin/vaadin-progress-bar"));
         Assert.assertTrue(filteredJson.hasKey("@vaadin/vaadin-upload"));
         Assert.assertTrue(filteredJson.hasKey("@polymer/iron-list"));

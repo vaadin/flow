@@ -76,13 +76,11 @@ public class FrontendToolsLocator implements Serializable {
     public Optional<File> tryLocateTool(String toolName) {
         List<String> candidateLocations = executeCommand(false,
                 isWindows() ? "where" : "which", toolName)
-                        .map(this::omitErrorResult)
-                        .map(CommandResult::getStdout)
-                        .orElseGet(() -> Arrays.asList(
-                                // Add most common paths in unix #5611
-                                "/usr/local/bin/" + toolName,
-                                "/opt/local/bin/" + toolName,
-                                "/opt/bin/" + toolName));
+                .map(this::omitErrorResult).map(CommandResult::getStdout)
+                .orElseGet(() -> Arrays.asList(
+                        // Add most common paths in unix #5611
+                        "/usr/local/bin/" + toolName,
+                        "/opt/local/bin/" + toolName, "/opt/bin/" + toolName));
 
         for (String candidateLocation : candidateLocations) {
             File candidate = new File(candidateLocation);
