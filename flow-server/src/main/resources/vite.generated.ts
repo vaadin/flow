@@ -75,8 +75,11 @@ function buildSWPlugin(): PluginOption {
       });
       rollupPlugins.push(
         replace({
-          'process.env.NODE_ENV': JSON.stringify(config.mode),
-          ...config.define
+          values: {
+            'process.env.NODE_ENV': JSON.stringify(config.mode),
+            ...config.define
+          },
+          preventAssignment: true
         })
       );
 
@@ -384,6 +387,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
       VITE_ENABLED: 'true'
     },
     server: {
+      host: '127.0.0.1',
       fs: {
         allow: allowedFrontendFolders
       }
@@ -410,6 +414,10 @@ export const vaadinConfig: UserConfigFn = (env) => {
         '@vaadin/router',
         '@vaadin/vaadin-license-checker',
         '@vaadin/vaadin-usage-statistics',
+        'workbox-core',
+        'workbox-precaching',
+        'workbox-routing',
+        'workbox-strategies'
       ]
     },
     plugins: [

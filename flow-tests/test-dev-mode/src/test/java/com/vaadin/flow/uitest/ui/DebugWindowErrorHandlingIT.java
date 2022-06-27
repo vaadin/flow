@@ -100,13 +100,13 @@ public class DebugWindowErrorHandlingIT extends ChromeBrowserTest {
     private void clientSideException() {
         findElement(
                 By.id(DebugWindowErrorHandlingView.CLIENT_SIDE_EXCEPTION_ID))
-                        .click();
+                .click();
     }
 
     private void clientSidePromiseRejection() {
         findElement(By.id(
                 DebugWindowErrorHandlingView.CLIENT_SIDE_PROMISE_REJECTION_ID))
-                        .click();
+                .click();
     }
 
     private void execJSException() {

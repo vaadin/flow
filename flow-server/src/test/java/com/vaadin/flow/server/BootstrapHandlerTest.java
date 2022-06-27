@@ -599,7 +599,7 @@ public class BootstrapHandlerTest {
                 "Content javascript should have been prepended to head element",
                 "<script type=\"text/javascript\">window.messages = window.messages || [];\n"
                         + "window.messages.push(\"content script\");</script>",
-                allElements.get(1).toString());
+                allElements.get(2).toString());
     }
 
     @Test // 3036
@@ -618,7 +618,7 @@ public class BootstrapHandlerTest {
                 "Content javascript should have been prepended to head element",
                 "<script type=\"text/javascript\">window.messages = window.messages || [];\n"
                         + "window.messages.push(\"inline.js\");</script>",
-                allElements.get(1).toString());
+                allElements.get(2).toString());
     }
 
     @Test // 3036
@@ -631,28 +631,27 @@ public class BootstrapHandlerTest {
         Document page = pageBuilder.getBootstrapPage(new BootstrapContext(
                 request, null, session, testUI, this::contextRootRelativePath));
 
-        Elements allElements = page.head().getAllElements();
+        String scripts = page.getElementsByTag("script").toString();
         // Note element 0 is the full head element.
-        assertStringEquals(
+        Assert.assertTrue(
                 "File javascript should have been appended to head element",
-                "<script type=\"text/javascript\">window.messages = window.messages || [];\n"
-                        + "window.messages.push(\"inline.js\");</script>",
-                allElements.get(allElements.size() - 3).toString());
-        assertStringEquals(
-                "File html should have been appended to head element",
-                "<script type=\"text/javascript\">\n"
+                scripts.contains(
+                        "<script type=\"text/javascript\">window.messages = window.messages || [];\n"
+                                + "window.messages.push(\"inline.js\");</script>"));
+        Assert.assertTrue("File html should have been appended to head element",
+                scripts.contains("<script type=\"text/javascript\">\n"
                         + "    // document.body might not yet be accessible, so just leave a message\n"
                         + "    window.messages = window.messages || [];\n"
                         + "    window.messages.push(\"inline.html\");\n"
-                        + "</script>",
-                allElements.get(allElements.size() - 2).toString());
-        assertStringEquals("File css should have been appended to head element",
-                "<style type=\"text/css\">/* inline.css */\n" + "\n"
-                        + "#preloadedDiv {\n"
+                        + "</script>"));
+
+        String styles = page.getElementsByTag("style").toString();
+        Assert.assertTrue("File css should have been appended to head element",
+                styles.contains("<style type=\"text/css\">/* inline.css */\n"
+                        + "\n" + "#preloadedDiv {\n"
                         + "    color: rgba(255, 255, 0, 1);\n" + "}\n" + "\n"
                         + "#inlineCssTestDiv {\n"
-                        + "    color: rgba(255, 255, 0, 1);\n" + "}</style>",
-                allElements.get(allElements.size() - 1).toString());
+                        + "    color: rgba(255, 255, 0, 1);\n" + "}</style>"));
     }
 
     @Test // 3036
@@ -688,7 +687,7 @@ public class BootstrapHandlerTest {
         Elements allElements = page.head().getAllElements();
 
         Assert.assertEquals("<meta name=\"theme-color\" content=\"#227aef\">",
-                allElements.get(1).toString());
+                allElements.get(2).toString());
     }
 
     @Test // 3203
@@ -888,7 +887,7 @@ public class BootstrapHandlerTest {
                 "File javascript should have been prepended to head element",
                 "<script type=\"text/javascript\">window.messages = window.messages || [];\n"
                         + "window.messages.push(\"inline.js\");</script>",
-                allElements.get(1).toString());
+                allElements.get(2).toString());
         assertStringEquals(
                 "File html should have been prepended to head element",
                 "<script type=\"text/javascript\">\n"
@@ -896,7 +895,7 @@ public class BootstrapHandlerTest {
                         + "    window.messages = window.messages || [];\n"
                         + "    window.messages.push(\"inline.html\");\n"
                         + "</script>",
-                allElements.get(2).toString());
+                allElements.get(3).toString());
         assertStringEquals(
                 "File css should have been prepended to head element",
                 "<style type=\"text/css\">/* inline.css */\n" + "\n"
@@ -904,7 +903,7 @@ public class BootstrapHandlerTest {
                         + "    color: rgba(255, 255, 0, 1);\n" + "}\n" + "\n"
                         + "#inlineCssTestDiv {\n"
                         + "    color: rgba(255, 255, 0, 1);\n" + "}</style>",
-                allElements.get(3).toString());
+                allElements.get(4).toString());
     }
 
     @Test // 3010
@@ -982,13 +981,10 @@ public class BootstrapHandlerTest {
         Document page = pageBuilder.getBootstrapPage(new BootstrapContext(
                 request, null, session, testUI, this::contextRootRelativePath));
 
-        Elements allElements = page.head().getAllElements();
-
-        assertStringEquals(
-                "File css should have been prepended to body element",
-                "<style type=\"text/css\">window.messages = window.messages || [];\n"
-                        + "window.messages.push(\"inline.js\");</style>",
-                allElements.get(allElements.size() - 1).toString());
+        assertTrue("File css should have been prepended to body element",
+                page.getElementsByTag("style").toString().contains(
+                        "<style type=\"text/css\">window.messages = window.messages || [];\n"
+                                + "window.messages.push(\"inline.js\");</style>"));
     }
 
     @Test

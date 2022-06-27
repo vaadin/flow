@@ -318,6 +318,11 @@ public class Binder<BEAN> implements Serializable {
          * If the Binder is already bound to some bean, the newly bound field is
          * associated with the corresponding bean property as described above.
          * <p>
+         * If the bound field implements {@link HasValidator}, then the binding
+         * instance returned by this method will subscribe for field's
+         * {@code ValidationStatusChangeEvent}s and will {@code validate} itself
+         * upon receiving them.
+         * <p>
          * The getter and setter can be arbitrary functions, for instance
          * implementing user-defined conversion or validation. However, in the
          * most basic use case you can simply pass a pair of method references
@@ -965,6 +970,12 @@ public class Binder<BEAN> implements Serializable {
                 getBinder().incompleteBindings.remove(getField());
             }
             this.binding = binding;
+
+            if (field instanceof HasValidator) {
+                HasValidator<FIELDVALUE> hasValidatorField = (HasValidator<FIELDVALUE>) field;
+                hasValidatorField.addValidationStatusChangeListener(
+                        event -> this.binding.validate());
+            }
 
             return binding;
         }
@@ -1814,9 +1825,9 @@ public class Binder<BEAN> implements Serializable {
 
         return createBinding(field, createNullRepresentationAdapter(field),
                 this::handleValidationStatus)
-                        .withValidator(field instanceof HasValidator
-                                ? ((HasValidator) field).getDefaultValidator()
-                                : Validator.alwaysPass());
+                .withValidator(field instanceof HasValidator
+                        ? ((HasValidator) field).getDefaultValidator()
+                        : Validator.alwaysPass());
     }
 
     /**

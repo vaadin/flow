@@ -111,7 +111,7 @@ public class TsFormTest extends AbstractEndpointGeneratorBaseTest {
         String actual = new String(Files.readAllBytes(formModelFile.toPath()));
         final String expected = new String(Files.readAllBytes(new File(
                 getClass().getResource("expected-TsFormEndpoint.ts").getFile())
-                        .toPath()));
+                .toPath()));
 
         final Matcher matcher = TS_FORM_FILE_LINK_PATTERN.matcher(actual);
         if (matcher.find()) {

@@ -78,6 +78,7 @@ import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.LocationUtil;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
+import com.vaadin.flow.server.communication.IndexHtmlRequestHandler;
 import com.vaadin.flow.server.communication.PushConnectionFactory;
 import com.vaadin.flow.server.communication.UidlWriter;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -759,6 +760,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             if (!config.isProductionMode()) {
                 UsageStatisticsExporter
                         .exportUsageStatisticsToDocument(document);
+                IndexHtmlRequestHandler.addLicenseChecker(document);
             }
 
             setupPwa(document, context);
@@ -1754,6 +1756,13 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             head.appendElement(META_TAG)
                     .attr("name", "apple-mobile-web-app-capable")
                     .attr(CONTENT_ATTRIBUTE, "yes");
+            head.appendElement(META_TAG).attr("name", "mobile-web-app-capable")
+                    .attr(CONTENT_ATTRIBUTE, "yes");
+            head.appendElement(META_TAG).attr("name", "apple-touch-fullscreen")
+                    .attr(CONTENT_ATTRIBUTE, "yes");
+            head.appendElement(META_TAG)
+                    .attr("name", "apple-mobile-web-app-title")
+                    .attr(CONTENT_ATTRIBUTE, config.getShortName());
 
             // Theme color
             head.appendElement(META_TAG).attr("name", "theme-color")

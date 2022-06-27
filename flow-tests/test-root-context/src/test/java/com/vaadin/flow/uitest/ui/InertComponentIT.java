@@ -37,7 +37,7 @@ public class InertComponentIT extends ChromeBrowserTest {
 
         List<NativeButtonElement> removeButtons = getAll(
                 NativeButtonElement.class, InertComponentView.REMOVE)
-                        .collect(Collectors.toList());
+                .collect(Collectors.toList());
         removeButtons.get(removeButtons.size() - 1).click();
 
         validateBoxCount(initialBoxCount,

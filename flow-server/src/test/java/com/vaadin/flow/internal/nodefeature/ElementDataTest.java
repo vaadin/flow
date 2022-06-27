@@ -34,7 +34,7 @@ import elemental.json.JsonObject;
 public class ElementDataTest extends AbstractNodeFeatureTest<ElementData> {
     private final ElementData elementData = new StateNode(
             Collections.singletonList(ElementData.class))
-                    .getFeature(ElementData.class);
+            .getFeature(ElementData.class);
 
     @Test
     public void setGetTag() {

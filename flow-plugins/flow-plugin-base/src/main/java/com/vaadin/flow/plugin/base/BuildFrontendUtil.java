@@ -160,20 +160,17 @@ public class BuildFrontendUtil {
         NodeTasks.Builder builder = new NodeTasks.Builder(lookup,
                 adapter.npmFolder(), adapter.generatedFolder(),
                 adapter.frontendDirectory(), adapter.buildFolder())
-                        .useV14Bootstrap(
-                                adapter.isUseDeprecatedV14Bootstrapping())
-                        .withFlowResourcesFolder(flowResourcesFolder)
-                        .createMissingPackageJson(true)
-                        .enableImportsUpdate(false).enablePackagesUpdate(false)
-                        .runNpmInstall(false)
-                        .withFrontendGeneratedFolder(
-                                adapter.generatedTsFolder())
-                        .withNodeVersion(adapter.nodeVersion())
-                        .withNodeDownloadRoot(nodeDownloadRootURI)
-                        .setNodeAutoUpdate(adapter.nodeAutoUpdate())
-                        .withHomeNodeExecRequired(adapter.requireHomeNodeExec())
-                        .setJavaResourceFolder(adapter.javaResourceFolder())
-                        .withProductionMode(adapter.productionMode());
+                .useV14Bootstrap(adapter.isUseDeprecatedV14Bootstrapping())
+                .withFlowResourcesFolder(flowResourcesFolder)
+                .createMissingPackageJson(true).enableImportsUpdate(false)
+                .enablePackagesUpdate(false).runNpmInstall(false)
+                .withFrontendGeneratedFolder(adapter.generatedTsFolder())
+                .withNodeVersion(adapter.nodeVersion())
+                .withNodeDownloadRoot(nodeDownloadRootURI)
+                .setNodeAutoUpdate(adapter.nodeAutoUpdate())
+                .withHomeNodeExecRequired(adapter.requireHomeNodeExec())
+                .setJavaResourceFolder(adapter.javaResourceFolder())
+                .withProductionMode(adapter.productionMode());
 
         // Copy jar artifact contents in TaskCopyFrontendFiles
         builder.copyResources(adapter.getJarFiles());
@@ -315,41 +312,32 @@ public class BuildFrontendUtil {
             new NodeTasks.Builder(lookup, adapter.npmFolder(),
                     adapter.generatedFolder(), adapter.frontendDirectory(),
                     adapter.buildFolder())
-                            .runNpmInstall(adapter.runNpmInstall())
-                            .withWebpack(adapter.webpackOutputDirectory(),
-                                    adapter.servletResourceOutputDirectory())
-                            .useV14Bootstrap(
-                                    adapter.isUseDeprecatedV14Bootstrapping())
-                            .enablePackagesUpdate(true)
-                            .useByteCodeScanner(adapter.optimizeBundle())
-                            .withFlowResourcesFolder(flowResourcesFolder)
-                            .copyResources(jarFiles).copyTemplates(true)
-                            .copyLocalResources(
-                                    adapter.frontendResourcesDirectory())
-                            .enableImportsUpdate(true)
-                            .withEmbeddableWebComponents(
-                                    adapter.generateEmbeddableWebComponents())
-                            .withTokenFile(
-                                    BuildFrontendUtil.getTokenFile(adapter))
-                            .enablePnpm(adapter.pnpmEnable())
-                            .useGlobalPnpm(adapter.useGlobalPnpm())
-                            .withApplicationProperties(
-                                    adapter.applicationProperties())
-                            .withEndpointSourceFolder(
-                                    adapter.javaSourceFolder())
-                            .withEndpointGeneratedOpenAPIFile(
-                                    adapter.openApiJsonFile())
-                            .withFrontendGeneratedFolder(
-                                    adapter.generatedTsFolder())
-                            .withHomeNodeExecRequired(
-                                    adapter.requireHomeNodeExec())
-                            .withNodeVersion(adapter.nodeVersion())
-                            .withNodeDownloadRoot(nodeDownloadRootURI)
-                            .setNodeAutoUpdate(adapter.nodeAutoUpdate())
-                            .setJavaResourceFolder(adapter.javaResourceFolder())
-                            .withPostinstallPackages(
-                                    adapter.postinstallPackages())
-                            .build().execute();
+                    .runNpmInstall(adapter.runNpmInstall())
+                    .withWebpack(adapter.webpackOutputDirectory(),
+                            adapter.servletResourceOutputDirectory())
+                    .useV14Bootstrap(adapter.isUseDeprecatedV14Bootstrapping())
+                    .enablePackagesUpdate(true)
+                    .useByteCodeScanner(adapter.optimizeBundle())
+                    .withFlowResourcesFolder(flowResourcesFolder)
+                    .copyResources(jarFiles).copyTemplates(true)
+                    .copyLocalResources(adapter.frontendResourcesDirectory())
+                    .enableImportsUpdate(true)
+                    .withEmbeddableWebComponents(
+                            adapter.generateEmbeddableWebComponents())
+                    .withTokenFile(BuildFrontendUtil.getTokenFile(adapter))
+                    .enablePnpm(adapter.pnpmEnable())
+                    .useGlobalPnpm(adapter.useGlobalPnpm())
+                    .withApplicationProperties(adapter.applicationProperties())
+                    .withEndpointSourceFolder(adapter.javaSourceFolder())
+                    .withEndpointGeneratedOpenAPIFile(adapter.openApiJsonFile())
+                    .withFrontendGeneratedFolder(adapter.generatedTsFolder())
+                    .withHomeNodeExecRequired(adapter.requireHomeNodeExec())
+                    .withNodeVersion(adapter.nodeVersion())
+                    .withNodeDownloadRoot(nodeDownloadRootURI)
+                    .setNodeAutoUpdate(adapter.nodeAutoUpdate())
+                    .setJavaResourceFolder(adapter.javaResourceFolder())
+                    .withPostinstallPackages(adapter.postinstallPackages())
+                    .build().execute();
         } catch (ExecutionFailedException exception) {
             throw exception;
         } catch (Throwable throwable) { // NOSONAR Intentionally throwable
@@ -375,7 +363,7 @@ public class BuildFrontendUtil {
             throws TimeoutException, URISyntaxException {
         FeatureFlags featureFlags = getFeatureFlags(adapter);
 
-        if (featureFlags.isEnabled(FeatureFlags.NEW_LICENSE_CHECKER)) {
+        if (featureFlags.isEnabled(FeatureFlags.OFFLINE_LICENSE_CHECKER)) {
             LicenseChecker.setStrictOffline(true);
         }
 
@@ -486,10 +474,6 @@ public class BuildFrontendUtil {
     private static void validateLicenses(PluginAdapterBase adapter) {
         File nodeModulesFolder = new File(adapter.npmFolder(),
                 FrontendUtils.NODE_MODULES);
-        FeatureFlags featureFlags = getFeatureFlags(adapter);
-        if (!featureFlags.isEnabled(FeatureFlags.NEW_LICENSE_CHECKER)) {
-            return;
-        }
 
         File outputFolder = adapter.webpackOutputDirectory();
         File statsFile = new File(adapter.servletResourceOutputDirectory(),
