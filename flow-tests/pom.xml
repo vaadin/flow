@@ -221,6 +221,7 @@
                         <systemProperties>
                             <!-- All system props are defined here as they need to be overridden
                                  in all modules so no non-standard value leaks to another module -->
+                            <force>true</force>
                             <vaadin.reuseDevServer>${vaadin.reuseDevServer}</vaadin.reuseDevServer>
                             <vaadin.devmode.liveReload.enabled>${vaadin.devmode.liveReload.enabled}</vaadin.devmode.liveReload.enabled>
                             <vaadin.allow.appshell.annotations>${vaadin.allow.appshell.annotations}</vaadin.allow.appshell.annotations>
