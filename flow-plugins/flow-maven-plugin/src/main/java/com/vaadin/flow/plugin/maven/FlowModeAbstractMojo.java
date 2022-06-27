@@ -18,6 +18,7 @@ package com.vaadin.flow.plugin.maven;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
+import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
 
 import java.io.File;
 import java.net.URI;
@@ -84,8 +85,12 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
 
     /**
      * The folder where flow will put TS API files for client projects.
+     *
+     * If not set, defaults to ${frontendDirectory}/generated.
+     *
+     * @see #frontendDirectory
      */
-    @Parameter(defaultValue = "${project.basedir}/" + FRONTEND + "/generated")
+    @Parameter
     private File generatedTsFolder;
 
     /**
@@ -269,7 +274,9 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
 
     @Override
     public File generatedTsFolder() {
-
+        if (generatedTsFolder == null) {
+            return new File(frontendDirectory, GENERATED);
+        }
         return generatedTsFolder;
     }
 

@@ -41,7 +41,7 @@ internal class GradlePluginAdapter(val project: Project, private val isBeforePro
 
     override fun generatedFolder(): File = extension.generatedFolder
 
-    override fun generatedTsFolder(): File = extension.generatedTsFolder
+    override fun generatedTsFolder(): File = requireNotNull(extension.generatedTsFolder) { "VaadinFlowPluginExtension.autoconfigure() was not called" }
 
     override fun getClassFinder(): ClassFinder {
         val runtimeClasspathJars: List<File> = project.configurations.findByName("runtimeClasspath")
