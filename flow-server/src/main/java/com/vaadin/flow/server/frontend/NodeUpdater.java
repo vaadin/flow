@@ -193,21 +193,45 @@ public abstract class NodeUpdater implements FallibleCommand {
      *             when versions file could not be read
      */
     JsonObject getPlatformPinnedDependencies() throws IOException {
-        URL resource = finder.getResource(Constants.VAADIN_VERSIONS_JSON);
-        if (resource == null) {
-            log().info("Couldn't find {} file to pin dependency versions."
-                    + " Transitive dependencies won't be pinned for pnpm.",
-                    Constants.VAADIN_VERSIONS_JSON);
+        URL coreVersionsResource = finder
+                .getResource(Constants.VAADIN_CORE_VERSIONS_JSON);
+        if (coreVersionsResource == null) {
+            log().info(
+                    "Couldn't find {} file to pin dependency versions for core components."
+                            + " Transitive dependencies won't be pinned for npm/pnpm.",
+                    Constants.VAADIN_CORE_VERSIONS_JSON);
             return Json.createObject();
         }
 
+        JsonObject versionsJson = getFilteredVersionsFromResource(
+                coreVersionsResource, Constants.VAADIN_CORE_VERSIONS_JSON);
+
+        URL vaadinVersionsResource = finder
+                .getResource(Constants.VAADIN_VERSIONS_JSON);
+        if (vaadinVersionsResource == null) {
+            // vaadin is not on the classpath, only vaadin-core is present.
+            return versionsJson;
+        }
+
+        JsonObject vaadinVersionsJson = getFilteredVersionsFromResource(
+                vaadinVersionsResource, Constants.VAADIN_VERSIONS_JSON);
+        for (String key : vaadinVersionsJson.keys()) {
+            versionsJson.put(key, vaadinVersionsJson.getString(key));
+        }
+
+        return versionsJson;
+    }
+
+    private JsonObject getFilteredVersionsFromResource(URL versionsResource,
+            String versionsOrigin) throws IOException {
         JsonObject versionsJson;
-        try (InputStream content = resource.openStream()) {
+        try (InputStream content = versionsResource.openStream()) {
             VersionsJsonConverter convert = new VersionsJsonConverter(Json
                     .parse(IOUtils.toString(content, StandardCharsets.UTF_8)));
             versionsJson = convert.getConvertedJson();
             versionsJson = new VersionsJsonFilter(getPackageJson(),
-                    DEPENDENCIES).getFilteredVersions(versionsJson);
+                    DEPENDENCIES)
+                    .getFilteredVersions(versionsJson, versionsOrigin);
         }
         return versionsJson;
     }
@@ -388,7 +412,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         final String WORKBOX_VERSION = "6.5.0";
 
         if (featureFlags.isEnabled(FeatureFlags.VITE)) {
-            defaults.put("vite", "v2.9.1");
+            defaults.put("vite", "v2.9.13");
             defaults.put("@rollup/plugin-replace", "3.1.0");
             defaults.put("rollup-plugin-brotli", "3.1.0");
             defaults.put("vite-plugin-checker", "0.3.4");

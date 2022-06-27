@@ -4,7 +4,7 @@ import { classMap } from 'lit/directives/class-map.js';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { copy } from './copy-to-clipboard.js';
-import { licenseCheckFailed, licenseCheckNoKey, licenseCheckOk, Product } from './License';
+import { licenseCheckFailed, licenseCheckNoKey, licenseCheckOk, Product, licenseInit } from './License';
 
 interface ServerInfo {
   vaadinVersion: string;
@@ -138,8 +138,15 @@ export class Connection extends Object {
   }
 
   private send(command: string, data: any) {
-    const message = { command, data };
-    this.webSocket!.send(JSON.stringify(message));
+    const message = JSON.stringify({ command, data });
+    if (!this.webSocket) {
+      // eslint-disable-next-line no-console
+      console.error(`Unable to send message ${command}. No websocket is available`);
+    } else if (this.webSocket.readyState !== WebSocket.OPEN) {
+      this.webSocket.addEventListener('open', () => this.webSocket!.send(message));
+    } else {
+      this.webSocket.send(message);
+    }
   }
 
   setFeature(featureId: string, enabled: boolean) {
@@ -1118,9 +1125,11 @@ export class VaadinDevTools extends LitElement {
       10
     );
 
-    if ((window as any).Vaadin) {
-      (window as any).Vaadin.devTools = this;
-    }
+    const windowAny = window as any;
+    windowAny.Vaadin = windowAny.Vaadin || {};
+    windowAny.Vaadin.devTools = Object.assign(this, windowAny.Vaadin.devTools);
+
+    licenseInit();
   }
   format(o: any): string {
     return o.toString();

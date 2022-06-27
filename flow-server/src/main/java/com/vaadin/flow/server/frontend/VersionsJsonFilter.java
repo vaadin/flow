@@ -51,14 +51,15 @@ class VersionsJsonFilter {
      *
      * @param versions
      *            to be filtered for user managed ones
+     * @param versionOrigin
+     *            origin of the version (like a file), used in error message
      * @return filtered versions json
      */
-    JsonObject getFilteredVersions(JsonObject versions) {
+    JsonObject getFilteredVersions(JsonObject versions, String versionOrigin) {
         JsonObject json = Json.createObject();
         for (String key : versions.keys()) {
             final FrontendVersion version = FrontendUtils
-                    .getPackageVersionFromJson(versions, key,
-                            "vaadin_version.json");
+                    .getPackageVersionFromJson(versions, key, versionOrigin);
             if (version == null) {
                 continue;
             }
