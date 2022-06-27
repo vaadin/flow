@@ -127,6 +127,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
       OFFLINE_PATH: "'.'"
     },
     server: {
+      host: '127.0.0.1',
       fs: {
         allow: allowedFrontendFolders,
       }
