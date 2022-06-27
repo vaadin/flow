@@ -175,18 +175,33 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         );
     }
 
-    private void addLicenseChecker(Document indexDocument) {
+    /**
+     * Adds the needed overrides for the license checker to work when in
+     * development mode.
+     */
+    public static void addLicenseChecker(Document indexDocument) {
         // maybeCheck is invoked by the WC license checker
         addScript(indexDocument, "" + //
                 "window.Vaadin = window.Vaadin || {};" + //
                 "window.Vaadin.VaadinLicenseChecker = {" + //
                 "  maybeCheck: (productInfo) => {" + //
-                "    window.Vaadin.devTools.checkLicense(productInfo);" + //
+                // This disables the license check that the web components are
+                // still using
                 "  }" + //
+                "};" + //
+                "window.Vaadin.devTools = window.Vaadin.devTools || {};"
+                + "window.Vaadin.devTools.definedCustomElements = window.Vaadin.devTools.definedCustomElements || [];"
+                + //
+                "const originalCustomElementDefineFn = window.customElements.define;"
+                + //
+                "window.customElements.define = function (tagName, ...args) {" + //
+                "originalCustomElementDefineFn.call(this, tagName, ...args);" + //
+                "window.Vaadin.devTools.definedCustomElements.push(tagName);" + //
                 "};");
+
     }
 
-    private void addScript(Document indexDocument, String script) {
+    private static void addScript(Document indexDocument, String script) {
         Element elm = new Element(SCRIPT);
         elm.attr(SCRIPT_INITIAL, "");
         elm.appendChild(new DataNode(script));

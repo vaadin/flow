@@ -84,7 +84,7 @@ public class WebComponentConfigurationRegistryInitializerTest {
         initializer = new WebComponentConfigurationRegistryInitializer();
         when(servletContext.getAttribute(
                 WebComponentConfigurationRegistry.class.getName()))
-                        .thenReturn(registry);
+                .thenReturn(registry);
 
         VaadinService.setCurrent(vaadinService);
         when(vaadinService.getInstantiator())

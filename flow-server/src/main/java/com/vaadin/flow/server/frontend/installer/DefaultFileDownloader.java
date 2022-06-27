@@ -106,7 +106,7 @@ public final class DefaultFileDownloader implements FileDownloader {
         }
         new File(
                 FilenameUtils.getFullPathNoEndSeparator(destination.toString()))
-                        .mkdirs();
+                .mkdirs();
 
         try (ReadableByteChannel rbc = Channels
                 .newChannel(response.getEntity().getContent());
