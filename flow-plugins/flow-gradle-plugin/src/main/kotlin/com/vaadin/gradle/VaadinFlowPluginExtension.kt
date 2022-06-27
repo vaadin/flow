@@ -143,7 +143,7 @@ public open class VaadinFlowPluginExtension(project: Project) {
     /**
      * The folder where flow will put TS API files for client projects.
      */
-    public var generatedTsFolder: File = File(project.projectDir, "frontend/generated")
+    public var generatedTsFolder: File? = null
 
     /**
      * The node.js version to be used when node.js is installed automatically by
@@ -200,6 +200,11 @@ public open class VaadinFlowPluginExtension(project: Project) {
         // calculate webpackOutputDirectory if not set by the user
         if (webpackOutputDirectory == null) {
             webpackOutputDirectory = File(project.buildResourcesDir, Constants.VAADIN_WEBAPP_RESOURCES)
+        }
+
+        // calculate generatedTsFolder if not set by the user
+        if (generatedTsFolder == null) {
+            generatedTsFolder = File(frontendDirectory, FrontendUtils.GENERATED)
         }
 
         val productionModeProperty: Boolean? = project.getBooleanProperty("vaadin.productionMode")

@@ -19,6 +19,7 @@ package com.vaadin.flow.plugin.maven;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
@@ -58,6 +59,8 @@ import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_USE_V14_BO
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
+import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
 public class PrepareFrontendMojoTest {
@@ -252,6 +255,27 @@ public class PrepareFrontendMojoTest {
         mojo.execute();
 
         Mockito.verify(project, Mockito.atLeastOnce()).getArtifacts();
+    }
+
+    @Test
+    public void generatedTsFolder_defaultValueComputedBasedOnFrontendDirectory()
+            throws IOException, IllegalAccessException, MojoExecutionException,
+            MojoFailureException {
+        File customFrontendDir = temporaryFolder.newFolder("src", "main",
+                "frontend");
+        File expectedGeneratedIndex = new File(
+                new File(customFrontendDir, GENERATED), "index.ts");
+
+        ReflectionUtils.setVariableValueInObject(mojo, "frontendDirectory",
+                customFrontendDir);
+        ReflectionUtils.setVariableValueInObject(mojo, "generatedTsFolder",
+                null);
+
+        mojo.execute();
+        Assert.assertFalse(projectBase.toPath()
+                .resolve(Path.of(FRONTEND, GENERATED, "index.ts")).toFile()
+                .exists());
+        Assert.assertTrue(expectedGeneratedIndex.exists());
     }
 
     private void assertPackageJsonContent() throws IOException {

@@ -15,7 +15,8 @@
  */
 package com.vaadin.gradle
 
-import com.vaadin.flow.server.Constants
+import java.io.File
+import kotlin.test.expect
 import com.vaadin.flow.server.InitParameters
 import elemental.json.JsonObject
 import elemental.json.impl.JsonUtil
@@ -23,8 +24,6 @@ import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.Before
 import org.junit.Test
-import java.io.File
-import kotlin.test.expect
 
 /**
  * The most basic tests. If these fail, the plugin is completely broken and all
@@ -167,5 +166,41 @@ class VaadinSmokeTest : AbstractGradleTest() {
         testProject.build("vaadinClean")
         expect(false) { tsconfigJson.exists() }
         expect(false) { typesDTs.exists() }
+    }
+
+    /**
+     * Tests that build works with a custom frontend directory
+     */
+    @Test
+    fun testCustomFrontendDirectory() {
+        testProject.buildFile.writeText("""
+            plugins {
+                id 'war'
+                id 'com.vaadin'
+            }
+            repositories {
+                mavenLocal()
+                mavenCentral()
+                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+            }
+            dependencies {
+                compile("com.vaadin:flow:$flowVersion")
+                providedCompile("javax.servlet:javax.servlet-api:3.1.0")
+                compile("org.slf4j:slf4j-simple:1.7.30")
+            }
+            vaadin {
+                frontendDirectory = file("src/main/frontend")                
+            }
+        """)
+        val result: BuildResult = testProject.build("vaadinPrepareFrontend")
+        // let's explicitly check that vaadinPrepareFrontend has been run.
+        result.expectTaskSucceded("vaadinPrepareFrontend")
+
+        expect(false) {
+            File(testProject.dir, "frontend/generated/index.ts").exists()
+        }
+        expect(true) {
+            File(testProject.dir, "src/main/frontend/generated/index.ts").exists()
+        }
     }
 }
