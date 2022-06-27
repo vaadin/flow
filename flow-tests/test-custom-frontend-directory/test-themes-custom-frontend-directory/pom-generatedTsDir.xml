@@ -1,14 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>test-custom-frontend-directory</artifactId>
         <version>23.2-SNAPSHOT</version>
     </parent>
-    <artifactId>flow-test-themes-custom-frontend-directory</artifactId>
-    <name>Flow themes tests in NPM mode with custom frontend directory</name>
+    <artifactId>flow-test-themes-custom-generatedTs-directory</artifactId>
+    <name>Flow themes tests in NPM mode with custom generatedTs directory</name>
     <packaging>war</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
@@ -50,6 +49,7 @@
                 <artifactId>flow-maven-plugin</artifactId>
                 <configuration>
                     <frontendDirectory>${project.basedir}/side-src/main/frontend</frontendDirectory>
+                    <generatedTsFolder>${project.basedir}/target/the-frontend/generated</generatedTsFolder>
                     <productionMode>false</productionMode>
                 </configuration>
                 <executions>
@@ -80,5 +80,4 @@
                 </executions>
             </plugin>
         </plugins>
-    </build>
-</project>
+    </build></project>
