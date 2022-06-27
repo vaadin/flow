@@ -103,7 +103,8 @@ public abstract class AbstractNodeUpdatePackagesTest
         classFinder = Mockito.spy(getClassFinder());
         File versions = temporaryFolder.newFile();
         FileUtils.write(versions, "{}", StandardCharsets.UTF_8);
-        Mockito.when(classFinder.getResource(Constants.VAADIN_VERSIONS_JSON))
+        Mockito.when(
+                classFinder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
                 .thenReturn(versions.toURI().toURL());
 
         packageUpdater = new TaskUpdatePackages(classFinder,

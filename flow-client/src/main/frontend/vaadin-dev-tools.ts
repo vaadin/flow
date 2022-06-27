@@ -4,7 +4,7 @@ import { classMap } from 'lit/directives/class-map.js';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { copy } from './copy-to-clipboard.js';
-import { licenseCheckFailed, licenseCheckNoKey, licenseCheckOk, Product } from './License';
+import { licenseCheckFailed, licenseCheckNoKey, licenseCheckOk, Product, licenseInit } from './License';
 
 interface ServerInfo {
   vaadinVersion: string;
@@ -1125,9 +1125,11 @@ export class VaadinDevTools extends LitElement {
       10
     );
 
-    if ((window as any).Vaadin) {
-      (window as any).Vaadin.devTools = this;
-    }
+    const windowAny = window as any;
+    windowAny.Vaadin = windowAny.Vaadin || {};
+    windowAny.Vaadin.devTools = Object.assign(this, windowAny.Vaadin.devTools);
+
+    licenseInit();
   }
   format(o: any): string {
     return o.toString();
