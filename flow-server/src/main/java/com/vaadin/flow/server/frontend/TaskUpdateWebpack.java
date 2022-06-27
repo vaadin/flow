@@ -208,11 +208,6 @@ public class TaskUpdateWebpack implements FallibleCommand {
     }
 
     private String getClientEntryPoint() {
-        /*
-         * return String.format("path.resolve(__dirname, '%s', '%s', '%s');",
-         * getEscapedRelativeWebpackPath(frontendDirectory), GENERATED,
-         * BOOTSTRAP_FILE_NAME);
-         */
         return String.format("path.resolve(__dirname, '%s',  '%s');",
                 getEscapedRelativeWebpackPath(frontendGeneratedFolder),
                 BOOTSTRAP_FILE_NAME);
