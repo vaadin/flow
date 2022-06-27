@@ -67,7 +67,7 @@ public class DependenciesLoadingAnnotationsIT extends ChromeBrowserTest {
 
         List<String> testMessages = findElements(
                 By.className("dependenciesTest" + getCssSuffix())).stream()
-                        .map(WebElement::getText).collect(Collectors.toList());
+                .map(WebElement::getText).collect(Collectors.toList());
 
         assertThat(
                 "5 elements are expected to be added: 2 for eager dependencies, 2 for inline dependencies, 1 for UI 'onAttach' method, 2 for lazy dependencies",

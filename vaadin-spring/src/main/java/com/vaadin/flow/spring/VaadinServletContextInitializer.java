@@ -288,7 +288,7 @@ public class VaadinServletContextInitializer
                 try {
                     List<Class<?>> routeClasses = findByAnnotation(
                             getRoutePackages(), Route.class, RouteAlias.class)
-                                    .collect(Collectors.toList());
+                            .collect(Collectors.toList());
 
                     getLogger().debug(
                             "Found {} route classes. Here is the list: {}",
@@ -363,8 +363,8 @@ public class VaadinServletContextInitializer
                             event.getServletContext()));
             Stream<Class<? extends Component>> hasErrorComponents = findBySuperType(
                     getErrorParameterPackages(), HasErrorParameter.class)
-                            .filter(Component.class::isAssignableFrom)
-                            .map(clazz -> (Class<? extends Component>) clazz);
+                    .filter(Component.class::isAssignableFrom)
+                    .map(clazz -> (Class<? extends Component>) clazz);
             registry.setErrorNavigationTargets(
                     hasErrorComponents.collect(Collectors.toSet()));
         }
@@ -457,7 +457,7 @@ public class VaadinServletContextInitializer
 
             Set<Class<?>> classes = findByAnnotationOrSuperType(basePackages,
                     customLoader, annotations, superTypes)
-                            .collect(Collectors.toSet());
+                    .collect(Collectors.toSet());
 
             long ms = (System.nanoTime() - start) / 1000000;
             getLogger().info(
@@ -525,7 +525,7 @@ public class VaadinServletContextInitializer
 
                 Set<Class<?>> webComponentExporters = findBySuperType(
                         getWebComponentPackages(), WebComponentExporter.class)
-                                .collect(Collectors.toSet());
+                        .collect(Collectors.toSet());
 
                 initializer.process(webComponentExporters,
                         event.getServletContext());
@@ -551,7 +551,7 @@ public class VaadinServletContextInitializer
                     getVerifiableAnnotationPackages(), customLoader,
                     VaadinAppShellInitializer.getValidAnnotations(),
                     VaadinAppShellInitializer.getValidSupers())
-                            .collect(Collectors.toSet());
+                    .collect(Collectors.toSet());
 
             long ms = (System.nanoTime() - start) / 1000000;
             getLogger().info("Search for VaadinAppShell took {} ms", ms);

@@ -6,7 +6,6 @@ import java.util.Optional;
 
 import javax.annotation.security.RolesAllowed;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.router.Route;
@@ -29,24 +28,17 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.jackson.JacksonProperties;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
-import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import dev.hilla.EndpointControllerConfiguration;
-import dev.hilla.EndpointProperties;
-
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { EndpointProperties.class })
-@ContextConfiguration(classes = { EndpointControllerConfiguration.class,
-        SpringBootAutoConfiguration.class,
-        SpringSecurityAutoConfiguration.class, ObjectMapper.class,
-        Jackson2ObjectMapperBuilder.class, JacksonProperties.class })
+@SpringBootTest()
+@ContextConfiguration(classes = { SpringBootAutoConfiguration.class,
+        SpringSecurityAutoConfiguration.class })
 public class RequestUtilTest {
 
     @Autowired
