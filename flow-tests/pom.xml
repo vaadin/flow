@@ -42,7 +42,7 @@
         <vaadin.allow.appshell.annotations>false</vaadin.allow.appshell.annotations>
         <useDeprecatedV14Bootstrapping>false</useDeprecatedV14Bootstrapping>
         <vaadin.devmode.vite.options>--host</vaadin.devmode.vite.options>
-
+        <vaadin.eagerServerLoad>false</vaadin.eagerServerLoad>
         <!-- make sure we do not leave webpack-dev-server running after IT -->
         <vaadin.reuseDevServer>false</vaadin.reuseDevServer>
     </properties>
@@ -219,7 +219,7 @@
                         <stopKey>foo</stopKey>
                         <stopWait>5</stopWait>
                         <systemProperties>
-                            <!-- All system props are defined here as they need to be overridden 
+                            <!-- All system props are defined here as they need to be overridden
                                  in all modules so no non-standard value leaks to another module -->
                             <force>true</force>
                             <systemProperty>
@@ -233,6 +233,10 @@
                             <systemProperty>
                                 <name>vaadin.allow.appshell.annotations</name>
                                 <value>${vaadin.allow.appshell.annotations}</value>
+                            </systemProperty>
+                            <systemProperty>
+                                <name>vaadin.eagerServerLoad</name>
+                                <value>${vaadin.eagerServerLoad}</value>
                             </systemProperty>
                             <systemProperty>
                                 <name>jetty.scantrigger</name>
@@ -320,6 +324,7 @@
 
                 <module>test-root-context</module>
 
+                <module>test-eager-bootstrap</module>
                 <module>test-v14-bootstrap</module>
                 <module>test-v14-bootstrap/pom-production.xml</module>
 
