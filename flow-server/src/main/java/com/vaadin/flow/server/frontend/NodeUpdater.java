@@ -230,8 +230,8 @@ public abstract class NodeUpdater implements FallibleCommand {
                     .parse(IOUtils.toString(content, StandardCharsets.UTF_8)));
             versionsJson = convert.getConvertedJson();
             versionsJson = new VersionsJsonFilter(getPackageJson(),
-                    DEPENDENCIES)
-                    .getFilteredVersions(versionsJson, versionsOrigin);
+                    DEPENDENCIES).getFilteredVersions(versionsJson,
+                            versionsOrigin);
         }
         return versionsJson;
     }
