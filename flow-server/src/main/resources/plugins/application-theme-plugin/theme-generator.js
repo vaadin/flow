@@ -40,7 +40,7 @@ const createLinkReferences = (css, target) => {
   // [0] is the full match
   // [1] matches the media query
   // [2] matches the url
-  const importMatcher = /(?:@media\\s(.+?))?(?:\\s{)?\\@import\\surl\\((.+?)\\);(?:})?/g;
+  const importMatcher = /(?:@media\\s(.+?))?(?:\\s{)?\\@import\\surl\\(['"']?(.+?)['"']?\\);(?:})?/g;
   
   var match;
   var styleCss = css;

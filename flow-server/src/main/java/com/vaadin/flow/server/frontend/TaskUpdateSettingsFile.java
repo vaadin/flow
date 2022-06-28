@@ -48,6 +48,7 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
     public static final String DEV_SETTINGS_FILE = "vaadin-dev-server-settings.json";
     File npmFolder;
     File frontendDirectory;
+    File frontendGeneratedDirectory;
     File flowResourcesFolder;
     File webappResourcesDirectory;
     String buildDirectory;
@@ -58,6 +59,8 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
             PwaConfiguration pwaConfiguration) {
         this.npmFolder = builder.getNpmFolder();
         this.frontendDirectory = builder.getFrontendDirectory();
+        this.frontendGeneratedDirectory = builder
+                .getFrontendGeneratedDirectory();
         this.flowResourcesFolder = builder.getFlowResourcesFolder();
         this.webappResourcesDirectory = builder.getWebappResourcesDirectory();
         this.buildDirectory = builder.getBuildDirectory();
@@ -88,7 +91,8 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
 
         settings.put("staticOutput",
                 FrontendUtils.getUnixPath(new File(staticOutput).toPath()));
-        settings.put("generatedFolder", "generated");
+        settings.put("generatedFolder",
+                FrontendUtils.getUnixPath(frontendGeneratedDirectory.toPath()));
         settings.put("frontendBundleOutput", webappResources);
         settings.put("addonFrontendFolder", combinePath(buildDirectory,
                 FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER));

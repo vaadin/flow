@@ -631,6 +631,16 @@ public class NodeTasks implements FallibleCommand {
         }
 
         /**
+         * Get the folder where frontend files are generated.
+         *
+         * @return folder where frontend files are generated.
+         */
+        public File getFrontendGeneratedDirectory() {
+            return frontendGeneratedFolder != null ? frontendGeneratedFolder
+                    : new File(frontendDirectory, GENERATED);
+        }
+
+        /**
          * Get the name of the used build directory.
          * <p>
          * By default this will be {@code target} for maven and {@code build}
@@ -746,7 +756,7 @@ public class NodeTasks implements FallibleCommand {
                     commands.add(new TaskGenerateWebComponentHtml(
                             builder.frontendDirectory));
                     commands.add(new TaskGenerateWebComponentBootstrap(
-                            frontendGeneratedFolderOrDefault(builder),
+                            builder.getFrontendGeneratedDirectory(),
                             new File(builder.generatedFolder, IMPORTS_NAME)));
                 }
             }
@@ -808,11 +818,11 @@ public class NodeTasks implements FallibleCommand {
 
             commands.add(new TaskGenerateBootstrap(frontendDependencies,
                     builder.frontendDirectory,
-                    frontendGeneratedFolderOrDefault(builder),
+                    builder.getFrontendGeneratedDirectory(),
                     builder.productionMode));
 
             commands.add(new TaskGenerateFeatureFlags(
-                    frontendGeneratedFolderOrDefault(builder), featureFlags));
+                    builder.getFrontendGeneratedDirectory(), featureFlags));
         }
 
         if (builder.jarFiles != null && builder.flowResourcesFolder != null) {
@@ -849,7 +859,7 @@ public class NodeTasks implements FallibleCommand {
                     builder.resourceOutputDirectory,
                     new File(builder.generatedFolder, IMPORTS_NAME),
                     builder.useLegacyV14Bootstrap, builder.flowResourcesFolder,
-                    pwaConfiguration, frontendGeneratedFolderOrDefault(builder),
+                    pwaConfiguration, builder.getFrontendGeneratedDirectory(),
                     builder.buildDirectory));
         }
 
@@ -866,19 +876,13 @@ public class NodeTasks implements FallibleCommand {
             commands.add(new TaskUpdateThemeImport(builder.npmFolder,
                     frontendDependencies.getThemeDefinition(),
                     builder.frontendDirectory,
-                    frontendGeneratedFolderOrDefault(builder)));
+                    builder.getFrontendGeneratedDirectory()));
         }
 
         if (builder.copyTemplates) {
             commands.add(new TaskCopyTemplateFiles(classFinder,
                     builder.npmFolder, builder.resourceOutputDirectory));
         }
-    }
-
-    private File frontendGeneratedFolderOrDefault(Builder builder) {
-        return builder.frontendGeneratedFolder != null
-                ? builder.frontendGeneratedFolder
-                : new File(builder.frontendDirectory, GENERATED);
     }
 
     private void addBootstrapTasks(Builder builder) {
@@ -889,7 +893,7 @@ public class NodeTasks implements FallibleCommand {
                 builder.buildDirectory);
         TaskGenerateIndexTs taskGenerateIndexTs = new TaskGenerateIndexTs(
                 builder.frontendDirectory,
-                frontendGeneratedFolderOrDefault(builder),
+                builder.getFrontendGeneratedDirectory(),
                 new File(builder.generatedFolder, IMPORTS_NAME),
                 buildDirectory);
         commands.add(taskGenerateIndexTs);

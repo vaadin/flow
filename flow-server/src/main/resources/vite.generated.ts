@@ -361,7 +361,8 @@ const allowedFrontendFolders = [
   frontendFolder,
   addonFrontendFolder,
   path.resolve(addonFrontendFolder, '..', 'frontend'), // Contains only generated-flow-imports
-  path.resolve(frontendFolder, '../node_modules')
+  //path.resolve(frontendFolder, '../node_modules')
+  path.resolve(__dirname, 'node_modules')
 ];
 
 export const vaadinConfig: UserConfigFn = (env) => {
@@ -374,7 +375,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
   }
 
   return {
-    root: 'frontend',
+    root: frontendFolder,
     base: '',
     resolve: {
       alias: {
