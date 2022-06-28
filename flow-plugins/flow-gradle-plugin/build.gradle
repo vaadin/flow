@@ -55,7 +55,6 @@ task javadocJar(type: Jar, dependsOn: dokkaJavadoc) {
  **********************************************************************************************************************/
 
 repositories {
-    mavenLocal()
     mavenCentral()
     maven { url = 'https://plugins.gradle.org/m2/' }
     maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
