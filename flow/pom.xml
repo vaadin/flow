@@ -53,11 +53,6 @@
             <artifactId>flow-polymer-template</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>fusion-endpoint</artifactId>
-            <version>${project.version}</version>
-        </dependency>
     </dependencies>
 
     <build>
@@ -70,7 +65,6 @@
                     <excludedArtifactIds>
                         <excludedArtifactId>flow-server</excludedArtifactId>
                         <excludedArtifactId>flow-data</excludedArtifactId>
-                        <excludedArtifactId>fusion-endpoint</excludedArtifactId>
                     </excludedArtifactIds>
                     <includeTransitiveDependency>false</includeTransitiveDependency>
                 </configuration>

@@ -49,7 +49,7 @@ public class Platform implements Serializable {
                     versionErrorLogged = true;
                     LoggerFactory.getLogger(Platform.class)
                             .info("Unable to determine version information. "
-                                    + "No vaadin_versions.json found");
+                                    + "No vaadin-core-versions.json found");
                 }
             }
         } catch (Exception e) {
