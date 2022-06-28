@@ -21,10 +21,15 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -69,16 +74,64 @@ public class VersionsJsonFilterTest {
                 NodeUpdater.DEV_DEPENDENCIES);
     }
 
+    @Test
+    public void testGetFilteredVersions_whenErrorHappens_versionOriginParameterIsUsedInErrorLogs()
+            throws IOException {
+        String pkgJson = IOUtils.toString(
+                Objects.requireNonNull(
+                        getClass().getClassLoader().getResourceAsStream(
+                                "versions/no_vaadin_package.json")),
+                StandardCharsets.UTF_8);
+        JsonObject packageJson = Json.parse(pkgJson);
+        VersionsJsonFilter filter = new VersionsJsonFilter(packageJson,
+                NodeUpdater.DEPENDENCIES);
+        String versionOrigin = "dummy-origin.json";
+
+        Logger logger = Mockito.spy(Logger.class);
+        try (MockedStatic<LoggerFactory> loggerFactoryMocked = Mockito
+                .mockStatic(LoggerFactory.class)) {
+            loggerFactoryMocked
+                    .when(() -> LoggerFactory.getLogger(FrontendVersion.class))
+                    .thenReturn(logger);
+
+            JsonObject sourceJsonMocked = getMockedJsonObject();
+
+            Mockito.when(sourceJsonMocked.getString(Mockito.anyString()))
+                    .thenThrow(new ClassCastException());
+            filter.getFilteredVersions(sourceJsonMocked, versionOrigin);
+            Mockito.verify(logger, Mockito.times(1)).warn(
+                    "Ignoring error while parsing frontend dependency version for package '{}' in '{}'",
+                    "test", versionOrigin);
+
+            sourceJsonMocked = getMockedJsonObject();
+
+            String nfeMessage = "NFE MSG";
+            Mockito.when(sourceJsonMocked.getString(Mockito.anyString()))
+                    .thenThrow(new NumberFormatException(nfeMessage));
+            filter.getFilteredVersions(sourceJsonMocked, versionOrigin);
+            Mockito.verify(logger, Mockito.times(1)).warn(
+                    "Ignoring error while parsing frontend dependency version in {}: {}",
+                    versionOrigin, nfeMessage);
+        }
+    }
+
+    private JsonObject getMockedJsonObject() {
+        JsonObject jsonObject = Mockito.mock(JsonObject.class);
+        Mockito.when(jsonObject.keys()).thenReturn(new String[] { "test" });
+        Mockito.when(jsonObject.hasKey("test")).thenReturn(true);
+        return jsonObject;
+    }
+
     private void assertMissingVaadinDependencies_allDependenciesSholdBeUserHandled(
             String depKey) throws IOException {
-        String versions = IOUtils
-                .toString(
-                        getClass().getClassLoader()
-                                .getResourceAsStream("versions/versions.json"),
-                        StandardCharsets.UTF_8);
+        String versions = IOUtils.toString(
+                Objects.requireNonNull(getClass().getClassLoader()
+                        .getResourceAsStream("versions/versions.json")),
+                StandardCharsets.UTF_8);
         String pkgJson = IOUtils.toString(
-                getClass().getClassLoader()
-                        .getResourceAsStream("versions/no_vaadin_package.json"),
+                Objects.requireNonNull(
+                        getClass().getClassLoader().getResourceAsStream(
+                                "versions/no_vaadin_package.json")),
                 StandardCharsets.UTF_8);
 
         VersionsJsonFilter filter = new VersionsJsonFilter(Json.parse(pkgJson),
@@ -95,16 +148,14 @@ public class VersionsJsonFilterTest {
 
     private void assertFilterPlatformVersions_multipleUserChanged_correctlyIgnored(
             String depKey) throws IOException {
-        String versions = IOUtils
-                .toString(
-                        getClass().getClassLoader().getResourceAsStream(
-                                "versions/user_versions.json"),
-                        StandardCharsets.UTF_8);
-        String pkgJson = IOUtils
-                .toString(
-                        getClass().getClassLoader().getResourceAsStream(
-                                "versions/user_package.json"),
-                        StandardCharsets.UTF_8);
+        String versions = IOUtils.toString(
+                Objects.requireNonNull(getClass().getClassLoader()
+                        .getResourceAsStream("versions/user_versions.json")),
+                StandardCharsets.UTF_8);
+        String pkgJson = IOUtils.toString(
+                Objects.requireNonNull(getClass().getClassLoader()
+                        .getResourceAsStream("versions/user_package.json")),
+                StandardCharsets.UTF_8);
 
         VersionsJsonFilter filter = new VersionsJsonFilter(Json.parse(pkgJson),
                 depKey);
@@ -143,16 +194,14 @@ public class VersionsJsonFilterTest {
 
     private void assertFilterPlatformVersions(String depKey)
             throws IOException {
-        String versions = IOUtils
-                .toString(
-                        getClass().getClassLoader()
-                                .getResourceAsStream("versions/versions.json"),
-                        StandardCharsets.UTF_8);
-        String pkgJson = IOUtils
-                .toString(
-                        getClass().getClassLoader()
-                                .getResourceAsStream("versions/package.json"),
-                        StandardCharsets.UTF_8);
+        String versions = IOUtils.toString(
+                Objects.requireNonNull(getClass().getClassLoader()
+                        .getResourceAsStream("versions/versions.json")),
+                StandardCharsets.UTF_8);
+        String pkgJson = IOUtils.toString(
+                Objects.requireNonNull(getClass().getClassLoader()
+                        .getResourceAsStream("versions/package.json")),
+                StandardCharsets.UTF_8);
 
         VersionsJsonFilter filter = new VersionsJsonFilter(Json.parse(pkgJson),
                 depKey);
