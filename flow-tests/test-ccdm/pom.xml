@@ -21,11 +21,6 @@
         <!-- Project dependencies -->
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>fusion-endpoint</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.vaadin</groupId>
             <artifactId>flow-test-lumo</artifactId>
             <version>${project.version}</version>
         </dependency>
