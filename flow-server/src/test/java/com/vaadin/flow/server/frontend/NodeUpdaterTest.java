@@ -54,6 +54,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class NodeUpdaterTest {
 
+    private static final String POLYMER_VERSION = "3.5.1";
+
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
@@ -140,7 +142,7 @@ public class NodeUpdaterTest {
         nodeUpdater.updateDefaultDependencies(object);
 
         String version = getPolymerVersion(object);
-        Assert.assertEquals("3.4.1", version);
+        Assert.assertEquals(POLYMER_VERSION, version);
     }
 
     @Test
@@ -168,8 +170,8 @@ public class NodeUpdaterTest {
         nodeUpdater.addVaadinDefaultsToJson(object);
         nodeUpdater.updateDefaultDependencies(object);
 
-        Assert.assertEquals("3.4.1", getPolymerVersion(object));
-        Assert.assertEquals("3.4.1", getPolymerVersion(
+        Assert.assertEquals(POLYMER_VERSION, getPolymerVersion(object));
+        Assert.assertEquals(POLYMER_VERSION, getPolymerVersion(
                 object.getObject(NodeUpdater.VAADIN_DEP_KEY)));
     }
 
