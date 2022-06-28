@@ -103,7 +103,7 @@ public class TaskGenerateBootstrapTest {
     }
 
     @Test
-    public void should_importFrontendIndexTS_customFrontendFolder()
+    public void should_importFrontendIndexTS_fromCustomFrontendFolder()
             throws ExecutionFailedException, IOException {
         frontendFolder = temporaryFolder.newFolder("src", "main", FRONTEND);
         taskGenerateBootstrap = new TaskGenerateBootstrap(frontDeps,
