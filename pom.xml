@@ -107,7 +107,7 @@
         <maven.clean.plugin.version>3.2.0</maven.clean.plugin.version>
         <maven.exec.plugin.version>1.6.0</maven.exec.plugin.version>
         <testbench.version>8.1.0.alpha7</testbench.version>
-        <webdrivermanager.version>5.2.0</webdrivermanager.version>
+        <webdrivermanager.version>5.2.1</webdrivermanager.version>
         <jetty.version>10.0.9</jetty.version>
         <properties-maven-plugin.version>1.0.0</properties-maven-plugin.version>
 
@@ -236,7 +236,7 @@
             <dependency>
                 <groupId>net.bytebuddy</groupId>
                 <artifactId>byte-buddy</artifactId>
-                <version>1.12.11</version>
+                <version>1.12.12</version>
             </dependency>
             <dependency>
                 <groupId>io.projectreactor</groupId>
@@ -304,7 +304,7 @@
             <extension>
                 <groupId>org.apache.maven.wagon</groupId>
                 <artifactId>wagon-ssh-external</artifactId>
-                <version>3.5.1</version>
+                <version>3.5.2</version>
             </extension>
         </extensions>
 

@@ -2,7 +2,7 @@
   "name": "no-name",
   "license": "UNLICENSED",
   "dependencies": {
-    "@polymer/polymer": "3.4.1",
+    "@polymer/polymer": "3.5.1",
     "@testscope/all": "../vite-test-assets/packages/@testscope/all",
     "@testscope/button": "../vite-test-assets/packages/@testscope/button",
     "@vaadin/bundles": "../vite-test-assets/packages/@vaadin/bundles-old",
