@@ -1033,10 +1033,6 @@ public class UI extends Component
      * Besides the navigation to the {@code location} this method also updates
      * the browser location (and page history).
      * <p>
-     * Note! A {@code null} parameter will be handled the same as
-     * navigate(navigationTarget) and will throw an exception if HasUrlParameter
-     * is not @OptionalParameter or @WildcardParameter.
-     * <p>
      * If the view change actually happens (e.g. the view itself doesn't cancel
      * the navigation), all navigation listeners are notified and a reference of
      * the new view is returned for additional configuration.
