@@ -1,29 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-tests</artifactId>
         <version>23.2-SNAPSHOT</version>
     </parent>
-    <modelVersion>4.0.0</modelVersion>
-
-    <artifactId>flow-test-ccdm-prod</artifactId>
-    <name>Flow CCDM tests (production mode)</name>
+    <artifactId>flow-test-eager-bootstrap</artifactId>
+    <name>Flow eager bootstrap (includes UIDL in first request) test</name>
     <packaging>war</packaging>
-
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
+        <vaadin.eagerServerLoad>true</vaadin.eagerServerLoad>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>flow-server-production-mode</artifactId>
+            <artifactId>flow-test-resources</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>flow-test-lumo</artifactId>
+            <artifactId>vaadin-dev-server</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
@@ -31,29 +30,34 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-maven-plugin</artifactId>
+                <groupId>com.vaadin</groupId>
+                <artifactId>flow-maven-plugin</artifactId>
                 <configuration>
-                    <webApp>
-                        <contextPath>/foo</contextPath>
-                    </webApp>
+                    <productionMode>false</productionMode>
                 </configuration>
             </plugin>
             <plugin>
-                <groupId>com.vaadin</groupId>
-                <artifactId>flow-maven-plugin</artifactId>
+                <groupId>org.eclipse.jetty</groupId>
+                <artifactId>jetty-maven-plugin</artifactId>
+                <version>${jetty.version}</version>
                 <executions>
+                    <!-- start and stop jetty (running our app) when running
+                        integration tests -->
                     <execution>
+                        <id>start-jetty</id>
+                        <phase>pre-integration-test</phase>
                         <goals>
-                            <goal>prepare-frontend</goal>
-                            <goal>build-frontend</goal>
+                            <goal>start</goal>
                         </goals>
-                        <phase>compile</phase>
+                    </execution>
+                    <execution>
+                        <id>stop-jetty</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>stop</goal>
+                        </goals>
                     </execution>
                 </executions>
-                <configuration>
-                    <productionMode>true</productionMode>
-                </configuration>
             </plugin>
         </plugins>
     </build>

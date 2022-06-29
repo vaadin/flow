@@ -309,39 +309,15 @@
                 <module>test-spring</module>
                 <module>test-spring-boot-contextpath</module>
 
-                <module>test-endpoints</module>
-                <module>test-endpoints-custom-client</module>
                 <module>test-mvc-without-endpoints</module>
 
                 <module>test-spring-security-flow</module>
                 <module>test-spring-security-flow-contextpath</module>
                 <module>test-spring-security-flow-urlmapping</module>
-                <module>test-spring-security-fusion</module>
-                <module>test-spring-security-fusion-jwt</module>
-                <module>test-spring-security-fusion-contextpath</module>
-                <module>test-spring-security-fusion-urlmapping</module>
 
                 <module>test-spring-boot-only-prepare</module>
                 <module>test-spring-white-list</module>
             </modules>
-        </profile>
-        <profile>
-            <id>java17</id>
-            <activation>
-                <jdk>[17,)</jdk>
-                <property>
-                    <name>!skipTests</name>
-                </property>
-            </activation>
-            <modules>
-                <module>test-endpoints-latest-java</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>validation</id>
-            <properties>
-                <maven.javadoc.skip>true</maven.javadoc.skip>
-            </properties>
         </profile>
     </profiles>
 
