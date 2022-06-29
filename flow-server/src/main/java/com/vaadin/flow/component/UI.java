@@ -1028,8 +1028,7 @@ public class UI extends Component
 
     /**
      * Updates this UI to show the view corresponding to the given navigation
-     * target with the specified parameter. The parameter needs to be the same
-     * as defined in the route target HasUrlParameter.
+     * target and query parameters.
      * <p>
      * Besides the navigation to the {@code location} this method also updates
      * the browser location (and page history).
