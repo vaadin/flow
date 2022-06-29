@@ -466,14 +466,10 @@ export const vaadinConfig: UserConfigFn = (env) => {
               return;
             }
 
-            const basePath = devMode
-              ? server?.config.base ?? ''
-              : './'
-
             return [
               {
                 tag: 'script',
-                attrs: { type: 'module', src: `${basePath}generated/vaadin-web-component.ts` },
+                attrs: { type: 'module', src: `/generated/vaadin-web-component.ts` },
                 injectTo: 'head'
               }
             ]
@@ -489,29 +485,21 @@ export const vaadinConfig: UserConfigFn = (env) => {
               return;
             }
 
-            if (devMode) {
-              const basePath = server?.config.base ?? '';
-              return [
-                {
-                  tag: 'script',
-                  attrs: { type: 'module', src: `${basePath}generated/vite-devmode.ts` },
-                  injectTo: 'head'
-                },
-                {
-                  tag: 'script',
-                  attrs: { type: 'module', src: `${basePath}generated/vaadin.ts` },
-                  injectTo: 'head'
-                }
-              ];
-            }
+            const scripts = [];
 
-            return [
-              {
+            if (devMode) {
+              scripts.push({
                 tag: 'script',
-                attrs: { type: 'module', src: './generated/vaadin.ts' },
+                attrs: { type: 'module', src: `/generated/vite-devmode.ts` },
                 injectTo: 'head'
-              }
-            ];
+              });
+            }
+            scripts.push({
+              tag: 'script',
+              attrs: { type: 'module', src: '/generated/vaadin.ts' },
+              injectTo: 'head'
+            });
+            return scripts;
           }
         }
       },

@@ -24,7 +24,7 @@
     "html-webpack-plugin": "4.5.1",
     "lit-css-loader": "0.1.0",
     "loader-utils": "2.0.0",
-    "typescript": "4.5.3",
+    "typescript": "4.7.4",
     "webpack": "4.46.0",
     "webpack-cli": "4.10.0",
     "webpack-dev-server": "4.9.2",
@@ -56,7 +56,7 @@
       "html-webpack-plugin": "4.5.1",
       "lit-css-loader": "0.1.0",
       "loader-utils": "2.0.0",
-      "typescript": "4.5.3",
+      "typescript": "4.7.4",
       "webpack": "4.46.0",
       "webpack-cli": "4.10.0",
       "webpack-dev-server": "4.9.2",
@@ -65,7 +65,7 @@
       "workbox-precaching": "6.5.0",
       "workbox-webpack-plugin": "6.5.0"
     },
-    "hash": "1426e355f6fe4544cd390ec75654b43bfd8112f64e9a97075ba4ab9218b8e3bd"
+    "hash": "682a252d56e537d0230f32fdcd5e687d20e638a2354d67b09b2eaa3a57b50082"
   },
   "overrides": {
     "@vaadin/common-frontend": "$@vaadin/common-frontend",
