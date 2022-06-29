@@ -9,6 +9,8 @@ import { readFileSync, existsSync, writeFileSync } from 'fs';
 import * as net from 'net';
 
 import { processThemeResources } from '#buildFolder#/plugins/application-theme-plugin/theme-handle';
+import { rewriteThemeCssUrls } from '#buildFolder#/plugins/theme-loader/vite-theme-loader';
+
 import settings from '#settingsImport#';
 import { defineConfig, mergeConfig, PluginOption, ResolvedConfig, UserConfigFn, OutputOptions, AssetInfo, ChunkInfo } from 'vite';
 import { injectManifest } from 'workbox-build';
@@ -26,6 +28,7 @@ const frontendBundleFolder = path.resolve(__dirname, settings.frontendBundleOutp
 const addonFrontendFolder = path.resolve(__dirname, settings.addonFrontendFolder);
 const themeResourceFolder = path.resolve(__dirname, settings.themeResourceFolder);
 const statsFile = path.resolve(frontendBundleFolder, '..', 'config', 'stats.json');
+const staticOutputFolder = path.resolve(__dirname, settings.staticOutput);
 
 const projectStaticAssetsFolders = [
   path.resolve(__dirname, 'src', 'main', 'resources', 'META-INF', 'resources'),
@@ -42,7 +45,7 @@ const themeOptions = {
   // (not 'frontend/themes') for theme in JAR that is copied there
   themeResourceFolder: path.resolve(themeResourceFolder, settings.themeFolder),
   themeProjectFolders: themeProjectFolders,
-  projectStaticAssetsOutputFolder: path.resolve(__dirname, settings.staticOutput),
+  projectStaticAssetsOutputFolder: staticOutputFolder,
   frontendGeneratedFolder: path.resolve(frontendFolder, settings.generatedFolder)
 };
 
@@ -324,11 +327,14 @@ function themePlugin(): PluginOption {
         }
       }
     },
+    async transform(code, id) {
+        console.log("============= transforming " + id); // + " with code " + code);
+        return rewriteThemeCssUrls(code, id, { logger: console });
+    },
     async resolveId(id) {
       if (!id.startsWith(settings.themeFolder)) {
         return;
       }
-
       for (const location of [themeResourceFolder, frontendFolder]) {
         const result = await this.resolve(path.resolve(location, id));
         if (result) {
@@ -360,6 +366,7 @@ let spaMiddlewareForceRemoved = false;
 const allowedFrontendFolders = [
   frontendFolder,
   addonFrontendFolder,
+  staticOutputFolder,
   path.resolve(addonFrontendFolder, '..', 'frontend'), // Contains only generated-flow-imports
   //path.resolve(frontendFolder, '../node_modules')
   path.resolve(__dirname, 'node_modules')
@@ -381,6 +388,16 @@ export const vaadinConfig: UserConfigFn = (env) => {
       alias: {
         Frontend: frontendFolder
       },
+      /*
+      alias: [
+        { find: 'Frontend', replacement: frontendFolder },
+        { find:/^(.*)\.svg$/, replacement: '$1.alias', customResolver: (a, b, c) => {
+            console.log("resolver function ", a, b, c);
+            return a;
+        }
+        }
+      ],
+      */
       preserveSymlinks: true
     },
     define: {
