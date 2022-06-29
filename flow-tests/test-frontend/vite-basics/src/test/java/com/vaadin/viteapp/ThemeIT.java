@@ -47,7 +47,7 @@ public class ThemeIT extends ViteDevModeIT {
         checkLogsForErrors();
 
         final WebElement documentHead = getDriver()
-                .findElement(By.xpath("/html/head"));
+                .findElement(By.tagName("head"));
         final List<WebElement> links = documentHead
                 .findElements(By.tagName("link"));
 
