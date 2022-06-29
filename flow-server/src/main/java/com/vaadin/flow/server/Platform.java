@@ -39,7 +39,7 @@ public class Platform implements Serializable {
      */
     public static Optional<String> getVaadinVersion() {
         try (InputStream vaadinVersionsStream = Platform.class.getClassLoader()
-                .getResourceAsStream(Constants.VAADIN_VERSIONS_JSON)) {
+                .getResourceAsStream(Constants.VAADIN_CORE_VERSIONS_JSON)) {
             if (vaadinVersionsStream != null) {
                 ObjectMapper m = new ObjectMapper();
                 JsonNode vaadinVersions = m.readTree(vaadinVersionsStream);
@@ -49,7 +49,7 @@ public class Platform implements Serializable {
                     versionErrorLogged = true;
                     LoggerFactory.getLogger(Platform.class)
                             .info("Unable to determine version information. "
-                                    + "No vaadin_versions.json found");
+                                    + "No vaadin-core-versions.json found");
                 }
             }
         } catch (Exception e) {
