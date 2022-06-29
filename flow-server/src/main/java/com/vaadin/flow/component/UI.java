@@ -976,6 +976,94 @@ public class UI extends Component
     }
 
     /**
+     * Updates this UI to show the view corresponding to the given navigation
+     * target with the specified parameter. The parameter needs to be the same
+     * as defined in the route target HasUrlParameter.
+     * <p>
+     * Besides the navigation to the {@code location} this method also updates
+     * the browser location (and page history).
+     * <p>
+     * Note! A {@code null} parameter will be handled the same as
+     * navigate(navigationTarget) and will throw an exception if HasUrlParameter
+     * is not @OptionalParameter or @WildcardParameter.
+     * <p>
+     * If the view change actually happens (e.g. the view itself doesn't cancel
+     * the navigation), all navigation listeners are notified and a reference of
+     * the new view is returned for additional configuration.
+     *
+     * @param navigationTarget
+     *            navigation target to navigate to
+     * @param parameter
+     *            route parameter to pass to view
+     * @param queryParameters
+     *            additional query parameters to pass to view
+     * @param <T>
+     *            url parameter type
+     * @param <C>
+     *            navigation target type
+     * @return the view instance, if navigation actually happened
+     * @throws IllegalArgumentException
+     *             if a {@code null} parameter is given while navigationTarget's
+     *             parameter is not annotated with @OptionalParameter
+     *             or @WildcardParameter.
+     * @throws NotFoundException
+     *             in case there is no route defined for the given
+     *             navigationTarget matching the parameters.
+     */
+    @SuppressWarnings("unchecked")
+    public <T, C extends Component & HasUrlParameter<T>> Optional<C> navigate(
+            Class<? extends C> navigationTarget, T parameter,
+            QueryParameters queryParameters) {
+
+        RouteConfiguration configuration = RouteConfiguration
+                .forRegistry(getInternals().getRouter().getRegistry());
+        RouteParameters parameters = HasUrlParameterFormat
+                .getParameters(parameter);
+        String url = configuration.getUrl(navigationTarget, parameters);
+        getInternals().getRouter().navigate(this,
+                new Location(url, queryParameters),
+                NavigationTrigger.UI_NAVIGATE);
+        return (Optional<C>) findCurrentNavigationTarget(navigationTarget);
+    }
+
+    /**
+     * Updates this UI to show the view corresponding to the given navigation
+     * target and query parameters.
+     * <p>
+     * Besides the navigation to the {@code location} this method also updates
+     * the browser location (and page history).
+     * <p>
+     * If the view change actually happens (e.g. the view itself doesn't cancel
+     * the navigation), all navigation listeners are notified and a reference of
+     * the new view is returned for additional configuration.
+     *
+     * @param navigationTarget
+     *            navigation target to navigate to
+     * @param queryParameters
+     *            additional query parameters to pass to view
+     * @param <T>
+     *            navigation target type
+     * @return the view instance, if navigation actually happened
+     * @throws NotFoundException
+     *             in case there is no route defined for the given
+     *             navigationTarget matching the parameters.
+     */
+    @SuppressWarnings("unchecked")
+    public <T extends Component> Optional<T> navigate(
+            Class<? extends T> navigationTarget,
+            QueryParameters queryParameters) {
+
+        RouteConfiguration configuration = RouteConfiguration
+                .forRegistry(getInternals().getRouter().getRegistry());
+        String url = configuration.getUrl(navigationTarget,
+                RouteParameters.empty());
+        getInternals().getRouter().navigate(this,
+                new Location(url, queryParameters),
+                NavigationTrigger.UI_NAVIGATE);
+        return (Optional<T>) findCurrentNavigationTarget(navigationTarget);
+    }
+
+    /**
      * Updates this UI to show the view corresponding to the given location. The
      * location must be a relative path without any ".." segments.
      * <p>
