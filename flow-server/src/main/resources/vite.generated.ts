@@ -327,11 +327,36 @@ function themePlugin(): PluginOption {
         }
       }
     },
-    async transform(code, id) {
-        console.log("============= transforming " + id); // + " with code " + code);
-        return rewriteThemeCssUrls(code, id, { logger: console });
+    async transform(raw, id, options) {
+        const [bareId, query] = id.split('?');
+        console.log("============= transforming " + id + "  themeFolder " +
+        path.resolve(frontendFolder, settings.themeFolder));
+
+      if (id.startsWith(settings.themeFolder)) {
+        console.log("========================== This is a theme file " + id);
+      }
+
+        if (!bareId.endsWith(".css")) {
+            return;
+        }
+        let themeFolder = path.dirname(bareId);
+        // Recurse up until we find the themes folder or don't have 'themes' on the path.
+        while (themeFolder.indexOf('themes') > 1 && path.basename(path.resolve(themeFolder, '..')) !== 'themes') {
+            themeFolder = path.resolve(themeFolder, '..');
+        }
+        // If we have found no themes folder return without doing anything.
+        if (path.basename(path.resolve(themeFolder, '..')) !== 'themes') {
+            return;
+        }
+        //const code = readFileSync(bareId, { encoding: 'utf8' });
+        const processed = rewriteThemeCssUrls(raw, bareId, { logger: console });
+
+        console.log("========================== Original content " + raw);
+        console.log("========================== Transformed content " + processed);
+        return processed;
     },
     async resolveId(id) {
+        console.log("========================== resolveId " + id);
       if (!id.startsWith(settings.themeFolder)) {
         return;
       }
@@ -342,6 +367,40 @@ function themePlugin(): PluginOption {
         }
       }
     },
+  }
+}
+function themeLoaderPlugin(): PluginOption {
+  return {
+    name: 'vaadin:theme-loader',
+    enforce: 'post',
+    transform(raw, id, options) {
+        const [bareId, query] = id.split('?');
+        console.log("============= transforming " + id + "  themeFolder " +
+        path.resolve(frontendFolder, settings.themeFolder));
+
+      if (id.startsWith(settings.themeFolder)) {
+        console.log("========================== This is a theme file " + id);
+      }
+
+        if (!bareId.endsWith(".css")) {
+            return null;
+        }
+        let themeFolder = path.dirname(bareId);
+        // Recurse up until we find the themes folder or don't have 'themes' on the path.
+        while (themeFolder.indexOf('themes') > 1 && path.basename(path.resolve(themeFolder, '..')) !== 'themes') {
+            themeFolder = path.resolve(themeFolder, '..');
+        }
+        // If we have found no themes folder return without doing anything.
+        if (path.basename(path.resolve(themeFolder, '..')) !== 'themes') {
+            return null;
+        }
+        const code = readFileSync(bareId, { encoding: 'utf8' });
+        const processed = rewriteThemeCssUrls(code, bareId, { logger: console });
+
+        console.log("========================== Original content " + code);
+        console.log("========================== Transformed content " + processed);
+        return processed;
+    }
   }
 }
 
