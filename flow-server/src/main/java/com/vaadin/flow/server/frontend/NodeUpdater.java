@@ -393,7 +393,7 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         defaults.put("@polymer/polymer", POLYMER_VERSION);
 
-        defaults.put("lit", "2.2.3");
+        defaults.put("lit", "2.2.5");
 
         // Constructable style sheets is only implemented for chrome,
         // polyfill needed for FireFox et.al. at the moment
@@ -443,7 +443,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         }
         defaults.put("workbox-core", WORKBOX_VERSION);
         defaults.put("workbox-precaching", WORKBOX_VERSION);
-        defaults.put("glob", "7.2.2");
+        defaults.put("glob", "7.2.3");
         defaults.put("async", "3.2.2");
 
         return defaults;
