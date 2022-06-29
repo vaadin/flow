@@ -1044,10 +1044,6 @@ public class UI extends Component
      * @param <T>
      *            navigation target type
      * @return the view instance, if navigation actually happened
-     * @throws IllegalArgumentException
-     *             if a {@code null} parameter is given while navigationTarget's
-     *             parameter is not annotated with @OptionalParameter
-     *             or @WildcardParameter.
      * @throws NotFoundException
      *             in case there is no route defined for the given
      *             navigationTarget matching the parameters.
