@@ -443,7 +443,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         }
         defaults.put("workbox-core", WORKBOX_VERSION);
         defaults.put("workbox-precaching", WORKBOX_VERSION);
-        defaults.put("glob", "7.2.2");
+        defaults.put("glob", "7.2.3");
         defaults.put("async", "3.2.2");
 
         return defaults;
