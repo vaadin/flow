@@ -79,8 +79,15 @@ if (process.env.NODE_ENV === 'development' && VITE_ENABLED) {
     event.waitUntil(caches.delete(cacheNames.runtime));
   });
 
+  // Vite 2 ping URL
   registerRoute(
     ({ url }) => url.pathname.startsWith(`${scopePath}VAADIN/__vite_ping`),
+    networkOnly
+  );
+
+  // Vite 3 ping URL
+  registerRoute(
+    ({ url }) => url.pathname == `${scopePath}VAADIN/`,
     networkOnly
   );
 
