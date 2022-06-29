@@ -364,6 +364,19 @@ const allowedFrontendFolders = [
   path.resolve(frontendFolder, '../node_modules')
 ];
 
+function setHmrPortToServerPort(): PluginOption {
+  return {
+    name: 'set-hmr-port-to-server-port',
+    configResolved(config) {
+      if (config.server.strictPort && config.server.hmr !== false) {
+        if (config.server.hmr === true) config.server.hmr = {};
+        config.server.hmr = config.server.hmr || {};
+        config.server.hmr.clientPort = config.server.port;
+      }
+    }
+  };
+}
+
 export const vaadinConfig: UserConfigFn = (env) => {
   const devMode = env.mode === 'development';
 
@@ -388,6 +401,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
     },
     server: {
       host: '127.0.0.1',
+      strictPort: true,
       fs: {
         allow: allowedFrontendFolders
       }
@@ -423,6 +437,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
     plugins: [
       !devMode && brotli(),
       devMode && vaadinBundlesPlugin(),
+      devMode && setHmrPortToServerPort(),
       settings.offlineEnabled && buildSWPlugin(),
       settings.offlineEnabled && injectManifestToSWPlugin(),
       !devMode && statsExtracterPlugin(),
