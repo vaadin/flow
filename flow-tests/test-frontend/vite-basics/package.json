@@ -5,7 +5,7 @@
     "postinstall": "node -e \"fs.writeFileSync('target/classes/main.postinstall', 'hello')\""
   },
   "dependencies": {
-    "@polymer/polymer": "3.4.1",
+    "@polymer/polymer": "3.5.1",
     "@testscope/all": "../vite-test-assets/packages/@testscope/all",
     "@testscope/button": "../vite-test-assets/packages/@testscope/button",
     "@vaadin/bundles": "../vite-test-assets/packages/@vaadin/bundles",
@@ -16,18 +16,18 @@
     "@vaadin/vaadin-text-field": "23.1.0-alpha2",
     "construct-style-sheets-polyfill": "3.1.0",
     "copy-to-clipboard": "^3.3.1",
-    "lit": "2.2.4",
+    "lit": "2.2.6",
     "package-outside-npm": "file:package-outside-npm",
     "package2-outside-npm": "./package2-outside-npm"
   },
   "devDependencies": {
     "@rollup/plugin-replace": "3.1.0",
     "async": "3.2.2",
-    "glob": "7.1.6",
+    "glob": "7.2.3",
     "mkdirp": "1.0.4",
     "rollup-plugin-brotli": "3.1.0",
     "typescript": "4.5.3",
-    "vite": "v2.9.1",
+    "vite": "v2.9.13",
     "vite-plugin-checker": "0.3.4",
     "workbox-build": "6.5.0",
     "workbox-core": "6.5.0",
@@ -35,28 +35,28 @@
   },
   "vaadin": {
     "dependencies": {
-      "@polymer/polymer": "3.4.1",
+      "@polymer/polymer": "3.5.1",
       "@vaadin/common-frontend": "0.0.17",
       "@vaadin/router": "1.7.4",
       "@vaadin/vaadin-lumo-styles": "23.1.0-alpha2",
       "@vaadin/vaadin-text-field": "23.1.0-alpha2",
       "construct-style-sheets-polyfill": "3.1.0",
-      "lit": "2.2.3"
+      "lit": "2.2.6"
     },
     "devDependencies": {
       "@rollup/plugin-replace": "3.1.0",
       "async": "3.2.2",
-      "glob": "7.1.6",
+      "glob": "7.2.3",
       "mkdirp": "1.0.4",
       "rollup-plugin-brotli": "3.1.0",
       "typescript": "4.5.3",
-      "vite": "v2.9.1",
+      "vite": "v2.9.13",
       "vite-plugin-checker": "0.3.4",
       "workbox-build": "6.5.0",
       "workbox-core": "6.5.0",
       "workbox-precaching": "6.5.0"
     },
-    "hash": "326cdb17f33a5fb847cf1929884b868f408be79cae3e727a78d317c32cd26978"
+    "hash": "c10b398f8d3a47350d5509875a404bcf1906ad8b4669f751378fefc636d80955"
   },
   "overrides": {
     "@polymer/polymer": "$@polymer/polymer",

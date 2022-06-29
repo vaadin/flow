@@ -2,25 +2,25 @@
   "name": "no-name",
   "license": "UNLICENSED",
   "dependencies": {
-    "@polymer/polymer": "3.4.1",
+    "@polymer/polymer": "3.5.1",
     "@vaadin/common-frontend": "0.0.17",
     "@vaadin/flow-frontend": "./target/flow-frontend",
     "@vaadin/router": "1.7.4",
     "@vaadin/vaadin-text-field": "23.1.0-alpha2",
     "construct-style-sheets-polyfill": "3.1.0",
-    "lit": "2.2.3"
+    "lit": "2.2.6"
   },
   "devDependencies": {
     "async": "3.2.2",
     "chokidar": "^3.5.0",
     "compression-webpack-plugin": "4.0.1",
     "css-loader": "5.2.7",
-    "esbuild-loader": "2.15.1",
+    "esbuild-loader": "2.19.0",
     "extra-watch-webpack-plugin": "1.0.3",
     "extract-loader": "5.1.0",
     "file-loader": "6.2.0",
     "fork-ts-checker-webpack-plugin": "6.2.1",
-    "glob": "7.1.6",
+    "glob": "7.2.3",
     "html-webpack-plugin": "4.5.1",
     "lit-css-loader": "0.1.0",
     "loader-utils": "2.0.0",
@@ -35,24 +35,24 @@
   },
   "vaadin": {
     "dependencies": {
-      "@polymer/polymer": "3.4.1",
+      "@polymer/polymer": "3.5.1",
       "@vaadin/common-frontend": "0.0.17",
       "@vaadin/router": "1.7.4",
       "@vaadin/vaadin-text-field": "23.1.0-alpha2",
       "construct-style-sheets-polyfill": "3.1.0",
-      "lit": "2.2.3"
+      "lit": "2.2.6"
     },
     "devDependencies": {
       "async": "3.2.2",
       "chokidar": "^3.5.0",
       "compression-webpack-plugin": "4.0.1",
       "css-loader": "5.2.7",
-      "esbuild-loader": "2.15.1",
+      "esbuild-loader": "2.19.0",
       "extra-watch-webpack-plugin": "1.0.3",
       "extract-loader": "5.1.0",
       "file-loader": "6.2.0",
       "fork-ts-checker-webpack-plugin": "6.2.1",
-      "glob": "7.1.6",
+      "glob": "7.2.3",
       "html-webpack-plugin": "4.5.1",
       "lit-css-loader": "0.1.0",
       "loader-utils": "2.0.0",
@@ -65,7 +65,7 @@
       "workbox-precaching": "6.5.0",
       "workbox-webpack-plugin": "6.5.0"
     },
-    "hash": "94f2997e1507057b70f51fd5e213e160049b8097c3d3189de046cad5fa6f5a44"
+    "hash": "1426e355f6fe4544cd390ec75654b43bfd8112f64e9a97075ba4ab9218b8e3bd"
   },
   "overrides": {
     "@vaadin/common-frontend": "$@vaadin/common-frontend",
