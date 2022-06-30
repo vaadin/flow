@@ -363,9 +363,8 @@ public class BuildFrontendUtil {
             throws TimeoutException, URISyntaxException {
         FeatureFlags featureFlags = getFeatureFlags(adapter);
 
-        if (featureFlags.isEnabled(FeatureFlags.OFFLINE_LICENSE_CHECKER)) {
-            LicenseChecker.setStrictOffline(true);
-        }
+        LicenseChecker.setStrictOffline(
+                featureFlags.isEnabled(FeatureFlags.OFFLINE_LICENSE_CHECKER));
 
         FrontendToolsSettings settings = getFrontendToolsSettings(adapter);
         FrontendTools tools = new FrontendTools(settings);
