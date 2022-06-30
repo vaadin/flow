@@ -257,6 +257,8 @@ public class DevModeInitializer
             return;
         }
 
+        LicenseChecker.setStrictOffline(true);
+
         String baseDir = config.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
                 null);
         if (baseDir == null) {

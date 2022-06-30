@@ -218,6 +218,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
     }
 
     void runWebpack(FrontendTools tools) throws MojoExecutionException {
+        LicenseChecker.setStrictOffline(true);
         String webpackCommand = "webpack/bin/webpack.js";
         File webpackExecutable = new File(npmFolder,
                 NODE_MODULES + webpackCommand);
