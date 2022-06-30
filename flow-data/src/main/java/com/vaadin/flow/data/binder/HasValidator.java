@@ -87,7 +87,7 @@ public interface HasValidator<V> extends Serializable {
      *      *&#47;
      *     &#64;Override
      *     public Validator getDefaultValidator() {
-     *          return (value, valueContext) -> clientSideValid ? ValidationResult.ok()
+     *          return (value, valueContext) -&gt; clientSideValid ? ValidationResult.ok()
      *                 : ValidationResult.error("Invalid date format");
      *     }
      *
