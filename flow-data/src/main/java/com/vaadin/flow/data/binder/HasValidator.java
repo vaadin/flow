@@ -73,6 +73,10 @@ public interface HasValidator<V> extends Serializable {
      * &#64;Tag("date-picker-demo")
      * public class DatePickerDemo implements HasValidator&lt;LocalDate&gt; {
      *
+     *     // Each web component has a way to communicate its validation status
+     *     // to its server-side component instance. The following clientSideValid
+     *     // state is introduced here just for the sake of simplicity of this code
+     *     // snippet:
      *     boolean clientSideValid = true;
      *
      *     /**
@@ -83,8 +87,8 @@ public interface HasValidator<V> extends Serializable {
      *      *&#47;
      *     &#64;Override
      *     public Validator getDefaultValidator() {
-     *          return clientSideValid ? ValidationResult.ok()
-     *                  : ValidationResult.error("Invalid date format");
+     *          return (value, valueContext) -&gt; clientSideValid ? ValidationResult.ok()
+     *                 : ValidationResult.error("Invalid date format");
      *     }
      *
      *     private final Collection&lt;ValidationStatusChangeListener&lt;LocalDate&gt;&gt;
@@ -101,10 +105,6 @@ public interface HasValidator<V> extends Serializable {
      *         validationStatusListeners.add(listener);
      *         return () -&gt; validationStatusListeners.remove(listener);
      *     }
-     *
-     *     // Each web-component has a way to communicate its validation status
-     *     // to its server-side component instance which can update
-     *     // <code>this.clientSideValid</code> state.
      *
      *     private void fireValidationStatusChangeEvent(
      *             boolean newValidationStatus) {
