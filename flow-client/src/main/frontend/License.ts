@@ -70,7 +70,10 @@ const key = (product: Product): string => {
 };
 
 const checkLicenseIfNeeded = (cvdlElement: Element) => {
-  const { cvdlName, version } = cvdlElement.constructor as any;
+  const { cvdlName, version } = cvdlElement.constructor as CustomElementConstructor & {
+    cvdlName: string;
+    version: string;
+  };
   const product: Product = { name: cvdlName, version };
   const tagName = cvdlElement.tagName.toLowerCase();
   productTagNames[cvdlName] = productTagNames[cvdlName] ?? [];
