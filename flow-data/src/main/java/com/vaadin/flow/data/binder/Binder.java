@@ -971,12 +971,6 @@ public class Binder<BEAN> implements Serializable {
             }
             this.binding = binding;
 
-            if (field instanceof HasValidator) {
-                HasValidator<FIELDVALUE> hasValidatorField = (HasValidator<FIELDVALUE>) field;
-                hasValidatorField.addValidationStatusChangeListener(
-                        event -> this.binding.validate());
-            }
-
             return binding;
         }
 
@@ -1219,6 +1213,8 @@ public class Binder<BEAN> implements Serializable {
 
         private boolean convertBackToPresentation = true;
 
+        private Registration onValidationStatusChange;
+
         public BindingImpl(BindingBuilderImpl<BEAN, FIELDVALUE, TARGET> builder,
                 ValueProvider<BEAN, TARGET> getter,
                 Setter<BEAN, TARGET> setter) {
@@ -1230,6 +1226,13 @@ public class Binder<BEAN> implements Serializable {
 
             onValueChange = getField().addValueChangeListener(
                     event -> handleFieldValueChange(event));
+
+            if (getField() instanceof HasValidator) {
+                HasValidator<FIELDVALUE> hasValidatorField = (HasValidator<FIELDVALUE>) getField();
+                onValidationStatusChange = hasValidatorField
+                        .addValidationStatusChangeListener(
+                                event -> this.validate());
+            }
 
             this.getter = getter;
             this.setter = setter;
@@ -1274,14 +1277,21 @@ public class Binder<BEAN> implements Serializable {
 
         /**
          * Removes this binding from its binder and unregisters the
-         * {@code ValueChangeListener} from any bound {@code HasValue}. It does
-         * nothing if it is called for an already unbound binding.
+         * {@code ValueChangeListener} from any bound {@code HasValue}, and
+         * {@code ValidationStatusChangeListener} from any bound
+         * {@code HasValidator}. It does nothing if it is called for an already
+         * unbound binding.
          */
         @Override
         public void unbind() {
             if (onValueChange != null) {
                 onValueChange.remove();
                 onValueChange = null;
+            }
+
+            if (onValidationStatusChange != null) {
+                onValidationStatusChange.remove();
+                onValidationStatusChange = null;
             }
 
             if (binder != null) {
