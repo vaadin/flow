@@ -69,27 +69,25 @@ const key = (product: Product): string => {
   return `${product.name}_${product.version}`;
 };
 
-const checkLicenseIfNeeded = (element: Element) => {
-  const { cvdlName, version } = element.constructor as any;
-  if (cvdlName && version) {
-    const product: Product = { name: cvdlName, version };
-    const tagName = element.tagName.toLowerCase();
-    productTagNames[cvdlName] = productTagNames[cvdlName] ?? [];
-    productTagNames[cvdlName].push(tagName);
+const checkLicenseIfNeeded = (cvdlElement: Element) => {
+  const { cvdlName, version } = cvdlElement.constructor as any;
+  const product: Product = { name: cvdlName, version };
+  const tagName = cvdlElement.tagName.toLowerCase();
+  productTagNames[cvdlName] = productTagNames[cvdlName] ?? [];
+  productTagNames[cvdlName].push(tagName);
 
-    const failedLicenseCheck = productMissingLicense[key(product)];
-    if (failedLicenseCheck) {
-      // Has been checked and the check failed
-      setTimeout(() => showNoLicenseFallback(element, failedLicenseCheck), noLicenseFallbackTimeout);
-    }
+  const failedLicenseCheck = productMissingLicense[key(product)];
+  if (failedLicenseCheck) {
+    // Has been checked and the check failed
+    setTimeout(() => showNoLicenseFallback(cvdlElement, failedLicenseCheck), noLicenseFallbackTimeout);
+  }
 
-    if (productMissingLicense[key(product)] || productCheckOk[key(product)]) {
-      // Already checked
-    } else if (!productChecking[key(product)]) {
-      // Has not been checked
-      productChecking[key(product)] = true;
-      (window as any).Vaadin.devTools.checkLicense(product);
-    }
+  if (productMissingLicense[key(product)] || productCheckOk[key(product)]) {
+    // Already checked
+  } else if (!productChecking[key(product)]) {
+    // Has not been checked
+    productChecking[key(product)] = true;
+    (window as any).Vaadin.devTools.checkLicense(product);
   }
 };
 
