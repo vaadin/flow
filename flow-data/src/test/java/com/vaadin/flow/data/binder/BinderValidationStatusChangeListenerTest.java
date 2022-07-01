@@ -1,5 +1,6 @@
 package com.vaadin.flow.data.binder;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -125,6 +126,26 @@ public class BinderValidationStatusChangeListenerTest
         field.fireValidationStatusChangeEvent(true);
         Assert.assertEquals(0, componentErrors.size());
         Assert.assertNull(componentErrors.get(field));
+    }
+
+    @Test
+    public void fieldWithHasValidatorFullyOverridden_boundFieldGetsUnbind_validationStatusChangeListenerInBindingIsRemoved() {
+        TestHasValidatorDatePicker.DataPickerHasValidatorOverridden field = new TestHasValidatorDatePicker.DataPickerHasValidatorOverridden();
+        Binder.Binding<Person, LocalDate> binding = binder.bind(field,
+                BIRTH_DATE_PROPERTY);
+        Assert.assertEquals(0, componentErrors.size());
+
+        field.fireValidationStatusChangeEvent(false);
+        Assert.assertEquals(1, componentErrors.size());
+        Assert.assertEquals(INVALID_DATE_FORMAT, componentErrors.get(field));
+
+        binding.unbind();
+
+        field.fireValidationStatusChangeEvent(true);
+        // after unbind is called, validationStatusChangeListener
+        // in the binding is not working anymore, errors are not cleared:
+        Assert.assertEquals(1, componentErrors.size());
+        Assert.assertEquals(INVALID_DATE_FORMAT, componentErrors.get(field));
     }
 
 }
