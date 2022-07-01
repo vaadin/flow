@@ -55,10 +55,13 @@ const showNoLicenseFallback = (element: Element, productAndMessage: ProductAndMe
           "<a href='https:$1'>https:$1</a>"
       );
 
-  element.outerHTML = `<no-license style="display:flex;align-items:center;text-align:center;justify-content:center;"><div>${htmlMessage}</div></no-license>`;
+  if (element.isConnected) {
+    element.outerHTML = `<no-license style="display:flex;align-items:center;text-align:center;justify-content:center;"><div>${htmlMessage}</div></no-license>`;
+  }
 };
 
 const productTagNames: Record<string, string[]> = {};
+const productChecking: Record<string, boolean> = {};
 const productMissingLicense: Record<string, ProductAndMessage> = {};
 const productCheckOk: Record<string, boolean> = {};
 
@@ -66,34 +69,28 @@ const key = (product: Product): string => {
   return `${product.name}_${product.version}`;
 };
 
-const checkLicenseIfNeeded = (tagName: string) => {
-  const constructor: CustomElementConstructor & { cvdlName?: string } & { version?: string } = customElements.get(
-      tagName
-  )!;
-  const { cvdlName, version } = constructor;
-  if (cvdlName && version) {
-    const product: Product = { name: cvdlName, version };
-    productTagNames[cvdlName] = productTagNames[cvdlName] ?? [];
-    productTagNames[cvdlName].push(tagName);
+const checkLicenseIfNeeded = (cvdlElement: Element) => {
+  const { cvdlName, version } = cvdlElement.constructor as CustomElementConstructor & {
+    cvdlName: string;
+    version: string;
+  };
+  const product: Product = { name: cvdlName, version };
+  const tagName = cvdlElement.tagName.toLowerCase();
+  productTagNames[cvdlName] = productTagNames[cvdlName] ?? [];
+  productTagNames[cvdlName].push(tagName);
 
-    const { connectedCallback } = constructor.prototype;
-    constructor.prototype.connectedCallback = function () {
-      const failedLicenseCheck = productMissingLicense[key(product)];
-      if (failedLicenseCheck) {
-        // Has been checked and the check failed
-        setTimeout(() => showNoLicenseFallback(this, failedLicenseCheck), noLicenseFallbackTimeout);
-      }
-      if (connectedCallback) {
-        connectedCallback.call(this);
-      }
-    };
+  const failedLicenseCheck = productMissingLicense[key(product)];
+  if (failedLicenseCheck) {
+    // Has been checked and the check failed
+    setTimeout(() => showNoLicenseFallback(cvdlElement, failedLicenseCheck), noLicenseFallbackTimeout);
+  }
 
-    if (productMissingLicense[key(product)] || productCheckOk[key(product)]) {
-      // Already checked
-    } else {
-      // Has not been checked
-      (window as any).Vaadin.devTools.checkLicense(product);
-    }
+  if (productMissingLicense[key(product)] || productCheckOk[key(product)]) {
+    // Already checked
+  } else if (!productChecking[key(product)]) {
+    // Has not been checked
+    productChecking[key(product)] = true;
+    (window as any).Vaadin.devTools.checkLicense(product);
   }
 };
 
@@ -143,14 +140,14 @@ export const licenseCheckNoKey = (data: ProductAndMessage) => {
 
 export const licenseInit = () => {
   // Process already registered elements
-  (window as any).Vaadin.devTools.definedCustomElements.forEach((tagName: string) => {
-    checkLicenseIfNeeded(tagName);
+  (window as any).Vaadin.devTools.createdCvdlElements.forEach((element: Element) => {
+    checkLicenseIfNeeded(element);
   });
 
   // Handle new elements directly
-  (window as any).Vaadin.devTools.definedCustomElements = {
-    push: (tagName: string) => {
-      checkLicenseIfNeeded(tagName);
+  (window as any).Vaadin.devTools.createdCvdlElements = {
+    push: (element: Element) => {
+      checkLicenseIfNeeded(element);
     }
   };
 };
