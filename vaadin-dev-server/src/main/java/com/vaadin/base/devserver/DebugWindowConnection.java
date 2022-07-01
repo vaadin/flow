@@ -31,6 +31,8 @@ import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.pro.licensechecker.BuildType;
 import com.vaadin.pro.licensechecker.LicenseChecker;
+import com.vaadin.pro.licensechecker.MachineId;
+import com.vaadin.pro.licensechecker.OfflineKeyValidator;
 import com.vaadin.pro.licensechecker.Product;
 
 import org.atmosphere.cpr.AtmosphereResource;
@@ -193,7 +195,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
                 LicenseChecker.checkLicense(product.getName(),
                         product.getVersion(), BuildType.DEVELOPMENT, keyUrl -> {
                             send(resource, "license-check-nokey",
-                                    new ProductAndMessage(product, keyUrl));
+                                    new ProductAndMessage(product, keyUrl + "|" + OfflineKeyValidator.getOfflineUrl(MachineId.get())));
                         });
                 ok = true;
             } catch (Exception e) {

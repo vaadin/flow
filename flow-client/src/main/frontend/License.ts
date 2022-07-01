@@ -119,10 +119,17 @@ export const licenseCheckFailed = (data: ProductAndMessage) => {
 };
 
 export const licenseCheckNoKey = (data: ProductAndMessage) => {
-  const keyUrl = data.message;
+  const [keyUrl, offlineKeyUrl] = data.message.split('|', 2);
 
   const productName = data.product.name;
-  data.messageHtml = `No license found. <a target=_blank onclick="javascript:window.open(this.href);return false;" href="${keyUrl}">Go here to start a trial or retrieve your license.</a>`;
+  data.messageHtml = `No license found. <a target=_blank onclick="javascript:window.open(this.href);return false;" href="${keyUrl}">Go here to start a trial or retrieve your license.</a>
+  <p>
+  If you need to work offline, go to <a target=_blank href="${offlineKeyUrl}">${offlineKeyUrl}</a> to retrieve an offline key</a>.
+  </p>
+  <p>
+  For troubleshooting steps, see <a target=_blank href="https://vaadin.com/licensing-faq-and-troubleshooting">https://vaadin.com/licensing-faq-and-troubleshooting</a>.
+  </p>
+  `;
   productMissingLicense[key(data.product)] = data;
   // eslint-disable-next-line no-console
   console.error('No license found when checking', productName);
