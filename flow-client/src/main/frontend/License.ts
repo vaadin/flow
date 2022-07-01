@@ -101,14 +101,14 @@ export const licenseCheckOk = (data: Product) => {
   productCheckOk[key(data)] = true;
 
   // eslint-disable-next-line no-console
-  console.debug('License check ok for ', data);
+  console.debug('License check ok for', data);
 };
 
 export const licenseCheckFailed = (data: ProductAndMessage) => {
   const productName = data.product.name;
   productMissingLicense[key(data.product)] = data;
   // eslint-disable-next-line no-console
-  console.error('License check failed for ', productName);
+  console.error('License check failed for', productName);
 
   const tags = productTagNames[productName];
   if (tags?.length > 0) {
@@ -128,7 +128,7 @@ export const licenseCheckNoKey = (data: ProductAndMessage) => {
   data.messageHtml = `No license found. <a target=_blank onclick="javascript:window.open(this.href);return false;" href="${keyUrl}">Go here to start a trial or retrieve your license.</a>`;
   productMissingLicense[key(data.product)] = data;
   // eslint-disable-next-line no-console
-  console.error('No license found when checking ', productName);
+  console.error('No license found when checking', productName);
 
   const tags = productTagNames[productName];
   if (tags?.length > 0) {
