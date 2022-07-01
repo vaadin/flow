@@ -190,13 +190,25 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 "  }" + //
                 "};" + //
                 "window.Vaadin.devTools = window.Vaadin.devTools || {};"
-                + "window.Vaadin.devTools.definedCustomElements = window.Vaadin.devTools.definedCustomElements || [];"
+                + "window.Vaadin.devTools.createdCvdlElements = window.Vaadin.devTools.createdCvdlElements || [];"
                 + //
                 "const originalCustomElementDefineFn = window.customElements.define;"
                 + //
-                "window.customElements.define = function (tagName, ...args) {" + //
-                "originalCustomElementDefineFn.call(this, tagName, ...args);" + //
-                "window.Vaadin.devTools.definedCustomElements.push(tagName);" + //
+                "window.customElements.define = function (tagName, constructor, ...args) {"
+                + //
+                "const { cvdlName, version } = constructor;" + //
+                "if (cvdlName && version) {" + //
+                "  const { connectedCallback } = constructor.prototype;" + //
+                "  constructor.prototype.connectedCallback = function () {" + //
+                "    window.Vaadin.devTools.createdCvdlElements.push(this);" + //
+                "    if (connectedCallback) {" + //
+                "      connectedCallback.call(this);" + //
+                "    }" + //
+                "  }" + //
+                "}" + //
+
+                "originalCustomElementDefineFn.call(this, tagName, constructor, ...args);"
+                + //
                 "};");
 
     }
