@@ -253,7 +253,7 @@ public class NodeUpdaterTest {
     }
 
     @Test
-    public void testGetPlatformPinnedDependencies_vaadinCoreVersionIsNotPresent_outputIsEmptyJson()
+    public void testGetPlatformPinnedDependencies_vaadinCoreVersionIsNotPresent_outputIsNull()
             throws IOException {
         Logger logger = Mockito.spy(Logger.class);
         try (MockedStatic<LoggerFactory> loggerFactoryMocked = Mockito
@@ -263,14 +263,14 @@ public class NodeUpdaterTest {
                     .thenReturn(logger);
 
             Mockito.when(
-                            finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
+                    finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
                     .thenReturn(null);
             Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
                     .thenReturn(null);
 
             JsonObject pinnedVersions = nodeUpdater
                     .getPlatformPinnedDependencies();
-            Assert.assertEquals(0, pinnedVersions.keys().length);
+            Assert.assertNull(pinnedVersions);
 
             Mockito.verify(logger, Mockito.times(1)).info(
                     "Couldn't find {} file to pin dependency versions for core components."
@@ -290,8 +290,7 @@ public class NodeUpdaterTest {
                 mockedVaadinCoreJson.getObject("core").hasKey("button"));
         Assert.assertFalse(mockedVaadinCoreJson.hasKey("vaadin"));
 
-        FileUtils.write(coreVersionsFile, mockedVaadinCoreJson.toJson(),
-                UTF_8);
+        FileUtils.write(coreVersionsFile, mockedVaadinCoreJson.toJson(), UTF_8);
         Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
                 .thenReturn(coreVersionsFile.toURI().toURL());
         Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
@@ -315,8 +314,7 @@ public class NodeUpdaterTest {
                 mockedVaadinCoreJson.getObject("core").hasKey("button"));
         Assert.assertFalse(mockedVaadinCoreJson.hasKey("vaadin"));
 
-        FileUtils.write(coreVersionsFile, mockedVaadinCoreJson.toJson(),
-                UTF_8);
+        FileUtils.write(coreVersionsFile, mockedVaadinCoreJson.toJson(), UTF_8);
         Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
                 .thenReturn(coreVersionsFile.toURI().toURL());
 
@@ -330,8 +328,7 @@ public class NodeUpdaterTest {
         Assert.assertTrue(
                 mockedVaadinJson.getObject("vaadin").hasKey("vaadin-grid-pro"));
 
-        FileUtils.write(vaadinVersionsFile, mockedVaadinJson.toJson(),
-                UTF_8);
+        FileUtils.write(vaadinVersionsFile, mockedVaadinJson.toJson(), UTF_8);
         Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
                 .thenReturn(vaadinVersionsFile.toURI().toURL());
 
