@@ -314,6 +314,7 @@ function themePlugin(): PluginOption {
   return {
     name: 'vaadin:theme',
     config() {
+        console.log("============= themePlugin config");
       processThemeResources(themeOptions, console);
     },
     handleHotUpdate(context) {
@@ -329,7 +330,7 @@ function themePlugin(): PluginOption {
         }
       }
     },
-    async transform(raw, id, options) {
+    transform(raw, id, options) {
         const [bareId, query] = id.split('?');
         //////console.log("============= transforming " + id + "  themeFolder " + themeFolder);
           if (id.startsWith(themeFolder)) {
@@ -339,20 +340,22 @@ function themePlugin(): PluginOption {
         if (!bareId.startsWith(themeFolder) || !bareId.endsWith(".css")) {
             return;
         }
+        console.log("============= transforming " + id + "  themeFolder " + themeFolder);
         const processed = rewriteThemeCssUrls(raw, bareId, { logger: console });
 
-        //////console.log("========================== Original content " + raw);
-        //////console.log("========================== Transformed content " + processed);
+        console.log("========================== Original content " + raw);
+        console.log("========================== Transformed content " + processed);
         return processed;
     },
     async resolveId(id) {
-        //////console.log("========================== resolveId " + id);
+        console.log("========================== resolveId " + id);
       if (!id.startsWith(settings.themeFolder)) {
         return;
       }
       for (const location of [themeResourceFolder, frontendFolder]) {
         const result = await this.resolve(path.resolve(location, id));
         if (result) {
+            console.log("========================== resolveId OK " + id + " ----> " + result);
           return result;
         }
       }
@@ -421,7 +424,8 @@ export const vaadinConfig: UserConfigFn = (env) => {
   }
 
   return {
-    root: frontendFolder,
+    //root: frontendFolder,
+    root: path.relative(__dirname, frontendFolder),
     base: '',
     resolve: {
       alias: {
@@ -483,7 +487,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
       settings.offlineEnabled && buildSWPlugin(),
       settings.offlineEnabled && injectManifestToSWPlugin(),
       !devMode && statsExtracterPlugin(),
-      styles({ mode: "emit" }),
+      //styles({ mode: "emit" }),
       themePlugin(),
       /*
       {

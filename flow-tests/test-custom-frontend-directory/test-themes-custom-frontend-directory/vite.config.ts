@@ -18,7 +18,7 @@ const customConfig: UserConfigFn = (env) => ({
   plugins: [
       {
           name: "marco:testme",
-          enfore: 'post',
+          enforce: 'post',
           transform(raw, id, options) {
             const [bareId, query] = id.split('?');
             if (!bareId.endsWith(".css")) {
