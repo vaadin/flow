@@ -17,6 +17,8 @@ import { injectManifest } from 'workbox-build';
 
 import * as rollup from 'rollup';
 import brotli from 'rollup-plugin-brotli';
+import styles from "rollup-plugin-styles";
+import litcss from 'rollup-plugin-lit-css';
 import replace from '@rollup/plugin-replace';
 import checker from 'vite-plugin-checker';
 
@@ -329,34 +331,22 @@ function themePlugin(): PluginOption {
     },
     async transform(raw, id, options) {
         const [bareId, query] = id.split('?');
-        console.log("============= transforming " + id + "  themeFolder " +
-        path.resolve(frontendFolder, settings.themeFolder));
+        //////console.log("============= transforming " + id + "  themeFolder " + themeFolder);
+          if (id.startsWith(themeFolder)) {
+            //////console.log("========================== This is a theme file " + id);
+          }
 
-      if (id.startsWith(settings.themeFolder)) {
-        console.log("========================== This is a theme file " + id);
-      }
-
-        if (!bareId.endsWith(".css")) {
+        if (!bareId.startsWith(themeFolder) || !bareId.endsWith(".css")) {
             return;
         }
-        let themeFolder = path.dirname(bareId);
-        // Recurse up until we find the themes folder or don't have 'themes' on the path.
-        while (themeFolder.indexOf('themes') > 1 && path.basename(path.resolve(themeFolder, '..')) !== 'themes') {
-            themeFolder = path.resolve(themeFolder, '..');
-        }
-        // If we have found no themes folder return without doing anything.
-        if (path.basename(path.resolve(themeFolder, '..')) !== 'themes') {
-            return;
-        }
-        //const code = readFileSync(bareId, { encoding: 'utf8' });
         const processed = rewriteThemeCssUrls(raw, bareId, { logger: console });
 
-        console.log("========================== Original content " + raw);
-        console.log("========================== Transformed content " + processed);
+        //////console.log("========================== Original content " + raw);
+        //////console.log("========================== Transformed content " + processed);
         return processed;
     },
     async resolveId(id) {
-        console.log("========================== resolveId " + id);
+        //////console.log("========================== resolveId " + id);
       if (!id.startsWith(settings.themeFolder)) {
         return;
       }
@@ -375,29 +365,17 @@ function themeLoaderPlugin(): PluginOption {
     enforce: 'post',
     transform(raw, id, options) {
         const [bareId, query] = id.split('?');
-        console.log("============= transforming " + id + "  themeFolder " +
-        path.resolve(frontendFolder, settings.themeFolder));
+        console.log("============= transforming " + id + "  themeFolder " + themeFolder);
+          if (id.startsWith(themeFolder)) {
+            console.log("========================== This is a theme file " + id);
+          }
 
-      if (id.startsWith(settings.themeFolder)) {
-        console.log("========================== This is a theme file " + id);
-      }
+        if (!bareId.startsWith(themeFolder) || !bareId.endsWith(".css")) {
+            return;
+        }
+        const processed = rewriteThemeCssUrls(raw, bareId, { logger: console });
 
-        if (!bareId.endsWith(".css")) {
-            return null;
-        }
-        let themeFolder = path.dirname(bareId);
-        // Recurse up until we find the themes folder or don't have 'themes' on the path.
-        while (themeFolder.indexOf('themes') > 1 && path.basename(path.resolve(themeFolder, '..')) !== 'themes') {
-            themeFolder = path.resolve(themeFolder, '..');
-        }
-        // If we have found no themes folder return without doing anything.
-        if (path.basename(path.resolve(themeFolder, '..')) !== 'themes') {
-            return null;
-        }
-        const code = readFileSync(bareId, { encoding: 'utf8' });
-        const processed = rewriteThemeCssUrls(code, bareId, { logger: console });
-
-        console.log("========================== Original content " + code);
+        console.log("========================== Original content " + raw);
         console.log("========================== Transformed content " + processed);
         return processed;
     }
@@ -427,9 +405,11 @@ const allowedFrontendFolders = [
   addonFrontendFolder,
   staticOutputFolder,
   path.resolve(addonFrontendFolder, '..', 'frontend'), // Contains only generated-flow-imports
-  //path.resolve(frontendFolder, '../node_modules')
+  path.resolve(frontendFolder, '../node_modules'),
   path.resolve(__dirname, 'node_modules')
 ];
+
+console.log(allowedFrontendFolders)
 
 export const vaadinConfig: UserConfigFn = (env) => {
   const devMode = env.mode === 'development';
@@ -503,7 +483,14 @@ export const vaadinConfig: UserConfigFn = (env) => {
       settings.offlineEnabled && buildSWPlugin(),
       settings.offlineEnabled && injectManifestToSWPlugin(),
       !devMode && statsExtracterPlugin(),
+      styles({ mode: "emit" }),
       themePlugin(),
+      /*
+      {
+        ...litcss(),
+        enforce: 'post'
+      },
+      */
       {
         name: 'vaadin:force-remove-spa-middleware',
         transformIndexHtml: {

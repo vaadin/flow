@@ -46,6 +46,7 @@
                 <directory>${project.basedir}/src/main/vite-resources</directory>
             </resource>
         </resources>
+        <testSourceDirectory>${project.basedir}/src/test-vite/java</testSourceDirectory>
         <plugins>
             <plugin>
                 <groupId>org.eclipse.jetty</groupId>
@@ -58,6 +59,7 @@
                     <frontendDirectory>${project.basedir}/side-src/main/frontend</frontendDirectory>
                     <productionMode>false</productionMode>
                 </configuration>
+                <!--
                 <executions>
                     <execution>
                         <id>ensure-fronted-deleted</id>
@@ -67,7 +69,9 @@
                         <phase>initialize</phase>
                     </execution>
                 </executions>
+                -->
             </plugin>
+            <!--
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-clean-plugin</artifactId>
@@ -85,6 +89,7 @@
                     </execution>
                 </executions>
             </plugin>
+            -->
         </plugins>
     </build>
 </project>
