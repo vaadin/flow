@@ -19,6 +19,7 @@ import * as rollup from 'rollup';
 import brotli from 'rollup-plugin-brotli';
 import styles from "rollup-plugin-styles";
 import litcss from 'rollup-plugin-lit-css';
+import postcssLit from 'rollup-plugin-postcss-lit';
 import replace from '@rollup/plugin-replace';
 import checker from 'vite-plugin-checker';
 
@@ -464,6 +465,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
             ? { webcomponenthtml: path.resolve(frontendFolder, 'web-component.html') }
             : {}
         }
+        //,external: /^lit/
       }
     },
     optimizeDeps: {
@@ -491,7 +493,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
       themePlugin(),
       /*
       {
-        ...litcss(),
+        ...lit({exclude: ["/** /index.html*"]}),
         enforce: 'post'
       },
       */
