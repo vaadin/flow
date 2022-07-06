@@ -30,6 +30,7 @@ import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.theme.ThemeDefinition;
 
 import static com.vaadin.flow.server.Constants.APPLICATION_THEME_ROOT;
+import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
 import static com.vaadin.flow.server.frontend.FrontendUtils.THEME_IMPORTS_D_TS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.THEME_IMPORTS_NAME;
 
@@ -55,6 +56,12 @@ public class TaskUpdateThemeImport implements FallibleCommand {
     private final ThemeDefinition theme;
     private final File frontendDirectory;
     private final File npmFolder;
+
+    TaskUpdateThemeImport(File npmFolder, ThemeDefinition theme,
+            File frontendDirectory) {
+        this(npmFolder, theme, frontendDirectory,
+                new File(frontendDirectory, GENERATED));
+    }
 
     TaskUpdateThemeImport(File npmFolder, ThemeDefinition theme,
             File frontendDirectory, File frontendGeneratedFolder) {

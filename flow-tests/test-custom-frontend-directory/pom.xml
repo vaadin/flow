@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>flow-tests</artifactId>
+        <groupId>com.vaadin</groupId>
+        <version>23.2-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>test-custom-frontend-directory</artifactId>
+    <name>Test Flow with custom frontend directory</name>
+    <packaging>pom</packaging>
+
+    <profiles>
+        <profile>
+            <id>run-tests</id>
+            <activation>
+                <property>
+                    <name>!skipTests</name>
+                </property>
+            </activation>
+            <modules>
+                <module>test-themes-custom-frontend-directory/pom.xml</module>
+                <module>test-themes-custom-frontend-directory/pom-generatedTsDir.xml</module>
+            </modules>
+        </profile>
+    </profiles>
+</project>

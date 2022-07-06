@@ -106,6 +106,41 @@ public class TaskUpdateWebpack implements FallibleCommand {
         this.buildFolder = buildFolder;
     }
 
+    /**
+     * Create an instance of the updater given all configurable parameters,
+     * except for {@code frontendGeneratedFolder} that defaults to
+     * {@code ${frontendDirectory}/generated }
+     *
+     * @param frontendDirectory
+     *            the directory used for {@code Frontend} alias
+     * @param webpackConfigFolder
+     *            folder with the `webpack.config.js` file.
+     * @param webpackOutputDirectory
+     *            the directory to set for webpack to output its build results.
+     * @param resourceOutputDirectory
+     *            the directory for generated non-served resources.
+     * @param generatedFlowImports
+     *            name of the JS file to update with the Flow project imports
+     * @param useV14Bootstrapping
+     *            whether the application running with deprecated V14
+     *            bootstrapping
+     * @param flowResourcesFolder
+     *            relative path to `flow-frontend` package
+     * @param buildFolder
+     *            build target folder
+     */
+    @SuppressWarnings("squid:S00107")
+    TaskUpdateWebpack(File frontendDirectory, File webpackConfigFolder,
+            File webpackOutputDirectory, File resourceOutputDirectory,
+            File generatedFlowImports, boolean useV14Bootstrapping,
+            File flowResourcesFolder, PwaConfiguration pwaConfiguration,
+            String buildFolder) {
+        this(frontendDirectory, webpackConfigFolder, webpackOutputDirectory,
+                resourceOutputDirectory, generatedFlowImports,
+                useV14Bootstrapping, flowResourcesFolder, pwaConfiguration,
+                new File(frontendDirectory, GENERATED), buildFolder);
+    }
+
     @Override
     public void execute() {
         try {

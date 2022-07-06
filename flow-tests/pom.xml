@@ -322,6 +322,7 @@
                 <module>test-application-theme</module>
                 <module>test-theme-no-polymer</module>
                 <module>test-frontend</module>
+                <module>test-custom-frontend-directory</module>
 
                 <module>vaadin-spring-tests</module>
             </modules>
