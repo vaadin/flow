@@ -15,10 +15,12 @@
  */
 package com.vaadin.flow.uitest.ui.theme;
 
+import java.io.File;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -45,6 +47,7 @@ public class ThemeIT extends ChromeBrowserTest {
     @Test
     public void typeScriptCssImport_stylesAreApplied() {
         getDriver().get(getRootURL() + "/path/hello");
+        waitForDevServer();
 
         checkLogsForErrors();
 
@@ -275,6 +278,32 @@ public class ThemeIT extends ChromeBrowserTest {
                 .contains("https://fonts.googleapis.com/css?family=Itim"));
         Assert.assertFalse("Found import that webpack should have resolved",
                 linkUrls.contains("sub-css/sub.css"));
+    }
+
+    @Test
+    public void customFrontendDirectory_generatedFilesNotInDefaultFrontendFolder() {
+        open();
+
+        File baseDir = new File(System.getProperty("user.dir", "."));
+        File expectedGeneratedFolder = new File(baseDir,
+                "side-src/main/frontend/generated");
+        File defaultGeneratedFolder = new File(baseDir, "frontend/generated");
+
+        String[] generatedFiles = { "theme.d.ts", "theme.js",
+                "theme-app-theme.generated.js",
+                "theme-parent-theme.generated.js", "vaadin.ts" };
+        for (String generatedFile : generatedFiles) {
+            Assert.assertTrue(
+                    "Expecting " + generatedFile + " to be present in "
+                            + expectedGeneratedFolder.getPath()
+                            + ", but was not",
+                    new File(expectedGeneratedFolder, generatedFile).exists());
+            Assert.assertFalse(
+                    "Expecting " + generatedFile + " not to be present in "
+                            + defaultGeneratedFolder.getPath()
+                            + ", but was not",
+                    new File(defaultGeneratedFolder, generatedFile).exists());
+        }
     }
 
     @Override

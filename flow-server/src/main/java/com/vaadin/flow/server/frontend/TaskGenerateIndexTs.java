@@ -86,13 +86,14 @@ public class TaskGenerateIndexTs extends AbstractTaskClientGenerator {
                 FrontendUtils.getUnixRelativePath(buildDirectory.toPath(),
                         generatedImports.toPath()));
 
-        String generatedToBuildRelativePath = FrontendUtils.getUnixRelativePath(
-                getGeneratedFile().getParentFile().toPath(),
-                buildDirectory.toPath());
+        String generatedDirRelativePathToBuildDir = FrontendUtils
+                .getUnixRelativePath(
+                        getGeneratedFile().getParentFile().toPath(),
+                        buildDirectory.toPath());
 
         relativizedImport = relativizedImport
                 // replace `./` with `../../target/` to make it work
-                .replaceFirst("^./", generatedToBuildRelativePath + "/")
+                .replaceFirst("^./", generatedDirRelativePathToBuildDir + "/")
                 // remove extension
                 .replaceFirst("\\.(ts|js)$", "");
 
