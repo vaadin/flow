@@ -122,9 +122,6 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
             }
             serverAvailabilityChecked = true;
         }
-
-        getDesiredCapabilities().setCapability("name", String.format("%s.%s",
-                getClass().getCanonicalName(), testName.getMethodName()));
     }
 
     protected void open() {
@@ -296,7 +293,6 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
                 caps.setCapability("resolution", "1680x1050");
             }
 
-            caps.setCapability("project", "Flow");
             capabilities.add(caps);
         }
         return capabilities;
