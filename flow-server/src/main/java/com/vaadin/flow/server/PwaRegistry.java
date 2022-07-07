@@ -258,7 +258,11 @@ public class PwaRegistry implements Serializable {
         if (pwaConfiguration.isOfflinePathEnabled()) {
             filesToCache
                     .add(offlinePageCache(pwaConfiguration.getOfflinePath()));
+        } else {
+            // No offlinePath configured, cache the root (#13987):
+            filesToCache.add(offlinePageCache("."));
         }
+
         // Offline stub to be shown within an <iframe> in the app shell
         filesToCache
                 .add(offlinePageCache(PwaHandler.DEFAULT_OFFLINE_STUB_PATH));
