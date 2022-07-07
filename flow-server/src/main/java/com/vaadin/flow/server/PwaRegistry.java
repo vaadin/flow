@@ -263,6 +263,9 @@ public class PwaRegistry implements Serializable {
         filesToCache
                 .add(offlinePageCache(PwaHandler.DEFAULT_OFFLINE_STUB_PATH));
 
+        // Always cache the index.html (#13987):
+        filesToCache.add(offlinePageCache("index.html"));
+
         // Add manifest to precache
         filesToCache.add(manifestCache());
 
