@@ -1,0 +1,75 @@
+@import url('https://fonts.googleapis.com/css?family=Itim');
+@import 'sub-css/sub.css';
+
+@font-face {
+    font-family: "Ostrich";
+    src: url("./font/ostrich-sans-regular.ttf") format("TrueType");
+}
+
+@font-face {
+    font-family: 'IBM Plex Mono';
+    font-style: normal;
+    font-weight: 400;
+    src: url("./font/IBMPlexMono-Regular.otf") format("opentype");
+
+}
+
+html, :host {
+    --lumo-primary-text-color: #008000;
+    color: rgba(0, 0, 0, 1); /* black */
+}
+
+
+
+/* Lumo has
+html {
+    background-color: var(--lumo-base-color);
+}
+This extact same rule with a different value should override that
+*/
+html {
+    background-color: blue;
+}
+
+body {
+    background-image: url("./img/bg.jpg");
+    font-family: "Ostrich";
+}
+
+#butterfly {
+    /* This shouldn't be translated */
+    background-image: url("./test/path/monarch-butterfly.jpg");
+    width: 300px;
+    height: 274px;
+    display: block;
+}
+
+#octopuss {
+    background-image: url('/octopuss.jpg');
+    width: 224px;
+    height: 224px;
+    display: block;
+}
+
+#font-awesome {
+    margin: 5px;
+    padding: 5px;
+}
+
+#dice {
+    width: 300px;
+    height: 300px;
+    display: block;
+}
+
+#icon-snowflake {
+    background-image: url('./fortawesome/icons/snowflake.svg');
+    height: 1em;
+    width: 1em;
+}
+
+p.global {
+    color: rgba(255, 255, 0, 1); /* yellow */
+    font-size: 20px;
+    margin: 2px;
+}

@@ -1,0 +1,5 @@
+/* This file is for testing CSS loading by `page.addStyleSheet` */
+
+p.page-add-stylesheet {
+    color: rgba(0, 255, 0, 1); /* green */
+}
