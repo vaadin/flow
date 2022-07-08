@@ -115,7 +115,7 @@
         <flow.dev.dependencies.file>devDependencies.json</flow.dev.dependencies.file>
 
         <!-- Used in OSGi manifests -->
-        <jsoup.version>1.15.1</jsoup.version>
+        <jsoup.version>1.15.2</jsoup.version>
         <!-- Note that this should be kept in sync with the class Constants -->
         <atmosphere.runtime.version>2.7.3.slf4jvaadin4</atmosphere.runtime.version>
         <atmosphere.client.version>3.1.3</atmosphere.client.version>
