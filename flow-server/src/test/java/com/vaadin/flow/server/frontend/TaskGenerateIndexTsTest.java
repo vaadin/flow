@@ -127,6 +127,14 @@ public class TaskGenerateIndexTsTest {
         String content = taskGenerateIndexTs.getFileContent();
         Assert.assertTrue(content.contains(
                 "import('../../target/frontend/flow-generated-imports'"));
+
+        // custom frontend folder
+        taskGenerateIndexTs = new TaskGenerateIndexTs(
+                temporaryFolder.newFolder("src", "main", FRONTEND),
+                generatedImports, outputFolder);
+        content = taskGenerateIndexTs.getFileContent();
+        Assert.assertTrue(content.contains(
+                "import('../../../../target/frontend/flow-generated-imports'"));
     }
 
     @Test

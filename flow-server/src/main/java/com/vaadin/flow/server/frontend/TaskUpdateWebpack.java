@@ -81,8 +81,6 @@ public class TaskUpdateWebpack implements FallibleCommand {
      *            bootstrapping
      * @param flowResourcesFolder
      *            relative path to `flow-frontend` package
-     * @param frontendGeneratedFolder
-     *            the folder with frontend auto-generated files
      * @param buildFolder
      *            build target folder
      */
@@ -91,7 +89,7 @@ public class TaskUpdateWebpack implements FallibleCommand {
             File webpackOutputDirectory, File resourceOutputDirectory,
             File generatedFlowImports, boolean useV14Bootstrapping,
             File flowResourcesFolder, PwaConfiguration pwaConfiguration,
-            File frontendGeneratedFolder, String buildFolder) {
+            String buildFolder) {
         this.frontendDirectory = frontendDirectory.toPath();
         this.webpackOutputPath = webpackOutputDirectory.toPath();
         this.resourceOutputPath = resourceOutputDirectory.toPath();
@@ -102,7 +100,8 @@ public class TaskUpdateWebpack implements FallibleCommand {
         this.pwaConfiguration = pwaConfiguration;
         this.resourceFolder = new File(webpackOutputDirectory,
                 VAADIN_STATIC_FILES_PATH).toPath();
-        this.frontendGeneratedFolder = frontendGeneratedFolder.toPath();
+        this.frontendGeneratedFolder = this.frontendDirectory
+                .resolve(GENERATED);
         this.buildFolder = buildFolder;
     }
 
