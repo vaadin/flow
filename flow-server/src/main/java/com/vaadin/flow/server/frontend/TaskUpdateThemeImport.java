@@ -59,15 +59,10 @@ public class TaskUpdateThemeImport implements FallibleCommand {
 
     TaskUpdateThemeImport(File npmFolder, ThemeDefinition theme,
             File frontendDirectory) {
-        this(npmFolder, theme, frontendDirectory,
-                new File(frontendDirectory, GENERATED));
-    }
-
-    TaskUpdateThemeImport(File npmFolder, ThemeDefinition theme,
-            File frontendDirectory, File frontendGeneratedFolder) {
         this.theme = theme;
         this.frontendDirectory = frontendDirectory;
         this.npmFolder = npmFolder;
+        File frontendGeneratedFolder = new File(frontendDirectory, GENERATED);
         themeImportFile = new File(frontendGeneratedFolder, THEME_IMPORTS_NAME);
         themeImportFileDefinition = new File(frontendGeneratedFolder,
                 THEME_IMPORTS_D_TS_NAME);
