@@ -20,15 +20,15 @@ import java.util.HashMap;
 import java.util.Optional;
 
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.devtools.Command;
 import org.openqa.selenium.devtools.Connection;
 import org.openqa.selenium.devtools.DevTools;
-import org.openqa.selenium.devtools.Command;
 import org.openqa.selenium.devtools.HasDevTools;
 import org.openqa.selenium.devtools.SeleniumCdpConnection;
 import org.openqa.selenium.devtools.idealized.Domains;
 import org.openqa.selenium.devtools.idealized.target.model.SessionID;
 import org.openqa.selenium.devtools.idealized.target.model.TargetID;
-import org.openqa.selenium.devtools.v100.network.Network;
+import org.openqa.selenium.devtools.v103.network.Network;
 import org.openqa.selenium.remote.Augmenter;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
