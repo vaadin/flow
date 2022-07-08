@@ -258,7 +258,7 @@ public class PwaRegistry implements Serializable {
         if (pwaConfiguration.isOfflinePathEnabled()) {
             filesToCache
                     .add(offlinePageCache(pwaConfiguration.getOfflinePath()));
-        } else {
+        } else if (isDevelopmentMode()) {
             // No offlinePath configured, cache the root (#13987):
             filesToCache.add(offlinePageCache("."));
         }
@@ -614,4 +614,10 @@ public class PwaRegistry implements Serializable {
         return icons;
     }
 
+    private boolean isDevelopmentMode() {
+        VaadinContext context = VaadinService.getCurrent().getContext();
+        ApplicationConfiguration configuration = ApplicationConfiguration
+                .get(context);
+        return configuration != null && !configuration.isProductionMode();
+    }
 }

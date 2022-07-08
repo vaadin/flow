@@ -26,7 +26,11 @@ import java.util.stream.Collectors;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
+import org.slf4j.LoggerFactory;
 
 @PWA(name = "foo", shortName = "bar")
 public class PwaRegistryTest {
@@ -39,9 +43,8 @@ public class PwaRegistryTest {
 
     @BeforeClass
     public static void initPwaWithCustomIconPath() throws IOException {
-        ServletContext context = Mockito.mock(ServletContext.class);
-        PwaRegistry registry = new PwaRegistry(
-                PwaWithCustomIconPath.class.getAnnotation(PWA.class), context);
+        PwaRegistry registry = preparePwaRegistry(
+                PwaWithCustomIconPath.class.getAnnotation(PWA.class));
         splashIconsForAppleDevices = registry.getIcons().stream().filter(
                 icon -> "apple-touch-startup-image".equals(icon.getRel()))
                 .collect(Collectors.toList());
@@ -50,15 +53,14 @@ public class PwaRegistryTest {
     @Test
     public void pwaIconIsGeneratedBasedOnClasspathIcon_servletContextHasNoResources()
             throws IOException {
-        ServletContext context = Mockito.mock(ServletContext.class);
         // PWA annotation has default value for "iconPath" but servlet context
         // has no resource for that path, in that case the ClassPath URL will be
         // checked which is "META-INF/resources/icons/icon.png" (this path
         // available is in the test resources folder). The icon in this path
         // differs from the default icon and set of icons will be generated
         // based on it
-        PwaRegistry registry = new PwaRegistry(
-                PwaRegistryTest.class.getAnnotation(PWA.class), context);
+        PwaRegistry registry = preparePwaRegistry(
+                PwaRegistryTest.class.getAnnotation(PWA.class));
         List<PwaIcon> icons = registry.getIcons();
         // This icon has width 32 and it's generated based on a custom icon (see
         // above)
@@ -68,6 +70,31 @@ public class PwaRegistryTest {
         pwaIcon.write(stream);
         // the default image has 47 on the position 36
         Assert.assertEquals(26, stream.toByteArray()[36]);
+    }
+
+    private static PwaRegistry preparePwaRegistry(PWA pwa) throws IOException {
+        try (MockedStatic<VaadinService> vaadinService = Mockito
+                .mockStatic(VaadinService.class);
+                MockedStatic<ApplicationConfiguration> configuration = Mockito
+                        .mockStatic(ApplicationConfiguration.class)) {
+
+            VaadinService vaadinServiceMocked = Mockito
+                    .mock(VaadinService.class);
+            VaadinContext vaadinContext = Mockito.mock(VaadinContext.class);
+            ApplicationConfiguration applicationConfiguration = Mockito
+                    .mock(ApplicationConfiguration.class);
+
+            vaadinService.when(VaadinService::getCurrent)
+                    .thenReturn(vaadinServiceMocked);
+            Mockito.when(vaadinServiceMocked.getContext())
+                    .thenReturn(vaadinContext);
+            configuration
+                    .when(() -> ApplicationConfiguration.get(Mockito.any()))
+                    .thenReturn(applicationConfiguration);
+
+            ServletContext context = Mockito.mock(ServletContext.class);
+            return new PwaRegistry(pwa, context);
+        }
     }
 
     @Test
