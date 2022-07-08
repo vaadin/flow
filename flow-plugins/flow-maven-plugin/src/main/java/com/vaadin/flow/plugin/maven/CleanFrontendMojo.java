@@ -78,6 +78,22 @@ public class CleanFrontendMojo extends FlowModeAbstractMojo {
             }
         }
 
+        // cleanup hard-coded frontend generated folder
+        // usually it is the same as generatedTsFolder, but if a custom fronted
+        // folder is set all frontend generated files goes under
+        // ${frontendDirectory}/generated
+        File frontendGeneratedFolder = new File(frontendDirectory(),
+                FrontendUtils.GENERATED);
+        if (frontendGeneratedFolder.exists()) {
+            try {
+                FileUtils.deleteDirectory(frontendGeneratedFolder);
+            } catch (IOException exception) {
+                throw new MojoFailureException("Failed to remove folder'"
+                        + frontendGeneratedFolder.getAbsolutePath() + "'",
+                        exception);
+            }
+        }
+
         try {
             // Clean up package json framework managed versions.
             File packageJsonFile = new File(npmFolder(), "package.json");
