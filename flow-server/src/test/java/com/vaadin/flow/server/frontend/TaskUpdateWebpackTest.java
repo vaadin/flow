@@ -40,9 +40,9 @@ import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.testutil.FrontendStubs;
 
 import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC;
 import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC_JS;
@@ -173,10 +173,9 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
         TaskUpdateWebpack newUpdater = new TaskUpdateWebpack(frontendFolder,
                 baseDir, new File(baseDir, "baz"), new File(baseDir, "foo"),
                 new File(baseDir, "bar"), false,
-                new File(baseDir,
-                        Paths.get(TARGET, DEFAULT_FLOW_RESOURCES_FOLDER)
-                                .toString()),
-                pwaConfiguration, frontendGeneratedFolder, TARGET);
+                new File(baseDir, Paths
+                        .get(TARGET, DEFAULT_FLOW_RESOURCES_FOLDER).toString()),
+                pwaConfiguration, TARGET);
 
         newUpdater.execute();
 
@@ -348,7 +347,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
                 new File(baseDir,
                         Paths.get(Constants.TARGET,
                                 DEFAULT_FLOW_RESOURCES_FOLDER).toString()),
-                pwaConfiguration, frontendGeneratedFolder, TARGET);
+                pwaConfiguration, TARGET);
     }
 
     private void assertWebpackGeneratedConfigContent(String entryPoint,

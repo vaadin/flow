@@ -22,6 +22,8 @@ import org.gradle.api.tasks.TaskAction
  * Cleans everything Vaadin-related. Useful if npm fails to run after Vaadin
  * version upgrade. Deletes:
  *
+ * * `${frontendDirectory}/generated`
+ * * `${generatedTsFolder}`
  * * `node_modules`
  * * `package.json`
  * * `package-lock.json`
@@ -42,15 +44,20 @@ import org.gradle.api.tasks.TaskAction
 public open class VaadinCleanTask : DefaultTask() {
     init {
         group = "Vaadin"
-        description = "Cleans the project completely and removes node_modules, webpack.generated.js, " +
-                      "tsconfig.json, types.d.ts, pnpm-lock.yaml, pnpmfile.js and package-lock.json"
+        description = "Cleans the project completely and removes 'generated' folders, node_modules, webpack.generated.js, " +
+                "tsconfig.json, types.d.ts, pnpm-lock.yaml, pnpmfile.js and package-lock.json"
 
         dependsOn("clean")
     }
 
     @TaskAction
     public fun clean() {
-        project.delete("${project.projectDir}/node_modules",
+        val extension: VaadinFlowPluginExtension =
+                VaadinFlowPluginExtension.get(project)
+        project.delete(
+                extension.generatedTsFolder.absolutePath,
+                extension.frontendDirectory.resolve("generated").absolutePath,
+                "${project.projectDir}/node_modules",
                 "${project.projectDir}/package-lock.json",
                 "${project.projectDir}/webpack.generated.js",
                 "${project.projectDir}/pnpm-lock.yaml", // used by Vaadin 14.2+ pnpm
