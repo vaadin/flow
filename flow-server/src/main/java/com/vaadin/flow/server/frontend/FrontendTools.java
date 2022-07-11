@@ -66,11 +66,11 @@ public class FrontendTools {
      * the installed version is older than {@link #SUPPORTED_NODE_VERSION}, i.e.
      * {@value #SUPPORTED_NODE_MAJOR_VERSION}.{@value #SUPPORTED_NODE_MINOR_VERSION}.
      */
-    public static final String DEFAULT_NODE_VERSION = "v16.15.0";
+    public static final String DEFAULT_NODE_VERSION = "v16.16.0";
     /**
      * This is the version shipped with the default Node version.
      */
-    public static final String DEFAULT_NPM_VERSION = "8.5.5";
+    public static final String DEFAULT_NPM_VERSION = "8.11.0";
 
     public static final String DEFAULT_PNPM_VERSION = "5.18.10";
 
