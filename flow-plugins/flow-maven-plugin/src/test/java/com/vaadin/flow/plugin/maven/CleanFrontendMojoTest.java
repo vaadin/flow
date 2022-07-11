@@ -136,6 +136,30 @@ public class CleanFrontendMojoTest {
     }
 
     @Test
+    public void should_removeGeneratedFolderForCustomFrontendFolder()
+            throws MojoFailureException, IOException, IllegalAccessException {
+
+        File customFrontendFolder = new File(projectBase, "src/main/frontend");
+        File customFrontendGenerated = new File(customFrontendFolder,
+                "generated");
+        Assert.assertTrue("Failed to create 'src/main/frontend/generated'",
+                customFrontendGenerated.mkdirs());
+        FileUtils.fileWrite(new File(customFrontendFolder, "my_theme.js"),
+                "fakeThemeFile");
+
+        ReflectionUtils.setVariableValueInObject(mojo, "frontendDirectory",
+                customFrontendFolder);
+
+        mojo.execute();
+        Assert.assertTrue(
+                "Custom frontend folder 'src/main/frontend' has been removed.",
+                customFrontendFolder.exists());
+        Assert.assertFalse(
+                "Generated frontend folder 'src/main/frontend/generated' was not removed.",
+                customFrontendGenerated.exists());
+    }
+
+    @Test
     public void should_removeNpmPackageLockFile()
             throws MojoFailureException, IOException {
         final File packageLock = new File(projectBase, "package-lock.json");
