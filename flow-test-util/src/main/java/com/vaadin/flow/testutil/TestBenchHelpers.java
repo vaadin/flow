@@ -261,7 +261,7 @@ public class TestBenchHelpers extends ParallelTest {
      * @return current scroll position on x axis.
      */
     protected int getScrollX() {
-        return ((Long) executeScript("return window.pageXOffset")).intValue();
+        return ((Number) executeScript("return window.pageXOffset")).intValue();
     }
 
     /**
@@ -270,7 +270,7 @@ public class TestBenchHelpers extends ParallelTest {
      * @return current scroll position on y axis.
      */
     protected int getScrollY() {
-        return ((Long) executeScript("return window.pageYOffset")).intValue();
+        return ((Number) executeScript("return window.pageYOffset")).intValue();
     }
 
     /**

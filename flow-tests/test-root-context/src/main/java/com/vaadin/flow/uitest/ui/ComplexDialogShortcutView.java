@@ -31,8 +31,6 @@ public class ComplexDialogShortcutView extends DialogShortcutView {
         // transport the dialog contents to overlay element
         dialog.getElement().executeJs(
                 overlayFetchJS + ".appendChild(this.firstElementChild);");
-        dialog.content.getStyle().set("position", "fixed").set("inset",
-                "calc(50% + " + (dialog.index * 100) + "px)");
     }
 
     @Override
