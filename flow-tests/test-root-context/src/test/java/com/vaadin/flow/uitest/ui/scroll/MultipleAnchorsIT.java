@@ -28,7 +28,7 @@ public class MultipleAnchorsIT extends AbstractScrollIT {
 
     @Test
     public void numerousDifferentAnchorsShouldWorkAndHistoryShouldBePreserved() {
-        testBench().resizeViewPortTo(700, 800);
+        testBench().resizeViewPortTo(700, 600);
         open();
 
         final Long initialHistoryLength = getBrowserHistoryLength();
