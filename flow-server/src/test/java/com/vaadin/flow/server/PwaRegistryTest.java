@@ -16,7 +16,6 @@
 package com.vaadin.flow.server;
 
 import javax.servlet.ServletContext;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
@@ -29,8 +28,8 @@ import org.junit.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
-import org.slf4j.LoggerFactory;
 
 @PWA(name = "foo", shortName = "bar")
 public class PwaRegistryTest {
@@ -76,7 +75,9 @@ public class PwaRegistryTest {
         try (MockedStatic<VaadinService> vaadinService = Mockito
                 .mockStatic(VaadinService.class);
                 MockedStatic<ApplicationConfiguration> configuration = Mockito
-                        .mockStatic(ApplicationConfiguration.class)) {
+                        .mockStatic(ApplicationConfiguration.class);
+                MockedStatic<FeatureFlags> featureFlags = Mockito
+                        .mockStatic(FeatureFlags.class)) {
 
             VaadinService vaadinServiceMocked = Mockito
                     .mock(VaadinService.class);
@@ -91,6 +92,11 @@ public class PwaRegistryTest {
             configuration
                     .when(() -> ApplicationConfiguration.get(Mockito.any()))
                     .thenReturn(applicationConfiguration);
+
+            FeatureFlags flags = Mockito.mock(FeatureFlags.class);
+            Mockito.when(flags.isEnabled(FeatureFlags.VITE)).thenReturn(true);
+            featureFlags.when(() -> FeatureFlags.get(Mockito.any()))
+                    .thenReturn(flags);
 
             ServletContext context = Mockito.mock(ServletContext.class);
             return new PwaRegistry(pwa, context);
