@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const glob = require('glob');
 
 // Collect groups [url(] ['|"]optional './|../', file part and end of url
 const urlMatcher = /(url\(\s*)(\'|\")?(\.\/|\.\.\/)(\S*)(\2\s*\))/g;
@@ -9,13 +10,11 @@ function assetsContains(fileUrl, themeFolder, logger) {
   const themeProperties = getThemeProperties(themeFolder);
   if (!themeProperties) {
     logger.debug('No theme properties found.');
-    logger.log('No theme properties found.');
     return false;
   }
   const assets = themeProperties['assets'];
   if (!assets) {
     logger.debug('No defined assets in theme properties');
-    logger.log('No defined assets in theme properties');
     return false;
   }
   // Go through each asset module
@@ -24,11 +23,11 @@ function assetsContains(fileUrl, themeFolder, logger) {
     logger.log('asset ' + module);
     // Go through each copy rule
     for (let copyRule of Object.keys(copyRules)) {
-        logger.log('rule ' + copyRules[copyRule] + " ---> file " + fileUrl);
+      logger.log('rule ' + copyRules[copyRule] + " ---> file " + fileUrl);
       // if file starts with copyRule target check if file with path after copy target can be found
       if (fileUrl.startsWith(copyRules[copyRule])) {
         const targetFile = fileUrl.replace(copyRules[copyRule], '');
-        const files = require('glob').sync(path.resolve('node_modules/', module, copyRule), { nodir: true });
+        const files = glob.sync(path.resolve('node_modules/', module, copyRule), { nodir: true });
 
         logger.log('targetFile ' + targetFile);
         for (let file of files) {
