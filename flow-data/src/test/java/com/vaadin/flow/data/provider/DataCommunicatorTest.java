@@ -1587,44 +1587,6 @@ public class DataCommunicatorTest {
                 Range.withLength(0, 50), lastSet);
     }
 
-    // Simulates a flush request enqueued during a page reload with
-    // @PreserveOnRefresh
-    // see https://github.com/vaadin/flow/issues/14067
-    @Test
-    public void reattach_differentUI_requestFlushUpdatedDataExecuted() {
-        List<Item> items = new ArrayList<>();
-        for (int i = 0; i < 2; i++) {
-            items.add(new Item(i));
-        }
-        // Abusing the fact that ListDataProvider doesn't copy the backing store
-        ListDataProvider<Item> dataProvider = new ListDataProvider<>(items);
-        dataCommunicator.setDataProvider(dataProvider, null);
-
-        dataCommunicator.setRequestedRange(0, 50);
-        fakeClientCommunication();
-
-        Item originalItem = items.get(0);
-        String key = dataCommunicator.getKeyMapper().key(originalItem);
-
-        Assert.assertSame(originalItem,
-                dataCommunicator.getKeyMapper().get(key));
-
-        Item updatedItem = new Item(originalItem.id, "Updated");
-        items.set(0, updatedItem);
-        dataCommunicator.refresh(updatedItem);
-
-        MockUI newUI = new MockUI();
-        // simulates preserve on refresh
-        // DataCommunicator has a flushRequest pending
-        // that should be rescheduled on the new state tree
-        newUI.getInternals().moveElementsFrom(ui);
-        ui = newUI;
-        fakeClientCommunication();
-
-        Assert.assertSame(updatedItem,
-                dataCommunicator.getKeyMapper().get(key));
-    }
-
     @Tag("test-component")
     private static class TestComponent extends Component {
 
