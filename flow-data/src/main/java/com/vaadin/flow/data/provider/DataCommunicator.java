@@ -45,6 +45,7 @@ import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.NodeOwner;
+import com.vaadin.flow.internal.NullOwner;
 import com.vaadin.flow.internal.Range;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
@@ -115,9 +116,8 @@ public class DataCommunicator<T> implements Serializable {
 
     private Registration dataProviderUpdateRegistration;
     private HashSet<T> updatedData = new HashSet<>();
-
-    private SerializableConsumer<ExecutionContext> flushRequest;
-    private SerializableConsumer<ExecutionContext> flushUpdatedDataRequest;
+    private FlushRequest flushRequest;
+    private FlushRequest flushUpdatedDataRequest;
 
     private CallbackDataProvider.CountCallback<T, ?> countCallback;
     private int itemCountEstimate = -1;
@@ -1093,28 +1093,27 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     private void requestFlush(boolean forced) {
-        if ((flushRequest == null || forced) && fetchEnabled) {
-            flushRequest = context -> {
+        if ((flushRequest == null || !flushRequest.canExecute(stateNode)
+                || forced) && fetchEnabled) {
+            flushRequest = FlushRequest.register(stateNode, context -> {
                 if (!context.isClientSideInitialized()) {
                     reset();
                     arrayUpdater.initialize();
                 }
                 flush();
                 flushRequest = null;
-            };
-            stateNode.runWhenAttached(ui -> ui.getInternals().getStateTree()
-                    .beforeClientResponse(stateNode, flushRequest));
+            });
         }
     }
 
     private void requestFlushUpdatedData() {
-        if (flushUpdatedDataRequest == null) {
-            flushUpdatedDataRequest = context -> {
-                flushUpdatedData();
-                flushUpdatedDataRequest = null;
-            };
-            stateNode.runWhenAttached(ui -> ui.getInternals().getStateTree()
-                    .beforeClientResponse(stateNode, flushUpdatedDataRequest));
+        if (flushUpdatedDataRequest == null
+                || !flushUpdatedDataRequest.canExecute(stateNode)) {
+            flushUpdatedDataRequest = FlushRequest.register(stateNode,
+                    context -> {
+                        flushUpdatedData();
+                        flushUpdatedDataRequest = null;
+                    });
         }
     }
 
@@ -1473,6 +1472,27 @@ public class DataCommunicator<T> implements Serializable {
 
         public static Activation empty() {
             return new Activation(Collections.emptyList(), false);
+        }
+    }
+
+    private static class FlushRequest implements Serializable {
+
+        private NodeOwner owner;
+
+        static FlushRequest register(StateNode stateNode,
+                SerializableConsumer<ExecutionContext> action) {
+            FlushRequest request = new FlushRequest();
+            request.owner = stateNode.getOwner();
+            stateNode.runWhenAttached(ui -> {
+                request.owner = stateNode.getOwner();
+                ui.getInternals().getStateTree().beforeClientResponse(stateNode,
+                        action);
+            });
+            return request;
+        }
+
+        boolean canExecute(StateNode stateNode) {
+            return owner instanceof NullOwner || owner == stateNode.getOwner();
         }
     }
 
