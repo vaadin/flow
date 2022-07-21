@@ -66,6 +66,36 @@ public interface ValidationResult extends Serializable {
         public Optional<ErrorLevel> getErrorLevel() {
             return Optional.ofNullable(errorLevel);
         }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == this) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (!obj.getClass().equals(getClass())) {
+                return false;
+            }
+            SimpleValidationResult that = (SimpleValidationResult) obj;
+            return Objects.equals(that.error, error)
+                    && Objects.equals(that.errorLevel, errorLevel);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(error, errorLevel);
+        }
+
+        @Override
+        public String toString() {
+            if (error == null && errorLevel == null) {
+                return "ValidationResult{ok}";
+            }
+            return "ValidationResult{" + "error='" + error + '\''
+                    + ", errorLevel=" + errorLevel + '}';
+        }
     }
 
     /**
