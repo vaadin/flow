@@ -150,8 +150,7 @@ public abstract class Node<N extends Node<N>> implements Serializable {
 
     public N appendChild(Element child) {
         if (child == null) {
-            throw new IllegalArgumentException(
-                    THE_CHILD_CANNOT_BE_NULL);
+            throw new IllegalArgumentException(THE_CHILD_CANNOT_BE_NULL);
         }
 
         insertChild(getChildCount(), child);
@@ -198,8 +197,8 @@ public abstract class Node<N extends Node<N>> implements Serializable {
      * Appends the given child as the virtual child of the element.
      * <p>
      * The virtual child is not really a child of the DOM element. The
-     * client-side counterpart is created in the memory, but it's not attached to
-     * the DOM tree. The resulting element is referenced via the server side
+     * client-side counterpart is created in the memory, but it's not attached
+     * to the DOM tree. The resulting element is referenced via the server side
      * {@link Element} in JS function call as usual.
      *
      * @param child
@@ -208,8 +207,7 @@ public abstract class Node<N extends Node<N>> implements Serializable {
      */
     public N appendVirtualChild(Element child) {
         if (child == null) {
-            throw new IllegalArgumentException(
-                    THE_CHILD_CANNOT_BE_NULL);
+            throw new IllegalArgumentException(THE_CHILD_CANNOT_BE_NULL);
         }
 
         Node<?> parentNode = child.getParentNode();
@@ -229,8 +227,8 @@ public abstract class Node<N extends Node<N>> implements Serializable {
      * Appends the given children as the virtual children of the element.
      * <p>
      * The virtual child is not really a child of the DOM element. The
-     * client-side counterpart is created in the memory, but it's not attached to
-     * the DOM tree. The resulting element is referenced via the server side
+     * client-side counterpart is created in the memory, but it's not attached
+     * to the DOM tree. The resulting element is referenced via the server side
      * {@link Element} in JS function call as usual.
      *
      * @param children
@@ -279,12 +277,12 @@ public abstract class Node<N extends Node<N>> implements Serializable {
     }
 
     /**
-     * Removes the given child that has been attached as the virtual
-     * child of this element.
+     * Removes the given child that has been attached as the virtual child of
+     * this element.
      * <p>
      * The virtual child is not really a child of the DOM element. The
-     * client-side counterpart is created in the memory, but it's not attached to
-     * the DOM tree. The resulting element is referenced via the server side
+     * client-side counterpart is created in the memory, but it's not attached
+     * to the DOM tree. The resulting element is referenced via the server side
      * {@link Element} in JS function call as usual. *
      *
      * @param child
@@ -298,8 +296,7 @@ public abstract class Node<N extends Node<N>> implements Serializable {
      */
     public N removeVirtualChild(Element child) {
         if (child == null) {
-            throw new IllegalArgumentException(
-                    THE_CHILD_CANNOT_BE_NULL);
+            throw new IllegalArgumentException(THE_CHILD_CANNOT_BE_NULL);
         }
 
         if (getNode().hasFeature(VirtualChildrenList.class)) {
@@ -404,8 +401,7 @@ public abstract class Node<N extends Node<N>> implements Serializable {
 
     private N insertChild(AtomicInteger index, Element child) {
         if (child == null) {
-            throw new IllegalArgumentException(
-                    THE_CHILD_CANNOT_BE_NULL);
+            throw new IllegalArgumentException(THE_CHILD_CANNOT_BE_NULL);
         }
 
         if (index.get() > getChildCount()) {
@@ -545,8 +541,7 @@ public abstract class Node<N extends Node<N>> implements Serializable {
      */
     public N removeChild(Element child) {
         if (child == null) {
-            throw new IllegalArgumentException(
-                    THE_CHILD_CANNOT_BE_NULL);
+            throw new IllegalArgumentException(THE_CHILD_CANNOT_BE_NULL);
         }
 
         return removeChild(Collections.singleton(child));
@@ -565,9 +560,9 @@ public abstract class Node<N extends Node<N>> implements Serializable {
                     THE_CHILDREN_COLLECTION_CANNOT_BE_NULL);
         }
 
-        children.stream()
-                .peek(child -> ensureChildHasParent(child, false))
-                .forEach(child -> getStateProvider().removeChild(getNode(), child));
+        children.stream().peek(child -> ensureChildHasParent(child, false))
+                .forEach(child -> getStateProvider().removeChild(getNode(),
+                        child));
 
         return getSelf();
     }

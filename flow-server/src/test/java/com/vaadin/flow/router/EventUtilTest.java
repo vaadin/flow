@@ -171,7 +171,8 @@ public class EventUtilTest {
         nested.appendChild(new Element("nested-child"))
                 .appendChild(new EnterObserver().getElement());
 
-        bar.getElement().appendChild(new Foo().getElement()).appendChild(nested);
+        bar.getElement().appendChild(new Foo().getElement())
+                .appendChild(nested);
 
         EnterObserver toBeAttached = new EnterObserver();
 
@@ -368,7 +369,8 @@ public class EventUtilTest {
         nested.appendChild(new Element("nested-child"))
                 .appendChild(new Locale().getElement());
 
-        bar.getElement().appendChild(new Foo().getElement()).appendChild(nested);
+        bar.getElement().appendChild(new Foo().getElement())
+                .appendChild(nested);
 
         List<LocaleChangeObserver> beforeNavigationObservers = EventUtil
                 .collectLocaleChangeObservers(Arrays.asList(foo, bar));
@@ -387,7 +389,8 @@ public class EventUtilTest {
         nested.appendChild(new Element("nested-child"))
                 .appendChild(new Locale().getElement());
 
-        bar.getElement().appendChild(new Foo().getElement()).appendChild(nested);
+        bar.getElement().appendChild(new Foo().getElement())
+                .appendChild(nested);
 
         List<LocaleChangeObserver> beforeNavigationObservers = EventUtil
                 .collectLocaleChangeObservers(Arrays.asList(foo, bar));

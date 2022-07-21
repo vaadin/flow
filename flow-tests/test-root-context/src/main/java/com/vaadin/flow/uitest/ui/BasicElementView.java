@@ -118,10 +118,8 @@ public class BasicElementView extends AbstractDivView {
             elementContainer.removeChild(div2);
         });
 
-        mainElement.appendChild(helloWorldElement)
-                .appendChild(button)
-                .appendChild(input)
-                .appendChild(addRemoveButton)
+        mainElement.appendChild(helloWorldElement).appendChild(button)
+                .appendChild(input).appendChild(addRemoveButton)
                 .appendChild(elementContainer);
 
     }

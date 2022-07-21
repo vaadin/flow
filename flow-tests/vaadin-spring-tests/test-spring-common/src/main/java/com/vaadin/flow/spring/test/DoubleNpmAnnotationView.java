@@ -28,7 +28,6 @@ public class DoubleNpmAnnotationView extends Div {
         Element paperInput = new Element("paper-input");
         Element paperCheckbox = new Element("paper-checkbox");
 
-        this.getElement().appendChild(paperInput)
-                .appendChild(paperCheckbox);
+        this.getElement().appendChild(paperInput).appendChild(paperCheckbox);
     }
 }

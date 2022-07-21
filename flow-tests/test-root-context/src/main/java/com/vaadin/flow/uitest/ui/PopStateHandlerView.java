@@ -9,19 +9,20 @@ public class PopStateHandlerView extends RouterLinkView {
 
     @Override
     protected void addLinks() {
-        getElement().appendChild(createPushStateButtons(
+        getElement()
+                .appendChild(createPushStateButtons(
                         "com.vaadin.flow.uitest.ui.PopStateHandlerUI/another/"))
-                        .appendChild(ElementFactory.createParagraph())
-                        .appendChild(createPushStateButtons(
+                .appendChild(ElementFactory.createParagraph())
+                .appendChild(createPushStateButtons(
                         "com.vaadin.flow.uitest.ui.PopStateHandlerUI/forum/"))
-                        .appendChild(ElementFactory.createParagraph())
-                        .appendChild(createPushStateButtons(
+                .appendChild(ElementFactory.createParagraph())
+                .appendChild(createPushStateButtons(
                         "com.vaadin.flow.uitest.ui.PopStateHandlerUI/forum/#!/category/1"))
-                        .appendChild(ElementFactory.createParagraph())
-                        .appendChild(createPushStateButtons(
+                .appendChild(ElementFactory.createParagraph())
+                .appendChild(createPushStateButtons(
                         "com.vaadin.flow.uitest.ui.PopStateHandlerUI/forum/#!/category/2"))
-                        .appendChild(ElementFactory.createParagraph())
-                        .appendChild(createPushStateButtons(
+                .appendChild(ElementFactory.createParagraph())
+                .appendChild(createPushStateButtons(
                         "com.vaadin.flow.uitest.ui.PopStateHandlerUI/forum/#"));
     }
 

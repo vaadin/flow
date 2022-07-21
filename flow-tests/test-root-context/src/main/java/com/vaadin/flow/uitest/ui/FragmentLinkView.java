@@ -23,8 +23,7 @@ public class FragmentLinkView extends AbstractDivView {
         Element placeholder = ElementFactory.createDiv("Hash Change Events")
                 .setAttribute("id", "placeholder");
 
-        bodyElement.appendChild(scrollLocator)
-                .appendChild(placeholder)
+        bodyElement.appendChild(scrollLocator).appendChild(placeholder)
                 .appendChild(new Element("p"));
 
         Element scrollToLink = ElementFactory.createRouterLink(
@@ -44,19 +43,13 @@ public class FragmentLinkView extends AbstractDivView {
         Element scrollTarget2 = ElementFactory.createHeading2("Scroll Target 2")
                 .setAttribute("id", "Scroll_Target2");
 
-        bodyElement.appendChild(scrollToLink)
-                .appendChild(new Element("p"))
-                .appendChild(scrollToLink2)
-                .appendChild(new Element("p"))
+        bodyElement.appendChild(scrollToLink).appendChild(new Element("p"))
+                .appendChild(scrollToLink2).appendChild(new Element("p"))
                 .appendChild(scrollToLinkAnotherView)
-                .appendChild(new Element("p"))
-                .appendChild(linkThatIsOverridden)
-                .appendChild(new Element("p"))
-                .appendChild(createSpacer())
-                .appendChild(scrollTarget)
-                .appendChild(createSpacer())
-                .appendChild(scrollTarget2)
-                .appendChild(createSpacer());
+                .appendChild(new Element("p")).appendChild(linkThatIsOverridden)
+                .appendChild(new Element("p")).appendChild(createSpacer())
+                .appendChild(scrollTarget).appendChild(createSpacer())
+                .appendChild(scrollTarget2).appendChild(createSpacer());
 
     }
 

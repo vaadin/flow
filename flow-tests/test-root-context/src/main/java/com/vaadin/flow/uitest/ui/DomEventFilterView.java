@@ -97,10 +97,8 @@ public class DomEventFilterView extends AbstractDivView {
                 e -> addMessage("Component: " + e.getValue()), 1000);
 
         messages.setAttribute("id", "messages");
-        getElement().appendChild(space)
-                .appendChild(debounce)
-                .appendChild(component.getElement())
-                .appendChild(messages);
+        getElement().appendChild(space).appendChild(debounce)
+                .appendChild(component.getElement()).appendChild(messages);
 
         // tests for#5090
         final AtomicReference<DomListenerRegistration> atomicReference = new AtomicReference<>();

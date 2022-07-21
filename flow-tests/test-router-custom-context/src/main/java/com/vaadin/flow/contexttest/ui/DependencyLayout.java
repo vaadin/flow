@@ -123,10 +123,8 @@ public abstract class DependencyLayout extends Div {
                 }
             }.start();
         });
-        getElement().appendChild(jsOrder)
-                .appendChild(allBlue)
-                .appendChild(runPush)
-                .appendChild(ElementFactory.createHr())
+        getElement().appendChild(jsOrder).appendChild(allBlue)
+                .appendChild(runPush).appendChild(ElementFactory.createHr())
                 .appendChild(pushWorks);
     }
 

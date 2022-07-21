@@ -95,7 +95,8 @@ public class HistoryView extends AbstractDivView {
     }
 
     private Element addRow(Element... elements) {
-        Element row = ElementFactory.createDiv().appendChild(Arrays.asList(elements));
+        Element row = ElementFactory.createDiv()
+                .appendChild(Arrays.asList(elements));
         getElement().appendChild(row);
         return row;
     }

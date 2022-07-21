@@ -89,7 +89,8 @@ public class WebComponentWrapper extends Component {
             WebComponentBinding<?> binding, List<Element> bootstrapElements) {
         this(rootElement, binding);
         // shadow root is attached in this(...)
-        getElement().getShadowRoot().ifPresent(shadow -> shadow.appendChild(bootstrapElements));
+        getElement().getShadowRoot()
+                .ifPresent(shadow -> shadow.appendChild(bootstrapElements));
     }
 
     /**

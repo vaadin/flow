@@ -22,10 +22,8 @@ public class RouterLinkView extends AbstractDivView {
         Element queryParams = ElementFactory.createDiv("no queryParams")
                 .setAttribute("id", "queryParams");
 
-        bodyElement.appendChild(location)
-                .appendChild(new Element("p"));
-        bodyElement.appendChild(queryParams)
-                .appendChild(new Element("p"));
+        bodyElement.appendChild(location).appendChild(new Element("p"));
+        bodyElement.appendChild(queryParams).appendChild(new Element("p"));
 
         addLinks();
 

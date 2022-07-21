@@ -54,10 +54,8 @@ public class NavigationTriggerView extends AbstractDivView
                 .navigate(NavigationTriggerView.class, "reroute"));
         rerouteButton.setAttribute("id", "rerouteButton");
 
-        getElement().appendChild(routerLink)
-                .appendChild(navigateButton)
-                .appendChild(forwardButton)
-                .appendChild(rerouteButton);
+        getElement().appendChild(routerLink).appendChild(navigateButton)
+                .appendChild(forwardButton).appendChild(rerouteButton);
     }
 
     public static String buildMessage(String path, NavigationTrigger trigger,

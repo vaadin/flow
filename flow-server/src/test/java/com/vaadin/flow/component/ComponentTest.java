@@ -281,8 +281,9 @@ public class ComponentTest {
         child1SpanComponent = new TestComponent(
                 ElementFactory.createSpan("Span"));
         child2InputComponent = new TestComponent(ElementFactory.createInput());
-        parentDivComponent.getElement().appendChild(child1SpanComponent.getElement())
-                        .appendChild(child2InputComponent.getElement());
+        parentDivComponent.getElement()
+                .appendChild(child1SpanComponent.getElement())
+                .appendChild(child2InputComponent.getElement());
 
         mocks = new MockServletServiceSessionSetup();
 
@@ -392,11 +393,12 @@ public class ComponentTest {
                 ElementFactory.createDiv("Child2"));
 
         Element parentElement = parent.getElement();
-        parentElement.appendChild(
-                new Element("level1").appendChild(
+        parentElement
+                .appendChild(new Element("level1").appendChild(
                         new Element("level2").appendChild(child1.getElement())))
                 .appendChild(child2.getElement())
-                .appendChild(new Element("level1b").appendChild(child3.getElement()));
+                .appendChild(new Element("level1b")
+                        .appendChild(child3.getElement()));
 
         List<Component> children = parent.getChildren()
                 .collect(Collectors.toList());

@@ -2422,11 +2422,9 @@ public class ElementTest extends AbstractNodeTest {
         Element child1 = new Element("main");
         Element child2 = new Element("menu");
 
-        parent.appendVirtualChild(child1)
-                .appendVirtualChild(child2);
+        parent.appendVirtualChild(child1).appendVirtualChild(child2);
 
-        parent.removeVirtualChild(child2)
-                .removeVirtualChild(child1);
+        parent.removeVirtualChild(child2).removeVirtualChild(child1);
 
         Assert.assertNull(child1.getParent());
         Assert.assertFalse(child1.isVirtualChild());
