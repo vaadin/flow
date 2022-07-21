@@ -97,8 +97,8 @@ public class AbstractCompositeFieldTest {
         public MultipleFieldsField() {
             super(null);
 
-            getContent().getElement().appendChild(start.getElement(),
-                    rest.getElement());
+            getContent().getElement().appendChild(start.getElement())
+                    .appendChild(rest.getElement());
 
             start.addValueChangeListener(
                     event -> updateValue(event.isFromClient()));

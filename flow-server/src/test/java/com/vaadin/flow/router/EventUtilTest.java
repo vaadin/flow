@@ -117,13 +117,13 @@ public class EventUtilTest {
     }
 
     @Test
-    public void collectBeforeNavigationObserversFromUI() throws Exception {
+    public void collectBeforeNavigationObserversFromUI() {
         UI ui = UI.getCurrent();
         Element node = ui.getElement();
-        node.appendChild(new Element("main"), new Element("menu"));
+        node.appendChild(new Element("main")).appendChild(new Element("menu"));
         Element nested = new Element("nested");
-        nested.appendChild(new Element("nested-child"),
-                new Element("nested-child-2"));
+        nested.appendChild(new Element("nested-child"))
+                .appendChild(new Element("nested-child-2"));
 
         node.appendChild(nested);
         Component.from(nested, LeaveObserver.class);
@@ -136,14 +136,13 @@ public class EventUtilTest {
     }
 
     @Test
-    public void collectBeforeNavigationObserversFromUI_elementHasVirtualChildren()
-            throws Exception {
+    public void collectBeforeNavigationObserversFromUI_elementHasVirtualChildren() {
         UI ui = UI.getCurrent();
         Element node = ui.getElement();
-        node.appendChild(new Element("main"), new Element("menu"));
+        node.appendChild(new Element("main")).appendChild(new Element("menu"));
         Element nested = new Element("nested");
-        nested.appendVirtualChild(new Element("nested-child"),
-                new Element("nested-child-2"));
+        nested.appendVirtualChild(new Element("nested-child"))
+                .appendVirtualChild(new Element("nested-child-2"));
 
         node.appendChild(nested);
 
@@ -161,18 +160,18 @@ public class EventUtilTest {
     }
 
     @Test
-    public void collectBeforeNavigationObserversFromChains() throws Exception {
+    public void collectBeforeNavigationObserversFromChains() {
         Foo foo = new Foo();
         EnterObserver toBeDetached = new EnterObserver();
-        foo.getElement().appendChild(new EnterObserver().getElement(),
-                toBeDetached.getElement());
+        foo.getElement().appendChild(new EnterObserver().getElement())
+                .appendChild(toBeDetached.getElement());
         Bar bar = new Bar();
 
         Element nested = new Element("nested");
-        nested.appendChild(new Element("nested-child"),
-                new EnterObserver().getElement());
+        nested.appendChild(new Element("nested-child"))
+                .appendChild(new EnterObserver().getElement());
 
-        bar.getElement().appendChild(new Foo().getElement(), nested);
+        bar.getElement().appendChild(new Foo().getElement()).appendChild(nested);
 
         EnterObserver toBeAttached = new EnterObserver();
 
@@ -195,10 +194,10 @@ public class EventUtilTest {
         menu.appendChild(new AfterObserver().getElement());
 
         Element node = ui.getElement();
-        node.appendChild(new Element("main"), menu);
+        node.appendChild(new Element("main")).appendChild(menu);
         Element nested = new Element("nested");
-        nested.appendChild(new Element("nested-child"),
-                new Element("nested-child-2"));
+        nested.appendChild(new Element("nested-child"))
+                .appendChild(new Element("nested-child-2"));
 
         node.appendChild(nested);
         Component.from(nested, AfterObserver.class);
@@ -211,12 +210,12 @@ public class EventUtilTest {
     }
 
     @Test
-    public void inspectChildrenHierarchy() throws Exception {
+    public void inspectChildrenHierarchy() {
         Element node = new Element("root");
-        node.appendChild(new Element("main"), new Element("menu"));
+        node.appendChild(new Element("main")).appendChild(new Element("menu"));
         Element nested = new Element("nested");
-        nested.appendChild(new Element("nested-child"),
-                new Element("nested-child-2"));
+        nested.appendChild(new Element("nested-child"))
+                .appendChild(new Element("nested-child-2"));
 
         node.appendChild(nested);
 
@@ -228,12 +227,12 @@ public class EventUtilTest {
     }
 
     @Test
-    public void inspectChildrenHierarchy_selective() throws Exception {
+    public void inspectChildrenHierarchy_selective() {
         Element node = new Element("root");
-        node.appendChild(new Element("main"), new Element("menu"));
+        node.appendChild(new Element("main")).appendChild(new Element("menu"));
         Element nested = new Element("nested");
-        nested.appendChild(new Element("nested-child"),
-                new Element("nested-child-2"));
+        nested.appendChild(new Element("nested-child"))
+                .appendChild(new Element("nested-child-2"));
 
         node.appendChild(nested);
 
@@ -246,14 +245,15 @@ public class EventUtilTest {
     }
 
     @Test
-    public void inspectMixedChildrenHierarchy() throws Exception {
+    public void inspectMixedChildrenHierarchy() {
         Element node = new Element("root");
-        node.appendVirtualChild(new Element("main"), new Element("menu"));
+        node.appendVirtualChild(new Element("main"))
+                .appendVirtualChild(new Element("menu"));
         Element nested = new Element("nested");
-        nested.appendVirtualChild(new Element("nested-virtual-child"),
-                new Element("nested-virtual-child-2"));
-        nested.appendChild(new Element("nested-child"),
-                new Element("nested-child-2"));
+        nested.appendVirtualChild(new Element("nested-virtual-child"))
+                .appendVirtualChild(new Element("nested-virtual-child-2"));
+        nested.appendChild(new Element("nested-child"))
+                .appendChild(new Element("nested-child-2"));
 
         nested.getStateProvider().appendVirtualChild(nested.getNode(),
                 new Element("attached-by-id"), NodeProperties.INJECT_BY_ID,
@@ -272,12 +272,12 @@ public class EventUtilTest {
     }
 
     @Test
-    public void getImplementingComponents() throws Exception {
+    public void getImplementingComponents() {
         Element node = new Element("root");
-        node.appendChild(new Element("main"), new Element("menu"));
+        node.appendChild(new Element("main")).appendChild(new Element("menu"));
         Element nested = new Element("nested");
-        nested.appendChild(new Element("nested-child"),
-                new Element("nested-child-2"));
+        nested.appendChild(new Element("nested-child"))
+                .appendChild(new Element("nested-child-2"));
 
         node.appendChild(nested);
         Component.from(nested, EnterObserver.class);
@@ -296,13 +296,12 @@ public class EventUtilTest {
     }
 
     @Test
-    public void getImplementingComponents_elementHasVirtualChildren()
-            throws Exception {
+    public void getImplementingComponents_elementHasVirtualChildren() {
         Element node = new Element("root");
-        node.appendChild(new Element("main"), new Element("menu"));
+        node.appendChild(new Element("main")).appendChild(new Element("menu"));
         Element nested = new Element("nested");
-        nested.appendChild(new Element("nested-child"),
-                new Element("nested-child-2"));
+        nested.appendChild(new Element("nested-child"))
+                .appendChild(new Element("nested-child-2"));
 
         node.getStateProvider().appendVirtualChild(node.getNode(), nested,
                 NodeProperties.TEMPLATE_IN_TEMPLATE, "");
@@ -322,12 +321,12 @@ public class EventUtilTest {
     }
 
     @Test
-    public void collectLocaleChangeObserverFromElement() throws Exception {
+    public void collectLocaleChangeObserverFromElement() {
         Element node = new Element("root");
-        node.appendChild(new Element("main"), new Element("menu"));
+        node.appendChild(new Element("main")).appendChild(new Element("menu"));
         Element nested = new Element("nested-locale");
-        nested.appendChild(new Element("nested-child"),
-                new Element("nested-child-2"));
+        nested.appendChild(new Element("nested-child"))
+                .appendChild(new Element("nested-child-2"));
 
         node.appendChild(nested);
         Component.from(nested, Locale.class);
@@ -340,15 +339,14 @@ public class EventUtilTest {
     }
 
     @Test
-    public void collectLocaleChangeObserverFromElement_elementHasVirtualChildren()
-            throws Exception {
+    public void collectLocaleChangeObserverFromElement_elementHasVirtualChildren() {
         Element node = new Element("root");
-        node.appendChild(new Element("main"), new Element("menu"));
-        node.appendVirtualChild(new Element("main-virtual"),
-                new Element("menu-virtual"));
+        node.appendChild(new Element("main")).appendChild(new Element("menu"));
+        node.appendVirtualChild(new Element("main-virtual"))
+                .appendVirtualChild(new Element("menu-virtual"));
         Element nested = new Element("nested-locale");
-        nested.appendVirtualChild(new Element("nested-child"),
-                new Element("nested-child-2"));
+        nested.appendVirtualChild(new Element("nested-child"))
+                .appendVirtualChild(new Element("nested-child-2"));
 
         node.appendVirtualChild(nested);
         Component.from(nested, Locale.class);
@@ -361,17 +359,16 @@ public class EventUtilTest {
     }
 
     @Test
-    public void collectLocaleChangeObserverFromComponentList()
-            throws Exception {
+    public void collectLocaleChangeObserverFromComponentList() {
         Foo foo = new Foo();
         foo.getElement().appendChild(new Locale().getElement());
         Bar bar = new Bar();
 
         Element nested = new Element("nested-locale");
-        nested.appendChild(new Element("nested-child"),
-                new Locale().getElement());
+        nested.appendChild(new Element("nested-child"))
+                .appendChild(new Locale().getElement());
 
-        bar.getElement().appendChild(new Foo().getElement(), nested);
+        bar.getElement().appendChild(new Foo().getElement()).appendChild(nested);
 
         List<LocaleChangeObserver> beforeNavigationObservers = EventUtil
                 .collectLocaleChangeObservers(Arrays.asList(foo, bar));
@@ -381,17 +378,16 @@ public class EventUtilTest {
     }
 
     @Test
-    public void collectLocaleChangeObserverFromComponentList_elementHasVirtualChildren()
-            throws Exception {
+    public void collectLocaleChangeObserverFromComponentList_elementHasVirtualChildren() {
         Foo foo = new Foo();
         foo.getElement().appendChild(new Locale().getElement());
         Bar bar = new Bar();
 
         Element nested = new Element("nested-locale");
-        nested.appendChild(new Element("nested-child"),
-                new Locale().getElement());
+        nested.appendChild(new Element("nested-child"))
+                .appendChild(new Locale().getElement());
 
-        bar.getElement().appendChild(new Foo().getElement(), nested);
+        bar.getElement().appendChild(new Foo().getElement()).appendChild(nested);
 
         List<LocaleChangeObserver> beforeNavigationObservers = EventUtil
                 .collectLocaleChangeObservers(Arrays.asList(foo, bar));

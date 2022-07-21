@@ -42,7 +42,7 @@ public interface NodeVisitor {
         /**
          * The type of the virtual element: the element which has been created
          * via Element API and attached using
-         * {@link Element#appendVirtualChild(Element...)}.
+         * {@link Element#appendVirtualChild(Element)}.
          */
         VIRTUAL,
         /**

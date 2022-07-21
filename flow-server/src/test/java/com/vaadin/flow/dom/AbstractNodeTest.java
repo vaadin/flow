@@ -18,9 +18,7 @@ package com.vaadin.flow.dom;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
@@ -35,13 +33,13 @@ public abstract class AbstractNodeTest {
     @Test(expected = IllegalArgumentException.class)
     public void insertWithNullParameter() {
         Node<?> parent = createParentNode();
-        parent.insertChild(0, (Element[]) null);
+        parent.insertChild(0, (Element) null);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void insertNullChild() {
         Node<?> parent = createParentNode();
-        parent.insertChild(0, new Element[] { null });
+        parent.insertChild(0, Collections.singleton(null));
     }
 
     @Test
@@ -49,7 +47,7 @@ public abstract class AbstractNodeTest {
         Node<?> parent = createParentNode();
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
-        parent.appendChild(child1, child2);
+        parent.appendChild(child1).appendChild(child2);
 
         assertChildren(parent, child1, child2);
     }
@@ -82,7 +80,7 @@ public abstract class AbstractNodeTest {
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
         Element child3 = new Element("child3");
-        parent.appendChild(child1, child2);
+        parent.appendChild(child1).appendChild(child2);
         parent.insertChild(1, child3);
 
         assertChildren(parent, child1, child3, child2);
@@ -94,7 +92,7 @@ public abstract class AbstractNodeTest {
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
         Element child3 = new Element("child3");
-        parent.appendChild(child1, child2);
+        parent.appendChild(child1).appendChild(child2);
         parent.insertChild(2, child3);
 
         assertChildren(parent, child1, child2, child3);
@@ -106,7 +104,7 @@ public abstract class AbstractNodeTest {
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
         Element child3 = new Element("child3");
-        parent.appendChild(child1, child2);
+        parent.appendChild(child1).appendChild(child2);
         parent.insertChild(3, child3);
     }
 
@@ -116,7 +114,8 @@ public abstract class AbstractNodeTest {
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
         Element child3 = new Element("child3");
-        parent.appendChild(child1, child2, child3);
+        parent.appendChild(child1).appendChild(child2)
+                .appendChild(child3);
         parent.removeChild(child1);
 
         assertChildren(parent, child2, child3);
@@ -128,7 +127,8 @@ public abstract class AbstractNodeTest {
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
         Element child3 = new Element("child3");
-        parent.appendChild(child1, child2, child3);
+        parent.appendChild(child1).appendChild(child2)
+                .appendChild(child3);
         parent.removeChild(0);
 
         assertChildren(parent, child2, child3);
@@ -140,8 +140,9 @@ public abstract class AbstractNodeTest {
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
         Element child3 = new Element("child3");
-        parent.appendChild(child1, child2, child3);
-        parent.removeChild(child1, child2);
+        parent.appendChild(child1).appendChild(child2)
+                .appendChild(child3);
+        parent.removeChild(child1).removeChild(child2);
 
         assertChildren(parent, child3);
     }
@@ -152,7 +153,8 @@ public abstract class AbstractNodeTest {
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
         Element child3 = new Element("child3");
-        parent.appendChild(child1, child2, child3);
+        parent.appendChild(child1).appendChild(child2)
+                .appendChild(child3);
         parent.removeChild(child2);
 
         assertChildren(parent, child1, child3);
@@ -164,7 +166,8 @@ public abstract class AbstractNodeTest {
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
         Element child3 = new Element("child3");
-        parent.appendChild(child1, child2, child3);
+        parent.appendChild(child1).appendChild(child2)
+                .appendChild(child3);
         parent.removeChild(1);
 
         assertChildren(parent, child1, child3);
@@ -177,8 +180,9 @@ public abstract class AbstractNodeTest {
         Element child2 = new Element("child2");
         Element child3 = new Element("child3");
         Element child4 = new Element("child4");
-        parent.appendChild(child1, child2, child3, child4);
-        parent.removeChild(child2, child3);
+        parent.appendChild(child1).appendChild(child2)
+                .appendChild(child3).appendChild(child4);
+        parent.removeChild(child2).removeChild(child3);
 
         assertChildren(parent, child1, child4);
     }
@@ -189,7 +193,8 @@ public abstract class AbstractNodeTest {
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
         Element child3 = new Element("child3");
-        parent.appendChild(child1, child2, child3);
+        parent.appendChild(child1).appendChild(child2)
+                .appendChild(child3);
         parent.removeChild(child3);
 
         assertChildren(parent, child1, child2);
@@ -201,7 +206,8 @@ public abstract class AbstractNodeTest {
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
         Element child3 = new Element("child3");
-        parent.appendChild(child1, child2, child3);
+        parent.appendChild(child1).appendChild(child2)
+                .appendChild(child3);
         parent.removeChild(2);
 
         assertChildren(parent, child1, child2);
@@ -214,8 +220,9 @@ public abstract class AbstractNodeTest {
         Element child2 = new Element("child2");
         Element child3 = new Element("child3");
         Element child4 = new Element("child4");
-        parent.appendChild(child1, child2, child3, child4);
-        parent.removeChild(child3, child4);
+        parent.appendChild(child1).appendChild(child2)
+                .appendChild(child3).appendChild(child4);
+        parent.removeChild(child3).removeChild(child4);
 
         assertChildren(parent, child1, child2);
     }
@@ -227,7 +234,8 @@ public abstract class AbstractNodeTest {
         Element child2 = new Element("child2");
         Element child3 = new Element("child3");
         Element child4 = new Element("child4");
-        parent.appendChild(child1, child2, child3, child4);
+        parent.appendChild(child1).appendChild(child2)
+                .appendChild(child3).appendChild(child4);
         parent.removeAllChildren();
 
         assertChildren(parent);
@@ -249,7 +257,8 @@ public abstract class AbstractNodeTest {
         Element child2 = ElementFactory.createDiv();
         Element child3 = ElementFactory.createDiv();
 
-        parent.appendChild(child1, child2, child3);
+        parent.appendChild(child1).appendChild(child2)
+                .appendChild(child3);
 
         List<Element> children = parent.getChildren()
                 .collect(Collectors.toList());
@@ -277,7 +286,8 @@ public abstract class AbstractNodeTest {
         Element child2 = new Element("child2");
         Element child3 = new Element("child3");
         Element child4 = new Element("child4");
-        parent.appendChild(child1, child2, child3, child4);
+        parent.appendChild(child1).appendChild(child2)
+                .appendChild(child3).appendChild(child4);
         Assert.assertEquals(child1, parent.getChild(0));
         Assert.assertEquals(child2, parent.getChild(1));
         Assert.assertEquals(child3, parent.getChild(2));
@@ -289,7 +299,7 @@ public abstract class AbstractNodeTest {
         Node<?> parent = createParentNode();
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
-        parent.appendChild(child1, child2);
+        parent.appendChild(child1).appendChild(child2);
         parent.getChild(-1);
     }
 
@@ -298,7 +308,7 @@ public abstract class AbstractNodeTest {
         Node<?> parent = createParentNode();
         Element child1 = new Element("child1");
         Element child2 = new Element("child2");
-        parent.appendChild(child1, child2);
+        parent.appendChild(child1).appendChild(child2);
         parent.getChild(2);
     }
 
@@ -314,7 +324,7 @@ public abstract class AbstractNodeTest {
     @Test(expected = IllegalArgumentException.class)
     public void appendNullChild() {
         Node<?> parent = createParentNode();
-        parent.appendChild((Element[]) null);
+        parent.appendChild((Element) null);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -328,7 +338,7 @@ public abstract class AbstractNodeTest {
     @Test(expected = IllegalArgumentException.class)
     public void removeNullChild() {
         Node<?> parent = createParentNode();
-        parent.removeChild((Element[]) null);
+        parent.removeChild((Element) null);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -431,7 +441,8 @@ public abstract class AbstractNodeTest {
         Element child1 = ElementFactory.createDiv();
         Element child2 = ElementFactory.createAnchor();
         Element child3 = ElementFactory.createButton();
-        parent.appendChild(child1, child2, child3);
+        parent.appendChild(child1).appendChild(child2)
+                .appendChild(child3);
 
         Assert.assertEquals(1, parent.indexOfChild(child2));
     }
@@ -449,7 +460,7 @@ public abstract class AbstractNodeTest {
         Node<?> parent = createParentNode();
         Element child1 = ElementFactory.createDiv();
         Element child2 = ElementFactory.createDiv();
-        parent.appendChild(child1, child2);
+        parent.appendChild(child1).appendChild(child2);
 
         parent.appendChild(child1);
         assertChildren(parent, child2, child1);
@@ -460,7 +471,7 @@ public abstract class AbstractNodeTest {
         Node<?> parent = createParentNode();
         Element child1 = ElementFactory.createDiv();
         Element child2 = ElementFactory.createDiv();
-        parent.appendChild(child1, child2);
+        parent.appendChild(child1).appendChild(child2);
 
         parent.appendChild(child2);
         assertChildren(parent, child1, child2);
@@ -471,9 +482,9 @@ public abstract class AbstractNodeTest {
         Node<?> parent = createParentNode();
         Element child1 = ElementFactory.createDiv();
         Element child2 = ElementFactory.createDiv();
-        parent.appendChild(child1, child2);
+        parent.appendChild(child1).appendChild(child2);
 
-        parent.appendChild(child2, child1);
+        parent.appendChild(child2).appendChild(child1);
         // Order should be changed
         assertChildren(parent, child2, child1);
     }
@@ -485,7 +496,7 @@ public abstract class AbstractNodeTest {
         Element child2 = ElementFactory.createDiv();
         parent.appendChild(child1);
 
-        parent.appendChild(child2, child1);
+        parent.appendChild(child2).appendChild(child1);
 
         assertChildren(parent, child2, child1);
     }

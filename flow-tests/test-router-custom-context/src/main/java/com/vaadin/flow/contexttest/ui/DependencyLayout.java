@@ -123,8 +123,11 @@ public abstract class DependencyLayout extends Div {
                 }
             }.start();
         });
-        getElement().appendChild(jsOrder, allBlue, runPush,
-                ElementFactory.createHr(), pushWorks);
+        getElement().appendChild(jsOrder)
+                .appendChild(allBlue)
+                .appendChild(runPush)
+                .appendChild(ElementFactory.createHr())
+                .appendChild(pushWorks);
     }
 
     private StreamResource getJsResource() {

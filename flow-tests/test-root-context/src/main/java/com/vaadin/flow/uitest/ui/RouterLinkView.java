@@ -22,8 +22,10 @@ public class RouterLinkView extends AbstractDivView {
         Element queryParams = ElementFactory.createDiv("no queryParams")
                 .setAttribute("id", "queryParams");
 
-        bodyElement.appendChild(location, new Element("p"));
-        bodyElement.appendChild(queryParams, new Element("p"));
+        bodyElement.appendChild(location)
+                .appendChild(new Element("p"));
+        bodyElement.appendChild(queryParams)
+                .appendChild(new Element("p"));
 
         addLinks();
 
@@ -53,24 +55,32 @@ public class RouterLinkView extends AbstractDivView {
     }
 
     protected void addLinks() {
-        getElement().appendChild(
+        getElement()
                 // inside servlet mapping
-                ElementFactory.createDiv("inside this servlet"),
-                ElementFactory.createRouterLink("", "empty"), new Element("p"),
-                createRouterLink("foo"), new Element("p"),
-                createRouterLink("foo/bar"), new Element("p"),
-                createRouterLink("./foobar"), new Element("p"),
-                createRouterLink("./foobar?what=not"), new Element("p"),
-                createRouterLink("./foobar?what=not#fragment"),
-                new Element("p"), createRouterLink("/view/baz"),
-                new Element("p"),
+                .appendChild(ElementFactory.createDiv("inside this servlet"))
+                .appendChild(ElementFactory.createRouterLink("", "empty"))
+                .appendChild(new Element("p"))
+                .appendChild(createRouterLink("foo"))
+                .appendChild(new Element("p"))
+                .appendChild(createRouterLink("foo/bar"))
+                .appendChild(new Element("p"))
+                .appendChild(createRouterLink("./foobar"))
+                .appendChild(new Element("p"))
+                .appendChild(createRouterLink("./foobar?what=not"))
+                .appendChild(new Element("p"))
+                .appendChild(createRouterLink("./foobar?what=not#fragment"))
+                .appendChild(new Element("p"))
+                .appendChild(createRouterLink("/view/baz"))
+                .appendChild(new Element("p"))
                 // outside
-                ElementFactory.createDiv("outside this servlet"),
-                createRouterLink("/run"), new Element("p"),
-                createRouterLink("/foo/bar"), new Element("p"),
+                .appendChild(ElementFactory.createDiv("outside this servlet"))
+                .appendChild(createRouterLink("/run"))
+                .appendChild(new Element("p"))
+                .appendChild(createRouterLink("/foo/bar"))
+                .appendChild(new Element("p"))
                 // external
-                ElementFactory.createDiv("external"),
-                createRouterLink("http://example.net/"));
+                .appendChild(ElementFactory.createDiv("external"))
+                .appendChild(createRouterLink("http://example.net/"));
     }
 
     private Element createRouterLink(String target) {

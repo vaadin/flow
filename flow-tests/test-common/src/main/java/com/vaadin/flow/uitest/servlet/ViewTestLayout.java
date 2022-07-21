@@ -80,8 +80,9 @@ public class ViewTestLayout extends Div
             ui.navigate(viewSelect.getProperty("value"));
         }).synchronizeProperty("value");
 
-        element.appendChild(viewSelect, ElementFactory.createHr(),
-                viewContainer);
+        element.appendChild(viewSelect)
+                .appendChild(ElementFactory.createHr())
+                .appendChild(viewContainer);
 
         getElement().appendChild(element);
     }

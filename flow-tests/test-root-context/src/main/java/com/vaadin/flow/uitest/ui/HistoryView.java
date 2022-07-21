@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import java.util.Arrays;
 import java.util.function.BiConsumer;
 
 import com.vaadin.flow.component.ClickEvent;
@@ -94,7 +95,7 @@ public class HistoryView extends AbstractDivView {
     }
 
     private Element addRow(Element... elements) {
-        Element row = ElementFactory.createDiv().appendChild(elements);
+        Element row = ElementFactory.createDiv().appendChild(Arrays.asList(elements));
         getElement().appendChild(row);
         return row;
     }

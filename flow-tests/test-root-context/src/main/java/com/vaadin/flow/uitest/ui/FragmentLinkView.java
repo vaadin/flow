@@ -23,7 +23,9 @@ public class FragmentLinkView extends AbstractDivView {
         Element placeholder = ElementFactory.createDiv("Hash Change Events")
                 .setAttribute("id", "placeholder");
 
-        bodyElement.appendChild(scrollLocator, placeholder, new Element("p"));
+        bodyElement.appendChild(scrollLocator)
+                .appendChild(placeholder)
+                .appendChild(new Element("p"));
 
         Element scrollToLink = ElementFactory.createRouterLink(
                 "/view/com.vaadin.flow.uitest.ui.FragmentLinkView#Scroll_Target",
@@ -42,10 +44,19 @@ public class FragmentLinkView extends AbstractDivView {
         Element scrollTarget2 = ElementFactory.createHeading2("Scroll Target 2")
                 .setAttribute("id", "Scroll_Target2");
 
-        bodyElement.appendChild(scrollToLink, new Element("p"), scrollToLink2,
-                new Element("p"), scrollToLinkAnotherView, new Element("p"),
-                linkThatIsOverridden, new Element("p"), createSpacer(),
-                scrollTarget, createSpacer(), scrollTarget2, createSpacer());
+        bodyElement.appendChild(scrollToLink)
+                .appendChild(new Element("p"))
+                .appendChild(scrollToLink2)
+                .appendChild(new Element("p"))
+                .appendChild(scrollToLinkAnotherView)
+                .appendChild(new Element("p"))
+                .appendChild(linkThatIsOverridden)
+                .appendChild(new Element("p"))
+                .appendChild(createSpacer())
+                .appendChild(scrollTarget)
+                .appendChild(createSpacer())
+                .appendChild(scrollTarget2)
+                .appendChild(createSpacer());
 
     }
 

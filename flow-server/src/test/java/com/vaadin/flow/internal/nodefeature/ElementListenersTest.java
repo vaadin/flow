@@ -405,7 +405,7 @@ public class ElementListenersTest
         Element sibling = new Element("sibling");
         parent.appendChild(child);
         new StateTree(new UI().getInternals(), ElementChildrenList.class)
-                .getUI().getElement().appendChild(parent, sibling);
+                .getUI().getElement().appendChild(parent).appendChild(sibling);
         final String eventType = "click";
         final String expression = "expression";
         final String key = JsonConstants.MAP_STATE_NODE_EVENT_DATA + expression;

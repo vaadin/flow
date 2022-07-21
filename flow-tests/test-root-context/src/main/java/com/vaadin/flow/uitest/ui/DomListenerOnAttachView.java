@@ -34,6 +34,7 @@ public class DomListenerOnAttachView extends AbstractDivView {
             status.setText("Event received");
         });
 
-        getElement().appendChild(element, status.getElement());
+        getElement().appendChild(element)
+                .appendChild(status.getElement());
     }
 }

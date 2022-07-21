@@ -33,7 +33,7 @@ public interface ChildElementConsumer extends Consumer<Element>, Serializable {
 
     /**
      * This callback method is called when the request initiated by the
-     * {@link Node#appendChild(Element...)} method is successfully executed.
+     * {@link Node#appendChild(Element)} method is successfully executed.
      * <p>
      * The parameter value is the element created by the request.
      *

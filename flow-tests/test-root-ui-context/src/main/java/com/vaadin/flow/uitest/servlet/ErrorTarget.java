@@ -13,8 +13,8 @@ public class ErrorTarget extends RouteNotFoundError {
     public int setErrorParameter(BeforeEnterEvent event,
             ErrorParameter<NotFoundException> parameter) {
         getElement().appendChild(ElementFactory.createDiv(
-                "This is the error view. Next element contains the error path "),
-                ElementFactory.createDiv(event.getLocation().getPath())
+                "This is the error view. Next element contains the error path "))
+                .appendChild(ElementFactory.createDiv(event.getLocation().getPath())
                         .setAttribute("id", "error-path"));
         return HttpStatusCode.NOT_FOUND.getCode();
     }

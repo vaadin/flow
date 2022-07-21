@@ -718,8 +718,8 @@ public class ElementTest extends AbstractNodeTest {
     @Test
     public void setInnerHtmlProeprty_setValueAndRemoveAllChildren() {
         Element element = new Element("element");
-        element.appendChild(ElementFactory.createAnchor(),
-                ElementFactory.createDiv());
+        element.appendChild(ElementFactory.createAnchor())
+                .appendChild(ElementFactory.createDiv());
         element.setProperty("innerHTML", "<br>");
 
         Assert.assertEquals(0, element.getChildCount());
@@ -2221,7 +2221,7 @@ public class ElementTest extends AbstractNodeTest {
         Element element = ElementFactory.createDiv();
         Element button = ElementFactory.createButton();
         Element emphasis = ElementFactory.createEmphasis();
-        element.appendChild(button, emphasis);
+        element.appendChild(button).appendChild(emphasis);
 
         ShadowRoot shadow = element.attachShadow();
         Assert.assertNotNull(shadow);
@@ -2422,9 +2422,11 @@ public class ElementTest extends AbstractNodeTest {
         Element child1 = new Element("main");
         Element child2 = new Element("menu");
 
-        parent.appendVirtualChild(child1, child2);
+        parent.appendVirtualChild(child1)
+                .appendVirtualChild(child2);
 
-        parent.removeVirtualChild(child2, child1);
+        parent.removeVirtualChild(child2)
+                .removeVirtualChild(child1);
 
         Assert.assertNull(child1.getParent());
         Assert.assertFalse(child1.isVirtualChild());

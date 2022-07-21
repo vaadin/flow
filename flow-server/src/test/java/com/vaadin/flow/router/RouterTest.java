@@ -226,8 +226,9 @@ public class RouterTest extends RoutingTestBase {
         }
 
         public CombinedObserverTarget() {
-            getElement().appendChild(new Enter().getElement(),
-                    new Leave().getElement(), new Before().getElement());
+            getElement().appendChild(new Enter().getElement())
+                    .appendChild(new Leave().getElement())
+                    .appendChild(new Before().getElement());
         }
     }
 

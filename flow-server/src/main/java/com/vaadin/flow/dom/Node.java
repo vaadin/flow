@@ -16,8 +16,8 @@
 package com.vaadin.flow.dom;
 
 import java.io.Serializable;
-import java.util.Iterator;
-import java.util.Objects;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -41,6 +41,10 @@ public abstract class Node<N extends Node<N>> implements Serializable {
     static final String CANNOT_X_WITH_INDEX_Y_WHEN_THERE_ARE_Z_CHILDREN = "Cannot %s element with index %d when there are %d children";
 
     static final String THE_CHILDREN_ARRAY_CANNOT_BE_NULL = "The children array cannot be null";
+
+    static final String THE_CHILDREN_COLLECTION_CANNOT_BE_NULL = "The children collection cannot be null";
+
+    static final String THE_CHILD_CANNOT_BE_NULL = "The child cannot be null";
 
     private final ElementStateProvider stateProvider;
     private final StateNode node;
@@ -131,11 +135,34 @@ public abstract class Node<N extends Node<N>> implements Serializable {
      * @param children
      *            the element(s) to add
      * @return this element
+     * @deprecated varargs methods will be removed in the future
+     * @see com.vaadin.flow.dom.Node#appendChild(Collection)
      */
+    @Deprecated
     public N appendChild(Element... children) {
         if (children == null) {
             throw new IllegalArgumentException(
                     THE_CHILDREN_ARRAY_CANNOT_BE_NULL);
+        }
+
+        return appendChild(Arrays.asList(children));
+    }
+
+    public N appendChild(Element child) {
+        if (child == null) {
+            throw new IllegalArgumentException(
+                    THE_CHILD_CANNOT_BE_NULL);
+        }
+
+        insertChild(getChildCount(), child);
+
+        return getSelf();
+    }
+
+    public N appendChild(Collection<Element> children) {
+        if (children == null) {
+            throw new IllegalArgumentException(
+                    THE_CHILDREN_COLLECTION_CANNOT_BE_NULL);
         }
 
         insertChild(getChildCount(), children);
@@ -154,28 +181,69 @@ public abstract class Node<N extends Node<N>> implements Serializable {
      * @param children
      *            the element(s) to add
      * @return this element
+     * @deprecated varargs methods will be removed in the future
+     * @see com.vaadin.flow.dom.Node#appendVirtualChild(Collection)
      */
+    @Deprecated
     public N appendVirtualChild(Element... children) {
         if (children == null) {
             throw new IllegalArgumentException(
                     THE_CHILDREN_ARRAY_CANNOT_BE_NULL);
         }
 
-        for (Element child : children) {
-            if (child == null) {
-                throw new IllegalArgumentException(
-                        "Element to insert must not be null");
-            }
-            Node<?> parentNode = child.getParentNode();
-            if (parentNode != null) {
-                throw new IllegalArgumentException(
-                        "Element to insert already has a parent and can't "
-                                + "be added as a virtual child");
-            }
-            getStateProvider().appendVirtualChild(getNode(), child,
-                    NodeProperties.IN_MEMORY_CHILD, null);
-            ensureChildHasParent(child, true);
+        return appendVirtualChild(Arrays.asList(children));
+    }
+
+    /**
+     * Appends the given child as the virtual child of the element.
+     * <p>
+     * The virtual child is not really a child of the DOM element. The
+     * client-side counterpart is created in the memory, but it's not attached to
+     * the DOM tree. The resulting element is referenced via the server side
+     * {@link Element} in JS function call as usual.
+     *
+     * @param child
+     *            the element to add
+     * @return this element
+     */
+    public N appendVirtualChild(Element child) {
+        if (child == null) {
+            throw new IllegalArgumentException(
+                    THE_CHILD_CANNOT_BE_NULL);
         }
+
+        Node<?> parentNode = child.getParentNode();
+        if (parentNode != null) {
+            throw new IllegalArgumentException(
+                    "Element to insert already has a parent and can't "
+                            + "be added as a virtual child");
+        }
+        getStateProvider().appendVirtualChild(getNode(), child,
+                NodeProperties.IN_MEMORY_CHILD, null);
+        ensureChildHasParent(child, true);
+
+        return getSelf();
+    }
+
+    /**
+     * Appends the given children as the virtual children of the element.
+     * <p>
+     * The virtual child is not really a child of the DOM element. The
+     * client-side counterpart is created in the memory, but it's not attached to
+     * the DOM tree. The resulting element is referenced via the server side
+     * {@link Element} in JS function call as usual.
+     *
+     * @param children
+     *            the element(s) to add
+     * @return this element
+     */
+    public N appendVirtualChild(Collection<Element> children) {
+        if (children == null) {
+            throw new IllegalArgumentException(
+                    THE_CHILDREN_ARRAY_CANNOT_BE_NULL);
+        }
+
+        children.forEach(this::appendVirtualChild);
 
         return getSelf();
     }
@@ -192,34 +260,82 @@ public abstract class Node<N extends Node<N>> implements Serializable {
      * @param children
      *            the element(s) to remove
      * @return this element
+     * @deprecated varargs methods will be removed in the future
+     * @see com.vaadin.flow.dom.Node#removeVirtualChild(Collection)
      */
     /*
      * The use case for removing virtual children is when exported Flow web
      * components are detached from their parent due to missing heart beats +
      * timeout.
      */
+    @Deprecated
     public N removeVirtualChild(Element... children) {
         if (children == null) {
             throw new IllegalArgumentException(
                     THE_CHILDREN_ARRAY_CANNOT_BE_NULL);
         }
 
+        return removeVirtualChild(Arrays.asList(children));
+    }
+
+    /**
+     * Removes the given child that has been attached as the virtual
+     * child of this element.
+     * <p>
+     * The virtual child is not really a child of the DOM element. The
+     * client-side counterpart is created in the memory, but it's not attached to
+     * the DOM tree. The resulting element is referenced via the server side
+     * {@link Element} in JS function call as usual. *
+     *
+     * @param child
+     *            the element to remove
+     * @return this element
+     */
+    /*
+     * The use case for removing virtual children is when exported Flow web
+     * components are detached from their parent due to missing heart beats +
+     * timeout.
+     */
+    public N removeVirtualChild(Element child) {
+        if (child == null) {
+            throw new IllegalArgumentException(
+                    THE_CHILD_CANNOT_BE_NULL);
+        }
+
         if (getNode().hasFeature(VirtualChildrenList.class)) {
             VirtualChildrenList childrenList = getNode()
                     .getFeature(VirtualChildrenList.class);
-            for (Element child : children) {
-                if (child == null) {
-                    throw new IllegalArgumentException(
-                            "Element to remove must not be null");
-                }
-                int index = childrenList.indexOf(child.getNode());
-                if (index == -1) {
-                    throw new IllegalArgumentException(
-                            "Trying to detach a virtual child element from parent that does not have it.");
-                }
-                childrenList.remove(index);
+            int index = childrenList.indexOf(child.getNode());
+            if (index == -1) {
+                throw new IllegalArgumentException(
+                        "Trying to detach a virtual child element from parent that does not have it.");
             }
+            childrenList.remove(index);
         }
+
+        return getSelf();
+    }
+
+    /**
+     * Removes the given children that have been attached as the virtual
+     * children of this element.
+     * <p>
+     * The virtual child is not really a child of the DOM element. The
+     * client-side counterpart is created in the memory but it's not attached to
+     * the DOM tree. The resulting element is referenced via the server side
+     * {@link Element} in JS function call as usual. *
+     *
+     * @param children
+     *            the elements to remove
+     * @return this element
+     */
+    public N removeVirtualChild(Collection<Element> children) {
+        if (children == null) {
+            throw new IllegalArgumentException(
+                    THE_CHILDREN_ARRAY_CANNOT_BE_NULL);
+        }
+
+        children.forEach(this::removeVirtualChild);
 
         return getSelf();
     }
@@ -260,41 +376,83 @@ public abstract class Node<N extends Node<N>> implements Serializable {
      * @param children
      *            the child element(s) to insert
      * @return this element
+     * @deprecated varargs methods will be removed in the future
+     * @see com.vaadin.flow.dom.Node#insertChild(int, Collection)
      */
+    @Deprecated
     public N insertChild(int index, Element... children) {
         if (children == null) {
             throw new IllegalArgumentException(
-                    THE_CHILDREN_ARRAY_CANNOT_BE_NULL);
-        }
-        if (index > getChildCount()) {
-            throw new IllegalArgumentException(String.format(
-                    CANNOT_X_WITH_INDEX_Y_WHEN_THERE_ARE_Z_CHILDREN, "insert",
-                    index, getChildCount()));
+                    THE_CHILDREN_COLLECTION_CANNOT_BE_NULL);
         }
 
-        for (int i = 0,
-                insertIndex = index; i < children.length; i++, insertIndex++) {
-            Element child = children[i];
-            if (child == null) {
-                throw new IllegalArgumentException(
-                        "Element to insert must not be null");
-            }
-            if (equals(child.getParentNode())) {
-                int childIndex = indexOfChild(child);
-                if (childIndex == insertIndex) {
-                    // No-op of inserting to the current position
-                    continue;
-                } else if (childIndex < insertIndex) {
-                    // Adjust target index if the new child is already our
-                    // child,
-                    // and we will be removing it from before the target index
-                    insertIndex--;
-                }
-            }
-            child.removeFromParent();
-            getStateProvider().insertChild(node, insertIndex, child);
-            ensureChildHasParent(child, true);
+        return insertChild(index, Arrays.asList(children));
+    }
+
+    /**
+     * Inserts the given child element at the given position.
+     *
+     * @param index
+     *            the position at which to insert the new child
+     * @param child
+     *            the child element to insert
+     * @return this element
+     */
+    public N insertChild(int index, Element child) {
+        return insertChild(new AtomicInteger(index), child);
+    }
+
+    private N insertChild(AtomicInteger index, Element child) {
+        if (child == null) {
+            throw new IllegalArgumentException(
+                    THE_CHILD_CANNOT_BE_NULL);
         }
+
+        if (index.get() > getChildCount()) {
+            throw new IllegalArgumentException(String.format(
+                    CANNOT_X_WITH_INDEX_Y_WHEN_THERE_ARE_Z_CHILDREN, "insert",
+                    index.get(), getChildCount()));
+        }
+
+        if (equals(child.getParentNode())) {
+            int childIndex = indexOfChild(child);
+            if (childIndex == index.get()) {
+                // No-op of inserting to the current position
+                return getSelf();
+            } else if (childIndex < index.get()) {
+                // Adjust target index if the new child is already our
+                // child,
+                // and we will be removing it from before the target index
+                index.decrementAndGet();
+            }
+        }
+        child.removeFromParent();
+        getStateProvider().insertChild(node, index.get(), child);
+        ensureChildHasParent(child, true);
+
+        return getSelf();
+    }
+
+    /**
+     * Inserts the given child elements at the given position.
+     *
+     * @param index
+     *            the position at which to insert the new child
+     * @param children
+     *            the child elements to insert
+     * @return this element
+     */
+    public N insertChild(int index, Collection<Element> children) {
+        if (children == null) {
+            throw new IllegalArgumentException(
+                    THE_CHILDREN_COLLECTION_CANNOT_BE_NULL);
+        }
+
+        AtomicInteger insertIndex = new AtomicInteger(index);
+        children.forEach(child -> {
+            insertChild(insertIndex, child);
+            insertIndex.incrementAndGet();
+        });
 
         return getSelf();
     }
@@ -365,17 +523,52 @@ public abstract class Node<N extends Node<N>> implements Serializable {
      * @param children
      *            the child element(s) to remove
      * @return this element
+     * @deprecated varargs methods will be removed in the future
+     * @see com.vaadin.flow.dom.Node#removeChild(Collection)
      */
+    @Deprecated
     public N removeChild(Element... children) {
         if (children == null) {
             throw new IllegalArgumentException(
                     THE_CHILDREN_ARRAY_CANNOT_BE_NULL);
         }
 
-        for (Element child : children) {
-            ensureChildHasParent(child, false);
-            getStateProvider().removeChild(getNode(), child);
+        return removeChild(Arrays.asList(children));
+    }
+
+    /**
+     * Removes the given child element.
+     *
+     * @param child
+     *            the child element to remove
+     * @return this element
+     */
+    public N removeChild(Element child) {
+        if (child == null) {
+            throw new IllegalArgumentException(
+                    THE_CHILD_CANNOT_BE_NULL);
         }
+
+        return removeChild(Collections.singleton(child));
+    }
+
+    /**
+     * Removes the given child elements.
+     *
+     * @param children
+     *            the child elements to remove
+     * @return this element
+     */
+    public N removeChild(Collection<Element> children) {
+        if (children == null) {
+            throw new IllegalArgumentException(
+                    THE_CHILDREN_COLLECTION_CANNOT_BE_NULL);
+        }
+
+        children.stream()
+                .peek(child -> ensureChildHasParent(child, false))
+                .forEach(child -> getStateProvider().removeChild(getNode(), child));
+
         return getSelf();
     }
 
