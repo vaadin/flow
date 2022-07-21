@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -131,12 +132,10 @@ public class DataCommunicatorTest {
             }
         };
 
-        Mockito.when(arrayUpdater.startUpdate(Mockito.anyInt()))
-                .thenReturn(update);
+        Mockito.when(arrayUpdater.startUpdate(Mockito.anyInt())).thenReturn(update);
 
-        dataCommunicator = new DataCommunicator<>(dataGenerator, arrayUpdater,
-                data -> {
-                }, element.getNode());
+        dataCommunicator = new DataCommunicator<>(dataGenerator, arrayUpdater, data -> {
+        }, element.getNode());
     }
 
     @Test
@@ -145,17 +144,13 @@ public class DataCommunicatorTest {
         fakeClientCommunication();
 
         Assert.assertEquals(Range.withLength(0, 0), lastSet);
-        Assert.assertNull(
-                "Only requestAll should clear items. This may make us loop.",
-                lastClear);
+        Assert.assertNull("Only requestAll should clear items. This may make us loop.", lastClear);
 
         dataCommunicator.setRequestedRange(0, 0);
         fakeClientCommunication();
 
         Assert.assertEquals(Range.withLength(0, 0), lastSet);
-        Assert.assertNull(
-                "Only requestAll should clear items. Which would make us loop.",
-                lastClear);
+        Assert.assertNull("Only requestAll should clear items. Which would make us loop.", lastClear);
     }
 
     @Test
@@ -165,15 +160,12 @@ public class DataCommunicatorTest {
         dataCommunicator.setRequestedRange(0, 50);
         fakeClientCommunication();
 
-        Assert.assertEquals(
-                "Expected request range for 50 items on first request.",
-                Range.withLength(0, 50), lastSet);
+        Assert.assertEquals("Expected request range for 50 items on first request.", Range.withLength(0, 50), lastSet);
 
         dataCommunicator.setRequestedRange(0, 70);
         fakeClientCommunication();
 
-        Assert.assertEquals("Expected request range for 20 new items.",
-                Range.withLength(50, 20), lastSet);
+        Assert.assertEquals("Expected request range for 20 new items.", Range.withLength(50, 20), lastSet);
     }
 
     @Test
@@ -182,8 +174,7 @@ public class DataCommunicatorTest {
         dataCommunicator.setRequestedRange(0, 50);
         fakeClientCommunication();
 
-        Assert.assertEquals("Expected initial full reset.",
-                Range.withLength(0, 50), lastSet);
+        Assert.assertEquals("Expected initial full reset.", Range.withLength(0, 50), lastSet);
         lastSet = null;
 
         element.removeFromParent();
@@ -194,8 +185,7 @@ public class DataCommunicatorTest {
         ui.getElement().appendChild(element);
         fakeClientCommunication();
 
-        Assert.assertEquals("Expected initial full reset after reattach",
-                Range.withLength(0, 50), lastSet);
+        Assert.assertEquals("Expected initial full reset after reattach", Range.withLength(0, 50), lastSet);
     }
 
     @Test
@@ -204,8 +194,7 @@ public class DataCommunicatorTest {
         dataCommunicator.setRequestedRange(0, 50);
         fakeClientCommunication();
 
-        Assert.assertEquals("Expected initial full reset.",
-                Range.withLength(0, 50), lastSet);
+        Assert.assertEquals("Expected initial full reset.", Range.withLength(0, 50), lastSet);
         lastSet = null;
 
         element.removeFromParent();
@@ -227,8 +216,7 @@ public class DataCommunicatorTest {
         Assert.assertEquals(0, dataCommunicator.getKeyMapper().get("1").id);
 
         dataCommunicator.setDataProvider(createDataProvider(), null);
-        Assert.assertNull(
-                "The KeyMapper should be reset when a new DataProvider is set",
+        Assert.assertNull("The KeyMapper should be reset when a new DataProvider is set",
                 dataCommunicator.getKeyMapper().get("1"));
     }
 
@@ -238,17 +226,15 @@ public class DataCommunicatorTest {
         for (int i = 0; i < 2; i++) {
             items.add(new Item(i));
         }
-        DataProvider<Item, Void> dataProvider = DataProvider
-                .fromCallbacks(query -> {
-                    return items.stream();
-                }, query -> {
-                    return items.size();
-                });
+        DataProvider<Item, Void> dataProvider = DataProvider.fromCallbacks(query -> {
+            return items.stream();
+        }, query -> {
+            return items.size();
+        });
         dataCommunicator.setDataProvider(dataProvider, null);
 
         expectedException.expect(IllegalStateException.class);
-        expectedException.expectMessage(CoreMatchers.containsString(
-                "The data provider hasn't ever called getLimit"));
+        expectedException.expectMessage(CoreMatchers.containsString("The data provider hasn't ever called getLimit"));
         dataCommunicator.fetchFromProvider(0, 1);
     }
 
@@ -258,18 +244,16 @@ public class DataCommunicatorTest {
         for (int i = 0; i < 2; i++) {
             items.add(new Item(i));
         }
-        DataProvider<Item, Void> dataProvider = DataProvider
-                .fromCallbacks(query -> {
-                    query.getLimit();
-                    return items.stream();
-                }, query -> {
-                    return items.size();
-                });
+        DataProvider<Item, Void> dataProvider = DataProvider.fromCallbacks(query -> {
+            query.getLimit();
+            return items.stream();
+        }, query -> {
+            return items.size();
+        });
         dataCommunicator.setDataProvider(dataProvider, null);
 
         expectedException.expect(IllegalStateException.class);
-        expectedException.expectMessage(CoreMatchers.containsString(
-                "The data provider hasn't ever called getOffset"));
+        expectedException.expectMessage(CoreMatchers.containsString("The data provider hasn't ever called getOffset"));
         dataCommunicator.fetchFromProvider(1, 1);
     }
 
@@ -279,21 +263,19 @@ public class DataCommunicatorTest {
         for (int i = 0; i < 2; i++) {
             items.add(new Item(i));
         }
-        DataProvider<Item, Void> dataProvider = DataProvider
-                .fromCallbacks(query -> {
-                    query.getOffset();
-                    query.getLimit();
-                    return items.stream();
-                }, query -> {
-                    return items.size();
-                });
+        DataProvider<Item, Void> dataProvider = DataProvider.fromCallbacks(query -> {
+            query.getOffset();
+            query.getLimit();
+            return items.stream();
+        }, query -> {
+            return items.size();
+        });
         dataCommunicator.setDataProvider(dataProvider, null);
 
         Stream<Item> stream = dataCommunicator.fetchFromProvider(0, 1);
 
         expectedException.expect(IllegalStateException.class);
-        expectedException.expectMessage(CoreMatchers.containsString(
-                "exceeds the limit specified by the query (1)."));
+        expectedException.expectMessage(CoreMatchers.containsString("exceeds the limit specified by the query (1)."));
 
         stream.forEach(item -> {
         });
@@ -315,8 +297,7 @@ public class DataCommunicatorTest {
         Item originalItem = items.get(0);
         String key = dataCommunicator.getKeyMapper().key(originalItem);
 
-        Assert.assertSame(originalItem,
-                dataCommunicator.getKeyMapper().get(key));
+        Assert.assertSame(originalItem, dataCommunicator.getKeyMapper().get(key));
 
         Item updatedItem = new Item(originalItem.id, "Updated");
         items.set(0, updatedItem);
@@ -324,14 +305,12 @@ public class DataCommunicatorTest {
 
         fakeClientCommunication();
 
-        Assert.assertSame(updatedItem,
-                dataCommunicator.getKeyMapper().get(key));
+        Assert.assertSame(updatedItem, dataCommunicator.getKeyMapper().get(key));
     }
 
     @Test
     public void dataProviderReturnsLessItemsThanRequested_aNewSizeQueryIsPerformed() {
-        AbstractDataProvider<Item, Object> dataProvider = createDataProviderThatChangesSize(
-                50, 10);
+        AbstractDataProvider<Item, Object> dataProvider = createDataProviderThatChangesSize(50, 10);
         dataProvider = Mockito.spy(dataProvider);
         dataCommunicator.setDataProvider(dataProvider, null);
 
@@ -352,9 +331,8 @@ public class DataCommunicatorTest {
         AtomicInteger listenerInvocationCounter = new AtomicInteger(0);
 
         TestComponent componentWithDataProvider = new TestComponent();
-        dataCommunicator = new DataCommunicator<Item>(dataGenerator,
-                arrayUpdater, data -> {
-                }, componentWithDataProvider.getElement().getNode()) {
+        dataCommunicator = new DataCommunicator<Item>(dataGenerator, arrayUpdater, data -> {
+        }, componentWithDataProvider.getElement().getNode()) {
             @Override
             public void reset() {
                 listenerInvocationCounter.incrementAndGet();
@@ -368,10 +346,8 @@ public class DataCommunicatorTest {
         ui.add(componentWithDataProvider);
         fakeClientCommunication();
 
-        Assert.assertEquals(
-                "Expected two DataCommunicator::reset() invocations: upon "
-                        + "setting the data provider and component attaching",
-                2, listenerInvocationCounter.get());
+        Assert.assertEquals("Expected two DataCommunicator::reset() invocations: upon "
+                + "setting the data provider and component attaching", 2, listenerInvocationCounter.get());
 
         // when
         // the data is being refreshed -> data provider's listeners are being
@@ -388,22 +364,17 @@ public class DataCommunicatorTest {
 
     @Test
     public void setRequestedRange_tooMuchItemsRequested_maxItemsAllowedRequested() {
-        DataProvider<Item, Object> dataProvider = Mockito
-                .spy(createDataProvider(2000));
+        DataProvider<Item, Object> dataProvider = Mockito.spy(createDataProvider(2000));
         dataCommunicator.setDataProvider(dataProvider, null);
         // More than allowed (1000) items requested
         dataCommunicator.setRequestedRange(0, 1001);
         fakeClientCommunication();
 
-        ArgumentCaptor<Query> queryCaptor = ArgumentCaptor
-                .forClass(Query.class);
-        Mockito.verify(dataProvider, Mockito.times(1))
-                .fetch(queryCaptor.capture());
+        ArgumentCaptor<Query> queryCaptor = ArgumentCaptor.forClass(Query.class);
+        Mockito.verify(dataProvider, Mockito.times(1)).fetch(queryCaptor.capture());
 
-        Assert.assertEquals(
-                "Expected the requested items count to be limited"
-                        + " to allowed threshold",
-                1000, queryCaptor.getValue().getLimit());
+        Assert.assertEquals("Expected the requested items count to be limited" + " to allowed threshold", 1000,
+                queryCaptor.getValue().getLimit());
     }
 
     private void fakeClientCommunication() {
@@ -412,8 +383,7 @@ public class DataCommunicatorTest {
         });
     }
 
-    private AbstractDataProvider<Item, Object> createDataProviderThatChangesSize(
-            final int size, final int delta) {
+    private AbstractDataProvider<Item, Object> createDataProviderThatChangesSize(final int size, final int delta) {
         return new AbstractDataProvider<Item, Object>() {
             private boolean modifiedCount;
 
@@ -437,8 +407,7 @@ public class DataCommunicatorTest {
                     count -= delta;
                     modifiedCount = true;
                 }
-                return IntStream.range(query.getOffset(), count)
-                        .mapToObj(Item::new);
+                return IntStream.range(query.getOffset(), count).mapToObj(Item::new);
             }
         };
     }
@@ -461,10 +430,7 @@ public class DataCommunicatorTest {
 
             @Override
             public Stream<Item> fetch(Query<Item, Object> query) {
-                return IntStream
-                        .range(query.getOffset(),
-                                query.getLimit() + query.getOffset())
-                        .mapToObj(Item::new);
+                return IntStream.range(query.getOffset(), query.getLimit() + query.getOffset()).mapToObj(Item::new);
             }
         };
     }
@@ -506,12 +472,10 @@ public class DataCommunicatorTest {
 
     public static class MockVaadinSession extends VaadinSession {
         /*
-         * Used to make sure there's at least one reference to the mock session
-         * while it's locked. This is used to prevent the session from being
-         * eaten by GC in tests where @Before creates a session and sets it as
-         * the current instance without keeping any direct reference to it. This
-         * pattern has a chance of leaking memory if the session is not unlocked
-         * in the right way, but it should be acceptable for testing use.
+         * Used to make sure there's at least one reference to the mock session while it's locked. This is used to
+         * prevent the session from being eaten by GC in tests where @Before creates a session and sets it as the
+         * current instance without keeping any direct reference to it. This pattern has a chance of leaking memory if
+         * the session is not unlocked in the right way, but it should be acceptable for testing use.
          */
         private static final ThreadLocal<MockVaadinSession> referenceKeeper = new ThreadLocal<>();
 
@@ -549,6 +513,33 @@ public class DataCommunicatorTest {
         private int closeCount;
 
         private ReentrantLock lock = new ReentrantLock();
+    }
+
+    // Simulates a flush request enqueued during a page reload with
+    // @PreserveOnRefresh
+    // see https://github.com/vaadin/flow/issues/14067
+    @Test
+    public void reattach_differentUI_requestFlushExecuted() {
+        dataCommunicator.setDataProvider(createDataProvider(), null);
+        dataCommunicator.setRequestedRange(0, 50);
+
+        MockUI newUI = new MockUI();
+        // simulates preserve on refresh
+        // DataCommunicator has a flushRequest pending
+        // that should be rescheduled on the new state tree
+        moveToNewUI(ui, newUI.getInternals().getUI());
+        ui = newUI;
+        fakeClientCommunication();
+
+        Assert.assertEquals("Expected initial full reset.", Range.withLength(0, 50), lastSet);
+    }
+
+    private void moveToNewUI(UI oldUI, UI newUI) {
+        final List<Element> uiChildren = oldUI.getElement().getChildren().collect(Collectors.toList());
+        uiChildren.forEach(element -> {
+            element.removeFromTree();
+            newUI.getElement().appendChild(element);
+        });
     }
 
     @Tag("test-component")
