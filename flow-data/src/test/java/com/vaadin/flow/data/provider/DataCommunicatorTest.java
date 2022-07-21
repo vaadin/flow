@@ -1567,6 +1567,26 @@ public class DataCommunicatorTest {
                 600, queryCaptor.getValue().getLimit());
     }
 
+    // Simulates a flush request enqueued during a page reload with
+    // @PreserveOnRefresh
+    // see https://github.com/vaadin/flow/issues/14067
+    @Test
+    public void reattach_differentUI_requestFlushExecuted() {
+        dataCommunicator.setDataProvider(createDataProvider(), null);
+        dataCommunicator.setRequestedRange(0, 50);
+
+        MockUI newUI = new MockUI();
+        // simulates preserve on refresh
+        // DataCommunicator has a flushRequest pending
+        // that should be rescheduled on the new state tree
+        newUI.getInternals().moveElementsFrom(ui);
+        ui = newUI;
+        fakeClientCommunication();
+
+        Assert.assertEquals("Expected initial full reset.",
+                Range.withLength(0, 50), lastSet);
+    }
+
     @Tag("test-component")
     private static class TestComponent extends Component {
 
