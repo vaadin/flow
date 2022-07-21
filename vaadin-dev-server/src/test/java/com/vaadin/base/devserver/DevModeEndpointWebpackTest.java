@@ -1,17 +1,11 @@
 package com.vaadin.base.devserver;
 
-import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
-import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_JAVA_SOURCE_FOLDER;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_OPENAPI_JSON_FILE;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR;
-import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
-import static com.vaadin.flow.testutil.FrontendStubs.createStubViteServer;
-import static com.vaadin.flow.testutil.FrontendStubs.createStubWebpackServer;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
+import javax.servlet.ServletRegistration;
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
@@ -19,26 +13,35 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.servlet.ServletRegistration;
-
-import com.vaadin.base.devserver.startup.AbstractDevModeTest;
-import com.vaadin.base.devserver.startup.DevModeStartupListener;
-import com.vaadin.flow.di.ResourceProvider;
-import com.vaadin.flow.internal.DevModeHandlerManager;
-import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.VaadinServletContext;
-import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
-
+import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import net.jcip.annotations.NotThreadSafe;
+import com.vaadin.base.devserver.startup.AbstractDevModeTest;
+import com.vaadin.base.devserver.startup.DevModeStartupListener;
+import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.di.ResourceProvider;
+import com.vaadin.flow.internal.DevModeHandlerManager;
+import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinServletContext;
+import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
+
+import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
+import static com.vaadin.flow.server.Constants.TARGET;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_JAVA_SOURCE_FOLDER;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_OPENAPI_JSON_FILE;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR;
+import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
+import static com.vaadin.flow.testutil.FrontendStubs.createStubWebpackServer;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
 
 @NotThreadSafe
-public class DevModeEndpointTest extends AbstractDevModeTest {
+public class DevModeEndpointWebpackTest extends AbstractDevModeTest {
 
     Set<Class<?>> classes;
     DevModeStartupListener devModeStartupListener;
@@ -58,7 +61,7 @@ public class DevModeEndpointTest extends AbstractDevModeTest {
                         .isPresent());
 
         createStubNode(false, true, baseDir);
-        createStubViteServer("ready in 500ms", 500, baseDir, true);
+        createStubWebpackServer("Compiled", 500, baseDir, true);
 
         // Prevent TaskRunNpmInstall#cleanUp from deleting node_modules
         new File(baseDir, "node_modules/.modules.yaml").createNewFile();
@@ -68,11 +71,6 @@ public class DevModeEndpointTest extends AbstractDevModeTest {
 
         Mockito.doReturn(new TestEndpointGeneratorTaskFactory()).when(lookup)
                 .lookup(EndpointGeneratorTaskFactory.class);
-
-        ResourceProvider resourceProvider = Mockito
-                .mock(ResourceProvider.class);
-        Mockito.when(lookup.lookup(ResourceProvider.class))
-                .thenReturn(resourceProvider);
 
         Mockito.when(vaadinServletRegistration.getClassName())
                 .thenReturn(VaadinServletSubClass.class.getName());
@@ -100,6 +98,18 @@ public class DevModeEndpointTest extends AbstractDevModeTest {
                 new File(baseDir, DEFAULT_CONNECT_JAVA_SOURCE_FOLDER));
 
         devModeStartupListener = new DevModeStartupListener();
+    }
+
+    @Override
+    protected void setupMockResourceProvider(
+            ResourceProvider mockResourceProvider) throws IOException {
+        URL mockURL = Mockito.mock(URL.class);
+        when(mockResourceProvider
+                .getApplicationResource(FeatureFlags.PROPERTIES_FILENAME))
+                .thenReturn(mockURL);
+        when(mockURL.openStream()).then(i -> new ByteArrayInputStream(
+                "com.vaadin.experimental.webpackForFrontendBuild=true"
+                        .getBytes(StandardCharsets.UTF_8)));
     }
 
     @Test

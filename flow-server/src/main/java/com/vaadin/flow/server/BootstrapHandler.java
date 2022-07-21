@@ -766,7 +766,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             setupPwa(document, context);
 
             if (!config.isProductionMode()) {
-                showWebpackErrors(context.getService(), document);
+                showDevServerErrors(context.getService(), document);
             }
 
             BootstrapPageResponse response = new BootstrapPageResponse(
@@ -995,11 +995,13 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 BootstrapContext context) throws IOException {
             if (FeatureFlags.get(service.getContext())
                     .isEnabled(FeatureFlags.WEBPACK)) {
-                String content = FrontendUtils.getStatsAssetsByChunkName(service);
+                String content = FrontendUtils
+                        .getStatsAssetsByChunkName(service);
                 if (content == null) {
                     StringBuilder message = new StringBuilder(
                             "The stats file from webpack (stats.json) was not found.\n");
-                    if (service.getDeploymentConfiguration().isProductionMode()) {
+                    if (service.getDeploymentConfiguration()
+                            .isProductionMode()) {
                         message.append(
                                 "The application is running in production mode.");
                         message.append(
@@ -1030,8 +1032,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     } else {
                         chunkName = chunks.getString(key);
                     }
-                    Element script = createJavaScriptModuleElement("./" + chunkName,
-                            false);
+                    Element script = createJavaScriptModuleElement(
+                            "./" + chunkName, false);
                     head.appendChild(script
                             .attr("data-app-id",
                                     context.getUI().getInternals().getAppId())
@@ -1056,8 +1058,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                         .matcher(index);
                 while (scriptMatcher.find()) {
                     Element script = createJavaScriptModuleElement(context
-                                    .getUriResolver().resolveVaadinUri("context://"
-                                                                       + "VAADIN/build/" + scriptMatcher.group(1)),
+                            .getUriResolver().resolveVaadinUri("context://"
+                                    + "VAADIN/build/" + scriptMatcher.group(1)),
                             false);
                     head.appendChild(script.attr("async", true)
                             // Fixes basic auth in Safari #6560
@@ -1071,7 +1073,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 while (cssMatcher.find()) {
                     Element link = createStylesheetElement(context
                             .getUriResolver().resolveVaadinUri("context://"
-                                                               + "VAADIN/build/" + cssMatcher.group(1)));
+                                    + "VAADIN/build/" + cssMatcher.group(1)));
                     head.appendChild(link);
                 }
             }
@@ -1689,7 +1691,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         return pushJSPath;
     }
 
-    protected static void showWebpackErrors(VaadinService service,
+    protected static void showDevServerErrors(VaadinService service,
             Document document) {
         Optional<DevModeHandler> devServer = DevModeHandlerManager
                 .getDevModeHandler(service);

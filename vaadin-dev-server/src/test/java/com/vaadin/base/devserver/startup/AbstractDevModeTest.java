@@ -1,6 +1,7 @@
 package com.vaadin.base.devserver.startup;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.file.Paths;
 import java.util.Collections;
@@ -75,6 +76,7 @@ public abstract class AbstractDevModeTest {
                 .mock(ResourceProvider.class);
         Mockito.when(lookup.lookup(ResourceProvider.class))
                 .thenReturn(resourceProvider);
+        setupMockResourceProvider(resourceProvider);
         devModeHandlerManager = new DevModeHandlerManagerImpl();
         Mockito.when(lookup.lookup(DevModeHandlerManager.class))
                 .thenReturn(devModeHandlerManager);
@@ -101,6 +103,11 @@ public abstract class AbstractDevModeTest {
             handler.stop();
             handler = null;
         }
+
+    }
+
+    protected void setupMockResourceProvider(
+            ResourceProvider mockResourceProvider) throws IOException {
 
     }
 

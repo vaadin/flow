@@ -1,16 +1,6 @@
 package com.vaadin.base.devserver.startup;
 
-import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
-import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
-import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
-import static com.vaadin.flow.server.Constants.RESOURCES_THEME_JAR_DEFAULT;
-import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_OPENAPI_JSON_FILE;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -21,6 +11,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -33,16 +24,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
-import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.InitParameters;
-import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
-import com.vaadin.flow.server.frontend.FallbackChunk;
-import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.startup.ApplicationConfiguration;
-import com.vaadin.flow.server.startup.VaadinInitializerException;
-
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -51,10 +33,36 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
-import net.jcip.annotations.NotThreadSafe;
+import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.ResourceProvider;
+import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
+import com.vaadin.flow.server.frontend.FallbackChunk;
+import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
+import com.vaadin.flow.server.startup.VaadinInitializerException;
+
+import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
+import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
+import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
+import static com.vaadin.flow.server.Constants.RESOURCES_THEME_JAR_DEFAULT;
+import static com.vaadin.flow.server.Constants.TARGET;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_OPENAPI_JSON_FILE;
+import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
+import static com.vaadin.flow.testutil.FrontendStubs.WEBPACK_SERVER;
+import static com.vaadin.flow.testutil.FrontendStubs.createStubWebpackServer;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.when;
 
 @NotThreadSafe
-public class DevModeInitializerTest extends DevModeInitializerTestBase {
+public class DevModeInitializerWebpackTest extends DevModeInitializerTestBase {
 
     @JsModule("foo")
     public static class Visited {
@@ -119,6 +127,24 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
+
+    @Override
+    protected File createStubDevServer(String baseDir) throws IOException {
+        createStubWebpackServer("Compiled", 500, baseDir, true);
+        return new File(baseDir, WEBPACK_CONFIG);
+    }
+
+    @Override
+    protected void setupMockResourceProvider(
+            ResourceProvider mockResourceProvider) throws IOException {
+        URL mockURL = Mockito.mock(URL.class);
+        when(mockResourceProvider
+                .getApplicationResource(FeatureFlags.PROPERTIES_FILENAME))
+                .thenReturn(mockURL);
+        when(mockURL.openStream()).then(i -> new ByteArrayInputStream(
+                "com.vaadin.experimental.webpackForFrontendBuild=true"
+                        .getBytes(StandardCharsets.UTF_8)));
+    }
 
     @Test
     public void loadingJars_useModernResourcesFolder_allFilesExist()

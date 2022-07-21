@@ -72,7 +72,8 @@ public class WebComponentBootstrapHandlerWebpackTest {
 
     @Before
     public void before() throws IOException {
-        ApplicationConfiguration configuration = Mockito.mock(ApplicationConfiguration.class);
+        ApplicationConfiguration configuration = Mockito
+                .mock(ApplicationConfiguration.class);
         context = Mockito.mock(VaadinContext.class);
 
         lookup = Mockito.mock(Lookup.class);
@@ -84,9 +85,12 @@ public class WebComponentBootstrapHandlerWebpackTest {
                 "com.vaadin.experimental.webpackForFrontendBuild=true\n",
                 StandardCharsets.UTF_8);
 
-        Mockito.when(context.getAttribute(Mockito.eq(ApplicationConfiguration.class),
-                Mockito.any(Supplier.class))).thenReturn(configuration);
-        Mockito.when(configuration.getJavaResourceFolder()).thenReturn(propertiesDir);
+        Mockito.when(
+                context.getAttribute(Mockito.eq(ApplicationConfiguration.class),
+                        Mockito.any(Supplier.class)))
+                .thenReturn(configuration);
+        Mockito.when(configuration.getJavaResourceFolder())
+                .thenReturn(propertiesDir);
 
         service = new MockVaadinServletService() {
             @Override
@@ -276,8 +280,8 @@ public class WebComponentBootstrapHandlerWebpackTest {
                 "if (!hasScript(\"/VAADIN/build/vaadin-export-2222.cache.js\")) {");
         Assert.assertTrue(guardIndex > scriptIndex);
 
-        int createScriptIndex = result
-                .indexOf("document.createElement('script')");
+        int createScriptIndex = result.indexOf(
+                "document.createElement('script');headElem.setAttribute('type'");
         Assert.assertTrue(createScriptIndex > guardIndex);
 
         Assert.assertTrue(result.contains("\\\"devToolsEnabled\\\": false"));
@@ -402,8 +406,10 @@ public class WebComponentBootstrapHandlerWebpackTest {
                 .thenReturn(provider);
 
         Mockito.when(provider.getApplicationResource(Mockito.anyString()))
-                .thenAnswer(answer -> WebComponentBootstrapHandlerWebpackTest.class
-                        .getClassLoader().getResource(answer.getArgument(0)));
+                .thenAnswer(
+                        answer -> WebComponentBootstrapHandlerWebpackTest.class
+                                .getClassLoader()
+                                .getResource(answer.getArgument(0)));
 
         Mockito.when(provider.getClientResourceAsStream(
                 "META-INF/resources/" + ApplicationConstants.CLIENT_ENGINE_PATH
