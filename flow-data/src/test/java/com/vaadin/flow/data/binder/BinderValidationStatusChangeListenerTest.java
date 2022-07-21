@@ -66,8 +66,8 @@ public class BinderValidationStatusChangeListenerTest
     @Test
     public void binderWithFieldsValidationStatusChangeListenerDisabled_bindIsCalled_noValidationStatusListenerIsCalled() {
         binder.setFieldsValidationStatusChangeListenerEnabled(false);
-        TestHasValidatorDatePicker.DatePickerHasValidatorDefaults field = Mockito.spy(
-                TestHasValidatorDatePicker.DatePickerHasValidatorDefaults.class);
+        TestHasValidatorDatePicker.DatePickerHasValidatorDefaults field = Mockito
+                .spy(TestHasValidatorDatePicker.DatePickerHasValidatorDefaults.class);
         binder.bind(field, BIRTH_DATE_PROPERTY);
         Mockito.verify(field, Mockito.never())
                 .addValidationStatusChangeListener(Mockito.any());
