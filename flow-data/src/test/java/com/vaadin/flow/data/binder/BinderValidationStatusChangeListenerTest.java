@@ -64,6 +64,16 @@ public class BinderValidationStatusChangeListenerTest
     }
 
     @Test
+    public void binderWithFieldsValidationStatusChangeListenerDisabled_bindIsCalled_noValidationStatusListenerIsCalled() {
+        binder.setFieldsValidationStatusChangeListenerEnabled(false);
+        TestHasValidatorDatePicker.DatePickerHasValidatorDefaults field = Mockito
+                .spy(TestHasValidatorDatePicker.DatePickerHasValidatorDefaults.class);
+        binder.bind(field, BIRTH_DATE_PROPERTY);
+        Mockito.verify(field, Mockito.never())
+                .addValidationStatusChangeListener(Mockito.any());
+    }
+
+    @Test
     public void fieldWithHasValidatorOnlyGetDefaultValidatorOverridden_bindIsCalled_addValidationStatusListenerIsCalled() {
         TestHasValidatorDatePicker.DataPickerHasValidatorGetDefaultValidatorOverridden field = Mockito
                 .spy(TestHasValidatorDatePicker.DataPickerHasValidatorGetDefaultValidatorOverridden.class);
@@ -99,6 +109,17 @@ public class BinderValidationStatusChangeListenerTest
         field.fireValidationStatusChangeEvent(false);
         Assert.assertEquals(1, componentErrors.size());
         Assert.assertEquals(INVALID_DATE_FORMAT, componentErrors.get(field));
+    }
+
+    @Test
+    public void binderWithFieldsValidationStatusChangeListenerDisabled_fieldValidationStatusChangesToFalse_binderHandleErrorIsNotCalled() {
+        binder.setFieldsValidationStatusChangeListenerEnabled(false);
+        TestHasValidatorDatePicker.DataPickerHasValidatorOverridden field = new TestHasValidatorDatePicker.DataPickerHasValidatorOverridden();
+        binder.bind(field, BIRTH_DATE_PROPERTY);
+        Assert.assertEquals(0, componentErrors.size());
+
+        field.fireValidationStatusChangeEvent(false);
+        Assert.assertEquals(0, componentErrors.size());
     }
 
     @Test
