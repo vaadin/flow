@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -549,6 +550,35 @@ public class DataCommunicatorTest {
         private int closeCount;
 
         private ReentrantLock lock = new ReentrantLock();
+    }
+
+    // Simulates a flush request enqueued during a page reload with
+    // @PreserveOnRefresh
+    // see https://github.com/vaadin/flow/issues/14067
+    @Test
+    public void reattach_differentUI_requestFlushExecuted() {
+        dataCommunicator.setDataProvider(createDataProvider(), null);
+        dataCommunicator.setRequestedRange(0, 50);
+
+        MockUI newUI = new MockUI();
+        // simulates preserve on refresh
+        // DataCommunicator has a flushRequest pending
+        // that should be rescheduled on the new state tree
+        moveToNewUI(ui, newUI.getInternals().getUI());
+        ui = newUI;
+        fakeClientCommunication();
+
+        Assert.assertEquals("Expected initial full reset.",
+                Range.withLength(0, 50), lastSet);
+    }
+
+    private void moveToNewUI(UI oldUI, UI newUI) {
+        final List<Element> uiChildren = oldUI.getElement().getChildren()
+                .collect(Collectors.toList());
+        uiChildren.forEach(element -> {
+            element.removeFromTree();
+            newUI.getElement().appendChild(element);
+        });
     }
 
     @Tag("test-component")
