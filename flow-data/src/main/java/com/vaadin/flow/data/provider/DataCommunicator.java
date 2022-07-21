@@ -379,7 +379,7 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     private String getInvalidContractMessage(String method) {
-        return String.format("The data provider hasn't ever called %s() " + "method on the provided query. "
+        return String.format("The data provider hasn't ever called %s() method on the provided query. "
                 + "It means that the the data provider breaks the contract "
                 + "and the returned stream contains unxpected data.", method);
     }
