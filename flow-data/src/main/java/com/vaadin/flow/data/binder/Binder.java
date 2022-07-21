@@ -1227,7 +1227,8 @@ public class Binder<BEAN> implements Serializable {
             onValueChange = getField().addValueChangeListener(
                     event -> handleFieldValueChange(event));
 
-            if (getField() instanceof HasValidator) {
+            if (getBinder().isFieldsValidationStatusChangeListenerEnabled()
+                    && getField() instanceof HasValidator) {
                 HasValidator<FIELDVALUE> hasValidatorField = (HasValidator<FIELDVALUE>) getField();
                 onValidationStatusChange = hasValidatorField
                         .addValidationStatusChangeListener(
@@ -1684,6 +1685,8 @@ public class Binder<BEAN> implements Serializable {
     private Set<Binding<BEAN, ?>> changedBindings = new LinkedHashSet<>();
 
     private boolean validatorsDisabled = false;
+
+    private boolean fieldsValidationStatusChangeListenerEnabled = true;
 
     /**
      * Creates a binder using a custom {@link PropertySet} implementation for
@@ -3525,6 +3528,30 @@ public class Binder<BEAN> implements Serializable {
      */
     public boolean isValidatorsDisabled() {
         return validatorsDisabled;
+    }
+
+    /**
+     * Control whether bound fields implementing {@link HasValidator} subscribe
+     * for field's {@code ValidationStatusChangeEvent}s and will
+     * {@code validate} upon receiving them.
+     *
+     * @param fieldsValidationStatusChangeListenerEnabled
+     *            Boolean value.
+     */
+    public void setFieldsValidationStatusChangeListenerEnabled(
+            boolean fieldsValidationStatusChangeListenerEnabled) {
+        this.fieldsValidationStatusChangeListenerEnabled = fieldsValidationStatusChangeListenerEnabled;
+    }
+
+    /**
+     * Returns if the bound fields implementing {@link HasValidator} subscribe
+     * for field's {@code ValidationStatusChangeEvent}s and will
+     * {@code validate} upon receiving them.
+     *
+     * @return Boolean value
+     */
+    public boolean isFieldsValidationStatusChangeListenerEnabled() {
+        return fieldsValidationStatusChangeListenerEnabled;
     }
 
     /**
