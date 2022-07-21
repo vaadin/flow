@@ -107,7 +107,7 @@
         <maven.exec.plugin.version>1.6.0</maven.exec.plugin.version>
         <testbench.version>8.1.0.alpha11</testbench.version>
         <webdrivermanager.version>5.2.1</webdrivermanager.version>
-        <jetty.version>10.0.10</jetty.version>
+        <jetty.version>10.0.11</jetty.version>
         <properties-maven-plugin.version>1.0.0</properties-maven-plugin.version>
 
         <!-- Frontend -->
@@ -240,7 +240,7 @@
             <dependency>
                 <groupId>io.projectreactor</groupId>
                 <artifactId>reactor-bom</artifactId>
-                <version>2020.0.20</version>
+                <version>2020.0.21</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
