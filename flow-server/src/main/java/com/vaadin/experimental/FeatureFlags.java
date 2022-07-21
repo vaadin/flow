@@ -54,8 +54,8 @@ public class FeatureFlags implements Serializable {
             false,
             "com.vaadin.flow.server.frontend.NodeTestComponents$ExampleExperimentalComponent");
     public static final Feature WEBPACK = new Feature(
-            "Use Webpack for front-end builds (Deprecated)", "webpackForFrontendBuild",
-            "", true, null);
+            "Use Webpack for front-end builds (Deprecated)",
+            "webpackForFrontendBuild", "", true, null);
     public static final Feature MAP_COMPONENT = new Feature(
             "Map component (Pro)", "mapComponent",
             "https://vaadin.com/docs/latest/ds/components/map", true,

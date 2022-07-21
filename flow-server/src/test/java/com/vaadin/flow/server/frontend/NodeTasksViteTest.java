@@ -149,8 +149,7 @@ public class NodeTasksViteTest {
         Builder builder = new Builder(mockedLookup, new File(userDir), TARGET)
                 .enablePackagesUpdate(false).enableImportsUpdate(true)
                 .runNpmInstall(false).withEmbeddableWebComponents(false)
-                .setJavaResourceFolder(propertiesDir)
-                .withFlowResourcesFolder(
+                .setJavaResourceFolder(propertiesDir).withFlowResourcesFolder(
                         new File(userDir, TARGET + "flow-frontend"));
 
         builder.build().execute();
@@ -220,7 +219,7 @@ public class NodeTasksViteTest {
         builder.build().execute();
         Assert.assertTrue(new File(userDir, Paths
                 .get(TARGET, DEFAULT_GENERATED_DIR, IMPORTS_NAME).toString())
-                        .exists());
+                .exists());
     }
 
     @Test
@@ -263,9 +262,9 @@ public class NodeTasksViteTest {
                 new DefaultClassFinder(this.getClass().getClassLoader()))
                 .when(mockedLookup).lookup(ClassFinder.class);
         Builder builder = new Builder(mockedLookup, new File(userDir), TARGET)
-                .enablePackagesUpdate(false)
-                .enableImportsUpdate(true).runNpmInstall(false)
-                .withEmbeddableWebComponents(false).useV14Bootstrap(false)
+                .enablePackagesUpdate(false).enableImportsUpdate(true)
+                .runNpmInstall(false).withEmbeddableWebComponents(false)
+                .useV14Bootstrap(false)
                 .withFlowResourcesFolder(
                         new File(userDir, TARGET + "flow-frontend"))
                 .withFrontendGeneratedFolder(new File(userDir,
