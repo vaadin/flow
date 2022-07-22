@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component;
 
+import java.util.Collection;
+
 import com.vaadin.flow.shared.Registration;
 import org.junit.Assert;
 import org.junit.Test;
@@ -83,6 +85,23 @@ public class ComponentUtilTest {
                 });
         Assert.assertTrue(
                 ComponentUtil.hasEventListener(component, PollEvent.class));
+
+        listener.remove();
+        Assert.assertFalse(
+                ComponentUtil.hasEventListener(component, PollEvent.class));
+    }
+
+    @Test
+    public void addListenerToComponent_getListeners_returnsCollection() {
+        Assert.assertFalse(
+                ComponentUtil.hasEventListener(component, PollEvent.class));
+
+        Registration listener = ComponentUtil.addListener(component,
+                PollEvent.class, event -> {
+                });
+        Collection<?> listeners = ComponentUtil.getListeners(component,
+                PollEvent.class);
+        Assert.assertEquals(1, listeners.size());
 
         listener.remove();
         Assert.assertFalse(
