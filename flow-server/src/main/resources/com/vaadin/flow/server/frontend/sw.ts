@@ -95,17 +95,6 @@ if (process.env.NODE_ENV === 'development' && VITE_ENABLED) {
     ({ url }) => url.pathname.startsWith(`${scopePath}VAADIN/`),
     networkFirst
   );
-
-  if (offlinePath === '.') {
-    registerRoute(
-      ({ request, url }) => request.mode === 'navigate' && !isManifestEntryURL(url),
-      async ({ event }) => {
-        return networkFirst
-          .handle({ request: new Request(offlinePath), event })
-          .then(rewriteBaseHref);
-      }
-    )
-  }
 }
 
 registerRoute(
