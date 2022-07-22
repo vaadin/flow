@@ -38,6 +38,8 @@ import com.vaadin.flow.function.SerializableComparator;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.internal.JsonUtils;
+import com.vaadin.flow.internal.NodeOwner;
+import com.vaadin.flow.internal.NullOwner;
 import com.vaadin.flow.internal.Range;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.Registration;
@@ -104,9 +106,8 @@ public class DataCommunicator<T> implements Serializable {
 
     private Registration dataProviderUpdateRegistration;
     private HashSet<T> updatedData = new HashSet<>();
-
-    private SerializableConsumer<ExecutionContext> flushRequest;
-    private SerializableConsumer<ExecutionContext> flushUpdatedDataRequest;
+    private FlushRequest flushRequest;
+    private FlushRequest flushUpdatedDataRequest;
 
     private transient Executor executor = null;
     private transient CompletableFuture<Activation> future;
@@ -191,7 +192,7 @@ public class DataCommunicator<T> implements Serializable {
      * <p>
      * Note: This works only with Grid component. If set to true, Push needs to
      * be enabled and set to PushMode.AUTOMATIC in order this to work.
-     * 
+     *
      * @param executor
      *            The Executor used for async updates.
      */
@@ -466,28 +467,31 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     private void requestFlush() {
-        if (flushRequest == null) {
-            flushRequest = context -> {
+        requestFlush(false);
+    }
+
+    private void requestFlush(boolean forced) {
+        if (flushRequest == null || !flushRequest.canExecute(stateNode)
+                || forced) {
+            flushRequest = FlushRequest.register(stateNode, context -> {
                 if (!context.isClientSideInitialized()) {
                     reset();
                     arrayUpdater.initialize();
                 }
                 flush();
                 flushRequest = null;
-            };
-            stateNode.runWhenAttached(ui -> ui.getInternals().getStateTree()
-                    .beforeClientResponse(stateNode, flushRequest));
+            });
         }
     }
 
     private void requestFlushUpdatedData() {
-        if (flushUpdatedDataRequest == null) {
-            flushUpdatedDataRequest = context -> {
-                flushUpdatedData();
-                flushUpdatedDataRequest = null;
-            };
-            stateNode.runWhenAttached(ui -> ui.getInternals().getStateTree()
-                    .beforeClientResponse(stateNode, flushUpdatedDataRequest));
+        if (flushUpdatedDataRequest == null
+                || !flushUpdatedDataRequest.canExecute(stateNode)) {
+            flushUpdatedDataRequest = FlushRequest.register(stateNode,
+                    context -> {
+                        flushUpdatedData();
+                        flushUpdatedDataRequest = null;
+                    });
         }
     }
 
@@ -514,7 +518,7 @@ public class DataCommunicator<T> implements Serializable {
             if (ui.getPushConfiguration().getPushMode() != PushMode.AUTOMATIC) {
                 throw new IllegalStateException(
                         "Asynchronous DataCommunicator updates require Push to be enabled and PushMode.AUTOMATIC");
-            }            
+            }
             if (future != null) {
                 future.cancel(true);
             }
@@ -769,6 +773,27 @@ public class DataCommunicator<T> implements Serializable {
 
         public static Activation empty() {
             return new Activation(Collections.emptyList(), false);
+        }
+    }
+
+    private static class FlushRequest implements Serializable {
+
+        private NodeOwner owner;
+
+        static FlushRequest register(StateNode stateNode,
+                SerializableConsumer<ExecutionContext> action) {
+            FlushRequest request = new FlushRequest();
+            request.owner = stateNode.getOwner();
+            stateNode.runWhenAttached(ui -> {
+                request.owner = stateNode.getOwner();
+                ui.getInternals().getStateTree().beforeClientResponse(stateNode,
+                        action);
+            });
+            return request;
+        }
+
+        boolean canExecute(StateNode stateNode) {
+            return owner instanceof NullOwner || owner == stateNode.getOwner();
         }
     }
 
