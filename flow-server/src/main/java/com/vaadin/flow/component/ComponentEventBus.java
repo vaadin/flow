@@ -19,9 +19,11 @@ import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -174,6 +176,31 @@ public class ComponentEventBus implements Serializable {
             throw new IllegalArgumentException("Event type cannot be null");
         }
         return componentEventData.containsKey(eventType);
+    }
+
+    /**
+     * Returns all listeners that match or extend the given event type.
+     *
+     * @param eventType
+     *            the component event type
+     * @return A collection with all registered listeners. Empty if no listeners
+     *         are found.
+     */
+    protected Collection<?> getListeners(
+            Class<? extends ComponentEvent> eventType) {
+        if (eventType == null) {
+            throw new IllegalArgumentException("Event type cannot be null");
+        }
+
+        List<Object> listeners = new ArrayList<>();
+        componentEventData.entrySet().stream()
+                .filter(entry -> eventType.isAssignableFrom(entry.getKey()))
+                .map(Map.Entry::getValue)
+                .forEach(wrappers -> wrappers.stream()
+                        .map(wrapper -> wrapper.listener)
+                        .forEach(listeners::add));
+
+        return listeners;
     }
 
     /**
