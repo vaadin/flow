@@ -1671,8 +1671,8 @@ public class ComponentTest {
         componentContainer.add(component);
         ui.add(componentContainer);
 
-        Assert.assertEquals(componentContainer,
-                component.findOptionalAncestor(TestComponentContainer.class).get());
+        Assert.assertEquals(componentContainer, component
+                .findOptionalAncestor(TestComponentContainer.class).get());
         Assert.assertEquals(ui, component.findOptionalAncestor(UI.class).get());
         Assert.assertEquals(ui,
                 component.findOptionalAncestor(PollNotifier.class).get());
