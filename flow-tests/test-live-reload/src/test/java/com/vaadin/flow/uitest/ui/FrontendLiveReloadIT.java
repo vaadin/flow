@@ -80,19 +80,27 @@ public class FrontendLiveReloadIT extends AbstractLiveReloadIT {
 
         // then: an error box is shown
         testBench().disableWaitForVaadin();
-        waitForElementPresent(By.className("v-system-error"));
+        waitForElementPresent(errorBoxSelector());
 
         // when: the error is corrected
         resetFrontend();
         testBench().enableWaitForVaadin();
 
         // then: the error box is not shown and the view is reloaded
-        waitForElementNotPresent(By.className("v-system-error"));
+        waitForElementNotPresent(errorBoxSelector());
     }
 
     private String getValue(WebElement element) {
         Object result = getCommandExecutor()
                 .executeScript("return arguments[0].value;", element);
         return result == null ? "" : result.toString();
+    }
+
+    protected By errorBoxSelector() {
+        return By.tagName("vite-error-overlay");
+    }
+
+    protected By errorBoxSelector2() {
+        return By.className("v-system-error");
     }
 }
