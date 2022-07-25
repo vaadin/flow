@@ -18,6 +18,7 @@ package com.vaadin.flow.uitest.ui.template;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.WebElement;
 
@@ -29,6 +30,7 @@ public class RouterLinksIT extends ChromeBrowserTest {
     public static final String TEXT_INPUT = "abc";
 
     @Test
+    @Ignore("Tests with V14 compatibility mode, not working with VITE")
     public void handleEventOnServer() {
         open();
 
