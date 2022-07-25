@@ -1664,7 +1664,7 @@ public class ComponentTest {
     }
 
     @Test
-    public void findAncestorTest() {
+    public void findOptionalAncestorTest() {
         UI ui = new UI();
         TestComponentContainer componentContainer = new TestComponentContainer();
         TestComponent component = new TestComponent();
@@ -1672,12 +1672,12 @@ public class ComponentTest {
         ui.add(componentContainer);
 
         Assert.assertEquals(componentContainer,
-                component.findAncestor(TestComponentContainer.class).get());
-        Assert.assertEquals(ui, component.findAncestor(UI.class).get());
+                component.findOptionalAncestor(TestComponentContainer.class).get());
+        Assert.assertEquals(ui, component.findOptionalAncestor(UI.class).get());
         Assert.assertEquals(ui,
-                component.findAncestor(PollNotifier.class).get());
+                component.findOptionalAncestor(PollNotifier.class).get());
         Assert.assertFalse(
-                component.findAncestor(TestButton.class).isPresent());
+                component.findOptionalAncestor(TestButton.class).isPresent());
 
     }
 
