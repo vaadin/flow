@@ -940,8 +940,8 @@ public class Binder<BEAN> implements Serializable {
             Objects.requireNonNull(validator, "validator cannot be null");
 
             Validator<? super TARGET> wrappedValidator = ((value, context) -> {
-                if (getBinder().isValidatorsDisabled() ||
-                        (binding != null && binding.isValidatorsDisabled())) {
+                if (getBinder().isValidatorsDisabled() || (binding != null
+                        && binding.isValidatorsDisabled())) {
                     return ValidationResult.ok();
                 } else {
                     return validator.apply(value, context);
@@ -1121,7 +1121,8 @@ public class Binder<BEAN> implements Serializable {
             onValueChange = getField().addValueChangeListener(
                     event -> handleFieldValueChange(event));
 
-            if (getField() instanceof HasValidator) {
+            if (getBinder().isFieldsValidationStatusChangeListenerEnabled()
+                    && getField() instanceof HasValidator) {
                 HasValidator<FIELDVALUE> hasValidatorField = (HasValidator<FIELDVALUE>) getField();
                 onValidationStatusChange = hasValidatorField
                         .addValidationStatusChangeListener(
@@ -1425,7 +1426,8 @@ public class Binder<BEAN> implements Serializable {
         }
 
         @Override
-        public void setConvertBackToPresentation(boolean convertBackToPresentation) {
+        public void setConvertBackToPresentation(
+                boolean convertBackToPresentation) {
             this.convertBackToPresentation = convertBackToPresentation;
         }
 
@@ -1542,6 +1544,8 @@ public class Binder<BEAN> implements Serializable {
     private Set<Binding<BEAN, ?>> changedBindings = new LinkedHashSet<>();
 
     private boolean validatorsDisabled = false;
+
+    private boolean fieldsValidationStatusChangeListenerEnabled = true;
 
     /**
      * Creates a binder using a custom {@link PropertySet} implementation for
@@ -1961,7 +1965,7 @@ public class Binder<BEAN> implements Serializable {
      *            {@code null}
      */
     public void writeBeanAsDraft(BEAN bean) {
-        doWriteDraft(bean, new ArrayList<>(bindings),false);
+        doWriteDraft(bean, new ArrayList<>(bindings), false);
     }
 
     /**
@@ -1981,7 +1985,7 @@ public class Binder<BEAN> implements Serializable {
      *            disable all Validators during write
      */
     public void writeBeanAsDraft(BEAN bean, boolean forced) {
-        doWriteDraft(bean, new ArrayList<>(bindings),forced);
+        doWriteDraft(bean, new ArrayList<>(bindings), forced);
     }
 
     /**
@@ -2090,12 +2094,12 @@ public class Binder<BEAN> implements Serializable {
      *            disable validators during write if true
      */
     @SuppressWarnings({ "unchecked" })
-    private void doWriteDraft(BEAN bean, 
-            Collection<Binding<BEAN, ?>> bindings, boolean forced) {
+    private void doWriteDraft(BEAN bean, Collection<Binding<BEAN, ?>> bindings,
+            boolean forced) {
         Objects.requireNonNull(bean, "bean cannot be null");
 
         if (!forced) {
-             bindings.forEach(binding -> ((BindingImpl<BEAN, ?, ?>) binding)
+            bindings.forEach(binding -> ((BindingImpl<BEAN, ?, ?>) binding)
                     .writeFieldValue(bean));
         } else {
             boolean isDisabled = isValidatorsDisabled();
@@ -3202,7 +3206,7 @@ public class Binder<BEAN> implements Serializable {
     /**
      * Control whether validators including bean level validators are
      * disabled or enabled globally for this Binder.
-     * 
+     *
      * @param validatorsDisabled Boolean value.
      */
     public void setValidatorsDisabled(boolean validatorsDisabled) {
@@ -3212,10 +3216,34 @@ public class Binder<BEAN> implements Serializable {
     /**
      * Returns if the validators including bean level validators
      * are disabled or enabled for this Binder.
-     * 
+     *
      * @return Boolean value
      */
     public boolean isValidatorsDisabled() {
         return validatorsDisabled;
+    }
+
+    /**
+     * Control whether bound fields implementing {@link HasValidator} subscribe
+     * for field's {@code ValidationStatusChangeEvent}s and will
+     * {@code validate} upon receiving them.
+     *
+     * @param fieldsValidationStatusChangeListenerEnabled
+     *            Boolean value.
+     */
+    public void setFieldsValidationStatusChangeListenerEnabled(
+            boolean fieldsValidationStatusChangeListenerEnabled) {
+        this.fieldsValidationStatusChangeListenerEnabled = fieldsValidationStatusChangeListenerEnabled;
+    }
+
+    /**
+     * Returns if the bound fields implementing {@link HasValidator} subscribe
+     * for field's {@code ValidationStatusChangeEvent}s and will
+     * {@code validate} upon receiving them.
+     *
+     * @return Boolean value
+     */
+    public boolean isFieldsValidationStatusChangeListenerEnabled() {
+        return fieldsValidationStatusChangeListenerEnabled;
     }
 }
