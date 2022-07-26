@@ -24,6 +24,7 @@
             <modules>
                 <module>test-themes-custom-frontend-directory/pom.xml</module>
                 <module>test-themes-custom-frontend-directory/pom-generatedTsDir.xml</module>
+                <module>test-themes-custom-frontend-directory/pom-vite.xml</module>
             </modules>
         </profile>
     </profiles>
