@@ -26,12 +26,11 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
-@Route(layout = ViewTestLayout.class)
+@Route(value = "com.vaadin.flow.uitest.ui.ShortcutsWithLazyValueChangeView", layout = ViewTestLayout.class)
 public class ShortcutsWithLazyValueChangeView extends Div {
 
-
     public ShortcutsWithLazyValueChangeView() {
-    	
+
         Input input = new Input();
         input.setId("input");
 
@@ -45,7 +44,7 @@ public class ShortcutsWithLazyValueChangeView extends Div {
 
         input.setValueChangeMode(ValueChangeMode.LAZY);
         // make this really big to make testing easier
-        input.setValueChangeTimeout(3000); 
+        input.setValueChangeTimeout(3000);
 
         // clickShortcutWorks
         button.setText("Button triggered by CTRL + S");
