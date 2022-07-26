@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import java.io.File;
+
 /**
  * Generate the Vaadin TS files for endpoints, and the Client API file. It uses
  * the new Maven/Gradle plugin based generator.
@@ -22,5 +24,5 @@ package com.vaadin.flow.server.frontend;
  * For internal use only. May be renamed or removed in a future release.
  */
 public interface TaskGenerateHilla extends FallibleCommand {
-
+    void configure(File projectDirectory, String buildDirectoryName);
 }
