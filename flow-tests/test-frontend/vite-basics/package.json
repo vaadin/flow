@@ -28,47 +28,16 @@
     "rollup-plugin-brotli": "3.1.0",
     "typescript": "4.7.4",
     "vite": "v2.9.13",
-    "vite-plugin-checker": "0.3.4",
+    "vite-plugin-checker": "0.4.6",
     "workbox-build": "6.5.0",
     "workbox-core": "6.5.0",
     "workbox-precaching": "6.5.0"
   },
-  "vaadin": {
-    "dependencies": {
-      "@polymer/polymer": "3.5.1",
-      "@vaadin/common-frontend": "0.0.17",
-      "@vaadin/router": "1.7.4",
-      "@vaadin/vaadin-lumo-styles": "23.1.0-alpha2",
-      "@vaadin/vaadin-text-field": "23.1.0-alpha2",
-      "construct-style-sheets-polyfill": "3.1.0",
-      "lit": "2.2.6"
-    },
-    "devDependencies": {
-      "@rollup/plugin-replace": "3.1.0",
-      "async": "3.2.2",
-      "glob": "7.2.3",
-      "mkdirp": "1.0.4",
-      "rollup-plugin-brotli": "3.1.0",
-      "typescript": "4.7.4",
-      "vite": "v2.9.13",
-      "vite-plugin-checker": "0.3.4",
-      "workbox-build": "6.5.0",
-      "workbox-core": "6.5.0",
-      "workbox-precaching": "6.5.0"
-    },
-    "hash": "5194c1e2c2155047c5297e496fdc7a03d8a371eba9f531c7c0d02841390ccab3"
-  },
   "overrides": {
-    "@polymer/polymer": "$@polymer/polymer",
     "@testscope/all": "$@testscope/all",
     "@testscope/button": "$@testscope/button",
     "@vaadin/bundles": "$@vaadin/bundles",
-    "@vaadin/common-frontend": "$@vaadin/common-frontend",
-    "@vaadin/router": "$@vaadin/router",
-    "@vaadin/vaadin-lumo-styles": "$@vaadin/vaadin-lumo-styles",
-    "construct-style-sheets-polyfill": "$construct-style-sheets-polyfill",
     "copy-to-clipboard": "$copy-to-clipboard",
-    "lit": "$lit",
     "package-outside-npm": "$package-outside-npm",
     "package2-outside-npm": "$package2-outside-npm",
     "glob": "$glob",
@@ -81,5 +50,30 @@
     "workbox-core": "$workbox-core",
     "workbox-precaching": "$workbox-precaching",
     "@rollup/plugin-replace": "$@rollup/plugin-replace"
+  },
+  "vaadin": {
+    "dependencies": {
+      "@polymer/polymer": "3.5.1",
+      "@vaadin/common-frontend": "0.0.17",
+      "@vaadin/router": "1.7.4",
+      "@vaadin/vaadin-lumo-styles": "23.1.0-alpha2",
+      "@vaadin/vaadin-text-field": "23.1.0-alpha2",
+      "construct-style-sheets-polyfill": "3.1.0",
+      "lit": "2.2.7"
+    },
+    "devDependencies": {
+      "@rollup/plugin-replace": "3.1.0",
+      "async": "3.2.2",
+      "glob": "7.2.3",
+      "mkdirp": "1.0.4",
+      "rollup-plugin-brotli": "3.1.0",
+      "typescript": "4.7.4",
+      "vite": "v2.9.13",
+      "vite-plugin-checker": "0.4.6",
+      "workbox-build": "6.5.0",
+      "workbox-core": "6.5.0",
+      "workbox-precaching": "6.5.0"
+    },
+    "hash": "24e567aea2f31149afdf82be1297a30d0b8975d3b20ed59be79c71677282b9f1"
   }
 }
