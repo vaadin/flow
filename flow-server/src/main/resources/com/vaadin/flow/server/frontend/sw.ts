@@ -79,8 +79,15 @@ if (process.env.NODE_ENV === 'development' && VITE_ENABLED) {
     event.waitUntil(caches.delete(cacheNames.runtime));
   });
 
+  // Vite 2 ping URL
   registerRoute(
     ({ url }) => url.pathname.startsWith(`${scopePath}VAADIN/__vite_ping`),
+    networkOnly
+  );
+
+  // Vite 3 ping URL
+  registerRoute(
+    ({ url }) => url.pathname == `${scopePath}VAADIN/`,
     networkOnly
   );
 
@@ -88,17 +95,6 @@ if (process.env.NODE_ENV === 'development' && VITE_ENABLED) {
     ({ url }) => url.pathname.startsWith(`${scopePath}VAADIN/`),
     networkFirst
   );
-
-  if (offlinePath === '.') {
-    registerRoute(
-      ({ request, url }) => request.mode === 'navigate' && !isManifestEntryURL(url),
-      async ({ event }) => {
-        return networkFirst
-          .handle({ request: new Request(offlinePath), event })
-          .then(rewriteBaseHref);
-      }
-    )
-  }
 }
 
 registerRoute(

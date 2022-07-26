@@ -220,4 +220,21 @@ public class QueryParametersTest {
                 Collections.singletonMap("foo", Collections.singletonList("")));
         Assert.assertEquals("foo", fullParams.getQueryString());
     }
+
+    @Test
+    public void toStringValidation() {
+        String toString = QueryParameters.of("foo", "bar").toString();
+        Assert.assertEquals("QueryParameters(foo=bar)", toString);
+    }
+
+    @Test
+    public void equalsAndHashCode() {
+        QueryParameters qp1 = QueryParameters.of("foo", "bar");
+        QueryParameters qp2 = QueryParameters.fromString("foo=bar");
+        QueryParameters qp3 = QueryParameters.fromString("bar=foo");
+        Assert.assertEquals(qp1, qp2);
+        Assert.assertNotEquals(qp3, qp2);
+        Assert.assertEquals(qp1.hashCode(), qp2.hashCode());
+    }
+
 }

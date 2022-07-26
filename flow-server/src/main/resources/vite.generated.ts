@@ -75,8 +75,11 @@ function buildSWPlugin(): PluginOption {
       });
       rollupPlugins.push(
         replace({
-          'process.env.NODE_ENV': JSON.stringify(config.mode),
-          ...config.define
+          values: {
+            'process.env.NODE_ENV': JSON.stringify(config.mode),
+            ...config.define
+          },
+          preventAssignment: true
         })
       );
 
@@ -361,6 +364,19 @@ const allowedFrontendFolders = [
   path.resolve(frontendFolder, '../node_modules')
 ];
 
+function setHmrPortToServerPort(): PluginOption {
+  return {
+    name: 'set-hmr-port-to-server-port',
+    configResolved(config) {
+      if (config.server.strictPort && config.server.hmr !== false) {
+        if (config.server.hmr === true) config.server.hmr = {};
+        config.server.hmr = config.server.hmr || {};
+        config.server.hmr.clientPort = config.server.port;
+      }
+    }
+  };
+}
+
 export const vaadinConfig: UserConfigFn = (env) => {
   const devMode = env.mode === 'development';
 
@@ -384,6 +400,8 @@ export const vaadinConfig: UserConfigFn = (env) => {
       VITE_ENABLED: 'true'
     },
     server: {
+      host: '127.0.0.1',
+      strictPort: true,
       fs: {
         allow: allowedFrontendFolders
       }
@@ -410,11 +428,16 @@ export const vaadinConfig: UserConfigFn = (env) => {
         '@vaadin/router',
         '@vaadin/vaadin-license-checker',
         '@vaadin/vaadin-usage-statistics',
+        'workbox-core',
+        'workbox-precaching',
+        'workbox-routing',
+        'workbox-strategies'
       ]
     },
     plugins: [
       !devMode && brotli(),
       devMode && vaadinBundlesPlugin(),
+      devMode && setHmrPortToServerPort(),
       settings.offlineEnabled && buildSWPlugin(),
       settings.offlineEnabled && injectManifestToSWPlugin(),
       !devMode && statsExtracterPlugin(),

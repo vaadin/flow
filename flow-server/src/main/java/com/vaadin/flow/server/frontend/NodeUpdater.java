@@ -99,7 +99,7 @@ public abstract class NodeUpdater implements FallibleCommand {
     private static final String DEP_VERSION_KEY = "version";
     private static final String DEP_VERSION_DEFAULT = "1.0.0";
     private static final String ROUTER_VERSION = "1.7.4";
-    protected static final String POLYMER_VERSION = "3.4.1";
+    protected static final String POLYMER_VERSION = "3.5.1";
 
     static final String VAADIN_VERSION = "vaadinVersion";
 
@@ -193,21 +193,45 @@ public abstract class NodeUpdater implements FallibleCommand {
      *             when versions file could not be read
      */
     JsonObject getPlatformPinnedDependencies() throws IOException {
-        URL resource = finder.getResource(Constants.VAADIN_VERSIONS_JSON);
-        if (resource == null) {
-            log().info("Couldn't find {} file to pin dependency versions."
-                    + " Transitive dependencies won't be pinned for pnpm.",
-                    Constants.VAADIN_VERSIONS_JSON);
+        URL coreVersionsResource = finder
+                .getResource(Constants.VAADIN_CORE_VERSIONS_JSON);
+        if (coreVersionsResource == null) {
+            log().info(
+                    "Couldn't find {} file to pin dependency versions for core components."
+                            + " Transitive dependencies won't be pinned for npm/pnpm.",
+                    Constants.VAADIN_CORE_VERSIONS_JSON);
             return Json.createObject();
         }
 
+        JsonObject versionsJson = getFilteredVersionsFromResource(
+                coreVersionsResource, Constants.VAADIN_CORE_VERSIONS_JSON);
+
+        URL vaadinVersionsResource = finder
+                .getResource(Constants.VAADIN_VERSIONS_JSON);
+        if (vaadinVersionsResource == null) {
+            // vaadin is not on the classpath, only vaadin-core is present.
+            return versionsJson;
+        }
+
+        JsonObject vaadinVersionsJson = getFilteredVersionsFromResource(
+                vaadinVersionsResource, Constants.VAADIN_VERSIONS_JSON);
+        for (String key : vaadinVersionsJson.keys()) {
+            versionsJson.put(key, vaadinVersionsJson.getString(key));
+        }
+
+        return versionsJson;
+    }
+
+    private JsonObject getFilteredVersionsFromResource(URL versionsResource,
+            String versionsOrigin) throws IOException {
         JsonObject versionsJson;
-        try (InputStream content = resource.openStream()) {
+        try (InputStream content = versionsResource.openStream()) {
             VersionsJsonConverter convert = new VersionsJsonConverter(Json
                     .parse(IOUtils.toString(content, StandardCharsets.UTF_8)));
             versionsJson = convert.getConvertedJson();
             versionsJson = new VersionsJsonFilter(getPackageJson(),
-                    DEPENDENCIES).getFilteredVersions(versionsJson);
+                    DEPENDENCIES)
+                    .getFilteredVersions(versionsJson, versionsOrigin);
         }
         return versionsJson;
     }
@@ -369,7 +393,7 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         defaults.put("@polymer/polymer", POLYMER_VERSION);
 
-        defaults.put("lit", "2.2.3");
+        defaults.put("lit", "2.2.6");
 
         // Constructable style sheets is only implemented for chrome,
         // polyfill needed for FireFox et.al. at the moment
@@ -383,15 +407,15 @@ public abstract class NodeUpdater implements FallibleCommand {
     Map<String, String> getDefaultDevDependencies() {
         Map<String, String> defaults = new HashMap<>();
 
-        defaults.put("typescript", "4.5.3");
+        defaults.put("typescript", "4.7.4");
 
         final String WORKBOX_VERSION = "6.5.0";
 
         if (featureFlags.isEnabled(FeatureFlags.VITE)) {
-            defaults.put("vite", "v2.9.1");
+            defaults.put("vite", "v2.9.13");
             defaults.put("@rollup/plugin-replace", "3.1.0");
             defaults.put("rollup-plugin-brotli", "3.1.0");
-            defaults.put("vite-plugin-checker", "0.3.4");
+            defaults.put("vite-plugin-checker", "0.4.6");
             defaults.put("mkdirp", "1.0.4"); // for application-theme-plugin
             defaults.put("workbox-build", WORKBOX_VERSION);
         } else {
@@ -419,7 +443,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         }
         defaults.put("workbox-core", WORKBOX_VERSION);
         defaults.put("workbox-precaching", WORKBOX_VERSION);
-        defaults.put("glob", "7.1.6");
+        defaults.put("glob", "7.2.3");
         defaults.put("async", "3.2.2");
 
         return defaults;

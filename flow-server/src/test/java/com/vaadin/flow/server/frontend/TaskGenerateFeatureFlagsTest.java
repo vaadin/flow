@@ -96,6 +96,13 @@ public class TaskGenerateFeatureFlagsTest {
         assertFeatureFlagGlobal(content, FeatureFlags.EXAMPLE, true);
     }
 
+    @Test
+    public void should_containEmptyExport() throws ExecutionFailedException {
+        taskGenerateFeatureFlags.execute();
+        String content = taskGenerateFeatureFlags.getFileContent();
+        Assert.assertTrue(content.contains("export {};"));
+    }
+
     private static void assertFeatureFlagGlobal(String content, Feature feature,
             boolean enabled) {
         Assert.assertTrue(content

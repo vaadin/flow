@@ -1,5 +1,21 @@
+/*
+ * Copyright 2000-2022 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.flow.data.binder;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -49,6 +65,16 @@ public class BinderValidationStatusChangeListenerTest
     }
 
     @Test
+    public void binderWithFieldsValidationStatusChangeListenerDisabled_bindIsCalled_noValidationStatusListenerIsCalled() {
+        binder.setFieldsValidationStatusChangeListenerEnabled(false);
+        var field = Mockito.spy(
+                TestHasValidatorDatePicker.DatePickerHasValidatorDefaults.class);
+        binder.bind(field, BIRTH_DATE_PROPERTY);
+        Mockito.verify(field, Mockito.never())
+                .addValidationStatusChangeListener(Mockito.any());
+    }
+
+    @Test
     public void fieldWithHasValidatorOnlyGetDefaultValidatorOverridden_bindIsCalled_addValidationStatusListenerIsCalled() {
         var field = Mockito.spy(
                 TestHasValidatorDatePicker.DataPickerHasValidatorGetDefaultValidatorOverridden.class);
@@ -84,6 +110,17 @@ public class BinderValidationStatusChangeListenerTest
         field.fireValidationStatusChangeEvent(false);
         Assert.assertEquals(1, componentErrors.size());
         Assert.assertEquals(INVALID_DATE_FORMAT, componentErrors.get(field));
+    }
+
+    @Test
+    public void binderWithFieldsValidationStatusChangeListenerDisabled_fieldValidationStatusChangesToFalse_binderHandleErrorIsNotCalled() {
+        binder.setFieldsValidationStatusChangeListenerEnabled(false);
+        var field = new TestHasValidatorDatePicker.DataPickerHasValidatorOverridden();
+        binder.bind(field, BIRTH_DATE_PROPERTY);
+        Assert.assertEquals(0, componentErrors.size());
+
+        field.fireValidationStatusChangeEvent(false);
+        Assert.assertEquals(0, componentErrors.size());
     }
 
     @Test
@@ -125,6 +162,26 @@ public class BinderValidationStatusChangeListenerTest
         field.fireValidationStatusChangeEvent(true);
         Assert.assertEquals(0, componentErrors.size());
         Assert.assertNull(componentErrors.get(field));
+    }
+
+    @Test
+    public void fieldWithHasValidatorFullyOverridden_boundFieldGetsUnbind_validationStatusChangeListenerInBindingIsRemoved() {
+        TestHasValidatorDatePicker.DataPickerHasValidatorOverridden field = new TestHasValidatorDatePicker.DataPickerHasValidatorOverridden();
+        Binder.Binding<Person, LocalDate> binding = binder.bind(field,
+                BIRTH_DATE_PROPERTY);
+        Assert.assertEquals(0, componentErrors.size());
+
+        field.fireValidationStatusChangeEvent(false);
+        Assert.assertEquals(1, componentErrors.size());
+        Assert.assertEquals(INVALID_DATE_FORMAT, componentErrors.get(field));
+
+        binding.unbind();
+
+        field.fireValidationStatusChangeEvent(true);
+        // after unbind is called, validationStatusChangeListener
+        // in the binding is not working anymore, errors are not cleared:
+        Assert.assertEquals(1, componentErrors.size());
+        Assert.assertEquals(INVALID_DATE_FORMAT, componentErrors.get(field));
     }
 
 }

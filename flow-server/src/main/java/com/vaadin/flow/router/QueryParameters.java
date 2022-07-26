@@ -103,6 +103,19 @@ public class QueryParameters implements Serializable {
     }
 
     /**
+     * Creates parameters from given key-value pair.
+     *
+     * @param key
+     *            the name of the parameter
+     * @param value
+     *            the value
+     * @return query parameters information
+     */
+    public static QueryParameters of(String key, String value) {
+        return simple(Collections.singletonMap(key, value));
+    }
+
+    /**
      * Creates parameters from a query string.
      * <p>
      * Note that no length checking is done for the string. It is the
@@ -114,6 +127,9 @@ public class QueryParameters implements Serializable {
      * @return query parameters information
      */
     public static QueryParameters fromString(String queryString) {
+        if (queryString == null) {
+            return empty();
+        }
         return new QueryParameters(parseQueryString(queryString));
     }
 
@@ -213,4 +229,28 @@ public class QueryParameters implements Serializable {
                     "Unable to decode parameter: " + parameter, e);
         }
     }
+
+    @Override
+    public String toString() {
+        return "QueryParameters(" + getQueryString() + ")";
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this)
+            return true;
+
+        if (obj instanceof QueryParameters) {
+            QueryParameters o = (QueryParameters) obj;
+            return parameters.equals(o.parameters);
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        return parameters.hashCode();
+    }
+
 }

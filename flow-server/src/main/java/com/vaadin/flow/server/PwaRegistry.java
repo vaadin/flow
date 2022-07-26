@@ -40,6 +40,7 @@ import java.util.stream.Collectors;
 
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.server.communication.PwaHandler;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
@@ -258,7 +259,11 @@ public class PwaRegistry implements Serializable {
         if (pwaConfiguration.isOfflinePathEnabled()) {
             filesToCache
                     .add(offlinePageCache(pwaConfiguration.getOfflinePath()));
+        } else if (shouldCacheRoot()) {
+            // No offlinePath configured, cache the root (#13987):
+            filesToCache.add(offlinePageCache("."));
         }
+
         // Offline stub to be shown within an <iframe> in the app shell
         filesToCache
                 .add(offlinePageCache(PwaHandler.DEFAULT_OFFLINE_STUB_PATH));
@@ -610,4 +615,11 @@ public class PwaRegistry implements Serializable {
         return icons;
     }
 
+    private boolean shouldCacheRoot() {
+        VaadinContext context = VaadinService.getCurrent().getContext();
+        ApplicationConfiguration configuration = ApplicationConfiguration
+                .get(context);
+        return configuration != null && !configuration.isProductionMode()
+                && FeatureFlags.get(context).isEnabled(FeatureFlags.VITE);
+    }
 }

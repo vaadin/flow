@@ -15,7 +15,6 @@
  */
 package com.vaadin.gradle
 
-import com.vaadin.flow.server.Constants
 import com.vaadin.flow.server.InitParameters
 import elemental.json.JsonObject
 import elemental.json.impl.JsonUtil
@@ -167,5 +166,115 @@ class VaadinSmokeTest : AbstractGradleTest() {
         testProject.build("vaadinClean")
         expect(false) { tsconfigJson.exists() }
         expect(false) { typesDTs.exists() }
+    }
+
+    /**
+     * Tests that VaadinClean task removes default fronted/generated directory
+     */
+    @Test
+    fun vaadinCleanDeletesGeneratedFolder() {
+        val generatedFolder = testProject.newFolder("frontend/generated")
+        val generatedFile = testProject.newFile("frontend/generated/index.ts")
+        testProject.build("vaadinClean")
+        expect(false) { generatedFile.exists() }
+        expect(false) { generatedFolder.exists() }
+    }
+
+    /**
+     * Tests that VaadinClean task removes custom fronted/generated directory
+     */
+    @Test
+    fun vaadinCleanDeletesGeneratedFolderForCustomFrontendFolder() {
+        testProject.buildFile.writeText("""
+            plugins {
+                id 'war'
+                id 'com.vaadin'
+            }
+            repositories {
+                mavenLocal()
+                mavenCentral()
+                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+            }
+            dependencies {
+                compile("com.vaadin:flow:$flowVersion")
+                providedCompile("javax.servlet:javax.servlet-api:3.1.0")
+                compile("org.slf4j:slf4j-simple:1.7.30")
+            }
+            vaadin {
+                frontendDirectory = file("src/main/frontend")
+            }
+        """)
+        val generatedFolder = testProject.newFolder("src/main/frontend/generated")
+        val generatedFile = testProject.newFile("src/main/frontend/generated/index.ts")
+        testProject.build("vaadinClean")
+        expect(false) { generatedFile.exists() }
+        expect(false) { generatedFolder.exists() }
+    }
+
+    /**
+     * Tests that VaadinClean task removes custom fronted/generated directory
+     */
+    @Test
+    fun vaadinCleanDeletesGeneratedTsFolder() {
+        testProject.buildFile.writeText("""
+            plugins {
+                id 'war'
+                id 'com.vaadin'
+            }
+            repositories {
+                mavenLocal()
+                mavenCentral()
+                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+            }
+            dependencies {
+                compile("com.vaadin:flow:$flowVersion")
+                providedCompile("javax.servlet:javax.servlet-api:3.1.0")
+                compile("org.slf4j:slf4j-simple:1.7.30")
+            }
+            vaadin {
+                generatedTsFolder = file("api")
+            }
+        """)
+        val generatedTsFolder = testProject.newFolder("api/generated")
+        val generatedFile = testProject.newFile("api/generated/endpoint.ts")
+        testProject.build("vaadinClean")
+        expect(false) { generatedFile.exists() }
+        expect(false) { generatedTsFolder.exists() }
+    }
+
+    /**
+     * Tests that build works with a custom frontend directory
+     */
+    @Test
+    fun testCustomFrontendDirectory() {
+        testProject.buildFile.writeText("""
+            plugins {
+                id 'war'
+                id 'com.vaadin'
+            }
+            repositories {
+                mavenLocal()
+                mavenCentral()
+                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+            }
+            dependencies {
+                compile("com.vaadin:flow:$flowVersion")
+                providedCompile("javax.servlet:javax.servlet-api:3.1.0")
+                compile("org.slf4j:slf4j-simple:1.7.30")
+            }
+            vaadin {
+                frontendDirectory = file("src/main/frontend")
+            }
+        """)
+        val result: BuildResult = testProject.build("vaadinPrepareFrontend")
+        // let's explicitly check that vaadinPrepareFrontend has been run.
+        result.expectTaskSucceded("vaadinPrepareFrontend")
+
+        expect(false) {
+            File(testProject.dir, "frontend/generated/index.ts").exists()
+        }
+        expect(true) {
+            File(testProject.dir, "src/main/frontend/generated/index.ts").exists()
+        }
     }
 }
