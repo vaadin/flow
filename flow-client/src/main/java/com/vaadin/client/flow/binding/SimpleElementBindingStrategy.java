@@ -1305,15 +1305,14 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         boolean sendNow = resolveFilters(element, type, expressionSettings,
                 eventData, sendCommand);
-        
 
         if (sendNow) {
             // Send if there were not filters or at least one matched
-        	
-        	// Flush all debounced events so that they don't happen
-        	// in wrong order in the server-side 
-        	Debouncer.flushAll();
-        	
+
+            // Flush all debounced events so that they don't happen
+            // in wrong order in the server-side
+            Debouncer.flushAll();
+
             sendCommand.accept(null);
         }
     }

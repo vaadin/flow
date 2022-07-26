@@ -127,7 +127,7 @@ public class Debouncer {
             elementMap.delete(identifier);
 
             if (elementMap.isEmpty()) {
-            	debouncers.delete(element);
+                debouncers.delete(element);
             }
         }
     }
@@ -168,35 +168,39 @@ public class Debouncer {
 
         return debouncer;
     }
-    
-    private static native void nativeConsoleLog( String s ) 
+
+    private static native void nativeConsoleLog(String s)
     /*-{ console.log( s ); }-*/;
 
-	public static void flushAll() {
-		int size = debouncers.size();
-		nativeConsoleLog("Debouncers: " + size);
-		
-		debouncers.forEach(new ForEachCallback<Node, JsMap<String,JsMap<Double,Debouncer>>>() {
-			
-			@Override
-			public void accept(JsMap<String, JsMap<Double, Debouncer>> jsmap, Node key) {
-				nativeConsoleLog("jsmap: " + jsmap.size());
-				jsmap.mapValues().forEach(value -> {
-					nativeConsoleLog("value: " + value.size());
-					value.mapValues().forEach(debouncer -> {
-						nativeConsoleLog("Flushing... " + debouncer.identifier);
-						debouncer.lastCommand.accept(null);
-						if(debouncer.idleTimer != null) {
-							debouncer.idleTimer.cancel();
-						}
-						if(debouncer.intermediateTimer != null) {
-							debouncer.intermediateTimer.cancel();
-						}
-					});
-				});
-			}
-		});
-		
-		debouncers.clear();
-	}
+    public static void flushAll() {
+        int size = debouncers.size();
+        nativeConsoleLog("Debouncers: " + size);
+
+        debouncers.forEach(
+                new ForEachCallback<Node, JsMap<String, JsMap<Double, Debouncer>>>() {
+
+                    @Override
+                    public void accept(
+                            JsMap<String, JsMap<Double, Debouncer>> jsmap,
+                            Node key) {
+                        nativeConsoleLog("jsmap: " + jsmap.size());
+                        jsmap.mapValues().forEach(value -> {
+                            nativeConsoleLog("value: " + value.size());
+                            value.mapValues().forEach(debouncer -> {
+                                nativeConsoleLog(
+                                        "Flushing... " + debouncer.identifier);
+                                debouncer.lastCommand.accept(null);
+                                if (debouncer.idleTimer != null) {
+                                    debouncer.idleTimer.cancel();
+                                }
+                                if (debouncer.intermediateTimer != null) {
+                                    debouncer.intermediateTimer.cancel();
+                                }
+                            });
+                        });
+                    }
+                });
+
+        debouncers.clear();
+    }
 }
