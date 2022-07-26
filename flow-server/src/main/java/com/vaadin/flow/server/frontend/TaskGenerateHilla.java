@@ -24,5 +24,6 @@ import java.io.File;
  * For internal use only. May be renamed or removed in a future release.
  */
 public interface TaskGenerateHilla extends FallibleCommand {
-    void configure(File projectDirectory, String buildDirectoryName);
+    default void configure(File projectDirectory, String buildDirectoryName) {
+    }
 }
