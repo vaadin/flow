@@ -12,7 +12,7 @@
     "@vaadin/vaadin-lumo-styles": "23.1.0-alpha2",
     "@vaadin/vaadin-text-field": "23.1.0-alpha2",
     "construct-style-sheets-polyfill": "3.1.0",
-    "lit": "2.2.6"
+    "lit": "2.2.7"
   },
   "devDependencies": {
     "@rollup/plugin-replace": "3.1.0",
@@ -20,9 +20,9 @@
     "glob": "7.2.3",
     "mkdirp": "1.0.4",
     "rollup-plugin-brotli": "3.1.0",
-    "typescript": "4.5.3",
+    "typescript": "4.7.4",
     "vite": "v2.9.13",
-    "vite-plugin-checker": "0.3.4",
+    "vite-plugin-checker": "0.4.6",
     "workbox-build": "6.5.0",
     "workbox-core": "6.5.0",
     "workbox-precaching": "6.5.0"
@@ -35,7 +35,7 @@
       "@vaadin/vaadin-lumo-styles": "23.1.0-alpha2",
       "@vaadin/vaadin-text-field": "23.1.0-alpha2",
       "construct-style-sheets-polyfill": "3.1.0",
-      "lit": "2.2.6"
+      "lit": "2.2.7"
     },
     "devDependencies": {
       "@rollup/plugin-replace": "3.1.0",
@@ -43,13 +43,13 @@
       "glob": "7.2.3",
       "mkdirp": "1.0.4",
       "rollup-plugin-brotli": "3.1.0",
-      "typescript": "4.5.3",
+      "typescript": "4.7.4",
       "vite": "v2.9.13",
-      "vite-plugin-checker": "0.3.4",
+      "vite-plugin-checker": "0.4.6",
       "workbox-build": "6.5.0",
       "workbox-core": "6.5.0",
       "workbox-precaching": "6.5.0"
     },
-    "hash": "6f6305a2eaac7574f3d0ba9a90dc3ced4adf9cbcfcfbdc50b125e19b2f509981"
+    "hash": "03e4b15a02797897a9ad55900eda27180d2be5ce02647e2514c8bfb649e66434"
   }
 }
