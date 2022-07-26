@@ -9,6 +9,7 @@ import { readFileSync, existsSync, writeFileSync } from 'fs';
 import * as net from 'net';
 
 import { processThemeResources } from '#buildFolder#/plugins/application-theme-plugin/theme-handle';
+import { rewriteCssUrls } from '#buildFolder#/plugins/theme-loader/theme-loader-utils';
 import settings from '#settingsImport#';
 import { defineConfig, mergeConfig, PluginOption, ResolvedConfig, UserConfigFn, OutputOptions, AssetInfo, ChunkInfo } from 'vite';
 import { injectManifest } from 'workbox-build';
@@ -305,7 +306,7 @@ export { ${exports.map((binding) => `${binding} as ${binding}`).join(', ')} };`;
   };
 }
 
-function themePlugin(): PluginOption {
+function themePlugin(opts): PluginOption {
   return {
     name: 'vaadin:theme',
     config() {
@@ -336,6 +337,15 @@ function themePlugin(): PluginOption {
         }
       }
     },
+    async transform(raw, id, options) {
+      // rewrite urls for the application theme css files
+      const [bareId, query] = id.split('?');
+      if (!bareId?.startsWith(themeFolder) || !bareId?.endsWith(".css")) {
+        return;
+      }
+      const [themeName] = bareId.substring(themeFolder.length + 1).split('/');
+      return rewriteCssUrls(raw, path.dirname(bareId), path.resolve(themeFolder, themeName), console, opts);
+    }
   }
 }
 
@@ -361,7 +371,7 @@ const allowedFrontendFolders = [
   frontendFolder,
   addonFrontendFolder,
   path.resolve(addonFrontendFolder, '..', 'frontend'), // Contains only generated-flow-imports
-  path.resolve(frontendFolder, '../node_modules')
+  path.resolve(__dirname, 'node_modules')
 ];
 
 export const vaadinConfig: UserConfigFn = (env) => {
@@ -374,7 +384,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
   }
 
   return {
-    root: 'frontend',
+    root: frontendFolder,
     base: '',
     resolve: {
       alias: {
@@ -422,7 +432,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
       settings.offlineEnabled && buildSWPlugin(),
       settings.offlineEnabled && injectManifestToSWPlugin(),
       !devMode && statsExtracterPlugin(),
-      themePlugin(),
+      themePlugin({devMode}),
       {
         name: 'vaadin:force-remove-spa-middleware',
         transformIndexHtml: {
