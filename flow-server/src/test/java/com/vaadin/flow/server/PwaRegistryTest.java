@@ -16,7 +16,6 @@
 package com.vaadin.flow.server;
 
 import javax.servlet.ServletContext;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.List;
@@ -26,7 +25,11 @@ import java.util.stream.Collectors;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+
+import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 @PWA(name = "foo", shortName = "bar")
 public class PwaRegistryTest {
@@ -35,13 +38,16 @@ public class PwaRegistryTest {
     private static class PwaWithCustomIconPath {
     }
 
+    @PWA(name = "Custom Icon Path", shortName = "COP", offlinePath = "some/path.html")
+    private static class PwaWithCustomOfflinePath {
+    }
+
     private static List<PwaIcon> splashIconsForAppleDevices;
 
     @BeforeClass
     public static void initPwaWithCustomIconPath() throws IOException {
-        ServletContext context = Mockito.mock(ServletContext.class);
-        PwaRegistry registry = new PwaRegistry(
-                PwaWithCustomIconPath.class.getAnnotation(PWA.class), context);
+        PwaRegistry registry = preparePwaRegistry(
+                PwaWithCustomIconPath.class.getAnnotation(PWA.class), true);
         splashIconsForAppleDevices = registry.getIcons().stream().filter(
                 icon -> "apple-touch-startup-image".equals(icon.getRel()))
                 .collect(Collectors.toList());
@@ -50,15 +56,14 @@ public class PwaRegistryTest {
     @Test
     public void pwaIconIsGeneratedBasedOnClasspathIcon_servletContextHasNoResources()
             throws IOException {
-        ServletContext context = Mockito.mock(ServletContext.class);
         // PWA annotation has default value for "iconPath" but servlet context
         // has no resource for that path, in that case the ClassPath URL will be
         // checked which is "META-INF/resources/icons/icon.png" (this path
         // available is in the test resources folder). The icon in this path
         // differs from the default icon and set of icons will be generated
         // based on it
-        PwaRegistry registry = new PwaRegistry(
-                PwaRegistryTest.class.getAnnotation(PWA.class), context);
+        PwaRegistry registry = preparePwaRegistry(
+                PwaRegistryTest.class.getAnnotation(PWA.class), true);
         List<PwaIcon> icons = registry.getIcons();
         // This icon has width 32 and it's generated based on a custom icon (see
         // above)
@@ -68,6 +73,40 @@ public class PwaRegistryTest {
         pwaIcon.write(stream);
         // the default image has 47 on the position 36
         Assert.assertEquals(26, stream.toByteArray()[36]);
+    }
+
+    private static PwaRegistry preparePwaRegistry(PWA pwa, boolean viteEnabled)
+            throws IOException {
+        try (MockedStatic<VaadinService> vaadinService = Mockito
+                .mockStatic(VaadinService.class);
+                MockedStatic<ApplicationConfiguration> configuration = Mockito
+                        .mockStatic(ApplicationConfiguration.class);
+                MockedStatic<FeatureFlags> featureFlags = Mockito
+                        .mockStatic(FeatureFlags.class)) {
+
+            VaadinService vaadinServiceMocked = Mockito
+                    .mock(VaadinService.class);
+            VaadinContext vaadinContext = Mockito.mock(VaadinContext.class);
+            ApplicationConfiguration applicationConfiguration = Mockito
+                    .mock(ApplicationConfiguration.class);
+
+            vaadinService.when(VaadinService::getCurrent)
+                    .thenReturn(vaadinServiceMocked);
+            Mockito.when(vaadinServiceMocked.getContext())
+                    .thenReturn(vaadinContext);
+            configuration
+                    .when(() -> ApplicationConfiguration.get(Mockito.any()))
+                    .thenReturn(applicationConfiguration);
+
+            FeatureFlags flags = Mockito.mock(FeatureFlags.class);
+            Mockito.when(flags.isEnabled(FeatureFlags.VITE))
+                    .thenReturn(viteEnabled);
+            featureFlags.when(() -> FeatureFlags.get(Mockito.any()))
+                    .thenReturn(flags);
+
+            ServletContext context = Mockito.mock(ServletContext.class);
+            return new PwaRegistry(pwa, context);
+        }
     }
 
     @Test
@@ -262,4 +301,43 @@ public class PwaRegistryTest {
                 .stream().filter(media -> media.contains("landscape")).count());
     }
 
+    @Test
+    public void pwaWithCustomOfflinePath_viteIsEnabled_getRuntimeServiceWorkerJsContainsCustomOfflinePath()
+            throws IOException {
+        PwaRegistry registry = preparePwaRegistry(
+                PwaWithCustomOfflinePath.class.getAnnotation(PWA.class), true);
+        Assert.assertTrue(registry.getRuntimeServiceWorkerJs()
+                .contains("some/path.html"));
+        Assert.assertFalse(registry.getRuntimeServiceWorkerJs()
+                .contains("{ url: '.', revision:"));
+    }
+
+    @Test
+    public void pwaWithCustomOfflinePath_viteIsNotEnabled_getRuntimeServiceWorkerJsContainsCustomOfflinePath()
+            throws IOException {
+        PwaRegistry registry = preparePwaRegistry(
+                PwaWithCustomOfflinePath.class.getAnnotation(PWA.class), false);
+        Assert.assertTrue(registry.getRuntimeServiceWorkerJs()
+                .contains("some/path.html"));
+        Assert.assertFalse(registry.getRuntimeServiceWorkerJs()
+                .contains("{ url: '.', revision:"));
+    }
+
+    @Test
+    public void pwaWithoutCustomOfflinePath_viteIsEnabled_getRuntimeServiceWorkerJsContainsCustomOfflinePath()
+            throws IOException {
+        PwaRegistry registry = preparePwaRegistry(
+                PwaRegistryTest.class.getAnnotation(PWA.class), true);
+        Assert.assertTrue(registry.getRuntimeServiceWorkerJs()
+                .contains("{ url: '.', revision:"));
+    }
+
+    @Test
+    public void pwaWithoutCustomOfflinePath_viteIsNotEnabled_getRuntimeServiceWorkerJsDoesNotContainsRoot()
+            throws IOException {
+        PwaRegistry registry = preparePwaRegistry(
+                PwaRegistryTest.class.getAnnotation(PWA.class), false);
+        Assert.assertFalse(registry.getRuntimeServiceWorkerJs()
+                .contains("{ url: '.', revision:"));
+    }
 }
