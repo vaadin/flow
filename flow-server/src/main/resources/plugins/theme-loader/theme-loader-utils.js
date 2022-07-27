@@ -20,16 +20,13 @@ function assetsContains(fileUrl, themeFolder, logger) {
   // Go through each asset module
   for (let module of Object.keys(assets)) {
     const copyRules = assets[module];
-    logger.log('asset ' + module);
     // Go through each copy rule
     for (let copyRule of Object.keys(copyRules)) {
-      logger.log('rule ' + copyRules[copyRule] + " ---> file " + fileUrl);
       // if file starts with copyRule target check if file with path after copy target can be found
       if (fileUrl.startsWith(copyRules[copyRule])) {
         const targetFile = fileUrl.replace(copyRules[copyRule], '');
         const files = glob.sync(path.resolve('node_modules/', module, copyRule), { nodir: true });
 
-        logger.log('targetFile ' + targetFile);
         for (let file of files) {
           if (file.endsWith(targetFile)) return true;
         }
