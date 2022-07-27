@@ -15,6 +15,7 @@
  */
 package com.vaadin.client.flow.binding;
 
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -1306,10 +1307,13 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
                 name -> commands.push(getSyncPropertyCommand(name, context)));
 
         Consumer<String> sendCommand = debouncePhase -> {
+            nativeConsoleLog("================== sendCommand ");
             commands.forEach(Runnable::run);
 
             sendEventToServer(node, type, eventData, debouncePhase);
         };
+
+        nativeConsoleLog("================== handle dome event " + event.getType());
 
         boolean sendNow = resolveFilters(element, type, expressionSettings,
                 eventData, sendCommand);
@@ -1317,13 +1321,21 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         if (sendNow) {
             // Send if there were not filters or at least one matched
 
+            nativeConsoleLog("================== sendNow before flushAll ");
             // Flush all debounced events so that they don't happen
             // in wrong order in the server-side
-            Debouncer.flushAll();
+            List<Consumer<String>> executedCommands = Debouncer.flushAll(element);
+            nativeConsoleLog("================== sendNow after flushAll ");
 
-            sendCommand.accept(null);
+            if (!executedCommands.contains(sendCommand)) {
+                sendCommand.accept(null);
+                nativeConsoleLog("================== sendNow after sendcommand accept ");
+            }
         }
     }
+
+    private static native void nativeConsoleLog(String s)
+        /*-{ console.log( s ); }-*/;
 
     private Runnable getSyncPropertyCommand(String propertyName,
             BindingContext context) {
@@ -1391,6 +1403,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
             double timeout = debounceSettings.getNumber(0);
 
+            nativeConsoleLog("================== resolveDebounces timeout=" + timeout);
             if (timeout == 0) {
                 atLeastOneEager = true;
                 continue;
