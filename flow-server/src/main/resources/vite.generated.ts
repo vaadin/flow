@@ -325,10 +325,11 @@ export { ${exports.map((binding) => `${binding} as ${binding}`).join(', ')} };`;
 }
 
 function themePlugin(opts): PluginOption {
+  const fullThemeOptions = {...themeOptions, devMode: opts.devMode };
   return {
     name: 'vaadin:theme',
     config() {
-      processThemeResources(themeOptions, console);
+      processThemeResources(fullThemeOptions, console);
     },
     handleHotUpdate(context) {
       const contextPath = path.resolve(context.file);
@@ -339,7 +340,7 @@ function themePlugin(opts): PluginOption {
         console.debug('Theme file changed', changed);
 
         if (changed.startsWith(settings.themeName)) {
-          processThemeResources(themeOptions, console);
+          processThemeResources(fullThemeOptions, console);
         }
       }
     },
