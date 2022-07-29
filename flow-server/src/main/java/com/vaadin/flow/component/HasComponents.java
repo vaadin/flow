@@ -66,7 +66,7 @@ public interface HasComponents extends HasElement, HasEnabled {
     default void add(Collection<Component> components) {
         Objects.requireNonNull(components, "Components should not be null");
         components.stream()
-                .map(c -> Objects.requireNonNull(c,
+                .map(component -> Objects.requireNonNull(component,
                         "Component to add cannot be null"))
                 .map(Component::getElement).forEach(getElement()::appendChild);
     }
