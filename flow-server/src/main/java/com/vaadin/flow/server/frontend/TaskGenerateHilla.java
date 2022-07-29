@@ -24,6 +24,16 @@ import java.io.File;
  * For internal use only. May be renamed or removed in a future release.
  */
 public interface TaskGenerateHilla extends FallibleCommand {
+    /**
+     * Configures the task by passing it some parameters.
+     *
+     * @param projectDirectory
+     *            the project root directory. In a Maven multi-module project,
+     *            this is the module root, not the main project one.
+     * @param buildDirectoryName
+     *            the name of the build directory (i.e.&nbsp;"build" or
+     *            "target").
+     */
     default void configure(File projectDirectory, String buildDirectoryName) {
     }
 }
