@@ -227,6 +227,28 @@ public class NodeUpdaterTest {
     }
 
     @Test
+    public void shouldSkipUpdatingNonParsableVersions() throws IOException {
+        JsonObject packageJson = Json.createObject();
+        JsonObject dependencies = Json.createObject();
+        packageJson.put(NodeUpdater.DEPENDENCIES, dependencies);
+        JsonObject vaadinDependencies = Json.createObject();
+        vaadinDependencies.put(NodeUpdater.DEPENDENCIES, Json.createObject());
+        packageJson.put(NodeUpdater.VAADIN_DEP_KEY, vaadinDependencies);
+
+        String formPackage = "@vaadin/form";
+        String existingVersion = "../../../some/local/path";
+        String newVersion = "2.0.0";
+
+        dependencies.put(formPackage, existingVersion);
+
+        nodeUpdater.addDependency(packageJson, NodeUpdater.DEPENDENCIES,
+                formPackage, newVersion);
+
+        Assert.assertEquals(existingVersion, packageJson
+                .getObject(NodeUpdater.DEPENDENCIES).getString(formPackage));
+    }
+
+    @Test
     public void getJsonFileContent_incorrectPackageJsonContent_throwsExceptionWithFileName()
             throws IOException {
         File brokenPackageJsonFile = temporaryFolder

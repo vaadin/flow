@@ -522,7 +522,7 @@ public abstract class NodeUpdater implements FallibleCommand {
                 // https://docs.npmjs.com/cli/v8/configuring-npm/package-json#dependencies
                 // for some examples. So let's return false for unparsable
                 // versions, as we don't want them to be updated.
-                log().warn("Package {} has unparseable version {}", pkg,
+                log().warn("Package {} has unparseable version: {}", pkg,
                         e.getMessage());
                 return false;
             }
