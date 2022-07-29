@@ -31,7 +31,7 @@ public interface TaskGenerateHilla extends FallibleCommand {
      *            the project root directory. In a Maven multi-module project,
      *            this is the module root, not the main project one.
      * @param buildDirectoryName
-     *            the name of the build directory (i.e.&nbsp;"build" or
+     *            the name of the build directory (i.e. "build" or
      *            "target").
      */
     default void configure(File projectDirectory, String buildDirectoryName) {
