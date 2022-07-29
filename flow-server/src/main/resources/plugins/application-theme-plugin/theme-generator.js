@@ -44,7 +44,7 @@ const createLinkReferences = (css, target) => {
   // [2] matches the url
   // [3] matches the quote char surrounding in '@import "..."'
   // [4] matches the url in '@import "..."'
-  // [5] matcher media query on @import statement
+  // [5] matches media query on @import statement
   const importMatcher = /(?:@media\\s(.+?))?(?:\\s{)?\\@import\\s*(?:url\\(\\s*['"]?(.+?)['"]?\\s*\\)|(["'])((?:\\\\.|[^\\\\])*?)\\3)([^;]*);(?:})?/g
   
   var match;
