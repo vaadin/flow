@@ -36,11 +36,12 @@ const headerImport = `import 'construct-style-sheets-polyfill';
 
 const createLinkReferences = `
 const createLinkReferences = (css, target) => {
-  // Unresolved urls are written as '@import url(text);' to the css
+  // Unresolved urls are written as '@import url(text);' or '@import "text";' to the css
+  // Note that with Vite production build there is no space between @import and "text"
   // [0] is the full match
   // [1] matches the media query
   // [2] matches the url
-  const importMatcher = /(?:@media\\s(.+?))?(?:\\s{)?\\@import\\surl\\(\\s*['"]?(.+?)['"]?\\s*\\);(?:})?/g;
+  const importMatcher = /(?:@media\\s(.+?))?(?:\\s{)?\\@import(?:\\surl\\(\\s*)?['"]?(.+?)['"]?(?:\\s*\\))?;(?:})?/g;
   
   var match;
   var styleCss = css;
