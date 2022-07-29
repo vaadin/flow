@@ -518,7 +518,9 @@ public abstract class NodeUpdater implements FallibleCommand {
                     .contains(VAADIN_FORM_PKG_LEGACY_VERSION)) {
                 return true;
             } else {
-                throw e;
+                log().warn("Package {} has unparseable version {}", pkg,
+                        e.getMessage());
+                return false;
             }
         }
     }
