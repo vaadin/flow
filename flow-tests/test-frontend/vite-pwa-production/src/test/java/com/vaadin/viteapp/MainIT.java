@@ -95,6 +95,10 @@ public class MainIT extends ChromeDeviceTest {
 
     private void openPage(String url) {
         getDriver().get(getRootURL() + url);
-        waitForServiceWorkerReady();
+        try {
+            waitForServiceWorkerReady();
+        } finally {
+            checkLogsForErrors();
+        }
     }
 }

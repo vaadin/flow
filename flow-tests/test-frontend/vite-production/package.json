@@ -12,7 +12,7 @@
     "@vaadin/vaadin-lumo-styles": "23.1.0-alpha2",
     "@vaadin/vaadin-text-field": "23.1.0-alpha2",
     "construct-style-sheets-polyfill": "3.1.0",
-    "lit": "2.2.6"
+    "lit": "2.2.7"
   },
   "devDependencies": {
     "@rollup/plugin-replace": "3.1.0",
@@ -35,7 +35,7 @@
       "@vaadin/vaadin-lumo-styles": "23.1.0-alpha2",
       "@vaadin/vaadin-text-field": "23.1.0-alpha2",
       "construct-style-sheets-polyfill": "3.1.0",
-      "lit": "2.2.6"
+      "lit": "2.2.7"
     },
     "devDependencies": {
       "@rollup/plugin-replace": "3.1.0",
@@ -50,6 +50,6 @@
       "workbox-core": "6.5.0",
       "workbox-precaching": "6.5.0"
     },
-    "hash": "6de3b99e199a5361c766d70d9e590e370beede655f43871db89c1d96e5004462"
+    "hash": "d9973f4f4fd94ba692927888d08f03934a1f7631e35bc377c9956d65c4756e88"
   }
 }

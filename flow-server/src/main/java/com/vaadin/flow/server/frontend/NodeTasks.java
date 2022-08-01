@@ -796,6 +796,8 @@ public class NodeTasks implements FallibleCommand {
             // use the new Hilla generator if available, otherwise the old
             // generator.
             if (hillaTask != null) {
+                hillaTask.configure(builder.getNpmFolder(),
+                        builder.getBuildDirectory());
                 commands.add(hillaTask);
             } else {
                 if (builder.endpointSourceFolder != null

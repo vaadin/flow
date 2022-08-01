@@ -8,7 +8,7 @@
     "@vaadin/router": "1.7.4",
     "@vaadin/vaadin-text-field": "23.1.0-alpha2",
     "construct-style-sheets-polyfill": "3.1.0",
-    "lit": "2.2.6"
+    "lit": "2.2.7"
   },
   "devDependencies": {
     "async": "3.2.2",
@@ -40,7 +40,7 @@
       "@vaadin/router": "1.7.4",
       "@vaadin/vaadin-text-field": "23.1.0-alpha2",
       "construct-style-sheets-polyfill": "3.1.0",
-      "lit": "2.2.6"
+      "lit": "2.2.7"
     },
     "devDependencies": {
       "async": "3.2.2",
@@ -65,7 +65,7 @@
       "workbox-precaching": "6.5.0",
       "workbox-webpack-plugin": "6.5.0"
     },
-    "hash": "682a252d56e537d0230f32fdcd5e687d20e638a2354d67b09b2eaa3a57b50082"
+    "hash": "e97cfa9fd431ede7b6dfe02f6fc65eb44e6f668475545a51518c8d6900de48b5"
   },
   "overrides": {
     "@vaadin/common-frontend": "$@vaadin/common-frontend",
