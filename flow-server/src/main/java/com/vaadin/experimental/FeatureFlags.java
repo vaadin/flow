@@ -75,8 +75,7 @@ public class FeatureFlags implements Serializable {
             "collaborationEngineBackend",
             "https://github.com/vaadin/platform/issues/1988", true, null);
     public static final Feature GRID_MULTI_SORT_PRIORITY_APPEND = new Feature(
-            "Grid MultiSort priority new behavior",
-            "multiSortPriorityAppend",
+            "Grid MultiSort priority new behavior", "multiSortPriorityAppend",
             "https://github.com/vaadin/platform/issues/3052", false, null);
     private List<Feature> features = new ArrayList<>();
 
