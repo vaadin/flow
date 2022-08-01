@@ -183,10 +183,10 @@ public class ComponentEventBus implements Serializable {
      *
      * @param eventType
      *            the component event type
-     * @return A collection with all registered listeners. Empty if no listeners
-     *         are found.
+     * @return A collection with all registered listeners for a given event
+     *         type. Empty if no listeners are found.
      */
-    protected Collection<?> getListeners(
+    public Collection<?> getListeners(
             Class<? extends ComponentEvent> eventType) {
         if (eventType == null) {
             throw new IllegalArgumentException("Event type cannot be null");

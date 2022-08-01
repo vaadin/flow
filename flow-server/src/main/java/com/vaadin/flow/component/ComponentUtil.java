@@ -391,8 +391,8 @@ public class ComponentUtil {
      *
      * @param eventType
      *            the component event type
-     * @return A collection with all registered listeners. Empty if no listeners
-     *         are found.
+     * @return A collection with all registered listeners for a given event
+     *         type. Empty if no listeners are found.
      */
     public static Collection<?> getListeners(Component component,
             Class<? extends ComponentEvent> eventType) {

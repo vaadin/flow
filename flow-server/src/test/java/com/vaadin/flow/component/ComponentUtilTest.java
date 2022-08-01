@@ -104,7 +104,7 @@ public class ComponentUtilTest {
         Assert.assertEquals(1, listeners.size());
 
         listener.remove();
-        Assert.assertFalse(
-                ComponentUtil.hasEventListener(component, PollEvent.class));
+        Assert.assertTrue(ComponentUtil.getListeners(component, PollEvent.class)
+                .isEmpty());
     }
 }
