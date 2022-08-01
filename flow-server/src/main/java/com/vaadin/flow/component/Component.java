@@ -16,6 +16,8 @@
 package com.vaadin.flow.component;
 
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -363,6 +365,20 @@ public abstract class Component
     @SuppressWarnings("rawtypes")
     protected boolean hasListener(Class<? extends ComponentEvent> eventType) {
         return eventBus != null && eventBus.hasListener(eventType);
+    }
+
+    /**
+     * Returns all listeners that match or extend the given event type.
+     *
+     * @param eventType
+     *            the component event type
+     * @return A collection with all registered listeners for a given event
+     *         type. Empty if no listeners are found.
+     */
+    protected Collection<?> getListeners(
+            Class<? extends ComponentEvent> eventType) {
+        return eventBus != null ? eventBus.getListeners(eventType)
+                : Collections.emptyList();
     }
 
     /**

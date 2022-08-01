@@ -387,6 +387,19 @@ public class ComponentUtil {
     }
 
     /**
+     * Returns all listeners that match or extend the given event type.
+     *
+     * @param eventType
+     *            the component event type
+     * @return A collection with all registered listeners for a given event
+     *         type. Empty if no listeners are found.
+     */
+    public static Collection<?> getListeners(Component component,
+            Class<? extends ComponentEvent> eventType) {
+        return component.getListeners(eventType);
+    }
+
+    /**
      * Dispatches the event to all listeners registered for the event type.
      *
      * @see Component#fireEvent(ComponentEvent)
