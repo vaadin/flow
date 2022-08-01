@@ -313,6 +313,8 @@
                 <module>test-root-context</module>
 
                 <module>test-eager-bootstrap</module>
+
+                <!-- Webpack only -->
                 <module>test-v14-bootstrap</module>
                 <module>test-v14-bootstrap/pom-production.xml</module>
 

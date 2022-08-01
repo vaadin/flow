@@ -19,6 +19,7 @@ package com.vaadin.flow.webcomponent;
 import java.util.List;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
@@ -32,6 +33,7 @@ public class NpmOnlyIndexIT extends ChromeBrowserTest {
         return Constants.PAGE_CONTEXT + "/index.html";
     }
 
+    @Ignore("Vite handles web components differently. verify if #7005 affects also Vite")
     // test for #7005
     @Test
     public void globalStylesAreUnderTheWebComponent() {

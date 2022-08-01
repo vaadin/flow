@@ -7,13 +7,12 @@
         <artifactId>test-custom-frontend-directory</artifactId>
         <version>23.2-SNAPSHOT</version>
     </parent>
-    <artifactId>flow-test-themes-custom-frontend-directory-vite</artifactId>
-    <name>Flow themes tests in Vite with custom frontend directory</name>
+    <artifactId>flow-test-themes-custom-frontend-directory</artifactId>
+    <name>Flow themes tests in NPM mode with custom frontend directory</name>
     <packaging>war</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
         <vaadin.devmode.liveReload.enabled>true</vaadin.devmode.liveReload.enabled>
-        <vaadin.pnpm.enable>false</vaadin.pnpm.enable>
     </properties>
 
     <dependencies>
@@ -43,10 +42,10 @@
     <build>
         <resources>
             <resource>
-                <directory>${project.basedir}/src/main/vite-resources</directory>
+                <directory>src/main/webpack-resources</directory>
             </resource>
         </resources>
-        <testSourceDirectory>${project.basedir}/src/test-vite/java</testSourceDirectory>
+        <testSourceDirectory>src/test-webpack/java</testSourceDirectory>
         <plugins>
             <plugin>
                 <groupId>org.eclipse.jetty</groupId>

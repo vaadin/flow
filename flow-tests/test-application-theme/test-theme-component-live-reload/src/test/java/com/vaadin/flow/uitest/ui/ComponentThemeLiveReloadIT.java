@@ -25,6 +25,7 @@ import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
@@ -40,6 +41,7 @@ import com.vaadin.testbench.TestBenchElement;
 import static com.vaadin.flow.uitest.ui.ComponentThemeLiveReloadView.ATTACH_IDENTIFIER;
 import static com.vaadin.flow.uitest.ui.ComponentThemeLiveReloadView.THEMED_COMPONENT_ID;
 
+@Ignore("VITE, failures when deleting files, https://github.com/vaadin/flow/issues/12154")
 @NotThreadSafe
 public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
 

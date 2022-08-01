@@ -33,7 +33,8 @@ import static com.vaadin.flow.webcomponent.ThemedComponent.EMBEDDED_ID;
 import static com.vaadin.flow.webcomponent.ThemedComponent.HAND_ID;
 import static com.vaadin.flow.webcomponent.ThemedComponent.MY_COMPONENT_ID;
 
-public class ApplicationThemeComponentIT extends ChromeBrowserTest {
+@Ignore("WEBPACK handles assets in production mode differently")
+public class ApplicationThemeComponentWebpackIT extends ChromeBrowserTest {
 
     private static final String FIND_FONT_FACE_RULE_SCRIPT =
     //@formatter:off
@@ -65,12 +66,9 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
         validateEmbeddedComponent($("themed-component").id("second"), "second");
 
         final WebElement body = findElement(By.tagName("body"));
-
-        // With Vite assets are served from /VAADIN/build in production mode
-        String imageUrl = body.getCssValue("background-image");
-        Assert.assertFalse("background-image should not be applied to body",
-                imageUrl.matches("url\\(\"" + getRootURL()
-                        + "/VAADIN/build/bg\\.[^.]+\\.jpg\"\\)"));
+        Assert.assertNotEquals("url(\"" + getRootURL()
+                + "/path/VAADIN/static/themes/embedded-theme/img/bg.jpg\")",
+                body.getCssValue("background-image"));
 
         Assert.assertNotEquals("Ostrich", body.getCssValue("font-family"));
 
@@ -85,11 +83,10 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
 
     private void validateEmbeddedComponent(TestBenchElement themedComponent,
             String target) {
-        // With Vite assets are served from /VAADIN/build in production mode
-        String imageUrl = themedComponent.getCssValue("background-image");
-        Assert.assertTrue(target + " didn't contain the background image",
-                imageUrl.matches("url\\(\"" + getRootURL()
-                        + "/VAADIN/build/bg\\.[^.]+\\.jpg\"\\)"));
+        Assert.assertEquals(target + " didn't contain the background image",
+                "url(\"" + getRootURL()
+                        + "/VAADIN/static/themes/embedded-theme/img/bg.jpg\")",
+                themedComponent.getCssValue("background-image"));
 
         Assert.assertEquals(target + " didn't contain font-family", "Ostrich",
                 themedComponent.getCssValue("font-family"));
@@ -220,7 +217,7 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
         Assert.assertEquals(
                 "document.css adds 2 font links and those should not duplicate",
                 2l, getCommandExecutor().executeScript(
-                        "return document.head.querySelectorAll(\"link[rel=stylesheet]\").length"));
+                        "return document.head.getElementsByTagName('link').length"));
         Assert.assertEquals(
                 "Project contains 2 css injections to document and both should be hashed",
                 2l, getCommandExecutor().executeScript(

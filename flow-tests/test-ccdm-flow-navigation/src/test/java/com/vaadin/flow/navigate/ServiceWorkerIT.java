@@ -150,7 +150,8 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
 
             MatcherAssert.assertThat(getDriver().getCurrentUrl(),
                     CoreMatchers.endsWith("/another"));
-            TestBenchElement anotherView = $("another-view").first();
+            TestBenchElement anotherView = waitUntil(
+                    driver -> $("another-view").first());
             Assert.assertTrue(
                     anotherView.$("*").id("another-content").isDisplayed());
 

@@ -15,9 +15,6 @@
  */
 package com.vaadin.flow.webcomponent;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -33,7 +30,8 @@ import static com.vaadin.flow.webcomponent.ThemedComponent.EMBEDDED_ID;
 import static com.vaadin.flow.webcomponent.ThemedComponent.HAND_ID;
 import static com.vaadin.flow.webcomponent.ThemedComponent.MY_COMPONENT_ID;
 
-public class ApplicationThemeComponentIT extends ChromeBrowserTest {
+@Ignore("WEBPACK handles assets in production mode differently")
+public class ApplicationThemeComponentWebpackIT extends ChromeBrowserTest {
 
     private static final String FIND_FONT_FACE_RULE_SCRIPT =
     //@formatter:off
@@ -65,12 +63,9 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
         validateEmbeddedComponent($("themed-component").id("second"), "second");
 
         final WebElement body = findElement(By.tagName("body"));
-
-        // With Vite assets are served from /VAADIN/build in production mode
-        String imageUrl = body.getCssValue("background-image");
-        Assert.assertFalse("background-image should not be applied to body",
-                imageUrl.matches("url\\(\"" + getRootURL()
-                        + "/VAADIN/build/bg\\.[^.]+\\.jpg\"\\)"));
+        Assert.assertNotEquals("url(\"" + getRootURL()
+                + "/path/VAADIN/static/themes/reusable-theme/img/bg.jpg\")",
+                body.getCssValue("background-image"));
 
         Assert.assertNotEquals("Ostrich", body.getCssValue("font-family"));
 
@@ -78,18 +73,17 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
                 "Embedded style should not match external component",
                 "rgba(0, 0, 255, 1)",
                 $(SpanElement.class).id("overflow").getCssValue("color"));
-        getDriver().get(getRootURL() + "/themes/embedded-theme/img/bg.jpg");
+        getDriver().get(getRootURL() + "/themes/reusable-theme/img/bg.jpg");
         Assert.assertFalse("app-theme background file should be served",
                 driver.getPageSource().contains("Could not navigate"));
     }
 
     private void validateEmbeddedComponent(TestBenchElement themedComponent,
             String target) {
-        // With Vite assets are served from /VAADIN/build in production mode
-        String imageUrl = themedComponent.getCssValue("background-image");
-        Assert.assertTrue(target + " didn't contain the background image",
-                imageUrl.matches("url\\(\"" + getRootURL()
-                        + "/VAADIN/build/bg\\.[^.]+\\.jpg\"\\)"));
+        Assert.assertEquals(target + " didn't contain the background image",
+                "url(\"" + getRootURL()
+                        + "/VAADIN/static/themes/reusable-theme/img/bg.jpg\")",
+                themedComponent.getCssValue("background-image"));
 
         Assert.assertEquals(target + " didn't contain font-family", "Ostrich",
                 themedComponent.getCssValue("font-family"));
@@ -166,64 +160,5 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
         Assert.assertFalse(
                 "Expected no Ostrich font to be applied to embedded component",
                 (Boolean) ostrichFontStylesFoundForEmbedded);
-    }
-
-    @Test
-    public void documentCssImport_onlyExternalAddedToHeadAsLink() {
-        open();
-        checkLogsForErrors();
-
-        final WebElement documentHead = getDriver()
-                .findElement(By.xpath("/html/head"));
-        final List<WebElement> links = documentHead
-                .findElements(By.tagName("link"));
-
-        List<String> linkUrls = links.stream()
-                .map(link -> link.getAttribute("href"))
-                .collect(Collectors.toList());
-        Assert.assertTrue("Missing link for external url", linkUrls
-                .contains("https://fonts.googleapis.com/css?family=Poppins"));
-        Assert.assertTrue("Link with media query was not found", linkUrls
-                .contains("https://fonts.googleapis.com/css?family=Oswald"));
-        Assert.assertFalse("Found import that webpack should have resolved",
-                linkUrls.contains("docImport.css"));
-
-        final List<WebElement> mediaLinks = links.stream()
-                .filter(link -> link.getAttribute("href").equals(
-                        "https://fonts.googleapis.com/css?family=Oswald"))
-                .collect(Collectors.toList());
-        Assert.assertFalse("No expected media link found",
-                mediaLinks.isEmpty());
-        Assert.assertEquals("Wrong media attribute contents",
-                "screen and (orientation:landscape)",
-                mediaLinks.get(0).getAttribute("media"));
-    }
-
-    @Test
-    public void stylesCssImport_externalLinkAddedToShadowroot() {
-        open();
-        checkLogsForErrors();
-        final TestBenchElement themedComponent = $("themed-component").first();
-        final List<TestBenchElement> links = themedComponent.$("link").all();
-
-        List<String> linkUrls = links.stream()
-                .map(link -> link.getAttribute("href"))
-                .collect(Collectors.toList());
-        Assert.assertTrue("Missing link for external url", linkUrls
-                .contains("https://fonts.googleapis.com/css?family=Itim"));
-    }
-
-    @Test
-    public void multipleSameEmbedded_cssTargetingDocumentShouldOnlyAddElementsOneTime() {
-        open();
-        checkLogsForErrors();
-        Assert.assertEquals(
-                "document.css adds 2 font links and those should not duplicate",
-                2l, getCommandExecutor().executeScript(
-                        "return document.head.querySelectorAll(\"link[rel=stylesheet]\").length"));
-        Assert.assertEquals(
-                "Project contains 2 css injections to document and both should be hashed",
-                2l, getCommandExecutor().executeScript(
-                        "return window.Vaadin.theme.injectedGlobalCss.length"));
     }
 }
