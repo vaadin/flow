@@ -134,12 +134,10 @@ fun expectArchiveDoesntContain(vararg globs: String, archiveProvider: () -> File
     }
 }
 
-/**
- * Asserts that given archive (jar/war) contains the Vaadin webpack bundle:
- * the `META-INF/VAADIN/build/` directory.
- */
-fun expectArchiveContainsVaadinWebpackBundle(archive: File,
-                                             isSpringBootJar: Boolean) {
+fun expectArchiveContainsVaadinBundle(archive: File,
+                                             isSpringBootJar: Boolean,
+                                      compressedExtension: String = "*.br"
+                                        ) {
     val isWar: Boolean = archive.name.endsWith(".war", true)
     val isStandaloneJar: Boolean = !isWar && !isSpringBootJar
     val resourcePackaging: String = when {
@@ -150,7 +148,7 @@ fun expectArchiveContainsVaadinWebpackBundle(archive: File,
     expectArchiveContains(
             "${resourcePackaging}META-INF/VAADIN/config/flow-build-info.json",
             "${resourcePackaging}META-INF/VAADIN/config/stats.json",
-            "${resourcePackaging}META-INF/VAADIN/webapp/VAADIN/build/*.gz",
+            "${resourcePackaging}META-INF/VAADIN/webapp/VAADIN/build/${compressedExtension}",
             "${resourcePackaging}META-INF/VAADIN/webapp/VAADIN/build/*.js"
     ) { archive }
     if (!isStandaloneJar) {

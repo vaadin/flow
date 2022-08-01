@@ -22,6 +22,7 @@ import org.gradle.testkit.runner.TaskOutcome
 import org.junit.Test
 import java.io.File
 import kotlin.test.expect
+import org.junit.Ignore
 
 class MiscSingleModuleTest : AbstractGradleTest() {
     /**
@@ -30,7 +31,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
     @Test
     fun testVaadin8VaadinPlatformMPRProject() {
         testProject.buildFile.writeText(
-            """
+                """
             plugins {
                 id "com.devsoap.plugin.vaadin" version "1.4.1"
                 id 'com.vaadin'
@@ -62,7 +63,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
     @Test
     fun testWarProjectDevelopmentMode() {
         testProject.buildFile.writeText(
-            """
+                """
             plugins {
                 id 'war'
                 id 'org.gretty' version '3.0.1'
@@ -95,8 +96,22 @@ class MiscSingleModuleTest : AbstractGradleTest() {
      */
     @Test
     fun testWarProjectProductionMode() {
+        doTestWarProjectProductionMode()
+    }
+
+    /**
+     * This test covers the [Base Starter Gradle](https://github.com/vaadin/base-starter-gradle)
+     * example project.
+     */
+    @Ignore("Webpack uses gzip compression")
+    @Test
+    fun testWarProjectProductionModeWebpack() {
+        doTestWarProjectProductionMode("*.gz")
+    }
+
+    fun doTestWarProjectProductionMode(compressedExtension: String = "*.br") {
         testProject.buildFile.writeText(
-            """
+                """
             plugins {
                 id 'war'
                 id 'org.gretty' version '3.0.1'
@@ -116,12 +131,12 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         )
 
         val build: BuildResult =
-            testProject.build("-Pvaadin.productionMode", "build")
+                testProject.build("-Pvaadin.productionMode", "build")
         // vaadinBuildFrontend should have been executed automatically
         build.expectTaskSucceded("vaadinBuildFrontend")
 
         val war: File = testProject.builtWar
-        expectArchiveContainsVaadinWebpackBundle(war, false)
+        expectArchiveContainsVaadinBundle(war, false, compressedExtension)
     }
 
     /**
@@ -130,7 +145,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
     @Test
     fun testJarProjectDevelopmentMode() {
         testProject.buildFile.writeText(
-            """
+                """
             plugins {
                 id 'java'
                 id("com.vaadin")
@@ -152,7 +167,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         """.trimIndent()
         )
 
-        val build: BuildResult = testProject.build( "build")
+        val build: BuildResult = testProject.build("build")
         // vaadinBuildFrontend should NOT have been executed automatically
         expect(null) { build.task(":vaadinBuildFrontend") }
 
@@ -165,8 +180,21 @@ class MiscSingleModuleTest : AbstractGradleTest() {
      */
     @Test
     fun testJarProjectProductionMode() {
+        doTestJarProjectProductionMode()
+    }
+
+    /**
+     * This test covers the https://github.com/mvysny/vaadin14-embedded-jetty-gradle example.
+     */
+    @Ignore("Webpack uses gzip compression")
+    @Test
+    fun testJarProjectProductionModeWebpack() {
+        doTestJarProjectProductionMode("*.gz")
+    }
+
+    private fun doTestJarProjectProductionMode(compressedExtension: String = "*.br") {
         testProject.buildFile.writeText(
-            """
+                """
             plugins {
                 id 'java'
                 id("com.vaadin")
@@ -196,12 +224,12 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         )
 
         val build: BuildResult =
-            testProject.build("-Pvaadin.productionMode", "build")
+                testProject.build("-Pvaadin.productionMode", "build")
         build.expectTaskSucceded("vaadinPrepareFrontend")
         build.expectTaskSucceded("vaadinBuildFrontend")
 
         val jar: File = testProject.builtJar
-        expectArchiveContainsVaadinWebpackBundle(jar, false)
+        expectArchiveContainsVaadinBundle(jar, false, compressedExtension)
     }
 
     /**
@@ -215,11 +243,21 @@ class MiscSingleModuleTest : AbstractGradleTest() {
      */
     @Test
     fun testSpringProjectProductionMode() {
+        doTestSpringProjectProductionMode();
+    }
+
+    @Ignore("Webpack uses gzip compression")
+    @Test
+    fun testSpringProjectProductionModeWebpack() {
+        doTestSpringProjectProductionMode("*.gz")
+    }
+
+    private fun doTestSpringProjectProductionMode(compressedExtension: String = "*.br") {
 
         val springBootVersion = "2.2.4.RELEASE"
 
         testProject.buildFile.writeText(
-            """
+                """
             plugins {
                 id 'org.springframework.boot' version '$springBootVersion'
                 id 'io.spring.dependency-management' version '1.0.11.RELEASE'
@@ -260,7 +298,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
 
         // need to create the Application.java file otherwise bootJar will fail
         testProject.newFile(
-            "src/main/java/com/example/demo/DemoApplication.java", """
+                "src/main/java/com/example/demo/DemoApplication.java", """
             package com.example.demo;
             
             import org.springframework.boot.SpringApplication;
@@ -279,7 +317,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
 
         // AppShell.java file creation
         testProject.newFile(
-            "src/main/java/com/example/demo/AppShell.java", """
+                "src/main/java/com/example/demo/AppShell.java", """
             package com.example.demo;
             
             import com.vaadin.flow.component.page.AppShellConfigurator;
@@ -292,12 +330,12 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         )
 
         val build: BuildResult =
-            testProject.build("-Pvaadin.productionMode", "build")
+                testProject.build("-Pvaadin.productionMode", "build")
         build.expectTaskSucceded("vaadinPrepareFrontend")
         build.expectTaskSucceded("vaadinBuildFrontend")
 
         val jar: File = testProject.builtJar
-        expectArchiveContainsVaadinWebpackBundle(jar, true)
+        expectArchiveContainsVaadinBundle(jar, true, compressedExtension)
     }
 
     /**
@@ -305,8 +343,22 @@ class MiscSingleModuleTest : AbstractGradleTest() {
      */
     @Test
     fun testCircularDepsBug() {
+        dotestCircularDepsBug();
+    }
+
+    /**
+     * Tests https://github.com/vaadin/vaadin-gradle-plugin/issues/42
+     */
+    @Ignore("Webpack uses gzip compression")
+    @Test
+    fun testCircularDepsBugWebpack() {
+        dotestCircularDepsBug("*.gz");
+    }
+
+    private fun dotestCircularDepsBug(compressedExtension: String = "*.br") {
+
         testProject.buildFile.writeText(
-            """
+                """
             plugins {
                 id 'war'
                 id 'org.gretty' version '3.0.1'
@@ -349,12 +401,12 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         )
 
         val build: BuildResult =
-            testProject.build("-Pvaadin.productionMode", "build")
+                testProject.build("-Pvaadin.productionMode", "build")
         build.expectTaskSucceded("vaadinPrepareFrontend")
         build.expectTaskSucceded("vaadinBuildFrontend")
 
         val war: File = testProject.builtWar
-        expectArchiveContainsVaadinWebpackBundle(war, false)
+        expectArchiveContainsVaadinBundle(war, false, compressedExtension)
     }
 
     /**
@@ -364,7 +416,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
     fun testNodeDownload() {
 
         testProject.buildFile.writeText(
-            """
+                """
             plugins {
                 id 'com.vaadin'
             }
@@ -415,7 +467,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
     @Test
     fun testReflectionsException() {
         testProject.buildFile.writeText(
-            """
+                """
             plugins {
                 id 'com.vaadin'
             }
