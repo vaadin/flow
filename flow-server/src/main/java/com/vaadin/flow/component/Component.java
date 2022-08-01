@@ -686,28 +686,27 @@ public abstract class Component
     }
 
     /**
-     * Traverses the component tree up and returns the first component that
-     * matches the given type.
+     * Traverses the component tree up and returns the first ancestor component
+     * that matches the given type.
      *
      * @param componentType
-     *            the class of the component to search for
-     * @return the component as Optional or empty Optional if a parent of given
-     *         type is not found
+     *            the class of the ancestor component to search for
+     * @return The first ancestor that can be assigned to the given class. Null
+     *         if no ancestor with the correct type could be found.
      * @param <T>
-     *            the type of the component to return
+     *            the type of the ancestor component to return
      */
-    @SuppressWarnings("unchecked")
-    public <T> Optional<T> findAncestor(Class<T> componentType) {
-        Optional<Component> parent = getParent();
-        while (parent.isPresent()) {
-            Component component = parent.get();
-            if (componentType.isAssignableFrom(component.getClass())) {
-                return Optional.of((T) component);
+    public <T> T findAncestor(Class<T> componentType) {
+        Optional<Component> optionalParent = getParent();
+        while (optionalParent.isPresent()) {
+            Component parent = optionalParent.get();
+            if (componentType.isAssignableFrom(parent.getClass())) {
+                return componentType.cast(parent);
             } else {
-                parent = component.getParent();
+                optionalParent = parent.getParent();
             }
         }
-        return Optional.empty();
+        return null;
     }
 
 }
