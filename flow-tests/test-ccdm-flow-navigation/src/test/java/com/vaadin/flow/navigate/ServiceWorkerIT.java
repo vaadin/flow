@@ -158,10 +158,11 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
             // Verify <base href> by navigating with a relative link
             $("main-view").first().$("a").id("menu-about").click();
 
+            WebElement aboutView = waitUntil(
+                    driver -> findElement(By.tagName("about-view")));
             MatcherAssert.assertThat(getDriver().getCurrentUrl(),
                     CoreMatchers.endsWith("/about"));
-            Assert.assertNotNull("Should have <about-view> in DOM",
-                    findElement(By.tagName("about-view")));
+            Assert.assertNotNull("Should have <about-view> in DOM", aboutView);
         } finally {
             // Reset network conditions back
             setConnectionType(NetworkConnection.ConnectionType.ALL);
@@ -211,7 +212,9 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
         setConnectionType(NetworkConnection.ConnectionType.AIRPLANE_MODE);
 
         try {
-            $("main-view").first().$("a").id("menu-another").click();
+            waitUntil(
+                    driver -> $("main-view").first().$("a").id("menu-another"))
+                    .click();
 
             // Wait for component inside shadow root as there is no vaadin
             // to wait for as with server-side
@@ -258,7 +261,8 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
 
         setConnectionType(NetworkConnection.ConnectionType.AIRPLANE_MODE);
         try {
-            $("main-view").first().$("a").id("menu-hello").click();
+            waitUntil(driver -> $("main-view").first().$("a").id("menu-hello"))
+                    .click();
 
             waitForElementPresent(By.tagName("iframe"));
             WebElement offlineStub = findElement(By.tagName("iframe"));
