@@ -134,8 +134,7 @@ public abstract class AbstractRpcInvocationHandler
     }
 
     private boolean isPollingEnabledForUI(UI ui) {
-        return ui.getPollInterval() > 0
-                && ComponentUtil.hasEventListener(ui, PollEvent.class);
+        return ui.getPollInterval() > 0;
     }
 
     /**
