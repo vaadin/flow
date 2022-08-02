@@ -258,18 +258,23 @@ public class HandlerHelper implements Serializable {
              * A string beginning with a ‘/’ character and ending with a ‘/*’
              * suffix is used for path mapping.
              */
-            String directory = servletMappingPath.substring(0,
+
+            String directory = servletMappingPath.substring(1,
                     servletMappingPath.length() - 2);
             String directoryWithSlash = directory + "/";
 
+            // Requested path should not contain the initial slash,
+            // but if it does, we remove it to be consistent with directory
+            String relativeRequestedPath = requestedPath.replaceFirst("^/", "");
+
             // /foo/* matches /foo
-            if (requestedPath.equals(directory)) {
+            if (relativeRequestedPath.equals(directory)) {
                 return Optional.of("");
 
             }
-            if (requestedPath.startsWith(directoryWithSlash)) {
-                return Optional.of(
-                        requestedPath.substring(directoryWithSlash.length()));
+            if (relativeRequestedPath.startsWith(directoryWithSlash)) {
+                return Optional.of(relativeRequestedPath
+                        .substring(directoryWithSlash.length()));
             }
             return Optional.empty();
         }
@@ -300,7 +305,7 @@ public class HandlerHelper implements Serializable {
      * @return the path inside the context root, not including the slash after
      *         the context root path
      */
-    private static String getRequestPathInsideContext(
+    public static String getRequestPathInsideContext(
             HttpServletRequest request) {
         String servletPath = request.getServletPath();
         String pathInfo = request.getPathInfo();

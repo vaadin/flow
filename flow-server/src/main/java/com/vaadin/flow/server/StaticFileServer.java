@@ -441,10 +441,15 @@ public class StaticFileServer implements StaticFileHandler {
         // http://localhost:8888/context/servlet/VAADIN/folder/file.js
         // ->
         // /VAADIN/folder/file.js
+        //
+        // http://localhost:8888/context/servlet/sw.js
+        // ->
+        // /sw.js
         if (request.getPathInfo() == null) {
             return request.getServletPath();
         } else if (request.getPathInfo().startsWith("/" + VAADIN_MAPPING)
-                || APP_THEME_PATTERN.matcher(request.getPathInfo()).find()) {
+                || APP_THEME_PATTERN.matcher(request.getPathInfo()).find()
+                || request.getPathInfo().startsWith("/sw.js")) {
             return request.getPathInfo();
         }
         return request.getServletPath() + request.getPathInfo();
