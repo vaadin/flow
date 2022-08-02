@@ -1672,12 +1672,10 @@ public class ComponentTest {
         ui.add(componentContainer);
 
         Assert.assertEquals(componentContainer,
-                component.findAncestor(TestComponentContainer.class).get());
-        Assert.assertEquals(ui, component.findAncestor(UI.class).get());
-        Assert.assertEquals(ui,
-                component.findAncestor(PollNotifier.class).get());
-        Assert.assertFalse(
-                component.findAncestor(TestButton.class).isPresent());
+                component.findAncestor(TestComponentContainer.class));
+        Assert.assertEquals(ui, component.findAncestor(UI.class));
+        Assert.assertEquals(ui, component.findAncestor(PollNotifier.class));
+        Assert.assertNull(component.findAncestor(TestButton.class));
 
     }
 
