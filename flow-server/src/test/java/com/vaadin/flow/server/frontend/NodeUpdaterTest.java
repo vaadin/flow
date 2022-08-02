@@ -263,14 +263,13 @@ public class NodeUpdaterTest {
 
         dependencies.put(formPackage, existingVersion);
 
-        try {
-            nodeUpdater.addDependency(packageJson, NodeUpdater.DEPENDENCIES,
-                    formPackage, newVersion);
-            Assert.fail("Expected NumberFormatException");
-        } catch (NumberFormatException e) {
-            Assert.assertTrue(
-                    e.getMessage().contains("is not a valid version"));
-        }
+        NumberFormatException expectedException = Assert
+                .assertThrows(NumberFormatException.class,
+                        () -> nodeUpdater.addDependency(packageJson,
+                                NodeUpdater.DEPENDENCIES, formPackage,
+                                newVersion));
+        Assert.assertTrue(expectedException.getMessage()
+                .contains("is not a valid version"));
     }
 
     @Test
