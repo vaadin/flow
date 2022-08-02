@@ -249,6 +249,31 @@ public class NodeUpdaterTest {
     }
 
     @Test
+    public void shouldThrowExceptionOnNewVersionNonParsable() {
+        JsonObject packageJson = Json.createObject();
+        JsonObject dependencies = Json.createObject();
+        packageJson.put(NodeUpdater.DEPENDENCIES, dependencies);
+        JsonObject vaadinDependencies = Json.createObject();
+        vaadinDependencies.put(NodeUpdater.DEPENDENCIES, Json.createObject());
+        packageJson.put(NodeUpdater.VAADIN_DEP_KEY, vaadinDependencies);
+
+        String formPackage = "@vaadin/form";
+        String existingVersion = "2.0.0";
+        String newVersion = "../../../some/local/path";
+
+        dependencies.put(formPackage, existingVersion);
+
+        try {
+            nodeUpdater.addDependency(packageJson, NodeUpdater.DEPENDENCIES,
+                    formPackage, newVersion);
+            Assert.fail("Expected NumberFormatException");
+        } catch (NumberFormatException e) {
+            Assert.assertTrue(
+                    e.getMessage().contains("is not a valid version"));
+        }
+    }
+
+    @Test
     public void getJsonFileContent_incorrectPackageJsonContent_throwsExceptionWithFileName()
             throws IOException {
         File brokenPackageJsonFile = temporaryFolder
