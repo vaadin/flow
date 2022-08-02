@@ -20,19 +20,6 @@
             <artifactId>vaadin-dev-server</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <!-- Temporary fix to workaround errors with internal selenium grid -->
-        <dependency>
-            <groupId>org.seleniumhq.selenium</groupId>
-            <artifactId>selenium-devtools-v100</artifactId>
-            <version>4.2.2</version>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
     </dependencies>
 
     <build>
