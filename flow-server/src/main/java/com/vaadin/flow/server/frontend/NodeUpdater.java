@@ -509,8 +509,9 @@ public abstract class NodeUpdater implements FallibleCommand {
 
     private boolean isNewerVersion(JsonObject json, String pkg,
             String version) {
+        FrontendVersion newVersion = new FrontendVersion(version);
+
         try {
-            FrontendVersion newVersion = new FrontendVersion(version);
             FrontendVersion existingVersion = toVersion(json, pkg);
             return newVersion.isNewerThan(existingVersion);
         } catch (NumberFormatException e) {
