@@ -16,6 +16,8 @@
 package com.vaadin.flow.component;
 
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -366,6 +368,20 @@ public abstract class Component
     }
 
     /**
+     * Returns all listeners that match or extend the given event type.
+     *
+     * @param eventType
+     *            the component event type
+     * @return A collection with all registered listeners for a given event
+     *         type. Empty if no listeners are found.
+     */
+    protected Collection<?> getListeners(
+            Class<? extends ComponentEvent> eventType) {
+        return eventBus != null ? eventBus.getListeners(eventType)
+                : Collections.emptyList();
+    }
+
+    /**
      * Dispatches the event to all listeners registered for the event type.
      *
      * @see ComponentUtil#fireEvent(Component, ComponentEvent)
@@ -686,28 +702,27 @@ public abstract class Component
     }
 
     /**
-     * Traverses the component tree up and returns the first component that
-     * matches the given type.
+     * Traverses the component tree up and returns the first ancestor component
+     * that matches the given type.
      *
      * @param componentType
-     *            the class of the component to search for
-     * @return the component as Optional or empty Optional if a parent of given
-     *         type is not found
+     *            the class of the ancestor component to search for
+     * @return The first ancestor that can be assigned to the given class. Null
+     *         if no ancestor with the correct type could be found.
      * @param <T>
-     *            the type of the component to return
+     *            the type of the ancestor component to return
      */
-    @SuppressWarnings("unchecked")
-    public <T> Optional<T> findAncestor(Class<T> componentType) {
-        Optional<Component> parent = getParent();
-        while (parent.isPresent()) {
-            Component component = parent.get();
-            if (componentType.isAssignableFrom(component.getClass())) {
-                return Optional.of((T) component);
+    public <T> T findAncestor(Class<T> componentType) {
+        Optional<Component> optionalParent = getParent();
+        while (optionalParent.isPresent()) {
+            Component parent = optionalParent.get();
+            if (componentType.isAssignableFrom(parent.getClass())) {
+                return componentType.cast(parent);
             } else {
-                parent = component.getParent();
+                optionalParent = parent.getParent();
             }
         }
-        return Optional.empty();
+        return null;
     }
 
 }

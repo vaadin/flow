@@ -21,8 +21,11 @@ declare var VITE_ENABLED: boolean; // defined by Webpack/Vite
 // Combine manifest entries injected at compile-time by Webpack/Vite
 // with ones that Flow injects at runtime through `sw-runtime-resources-precache.js`.
 let manifestEntries: PrecacheEntry[] = self.__WB_MANIFEST || [];
+// If injected entries contains element for root, then discard the one from Flow
+// may only happen when running in development mode, but after a frontend build
+let hasRootEntry = manifestEntries.findIndex((entry) => entry.url === '.') >= 0;
 if (self.additionalManifestEntries?.length) {
-  manifestEntries.push(...self.additionalManifestEntries);
+  manifestEntries.push(...self.additionalManifestEntries.filter( (entry) => entry.url !== '.' || !hasRootEntry));
 }
 
 const offlinePath = OFFLINE_PATH;
