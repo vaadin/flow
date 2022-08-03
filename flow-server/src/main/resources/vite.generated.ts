@@ -334,6 +334,8 @@ function themePlugin(opts): PluginOption {
     handleHotUpdate(context) {
       const contextPath = path.resolve(context.file);
       const themePath = path.resolve(themeFolder);
+      // Track also updates on fronted/generated/theme.js to regenerate theme
+      // upon a java live reload when value of @Theme annotation changes.
       const isThemeJS = contextPath === path.resolve(themeOptions.frontendGeneratedFolder, "theme.js");
       if (isThemeJS || contextPath.startsWith(themePath)) {
         const changed = path.relative(themePath, contextPath);
