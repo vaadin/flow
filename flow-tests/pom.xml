@@ -38,7 +38,7 @@
         <jetty.scantrigger></jetty.scantrigger>
 
         <vaadin.devmode.liveReload.enabled>false</vaadin.devmode.liveReload.enabled>
-        <vaadin.pnpm.enable>true</vaadin.pnpm.enable>
+        <vaadin.pnpm.enable>false</vaadin.pnpm.enable>
         <vaadin.allow.appshell.annotations>false</vaadin.allow.appshell.annotations>
         <useDeprecatedV14Bootstrapping>false</useDeprecatedV14Bootstrapping>
         <vaadin.devmode.vite.options>--host</vaadin.devmode.vite.options>
