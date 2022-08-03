@@ -345,19 +345,15 @@ function themePlugin(opts): PluginOption {
     handleHotUpdate(context) {
       const contextPath = path.resolve(context.file);
       const themePath = path.resolve(themeFolder);
-      console.log("==================== handleHotUpdate " + context.file);
       // Track also updates on fronted/generated/theme.js to regenerate theme
       // upon a java live reload when value of @Theme annotation changes.
       const isThemeJS = contextPath === path.resolve(themeOptions.frontendGeneratedFolder, "theme.js");
-      console.log('================================== is theme.js? ' + isThemeJS);
       if (isThemeJS || contextPath.startsWith(themePath)) {
         const changed = path.relative(themePath, contextPath);
 
         console.debug('Theme file changed', changed);
-        console.log('================================== Theme file changed', changed);
 
         if (isThemeJS || changed.startsWith(settings.themeName)) {
-        console.log('================================== Triggering processThemeResources');
           processThemeResources(fullThemeOptions, console);
         }
       }
