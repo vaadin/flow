@@ -334,12 +334,13 @@ function themePlugin(opts): PluginOption {
     handleHotUpdate(context) {
       const contextPath = path.resolve(context.file);
       const themePath = path.resolve(themeFolder);
-      if (contextPath.startsWith(themePath)) {
+      const isThemeJS = contextPath === path.resolve(themeOptions.frontendGeneratedFolder, "theme.js");
+      if (isThemeJS || contextPath.startsWith(themePath)) {
         const changed = path.relative(themePath, contextPath);
 
         console.debug('Theme file changed', changed);
 
-        if (changed.startsWith(settings.themeName)) {
+        if (isThemeJS || changed.startsWith(settings.themeName)) {
           processThemeResources(fullThemeOptions, console);
         }
       }
