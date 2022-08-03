@@ -41,9 +41,6 @@ let firstThemeName = undefined;
  */
 function processThemeResources(options, logger) {
   const themeName = extractThemeName(options.frontendGeneratedFolder);
-  console.log("====================== processThemeResources themeName ", themeName);
-  console.log("====================== processThemeResources prevThemeName ", prevThemeName);
-  console.log("====================== processThemeResources firstThemeName ", firstThemeName);
   if (themeName) {
     if (!prevThemeName && !firstThemeName) {
       firstThemeName = themeName;
