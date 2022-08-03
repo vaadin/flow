@@ -18,6 +18,7 @@ package com.vaadin.flow.server.frontend;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -26,18 +27,18 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Scanner;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
@@ -1259,15 +1260,78 @@ public class FrontendUtils {
                     + " does not look like a node_modules directory");
         }
 
-        Path nodeModulesPath = nodeModules.toPath();
-        try (Stream<Path> walk = Files.walk(nodeModulesPath)) {
-            String undeletable = walk.sorted(Comparator.reverseOrder())
-                    .map(Path::toFile).filter(file -> !file.delete())
-                    .map(File::getAbsolutePath)
-                    .collect(Collectors.joining(", "));
+        deleteDirectory(nodeModules);
+    }
 
-            if (!undeletable.isEmpty() && nodeModules.exists()) {
-                throw new IOException("Unable to delete files: " + undeletable);
+    public static void deleteDirectory(File directory) throws IOException {
+        if (!directory.exists() || !directory.isDirectory()) {
+            return;
+        }
+
+        if (!(Files.isSymbolicLink(directory.toPath()) || isJunction(directory.toPath()))) {
+            cleanDirectory(directory);
+        }
+
+        if (!directory.delete()) {
+            String message = "Unable to delete directory " + directory + ".";
+            throw new IOException(message);
+        }
+    }
+
+    /**
+     * Check that directory is not a windows junction which is basically a symlink.
+     * @param directory directory path to check
+     * @return true if directory is a windows junction
+     * @throws IOException if an I/O error occurs
+     */
+    private static boolean isJunction(Path directory) throws IOException {
+        boolean isWindows = System.getProperty("os.name").toLowerCase().contains("windows");
+        BasicFileAttributes attrs = Files.readAttributes(directory, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
+        return isWindows && attrs.isDirectory() && attrs.isOther();
+    }
+
+    private static void cleanDirectory(File directory) throws IOException {
+        if (!directory.exists()) {
+            String message = directory + " does not exist";
+            throw new IllegalArgumentException(message);
+        }
+
+        if (!directory.isDirectory()) {
+            String message = directory + " is not a directory";
+            throw new IllegalArgumentException(message);
+        }
+
+        File[] files = directory.listFiles();
+        if (files == null) {  // null if security restricted
+            throw new IOException("Failed to list contents of " + directory);
+        }
+
+        IOException exception = null;
+        for (File file : files) {
+            try {
+                forceDelete(file);
+            } catch (IOException ioe) {
+                exception = ioe;
+            }
+        }
+
+        if (exception != null) {
+            throw exception;
+        }
+    }
+
+    private static void forceDelete(File file) throws IOException {
+        if (file.isDirectory()) {
+            deleteDirectory(file);
+        } else {
+            boolean filePresent = file.exists();
+            if (!file.delete()) {
+                if (!filePresent) {
+                    throw new FileNotFoundException("File does not exist: " + file);
+                }
+                String message =
+                        "Unable to delete file: " + file;
+                throw new IOException(message);
             }
         }
     }
