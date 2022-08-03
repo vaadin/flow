@@ -13,7 +13,7 @@ jobs:
       matrix-unit: ${{ steps.set-matrix.outputs.matrix-unit }}
       matrix-it: ${{ steps.set-matrix.outputs.matrix-it }}
     steps:
-      - uses: actions-cool/check-user-permission@v2
+      - uses: ZheSun88/check-user-permission@triggering-actor
         id: check
         with:
           require: 'write'
