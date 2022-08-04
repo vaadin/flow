@@ -37,9 +37,7 @@ import org.jsoup.select.Elements;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
@@ -92,9 +90,6 @@ public class IndexHtmlRequestHandlerWebpackTest {
     private MockDeploymentConfiguration deploymentConfiguration;
     private VaadinContext context;
     private ResourceProvider resourceProvider;
-
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
 
     private String springTokenString;
     private String springTokenHeaderName = "x-CSRF-TOKEN";
@@ -179,11 +174,10 @@ public class IndexHtmlRequestHandlerWebpackTest {
                         + "It is required to have '%1$s' file when "
                         + "using client side bootstrapping.", path);
 
-        exceptionRule.expect(IOException.class);
-        exceptionRule.expectMessage(expectedError);
-
-        indexHtmlRequestHandler.synchronizedHandleRequest(session,
-                vaadinRequest, response);
+        IOException expectedException = Assert.assertThrows(IOException.class,
+                () -> indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                        vaadinRequest, response));
+        Assert.assertEquals(expectedError, expectedException.getMessage());
     }
 
     @Test
