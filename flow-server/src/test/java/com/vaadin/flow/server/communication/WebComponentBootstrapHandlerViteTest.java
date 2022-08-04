@@ -199,9 +199,8 @@ public class WebComponentBootstrapHandlerViteTest {
                 CoreMatchers.not(CoreMatchers.containsString("baz")));
     }
 
-    @Ignore
     @Test
-    public void writeBootstrapPage_scriptGuardedAndDevToolsDisabled()
+    public void writeBootstrapPage_devToolsDisabled()
             throws IOException, ServiceException {
         TestWebComponentBootstrapHandler handler = new TestWebComponentBootstrapHandler();
         VaadinServletService service = new MockVaadinServletService();
@@ -228,14 +227,6 @@ public class WebComponentBootstrapHandlerViteTest {
 
         int scriptIndex = result.indexOf("var hasScript = function(src)");
         Assert.assertTrue(scriptIndex >= 0);
-
-        int guardIndex = result.indexOf(
-                "if (!hasScript(\"/VAADIN/build/vaadin-export-2222.cache.js\")) {");
-        Assert.assertTrue(guardIndex > scriptIndex);
-
-        int createScriptIndex = result.indexOf(
-                "ocument.createElement('script');headElem.setAttribute('type'");
-        Assert.assertTrue(createScriptIndex > guardIndex);
 
         Assert.assertTrue(result.contains("\\\"devToolsEnabled\\\": false"));
     }
