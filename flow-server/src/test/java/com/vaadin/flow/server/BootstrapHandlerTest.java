@@ -10,9 +10,11 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
@@ -73,6 +75,8 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 public class BootstrapHandlerTest {
@@ -988,11 +992,13 @@ public class BootstrapHandlerTest {
     }
 
     @Test
-    public void index_appended_to_head_in_npm()
-            throws InvalidRouteConfigurationException {
+    public void webpack_index_appended_to_head_in_npm()
+            throws InvalidRouteConfigurationException, IOException {
 
         initUI(testUI, createVaadinRequest(),
                 Collections.singleton(AliasLayout.class));
+
+        enableWebpackFeature();
 
         Document page = pageBuilder.getBootstrapPage(new BootstrapContext(
                 request, null, session, testUI, this::contextRootRelativePath));
@@ -1329,8 +1335,8 @@ public class BootstrapHandlerTest {
     }
 
     @Test
-    public void getBootstrapPage_jsModulesDoNotContainDeferAttribute()
-            throws ServiceException {
+    public void webpack_getBootstrapPage_jsModulesDoNotContainDeferAttribute()
+            throws ServiceException, IOException {
         List<DependencyFilter> filters = Arrays.asList((list, context) -> {
             list.clear(); // remove everything
             return list;
@@ -1342,6 +1348,8 @@ public class BootstrapHandlerTest {
         service.setDependencyFilters(filters);
 
         initUI(testUI);
+
+        enableWebpackFeature();
 
         BootstrapContext bootstrapContext = new BootstrapContext(request, null,
                 session, testUI, this::contextRootRelativePath);
@@ -1362,8 +1370,10 @@ public class BootstrapHandlerTest {
     }
 
     @Test
-    public void getBootstrapPage_removesExportScript() throws ServiceException {
+    public void webpack_getBootstrapPage_removesExportScript()
+            throws IOException {
         initUI(testUI);
+        enableWebpackFeature();
 
         BootstrapContext bootstrapContext = new BootstrapContext(request, null,
                 session, testUI, this::contextRootRelativePath);
@@ -1382,10 +1392,12 @@ public class BootstrapHandlerTest {
     }
 
     @Test // #7158
-    public void getBootstrapPage_assetChunksIsAnARRAY_bootstrapParsesOk()
+    public void webpack_getBootstrapPage_assetChunksIsAnARRAY_bootstrapParsesOk()
             throws ServiceException, IOException {
 
         initUI(testUI);
+
+        enableWebpackFeature();
 
         String statsJson = "{\n" + " \"errors\": [],\n" + " \"warnings\": [],\n"
                 + " \"assetsByChunkName\": {\n" + "  \"bundle\": [\n"
@@ -1727,8 +1739,6 @@ public class BootstrapHandlerTest {
             throws IOException {
         initUI(testUI);
 
-        enableViteFeature(false);
-
         final Document bootstrapPage = pageBuilder.getBootstrapPage(context);
         Assert.assertTrue("@vite/client should be added to head.", bootstrapPage
                 .head().toString().contains("VAADIN/@vite/client"));
@@ -1737,8 +1747,6 @@ public class BootstrapHandlerTest {
     @Test
     public void runViteFeatureProdMode_bundleAddedToHead() throws IOException {
         initUI(testUI);
-
-        enableViteFeature(true);
 
         deploymentConfiguration.setProductionMode(true);
 
@@ -1776,25 +1784,25 @@ public class BootstrapHandlerTest {
                         .contains("href=\"./VAADIN/build/main.688a5538.css\""));
     }
 
-    private void enableViteFeature(boolean productionMode) throws IOException {
+    private void enableWebpackFeature() {
         VaadinContext vaadinContext = Mockito.mock(VaadinContext.class);
+        Lookup lookup = testUI.getSession().getService().getContext()
+                .getAttribute(Lookup.class);
 
-        final Lookup lookup = Mockito.mock(Lookup.class);
-        ResourceProvider resourceProvider = Mockito
-                .mock(ResourceProvider.class);
-        Mockito.when(lookup.lookup(ResourceProvider.class))
-                .thenReturn(resourceProvider);
+        Map<Object, Object> vaadinContextStore = new HashMap<>();
+        vaadinContextStore.put(Lookup.class, lookup);
 
-        Mockito.when(resourceProvider.getClientResourceAsStream(
-                "META-INF/resources/" + ApplicationConstants.CLIENT_ENGINE_PATH
-                        + "/compile.properties"))
-                .thenReturn(getClass().getClassLoader()
-                        .getResourceAsStream("META-INF/resources/"
-                                + ApplicationConstants.CLIENT_ENGINE_PATH
-                                + "/compile.properties"));
+        Mockito.when(vaadinContext.getAttribute(any()))
+                .then(i -> vaadinContextStore.get(i.getArgument(0)));
+        Mockito.when(vaadinContext.getAttribute(any(), any()))
+                .then(i -> vaadinContextStore.get(i.getArgument(0)));
+        Mockito.doAnswer(
+                i -> vaadinContextStore.put(i.getArgument(0), i.getArgument(1)))
+                .when(vaadinContext).setAttribute(any(), any());
+        Mockito.doAnswer(i -> vaadinContextStore
+                .put(i.getArgument(0).getClass(), i.getArgument(0)))
+                .when(vaadinContext).setAttribute(any());
 
-        Mockito.when(vaadinContext.getAttribute(Lookup.class))
-                .thenReturn(lookup);
         service.setContext(vaadinContext);
 
         ApplicationConfiguration configuration = Mockito
@@ -1802,24 +1810,13 @@ public class BootstrapHandlerTest {
         Mockito.when(configuration.isProductionMode()).thenReturn(false);
         Mockito.when(configuration.getJavaResourceFolder())
                 .thenReturn(tmpDir.getRoot());
-
-        Mockito.when(lookup.lookup(ApplicationConfiguration.class))
-                .thenReturn(configuration);
-        Mockito.when(vaadinContext.getAttribute(ApplicationConfiguration.class))
-                .thenReturn(configuration);
-        Mockito.when(vaadinContext.getAttribute(
-                Mockito.eq(ApplicationConfiguration.class), Mockito.any()))
-                .thenReturn(configuration);
+        vaadinContextStore.put(ApplicationConfiguration.class, configuration);
 
         final FeatureFlags featureFlags = FeatureFlags
                 .get(testUI.getSession().getService().getContext());
-        Mockito.when(vaadinContext.getAttribute(FeatureFlags.class))
-                .thenReturn(featureFlags);
 
-        featureFlags.setEnabled(FeatureFlags.VITE.getId(), true);
+        featureFlags.setEnabled(FeatureFlags.WEBPACK.getId(), true);
 
-        Mockito.when(configuration.isProductionMode())
-                .thenReturn(productionMode);
     }
 
     public static Location requestToLocation(VaadinRequest request) {

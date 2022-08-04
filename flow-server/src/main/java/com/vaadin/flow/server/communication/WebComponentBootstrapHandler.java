@@ -108,8 +108,8 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         public Document getBootstrapPage(BootstrapContext context) {
             VaadinService service = context.getSession().getService();
 
-            if (FeatureFlags.get(service.getContext())
-                    .isEnabled(FeatureFlags.VITE)) {
+            if (!FeatureFlags.get(service.getContext())
+                    .isEnabled(FeatureFlags.WEBPACK)) {
                 try {
                     Document document = Jsoup.parse(
                             FrontendUtils.getWebComponentHtmlContent(service));

@@ -411,14 +411,7 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         final String WORKBOX_VERSION = "6.5.0";
 
-        if (featureFlags.isEnabled(FeatureFlags.VITE)) {
-            defaults.put("vite", "v3.0.2");
-            defaults.put("@rollup/plugin-replace", "3.1.0");
-            defaults.put("rollup-plugin-brotli", "3.1.0");
-            defaults.put("vite-plugin-checker", "0.4.9");
-            defaults.put("mkdirp", "1.0.4"); // for application-theme-plugin
-            defaults.put("workbox-build", WORKBOX_VERSION);
-        } else {
+        if (featureFlags.isEnabled(FeatureFlags.WEBPACK)) {
             // Webpack plugins and helpers
             defaults.put("esbuild-loader", "2.19.0");
             defaults.put("html-webpack-plugin", "4.5.1");
@@ -440,6 +433,14 @@ public abstract class NodeUpdater implements FallibleCommand {
             // available
             // check out https://github.com/babel/babel/issues/11488
             defaults.put("chokidar", "^3.5.0");
+        } else {
+            // Use Vite
+            defaults.put("vite", "v3.0.2");
+            defaults.put("@rollup/plugin-replace", "3.1.0");
+            defaults.put("rollup-plugin-brotli", "3.1.0");
+            defaults.put("vite-plugin-checker", "0.4.9");
+            defaults.put("mkdirp", "1.0.4"); // for application-theme-plugin
+            defaults.put("workbox-build", WORKBOX_VERSION);
         }
         defaults.put("workbox-core", WORKBOX_VERSION);
         defaults.put("workbox-precaching", WORKBOX_VERSION);
@@ -509,8 +510,9 @@ public abstract class NodeUpdater implements FallibleCommand {
 
     private boolean isNewerVersion(JsonObject json, String pkg,
             String version) {
+        FrontendVersion newVersion = new FrontendVersion(version);
+
         try {
-            FrontendVersion newVersion = new FrontendVersion(version);
             FrontendVersion existingVersion = toVersion(json, pkg);
             return newVersion.isNewerThan(existingVersion);
         } catch (NumberFormatException e) {
@@ -518,7 +520,13 @@ public abstract class NodeUpdater implements FallibleCommand {
                     .contains(VAADIN_FORM_PKG_LEGACY_VERSION)) {
                 return true;
             } else {
-                throw e;
+                // NPM package versions are not always easy to parse, see
+                // https://docs.npmjs.com/cli/v8/configuring-npm/package-json#dependencies
+                // for some examples. So let's return false for unparsable
+                // versions, as we don't want them to be updated.
+                log().warn("Package {} has unparseable version: {}", pkg,
+                        e.getMessage());
+                return false;
             }
         }
     }

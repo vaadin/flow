@@ -620,6 +620,6 @@ public class PwaRegistry implements Serializable {
         ApplicationConfiguration configuration = ApplicationConfiguration
                 .get(context);
         return configuration != null && !configuration.isProductionMode()
-                && FeatureFlags.get(context).isEnabled(FeatureFlags.VITE);
+                && !FeatureFlags.get(context).isEnabled(FeatureFlags.WEBPACK);
     }
 }
