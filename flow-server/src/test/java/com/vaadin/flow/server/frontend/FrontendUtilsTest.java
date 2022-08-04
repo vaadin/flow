@@ -373,7 +373,8 @@ public class FrontendUtilsTest {
     }
 
     @Test
-    public void symlinkByNpm_deleteDirectory_doesNotDeleteSymlinkFolderFiles() throws IOException, ExecutionFailedException {
+    public void symlinkByNpm_deleteDirectory_doesNotDeleteSymlinkFolderFiles()
+            throws IOException, ExecutionFailedException {
         File npmFolder = tmpDir.newFolder();
 
         File generatedPath = new File(npmFolder, "generated");
@@ -387,15 +388,15 @@ public class FrontendUtilsTest {
         final JsonObject packageJson = Json.createObject();
         packageJson.put(DEPENDENCIES, Json.createObject());
 
-        packageJson.getObject(DEPENDENCIES).put("@symbolic/link", "./" + symbolic.getName());
+        packageJson.getObject(DEPENDENCIES).put("@symbolic/link",
+                "./" + symbolic.getName());
 
         FileUtils.writeStringToFile(new File(npmFolder, PACKAGE_JSON),
                 packageJson.toJson(), StandardCharsets.UTF_8);
 
         ClassFinder finder = Mockito.mock(ClassFinder.class);
 
-        Logger logger = Mockito
-                .spy(LoggerFactory.getLogger(NodeUpdater.class));
+        Logger logger = Mockito.spy(LoggerFactory.getLogger(NodeUpdater.class));
 
         NodeUpdater nodeUpdater = new NodeUpdater(finder,
                 Mockito.mock(FrontendDependencies.class), npmFolder,
@@ -419,7 +420,9 @@ public class FrontendUtilsTest {
 
         FrontendUtils.deleteNodeModules(new File(npmFolder, "node_modules"));
 
-        Assert.assertTrue("File from linked folder was removed, even if only link folder should be touched.", linkFolderFile.exists());
+        Assert.assertTrue(
+                "File from linked folder was removed, even if only link folder should be touched.",
+                linkFolderFile.exists());
     }
 
     private ResourceProvider mockResourceProvider(VaadinService service) {

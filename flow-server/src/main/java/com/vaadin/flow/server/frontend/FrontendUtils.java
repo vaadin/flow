@@ -1268,7 +1268,8 @@ public class FrontendUtils {
             return;
         }
 
-        if (!(Files.isSymbolicLink(directory.toPath()) || isJunction(directory.toPath()))) {
+        if (!(Files.isSymbolicLink(directory.toPath())
+                || isJunction(directory.toPath()))) {
             cleanDirectory(directory);
         }
 
@@ -1279,14 +1280,20 @@ public class FrontendUtils {
     }
 
     /**
-     * Check that directory is not a windows junction which is basically a symlink.
-     * @param directory directory path to check
+     * Check that directory is not a windows junction which is basically a
+     * symlink.
+     *
+     * @param directory
+     *            directory path to check
      * @return true if directory is a windows junction
-     * @throws IOException if an I/O error occurs
+     * @throws IOException
+     *             if an I/O error occurs
      */
     private static boolean isJunction(Path directory) throws IOException {
-        boolean isWindows = System.getProperty("os.name").toLowerCase().contains("windows");
-        BasicFileAttributes attrs = Files.readAttributes(directory, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
+        boolean isWindows = System.getProperty("os.name").toLowerCase()
+                .contains("windows");
+        BasicFileAttributes attrs = Files.readAttributes(directory,
+                BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
         return isWindows && attrs.isDirectory() && attrs.isOther();
     }
 
@@ -1302,7 +1309,7 @@ public class FrontendUtils {
         }
 
         File[] files = directory.listFiles();
-        if (files == null) {  // null if security restricted
+        if (files == null) { // null if security restricted
             throw new IOException("Failed to list contents of " + directory);
         }
 
@@ -1327,10 +1334,10 @@ public class FrontendUtils {
             boolean filePresent = file.exists();
             if (!file.delete()) {
                 if (!filePresent) {
-                    throw new FileNotFoundException("File does not exist: " + file);
+                    throw new FileNotFoundException(
+                            "File does not exist: " + file);
                 }
-                String message =
-                        "Unable to delete file: " + file;
+                String message = "Unable to delete file: " + file;
                 throw new IOException(message);
             }
         }
