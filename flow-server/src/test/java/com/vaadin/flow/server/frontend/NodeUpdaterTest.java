@@ -181,12 +181,12 @@ public class NodeUpdaterTest {
         JsonObject packageJson = nodeUpdater.getPackageJson();
         packageJson.put(NodeUpdater.DEPENDENCIES, Json.createObject());
         packageJson.put(NodeUpdater.DEV_DEPENDENCIES, Json.createObject());
-        packageJson.getObject(NodeUpdater.DEV_DEPENDENCIES).put("webpack",
-                "3.3.10");
+        packageJson.getObject(NodeUpdater.DEV_DEPENDENCIES).put("vite",
+                "v2.7.10");
         nodeUpdater.updateDefaultDependencies(packageJson);
 
-        Assert.assertEquals("4.46.0", packageJson
-                .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("webpack"));
+        Assert.assertEquals("v2.9.13", packageJson
+                .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("vite"));
     }
 
     @Test // #6907 test when user has set newer versions
@@ -195,12 +195,12 @@ public class NodeUpdaterTest {
         JsonObject packageJson = nodeUpdater.getPackageJson();
         packageJson.put(NodeUpdater.DEPENDENCIES, Json.createObject());
         packageJson.put(NodeUpdater.DEV_DEPENDENCIES, Json.createObject());
-        packageJson.getObject(NodeUpdater.DEV_DEPENDENCIES).put("webpack",
-                "5.0.1");
+        packageJson.getObject(NodeUpdater.DEV_DEPENDENCIES).put("vite",
+                "v4.0.0");
         nodeUpdater.updateDefaultDependencies(packageJson);
 
-        Assert.assertEquals("5.0.1", packageJson
-                .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("webpack"));
+        Assert.assertEquals("v4.0.0", packageJson
+                .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("vite"));
     }
 
     @Test

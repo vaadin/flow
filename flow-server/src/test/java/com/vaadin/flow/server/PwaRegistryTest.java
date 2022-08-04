@@ -47,7 +47,7 @@ public class PwaRegistryTest {
     @BeforeClass
     public static void initPwaWithCustomIconPath() throws IOException {
         PwaRegistry registry = preparePwaRegistry(
-                PwaWithCustomIconPath.class.getAnnotation(PWA.class), true);
+                PwaWithCustomIconPath.class.getAnnotation(PWA.class), false);
         splashIconsForAppleDevices = registry.getIcons().stream().filter(
                 icon -> "apple-touch-startup-image".equals(icon.getRel()))
                 .collect(Collectors.toList());
@@ -63,7 +63,7 @@ public class PwaRegistryTest {
         // differs from the default icon and set of icons will be generated
         // based on it
         PwaRegistry registry = preparePwaRegistry(
-                PwaRegistryTest.class.getAnnotation(PWA.class), true);
+                PwaRegistryTest.class.getAnnotation(PWA.class), false);
         List<PwaIcon> icons = registry.getIcons();
         // This icon has width 32 and it's generated based on a custom icon (see
         // above)
@@ -75,8 +75,8 @@ public class PwaRegistryTest {
         Assert.assertEquals(26, stream.toByteArray()[36]);
     }
 
-    private static PwaRegistry preparePwaRegistry(PWA pwa, boolean viteEnabled)
-            throws IOException {
+    private static PwaRegistry preparePwaRegistry(PWA pwa,
+            boolean webpackEnabled) throws IOException {
         try (MockedStatic<VaadinService> vaadinService = Mockito
                 .mockStatic(VaadinService.class);
                 MockedStatic<ApplicationConfiguration> configuration = Mockito
@@ -99,8 +99,8 @@ public class PwaRegistryTest {
                     .thenReturn(applicationConfiguration);
 
             FeatureFlags flags = Mockito.mock(FeatureFlags.class);
-            Mockito.when(flags.isEnabled(FeatureFlags.VITE))
-                    .thenReturn(viteEnabled);
+            Mockito.when(flags.isEnabled(FeatureFlags.WEBPACK))
+                    .thenReturn(webpackEnabled);
             featureFlags.when(() -> FeatureFlags.get(Mockito.any()))
                     .thenReturn(flags);
 
@@ -302,18 +302,7 @@ public class PwaRegistryTest {
     }
 
     @Test
-    public void pwaWithCustomOfflinePath_viteIsEnabled_getRuntimeServiceWorkerJsContainsCustomOfflinePath()
-            throws IOException {
-        PwaRegistry registry = preparePwaRegistry(
-                PwaWithCustomOfflinePath.class.getAnnotation(PWA.class), true);
-        Assert.assertTrue(registry.getRuntimeServiceWorkerJs()
-                .contains("some/path.html"));
-        Assert.assertFalse(registry.getRuntimeServiceWorkerJs()
-                .contains("{ url: '.', revision:"));
-    }
-
-    @Test
-    public void pwaWithCustomOfflinePath_viteIsNotEnabled_getRuntimeServiceWorkerJsContainsCustomOfflinePath()
+    public void pwaWithCustomOfflinePath_getRuntimeServiceWorkerJsContainsCustomOfflinePath()
             throws IOException {
         PwaRegistry registry = preparePwaRegistry(
                 PwaWithCustomOfflinePath.class.getAnnotation(PWA.class), false);
@@ -324,19 +313,30 @@ public class PwaRegistryTest {
     }
 
     @Test
-    public void pwaWithoutCustomOfflinePath_viteIsEnabled_getRuntimeServiceWorkerJsContainsCustomOfflinePath()
+    public void pwaWithCustomOfflinePath_webpackEnabled_getRuntimeServiceWorkerJsContainsCustomOfflinePath()
             throws IOException {
         PwaRegistry registry = preparePwaRegistry(
-                PwaRegistryTest.class.getAnnotation(PWA.class), true);
+                PwaWithCustomOfflinePath.class.getAnnotation(PWA.class), true);
+        Assert.assertTrue(registry.getRuntimeServiceWorkerJs()
+                .contains("some/path.html"));
+        Assert.assertFalse(registry.getRuntimeServiceWorkerJs()
+                .contains("{ url: '.', revision:"));
+    }
+
+    @Test
+    public void pwaWithoutCustomOfflinePath_getRuntimeServiceWorkerJsContainsCustomOfflinePath()
+            throws IOException {
+        PwaRegistry registry = preparePwaRegistry(
+                PwaRegistryTest.class.getAnnotation(PWA.class), false);
         Assert.assertTrue(registry.getRuntimeServiceWorkerJs()
                 .contains("{ url: '.', revision:"));
     }
 
     @Test
-    public void pwaWithoutCustomOfflinePath_viteIsNotEnabled_getRuntimeServiceWorkerJsDoesNotContainsRoot()
+    public void pwaWithoutCustomOfflinePath_webpackEnabled_getRuntimeServiceWorkerJsDoesNotContainsRoot()
             throws IOException {
         PwaRegistry registry = preparePwaRegistry(
-                PwaRegistryTest.class.getAnnotation(PWA.class), false);
+                PwaRegistryTest.class.getAnnotation(PWA.class), true);
         Assert.assertFalse(registry.getRuntimeServiceWorkerJs()
                 .contains("{ url: '.', revision:"));
     }

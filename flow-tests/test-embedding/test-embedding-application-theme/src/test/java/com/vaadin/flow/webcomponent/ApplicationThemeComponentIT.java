@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -64,9 +65,12 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
         validateEmbeddedComponent($("themed-component").id("second"), "second");
 
         final WebElement body = findElement(By.tagName("body"));
-        Assert.assertNotEquals("url(\"" + getRootURL()
-                + "/path/VAADIN/static/themes/embedded-theme/img/bg.jpg\")",
-                body.getCssValue("background-image"));
+
+        // With Vite assets are served from /VAADIN/build in production mode
+        String imageUrl = body.getCssValue("background-image");
+        Assert.assertFalse("background-image should not be applied to body",
+                imageUrl.matches("url\\(\"" + getRootURL()
+                        + "/VAADIN/build/bg\\.[^.]+\\.jpg\"\\)"));
 
         Assert.assertNotEquals("Ostrich", body.getCssValue("font-family"));
 
@@ -81,10 +85,11 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
 
     private void validateEmbeddedComponent(TestBenchElement themedComponent,
             String target) {
-        Assert.assertEquals(target + " didn't contain the background image",
-                "url(\"" + getRootURL()
-                        + "/VAADIN/static/themes/embedded-theme/img/bg.jpg\")",
-                themedComponent.getCssValue("background-image"));
+        // With Vite assets are served from /VAADIN/build in production mode
+        String imageUrl = themedComponent.getCssValue("background-image");
+        Assert.assertTrue(target + " didn't contain the background image",
+                imageUrl.matches("url\\(\"" + getRootURL()
+                        + "/VAADIN/build/bg\\.[^.]+\\.jpg\"\\)"));
 
         Assert.assertEquals(target + " didn't contain font-family", "Ostrich",
                 themedComponent.getCssValue("font-family"));
@@ -215,7 +220,7 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
         Assert.assertEquals(
                 "document.css adds 2 font links and those should not duplicate",
                 2l, getCommandExecutor().executeScript(
-                        "return document.head.getElementsByTagName('link').length"));
+                        "return document.head.querySelectorAll(\"link[rel=stylesheet]\").length"));
         Assert.assertEquals(
                 "Project contains 2 css injections to document and both should be hashed",
                 2l, getCommandExecutor().executeScript(

@@ -32,6 +32,7 @@ import java.util.zip.GZIPInputStream;
 
 import org.junit.Assert;
 import org.junit.Assume;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
@@ -124,9 +125,22 @@ public class PwaTestIT extends ChromeDeviceTest {
         assertExists(serviceWorkerUrl);
 
         String serviceWorkerJS = readStringFromUrl(serviceWorkerUrl);
+
+        // For Vite search for the precache file as it is loaded at runtime
+        // and not compiled into sw.js during build
+        Assert.assertTrue(
+                "Expected sw-runtime-resources-precache.js to be imported, but was not",
+                serviceWorkerJS.contains(
+                        "importScripts(\"sw-runtime-resources-precache.js\");"));
+
+        serviceWorkerUrl = getRootURL() + "/sw-runtime-resources-precache.js";
+        serviceWorkerJS = readStringFromUrl(serviceWorkerUrl);
+        System.out.println(serviceWorkerJS);
+
         // parse the precache resources (the app bundles) from service worker JS
-        pattern = Pattern
-                .compile("\\{'revision':('[^']+'|null),'url':'([^']+)'}");
+        pattern = Pattern.compile(
+                "\\{ url: '([^']+)', revision: ('[^']+'|null) }",
+                Pattern.MULTILINE);
         matcher = pattern.matcher(serviceWorkerJS);
         ArrayList<String> precacheUrls = new ArrayList<>();
         while (matcher.find()) {
@@ -134,7 +148,8 @@ public class PwaTestIT extends ChromeDeviceTest {
         }
         Assert.assertFalse("Expected at least one precache URL",
                 precacheUrls.isEmpty());
-        Assert.assertTrue("Expected precached appshell",
+        // Vite does not precache appshell if there's an offline path configured
+        Assert.assertFalse("Expected appshell not to be precached",
                 precacheUrls.contains("."));
         checkResources(precacheUrls.toArray(new String[] {}));
         checkResources("yes.png", "offline.html");
@@ -209,6 +224,8 @@ public class PwaTestIT extends ChromeDeviceTest {
         }
     }
 
+    @Ignore("Vite is currently not compressing service worker. "
+            + "See https://github.com/vaadin/flow/issues/14206")
     @Test
     public void compareUncompressedAndCompressedServiceWorkerJS()
             throws IOException {
@@ -219,7 +236,7 @@ public class PwaTestIT extends ChromeDeviceTest {
         Assume.assumeTrue(isProductionMode());
 
         byte[] uncompressed = readBytesFromUrl(getRootURL() + "/sw.js");
-        byte[] compressed = readBytesFromUrl(getRootURL() + "/sw.js.gz");
+        byte[] compressed = readBytesFromUrl(getRootURL() + "/sw.js.br");
         byte[] decompressed = readAllBytes(
                 new GZIPInputStream(new ByteArrayInputStream(compressed)));
         Assert.assertArrayEquals(uncompressed, decompressed);

@@ -21,6 +21,7 @@ import elemental.json.impl.JsonUtil
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Test
 import java.io.File
 import kotlin.test.expect
@@ -83,13 +84,23 @@ class VaadinSmokeTest : AbstractGradleTest() {
 
     @Test
     fun `vaadinBuildFrontend can be run manually in development mode`() {
+        checkBuildFrontendInDevelopmentMode("*.br");
+    }
+
+    @Ignore("Webpack uses gzip compression")
+    @Test
+    fun `vaadinBuildFrontend can be run manually in development mode with WEBPACK`() {
+        checkBuildFrontendInDevelopmentMode("*.gz");
+    }
+
+    private fun checkBuildFrontendInDevelopmentMode(compressedExtension: String) {
         val result: BuildResult = testProject.build("vaadinBuildFrontend")
         // let's explicitly check that vaadinPrepareFrontend has been run.
         result.expectTaskSucceded("vaadinPrepareFrontend")
 
         val build = File(testProject.dir, "build/resources/main/META-INF/VAADIN/webapp/VAADIN/build")
         expect(true, build.toString()) { build.exists() }
-        build.find("*.gz", 5..10)
+        build.find(compressedExtension, 5..10)
         build.find("*.js", 5..10)
 
         val tokenFile = File(testProject.dir, "build/resources/main/META-INF/VAADIN/config/flow-build-info.json")
@@ -99,6 +110,17 @@ class VaadinSmokeTest : AbstractGradleTest() {
 
     @Test
     fun testBuildFrontendInProductionMode() {
+        checkBuildFrontendInInProductionMode();
+    }
+
+
+    @Ignore("Webpack uses gzip compression")
+    @Test
+    fun testBuildFrontendInProductionModeWithWebpack() {
+        checkBuildFrontendInInProductionMode("*.gz");
+    }
+
+    private fun checkBuildFrontendInInProductionMode(compressedExtension: String = "*.br") {
         val result: BuildResult = testProject.build("-Pvaadin.productionMode", "vaadinBuildFrontend")
         // vaadinBuildFrontend depends on vaadinPrepareFrontend
         // let's explicitly check that vaadinPrepareFrontend has been run
@@ -107,7 +129,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
         val build = File(testProject.dir, "build/resources/main/META-INF/VAADIN/webapp/VAADIN/build")
         expect(true, build.toString()) { build.isDirectory }
         expect(true) { build.listFiles()!!.isNotEmpty() }
-        build.find("*.gz", 5..10)
+        build.find(compressedExtension, 5..10)
         build.find("*.js", 5..10)
         val tokenFile = File(testProject.dir, "build/resources/main/META-INF/VAADIN/config/flow-build-info.json")
         val buildInfo: JsonObject = JsonUtil.parse(tokenFile.readText())

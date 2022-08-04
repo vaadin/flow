@@ -30,6 +30,9 @@ public class FrontendStubs {
     public static final String WEBPACK_SERVER = "node_modules/webpack-dev-server/bin/webpack-dev-server.js";
     public static final String WEBPACK_TEST_OUT_FILE = "webpack-out.test";
 
+    public static final String VITE_SERVER = "node_modules/vite/bin/vite.js";
+    public static final String VITE_TEST_OUT_FILE = "vite-out.test";
+
     private static final String NPM_BIN_PATH = "node/node_modules/npm/bin";
     private static final String NPM_CACHE_PATH_STUB = "cache";
 
@@ -142,7 +145,73 @@ public class FrontendStubs {
     public static void createStubWebpackServer(String readyString,
             int milliSecondsToRun, String baseDir, boolean enableListening)
             throws IOException {
-        File serverFile = new File(baseDir, WEBPACK_SERVER);
+        createStubDevServer(new File(baseDir, WEBPACK_SERVER),
+                WEBPACK_TEST_OUT_FILE, readyString, milliSecondsToRun,
+                enableListening);
+    }
+
+    /**
+     * Creates a stub webpack-dev-server able to output a ready string, sleep
+     * for a while and output arguments passed to a file, so as tests can check
+     * it.
+     *
+     * @param readyString
+     *            string to output
+     * @param milliSecondsToRun
+     *            time to keep the server running
+     * @param baseDir
+     *            parent directory
+     * @throws IOException
+     *             when a file operation fails
+     */
+    public static void createStubWebpackServer(String readyString,
+            int milliSecondsToRun, String baseDir) throws IOException {
+        createStubWebpackServer(readyString, milliSecondsToRun, baseDir, false);
+    }
+
+    /**
+     * Creates a stub vite-dev-server able to output a ready string, sleep for a
+     * while and output arguments passed to a file, so as tests can check it.
+     *
+     * @param readyString
+     *            string to output
+     * @param milliSecondsToRun
+     *            time to keep the server running
+     * @param baseDir
+     *            parent directory
+     * @param enableListening
+     *            enable listening to port passed via `--port`
+     * @throws IOException
+     *             when a file operation fails
+     */
+    public static void createStubViteServer(String readyString,
+            int milliSecondsToRun, String baseDir, boolean enableListening)
+            throws IOException {
+        createStubDevServer(new File(baseDir, VITE_SERVER), VITE_TEST_OUT_FILE,
+                readyString, milliSecondsToRun, enableListening);
+    }
+
+    /**
+     * Creates a stub vite-dev-server able to output a ready string, sleep for a
+     * while and output arguments passed to a file, so as tests can check it.
+     *
+     * @param readyString
+     *            string to output
+     * @param milliSecondsToRun
+     *            time to keep the server running
+     * @param baseDir
+     *            parent directory
+     * @throws IOException
+     *             when a file operation fails
+     */
+    public static void createStubViteServer(String readyString,
+            int milliSecondsToRun, String baseDir) throws IOException {
+        createStubViteServer(readyString, milliSecondsToRun, baseDir, false);
+    }
+
+    private static void createStubDevServer(File serverFile,
+            String serverOutputFile, String readyString, int milliSecondsToRun,
+            boolean enableListening) throws IOException {
         FileUtils.forceMkdirParent(serverFile);
 
         serverFile.createNewFile();
@@ -153,7 +222,7 @@ public class FrontendStubs {
         sb.append("const args = String(process.argv);\n");
         sb.append("const fs = require('fs');\n");
         sb.append("const http = require('http');\n");
-        sb.append("fs.writeFileSync('").append(WEBPACK_TEST_OUT_FILE)
+        sb.append("fs.writeFileSync('").append(serverOutputFile)
                 .append("', args);\n");
         if (enableListening) {
             sb.append("const port = Number.parseInt(process.argv[")
@@ -176,25 +245,6 @@ public class FrontendStubs {
         sb.append("console.log(args);\n");
         sb.append("console.log('[wps]: ").append(readyString).append(".');\n");
         FileUtils.write(serverFile, sb.toString(), "UTF-8");
-    }
-
-    /**
-     * Creates a stub webpack-dev-server able to output a ready string, sleep
-     * for a while and output arguments passed to a file, so as tests can check
-     * it.
-     *
-     * @param readyString
-     *            string to output
-     * @param milliSecondsToRun
-     *            time to keep the server running
-     * @param baseDir
-     *            parent directory
-     * @throws IOException
-     *             when a file operation fails
-     */
-    public static void createStubWebpackServer(String readyString,
-            int milliSecondsToRun, String baseDir) throws IOException {
-        createStubWebpackServer(readyString, milliSecondsToRun, baseDir, false);
     }
 
     /**
