@@ -3,7 +3,7 @@ package com.vaadin.flow.navigate;
 import org.junit.After;
 import org.junit.Ignore;
 
-@Ignore("Vite, service worker not working on nested path")
+@Ignore("Service worker not working on nested path with VITE. See https://github.com/vaadin/flow/issues/14227")
 public class ServiceWorkerOnNestedMappingIT extends ServiceWorkerIT {
 
     @Override

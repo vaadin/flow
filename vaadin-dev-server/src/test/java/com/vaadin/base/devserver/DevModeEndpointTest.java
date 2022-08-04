@@ -58,7 +58,7 @@ public class DevModeEndpointTest extends AbstractDevModeTest {
                         .isPresent());
 
         createStubNode(false, true, baseDir);
-        createStubViteServer("ready in 500ms", 500, baseDir, true);
+        createStubViteServer("ready in 500 ms", 500, baseDir, true);
 
         // Prevent TaskRunNpmInstall#cleanUp from deleting node_modules
         new File(baseDir, "node_modules/.modules.yaml").createNewFile();

@@ -77,14 +77,14 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_D_TS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
-import static com.vaadin.flow.server.frontend.FrontendUtils.VITE_CONFIG;
-import static com.vaadin.flow.server.frontend.FrontendUtils.VITE_GENERATED_CONFIG;
+import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
+import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
 import static java.io.File.pathSeparator;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class BuildFrontendMojoTest {
+public class BuildFrontendMojoWebpackTest {
     public static final String TEST_PROJECT_RESOURCE_JS = "test_project_resource.js";
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -96,8 +96,8 @@ public class BuildFrontendMojoTest {
     private File projectBase;
     private File projectFrontendResourcesDirectory;
     private String packageJson;
-    private String viteConfig;
-    private String viteGenerated;
+    private String webpackConfig;
+    private String webpackGenerated;
     private File webpackOutputDirectory;
     private File resourceOutputDirectory;
     private File defaultJavaSource;
@@ -107,7 +107,6 @@ public class BuildFrontendMojoTest {
     private File tokenFile;
 
     private final BuildFrontendMojo mojo = Mockito.spy(new BuildFrontendMojo());
-    private Lookup lookup;
 
     @Before
     public void setup() throws Exception {
@@ -139,8 +138,8 @@ public class BuildFrontendMojoTest {
         File frontendDirectory = new File(npmFolder, DEFAULT_FRONTEND_DIR);
 
         packageJson = new File(npmFolder, PACKAGE_JSON).getAbsolutePath();
-        viteConfig = new File(npmFolder, VITE_CONFIG).getAbsolutePath();
-        viteGenerated = new File(npmFolder, VITE_GENERATED_CONFIG)
+        webpackConfig = new File(npmFolder, WEBPACK_CONFIG).getAbsolutePath();
+        webpackGenerated = new File(npmFolder, WEBPACK_GENERATED)
                 .getAbsolutePath();
         webpackOutputDirectory = new File(projectBase, VAADIN_WEBAPP_RESOURCES);
         resourceOutputDirectory = new File(projectBase,
@@ -209,14 +208,16 @@ public class BuildFrontendMojoTest {
         FileUtils.fileWrite(packageJson, "UTF-8",
                 TestUtils.getInitalPackageJson().toJson());
 
-        lookup = Mockito.mock(Lookup.class);
+        Lookup lookup = Mockito.mock(Lookup.class);
         Mockito.doReturn(new TestEndpointGeneratorTaskFactory()).when(lookup)
                 .lookup(EndpointGeneratorTaskFactory.class);
         Mockito.doAnswer(invocation -> {
-            Mockito.doReturn((ClassFinder) invocation.getArguments()[0])
-                    .when(lookup).lookup(ClassFinder.class);
+            Mockito.doReturn(invocation.getArguments()[0]).when(lookup)
+                    .lookup(ClassFinder.class);
             return lookup;
         }).when(mojo).createLookup(Mockito.any(ClassFinder.class));
+
+        setupWebpackBuild(lookup);
     }
 
     @After
@@ -224,11 +225,11 @@ public class BuildFrontendMojoTest {
         if (FileUtils.fileExists(packageJson)) {
             FileUtils.fileDelete(packageJson);
         }
-        if (FileUtils.fileExists(viteConfig)) {
-            FileUtils.fileDelete(viteConfig);
+        if (FileUtils.fileExists(webpackConfig)) {
+            FileUtils.fileDelete(webpackConfig);
         }
-        if (FileUtils.fileExists(viteGenerated)) {
-            FileUtils.fileDelete(viteGenerated);
+        if (FileUtils.fileExists(webpackGenerated)) {
+            FileUtils.fileDelete(webpackGenerated);
         }
     }
 
@@ -244,17 +245,17 @@ public class BuildFrontendMojoTest {
     }
 
     @Test
-    public void should_generateViteConfig() throws Exception {
-        Assert.assertFalse(FileUtils.fileExists(viteConfig));
+    public void should_generateWebpackConfig() throws Exception {
+        Assert.assertFalse(FileUtils.fileExists(webpackConfig));
         mojo.execute();
-        Assert.assertTrue(FileUtils.fileExists(viteConfig));
+        Assert.assertTrue(FileUtils.fileExists(webpackConfig));
     }
 
     @Test
-    public void should_generateViteGeneratedConfig() throws Exception {
-        Assert.assertFalse(FileUtils.fileExists(viteGenerated));
+    public void should_generateWebpackGeneratedConfig() throws Exception {
+        Assert.assertFalse(FileUtils.fileExists(webpackGenerated));
         mojo.execute();
-        Assert.assertTrue(FileUtils.fileExists(viteGenerated));
+        Assert.assertTrue(FileUtils.fileExists(webpackGenerated));
     }
 
     @Test
@@ -726,4 +727,19 @@ public class BuildFrontendMojoTest {
             return Collections.emptyList();
         }
     }
+
+    static void setupWebpackBuild(Lookup lookup) throws IOException {
+        URL mockURL = Mockito.mock(URL.class);
+        ResourceProvider resourceProvider = Mockito
+                .mock(ResourceProvider.class);
+        when(resourceProvider
+                .getApplicationResource(FeatureFlags.PROPERTIES_FILENAME))
+                .thenReturn(mockURL);
+        when(mockURL.openStream()).then(i -> new ByteArrayInputStream(
+                "com.vaadin.experimental.webpackForFrontendBuild=true"
+                        .getBytes(StandardCharsets.UTF_8)));
+        Mockito.when(lookup.lookup(ResourceProvider.class))
+                .thenReturn(resourceProvider);
+    }
+
 }

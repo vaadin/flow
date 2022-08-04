@@ -17,7 +17,6 @@
 package com.vaadin.gradle
 
 import org.gradle.testkit.runner.BuildResult
-import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.Test
 import java.io.File
@@ -343,7 +342,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
      */
     @Test
     fun testCircularDepsBug() {
-        dotestCircularDepsBug();
+        doTestCircularDepsBug();
     }
 
     /**
@@ -352,10 +351,10 @@ class MiscSingleModuleTest : AbstractGradleTest() {
     @Ignore("Webpack uses gzip compression")
     @Test
     fun testCircularDepsBugWebpack() {
-        dotestCircularDepsBug("*.gz");
+        doTestCircularDepsBug("*.gz");
     }
 
-    private fun dotestCircularDepsBug(compressedExtension: String = "*.br") {
+    private fun doTestCircularDepsBug(compressedExtension: String = "*.br") {
 
         testProject.buildFile.writeText(
                 """

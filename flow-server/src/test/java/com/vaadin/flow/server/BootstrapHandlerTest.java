@@ -1739,8 +1739,6 @@ public class BootstrapHandlerTest {
             throws IOException {
         initUI(testUI);
 
-        /////// enableViteFeature(false);
-
         final Document bootstrapPage = pageBuilder.getBootstrapPage(context);
         Assert.assertTrue("@vite/client should be added to head.", bootstrapPage
                 .head().toString().contains("VAADIN/@vite/client"));
@@ -1749,8 +1747,6 @@ public class BootstrapHandlerTest {
     @Test
     public void runViteFeatureProdMode_bundleAddedToHead() throws IOException {
         initUI(testUI);
-
-        /////// enableViteFeature(true);
 
         deploymentConfiguration.setProductionMode(true);
 

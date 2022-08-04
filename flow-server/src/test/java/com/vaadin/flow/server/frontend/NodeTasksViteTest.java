@@ -253,7 +253,7 @@ public class NodeTasksViteTest {
                         .exists());
     }
 
-    @Ignore("Vite doesn't take into account v14 bootstrapping")
+    @Ignore("Making Vite support v14 bootstrapping is not planned. V14 bootstrapping requires Webpack to be enabled.")
     @Test
     public void should_SetIsClientBootstrapMode_When_EnableClientSideBootstrapMode()
             throws ExecutionFailedException, IOException {

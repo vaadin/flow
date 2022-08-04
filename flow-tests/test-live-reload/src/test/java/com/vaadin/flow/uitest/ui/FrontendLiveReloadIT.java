@@ -15,15 +15,14 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.testbench.TestBenchElement;
-
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-import net.jcip.annotations.NotThreadSafe;
+import com.vaadin.testbench.TestBenchElement;
 
 @NotThreadSafe
 public class FrontendLiveReloadIT extends AbstractLiveReloadIT {
@@ -98,9 +97,5 @@ public class FrontendLiveReloadIT extends AbstractLiveReloadIT {
 
     protected By errorBoxSelector() {
         return By.tagName("vite-error-overlay");
-    }
-
-    protected By errorBoxSelector2() {
-        return By.className("v-system-error");
     }
 }
