@@ -1263,6 +1263,17 @@ public class FrontendUtils {
         deleteDirectory(nodeModules);
     }
 
+    /**
+     * Recursively delete given directory and contents.
+     * <p>
+     * Will not delete contents of symlink or junction directories, only the
+     * link file.
+     *
+     * @param directory
+     *            directory to delete
+     * @throws IOException
+     *             on failure to delete or read any one file
+     */
     public static void deleteDirectory(File directory) throws IOException {
         if (!directory.exists() || !directory.isDirectory()) {
             return;
