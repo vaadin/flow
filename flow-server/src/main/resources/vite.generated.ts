@@ -331,6 +331,17 @@ function themePlugin(opts): PluginOption {
     config() {
       processThemeResources(fullThemeOptions, console);
     },
+    configureServer(server) {
+      function handleThemeFileCreateDelete(themeFile, stats) {
+        if (themeFile.startsWith(themeFolder)) {
+          const changed = path.relative(themeFolder, themeFile)
+          console.debug('Theme file ' + (!!stats ? 'created' : 'deleted'), changed);
+          processThemeResources(fullThemeOptions, console);
+        }
+      }
+      server.watcher.on('add', handleThemeFileCreateDelete);
+      server.watcher.on('unlink', handleThemeFileCreateDelete);
+    },
     handleHotUpdate(context) {
       const contextPath = path.resolve(context.file);
       const themePath = path.resolve(themeFolder);
