@@ -12,6 +12,7 @@
     <packaging>jar</packaging>
 
     <properties>
+        <surefire.argLine>--add-opens=java.base/java.net=ALL-UNNAMED</surefire.argLine>
     </properties>
 
     <dependencies>
