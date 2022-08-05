@@ -63,14 +63,14 @@ public interface UIInternalUpdater extends Serializable {
      *            the new UI where children of the old UI will be landed
      */
     default void moveToNewUI(UI oldUI, UI newUI) {
-        final List<Element> uiChildren = oldUI.getElement().getChildren()
-                .collect(Collectors.toList());
         oldUI.getInternals().getActiveModalComponent().getChildren()
                 .forEach(component -> {
-                    oldUI.getActiveDragSourceComponent().getElement()
-                            .removeFromTree();
+                    System.out.println("Hello");
+                    component.getElement().removeFromTree();
                     newUI.addToModalComponent(component);
                 });
+        final List<Element> uiChildren = oldUI.getElement().getChildren()
+                .collect(Collectors.toList());
         uiChildren.forEach(element -> {
             element.removeFromTree();
             newUI.getElement().appendChild(element);
