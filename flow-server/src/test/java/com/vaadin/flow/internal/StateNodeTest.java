@@ -418,7 +418,8 @@ public class StateNodeTest {
                     tree.hasNode(child));
 
             child.setParent(null);
-            Assert.assertTrue("Child's parent should be null",getParent() == null);
+            Assert.assertTrue("Child's parent should be null",
+                    child.getParent() == null);
 
             triggered.set(true);
         });
