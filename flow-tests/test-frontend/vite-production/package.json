@@ -9,7 +9,7 @@
     "@vaadin/common-frontend": "0.0.17",
     "@vaadin/flow-frontend": "./target/flow-frontend",
     "@vaadin/router": "1.7.4",
-    "@vaadin/vaadin-lumo-styles": "23.1.0-alpha2",
+    "@vaadin/vaadin-lumo-styles": "23.1.4",
     "@vaadin/vaadin-text-field": "23.1.0-alpha2",
     "construct-style-sheets-polyfill": "3.1.0",
     "lit": "2.2.7"
