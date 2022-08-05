@@ -420,8 +420,7 @@ public class FrontendUtilsTest {
 
         FrontendUtils.deleteNodeModules(new File(npmFolder, "node_modules"));
 
-        Assert.assertTrue(
-                "Linked folder contents should not be removed.",
+        Assert.assertTrue("Linked folder contents should not be removed.",
                 linkFolderFile.exists());
     }
 
