@@ -18,6 +18,7 @@ import * as rollup from 'rollup';
 import brotli from 'rollup-plugin-brotli';
 import replace from '@rollup/plugin-replace';
 import checker from 'vite-plugin-checker';
+import postcssLit from 'rollup-plugin-postcss-lit';
 
 const appShellUrl = '.';
 
@@ -485,6 +486,10 @@ export const vaadinConfig: UserConfigFn = (env) => {
       settings.offlineEnabled && injectManifestToSWPlugin(),
       !devMode && statsExtracterPlugin(),
       themePlugin({devMode}),
+      postcssLit({
+        include: ['**/*.css', '**/*.css\?*'],
+        exclude: [`${themeFolder}/**/*.css`, `${themeFolder}/**/*.css\?*`]
+      }),
       {
         name: 'vaadin:force-remove-spa-middleware',
         transformIndexHtml: {
