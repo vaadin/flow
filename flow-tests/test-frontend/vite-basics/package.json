@@ -13,7 +13,7 @@
     "@vaadin/flow-frontend": "./target/flow-frontend",
     "@vaadin/router": "1.7.4",
     "@vaadin/vaadin-lumo-styles": "23.2.0-alpha5",
-    "@vaadin/vaadin-text-field": "23.1.1",
+    "@vaadin/vaadin-text-field": "23.2.0-alpha5",
     "construct-style-sheets-polyfill": "3.1.0",
     "copy-to-clipboard": "^3.3.1",
     "lit": "2.2.7",
