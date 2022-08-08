@@ -488,7 +488,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
       themePlugin({devMode}),
       postcssLit({
         include: ['**/*.css', '**/*.css\?*'],
-        exclude: [`${themeFolder}/**/*.css`, `${themeFolder}/**/*.css\?*`]
+        exclude: [`${themeFolder}/**/*.css`, `${themeFolder}/**/*.css\?*`, '**/*\?html-proxy*']
       }),
       {
         name: 'vaadin:force-remove-spa-middleware',
