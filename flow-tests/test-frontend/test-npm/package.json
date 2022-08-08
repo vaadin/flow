@@ -6,7 +6,7 @@
     "@vaadin/common-frontend": "0.0.17",
     "@vaadin/flow-frontend": "./target/flow-frontend",
     "@vaadin/router": "1.7.4",
-    "@vaadin/vaadin-text-field": "23.1.0-alpha2",
+    "@vaadin/vaadin-text-field": "23.2.0-alpha5",
     "construct-style-sheets-polyfill": "3.1.0",
     "lit": "2.2.7"
   },
@@ -38,7 +38,7 @@
       "@polymer/polymer": "3.5.1",
       "@vaadin/common-frontend": "0.0.17",
       "@vaadin/router": "1.7.4",
-      "@vaadin/vaadin-text-field": "23.1.0-alpha2",
+      "@vaadin/vaadin-text-field": "23.2.0-alpha5",
       "construct-style-sheets-polyfill": "3.1.0",
       "lit": "2.2.7"
     },
@@ -65,7 +65,7 @@
       "workbox-precaching": "6.5.0",
       "workbox-webpack-plugin": "6.5.0"
     },
-    "hash": "e97cfa9fd431ede7b6dfe02f6fc65eb44e6f668475545a51518c8d6900de48b5"
+    "hash": "87e9762966d345aca8395c687b71cc49081fdceb1a82f7d7cfcd45d01770bc0a"
   },
   "overrides": {
     "@vaadin/common-frontend": "$@vaadin/common-frontend",
