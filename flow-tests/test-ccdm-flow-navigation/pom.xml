@@ -50,20 +50,6 @@
                     <productionMode>false</productionMode>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-maven-plugin</artifactId>
-                <version>${jetty.version}</version>
-                <configuration>
-                    <systemProperties>
-                        <!--
-                        Disable dev tools to avoid page reloads caused by debug window
-                        See https://github.com/vaadin/flow/issues/13116
-                        -->
-                        <vaadin.devmode.devTools.enabled>false</vaadin.devmode.devTools.enabled>
-                    </systemProperties>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
 </project>
