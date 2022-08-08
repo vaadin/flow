@@ -120,7 +120,7 @@ public class ConnectionIndicatorIT extends ChromeDeviceTest {
         waitUntil(driver -> ((JavascriptExecutor) driver).executeScript(
                 "return window.Vaadin.connectionState.state === '" + state
                         + "'"),
-                2);
+                4);
     }
 
     @Override
