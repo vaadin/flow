@@ -411,14 +411,7 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         final String WORKBOX_VERSION = "6.5.0";
 
-        if (featureFlags.isEnabled(FeatureFlags.VITE)) {
-            defaults.put("vite", "v2.9.13");
-            defaults.put("@rollup/plugin-replace", "3.1.0");
-            defaults.put("rollup-plugin-brotli", "3.1.0");
-            defaults.put("vite-plugin-checker", "0.4.6");
-            defaults.put("mkdirp", "1.0.4"); // for application-theme-plugin
-            defaults.put("workbox-build", WORKBOX_VERSION);
-        } else {
+        if (featureFlags.isEnabled(FeatureFlags.WEBPACK)) {
             // Webpack plugins and helpers
             defaults.put("esbuild-loader", "2.19.0");
             defaults.put("html-webpack-plugin", "4.5.1");
@@ -440,6 +433,14 @@ public abstract class NodeUpdater implements FallibleCommand {
             // available
             // check out https://github.com/babel/babel/issues/11488
             defaults.put("chokidar", "^3.5.0");
+        } else {
+            // Use Vite
+            defaults.put("vite", "v3.0.2");
+            defaults.put("@rollup/plugin-replace", "3.1.0");
+            defaults.put("rollup-plugin-brotli", "3.1.0");
+            defaults.put("vite-plugin-checker", "0.4.9");
+            defaults.put("mkdirp", "1.0.4"); // for application-theme-plugin
+            defaults.put("workbox-build", WORKBOX_VERSION);
         }
         defaults.put("workbox-core", WORKBOX_VERSION);
         defaults.put("workbox-precaching", WORKBOX_VERSION);

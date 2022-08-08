@@ -369,10 +369,10 @@ public class BuildFrontendUtil {
         FrontendToolsSettings settings = getFrontendToolsSettings(adapter);
         FrontendTools tools = new FrontendTools(settings);
         tools.validateNodeAndNpmVersion();
-        if (featureFlags.isEnabled(FeatureFlags.VITE)) {
-            BuildFrontendUtil.runVite(adapter, tools);
-        } else {
+        if (featureFlags.isEnabled(FeatureFlags.WEBPACK)) {
             BuildFrontendUtil.runWebpack(adapter, tools);
+        } else {
+            BuildFrontendUtil.runVite(adapter, tools);
         }
     }
 

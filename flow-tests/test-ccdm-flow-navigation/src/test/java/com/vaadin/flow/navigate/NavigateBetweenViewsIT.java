@@ -38,7 +38,8 @@ public class NavigateBetweenViewsIT extends ChromeBrowserTest {
         Assert.assertThat(getDriver().getCurrentUrl(),
                 CoreMatchers.endsWith("/hello"));
 
-        $(NativeButtonElement.class).id(NAVIGATE_ABOUT).click();
+        waitUntil(driver -> $(NativeButtonElement.class).id(NAVIGATE_ABOUT))
+                .click();
 
         // Wait for component inside shadowroot as there is no vaadin
         // to wait for as with server-side

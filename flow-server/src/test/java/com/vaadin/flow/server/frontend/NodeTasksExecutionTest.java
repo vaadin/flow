@@ -1,15 +1,23 @@
 package com.vaadin.flow.server.frontend;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
+import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 import org.mockito.Mockito;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.ExecutionFailedException;
 
@@ -18,7 +26,22 @@ import static com.vaadin.flow.server.Constants.TARGET;
 /**
  * Test that commands in NodeTasks are always executed in a predefined order.
  */
+@RunWith(Parameterized.class)
 public class NodeTasksExecutionTest {
+
+    private static final String DEV_SERVER_VITE = "VITE";
+    private static final String DEV_SERVER_WEBPACK = "WEBPACK";
+
+    @Parameterized.Parameters(name = "{0}")
+    public static Collection<String> devServers() {
+        return List.of(DEV_SERVER_VITE, DEV_SERVER_WEBPACK);
+    }
+
+    @Rule
+    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+    @Parameterized.Parameter
+    public String devServerImpl;
 
     private NodeTasks nodeTasks;
     private List<FallibleCommand> commandsMock;
@@ -28,11 +51,18 @@ public class NodeTasksExecutionTest {
 
     @Before
     public void init() throws Exception {
+
         // Make a builder that doesn't add any commands.
         NodeTasks.Builder builder = new NodeTasks.Builder(
                 Mockito.mock(Lookup.class), null, TARGET);
         builder.useV14Bootstrap(true);
         builder.withProductionMode(false);
+
+        if (DEV_SERVER_WEBPACK.equals(devServerImpl)) {
+            builder.setJavaResourceFolder(temporaryFolder.getRoot());
+            createFeatureFlagsFile(
+                    "com.vaadin.experimental.webpackForFrontendBuild=true");
+        }
 
         nodeTasks = builder.build();
 
@@ -52,9 +82,20 @@ public class NodeTasksExecutionTest {
         commandsField.setAccessible(true);
         commands = (List<FallibleCommand>) commandsField.get(nodeTasks);
 
+        if (DEV_SERVER_VITE.equals(devServerImpl)) {
+            // With Vite we always have two default tasks that cannot be reomve
+            // by configuring builder
+            commands.clear();
+        }
+
         Assert.assertEquals("No commands should be added initially, "
                 + "update mock builder so that we don't automatically add any tasks!",
                 0, commands.size());
+    }
+
+    private void createFeatureFlagsFile(String contents) throws IOException {
+        Files.writeString(temporaryFolder
+                .newFile(FeatureFlags.PROPERTIES_FILENAME).toPath(), contents);
     }
 
     @Test

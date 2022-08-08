@@ -261,8 +261,7 @@ public class PrepareFrontendMojoTest {
                 "@polymer/polymer");
 
         assertContainsPackage(packageJsonObject.getObject("devDependencies"),
-                "webpack", "webpack-cli", "webpack-dev-server",
-                "html-webpack-plugin");
+                "vite", "@rollup/plugin-replace", "rollup-plugin-brotli",
+                "vite-plugin-checker");
     }
-
 }

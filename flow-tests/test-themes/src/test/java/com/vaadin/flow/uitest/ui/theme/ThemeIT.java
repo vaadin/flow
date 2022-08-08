@@ -15,12 +15,18 @@
  */
 package com.vaadin.flow.uitest.ui.theme;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Base64;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
@@ -42,6 +48,7 @@ import static com.vaadin.flow.uitest.ui.theme.ThemeView.SUB_COMPONENT_ID;
 
 public class ThemeIT extends ChromeBrowserTest {
 
+    @Ignore("Vite issue with web components styles https://github.com/vaadin/flow/issues/14142")
     @Test
     public void typeScriptCssImport_stylesAreApplied() {
         getDriver().get(getRootURL() + "/path/hello");
@@ -109,12 +116,16 @@ public class ThemeIT extends ChromeBrowserTest {
         // No exception for bg-image should exist
         checkLogsForErrors();
 
+        // Vite ignores servlet path and assumes servlet with custom mapping
+        // also covers /VAADIN/*
+
         final WebElement body = findElement(By.tagName("body"));
-        // Note themes/app-theme gets VAADIN/static from the file-loader
-        Assert.assertEquals("body background-image should come from styles.css",
-                "url(\"" + getRootURL()
-                        + "/path/VAADIN/static/themes/app-theme/img/bg.jpg\")",
-                body.getCssValue("background-image"));
+        // Note themes/app-theme resources are served from VAADIN/build in
+        // production mode
+        String imageUrl = body.getCssValue("background-image");
+        Assert.assertTrue("body background-image should come from styles.css",
+                imageUrl.matches("url\\(\"" + getRootURL()
+                        + "/path/VAADIN/build/bg\\.[^.]+\\.jpg\"\\)"));
 
         Assert.assertEquals("body font-family should come from styles.css",
                 "Ostrich", body.getCssValue("font-family"));
@@ -123,8 +134,8 @@ public class ThemeIT extends ChromeBrowserTest {
                 "rgba(0, 0, 0, 1)", body.getCssValue("color"));
 
         // Note themes/app-theme gets VAADIN/static from the file-loader
-        getDriver().get(getRootURL()
-                + "/path/VAADIN/static/themes/app-theme/img/bg.jpg");
+        getDriver().get(
+                getRootURL() + "/VAADIN/static/themes/app-theme/img/bg.jpg");
         Assert.assertFalse("app-theme background file should be served",
                 driver.getPageSource().contains("Could not navigate"));
     }
@@ -192,15 +203,21 @@ public class ThemeIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void subCssWithRelativePath_urlPathIsNotRelative() {
+    public void subCssWithRelativePath_urlPathIsNotRelative()
+            throws IOException {
         open();
         checkLogsForErrors();
 
-        // Note themes/app-theme gets VAADIN/static from the file-loader
+        // Vite ignores servlet path and assumes servlet with custom mapping
+        // also covers /VAADIN/*
+        // In production mode the image is inlined
+        String expectedUrl = "url(\"data:image/png;base64,"
+                + Base64.getEncoder()
+                        .encodeToString(Files.readAllBytes(Paths.get(
+                                "frontend/themes/app-theme/icons/archive.png")))
+                + "\")";
         Assert.assertEquals("Imported css file URLs should have been handled.",
-                "url(\"" + getRootURL()
-                        + "/path/VAADIN/static/themes/app-theme/icons/archive.png\")",
-                $(SpanElement.class).id(SUB_COMPONENT_ID)
+                expectedUrl, $(SpanElement.class).id(SUB_COMPONENT_ID)
                         .getCssValue("background-image"));
     }
 

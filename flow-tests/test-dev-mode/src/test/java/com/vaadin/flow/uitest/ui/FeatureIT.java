@@ -33,16 +33,16 @@ public class FeatureIT extends ChromeBrowserTest {
                 $(H2Element.class).id("value").getText());
 
         // enable the feature
-        toggleViteFeature(false);
+        toggleWebpackFeature(false);
 
         try {
             $(NativeButtonElement.class).id("check").click();
             Assert.assertEquals(
-                    "Feature file exists with properties: com.vaadin.experimental.viteForFrontendBuild",
+                    "Feature file exists with properties: com.vaadin.experimental.webpackForFrontendBuild",
                     $(H2Element.class).id("value").getText());
 
             // disable the feature
-            toggleViteFeature(true);
+            toggleWebpackFeature(true);
 
             $(NativeButtonElement.class).id("check").click();
             Assert.assertEquals("Feature file exists with properties:",
@@ -54,12 +54,12 @@ public class FeatureIT extends ChromeBrowserTest {
         }
     }
 
-    private void toggleViteFeature(boolean expectedInitialState) {
+    private void toggleWebpackFeature(boolean expectedInitialState) {
         DevToolsElement devTools = $(DevToolsElement.class).waitForFirst();
         devTools.expand();
         devTools.$(NativeButtonElement.class).id("features").click();
         TestBenchElement toggleButton = devTools.$(TestBenchElement.class)
-                .id("feature-toggle-viteForFrontendBuild");
+                .id("feature-toggle-webpackForFrontendBuild");
         String checked = getCommandExecutor()
                 .executeScript("return arguments[0].checked", toggleButton)
                 .toString();
