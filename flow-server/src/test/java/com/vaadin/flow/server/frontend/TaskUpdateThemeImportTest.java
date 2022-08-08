@@ -33,7 +33,6 @@ import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
 import static com.vaadin.flow.server.Constants.APPLICATION_THEME_ROOT;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
@@ -58,7 +57,6 @@ public class TaskUpdateThemeImportTest {
     private File projectRoot;
     private File npmFolder;
     private File frontendDirectory;
-    private File frontendGeneratedDirectory;
     private File themeImportFile;
     private File themeImportTsFile;
     private Class<? extends AbstractTheme> dummyThemeClass;
@@ -70,8 +68,6 @@ public class TaskUpdateThemeImportTest {
         projectRoot = temporaryFolder.getRoot();
         npmFolder = temporaryFolder.getRoot();
         frontendDirectory = new File(projectRoot, DEFAULT_FRONTEND_DIR);
-        frontendGeneratedDirectory = new File(projectRoot,
-                DEFAULT_PROJECT_FRONTEND_GENERATED_DIR);
 
         File frontendFolder = new File(npmFolder,
                 FrontendUtils.DEFAULT_FRONTEND_DIR);
@@ -85,7 +81,7 @@ public class TaskUpdateThemeImportTest {
         customTheme = new ThemeDefinition(dummyThemeClass, CUSTOM_VARIANT_NAME,
                 CUSTOM_THEME_NAME);
         taskUpdateThemeImport = new TaskUpdateThemeImport(npmFolder,
-                customTheme, frontendDirectory, frontendGeneratedDirectory);
+                customTheme, frontendDirectory);
     }
 
     @Test
@@ -95,8 +91,7 @@ public class TaskUpdateThemeImportTest {
                 DEFAULT_FRONTEND_DIR);
 
         TaskUpdateThemeImport taskUpdateThemeImportWithNonExistentThemeFolder = new TaskUpdateThemeImport(
-                npmFolder, customTheme, faultyFrontendDirectory,
-                frontendGeneratedDirectory);
+                npmFolder, customTheme, faultyFrontendDirectory);
 
         ExecutionFailedException e = Assert.assertThrows(
                 ExecutionFailedException.class,
@@ -216,7 +211,7 @@ public class TaskUpdateThemeImportTest {
         assertThemeGeneratedDefinitionFilesExist(SHOULD_EXIST_AFTER_EXECUTION);
 
         taskUpdateThemeImport = new TaskUpdateThemeImport(npmFolder, null,
-                frontendDirectory, frontendGeneratedDirectory);
+                frontendDirectory);
 
         taskUpdateThemeImport.execute();
 

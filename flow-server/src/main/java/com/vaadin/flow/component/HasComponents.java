@@ -16,6 +16,8 @@
 package com.vaadin.flow.component;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
@@ -41,19 +43,32 @@ public interface HasComponents extends HasElement, HasEnabled {
     /**
      * Adds the given components as children of this component.
      * <p>
-     * In case the any of the specified components has already been added to
-     * another parent, it will be removed from there and added to this one.
+     * In case any of the specified components has already been added to another
+     * parent, it will be removed from there and added to this one.
      *
      * @param components
      *            the components to add
      */
     default void add(Component... components) {
         Objects.requireNonNull(components, "Components should not be null");
-        for (Component component : components) {
-            Objects.requireNonNull(component,
-                    "Component to add cannot be null");
-            getElement().appendChild(component.getElement());
-        }
+        add(Arrays.asList(components));
+    }
+
+    /**
+     * Adds the given components as children of this component.
+     * <p>
+     * In case any of the specified components has already been added to another
+     * parent, it will be removed from there and added to this one.
+     *
+     * @param components
+     *            the components to add
+     */
+    default void add(Collection<Component> components) {
+        Objects.requireNonNull(components, "Components should not be null");
+        components.stream()
+                .map(component -> Objects.requireNonNull(component,
+                        "Component to add cannot be null"))
+                .map(Component::getElement).forEach(getElement()::appendChild);
     }
 
     /**
@@ -77,7 +92,21 @@ public interface HasComponents extends HasElement, HasEnabled {
      */
     default void remove(Component... components) {
         Objects.requireNonNull(components, "Components should not be null");
-        List<Component> toRemove = new ArrayList<>(components.length);
+        remove(Arrays.asList(components));
+    }
+
+    /**
+     * Removes the given child components from this component.
+     *
+     * @param components
+     *            the components to remove
+     * @throws IllegalArgumentException
+     *             if there is a component whose non {@code null} parent is not
+     *             this component
+     */
+    default void remove(Collection<Component> components) {
+        Objects.requireNonNull(components, "Components should not be null");
+        List<Component> toRemove = new ArrayList<>(components.size());
         for (Component component : components) {
             Objects.requireNonNull(component,
                     "Component to remove cannot be null");

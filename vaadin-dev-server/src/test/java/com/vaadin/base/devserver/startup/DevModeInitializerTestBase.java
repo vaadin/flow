@@ -1,16 +1,9 @@
 package com.vaadin.base.devserver.startup;
 
-import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
-import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_REUSE_DEV_SERVER;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_JAVA_SOURCE_FOLDER;
-import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
-import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
-import static com.vaadin.flow.testutil.FrontendStubs.createStubWebpackServer;
-import static org.mockito.ArgumentMatchers.any;
-
+import javax.servlet.ServletContextEvent;
+import javax.servlet.ServletRegistration;
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Arrays;
@@ -22,21 +15,27 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletRegistration;
+import org.apache.commons.io.FileUtils;
+import org.junit.Rule;
+import org.junit.rules.TemporaryFolder;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.TaskGenerateEndpoint;
 import com.vaadin.flow.server.frontend.TaskGenerateOpenAPI;
 
-import org.apache.commons.io.FileUtils;
-import org.junit.Rule;
-import org.junit.rules.TemporaryFolder;
-import org.mockito.Mockito;
-
 import elemental.json.Json;
 import elemental.json.JsonObject;
+import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_REUSE_DEV_SERVER;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_JAVA_SOURCE_FOLDER;
+import static com.vaadin.flow.server.frontend.FrontendUtils.VITE_CONFIG;
+import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
+import static com.vaadin.flow.testutil.FrontendStubs.createStubViteServer;
+import static org.mockito.ArgumentMatchers.any;
 
 /**
  * Base class for DevModeInitializer tests. It is an independent class so as it
@@ -50,7 +49,7 @@ public class DevModeInitializerTestBase extends AbstractDevModeTest {
     // as they can be used in package tests
     Set<Class<?>> classes;
     File mainPackageFile;
-    File webpackFile;
+    File devServerConfigFile;
     EndpointGeneratorTaskFactory endpointGeneratorTaskFactory;
     TaskGenerateEndpoint taskGenerateEndpoint;
     TaskGenerateOpenAPI taskGenerateOpenAPI;
@@ -68,7 +67,7 @@ public class DevModeInitializerTestBase extends AbstractDevModeTest {
         super.setup();
 
         createStubNode(false, true, baseDir);
-        createStubWebpackServer("Compiled", 500, baseDir, true);
+        devServerConfigFile = createStubDevServer(baseDir);
 
         // Prevent TaskRunNpmInstall#cleanUp from deleting node_modules
         new File(baseDir, "node_modules/.modules.yaml").createNewFile();
@@ -110,18 +109,22 @@ public class DevModeInitializerTestBase extends AbstractDevModeTest {
                 .thenReturn(this.getClass().getClassLoader());
 
         mainPackageFile = new File(baseDir, PACKAGE_JSON);
-        webpackFile = new File(baseDir, WEBPACK_CONFIG);
 
         // Not this needs to update according to dependencies in
         // NodeUpdater.getDefaultDependencies and
         // NodeUpdater.getDefaultDevDependencies
         FileUtils.write(mainPackageFile, getInitalPackageJson().toJson(),
                 "UTF-8");
-        webpackFile.createNewFile();
+        devServerConfigFile.createNewFile();
         FileUtils.forceMkdir(
                 new File(baseDir, DEFAULT_CONNECT_JAVA_SOURCE_FOLDER));
 
         devModeStartupListener = new DevModeStartupListener();
+    }
+
+    protected File createStubDevServer(String baseDir) throws IOException {
+        createStubViteServer("ready in 500ms", 500, baseDir, true);
+        return new File(baseDir, VITE_CONFIG);
     }
 
     private JsonObject getInitalPackageJson() {
@@ -156,7 +159,7 @@ public class DevModeInitializerTestBase extends AbstractDevModeTest {
         System.clearProperty("vaadin." + SERVLET_PARAMETER_REUSE_DEV_SERVER);
         System.clearProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN);
 
-        webpackFile.delete();
+        devServerConfigFile.delete();
         mainPackageFile.delete();
     }
 

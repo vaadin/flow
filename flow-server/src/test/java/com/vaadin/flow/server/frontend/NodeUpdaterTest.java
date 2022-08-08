@@ -181,12 +181,12 @@ public class NodeUpdaterTest {
         JsonObject packageJson = nodeUpdater.getPackageJson();
         packageJson.put(NodeUpdater.DEPENDENCIES, Json.createObject());
         packageJson.put(NodeUpdater.DEV_DEPENDENCIES, Json.createObject());
-        packageJson.getObject(NodeUpdater.DEV_DEPENDENCIES).put("webpack",
-                "3.3.10");
+        packageJson.getObject(NodeUpdater.DEV_DEPENDENCIES).put("vite",
+                "v2.7.10");
         nodeUpdater.updateDefaultDependencies(packageJson);
 
-        Assert.assertEquals("4.46.0", packageJson
-                .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("webpack"));
+        Assert.assertEquals("v3.0.2", packageJson
+                .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("vite"));
     }
 
     @Test // #6907 test when user has set newer versions
@@ -195,12 +195,12 @@ public class NodeUpdaterTest {
         JsonObject packageJson = nodeUpdater.getPackageJson();
         packageJson.put(NodeUpdater.DEPENDENCIES, Json.createObject());
         packageJson.put(NodeUpdater.DEV_DEPENDENCIES, Json.createObject());
-        packageJson.getObject(NodeUpdater.DEV_DEPENDENCIES).put("webpack",
-                "5.0.1");
+        packageJson.getObject(NodeUpdater.DEV_DEPENDENCIES).put("vite",
+                "v4.0.0");
         nodeUpdater.updateDefaultDependencies(packageJson);
 
-        Assert.assertEquals("5.0.1", packageJson
-                .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("webpack"));
+        Assert.assertEquals("v4.0.0", packageJson
+                .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("vite"));
     }
 
     @Test
@@ -224,6 +224,52 @@ public class NodeUpdaterTest {
 
         Assert.assertEquals(newVersion, packageJson
                 .getObject(NodeUpdater.DEPENDENCIES).getString(formPackage));
+    }
+
+    @Test
+    public void shouldSkipUpdatingNonParsableVersions() throws IOException {
+        JsonObject packageJson = Json.createObject();
+        JsonObject dependencies = Json.createObject();
+        packageJson.put(NodeUpdater.DEPENDENCIES, dependencies);
+        JsonObject vaadinDependencies = Json.createObject();
+        vaadinDependencies.put(NodeUpdater.DEPENDENCIES, Json.createObject());
+        packageJson.put(NodeUpdater.VAADIN_DEP_KEY, vaadinDependencies);
+
+        String formPackage = "@vaadin/form";
+        String existingVersion = "../../../some/local/path";
+        String newVersion = "2.0.0";
+
+        dependencies.put(formPackage, existingVersion);
+
+        nodeUpdater.addDependency(packageJson, NodeUpdater.DEPENDENCIES,
+                formPackage, newVersion);
+
+        Assert.assertEquals(existingVersion, packageJson
+                .getObject(NodeUpdater.DEPENDENCIES).getString(formPackage));
+    }
+
+    @Test
+    public void shouldThrowExceptionOnNewVersionNonParsable() {
+        JsonObject packageJson = Json.createObject();
+        JsonObject dependencies = Json.createObject();
+        packageJson.put(NodeUpdater.DEPENDENCIES, dependencies);
+        JsonObject vaadinDependencies = Json.createObject();
+        vaadinDependencies.put(NodeUpdater.DEPENDENCIES, Json.createObject());
+        packageJson.put(NodeUpdater.VAADIN_DEP_KEY, vaadinDependencies);
+
+        String formPackage = "@vaadin/form";
+        String existingVersion = "2.0.0";
+        String newVersion = "../../../some/local/path";
+
+        dependencies.put(formPackage, existingVersion);
+
+        NumberFormatException expectedException = Assert
+                .assertThrows(NumberFormatException.class,
+                        () -> nodeUpdater.addDependency(packageJson,
+                                NodeUpdater.DEPENDENCIES, formPackage,
+                                newVersion));
+        Assert.assertTrue(expectedException.getMessage()
+                .contains("is not a valid version"));
     }
 
     @Test

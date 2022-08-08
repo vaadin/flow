@@ -140,7 +140,7 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
                     "    background-color: " + RED_COLOR  + ";" +
                     "}";
 
-            final String stylesCssContent = "@Import \"./test-styles.css\";";
+            final String stylesCssContent = "@import \"./test-styles.css\";";
             // @formatter:on
             FileUtils.write(testStylesCSSFile, fontStyle,
                     StandardCharsets.UTF_8.name());

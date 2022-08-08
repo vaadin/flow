@@ -94,7 +94,6 @@ import elemental.json.JsonObject;
 import elemental.json.JsonType;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
-
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.server.frontend.FrontendUtils.EXPORT_CHUNK;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -766,7 +765,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             setupPwa(document, context);
 
             if (!config.isProductionMode()) {
-                showWebpackErrors(context.getService(), document);
+                showDevServerErrors(context.getService(), document);
             }
 
             BootstrapPageResponse response = new BootstrapPageResponse(
@@ -994,44 +993,54 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         private void appendNpmBundle(Element head, VaadinService service,
                 BootstrapContext context) throws IOException {
             if (FeatureFlags.get(service.getContext())
-                    .isEnabled(FeatureFlags.VITE)) {
+                    .isEnabled(FeatureFlags.WEBPACK)) {
+                appendWebpackNpmBundle(head, service, context);
+            } else {
+                // Use Vite
+                appendViteNpmBundle(head, service, context);
+            }
+        }
 
-                if (!service.getDeploymentConfiguration().isProductionMode()) {
-                    Element script = createJavaScriptModuleElement(
-                            "VAADIN/@vite/client", false);
-                    head.appendChild(script);
-                    return;
-                }
-
-                // Get the index.html to get vite generated bundles
-                String index = FrontendUtils.getIndexHtmlContent(service);
-
-                // Get and add all javascriptbundles
-                Matcher scriptMatcher = Pattern
-                        .compile("src=\\\"VAADIN\\/build\\/(.*\\.js)\\\"")
-                        .matcher(index);
-                while (scriptMatcher.find()) {
-                    Element script = createJavaScriptModuleElement(context
-                            .getUriResolver().resolveVaadinUri("context://"
-                                    + "VAADIN/build/" + scriptMatcher.group(1)),
-                            false);
-                    head.appendChild(script.attr("async", true)
-                            // Fixes basic auth in Safari #6560
-                            .attr("crossorigin", true));
-                }
-
-                // Get and add all css bundle links
-                Matcher cssMatcher = Pattern
-                        .compile("href=\\\"VAADIN\\/build\\/(.*\\.css)\\\"")
-                        .matcher(index);
-                while (cssMatcher.find()) {
-                    Element link = createStylesheetElement(context
-                            .getUriResolver().resolveVaadinUri("context://"
-                                    + "VAADIN/build/" + cssMatcher.group(1)));
-                    head.appendChild(link);
-                }
+        private void appendViteNpmBundle(Element head, VaadinService service,
+                BootstrapContext context) throws IOException {
+            if (!service.getDeploymentConfiguration().isProductionMode()) {
+                Element script = createJavaScriptModuleElement(
+                        "VAADIN/@vite/client", false);
+                head.appendChild(script);
                 return;
             }
+
+            // Get the index.html to get vite generated bundles
+            String index = FrontendUtils.getIndexHtmlContent(service);
+
+            // Get and add all javascriptbundles
+            Matcher scriptMatcher = Pattern
+                    .compile("src=\\\"VAADIN\\/build\\/(.*\\.js)\\\"")
+                    .matcher(index);
+            while (scriptMatcher.find()) {
+                Element script = createJavaScriptModuleElement(
+                        context.getUriResolver().resolveVaadinUri("context://"
+                                + "VAADIN/build/" + scriptMatcher.group(1)),
+                        false);
+                head.appendChild(script.attr("async", true)
+                        // Fixes basic auth in Safari #6560
+                        .attr("crossorigin", true));
+            }
+
+            // Get and add all css bundle links
+            Matcher cssMatcher = Pattern
+                    .compile("href=\\\"VAADIN\\/build\\/(.*\\.css)\\\"")
+                    .matcher(index);
+            while (cssMatcher.find()) {
+                Element link = createStylesheetElement(
+                        context.getUriResolver().resolveVaadinUri("context://"
+                                + "VAADIN/build/" + cssMatcher.group(1)));
+                head.appendChild(link);
+            }
+        }
+
+        private void appendWebpackNpmBundle(Element head, VaadinService service,
+                BootstrapContext context) throws IOException {
             String content = FrontendUtils.getStatsAssetsByChunkName(service);
             if (content == null) {
                 StringBuilder message = new StringBuilder(
@@ -1689,7 +1698,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         return pushJSPath;
     }
 
-    protected static void showWebpackErrors(VaadinService service,
+    protected static void showDevServerErrors(VaadinService service,
             Document document) {
         Optional<DevModeHandler> devServer = DevModeHandlerManager
                 .getDevModeHandler(service);

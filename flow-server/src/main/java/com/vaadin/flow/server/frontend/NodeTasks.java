@@ -796,6 +796,8 @@ public class NodeTasks implements FallibleCommand {
             // use the new Hilla generator if available, otherwise the old
             // generator.
             if (hillaTask != null) {
+                hillaTask.configure(builder.getNpmFolder(),
+                        builder.getBuildDirectory());
                 commands.add(hillaTask);
             } else {
                 if (builder.endpointSourceFolder != null
@@ -823,7 +825,7 @@ public class NodeTasks implements FallibleCommand {
                     builder.flowResourcesFolder, builder.localResourcesFolder));
         }
 
-        if (featureFlags.isEnabled(FeatureFlags.VITE)) {
+        if (!featureFlags.isEnabled(FeatureFlags.WEBPACK)) {
             String themeName = "";
             PwaConfiguration pwa;
             if (frontendDependencies != null) {
@@ -846,8 +848,7 @@ public class NodeTasks implements FallibleCommand {
                     builder.resourceOutputDirectory,
                     new File(builder.generatedFolder, IMPORTS_NAME),
                     builder.useLegacyV14Bootstrap, builder.flowResourcesFolder,
-                    pwaConfiguration, builder.frontendGeneratedFolder,
-                    builder.buildDirectory));
+                    pwaConfiguration, builder.buildDirectory));
         }
 
         if (builder.enableImportsUpdate) {
@@ -862,8 +863,7 @@ public class NodeTasks implements FallibleCommand {
 
             commands.add(new TaskUpdateThemeImport(builder.npmFolder,
                     frontendDependencies.getThemeDefinition(),
-                    builder.frontendDirectory,
-                    builder.frontendGeneratedFolder));
+                    builder.frontendDirectory));
         }
 
         if (builder.copyTemplates) {
@@ -883,7 +883,7 @@ public class NodeTasks implements FallibleCommand {
                 new File(builder.generatedFolder, IMPORTS_NAME),
                 buildDirectory);
         commands.add(taskGenerateIndexTs);
-        if (builder.getFeatureFlags().isEnabled(FeatureFlags.VITE)
+        if (!builder.getFeatureFlags().isEnabled(FeatureFlags.WEBPACK)
                 && !builder.productionMode) {
             commands.add(
                     new TaskGenerateViteDevMode(builder.frontendDirectory));

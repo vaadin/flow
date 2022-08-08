@@ -53,9 +53,10 @@ public class FeatureFlags implements Serializable {
             "exampleFeatureFlag", "https://github.com/vaadin/flow/pull/12004",
             false,
             "com.vaadin.flow.server.frontend.NodeTestComponents$ExampleExperimentalComponent");
-    public static final Feature VITE = new Feature(
-            "Use Vite for faster front-end builds", "viteForFrontendBuild",
-            "https://github.com/vaadin/platform/issues/2448", true, null);
+    public static final Feature WEBPACK = new Feature(
+            "Use Webpack for front-end builds (Deprecated)",
+            "webpackForFrontendBuild",
+            "https://github.com/vaadin/flow/issues/13852", true, null);
     public static final Feature MAP_COMPONENT = new Feature(
             "Map component (Pro)", "mapComponent",
             "https://vaadin.com/docs/latest/ds/components/map", true,
@@ -74,6 +75,9 @@ public class FeatureFlags implements Serializable {
             "Collaboration Engine backend for clustering support",
             "collaborationEngineBackend",
             "https://github.com/vaadin/platform/issues/1988", true, null);
+    public static final Feature GRID_MULTI_SORT_PRIORITY_APPEND = new Feature(
+            "Grid MultiSort priority new behavior", "multiSortPriorityAppend",
+            "https://github.com/vaadin/platform/issues/3052", false, null);
     private List<Feature> features = new ArrayList<>();
 
     File propertiesFolder = null;
@@ -91,12 +95,13 @@ public class FeatureFlags implements Serializable {
     public FeatureFlags(Lookup lookup) {
         this.lookup = lookup;
         features.add(new Feature(EXAMPLE));
-        features.add(new Feature(VITE));
         features.add(new Feature(MAP_COMPONENT));
         features.add(new Feature(SPREADSHEET_COMPONENT));
         features.add(new Feature(HILLA_PUSH));
         features.add(new Feature(OFFLINE_LICENSE_CHECKER));
         features.add(new Feature(COLLABORATION_ENGINE_BACKEND));
+        features.add(new Feature(WEBPACK));
+        features.add(new Feature(GRID_MULTI_SORT_PRIORITY_APPEND));
         loadProperties();
     }
 

@@ -9,6 +9,7 @@ import { readFileSync, existsSync, writeFileSync } from 'fs';
 import * as net from 'net';
 
 import { processThemeResources } from '#buildFolder#/plugins/application-theme-plugin/theme-handle';
+import { rewriteCssUrls } from '#buildFolder#/plugins/theme-loader/theme-loader-utils';
 import settings from '#settingsImport#';
 import { defineConfig, mergeConfig, PluginOption, ResolvedConfig, UserConfigFn, OutputOptions, AssetInfo, ChunkInfo } from 'vite';
 import { injectManifest } from 'workbox-build';
@@ -52,8 +53,50 @@ const hasExportedWebComponents = existsSync(path.resolve(frontendFolder, 'web-co
 console.trace = () => {};
 console.debug = () => {};
 
-function buildSWPlugin(): PluginOption {
+function buildSWPlugin(opts): PluginOption {
   let config: ResolvedConfig;
+  const devMode = opts.devMode;
+
+  const swObj = {}
+
+  async function build(action: 'generate' | 'write') {
+    const includedPluginNames = [
+      'alias',
+      'vite:resolve',
+      'vite:esbuild',
+      'rollup-plugin-dynamic-import-variables',
+      'vite:esbuild-transpile',
+      'vite:terser',
+    ]
+    const plugins: rollup.Plugin[] = config.plugins.filter((p) => {
+      return includedPluginNames.includes(p.name)
+    });
+    plugins.push(
+      replace({
+        values: {
+          'process.env.NODE_ENV': JSON.stringify(config.mode),
+          ...config.define,
+        },
+        preventAssignment: true
+      })
+    );
+    const bundle = await rollup.rollup({
+      input: path.resolve(settings.clientServiceWorkerSource),
+      plugins
+    });
+
+    try {
+      return await bundle[action]({
+        file: path.resolve(frontendBundleFolder, 'sw.js'),
+        format: 'es',
+        exports: 'none',
+        sourcemap: config.command === 'serve' || config.build.sourcemap,
+        inlineDynamicImports: true,
+      });
+    } finally {
+      await bundle.close();
+    }
+  }
 
   return {
     name: 'vaadin:build-sw',
@@ -62,49 +105,25 @@ function buildSWPlugin(): PluginOption {
       config = resolvedConfig;
     },
     async buildStart() {
-      const includedPluginNames = [
-        'alias',
-        'vite:resolve',
-        'vite:esbuild',
-        'rollup-plugin-dynamic-import-variables',
-        'vite:esbuild-transpile',
-        'vite:terser'
-      ];
-      const rollupPlugins: rollup.Plugin[] = config.plugins.filter((p) => {
-        return includedPluginNames.includes(p.name);
-      });
-      rollupPlugins.push(
-        replace({
-          values: {
-            'process.env.NODE_ENV': JSON.stringify(config.mode),
-            ...config.define
-          },
-          preventAssignment: true
-        })
-      );
-
-      const rollupOutput: rollup.OutputOptions = {
-        file: path.resolve(frontendBundleFolder, 'sw.js'),
-        format: 'es',
-        exports: 'none',
-        sourcemap: config.command === 'serve' || config.build.sourcemap,
-        inlineDynamicImports: true
-      };
-
-      const rollupConfig: rollup.RollupOptions = {
-        input: path.resolve(settings.clientServiceWorkerSource),
-        output: rollupOutput,
-        plugins: rollupPlugins
-      };
-
-      const bundle = await rollup.rollup(rollupConfig);
-      try {
-        await bundle.write(rollupOutput);
-      } finally {
-        await bundle.close();
+      if (devMode) {
+        const { output } = await build('generate');
+        swObj.code = output[0].code;
+        swObj.map =  output[0].map;
+      } else {
+        await build('write');
       }
-    }
-  };
+    },
+    async load(id) {
+      if (id.endsWith('sw.js')) {
+        return '';
+      }
+    },
+    async transform(_code, id) {
+      if (id.endsWith('sw.js')) {
+        return swObj;
+      }
+    },
+  }
 }
 
 function injectManifestToSWPlugin(): PluginOption {
@@ -305,22 +324,37 @@ export { ${exports.map((binding) => `${binding} as ${binding}`).join(', ')} };`;
   };
 }
 
-function themePlugin(): PluginOption {
+function themePlugin(opts): PluginOption {
+  const fullThemeOptions = {...themeOptions, devMode: opts.devMode };
   return {
     name: 'vaadin:theme',
     config() {
-      processThemeResources(themeOptions, console);
+      processThemeResources(fullThemeOptions, console);
+    },
+    configureServer(server) {
+      function handleThemeFileCreateDelete(themeFile, stats) {
+        if (themeFile.startsWith(themeFolder)) {
+          const changed = path.relative(themeFolder, themeFile)
+          console.debug('Theme file ' + (!!stats ? 'created' : 'deleted'), changed);
+          processThemeResources(fullThemeOptions, console);
+        }
+      }
+      server.watcher.on('add', handleThemeFileCreateDelete);
+      server.watcher.on('unlink', handleThemeFileCreateDelete);
     },
     handleHotUpdate(context) {
       const contextPath = path.resolve(context.file);
       const themePath = path.resolve(themeFolder);
-      if (contextPath.startsWith(themePath)) {
+      // Track also updates on fronted/generated/theme.js to regenerate theme
+      // upon a java live reload when value of @Theme annotation changes.
+      const isThemeJS = contextPath === path.resolve(themeOptions.frontendGeneratedFolder, "theme.js");
+      if (isThemeJS || contextPath.startsWith(themePath)) {
         const changed = path.relative(themePath, contextPath);
 
         console.debug('Theme file changed', changed);
 
-        if (changed.startsWith(settings.themeName)) {
-          processThemeResources(themeOptions, console);
+        if (isThemeJS || changed.startsWith(settings.themeName)) {
+          processThemeResources(fullThemeOptions, console);
         }
       }
     },
@@ -336,6 +370,15 @@ function themePlugin(): PluginOption {
         }
       }
     },
+    async transform(raw, id, options) {
+      // rewrite urls for the application theme css files
+      const [bareId, query] = id.split('?');
+      if (!bareId?.startsWith(themeFolder) || !bareId?.endsWith(".css")) {
+        return;
+      }
+      const [themeName] = bareId.substring(themeFolder.length + 1).split('/');
+      return rewriteCssUrls(raw, path.dirname(bareId), path.resolve(themeFolder, themeName), console, opts);
+    }
   }
 }
 
@@ -361,7 +404,7 @@ const allowedFrontendFolders = [
   frontendFolder,
   addonFrontendFolder,
   path.resolve(addonFrontendFolder, '..', 'frontend'), // Contains only generated-flow-imports
-  path.resolve(frontendFolder, '../node_modules')
+  path.resolve(__dirname, 'node_modules')
 ];
 
 function setHmrPortToServerPort(): PluginOption {
@@ -387,7 +430,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
   }
 
   return {
-    root: 'frontend',
+    root: frontendFolder,
     base: '',
     resolve: {
       alias: {
@@ -438,10 +481,10 @@ export const vaadinConfig: UserConfigFn = (env) => {
       !devMode && brotli(),
       devMode && vaadinBundlesPlugin(),
       devMode && setHmrPortToServerPort(),
-      settings.offlineEnabled && buildSWPlugin(),
+      settings.offlineEnabled && buildSWPlugin({ devMode }),
       settings.offlineEnabled && injectManifestToSWPlugin(),
       !devMode && statsExtracterPlugin(),
-      themePlugin(),
+      themePlugin({devMode}),
       {
         name: 'vaadin:force-remove-spa-middleware',
         transformIndexHtml: {
@@ -466,14 +509,10 @@ export const vaadinConfig: UserConfigFn = (env) => {
               return;
             }
 
-            const basePath = devMode
-              ? server?.config.base ?? ''
-              : './'
-
             return [
               {
                 tag: 'script',
-                attrs: { type: 'module', src: `${basePath}generated/vaadin-web-component.ts` },
+                attrs: { type: 'module', src: `/generated/vaadin-web-component.ts` },
                 injectTo: 'head'
               }
             ]
@@ -489,29 +528,21 @@ export const vaadinConfig: UserConfigFn = (env) => {
               return;
             }
 
-            if (devMode) {
-              const basePath = server?.config.base ?? '';
-              return [
-                {
-                  tag: 'script',
-                  attrs: { type: 'module', src: `${basePath}generated/vite-devmode.ts` },
-                  injectTo: 'head'
-                },
-                {
-                  tag: 'script',
-                  attrs: { type: 'module', src: `${basePath}generated/vaadin.ts` },
-                  injectTo: 'head'
-                }
-              ];
-            }
+            const scripts = [];
 
-            return [
-              {
+            if (devMode) {
+              scripts.push({
                 tag: 'script',
-                attrs: { type: 'module', src: './generated/vaadin.ts' },
+                attrs: { type: 'module', src: `/generated/vite-devmode.ts` },
                 injectTo: 'head'
-              }
-            ];
+              });
+            }
+            scripts.push({
+              tag: 'script',
+              attrs: { type: 'module', src: '/generated/vaadin.ts' },
+              injectTo: 'head'
+            });
+            return scripts;
           }
         }
       },

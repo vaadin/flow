@@ -282,6 +282,8 @@
                 <module>test-dev-mode</module>
                 <module>test-pwa</module>
                 <module>test-pwa/pom-production.xml</module>
+                <module>test-pwa/pom-webpack.xml</module>
+                <module>test-pwa/pom-production-webpack.xml</module>
                 <module>test-pwa-disabled-offline</module>
                 <module>test-pwa-disabled-offline/pom-production.xml</module>
                 <module>test-root-ui-context</module>
@@ -311,6 +313,8 @@
                 <module>test-root-context</module>
 
                 <module>test-eager-bootstrap</module>
+
+                <!-- Webpack only -->
                 <module>test-v14-bootstrap</module>
                 <module>test-v14-bootstrap/pom-production.xml</module>
 
@@ -322,6 +326,7 @@
                 <module>test-application-theme</module>
                 <module>test-theme-no-polymer</module>
                 <module>test-frontend</module>
+                <module>test-custom-frontend-directory</module>
 
                 <module>vaadin-spring-tests</module>
             </modules>

@@ -56,6 +56,9 @@ public class TaskGenerateFeatureFlags extends AbstractTaskClientGenerator {
                     feature.getId(), featureFlags.isEnabled(feature)));
         });
 
+        // See https://github.com/vaadin/flow/issues/14184
+        lines.add("export {};");
+
         return String.join(System.lineSeparator(), lines);
     }
 

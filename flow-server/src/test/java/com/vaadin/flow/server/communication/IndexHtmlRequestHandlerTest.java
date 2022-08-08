@@ -16,7 +16,6 @@
 package com.vaadin.flow.server.communication;
 
 import javax.servlet.http.HttpServletRequest;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -38,9 +37,7 @@ import org.jsoup.select.Elements;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
@@ -71,12 +68,12 @@ import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-
 import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -93,14 +90,11 @@ public class IndexHtmlRequestHandlerTest {
     private MockDeploymentConfiguration deploymentConfiguration;
     private VaadinContext context;
 
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-
     private String springTokenString;
     private String springTokenHeaderName = "x-CSRF-TOKEN";
     private String springTokenParamName = SPRING_CSRF_ATTRIBUTE_IN_SESSION;
 
-    private int expectedScriptsTagsOnBootstrapPage = 3;
+    private int expectedScriptsTagsOnBootstrapPage = 4;
 
     @Before
     public void setUp() throws Exception {
@@ -165,11 +159,10 @@ public class IndexHtmlRequestHandlerTest {
                         + "It is required to have '%1$s' file when "
                         + "using client side bootstrapping.", path);
 
-        exceptionRule.expect(IOException.class);
-        exceptionRule.expectMessage(expectedError);
-
-        indexHtmlRequestHandler.synchronizedHandleRequest(session,
-                vaadinRequest, response);
+        IOException expectedException = assertThrows(IOException.class,
+                () -> indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                        vaadinRequest, response));
+        Assert.assertEquals(expectedError, expectedException.getMessage());
     }
 
     @Test
@@ -335,7 +328,7 @@ public class IndexHtmlRequestHandlerTest {
         Elements scripts = document.head().getElementsByTag("script");
         Assert.assertEquals(expectedScriptsTagsOnBootstrapPage, scripts.size());
         Element initialUidlScript = scripts
-                .get(expectedScriptsTagsOnBootstrapPage - 1);
+                .get(expectedScriptsTagsOnBootstrapPage - 2);
         Assert.assertEquals("", initialUidlScript.attr("initial"));
         Assert.assertTrue(
                 initialUidlScript.toString().contains("Could not navigate"));
@@ -356,7 +349,7 @@ public class IndexHtmlRequestHandlerTest {
         Elements scripts = document.head().getElementsByTag("script");
         Assert.assertEquals(expectedScriptsTagsOnBootstrapPage, scripts.size());
         Element initialUidlScript = scripts
-                .get(expectedScriptsTagsOnBootstrapPage - 1);
+                .get(expectedScriptsTagsOnBootstrapPage - 2);
 
         Assert.assertEquals(
                 "window.Vaadin = window.Vaadin || {};window.Vaadin.TypeScript= {};",
@@ -385,7 +378,7 @@ public class IndexHtmlRequestHandlerTest {
         Elements scripts = document.head().getElementsByTag("script");
         Assert.assertEquals(expectedScriptsTagsOnBootstrapPage, scripts.size());
         Element initialUidlScript = scripts
-                .get(expectedScriptsTagsOnBootstrapPage - 1);
+                .get(expectedScriptsTagsOnBootstrapPage - 2);
         Assert.assertEquals("", initialUidlScript.attr("initial"));
         String scriptContent = initialUidlScript.toString();
         Assert.assertTrue(scriptContent.contains("Could not navigate"));
@@ -413,7 +406,7 @@ public class IndexHtmlRequestHandlerTest {
         Elements scripts = document.head().getElementsByTag("script");
         Assert.assertEquals(expectedScriptsTagsOnBootstrapPage, scripts.size());
         Element initialUidlScript = scripts
-                .get(expectedScriptsTagsOnBootstrapPage - 1);
+                .get(expectedScriptsTagsOnBootstrapPage - 2);
         Assert.assertEquals(
                 "window.Vaadin = window.Vaadin || {};window.Vaadin.TypeScript= {};",
                 initialUidlScript.childNode(0).toString());
@@ -478,7 +471,7 @@ public class IndexHtmlRequestHandlerTest {
         Elements scripts = document.head().getElementsByTag("script");
         Assert.assertEquals(expectedScriptsTagsOnBootstrapPage, scripts.size());
         Element initialUidlScript = scripts
-                .get(expectedScriptsTagsOnBootstrapPage - 1);
+                .get(expectedScriptsTagsOnBootstrapPage - 2);
         Assert.assertFalse(initialUidlScript.childNode(0).toString()
                 .contains("window.Vaadin = {Flow: {\"csrfToken\":"));
         Assert.assertEquals("", initialUidlScript.attr("initial"));

@@ -57,6 +57,7 @@ flow-client/src/main/frontend/FlowClient.js
 flow-tests/**/types.d.ts
 flow-tests/**/*.generated.js
 flow-tests/**/*.generated.ts
+flow-tests/**/vite.config.ts
 flow-tests/**/generated/**
 flow-tests/**/pnpmfile.js
 flow-tests/**/.pnpmfile.cjs
