@@ -49,4 +49,20 @@ public interface I18NProvider extends Serializable {
      * @return translation for key if found
      */
     String getTranslation(String key, Locale locale, Object... params);
+
+    /**
+     * Get the translation for key with given locale.
+     * <p>
+     * Note! For usability and catching missing translations implementation
+     * should never return a null, but an exception string e.g. '!{key}!'
+     *
+     * @param key
+     *            translation key
+     * @param locale
+     *            locale to use
+     * @param params
+     *            parameters used in translation string
+     * @return translation for key if found
+     */
+    String getTranslation(Object key, Locale locale, Object... params);
 }
