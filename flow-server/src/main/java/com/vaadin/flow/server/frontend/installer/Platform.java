@@ -15,7 +15,11 @@
  */
 package com.vaadin.flow.server.frontend.installer;
 
+import java.io.File;
+
 import com.vaadin.flow.server.frontend.FrontendVersion;
+
+import static com.vaadin.flow.server.frontend.installer.NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT;
 
 /**
  * Platform contains information about system architecture and OS.
@@ -109,8 +113,10 @@ public class Platform {
         }
     }
 
+    private final String nodeDownloadRoot;
     private final OS os;
     private final Architecture architecture;
+    private final String classifier;
 
     // Node.js supports Apple silicon from v16.0.0
     private static final int NODE_VERSION_THRESHOLD_MAC_ARM64 = 16;
@@ -124,8 +130,15 @@ public class Platform {
      *            platform Architecture
      */
     public Platform(OS os, Architecture architecture) {
+        this(DEFAULT_NODEJS_DOWNLOAD_ROOT, os, architecture, null);
+    }
+
+    public Platform(String nodeDownloadRoot, OS os, Architecture architecture,
+            String classifier) {
+        this.nodeDownloadRoot = nodeDownloadRoot;
         this.os = os;
         this.architecture = architecture;
+        this.classifier = classifier;
     }
 
     /**
@@ -136,6 +149,22 @@ public class Platform {
     public static Platform guess() {
         OS os = OS.guess();
         Architecture architecture = Architecture.guess();
+        // The default libc is glibc, but Alpine uses musl. When not default,
+        // the nodejs download
+        // (and path within it) needs a classifier in the suffix (ex. -musl).
+        // We know Alpine is in use if the release file exists, and this is the
+        // simplest check.
+        if (os == OS.LINUX && new File("/etc/alpine-release").exists()) {
+            return new Platform(
+                    // Currently, musl is Experimental. The download root can be
+                    // overridden with config
+                    // if this changes and there's not been an update to this
+                    // project, yet.
+                    // See
+                    // https://github.com/nodejs/node/blob/master/BUILDING.md#platform-list
+                    "https://unofficial-builds.nodejs.org/download/release/",
+                    os, architecture, "musl");
+        }
         return new Platform(os, architecture);
     }
 
@@ -210,7 +239,18 @@ public class Platform {
      * @return platform node classifier
      */
     public String getNodeClassifier(FrontendVersion nodeVersion) {
-        return getCodename() + "-" + resolveArchitecture(nodeVersion).getName();
+        String result = getCodename() + "-"
+                + resolveArchitecture(nodeVersion).getName();
+        return classifier != null ? result + "-" + classifier : result;
+    }
+
+    /**
+     * Gets the platform dependent download root.
+     *
+     * @return platform download root
+     */
+    public String getNodeDownloadRoot() {
+        return nodeDownloadRoot;
     }
 
     private Architecture resolveArchitecture(FrontendVersion nodeVersion) {

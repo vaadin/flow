@@ -197,7 +197,7 @@ public class NodeInstaller {
         synchronized (lock) {
             // If no download root defined use default root
             if (nodeDownloadRoot == null) {
-                nodeDownloadRoot = URI.create(DEFAULT_NODEJS_DOWNLOAD_ROOT);
+                nodeDownloadRoot = URI.create(platform.getNodeDownloadRoot());
             }
 
             if (nodeIsAlreadyInstalled()) {
