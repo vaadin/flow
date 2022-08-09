@@ -545,6 +545,7 @@
                         </execution>
                     </executions>
                     <configuration>
+                        <argLine>${failsafe.argLine}</argLine>
                         <trimStackTrace>false</trimStackTrace>
                         <enableAssertions>true</enableAssertions>
                         <parallel>all</parallel>

@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.navigate;
 
-import java.io.IOException;
-
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
@@ -24,7 +22,6 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.mobile.NetworkConnection;
 
 import com.vaadin.flow.testutil.ChromeDeviceTest;
 import com.vaadin.testbench.TestBenchElement;
@@ -49,10 +46,8 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
     }
 
     @Test
-    public void offlineRoot_reload_viewReloaded() throws IOException {
-        getDriver().get(getRootURL() + "/");
-        waitForDevServer();
-        waitForServiceWorkerReady();
+    public void offlineRoot_reload_viewReloaded() {
+        openPageAndPreCacheWhenDevelopmentMode("/");
 
         // Confirm that app shell is loaded
         Assert.assertNotNull("Should have outlet when loaded online",
@@ -64,7 +59,7 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
                 findElement(By.tagName("about-view")));
 
         // Set offline network conditions in ChromeDriver
-        setConnectionType(NetworkConnection.ConnectionType.AIRPLANE_MODE);
+        getDevTools().setOfflineEnabled(true);
 
         try {
             Assert.assertEquals("navigator.onLine should be false", false,
@@ -86,27 +81,27 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
                     findElement(By.tagName("about-view")));
         } finally {
             // Reset network conditions back
-            setConnectionType(NetworkConnection.ConnectionType.ALL);
+            getDevTools().setOfflineEnabled(false);
         }
     }
 
     @Test
-    public void offlineNonRoot_reload_viewReloaded() throws IOException {
-        getDriver().get(getRootURL() + "/");
-        waitForDevServer();
-        waitForServiceWorkerReady();
-
-        // Set offline network conditions in ChromeDriver
-        setConnectionType(NetworkConnection.ConnectionType.AIRPLANE_MODE);
-
-        try {
+    public void offlineNonRoot_reload_viewReloaded() {
+        Runnable navigate = () -> {
             $("main-view").first().$("a").id("menu-another").click();
 
             // Wait for component inside shadow root as there is no vaadin
             // to wait for as with server-side
             waitUntil(input -> $("another-view").first().$("div")
                     .id("another-content").isDisplayed());
+        };
+        openPageAndPreCacheWhenDevelopmentMode("/", navigate);
 
+        // Set offline network conditions in ChromeDriver
+        getDevTools().setOfflineEnabled(true);
+
+        try {
+            navigate.run();
             // Reload the page in offline mode
             executeScript("window.location.reload();");
             waitUntil(webDriver -> ((JavascriptExecutor) driver)
@@ -120,27 +115,27 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
                     anotherView.$("*").id("another-content").isDisplayed());
         } finally {
             // Reset network conditions back
-            setConnectionType(NetworkConnection.ConnectionType.ALL);
+            getDevTools().setOfflineEnabled(false);
         }
     }
 
     @Test
-    public void offlineDeepPath_reload_viewReloaded_baseUrlRewritten()
-            throws IOException {
-        getDriver().get(getRootURL() + "/");
-        waitForDevServer();
-        waitForServiceWorkerReady();
-
-        // Set offline network conditions in ChromeDriver
-        setConnectionType(NetworkConnection.ConnectionType.AIRPLANE_MODE);
-
-        try {
+    public void offlineDeepPath_reload_viewReloaded_baseUrlRewritten() {
+        Runnable navigate = () -> {
             $("main-view").first().$("a").id("menu-deep-another").click();
 
             // Wait for component inside shadow root as there is no vaadin
             // to wait for as with server-side
             waitUntil(input -> $("another-view").first().$("div")
                     .id("another-content").isDisplayed());
+        };
+        openPageAndPreCacheWhenDevelopmentMode("/", navigate);
+
+        // Set offline network conditions in ChromeDriver
+        getDevTools().setOfflineEnabled(true);
+
+        try {
+            navigate.run();
 
             // Reload the page in offline mode
             executeScript("window.location.reload();");
@@ -165,31 +160,31 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
             Assert.assertNotNull("Should have <about-view> in DOM", aboutView);
         } finally {
             // Reset network conditions back
-            setConnectionType(NetworkConnection.ConnectionType.ALL);
+            getDevTools().setOfflineEnabled(false);
         }
     }
 
     @Test
-    public void offlineTsView_navigateToOtherTsView_navigationSuccessful()
-            throws IOException {
-        getDriver().get(getRootURL() + "/about");
-        waitForDevServer();
-        waitForServiceWorkerReady();
-
-        MatcherAssert.assertThat(getDriver().getCurrentUrl(),
-                CoreMatchers.endsWith("/about"));
-
-        // Set offline network conditions in ChromeDriver
-        setConnectionType(NetworkConnection.ConnectionType.AIRPLANE_MODE);
-
-        try {
+    public void offlineTsView_navigateToOtherTsView_navigationSuccessful() {
+        Runnable navigate = () -> {
             $("main-view").first().$("a").id("menu-another").click();
 
             // Wait for component inside shadow root as there is no vaadin
             // to wait for as with server-side
             waitUntil(input -> $("another-view").first().$("div")
                     .id("another-content").isDisplayed());
+        };
+        openPageAndPreCacheWhenDevelopmentMode("/about", navigate);
 
+        MatcherAssert.assertThat(getDriver().getCurrentUrl(),
+                CoreMatchers.endsWith("/about"));
+
+        // Set offline network conditions in ChromeDriver
+        getDevTools().setOfflineEnabled(true);
+
+        try {
+
+            navigate.run();
             MatcherAssert.assertThat(getDriver().getCurrentUrl(),
                     CoreMatchers.endsWith("/another"));
             TestBenchElement anotherView = $("another-view").first();
@@ -197,29 +192,27 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
                     anotherView.$("*").id("another-content").isDisplayed());
         } finally {
             // Reset network conditions back
-            setConnectionType(NetworkConnection.ConnectionType.ALL);
+            getDevTools().setOfflineEnabled(false);
         }
     }
 
     @Test
-    public void offlineServerView_navigateToTsView_navigationSuccessful()
-            throws IOException {
-        getDriver().get(getRootURL() + "/hello");
-        waitForDevServer();
-        waitForServiceWorkerReady();
-
-        // Set offline network conditions in ChromeDriver
-        setConnectionType(NetworkConnection.ConnectionType.AIRPLANE_MODE);
-
-        try {
-            waitUntil(
-                    driver -> $("main-view").first().$("a").id("menu-another"))
-                    .click();
+    public void offlineServerView_navigateToTsView_navigationSuccessful() {
+        Runnable navigate = () -> {
+            $("main-view").first().$("a").id("menu-another").click();
 
             // Wait for component inside shadow root as there is no vaadin
             // to wait for as with server-side
             waitUntil(input -> $("another-view").first().$("div")
                     .id("another-content").isDisplayed());
+        };
+        openPageAndPreCacheWhenDevelopmentMode("/hello", navigate);
+
+        // Set offline network conditions in ChromeDriver
+        getDevTools().setOfflineEnabled(true);
+
+        try {
+            navigate.run();
 
             MatcherAssert.assertThat(getDriver().getCurrentUrl(),
                     CoreMatchers.endsWith("/another"));
@@ -228,18 +221,15 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
                     anotherView.$("*").id("another-content").isDisplayed());
         } finally {
             // Reset network conditions back
-            setConnectionType(NetworkConnection.ConnectionType.ALL);
+            getDevTools().setOfflineEnabled(false);
         }
     }
 
     @Test
-    public void offlineTsView_navigateToServerView_offlineStubShown()
-            throws IOException {
-        getDriver().get(getRootURL() + "/another");
-        waitForDevServer();
-        waitForServiceWorkerReady();
+    public void offlineTsView_navigateToServerView_offlineStubShown() {
+        openPageAndPreCacheWhenDevelopmentMode("/another");
 
-        setConnectionType(NetworkConnection.ConnectionType.AIRPLANE_MODE);
+        getDevTools().setOfflineEnabled(true);
         try {
             $("main-view").first().$("a").id("menu-hello").click();
 
@@ -248,18 +238,15 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
             driver.switchTo().frame(offlineStub);
             Assert.assertNotNull(findElement(By.className("offline")));
         } finally {
-            setConnectionType(NetworkConnection.ConnectionType.ALL);
+            getDevTools().setOfflineEnabled(false);
         }
     }
 
     @Test
-    public void offlineServerView_navigateToServerView_offlineStubShown()
-            throws IOException {
-        getDriver().get(getRootURL() + "/hello");
-        waitForDevServer();
-        waitForServiceWorkerReady();
+    public void offlineServerView_navigateToServerView_offlineStubShown() {
+        openPageAndPreCacheWhenDevelopmentMode("/");
 
-        setConnectionType(NetworkConnection.ConnectionType.AIRPLANE_MODE);
+        getDevTools().setOfflineEnabled(true);
         try {
             waitUntil(driver -> $("main-view").first().$("a").id("menu-hello"))
                     .click();
@@ -269,37 +256,36 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
             driver.switchTo().frame(offlineStub);
             Assert.assertNotNull(findElement(By.className("offline")));
         } finally {
-            setConnectionType(NetworkConnection.ConnectionType.ALL);
+            getDevTools().setOfflineEnabled(false);
         }
     }
 
     @Test
-    public void offlineStub_backOnline_stubRemoved_serverViewShown()
-            throws IOException {
+    public void offlineStub_backOnline_stubRemoved_serverViewShown() {
         getDriver().get(getRootURL() + "/");
         waitForDevServer();
         waitForServiceWorkerReady();
-        setConnectionType(NetworkConnection.ConnectionType.AIRPLANE_MODE);
+        getDevTools().setOfflineEnabled(true);
+
         try {
             $("main-view").first().$("a").id("menu-hello").click();
             waitForElementPresent(By.tagName("iframe"));
 
-            setConnectionType(NetworkConnection.ConnectionType.ALL);
+            getDevTools().setOfflineEnabled(false);
 
             waitForElementNotPresent(By.tagName("iframe"));
             Assert.assertNotNull(findElement(By.id(NAVIGATE_ABOUT)));
         } finally {
-            setConnectionType(NetworkConnection.ConnectionType.ALL);
+            getDevTools().setOfflineEnabled(false);
         }
     }
 
     @Test
-    public void offline_cachedResourceRequest_resourceLoaded()
-            throws IOException {
+    public void offline_cachedResourceRequest_resourceLoaded() {
         getDriver().get(getRootURL());
         waitForDevServer();
         waitForServiceWorkerReady();
-        setConnectionType(NetworkConnection.ConnectionType.AIRPLANE_MODE);
+        getDevTools().setOfflineEnabled(true);
         try {
             // verify that we can retrieve a cached file (manifest.webmanifest)
             driver.get(getRootURL() + "/manifest.webmanifest");
@@ -310,7 +296,35 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
             Assert.assertTrue(json.hasKey("name"));
             Assert.assertTrue(json.hasKey("short_name"));
         } finally {
-            setConnectionType(NetworkConnection.ConnectionType.ALL);
+            getDevTools().setOfflineEnabled(false);
+        }
+    }
+
+    private void openPageAndPreCacheWhenDevelopmentMode(String targetView) {
+        openPageAndPreCacheWhenDevelopmentMode(targetView, () -> {
+        });
+    }
+
+    private void openPageAndPreCacheWhenDevelopmentMode(String targetView,
+            Runnable activateViews) {
+        getDriver().get(getRootURL() + targetView);
+        waitForDevServer();
+        waitForServiceWorkerReady();
+
+        boolean isDevMode = Boolean.getBoolean("vaadin.test.developmentMode");
+        if (isDevMode) {
+            // In production mode all views are supposed to be already in the
+            // bundle, but in dev mode they are loaded at runtime
+            // So, for dev mode, pre cache required views
+            activateViews.run();
+
+            // In addition not all external resources are cached when the page
+            // opens
+            // first time, so we need to reload the page even if there is no
+            // navigation to other views
+            getDriver().get(getRootURL() + targetView);
+            waitForDevServer();
+            waitForServiceWorkerReady();
         }
     }
 
