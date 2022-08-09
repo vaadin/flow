@@ -26,7 +26,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
@@ -48,7 +47,6 @@ import static com.vaadin.flow.uitest.ui.theme.ThemeView.SUB_COMPONENT_ID;
 
 public class ThemeIT extends ChromeBrowserTest {
 
-    @Ignore("Vite issue with web components styles https://github.com/vaadin/flow/issues/14142")
     @Test
     public void typeScriptCssImport_stylesAreApplied() {
         getDriver().get(getRootURL() + "/path/hello");

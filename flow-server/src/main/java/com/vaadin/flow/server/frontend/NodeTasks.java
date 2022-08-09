@@ -791,11 +791,11 @@ public class NodeTasks implements FallibleCommand {
         if (!builder.useLegacyV14Bootstrap) {
             addBootstrapTasks(builder);
 
-            TaskGenerateHilla hillaTask = builder.lookup
-                    .lookup(TaskGenerateHilla.class);
-            // use the new Hilla generator if available, otherwise the old
+            // use the new Hilla generator if enabled, otherwise use the old
             // generator.
-            if (hillaTask != null) {
+            if (featureFlags.isEnabled(FeatureFlags.HILLA_ENGINE)) {
+                TaskGenerateHilla hillaTask = builder.lookup
+                        .lookup(TaskGenerateHilla.class);
                 hillaTask.configure(builder.getNpmFolder(),
                         builder.getBuildDirectory());
                 commands.add(hillaTask);
