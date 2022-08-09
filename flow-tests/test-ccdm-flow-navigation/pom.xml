@@ -14,6 +14,7 @@
 
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
+        <failsafe.argLine>-Dvaadin.test.developmentMode=true</failsafe.argLine>
     </properties>
 
     <dependencies>
