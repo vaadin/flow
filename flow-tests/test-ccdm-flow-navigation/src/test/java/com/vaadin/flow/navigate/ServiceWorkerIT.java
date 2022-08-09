@@ -311,8 +311,7 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
         waitForDevServer();
         waitForServiceWorkerReady();
 
-        boolean isDevMode = (Boolean) getCommandExecutor()
-                .executeScript("return Vaadin.developmentMode");
+        boolean isDevMode = Boolean.getBoolean("vaadin.test.developmentMode");
         if (isDevMode) {
             // In production mode all views are supposed to be already in the
             // bundle, but in dev mode they are loaded at runtime
