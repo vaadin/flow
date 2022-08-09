@@ -27,15 +27,17 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer;
 import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.access.AccessDeniedHandlerImpl;
 import org.springframework.security.web.access.DelegatingAccessDeniedHandler;
@@ -58,7 +60,7 @@ import com.vaadin.flow.server.auth.ViewAccessChecker;
 import com.vaadin.flow.spring.security.stateless.VaadinStatelessSecurityConfigurer;
 
 /**
- * Provides basic Vaadin security configuration for the project.
+ * Provides basic Vaadin component-based security configuration for the project.
  * <p>
  * Sets up security rules for a Vaadin application and restricts all URLs except
  * for public resources and internal Vaadin URLs to authenticated user.
@@ -66,23 +68,19 @@ import com.vaadin.flow.spring.security.stateless.VaadinStatelessSecurityConfigur
  * The default behavior can be altered by extending the public/protected methods
  * in the class.
  * <p>
- * To use this, create your own web security configurer adapter class by
- * extending this class instead of <code>WebSecurityConfigurerAdapter</code> and
+ * To use this, create your own web security class by extending this class and
  * annotate it with <code>@EnableWebSecurity</code> and
  * <code>@Configuration</code>.
  * <p>
  * For example <code>
 &#64;EnableWebSecurity
 &#64;Configuration
-public class MySecurityConfigurerAdapter extends VaadinWebSecurityConfigurerAdapter {
+public class MyWebSecurity extends VaadinWebSecurity {
 
 }
- * @deprecated Use component-based security configuration {@link VaadinWebSecurity}
  * </code>
  */
-@Deprecated
-public abstract class VaadinWebSecurityConfigurerAdapter
-        extends WebSecurityConfigurerAdapter {
+public abstract class VaadinWebSecurity {
 
     @Autowired
     private VaadinDefaultRequestCache vaadinDefaultRequestCache;
@@ -100,14 +98,16 @@ public abstract class VaadinWebSecurityConfigurerAdapter
      * <p>
      * {@inheritDoc}
      */
-    @Override
-    public void configure(WebSecurity web) throws Exception {
-        web.ignoring().requestMatchers(getDefaultWebSecurityIgnoreMatcher(
-                requestUtil.getUrlMapping()));
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring()
+                .requestMatchers(getDefaultWebSecurityIgnoreMatcher(
+                        requestUtil.getUrlMapping()));
     }
 
-    @Override
-    protected void configure(HttpSecurity http) throws Exception {
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
         // Use a security context holder that can find the context from Vaadin
         // specific classes
         SecurityContextHolder.setStrategyName(
@@ -153,6 +153,8 @@ public abstract class VaadinWebSecurityConfigurerAdapter
 
         // Enable view access control
         viewAccessChecker.enable();
+
+        return http.build();
     }
 
     /**
