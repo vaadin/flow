@@ -19,10 +19,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
@@ -32,21 +34,33 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletService;
+import com.vaadin.flow.server.frontend.installer.NodeInstaller;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
+import elemental.json.Json;
+import elemental.json.JsonObject;
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
+import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_STATISTICS_JSON;
+import static com.vaadin.flow.server.frontend.NodeUpdater.DEPENDENCIES;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -365,6 +379,58 @@ public class FrontendUtilsTest {
 
         Assert.assertFalse(nodeModules.exists());
         Assert.assertTrue(externalLicense.exists());
+    }
+
+    @Test
+    public void symlinkByNpm_deleteDirectory_doesNotDeleteSymlinkFolderFiles()
+            throws IOException, ExecutionFailedException {
+        File npmFolder = tmpDir.newFolder();
+
+        File generatedPath = new File(npmFolder, "generated");
+        generatedPath.mkdir();
+
+        File symbolic = new File(npmFolder, "symbolic");
+        symbolic.mkdir();
+        File linkFolderFile = new File(symbolic, "symbol.txt");
+        linkFolderFile.createNewFile();
+
+        final JsonObject packageJson = Json.createObject();
+        packageJson.put(DEPENDENCIES, Json.createObject());
+
+        packageJson.getObject(DEPENDENCIES).put("@symbolic/link",
+                "./" + symbolic.getName());
+
+        FileUtils.writeStringToFile(new File(npmFolder, PACKAGE_JSON),
+                packageJson.toJson(), StandardCharsets.UTF_8);
+
+        ClassFinder finder = Mockito.mock(ClassFinder.class);
+
+        Logger logger = Mockito.spy(LoggerFactory.getLogger(NodeUpdater.class));
+
+        NodeUpdater nodeUpdater = new NodeUpdater(finder,
+                Mockito.mock(FrontendDependencies.class), npmFolder,
+                generatedPath, null, TARGET, Mockito.mock(FeatureFlags.class)) {
+
+            @Override
+            public void execute() {
+            }
+
+            @Override
+            Logger log() {
+                return logger;
+            }
+
+        };
+
+        new TaskRunNpmInstall(nodeUpdater, false, false,
+                FrontendTools.DEFAULT_NODE_VERSION,
+                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false,
+                false).execute();
+
+        FrontendUtils.deleteNodeModules(new File(npmFolder, "node_modules"));
+
+        Assert.assertTrue("Linked folder contents should not be removed.",
+                linkFolderFile.exists());
     }
 
     private ResourceProvider mockResourceProvider(VaadinService service) {
