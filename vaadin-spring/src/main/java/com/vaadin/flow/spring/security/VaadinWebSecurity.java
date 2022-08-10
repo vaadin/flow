@@ -234,7 +234,7 @@ public abstract class VaadinWebSecurity {
      * available at the given path.
      *
      * @param http
-     *            the http security from {@link #configure(HttpSecurity)}
+     *            the http security from {@link #filterChain(HttpSecurity)}
      * @param hillaLoginViewPath
      *            the path to the login view
      * @throws Exception
@@ -253,7 +253,7 @@ public abstract class VaadinWebSecurity {
      * available at the given path.
      *
      * @param http
-     *            the http security from {@link #configure(HttpSecurity)}
+     *            the http security from {@link #filterChain(HttpSecurity)}
      * @param hillaLoginViewPath
      *            the path to the login view
      * @param logoutUrl
@@ -279,7 +279,7 @@ public abstract class VaadinWebSecurity {
      * Sets up login for the application using the given Flow login view.
      *
      * @param http
-     *            the http security from {@link #configure(HttpSecurity)}
+     *            the http security from {@link #filterChain(HttpSecurity)}
      * @param flowLoginView
      *            the login view to use
      * @throws Exception
@@ -294,7 +294,7 @@ public abstract class VaadinWebSecurity {
      * Sets up login for the application using the given Flow login view.
      *
      * @param http
-     *            the http security from {@link #configure(HttpSecurity)}
+     *            the http security from {@link #filterChain(HttpSecurity)}
      * @param flowLoginView
      *            the login view to use
      * @param logoutUrl
@@ -338,7 +338,7 @@ public abstract class VaadinWebSecurity {
      * Sets up stateless JWT authentication using cookies.
      *
      * @param http
-     *            the http security from {@link #configure(HttpSecurity)}
+     *            the http security from {@link #filterChain(HttpSecurity)}
      * @param secretKey
      *            the secret key for encoding and decoding JWTs, must use a
      *            {@link MacAlgorithm} algorithm name
@@ -356,7 +356,7 @@ public abstract class VaadinWebSecurity {
      * Sets up stateless JWT authentication using cookies.
      *
      * @param http
-     *            the http security from {@link #configure(HttpSecurity)}
+     *            the http security from {@link #filterChain(HttpSecurity)}
      * @param secretKey
      *            the secret key for encoding and decoding JWTs, must use a
      *            {@link MacAlgorithm} algorithm name
