@@ -643,8 +643,6 @@ public abstract class Component
      * @param params
      *            parameters used in translation string
      * @return translation for key if found
-     * @deprecated Use {@link #getTranslation(Locale, String, Object...)}
-     *             instead
      */
     public String getTranslation(Object key, Locale locale, Object... params) {
         if (getI18NProvider() == null) {
