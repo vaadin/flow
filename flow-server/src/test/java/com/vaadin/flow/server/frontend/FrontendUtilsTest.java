@@ -467,9 +467,9 @@ public class FrontendUtilsTest {
 
         };
 
-        new TaskRunNpmInstall(finder, nodeUpdater, false, false,
-                FrontendTools.DEFAULT_NODE_VERSION,
-                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT)).execute();
+        new TaskRunNpmInstall(finder, nodeUpdater, false, true, "v16.16.0",
+                URI.create(
+                        NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT)).execute();
 
         FrontendUtils.deleteNodeModules(new File(npmFolder, "node_modules"));
 
