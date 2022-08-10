@@ -37,6 +37,7 @@ import java.io.IOException;
 import java.net.BindException;
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
+import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -266,7 +267,7 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
         assertEquals(HTTP_UNAUTHORIZED, responseError);
 
         httpServer.stop(0);
-        exception.expect(ConnectException.class);
+        exception.expect(SocketException.class);
         handler.serveDevModeRequest(request, null);
     }
 
@@ -289,7 +290,7 @@ public class WebpackHandlerTest extends AbstractDevModeTest {
         assertEquals(HTTP_NOT_MODIFIED, responseStatus);
 
         httpServer.stop(0);
-        exception.expect(ConnectException.class);
+        exception.expect(SocketException.class);
         servlet.service(request, response);
     }
 
