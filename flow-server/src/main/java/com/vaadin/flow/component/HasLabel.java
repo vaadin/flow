@@ -26,7 +26,7 @@
     *
     *
     * @author Vaadin Ltd
-    * @since
+    * @since 2.8
     */
    public interface HasLabel extends HasElement{
        /**
