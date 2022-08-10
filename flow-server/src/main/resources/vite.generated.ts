@@ -18,6 +18,7 @@ import * as rollup from 'rollup';
 import brotli from 'rollup-plugin-brotli';
 import replace from '@rollup/plugin-replace';
 import checker from 'vite-plugin-checker';
+import postcssLit from 'rollup-plugin-postcss-lit';
 
 const appShellUrl = '.';
 
@@ -345,20 +346,26 @@ function themePlugin(opts): PluginOption {
     handleHotUpdate(context) {
       const contextPath = path.resolve(context.file);
       const themePath = path.resolve(themeFolder);
-      // Track also updates on fronted/generated/theme.js to regenerate theme
-      // upon a java live reload when value of @Theme annotation changes.
-      const isThemeJS = contextPath === path.resolve(themeOptions.frontendGeneratedFolder, "theme.js");
-      if (isThemeJS || contextPath.startsWith(themePath)) {
+      if (contextPath.startsWith(themePath)) {
         const changed = path.relative(themePath, contextPath);
 
         console.debug('Theme file changed', changed);
 
-        if (isThemeJS || changed.startsWith(settings.themeName)) {
+        if (changed.startsWith(settings.themeName)) {
           processThemeResources(fullThemeOptions, console);
         }
       }
     },
-    async resolveId(id) {
+    async resolveId(id, importer) {
+      // force theme generation if generated theme sources does not yet exist
+      // this may happen for example during Java hot reload when updating
+      // @Theme annotation value
+      if (path.resolve(themeOptions.frontendGeneratedFolder, "theme.js") === importer &&
+            !existsSync(path.resolve(themeOptions.frontendGeneratedFolder, id))) {
+          console.debug('Generate theme file ' + id + ' not existing. Processing theme resource');
+          processThemeResources(fullThemeOptions, console);
+          return;
+      }
       if (!id.startsWith(settings.themeFolder)) {
         return;
       }
@@ -485,6 +492,16 @@ export const vaadinConfig: UserConfigFn = (env) => {
       settings.offlineEnabled && injectManifestToSWPlugin(),
       !devMode && statsExtracterPlugin(),
       themePlugin({devMode}),
+      postcssLit({
+        include: ['**/*.css', '**/*.css\?*'],
+        exclude: [
+          `${themeFolder}/**/*.css`,
+          `${themeFolder}/**/*.css\?*`,
+          `${themeResourceFolder}/**/*.css`,
+          `${themeResourceFolder}/**/*.css\?*`,
+          '**/*\?html-proxy*'
+        ]
+      }),
       {
         name: 'vaadin:force-remove-spa-middleware',
         transformIndexHtml: {
