@@ -24,7 +24,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
@@ -422,8 +421,7 @@ public class FrontendUtilsTest {
 
         };
 
-        new TaskRunNpmInstall(nodeUpdater, false, false,
-                FrontendTools.DEFAULT_NODE_VERSION,
+        new TaskRunNpmInstall(nodeUpdater, false, true, "v16.16.0",
                 URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false,
                 false).execute();
 
