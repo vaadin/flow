@@ -33,8 +33,7 @@ public class NpmOnlyIndexIT extends ChromeBrowserTest {
         return Constants.PAGE_CONTEXT + "/index.html";
     }
 
-    @Ignore("Vite handles web components differently. Verify if #7005 affects also Vite. See https://github.com/vaadin/flow/issues/14256")
-    // test for #7005
+    // test for #7005, #14256
     @Test
     public void globalStylesAreUnderTheWebComponent() {
         open();

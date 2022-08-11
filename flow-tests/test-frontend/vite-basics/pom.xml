@@ -67,6 +67,9 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <productionMode>false</productionMode>
+                </configuration>
             </plugin>
             <plugin>
                  <groupId>org.eclipse.jetty</groupId>
