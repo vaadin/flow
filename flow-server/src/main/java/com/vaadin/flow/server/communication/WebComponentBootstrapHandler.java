@@ -136,6 +136,8 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                                 getPushScript(context), true));
                     }
 
+                    setupCss(head, context);
+
                     return document;
                 } catch (IOException e) {
                     throw new BootstrapException(

@@ -25,7 +25,7 @@
 
     <artifactId>test-embedding-reusable-theme</artifactId>
     <packaging>war</packaging>
-    <name>Flow Embedding resuable application theme tests</name>
+    <name>Flow Embedding reusable application theme tests</name>
 
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>

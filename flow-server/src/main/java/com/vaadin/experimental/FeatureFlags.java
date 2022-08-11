@@ -57,10 +57,6 @@ public class FeatureFlags implements Serializable {
             "Use Webpack for front-end builds (Deprecated)",
             "webpackForFrontendBuild",
             "https://github.com/vaadin/flow/issues/13852", true, null);
-    public static final Feature MAP_COMPONENT = new Feature(
-            "Map component (Pro)", "mapComponent",
-            "https://vaadin.com/docs/latest/ds/components/map", true,
-            "com.vaadin.flow.component.map.Map");
     public static final Feature SPREADSHEET_COMPONENT = new Feature(
             "Spreadsheet component (Pro)", "spreadsheetComponent",
             "https://github.com/vaadin/platform/issues/2027", true,
@@ -99,7 +95,6 @@ public class FeatureFlags implements Serializable {
     public FeatureFlags(Lookup lookup) {
         this.lookup = lookup;
         features.add(new Feature(EXAMPLE));
-        features.add(new Feature(MAP_COMPONENT));
         features.add(new Feature(SPREADSHEET_COMPONENT));
         features.add(new Feature(HILLA_PUSH));
         features.add(new Feature(HILLA_ENGINE));
