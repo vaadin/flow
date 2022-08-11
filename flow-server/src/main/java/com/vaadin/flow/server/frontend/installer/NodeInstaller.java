@@ -48,6 +48,8 @@ public class NodeInstaller {
 
     public static final String DEFAULT_NODEJS_DOWNLOAD_ROOT = "https://nodejs.org/dist/";
 
+    public static final String UNOFFICIAL_NODEJS_DOWNLOAD_ROOT = "https://unofficial-builds.nodejs.org/download/release/";
+
     private static final String NODE_WINDOWS = INSTALL_PATH.replaceAll("/",
             "\\\\") + "\\node.exe";
     private static final String NODE_DEFAULT = INSTALL_PATH + "/node";
