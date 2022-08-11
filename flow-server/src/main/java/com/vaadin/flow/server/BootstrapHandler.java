@@ -1171,7 +1171,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return null;
         }
 
-        private void setupCss(Element head, BootstrapContext context) {
+        protected void setupCss(Element head, BootstrapContext context) {
             Element styles = head.appendElement("style").attr("type",
                     CSS_TYPE_ATTRIBUTE_VALUE);
             // Add any body style that is defined for the application using
