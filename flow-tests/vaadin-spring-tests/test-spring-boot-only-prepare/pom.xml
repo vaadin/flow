@@ -132,6 +132,9 @@
                 <configuration>
                     <maxAttempts>100</maxAttempts>
                     <wait>2500</wait>
+                    <jvmArguments>
+                        -Dvaadin.devmode.vite.options=${vaadin.devmode.vite.options}
+                    </jvmArguments>
                 </configuration>
                 <executions>
                     <!-- start and stop application when running
