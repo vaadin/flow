@@ -58,6 +58,8 @@ public class BrowserDetailsTest extends TestCase {
     private static final String CHROME_IOS = "Mozilla/5.0 (iPhone; CPU iPhone OS 9_2_1 like Mac OS X) AppleWebKit/601.1 (KHTML, like Gecko) CriOS/49.0.2623.73 Mobile/13D15 Safari/601.1.46";
     private static final String CHROME_40_ON_CHROMEOS = "Mozilla/5.0 (X11; CrOS x86_64 6457.31.0) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/40.0.2214.38 Safari/537.36";
 
+    private static final String CHROME_IOS_DESKTOP = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_5) AppleWebKit/605.1.15 (KHTML, like Gecko) CriOS/85 Version/11.1.1 Safari/605.1.15";
+
     private static final String SAFARI3_WINDOWS = "Mozilla/5.0 (Windows; U; Windows NT 5.1; cs-CZ) AppleWebKit/525.28.3 (KHTML, like Gecko) Version/3.2.3 Safari/525.29";
     private static final String SAFARI4_MAC = "Mozilla/5.0 (Macintosh; U; PPC Mac OS X 10_5_8; en-us) AppleWebKit/531.22.7 (KHTML, like Gecko) Version/4.0.5 Safari/531.22.7";
     private static final String SAFARI10_WINDOWS = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/603.3.8 (KHTML, like Gecko) Version/10.1.2 Safari/603.3.8";
@@ -260,6 +262,15 @@ public class BrowserDetailsTest extends TestCase {
         assertBrowserMajorVersion(bd, 49);
         assertBrowserMinorVersion(bd, 0);
         assertEngineVersion(bd, 601.1f);
+    }
+
+    public void testChromeIOSDesktopSiteFeature() {
+        BrowserDetails bd = new BrowserDetails(CHROME_IOS_DESKTOP);
+        assertWebKit(bd);
+        assertChrome(bd);
+        assertBrowserMajorVersion(bd, 85);
+        assertBrowserMinorVersion(bd, 0);
+        assertEngineVersion(bd, 605.1f);
     }
 
     public void testChromeChromeOS() {
