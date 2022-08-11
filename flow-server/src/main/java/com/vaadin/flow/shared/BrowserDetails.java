@@ -290,7 +290,8 @@ public class BrowserDetails implements Serializable {
     }
 
     private void parseChromeVersion(String userAgent) {
-        int i = userAgent.indexOf(" crios/");
+        final String crios = " crios/";
+        int i = userAgent.indexOf(crios);
         if (i == -1) {
             i = userAgent.indexOf(CHROME);
             if (i == -1) {
@@ -298,12 +299,32 @@ public class BrowserDetails implements Serializable {
             } else {
                 i += CHROME.length();
             }
-
-            parseVersionString(safeSubstring(userAgent, i, i + 5));
+            int versionBreak = getVersionStringLength(userAgent, i);
+            parseVersionString(safeSubstring(userAgent, i, i + versionBreak));
         } else {
-            i += 7;
-            parseVersionString(safeSubstring(userAgent, i, i + 6));
+            i += crios.length(); // move index to version string start
+            int versionBreak = getVersionStringLength(userAgent, i);
+            parseVersionString(safeSubstring(userAgent, i, i + versionBreak));
         }
+    }
+
+    /**
+     * Get the full version string until space.
+     *
+     * @param userAgent
+     *            user agent string
+     * @param startIndex
+     *            index for version string start
+     * @return length of version number
+     */
+    private static int getVersionStringLength(String userAgent,
+            int startIndex) {
+        final String versionSubString = userAgent.substring(startIndex);
+        int versionBreak = versionSubString.indexOf(" ");
+        if (versionBreak == -1) {
+            versionBreak = versionSubString.length();
+        }
+        return versionBreak;
     }
 
     private void parseAndroidVersion(String userAgent) {
@@ -362,6 +383,11 @@ public class BrowserDetails implements Serializable {
 
         int idx2 = versionString.indexOf('.', idx + 1);
         if (idx2 < 0) {
+            // If string only contains major version, set minor to 0.
+            if (versionString.substring(idx).length() == 0) {
+                browserMinorVersion = 0;
+                return;
+            }
             idx2 = versionString.length();
         }
         String minorVersionPart = safeSubstring(versionString, idx + 1, idx2)
