@@ -296,12 +296,30 @@ public class BrowserDetails implements Serializable {
             } else {
                 i += CHROME.length();
             }
-
-            parseVersionString(safeSubstring(userAgent, i, i + 5));
+            int versionBreak = getVersionStringLength(userAgent, i);
+            parseVersionString(safeSubstring(userAgent, i, i + versionBreak));
         } else {
             i += 7;
-            parseVersionString(safeSubstring(userAgent, i, i + 6));
+            int versionBreak = getVersionStringLength(userAgent, i);
+            parseVersionString(safeSubstring(userAgent, i, i + versionBreak));
         }
+    }
+
+    /**
+     * Get the full version string until space.
+     *
+     * @param userAgent
+     *            user agent string
+     * @param i
+     *            version index
+     * @return length of version number
+     */
+    private static int getVersionStringLength(String userAgent, int i) {
+        int versionBreak = userAgent.substring(i).indexOf(" ");
+        if (versionBreak == -1) {
+            versionBreak = userAgent.substring(i).length();
+        }
+        return versionBreak;
     }
 
     private void parseAndroidVersion(String userAgent) {
@@ -360,6 +378,11 @@ public class BrowserDetails implements Serializable {
 
         int idx2 = versionString.indexOf('.', idx + 1);
         if (idx2 < 0) {
+            // If string only contains major version, set minor to 0.
+            if (versionString.substring(idx).length() == 0) {
+                browserMinorVersion = 0;
+                return;
+            }
             idx2 = versionString.length();
         }
         String minorVersionPart = safeSubstring(versionString, idx + 1, idx2)
