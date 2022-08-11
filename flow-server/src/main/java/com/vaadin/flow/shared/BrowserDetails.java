@@ -288,7 +288,8 @@ public class BrowserDetails implements Serializable {
     }
 
     private void parseChromeVersion(String userAgent) {
-        int i = userAgent.indexOf(" crios/");
+        final String crios = " crios/";
+        int i = userAgent.indexOf(crios);
         if (i == -1) {
             i = userAgent.indexOf(CHROME);
             if (i == -1) {
@@ -299,7 +300,7 @@ public class BrowserDetails implements Serializable {
             int versionBreak = getVersionStringLength(userAgent, i);
             parseVersionString(safeSubstring(userAgent, i, i + versionBreak));
         } else {
-            i += 7;
+            i += crios.length(); // move index to version string start
             int versionBreak = getVersionStringLength(userAgent, i);
             parseVersionString(safeSubstring(userAgent, i, i + versionBreak));
         }
@@ -310,14 +311,16 @@ public class BrowserDetails implements Serializable {
      *
      * @param userAgent
      *            user agent string
-     * @param i
-     *            version index
+     * @param startIndex
+     *            index for version string start
      * @return length of version number
      */
-    private static int getVersionStringLength(String userAgent, int i) {
-        int versionBreak = userAgent.substring(i).indexOf(" ");
+    private static int getVersionStringLength(String userAgent,
+            int startIndex) {
+        final String versionSubString = userAgent.substring(startIndex);
+        int versionBreak = versionSubString.indexOf(" ");
         if (versionBreak == -1) {
-            versionBreak = userAgent.substring(i).length();
+            versionBreak = versionSubString.length();
         }
         return versionBreak;
     }
