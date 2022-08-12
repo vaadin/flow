@@ -119,7 +119,6 @@ public class ChromeDeviceTest extends ViewOrUITest {
         final Map<String, Object> mobileEmulationParams = new HashMap<>();
         mobileEmulationParams.put("deviceName", "Laptop with touch");
 
-        // chromeOptions.setExperimentalOption("w3c", false);
         chromeOptions.setExperimentalOption("mobileEmulation",
                 mobileEmulationParams);
         chromeOptions.setCapability("networkConnectionEnabled", true);
