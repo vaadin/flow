@@ -32,7 +32,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer;
 import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -91,20 +90,6 @@ public abstract class VaadinWebSecurity {
     @Autowired
     private ViewAccessChecker viewAccessChecker;
 
-    /**
-     * The paths listed as "ignoring" in this method are handled without any
-     * Spring Security involvement. They have no access to any security context
-     * etc.
-     * <p>
-     * {@inheritDoc}
-     */
-    @Bean
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        return (web) -> web.ignoring()
-                .requestMatchers(getDefaultWebSecurityIgnoreMatcher(
-                        requestUtil.getUrlMapping()));
-    }
-
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
@@ -147,6 +132,11 @@ public abstract class VaadinWebSecurity {
         urlRegistry.requestMatchers(requestUtil::isAnonymousRoute).permitAll();
         urlRegistry.requestMatchers(getDefaultHttpSecurityPermitMatcher(
                 requestUtil.getUrlMapping())).permitAll();
+
+        // matcher for Vaadin static (public) resources
+        urlRegistry.requestMatchers(
+                getDefaultWebSecurityIgnoreMatcher(requestUtil.getUrlMapping()))
+                .permitAll();
 
         // all other requests require authentication
         urlRegistry.anyRequest().authenticated();

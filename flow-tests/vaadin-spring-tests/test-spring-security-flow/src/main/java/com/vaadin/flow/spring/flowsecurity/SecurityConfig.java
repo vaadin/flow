@@ -7,12 +7,8 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
-import org.springframework.security.config.ldap.EmbeddedLdapServerContextSourceFactoryBean;
-import org.springframework.security.config.ldap.LdapBindAuthenticationManagerFactory;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -28,7 +24,6 @@ import com.vaadin.flow.spring.flowsecurity.data.UserInfo;
 import com.vaadin.flow.spring.flowsecurity.data.UserInfoRepository;
 import com.vaadin.flow.spring.flowsecurity.views.LoginView;
 import com.vaadin.flow.spring.security.VaadinWebSecurity;
-import com.vaadin.flow.spring.security.VaadinWebSecurityConfigurerAdapter;
 
 @EnableWebSecurity
 @Configuration
@@ -70,17 +65,9 @@ public class SecurityConfig extends VaadinWebSecurity {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.authorizeRequests().antMatchers("/admin-only/**")
                 .hasAnyRole(ROLE_ADMIN);
+        http.authorizeRequests().antMatchers("/public/**").permitAll();
         setLoginView(http, LoginView.class, getLogoutSuccessUrl());
         return super.filterChain(http);
-    }
-
-    @Bean
-    @Override
-    public WebSecurityCustomizer webSecurityCustomizer() {
-        return (web) -> {
-            super.webSecurityCustomizer().customize(web);
-            web.ignoring().antMatchers("/public/**");
-        };
     }
 
     @Bean
