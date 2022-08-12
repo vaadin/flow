@@ -259,6 +259,11 @@ public class StaticFileServer implements StaticFileHandler {
                             + filenameWithPath.replaceFirst("^/", ""));
         }
 
+        // Strip off servlet path (if any) from file path so it corresponds to our resources as we know them
+        final String servletPath = request.getServletPath();
+        if (servletPath != null && !servletPath.isEmpty() && !isSpecialRequestFilename(request))
+            filenameWithPath = filenameWithPath.substring(servletPath.length());
+
         if (resourceUrl == null) {
             resourceUrl = getStaticResource(filenameWithPath);
         }
@@ -434,6 +439,28 @@ public class StaticFileServer implements StaticFileHandler {
      * @return the requested file name, starting with a {@literal /}
      */
     String getRequestFilename(HttpServletRequest request) {
+
+        // In special cases, do not prepend the servlet path
+        if (isSpecialRequestFilename(request))
+            return request.getPathInfo();
+
+        // Prepend servlet path to path info (if any)
+        String requestFilename = request.getServletPath();
+        if (request.getPathInfo() != null)
+            requestFilename += request.getPathInfo();
+
+        // Done
+        return requestFilename;
+    }
+
+    /**
+     * Normally we prepend the servlet path to the request filename, but for some special paths we do not.
+     * This method makes that determination.
+     *
+     * @param request HTTP request
+     * @return true if request filename does not get the servlet path prepended
+     */
+    boolean isSpecialRequestFilename(HttpServletRequest request) {
         // http://localhost:8888/context/servlet/folder/file.js
         // ->
         // /servlet/folder/file.js
@@ -445,14 +472,11 @@ public class StaticFileServer implements StaticFileHandler {
         // http://localhost:8888/context/servlet/sw.js
         // ->
         // /sw.js
-        if (request.getPathInfo() == null) {
-            return request.getServletPath();
-        } else if (request.getPathInfo().startsWith("/" + VAADIN_MAPPING)
-                || APP_THEME_PATTERN.matcher(request.getPathInfo()).find()
-                || request.getPathInfo().startsWith("/sw.js")) {
-            return request.getPathInfo();
-        }
-        return request.getServletPath() + request.getPathInfo();
+        final String pathInfo = request.getPathInfo();
+        return pathInfo != null
+          && (pathInfo.startsWith("/" + VAADIN_MAPPING)
+                || APP_THEME_PATTERN.matcher(pathInfo).find()
+                || pathInfo.startsWith("/sw.js"));
     }
 
     /**

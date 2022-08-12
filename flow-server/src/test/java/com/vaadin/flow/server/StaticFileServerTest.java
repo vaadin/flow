@@ -277,7 +277,7 @@ public class StaticFileServerTest implements Serializable {
     @Test
     public void isResourceRequest() throws Exception {
         fileServer.writeResponse = false;
-        setupRequestURI("", "/static", "/file.png");
+        setupRequestURI("", "/static", "/static/file.png");
         Mockito.when(servletService.getStaticResource("/static/file.png"))
                 .thenReturn(new URL("file:///static/file.png"));
         Assert.assertTrue(fileServer.serveStaticResource(request, response));
@@ -286,7 +286,7 @@ public class StaticFileServerTest implements Serializable {
     @Test
     public void isResourceRequestWithContextPath() throws Exception {
         fileServer.writeResponse = false;
-        setupRequestURI("/foo", "/static", "/file.png");
+        setupRequestURI("/foo", "/static", "/static/file.png");
         Mockito.when(servletService.getStaticResource("/static/file.png"))
                 .thenReturn(new URL("file:///static/file.png"));
         Assert.assertTrue(fileServer.serveStaticResource(request, response));
@@ -818,7 +818,7 @@ public class StaticFileServerTest implements Serializable {
 
     @Test
     public void serveStaticResource() throws IOException {
-        setupRequestURI("", "/some", "/file.js");
+        setupRequestURI("", "/some", "/some/file.js");
         String fileData = "function() {eval('foo');};";
 
         Mockito.when(servletService.getStaticResource("/some/file.js"))
@@ -1103,7 +1103,7 @@ public class StaticFileServerTest implements Serializable {
         long browserLatest = 123L;
         long fileModified = 123L;
 
-        setupRequestURI("", "/some", "/file.js");
+        setupRequestURI("", "/some", "/some/file.js");
         Mockito.when(request.getDateHeader("If-Modified-Since"))
                 .thenReturn(browserLatest);
 
