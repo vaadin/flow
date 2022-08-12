@@ -253,19 +253,19 @@ public abstract class VaadinWebSecurityConfigurerAdapter
      *            the http security from {@link #configure(HttpSecurity)}
      * @param hillaLoginViewPath
      *            the path to the login view
-     * @param logoutUrl
+     * @param logoutSuccessUrl
      *            the URL to redirect the user to after logging out
      * @throws Exception
      *             if something goes wrong
      */
     protected void setLoginView(HttpSecurity http, String hillaLoginViewPath,
-            String logoutUrl) throws Exception {
+            String logoutSuccessUrl) throws Exception {
         hillaLoginViewPath = applyUrlMapping(hillaLoginViewPath);
         FormLoginConfigurer<HttpSecurity> formLogin = http.formLogin();
         formLogin.loginPage(hillaLoginViewPath).permitAll();
         formLogin.successHandler(
                 getVaadinSavedRequestAwareAuthenticationSuccessHandler(http));
-        http.logout().logoutSuccessUrl(logoutUrl);
+        http.logout().logoutSuccessUrl(logoutSuccessUrl);
         http.exceptionHandling().defaultAuthenticationEntryPointFor(
                 new LoginUrlAuthenticationEntryPoint(hillaLoginViewPath),
                 AnyRequestMatcher.INSTANCE);
@@ -294,14 +294,14 @@ public abstract class VaadinWebSecurityConfigurerAdapter
      *            the http security from {@link #configure(HttpSecurity)}
      * @param flowLoginView
      *            the login view to use
-     * @param logoutUrl
+     * @param logoutSuccessUrl
      *            the URL to redirect the user to after logging out
      *
      * @throws Exception
      *             if something goes wrong
      */
     protected void setLoginView(HttpSecurity http,
-            Class<? extends Component> flowLoginView, String logoutUrl)
+            Class<? extends Component> flowLoginView, String logoutSuccessUrl)
             throws Exception {
         Optional<Route> route = AnnotationReader.getAnnotationFor(flowLoginView,
                 Route.class);
@@ -324,7 +324,7 @@ public abstract class VaadinWebSecurityConfigurerAdapter
         formLogin.successHandler(
                 getVaadinSavedRequestAwareAuthenticationSuccessHandler(http));
         http.csrf().ignoringAntMatchers(loginPath);
-        http.logout().logoutSuccessUrl(logoutUrl);
+        http.logout().logoutSuccessUrl(logoutSuccessUrl);
         http.exceptionHandling().defaultAuthenticationEntryPointFor(
                 new LoginUrlAuthenticationEntryPoint(loginPath),
                 AnyRequestMatcher.INSTANCE);
