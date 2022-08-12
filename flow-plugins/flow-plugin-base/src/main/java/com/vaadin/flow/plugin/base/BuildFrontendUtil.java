@@ -27,14 +27,12 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeoutException;
 
-import com.fasterxml.jackson.annotation.JsonFormat.Feature;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
@@ -45,7 +43,6 @@ import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendToolsSettings;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
-import com.vaadin.flow.server.frontend.TaskUpdateImports;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.scanner.ReflectionsClassFinder;
 import com.vaadin.flow.utils.FlowFileUtils;
@@ -364,7 +361,7 @@ public class BuildFrontendUtil {
         FeatureFlags featureFlags = getFeatureFlags(adapter);
 
         LicenseChecker.setStrictOffline(
-                featureFlags.isEnabled(FeatureFlags.OFFLINE_LICENSE_CHECKER));
+                !featureFlags.isEnabled(FeatureFlags.OLD_LICENSE_CHECKER));
 
         FrontendToolsSettings settings = getFrontendToolsSettings(adapter);
         FrontendTools tools = new FrontendTools(settings);

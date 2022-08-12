@@ -205,7 +205,7 @@ public class DevModeInitializer implements Serializable {
         // this call
         FeatureFlags featureFlags = FeatureFlags.get(context);
         LicenseChecker.setStrictOffline(
-                featureFlags.isEnabled(FeatureFlags.OFFLINE_LICENSE_CHECKER));
+                !featureFlags.isEnabled(FeatureFlags.OLD_LICENSE_CHECKER));
 
         featureFlags.setPropertiesLocation(config.getJavaResourceFolder());
 

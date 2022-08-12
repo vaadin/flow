@@ -418,7 +418,7 @@ public abstract class NodeUpdater implements FallibleCommand {
             defaults.put("fork-ts-checker-webpack-plugin", "6.2.1");
             defaults.put("webpack", "4.46.0");
             defaults.put("webpack-cli", "4.10.0");
-            defaults.put("webpack-dev-server", "4.9.2");
+            defaults.put("webpack-dev-server", "4.10.0");
             defaults.put("compression-webpack-plugin", "4.0.1");
             defaults.put("extra-watch-webpack-plugin", "1.0.3");
             defaults.put("webpack-merge", "4.2.2");
@@ -435,9 +435,10 @@ public abstract class NodeUpdater implements FallibleCommand {
             defaults.put("chokidar", "^3.5.0");
         } else {
             // Use Vite
-            defaults.put("vite", "v3.0.2");
+            defaults.put("vite", "v3.0.4");
             defaults.put("@rollup/plugin-replace", "3.1.0");
             defaults.put("rollup-plugin-brotli", "3.1.0");
+            defaults.put("rollup-plugin-postcss-lit", "2.0.0");
             defaults.put("vite-plugin-checker", "0.4.9");
             defaults.put("mkdirp", "1.0.4"); // for application-theme-plugin
             defaults.put("workbox-build", WORKBOX_VERSION);

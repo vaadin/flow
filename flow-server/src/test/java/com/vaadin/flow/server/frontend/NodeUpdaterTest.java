@@ -185,7 +185,7 @@ public class NodeUpdaterTest {
                 "v2.7.10");
         nodeUpdater.updateDefaultDependencies(packageJson);
 
-        Assert.assertEquals("v3.0.2", packageJson
+        Assert.assertEquals("v3.0.4", packageJson
                 .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("vite"));
     }
 
