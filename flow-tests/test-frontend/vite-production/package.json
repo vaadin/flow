@@ -12,7 +12,7 @@
     "@vaadin/vaadin-lumo-styles": "23.2.0-alpha5",
     "@vaadin/vaadin-text-field": "23.2.0-alpha5",
     "construct-style-sheets-polyfill": "3.1.0",
-    "lit": "2.2.7"
+    "lit": "2.2.8"
   },
   "devDependencies": {
     "@rollup/plugin-replace": "3.1.0",
