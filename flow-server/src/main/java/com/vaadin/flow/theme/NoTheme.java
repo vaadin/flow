@@ -37,6 +37,9 @@ import java.lang.annotation.Target;
  * the classpath (which comes from the vaadin-lumo-theme project), then it is
  * used as the default theme.
  * </ul>
+ * <p>
+ * {@link NoTheme} annotation should be added to the AppShellConfigurator
+ * implementation.
  *
  * @since 1.0
  */
