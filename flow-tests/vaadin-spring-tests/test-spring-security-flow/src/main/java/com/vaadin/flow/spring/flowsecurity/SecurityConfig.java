@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -60,14 +61,13 @@ public class SecurityConfig extends VaadinWebSecurity {
         return logoutSuccessUrl;
     }
 
-    @Bean
     @Override
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests().antMatchers("/admin-only/**")
                 .hasAnyRole(ROLE_ADMIN);
         http.authorizeRequests().antMatchers("/public/**").permitAll();
+        super.configure(http);
         setLoginView(http, LoginView.class, getLogoutSuccessUrl());
-        return super.filterChain(http);
     }
 
     @Bean

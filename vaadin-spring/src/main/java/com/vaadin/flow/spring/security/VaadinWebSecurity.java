@@ -30,12 +30,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer;
 import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.access.AccessDeniedHandlerImpl;
@@ -67,6 +71,9 @@ import com.vaadin.flow.spring.security.stateless.VaadinStatelessSecurityConfigur
  * The default behavior can be altered by extending the public/protected methods
  * in the class.
  * <p>
+ * Provides default bean implementations for {@link SecurityFilterChain} and
+ * {@link WebSecurityCustomizer}.
+ * <p>
  * To use this, create your own web security class by extending this class and
  * annotate it with <code>@EnableWebSecurity</code> and
  * <code>@Configuration</code>.
@@ -90,9 +97,20 @@ public abstract class VaadinWebSecurity {
     @Autowired
     private ViewAccessChecker viewAccessChecker;
 
-    @Bean
+    /**
+     * Registers default {@link SecurityFilterChain} bean.
+     * <p>
+     * Defines a filter chain which is capable of being matched against an
+     * {@code HttpServletRequest}. in order to decide whether it applies to that
+     * request.
+     */
+    @Bean(name = "VaadinSecurityFilterChainBean")
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        configure(http);
+        return http.build();
+    }
 
+    protected void configure(HttpSecurity http) throws Exception {
         // Use a security context holder that can find the context from Vaadin
         // specific classes
         SecurityContextHolder.setStrategyName(
@@ -143,8 +161,29 @@ public abstract class VaadinWebSecurity {
 
         // Enable view access control
         viewAccessChecker.enable();
+    }
 
-        return http.build();
+    /**
+     * Registers default {@link WebSecurityCustomizer} bean.
+     * <p>
+     * Beans of this type will automatically be used by
+     * {@link WebSecurityConfiguration} to customize {@link WebSecurity}.
+     * <p>
+     * Default no {@link WebSecurity} customization is performed.
+     */
+    @Bean(name = "VaadinWebSecurityCustomizerBean")
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> {
+            try {
+                configure(web);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        };
+    }
+
+    protected void configure(WebSecurity web) throws Exception {
+        // no-operation
     }
 
     /**
