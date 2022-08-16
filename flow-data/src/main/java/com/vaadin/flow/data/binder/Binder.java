@@ -56,6 +56,8 @@ import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.flow.data.converter.ConverterFactory;
+import com.vaadin.flow.data.converter.DefaultConverterFactory;
 
 /**
  * Connects one or more {@code Field} components to properties of a backing data
@@ -2974,7 +2976,13 @@ public class Binder<BEAN> implements Serializable {
                     memberField.getName(),
                     objectWithMemberFields.getClass().getName()));
         }
-        if (propertyType.equals(GenericTypeReflector.erase(valueType))) {
+        Class<?> erasedValueType = GenericTypeReflector.erase(valueType);
+        boolean compatibleTypes = propertyType.equals(erasedValueType);
+        Converter automaticConverter = compatibleTypes ? null
+                : getConverterFactory()
+                .newInstance(erasedValueType, propertyType)
+                .orElse(null);
+        if (compatibleTypes || automaticConverter != null) {
             HasValue<?, ?> field;
             // Get the field from the object
             try {
@@ -2991,7 +2999,16 @@ public class Binder<BEAN> implements Serializable {
                                 .getType());
                 initializeField(objectWithMemberFields, memberField, field);
             }
-            forField(field).bind(property);
+            BindingBuilder<BEAN, ?> bindingBuilder = forField(field);
+            if (automaticConverter != null) {
+                // Forcing a converter will overwrite null handling set by
+                // forField() using createNullRepresentationAdapter()
+                // so we need to add a null representation based on same logics.
+                bindingBuilder = ((BindingBuilder) bindingBuilder)
+                        .withNullRepresentation(field.getEmptyValue())
+                        .withConverter(automaticConverter);
+            }
+            bindingBuilder.bind(property);
             return true;
         } else {
             throw new IllegalStateException(String.format(
@@ -3000,6 +3017,23 @@ public class Binder<BEAN> implements Serializable {
                             + "Binding should be configured manually using converter.",
                     propertyType.getName(), valueType.getTypeName()));
         }
+    }
+
+    /**
+     * Gets an instance of {@link ConverterFactory} that can be used to detect a
+     * suitable converter for bindings when presentation and model types are not
+     * compatible and a converter has not been explicitly configured.
+     *
+     * By default, returns a factory capable of handling standard converters.
+     *
+     * Subclasses can override this method to provide additional or customized
+     * conversion rules by creating a completely new factory implementation or
+     * composing with the default one.
+     *
+     * @return an instance of {@link ConverterFactory}, never {@literal null}.
+     */
+    protected ConverterFactory getConverterFactory() {
+        return DefaultConverterFactory.INSTANCE;
     }
 
     /**
