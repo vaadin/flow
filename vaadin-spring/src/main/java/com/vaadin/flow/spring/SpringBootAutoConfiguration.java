@@ -79,7 +79,6 @@ public class SpringBootAutoConfiguration {
         String mapping = configurationProperties.getUrlMapping();
         Map<String, String> initParameters = new HashMap<>();
         boolean rootMapping = RootMappedCondition.isRootMapping(mapping);
-        String[] urlMappings;
         String pushRegistrationPath;
 
         if (rootMapping) {
@@ -89,7 +88,6 @@ public class SpringBootAutoConfiguration {
             pushRegistrationPath = mapping.replace("/*", "");
         }
 
-        urlMappings = new String[] { mapping, "/VAADIN/*" };
         /*
          * Tell Atmosphere which servlet to use for the push endpoint. Servlet
          * mappings are returned as a Set from at least Tomcat so even if
@@ -100,7 +98,7 @@ public class SpringBootAutoConfiguration {
                 pushRegistrationPath);
 
         ServletRegistrationBean<SpringServlet> registration = new ServletRegistrationBean<>(
-                new SpringServlet(context, rootMapping), urlMappings);
+                new SpringServlet(context, rootMapping), mapping);
         registration.setInitParameters(initParameters);
         registration
                 .setAsyncSupported(configurationProperties.isAsyncSupported());

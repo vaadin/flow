@@ -53,35 +53,28 @@ public abstract class VaadinMVCWebAppInitializer
         context.setServletContext(servletContext);
         registerConfiguration(context);
         servletContext.addListener(new ContextLoaderListener(context));
-
         context.refresh();
-
         Environment env = context.getBean(Environment.class);
         String mapping = RootMappedCondition.getUrlMapping(env);
         if (mapping == null) {
             mapping = "/*";
         }
-        String pushRegistrationPath;
-
         boolean rootMapping = RootMappedCondition.isRootMapping(mapping);
-
         Dynamic registration = servletContext.addServlet(
                 ClassUtils.getShortNameAsProperty(SpringServlet.class),
                 new SpringServlet(context, rootMapping));
-
         Map<String, String> initParameters = new HashMap<>();
         if (rootMapping) {
             Dynamic dispatcherRegistration = servletContext
                     .addServlet("dispatcher", new DispatcherServlet(context));
             dispatcherRegistration.addMapping("/*");
-            mapping = VaadinServletConfiguration.VAADIN_SERVLET_MAPPING;
-            pushRegistrationPath = "";
-        } else {
-            pushRegistrationPath = mapping.replace("/*", "");
+            initParameters.put(Constants.SERVLET_PARAMETER_PUSH_URL,
+                    makeContextRelative(mapping.replace("*", "")));
         }
-
+        if (rootMapping) {
+            mapping = VaadinServletConfiguration.VAADIN_SERVLET_MAPPING;
+        }
         registration.addMapping(mapping);
-        registration.addMapping("/VAADIN/*");
 
         /*
          * Tell Atmosphere which servlet to use for the push endpoint. Servlet
@@ -90,7 +83,7 @@ public abstract class VaadinMVCWebAppInitializer
          * and websockets will fail.
          */
         initParameters.put(ApplicationConfig.JSR356_MAPPING_PATH,
-                pushRegistrationPath);
+                mapping.replace("/*", ""));
 
         registration.setInitParameters(initParameters);
 
