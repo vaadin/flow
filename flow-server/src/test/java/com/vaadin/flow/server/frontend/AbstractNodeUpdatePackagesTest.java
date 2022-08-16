@@ -103,7 +103,8 @@ public abstract class AbstractNodeUpdatePackagesTest
         classFinder = Mockito.spy(getClassFinder());
         File versions = temporaryFolder.newFile();
         FileUtils.write(versions, "{}", StandardCharsets.UTF_8);
-        Mockito.when(classFinder.getResource(Constants.VAADIN_VERSIONS_JSON))
+        Mockito.when(
+                classFinder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
                 .thenReturn(versions.toURI().toURL());
 
         packageUpdater = new TaskUpdatePackages(classFinder,
@@ -275,11 +276,11 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         // Change the version
         JsonObject json = packageUpdater.getPackageJson();
-        final String key = "webpack";
+        final String key = "vite";
         final String version = packageUpdater.getDefaultDevDependencies()
                 .get(key);
         json.getObject(VAADIN_DEP_KEY).getObject(DEV_DEPENDENCIES).put(key,
-                "3.42.0");
+                "v2.8.0");
         json.getObject(DEV_DEPENDENCIES).put(key, version);
 
         Files.write(packageJson.toPath(),

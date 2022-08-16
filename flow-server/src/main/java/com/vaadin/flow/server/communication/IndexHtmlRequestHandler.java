@@ -83,6 +83,10 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 : getIndexHtmlDocument(service);
 
         prependBaseHref(request, indexDocument);
+        String contextRootRelativePath = request.getService()
+                .getContextRootRelativePath(request);
+        rewriteBundleImportToContextRoot(indexDocument,
+                contextRootRelativePath);
 
         JsonObject initialJson = Json.createObject();
 
@@ -105,7 +109,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         configureErrorDialogStyles(indexDocument);
 
-        showWebpackErrors(session.getService(), indexDocument);
+        showDevServerErrors(session.getService(), indexDocument);
         response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF_8);
 
         VaadinContext context = session.getService().getContext();
@@ -131,14 +135,11 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         // modify the page based on registered IndexHtmlRequestListener:s
         service.modifyIndexHtmlResponse(indexHtmlResponse);
 
-        if (config.isDevModeGizmoEnabled()) {
-            addDevmodeGizmo(indexDocument, config, session, request);
+        if (config.isDevToolsEnabled()) {
+            addDevTools(indexDocument, config, session, request);
             catchErrorsInDevMode(indexDocument);
 
-            if (getFeatureFlags(service)
-                    .isEnabled(FeatureFlags.NEW_LICENSE_CHECKER)) {
-                addLicenseChecker(indexDocument);
-            }
+            addLicenseChecker(indexDocument);
         }
 
         try {
@@ -174,18 +175,45 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         );
     }
 
-    private void addLicenseChecker(Document indexDocument) {
+    /**
+     * Adds the needed overrides for the license checker to work when in
+     * development mode.
+     */
+    public static void addLicenseChecker(Document indexDocument) {
         // maybeCheck is invoked by the WC license checker
         addScript(indexDocument, "" + //
                 "window.Vaadin = window.Vaadin || {};" + //
                 "window.Vaadin.VaadinLicenseChecker = {" + //
                 "  maybeCheck: (productInfo) => {" + //
-                "    window.Vaadin.devModeGizmo.checkLicense(productInfo);" + //
+                // This disables the license check that the web components are
+                // still using
                 "  }" + //
+                "};" + //
+                "window.Vaadin.devTools = window.Vaadin.devTools || {};"
+                + "window.Vaadin.devTools.createdCvdlElements = window.Vaadin.devTools.createdCvdlElements || [];"
+                + //
+                "const originalCustomElementDefineFn = window.customElements.define;"
+                + //
+                "window.customElements.define = function (tagName, constructor, ...args) {"
+                + //
+                "const { cvdlName, version } = constructor;" + //
+                "if (cvdlName && version) {" + //
+                "  const { connectedCallback } = constructor.prototype;" + //
+                "  constructor.prototype.connectedCallback = function () {" + //
+                "    window.Vaadin.devTools.createdCvdlElements.push(this);" + //
+                "    if (connectedCallback) {" + //
+                "      connectedCallback.call(this);" + //
+                "    }" + //
+                "  }" + //
+                "}" + //
+
+                "originalCustomElementDefineFn.call(this, tagName, constructor, ...args);"
+                + //
                 "};");
+
     }
 
-    private void addScript(Document indexDocument, String script) {
+    private static void addScript(Document indexDocument, String script) {
         Element elm = new Element(SCRIPT);
         elm.attr(SCRIPT_INITIAL, "");
         elm.appendChild(new DataNode(script));
@@ -203,7 +231,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         }
     }
 
-    private void addDevmodeGizmo(Document indexDocument,
+    private void addDevTools(Document indexDocument,
             DeploymentConfiguration config, VaadinSession session,
             VaadinRequest request) {
         VaadinService service = session.getService();
@@ -211,19 +239,19 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 .getLiveReloadFromService(service);
 
         if (liveReload.isPresent()) {
-            Element devmodeGizmo = new Element("vaadin-devmode-gizmo");
+            Element devTools = new Element("vaadin-dev-tools");
             if (!config.isDevModeLiveReloadEnabled()) {
-                devmodeGizmo.attr("liveReloadDisabled", "");
+                devTools.attr("liveReloadDisabled", "");
             }
-            devmodeGizmo.attr("url",
+            devTools.attr("url",
                     BootstrapHandlerHelper.getPushURL(session, request));
             BrowserLiveReload.Backend backend = liveReload.get().getBackend();
             if (backend != null) {
-                devmodeGizmo.attr("backend", backend.toString());
+                devTools.attr("backend", backend.toString());
             }
-            devmodeGizmo.attr("springbootlivereloadport", Integer
+            devTools.attr("springbootlivereloadport", Integer
                     .toString(Constants.SPRING_BOOT_DEFAULT_LIVE_RELOAD_PORT));
-            indexDocument.body().appendChild(devmodeGizmo);
+            indexDocument.body().appendChild(devTools);
         }
     }
 
@@ -280,6 +308,16 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         }
     }
 
+    private static void rewriteBundleImportToContextRoot(Document indexDocument,
+            String contextRootRelativePath) {
+        Elements bundleScripts = indexDocument.head()
+                .getElementsByAttributeValueStarting("src", "VAADIN/");
+        for (Element bundleScript : bundleScripts) {
+            bundleScript.attr("src", bundleScript.attr("src").replaceFirst(
+                    "VAADIN", contextRootRelativePath + "VAADIN"));
+        }
+    }
+
     private static Document getCachedIndexHtmlDocument(VaadinService service) {
         return service.getContext().getAttribute(IndexHtmlHolder.class,
                 () -> new IndexHtmlHolder(service)).getDocument();
@@ -290,7 +328,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         String index = FrontendUtils.getIndexHtmlContent(service);
         if (index != null) {
             Document indexHtmlDocument = Jsoup.parse(index);
-            if (getFeatureFlags(service).isEnabled(FeatureFlags.VITE)) {
+            if (!getFeatureFlags(service).isEnabled(FeatureFlags.WEBPACK)) {
                 modifyIndexHtmlForVite(indexHtmlDocument);
             }
             return indexHtmlDocument;

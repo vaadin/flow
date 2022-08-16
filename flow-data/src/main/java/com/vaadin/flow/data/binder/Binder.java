@@ -318,6 +318,11 @@ public class Binder<BEAN> implements Serializable {
          * If the Binder is already bound to some bean, the newly bound field is
          * associated with the corresponding bean property as described above.
          * <p>
+         * If the bound field implements {@link HasValidator}, then the binding
+         * instance returned by this method will subscribe for field's
+         * {@code ValidationStatusChangeEvent}s and will {@code validate} itself
+         * upon receiving them.
+         * <p>
          * The getter and setter can be arbitrary functions, for instance
          * implementing user-defined conversion or validation. However, in the
          * most basic use case you can simply pass a pair of method references
@@ -1208,6 +1213,8 @@ public class Binder<BEAN> implements Serializable {
 
         private boolean convertBackToPresentation = true;
 
+        private Registration onValidationStatusChange;
+
         public BindingImpl(BindingBuilderImpl<BEAN, FIELDVALUE, TARGET> builder,
                 ValueProvider<BEAN, TARGET> getter,
                 Setter<BEAN, TARGET> setter) {
@@ -1219,6 +1226,14 @@ public class Binder<BEAN> implements Serializable {
 
             onValueChange = getField().addValueChangeListener(
                     event -> handleFieldValueChange(event));
+
+            if (getBinder().isFieldsValidationStatusChangeListenerEnabled()
+                    && getField() instanceof HasValidator) {
+                HasValidator<FIELDVALUE> hasValidatorField = (HasValidator<FIELDVALUE>) getField();
+                onValidationStatusChange = hasValidatorField
+                        .addValidationStatusChangeListener(
+                                event -> this.validate());
+            }
 
             this.getter = getter;
             this.setter = setter;
@@ -1263,14 +1278,21 @@ public class Binder<BEAN> implements Serializable {
 
         /**
          * Removes this binding from its binder and unregisters the
-         * {@code ValueChangeListener} from any bound {@code HasValue}. It does
-         * nothing if it is called for an already unbound binding.
+         * {@code ValueChangeListener} from any bound {@code HasValue}, and
+         * {@code ValidationStatusChangeListener} from any bound
+         * {@code HasValidator}. It does nothing if it is called for an already
+         * unbound binding.
          */
         @Override
         public void unbind() {
             if (onValueChange != null) {
                 onValueChange.remove();
                 onValueChange = null;
+            }
+
+            if (onValidationStatusChange != null) {
+                onValidationStatusChange.remove();
+                onValidationStatusChange = null;
             }
 
             if (binder != null) {
@@ -1664,6 +1686,8 @@ public class Binder<BEAN> implements Serializable {
 
     private boolean validatorsDisabled = false;
 
+    private boolean fieldsValidationStatusChangeListenerEnabled = true;
+
     /**
      * Creates a binder using a custom {@link PropertySet} implementation for
      * finding and resolving property names for
@@ -1814,9 +1838,9 @@ public class Binder<BEAN> implements Serializable {
 
         return createBinding(field, createNullRepresentationAdapter(field),
                 this::handleValidationStatus)
-                        .withValidator(field instanceof HasValidator
-                                ? ((HasValidator) field).getDefaultValidator()
-                                : Validator.alwaysPass());
+                .withValidator(field instanceof HasValidator
+                        ? ((HasValidator) field).getDefaultValidator()
+                        : Validator.alwaysPass());
     }
 
     /**
@@ -3504,6 +3528,30 @@ public class Binder<BEAN> implements Serializable {
      */
     public boolean isValidatorsDisabled() {
         return validatorsDisabled;
+    }
+
+    /**
+     * Control whether bound fields implementing {@link HasValidator} subscribe
+     * for field's {@code ValidationStatusChangeEvent}s and will
+     * {@code validate} upon receiving them.
+     *
+     * @param fieldsValidationStatusChangeListenerEnabled
+     *            Boolean value.
+     */
+    public void setFieldsValidationStatusChangeListenerEnabled(
+            boolean fieldsValidationStatusChangeListenerEnabled) {
+        this.fieldsValidationStatusChangeListenerEnabled = fieldsValidationStatusChangeListenerEnabled;
+    }
+
+    /**
+     * Returns if the bound fields implementing {@link HasValidator} subscribe
+     * for field's {@code ValidationStatusChangeEvent}s and will
+     * {@code validate} upon receiving them.
+     *
+     * @return Boolean value
+     */
+    public boolean isFieldsValidationStatusChangeListenerEnabled() {
+        return fieldsValidationStatusChangeListenerEnabled;
     }
 
     /**

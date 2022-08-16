@@ -45,7 +45,7 @@ import elemental.json.impl.JsonUtil;
  *
  * @since 9.0
  */
-@Mojo(name = "clean-frontend", defaultPhase = LifecyclePhase.CLEAN)
+@Mojo(name = "clean-frontend", defaultPhase = LifecyclePhase.PRE_CLEAN)
 public class CleanFrontendMojo extends FlowModeAbstractMojo {
 
     public static final String VAADIN = "vaadin";
@@ -74,6 +74,22 @@ public class CleanFrontendMojo extends FlowModeAbstractMojo {
                 throw new MojoFailureException(
                         "Failed to remove folder'"
                                 + generatedTsFolder().getAbsolutePath() + "'",
+                        exception);
+            }
+        }
+
+        // cleanup hard-coded frontend generated folder
+        // usually it is the same as generatedTsFolder, but if a custom fronted
+        // folder is set all frontend generated files goes under
+        // ${frontendDirectory}/generated
+        File frontendGeneratedFolder = new File(frontendDirectory(),
+                FrontendUtils.GENERATED);
+        if (frontendGeneratedFolder.exists()) {
+            try {
+                FileUtils.deleteDirectory(frontendGeneratedFolder);
+            } catch (IOException exception) {
+                throw new MojoFailureException("Failed to remove folder'"
+                        + frontendGeneratedFolder.getAbsolutePath() + "'",
                         exception);
             }
         }

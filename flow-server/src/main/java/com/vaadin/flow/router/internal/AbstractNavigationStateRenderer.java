@@ -224,8 +224,6 @@ public abstract class AbstractNavigationStateRenderer
         ui.getInternals().showRouteTarget(event.getLocation(),
                 componentInstance, routerLayouts);
 
-        updatePageTitle(event, componentInstance);
-
         int statusCode = locationChangeEvent.getStatusCode();
         validateStatusCode(statusCode, routeTargetType);
 
@@ -238,6 +236,8 @@ public abstract class AbstractNavigationStateRenderer
         fireAfterNavigationListeners(
                 new AfterNavigationEvent(locationChangeEvent),
                 afterNavigationHandlers);
+
+        updatePageTitle(event, componentInstance);
 
         return statusCode;
     }
@@ -963,7 +963,7 @@ public abstract class AbstractNavigationStateRenderer
         if (!configuration.isProductionMode()
                 && configuration.isDevModeLiveReloadEnabled()) {
             ui.getPage().executeJs(
-                    "Vaadin.devModeGizmo.showNotification('warning', '@PreserveOnRefresh enabled', 'When refreshing the page in the browser, the server-side Java view instance is reused rather than being recreated.', null, 'preserveOnRefreshWarning')");
+                    "Vaadin.devTools.showNotification('warning', '@PreserveOnRefresh enabled', 'When refreshing the page in the browser, the server-side Java view instance is reused rather than being recreated.', null, 'preserveOnRefreshWarning')");
         }
     }
 }

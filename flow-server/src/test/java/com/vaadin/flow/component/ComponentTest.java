@@ -259,7 +259,7 @@ public class ComponentTest {
 
     }
 
-    private static class TestComponentContainer extends TestComponent {
+    static class TestComponentContainer extends TestComponent {
 
         public TestComponentContainer() {
         }
@@ -1661,6 +1661,22 @@ public class ComponentTest {
         component.getTranslation(Locale.GERMAN, "foo");
 
         Mockito.verify(component).getTranslation("foo", Locale.GERMAN);
+    }
+
+    @Test
+    public void findAncestorTest() {
+        UI ui = new UI();
+        TestComponentContainer componentContainer = new TestComponentContainer();
+        TestComponent component = new TestComponent();
+        componentContainer.add(component);
+        ui.add(componentContainer);
+
+        Assert.assertEquals(componentContainer,
+                component.findAncestor(TestComponentContainer.class));
+        Assert.assertEquals(ui, component.findAncestor(UI.class));
+        Assert.assertEquals(ui, component.findAncestor(PollNotifier.class));
+        Assert.assertNull(component.findAncestor(TestButton.class));
+
     }
 
     private void enabledStateChangeOnAttachCalledForParentState(

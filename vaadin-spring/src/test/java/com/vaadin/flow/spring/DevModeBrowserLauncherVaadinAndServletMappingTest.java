@@ -21,7 +21,7 @@ import org.springframework.mock.web.MockServletContext;
 import org.springframework.test.context.TestPropertySource;
 
 @TestPropertySource(properties = { "server.port = 1234",
-        "vaadin.urlMapping=/ui/*" })
+        "vaadin.url-mapping=/ui/*" })
 public class DevModeBrowserLauncherVaadinAndServletMappingTest
         extends AbstractDevModeBrowserLauncherTest {
 

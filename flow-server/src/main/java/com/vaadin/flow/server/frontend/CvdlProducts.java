@@ -19,7 +19,9 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+import com.vaadin.pro.licensechecker.BuildType;
 import com.vaadin.pro.licensechecker.LicenseChecker;
+import com.vaadin.pro.licensechecker.LocalOfflineKey;
 import com.vaadin.pro.licensechecker.LocalProKey;
 import com.vaadin.pro.licensechecker.Product;
 
@@ -57,19 +59,6 @@ public class CvdlProducts {
             if (packageJson.hasKey(CVDL_PACKAGE_KEY)) {
                 return new Product(packageJson.getString(CVDL_PACKAGE_KEY),
                         packageJson.getString("version"));
-            } else if (packageJson.hasKey("license")) {
-                String packageName = packageJson.getString("name");
-                String license = packageJson.getString("license");
-                if (packageName.startsWith("@vaadin/") && license
-                        .startsWith("https://raw.githubusercontent.com")) {
-                    // Free components have "Apache-2.0"
-                    String cvdlName = packageName;
-                    cvdlName = cvdlName.replace("@", "");
-                    cvdlName = cvdlName.replace("/", "-");
-                    cvdlName = cvdlName.replace("charts", "chart");
-                    return new Product(cvdlName,
-                            packageJson.getString("version"));
-                }
             }
             return null;
         } catch (IOException e) {
@@ -93,16 +82,16 @@ public class CvdlProducts {
 
         Product product = CvdlProducts.getProductIfCvdl(nodeModules, npmModule);
         if (product != null) {
-            if (LocalProKey.get() == null) {
+            if (LocalProKey.get() == null && LocalOfflineKey.get() == null) {
                 // No proKey, do not bother free users with a license check
                 getLogger().debug(
-                        "No proKey found. Dropping '{}' from the fallback bundle without asking for validation",
+                        "No pro key or offline key found. Dropping '{}' from the fallback bundle without asking for validation",
                         module);
                 return false;
             } else {
                 try {
                     LicenseChecker.checkLicense(product.getName(),
-                            product.getVersion());
+                            product.getVersion(), BuildType.PRODUCTION);
                     return true;
                 } catch (Exception e) {
                     // Silently drop from the fallback bundle (it is a

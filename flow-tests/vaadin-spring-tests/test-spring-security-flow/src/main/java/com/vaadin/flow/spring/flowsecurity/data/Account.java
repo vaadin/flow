@@ -8,10 +8,13 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 
+import org.hibernate.annotations.Type;
+
 @Entity
 public class Account {
     @Id
     @GeneratedValue
+    @Type(type = "uuid-char")
     private UUID id;
 
     @ManyToOne

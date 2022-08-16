@@ -478,11 +478,11 @@ public class TaskUpdateImports extends NodeUpdater {
     }
 
     private Stream<String> filter(Stream<String> modules) {
-        if (!productionMode) {
-            return modules;
+        if (productionMode) {
+            return modules.filter(module -> CvdlProducts
+                    .includeInFallbackBundle(module, nodeModulesFolder));
         }
-        return modules.filter(module -> CvdlProducts
-                .includeInFallbackBundle(module, nodeModulesFolder));
+        return modules;
     }
 
     private JsonArray makeFallbackCssImports(AbstractUpdateImports updater) {

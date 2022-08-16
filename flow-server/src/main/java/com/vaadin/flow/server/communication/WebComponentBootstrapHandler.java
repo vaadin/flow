@@ -108,8 +108,8 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         public Document getBootstrapPage(BootstrapContext context) {
             VaadinService service = context.getSession().getService();
 
-            if (FeatureFlags.get(service.getContext())
-                    .isEnabled(FeatureFlags.VITE)) {
+            if (!FeatureFlags.get(service.getContext())
+                    .isEnabled(FeatureFlags.WEBPACK)) {
                 try {
                     Document document = Jsoup.parse(
                             FrontendUtils.getWebComponentHtmlContent(service));
@@ -135,6 +135,8 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                         head.prependChild(createJavaScriptModuleElement(
                                 getPushScript(context), true));
                     }
+
+                    setupCss(head, context);
 
                     return document;
                 } catch (IOException e) {
@@ -244,7 +246,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 .collect(JsonUtils.asArray());
         config.put("webcomponents", tags);
 
-        config.put(ApplicationConstants.DEVMODE_GIZMO_ENABLED, false);
+        config.put(ApplicationConstants.DEV_TOOLS_ENABLED, false);
 
         return context;
     }

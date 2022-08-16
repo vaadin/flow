@@ -330,11 +330,15 @@ public class ApplicationRunnerServlet extends VaadinServlet {
                 if (currentRequest != null) {
                     HttpSession httpSession = currentRequest.getSession(false);
                     if (httpSession != null) {
+                        // setting null session in CurrentInstance also removes
+                        // VaadinService, so we need to get service instance and
+                        // set it again after nullify session
+                        VaadinServletService service = (VaadinServletService) VaadinService
+                                .getCurrent();
                         Map<Class<?>, CurrentInstance> oldCurrent = CurrentInstance
                                 .setCurrent((VaadinSession) null);
                         try {
-                            VaadinServletService service = (VaadinServletService) VaadinService
-                                    .getCurrent();
+                            VaadinService.setCurrent(service);
                             session = service.findVaadinSession(
                                     new VaadinServletRequest(currentRequest,
                                             service));

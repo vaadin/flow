@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>vaadin-spring-tests</artifactId>
-        <version>23.1-SNAPSHOT</version>
+        <version>23.2-SNAPSHOT</version>
     </parent>
     <artifactId>vaadin-test-spring-boot-prepare</artifactId>
     <name>Vaadin Spring Boot integration tests with only prepare goal</name>
@@ -132,6 +132,9 @@
                 <configuration>
                     <maxAttempts>100</maxAttempts>
                     <wait>2500</wait>
+                    <jvmArguments>
+                        -Dvaadin.devmode.vite.options=${vaadin.devmode.vite.options}
+                    </jvmArguments>
                 </configuration>
                 <executions>
                     <!-- start and stop application when running

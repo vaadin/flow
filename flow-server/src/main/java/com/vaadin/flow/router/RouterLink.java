@@ -19,6 +19,7 @@ import java.util.Objects;
 import java.util.Optional;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.Focusable;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.HasStyle;
@@ -65,6 +66,16 @@ public class RouterLink extends Component implements HasText, HasComponents,
     }
 
     /**
+     * Creates a new router link for the given navigation target.
+     *
+     * @param navigationTarget
+     *            navigation target
+     */
+    public RouterLink(Class<? extends Component> navigationTarget) {
+        this(navigationTarget, RouteParameters.empty());
+    }
+
+    /**
      * Creates a new router link for the given navigation target using the given
      * text.
      *
@@ -76,6 +87,24 @@ public class RouterLink extends Component implements HasText, HasComponents,
     public RouterLink(String text,
             Class<? extends Component> navigationTarget) {
         this(text, navigationTarget, RouteParameters.empty());
+    }
+
+    /**
+     * Creates a new router link for the given navigation target using the given
+     * parameter.
+     *
+     * @param navigationTarget
+     *            navigation target
+     * @param parameter
+     *            url parameter for navigation target
+     * @param <T>
+     *            url parameter type
+     * @param <C>
+     *            navigation target type
+     */
+    public <T, C extends Component & HasUrlParameter<T>> RouterLink(
+            Class<? extends C> navigationTarget, T parameter) {
+        this(navigationTarget, HasUrlParameterFormat.getParameters(parameter));
     }
 
     /**
@@ -101,6 +130,21 @@ public class RouterLink extends Component implements HasText, HasComponents,
 
     /**
      * Creates a new router link for the given navigation target using the given
+     * parameters.
+     *
+     * @param navigationTarget
+     *            navigation target
+     * @param parameters
+     *            route parameters for navigation target
+     */
+    public RouterLink(Class<? extends Component> navigationTarget,
+            RouteParameters parameters) {
+        this();
+        setRoute(getRouter(), navigationTarget, parameters);
+    }
+
+    /**
+     * Creates a new router link for the given navigation target using the given
      * text and parameters.
      *
      * @param text
@@ -115,6 +159,22 @@ public class RouterLink extends Component implements HasText, HasComponents,
         this();
         setText(text);
         setRoute(getRouter(), navigationTarget, parameters);
+    }
+
+    /**
+     * Creates a new router link for the given navigation target.
+     *
+     * @param router
+     *            router used for navigation
+     * @param navigationTarget
+     *            navigation target
+     * @throws IllegalArgumentException
+     *             if navigation target requires parameters
+     */
+    public RouterLink(Router router,
+            Class<? extends Component> navigationTarget)
+            throws IllegalArgumentException {
+        this(router, navigationTarget, RouteParameters.empty());
     }
 
     /**
@@ -134,6 +194,27 @@ public class RouterLink extends Component implements HasText, HasComponents,
             Class<? extends Component> navigationTarget)
             throws IllegalArgumentException {
         this(router, text, navigationTarget, RouteParameters.empty());
+    }
+
+    /**
+     * Creates a new router link for the given navigation target using the given
+     * parameter.
+     *
+     * @param router
+     *            router used for navigation
+     * @param navigationTarget
+     *            navigation target
+     * @param parameter
+     *            url parameter for navigation target
+     * @param <T>
+     *            url parameter type
+     * @param <C>
+     *            navigation target type
+     */
+    public <T, C extends Component & HasUrlParameter<T>> RouterLink(
+            Router router, Class<? extends C> navigationTarget, T parameter) {
+        this(router, navigationTarget,
+                HasUrlParameterFormat.getParameters(parameter));
     }
 
     /**
@@ -158,6 +239,24 @@ public class RouterLink extends Component implements HasText, HasComponents,
             T parameter) {
         this(router, text, navigationTarget,
                 HasUrlParameterFormat.getParameters(parameter));
+    }
+
+    /**
+     * Creates a new router link for the given navigation target using the given
+     * parameters.
+     *
+     * @param router
+     *            router used for navigation
+     * @param navigationTarget
+     *            navigation target
+     * @param parameters
+     *            route parameters for navigation target
+     */
+    public RouterLink(Router router,
+            Class<? extends Component> navigationTarget,
+            RouteParameters parameters) {
+        this();
+        setRoute(router, navigationTarget, parameters);
     }
 
     /**
@@ -337,20 +436,7 @@ public class RouterLink extends Component implements HasText, HasComponents,
     }
 
     private Router getRouter() {
-        Router router = null;
-        if (getElement().getNode().isAttached()) {
-            StateTree tree = (StateTree) getElement().getNode().getOwner();
-            router = tree.getUI().getInternals().getRouter();
-        }
-        if (router == null) {
-            router = VaadinService.getCurrent().getRouter();
-        }
-        if (router == null) {
-            throw new IllegalStateException(
-                    "Implicit router instance is not available. "
-                            + "Use overloaded method with explicit router parameter.");
-        }
-        return router;
+        return ComponentUtil.getRouter(this);
     }
 
     /**

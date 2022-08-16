@@ -66,11 +66,11 @@ public class FrontendTools {
      * the installed version is older than {@link #SUPPORTED_NODE_VERSION}, i.e.
      * {@value #SUPPORTED_NODE_MAJOR_VERSION}.{@value #SUPPORTED_NODE_MINOR_VERSION}.
      */
-    public static final String DEFAULT_NODE_VERSION = "v16.14.2";
+    public static final String DEFAULT_NODE_VERSION = "v16.16.0";
     /**
      * This is the version shipped with the default Node version.
      */
-    public static final String DEFAULT_NPM_VERSION = "8.5.0";
+    public static final String DEFAULT_NPM_VERSION = "8.11.0";
 
     public static final String DEFAULT_PNPM_VERSION = "5.18.10";
 
@@ -689,7 +689,7 @@ public class FrontendTools {
     protected String installNode(String nodeVersion, URI downloadRoot) {
         NodeInstaller nodeInstaller = new NodeInstaller(
                 new File(getAlternativeDir()), getProxies())
-                        .setNodeVersion(nodeVersion);
+                .setNodeVersion(nodeVersion);
         if (downloadRoot != null) {
             nodeInstaller.setNodeDownloadRoot(downloadRoot);
         }

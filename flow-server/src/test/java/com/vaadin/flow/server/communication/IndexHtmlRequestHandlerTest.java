@@ -38,9 +38,7 @@ import org.jsoup.select.Elements;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
@@ -71,12 +69,13 @@ import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-
 import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -92,12 +91,11 @@ public class IndexHtmlRequestHandlerTest {
     private MockDeploymentConfiguration deploymentConfiguration;
     private VaadinContext context;
 
-    @Rule
-    public ExpectedException exceptionRule = ExpectedException.none();
-
     private String springTokenString;
     private String springTokenHeaderName = "x-CSRF-TOKEN";
     private String springTokenParamName = SPRING_CSRF_ATTRIBUTE_IN_SESSION;
+
+    private int expectedScriptsTagsOnBootstrapPage = 4;
 
     @Before
     public void setUp() throws Exception {
@@ -162,11 +160,10 @@ public class IndexHtmlRequestHandlerTest {
                         + "It is required to have '%1$s' file when "
                         + "using client side bootstrapping.", path);
 
-        exceptionRule.expect(IOException.class);
-        exceptionRule.expectMessage(expectedError);
-
-        indexHtmlRequestHandler.synchronizedHandleRequest(session,
-                vaadinRequest, response);
+        IOException expectedException = assertThrows(IOException.class,
+                () -> indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                        vaadinRequest, response));
+        Assert.assertEquals(expectedError, expectedException.getMessage());
     }
 
     @Test
@@ -310,9 +307,12 @@ public class IndexHtmlRequestHandlerTest {
                 .toString(StandardCharsets.UTF_8.name());
         Document document = Jsoup.parse(indexHtml);
         Elements scripts = document.head().getElementsByTag("script");
-        Assert.assertEquals(3, scripts.size());
-        Assert.assertEquals("testing.1", scripts.get(1).attr("src"));
-        Assert.assertEquals("testing.2", scripts.get(2).attr("src"));
+        int expectedScripts = 4;
+        Assert.assertEquals(expectedScripts, scripts.size());
+        Assert.assertEquals("testing.1",
+                scripts.get(expectedScripts - 2).attr("src"));
+        Assert.assertEquals("testing.2",
+                scripts.get(expectedScripts - 1).attr("src"));
     }
 
     @Test
@@ -327,8 +327,9 @@ public class IndexHtmlRequestHandlerTest {
         Document document = Jsoup.parse(indexHtml);
 
         Elements scripts = document.head().getElementsByTag("script");
-        Assert.assertEquals(2, scripts.size());
-        Element initialUidlScript = scripts.get(1);
+        Assert.assertEquals(expectedScriptsTagsOnBootstrapPage, scripts.size());
+        Element initialUidlScript = scripts
+                .get(expectedScriptsTagsOnBootstrapPage - 2);
         Assert.assertEquals("", initialUidlScript.attr("initial"));
         Assert.assertTrue(
                 initialUidlScript.toString().contains("Could not navigate"));
@@ -347,8 +348,9 @@ public class IndexHtmlRequestHandlerTest {
         Document document = Jsoup.parse(indexHtml);
 
         Elements scripts = document.head().getElementsByTag("script");
-        Assert.assertEquals(2, scripts.size());
-        Element initialUidlScript = scripts.get(1);
+        Assert.assertEquals(expectedScriptsTagsOnBootstrapPage, scripts.size());
+        Element initialUidlScript = scripts
+                .get(expectedScriptsTagsOnBootstrapPage - 2);
 
         Assert.assertEquals(
                 "window.Vaadin = window.Vaadin || {};window.Vaadin.TypeScript= {};",
@@ -375,8 +377,9 @@ public class IndexHtmlRequestHandlerTest {
         Document document = Jsoup.parse(indexHtml);
 
         Elements scripts = document.head().getElementsByTag("script");
-        Assert.assertEquals(2, scripts.size());
-        Element initialUidlScript = scripts.get(1);
+        Assert.assertEquals(expectedScriptsTagsOnBootstrapPage, scripts.size());
+        Element initialUidlScript = scripts
+                .get(expectedScriptsTagsOnBootstrapPage - 2);
         Assert.assertEquals("", initialUidlScript.attr("initial"));
         String scriptContent = initialUidlScript.toString();
         Assert.assertTrue(scriptContent.contains("Could not navigate"));
@@ -402,8 +405,9 @@ public class IndexHtmlRequestHandlerTest {
         Document document = Jsoup.parse(indexHtml);
 
         Elements scripts = document.head().getElementsByTag("script");
-        Assert.assertEquals(2, scripts.size());
-        Element initialUidlScript = scripts.get(1);
+        Assert.assertEquals(expectedScriptsTagsOnBootstrapPage, scripts.size());
+        Element initialUidlScript = scripts
+                .get(expectedScriptsTagsOnBootstrapPage - 2);
         Assert.assertEquals(
                 "window.Vaadin = window.Vaadin || {};window.Vaadin.TypeScript= {};",
                 initialUidlScript.childNode(0).toString());
@@ -466,8 +470,9 @@ public class IndexHtmlRequestHandlerTest {
         Document document = Jsoup.parse(indexHtml);
 
         Elements scripts = document.head().getElementsByTag("script");
-        Assert.assertEquals(2, scripts.size());
-        Element initialUidlScript = scripts.get(1);
+        Assert.assertEquals(expectedScriptsTagsOnBootstrapPage, scripts.size());
+        Element initialUidlScript = scripts
+                .get(expectedScriptsTagsOnBootstrapPage - 2);
         Assert.assertFalse(initialUidlScript.childNode(0).toString()
                 .contains("window.Vaadin = {Flow: {\"csrfToken\":"));
         Assert.assertEquals("", initialUidlScript.attr("initial"));
@@ -620,17 +625,50 @@ public class IndexHtmlRequestHandlerTest {
         Document document = Jsoup.parse(indexHtml);
 
         Elements elements = document.head().getElementsByTag("meta");
-        assertEquals(5, elements.size());
-        assertEquals("viewport", elements.get(1).attr("name"));
-        assertEquals("my-viewport", elements.get(1).attr("content"));
-        assertEquals("apple-mobile-web-app-capable",
-                elements.get(2).attr("name"));
-        assertEquals("yes", elements.get(2).attr("content"));
-        assertEquals("theme-color", elements.get(3).attr("name"));
-        assertEquals("#ffffff", elements.get(3).attr("content"));
-        assertEquals("apple-mobile-web-app-status-bar-style",
-                elements.get(4).attr("name"));
-        assertEquals("#ffffff", elements.get(4).attr("content"));
+        assertEquals(8, elements.size());
+
+        Optional<Element> viewPort = findFirstElementByNameAttrEqualTo(elements,
+                "viewport");
+        assertTrue("'viewport' meta link should exist.", viewPort.isPresent());
+        assertEquals("my-viewport", viewPort.get().attr("content"));
+
+        Optional<Element> appleMobileWebAppCapable = findFirstElementByNameAttrEqualTo(
+                elements, "apple-mobile-web-app-capable");
+        assertTrue("'apple-mobile-web-app-capable' meta link should exist.",
+                appleMobileWebAppCapable.isPresent());
+        assertEquals("yes", appleMobileWebAppCapable.get().attr("content"));
+
+        Optional<Element> themeColor = findFirstElementByNameAttrEqualTo(
+                elements, "theme-color");
+        assertTrue("'theme-color' meta link should exists.",
+                themeColor.isPresent());
+        assertEquals("#ffffff", themeColor.get().attr("content"));
+
+        Optional<Element> appleMobileWebAppStatusBar = findFirstElementByNameAttrEqualTo(
+                elements, "apple-mobile-web-app-status-bar-style");
+        assertTrue(
+                "'apple-mobile-web-app-status-bar-style' meta link should exists.",
+                appleMobileWebAppStatusBar.isPresent());
+        assertEquals("#ffffff",
+                appleMobileWebAppStatusBar.get().attr("content"));
+
+        Optional<Element> mobileWebAppCapableElements = findFirstElementByNameAttrEqualTo(
+                elements, "mobile-web-app-capable");
+        assertTrue("'mobile-web-app-capable' meta link should exists.",
+                mobileWebAppCapableElements.isPresent());
+        assertEquals("yes", mobileWebAppCapableElements.get().attr("content"));
+
+        Optional<Element> appleTouchFullScreenElements = findFirstElementByNameAttrEqualTo(
+                elements, "apple-touch-fullscreen");
+        assertTrue("'apple-touch-fullscreen' meta link should exist.",
+                appleTouchFullScreenElements.isPresent());
+        assertEquals("yes", appleTouchFullScreenElements.get().attr("content"));
+
+        Optional<Element> appleMobileWebAppTitleElements = findFirstElementByNameAttrEqualTo(
+                elements, "apple-mobile-web-app-title");
+        assertTrue("'apple-mobile-web-app-title' should exist.",
+                appleMobileWebAppTitleElements.isPresent());
+        assertEquals("n", appleMobileWebAppTitleElements.get().attr("content"));
 
         Elements headInlineAndStyleElements = document.head()
                 .getElementsByTag("style");
@@ -790,6 +828,13 @@ public class IndexHtmlRequestHandlerTest {
     public void tearDown() throws Exception {
         session.unlock();
         mocks.cleanup();
+    }
+
+    private Optional<Element> findFirstElementByNameAttrEqualTo(
+            Elements elements, String name) {
+        return elements.stream()
+                .filter(element -> name.equals(element.attr("name")))
+                .findFirst();
     }
 
     private VaadinServletRequest createRequestWithDestination(String pathInfo,

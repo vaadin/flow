@@ -24,7 +24,7 @@ import org.openqa.selenium.JavascriptExecutor;
 import com.vaadin.flow.testutil.ChromeDeviceTest;
 
 public class MainIT extends ChromeDeviceTest {
-    final String VITE_PING_PATH = "/VAADIN/__vite_ping";
+    final String VITE_PING_PATH = "/VAADIN";
 
     @Before
     public void init() {

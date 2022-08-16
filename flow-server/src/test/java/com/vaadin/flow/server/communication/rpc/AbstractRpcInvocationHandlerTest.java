@@ -25,7 +25,7 @@ import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.JsonConstants;
-import com.vaadin.flow.shared.Registration;
+
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import org.junit.Assert;
@@ -101,9 +101,9 @@ public class AbstractRpcInvocationHandlerTest {
     }
 
     @Test
-    public void inertUIWithPollListener_passingNoPollingPayload_ignoresPollingInvocation() {
+    public void inertUI_passingNoPollingPayload_ignoresPollingInvocation() {
 
-        UI ui = createInertUIWithPollListener();
+        UI ui = createInertUIWithPollInterval();
         JsonObject invocationJson = createNonPollingRpcInvocationPayload(ui);
         Optional<Runnable> runnable = handler.handle(ui, invocationJson);
 
@@ -111,7 +111,7 @@ public class AbstractRpcInvocationHandlerTest {
     }
 
     @Test
-    public void inertUIWithoutPollListener_passingLegitimatePollingPayload_ignoresPollingInvocation() {
+    public void inertUIWithPollingInterval_passingLegitimatePollingPayload_doesNotIgnorePolling() {
 
         UI ui = createInertUI();
 
@@ -120,36 +120,19 @@ public class AbstractRpcInvocationHandlerTest {
         Optional<Runnable> runnable = handler.handle(ui, invocationJson);
         Assert.assertEquals(Optional.empty(), runnable);
 
-        Registration listener = ui.addPollListener(event -> {
-        });
-        runnable = handler.handle(ui, invocationJson);
-        Assert.assertEquals(Optional.empty(), runnable);
-
         ui.setPollInterval(0);
         runnable = handler.handle(ui, invocationJson);
         Assert.assertEquals(Optional.empty(), runnable);
 
-        listener.remove();
         ui.setPollInterval(5000);
         runnable = handler.handle(ui, invocationJson);
-        Assert.assertEquals(Optional.empty(), runnable);
-    }
-
-    @Test
-    public void inertUIWithPollListener_passingLegitimatePollingPayload_doesNotIgnorePolling() {
-
-        UI ui = createInertUIWithPollListener();
-        JsonObject invocationJson = createLegitimatePollingRpcInvocationPayload(
-                ui);
-        Optional<Runnable> runnable = handler.handle(ui, invocationJson);
-
         Assert.assertNotEquals(Optional.empty(), runnable);
     }
 
     @Test
-    public void inertUIWithPollListener_passingIllegitimateKeysForPollingPayload_ignoresInvocation() {
+    public void inertUIWithPollingInterval_passingIllegitimateKeysForPollingPayload_ignoresInvocation() {
 
-        UI ui = createInertUIWithPollListener();
+        UI ui = createInertUIWithPollInterval();
         JsonObject invocationJson = createIllegitimatePayloadKeysPollingRpcInvocationPayload(
                 ui);
         Optional<Runnable> runnable = handler.handle(ui, invocationJson);
@@ -158,9 +141,9 @@ public class AbstractRpcInvocationHandlerTest {
     }
 
     @Test
-    public void inertUIWithPollListener_passingIllegitimateGreaterNumberOfKeysForPollingPayload_ignoresInvocation() {
+    public void inertUIWithPollingInterval_passingIllegitimateGreaterNumberOfKeysForPollingPayload_ignoresInvocation() {
 
-        UI ui = createInertUIWithPollListener();
+        UI ui = createInertUIWithPollInterval();
         JsonObject invocationJson = createIllegitimatePayloadWithGreaterSizePollingRpcInvocationPayload(
                 ui);
         Optional<Runnable> runnable = handler.handle(ui, invocationJson);
@@ -169,9 +152,9 @@ public class AbstractRpcInvocationHandlerTest {
     }
 
     @Test
-    public void inertUIWithPollListener_passingIllegitimateSmallerNumberOfKeysForPollingPayload_ignoresInvocation() {
+    public void inertUIWithPollingInterval_passingIllegitimateSmallerNumberOfKeysForPollingPayload_ignoresInvocation() {
 
-        UI ui = createInertUIWithPollListener();
+        UI ui = createInertUIWithPollInterval();
         JsonObject invocationJson = createIllegitimatePayloadWithSmallerSizePollingRpcInvocationPayload(
                 ui);
         Optional<Runnable> runnable = handler.handle(ui, invocationJson);
@@ -180,18 +163,18 @@ public class AbstractRpcInvocationHandlerTest {
     }
 
     @Test
-    public void inertUIWithPollListener_passingIllegitimateNoNodeKeyForPollingPayload_throwsAssertionError() {
+    public void inertUIWithPollingInterval_passingIllegitimateNoNodeKeyForPollingPayload_throwsAssertionError() {
 
-        UI ui = createInertUIWithPollListener();
+        UI ui = createInertUIWithPollInterval();
         JsonObject invocationJson = createIllegitimatePayloadNoNodeKeyForPollingRpcInvocationPayload();
         Assert.assertThrows(AssertionError.class,
                 () -> handler.handle(ui, invocationJson));
     }
 
     @Test
-    public void inertUIWithPollListener_passingIllegitimateNonRootNodeIdForPollingPayload_ignoresInvocation() {
+    public void inertUIWithPollingInterval_passingIllegitimateNonRootNodeIdForPollingPayload_ignoresInvocation() {
 
-        UI ui = createInertUIWithPollListener();
+        UI ui = createInertUIWithPollInterval();
         JsonObject invocationJson = createIllegitimatePayloadWithNonRootNodePollingRpcInvocationPayload(
                 ui);
         Optional<Runnable> runnable = handler.handle(ui, invocationJson);
@@ -200,7 +183,7 @@ public class AbstractRpcInvocationHandlerTest {
     }
 
     @Test
-    public void inertUIWithoutPollListener_passingLegitimatePollingPayload_logsIgnoredPayloadInDebugLevel() {
+    public void inertUIWithoutPollInterval_passingLegitimatePollingPayload_logsIgnoredPayloadInDebugLevel() {
 
         Logger logger = spy(Logger.class);
         try (MockedStatic<LoggerFactory> mockedLoggerFactory = mockStatic(
@@ -221,7 +204,7 @@ public class AbstractRpcInvocationHandlerTest {
     }
 
     @Test
-    public void inertUIWithPollListener_passingIllegitimatePollingPayload_logsIgnoredPayloadInDebugLevel() {
+    public void inertUIWithPollingInterval_passingIllegitimatePollingPayload_logsIgnoredPayloadInDebugLevel() {
 
         Logger logger = spy(Logger.class);
         try (MockedStatic<LoggerFactory> mockedLoggerFactory = mockStatic(
@@ -231,7 +214,7 @@ public class AbstractRpcInvocationHandlerTest {
                             AbstractRpcInvocationHandler.class.getName()))
                     .thenReturn(logger);
 
-            UI ui = createInertUIWithPollListener();
+            UI ui = createInertUIWithPollInterval();
             JsonObject invocationJson = createIllegitimatePayloadKeysPollingRpcInvocationPayload(
                     ui);
             handler.handle(ui, invocationJson);
@@ -256,10 +239,8 @@ public class AbstractRpcInvocationHandlerTest {
         return element;
     }
 
-    private UI createInertUIWithPollListener() {
+    private UI createInertUIWithPollInterval() {
         UI ui = createInertUI();
-        ui.addPollListener(event -> {
-        });
         ui.setPollInterval(5000);
         return ui;
     }

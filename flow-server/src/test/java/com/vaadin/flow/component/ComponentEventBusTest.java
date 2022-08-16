@@ -16,6 +16,9 @@
 package com.vaadin.flow.component;
 
 import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -25,6 +28,7 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.ComponentTest.TestComponent;
+import com.vaadin.flow.component.internal.KeyboardEvent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.MessageDigestUtil;
@@ -633,6 +637,49 @@ public class ComponentEventBusTest {
     @Test(expected = IllegalArgumentException.class)
     public void hasListeners_nullEventType_throws() {
         new ComponentEventBus(new TestComponent()).hasListener(null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void getListeners_nullEventType_throws() {
+        new ComponentEventBus(new TestComponent()).getListeners(null);
+    }
+
+    @Test
+    public void getListeners_eventType_listenersCollection() {
+        TestComponent component = new TestComponent();
+        EventTracker<MappedToDomEvent> eventTracker = new EventTracker<>();
+        Registration remover = component.addListener(MappedToDomEvent.class,
+                eventTracker);
+        Collection<?> listeners = component
+                .getListeners(MappedToDomEvent.class);
+        Assert.assertEquals(1, listeners.size());
+        remover.remove();
+    }
+
+    @Test
+    public void getListeners_subclassOfEventType_listenersCollection() {
+        TestComponent component = new TestComponent();
+        EventTracker<KeyPressEvent> eventTracker = new EventTracker<>();
+        EventTracker<KeyUpEvent> eventTracker2 = new EventTracker<>();
+        Registration remover = component.addListener(KeyPressEvent.class,
+                eventTracker);
+        Registration remover2 = component.addListener(KeyUpEvent.class,
+                eventTracker2);
+        Collection<?> listeners = component.getListeners(KeyboardEvent.class);
+        Assert.assertEquals(2, listeners.size());
+        remover.remove();
+        remover2.remove();
+    }
+
+    @Test
+    public void getListeners_notExistingEventType_emptyListenersCollection() {
+        TestComponent component = new TestComponent();
+        EventTracker<MappedToDomEvent> eventTracker = new EventTracker<>();
+        Registration remover = component.addListener(MappedToDomEvent.class,
+                eventTracker);
+        Collection<?> listeners = component.getListeners(ServerEvent.class);
+        Assert.assertTrue(listeners.isEmpty());
+        remover.remove();
     }
 
     @Test

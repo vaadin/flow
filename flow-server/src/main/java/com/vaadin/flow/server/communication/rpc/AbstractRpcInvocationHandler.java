@@ -48,12 +48,12 @@ public abstract class AbstractRpcInvocationHandler
         StateNode node = ui.getInternals().getStateTree()
                 .getNodeById(getNodeId(invocationJson));
         if (node == null) {
-            getLogger().warn("Ignoring RPC for non-existent node: {}",
+            getLogger().debug("Ignoring RPC for non-existent node: {}",
                     getNodeId(invocationJson));
             return Optional.empty();
         }
         if (!node.isAttached()) {
-            getLogger().warn("Ignoring RPC for detached node: {}",
+            getLogger().debug("Ignoring RPC for detached node: {}",
                     getNodeId(invocationJson));
             return Optional.empty();
         }
@@ -116,8 +116,7 @@ public abstract class AbstractRpcInvocationHandler
     }
 
     private boolean isPollingEnabledForUI(UI ui) {
-        return ui.getPollInterval() > 0
-                && ComponentUtil.hasEventListener(ui, PollEvent.class);
+        return ui.getPollInterval() > 0;
     }
 
     /**

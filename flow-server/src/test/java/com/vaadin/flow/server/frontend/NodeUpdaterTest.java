@@ -32,9 +32,13 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 
@@ -49,6 +53,8 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAM
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class NodeUpdaterTest {
+
+    private static final String POLYMER_VERSION = "3.5.1";
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -136,7 +142,7 @@ public class NodeUpdaterTest {
         nodeUpdater.updateDefaultDependencies(object);
 
         String version = getPolymerVersion(object);
-        Assert.assertEquals("3.4.1", version);
+        Assert.assertEquals(POLYMER_VERSION, version);
     }
 
     @Test
@@ -164,8 +170,8 @@ public class NodeUpdaterTest {
         nodeUpdater.addVaadinDefaultsToJson(object);
         nodeUpdater.updateDefaultDependencies(object);
 
-        Assert.assertEquals("3.4.1", getPolymerVersion(object));
-        Assert.assertEquals("3.4.1", getPolymerVersion(
+        Assert.assertEquals(POLYMER_VERSION, getPolymerVersion(object));
+        Assert.assertEquals(POLYMER_VERSION, getPolymerVersion(
                 object.getObject(NodeUpdater.VAADIN_DEP_KEY)));
     }
 
@@ -175,12 +181,12 @@ public class NodeUpdaterTest {
         JsonObject packageJson = nodeUpdater.getPackageJson();
         packageJson.put(NodeUpdater.DEPENDENCIES, Json.createObject());
         packageJson.put(NodeUpdater.DEV_DEPENDENCIES, Json.createObject());
-        packageJson.getObject(NodeUpdater.DEV_DEPENDENCIES).put("webpack",
-                "3.3.10");
+        packageJson.getObject(NodeUpdater.DEV_DEPENDENCIES).put("vite",
+                "v2.7.10");
         nodeUpdater.updateDefaultDependencies(packageJson);
 
-        Assert.assertEquals("4.46.0", packageJson
-                .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("webpack"));
+        Assert.assertEquals("v3.0.4", packageJson
+                .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("vite"));
     }
 
     @Test // #6907 test when user has set newer versions
@@ -189,12 +195,12 @@ public class NodeUpdaterTest {
         JsonObject packageJson = nodeUpdater.getPackageJson();
         packageJson.put(NodeUpdater.DEPENDENCIES, Json.createObject());
         packageJson.put(NodeUpdater.DEV_DEPENDENCIES, Json.createObject());
-        packageJson.getObject(NodeUpdater.DEV_DEPENDENCIES).put("webpack",
-                "5.0.1");
+        packageJson.getObject(NodeUpdater.DEV_DEPENDENCIES).put("vite",
+                "v4.0.0");
         nodeUpdater.updateDefaultDependencies(packageJson);
 
-        Assert.assertEquals("5.0.1", packageJson
-                .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("webpack"));
+        Assert.assertEquals("v4.0.0", packageJson
+                .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("vite"));
     }
 
     @Test
@@ -218,6 +224,52 @@ public class NodeUpdaterTest {
 
         Assert.assertEquals(newVersion, packageJson
                 .getObject(NodeUpdater.DEPENDENCIES).getString(formPackage));
+    }
+
+    @Test
+    public void shouldSkipUpdatingNonParsableVersions() throws IOException {
+        JsonObject packageJson = Json.createObject();
+        JsonObject dependencies = Json.createObject();
+        packageJson.put(NodeUpdater.DEPENDENCIES, dependencies);
+        JsonObject vaadinDependencies = Json.createObject();
+        vaadinDependencies.put(NodeUpdater.DEPENDENCIES, Json.createObject());
+        packageJson.put(NodeUpdater.VAADIN_DEP_KEY, vaadinDependencies);
+
+        String formPackage = "@vaadin/form";
+        String existingVersion = "../../../some/local/path";
+        String newVersion = "2.0.0";
+
+        dependencies.put(formPackage, existingVersion);
+
+        nodeUpdater.addDependency(packageJson, NodeUpdater.DEPENDENCIES,
+                formPackage, newVersion);
+
+        Assert.assertEquals(existingVersion, packageJson
+                .getObject(NodeUpdater.DEPENDENCIES).getString(formPackage));
+    }
+
+    @Test
+    public void shouldThrowExceptionOnNewVersionNonParsable() {
+        JsonObject packageJson = Json.createObject();
+        JsonObject dependencies = Json.createObject();
+        packageJson.put(NodeUpdater.DEPENDENCIES, dependencies);
+        JsonObject vaadinDependencies = Json.createObject();
+        vaadinDependencies.put(NodeUpdater.DEPENDENCIES, Json.createObject());
+        packageJson.put(NodeUpdater.VAADIN_DEP_KEY, vaadinDependencies);
+
+        String formPackage = "@vaadin/form";
+        String existingVersion = "2.0.0";
+        String newVersion = "../../../some/local/path";
+
+        dependencies.put(formPackage, existingVersion);
+
+        NumberFormatException expectedException = Assert
+                .assertThrows(NumberFormatException.class,
+                        () -> nodeUpdater.addDependency(packageJson,
+                                NodeUpdater.DEPENDENCIES, formPackage,
+                                newVersion));
+        Assert.assertTrue(expectedException.getMessage()
+                .contains("is not a valid version"));
     }
 
     @Test
@@ -313,6 +365,96 @@ public class NodeUpdaterTest {
                 versionsJson.toJson());
     }
 
+    @Test
+    public void testGetPlatformPinnedDependencies_vaadinCoreVersionIsNotPresent_outputIsEmptyJson()
+            throws IOException {
+        Logger logger = Mockito.spy(Logger.class);
+        try (MockedStatic<LoggerFactory> loggerFactoryMocked = Mockito
+                .mockStatic(LoggerFactory.class)) {
+            loggerFactoryMocked
+                    .when(() -> LoggerFactory.getLogger(nodeUpdater.getClass()))
+                    .thenReturn(logger);
+
+            Mockito.when(
+                    finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
+                    .thenReturn(null);
+            Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
+                    .thenReturn(null);
+
+            JsonObject pinnedVersions = nodeUpdater
+                    .getPlatformPinnedDependencies();
+            Assert.assertEquals(0, pinnedVersions.keys().length);
+
+            Mockito.verify(logger, Mockito.times(1)).info(
+                    "Couldn't find {} file to pin dependency versions for core components."
+                            + " Transitive dependencies won't be pinned for npm/pnpm.",
+                    Constants.VAADIN_CORE_VERSIONS_JSON);
+        }
+    }
+
+    @Test
+    public void testGetPlatformPinnedDependencies_onlyVaadinCoreVersionIsPresent_outputContainsOnlyCoreVersions()
+            throws IOException {
+        File coreVersionsFile = File.createTempFile("vaadin-core-versions",
+                ".json", temporaryFolder.newFolder());
+        JsonObject mockedVaadinCoreJson = getMockVaadinCoreVersionsJson();
+        Assert.assertTrue(mockedVaadinCoreJson.hasKey("core"));
+        Assert.assertTrue(
+                mockedVaadinCoreJson.getObject("core").hasKey("button"));
+        Assert.assertFalse(mockedVaadinCoreJson.hasKey("vaadin"));
+
+        FileUtils.write(coreVersionsFile, mockedVaadinCoreJson.toJson(),
+                StandardCharsets.UTF_8);
+        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
+                .thenReturn(coreVersionsFile.toURI().toURL());
+        Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
+                .thenReturn(null);
+
+        JsonObject pinnedVersions = nodeUpdater.getPlatformPinnedDependencies();
+
+        Assert.assertTrue(pinnedVersions.hasKey("@vaadin/button"));
+        Assert.assertFalse(pinnedVersions.hasKey("@vaadin/grid-pro"));
+        Assert.assertFalse(pinnedVersions.hasKey("@vaadin/vaadin-grid-pro"));
+    }
+
+    @Test
+    public void testGetPlatformPinnedDependencies_VaadinAndVaadinCoreVersionsArePresent_outputContainsBothCoreAndCommercialVersions()
+            throws IOException {
+        File coreVersionsFile = File.createTempFile("vaadin-core-versions",
+                ".json", temporaryFolder.newFolder());
+        JsonObject mockedVaadinCoreJson = getMockVaadinCoreVersionsJson();
+        Assert.assertTrue(mockedVaadinCoreJson.hasKey("core"));
+        Assert.assertTrue(
+                mockedVaadinCoreJson.getObject("core").hasKey("button"));
+        Assert.assertFalse(mockedVaadinCoreJson.hasKey("vaadin"));
+
+        FileUtils.write(coreVersionsFile, mockedVaadinCoreJson.toJson(),
+                StandardCharsets.UTF_8);
+        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
+                .thenReturn(coreVersionsFile.toURI().toURL());
+
+        File vaadinVersionsFile = File.createTempFile("vaadin-versions",
+                ".json", temporaryFolder.newFolder());
+        JsonObject mockedVaadinJson = getMockVaadinVersionsJson();
+        Assert.assertFalse(mockedVaadinJson.hasKey("core"));
+        Assert.assertTrue(mockedVaadinJson.hasKey("vaadin"));
+        Assert.assertTrue(
+                mockedVaadinJson.getObject("vaadin").hasKey("grid-pro"));
+        Assert.assertTrue(
+                mockedVaadinJson.getObject("vaadin").hasKey("vaadin-grid-pro"));
+
+        FileUtils.write(vaadinVersionsFile, mockedVaadinJson.toJson(),
+                StandardCharsets.UTF_8);
+        Mockito.when(finder.getResource(Constants.VAADIN_VERSIONS_JSON))
+                .thenReturn(vaadinVersionsFile.toURI().toURL());
+
+        JsonObject pinnedVersions = nodeUpdater.getPlatformPinnedDependencies();
+
+        Assert.assertTrue(pinnedVersions.hasKey("@vaadin/button"));
+        Assert.assertTrue(pinnedVersions.hasKey("@vaadin/grid-pro"));
+        Assert.assertTrue(pinnedVersions.hasKey("@vaadin/vaadin-grid-pro"));
+    }
+
     private String getPolymerVersion(JsonObject object) {
         JsonObject deps = object.get("dependencies");
         String version = deps.getString("@polymer/polymer");
@@ -333,5 +475,92 @@ public class NodeUpdaterTest {
                 .thenReturn(null);
         Assert.assertEquals("foo", nodeUpdater.resolveResource("foo"));
         Assert.assertEquals("foo", nodeUpdater.resolveResource("foo"));
+    }
+
+    private JsonObject getMockVaadinCoreVersionsJson() {
+        // @formatter:off
+        return Json.parse(
+                "{\n" +
+                        "    \"bundles\": {\n" +
+                        "        \"vaadin\": {\n" +
+                        "            \"jsVersion\": \"23.2.0\",\n" +
+                        "            \"npmName\": \"@vaadin/bundles\"\n" +
+                        "        }\n" +
+                        "    },\n" +
+                        "    \"core\": {\n" +
+                        "        \"accordion\": {\n" +
+                        "            \"jsVersion\": \"23.2.0\",\n" +
+                        "            \"npmName\": \"@vaadin/accordion\"\n" +
+                        "        },\n" +
+                        "        \"app-layout\": {\n" +
+                        "            \"jsVersion\": \"23.2.0\",\n" +
+                        "            \"npmName\": \"@vaadin/app-layout\"\n" +
+                        "        },\n" +
+                        "        \"avatar\": {\n" +
+                        "            \"jsVersion\": \"23.2.0\",\n" +
+                        "            \"npmName\": \"@vaadin/avatar\"\n" +
+                        "        },\n" +
+                        "        \"avatar-group\": {\n" +
+                        "            \"jsVersion\": \"23.2.0\",\n" +
+                        "            \"npmName\": \"@vaadin/avatar-group\"\n" +
+                        "        },\n" +
+                        "        \"button\": {\n" +
+                        "            \"jsVersion\": \"23.2.0\",\n" +
+                        "            \"npmName\": \"@vaadin/button\"\n" +
+                        "        },\n" +
+                        "        \"checkbox\": {\n" +
+                        "            \"jsVersion\": \"23.2.0\",\n" +
+                        "            \"npmName\": \"@vaadin/checkbox\"\n" +
+                        "        }" +
+                        "    },\n" +
+                        "    \"platform\": \"23.2.0\"\n" +
+                        "}"
+        );
+        // @formatter:on
+    }
+
+    private JsonObject getMockVaadinVersionsJson() {
+        // @formatter:off
+        return Json.parse(
+                "{\n" +
+                        "    \"vaadin\": {\n" +
+                        "        \"board\": {\n" +
+                        "            \"jsVersion\": \"23.2.0\",\n" +
+                        "            \"npmName\": \"@vaadin/board\"\n" +
+                        "        },\n" +
+                        "        \"charts\": {\n" +
+                        "            \"jsVersion\": \"23.2.0\",\n" +
+                        "            \"npmName\": \"@vaadin/charts\"\n" +
+                        "        },\n" +
+                        "        \"grid-pro\": {\n" +
+                        "            \"jsVersion\": \"23.2.0\",\n" +
+                        "            \"npmName\": \"@vaadin/grid-pro\"\n" +
+                        "        },\n" +
+                        "        \"vaadin-board\": {\n" +
+                        "            \"component\": true,\n" +
+                        "            \"javaVersion\": \"23.2.0\",\n" +
+                        "            \"jsVersion\": \"23.2.0\",\n" +
+                        "            \"npmName\": \"@vaadin/vaadin-board\",\n" +
+                        "            \"pro\": true\n" +
+                        "        },\n" +
+                        "        \"vaadin-charts\": {\n" +
+                        "            \"component\": true,\n" +
+                        "            \"javaVersion\": \"23.2.0\",\n" +
+                        "            \"jsVersion\": \"23.2.0\",\n" +
+                        "            \"npmName\": \"@vaadin/vaadin-charts\",\n" +
+                        "            \"pro\": true\n" +
+                        "        },\n" +
+                        "        \"vaadin-grid-pro\": {\n" +
+                        "            \"component\": true,\n" +
+                        "            \"javaVersion\": \"23.2.0\",\n" +
+                        "            \"jsVersion\": \"23.2.0\",\n" +
+                        "            \"npmName\": \"@vaadin/vaadin-grid-pro\",\n" +
+                        "            \"pro\": true\n" +
+                        "        },\n" +
+                        "    },\n" +
+                        "    \"platform\": \"23.2.0\"\n" +
+                        "}"
+        );
+        // @formatter:on
     }
 }

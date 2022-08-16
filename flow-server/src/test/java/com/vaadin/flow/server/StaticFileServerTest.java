@@ -479,8 +479,7 @@ public class StaticFileServerTest implements Serializable {
         final FileSystem fileSystem = FileSystems
                 .newFileSystem(new URL("jar:file:///"
                         + tempArchive.toString().replaceAll("\\\\", "/") + "!/")
-                                .toURI(),
-                        Collections.emptyMap());
+                        .toURI(), Collections.emptyMap());
 
         final URL folderResourceURL = new URL(
                 "jar:file:///" + tempArchive.toString().replaceAll("\\\\", "/")
@@ -1096,7 +1095,7 @@ public class StaticFileServerTest implements Serializable {
     public byte[] getStatsData() {
         return ("{ " + "\"assetsByChunkName\" :{ "
                 + "\"index\": \"build/vaadin-bundle-1234.cache.js\"} }")
-                        .getBytes(StandardCharsets.UTF_8);
+                .getBytes(StandardCharsets.UTF_8);
     }
 
     @Test

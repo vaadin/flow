@@ -78,7 +78,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
 
     private static final String START_FAILURE = "Couldn't start dev server because";
 
-    private static final String DEV_SERVER_HOST = "http://localhost";
+    private static final String DEV_SERVER_HOST = "http://127.0.0.1";
 
     private static final String FAILED_MSG = "\n------------------ Frontend compilation failed. ------------------\n\n";
     private static final String SUCCEED_MSG = "\n----------------- Frontend compiled successfully. -----------------\n\n";
@@ -175,7 +175,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         }
     }
 
-    private void doStartDevModeServer() throws ExecutionFailedException {
+    void doStartDevModeServer() throws ExecutionFailedException {
         // If port is defined, means that the dev server is already running
         if (port > 0) {
             if (!checkConnection()) {
@@ -671,16 +671,19 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
     public boolean serveDevModeRequest(HttpServletRequest request,
             HttpServletResponse response) throws IOException {
         // Do not serve requests if dev server starting or failed to start.
-        if (isDevServerFailedToStart.get() || !devServerStartFuture.isDone()) {
+        if (isDevServerFailedToStart.get() || !devServerStartFuture.isDone()
+                || devServerStartFuture.isCompletedExceptionally()) {
             return false;
         }
         // Since we have 'publicPath=/VAADIN/' in the dev server config,
         // a valid request for the dev server should start with '/VAADIN/'
-        String requestFilename = request.getPathInfo();
+
+        String requestFilename = UrlUtil.getStaticVaadinPathInfo(request);
 
         if (HandlerHelper.isPathUnsafe(requestFilename)
-                || WEBPACK_ILLEGAL_CHAR_PATTERN.matcher(requestFilename)
-                        .find()) {
+                || WEBPACK_ILLEGAL_CHAR_PATTERN.matcher(requestFilename).find())
+
+        {
             getLogger().info("Blocked attempt to access file: {}",
                     requestFilename);
             response.setStatus(HttpStatusCode.FORBIDDEN.getCode());

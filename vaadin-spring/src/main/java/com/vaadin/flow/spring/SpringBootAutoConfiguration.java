@@ -19,6 +19,7 @@ import jakarta.servlet.MultipartConfigElement;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.atmosphere.cpr.ApplicationConfig;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
@@ -78,11 +79,28 @@ public class SpringBootAutoConfiguration {
         String mapping = configurationProperties.getUrlMapping();
         Map<String, String> initParameters = new HashMap<>();
         boolean rootMapping = RootMappedCondition.isRootMapping(mapping);
+        String[] urlMappings;
+        String pushRegistrationPath;
+
         if (rootMapping) {
             mapping = VaadinServletConfiguration.VAADIN_SERVLET_MAPPING;
+            pushRegistrationPath = "";
+        } else {
+            pushRegistrationPath = mapping.replace("/*", "");
         }
+
+        urlMappings = new String[] { mapping, "/VAADIN/*" };
+        /*
+         * Tell Atmosphere which servlet to use for the push endpoint. Servlet
+         * mappings are returned as a Set from at least Tomcat so even if
+         * Atmosphere always picks the first, it might end up using /VAADIN/*
+         * and websockets will fail.
+         */
+        initParameters.put(ApplicationConfig.JSR356_MAPPING_PATH,
+                pushRegistrationPath);
+
         ServletRegistrationBean<SpringServlet> registration = new ServletRegistrationBean<>(
-                new SpringServlet(context, rootMapping), mapping);
+                new SpringServlet(context, rootMapping), urlMappings);
         registration.setInitParameters(initParameters);
         registration
                 .setAsyncSupported(configurationProperties.isAsyncSupported());

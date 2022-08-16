@@ -461,9 +461,14 @@ public final class Constants implements Serializable {
     public static final String STATISTIC_ROUTING_HYBRID = "routing/hybrid";
 
     /**
-     * The name of platform versions file.
+     * The name of platform core components and tools versions file.
      */
-    public static final String VAADIN_VERSIONS_JSON = "vaadin_versions.json";
+    public static final String VAADIN_CORE_VERSIONS_JSON = "vaadin-core-versions.json";
+
+    /**
+     * The name of platform commercial components and tools versions file.
+     */
+    public static final String VAADIN_VERSIONS_JSON = "vaadin-versions.json";
 
     /**
      * @deprecated Use

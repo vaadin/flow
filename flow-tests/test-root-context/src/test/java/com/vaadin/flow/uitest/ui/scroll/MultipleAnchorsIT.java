@@ -28,7 +28,7 @@ public class MultipleAnchorsIT extends AbstractScrollIT {
 
     @Test
     public void numerousDifferentAnchorsShouldWorkAndHistoryShouldBePreserved() {
-        testBench().resizeViewPortTo(700, 800);
+        testBench().resizeViewPortTo(700, 600);
         open();
 
         final Long initialHistoryLength = getBrowserHistoryLength();
@@ -84,7 +84,7 @@ public class MultipleAnchorsIT extends AbstractScrollIT {
     private void verifyAnchor(int idNumber) {
         Point anchorElementLocation = findElement(
                 By.id(MultipleAnchorsView.ANCHOR_DIV_ID_BASE + idNumber))
-                        .getLocation();
+                .getLocation();
         assertThat("Expected url to change to anchor one",
                 driver.getCurrentUrl(),
                 endsWith(MultipleAnchorsView.ANCHOR_URL_BASE + idNumber));

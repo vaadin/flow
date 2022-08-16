@@ -24,6 +24,9 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinServletContext;
@@ -32,10 +35,8 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
+import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC_JS;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEB_COMPONENT_HTML;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Handles communication with a Vite server.
@@ -140,6 +141,11 @@ public final class ViteHandler extends AbstractDevServerRunner {
         if (path.equals("/" + WEB_COMPONENT_HTML)) {
             return super.prepareConnection(getContextPath() + "/"
                     + VAADIN_MAPPING + WEB_COMPONENT_HTML, method);
+        }
+
+        if (path.equals("/" + SERVICE_WORKER_SRC_JS)) {
+            return super.prepareConnection(getContextPath() + "/"
+                    + VAADIN_MAPPING + SERVICE_WORKER_SRC_JS, method);
         }
 
         return super.prepareConnection(getContextPath() + path, method);

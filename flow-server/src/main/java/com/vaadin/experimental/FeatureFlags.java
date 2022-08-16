@@ -53,13 +53,10 @@ public class FeatureFlags implements Serializable {
             "exampleFeatureFlag", "https://github.com/vaadin/flow/pull/12004",
             false,
             "com.vaadin.flow.server.frontend.NodeTestComponents$ExampleExperimentalComponent");
-    public static final Feature VITE = new Feature(
-            "Use Vite for faster front-end builds", "viteForFrontendBuild",
-            "https://github.com/vaadin/platform/issues/2448", true, null);
-    public static final Feature MAP_COMPONENT = new Feature(
-            "Map component (Pro)", "mapComponent",
-            "https://vaadin.com/docs/latest/ds/components/map", true,
-            "com.vaadin.flow.component.map.Map");
+    public static final Feature WEBPACK = new Feature(
+            "Use Webpack for front-end builds (Deprecated)",
+            "webpackForFrontendBuild",
+            "https://github.com/vaadin/flow/issues/13852", true, null);
     public static final Feature SPREADSHEET_COMPONENT = new Feature(
             "Spreadsheet component (Pro)", "spreadsheetComponent",
             "https://github.com/vaadin/platform/issues/2027", true,
@@ -67,9 +64,20 @@ public class FeatureFlags implements Serializable {
     public static final Feature HILLA_PUSH = new Feature(
             "Push support in Hilla", "hillaPush",
             "https://github.com/vaadin/hilla/issues/56", true, null);
-    public static final Feature NEW_LICENSE_CHECKER = new Feature(
-            "New license checker", "newLicenseChecker",
-            "https://github.com/vaadin/platform/issues/2938", false, null);
+    public static final Feature HILLA_ENGINE = new Feature(
+            "Multi-module engine in Hilla", "hillaEngine",
+            "https://github.com/vaadin/flow/issues/9010", true, null);
+    public static final Feature OLD_LICENSE_CHECKER = new Feature(
+            "Old license checker", "oldLicenseChecker",
+            "https://github.com/vaadin/platform/issues/2984", false, null);
+    public static final Feature COLLABORATION_ENGINE_BACKEND = new Feature(
+            "Collaboration Engine backend for clustering support",
+            "collaborationEngineBackend",
+            "https://github.com/vaadin/platform/issues/1988", true, null);
+    public static final Feature ENFORCE_FIELD_VALIDATION = new Feature(
+            "Enforce client / constraint / binder validation",
+            "enforceFieldValidation",
+            "https://github.com/vaadin/platform/issues/3066", false, null);
     private List<Feature> features = new ArrayList<>();
 
     File propertiesFolder = null;
@@ -87,11 +95,13 @@ public class FeatureFlags implements Serializable {
     public FeatureFlags(Lookup lookup) {
         this.lookup = lookup;
         features.add(new Feature(EXAMPLE));
-        features.add(new Feature(VITE));
-        features.add(new Feature(MAP_COMPONENT));
         features.add(new Feature(SPREADSHEET_COMPONENT));
         features.add(new Feature(HILLA_PUSH));
-        features.add(new Feature(NEW_LICENSE_CHECKER));
+        features.add(new Feature(HILLA_ENGINE));
+        features.add(new Feature(OLD_LICENSE_CHECKER));
+        features.add(new Feature(COLLABORATION_ENGINE_BACKEND));
+        features.add(new Feature(WEBPACK));
+        features.add(new Feature(ENFORCE_FIELD_VALIDATION));
         loadProperties();
     }
 

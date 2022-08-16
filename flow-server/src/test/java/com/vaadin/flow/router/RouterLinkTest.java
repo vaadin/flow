@@ -32,6 +32,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.HasCurrentService;
+import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
@@ -137,6 +138,87 @@ public class RouterLinkTest extends HasCurrentService {
         RouterLink link = new RouterLink(router, "Show something",
                 TestView.class, "something");
         Assert.assertEquals("Show something", link.getText());
+        Assert.assertTrue(link.getElement()
+                .hasAttribute(ApplicationConstants.ROUTER_LINK_ATTRIBUTE));
+
+        Assert.assertTrue(link.getElement().hasAttribute("href"));
+
+        Assert.assertEquals("bar/something",
+                link.getElement().getAttribute("href"));
+    }
+
+    @Test
+    public void createRouterLink_withTargetViewNoText() {
+        RouterLink link = new RouterLink(FooNavigationTarget.class);
+        Assert.assertEquals("", link.getText());
+        Assert.assertTrue(link.getElement()
+                .hasAttribute(ApplicationConstants.ROUTER_LINK_ATTRIBUTE));
+
+        Assert.assertTrue(link.getElement().hasAttribute("href"));
+
+        Assert.assertEquals("foo", link.getElement().getAttribute("href"));
+    }
+
+    @Test
+    public void createRouterLink_withTargetViewWithParameterNoText() {
+        RouterLink link = new RouterLink(TestView.class, "something");
+        Assert.assertEquals("", link.getText());
+        Assert.assertTrue(link.getElement()
+                .hasAttribute(ApplicationConstants.ROUTER_LINK_ATTRIBUTE));
+
+        Assert.assertTrue(link.getElement().hasAttribute("href"));
+
+        Assert.assertEquals("bar/something",
+                link.getElement().getAttribute("href"));
+    }
+
+    @Test
+    public void createRouterLink_withTargetViewWithRouteParametersNoText() {
+        RouteParameters routeParameters = HasUrlParameterFormat
+                .getParameters("something");
+        RouterLink link = new RouterLink(TestView.class, routeParameters);
+        Assert.assertEquals("", link.getText());
+        Assert.assertTrue(link.getElement()
+                .hasAttribute(ApplicationConstants.ROUTER_LINK_ATTRIBUTE));
+
+        Assert.assertTrue(link.getElement().hasAttribute("href"));
+
+        Assert.assertEquals("bar/something",
+                link.getElement().getAttribute("href"));
+    }
+
+    @Test
+    public void createRouterLink_explicitRouterWithTargetViewNoText() {
+        RouterLink link = new RouterLink(router, FooNavigationTarget.class);
+        Assert.assertEquals("", link.getText());
+        Assert.assertTrue(link.getElement()
+                .hasAttribute(ApplicationConstants.ROUTER_LINK_ATTRIBUTE));
+
+        Assert.assertTrue(link.getElement().hasAttribute("href"));
+
+        Assert.assertEquals("foo", link.getElement().getAttribute("href"));
+    }
+
+    @Test
+    public void createRouterLink_explicitRouterWithTargetViewWithParameterNoText() {
+        RouterLink link = new RouterLink(router, TestView.class, "something");
+        Assert.assertEquals("", link.getText());
+        Assert.assertTrue(link.getElement()
+                .hasAttribute(ApplicationConstants.ROUTER_LINK_ATTRIBUTE));
+
+        Assert.assertTrue(link.getElement().hasAttribute("href"));
+
+        Assert.assertEquals("bar/something",
+                link.getElement().getAttribute("href"));
+    }
+
+    @Test
+    public void createRouterLink_explicitRouterWithTargetViewWithRouteParametersNoText() {
+        RouteParameters routeParameters = HasUrlParameterFormat
+                .getParameters("something");
+        RouterLink link = new RouterLink(router, TestView.class,
+                routeParameters);
+        Assert.assertEquals("", link.getText());
         Assert.assertTrue(link.getElement()
                 .hasAttribute(ApplicationConstants.ROUTER_LINK_ATTRIBUTE));
 

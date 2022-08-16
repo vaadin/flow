@@ -17,7 +17,7 @@ package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import com.vaadin.flow.testutil.DevModeGizmoElement;
+import com.vaadin.flow.testutil.DevToolsElement;
 import com.vaadin.testbench.TestBenchElement;
 
 import org.junit.Assert;
@@ -31,17 +31,17 @@ public class DebugWindowErrorHandlingIT extends ChromeBrowserTest {
     public void clientSideErrorsReported() {
         open();
         clientSideError();
-        DevModeGizmoElement gizmo = $(DevModeGizmoElement.class).first();
-        gizmo.waitForErrorMessage(text -> text.equals("Client side error"));
-        Assert.assertTrue(gizmo.isExpanded());
+        DevToolsElement devTools = $(DevToolsElement.class).first();
+        devTools.waitForErrorMessage(text -> text.equals("Client side error"));
+        Assert.assertTrue(devTools.isExpanded());
     }
 
     @Test
     public void clientSideExceptionReported() {
         open();
         clientSideException();
-        DevModeGizmoElement gizmo = $(DevModeGizmoElement.class).first();
-        gizmo.waitForErrorMessage(text -> text.matches(
+        DevToolsElement devTools = $(DevToolsElement.class).first();
+        devTools.waitForErrorMessage(text -> text.matches(
                 "Uncaught TypeError: Cannot read properties of null \\(reading 'foo'\\).*"));
     }
 
@@ -49,8 +49,8 @@ public class DebugWindowErrorHandlingIT extends ChromeBrowserTest {
     public void clientSidePromiseRejectionReported() {
         open();
         clientSidePromiseRejection();
-        DevModeGizmoElement gizmo = $(DevModeGizmoElement.class).first();
-        gizmo.waitForErrorMessage(text -> text.matches(
+        DevToolsElement devTools = $(DevToolsElement.class).first();
+        devTools.waitForErrorMessage(text -> text.matches(
                 "TypeError: Failed to fetch dynamically imported module: .*this-file-does-not-exist.js"));
     }
 
@@ -58,31 +58,32 @@ public class DebugWindowErrorHandlingIT extends ChromeBrowserTest {
     public void execJSExceptionReported() {
         open();
         execJSException();
-        DevModeGizmoElement gizmo = $(DevModeGizmoElement.class).first();
-        gizmo.waitForErrorMessage(text -> text.equals(
+        DevToolsElement devTools = $(DevToolsElement.class).first();
+        devTools.waitForErrorMessage(text -> text.equals(
                 "Exception is thrown during JavaScript execution. Stacktrace will be dumped separately."));
-        gizmo.waitForErrorMessage(text -> text
+        devTools.waitForErrorMessage(text -> text
                 .equals("The error has occurred in the JS code: 'null.foo'"));
-        gizmo.waitForErrorMessage(text -> text.matches(
+        devTools.waitForErrorMessage(text -> text.matches(
                 "Uncaught TypeError: Cannot read properties of null \\(reading 'foo'\\).*"));
     }
 
     @Test
     public void numberOfLogRowsLimited() {
         open();
-        DevModeGizmoElement gizmo = $(DevModeGizmoElement.class).first();
-        gizmo.expand();
+        DevToolsElement devTools = $(DevToolsElement.class).first();
+        devTools.expand();
         causeErrors("1001");
-        gizmo.waitForLastErrorMessageToMatch(msg -> msg.equals("Error 1001"));
+        devTools.waitForLastErrorMessageToMatch(
+                msg -> msg.equals("Error 1001"));
 
-        Assert.assertEquals("Error 2", gizmo.getFirstErrorLogRow());
-        Assert.assertEquals("Error 1001", gizmo.getLastErrorLogRow());
-        Assert.assertEquals(1000, gizmo.getNumberOfErrorLogRows());
+        Assert.assertEquals("Error 2", devTools.getFirstErrorLogRow());
+        Assert.assertEquals("Error 1001", devTools.getLastErrorLogRow());
+        Assert.assertEquals(1000, devTools.getNumberOfErrorLogRows());
 
         causeErrors("2");
-        gizmo.waitForLastErrorMessageToMatch(msg -> msg.equals("Error 2"));
-        Assert.assertEquals("Error 4", gizmo.getFirstErrorLogRow());
-        Assert.assertEquals("Error 2", gizmo.getLastErrorLogRow());
+        devTools.waitForLastErrorMessageToMatch(msg -> msg.equals("Error 2"));
+        Assert.assertEquals("Error 4", devTools.getFirstErrorLogRow());
+        Assert.assertEquals("Error 2", devTools.getLastErrorLogRow());
     }
 
     private void causeErrors(String nr) {
@@ -99,13 +100,13 @@ public class DebugWindowErrorHandlingIT extends ChromeBrowserTest {
     private void clientSideException() {
         findElement(
                 By.id(DebugWindowErrorHandlingView.CLIENT_SIDE_EXCEPTION_ID))
-                        .click();
+                .click();
     }
 
     private void clientSidePromiseRejection() {
         findElement(By.id(
                 DebugWindowErrorHandlingView.CLIENT_SIDE_PROMISE_REJECTION_ID))
-                        .click();
+                .click();
     }
 
     private void execJSException() {

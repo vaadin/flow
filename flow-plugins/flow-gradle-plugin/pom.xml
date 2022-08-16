@@ -3,7 +3,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-plugins</artifactId>
-        <version>23.1-SNAPSHOT</version>
+        <version>23.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>flow-gradle-plugin</artifactId>
@@ -32,35 +32,11 @@
 
     <build>
         <plugins>
-            <!-- copy all dependencies to target/dependencies -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.3.0</version>
-                <executions>
-                    <execution>
-                        <id>copy-dependencies</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                            <goal>copy-dependencies</goal>
-                        </goals>
-                        <inherited>false</inherited>
-                        <configuration>
-                            <useBaseVersion>true</useBaseVersion>
-                            <addParentPoms>true</addParentPoms>
-                            <copyPom>true</copyPom>
-                            <useRepositoryLayout>true</useRepositoryLayout>
-                            <outputDirectory>${project.build.directory}/dependencies</outputDirectory>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
             <!-- execute Gradle command -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <version>3.0.0</version>
+                <version>3.1.0</version>
                 <executions>
                     <execution>
                         <id>gradle</id>
@@ -86,7 +62,7 @@
             <!-- copy generated JARs -->
             <plugin>
                 <artifactId>maven-resources-plugin</artifactId>
-                <version>3.2.0</version>
+                <version>3.3.0</version>
                 <executions>
                     <execution>
                         <id>copy-gradle-jars</id>

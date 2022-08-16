@@ -45,7 +45,8 @@ public class WebComponentExporterAwareValidator
 
     @Override
     public void initialize(Set<Class<?>> classSet, VaadinContext context) {
-        validateClasses(classSet);
+        validateClasses(AbstractAnnotationValidator
+                .removeHandleTypesSelfReferences(classSet, this));
     }
 
     @Override

@@ -56,8 +56,9 @@ public class RouteRegistryInitializer extends AbstractRouteRegistryInitializer
     public void initialize(Set<Class<?>> classSet, VaadinContext context)
             throws VaadinInitializerException {
         try {
-            Set<Class<?>> routesSet = classSet == null ? Collections.emptySet()
-                    : classSet;
+            Set<Class<?>> routesSet = AbstractAnnotationValidator
+                    .removeHandleTypesSelfReferences(classSet, this);
+
             ApplicationRouteRegistry routeRegistry = ApplicationRouteRegistry
                     .getInstance(context);
 

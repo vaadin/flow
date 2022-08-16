@@ -16,6 +16,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -176,21 +177,27 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         URLConnection urlConnection = Mockito.mock(URLConnection.class);
         Mockito.when(urlConnection.getContent()).thenReturn(virtualFile);
 
-        URL.setURLStreamHandlerFactory(protocol -> {
-            if (protocol.equals("vfs")) {
-                return new URLStreamHandler() {
-                    @Override
-                    protected URLConnection openConnection(URL u) {
-                        return urlConnection;
-                    }
-                };
-            }
-            return null;
-        });
-        URL url = new URL("vfs://some-non-existent-place" + path);
+        try {
+            URL.setURLStreamHandlerFactory(protocol -> {
+                if (protocol.equals("vfs")) {
+                    return new URLStreamHandler() {
+                        @Override
+                        protected URLConnection openConnection(URL u) {
+                            return urlConnection;
+                        }
+                    };
+                }
+                return null;
+            });
+            URL url = new URL("vfs://some-non-existent-place" + path);
 
-        loadingFsResources_allFilesExist(Collections.singletonList(url),
-                RESOURCES_FRONTEND_DEFAULT);
+            loadingFsResources_allFilesExist(Collections.singletonList(url),
+                    RESOURCES_FRONTEND_DEFAULT);
+        } finally {
+            Field field = URL.class.getDeclaredField("factory");
+            field.setAccessible(true);
+            field.set(null, null);
+        }
     }
 
     @Test
@@ -203,7 +210,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     @Test
     public void should_Run_Updaters_when_NoNodeConfFiles_doesNotThrow()
             throws Exception {
-        webpackFile.delete();
+        devServerConfigFile.delete();
         mainPackageFile.delete();
         // no any exception means that updaters are executed and dev mode server
         // started
@@ -217,7 +224,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
 
     @Test
     public void should_Run_Updaters_when_NoNodeConfFiles() throws Exception {
-        webpackFile.delete();
+        devServerConfigFile.delete();
         mainPackageFile.delete();
         process();
         assertDevModeHandlerStarted();
@@ -239,7 +246,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
 
     @Test
     public void should_Run_Updaters_when_NoWebpackFile() throws Exception {
-        webpackFile.delete();
+        devServerConfigFile.delete();
         process();
         assertDevModeHandlerStarted();
     }

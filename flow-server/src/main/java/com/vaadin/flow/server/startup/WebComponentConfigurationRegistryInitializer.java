@@ -57,7 +57,10 @@ public class WebComponentConfigurationRegistryInitializer
         WebComponentConfigurationRegistry instance = WebComponentConfigurationRegistry
                 .getInstance(context);
 
-        if (classSet == null || classSet.isEmpty()) {
+        classSet = AbstractAnnotationValidator
+                .removeHandleTypesSelfReferences(classSet, this);
+
+        if (classSet.isEmpty()) {
             instance.setConfigurations(Collections.emptySet());
             return;
         }

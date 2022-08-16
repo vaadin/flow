@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-project</artifactId>
-        <version>23.1-SNAPSHOT</version>
+        <version>23.2-SNAPSHOT</version>
     </parent>
     <artifactId>flow-tests</artifactId>
     <name>Flow tests</name>
@@ -42,7 +42,7 @@
         <vaadin.allow.appshell.annotations>false</vaadin.allow.appshell.annotations>
         <useDeprecatedV14Bootstrapping>false</useDeprecatedV14Bootstrapping>
         <vaadin.devmode.vite.options>--host</vaadin.devmode.vite.options>
-
+        <vaadin.eagerServerLoad>false</vaadin.eagerServerLoad>
         <!-- make sure we do not leave webpack-dev-server running after IT -->
         <vaadin.reuseDevServer>false</vaadin.reuseDevServer>
     </properties>
@@ -223,7 +223,7 @@
                             <vaadin.reuseDevServer>${vaadin.reuseDevServer}</vaadin.reuseDevServer>
                             <vaadin.devmode.liveReload.enabled>${vaadin.devmode.liveReload.enabled}</vaadin.devmode.liveReload.enabled>
                             <vaadin.allow.appshell.annotations>${vaadin.allow.appshell.annotations}</vaadin.allow.appshell.annotations>
-
+			    <vaadin.eagerServerLoad>${vaadin.eagerServerLoad}</vaadin.eagerServerLoad>
                             <jetty.scantrigger>${jetty.scantrigger}</jetty.scantrigger>
                             <!-- Allow test clients not on localhost to connect to Vite-->
                             <vaadin.devmode.vite.options>${vaadin.devmode.vite.options}</vaadin.devmode.vite.options>
@@ -257,7 +257,6 @@
                 </property>
             </activation>
             <modules>
-                <module>test-fusion-csrf</module>
                 <module>test-root-context</module>
                 <module>test-embedding</module>
                 <module>test-frontend</module>
@@ -283,6 +282,8 @@
                 <module>test-dev-mode</module>
                 <module>test-pwa</module>
                 <module>test-pwa/pom-production.xml</module>
+                <module>test-pwa/pom-webpack.xml</module>
+                <module>test-pwa/pom-production-webpack.xml</module>
                 <module>test-pwa-disabled-offline</module>
                 <module>test-pwa-disabled-offline/pom-production.xml</module>
                 <module>test-root-ui-context</module>
@@ -308,11 +309,12 @@
                 <module>test-ccdm/pom-production.xml</module>
                 <module>test-ccdm-flow-navigation</module>
                 <module>test-ccdm-flow-navigation/pom-production.xml</module>
-                <module>test-fusion-csrf</module>
-                <module>test-fusion-csrf-context</module>
 
                 <module>test-root-context</module>
 
+                <module>test-eager-bootstrap</module>
+
+                <!-- Webpack only -->
                 <module>test-v14-bootstrap</module>
                 <module>test-v14-bootstrap/pom-production.xml</module>
 
@@ -324,6 +326,7 @@
                 <module>test-application-theme</module>
                 <module>test-theme-no-polymer</module>
                 <module>test-frontend</module>
+                <module>test-custom-frontend-directory</module>
 
                 <module>vaadin-spring-tests</module>
             </modules>

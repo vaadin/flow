@@ -16,28 +16,7 @@
  */
 package com.vaadin.flow.plugin.maven;
 
-import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
-import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
-import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FALLBACK_IMPORTS_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_D_TS_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
-import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
-import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
-import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
-import static java.io.File.pathSeparator;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -70,19 +49,40 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.plugin.TestUtils;
 import com.vaadin.flow.server.Constants;
-import dev.hilla.Endpoint;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.FrontendTools;
-import dev.hilla.frontend.EndpointGeneratorTaskFactoryImpl;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.Constants.TARGET;
+import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FALLBACK_IMPORTS_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_D_TS_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
+import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
+import static com.vaadin.flow.server.frontend.FrontendUtils.VITE_CONFIG;
+import static com.vaadin.flow.server.frontend.FrontendUtils.VITE_GENERATED_CONFIG;
+import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
+import static java.io.File.pathSeparator;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class BuildFrontendMojoTest {
     public static final String TEST_PROJECT_RESOURCE_JS = "test_project_resource.js";
@@ -96,8 +96,8 @@ public class BuildFrontendMojoTest {
     private File projectBase;
     private File projectFrontendResourcesDirectory;
     private String packageJson;
-    private String webpackConfig;
-    private String webpackGenerated;
+    private String viteConfig;
+    private String viteGenerated;
     private File webpackOutputDirectory;
     private File resourceOutputDirectory;
     private File defaultJavaSource;
@@ -107,6 +107,7 @@ public class BuildFrontendMojoTest {
     private File tokenFile;
 
     private final BuildFrontendMojo mojo = Mockito.spy(new BuildFrontendMojo());
+    private Lookup lookup;
 
     @Before
     public void setup() throws Exception {
@@ -138,8 +139,8 @@ public class BuildFrontendMojoTest {
         File frontendDirectory = new File(npmFolder, DEFAULT_FRONTEND_DIR);
 
         packageJson = new File(npmFolder, PACKAGE_JSON).getAbsolutePath();
-        webpackConfig = new File(npmFolder, WEBPACK_CONFIG).getAbsolutePath();
-        webpackGenerated = new File(npmFolder, WEBPACK_GENERATED)
+        viteConfig = new File(npmFolder, VITE_CONFIG).getAbsolutePath();
+        viteGenerated = new File(npmFolder, VITE_GENERATED_CONFIG)
                 .getAbsolutePath();
         webpackOutputDirectory = new File(projectBase, VAADIN_WEBAPP_RESOURCES);
         resourceOutputDirectory = new File(projectBase,
@@ -208,8 +209,8 @@ public class BuildFrontendMojoTest {
         FileUtils.fileWrite(packageJson, "UTF-8",
                 TestUtils.getInitalPackageJson().toJson());
 
-        Lookup lookup = Mockito.mock(Lookup.class);
-        Mockito.doReturn(new EndpointGeneratorTaskFactoryImpl()).when(lookup)
+        lookup = Mockito.mock(Lookup.class);
+        Mockito.doReturn(new TestEndpointGeneratorTaskFactory()).when(lookup)
                 .lookup(EndpointGeneratorTaskFactory.class);
         Mockito.doAnswer(invocation -> {
             Mockito.doReturn((ClassFinder) invocation.getArguments()[0])
@@ -223,11 +224,11 @@ public class BuildFrontendMojoTest {
         if (FileUtils.fileExists(packageJson)) {
             FileUtils.fileDelete(packageJson);
         }
-        if (FileUtils.fileExists(webpackConfig)) {
-            FileUtils.fileDelete(webpackConfig);
+        if (FileUtils.fileExists(viteConfig)) {
+            FileUtils.fileDelete(viteConfig);
         }
-        if (FileUtils.fileExists(webpackGenerated)) {
-            FileUtils.fileDelete(webpackGenerated);
+        if (FileUtils.fileExists(viteGenerated)) {
+            FileUtils.fileDelete(viteGenerated);
         }
     }
 
@@ -243,17 +244,17 @@ public class BuildFrontendMojoTest {
     }
 
     @Test
-    public void should_generateWebpackConfig() throws Exception {
-        Assert.assertFalse(FileUtils.fileExists(webpackConfig));
+    public void should_generateViteConfig() throws Exception {
+        Assert.assertFalse(FileUtils.fileExists(viteConfig));
         mojo.execute();
-        Assert.assertTrue(FileUtils.fileExists(webpackConfig));
+        Assert.assertTrue(FileUtils.fileExists(viteConfig));
     }
 
     @Test
-    public void should_generateWebpackGeneratedConfig() throws Exception {
-        Assert.assertFalse(FileUtils.fileExists(webpackGenerated));
+    public void should_generateViteGeneratedConfig() throws Exception {
+        Assert.assertFalse(FileUtils.fileExists(viteGenerated));
         mojo.execute();
-        Assert.assertTrue(FileUtils.fileExists(webpackGenerated));
+        Assert.assertTrue(FileUtils.fileExists(viteGenerated));
     }
 
     @Test
@@ -723,16 +724,6 @@ public class BuildFrontendMojoTest {
                 return files;
             }
             return Collections.emptyList();
-        }
-    }
-
-    @Endpoint
-    public class MyEndpoint {
-        public void foo(String bar) {
-        }
-
-        public String bar(String baz) {
-            return baz;
         }
     }
 }

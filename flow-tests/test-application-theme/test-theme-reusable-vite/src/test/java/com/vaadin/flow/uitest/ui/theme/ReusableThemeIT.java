@@ -66,8 +66,8 @@ public class ReusableThemeIT extends ChromeBrowserTest {
         // of keeping name intact.
         final String bgCssValue = body.getCssValue("background-image");
         final String regex = ("url\\(\"" + getRootURL()
-                + "/path/VAADIN/build/(.*)\\.jpg\"\\)").replaceAll("/",
-                        "\\\\/");
+                + "/path/VAADIN/build/(.*)\\.jpg\"\\)")
+                .replaceAll("/", "\\\\/");
         Matcher imageMatcher = Pattern.compile(regex).matcher(bgCssValue);
 
         Assert.assertTrue("BG image not found in body css '" + bgCssValue + "'",

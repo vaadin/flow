@@ -4,7 +4,7 @@ module.exports = {
   mode: "development",
   entry: {
     flow: "./src/test/frontend/FlowTests.ts",
-    gizmo: "./src/test/frontend/VaadinDevmodeGizmoTests.js",
+    devtools: "./src/test/frontend/vaadin-dev-tools-tests.js",
   },
   output: {
     filename: "[name].spec.js",
@@ -36,9 +36,5 @@ module.exports = {
     ]
   },
 
-  node: {
-    process: false,
-    global: false,
-    fs: "empty"
-  }
+  node: false
 };

@@ -27,14 +27,12 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeoutException;
 
-import com.fasterxml.jackson.annotation.JsonFormat.Feature;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
@@ -45,10 +43,10 @@ import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendToolsSettings;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
-import com.vaadin.flow.server.frontend.TaskUpdateImports;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.scanner.ReflectionsClassFinder;
 import com.vaadin.flow.utils.FlowFileUtils;
+import com.vaadin.pro.licensechecker.BuildType;
 import com.vaadin.pro.licensechecker.LicenseChecker;
 import com.vaadin.pro.licensechecker.Product;
 
@@ -159,20 +157,17 @@ public class BuildFrontendUtil {
         NodeTasks.Builder builder = new NodeTasks.Builder(lookup,
                 adapter.npmFolder(), adapter.generatedFolder(),
                 adapter.frontendDirectory(), adapter.buildFolder())
-                        .useV14Bootstrap(
-                                adapter.isUseDeprecatedV14Bootstrapping())
-                        .withFlowResourcesFolder(flowResourcesFolder)
-                        .createMissingPackageJson(true)
-                        .enableImportsUpdate(false).enablePackagesUpdate(false)
-                        .runNpmInstall(false)
-                        .withFrontendGeneratedFolder(
-                                adapter.generatedTsFolder())
-                        .withNodeVersion(adapter.nodeVersion())
-                        .withNodeDownloadRoot(nodeDownloadRootURI)
-                        .setNodeAutoUpdate(adapter.nodeAutoUpdate())
-                        .withHomeNodeExecRequired(adapter.requireHomeNodeExec())
-                        .setJavaResourceFolder(adapter.javaResourceFolder())
-                        .withProductionMode(adapter.productionMode());
+                .useV14Bootstrap(adapter.isUseDeprecatedV14Bootstrapping())
+                .withFlowResourcesFolder(flowResourcesFolder)
+                .createMissingPackageJson(true).enableImportsUpdate(false)
+                .enablePackagesUpdate(false).runNpmInstall(false)
+                .withFrontendGeneratedFolder(adapter.generatedTsFolder())
+                .withNodeVersion(adapter.nodeVersion())
+                .withNodeDownloadRoot(nodeDownloadRootURI)
+                .setNodeAutoUpdate(adapter.nodeAutoUpdate())
+                .withHomeNodeExecRequired(adapter.requireHomeNodeExec())
+                .setJavaResourceFolder(adapter.javaResourceFolder())
+                .withProductionMode(adapter.productionMode());
 
         // Copy jar artifact contents in TaskCopyFrontendFiles
         builder.copyResources(adapter.getJarFiles());
@@ -314,41 +309,32 @@ public class BuildFrontendUtil {
             new NodeTasks.Builder(lookup, adapter.npmFolder(),
                     adapter.generatedFolder(), adapter.frontendDirectory(),
                     adapter.buildFolder())
-                            .runNpmInstall(adapter.runNpmInstall())
-                            .withWebpack(adapter.webpackOutputDirectory(),
-                                    adapter.servletResourceOutputDirectory())
-                            .useV14Bootstrap(
-                                    adapter.isUseDeprecatedV14Bootstrapping())
-                            .enablePackagesUpdate(true)
-                            .useByteCodeScanner(adapter.optimizeBundle())
-                            .withFlowResourcesFolder(flowResourcesFolder)
-                            .copyResources(jarFiles).copyTemplates(true)
-                            .copyLocalResources(
-                                    adapter.frontendResourcesDirectory())
-                            .enableImportsUpdate(true)
-                            .withEmbeddableWebComponents(
-                                    adapter.generateEmbeddableWebComponents())
-                            .withTokenFile(
-                                    BuildFrontendUtil.getTokenFile(adapter))
-                            .enablePnpm(adapter.pnpmEnable())
-                            .useGlobalPnpm(adapter.useGlobalPnpm())
-                            .withApplicationProperties(
-                                    adapter.applicationProperties())
-                            .withEndpointSourceFolder(
-                                    adapter.javaSourceFolder())
-                            .withEndpointGeneratedOpenAPIFile(
-                                    adapter.openApiJsonFile())
-                            .withFrontendGeneratedFolder(
-                                    adapter.generatedTsFolder())
-                            .withHomeNodeExecRequired(
-                                    adapter.requireHomeNodeExec())
-                            .withNodeVersion(adapter.nodeVersion())
-                            .withNodeDownloadRoot(nodeDownloadRootURI)
-                            .setNodeAutoUpdate(adapter.nodeAutoUpdate())
-                            .setJavaResourceFolder(adapter.javaResourceFolder())
-                            .withPostinstallPackages(
-                                    adapter.postinstallPackages())
-                            .build().execute();
+                    .runNpmInstall(adapter.runNpmInstall())
+                    .withWebpack(adapter.webpackOutputDirectory(),
+                            adapter.servletResourceOutputDirectory())
+                    .useV14Bootstrap(adapter.isUseDeprecatedV14Bootstrapping())
+                    .enablePackagesUpdate(true)
+                    .useByteCodeScanner(adapter.optimizeBundle())
+                    .withFlowResourcesFolder(flowResourcesFolder)
+                    .copyResources(jarFiles).copyTemplates(true)
+                    .copyLocalResources(adapter.frontendResourcesDirectory())
+                    .enableImportsUpdate(true)
+                    .withEmbeddableWebComponents(
+                            adapter.generateEmbeddableWebComponents())
+                    .withTokenFile(BuildFrontendUtil.getTokenFile(adapter))
+                    .enablePnpm(adapter.pnpmEnable())
+                    .useGlobalPnpm(adapter.useGlobalPnpm())
+                    .withApplicationProperties(adapter.applicationProperties())
+                    .withEndpointSourceFolder(adapter.javaSourceFolder())
+                    .withEndpointGeneratedOpenAPIFile(adapter.openApiJsonFile())
+                    .withFrontendGeneratedFolder(adapter.generatedTsFolder())
+                    .withHomeNodeExecRequired(adapter.requireHomeNodeExec())
+                    .withNodeVersion(adapter.nodeVersion())
+                    .withNodeDownloadRoot(nodeDownloadRootURI)
+                    .setNodeAutoUpdate(adapter.nodeAutoUpdate())
+                    .setJavaResourceFolder(adapter.javaResourceFolder())
+                    .withPostinstallPackages(adapter.postinstallPackages())
+                    .build().execute();
         } catch (ExecutionFailedException exception) {
             throw exception;
         } catch (Throwable throwable) { // NOSONAR Intentionally throwable
@@ -373,13 +359,17 @@ public class BuildFrontendUtil {
     public static void runFrontendBuild(PluginAdapterBase adapter)
             throws TimeoutException, URISyntaxException {
         FeatureFlags featureFlags = getFeatureFlags(adapter);
+
+        LicenseChecker.setStrictOffline(
+                !featureFlags.isEnabled(FeatureFlags.OLD_LICENSE_CHECKER));
+
         FrontendToolsSettings settings = getFrontendToolsSettings(adapter);
         FrontendTools tools = new FrontendTools(settings);
         tools.validateNodeAndNpmVersion();
-        if (featureFlags.isEnabled(FeatureFlags.VITE)) {
-            BuildFrontendUtil.runVite(adapter, tools);
-        } else {
+        if (featureFlags.isEnabled(FeatureFlags.WEBPACK)) {
             BuildFrontendUtil.runWebpack(adapter, tools);
+        } else {
+            BuildFrontendUtil.runVite(adapter, tools);
         }
     }
 
@@ -480,10 +470,6 @@ public class BuildFrontendUtil {
     private static void validateLicenses(PluginAdapterBase adapter) {
         File nodeModulesFolder = new File(adapter.npmFolder(),
                 FrontendUtils.NODE_MODULES);
-        FeatureFlags featureFlags = getFeatureFlags(adapter);
-        if (!featureFlags.isEnabled(FeatureFlags.NEW_LICENSE_CHECKER)) {
-            return;
-        }
 
         File outputFolder = adapter.webpackOutputDirectory();
         File statsFile = new File(adapter.servletResourceOutputDirectory(),
@@ -499,7 +485,7 @@ public class BuildFrontendUtil {
         for (Product component : commercialComponents) {
             try {
                 LicenseChecker.checkLicense(component.getName(),
-                        component.getVersion());
+                        component.getVersion(), BuildType.PRODUCTION);
             } catch (Exception e) {
                 try {
                     getLogger().debug(

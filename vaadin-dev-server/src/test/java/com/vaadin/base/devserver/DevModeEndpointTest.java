@@ -6,6 +6,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_JAVA
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_OPENAPI_JSON_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR;
 import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
+import static com.vaadin.flow.testutil.FrontendStubs.createStubViteServer;
 import static com.vaadin.flow.testutil.FrontendStubs.createStubWebpackServer;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -27,7 +28,6 @@ import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
-import dev.hilla.frontend.EndpointGeneratorTaskFactoryImpl;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
@@ -58,7 +58,7 @@ public class DevModeEndpointTest extends AbstractDevModeTest {
                         .isPresent());
 
         createStubNode(false, true, baseDir);
-        createStubWebpackServer("Compiled", 500, baseDir, true);
+        createStubViteServer("ready in 500 ms", 500, baseDir, true);
 
         // Prevent TaskRunNpmInstall#cleanUp from deleting node_modules
         new File(baseDir, "node_modules/.modules.yaml").createNewFile();
@@ -66,7 +66,7 @@ public class DevModeEndpointTest extends AbstractDevModeTest {
         ServletRegistration vaadinServletRegistration = Mockito
                 .mock(ServletRegistration.class);
 
-        Mockito.doReturn(new EndpointGeneratorTaskFactoryImpl()).when(lookup)
+        Mockito.doReturn(new TestEndpointGeneratorTaskFactory()).when(lookup)
                 .lookup(EndpointGeneratorTaskFactory.class);
 
         ResourceProvider resourceProvider = Mockito

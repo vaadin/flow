@@ -24,6 +24,7 @@ import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -31,11 +32,11 @@ import java.util.zip.GZIPInputStream;
 
 import org.junit.Assert;
 import org.junit.Assume;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.mobile.NetworkConnection;
 
 import com.vaadin.flow.testutil.ChromeDeviceTest;
 
@@ -80,14 +81,15 @@ public class PwaTestIT extends ChromeDeviceTest {
                 By.xpath("//link[@rel='apple-touch-icon'][@sizes][@href]")), 1);
 
         checkIcons(head.findElements(By.xpath(
-                "//link[@rel='apple-touch-startup-image'][@sizes][@href]")), 4);
+                "//link[@rel='apple-touch-startup-image'][@sizes][@href]")),
+                26);
 
         // test web manifest
         List<WebElement> elements = head
                 .findElements(By.xpath("//link[@rel='manifest'][@href]"));
         Assert.assertEquals(1, elements.size());
         String href = elements.get(0).getAttribute("href");
-        Assert.assertTrue(href + " didn't respond with resource", exists(href));
+        assertExists(href);
         // Verify user values in manifest.webmanifest
         if (!href.startsWith(getRootURL())) {
             href = getRootURL() + '/' + href;
@@ -119,13 +121,25 @@ public class PwaTestIT extends ChromeDeviceTest {
                 ? matcher.group(1)
                 : getRootURL() + "/" + matcher.group(1);
 
-        Assert.assertTrue("Service worker not served at: " + serviceWorkerUrl,
-                exists(serviceWorkerUrl));
+        assertExists(serviceWorkerUrl);
 
         String serviceWorkerJS = readStringFromUrl(serviceWorkerUrl);
+
+        // For Vite search for the precache file as it is loaded at runtime
+        // and not compiled into sw.js during build
+        Assert.assertTrue(
+                "Expected sw-runtime-resources-precache.js to be imported, but was not",
+                serviceWorkerJS.contains(
+                        "importScripts(\"sw-runtime-resources-precache.js\");"));
+
+        serviceWorkerUrl = getRootURL() + "/sw-runtime-resources-precache.js";
+        serviceWorkerJS = readStringFromUrl(serviceWorkerUrl);
+        System.out.println(serviceWorkerJS);
+
         // parse the precache resources (the app bundles) from service worker JS
-        pattern = Pattern
-                .compile("\\{'revision':('[^']+'|null),'url':'([^']+)'}");
+        pattern = Pattern.compile(
+                "\\{ url: '([^']+)', revision: ('[^']+'|null) }",
+                Pattern.MULTILINE);
         matcher = pattern.matcher(serviceWorkerJS);
         ArrayList<String> precacheUrls = new ArrayList<>();
         while (matcher.find()) {
@@ -133,17 +147,18 @@ public class PwaTestIT extends ChromeDeviceTest {
         }
         Assert.assertFalse("Expected at least one precache URL",
                 precacheUrls.isEmpty());
-        Assert.assertTrue("Expected precached appshell",
+        // Vite does not precache appshell if there's an offline path configured
+        Assert.assertFalse("Expected appshell not to be precached",
                 precacheUrls.contains("."));
         checkResources(precacheUrls.toArray(new String[] {}));
         checkResources("yes.png", "offline.html");
     }
 
     @Test
-    public void testPwaResourcesOffline() throws IOException {
+    public void testPwaResourcesOffline() {
         open();
         waitForServiceWorkerReady();
-        setConnectionType(NetworkConnection.ConnectionType.AIRPLANE_MODE);
+        getDevTools().setOfflineEnabled(true);
         try {
             // Ensure we are offline
             Assert.assertEquals("navigator.onLine should be false", false,
@@ -155,12 +170,12 @@ public class PwaTestIT extends ChromeDeviceTest {
             // not all icons are precached.
             checkResources("icons/icon-32x32.png", "yes.png", "offline.html");
         } finally {
-            setConnectionType(NetworkConnection.ConnectionType.ALL);
+            getDevTools().setOfflineEnabled(false);
         }
     }
 
     @Test
-    public void testPwaOfflinePath() throws IOException {
+    public void testPwaOfflinePath() {
         open();
         waitForServiceWorkerReady();
 
@@ -169,7 +184,7 @@ public class PwaTestIT extends ChromeDeviceTest {
                 findElement(By.id("outlet")));
 
         // Set offline network conditions in ChromeDriver
-        setConnectionType(NetworkConnection.ConnectionType.AIRPLANE_MODE);
+        getDevTools().setOfflineEnabled(true);
 
         try {
             Assert.assertEquals("navigator.onLine should be false", false,
@@ -204,10 +219,12 @@ public class PwaTestIT extends ChromeDeviceTest {
                     message.getText().toLowerCase().contains("offline"));
         } finally {
             // Reset network conditions back
-            setConnectionType(NetworkConnection.ConnectionType.ALL);
+            getDevTools().setOfflineEnabled(false);
         }
     }
 
+    @Ignore("Vite is currently not compressing service worker. "
+            + "See https://github.com/vaadin/flow/issues/14206")
     @Test
     public void compareUncompressedAndCompressedServiceWorkerJS()
             throws IOException {
@@ -218,7 +235,7 @@ public class PwaTestIT extends ChromeDeviceTest {
         Assume.assumeTrue(isProductionMode());
 
         byte[] uncompressed = readBytesFromUrl(getRootURL() + "/sw.js");
-        byte[] compressed = readBytesFromUrl(getRootURL() + "/sw.js.gz");
+        byte[] compressed = readBytesFromUrl(getRootURL() + "/sw.js.br");
         byte[] decompressed = readAllBytes(
                 new GZIPInputStream(new ByteArrayInputStream(compressed)));
         Assert.assertArrayEquals(uncompressed, decompressed);
@@ -233,31 +250,45 @@ public class PwaTestIT extends ChromeDeviceTest {
         Assert.assertEquals(expected, icons.size());
         for (WebElement element : icons) {
             String href = element.getAttribute("href");
-            Assert.assertTrue(href + " didn't respond with resource",
-                    exists(href));
+            assertExists(href);
         }
     }
 
     private void checkResources(String... resources) {
         for (String url : resources) {
-            Assert.assertTrue(url + " didn't respond with resource",
-                    exists(url));
+            assertExists(url);
         }
     }
 
-    private boolean exists(String url) {
+    private void assertExists(String url) {
         // If the mimetype can be guessed from the file name, check consistency
         // with the actual served file
         String expectedMimeType = URLConnection.guessContentTypeFromName(url);
+        if ("text/javascript".equals(expectedMimeType)) {
+            expectedMimeType = "application/javascript";
+        }
         String script = "const mimeType = arguments[0];"
                 + "const resolve = arguments[2];" //
                 + "fetch(arguments[1], {method: 'GET'})" //
-                + ".then(response => resolve(response.status===200" //
-                + "      && !response.redirected" //
-                + "      && (mimeType===null || response.headers.get('Content-Type').replace(';charset=utf-8','')===mimeType)))" //
-                + ".catch(err => resolve(false));";
-        return (boolean) ((JavascriptExecutor) getDriver())
+                + ".then(response => resolve({status: response.status," //
+                + "      redirected: response.redirected," //
+                + "      mimeType: response.headers.get('Content-Type')}))" //
+                + ".catch(err => resolve());";
+        Map data = (Map) ((JavascriptExecutor) getDriver())
                 .executeAsyncScript(script, expectedMimeType, url);
+
+        if (expectedMimeType != null) {
+            String mimeType = ((String) data.get("mimeType"))
+                    .replaceAll(";[ ]?charset=utf-8", "");
+
+            Assert.assertEquals(url + " has an unexpected mime type",
+                    expectedMimeType, mimeType);
+        }
+        Assert.assertEquals(url + " has an unexpected redirect", false,
+                data.get("redirected"));
+        Assert.assertEquals(url + " has an unexpected response code", 200L,
+                data.get("status"));
+
     }
 
     private static String readStringFromUrl(String url) throws IOException {

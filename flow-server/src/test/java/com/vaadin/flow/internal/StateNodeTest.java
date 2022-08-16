@@ -418,6 +418,8 @@ public class StateNodeTest {
                     tree.hasNode(child));
 
             child.setParent(null);
+            Assert.assertTrue("Child's parent should be null",
+                    child.getParent() == null);
 
             triggered.set(true);
         });
@@ -616,7 +618,7 @@ public class StateNodeTest {
 
         new StateTree(new UI().getInternals(), ElementChildrenList.class,
                 InertData.class).getRootNode()
-                        .getFeature(ElementChildrenList.class).add(0, parent);
+                .getFeature(ElementChildrenList.class).add(0, parent);
         parent.getFeature(ElementChildrenList.class).add(0, child);
         child.getFeature(ElementChildrenList.class).add(0, grandchild);
 
@@ -686,7 +688,7 @@ public class StateNodeTest {
         final ElementChildrenList feature = new StateTree(
                 new UI().getInternals(), ElementChildrenList.class,
                 InertData.class).getRootNode()
-                        .getFeature(ElementChildrenList.class);
+                .getFeature(ElementChildrenList.class);
         feature.add(0, parent);
         feature.add(1, inertParent);
         inertParent.getFeature(ElementChildrenList.class).add(0, child);

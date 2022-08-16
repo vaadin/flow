@@ -1,10 +1,5 @@
 package com.vaadin.flow.spring.security;
 
-import java.util.Optional;
-
-import javax.annotation.PostConstruct;
-import jakarta.servlet.http.HttpServletRequest;
-
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.internal.NavigationRouteTarget;
 import com.vaadin.flow.router.internal.RouteTarget;
@@ -13,16 +8,18 @@ import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.auth.AccessAnnotationChecker;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
-import dev.hilla.EndpointUtil;
+import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.spring.SpringServlet;
 import com.vaadin.flow.spring.VaadinConfigurationProperties;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
+
+import jakarta.servlet.http.HttpServletRequest;
+import java.util.Optional;
 
 /**
  * Contains utility methods related to request handling.
@@ -39,25 +36,11 @@ public class RequestUtil {
     @Autowired
     private VaadinConfigurationProperties configurationProperties;
 
-    private Object endpointUtil;
+    @Autowired(required = false)
+    private EndpointRequestUtil endpointRequestUtil;
 
     @Autowired
     private ServletRegistrationBean<SpringServlet> springServletRegistration;
-
-    /**
-     * Initializes the util class.
-     */
-    @PostConstruct
-    public void init() {
-        try {
-            endpointUtil = applicationContext.getBean(EndpointUtil.class);
-        } catch (NoClassDefFoundError e) { // NOSONAR
-            // Presumable Fusion is not on the classpath
-        } catch (Exception e) { // NOSONAR
-            // Presumable Fusion is not on the classpath
-        }
-
-    }
 
     /**
      * Checks whether the request is an internal request.
@@ -87,8 +70,8 @@ public class RequestUtil {
      *         {@code false} otherwise
      */
     public boolean isEndpointRequest(HttpServletRequest request) {
-        if (endpointUtil != null) {
-            return ((EndpointUtil) endpointUtil).isEndpointRequest(request);
+        if (endpointRequestUtil != null) {
+            return endpointRequestUtil.isEndpointRequest(request);
         }
         return false;
     }
@@ -103,8 +86,8 @@ public class RequestUtil {
      *         {@code false} otherwise
      */
     public boolean isAnonymousEndpoint(HttpServletRequest request) {
-        if (endpointUtil != null) {
-            return ((EndpointUtil) endpointUtil).isAnonymousEndpoint(request);
+        if (endpointRequestUtil != null) {
+            return endpointRequestUtil.isAnonymousEndpoint(request);
         }
         return false;
     }

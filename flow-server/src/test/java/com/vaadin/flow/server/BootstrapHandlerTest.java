@@ -10,9 +10,11 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
@@ -73,6 +75,8 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 public class BootstrapHandlerTest {
@@ -599,7 +603,7 @@ public class BootstrapHandlerTest {
                 "Content javascript should have been prepended to head element",
                 "<script type=\"text/javascript\">window.messages = window.messages || [];\n"
                         + "window.messages.push(\"content script\");</script>",
-                allElements.get(1).toString());
+                allElements.get(2).toString());
     }
 
     @Test // 3036
@@ -618,7 +622,7 @@ public class BootstrapHandlerTest {
                 "Content javascript should have been prepended to head element",
                 "<script type=\"text/javascript\">window.messages = window.messages || [];\n"
                         + "window.messages.push(\"inline.js\");</script>",
-                allElements.get(1).toString());
+                allElements.get(2).toString());
     }
 
     @Test // 3036
@@ -631,28 +635,27 @@ public class BootstrapHandlerTest {
         Document page = pageBuilder.getBootstrapPage(new BootstrapContext(
                 request, null, session, testUI, this::contextRootRelativePath));
 
-        Elements allElements = page.head().getAllElements();
+        String scripts = page.getElementsByTag("script").toString();
         // Note element 0 is the full head element.
-        assertStringEquals(
+        Assert.assertTrue(
                 "File javascript should have been appended to head element",
-                "<script type=\"text/javascript\">window.messages = window.messages || [];\n"
-                        + "window.messages.push(\"inline.js\");</script>",
-                allElements.get(allElements.size() - 3).toString());
-        assertStringEquals(
-                "File html should have been appended to head element",
-                "<script type=\"text/javascript\">\n"
+                scripts.contains(
+                        "<script type=\"text/javascript\">window.messages = window.messages || [];\n"
+                                + "window.messages.push(\"inline.js\");</script>"));
+        Assert.assertTrue("File html should have been appended to head element",
+                scripts.contains("<script type=\"text/javascript\">\n"
                         + "    // document.body might not yet be accessible, so just leave a message\n"
                         + "    window.messages = window.messages || [];\n"
                         + "    window.messages.push(\"inline.html\");\n"
-                        + "</script>",
-                allElements.get(allElements.size() - 2).toString());
-        assertStringEquals("File css should have been appended to head element",
-                "<style type=\"text/css\">/* inline.css */\n" + "\n"
-                        + "#preloadedDiv {\n"
+                        + "</script>"));
+
+        String styles = page.getElementsByTag("style").toString();
+        Assert.assertTrue("File css should have been appended to head element",
+                styles.contains("<style type=\"text/css\">/* inline.css */\n"
+                        + "\n" + "#preloadedDiv {\n"
                         + "    color: rgba(255, 255, 0, 1);\n" + "}\n" + "\n"
                         + "#inlineCssTestDiv {\n"
-                        + "    color: rgba(255, 255, 0, 1);\n" + "}</style>",
-                allElements.get(allElements.size() - 1).toString());
+                        + "    color: rgba(255, 255, 0, 1);\n" + "}</style>"));
     }
 
     @Test // 3036
@@ -688,7 +691,7 @@ public class BootstrapHandlerTest {
         Elements allElements = page.head().getAllElements();
 
         Assert.assertEquals("<meta name=\"theme-color\" content=\"#227aef\">",
-                allElements.get(1).toString());
+                allElements.get(2).toString());
     }
 
     @Test // 3203
@@ -888,7 +891,7 @@ public class BootstrapHandlerTest {
                 "File javascript should have been prepended to head element",
                 "<script type=\"text/javascript\">window.messages = window.messages || [];\n"
                         + "window.messages.push(\"inline.js\");</script>",
-                allElements.get(1).toString());
+                allElements.get(2).toString());
         assertStringEquals(
                 "File html should have been prepended to head element",
                 "<script type=\"text/javascript\">\n"
@@ -896,7 +899,7 @@ public class BootstrapHandlerTest {
                         + "    window.messages = window.messages || [];\n"
                         + "    window.messages.push(\"inline.html\");\n"
                         + "</script>",
-                allElements.get(2).toString());
+                allElements.get(3).toString());
         assertStringEquals(
                 "File css should have been prepended to head element",
                 "<style type=\"text/css\">/* inline.css */\n" + "\n"
@@ -904,7 +907,7 @@ public class BootstrapHandlerTest {
                         + "    color: rgba(255, 255, 0, 1);\n" + "}\n" + "\n"
                         + "#inlineCssTestDiv {\n"
                         + "    color: rgba(255, 255, 0, 1);\n" + "}</style>",
-                allElements.get(3).toString());
+                allElements.get(4).toString());
     }
 
     @Test // 3010
@@ -982,21 +985,20 @@ public class BootstrapHandlerTest {
         Document page = pageBuilder.getBootstrapPage(new BootstrapContext(
                 request, null, session, testUI, this::contextRootRelativePath));
 
-        Elements allElements = page.head().getAllElements();
-
-        assertStringEquals(
-                "File css should have been prepended to body element",
-                "<style type=\"text/css\">window.messages = window.messages || [];\n"
-                        + "window.messages.push(\"inline.js\");</style>",
-                allElements.get(allElements.size() - 1).toString());
+        assertTrue("File css should have been prepended to body element",
+                page.getElementsByTag("style").toString().contains(
+                        "<style type=\"text/css\">window.messages = window.messages || [];\n"
+                                + "window.messages.push(\"inline.js\");</style>"));
     }
 
     @Test
-    public void index_appended_to_head_in_npm()
-            throws InvalidRouteConfigurationException {
+    public void webpack_index_appended_to_head_in_npm()
+            throws InvalidRouteConfigurationException, IOException {
 
         initUI(testUI, createVaadinRequest(),
                 Collections.singleton(AliasLayout.class));
+
+        enableWebpackFeature();
 
         Document page = pageBuilder.getBootstrapPage(new BootstrapContext(
                 request, null, session, testUI, this::contextRootRelativePath));
@@ -1333,8 +1335,8 @@ public class BootstrapHandlerTest {
     }
 
     @Test
-    public void getBootstrapPage_jsModulesDoNotContainDeferAttribute()
-            throws ServiceException {
+    public void webpack_getBootstrapPage_jsModulesDoNotContainDeferAttribute()
+            throws ServiceException, IOException {
         List<DependencyFilter> filters = Arrays.asList((list, context) -> {
             list.clear(); // remove everything
             return list;
@@ -1346,6 +1348,8 @@ public class BootstrapHandlerTest {
         service.setDependencyFilters(filters);
 
         initUI(testUI);
+
+        enableWebpackFeature();
 
         BootstrapContext bootstrapContext = new BootstrapContext(request, null,
                 session, testUI, this::contextRootRelativePath);
@@ -1366,8 +1370,10 @@ public class BootstrapHandlerTest {
     }
 
     @Test
-    public void getBootstrapPage_removesExportScript() throws ServiceException {
+    public void webpack_getBootstrapPage_removesExportScript()
+            throws IOException {
         initUI(testUI);
+        enableWebpackFeature();
 
         BootstrapContext bootstrapContext = new BootstrapContext(request, null,
                 session, testUI, this::contextRootRelativePath);
@@ -1386,10 +1392,12 @@ public class BootstrapHandlerTest {
     }
 
     @Test // #7158
-    public void getBootstrapPage_assetChunksIsAnARRAY_bootstrapParsesOk()
+    public void webpack_getBootstrapPage_assetChunksIsAnARRAY_bootstrapParsesOk()
             throws ServiceException, IOException {
 
         initUI(testUI);
+
+        enableWebpackFeature();
 
         String statsJson = "{\n" + " \"errors\": [],\n" + " \"warnings\": [],\n"
                 + " \"assetsByChunkName\": {\n" + "  \"bundle\": [\n"
@@ -1731,8 +1739,6 @@ public class BootstrapHandlerTest {
             throws IOException {
         initUI(testUI);
 
-        enableViteFeature(false);
-
         final Document bootstrapPage = pageBuilder.getBootstrapPage(context);
         Assert.assertTrue("@vite/client should be added to head.", bootstrapPage
                 .head().toString().contains("VAADIN/@vite/client"));
@@ -1741,8 +1747,6 @@ public class BootstrapHandlerTest {
     @Test
     public void runViteFeatureProdMode_bundleAddedToHead() throws IOException {
         initUI(testUI);
-
-        enableViteFeature(true);
 
         deploymentConfiguration.setProductionMode(true);
 
@@ -1773,32 +1777,32 @@ public class BootstrapHandlerTest {
         Assert.assertTrue(
                 "Bundle should be gotten from index and added to bootstrap page",
                 bootstrapPage.head().toString()
-                        .contains("src=\"VAADIN/build/main.d253dd35.js\""));
+                        .contains("src=\"./VAADIN/build/main.d253dd35.js\""));
         Assert.assertTrue(
                 "Bundled css should be gotten from index and added to bootstrap page",
                 bootstrapPage.head().toString()
-                        .contains("href=\"VAADIN/build/main.688a5538.css\""));
+                        .contains("href=\"./VAADIN/build/main.688a5538.css\""));
     }
 
-    private void enableViteFeature(boolean productionMode) throws IOException {
+    private void enableWebpackFeature() {
         VaadinContext vaadinContext = Mockito.mock(VaadinContext.class);
+        Lookup lookup = testUI.getSession().getService().getContext()
+                .getAttribute(Lookup.class);
 
-        final Lookup lookup = Mockito.mock(Lookup.class);
-        ResourceProvider resourceProvider = Mockito
-                .mock(ResourceProvider.class);
-        Mockito.when(lookup.lookup(ResourceProvider.class))
-                .thenReturn(resourceProvider);
+        Map<Object, Object> vaadinContextStore = new HashMap<>();
+        vaadinContextStore.put(Lookup.class, lookup);
 
-        Mockito.when(resourceProvider.getClientResourceAsStream(
-                "META-INF/resources/" + ApplicationConstants.CLIENT_ENGINE_PATH
-                        + "/compile.properties"))
-                .thenReturn(getClass().getClassLoader()
-                        .getResourceAsStream("META-INF/resources/"
-                                + ApplicationConstants.CLIENT_ENGINE_PATH
-                                + "/compile.properties"));
+        Mockito.when(vaadinContext.getAttribute(any()))
+                .then(i -> vaadinContextStore.get(i.getArgument(0)));
+        Mockito.when(vaadinContext.getAttribute(any(), any()))
+                .then(i -> vaadinContextStore.get(i.getArgument(0)));
+        Mockito.doAnswer(
+                i -> vaadinContextStore.put(i.getArgument(0), i.getArgument(1)))
+                .when(vaadinContext).setAttribute(any(), any());
+        Mockito.doAnswer(i -> vaadinContextStore
+                .put(i.getArgument(0).getClass(), i.getArgument(0)))
+                .when(vaadinContext).setAttribute(any());
 
-        Mockito.when(vaadinContext.getAttribute(Lookup.class))
-                .thenReturn(lookup);
         service.setContext(vaadinContext);
 
         ApplicationConfiguration configuration = Mockito
@@ -1806,24 +1810,13 @@ public class BootstrapHandlerTest {
         Mockito.when(configuration.isProductionMode()).thenReturn(false);
         Mockito.when(configuration.getJavaResourceFolder())
                 .thenReturn(tmpDir.getRoot());
-
-        Mockito.when(lookup.lookup(ApplicationConfiguration.class))
-                .thenReturn(configuration);
-        Mockito.when(vaadinContext.getAttribute(ApplicationConfiguration.class))
-                .thenReturn(configuration);
-        Mockito.when(vaadinContext.getAttribute(
-                Mockito.eq(ApplicationConfiguration.class), Mockito.any()))
-                .thenReturn(configuration);
+        vaadinContextStore.put(ApplicationConfiguration.class, configuration);
 
         final FeatureFlags featureFlags = FeatureFlags
                 .get(testUI.getSession().getService().getContext());
-        Mockito.when(vaadinContext.getAttribute(FeatureFlags.class))
-                .thenReturn(featureFlags);
 
-        featureFlags.setEnabled(FeatureFlags.VITE.getId(), true);
+        featureFlags.setEnabled(FeatureFlags.WEBPACK.getId(), true);
 
-        Mockito.when(configuration.isProductionMode())
-                .thenReturn(productionMode);
     }
 
     public static Location requestToLocation(VaadinRequest request) {
