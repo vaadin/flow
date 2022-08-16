@@ -18,7 +18,7 @@ import * as rollup from 'rollup';
 import brotli from 'rollup-plugin-brotli';
 import replace from '@rollup/plugin-replace';
 import checker from 'vite-plugin-checker';
-import postcssLit from 'rollup-plugin-postcss-lit';
+import postcssLit from '#buildFolder/plugins/rollup-plugin-postcss-lit-custom';
 
 const appShellUrl = '.';
 
