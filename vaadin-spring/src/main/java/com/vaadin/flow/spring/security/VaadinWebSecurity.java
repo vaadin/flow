@@ -103,6 +103,9 @@ public abstract class VaadinWebSecurity {
      * Defines a filter chain which is capable of being matched against an
      * {@code HttpServletRequest}. in order to decide whether it applies to that
      * request.
+     * <p>
+     * {@link HttpSecurity} configuration can be customized by overriding
+     * {@link VaadinWebSecurity#configure(HttpSecurity)}.
      */
     @Bean(name = "VaadinSecurityFilterChainBean")
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -110,6 +113,15 @@ public abstract class VaadinWebSecurity {
         return http.build();
     }
 
+    /**
+     * Applies Vaadin default configuration to {@link HttpSecurity}.
+     *
+     * Typically, subclasses should call super to apply default Vaadin
+     * configuration in addition to custom rules.
+     *
+     * @param http
+     * @throws Exception
+     */
     protected void configure(HttpSecurity http) throws Exception {
         // Use a security context holder that can find the context from Vaadin
         // specific classes
@@ -168,6 +180,9 @@ public abstract class VaadinWebSecurity {
      * <p>
      * Beans of this type will automatically be used by
      * {@link WebSecurityConfiguration} to customize {@link WebSecurity}.
+     * <p>
+     * {@link WebSecurity} configuration can be customized by overriding
+     * {@link VaadinWebSecurity#configure(WebSecurity)}
      * <p>
      * Default no {@link WebSecurity} customization is performed.
      */
