@@ -8,6 +8,7 @@
     "@polymer/polymer": "3.5.1",
     "@testscope/all": "../vite-test-assets/packages/@testscope/all",
     "@testscope/button": "../vite-test-assets/packages/@testscope/button",
+    "@testscope/map": "../vite-test-assets/packages/@testscope/map",
     "@vaadin/bundles": "../vite-test-assets/packages/@vaadin/bundles",
     "@vaadin/common-frontend": "0.0.17",
     "@vaadin/flow-frontend": "./target/flow-frontend",
@@ -16,7 +17,7 @@
     "@vaadin/vaadin-text-field": "23.2.0-alpha5",
     "construct-style-sheets-polyfill": "3.1.0",
     "copy-to-clipboard": "^3.3.1",
-    "lit": "2.2.7",
+    "lit": "2.3.0",
     "package-outside-npm": "file:package-outside-npm",
     "package2-outside-npm": "./package2-outside-npm"
   },
@@ -26,9 +27,10 @@
     "glob": "7.2.3",
     "mkdirp": "1.0.4",
     "rollup-plugin-brotli": "3.1.0",
+    "rollup-plugin-postcss-lit": "2.0.0",
     "typescript": "4.7.4",
-    "vite": "v3.0.2",
-    "vite-plugin-checker": "0.4.6",
+    "vite": "v3.0.4",
+    "vite-plugin-checker": "0.4.9",
     "workbox-build": "6.5.0",
     "workbox-core": "6.5.0",
     "workbox-precaching": "6.5.0"
@@ -59,7 +61,7 @@
       "@vaadin/vaadin-lumo-styles": "23.2.0-alpha5",
       "@vaadin/vaadin-text-field": "23.2.0-alpha5",
       "construct-style-sheets-polyfill": "3.1.0",
-      "lit": "2.2.7"
+      "lit": "2.3.0"
     },
     "devDependencies": {
       "@rollup/plugin-replace": "3.1.0",
@@ -67,13 +69,14 @@
       "glob": "7.2.3",
       "mkdirp": "1.0.4",
       "rollup-plugin-brotli": "3.1.0",
+      "rollup-plugin-postcss-lit": "2.0.0",
       "typescript": "4.7.4",
-      "vite": "v3.0.2",
-      "vite-plugin-checker": "0.4.6",
+      "vite": "v3.0.4",
+      "vite-plugin-checker": "0.4.9",
       "workbox-build": "6.5.0",
       "workbox-core": "6.5.0",
       "workbox-precaching": "6.5.0"
     },
-    "hash": "d67d11a6b16fe41965be58a690260f05392aafcff82c69bd541627d527e2325f"
+    "hash": "beb5f82fef215b33b99422ba3cc31a73f3f806e9c1fc7093080bad91487c2f7a"
   }
 }

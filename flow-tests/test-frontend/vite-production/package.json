@@ -5,6 +5,7 @@
     "@polymer/polymer": "3.5.1",
     "@testscope/all": "../vite-test-assets/packages/@testscope/all",
     "@testscope/button": "../vite-test-assets/packages/@testscope/button",
+    "@testscope/map": "../vite-test-assets/packages/@testscope/map",
     "@vaadin/bundles": "../vite-test-assets/packages/@vaadin/bundles",
     "@vaadin/common-frontend": "0.0.17",
     "@vaadin/flow-frontend": "./target/flow-frontend",

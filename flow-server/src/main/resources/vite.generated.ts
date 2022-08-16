@@ -245,6 +245,14 @@ function vaadinBundlesPlugin(): PluginOption {
     return Array.from(exportsSet);
   }
 
+  function getExportBinding(binding: string) {
+    return binding === 'default' ? '_default as default' : binding;
+  }
+
+  function getImportAssigment(binding: string) {
+    return binding === 'default' ? 'default: _default' : binding;
+  }
+
   return {
     name: 'vaadin:bundles',
     enforce: 'pre',
@@ -311,16 +319,16 @@ function vaadinBundlesPlugin(): PluginOption {
       if (!path.startsWith(modulesDirectory)) return;
 
       const id = path.substring(modulesDirectory.length + 1);
-      const exports = getExports(id);
-      if (exports === undefined) return;
+      const bindings = getExports(id);
+      if (bindings === undefined) return;
 
       const cacheSuffix = params ? `?${params}` : '';
       const bundlePath = `@vaadin/bundles/vaadin.js${cacheSuffix}`;
 
       return `import { init as VaadinBundleInit, get as VaadinBundleGet } from '${bundlePath}';
 await VaadinBundleInit('default');
-const { ${exports.join(', ')} } = (await VaadinBundleGet('./node_modules/${id}'))();
-export { ${exports.map((binding) => `${binding} as ${binding}`).join(', ')} };`;
+const { ${bindings.map(getImportAssigment).join(', ')} } = (await VaadinBundleGet('./node_modules/${id}'))();
+export { ${bindings.map(getExportBinding).join(', ')} };`;
     }
   };
 }

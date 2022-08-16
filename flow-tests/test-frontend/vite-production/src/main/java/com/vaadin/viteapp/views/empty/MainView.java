@@ -11,6 +11,7 @@ import com.vaadin.flow.router.Route;
 
 @Route("")
 @JsModule("@testscope/button")
+@JsModule("@testscope/map")
 public class MainView extends Div {
 
     public static final String PLANT = "plant";
@@ -33,6 +34,7 @@ public class MainView extends Div {
         getStyle().set("text-align", "center");
 
         add(new HtmlComponent("testscope-button"));
+        add(new HtmlComponent("testscope-map"));
     }
 
 }
