@@ -1,1 +1,2 @@
-import '@testscope/button'
+import '@testscope/button';
+import '@testscope/map';
