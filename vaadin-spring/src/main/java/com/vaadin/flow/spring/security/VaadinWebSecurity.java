@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2021 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -27,15 +27,20 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer;
 import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.access.AccessDeniedHandlerImpl;
 import org.springframework.security.web.access.DelegatingAccessDeniedHandler;
@@ -58,7 +63,7 @@ import com.vaadin.flow.server.auth.ViewAccessChecker;
 import com.vaadin.flow.spring.security.stateless.VaadinStatelessSecurityConfigurer;
 
 /**
- * Provides basic Vaadin security configuration for the project.
+ * Provides basic Vaadin component-based security configuration for the project.
  * <p>
  * Sets up security rules for a Vaadin application and restricts all URLs except
  * for public resources and internal Vaadin URLs to authenticated user.
@@ -66,23 +71,22 @@ import com.vaadin.flow.spring.security.stateless.VaadinStatelessSecurityConfigur
  * The default behavior can be altered by extending the public/protected methods
  * in the class.
  * <p>
- * To use this, create your own web security configurer adapter class by
- * extending this class instead of <code>WebSecurityConfigurerAdapter</code> and
+ * Provides default bean implementations for {@link SecurityFilterChain} and
+ * {@link WebSecurityCustomizer}.
+ * <p>
+ * To use this, create your own web security class by extending this class and
  * annotate it with <code>@EnableWebSecurity</code> and
  * <code>@Configuration</code>.
  * <p>
  * For example <code>
 &#64;EnableWebSecurity
 &#64;Configuration
-public class MySecurityConfigurerAdapter extends VaadinWebSecurityConfigurerAdapter {
+public class MyWebSecurity extends VaadinWebSecurity {
 
 }
- * @deprecated Use component-based security configuration {@link VaadinWebSecurity}
  * </code>
  */
-@Deprecated
-public abstract class VaadinWebSecurityConfigurerAdapter
-        extends WebSecurityConfigurerAdapter {
+public abstract class VaadinWebSecurity {
 
     @Autowired
     private VaadinDefaultRequestCache vaadinDefaultRequestCache;
@@ -94,19 +98,32 @@ public abstract class VaadinWebSecurityConfigurerAdapter
     private ViewAccessChecker viewAccessChecker;
 
     /**
-     * The paths listed as "ignoring" in this method are handled without any
-     * Spring Security involvement. They have no access to any security context
-     * etc.
+     * Registers default {@link SecurityFilterChain} bean.
      * <p>
-     * {@inheritDoc}
+     * Defines a filter chain which is capable of being matched against an
+     * {@code HttpServletRequest}. in order to decide whether it applies to that
+     * request.
+     * <p>
+     * {@link HttpSecurity} configuration can be customized by overriding
+     * {@link VaadinWebSecurity#configure(HttpSecurity)}.
      */
-    @Override
-    public void configure(WebSecurity web) throws Exception {
-        web.ignoring().requestMatchers(getDefaultWebSecurityIgnoreMatcher(
-                requestUtil.getUrlMapping()));
+    @Bean(name = "VaadinSecurityFilterChainBean")
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        configure(http);
+        return http.build();
     }
 
-    @Override
+    /**
+     * Applies Vaadin default configuration to {@link HttpSecurity}.
+     *
+     * Typically, subclasses should call super to apply default Vaadin
+     * configuration in addition to custom rules.
+     *
+     * @param http
+     *            the {@link HttpSecurity} to modify
+     * @throws Exception
+     *             if an error occurs
+     */
     protected void configure(HttpSecurity http) throws Exception {
         // Use a security context holder that can find the context from Vaadin
         // specific classes
@@ -148,11 +165,42 @@ public abstract class VaadinWebSecurityConfigurerAdapter
         urlRegistry.requestMatchers(getDefaultHttpSecurityPermitMatcher(
                 requestUtil.getUrlMapping())).permitAll();
 
+        // matcher for Vaadin static (public) resources
+        urlRegistry.requestMatchers(
+                getDefaultWebSecurityIgnoreMatcher(requestUtil.getUrlMapping()))
+                .permitAll();
+
         // all other requests require authentication
         urlRegistry.anyRequest().authenticated();
 
         // Enable view access control
         viewAccessChecker.enable();
+    }
+
+    /**
+     * Registers default {@link WebSecurityCustomizer} bean.
+     * <p>
+     * Beans of this type will automatically be used by
+     * {@link WebSecurityConfiguration} to customize {@link WebSecurity}.
+     * <p>
+     * {@link WebSecurity} configuration can be customized by overriding
+     * {@link VaadinWebSecurity#configure(WebSecurity)}
+     * <p>
+     * Default no {@link WebSecurity} customization is performed.
+     */
+    @Bean(name = "VaadinWebSecurityCustomizerBean")
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> {
+            try {
+                configure(web);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        };
+    }
+
+    protected void configure(WebSecurity web) throws Exception {
+        // no-operation
     }
 
     /**
@@ -232,7 +280,7 @@ public abstract class VaadinWebSecurityConfigurerAdapter
      * available at the given path.
      *
      * @param http
-     *            the http security from {@link #configure(HttpSecurity)}
+     *            the http security from {@link #filterChain(HttpSecurity)}
      * @param hillaLoginViewPath
      *            the path to the login view
      * @throws Exception
@@ -251,22 +299,22 @@ public abstract class VaadinWebSecurityConfigurerAdapter
      * available at the given path.
      *
      * @param http
-     *            the http security from {@link #configure(HttpSecurity)}
+     *            the http security from {@link #filterChain(HttpSecurity)}
      * @param hillaLoginViewPath
      *            the path to the login view
-     * @param logoutSuccessUrl
+     * @param logoutUrl
      *            the URL to redirect the user to after logging out
      * @throws Exception
      *             if something goes wrong
      */
     protected void setLoginView(HttpSecurity http, String hillaLoginViewPath,
-            String logoutSuccessUrl) throws Exception {
+            String logoutUrl) throws Exception {
         hillaLoginViewPath = applyUrlMapping(hillaLoginViewPath);
         FormLoginConfigurer<HttpSecurity> formLogin = http.formLogin();
         formLogin.loginPage(hillaLoginViewPath).permitAll();
         formLogin.successHandler(
                 getVaadinSavedRequestAwareAuthenticationSuccessHandler(http));
-        http.logout().logoutSuccessUrl(logoutSuccessUrl);
+        http.logout().logoutSuccessUrl(logoutUrl);
         http.exceptionHandling().defaultAuthenticationEntryPointFor(
                 new LoginUrlAuthenticationEntryPoint(hillaLoginViewPath),
                 AnyRequestMatcher.INSTANCE);
@@ -277,7 +325,7 @@ public abstract class VaadinWebSecurityConfigurerAdapter
      * Sets up login for the application using the given Flow login view.
      *
      * @param http
-     *            the http security from {@link #configure(HttpSecurity)}
+     *            the http security from {@link #filterChain(HttpSecurity)}
      * @param flowLoginView
      *            the login view to use
      * @throws Exception
@@ -292,17 +340,17 @@ public abstract class VaadinWebSecurityConfigurerAdapter
      * Sets up login for the application using the given Flow login view.
      *
      * @param http
-     *            the http security from {@link #configure(HttpSecurity)}
+     *            the http security from {@link #filterChain(HttpSecurity)}
      * @param flowLoginView
      *            the login view to use
-     * @param logoutSuccessUrl
+     * @param logoutUrl
      *            the URL to redirect the user to after logging out
      *
      * @throws Exception
      *             if something goes wrong
      */
     protected void setLoginView(HttpSecurity http,
-            Class<? extends Component> flowLoginView, String logoutSuccessUrl)
+            Class<? extends Component> flowLoginView, String logoutUrl)
             throws Exception {
         Optional<Route> route = AnnotationReader.getAnnotationFor(flowLoginView,
                 Route.class);
@@ -325,7 +373,7 @@ public abstract class VaadinWebSecurityConfigurerAdapter
         formLogin.successHandler(
                 getVaadinSavedRequestAwareAuthenticationSuccessHandler(http));
         http.csrf().ignoringAntMatchers(loginPath);
-        http.logout().logoutSuccessUrl(logoutSuccessUrl);
+        http.logout().logoutSuccessUrl(logoutUrl);
         http.exceptionHandling().defaultAuthenticationEntryPointFor(
                 new LoginUrlAuthenticationEntryPoint(loginPath),
                 AnyRequestMatcher.INSTANCE);
@@ -336,7 +384,7 @@ public abstract class VaadinWebSecurityConfigurerAdapter
      * Sets up stateless JWT authentication using cookies.
      *
      * @param http
-     *            the http security from {@link #configure(HttpSecurity)}
+     *            the http security from {@link #filterChain(HttpSecurity)}
      * @param secretKey
      *            the secret key for encoding and decoding JWTs, must use a
      *            {@link MacAlgorithm} algorithm name
@@ -354,7 +402,7 @@ public abstract class VaadinWebSecurityConfigurerAdapter
      * Sets up stateless JWT authentication using cookies.
      *
      * @param http
-     *            the http security from {@link #configure(HttpSecurity)}
+     *            the http security from {@link #filterChain(HttpSecurity)}
      * @param secretKey
      *            the secret key for encoding and decoding JWTs, must use a
      *            {@link MacAlgorithm} algorithm name
