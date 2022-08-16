@@ -62,6 +62,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     private static final String COULD_NOT_LOAD_ERROR_MSG = "Could not load annotation class ";
 
     private static final String VALUE = "value";
+    private static final String VERSION = "version";
 
     private ThemeDefinition themeDefinition;
     private AbstractTheme themeInstance;
@@ -77,6 +78,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     private final SerializableBiFunction<Class<?>, Class<? extends Annotation>, List<? extends Annotation>> annotationFinder;
 
     private final boolean useV14Bootstrap;
+    private final boolean fallback;
 
     /**
      * Creates a new scanner instance which discovers all dependencies in the
@@ -92,7 +94,26 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     FullDependenciesScanner(ClassFinder finder, boolean useV14Bootstrap,
             FeatureFlags featureFlags) {
         this(finder, AnnotationReader::getAnnotationsFor, useV14Bootstrap,
-                featureFlags);
+                featureFlags, false);
+    }
+
+    /**
+     * Creates a new scanner instance which discovers all dependencies in the
+     * classpath.
+     *
+     * @param finder
+     *            a class finder
+     * @param useV14Bootstrap
+     *            whether we are in V14 bootstrap mode
+     * @param featureFlags
+     *            available feature flags and their status
+     * @param fallback
+     *            whether dependency scanner is used as fallback
+     */
+    FullDependenciesScanner(ClassFinder finder, boolean useV14Bootstrap,
+            FeatureFlags featureFlags, boolean fallback) {
+        this(finder, AnnotationReader::getAnnotationsFor, useV14Bootstrap,
+                featureFlags, fallback);
     }
 
     /**
@@ -107,12 +128,16 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
      *            whether we are in V14 bootstrap mode
      * @param featureFlags
      *            available feature flags and their status
+     * @param fallback
+     *            whether dependency scanner is used as fallback
      */
     FullDependenciesScanner(ClassFinder finder,
             SerializableBiFunction<Class<?>, Class<? extends Annotation>, List<? extends Annotation>> annotationFinder,
-            boolean useV14Bootstrap, FeatureFlags featureFlags) {
+            boolean useV14Bootstrap, FeatureFlags featureFlags,
+            boolean fallback) {
         super(finder, featureFlags);
 
+        this.fallback = fallback;
         this.useV14Bootstrap = useV14Bootstrap;
 
         long start = System.currentTimeMillis();
@@ -221,11 +246,28 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                 classes.add(clazz.getName());
                 List<? extends Annotation> packageAnnotations = annotationFinder
                         .apply(clazz, loadedAnnotation);
-                packageAnnotations.forEach(pckg -> {
-                    String value = getAnnotationValueAsString(pckg, VALUE);
-                    String vers = getAnnotationValueAsString(pckg, "version");
-                    logs.add(value + " " + vers + " " + clazz.getName());
-                    result.put(value, vers);
+                packageAnnotations.forEach(annotation -> {
+                    String value = getAnnotationValueAsString(annotation,
+                            VALUE);
+                    String version = getAnnotationValueAsString(annotation,
+                            VERSION);
+                    logs.add(value + " " + version + " " + clazz.getName());
+                    if (result.containsKey(value)
+                            && !result.get(value).equals(version)) {
+                        if (!fallback) {
+                            // Only log warning if full scanner is not used as
+                            // fallback scanner. For fallback the bytecode
+                            // scanner will have informed about multiple
+                            // versions
+                            String foundVersions = "[" + result.get(value)
+                                    + ", " + version + "]";
+                            getLogger().warn(
+                                    "Multiple npm versions for {} found:  {}. First version found '{}' will be considered.",
+                                    value, foundVersions, result.get(value));
+                        }
+                    } else {
+                        result.put(value, version);
+                    }
                 });
             }
             debug("npm dependencies", logs);

@@ -202,6 +202,13 @@ public class FrontendUtils {
     public static final String BOOTSTRAP_FILE_NAME = "vaadin.ts";
 
     /**
+     * File name of the web component bootstrap file that is generated in
+     * frontend {@link #GENERATED} folder. The bootstrap file is always executed
+     * in an exported web component.
+     */
+    public static final String WEB_COMPONENT_BOOTSTRAP_FILE_NAME = "vaadin-web-component.ts";
+
+    /**
      * File name of the feature flags file that is generated in frontend
      * {@link #GENERATED} folder. The feature flags file contains code to define
      * feature flags as globals that might be used by Vaadin web components or
@@ -213,6 +220,11 @@ public class FrontendUtils {
      * File name of the index.html in client side.
      */
     public static final String INDEX_HTML = "index.html";
+
+    /**
+     * File name of the web-component.html in client side.
+     */
+    public static final String WEB_COMPONENT_HTML = "web-component.html";
 
     /**
      * File name of the index.ts in client side.
@@ -459,11 +471,13 @@ public class FrontendUtils {
 
     /**
      * Gets the content of the <code>frontend/index.html</code> file which is
-     * served by webpack-dev-server in dev-mode and read from classpath in
-     * production mode. NOTE: In dev mode, the file content file is fetched via
-     * webpack http request. So that we don't need to have a separate
-     * index.html's content watcher, auto-reloading will work automatically,
-     * like other files managed by webpack in `frontend/` folder.
+     * served by webpack or vite in dev-mode and read from classpath in
+     * production mode.
+     * <p>
+     * NOTE: In dev mode, the file content is fetched using an http request so
+     * that we don't need to have a separate index.html's content watcher.
+     * Auto-reloading will work automatically, like other files managed by
+     * webpack in `frontend/` folder.
      *
      * @param service
      *            the vaadin service
@@ -476,6 +490,29 @@ public class FrontendUtils {
     public static String getIndexHtmlContent(VaadinService service)
             throws IOException {
         return getFileContent(service, INDEX_HTML);
+    }
+
+    /**
+     * Gets the content of the <code>frontend/web-component.html</code> file
+     * which is served by webpack or vite in dev-mode and read from classpath in
+     * production mode.
+     * <p>
+     * NOTE: In dev mode, the file content is fetched using an http request so
+     * that we don't need to have a separate web-component.html's content
+     * watcher. Auto-reloading will work automatically, like other files managed
+     * by webpack in `frontend/` folder.
+     *
+     * @param service
+     *            the vaadin service
+     * @return the content of the web-component.html file as a string, null if
+     *         not found.
+     * @throws IOException
+     *             on error when reading file
+     *
+     */
+    public static String getWebComponentHtmlContent(VaadinService service)
+            throws IOException {
+        return getFileContent(service, WEB_COMPONENT_HTML);
     }
 
     private static String getFileContent(VaadinService service, String path)

@@ -23,6 +23,7 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.HasErrorParameter;
+import com.vaadin.flow.server.HttpStatusCode;
 
 public class NPEHandler extends Div
         implements HasErrorParameter<NullPointerException> {
@@ -34,7 +35,7 @@ public class NPEHandler extends Div
         setId("npe-handle");
         LoggerFactory.getLogger(NPEHandler.class).error("NPE is thrown",
                 parameter.getCaughtException());
-        return HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+        return HttpStatusCode.INTERNAL_SERVER_ERROR.getCode();
     }
 
 }

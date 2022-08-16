@@ -30,6 +30,7 @@ import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.server.ErrorHandler;
+import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.StreamReceiver;
 import com.vaadin.flow.server.StreamResourceRegistry;
@@ -251,7 +252,7 @@ public class StreamReceiverHandlerTest {
                 stateNode, 1);
 
         Mockito.verify(response)
-                .setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                .setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
     }
 
     @Test
@@ -265,7 +266,7 @@ public class StreamReceiverHandlerTest {
                 stateNode, 1);
 
         Mockito.verify(response)
-                .setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                .setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
     }
 
     @Test
@@ -287,7 +288,7 @@ public class StreamReceiverHandlerTest {
                 streamReceiver, stateNode);
 
         Mockito.verify(response)
-                .setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                .setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
         Assert.assertTrue(isGetContentLengthLongCalled);
     }
 
@@ -312,7 +313,7 @@ public class StreamReceiverHandlerTest {
                 streamReceiver, stateNode);
 
         Mockito.verify(response)
-                .setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                .setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
     }
 
     /**
@@ -333,7 +334,7 @@ public class StreamReceiverHandlerTest {
                 null);
 
         Mockito.verify(response)
-                .setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                .setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
     }
 
     @Test

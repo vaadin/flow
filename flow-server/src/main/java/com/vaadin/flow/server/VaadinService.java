@@ -468,7 +468,7 @@ public abstract class VaadinService implements Serializable {
      * @param resourceName
      *            a String specifying the name of a file
      * @return a String specifying the file's MIME type
-     * @see ServletContext#getMimeType(String)
+     * @see jakarta.servlet.ServletContext#getMimeType(String)
      */
     public abstract String getMimeType(String resourceName);
 
@@ -1570,7 +1570,7 @@ public abstract class VaadinService implements Serializable {
             }
 
             // Request not handled by any RequestHandler
-            response.sendError(HttpServletResponse.SC_NOT_FOUND,
+            response.sendError(HttpStatusCode.NOT_FOUND.getCode(),
                     "Request was not handled by any registered handler.");
 
         } catch (final SessionExpiredException e) {
@@ -1725,7 +1725,7 @@ public abstract class VaadinService implements Serializable {
                 // (https://github.com/vaadin/framework/issues/4167)
                 response.setHeader("Content-Type", "text/plain");
 
-                response.sendError(HttpServletResponse.SC_FORBIDDEN,
+                response.sendError(HttpStatusCode.FORBIDDEN.getCode(),
                         "Session expired");
             }
         } catch (IOException e) {
@@ -2099,7 +2099,7 @@ public abstract class VaadinService implements Serializable {
      * this service.
      *
      * @see #addServiceDestroyListener(ServiceDestroyListener)
-     * @see Servlet#destroy()
+     * @see jakarta.servlet.Servlet#destroy()
      */
     public void destroy() {
         ServiceDestroyEvent event = new ServiceDestroyEvent(this);

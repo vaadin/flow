@@ -4,7 +4,7 @@ const fs = require("fs");
 
 /****************** START CONFIG */
 // Do not run the following modules except 'flow-tests' that is handled separatelly in this script
-const globalExclusions = ['flow-tests', 'flow-tests/servlet-containers/tomcat9', 'flow-tests/servlet-containers/tomcat85'];
+const globalExclusions = ['flow-tests/servlet-containers/tomcat9', 'flow-tests/servlet-containers/tomcat85'];
 
 // Set modules or tests weights and fixed slice position for better distribution
 //  weight: it's time in half-minutes, default 1 = 30secs
@@ -50,6 +50,7 @@ const moduleWeights = {
   'flow-tests/test-embedding/test-embedding-reusable-theme': { pos: 3, weight: 2 },
   'flow-tests/test-multi-war/deployment': { pos: 3, weight: 2 },
   'flow-tests/test-application-theme/test-theme-reusable': { pos: 3, weight: 2 },
+  'flow-tests/test-application-theme/test-theme-reusable-vite': { pos: 3, weight: 2 },
   'flow-tests/test-frontend/vite-production': { pos: 3, weight: 2 },
   'flow-tests/test-frontend/vite-test-assets': { pos: 3 },
   'flow-tests/vaadin-spring-tests/test-spring-boot': { pos: 4, weight: 4 },
@@ -125,7 +126,7 @@ const reservedContainers = Object.keys(moduleWeights).filter(k => moduleWeights[
 
 // Using regex to avoid having to run `npm install` for xml libs.
 const regexComment = /<!--[\s\S]+?-->/gm;
-const regexModule = /([\s\S]*?)<module>([\s\S]*?)<\/module>([\s\S]*)/;
+const regexModule = /([\s\S]*?)<module>\s*([\d\w\-\/]+)\s*<\/module>([\s\S]*)/;
 const regexVersion = '(<version>)(VERSION)(</version>)';
 
 /**
@@ -281,7 +282,12 @@ function toObject(parts, suite, module, prevIdx) {
  * the object json for actions
  */
 function getParts(suite, prefix, slices) {
-  let modules = prefix ? getModulesRecursive(prefix) : getModules();
+  // All modules in the project
+  let modules = getModulesRecursive(prefix);
+  // Remove flow-tests because they are handled separately
+  if (prefix !== 'flow-tests') {
+    modules = modules.filter(module => !/^flow-tests/.test(module));
+  }
 
   const exclusions = Object.keys(moduleSplits).filter(module => modules.includes(module));
   modules = grep(modules, [...globalExclusions, ...exclusions]);

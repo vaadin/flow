@@ -71,4 +71,11 @@ public interface DevModeHandler extends RequestHandler {
      * @return the project root folder
      */
     File getProjectRoot();
+
+    /**
+     * Get the listening port of the dev server.
+     *
+     * @return the listening port
+     */
+    int getPort();
 }

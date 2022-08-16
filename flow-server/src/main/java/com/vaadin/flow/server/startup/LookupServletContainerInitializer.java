@@ -71,10 +71,10 @@ public class LookupServletContainerInitializer
             throw new ServletException(ServletContainerInitializer.class
                     .getSimpleName() + " is called but the "
                     + "provided set of classes is 'null'. "
-                    + LookupInitializer.class + " always presents "
+                    + LookupInitializer.class + " should always be present "
                     + "and has to be passed to the 'onStartup' method as an argument "
                     + "in the set of classes if the servlet container supports Servlet 5.0 specification. "
-                    + "The project configuration is broken somehow or you are using Servlet 5.0 incompatible container.");
+                    + "The project configuration is broken or you are using a Servlet 5.0 incompatible container.");
         }
         if (!classSet.contains(LookupInitializer.class)) {
             // this is a specific case for OSGi (PAX web): at some point it may

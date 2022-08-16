@@ -46,6 +46,7 @@ import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
+import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.MockInstantiator;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
@@ -170,7 +171,7 @@ public class WebComponentProviderTest {
                 .thenReturn("/web-component/my-component.js");
         Assert.assertTrue("Provider should handle web-component request",
                 provider.synchronizedHandleRequest(session, request, response));
-        Mockito.verify(response).sendError(HttpServletResponse.SC_NOT_FOUND,
+        Mockito.verify(response).sendError(HttpStatusCode.NOT_FOUND.getCode(),
                 "No web component for my-component");
     }
 

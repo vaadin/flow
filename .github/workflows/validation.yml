@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 jobs:
   build:
-    timeout-minutes: 10
+    timeout-minutes: 15
     runs-on: ubuntu-latest
     outputs:
       matrix-unit: ${{ steps.set-matrix.outputs.matrix-unit }}
@@ -40,7 +40,7 @@ jobs:
           echo "::set-output name=matrix-unit::$(./scripts/computeMatrix.js unit-tests --parallel=1 current module args)"
       - name: Compile and Install Flow
         run: |
-          cmd="mvn install -B -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
+          cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
           eval $cmd -T 2C -q || eval $cmd
       - name: Save workspace
         run: |
@@ -52,7 +52,7 @@ jobs:
           path: workspace.tar
   unit-tests:
     needs: build
-    timeout-minutes: 10
+    timeout-minutes: 15
     outputs:
       failure: ${{steps.set-failure.outputs.failure}}
     strategy:
@@ -84,7 +84,7 @@ jobs:
           [ -n "${{matrix.module}}" ] && \
             ARGS="-pl ${{matrix.module}} -Dtest=${{matrix.args}}" || \
             ARGS="-pl ${{matrix.args}}"
-          cmd="mvn -B -T 1C $ARGS"
+          cmd="mvn -B -ntp -T 1C $ARGS"
           set -x -e -o pipefail
           ($cmd -T 1C verify || $cmd clean verify -U) | tee mvn-unit-tests-${{matrix.current}}.out
       - name: Set build status flag
@@ -144,11 +144,11 @@ jobs:
       - name: Compile Shared modules
         run: |
           if [ ${{matrix.current}} -eq 2 -o ${{matrix.current}} -eq 3 ]; then
-            cmd="mvn install -B -DskipTests -Pit-shared-modules -amd -pl flow-tests"
+            cmd="mvn install -B -ntp -DskipTests -Pit-shared-modules -amd -pl flow-tests"
             $cmd -T 1C || $cmd
           fi
           if [ ${{matrix.current}} -eq 4 -o ${{matrix.current}} -eq 5 -o ${{matrix.current}} -eq 6 ]; then
-            cmd="mvn install -B -DskipTests -Pit-shared-spring-modules -amd -pl flow-tests"
+            cmd="mvn install -B -ntp -DskipTests -Pit-shared-spring-modules -amd -pl flow-tests"
             $cmd -T 1C || $cmd
           fi
       - name: Run ITs
@@ -156,7 +156,7 @@ jobs:
           [ -n "${{matrix.module}}" ] && \
             ARGS="-Dfailsafe.forkCount=4 -pl ${{matrix.module}} -Dit.test=${{matrix.args}}" || \
             ARGS="-pl ${{matrix.args}}"
-          cmd="mvn -V -B -e -fae -Dcom.vaadin.testbench.Parameters.testsInParallel=5 -Dfailsafe.rerunFailingTestsCount=2 -Dmaven.wagon.httpconnectionManager.ttlSeconds=25 -Dmaven.wagon.http.retryHandler.count=3 $ARGS"
+          cmd="mvn -V -B -ntp -e -fae -Dcom.vaadin.testbench.Parameters.testsInParallel=5 -Dfailsafe.rerunFailingTestsCount=2 -Dmaven.wagon.httpconnectionManager.ttlSeconds=25 -Dmaven.wagon.http.retryHandler.count=3 $ARGS"
           set -x -e -o pipefail
           $cmd verify | tee -a mvn-it-tests-${{matrix.current}}.out
       - name: Set build status flag

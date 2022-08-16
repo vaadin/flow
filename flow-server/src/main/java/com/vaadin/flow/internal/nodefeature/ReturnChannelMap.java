@@ -164,4 +164,12 @@ public class ReturnChannelMap extends ServerSideFeature {
         return channels.get(Integer.valueOf(channelId));
     }
 
+    /**
+     * Return if map contains any registered channels.
+     *
+     * @return {@code true} if registered channels exist.
+     */
+    public boolean hasChannels() {
+        return !channels.isEmpty();
+    }
 }

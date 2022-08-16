@@ -16,6 +16,9 @@
 
 package com.vaadin.flow.uitest.ui;
 
+import java.util.List;
+import java.util.Map;
+
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
@@ -25,10 +28,14 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.router.BeforeEvent;
+import com.vaadin.flow.router.HasUrlParameter;
+import com.vaadin.flow.router.Location;
+import com.vaadin.flow.router.OptionalParameter;
 import com.vaadin.flow.router.Route;
 
 @Route(value = "com.vaadin.flow.uitest.ui.ModalDialogView")
-public class ModalDialogView extends Div {
+public class ModalDialogView extends Div implements HasUrlParameter<String> {
 
     public static final String EVENT_LOG = "event-log";
     public static final String UI_BUTTON = "ui-button";
@@ -56,6 +63,20 @@ public class ModalDialogView extends Div {
                 createOpenDialogButton(false, OPEN_MODELESS_BUTTON), testButton,
                 eventLog);
         setId("main-div");
+    }
+
+    @Override
+    public void setParameter(BeforeEvent event,
+            @OptionalParameter String parameter) {
+        Location location = event.getLocation();
+        Map<String, List<String>> queryParameters = location
+                .getQueryParameters().getParameters();
+        if (queryParameters.containsKey("open_dialog")) {
+            boolean modal = queryParameters.get("open_dialog")
+                    .contains("modal");
+            final Dialog dialog = new Dialog(modal);
+            dialog.open();
+        }
     }
 
     private void logClickEvent(ClickEvent<?> event) {
@@ -124,7 +145,7 @@ public class ModalDialogView extends Div {
         }
 
         public void open() {
-            final UI ui = ModalDialogView.this.getUI().get();
+            final UI ui = UI.getCurrent();
             if (modal) {
                 ui.addModal(this);
             } else {

@@ -33,14 +33,14 @@ public interface HasErrorParameter<T extends Exception> extends Serializable {
      * Callback executed before rendering the exception view.
      * <p>
      * Note! returned int should be a valid
-     * {@link jakarta.servlet.http.HttpServletResponse} code
+     * {@link com.vaadin.flow.server.HttpStatusCode} code
      *
      * @param event
      *            the before navigation event for this request
      * @param parameter
      *            error parameter containing custom exception and caught
      *            exception
-     * @return a valid {@link jakarta.servlet.http.HttpServletResponse} code
+     * @return a valid {@link com.vaadin.flow.server.HttpStatusCode} code
      */
     int setErrorParameter(BeforeEnterEvent event, ErrorParameter<T> parameter);
 }

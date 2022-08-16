@@ -29,6 +29,7 @@ import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.router.NavigationState;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.internal.NavigationStateRenderer;
+import com.vaadin.flow.server.HttpStatusCode;
 
 /**
  * Handle navigation events in relation to the client side bootstrap UI
@@ -89,7 +90,7 @@ class JavaScriptNavigationStateRenderer extends NavigationStateRenderer {
 
             } else {
                 clientForwardRoute = beforeEvent.getUnknownForward();
-                return Optional.of(HttpServletResponse.SC_OK);
+                return Optional.of(HttpStatusCode.OK.getCode());
             }
         }
 

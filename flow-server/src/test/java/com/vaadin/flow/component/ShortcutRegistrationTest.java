@@ -31,6 +31,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
+import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.function.SerializableConsumer;
@@ -491,6 +492,40 @@ public class ShortcutRegistrationTest {
                 .fireEvent(new KeyDownEvent(listenOn[0], Key.KEY_A.toString()));
 
         Assert.assertNotNull(event.get());
+    }
+
+    @Test
+    public void uiRegistration_uiHasModalComponent_eventIsSentFromModalComponentInsteadOfUi() {
+        AtomicReference<ShortcutEvent> eventRef = new AtomicReference<>();
+
+        Component modal = Mockito.mock(Component.class);
+        when(modal.getUI()).thenReturn(Optional.of(ui));
+        when(modal.getEventBus()).thenReturn(new ComponentEventBus(modal));
+        when(modal.getElement()).thenReturn(new Element("tag"));
+        when(modal.isVisible()).thenReturn(true);
+
+        UIInternals uiInternals = Mockito.mock(UIInternals.class);
+        Mockito.when(uiInternals.hasModalComponent()).thenReturn(true);
+        Mockito.when(uiInternals.getActiveModalComponent()).thenReturn(modal);
+        Mockito.when(ui.getInternals()).thenReturn(uiInternals);
+
+        listenOn = new Component[] { ui };
+        when(ui.getUI()).thenReturn(Optional.of(ui));
+
+        new ShortcutRegistration(lifecycleOwner, () -> listenOn, eventRef::set,
+                Key.KEY_A);
+
+        mockLifecycle(true);
+        Mockito.when(lifecycleOwner.getParent()).thenReturn(Optional.of(modal));
+
+        clientResponse(listenOn);
+
+        modal.getEventBus()
+                .fireEvent(new KeyDownEvent(listenOn[0], Key.KEY_A.toString()));
+
+        ShortcutEvent event = eventRef.get();
+        Assert.assertNotNull(event);
+        Assert.assertEquals(modal, event.getSource());
     }
 
     @Test

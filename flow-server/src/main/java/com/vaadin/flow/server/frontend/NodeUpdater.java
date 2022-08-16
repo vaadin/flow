@@ -25,7 +25,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -274,7 +273,7 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         addDefaultObjects(packageJson);
         addVaadinDefaultsToJson(packageJson);
-        addWebpackPlugins(packageJson);
+        removeWebpackPlugins(packageJson);
 
         return packageJson;
     }
@@ -284,40 +283,26 @@ public abstract class NodeUpdater implements FallibleCommand {
         computeIfAbsent(json, DEV_DEPENDENCIES, Json::createObject);
     }
 
-    private void addWebpackPlugins(JsonObject packageJson) {
-        final List<String> plugins = WebpackPluginsUtil.getPlugins();
-
+    private void removeWebpackPlugins(JsonObject packageJson) {
         Path targetFolder = Paths.get(npmFolder.toString(), buildDir,
                 WebpackPluginsUtil.PLUGIN_TARGET);
 
-        JsonObject devDependencies;
-        if (packageJson.hasKey(DEV_DEPENDENCIES)) {
-            devDependencies = packageJson.getObject(DEV_DEPENDENCIES);
-        } else {
-            devDependencies = Json.createObject();
-            packageJson.put(DEV_DEPENDENCIES, devDependencies);
+        if (!packageJson.hasKey(DEV_DEPENDENCIES)) {
+            return;
         }
+        JsonObject devDependencies = packageJson.getObject(DEV_DEPENDENCIES);
 
         String atVaadinPrefix = "@vaadin/";
         String pluginTargetPrefix = "./"
                 + (npmFolder.toPath().relativize(targetFolder) + "/")
                         .replace('\\', '/');
-        plugins.stream().filter(plugin -> targetFolder.toFile().exists())
-                .forEach(plugin -> {
-                    String pluginTarget = pluginTargetPrefix + plugin;
-                    devDependencies.put(atVaadinPrefix + plugin, pluginTarget);
-                });
 
-        // Remove plugins previously installed but no longer needed
+        // Clean previously installed plugins
         for (String depKey : devDependencies.keys()) {
             String depVersion = devDependencies.getString(depKey);
             if (depKey.startsWith(atVaadinPrefix)
                     && depVersion.startsWith(pluginTargetPrefix)) {
-                final String pluginName = depKey
-                        .substring(atVaadinPrefix.length());
-                if (!plugins.contains(pluginName)) {
-                    devDependencies.remove(depKey);
-                }
+                devDependencies.remove(depKey);
             }
         }
     }
@@ -384,11 +369,11 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         defaults.put("@polymer/polymer", POLYMER_VERSION);
 
-        defaults.put("lit", "2.1.4");
+        defaults.put("lit", "2.2.1");
 
         // Constructable style sheets is only implemented for chrome,
         // polyfill needed for FireFox et.al. at the moment
-        defaults.put("construct-style-sheets-polyfill", "3.0.4");
+        defaults.put("construct-style-sheets-polyfill", "3.1.0");
 
         defaults.put("@vaadin/common-frontend", "0.0.17");
 
@@ -403,7 +388,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         final String WORKBOX_VERSION = "6.5.0";
 
         if (featureFlags.isEnabled(FeatureFlags.VITE)) {
-            defaults.put("vite", "v2.8.6");
+            defaults.put("vite", "v2.9.1");
             defaults.put("@rollup/plugin-replace", "3.1.0");
             defaults.put("rollup-plugin-brotli", "3.1.0");
             defaults.put("vite-plugin-checker", "0.3.4");
@@ -416,7 +401,7 @@ public abstract class NodeUpdater implements FallibleCommand {
             defaults.put("fork-ts-checker-webpack-plugin", "6.2.1");
             defaults.put("webpack", "4.46.0");
             defaults.put("webpack-cli", "4.9.2");
-            defaults.put("webpack-dev-server", "4.7.4");
+            defaults.put("webpack-dev-server", "4.8.1");
             defaults.put("compression-webpack-plugin", "4.0.1");
             defaults.put("extra-watch-webpack-plugin", "1.0.3");
             defaults.put("webpack-merge", "4.2.2");
@@ -435,6 +420,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         defaults.put("workbox-core", WORKBOX_VERSION);
         defaults.put("workbox-precaching", WORKBOX_VERSION);
         defaults.put("glob", "7.1.6");
+        defaults.put("async", "3.2.2");
 
         return defaults;
     }

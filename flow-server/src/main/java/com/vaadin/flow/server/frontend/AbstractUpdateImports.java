@@ -506,10 +506,13 @@ abstract class AbstractUpdateImports implements Runnable {
                     .collect(Collectors.joining(", ", "{", "}"));
         }
 
+        if (!lines.contains(THEMABLE_MIXIN_IMPORT)) {
+            // Imports are always needed for Vite CSS handling and extra imports
+            // is no harm
+            addLines(lines, THEMABLE_MIXIN_IMPORT);
+        }
+
         if (cssData.getThemefor() != null || cssData.getId() != null) {
-            if (!lines.contains(THEMABLE_MIXIN_IMPORT)) {
-                addLines(lines, THEMABLE_MIXIN_IMPORT);
-            }
             String themeFor = cssData.getThemefor() != null
                     ? cssData.getThemefor()
                     : "";

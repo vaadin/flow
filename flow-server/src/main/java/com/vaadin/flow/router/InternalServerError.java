@@ -31,6 +31,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.router.internal.DefaultErrorHandler;
+import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 
@@ -74,7 +75,7 @@ public class InternalServerError extends Component
         } else {
             getElement().setText(exceptionText);
         }
-        return HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
+        return HttpStatusCode.INTERNAL_SERVER_ERROR.getCode();
     }
 
     /**

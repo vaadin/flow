@@ -17,8 +17,8 @@ package com.vaadin.flow.spring.test;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.oauth2.config.annotation.configurers.ClientDetailsServiceConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.AuthorizationServerConfigurer;
@@ -27,10 +27,10 @@ import org.springframework.security.oauth2.config.annotation.web.configurers.Aut
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
 
 @SpringBootApplication
-@EnableAuthorizationServer
 @Configuration
 @EnableWebSecurity
-public class TestServletInitializer implements AuthorizationServerConfigurer {
+@Import(DummyOAuth2Server.class)
+public class TestServletInitializer {
 
     public static void main(String[] args) {
         SpringApplication.run(TestServletInitializer.class, args);

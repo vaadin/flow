@@ -931,7 +931,7 @@ public class StaticFileServerTest implements Serializable {
 
         Assert.assertTrue(fileServer.serveStaticResource(request, response));
         Assert.assertEquals(0, out.getOutput().length);
-        Assert.assertEquals(HttpServletResponse.SC_BAD_REQUEST,
+        Assert.assertEquals(HttpStatusCode.BAD_REQUEST.getCode(),
                 responseCode.get());
     }
 
@@ -1115,7 +1115,7 @@ public class StaticFileServerTest implements Serializable {
 
         Assert.assertTrue(fileServer.serveStaticResource(request, response));
         Assert.assertEquals(0, out.getOutput().length);
-        Assert.assertEquals(HttpServletResponse.SC_NOT_MODIFIED,
+        Assert.assertEquals(HttpStatusCode.NOT_MODIFIED.getCode(),
                 responseCode.get());
     }
 

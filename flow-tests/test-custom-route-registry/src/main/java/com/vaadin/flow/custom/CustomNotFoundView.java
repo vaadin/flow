@@ -25,6 +25,7 @@ import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.NotFoundException;
+import com.vaadin.flow.server.HttpStatusCode;
 
 /**
  * Custom view for the NofFoundException to be used with the
@@ -41,6 +42,6 @@ public class CustomNotFoundView extends Component
         notFound.setId("error");
         getElement().appendChild(notFound.getElement());
 
-        return HttpServletResponse.SC_NOT_FOUND;
+        return HttpStatusCode.NOT_FOUND.getCode();
     }
 }

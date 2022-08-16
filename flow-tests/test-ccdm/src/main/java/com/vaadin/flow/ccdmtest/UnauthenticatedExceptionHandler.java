@@ -21,7 +21,7 @@ import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.HasErrorParameter;
 
-import jakarta.servlet.http.HttpServletResponse;
+import com.vaadin.flow.server.HttpStatusCode;
 
 @Tag(Tag.DIV)
 public class UnauthenticatedExceptionHandler extends Component
@@ -33,6 +33,6 @@ public class UnauthenticatedExceptionHandler extends Component
         setId("errorView");
         getElement().setText(
                 "Tried to navigate to a view without being authenticated");
-        return HttpServletResponse.SC_UNAUTHORIZED;
+        return HttpStatusCode.UNAUTHORIZED.getCode();
     }
 }

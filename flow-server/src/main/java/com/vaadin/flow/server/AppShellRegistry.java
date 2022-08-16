@@ -55,7 +55,7 @@ public class AppShellRegistry implements Serializable {
             + "%nPlease create a custom class implementing `AppShellConfigurator` and move the following annotations to it:%n  %s%n";
 
     public static final String ERROR_HEADER_OFFENDING_PWA = "%n%nWe changed the way you configure PWAs, please see this link for more info:%n"
-            + "https://vaadin.com/docs/v15/flow/advanced/tutorial-modifying-the-bootstrap-page.html%n";
+            + "https://vaadin.com/docs/latest/flow/advanced/modifying-the-bootstrap-page%n";
 
     public static final String ERROR_HEADER_NO_APP_CONFIGURATOR = "%n%nThe `PageConfigurator` interface is deprecated since Vaadin 15 and has no effect."
             + "%nPlease, create a class implementing `AppShellConfigurator`, and remove `PageConfigurator` from: %n  - %s%n";
@@ -64,7 +64,8 @@ public class AppShellRegistry implements Serializable {
             + "%nPlease, configure the page in %s, and remove the `PageConfigurator` from: %n - %s%n";
 
     private static final String ERROR_LINE = "  - %s from %s";
-    private static final String ERROR_MULTIPLE_SHELL = "%n%nUnable to find a single class implementing `AppShellConfigurator` from the following candidates:%n  %s%n  %s%n";
+    private static final String ERROR_MULTIPLE_SHELL = "%n%nMultiple classes implementing `AppShellConfigurator` were found. However, only a single class implementing `AppShellConfigurator` is allowed."
+            + "%nRemove \"implements AppShellConfigurator\" from all but one of the following classes:%n  %s%n  %s%n";
 
     private static final String ERROR_MULTIPLE_ANNOTATION = "%n%s is not a repeatable annotation type.%n";
 

@@ -29,6 +29,7 @@ import com.vaadin.flow.router.internal.InternalRedirectHandler;
 import com.vaadin.flow.router.internal.NavigationStateRenderer;
 import com.vaadin.flow.router.internal.ResolveRequest;
 import com.vaadin.flow.server.ErrorRouteRegistry;
+import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.SessionRouteRegistry;
 import com.vaadin.flow.server.VaadinRequest;
@@ -225,7 +226,7 @@ public class Router implements Serializable {
                 ui.getInternals().clearLastHandledNavigation();
             }
         }
-        return HttpServletResponse.SC_NOT_MODIFIED;
+        return HttpStatusCode.NOT_MODIFIED.getCode();
     }
 
     private boolean handleNavigationForLocation(UI ui, Location location) {

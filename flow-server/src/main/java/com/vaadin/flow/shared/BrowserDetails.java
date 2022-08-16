@@ -92,7 +92,9 @@ public class BrowserDetails implements Serializable {
 
         isSafari = !isChrome && !isIE && userAgent.contains("safari");
         isFirefox = userAgent.contains(" firefox/");
-        if (userAgent.contains(" edge/")) {
+        if (userAgent.contains(" edge/") || userAgent.contains(" edg/")
+                || userAgent.contains(" edga/")
+                || userAgent.contains(" edgios/")) {
             isEdge = true;
             isChrome = false;
             isOpera = false;
@@ -210,6 +212,14 @@ public class BrowserDetails implements Serializable {
                 parseVersionString(safeSubstring(userAgent, i, i + 5));
             } else if (isEdge) {
                 int i = userAgent.indexOf(" edge/") + 6;
+                if (userAgent.contains(" edg/")) {
+                    i = userAgent.indexOf(" edg/") + 5;
+                } else if (userAgent.contains(" edga/")) {
+                    i = userAgent.indexOf(" edga/") + 6;
+                } else if (userAgent.contains(" edgios/")) {
+                    i = userAgent.indexOf(" edgios/") + 8;
+                }
+
                 parseVersionString(safeSubstring(userAgent, i, i + 8));
             }
         } catch (Exception e) {
@@ -606,13 +616,12 @@ public class BrowserDetails implements Serializable {
         if (isEdge() && getBrowserMajorVersion() < 79) {
             return true;
         }
-        // Safari 13+
-        if (isSafari() && getBrowserMajorVersion() < 13) {
-            if (getOperatingSystemMajorVersion() > 14) {
-                return false;
-            }
-            if (getOperatingSystemMajorVersion() == 14
-                    && getOperatingSystemMinorVersion() >= 7) {
+        // Safari 14+
+        if (isSafari() && getBrowserMajorVersion() < 14) {
+            if (isIPhone() && (getOperatingSystemMajorVersion() > 14
+                    || (getOperatingSystemMajorVersion() == 14
+                            && getOperatingSystemMinorVersion() >= 7))) {
+                // #11654
                 return false;
             }
             return true;

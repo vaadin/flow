@@ -36,7 +36,6 @@ import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.Pair;
-import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
@@ -60,6 +59,7 @@ import com.vaadin.flow.router.PreserveOnRefresh;
 import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.VaadinSession;
 
 import elemental.json.JsonValue;
@@ -74,9 +74,6 @@ import elemental.json.JsonValue;
  */
 public abstract class AbstractNavigationStateRenderer
         implements NavigationHandler {
-
-    private static List<Integer> statusCodes = ReflectTools
-            .getConstantIntValues(HttpServletResponse.class);
 
     private final NavigationState navigationState;
 
@@ -178,7 +175,7 @@ public abstract class AbstractNavigationStateRenderer
                 // `getPreservedChain`. Once the data is retrieved from the
                 // client, `handle` method will be invoked with the same
                 // `NavigationEvent` argument.
-                return HttpServletResponse.SC_OK;
+                return HttpStatusCode.OK.getCode();
             } else {
                 chain = maybeChain.get();
             }
@@ -405,7 +402,7 @@ public abstract class AbstractNavigationStateRenderer
                 currentAction.setReferences(this, event);
                 storeContinueNavigationAction(event.getUI(), currentAction);
 
-                return Optional.of(HttpServletResponse.SC_OK);
+                return Optional.of(HttpStatusCode.OK.getCode());
             }
         }
 
@@ -654,11 +651,11 @@ public abstract class AbstractNavigationStateRenderer
      * @param beforeEvent
      *            the {@link BeforeLeaveEvent} or {@link BeforeEnterEvent} being
      *            triggered to an observer.
-     * @return a HTTP status code wrapped as an {@link Optional}. If the
+     * @return an HTTP status code wrapped as an {@link Optional}. If the
      *         {@link Optional} is empty, the process will proceed with next
      *         observer or just move forward, otherwise the process will return
      *         immediately with the provided http code.
-     * @see HttpServletResponse
+     * @see HttpStatusCode
      */
     protected Optional<Integer> handleTriggeredBeforeEvent(
             NavigationEvent event, BeforeEvent beforeEvent) {
@@ -845,9 +842,9 @@ public abstract class AbstractNavigationStateRenderer
 
     private static void validateStatusCode(int statusCode,
             Class<? extends Component> targetClass) {
-        if (!statusCodes.contains(statusCode)) {
+        if (!HttpStatusCode.isValidStatusCode(statusCode)) {
             String msg = String.format(
-                    "Error state code must be a valid HttpServletResponse value. Received invalid value of '%s' for '%s'",
+                    "Error state code must be a valid HttpStatusCode value. Received invalid value of '%s' for '%s'",
                     statusCode, targetClass.getName());
             throw new IllegalStateException(msg);
         }

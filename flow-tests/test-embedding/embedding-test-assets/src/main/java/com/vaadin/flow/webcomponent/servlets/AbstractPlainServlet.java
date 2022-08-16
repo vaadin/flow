@@ -39,8 +39,7 @@ public abstract class AbstractPlainServlet extends HttpServlet {
             getImportsWriter().accept(out);
             out.println("<title>Embedded web component</title></head>");
             out.println("<body>");
-            out.println(
-                    "<client-select show='true'>Web Component</client-select>");
+            out.println("<client-select show='true'></client-select>");
             out.println("</body>");
             out.println("</html>");
         }

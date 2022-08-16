@@ -9,45 +9,47 @@
     "@vaadin/common-frontend": "0.0.17",
     "@vaadin/flow-frontend": "./target/flow-frontend",
     "@vaadin/router": "1.7.4",
-    "@vaadin/vaadin-lumo-styles": "22.0.0-alpha9",
-    "construct-style-sheets-polyfill": "3.0.4",
-    "lit": "2.0.0"
+    "@vaadin/vaadin-lumo-styles": "23.1.0-alpha2",
+    "@vaadin/vaadin-text-field": "23.1.0-alpha2",
+    "construct-style-sheets-polyfill": "3.1.0",
+    "lit": "2.2.1"
   },
   "devDependencies": {
-    "@vaadin/application-theme-plugin": "./target/plugins/application-theme-plugin",
-    "@vaadin/build-status-plugin": "./target/plugins/build-status-plugin",
-    "@vaadin/theme-live-reload-plugin": "./target/plugins/theme-live-reload-plugin",
-    "@vaadin/theme-loader": "./target/plugins/theme-loader",
+    "@rollup/plugin-replace": "3.1.0",
+    "async": "3.2.2",
     "glob": "7.1.6",
     "mkdirp": "1.0.4",
     "rollup-plugin-brotli": "3.1.0",
     "typescript": "4.5.3",
-    "vite": "v2.8.2",
+    "vite": "v2.9.1",
     "vite-plugin-checker": "0.3.4",
-    "workbox-build": "6.4.2",
-    "workbox-core": "6.4.2",
-    "workbox-precaching": "6.4.2"
+    "workbox-build": "6.5.0",
+    "workbox-core": "6.5.0",
+    "workbox-precaching": "6.5.0"
   },
   "vaadin": {
     "dependencies": {
       "@polymer/polymer": "3.4.1",
       "@vaadin/common-frontend": "0.0.17",
       "@vaadin/router": "1.7.4",
-      "@vaadin/vaadin-lumo-styles": "22.0.0-alpha9",
-      "construct-style-sheets-polyfill": "3.0.4",
-      "lit": "2.0.0"
+      "@vaadin/vaadin-lumo-styles": "23.1.0-alpha2",
+      "@vaadin/vaadin-text-field": "23.1.0-alpha2",
+      "construct-style-sheets-polyfill": "3.1.0",
+      "lit": "2.2.1"
     },
     "devDependencies": {
+      "@rollup/plugin-replace": "3.1.0",
+      "async": "3.2.2",
       "glob": "7.1.6",
       "mkdirp": "1.0.4",
       "rollup-plugin-brotli": "3.1.0",
       "typescript": "4.5.3",
-      "vite": "v2.8.2",
+      "vite": "v2.9.1",
       "vite-plugin-checker": "0.3.4",
-      "workbox-build": "6.4.2",
-      "workbox-core": "6.4.2",
-      "workbox-precaching": "6.4.2"
+      "workbox-build": "6.5.0",
+      "workbox-core": "6.5.0",
+      "workbox-precaching": "6.5.0"
     },
-    "hash": "1bcda35280e3531e661975533150ac4314b38195f2b7b2c4afb2ea43597626a6"
+    "hash": "f2fa734df59ae2432dff7a0c3c8f8ded1b6961558b0d1338719bd98428336d20"
   }
 }

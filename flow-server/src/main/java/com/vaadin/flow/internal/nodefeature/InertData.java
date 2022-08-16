@@ -198,7 +198,9 @@ public class InertData extends ServerSideFeature {
         }
         do {
             final Optional<InertData> optionalInertData = parent
-                    .getFeatureIfInitialized(InertData.class);
+                    .hasFeature(InertData.class)
+                            ? parent.getFeatureIfInitialized(InertData.class)
+                            : Optional.empty();
             if (optionalInertData.isPresent()) {
                 // Most state nodes will not have inert data so using recursion
                 // is safe. Need to use resolveInert() as the execution order of

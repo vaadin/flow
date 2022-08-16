@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -37,6 +38,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.ServiceLoader;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -108,6 +110,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
     public static final String SERVICE_WORKER_HEADER = "Service-Worker";
 
+    private static final String FETCH_DEST_HEADER = "Sec-Fetch-Dest";
+
     private static final CharSequence GWT_STAT_EVENTS_JS = "if (typeof window.__gwtStatsEvent != 'function') {"
             + "window.Vaadin.Flow.gwtStatsEvents = [];"
             + "window.__gwtStatsEvent = function(event) {"
@@ -133,6 +137,32 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static final String URL = "url";
 
     private final PageBuilder pageBuilder;
+
+    private static final Set<String> nonHtmlFetchDests;
+
+    static {
+        // Full list at
+        // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-Fetch-Dest
+        Set<String> dests = new HashSet<>();
+        dests.add("audio");
+        dests.add("audioworklet");
+        dests.add("font");
+        dests.add("image");
+        dests.add("manifest");
+        dests.add("paintworklet");
+        dests.add("script"); // NOSONAR
+        dests.add("serviceworker");
+        dests.add("sharedworker");
+        dests.add("style");
+        dests.add("track");
+        dests.add("video");
+        dests.add("worker");
+        dests.add("xslt");
+
+        // "empty" requests are used when service worker caches / so they need
+        // to be allowed
+        nonHtmlFetchDests = Collections.unmodifiableSet(dests);
+    }
 
     /**
      * Creates an instance of the handler with default {@link PageBuilder}.
@@ -511,12 +541,13 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             // an internal request
             return false;
         }
-        if (request.getHeader(SERVICE_WORKER_HEADER) != null) {
-            return false;
-        }
 
         if (isVaadinStaticFileRequest(request)) {
             // Do not allow routes inside /VAADIN/
+            return false;
+        }
+
+        if (!isRequestForHtml(request)) {
             return false;
         }
 
@@ -529,7 +560,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      * Warning: This assumes that the VaadinRequest is targeted for a
      * VaadinServlet and does no further checks to validate this. You want to
      * use
-     * {@link HandlerHelper#isFrameworkInternalRequest(String, HttpServletRequest)}
+     * {@link HandlerHelper#isFrameworkInternalRequest(String, jakarta.servlet.http.HttpServletRequest)}
      * instead.
      * <p>
      * This is public only so that
@@ -570,6 +601,30 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     public static boolean isVaadinStaticFileRequest(VaadinRequest request) {
         return request.getPathInfo() != null
                 && request.getPathInfo().startsWith("/" + VAADIN_MAPPING);
+    }
+
+    /**
+     * Checks if the request is potentially a request for an HTML page.
+     *
+     * @param request
+     *            the request to check
+     * @return {@code true} if the request is potentially for HTML,
+     *         {@code false} if it is certain that it is a request for a script,
+     *         image or something else
+     */
+    protected boolean isRequestForHtml(VaadinRequest request) {
+        if (request.getHeader(BootstrapHandler.SERVICE_WORKER_HEADER) != null) {
+            return false;
+        }
+        String fetchDest = request.getHeader(FETCH_DEST_HEADER);
+        if (fetchDest == null) {
+            // Old browsers do not send the header at all
+            return true;
+        }
+        if (nonHtmlFetchDests.contains(fetchDest)) {
+            return false;
+        }
+        return true;
     }
 
     @Override
@@ -1149,7 +1204,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     context.getPwaRegistry().orElse(null));
         }
 
-        private Element createInlineJavaScriptElement(
+        protected Element createInlineJavaScriptElement(
                 String javaScriptContents) {
             // defer makes no sense without src:
             // https://developer.mozilla.org/en/docs/Web/HTML/Element/script
@@ -1158,17 +1213,17 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return wrapper;
         }
 
-        private static Element createJavaScriptElement(String sourceUrl,
+        protected static Element createJavaScriptElement(String sourceUrl,
                 boolean defer) {
             return createJavaScriptElement(sourceUrl, defer, "text/javascript");
         }
 
-        private static Element createJavaScriptModuleElement(String sourceUrl,
+        protected static Element createJavaScriptModuleElement(String sourceUrl,
                 boolean defer) {
             return createJavaScriptElement(sourceUrl, defer, "module");
         }
 
-        private static Element createJavaScriptElement(String sourceUrl,
+        protected static Element createJavaScriptElement(String sourceUrl,
                 boolean defer, String type) {
             Element jsElement = new Element(Tag.valueOf(SCRIPT_TAG), "")
                     .attr("type", type).attr(DEFER_ATTRIBUTE, defer);
@@ -1178,7 +1233,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return jsElement;
         }
 
-        private static Element createJavaScriptElement(String sourceUrl) {
+        protected static Element createJavaScriptElement(String sourceUrl) {
             return createJavaScriptElement(sourceUrl, true);
         }
 
@@ -1235,7 +1290,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     "You have to enable javascript in your browser to use this web site.");
         }
 
-        private Element getBootstrapScript(JsonValue initialUIDL,
+        protected Element getBootstrapScript(JsonValue initialUIDL,
                 BootstrapContext context) {
             return createInlineJavaScriptElement("//<![CDATA[\n"
                     + getBootstrapJS(initialUIDL, context) + "//]]>");

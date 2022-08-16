@@ -27,6 +27,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.internal.NavigationStateRenderer;
+import com.vaadin.flow.server.HttpStatusCode;
 
 /**
  * Event created when the location changes by any of the reasons defined at
@@ -39,7 +40,7 @@ public class LocationChangeEvent extends EventObject {
     private final NavigationTrigger trigger;
     private final Location location;
 
-    private int statusCode = HttpServletResponse.SC_OK;
+    private int statusCode = HttpStatusCode.OK.getCode();
     private NavigationHandler rerouteTarget;
 
     private List<HasElement> routeTargetChain;

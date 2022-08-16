@@ -58,9 +58,18 @@ public class FeatureFlags implements Serializable {
             "https://github.com/vaadin/platform/issues/2448", true, null);
     public static final Feature MAP_COMPONENT = new Feature(
             "Map component (Pro)", "mapComponent",
-            "https://github.com/vaadin/platform/issues/2611", true,
+            "https://vaadin.com/docs/latest/ds/components/map", true,
             "com.vaadin.flow.component.map.Map");
-
+    public static final Feature SPREADSHEET_COMPONENT = new Feature(
+            "Spreadsheet component (Pro)", "spreadsheetComponent",
+            "https://github.com/vaadin/platform/issues/2027", true,
+            "com.vaadin.flow.component.spreadsheet.Spreadsheet");
+    public static final Feature HILLA_PUSH = new Feature(
+            "Push support in Hilla", "hillaPush",
+            "https://github.com/vaadin/hilla/issues/56", true, null);
+    public static final Feature NEW_LICENSE_CHECKER = new Feature(
+            "New license checker", "newLicenseChecker",
+            "https://github.com/vaadin/platform/issues/2938", false, null);
     private List<Feature> features = new ArrayList<>();
 
     File propertiesFolder = null;
@@ -80,6 +89,9 @@ public class FeatureFlags implements Serializable {
         features.add(new Feature(EXAMPLE));
         features.add(new Feature(VITE));
         features.add(new Feature(MAP_COMPONENT));
+        features.add(new Feature(SPREADSHEET_COMPONENT));
+        features.add(new Feature(HILLA_PUSH));
+        features.add(new Feature(NEW_LICENSE_CHECKER));
         loadProperties();
     }
 
@@ -320,6 +332,13 @@ public class FeatureFlags implements Serializable {
 
     private boolean isDevelopmentMode() {
         return configuration != null && !configuration.isProductionMode();
+    }
+
+    public String getEnableHelperMessage(Feature feature) {
+        return feature.getTitle()
+                + " is not enabled. Enable it in the debug window or by adding "
+                + getPropertyName(feature.getId())
+                + "=true to src/main/resources/" + PROPERTIES_FILENAME;
     }
 
     private Logger getLogger() {

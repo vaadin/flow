@@ -19,10 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Optional;
-import java.util.Set;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.DataNode;
@@ -69,30 +66,6 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
     private static final String SCRIPT = "script";
     private static final String SCRIPT_INITIAL = "initial";
-    private static final Set<String> nonHtmlFetchDests;
-    static {
-        // Full list at
-        // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-Fetch-Dest
-        Set<String> dests = new HashSet<>();
-        dests.add("audio");
-        dests.add("audioworklet");
-        dests.add("font");
-        dests.add("image");
-        dests.add("manifest");
-        dests.add("paintworklet");
-        dests.add("script"); // NOSONAR
-        dests.add("serviceworker");
-        dests.add("sharedworker");
-        dests.add("style");
-        dests.add("track");
-        dests.add("video");
-        dests.add("worker");
-        dests.add("xslt");
-
-        // "empty" requests are used when service worker caches / so they need
-        // to be allowed
-        nonHtmlFetchDests = Collections.unmodifiableSet(dests);
-    }
 
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
@@ -104,15 +77,16 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         DeploymentConfiguration config = session.getConfiguration();
         IndexHtmlResponse indexHtmlResponse;
 
+        VaadinService service = request.getService();
         Document indexDocument = config.isProductionMode()
-                ? getCachedIndexHtmlDocument(request.getService())
-                : getIndexHtmlDocument(request.getService());
+                ? getCachedIndexHtmlDocument(service)
+                : getIndexHtmlDocument(service);
 
         prependBaseHref(request, indexDocument);
 
         JsonObject initialJson = Json.createObject();
 
-        if (request.getService().getBootstrapInitialPredicate()
+        if (service.getBootstrapInitialPredicate()
                 .includeInitialUidl(request)) {
             includeInitialUidl(initialJson, session, request, response);
 
@@ -155,11 +129,16 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         storeAppShellTitleToUI(indexDocument);
 
         // modify the page based on registered IndexHtmlRequestListener:s
-        request.getService().modifyIndexHtmlResponse(indexHtmlResponse);
+        service.modifyIndexHtmlResponse(indexHtmlResponse);
 
         if (config.isDevModeGizmoEnabled()) {
             addDevmodeGizmo(indexDocument, config, session, request);
             catchErrorsInDevMode(indexDocument);
+
+            if (getFeatureFlags(service)
+                    .isEnabled(FeatureFlags.NEW_LICENSE_CHECKER)) {
+                addLicenseChecker(indexDocument);
+            }
         }
 
         try {
@@ -173,9 +152,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     }
 
     private void catchErrorsInDevMode(Document indexDocument) {
-        Element elm = new Element(SCRIPT);
-        elm.attr(SCRIPT_INITIAL, "");
-        elm.appendChild(new DataNode("" + //
+        addScript(indexDocument, "" + //
                 "window.Vaadin = window.Vaadin || {};" + //
                 "window.Vaadin.ConsoleErrors = window.Vaadin.ConsoleErrors || [];"
                 + //
@@ -194,7 +171,24 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 "window.addEventListener('unhandledrejection', e => {" + //
                 "    window.Vaadin.ConsoleErrors.push([e.reason]);" + //
                 "});" //
-        ));
+        );
+    }
+
+    private void addLicenseChecker(Document indexDocument) {
+        // maybeCheck is invoked by the WC license checker
+        addScript(indexDocument, "" + //
+                "window.Vaadin = window.Vaadin || {};" + //
+                "window.Vaadin.VaadinLicenseChecker = {" + //
+                "  maybeCheck: (productInfo) => {" + //
+                "    window.Vaadin.devModeGizmo.checkLicense(productInfo);" + //
+                "  }" + //
+                "};");
+    }
+
+    private void addScript(Document indexDocument, String script) {
+        Element elm = new Element(SCRIPT);
+        elm.attr(SCRIPT_INITIAL, "");
+        elm.appendChild(new DataNode(script));
         indexDocument.head().insertChildren(0, elm);
     }
 
@@ -261,30 +255,6 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                         .isValidUrl(request);
     }
 
-    /**
-     * Checks if the request is potentially a request for an HTML page.
-     *
-     * @param request
-     *            the request to check
-     * @return {@code true} if the request is potentially for HTML,
-     *         {@code false} if it is certain that it is a request for a script,
-     *         image or something else
-     */
-    protected boolean isRequestForHtml(VaadinRequest request) {
-        if (request.getHeader(SERVICE_WORKER_HEADER) != null) {
-            return false;
-        }
-        String fetchDest = request.getHeader("Sec-Fetch-Dest");
-        if (fetchDest == null) {
-            // Old browsers do not send the header at all
-            return true;
-        }
-        if (nonHtmlFetchDests.contains(fetchDest)) {
-            return false;
-        }
-        return true;
-    }
-
     @Override
     protected void initializeUIWithRouter(BootstrapContext context, UI ui) {
         if (context.getService().getBootstrapInitialPredicate()
@@ -320,8 +290,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         String index = FrontendUtils.getIndexHtmlContent(service);
         if (index != null) {
             Document indexHtmlDocument = Jsoup.parse(index);
-            if (FeatureFlags.get(service.getContext())
-                    .isEnabled(FeatureFlags.VITE)) {
+            if (getFeatureFlags(service).isEnabled(FeatureFlags.VITE)) {
                 modifyIndexHtmlForVite(indexHtmlDocument);
             }
             return indexHtmlDocument;
@@ -342,6 +311,10 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                         + "using client side bootstrapping.",
                 indexHtmlFilePath);
         throw new IOException(message);
+    }
+
+    private static FeatureFlags getFeatureFlags(VaadinService service) {
+        return FeatureFlags.get(service.getContext());
     }
 
     private static void modifyIndexHtmlForVite(Document indexHtmlDocument) {

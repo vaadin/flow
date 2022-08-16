@@ -34,6 +34,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.router.internal.DefaultErrorHandler;
+import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 
 /**
@@ -78,7 +79,7 @@ public class RouteNotFoundError extends Component
         template = template.replace("{{path}}", path);
 
         getElement().setChild(0, new Html(template).getElement());
-        return HttpServletResponse.SC_NOT_FOUND;
+        return HttpStatusCode.NOT_FOUND.getCode();
     }
 
     private static Logger getLogger() {

@@ -23,7 +23,7 @@ import jakarta.servlet.http.HttpSession;
 
 /**
  * A generic session, wrapping a more specific session implementation, e.g.
- * {@link HttpSession}.
+ * {@link jakarta.servlet.http.HttpSession}.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -69,14 +69,14 @@ public interface WrappedSession extends Serializable {
      *
      * @return an unmodifiable set of the current attribute names
      *
-     * @see HttpSession#getAttributeNames()
+     * @see jakarta.servlet.http.HttpSession#getAttributeNames()
      */
     Set<String> getAttributeNames();
 
     /**
      * Invalidates this session then unbinds any objects bound to it.
      *
-     * @see HttpSession#invalidate()
+     * @see jakarta.servlet.http.HttpSession#invalidate()
      */
     void invalidate();
 
@@ -85,7 +85,7 @@ public interface WrappedSession extends Serializable {
      *
      * @return a unique session id string
      *
-     * @see HttpSession#getId()
+     * @see jakarta.servlet.http.HttpSession#getId()
      */
     String getId();
 
@@ -98,7 +98,7 @@ public interface WrappedSession extends Serializable {
      *
      * @throws IllegalStateException
      *             if this method is called on an invalidated session
-     * @see HttpSession#getCreationTime()
+     * @see jakarta.servlet.http.HttpSession#getCreationTime()
      */
     long getCreationTime();
 
@@ -117,7 +117,7 @@ public interface WrappedSession extends Serializable {
      * @throws IllegalStateException
      *             if this method is called on an invalidated session
      *
-     * @see HttpSession#getLastAccessedTime()
+     * @see jakarta.servlet.http.HttpSession#getLastAccessedTime()
      */
     long getLastAccessedTime();
 
@@ -131,7 +131,7 @@ public interface WrappedSession extends Serializable {
      *         yet joined
      * @throws IllegalStateException
      *             if this method is called on an invalidated session
-     * @see HttpSession#isNew()
+     * @see jakarta.servlet.http.HttpSession#isNew()
      */
     boolean isNew();
 
@@ -144,7 +144,7 @@ public interface WrappedSession extends Serializable {
      *            the name of the object to remove from this session
      * @throws IllegalStateException
      *             if this method is called on an invalidated session
-     * @see HttpSession#removeAttribute(String)
+     * @see jakarta.servlet.http.HttpSession#removeAttribute(String)
      */
     void removeAttribute(String name);
 
@@ -155,7 +155,7 @@ public interface WrappedSession extends Serializable {
      *
      * @param interval
      *            An integer specifying the number of seconds
-     * @see HttpSession#setMaxInactiveInterval(int)
+     * @see jakarta.servlet.http.HttpSession#setMaxInactiveInterval(int)
      */
     void setMaxInactiveInterval(int interval);
 

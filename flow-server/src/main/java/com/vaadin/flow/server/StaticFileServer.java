@@ -235,7 +235,7 @@ public class StaticFileServer implements StaticFileHandler {
         if (HandlerHelper.isPathUnsafe(filenameWithPath)) {
             getLogger().info(HandlerHelper.UNSAFE_PATH_ERROR_MESSAGE_PATTERN,
                     filenameWithPath);
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.setStatus(HttpStatusCode.BAD_REQUEST.getCode());
             return true;
         }
 
@@ -291,7 +291,7 @@ public class StaticFileServer implements StaticFileHandler {
         if (browserHasNewestVersion(request, timestamp)) {
             // Browser is up to date, nothing further to do than set the
             // response code
-            response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+            response.setStatus(HttpStatusCode.NOT_MODIFIED.getCode());
             return true;
         }
         responseWriter.writeResponseContents(filenameWithPath, resourceUrl,

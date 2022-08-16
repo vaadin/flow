@@ -53,6 +53,7 @@ import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.Attributes;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
+import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.SystemMessages;
 import com.vaadin.flow.server.SystemMessagesProvider;
@@ -280,7 +281,7 @@ public class ApplicationRunnerServlet extends VaadinServlet {
                     public int navigate(UI ui, Location location,
                             NavigationTrigger trigger, JsonValue state) {
                         ui.getPage().getHistory().pushState(null, location);
-                        return HttpServletResponse.SC_OK;
+                        return HttpStatusCode.OK.getCode();
                     }
                 };
                 return router;

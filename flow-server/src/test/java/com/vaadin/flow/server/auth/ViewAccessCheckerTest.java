@@ -336,6 +336,26 @@ public class ViewAccessCheckerTest {
     }
 
     @Test
+    public void openingNoAnnotationViewShowsReasonAndHintInDevelopmentMode() {
+        Result result = checkAccess(NoAnnotationView.class, User.NORMAL_USER,
+                false);
+        Assert.assertEquals(NotFoundException.class, result.getRerouteError());
+        Assert.assertEquals(
+                "Access denied. Consider adding one of the following annotations "
+                        + "to make the view accessible: @AnonymousAllowed, "
+                        + "@PermitAll, @RolesAllowed.",
+                result.getRerouteErrorMessage());
+    }
+
+    @Test
+    public void openingNoAnnotationViewDoesNotShowAnyReasonAndHintInProductionMode() {
+        Result result = checkAccess(NoAnnotationView.class, User.NORMAL_USER,
+                true);
+        Assert.assertEquals(NotFoundException.class, result.getRerouteError());
+        Assert.assertEquals("", result.getRerouteErrorMessage());
+    }
+
+    @Test
     public void redirectWhenNoLoginSet() throws Exception {
         resetLoginView();
         Result result = checkAccess(RolesAllowedAdminView.class, null);

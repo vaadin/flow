@@ -20,7 +20,10 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.dom.DisabledUpdateMode;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
@@ -115,6 +118,33 @@ public class ReturnChannelHandlerTest {
                 observedArguments.get());
     }
 
+    @Test
+    public void modalComponent_registrationExists_invocationProcessed() {
+        ReturnChannelRegistration registration = registerUiChannel();
+
+        Div modal = new Div();
+        ui.addModal(modal);
+
+        handleMessage(registration);
+
+        Assert.assertNotNull("Channel handler should be called",
+                observedArguments.get());
+    }
+
+    @Test
+    public void modalComponent_unregisteredChannel_invocationIgnored() {
+        ReturnChannelRegistration registration = registerUiChannel();
+        registration.remove();
+
+        Div modal = new Div();
+        ui.addModal(modal);
+
+        handleMessage(registration);
+
+        Assert.assertNull("Channel handler should not be called",
+                observedArguments.get());
+    }
+
     private void handleMessage(ReturnChannelRegistration registration) {
         handleMessage(registration.getStateNodeId(),
                 registration.getChannelId());
@@ -141,5 +171,9 @@ public class ReturnChannelHandlerTest {
         invocationJson.put(JsonConstants.RPC_CHANNEL_ARGUMENTS, args);
 
         return invocationJson;
+    }
+
+    @Tag("div")
+    private class Div extends Component {
     }
 }

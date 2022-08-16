@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.net.HttpURLConnection;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -48,6 +49,7 @@ import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.HandlerHelper;
+import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.StaticFileServer;
 import com.vaadin.flow.server.VaadinRequest;
@@ -315,8 +317,14 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
      */
     protected void updateServerStartupEnvironment(FrontendTools frontendTools,
             Map<String, String> environment) {
+        environment.put("watchDogHost", getLoopbackAddress().getHostAddress());
         environment.put("watchDogPort",
                 Integer.toString(getWatchDog().getWatchDogPort()));
+    }
+
+    // visible for tests
+    InetAddress getLoopbackAddress() {
+        return InetAddress.getLoopbackAddress();
     }
 
     /**
@@ -504,11 +512,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         }
     }
 
-    /**
-     * Get the listening port of the dev server.
-     *
-     * @return the listening port
-     */
+    @Override
     public int getPort() {
         return port;
     }
@@ -679,7 +683,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
                         .find()) {
             getLogger().info("Blocked attempt to access file: {}",
                     requestFilename);
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.setStatus(HttpStatusCode.FORBIDDEN.getCode());
             return true;
         }
 

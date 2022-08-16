@@ -25,6 +25,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.RequestHandler;
 import com.vaadin.flow.server.StreamReceiver;
 import com.vaadin.flow.server.StreamResource;
@@ -90,7 +91,7 @@ public class StreamRequestHandler implements RequestHandler {
             abstractStreamResource = StreamRequestHandler.getPathUri(pathInfo)
                     .flatMap(session.getResourceRegistry()::getResource);
             if (!abstractStreamResource.isPresent()) {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND,
+                response.sendError(HttpStatusCode.NOT_FOUND.getCode(),
                         "Resource is not found for path=" + pathInfo);
                 return true;
             }

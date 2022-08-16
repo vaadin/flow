@@ -15,16 +15,20 @@
  */
 package com.vaadin.flow.server.communication.rpc;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.component.PollEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.JsonConstants;
 
 import elemental.json.JsonObject;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Abstract invocation handler implementation with common methods.
@@ -61,7 +65,7 @@ public abstract class AbstractRpcInvocationHandler
                     + "the client side for an inactive (disabled or invisible) node id='{}'",
                     getClass().getName(), node.getId());
             return Optional.empty();
-        } else if (!allowInert() && node.isInert()) {
+        } else if (!allowInert(ui, invocationJson) && node.isInert()) {
             getLogger().trace(
                     "Ignored RPC for invocation handler '{}' from "
                             + "the client side for an inert node id='{}'",
@@ -72,8 +76,116 @@ public abstract class AbstractRpcInvocationHandler
         }
     }
 
-    protected boolean allowInert() {
-        return false;
+    /**
+     * Checks whether a Poll RPC invocation is valid or not.
+     *
+     * @param ui
+     *            the current UI instance
+     * @param invocationJson
+     *            the JsonObject containing invocation properties
+     * @return a boolean indicating that the Poll RPC invocation is valid or
+     *         not.
+     */
+    private boolean isValidPollInvocation(UI ui, JsonObject invocationJson) {
+
+        if (!isPollEventInvocation(invocationJson)) {
+            return false;
+        }
+
+        if (!isPollingEnabledForUI(ui)) {
+            getLogger().warn(
+                    "Ignoring Poll RPC for UI that does not have polling enabled.");
+            getLogger().debug("Ignored payload:\n{}", invocationJson);
+            return false;
+        }
+
+        if (!isLegitimatePollEventInvocation(ui, invocationJson)) {
+            getLogger().warn(
+                    "Ignoring Poll RPC for illegitimate invocation payload.");
+            getLogger().debug("Ignored payload:\n{}", invocationJson);
+            return false;
+        }
+
+        return true;
+    }
+
+    private boolean isPollEventInvocation(JsonObject invocationJson) {
+        return invocationJson.hasKey(JsonConstants.RPC_EVENT_TYPE)
+                && PollEvent.DOM_EVENT_NAME.equalsIgnoreCase(
+                        invocationJson.getString(JsonConstants.RPC_EVENT_TYPE));
+    }
+
+    private boolean isPollingEnabledForUI(UI ui) {
+        return ui.getPollInterval() > 0
+                && ComponentUtil.hasEventListener(ui, PollEvent.class);
+    }
+
+    /**
+     * This method checks that a legitimate Poll Rpc invocation properties
+     * should contain only the following three <b>allowed</b> keys along with
+     * their values and nothing less or more:
+     * <ul>
+     * <li>{@link com.vaadin.flow.shared.JsonConstants#RPC_TYPE}</li>
+     * <li>{@link com.vaadin.flow.shared.JsonConstants#RPC_NODE}</li>
+     * <li>{@link com.vaadin.flow.shared.JsonConstants#RPC_EVENT_TYPE}</li>
+     * </ul>
+     * <p>
+     * As Rpc invocations of type polling would still be handled even while the
+     * UI is inert (due to server-modality) this will make sure that the request
+     * does not include any extra malicious payloads.
+     * <p>
+     * This method checks the existence of first two allowed keys as the
+     * {@link #isPollEventInvocation(JsonObject)} had already checked for the
+     * existence of the
+     * {@link com.vaadin.flow.shared.JsonConstants#RPC_EVENT_TYPE} before this
+     * method is called.
+     *
+     * @see #isValidPollInvocation(UI, JsonObject)
+     *
+     * @param ui
+     *            the UI instance which the Rpc event is coming from.
+     * @param invocationJson
+     *            the Rpc invocation payload as Json.
+     * @return a boolean indicating whether the invocationJson is legitimate in
+     *         accordance with the UI instance.
+     */
+    private boolean isLegitimatePollEventInvocation(UI ui,
+            JsonObject invocationJson) {
+        List<String> allowedKeys = Arrays.asList(JsonConstants.RPC_TYPE,
+                JsonConstants.RPC_NODE, JsonConstants.RPC_EVENT_TYPE);
+        List<String> invocationKeys = Arrays.asList(invocationJson.keys());
+        if (!allowedKeys.containsAll(invocationKeys)) {
+            return false;
+        }
+
+        if (!invocationJson.hasKey(JsonConstants.RPC_TYPE)) {
+            return false;
+        }
+        if (!JsonConstants.RPC_TYPE_EVENT
+                .equals(invocationJson.getString(JsonConstants.RPC_TYPE))) {
+            return false;
+        }
+
+        // Polling events should target only the root component in a UI:
+        StateNode node = ui.getInternals().getStateTree()
+                .getNodeById(getNodeId(invocationJson));
+        return node.equals(ui.getElement().getNode());
+    }
+
+    /**
+     * Specifies whether inert status should be ignored for an RPC invocation or
+     * not. The default behaviour is to let the polling events be handled, while
+     * ignoring other requests.
+     *
+     * @param ui
+     *            the UI instance that RPC invocation originated from.
+     * @param invocationJson
+     *            the JsonObject containing invocation properties.
+     * @return a boolean indicating that the inert status should be ignored for
+     *         the current invocation or not.
+     */
+    protected boolean allowInert(UI ui, JsonObject invocationJson) {
+        return isValidPollInvocation(ui, invocationJson);
     }
 
     /**
@@ -94,7 +206,7 @@ public abstract class AbstractRpcInvocationHandler
                 .getLogger(AbstractRpcInvocationHandler.class.getName());
     }
 
-    private static int getNodeId(JsonObject invocationJson) {
+    protected static int getNodeId(JsonObject invocationJson) {
         return (int) invocationJson.getNumber(JsonConstants.RPC_NODE);
     }
 }

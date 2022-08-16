@@ -12,16 +12,6 @@ const { DefinePlugin } = require('webpack');
 const ExtraWatchWebpackPlugin = require('extra-watch-webpack-plugin');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 
-// Flow plugins
-const BuildStatusPlugin = require('@vaadin/build-status-plugin');
-const ThemeLiveReloadPlugin = require('@vaadin/theme-live-reload-plugin');
-const {
-  ApplicationThemePlugin,
-  processThemeResources,
-  extractThemeName,
-  findParentThemes
-} = require('@vaadin/application-theme-plugin');
-
 const path = require('path');
 
 // this matches /themes/my-theme/ and is used to check css url handling and file path build.
@@ -57,6 +47,15 @@ const serviceWorkerPath = 'sw.js';
 // file which is used by flow to read templates for server `@Id` binding
 const statsFile = `${confFolder}/stats.json`;
 
+const buildDirectory = '[to-be-generated-by-flow]';
+
+// Flow plugins
+const BuildStatusPlugin = require(buildDirectory + '/plugins/build-status-plugin');
+const ThemeLiveReloadPlugin = require(buildDirectory + '/plugins/theme-live-reload-plugin');
+const { ApplicationThemePlugin, processThemeResources, extractThemeName, findParentThemes } = require(buildDirectory +
+  '/plugins/application-theme-plugin');
+const themeLoader = buildDirectory + '/plugins/theme-loader';
+
 // Folders in the project which can contain static assets.
 const projectStaticAssetsFolders = [
   path.resolve(__dirname, 'src', 'main', 'resources', 'META-INF', 'resources'),
@@ -89,12 +88,13 @@ let stats;
 // Open a connection with the Java dev-mode handler in order to finish
 // webpack-dev-mode when it exits or crashes.
 const watchDogPort = devMode && process.env.watchDogPort;
+const watchDogHost = (devMode && process.env.watchDogHost) || 'localhost';
 if (watchDogPort) {
   const runWatchDog = () => {
     const client = new require('net').Socket();
     client.setEncoding('utf8');
-    client.on('error', function () {
-      console.log('Watchdog connection error. Terminating webpack process...');
+    client.on('error', function (err) {
+      console.log('Watchdog connection error. Terminating webpack process...', err);
       client.destroy();
       process.exit(0);
     });
@@ -102,8 +102,7 @@ if (watchDogPort) {
       client.destroy();
       runWatchDog();
     });
-
-    client.connect(watchDogPort, 'localhost');
+    client.connect(watchDogPort, watchDogHost);
   };
   runWatchDog();
 }
@@ -287,7 +286,7 @@ module.exports = {
           {
             // theme-loader will change any url starting with './' to start with 'VAADIN/static' instead
             // NOTE! this loader should be here so it's run before css-loader as loaders are applied Right-To-Left
-            loader: '@vaadin/theme-loader',
+            loader: themeLoader,
             options: {
               devMode: devMode
             }
@@ -336,13 +335,32 @@ module.exports = {
 
     function (compiler) {
       // V14 bootstrapping needs the bundle names
-      compiler.hooks.afterEmit.tapAsync("FlowStatsHelper", (compilation, done) => {
+      compiler.hooks.afterEmit.tapAsync('FlowStatsHelper', (compilation, done) => {
+        const st = compilation.getStats().toJson();
+        const modules = st.modules;
+        const nodeModulesFolders = modules
+          .map((module) => module.identifier)
+          .filter((id) => id.includes('node_modules'));
+        const npmModules = nodeModulesFolders
+          .map((id) => id.replace(/.*node_modules./, ''))
+          .map((id) => {
+            const parts = id.split('/');
+            if (id.startsWith('@')) {
+              return parts[0] + '/' + parts[1];
+            } else {
+              return parts[0];
+            }
+          })
+          .sort()
+          .filter((value, index, self) => self.indexOf(value) === index);
+
         let miniStats = {
-          assetsByChunkName: compilation.getStats().toJson().assetsByChunkName
+          assetsByChunkName: st.assetsByChunkName,
+          npmModules: npmModules
         };
+
         if (!devMode) {
-          fs.writeFile(statsFile, JSON.stringify(miniStats, null, 1),
-            () => done());
+          fs.writeFile(statsFile, JSON.stringify(miniStats, null, 1), () => done());
         } else {
           stats = miniStats;
           done();

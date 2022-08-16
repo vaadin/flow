@@ -16,9 +16,9 @@ public class ModalDialogIT extends ChromeBrowserTest {
     private TestBenchElement modalDialogButton;
     private TestBenchElement modelessDialogButton;
 
-    @Before
-    public void init() {
-        open();
+    @Override
+    protected void open(String... parameters) {
+        super.open(parameters);
         eventLog = $(DivElement.class).id(ModalDialogView.EVENT_LOG);
         modalDialogButton = $(NativeButtonElement.class)
                 .id(ModalDialogView.OPEN_MODAL_BUTTON);
@@ -29,6 +29,8 @@ public class ModalDialogIT extends ChromeBrowserTest {
     // #7799
     @Test
     public void modalDialogOpened_sameShortcutsListeningOnUi_noShortcutTriggered() {
+        open();
+
         pressShortcutKey(
                 $(NativeButtonElement.class).id(ModalDialogView.UI_BUTTON));
         validateLatestShortcutEvent(0, ModalDialogView.UI_BUTTON);
@@ -39,17 +41,38 @@ public class ModalDialogIT extends ChromeBrowserTest {
         validateLatestShortcutEvent(0, ModalDialogView.UI_BUTTON);
         listenToButtonShortcutOnUI();
         pressShortcutKey(getDialogInput());
-        // no event occurred since shortcut is listened on ui which is inert
-        validateLatestShortcutEvent(0, ModalDialogView.UI_BUTTON);
+        // event occurred since when a shortcut is registered on UI, it is
+        // listened on the topmost modal component instead.
+        validateLatestShortcutEvent(1, ModalDialogView.DIALOG_BUTTON);
 
         closeDialog();
         pressShortcutKey(
                 $(NativeButtonElement.class).id(ModalDialogView.UI_BUTTON));
-        validateLatestShortcutEvent(1, ModalDialogView.UI_BUTTON);
+        validateLatestShortcutEvent(2, ModalDialogView.UI_BUTTON);
+    }
+
+    @Test
+    public void modalDialogOpenInitially_dialogClosed_shortcutsInViewTrigger() {
+        open("open_dialog=modal");
+
+        // shortcuts on view should not trigger while dialog is open
+        pressShortcutKey(
+                $(NativeButtonElement.class).id(ModalDialogView.UI_BUTTON));
+        Assert.assertTrue("No event should be logged",
+                eventLog.$(DivElement.class).all().isEmpty());
+
+        closeDialog();
+
+        // shortcuts on view should trigger when dialog has been closed
+        pressShortcutKey(
+                $(NativeButtonElement.class).id(ModalDialogView.UI_BUTTON));
+        validateLatestShortcutEvent(0, ModalDialogView.UI_BUTTON);
     }
 
     @Test
     public void modalDialogOpened_sameShortcutListeningOnUiAndDialog_onlyDialogShortcutExecuted() {
+        open();
+
         pressShortcutKey(
                 $(NativeButtonElement.class).id(ModalDialogView.UI_BUTTON));
         validateLatestShortcutEvent(0, ModalDialogView.UI_BUTTON);
@@ -71,6 +94,8 @@ public class ModalDialogIT extends ChromeBrowserTest {
 
     @Test
     public void modelessDialogOpened_sharesShortcutWithUI_bothExecuted() {
+        open();
+
         pressShortcutKey(
                 $(NativeButtonElement.class).id(ModalDialogView.UI_BUTTON));
         validateLatestShortcutEvent(0, ModalDialogView.UI_BUTTON);
@@ -90,6 +115,8 @@ public class ModalDialogIT extends ChromeBrowserTest {
 
     @Test
     public void modelessDialogOpened_sameShortcutListeningOnUiAndDialog_bothExecuted() {
+        open();
+
         pressShortcutKey(
                 $(NativeButtonElement.class).id(ModalDialogView.UI_BUTTON));
         validateLatestShortcutEvent(0, ModalDialogView.UI_BUTTON);

@@ -25,6 +25,7 @@ import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.RouteNotFoundError;
+import com.vaadin.flow.server.HttpStatusCode;
 
 @ParentLayout(PushLayout.class)
 public class PushRouteNotFoundView extends RouteNotFoundError {
@@ -39,7 +40,7 @@ public class PushRouteNotFoundView extends RouteNotFoundError {
         String path = event.getLocation().getPath();
         if (PUSH_NON_EXISTENT_PATH.equals(path)) {
             isPushPath = true;
-            return HttpServletResponse.SC_NOT_FOUND;
+            return HttpStatusCode.NOT_FOUND.getCode();
         } else {
             return super.setErrorParameter(event, parameter);
         }

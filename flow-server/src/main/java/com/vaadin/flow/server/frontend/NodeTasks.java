@@ -678,6 +678,10 @@ public class NodeTasks implements FallibleCommand {
             this.postinstallPackages = postinstallPackages;
             return this;
         }
+
+        public File getFlowResourcesFolder() {
+            return flowResourcesFolder;
+        }
     }
 
     // @formatter:off
@@ -696,6 +700,8 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateOpenAPI.class,
             TaskGenerateEndpoint.class,
             TaskGenerateBootstrap.class,
+            TaskGenerateWebComponentHtml.class,
+            TaskGenerateWebComponentBootstrap.class,
             TaskGenerateFeatureFlags.class,
             TaskInstallWebpackPlugins.class,
             TaskUpdatePackages.class,
@@ -731,8 +737,17 @@ public class NodeTasks implements FallibleCommand {
             if (builder.generateEmbeddableWebComponents) {
                 FrontendWebComponentGenerator generator = new FrontendWebComponentGenerator(
                         classFinder);
-                generator.generateWebComponents(builder.generatedFolder,
+                Set<File> webComponents = generator.generateWebComponents(
+                        builder.generatedFolder,
                         frontendDependencies.getThemeDefinition());
+
+                if (webComponents.size() > 0) {
+                    commands.add(new TaskGenerateWebComponentHtml(
+                            builder.frontendDirectory));
+                    commands.add(new TaskGenerateWebComponentBootstrap(
+                            builder.frontendDirectory,
+                            new File(builder.generatedFolder, IMPORTS_NAME)));
+                }
             }
 
             TaskUpdatePackages packageUpdater = null;
@@ -927,7 +942,7 @@ public class NodeTasks implements FallibleCommand {
             return new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
                     .createScanner(true, finder,
                             builder.generateEmbeddableWebComponents,
-                            builder.useLegacyV14Bootstrap, featureFlags);
+                            builder.useLegacyV14Bootstrap, featureFlags, true);
         } else {
             return null;
         }

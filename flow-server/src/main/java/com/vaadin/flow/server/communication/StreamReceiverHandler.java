@@ -42,6 +42,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.server.ErrorEvent;
+import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.NoInputStreamException;
 import com.vaadin.flow.server.NoOutputStreamException;
 import com.vaadin.flow.server.StreamReceiver;
@@ -448,7 +449,7 @@ public class StreamReceiverHandler implements Serializable {
                 }
             }
         } else {
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
         }
     }
 
