@@ -191,6 +191,15 @@ public class AtmospherePushConnection implements PushConnection {
             } else {
                 state = State.RESPONSE_PENDING;
             }
+        } else if (resource != null && resource.isResumed()) {
+            // This can happen for long polling and will prevent the message to
+            // reach the client
+            // In this case we should not create UIDL to prevent an infinite
+            // resynchronization loop because of serverId never sent to the
+            // client
+            getLogger().debug(
+                    "Cannot push, Atmosphere resource resumed. Disconnecting");
+            connectionLost();
         } else {
             try {
                 JsonObject response = new UidlWriter().createUidl(getUI(),
