@@ -119,8 +119,8 @@ public abstract class VaadinWebSecurity {
      * Typically, subclasses should call super to apply default Vaadin
      * configuration in addition to custom rules.
      *
-     * @param http
-     * @throws Exception
+     * @param http the {@link HttpSecurity} to modify
+     * @throws Exception if an error occurs
      */
     protected void configure(HttpSecurity http) throws Exception {
         // Use a security context holder that can find the context from Vaadin
