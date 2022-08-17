@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.vaadin.flow.server.frontend.TaskGenerateHilla;
 import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
@@ -53,6 +54,7 @@ public class DevModeInitializerTestBase extends AbstractDevModeTest {
     EndpointGeneratorTaskFactory endpointGeneratorTaskFactory;
     TaskGenerateEndpoint taskGenerateEndpoint;
     TaskGenerateOpenAPI taskGenerateOpenAPI;
+    TaskGenerateHilla taskGenerateHilla;
 
     @Rule
     public final TemporaryFolder javaSourceFolder = new TemporaryFolder();
@@ -88,6 +90,9 @@ public class DevModeInitializerTestBase extends AbstractDevModeTest {
                 .createTaskGenerateEndpoint(any(), any(), any(), any());
         Mockito.doReturn(taskGenerateOpenAPI).when(endpointGeneratorTaskFactory)
                 .createTaskGenerateOpenAPI(any(), any(), any(), any());
+        taskGenerateHilla = Mockito.mock(TaskGenerateHilla.class);
+        Mockito.doReturn(taskGenerateHilla).when(lookup)
+                .lookup(TaskGenerateHilla.class);
 
         classes = new HashSet<>();
         classes.add(this.getClass());
