@@ -4,29 +4,33 @@ import java.util.stream.Collectors;
 
 import jakarta.servlet.ServletContext;
 
-import com.vaadin.flow.spring.RootMappedCondition;
-import com.vaadin.flow.spring.VaadinConfigurationProperties;
-import com.vaadin.flow.spring.flowsecurity.data.UserInfo;
-import com.vaadin.flow.spring.flowsecurity.data.UserInfoRepository;
-import com.vaadin.flow.spring.flowsecurity.views.LoginView;
-import com.vaadin.flow.spring.security.VaadinWebSecurityConfigurerAdapter;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.SecurityFilterChain;
+
+import com.vaadin.flow.spring.RootMappedCondition;
+import com.vaadin.flow.spring.VaadinConfigurationProperties;
+import com.vaadin.flow.spring.flowsecurity.data.UserInfo;
+import com.vaadin.flow.spring.flowsecurity.data.UserInfoRepository;
+import com.vaadin.flow.spring.flowsecurity.views.LoginView;
+import com.vaadin.flow.spring.security.VaadinWebSecurity;
 
 @EnableWebSecurity
 @Configuration
-public class SecurityConfig extends VaadinWebSecurityConfigurerAdapter {
+public class SecurityConfig extends VaadinWebSecurity {
 
     public static String ROLE_USER = "user";
     public static String ROLE_ADMIN = "admin";
@@ -60,38 +64,34 @@ public class SecurityConfig extends VaadinWebSecurityConfigurerAdapter {
     }
 
     @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        // Admin only access for given resources
+    public void configure(HttpSecurity http) throws Exception {
         http.authorizeRequests().antMatchers("/admin-only/**")
                 .hasAnyRole(ROLE_ADMIN);
-
+        http.authorizeRequests().antMatchers("/public/**").permitAll();
         super.configure(http);
-
         setLoginView(http, LoginView.class, getLogoutSuccessUrl());
     }
 
-    @Override
-    public void configure(WebSecurity web) throws Exception {
-        super.configure(web);
-        web.ignoring().antMatchers("/public/**");
+    @Bean
+    public InMemoryUserDetailsManager userDetailsService() {
+        return new InMemoryUserDetailsManager() {
+            @Override
+            public UserDetails loadUserByUsername(String username)
+                    throws UsernameNotFoundException {
+                UserInfo userInfo = userInfoRepository.findByUsername(username);
+                if (userInfo == null) {
+                    throw new UsernameNotFoundException(
+                            "No user present with username: " + username);
+                } else {
+                    return new User(userInfo.getUsername(),
+                            userInfo.getEncodedPassword(),
+                            userInfo.getRoles().stream()
+                                    .map(role -> new SimpleGrantedAuthority(
+                                            "ROLE_" + role))
+                                    .collect(Collectors.toList()));
+                }
+            }
+        };
     }
 
-    @Override
-    protected void configure(AuthenticationManagerBuilder auth)
-            throws Exception {
-        auth.userDetailsService(username -> {
-            UserInfo userInfo = userInfoRepository.findByUsername(username);
-            if (userInfo == null) {
-                throw new UsernameNotFoundException(
-                        "No user present with username: " + username);
-            } else {
-                return new User(userInfo.getUsername(),
-                        userInfo.getEncodedPassword(),
-                        userInfo.getRoles().stream()
-                                .map(role -> new SimpleGrantedAuthority(
-                                        "ROLE_" + role))
-                                .collect(Collectors.toList()));
-            }
-        });
-    }
 }
