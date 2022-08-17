@@ -1,7 +1,7 @@
 package com.vaadin.base.devserver.startup;
 
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletRegistration;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletRegistration;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -15,14 +15,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import jakarta.servlet.ServletContextEvent;
-import jakarta.servlet.ServletRegistration;
-
-import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
-import com.vaadin.flow.server.frontend.TaskGenerateEndpoint;
-import com.vaadin.flow.server.frontend.TaskGenerateOpenAPI;
-
+import com.vaadin.flow.server.frontend.TaskGenerateHilla;
 import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
@@ -61,6 +54,7 @@ public class DevModeInitializerTestBase extends AbstractDevModeTest {
     EndpointGeneratorTaskFactory endpointGeneratorTaskFactory;
     TaskGenerateEndpoint taskGenerateEndpoint;
     TaskGenerateOpenAPI taskGenerateOpenAPI;
+    TaskGenerateHilla taskGenerateHilla;
 
     @Rule
     public final TemporaryFolder javaSourceFolder = new TemporaryFolder();
@@ -96,6 +90,9 @@ public class DevModeInitializerTestBase extends AbstractDevModeTest {
                 .createTaskGenerateEndpoint(any(), any(), any(), any());
         Mockito.doReturn(taskGenerateOpenAPI).when(endpointGeneratorTaskFactory)
                 .createTaskGenerateOpenAPI(any(), any(), any(), any());
+        taskGenerateHilla = Mockito.mock(TaskGenerateHilla.class);
+        Mockito.doReturn(taskGenerateHilla).when(lookup)
+                .lookup(TaskGenerateHilla.class);
 
         classes = new HashSet<>();
         classes.add(this.getClass());
