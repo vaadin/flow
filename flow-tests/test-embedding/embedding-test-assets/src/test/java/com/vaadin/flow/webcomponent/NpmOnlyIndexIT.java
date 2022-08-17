@@ -32,7 +32,7 @@ public class NpmOnlyIndexIT extends ChromeBrowserTest {
         return Constants.PAGE_CONTEXT + "/index.html";
     }
 
-    // test for #7005
+    // test for #7005, #14256
     @Test
     public void globalStylesAreUnderTheWebComponent() {
         open();

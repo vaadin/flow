@@ -1162,7 +1162,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return null;
         }
 
-        private void setupCss(Element head, BootstrapContext context) {
+        protected void setupCss(Element head, BootstrapContext context) {
             Element styles = head.appendElement("style").attr("type",
                     CSS_TYPE_ATTRIBUTE_VALUE);
             // Add any body style that is defined for the application using
@@ -1208,7 +1208,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     context.getPwaRegistry().orElse(null));
         }
 
-        private Element createInlineJavaScriptElement(
+        protected Element createInlineJavaScriptElement(
                 String javaScriptContents) {
             // defer makes no sense without src:
             // https://developer.mozilla.org/en/docs/Web/HTML/Element/script
@@ -1222,7 +1222,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return createJavaScriptElement(sourceUrl, defer, "text/javascript");
         }
 
-        private static Element createJavaScriptModuleElement(String sourceUrl,
+        protected static Element createJavaScriptModuleElement(String sourceUrl,
                 boolean defer) {
             return createJavaScriptElement(sourceUrl, defer, "module");
         }
@@ -1294,7 +1294,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     "You have to enable javascript in your browser to use this web site.");
         }
 
-        private Element getBootstrapScript(JsonValue initialUIDL,
+        protected Element getBootstrapScript(JsonValue initialUIDL,
                 BootstrapContext context) {
             return createInlineJavaScriptElement("//<![CDATA[\n"
                     + getBootstrapJS(initialUIDL, context) + "//]]>");
