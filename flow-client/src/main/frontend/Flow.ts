@@ -386,7 +386,9 @@ export class Flow {
         http.onerror = () => {
           $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTION_LOST;
         };
-        http.send();
+        // Postpone request to reduce potential net::ERR_INTERNET_DISCONNECTED
+        // errors that sometimes occurs even if browser says it is online
+        setTimeout(() => http.send(), 50);
       }
     });
     $wnd.addEventListener('offline', () => {
