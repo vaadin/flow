@@ -5,8 +5,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import org.hibernate.annotations.Type;
-
 public class UserInfo {
 
     private String username;
