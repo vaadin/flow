@@ -78,7 +78,9 @@ public class MySecurityConfigurerAdapter extends VaadinWebSecurityConfigurerAdap
 
 }
  * </code>
- * @deprecated Use component-based security configuration {@link VaadinWebSecurity}
+ *
+ * @deprecated Use component-based security configuration
+ *             {@link VaadinWebSecurity}
  */
 @Deprecated
 public abstract class VaadinWebSecurityConfigurerAdapter
