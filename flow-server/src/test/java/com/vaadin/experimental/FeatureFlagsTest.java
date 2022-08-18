@@ -20,14 +20,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
-import javax.annotation.concurrent.NotThreadSafe;
-
-import com.vaadin.flow.internal.UsageStatistics;
-import com.vaadin.flow.server.MockVaadinContext;
-import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.startup.ApplicationConfiguration;
-
+import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Before;
@@ -35,6 +28,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
+
+import com.vaadin.flow.internal.UsageStatistics;
+import com.vaadin.flow.server.MockVaadinContext;
+import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 @NotThreadSafe
 public class FeatureFlagsTest {
