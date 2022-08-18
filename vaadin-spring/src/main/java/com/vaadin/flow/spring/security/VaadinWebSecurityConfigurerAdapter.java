@@ -78,8 +78,10 @@ import com.vaadin.flow.spring.security.stateless.VaadinStatelessSecurityConfigur
 public class MySecurityConfigurerAdapter extends VaadinWebSecurityConfigurerAdapter {
 
 }
- * @deprecated Use component-based security configuration {@link VaadinWebSecurity}
  * </code>
+ *
+ * @deprecated Use component-based security configuration
+ *             {@link VaadinWebSecurity}
  */
 @Deprecated
 public abstract class VaadinWebSecurityConfigurerAdapter
