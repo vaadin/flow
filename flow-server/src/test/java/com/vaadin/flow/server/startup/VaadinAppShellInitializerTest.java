@@ -1,10 +1,5 @@
 package com.vaadin.flow.server.startup;
 
-import javax.annotation.concurrent.NotThreadSafe;
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.ServletRegistration;
-import jakarta.servlet.http.HttpServletRequest;
-
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.HashMap;
@@ -15,6 +10,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletRegistration;
+import jakarta.servlet.http.HttpServletRequest;
+import net.jcip.annotations.NotThreadSafe;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.junit.After;
