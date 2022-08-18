@@ -32,11 +32,11 @@ import java.lang.annotation.Target;
  * or method:
  * <ul>
  * <li>{@link AnonymousAllowed} is overridden by
- * {@link javax.annotation.security.DenyAll} annotation, disallowing any user
+ * {@link jakarta.annotation.security.DenyAll} annotation, disallowing any user
  * from accessing the method</li>
  * <li>{@link AnonymousAllowed} annotation overrides
- * {@link javax.annotation.security.PermitAll} and
- * {@link javax.annotation.security.RolesAllowed} annotations, allowing all
+ * {@link jakarta.annotation.security.PermitAll} and
+ * {@link jakarta.annotation.security.RolesAllowed} annotations, allowing all
  * users to access the method (anonymous and authenticated users with any
  * security roles)</li>
  * </ul>

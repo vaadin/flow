@@ -51,9 +51,9 @@
         </dependency>
         <!-- Needed for security annotations -->
         <dependency>
-            <groupId>javax.annotation</groupId>
-            <artifactId>javax.annotation-api</artifactId>
-            <version>${javax.annotation.api.version}</version>
+            <groupId>jakarta.annotation</groupId>
+            <artifactId>jakarta.annotation-api</artifactId>
+            <version>${jakarta.annotation.api.version}</version>
         </dependency>
 
         <!-- Library dependencies -->
@@ -194,14 +194,6 @@
             <groupId>com.google.code.findbugs</groupId>
             <artifactId>annotations</artifactId>
             <version>3.0.1</version>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- Needed for atmosphere -->
-        <dependency>
-            <groupId>jakarta.annotation</groupId>
-            <artifactId>jakarta.annotation-api</artifactId>
-            <version>${jakarta.annotation.api.version}</version>
             <scope>test</scope>
         </dependency>
 
