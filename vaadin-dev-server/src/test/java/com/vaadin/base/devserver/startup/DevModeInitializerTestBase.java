@@ -13,7 +13,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.vaadin.flow.server.frontend.TaskGenerateHilla;
 import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
@@ -24,6 +23,7 @@ import jakarta.servlet.ServletRegistration;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.TaskGenerateEndpoint;
+import com.vaadin.flow.server.frontend.TaskGenerateHilla;
 import com.vaadin.flow.server.frontend.TaskGenerateOpenAPI;
 
 import elemental.json.Json;

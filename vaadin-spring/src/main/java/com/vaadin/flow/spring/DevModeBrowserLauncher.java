@@ -47,7 +47,8 @@ public class DevModeBrowserLauncher
     }
 
     @Override
-    public void ready(ConfigurableApplicationContext context, Duration timeTaken) {
+    public void ready(ConfigurableApplicationContext context,
+            Duration timeTaken) {
         try {
             VaadinConfigurationProperties properties = context
                     .getBean(VaadinConfigurationProperties.class);

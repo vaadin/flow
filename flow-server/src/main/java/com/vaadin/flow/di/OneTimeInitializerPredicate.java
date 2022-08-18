@@ -18,8 +18,8 @@ package com.vaadin.flow.di;
 /**
  * The presence of the service implementing this interface with
  * {@link #runOnce()} returning {@code true} means that
- * {@link jakarta.servlet.ServletContainerInitializer}s are executed only once and
- * the implementation doesn't have to care about cleaning up data collected
+ * {@link jakarta.servlet.ServletContainerInitializer}s are executed only once
+ * and the implementation doesn't have to care about cleaning up data collected
  * based on previous call.
  * <p>
  * In some cases (e.g. OSGi) the

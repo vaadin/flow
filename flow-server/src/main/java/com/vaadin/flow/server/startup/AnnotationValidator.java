@@ -15,14 +15,11 @@
  */
 package com.vaadin.flow.server.startup;
 
-import jakarta.servlet.annotation.HandlesTypes;
-
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
+
+import jakarta.servlet.annotation.HandlesTypes;
 
 import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.component.page.Inline;
