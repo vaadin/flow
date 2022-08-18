@@ -15,13 +15,6 @@
  */
 package com.vaadin.flow.spring;
 
-import jakarta.servlet.ServletContainerInitializer;
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.ServletContextEvent;
-import jakarta.servlet.ServletContextListener;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.annotation.HandlesTypes;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
@@ -41,6 +34,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.googlecode.gentyref.GenericTypeReflector;
+import jakarta.servlet.ServletContainerInitializer;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.HandlesTypes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
@@ -118,10 +117,10 @@ public class VaadinServletContextInitializer
             "org/slf4j", "org/atmosphere", "org/springframework",
             "org/webjars/bowergithub", "org/yaml",
 
-            "java/", "javax/", "javafx/", "com/sun/", "oracle/deploy",
-            "oracle/javafx", "oracle/jrockit", "oracle/jvm", "oracle/net",
-            "oracle/nio", "oracle/tools", "oracle/util", "oracle/webservices",
-            "oracle/xmlns",
+            "java/", "javax/", "jakarta/", "javafx/", "com/sun/",
+            "oracle/deploy", "oracle/javafx", "oracle/jrockit", "oracle/jvm",
+            "oracle/net", "oracle/nio", "oracle/tools", "oracle/util",
+            "oracle/webservices", "oracle/xmlns",
 
             "com/intellij/", "org/jetbrains").collect(Collectors.toList());
 

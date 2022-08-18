@@ -15,10 +15,6 @@
  */
 package com.vaadin.flow.plugin.maven;
 
-import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
-import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
-
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -43,6 +39,10 @@ import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
+import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
+
 /**
  * The base class of Flow Mojos in order to compute correctly the modes.
  *
@@ -54,7 +54,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     /**
      * Additionally include compile-time-only dependencies matching the pattern.
      */
-    public static final String INCLUDE_FROM_COMPILE_DEPS_REGEX = ".*(/|\\\\)(portlet-api|javax\\.servlet-api)-.+jar$";
+    public static final String INCLUDE_FROM_COMPILE_DEPS_REGEX = ".*(/|\\\\)(portlet-api|jakarta\\.servlet-api)-.+jar$";
 
     /**
      * Application properties file in Spring project.

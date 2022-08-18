@@ -1,6 +1,5 @@
 package com.vaadin.base.devserver;
 
-import javax.servlet.ServletRegistration;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -13,6 +12,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import jakarta.servlet.ServletRegistration;
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
@@ -34,7 +34,6 @@ import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_JAVA_SOURCE_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_OPENAPI_JSON_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR;
-import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
 import static com.vaadin.flow.testutil.FrontendStubs.createStubWebpackServer;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;

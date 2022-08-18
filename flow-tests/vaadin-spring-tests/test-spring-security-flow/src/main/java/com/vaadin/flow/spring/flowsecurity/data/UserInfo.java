@@ -10,15 +10,15 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-
-import org.hibernate.annotations.Type;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Entity
 public class UserInfo {
 
     @Id
     @GeneratedValue
-    @Type(type = "uuid-char")
+    @JdbcTypeCode(SqlTypes.CHAR)
     private UUID id;
 
     private String username;

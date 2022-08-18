@@ -15,9 +15,6 @@
  */
 package com.vaadin.flow.server.frontend.scanner;
 
-import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.VALUE;
-import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.VERSION;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
@@ -35,6 +32,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import net.bytebuddy.jar.asm.ClassReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,7 +54,8 @@ import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
-import net.bytebuddy.jar.asm.ClassReader;
+import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.VALUE;
+import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.VERSION;
 
 /**
  * Represents the class dependency tree of the application.
@@ -641,7 +640,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                     "(^$|"
                     + ".*(slf4j).*|"
                     // #5803
-                    + "^(java|sun|elemental|javax|org.(apache|atmosphere|jsoup|jboss|w3c|spring|joda|hibernate|glassfish|hsqldb)|com.(helger|spring|gwt|lowagie|fasterxml)|net.(sf|bytebuddy)).*|"
+                    + "^(java|sun|elemental|javax|jakarta|org.(apache|atmosphere|jsoup|jboss|w3c|spring|joda|hibernate|glassfish|hsqldb)|com.(helger|spring|gwt|lowagie|fasterxml)|net.(sf|bytebuddy)).*|"
                     + ".*(Exception)$"
                     + ")"); // @formatter:on
     }

@@ -83,9 +83,9 @@
         <failOnMissingWebXml>false</failOnMissingWebXml>
 
         <!-- Dependencies -->
-        <spring.version>6.0.0-M2</spring.version>
-        <spring.boot.version>3.0.0-M1</spring.boot.version>
-        <spring.security.version>6.0.0-M2</spring.security.version>
+        <spring.version>6.0.0-M5</spring.version>
+        <spring.boot.version>3.0.0-M4</spring.boot.version>
+        <spring.security.version>6.0.0-M6</spring.security.version>
         <gwt.version>2.9.0</gwt.version>
         <hibernate.validator.version>7.0.2.Final</hibernate.validator.version>
         <slf4j.version>1.7.36</slf4j.version>
@@ -194,10 +194,6 @@
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
-        </pluginRepository>
-        <pluginRepository>
-            <id>spring milestones</id>
-            <url>https://repo.spring.io/milestone</url>
         </pluginRepository>
         <pluginRepository>
             <id>spring milestones</id>
