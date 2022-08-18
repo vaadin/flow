@@ -15,16 +15,14 @@
  */
 package com.vaadin.flow.spring;
 
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletRegistration.Dynamic;
-
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import com.vaadin.flow.server.Constants;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRegistration.Dynamic;
 
 import org.atmosphere.cpr.ApplicationConfig;
 import org.springframework.core.env.Environment;
