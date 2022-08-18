@@ -1,7 +1,5 @@
 package com.vaadin.base.devserver.startup;
 
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletRegistration;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -17,12 +15,6 @@ import java.util.stream.Collectors;
 
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletRegistration;
-
-import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
-import com.vaadin.flow.server.frontend.TaskGenerateEndpoint;
-import com.vaadin.flow.server.frontend.TaskGenerateOpenAPI;
-
 import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
@@ -31,6 +23,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.TaskGenerateEndpoint;
+import com.vaadin.flow.server.frontend.TaskGenerateHilla;
 import com.vaadin.flow.server.frontend.TaskGenerateOpenAPI;
 
 import elemental.json.Json;

@@ -15,10 +15,6 @@
  */
 package com.vaadin.flow.spring;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
@@ -26,10 +22,9 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.Environment;
 import org.springframework.web.servlet.mvc.ServletForwardingController;
