@@ -30,7 +30,7 @@ import java.lang.annotation.Target;
  * Place this annotation onto the class extending
  * {@link com.vaadin.flow.component.WebComponentExporter}. This flags all the
  * embedded components from that exporter to be preserved on refresh. Due to the
- * challenge of uniquely identifying embedded components through refresh. When
+ * challenge of uniquely identifying embedded components through refresh, when
  * embedded, the component is identified by window name and a generated
  * component id. This means, that if the same component instance is embedded
  * onto two pages within the same window context, the state can be transferred
