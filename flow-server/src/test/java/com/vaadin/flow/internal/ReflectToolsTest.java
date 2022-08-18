@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2022 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,21 +15,22 @@
  */
 package com.vaadin.flow.internal;
 
-import static org.junit.Assert.assertSame;
-
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
-import net.bytebuddy.ByteBuddy;
-import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 public class ReflectToolsTest {
 
@@ -206,6 +207,31 @@ public class ReflectToolsTest {
     public static class ChildInterface extends ParentInterface {
     }
 
+    public interface TestInterfaceMulti<T, R, S> {
+
+    }
+
+    public static class HasInterfaceMulti
+            implements TestInterfaceMulti<String, Integer, Double> {
+    }
+
+    public static class ParentInterfacePartial<Z>
+            implements TestInterfaceMulti<Boolean, Z, Long> {
+    }
+
+    public static class ParentInterfaceMulti
+            implements TestInterfaceMulti<Boolean, Float, Long> {
+
+    }
+
+    public static class ChildInterfaceMulti extends ParentInterfaceMulti {
+    }
+
+    public static class ChildInterfacePartial
+            extends ParentInterfacePartial<Short> {
+    }
+
+
     @Test
     public void getGenericInterfaceClass() {
         Class<?> genericInterfaceType = ReflectTools.getGenericInterfaceType(
@@ -217,6 +243,39 @@ public class ReflectToolsTest {
                 ChildInterface.class, TestInterface.class);
 
         Assert.assertEquals(Boolean.class, genericInterfaceType);
+    }
+
+    @Test
+    public void getGenericInterfaceClasses() {
+
+        List<Class<?>> genericInterfaceTypes = ReflectTools
+                .getGenericInterfaceTypes(HasInterface.class,
+                        TestInterface.class);
+        Assert.assertArrayEquals(new Class<?>[] { String.class },
+                genericInterfaceTypes.toArray());
+
+        genericInterfaceTypes = ReflectTools.getGenericInterfaceTypes(
+                ChildInterface.class, TestInterface.class);
+        Assert.assertArrayEquals(new Class<?>[] { Boolean.class },
+                genericInterfaceTypes.toArray());
+
+        genericInterfaceTypes = ReflectTools.getGenericInterfaceTypes(
+                HasInterfaceMulti.class, TestInterfaceMulti.class);
+        Assert.assertArrayEquals(
+                new Class<?>[] { String.class, Integer.class, Double.class },
+                genericInterfaceTypes.toArray());
+
+        genericInterfaceTypes = ReflectTools.getGenericInterfaceTypes(
+                ChildInterfaceMulti.class, TestInterfaceMulti.class);
+        Assert.assertArrayEquals(
+                new Class<?>[] { Boolean.class, Float.class, Long.class },
+                genericInterfaceTypes.toArray());
+
+        genericInterfaceTypes = ReflectTools.getGenericInterfaceTypes(
+                ChildInterfacePartial.class, TestInterfaceMulti.class);
+        Assert.assertArrayEquals(
+                new Class<?>[] { Boolean.class, Short.class, Long.class },
+                genericInterfaceTypes.toArray());
     }
 
     @Test
