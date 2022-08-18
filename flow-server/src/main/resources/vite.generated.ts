@@ -136,12 +136,11 @@ function injectManifestToSWPlugin(): PluginOption {
 
     return { manifest, warnings: [] };
   };
-
   return {
     name: 'vaadin:inject-manifest-to-sw',
     enforce: 'post',
     apply: 'build',
-    async closeBundle() {
+    async writeBundle() {
       await injectManifest({
         swSrc: path.resolve(frontendBundleFolder, 'sw.js'),
         swDest: path.resolve(frontendBundleFolder, 'sw.js'),
@@ -152,6 +151,29 @@ function injectManifestToSWPlugin(): PluginOption {
         manifestTransforms: [rewriteManifestIndexHtmlUrl],
         maximumFileSizeToCacheInBytes: 100 * 1024 * 1024 // 100mb,
       });
+    }
+  };
+}
+
+function compressSWPlugin(): PluginOption {
+  return {
+    name: 'vaadin:compress-sw',
+    enforce: 'post',
+    apply: 'build',
+    async closeBundle() {
+      const bundle = await rollup.rollup({
+        input: path.resolve(frontendBundleFolder, 'sw.js'),
+        plugins: [brotli({
+            test: /^sw\.js$/
+        })]
+      });
+      try {
+        bundle.write({
+            dir: frontendBundleFolder
+        });
+      } finally {
+        bundle.close();
+      }
     }
   };
 }
@@ -498,6 +520,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
       devMode && setHmrPortToServerPort(),
       settings.offlineEnabled && buildSWPlugin({ devMode }),
       settings.offlineEnabled && injectManifestToSWPlugin(),
+      !devMode && settings.offlineEnabled && compressSWPlugin(),
       !devMode && statsExtracterPlugin(),
       themePlugin({devMode}),
       postcssLit({

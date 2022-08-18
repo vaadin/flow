@@ -30,6 +30,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
+import org.brotli.dec.BrotliInputStream;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Ignore;
@@ -223,8 +224,6 @@ public class PwaTestIT extends ChromeDeviceTest {
         }
     }
 
-    @Ignore("Vite is currently not compressing service worker. "
-            + "See https://github.com/vaadin/flow/issues/14206")
     @Test
     public void compareUncompressedAndCompressedServiceWorkerJS()
             throws IOException {
@@ -237,7 +236,7 @@ public class PwaTestIT extends ChromeDeviceTest {
         byte[] uncompressed = readBytesFromUrl(getRootURL() + "/sw.js");
         byte[] compressed = readBytesFromUrl(getRootURL() + "/sw.js.br");
         byte[] decompressed = readAllBytes(
-                new GZIPInputStream(new ByteArrayInputStream(compressed)));
+                new BrotliInputStream(new ByteArrayInputStream(compressed)));
         Assert.assertArrayEquals(uncompressed, decompressed);
     }
 
