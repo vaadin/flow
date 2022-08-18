@@ -1,5 +1,10 @@
 package com.vaadin.flow.spring.security;
 
+import java.util.Optional;
+
+import javax.annotation.PostConstruct;
+import jakarta.servlet.http.HttpServletRequest;
+
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.internal.NavigationRouteTarget;
 import com.vaadin.flow.router.internal.RouteTarget;

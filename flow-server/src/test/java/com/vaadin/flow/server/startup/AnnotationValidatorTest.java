@@ -1,7 +1,7 @@
 package com.vaadin.flow.server.startup;
 
-import static com.vaadin.flow.server.startup.AbstractAnnotationValidator.ERROR_MESSAGE_BEGINNING;
-import static com.vaadin.flow.server.startup.AbstractAnnotationValidator.NON_PARENT;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
 
 import java.util.Set;
 import java.util.stream.Collectors;

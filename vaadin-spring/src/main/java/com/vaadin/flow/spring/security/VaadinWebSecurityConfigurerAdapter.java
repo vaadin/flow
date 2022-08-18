@@ -16,9 +16,10 @@
 package com.vaadin.flow.spring.security;
 
 import javax.crypto.SecretKey;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Objects;

@@ -23,7 +23,6 @@ import org.springframework.security.oauth2.core.oidc.OidcScopes;
 import org.springframework.security.oauth2.server.authorization.client.InMemoryRegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
-import org.springframework.web.multipart.commons.CommonsMultipartResolver;
 
 @Import(OAuth2AuthorizationServerConfiguration.class)
 @Configuration

@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server.startup;
 
+import jakarta.servlet.annotation.HandlesTypes;
+
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;

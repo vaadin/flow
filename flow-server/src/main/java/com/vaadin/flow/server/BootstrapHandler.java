@@ -559,7 +559,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      * Warning: This assumes that the VaadinRequest is targeted for a
      * VaadinServlet and does no further checks to validate this. You want to
      * use
-     * {@link HandlerHelper#isFrameworkInternalRequest(String, javax.servlet.http.HttpServletRequest)}
+     * {@link HandlerHelper#isFrameworkInternalRequest(String, jakarta.servlet.http.HttpServletRequest)}
      * instead.
      * <p>
      * This is public only so that

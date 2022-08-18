@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 
-import javax.servlet.http.Cookie;
+import jakarta.servlet.http.Cookie;
 
 import com.vaadin.flow.internal.CurrentInstance;
 
@@ -40,7 +40,7 @@ public interface VaadinResponse {
      *
      * @param statusCode
      *            the status code to set
-     * @see javax.servlet.http.HttpServletResponse#setStatus(int)
+     * @see jakarta.servlet.http.HttpServletResponse#setStatus(int)
      *
      */
     void setStatus(int statusCode);
@@ -53,7 +53,7 @@ public interface VaadinResponse {
      * @param contentType
      *            a string specifying the MIME type of the content
      *
-     * @see javax.servlet.ServletResponse#setContentType(String)
+     * @see jakarta.servlet.ServletResponse#setContentType(String)
      */
     void setContentType(String contentType);
 
@@ -66,7 +66,7 @@ public interface VaadinResponse {
      * @param value
      *            the header value.
      *
-     * @see javax.servlet.http.HttpServletResponse#setHeader(String, String)
+     * @see jakarta.servlet.http.HttpServletResponse#setHeader(String, String)
      */
     void setHeader(String name, String value);
 
@@ -79,7 +79,7 @@ public interface VaadinResponse {
      * @param timestamp
      *            the number of milliseconds since epoch
      *
-     * @see javax.servlet.http.HttpServletResponse#setDateHeader(String, long)
+     * @see jakarta.servlet.http.HttpServletResponse#setDateHeader(String, long)
      */
     void setDateHeader(String name, long timestamp);
 
@@ -95,7 +95,7 @@ public interface VaadinResponse {
      *             if an input or output exception occurred
      *
      * @see #getWriter()
-     * @see javax.servlet.ServletResponse#getOutputStream()
+     * @see jakarta.servlet.ServletResponse#getOutputStream()
      */
     OutputStream getOutputStream() throws IOException;
 
@@ -112,7 +112,7 @@ public interface VaadinResponse {
      *             if an input or output exception occurred
      *
      * @see #getOutputStream()
-     * @see javax.servlet.ServletResponse#getWriter()
+     * @see jakarta.servlet.ServletResponse#getWriter()
      */
     PrintWriter getWriter() throws IOException;
 
@@ -137,7 +137,7 @@ public interface VaadinResponse {
      * @throws IOException
      *             if an input or output exception occurs
      *
-     * @see javax.servlet.http.HttpServletResponse#sendError(int, String)
+     * @see jakarta.servlet.http.HttpServletResponse#sendError(int, String)
      */
     void sendError(int errorCode, String message) throws IOException;
 
@@ -157,7 +157,7 @@ public interface VaadinResponse {
      * @param cookie
      *            the Cookie to return to the client
      *
-     * @see javax.servlet.http.HttpServletResponse#addCookie(Cookie)
+     * @see jakarta.servlet.http.HttpServletResponse#addCookie(Cookie)
      */
     void addCookie(Cookie cookie);
 

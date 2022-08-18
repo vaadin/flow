@@ -15,6 +15,10 @@
  */
 package com.vaadin.flow.spring;
 
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRegistration.Dynamic;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;

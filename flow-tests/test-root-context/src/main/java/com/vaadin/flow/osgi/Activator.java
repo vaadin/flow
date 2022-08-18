@@ -15,9 +15,9 @@
  */
 package com.vaadin.flow.osgi;
 
-import javax.servlet.Servlet;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletException;
 
 import java.util.Dictionary;
 import java.util.Hashtable;

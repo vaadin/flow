@@ -1,6 +1,6 @@
 package com.vaadin.flow.uitest.ui.push;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 import java.io.IOException;
 import java.net.MalformedURLException;

@@ -19,7 +19,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.servlet.ServletRegistration;
+import jakarta.servlet.ServletRegistration;
 
 import com.vaadin.base.devserver.startup.AbstractDevModeTest;
 import com.vaadin.base.devserver.startup.DevModeStartupListener;
