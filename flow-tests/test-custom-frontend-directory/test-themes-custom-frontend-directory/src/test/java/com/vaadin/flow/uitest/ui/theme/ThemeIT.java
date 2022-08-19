@@ -27,7 +27,6 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.html.testbench.ImageElement;
 import com.vaadin.flow.component.html.testbench.SpanElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
@@ -51,8 +50,7 @@ public class ThemeIT extends ChromeBrowserTest {
 
         checkLogsForErrors();
 
-        final TestBenchElement helloWorld = $(TestBenchElement.class).first()
-                .findElement(By.tagName("hello-world-view"));
+        final TestBenchElement helloWorld = $("hello-world-view").waitForFirst();
 
         Assert.assertEquals("hello-world-view", helloWorld.getTagName());
 
@@ -99,6 +97,7 @@ public class ThemeIT extends ChromeBrowserTest {
                 driver.getPageSource().contains("HTTP ERROR 404 Not Found"));
 
         getDriver().get(getRootURL() + "/path/themes/no-copy/no-copy.txt");
+        waitForDevServer();
         String source = driver.getPageSource();
         Matcher m = Pattern.compile(
                 ".*Could not navigate to.*themes/no-copy/no-copy.txt.*",
@@ -113,10 +112,9 @@ public class ThemeIT extends ChromeBrowserTest {
         checkLogsForErrors();
 
         final WebElement body = findElement(By.tagName("body"));
-        // Note themes/app-theme gets VAADIN/static from the file-loader
         Assert.assertEquals("body background-image should come from styles.css",
                 "url(\"" + getRootURL()
-                        + "/path/VAADIN/static/themes/app-theme/img/bg.jpg\")",
+                        + "/path/VAADIN/themes/app-theme/img/bg.jpg\")",
                 body.getCssValue("background-image"));
 
         Assert.assertEquals("body font-family should come from styles.css",
@@ -125,9 +123,8 @@ public class ThemeIT extends ChromeBrowserTest {
         Assert.assertEquals("html color from styles.css should be applied.",
                 "rgba(0, 0, 0, 1)", body.getCssValue("color"));
 
-        // Note themes/app-theme gets VAADIN/static from the file-loader
         getDriver().get(getRootURL()
-                + "/path/VAADIN/static/themes/app-theme/img/bg.jpg");
+                + "/path/VAADIN/themes/app-theme/img/bg.jpg");
         Assert.assertFalse("app-theme background file should be served",
                 driver.getPageSource().contains("Could not navigate"));
     }
@@ -148,7 +145,7 @@ public class ThemeIT extends ChromeBrowserTest {
                 "\"\uf0f4\"", iconUnicode);
 
         getDriver().get(getRootURL()
-                + "/path/VAADIN/static/@fortawesome/fontawesome-free/webfonts/fa-solid-900.svg");
+                + "/path/VAADIN/@fortawesome/fontawesome-free/webfonts/fa-solid-900.svg");
         Assert.assertFalse("Font resource should be available",
                 driver.getPageSource().contains("HTTP ERROR 404 Not Found"));
     }
@@ -199,10 +196,9 @@ public class ThemeIT extends ChromeBrowserTest {
         open();
         checkLogsForErrors();
 
-        // Note themes/app-theme gets VAADIN/static from the file-loader
         Assert.assertEquals("Imported css file URLs should have been handled.",
                 "url(\"" + getRootURL()
-                        + "/path/VAADIN/static/themes/app-theme/icons/archive.png\")",
+                        + "/path/VAADIN/themes/app-theme/icons/archive.png\")",
                 $(SpanElement.class).id(SUB_COMPONENT_ID)
                         .getCssValue("background-image"));
     }
