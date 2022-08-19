@@ -51,10 +51,6 @@ public class ElementConstants {
      * The style property for color.
      */
     public static final String STYLE_COLOR = "color";
-    /**
-     * The label property.
-     */
-    public static final String LABEL_PROPERTY_NAME = "label";
 
     private ElementConstants() {
         // Constants only
