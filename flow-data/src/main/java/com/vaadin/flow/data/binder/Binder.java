@@ -867,6 +867,10 @@ public class Binder<BEAN> implements Serializable {
             BindingImpl<BEAN, FIELDVALUE, TARGET> binding = new BindingImpl<>(
                     this, getter, setter);
 
+            // Remove existing binding for same field to avoid potential
+            // multiple application of converter
+            getBinder().bindings.removeIf(
+                    registeredBinding -> registeredBinding.getField() == field);
             getBinder().bindings.add(binding);
             if (getBinder().getBean() != null) {
                 binding.initFieldValue(getBinder().getBean(), true);
@@ -2990,6 +2994,21 @@ public class Binder<BEAN> implements Serializable {
                         (Class<? extends HasValue<?, ?>>) memberField
                                 .getType());
                 initializeField(objectWithMemberFields, memberField, field);
+            } else if (incompleteBindings != null
+                    && incompleteBindings.get(field) != null) {
+                // A manual binding is ongoing for this field, so we should not
+                // automatically bind it, otherwise we may silently overwrite
+                // current configuration.
+                // 'bindInstanceFields' states that it doesn't override existing
+                // bindings and that incomplete bindings may be completed also
+                // after method call
+                LoggerFactory.getLogger(Binder.class.getName()).debug(
+                        "Binding for member '{}' of class '{}' will not be automatically "
+                                + "created because a custom binding has been started "
+                                + "but not yet finalized with 'bind()' invocation.",
+                        memberField.getName(),
+                        objectWithMemberFields.getClass().getName());
+                return false;
             }
             forField(field).bind(property);
             return true;
@@ -3085,7 +3104,6 @@ public class Binder<BEAN> implements Serializable {
 
         Boolean isPropertyBound = propertyHandler.apply(propertyName,
                 descriptor.get().getType());
-        assert boundProperties.containsKey(propertyName);
         return isPropertyBound;
     }
 
