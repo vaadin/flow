@@ -25,6 +25,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Properties;
 
 import com.vaadin.flow.component.UI;
@@ -56,6 +59,7 @@ public class VaadinServlet extends HttpServlet {
     private StaticFileHandler staticFileHandler;
 
     private volatile boolean isServletInitialized;
+    private static String firstMapping = null;
 
     /**
      * Called by the servlet container to indicate to a servlet that the servlet
@@ -126,6 +130,16 @@ public class VaadinServlet extends HttpServlet {
 
             staticFileHandler = createStaticFileHandler(servletService);
 
+            synchronized (VaadinServlet.class) {
+                if (firstMapping == null) {
+                    List<String> mappings = new ArrayList<>();
+                    mappings.addAll(
+                            this.getServletContext().getServletRegistrations()
+                                    .get(this.getServletName()).getMappings());
+                    Collections.sort(mappings);
+                    firstMapping = mappings.get(0);
+                }
+            }
             servletInitialized();
         } finally {
             CurrentInstance.clearAll();
@@ -546,6 +560,15 @@ public class VaadinServlet extends HttpServlet {
             initializer.initialize(vaadinServletContext);
         }
         return vaadinServletContext;
+    }
+
+    /**
+     * For internal use only.
+     *
+     * @return the first vaadin servlet that was reqistered
+     */
+    public static String getFirstMapping() {
+        return firstMapping;
     }
 
 }
