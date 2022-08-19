@@ -350,7 +350,7 @@ public class Binder<BEAN> implements Serializable {
          *             if {@code bind} has already been called on this binding
          */
         Binding<BEAN, TARGET> bind(ValueProvider<BEAN, TARGET> getter,
-                Setter<BEAN, TARGET> setter);
+                                   Setter<BEAN, TARGET> setter);
 
         /**
          * Completes this binding by connecting the field to the property with
@@ -403,7 +403,7 @@ public class Binder<BEAN> implements Serializable {
          *             if {@code bind} has already been called
          */
         BindingBuilder<BEAN, TARGET> withValidator(
-        Validator<? super TARGET> validator);
+                Validator<? super TARGET> validator);
 
         /**
          * A convenience method to add a validator to this binding using the
@@ -427,8 +427,8 @@ public class Binder<BEAN> implements Serializable {
          *             if {@code bind} has already been called
          */
         default BindingBuilder<BEAN, TARGET> withValidator(
-        SerializablePredicate<? super TARGET> predicate,
-        String message) {
+                SerializablePredicate<? super TARGET> predicate,
+                String message) {
             return withValidator(Validator.from(predicate, message));
         }
 
@@ -458,10 +458,10 @@ public class Binder<BEAN> implements Serializable {
          *             if {@code bind} has already been called
          */
         default BindingBuilder<BEAN, TARGET> withValidator(
-        SerializablePredicate<? super TARGET> predicate, String message,
-        ErrorLevel errorLevel) {
+                SerializablePredicate<? super TARGET> predicate, String message,
+                ErrorLevel errorLevel) {
             return withValidator(
-            Validator.from(predicate, message, errorLevel));
+                    Validator.from(predicate, message, errorLevel));
         }
 
         /**
@@ -488,10 +488,10 @@ public class Binder<BEAN> implements Serializable {
          *             if {@code bind} has already been called
          */
         default BindingBuilder<BEAN, TARGET> withValidator(
-        SerializablePredicate<? super TARGET> predicate,
-        ErrorMessageProvider errorMessageProvider) {
+                SerializablePredicate<? super TARGET> predicate,
+                ErrorMessageProvider errorMessageProvider) {
             return withValidator(
-            Validator.from(predicate, errorMessageProvider));
+                    Validator.from(predicate, errorMessageProvider));
         }
 
         /**
@@ -520,11 +520,11 @@ public class Binder<BEAN> implements Serializable {
          *             if {@code bind} has already been called
          */
         default BindingBuilder<BEAN, TARGET> withValidator(
-        SerializablePredicate<? super TARGET> predicate,
-        ErrorMessageProvider errorMessageProvider,
-        ErrorLevel errorLevel) {
+                SerializablePredicate<? super TARGET> predicate,
+                ErrorMessageProvider errorMessageProvider,
+                ErrorLevel errorLevel) {
             return withValidator(Validator.from(predicate, errorMessageProvider,
-            errorLevel));
+                    errorLevel));
         }
 
         /**
@@ -557,7 +557,7 @@ public class Binder<BEAN> implements Serializable {
          *             if {@code bind} has already been called
          */
         <NEWTARGET> BindingBuilder<BEAN, NEWTARGET> withConverter(
-        Converter<TARGET, NEWTARGET> converter);
+                Converter<TARGET, NEWTARGET> converter);
 
         /**
          * Maps the binding to another data type using the mapping functions and
@@ -593,10 +593,10 @@ public class Binder<BEAN> implements Serializable {
          *             if {@code bind} has already been called
          */
         default <NEWTARGET> BindingBuilder<BEAN, NEWTARGET> withConverter(
-        SerializableFunction<TARGET, NEWTARGET> toModel,
-        SerializableFunction<NEWTARGET, TARGET> toPresentation) {
+                SerializableFunction<TARGET, NEWTARGET> toModel,
+                SerializableFunction<NEWTARGET, TARGET> toPresentation) {
             return withConverter(Converter.from(toModel, toPresentation,
-            Throwable::getMessage));
+                    Throwable::getMessage));
         }
 
         /**
@@ -637,11 +637,11 @@ public class Binder<BEAN> implements Serializable {
          *             if {@code bind} has already been called
          */
         default <NEWTARGET> BindingBuilder<BEAN, NEWTARGET> withConverter(
-        SerializableFunction<TARGET, NEWTARGET> toModel,
-        SerializableFunction<NEWTARGET, TARGET> toPresentation,
-        String errorMessage) {
+                SerializableFunction<TARGET, NEWTARGET> toModel,
+                SerializableFunction<NEWTARGET, TARGET> toPresentation,
+                String errorMessage) {
             return withConverter(Converter.from(toModel, toPresentation,
-            exception -> errorMessage));
+                    exception -> errorMessage));
         }
 
         /**
@@ -653,12 +653,12 @@ public class Binder<BEAN> implements Serializable {
          * @return a new binding with null representation handling.
          */
         default BindingBuilder<BEAN, TARGET> withNullRepresentation(
-        TARGET nullRepresentation) {
+                TARGET nullRepresentation) {
             return withConverter(
-            fieldValue -> Objects.equals(fieldValue, nullRepresentation)
-            ? null : fieldValue,
-            modelValue -> Objects.isNull(modelValue)
-            ? nullRepresentation : modelValue);
+                    fieldValue -> Objects.equals(fieldValue, nullRepresentation)
+                            ? null : fieldValue,
+                    modelValue -> Objects.isNull(modelValue)
+                            ? nullRepresentation : modelValue);
         }
 
         /**
@@ -716,7 +716,7 @@ public class Binder<BEAN> implements Serializable {
          * @return this binding, for chaining
          */
         BindingBuilder<BEAN, TARGET> withValidationStatusHandler(
-        BindingValidationStatusHandler handler);
+                BindingValidationStatusHandler handler);
 
         /**
          * Sets the field to be required. This means two things:
@@ -782,7 +782,7 @@ public class Binder<BEAN> implements Serializable {
          * @return this binding, for chaining
          */
         BindingBuilder<BEAN, TARGET> asRequired(
-        ErrorMessageProvider errorMessageProvider);
+                ErrorMessageProvider errorMessageProvider);
 
         /**
          * Sets the field to be required and delegates the required check to a
@@ -798,7 +798,7 @@ public class Binder<BEAN> implements Serializable {
          * @return this binding, for chaining
          */
         public BindingBuilder<BEAN, TARGET> asRequired(
-        Validator<TARGET> customRequiredValidator);
+                Validator<TARGET> customRequiredValidator);
     }
 
     /**
@@ -813,7 +813,7 @@ public class Binder<BEAN> implements Serializable {
      *            until a converter has been set
      */
     protected static class BindingBuilderImpl<BEAN, FIELDVALUE, TARGET>
-    implements BindingBuilder<BEAN, TARGET> {
+            implements BindingBuilder<BEAN, TARGET> {
 
         private Binder<BEAN> binder;
 
@@ -847,9 +847,9 @@ public class Binder<BEAN> implements Serializable {
          *            the handler to track validation status, not null
          */
         protected BindingBuilderImpl(Binder<BEAN> binder,
-                HasValue<?, FIELDVALUE> field,
-                Converter<FIELDVALUE, TARGET> converterValidatorChain,
-                BindingValidationStatusHandler statusHandler) {
+                                     HasValue<?, FIELDVALUE> field,
+                                     Converter<FIELDVALUE, TARGET> converterValidatorChain,
+                                     BindingValidationStatusHandler statusHandler) {
             this.field = field;
             this.binder = binder;
             this.converterValidatorChain = converterValidatorChain;
@@ -862,17 +862,17 @@ public class Binder<BEAN> implements Serializable {
 
         @Override
         public Binding<BEAN, TARGET> bind(ValueProvider<BEAN, TARGET> getter,
-                Setter<BEAN, TARGET> setter) {
+                                          Setter<BEAN, TARGET> setter) {
             checkUnbound();
             Objects.requireNonNull(getter, "getter cannot be null");
 
             BindingImpl<BEAN, FIELDVALUE, TARGET> binding = new BindingImpl<>(
-            this, getter, setter);
+                    this, getter, setter);
 
             // Remove existing binding for same field to avoid potential
             // multiple application of converter
             getBinder().bindings.removeIf(
-            registeredBinding -> registeredBinding.getField() == field);
+                    registeredBinding -> registeredBinding.getField() == field);
             getBinder().bindings.add(binding);
             if (getBinder().getBean() != null) {
                 binding.initFieldValue(getBinder().getBean(), true);
@@ -895,38 +895,38 @@ public class Binder<BEAN> implements Serializable {
         @SuppressWarnings({ "unchecked", "rawtypes" })
         public Binding<BEAN, TARGET> bind(String propertyName) {
             Objects.requireNonNull(propertyName,
-            "Property name cannot be null");
+                    "Property name cannot be null");
             checkUnbound();
 
             PropertyDefinition<BEAN, ?> definition = getBinder().propertySet
-            .getProperty(propertyName)
-            .orElseThrow(() -> new IllegalArgumentException(
-            "Could not resolve property name " + propertyName
-            + " from " + getBinder().propertySet));
+                    .getProperty(propertyName)
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            "Could not resolve property name " + propertyName
+                                    + " from " + getBinder().propertySet));
 
             ValueProvider<BEAN, ?> getter = definition.getGetter();
             Setter<BEAN, ?> setter = definition.getSetter().orElse(null);
             if (setter == null) {
                 getLogger().info(
-                propertyName + " does not have an accessible setter");
+                        propertyName + " does not have an accessible setter");
             }
 
             BindingBuilder<BEAN, ?> finalBinding = withConverter(
-            createConverter(definition.getType()), false);
+                    createConverter(definition.getType()), false);
 
             finalBinding = getBinder().configureBinding(finalBinding,
-            definition);
+                    definition);
 
             try {
                 Binding binding = ((BindingBuilder) finalBinding).bind(getter,
-                setter);
+                        setter);
                 getBinder().boundProperties.put(propertyName, binding);
                 this.binding = binding;
                 return binding;
             } finally {
                 if (getBinder().incompleteMemberFieldBindings != null) {
                     getBinder().incompleteMemberFieldBindings
-                    .remove(getField());
+                            .remove(getField());
                 }
             }
         }
@@ -934,20 +934,20 @@ public class Binder<BEAN> implements Serializable {
         @SuppressWarnings("unchecked")
         private Converter<TARGET, Object> createConverter(Class<?> getterType) {
             return Converter.from(getterType::cast,
-            propertyValue -> (TARGET) propertyValue, exception -> {
-                throw new RuntimeException(exception);
-            });
+                    propertyValue -> (TARGET) propertyValue, exception -> {
+                        throw new RuntimeException(exception);
+                    });
         }
 
         @Override
         public BindingBuilder<BEAN, TARGET> withValidator(
-        Validator<? super TARGET> validator) {
+                Validator<? super TARGET> validator) {
             checkUnbound();
             Objects.requireNonNull(validator, "validator cannot be null");
 
             Validator<? super TARGET> wrappedValidator = ((value, context) -> {
                 if (getBinder().isValidatorsDisabled() || (binding != null
-                && binding.isValidatorsDisabled())) {
+                        && binding.isValidatorsDisabled())) {
                     return ValidationResult.ok();
                 } else {
                     return validator.apply(value, context);
@@ -955,25 +955,25 @@ public class Binder<BEAN> implements Serializable {
             });
 
             converterValidatorChain = ((Converter<FIELDVALUE, TARGET>) converterValidatorChain)
-            .chain(new ValidatorAsConverter<>(wrappedValidator));
+                    .chain(new ValidatorAsConverter<>(wrappedValidator));
             return this;
         }
 
         @Override
         public <NEWTARGET> BindingBuilder<BEAN, NEWTARGET> withConverter(
-        Converter<TARGET, NEWTARGET> converter) {
+                Converter<TARGET, NEWTARGET> converter) {
             return withConverter(converter, true);
         }
 
         @Override
         public BindingBuilder<BEAN, TARGET> withValidationStatusHandler(
-        BindingValidationStatusHandler handler) {
+                BindingValidationStatusHandler handler) {
             checkUnbound();
             Objects.requireNonNull(handler, "handler cannot be null");
             if (isStatusHandlerChanged) {
                 throw new IllegalStateException("A "
-                + BindingValidationStatusHandler.class.getSimpleName()
-                + " has already been set");
+                        + BindingValidationStatusHandler.class.getSimpleName()
+                        + " has already been set");
             }
             isStatusHandlerChanged = true;
             statusHandler = handler;
@@ -982,15 +982,15 @@ public class Binder<BEAN> implements Serializable {
 
         @Override
         public BindingBuilder<BEAN, TARGET> asRequired(
-        ErrorMessageProvider errorMessageProvider) {
+                ErrorMessageProvider errorMessageProvider) {
             return asRequired(Validator.from(
-            value -> !Objects.equals(value, field.getEmptyValue()),
-            errorMessageProvider));
+                    value -> !Objects.equals(value, field.getEmptyValue()),
+                    errorMessageProvider));
         }
 
         @Override
         public BindingBuilder<BEAN, TARGET> asRequired(
-        Validator<TARGET> customRequiredValidator) {
+                Validator<TARGET> customRequiredValidator) {
             checkUnbound();
             this.asRequiredSet = true;
             field.setRequiredIndicatorVisible(true);
@@ -1024,8 +1024,8 @@ public class Binder<BEAN> implements Serializable {
          *             if {@code bind} has already been called
          */
         protected <NEWTARGET> BindingBuilder<BEAN, NEWTARGET> withConverter(
-        Converter<TARGET, NEWTARGET> converter,
-        boolean resetNullRepresentation) {
+                Converter<TARGET, NEWTARGET> converter,
+                boolean resetNullRepresentation) {
             checkUnbound();
             Objects.requireNonNull(converter, "converter cannot be null");
 
@@ -1034,7 +1034,7 @@ public class Binder<BEAN> implements Serializable {
             }
 
             converterValidatorChain = ((Converter<FIELDVALUE, TARGET>) converterValidatorChain)
-            .chain(converter);
+                    .chain(converter);
 
             return (BindingBuilder<BEAN, NEWTARGET>) this;
         }
@@ -1059,7 +1059,7 @@ public class Binder<BEAN> implements Serializable {
         protected void checkUnbound() {
             if (bound) {
                 throw new IllegalStateException(
-                "cannot modify binding: already bound to a property");
+                        "cannot modify binding: already bound to a property");
             }
         }
 
@@ -1085,7 +1085,7 @@ public class Binder<BEAN> implements Serializable {
      *            unless a converter has been set
      */
     protected static class BindingImpl<BEAN, FIELDVALUE, TARGET>
-    implements Binding<BEAN, TARGET> {
+            implements Binding<BEAN, TARGET> {
 
         private Binder<BEAN> binder;
 
@@ -1116,8 +1116,8 @@ public class Binder<BEAN> implements Serializable {
         private Registration onValidationStatusChange;
 
         public BindingImpl(BindingBuilderImpl<BEAN, FIELDVALUE, TARGET> builder,
-                ValueProvider<BEAN, TARGET> getter,
-                Setter<BEAN, TARGET> setter) {
+                           ValueProvider<BEAN, TARGET> getter,
+                           Setter<BEAN, TARGET> setter) {
             binder = builder.getBinder();
             field = builder.field;
             statusHandler = builder.statusHandler;
@@ -1125,14 +1125,14 @@ public class Binder<BEAN> implements Serializable {
             converterValidatorChain = ((Converter<FIELDVALUE, TARGET>) builder.converterValidatorChain);
 
             onValueChange = getField().addValueChangeListener(
-            event -> handleFieldValueChange(event));
+                    event -> handleFieldValueChange(event));
 
             if (getBinder().isFieldsValidationStatusChangeListenerEnabled()
-            && getField() instanceof HasValidator) {
+                    && getField() instanceof HasValidator) {
                 HasValidator<FIELDVALUE> hasValidatorField = (HasValidator<FIELDVALUE>) getField();
                 onValidationStatusChange = hasValidatorField
-                .addValidationStatusChangeListener(
-                event -> this.validate());
+                        .addValidationStatusChangeListener(
+                                event -> this.validate());
             }
 
             this.getter = getter;
@@ -1164,13 +1164,13 @@ public class Binder<BEAN> implements Serializable {
         @Override
         public BindingValidationStatus<TARGET> validate(boolean fireEvent) {
             Objects.requireNonNull(binder,
-            "This Binding is no longer attached to a Binder");
+                    "This Binding is no longer attached to a Binder");
             BindingValidationStatus<TARGET> status = doValidation();
             if (fireEvent) {
                 getBinder().getValidationStatusHandler()
-                .statusChange(new BinderValidationStatus<>(getBinder(),
-                Collections.singletonList(status),
-                Collections.emptyList()));
+                        .statusChange(new BinderValidationStatus<>(getBinder(),
+                                Collections.singletonList(status),
+                                Collections.emptyList()));
                 getBinder().fireStatusChangeEvent(status.isError());
             }
             return status;
@@ -1213,11 +1213,11 @@ public class Binder<BEAN> implements Serializable {
         private Result<TARGET> doConversion() {
             FIELDVALUE fieldValue = field.getValue();
             return converterValidatorChain.convertToModel(fieldValue,
-            createValueContext());
+                    createValueContext());
         }
 
         private BindingValidationStatus<TARGET> toValidationStatus(
-        Result<TARGET> result) {
+                Result<TARGET> result) {
             return new BindingValidationStatus<>(result, this);
         }
 
@@ -1285,7 +1285,7 @@ public class Binder<BEAN> implements Serializable {
         private FIELDVALUE convertToFieldType(TARGET target) {
             ValueContext valueContext = createValueContext();
             return converterValidatorChain.convertToPresentation(target,
-            valueContext);
+                    valueContext);
         }
 
         /**
@@ -1294,7 +1294,7 @@ public class Binder<BEAN> implements Serializable {
          * @param event
          */
         private void handleFieldValueChange(
-        ValueChangeEvent<FIELDVALUE> event) {
+                ValueChangeEvent<FIELDVALUE> event) {
             // Don't handle change events when setting initial value
             if (valueInit || convertedBack) {
                 convertedBack = false;
@@ -1368,9 +1368,9 @@ public class Binder<BEAN> implements Serializable {
                  */
                 if (convertedValue == null && field.getEmptyValue() != null) {
                     throw new IllegalStateException(String.format(
-                    "A field of type %s didn't accept a null value."
-                    + " If null values are expected, then configure a null representation for the binding.",
-                    field.getClass().getName()), e);
+                            "A field of type %s didn't accept a null value."
+                                    + " If null values are expected, then configure a null representation for the binding.",
+                            field.getClass().getName()), e);
                 } else {
                     // Otherwise, let the original exception speak for itself
                     throw e;
@@ -1382,7 +1382,7 @@ public class Binder<BEAN> implements Serializable {
         public void setReadOnly(boolean readOnly) {
             if (setter == null && !readOnly) {
                 throw new IllegalStateException(
-                "Binding with a null setter has to be read-only");
+                        "Binding with a null setter has to be read-only");
             }
             this.readOnly = readOnly;
             getField().setReadOnly(readOnly);
@@ -1407,8 +1407,8 @@ public class Binder<BEAN> implements Serializable {
         public void setAsRequiredEnabled(boolean asRequiredEnabled) {
             if (!asRequiredSet) {
                 throw new IllegalStateException(
-                "Unable to toggle asRequired validation since "
-                + "asRequired has not been set.");
+                        "Unable to toggle asRequired validation since "
+                                + "asRequired has not been set.");
             }
             if (asRequiredEnabled != isAsRequiredEnabled()) {
                 field.setRequiredIndicatorVisible(asRequiredEnabled);
@@ -1433,7 +1433,7 @@ public class Binder<BEAN> implements Serializable {
 
         @Override
         public void setConvertBackToPresentation(
-        boolean convertBackToPresentation) {
+                boolean convertBackToPresentation) {
             this.convertBackToPresentation = convertBackToPresentation;
         }
 
@@ -1486,7 +1486,7 @@ public class Binder<BEAN> implements Serializable {
      * same as {@link Converter#identity()} behavior.
      */
     private static class ConverterDelegate<FIELDVALUE>
-    implements Converter<FIELDVALUE, FIELDVALUE> {
+            implements Converter<FIELDVALUE, FIELDVALUE> {
 
         private Converter<FIELDVALUE, FIELDVALUE> delegate;
 
@@ -1496,7 +1496,7 @@ public class Binder<BEAN> implements Serializable {
 
         @Override
         public Result<FIELDVALUE> convertToModel(FIELDVALUE value,
-                ValueContext context) {
+                                                 ValueContext context) {
             if (delegate == null) {
                 return Result.ok(value);
             } else {
@@ -1506,7 +1506,7 @@ public class Binder<BEAN> implements Serializable {
 
         @Override
         public FIELDVALUE convertToPresentation(FIELDVALUE value,
-                ValueContext context) {
+                                                ValueContext context) {
             if (delegate == null) {
                 return value;
             } else {
@@ -1537,7 +1537,7 @@ public class Binder<BEAN> implements Serializable {
     private final List<Validator<? super BEAN>> validators = new ArrayList<>();
 
     private final Map<HasValue<?, ?>, ConverterDelegate<?>> initialConverters = new IdentityHashMap<>(
-    4);
+            4);
 
     private HashMap<Class<?>, List<SerializableConsumer<?>>> listeners = new HashMap<>();
 
@@ -1591,16 +1591,16 @@ public class Binder<BEAN> implements Serializable {
             @Override
             public Stream<PropertyDefinition<BEAN, ?>> getProperties() {
                 throw new IllegalStateException(
-                "This Binder instance was created using the default constructor. "
-                + "To be able to use property names and bind to instance fields, create the binder using the Binder(Class<BEAN> beanType) constructor instead.");
+                        "This Binder instance was created using the default constructor. "
+                                + "To be able to use property names and bind to instance fields, create the binder using the Binder(Class<BEAN> beanType) constructor instead.");
             }
 
             @Override
             public Optional<PropertyDefinition<BEAN, ?>> getProperty(
-            String name) {
+                    String name) {
                 throw new IllegalStateException(
-                "This Binder instance was created using the default constructor. "
-                + "To be able to use property names and bind to instance fields, create the binder using the Binder(Class<BEAN> beanType) constructor instead.");
+                        "This Binder instance was created using the default constructor. "
+                                + "To be able to use property names and bind to instance fields, create the binder using the Binder(Class<BEAN> beanType) constructor instead.");
             }
         });
     }
@@ -1616,7 +1616,7 @@ public class Binder<BEAN> implements Serializable {
      */
     public Binder(Class<BEAN> beanType, boolean scanNestedDefinitions) {
         this(BeanPropertySet.get(beanType, scanNestedDefinitions,
-        PropertyFilterDefinition.getDefaultFilter()));
+                PropertyFilterDefinition.getDefaultFilter()));
     }
 
     /**
@@ -1641,7 +1641,7 @@ public class Binder<BEAN> implements Serializable {
      *         <code>null</code>
      */
     public static <BEAN> Binder<BEAN> withPropertySet(
-    PropertySet<BEAN> propertySet) {
+            PropertySet<BEAN> propertySet) {
         return new Binder<>(propertySet);
     }
 
@@ -1695,7 +1695,7 @@ public class Binder<BEAN> implements Serializable {
      * @see #bind(HasValue, ValueProvider, Setter)
      */
     public <FIELDVALUE> BindingBuilder<BEAN, FIELDVALUE> forField(
-    HasValue<?, FIELDVALUE> field) {
+            HasValue<?, FIELDVALUE> field) {
         Objects.requireNonNull(field, "field cannot be null");
         // clear previous errors for this field and any bean level validation
         clearError(field);
@@ -1703,9 +1703,9 @@ public class Binder<BEAN> implements Serializable {
 
         return createBinding(field, createNullRepresentationAdapter(field),
                 this::handleValidationStatus)
-                        .withValidator(field instanceof HasValidator
-                                ? ((HasValidator) field).getDefaultValidator()
-                                : Validator.alwaysPass());
+                .withValidator(field instanceof HasValidator
+                        ? ((HasValidator) field).getDefaultValidator()
+                        : Validator.alwaysPass());
     }
 
     /**
@@ -1726,7 +1726,7 @@ public class Binder<BEAN> implements Serializable {
      * @see #bindInstanceFields(Object)
      */
     public <FIELDVALUE> BindingBuilder<BEAN, FIELDVALUE> forMemberField(
-    HasValue<?, FIELDVALUE> field) {
+            HasValue<?, FIELDVALUE> field) {
         if (incompleteMemberFieldBindings == null) {
             incompleteMemberFieldBindings = new IdentityHashMap<>(8);
         }
@@ -1792,9 +1792,9 @@ public class Binder<BEAN> implements Serializable {
      * @return the newly created binding
      */
     public <FIELDVALUE> Binding<BEAN, FIELDVALUE> bind(
-    HasValue<?, FIELDVALUE> field,
-    ValueProvider<BEAN, FIELDVALUE> getter,
-    Setter<BEAN, FIELDVALUE> setter) {
+            HasValue<?, FIELDVALUE> field,
+            ValueProvider<BEAN, FIELDVALUE> getter,
+            Setter<BEAN, FIELDVALUE> setter) {
         return forField(field).bind(getter, setter);
     }
 
@@ -1830,7 +1830,7 @@ public class Binder<BEAN> implements Serializable {
      * @see #bind(HasValue, ValueProvider, Setter)
      */
     public <FIELDVALUE> Binding<BEAN, FIELDVALUE> bind(
-    HasValue<?, FIELDVALUE> field, String propertyName) {
+            HasValue<?, FIELDVALUE> field, String propertyName) {
         return forField(field).bind(propertyName);
     }
 
@@ -1873,7 +1873,7 @@ public class Binder<BEAN> implements Serializable {
             // if there has been field value change listeners that trigger
             // validation, need to make sure the validation errors are cleared
             getValidationStatusHandler().statusChange(
-            BinderValidationStatus.createUnresolvedStatus(this));
+                    BinderValidationStatus.createUnresolvedStatus(this));
             fireStatusChangeEvent(false);
         }
     }
@@ -1922,7 +1922,7 @@ public class Binder<BEAN> implements Serializable {
             });
             changedBindings.clear();
             getValidationStatusHandler().statusChange(
-            BinderValidationStatus.createUnresolvedStatus(this));
+                    BinderValidationStatus.createUnresolvedStatus(this));
             fireStatusChangeEvent(false);
         }
     }
@@ -1953,7 +1953,7 @@ public class Binder<BEAN> implements Serializable {
         BinderValidationStatus<BEAN> status = doWriteIfValid(bean, bindings);
         if (status.hasErrors()) {
             throw new ValidationException(status.getFieldValidationErrors(),
-            status.getBeanValidationErrors());
+                    status.getBeanValidationErrors());
         }
     }
 
@@ -2035,30 +2035,30 @@ public class Binder<BEAN> implements Serializable {
      */
     @SuppressWarnings("unchecked")
     private BinderValidationStatus<BEAN> doWriteIfValid(BEAN bean,
-            Collection<Binding<BEAN, ?>> bindings) {
+                                                        Collection<Binding<BEAN, ?>> bindings) {
         Objects.requireNonNull(bean, "bean cannot be null");
         List<ValidationResult> binderResults = Collections.emptyList();
 
         // make a copy of the incoming bindings to avoid their modifications
         // during validation
         Collection<Binding<BEAN, ?>> currentBindings = new ArrayList<>(
-        bindings);
+                bindings);
 
         // First run fields level validation, if no validation errors then
         // update bean
         List<BindingValidationStatus<?>> bindingResults = currentBindings
-        .stream().map(b -> b.validate(false))
-        .collect(Collectors.toList());
+                .stream().map(b -> b.validate(false))
+                .collect(Collectors.toList());
 
         if (bindingResults.stream()
-        .noneMatch(BindingValidationStatus::isError)) {
+                .noneMatch(BindingValidationStatus::isError)) {
             // Store old bean values so we can restore them if validators fail
             Map<Binding<BEAN, ?>, Object> oldValues = getBeanState(bean,
-            currentBindings);
+                    currentBindings);
 
             currentBindings
-            .forEach(binding -> ((BindingImpl<BEAN, ?, ?>) binding)
-            .writeFieldValue(bean));
+                    .forEach(binding -> ((BindingImpl<BEAN, ?, ?>) binding)
+                            .writeFieldValue(bean));
             // Now run bean level validation against the updated bean
             binderResults = validateBean(bean);
             if (binderResults.stream().anyMatch(ValidationResult::isError)) {
@@ -2082,7 +2082,7 @@ public class Binder<BEAN> implements Serializable {
 
         // Generate status object and fire events.
         BinderValidationStatus<BEAN> status = new BinderValidationStatus<>(this,
-        bindingResults, binderResults);
+                bindingResults, binderResults);
         getValidationStatusHandler().statusChange(status);
         fireStatusChangeEvent(!status.isOk());
         return status;
@@ -2101,17 +2101,17 @@ public class Binder<BEAN> implements Serializable {
      */
     @SuppressWarnings({ "unchecked" })
     private void doWriteDraft(BEAN bean, Collection<Binding<BEAN, ?>> bindings,
-            boolean forced) {
+                              boolean forced) {
         Objects.requireNonNull(bean, "bean cannot be null");
 
         if (!forced) {
             bindings.forEach(binding -> ((BindingImpl<BEAN, ?, ?>) binding)
-            .writeFieldValue(bean));
+                    .writeFieldValue(bean));
         } else {
             boolean isDisabled = isValidatorsDisabled();
             setValidatorsDisabled(true);
             bindings.forEach(binding -> ((BindingImpl<BEAN, ?, ?>) binding)
-            .writeFieldValue(bean));
+                    .writeFieldValue(bean));
             setValidatorsDisabled(isDisabled);
         }
     }
@@ -2126,14 +2126,14 @@ public class Binder<BEAN> implements Serializable {
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     protected void restoreBeanState(BEAN bean,
-            Map<Binding<BEAN, ?>, Object> oldValues) {
+                                    Map<Binding<BEAN, ?>, Object> oldValues) {
         getBindings().stream().filter(oldValues::containsKey)
-        .forEach(binding -> {
-            Setter setter = binding.setter;
-            if (setter != null) {
-                setter.accept(bean, oldValues.get(binding));
-            }
-        });
+                .forEach(binding -> {
+                    Setter setter = binding.setter;
+                    if (setter != null) {
+                        setter.accept(bean, oldValues.get(binding));
+                    }
+                });
     }
 
     /**
@@ -2148,12 +2148,12 @@ public class Binder<BEAN> implements Serializable {
      */
     @SuppressWarnings({ "unchecked", "rawtypes" })
     protected Map<Binding<BEAN, ?>, Object> getBeanState(BEAN bean,
-            Collection<Binding<BEAN, ?>> bindings) {
+                                                         Collection<Binding<BEAN, ?>> bindings) {
         Map<Binding<BEAN, ?>, Object> oldValues = new HashMap<>();
         bindings.stream().map(binding -> (BindingImpl) binding)
-        .filter(binding -> binding.setter != null)
-        .forEach(binding -> oldValues.put(binding,
-        binding.getter.apply(bean)));
+                .filter(binding -> binding.setter != null)
+                .forEach(binding -> oldValues.put(binding,
+                        binding.getter.apply(bean)));
         return oldValues;
     }
 
@@ -2206,7 +2206,7 @@ public class Binder<BEAN> implements Serializable {
      * @return this binder, for chaining
      */
     public Binder<BEAN> withValidator(SerializablePredicate<BEAN> predicate,
-            String message) {
+                                      String message) {
         return withValidator(Validator.from(predicate, message));
     }
 
@@ -2231,7 +2231,7 @@ public class Binder<BEAN> implements Serializable {
      * @return this binder, for chaining
      */
     public Binder<BEAN> withValidator(SerializablePredicate<BEAN> predicate,
-            ErrorMessageProvider errorMessageProvider) {
+                                      ErrorMessageProvider errorMessageProvider) {
         return withValidator(Validator.from(predicate, errorMessageProvider));
     }
 
@@ -2282,24 +2282,24 @@ public class Binder<BEAN> implements Serializable {
     protected BinderValidationStatus<BEAN> validate(boolean fireEvent) {
         if (getBean() == null && !validators.isEmpty()) {
             throw new IllegalStateException("Cannot validate binder: "
-            + "bean level validators have been configured "
-            + "but no bean is currently set");
+                    + "bean level validators have been configured "
+                    + "but no bean is currently set");
         }
         List<BindingValidationStatus<?>> bindingStatuses = validateBindings();
 
         BinderValidationStatus<BEAN> validationStatus;
         if (validators.isEmpty() || bindingStatuses.stream()
-        .anyMatch(BindingValidationStatus::isError)) {
+                .anyMatch(BindingValidationStatus::isError)) {
             validationStatus = new BinderValidationStatus<>(this,
-            bindingStatuses, Collections.emptyList());
+                    bindingStatuses, Collections.emptyList());
         } else {
             Map<Binding<BEAN, ?>, Object> beanState = getBeanState(getBean(),
-            changedBindings);
+                    changedBindings);
             changedBindings
-            .forEach(binding -> ((BindingImpl<BEAN, ?, ?>) binding)
-            .writeFieldValue(getBean()));
+                    .forEach(binding -> ((BindingImpl<BEAN, ?, ?>) binding)
+                            .writeFieldValue(getBean()));
             validationStatus = new BinderValidationStatus<>(this,
-            bindingStatuses, validateBean(getBean()));
+                    bindingStatuses, validateBean(getBean()));
             restoreBeanState(getBean(), beanState);
         }
         if (fireEvent) {
@@ -2346,8 +2346,8 @@ public class Binder<BEAN> implements Serializable {
      */
     private List<BindingValidationStatus<?>> validateBindings() {
         return getBindings().stream().map(BindingImpl::doValidation)
-        .collect(Collectors.collectingAndThen(Collectors.toList(),
-        Collections::unmodifiableList));
+                .collect(Collectors.collectingAndThen(Collectors.toList(),
+                        Collections::unmodifiableList));
     }
 
     /**
@@ -2366,9 +2366,9 @@ public class Binder<BEAN> implements Serializable {
     private List<ValidationResult> validateBean(BEAN bean) {
         Objects.requireNonNull(bean, "bean cannot be null");
         return validators.stream()
-        .map(validator -> validator.apply(bean, new ValueContext()))
-        .collect(Collectors.collectingAndThen(Collectors.toList(),
-        Collections::unmodifiableList));
+                .map(validator -> validator.apply(bean, new ValueContext()))
+                .collect(Collectors.collectingAndThen(Collectors.toList(),
+                        Collections::unmodifiableList));
     }
 
     /**
@@ -2390,8 +2390,8 @@ public class Binder<BEAN> implements Serializable {
     public void setStatusLabel(HasText statusLabel) {
         if (statusHandler != null) {
             throw new IllegalStateException("Cannot set status label if a "
-            + BinderValidationStatusHandler.class.getSimpleName()
-            + " has already been set.");
+                    + BinderValidationStatusHandler.class.getSimpleName()
+                    + " has already been set.");
         }
         this.statusLabel = statusLabel;
     }
@@ -2426,13 +2426,13 @@ public class Binder<BEAN> implements Serializable {
      * @see BindingBuilder#withValidationStatusHandler(BindingValidationStatusHandler)
      */
     public void setValidationStatusHandler(
-    BinderValidationStatusHandler<BEAN> statusHandler) {
+            BinderValidationStatusHandler<BEAN> statusHandler) {
         Objects.requireNonNull(statusHandler, "Cannot set a null "
-        + BinderValidationStatusHandler.class.getSimpleName());
+                + BinderValidationStatusHandler.class.getSimpleName());
         if (statusLabel != null) {
             throw new IllegalStateException("Cannot set "
-            + BinderValidationStatusHandler.class.getSimpleName()
-            + " if a status label has already been set.");
+                    + BinderValidationStatusHandler.class.getSimpleName()
+                    + " if a status label has already been set.");
         }
         this.statusHandler = statusHandler;
     }
@@ -2449,7 +2449,7 @@ public class Binder<BEAN> implements Serializable {
      */
     public BinderValidationStatusHandler<BEAN> getValidationStatusHandler() {
         return Optional.ofNullable(statusHandler)
-        .orElse(this::handleBinderValidationStatus);
+                .orElse(this::handleBinderValidationStatus);
     }
 
     /**
@@ -2487,9 +2487,9 @@ public class Binder<BEAN> implements Serializable {
      * @see #clearError(HasValue)
      */
     public void setValidationErrorHandler(
-    BinderValidationErrorHandler handler) {
+            BinderValidationErrorHandler handler) {
         Objects.requireNonNull(handler, "Cannot set a null "
-        + BinderValidationErrorHandler.class.getSimpleName());
+                + BinderValidationErrorHandler.class.getSimpleName());
         errorHandler = handler;
     }
 
@@ -2538,9 +2538,9 @@ public class Binder<BEAN> implements Serializable {
      * @return a registration for the listener
      */
     protected <T> Registration addListener(Class<T> eventType,
-            SerializableConsumer<T> method) {
+                                           SerializableConsumer<T> method) {
         List<SerializableConsumer<?>> list = listeners
-        .computeIfAbsent(eventType, key -> new ArrayList<>());
+                .computeIfAbsent(eventType, key -> new ArrayList<>());
         return Registration.addAndRemove(list, method);
     }
 
@@ -2564,7 +2564,7 @@ public class Binder<BEAN> implements Serializable {
      * @return a registration for the listener
      */
     public Registration addValueChangeListener(
-    ValueChangeListener<? super ValueChangeEvent<?>> listener) {
+            ValueChangeListener<? super ValueChangeEvent<?>> listener) {
         return addListener(ValueChangeEvent.class, listener::valueChanged);
     }
 
@@ -2585,13 +2585,13 @@ public class Binder<BEAN> implements Serializable {
      * @return the new incomplete binding
      */
     protected <FIELDVALUE, TARGET> BindingBuilder<BEAN, TARGET> createBinding(
-    HasValue<?, FIELDVALUE> field,
-    Converter<FIELDVALUE, TARGET> converter,
-    BindingValidationStatusHandler handler) {
+            HasValue<?, FIELDVALUE> field,
+            Converter<FIELDVALUE, TARGET> converter,
+            BindingValidationStatusHandler handler) {
         BindingBuilder<BEAN, TARGET> newBinding = doCreateBinding(field,
-        converter, handler);
+                converter, handler);
         if (incompleteMemberFieldBindings != null
-        && incompleteMemberFieldBindings.containsKey(field)) {
+                && incompleteMemberFieldBindings.containsKey(field)) {
             incompleteMemberFieldBindings.put(field, newBinding);
         }
         if (incompleteBindings == null) {
@@ -2602,9 +2602,9 @@ public class Binder<BEAN> implements Serializable {
     }
 
     protected <FIELDVALUE, TARGET> BindingBuilder<BEAN, TARGET> doCreateBinding(
-    HasValue<?, FIELDVALUE> field,
-    Converter<FIELDVALUE, TARGET> converter,
-    BindingValidationStatusHandler handler) {
+            HasValue<?, FIELDVALUE> field,
+            Converter<FIELDVALUE, TARGET> converter,
+            BindingValidationStatusHandler handler) {
         return new BindingBuilderImpl<>(this, field, converter, handler);
     }
 
@@ -2647,22 +2647,22 @@ public class Binder<BEAN> implements Serializable {
         clearError(source);
         if (status.isError()) {
             Optional<ValidationResult> firstError = status
-            .getValidationResults().stream()
-            .filter(ValidationResult::isError).findFirst();
+                    .getValidationResults().stream()
+                    .filter(ValidationResult::isError).findFirst();
             if (firstError.isPresent()) {
                 // Failed with a Validation error
                 handleError(source, firstError.get());
             } else {
                 // Conversion error
                 status.getResult()
-                .ifPresent(result -> handleError(source, result));
+                        .ifPresent(result -> handleError(source, result));
             }
         } else {
             // Show first non-error ValidationResult message.
             status.getValidationResults().stream()
-            .filter(result -> result.getErrorLevel().isPresent())
-            .findFirst()
-            .ifPresent(result -> handleError(source, result));
+                    .filter(result -> result.getErrorLevel().isPresent())
+                    .findFirst()
+                    .ifPresent(result -> handleError(source, result));
         }
     }
 
@@ -2673,7 +2673,7 @@ public class Binder<BEAN> implements Serializable {
      */
     protected Collection<BindingImpl<BEAN, ?, ?>> getBindings() {
         return bindings.stream().map(b -> ((BindingImpl<BEAN, ?, ?>) b))
-        .collect(Collectors.toList());
+                .collect(Collectors.toList());
     }
 
     /**
@@ -2688,15 +2688,15 @@ public class Binder<BEAN> implements Serializable {
      *            validators
      */
     protected void handleBinderValidationStatus(
-    BinderValidationStatus<BEAN> binderStatus) {
+            BinderValidationStatus<BEAN> binderStatus) {
         // let field events go to binding status handlers
         binderStatus.notifyBindingValidationStatusHandlers();
 
         // show first possible error or OK status in the label if set
         if (getStatusLabel().isPresent()) {
             String statusMessage = binderStatus.getBeanValidationErrors()
-            .stream().findFirst().map(ValidationResult::getErrorMessage)
-            .orElse("");
+                    .stream().findFirst().map(ValidationResult::getErrorMessage)
+                    .orElse("");
             getStatusLabel().get().setText(statusMessage);
         }
     }
@@ -2760,7 +2760,7 @@ public class Binder<BEAN> implements Serializable {
      */
     public void setReadOnly(boolean readOnly) {
         getBindings().stream().filter(binding -> binding.getSetter() != null)
-        .forEach(field -> field.setReadOnly(readOnly));
+                .forEach(field -> field.setReadOnly(readOnly));
     }
 
     /**
@@ -2774,8 +2774,8 @@ public class Binder<BEAN> implements Serializable {
      * @return the new configured binding
      */
     protected BindingBuilder<BEAN, ?> configureBinding(
-    BindingBuilder<BEAN, ?> binding,
-    PropertyDefinition<BEAN, ?> definition) {
+            BindingBuilder<BEAN, ?> binding,
+            PropertyDefinition<BEAN, ?> definition) {
         return binding;
     }
 
@@ -2785,7 +2785,7 @@ public class Binder<BEAN> implements Serializable {
             bean = null;
         }
         getValidationStatusHandler().statusChange(
-        BinderValidationStatus.createUnresolvedStatus(this));
+                BinderValidationStatus.createUnresolvedStatus(this));
         if (fireStatusEvent) {
             fireStatusChangeEvent(false);
         }
@@ -2793,31 +2793,31 @@ public class Binder<BEAN> implements Serializable {
 
     private void fireStatusChangeEvent(boolean hasValidationErrors) {
         StatusChangeEvent event = new StatusChangeEvent(this,
-        hasValidationErrors);
+                hasValidationErrors);
         fireEvent(event);
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     private void fireEvent(Object event) {
         new HashMap<>(listeners).entrySet().stream().filter(
-                entry -> entry.getKey().isAssignableFrom(event.getClass()))
+                        entry -> entry.getKey().isAssignableFrom(event.getClass()))
                 .forEach(entry -> {
                     for (Consumer consumer : new ArrayList<>(
-                        entry.getValue())) {
-                            consumer.accept(event);
-            }
-        });
+                            entry.getValue())) {
+                        consumer.accept(event);
+                    }
+                });
     }
 
     private <FIELDVALUE> Converter<FIELDVALUE, FIELDVALUE> createNullRepresentationAdapter(
-    HasValue<?, FIELDVALUE> field) {
+            HasValue<?, FIELDVALUE> field) {
         Converter<FIELDVALUE, FIELDVALUE> nullRepresentationConverter = Converter
-        .from(fieldValue -> fieldValue,
-        modelValue -> Objects.isNull(modelValue)
-        ? field.getEmptyValue() : modelValue,
-        Throwable::getMessage);
+                .from(fieldValue -> fieldValue,
+                        modelValue -> Objects.isNull(modelValue)
+                                ? field.getEmptyValue() : modelValue,
+                        Throwable::getMessage);
         ConverterDelegate<FIELDVALUE> converter = new ConverterDelegate<>(
-        nullRepresentationConverter);
+                nullRepresentationConverter);
         initialConverters.put(field, converter);
         return converter;
     }
@@ -2832,17 +2832,17 @@ public class Binder<BEAN> implements Serializable {
      */
     private void checkBindingsCompleted(String methodName) {
         if (!(incompleteMemberFieldBindings == null
-        || incompleteMemberFieldBindings.isEmpty())) {
+                || incompleteMemberFieldBindings.isEmpty())) {
             throw new IllegalStateException(
-            "All bindings created with forMemberField must "
-            + "be completed with bindInstanceFields before calling "
-            + methodName);
+                    "All bindings created with forMemberField must "
+                            + "be completed with bindInstanceFields before calling "
+                            + methodName);
         }
 
         if (!(incompleteBindings == null || incompleteBindings.isEmpty())) {
             throw new IllegalStateException(
-            "All bindings created with forField must be completed before calling "
-            + methodName);
+                    "All bindings created with forField must be completed before calling "
+                            + methodName);
         }
     }
 
@@ -2893,35 +2893,35 @@ public class Binder<BEAN> implements Serializable {
         Class<?> objectClass = objectWithMemberFields.getClass();
 
         Integer numberOfBoundFields = getFieldsInDeclareOrder(objectClass)
-        .stream()
-        .filter(memberField -> HasValue.class
-        .isAssignableFrom(memberField.getType()))
-        .filter(memberField -> !isFieldBound(memberField,
-        objectWithMemberFields))
-        .map(memberField -> handleProperty(memberField,
-        objectWithMemberFields,
-        (property, type) -> bindProperty(objectWithMemberFields,
-        memberField, property, type)))
-        .reduce(0, this::accumulate, Integer::sum);
+                .stream()
+                .filter(memberField -> HasValue.class
+                        .isAssignableFrom(memberField.getType()))
+                .filter(memberField -> !isFieldBound(memberField,
+                        objectWithMemberFields))
+                .map(memberField -> handleProperty(memberField,
+                        objectWithMemberFields,
+                        (property, type) -> bindProperty(objectWithMemberFields,
+                                memberField, property, type)))
+                .reduce(0, this::accumulate, Integer::sum);
         if (numberOfBoundFields == 0 && bindings.isEmpty()
-        && (incompleteBindings == null
+                && (incompleteBindings == null
                 || incompleteBindings.isEmpty())) {
             // Throwing here for incomplete bindings would be wrong as they
             // may be completed after this call. If they are not, setBean and
             // other methods will throw for those cases
             throw new IllegalStateException("There are no instance fields "
-            + "found for automatic binding");
+                    + "found for automatic binding");
         }
 
     }
 
     private boolean isFieldBound(Field memberField,
-            Object objectWithMemberFields) {
+                                 Object objectWithMemberFields) {
         try {
             HasValue<?, ?> field = (HasValue<?, ?>) getMemberFieldValue(
-            memberField, objectWithMemberFields);
+                    memberField, objectWithMemberFields);
             return bindings.stream()
-            .anyMatch(binding -> binding.getField() == field);
+                    .anyMatch(binding -> binding.getField() == field);
         } catch (Exception e) {
             return false;
         }
@@ -2932,16 +2932,16 @@ public class Binder<BEAN> implements Serializable {
     }
 
     private BindingBuilder<BEAN, ?> getIncompleteMemberFieldBinding(
-    Field memberField, Object objectWithMemberFields) {
+            Field memberField, Object objectWithMemberFields) {
         if (incompleteMemberFieldBindings == null) {
             return null;
         }
         return incompleteMemberFieldBindings
-        .get(getMemberFieldValue(memberField, objectWithMemberFields));
+                .get(getMemberFieldValue(memberField, objectWithMemberFields));
     }
 
     private Object getMemberFieldValue(Field memberField,
-            Object objectWithMemberFields) {
+                                       Object objectWithMemberFields) {
         memberField.setAccessible(true);
         try {
             return memberField.get(objectWithMemberFields);
@@ -2969,41 +2969,41 @@ public class Binder<BEAN> implements Serializable {
      * @return {@code true} if property is successfully bound
      */
     private boolean bindProperty(Object objectWithMemberFields,
-            Field memberField, String property, Class<?> propertyType) {
+                                 Field memberField, String property, Class<?> propertyType) {
         Type valueType = GenericTypeReflector.getTypeParameter(
-        memberField.getGenericType(),
-        HasValue.class.getTypeParameters()[1]);
+                memberField.getGenericType(),
+                HasValue.class.getTypeParameters()[1]);
         if (valueType == null) {
             throw new IllegalStateException(String.format(
-            "Unable to detect value type for the member '%s' in the "
-            + "class '%s'.",
-            memberField.getName(),
-            objectWithMemberFields.getClass().getName()));
+                    "Unable to detect value type for the member '%s' in the "
+                            + "class '%s'.",
+                    memberField.getName(),
+                    objectWithMemberFields.getClass().getName()));
         }
         Class<?> erasedValueType = GenericTypeReflector.erase(valueType);
         boolean compatibleTypes = propertyType.equals(erasedValueType);
         Converter automaticConverter = compatibleTypes ? null
-        : getConverterFactory()
-        .newInstance(erasedValueType, propertyType)
-        .orElse(null);
+                : getConverterFactory()
+                .newInstance(erasedValueType, propertyType)
+                .orElse(null);
         if (compatibleTypes || automaticConverter != null) {
             HasValue<?, ?> field;
             // Get the field from the object
             try {
                 field = (HasValue<?, ?>) ReflectTools.getJavaFieldValue(
-                objectWithMemberFields, memberField, HasValue.class);
+                        objectWithMemberFields, memberField, HasValue.class);
             } catch (IllegalArgumentException | IllegalAccessException
-            | InvocationTargetException e) {
+                    | InvocationTargetException e) {
                 // If we cannot determine the value, just skip the field
                 return false;
             }
             if (field == null) {
                 field = makeFieldInstance(
-                (Class<? extends HasValue<?, ?>>) memberField
-                .getType());
+                        (Class<? extends HasValue<?, ?>>) memberField
+                                .getType());
                 initializeField(objectWithMemberFields, memberField, field);
             } else if (incompleteBindings != null
-            && incompleteBindings.get(field) != null) {
+                    && incompleteBindings.get(field) != null) {
                 // A manual binding is ongoing for this field, so we should not
                 // automatically bind it, otherwise we may silently overwrite
                 // current configuration.
@@ -3011,11 +3011,11 @@ public class Binder<BEAN> implements Serializable {
                 // bindings and that incomplete bindings may be completed also
                 // after method call
                 LoggerFactory.getLogger(Binder.class.getName()).debug(
-                "Binding for member '{}' of class '{}' will not be automatically "
-                + "created because a custom binding has been started "
-                + "but not yet finalized with 'bind()' invocation.",
-                memberField.getName(),
-                objectWithMemberFields.getClass().getName());
+                        "Binding for member '{}' of class '{}' will not be automatically "
+                                + "created because a custom binding has been started "
+                                + "but not yet finalized with 'bind()' invocation.",
+                        memberField.getName(),
+                        objectWithMemberFields.getClass().getName());
                 return false;
             }
             BindingBuilder<BEAN, ?> bindingBuilder = forField(field);
@@ -3024,17 +3024,17 @@ public class Binder<BEAN> implements Serializable {
                 // forField() using createNullRepresentationAdapter()
                 // so we need to add a null representation based on same logics.
                 bindingBuilder = ((BindingBuilder) bindingBuilder)
-                .withNullRepresentation(field.getEmptyValue())
-                .withConverter(automaticConverter);
+                        .withNullRepresentation(field.getEmptyValue())
+                        .withConverter(automaticConverter);
             }
             bindingBuilder.bind(property);
             return true;
         } else {
             throw new IllegalStateException(String.format(
-            "Property type '%s' doesn't "
-            + "match the field type '%s'. "
-            + "Binding should be configured manually using converter.",
-            propertyType.getName(), valueType.getTypeName()));
+                    "Property type '%s' doesn't "
+                            + "match the field type '%s'. "
+                            + "Binding should be configured manually using converter.",
+                    propertyType.getName(), valueType.getTypeName()));
         }
     }
 
@@ -3072,7 +3072,7 @@ public class Binder<BEAN> implements Serializable {
      * @return a {@code fieldClass} instance object
      */
     private HasValue<?, ?> makeFieldInstance(
-    Class<? extends HasValue<?, ?>> fieldClass) {
+            Class<? extends HasValue<?, ?>> fieldClass) {
         try {
             return ReflectTools.createInstance(fieldClass);
         } catch (IllegalArgumentException e) {
@@ -3096,29 +3096,29 @@ public class Binder<BEAN> implements Serializable {
 
         while (searchClass != null) {
             memberFieldInOrder
-            .addAll(Arrays.asList(searchClass.getDeclaredFields()));
+                    .addAll(Arrays.asList(searchClass.getDeclaredFields()));
             searchClass = searchClass.getSuperclass();
         }
         return memberFieldInOrder;
     }
 
     private void initializeField(Object objectWithMemberFields,
-            Field memberField, HasValue<?, ?> value) {
+                                 Field memberField, HasValue<?, ?> value) {
         try {
             ReflectTools.setJavaFieldValue(objectWithMemberFields, memberField,
-            value);
+                    value);
         } catch (IllegalArgumentException e) {
             throw new IllegalStateException(
-            String.format("Could not assign value to field '%s'",
-            memberField.getName()),
-            e);
+                    String.format("Could not assign value to field '%s'",
+                            memberField.getName()),
+                    e);
         }
     }
 
     private boolean handleProperty(Field field, Object objectWithMemberFields,
-            BiFunction<String, Class<?>, Boolean> propertyHandler) {
+                                   BiFunction<String, Class<?>, Boolean> propertyHandler) {
         Optional<PropertyDefinition<BEAN, ?>> descriptor = getPropertyDescriptor(
-        field);
+                field);
 
         if (!descriptor.isPresent()) {
             return false;
@@ -3130,14 +3130,14 @@ public class Binder<BEAN> implements Serializable {
         }
 
         BindingBuilder<BEAN, ?> tentativeBinding = getIncompleteMemberFieldBinding(
-        field, objectWithMemberFields);
+                field, objectWithMemberFields);
         if (tentativeBinding != null) {
             tentativeBinding.bind(propertyName);
             return false;
         }
 
         Boolean isPropertyBound = propertyHandler.apply(propertyName,
-        descriptor.get().getType());
+                descriptor.get().getType());
         return isPropertyBound;
     }
 
@@ -3157,7 +3157,7 @@ public class Binder<BEAN> implements Serializable {
     }
 
     private Optional<PropertyDefinition<BEAN, ?>> getPropertyDescriptor(
-    Field field) {
+            Field field) {
         PropertyId propertyIdAnnotation = field.getAnnotation(PropertyId.class);
 
         String propertyId;
@@ -3171,8 +3171,8 @@ public class Binder<BEAN> implements Serializable {
         String minifiedFieldName = minifyFieldName(propertyId);
 
         return propertySet.getProperties().map(PropertyDefinition::getName)
-        .filter(name -> minifyFieldName(name).equals(minifiedFieldName))
-        .findFirst().flatMap(propertySet::getProperty);
+                .filter(name -> minifyFieldName(name).equals(minifiedFieldName))
+                .findFirst().flatMap(propertySet::getProperty);
     }
 
     private String minifyFieldName(String fieldName) {
@@ -3205,8 +3205,8 @@ public class Binder<BEAN> implements Serializable {
     public void removeBinding(HasValue<?, ?> field) {
         Objects.requireNonNull(field, "Field may not be null");
         Set<BindingImpl<BEAN, ?, ?>> toRemove = getBindings().stream()
-        .filter(binding -> field.equals(binding.getField()))
-        .collect(Collectors.toSet());
+                .filter(binding -> field.equals(binding.getField()))
+                .collect(Collectors.toSet());
         toRemove.forEach(Binding::unbind);
     }
 
@@ -3238,7 +3238,7 @@ public class Binder<BEAN> implements Serializable {
     protected void removeBindingInternal(Binding<BEAN, ?> binding) {
         if (bindings.remove(binding)) {
             boundProperties.entrySet()
-            .removeIf(entry -> entry.getValue().equals(binding));
+                    .removeIf(entry -> entry.getValue().equals(binding));
             changedBindings.remove(binding);
         }
     }
@@ -3252,7 +3252,7 @@ public class Binder<BEAN> implements Serializable {
     public void removeBinding(String propertyName) {
         Objects.requireNonNull(propertyName, "Property name may not be null");
         Optional.ofNullable(boundProperties.get(propertyName))
-        .ifPresent(Binding::unbind);
+                .ifPresent(Binding::unbind);
     }
 
     /**
@@ -3284,7 +3284,7 @@ public class Binder<BEAN> implements Serializable {
      *            Boolean value.
      */
     public void setFieldsValidationStatusChangeListenerEnabled(
-    boolean fieldsValidationStatusChangeListenerEnabled) {
+            boolean fieldsValidationStatusChangeListenerEnabled) {
         this.fieldsValidationStatusChangeListenerEnabled = fieldsValidationStatusChangeListenerEnabled;
     }
 

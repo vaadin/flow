@@ -83,7 +83,7 @@ public class ReflectTools implements Serializable {
      *             so this method can be called from a static initializer.
      */
     public static Method findMethod(Class<?> cls, String methodName,
-            Class<?>... parameterTypes) throws ExceptionInInitializerError {
+                                    Class<?>... parameterTypes) throws ExceptionInInitializerError {
         try {
             return cls.getDeclaredMethod(methodName, parameterTypes);
         } catch (Exception e) {
@@ -110,7 +110,7 @@ public class ReflectTools implements Serializable {
      *             If the value could not be retrieved
      */
     public static Object getJavaFieldValue(Object object,
-            java.lang.reflect.Field field) throws IllegalArgumentException,
+                                           java.lang.reflect.Field field) throws IllegalArgumentException,
             IllegalAccessException, InvocationTargetException {
         PropertyDescriptor pd;
         try {
@@ -154,7 +154,7 @@ public class ReflectTools implements Serializable {
      *             If the value could not be retrieved
      */
     public static Object getJavaFieldValue(Object object,
-            java.lang.reflect.Field field, Class<?> propertyType)
+                                           java.lang.reflect.Field field, Class<?> propertyType)
             throws IllegalArgumentException, IllegalAccessException,
             InvocationTargetException {
         PropertyDescriptor pd;
@@ -194,7 +194,7 @@ public class ReflectTools implements Serializable {
      *             If the value could not be assigned to the field
      */
     public static void setJavaFieldValue(Object object,
-            java.lang.reflect.Field field, Object value)
+                                         java.lang.reflect.Field field, Object value)
             throws IllegalArgumentException {
         // Try to set the value directly to the field or throw an exception
         if (!field.isAccessible()) {
@@ -406,7 +406,7 @@ public class ReflectTools implements Serializable {
         String methodName = method.getName();
         assert isGetter(method)
                 || isSetter(method) : "Method is not a valid getter or setter: "
-                        + methodName;
+                + methodName;
 
         String propertyName = SETTER_GETTER_STARTS.matcher(methodName)
                 .replaceFirst("");
@@ -473,7 +473,7 @@ public class ReflectTools implements Serializable {
      *             if class instance creation fails
      */
     public static <T> T createProxyInstance(Class<T> proxyClass,
-            Class<?> originalClass) {
+                                            Class<?> originalClass) {
         checkClassAccessibility(originalClass);
         try {
             Optional<Constructor<?>> constructor = Stream
@@ -580,7 +580,7 @@ public class ReflectTools implements Serializable {
      * @return Class if found else {@code null}
      */
     public static Class<?> getGenericInterfaceType(Class<?> clazz,
-            Class<?> interfaceType) {
+                                                   Class<?> interfaceType) {
         Type type = GenericTypeReflector.getTypeParameter(clazz,
                 interfaceType.getTypeParameters()[0]);
 
@@ -624,8 +624,8 @@ public class ReflectTools implements Serializable {
      * @return a getter method, or an empty optional if the bean type has no
      *         readable property with the provided name
      */
-    public static Optional<Method> getGetter(Class<? extends Object> beanClass, 
-            String propertyName) {
+    public static Optional<Method> getGetter(Class<? extends Object> beanClass,
+                                             String propertyName) {
         /*
          * Iterating all methods is no worse than what Class.getMethod
          * internally does, but in this way we don't have to deal with any
