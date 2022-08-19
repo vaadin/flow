@@ -1071,7 +1071,11 @@ public class Element extends Node<Element> {
     private void setTextContent(String textContent) {
         Element child;
         if (getChildCount() == 1 && getChild(0).isTextNode()) {
-            child = getChild(0).setText(textContent);
+            Element oneChild = getChild(0);
+            child = oneChild.setText(textContent);
+            if (oneChild == child) {
+                return;
+            }
         } else {
             child = createText(textContent);
         }
