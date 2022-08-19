@@ -138,6 +138,7 @@ public class PwaHandler implements RequestHandler {
                 requestHandlerMap.clear();
             } else if (!isInitialized && hasPwa) {
                 init(pwaRegistry);
+                isInitialized = true;
             }
 
             if (hasPwa) {
