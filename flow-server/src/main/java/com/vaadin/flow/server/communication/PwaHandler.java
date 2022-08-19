@@ -123,6 +123,7 @@ public class PwaHandler implements RequestHandler {
                     }
                     return true;
                 });
+        isInitialized = true;
     }
 
     @Override
