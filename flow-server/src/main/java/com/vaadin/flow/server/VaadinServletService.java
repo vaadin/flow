@@ -85,18 +85,6 @@ public class VaadinServletService extends VaadinService {
             throws ServiceException {
         List<RequestHandler> handlers = super.createRequestHandlers();
         handlers.add(0, new FaviconHandler());
-        if (isAtmosphereAvailable()) {
-            try {
-                handlers.add(new PushRequestHandler(this));
-            } catch (ServiceException e) {
-                // Atmosphere init failed. Push won't work but we don't throw a
-                // service exception as we don't want to prevent non-push
-                // applications from working
-                getLogger().warn(
-                        "Error initializing Atmosphere. Push will not work.",
-                        e);
-            }
-        }
 
         if (getDeploymentConfiguration().enableDevServer()) {
             Optional<DevModeHandler> handlerManager = DevModeHandlerManager
@@ -108,6 +96,22 @@ public class VaadinServletService extends VaadinService {
                         .warn("no DevModeHandlerManager implementation found "
                                 + "but dev server enabled. Include the "
                                 + "com.vaadin.vaadin-dev-server dependency.");
+            }
+        }
+
+        // PushRequestHandler should run before DevModeHandler to avoid
+        // responding with html contents when dev mode server is not ready
+        // (e.g. dev-mode-not-ready.html)
+        if (isAtmosphereAvailable()) {
+            try {
+                handlers.add(new PushRequestHandler(this));
+            } catch (ServiceException e) {
+                // Atmosphere init failed. Push won't work but we don't throw a
+                // service exception as we don't want to prevent non-push
+                // applications from working
+                getLogger().warn(
+                        "Error initializing Atmosphere. Push will not work.",
+                        e);
             }
         }
 
