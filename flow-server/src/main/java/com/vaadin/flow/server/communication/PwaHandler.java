@@ -123,7 +123,6 @@ public class PwaHandler implements RequestHandler {
                     }
                     return true;
                 });
-        isInitialized = true;
     }
 
     @Override
@@ -139,6 +138,7 @@ public class PwaHandler implements RequestHandler {
                 requestHandlerMap.clear();
             } else if (!isInitialized && hasPwa) {
                 init(pwaRegistry);
+                isInitialized = true;
             }
 
             if (hasPwa) {
