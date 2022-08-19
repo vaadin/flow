@@ -41,6 +41,9 @@ import com.googlecode.gentyref.GenericTypeReflector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.data.converter.ConverterFactory;
+import com.vaadin.flow.data.converter.DefaultConverterFactory;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.HasValue;
@@ -2869,9 +2872,11 @@ public class Binder<BEAN> implements Serializable {
      * It's not always possible to bind a field to a property because their
      * types are incompatible. E.g. custom converter is required to bind
      * {@code HasValue<String>} and {@code Integer} property (that would be a
-     * case of "age" property). In such case {@link IllegalStateException} will
-     * be thrown unless the field has been configured manually before calling
-     * the {@link #bindInstanceFields(Object)} method.
+     * case of "age" property). In such case, an attempt is made to get a
+     * suitable converter from a {@link ConverterFactory} but, if there is no
+     * match, an {@link IllegalStateException} will be thrown, unless the field
+     * has been configured manually before calling the
+     * {@link #bindInstanceFields(Object)} method.
      * <p>
      * It's always possible to do custom binding for any field: the
      * {@link #bindInstanceFields(Object)} method doesn't override existing
@@ -2882,6 +2887,7 @@ public class Binder<BEAN> implements Serializable {
      * @throws IllegalStateException
      *             if there are incompatible HasValue&lt;T&gt; and property
      *             types
+     *             @see #getConverterFactory()
      */
     public void bindInstanceFields(Object objectWithMemberFields) {
         Class<?> objectClass = objectWithMemberFields.getClass();
@@ -2974,7 +2980,13 @@ public class Binder<BEAN> implements Serializable {
                     memberField.getName(),
                     objectWithMemberFields.getClass().getName()));
         }
-        if (propertyType.equals(GenericTypeReflector.erase(valueType))) {
+        Class<?> erasedValueType = GenericTypeReflector.erase(valueType);
+        boolean compatibleTypes = propertyType.equals(erasedValueType);
+        Converter automaticConverter = compatibleTypes ? null
+                : getConverterFactory()
+                .newInstance(erasedValueType, propertyType)
+                .orElse(null);
+        if (compatibleTypes || automaticConverter != null) {
             HasValue<?, ?> field;
             // Get the field from the object
             try {
@@ -2991,7 +3003,16 @@ public class Binder<BEAN> implements Serializable {
                                 .getType());
                 initializeField(objectWithMemberFields, memberField, field);
             }
-            forField(field).bind(property);
+            BindingBuilder<BEAN, ?> bindingBuilder = forField(field);
+            if (automaticConverter != null) {
+                // Forcing a converter will overwrite null handling set by
+                // forField() using createNullRepresentationAdapter()
+                // so we need to add a null representation based on same logics.
+                bindingBuilder = ((BindingBuilder) bindingBuilder)
+                        .withNullRepresentation(field.getEmptyValue())
+                        .withConverter(automaticConverter);
+            }
+            bindingBuilder.bind(property);
             return true;
         } else {
             throw new IllegalStateException(String.format(
@@ -3000,6 +3021,23 @@ public class Binder<BEAN> implements Serializable {
                             + "Binding should be configured manually using converter.",
                     propertyType.getName(), valueType.getTypeName()));
         }
+    }
+
+    /**
+     * Gets an instance of {@link ConverterFactory} that can be used to detect a
+     * suitable converter for bindings when presentation and model types are not
+     * compatible and a converter has not been explicitly configured.
+     *
+     * By default, returns a factory capable of handling standard converters.
+     *
+     * Subclasses can override this method to provide additional or customized
+     * conversion rules by creating a completely new factory implementation or
+     * composing with the default one.
+     *
+     * @return an instance of {@link ConverterFactory}, never {@literal null}.
+     */
+    protected ConverterFactory getConverterFactory() {
+        return DefaultConverterFactory.INSTANCE;
     }
 
     /**
@@ -3246,4 +3284,5 @@ public class Binder<BEAN> implements Serializable {
     public boolean isFieldsValidationStatusChangeListenerEnabled() {
         return fieldsValidationStatusChangeListenerEnabled;
     }
+
 }

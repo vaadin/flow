@@ -206,6 +206,30 @@ public class ReflectToolsTest {
     public static class ChildInterface extends ParentInterface {
     }
 
+    public interface TestInterfaceMulti<T, R, S> {
+
+    }
+
+    public static class HasInterfaceMulti
+            implements TestInterfaceMulti<String, Integer, Double> {
+    }
+
+    public static class ParentInterfacePartial<Z>
+            implements TestInterfaceMulti<Boolean, Z, Long> {
+    }
+
+    public static class ParentInterfaceMulti
+            implements TestInterfaceMulti<Boolean, Float, Long> {
+
+    }
+
+    public static class ChildInterfaceMulti extends ParentInterfaceMulti {
+    }
+
+    public static class ChildInterfacePartial
+            extends ParentInterfacePartial<Short> {
+    }
+
     @Test
     public void getGenericInterfaceClass() {
         Class<?> genericInterfaceType = ReflectTools.getGenericInterfaceType(
@@ -217,6 +241,39 @@ public class ReflectToolsTest {
                 ChildInterface.class, TestInterface.class);
 
         Assert.assertEquals(Boolean.class, genericInterfaceType);
+    }
+
+    @Test
+    public void getGenericInterfaceClasses() {
+
+        List<Class<?>> genericInterfaceTypes = ReflectTools
+                .getGenericInterfaceTypes(HasInterface.class,
+                        TestInterface.class);
+        Assert.assertArrayEquals(new Class<?>[] { String.class },
+                genericInterfaceTypes.toArray());
+
+        genericInterfaceTypes = ReflectTools.getGenericInterfaceTypes(
+                ChildInterface.class, TestInterface.class);
+        Assert.assertArrayEquals(new Class<?>[] { Boolean.class },
+                genericInterfaceTypes.toArray());
+
+        genericInterfaceTypes = ReflectTools.getGenericInterfaceTypes(
+                HasInterfaceMulti.class, TestInterfaceMulti.class);
+        Assert.assertArrayEquals(
+                new Class<?>[] { String.class, Integer.class, Double.class },
+                genericInterfaceTypes.toArray());
+
+        genericInterfaceTypes = ReflectTools.getGenericInterfaceTypes(
+                ChildInterfaceMulti.class, TestInterfaceMulti.class);
+        Assert.assertArrayEquals(
+                new Class<?>[] { Boolean.class, Float.class, Long.class },
+                genericInterfaceTypes.toArray());
+
+        genericInterfaceTypes = ReflectTools.getGenericInterfaceTypes(
+                ChildInterfacePartial.class, TestInterfaceMulti.class);
+        Assert.assertArrayEquals(
+                new Class<?>[] { Boolean.class, Short.class, Long.class },
+                genericInterfaceTypes.toArray());
     }
 
     @Test
