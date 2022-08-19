@@ -75,6 +75,7 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -344,7 +345,16 @@ public class DevModeInitializer implements Serializable {
                         Arrays.asList(additionalPostinstallPackages))
                 .build();
 
-        Runnable runnable = () -> runNodeTasks(context, tokenFileData, tasks);
+        Runnable runnable = () -> {
+            runNodeTasks(context, tokenFileData, tasks);
+            // WAit
+            while (VaadinServlet.getFirstMapping() == null) {
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException e) {
+                }
+            }
+        };
 
         CompletableFuture<Void> nodeTasksFuture = CompletableFuture
                 .runAsync(runnable);

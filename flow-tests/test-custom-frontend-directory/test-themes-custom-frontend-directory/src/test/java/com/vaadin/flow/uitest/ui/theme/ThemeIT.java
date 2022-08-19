@@ -112,13 +112,11 @@ public class ThemeIT extends ChromeBrowserTest {
         // No exception for bg-image should exist
         checkLogsForErrors();
 
-        // Vite ignores servlet path and assumes servlet with custom mapping
-        // also covers /VAADIN/*
-
         final WebElement body = findElement(By.tagName("body"));
+        // Note themes/app-theme gets VAADIN/static from the file-loader
         Assert.assertEquals("body background-image should come from styles.css",
                 "url(\"" + getRootURL()
-                        + "/VAADIN/themes/app-theme/img/bg.jpg\")",
+                        + "/path/VAADIN/static/themes/app-theme/img/bg.jpg\")",
                 body.getCssValue("background-image"));
 
         Assert.assertEquals("body font-family should come from styles.css",
@@ -127,7 +125,9 @@ public class ThemeIT extends ChromeBrowserTest {
         Assert.assertEquals("html color from styles.css should be applied.",
                 "rgba(0, 0, 0, 1)", body.getCssValue("color"));
 
-        getDriver().get(getRootURL() + "/VAADIN/themes/app-theme/img/bg.jpg");
+        // Note themes/app-theme gets VAADIN/static from the file-loader
+        getDriver().get(getRootURL()
+                + "/path/VAADIN/static/themes/app-theme/img/bg.jpg");
         Assert.assertFalse("app-theme background file should be served",
                 driver.getPageSource().contains("Could not navigate"));
     }
@@ -199,11 +199,10 @@ public class ThemeIT extends ChromeBrowserTest {
         open();
         checkLogsForErrors();
 
-        // Vite ignores servlet path and assumes servlet with custom mapping
-        // also covers /VAADIN/*
+        // Note themes/app-theme gets VAADIN/static from the file-loader
         Assert.assertEquals("Imported css file URLs should have been handled.",
                 "url(\"" + getRootURL()
-                        + "/VAADIN/themes/app-theme/icons/archive.png\")",
+                        + "/path/VAADIN/static/themes/app-theme/icons/archive.png\")",
                 $(SpanElement.class).id(SUB_COMPONENT_ID)
                         .getCssValue("background-image"));
     }
