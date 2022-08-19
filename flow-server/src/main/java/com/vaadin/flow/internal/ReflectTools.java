@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2022 Vaadin Ltd.
+ * Copyright 2000-2020 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -83,7 +83,7 @@ public class ReflectTools implements Serializable {
      *             so this method can be called from a static initializer.
      */
     public static Method findMethod(Class<?> cls, String methodName,
-                                    Class<?>... parameterTypes) throws ExceptionInInitializerError {
+            Class<?>... parameterTypes) throws ExceptionInInitializerError {
         try {
             return cls.getDeclaredMethod(methodName, parameterTypes);
         } catch (Exception e) {
@@ -110,7 +110,7 @@ public class ReflectTools implements Serializable {
      *             If the value could not be retrieved
      */
     public static Object getJavaFieldValue(Object object,
-                                           java.lang.reflect.Field field) throws IllegalArgumentException,
+            java.lang.reflect.Field field) throws IllegalArgumentException,
             IllegalAccessException, InvocationTargetException {
         PropertyDescriptor pd;
         try {
@@ -154,7 +154,7 @@ public class ReflectTools implements Serializable {
      *             If the value could not be retrieved
      */
     public static Object getJavaFieldValue(Object object,
-                                           java.lang.reflect.Field field, Class<?> propertyType)
+            java.lang.reflect.Field field, Class<?> propertyType)
             throws IllegalArgumentException, IllegalAccessException,
             InvocationTargetException {
         PropertyDescriptor pd;
@@ -194,7 +194,7 @@ public class ReflectTools implements Serializable {
      *             If the value could not be assigned to the field
      */
     public static void setJavaFieldValue(Object object,
-                                         java.lang.reflect.Field field, Object value)
+            java.lang.reflect.Field field, Object value)
             throws IllegalArgumentException {
         // Try to set the value directly to the field or throw an exception
         if (!field.isAccessible()) {
@@ -406,7 +406,7 @@ public class ReflectTools implements Serializable {
         String methodName = method.getName();
         assert isGetter(method)
                 || isSetter(method) : "Method is not a valid getter or setter: "
-                + methodName;
+                        + methodName;
 
         String propertyName = SETTER_GETTER_STARTS.matcher(methodName)
                 .replaceFirst("");
@@ -473,7 +473,7 @@ public class ReflectTools implements Serializable {
      *             if class instance creation fails
      */
     public static <T> T createProxyInstance(Class<T> proxyClass,
-                                            Class<?> originalClass) {
+            Class<?> originalClass) {
         checkClassAccessibility(originalClass);
         try {
             Optional<Constructor<?>> constructor = Stream
@@ -580,7 +580,7 @@ public class ReflectTools implements Serializable {
      * @return Class if found else {@code null}
      */
     public static Class<?> getGenericInterfaceType(Class<?> clazz,
-                                                   Class<?> interfaceType) {
+            Class<?> interfaceType) {
         Type type = GenericTypeReflector.getTypeParameter(clazz,
                 interfaceType.getTypeParameters()[0]);
 
@@ -588,30 +588,6 @@ public class ReflectTools implements Serializable {
             return GenericTypeReflector.erase(type);
         }
         return null;
-    }
-
-    /**
-     * Finds the Class type for all parameters defined by the generic interface
-     * class extended by given class if exists.
-     *
-     * @param clazz
-     *            class that should extend interface
-     * @param interfaceType
-     *            class type of interface to get generic for
-     * @return List of Class if found else empty List, never {@literal null}
-     */
-    public static List<Class<?>> getGenericInterfaceTypes(Class<?> clazz,
-                                                          Class<?> interfaceType) {
-        return Stream.of(interfaceType.getTypeParameters())
-                .map(typeParam -> GenericTypeReflector.getTypeParameter(clazz,
-                        typeParam))
-                .map(type -> {
-                    if (type instanceof Class
-                            || type instanceof ParameterizedType) {
-                        return GenericTypeReflector.erase(type);
-                    }
-                    return null;
-                }).collect(Collectors.toList());
     }
 
     /**
@@ -625,7 +601,7 @@ public class ReflectTools implements Serializable {
      *         readable property with the provided name
      */
     public static Optional<Method> getGetter(Class<? extends Object> beanClass,
-                                             String propertyName) {
+            String propertyName) {
         /*
          * Iterating all methods is no worse than what Class.getMethod
          * internally does, but in this way we don't have to deal with any
