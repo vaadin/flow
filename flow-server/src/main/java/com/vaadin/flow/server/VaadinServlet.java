@@ -18,6 +18,7 @@ package com.vaadin.flow.server;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
+import javax.servlet.ServletRegistration;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -28,6 +29,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import com.vaadin.flow.component.UI;
@@ -133,11 +135,16 @@ public class VaadinServlet extends HttpServlet {
             synchronized (VaadinServlet.class) {
                 if (firstMapping == null) {
                     List<String> mappings = new ArrayList<>();
-                    mappings.addAll(
-                            this.getServletContext().getServletRegistrations()
-                                    .get(this.getServletName()).getMappings());
-                    Collections.sort(mappings);
-                    firstMapping = mappings.get(0);
+                    Map<String, ? extends ServletRegistration> servletRegistrations = this
+                            .getServletContext().getServletRegistrations();
+                    if (servletRegistrations != null
+                            && !servletRegistrations.isEmpty()) {
+                        // This should only happen in unit tests
+                        mappings.addAll(servletRegistrations
+                                .get(this.getServletName()).getMappings());
+                        firstMapping = mappings.get(0);
+                        Collections.sort(mappings);
+                    }
                 }
             }
             servletInitialized();
