@@ -50,7 +50,8 @@ public class ThemeIT extends ChromeBrowserTest {
 
         checkLogsForErrors();
 
-        final TestBenchElement helloWorld = $("hello-world-view").waitForFirst();
+        final TestBenchElement helloWorld = $("hello-world-view")
+                .waitForFirst();
 
         Assert.assertEquals("hello-world-view", helloWorld.getTagName());
 

@@ -147,7 +147,9 @@ public class VaadinServlet extends HttpServlet {
                                 .get(this.getServletName()).getMappings());
                         firstMapping = mappings.get(0);
                         Collections.sort(mappings);
-                        getLogger().debug("Using mapping "+firstMapping+" from servlet "+getClass().getSimpleName()+" as the frontend servlet because this was the first deployed VaadinServlet");
+                        getLogger().debug("Using mapping " + firstMapping
+                                + " from servlet " + getClass().getSimpleName()
+                                + " as the frontend servlet because this was the first deployed VaadinServlet");
                     }
                 }
             }

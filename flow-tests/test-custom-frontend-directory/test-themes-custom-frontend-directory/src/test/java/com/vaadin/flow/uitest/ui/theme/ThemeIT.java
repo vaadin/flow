@@ -50,7 +50,8 @@ public class ThemeIT extends ChromeBrowserTest {
 
         checkLogsForErrors();
 
-        final TestBenchElement helloWorld = $("hello-world-view").waitForFirst();
+        final TestBenchElement helloWorld = $("hello-world-view")
+                .waitForFirst();
 
         Assert.assertEquals("hello-world-view", helloWorld.getTagName());
 
@@ -123,7 +124,8 @@ public class ThemeIT extends ChromeBrowserTest {
         Assert.assertEquals("html color from styles.css should be applied.",
                 "rgba(0, 0, 0, 1)", body.getCssValue("color"));
 
-        getDriver().get(getRootURL() + "/path/VAADIN/themes/app-theme/img/bg.jpg");
+        getDriver()
+                .get(getRootURL() + "/path/VAADIN/themes/app-theme/img/bg.jpg");
         Assert.assertFalse("app-theme background file should be served",
                 driver.getPageSource().contains("Could not navigate"));
     }
