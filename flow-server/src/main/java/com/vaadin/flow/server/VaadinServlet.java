@@ -140,10 +140,14 @@ public class VaadinServlet extends HttpServlet {
 
             synchronized (VaadinServlet.class) {
                 if (frontendMapping == null) {
-                    String definedPath = getService()
-                            .getDeploymentConfiguration().getInitParameters()
-                            .getProperty(
-                                    INTERNAL_VAADIN_SERVLET_VITE_DEV_MODE_FRONTEND_PATH);
+                    String definedPath = null;
+                    DeploymentConfiguration deploymentConfiguration = getService()
+                            .getDeploymentConfiguration();
+                    if (deploymentConfiguration != null) {
+                        definedPath = deploymentConfiguration
+                                .getInitParameters().getProperty(
+                                        INTERNAL_VAADIN_SERVLET_VITE_DEV_MODE_FRONTEND_PATH);
+                    }
                     if (definedPath != null) {
                         frontendMapping = definedPath;
                     } else {
