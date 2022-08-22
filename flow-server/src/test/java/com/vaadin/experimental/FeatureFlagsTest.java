@@ -193,6 +193,16 @@ public class FeatureFlagsTest {
                 hasUsageStatsEntry("flow/featureflags/exampleFeatureFlag"));
     }
 
+    @Test
+    public void featureFlagShouldBeOverridableWithSystemProperty()
+            throws IOException {
+        System.setProperty("featureFlag-exampleFeatureFlag", "true");
+        createFeatureFlagsFile(
+                "com.vaadin.experimental.exampleFeatureFlag=false\n");
+        featureFlags.loadProperties();
+        Assert.assertTrue(featureFlags.isEnabled(FeatureFlags.EXAMPLE));
+    }
+
     private boolean hasUsageStatsEntry(String name) {
         return UsageStatistics.getEntries()
                 .filter(entry -> entry.getName().equals(name)).findFirst()
