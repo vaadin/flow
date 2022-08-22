@@ -50,8 +50,7 @@ public class ThemeIT extends ChromeBrowserTest {
 
         checkLogsForErrors();
 
-        final TestBenchElement helloWorld = $("hello-world-view")
-                .waitForFirst();
+        final TestBenchElement helloWorld = $("hello-world-view").waitForFirst();
 
         Assert.assertEquals("hello-world-view", helloWorld.getTagName());
 
@@ -124,8 +123,7 @@ public class ThemeIT extends ChromeBrowserTest {
         Assert.assertEquals("html color from styles.css should be applied.",
                 "rgba(0, 0, 0, 1)", body.getCssValue("color"));
 
-        getDriver()
-                .get(getRootURL() + "/path/VAADIN/themes/app-theme/img/bg.jpg");
+        getDriver().get(getRootURL() + "/path/VAADIN/themes/app-theme/img/bg.jpg");
         Assert.assertFalse("app-theme background file should be served",
                 driver.getPageSource().contains("Could not navigate"));
     }
@@ -146,7 +144,7 @@ public class ThemeIT extends ChromeBrowserTest {
                 "\"\uf0f4\"", iconUnicode);
 
         getDriver().get(getRootURL()
-                + "/path/VAADIN/@fortawesome/fontawesome-free/webfonts/fa-solid-900.svg");
+                + "/path/VAADIN/static/@fortawesome/fontawesome-free/webfonts/fa-solid-900.svg");
         Assert.assertFalse("Font resource should be available",
                 driver.getPageSource().contains("HTTP ERROR 404 Not Found"));
     }
@@ -199,7 +197,7 @@ public class ThemeIT extends ChromeBrowserTest {
 
         Assert.assertEquals("Imported css file URLs should have been handled.",
                 "url(\"" + getRootURL()
-                        + "/view/VAADIN/themes/app-theme/icons/archive.png\")",
+                        + "/path/VAADIN/themes/app-theme/icons/archive.png\")",
                 $(SpanElement.class).id(SUB_COMPONENT_ID)
                         .getCssValue("background-image"));
     }
