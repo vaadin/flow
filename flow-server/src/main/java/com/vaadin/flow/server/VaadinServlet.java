@@ -23,6 +23,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -144,6 +147,7 @@ public class VaadinServlet extends HttpServlet {
                                 .get(this.getServletName()).getMappings());
                         firstMapping = mappings.get(0);
                         Collections.sort(mappings);
+                        getLogger().debug("Using mapping "+firstMapping+" from servlet "+getClass().getSimpleName()+" as the frontend servlet because this was the first deployed VaadinServlet");
                     }
                 }
             }
@@ -151,6 +155,10 @@ public class VaadinServlet extends HttpServlet {
         } finally {
             CurrentInstance.clearAll();
         }
+    }
+
+    private Logger getLogger() {
+        return LoggerFactory.getLogger(getClass());
     }
 
     @Override
