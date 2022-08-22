@@ -210,9 +210,13 @@ public class BeanBinderTest
         otherBinder.forField(testClass.number)
                 .withConverter(new StringToIntegerConverter(""));
 
+        // bindInstanceFields does not throw exceptions for incomplete bindings
+        // because bindings they can be completed after the call.
+        otherBinder.bindInstanceFields(testClass);
+
         // Should throw an IllegalStateException since the binding for number is
         // not completed with bind
-        otherBinder.bindInstanceFields(testClass);
+        otherBinder.setBean(new TestBean());
     }
 
     @Test(expected = IllegalStateException.class)
