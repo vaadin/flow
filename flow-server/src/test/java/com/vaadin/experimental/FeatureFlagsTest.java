@@ -196,7 +196,7 @@ public class FeatureFlagsTest {
     @Test
     public void featureFlagShouldBeOverridableWithSystemProperty()
             throws IOException {
-        System.setProperty("featureFlag-exampleFeatureFlag", "true");
+        System.setProperty("vaadin-exampleFeatureFlag", "true");
         createFeatureFlagsFile(
                 "com.vaadin.experimental.exampleFeatureFlag=false\n");
         featureFlags.loadProperties();

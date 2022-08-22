@@ -215,7 +215,7 @@ public class FeatureFlags implements Serializable {
 
         // Allow users to override a feature flag with a system property
         for (Feature f : features) {
-            var prop = System.getProperty("featureFlag-" + f.getId());
+            var prop = System.getProperty("vaadin-" + f.getId());
 
             if (prop != null) {
                 f.setEnabled(Boolean.parseBoolean(prop));
