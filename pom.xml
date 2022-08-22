@@ -523,6 +523,9 @@
                         <threadCount>4</threadCount>
 -->
                         <failIfNoTests>false</failIfNoTests>
+                        <systemPropertyVariables>
+                            <org.slf4j.simpleLogger.logFile>test-output.log</org.slf4j.simpleLogger.logFile>
+                        </systemPropertyVariables>
                     </configuration>
                 </plugin>
                 <plugin>
@@ -546,8 +549,8 @@
                         <!-- export test server port to integration tests -->
                         <systemPropertyVariables>
                             <serverPort>${server.port}</serverPort>
-                            <webdriver.chrome.driver>${webdriver.chrome.driver}
-                            </webdriver.chrome.driver>
+                            <webdriver.chrome.driver>${webdriver.chrome.driver}</webdriver.chrome.driver>
+                            <org.slf4j.simpleLogger.logFile>test-output.log</org.slf4j.simpleLogger.logFile>
                         </systemPropertyVariables>
                         <excludes>
                             <exclude>**/*$*</exclude>

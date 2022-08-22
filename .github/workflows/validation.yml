@@ -113,6 +113,7 @@ jobs:
           name: saved-outputs
           path: |
             **/target/*-reports/*
+            **/test-output.log
             mvn-*.out
   it-tests:
     needs: build
@@ -191,6 +192,7 @@ jobs:
           path: |
             **/target/*-reports/*
             **/error-screenshots/*.png
+            **/test-output.log
             mvn-*.out
   test-results:
     if: ${{ failure() || success() }}
@@ -225,6 +227,7 @@ jobs:
           path: |
             **/target/*-reports/*
             **/error-screenshots/*.png
+            **/test-output.log
             mvn-*.out
       - name: Check Failure Status
         run: |
