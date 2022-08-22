@@ -50,8 +50,7 @@ public class ThemeIT extends ChromeBrowserTest {
 
         checkLogsForErrors();
 
-        final TestBenchElement helloWorld = $(TestBenchElement.class).first()
-                .findElement(By.tagName("hello-world-view"));
+        final TestBenchElement helloWorld = $("hello-world-view").waitForFirst();
 
         Assert.assertEquals("hello-world-view", helloWorld.getTagName());
 
@@ -98,6 +97,7 @@ public class ThemeIT extends ChromeBrowserTest {
                 driver.getPageSource().contains("HTTP ERROR 404 Not Found"));
 
         getDriver().get(getRootURL() + "/path/themes/no-copy/no-copy.txt");
+        waitForDevServer();
         String source = driver.getPageSource();
         Matcher m = Pattern.compile(
                 ".*Could not navigate to.*themes/no-copy/no-copy.txt.*",

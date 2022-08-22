@@ -256,6 +256,26 @@ public class ThemeIT extends ChromeBrowserTest {
     }
 
     @Test
+    public void documentCssImport_onlyExternalAddedToHeadAsLink() {
+        open();
+        checkLogsForErrors();
+
+        final WebElement documentHead = getDriver()
+                .findElement(By.xpath("/html/head"));
+        final List<WebElement> links = documentHead
+                .findElements(By.tagName("link"));
+
+        List<String> linkUrls = links.stream()
+                .map(link -> link.getAttribute("href"))
+                .collect(Collectors.toList());
+
+        Assert.assertTrue("Missing link for external url", linkUrls
+                .contains("https://fonts.googleapis.com/css?family=Itim"));
+        Assert.assertFalse("Found import that webpack should have resolved",
+                linkUrls.contains("sub-css/sub.css"));
+    }
+
+    @Test
     public void customFrontendDirectory_generatedFilesNotInDefaultFrontendFolder() {
         open();
 
@@ -279,26 +299,6 @@ public class ThemeIT extends ChromeBrowserTest {
                             + ", but was not",
                     new File(defaultGeneratedFolder, generatedFile).exists());
         }
-    }
-
-    @Test
-    public void documentCssImport_onlyExternalAddedToHeadAsLink() {
-        open();
-        checkLogsForErrors();
-
-        final WebElement documentHead = getDriver()
-                .findElement(By.xpath("/html/head"));
-        final List<WebElement> links = documentHead
-                .findElements(By.tagName("link"));
-
-        List<String> linkUrls = links.stream()
-                .map(link -> link.getAttribute("href"))
-                .collect(Collectors.toList());
-
-        Assert.assertTrue("Missing link for external url", linkUrls
-                .contains("https://fonts.googleapis.com/css?family=Itim"));
-        Assert.assertFalse("Found import that webpack should have resolved",
-                linkUrls.contains("sub-css/sub.css"));
     }
 
     @Override
