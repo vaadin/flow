@@ -347,11 +347,17 @@ public class DevModeInitializer implements Serializable {
 
         Runnable runnable = () -> {
             runNodeTasks(context, tokenFileData, tasks);
-            // WAit
-            while (VaadinServlet.getFirstMapping() == null) {
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
+            if (!featureFlags.isEnabled(FeatureFlags.WEBPACK)) {
+                // For Vite, wait until a VaadinServlet is deployed so we know
+                // which frontend servlet path to use
+                if (VaadinServlet.getFirstMapping() == null) {
+                    log().debug("Waiting for a VaadinServlet to be deployed");
+                    while (VaadinServlet.getFirstMapping() == null) {
+                        try {
+                            Thread.sleep(100);
+                        } catch (InterruptedException e) {
+                        }
+                    }
                 }
             }
         };

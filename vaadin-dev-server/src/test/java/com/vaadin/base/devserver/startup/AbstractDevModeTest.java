@@ -23,6 +23,7 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.StaticFileHandlerFactory;
 import com.vaadin.flow.server.StaticFileServer;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
@@ -51,6 +52,10 @@ public abstract class AbstractDevModeTest {
 
     @Before
     public void setup() throws Exception {
+        Field firstMapping = VaadinServlet.class
+                .getDeclaredField("firstMapping");
+        firstMapping.setAccessible(true);
+        firstMapping.set(null, "/fake-test-mapping");
         baseDir = temporaryFolder.getRoot().getPath();
         npmFolder = temporaryFolder.getRoot();
 
