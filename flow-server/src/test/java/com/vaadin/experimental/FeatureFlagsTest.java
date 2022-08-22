@@ -196,11 +196,23 @@ public class FeatureFlagsTest {
     @Test
     public void featureFlagShouldBeOverridableWithSystemProperty()
             throws IOException {
-        System.setProperty("vaadin-exampleFeatureFlag", "true");
-        createFeatureFlagsFile(
-                "com.vaadin.experimental.exampleFeatureFlag=false\n");
-        featureFlags.loadProperties();
-        Assert.assertTrue(featureFlags.isEnabled(FeatureFlags.EXAMPLE));
+        var feature = "exampleFeatureFlag";
+        var propertyName = "vaadin-" + feature;
+        var previousValue = System.getProperty(propertyName);
+
+        try {
+            System.setProperty(propertyName, "true");
+            createFeatureFlagsFile(String
+                    .format("com.vaadin.experimental.%s=false\n", feature));
+            featureFlags.loadProperties();
+            Assert.assertTrue(featureFlags.isEnabled(FeatureFlags.EXAMPLE));
+        } finally {
+            if (previousValue == null) {
+                System.clearProperty(propertyName);
+            } else {
+                System.setProperty(propertyName, previousValue);
+            }
+        }
     }
 
     private boolean hasUsageStatsEntry(String name) {
