@@ -197,7 +197,7 @@ public class FeatureFlagsTest {
     public void featureFlagShouldBeOverridableWithSystemProperty()
             throws IOException {
         var feature = "exampleFeatureFlag";
-        var propertyName = "vaadin-" + feature;
+        var propertyName = FeatureFlags.SYSTEM_PROPERTY_PREFIX + feature;
         var previousValue = System.getProperty(propertyName);
 
         try {
