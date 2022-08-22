@@ -60,11 +60,14 @@ import com.vaadin.flow.shared.JsonConstants;
  * @since 1.0
  */
 public class VaadinServlet extends HttpServlet {
+
+    public static final String INTERNAL_VAADIN_SERVLET_VITE_DEV_MODE_FRONTEND_PATH = "VAADIN_SERVLET_VITE_DEV_MODE_FRONTEND_PATH";
+
     private VaadinServletService servletService;
     private StaticFileHandler staticFileHandler;
 
     private volatile boolean isServletInitialized;
-    private static String firstMapping = null;
+    private static String frontendMapping = null;
 
     /**
      * Called by the servlet container to indicate to a servlet that the servlet
@@ -136,20 +139,29 @@ public class VaadinServlet extends HttpServlet {
             staticFileHandler = createStaticFileHandler(servletService);
 
             synchronized (VaadinServlet.class) {
-                if (firstMapping == null) {
-                    List<String> mappings = new ArrayList<>();
-                    Map<String, ? extends ServletRegistration> servletRegistrations = this
-                            .getServletContext().getServletRegistrations();
-                    if (servletRegistrations != null
-                            && !servletRegistrations.isEmpty()) {
-                        // This should only happen in unit tests
-                        mappings.addAll(servletRegistrations
-                                .get(this.getServletName()).getMappings());
-                        firstMapping = mappings.get(0);
-                        Collections.sort(mappings);
-                        getLogger().debug("Using mapping " + firstMapping
-                                + " from servlet " + getClass().getSimpleName()
-                                + " as the frontend servlet because this was the first deployed VaadinServlet");
+                if (frontendMapping == null) {
+                    String definedPath = getService()
+                            .getDeploymentConfiguration().getInitParameters()
+                            .getProperty(
+                                    INTERNAL_VAADIN_SERVLET_VITE_DEV_MODE_FRONTEND_PATH);
+                    if (definedPath != null) {
+                        frontendMapping = definedPath;
+                    } else {
+                        List<String> mappings = new ArrayList<>();
+                        Map<String, ? extends ServletRegistration> servletRegistrations = this
+                                .getServletContext().getServletRegistrations();
+                        if (servletRegistrations != null
+                                && !servletRegistrations.isEmpty()) {
+                            // This should only happen in unit tests
+                            mappings.addAll(servletRegistrations
+                                    .get(this.getServletName()).getMappings());
+                            frontendMapping = mappings.get(0);
+                            Collections.sort(mappings);
+                            getLogger().debug("Using mapping " + frontendMapping
+                                    + " from servlet "
+                                    + getClass().getSimpleName()
+                                    + " as the frontend servlet because this was the first deployed VaadinServlet");
+                        }
                     }
                 }
             }
@@ -585,7 +597,7 @@ public class VaadinServlet extends HttpServlet {
      * @return the first vaadin servlet that was reqistered
      */
     public static String getFirstMapping() {
-        return firstMapping;
+        return frontendMapping;
     }
 
 }

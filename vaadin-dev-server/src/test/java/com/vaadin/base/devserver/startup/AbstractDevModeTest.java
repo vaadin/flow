@@ -53,7 +53,7 @@ public abstract class AbstractDevModeTest {
     @Before
     public void setup() throws Exception {
         Field firstMapping = VaadinServlet.class
-                .getDeclaredField("firstMapping");
+                .getDeclaredField("frontendMapping");
         firstMapping.setAccessible(true);
         firstMapping.set(null, "/fake-test-mapping");
         baseDir = temporaryFolder.getRoot().getPath();

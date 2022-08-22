@@ -35,6 +35,8 @@ import org.springframework.util.ClassUtils;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.socket.server.standard.ServerEndpointExporter;
 
+import com.vaadin.flow.server.VaadinServlet;
+
 /**
  * Spring boot auto-configuration class for Flow.
  *
@@ -83,6 +85,9 @@ public class SpringBootAutoConfiguration {
 
         if (rootMapping) {
             mapping = VaadinServletConfiguration.VAADIN_SERVLET_MAPPING;
+            initParameters.put(
+                    VaadinServlet.INTERNAL_VAADIN_SERVLET_VITE_DEV_MODE_FRONTEND_PATH,
+                    "");
             pushRegistrationPath = "";
         } else {
             pushRegistrationPath = mapping.replace("/*", "");
