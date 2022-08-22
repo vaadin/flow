@@ -305,8 +305,9 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         Matcher match = URL_PATTERN.matcher(url);
         if (match.find()) {
             location.put(LOCATION, match.group(1));
+            return url;
         }
-        return url;
+        return null;
     }
 
     private String removeHashInRpc(JsonArray rpc) {
