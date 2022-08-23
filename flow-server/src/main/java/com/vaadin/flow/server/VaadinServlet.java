@@ -159,8 +159,8 @@ public class VaadinServlet extends HttpServlet {
                             // This should only happen in unit tests
                             mappings.addAll(servletRegistrations
                                     .get(this.getServletName()).getMappings());
-                            frontendMapping = mappings.get(0);
                             Collections.sort(mappings);
+                            frontendMapping = mappings.get(0);
                             getLogger().debug("Using mapping " + frontendMapping
                                     + " from servlet "
                                     + getClass().getSimpleName()
