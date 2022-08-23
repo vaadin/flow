@@ -689,6 +689,7 @@ public class NodeTasks implements FallibleCommand {
     // without depending on when they are added.
     private static final List<Class<? extends FallibleCommand>> commandOrder =
         Collections.unmodifiableList(Arrays.asList(
+            TaskNotifyWebpackConfExistenceWhileUsingVite.class,
             TaskGeneratePackageJson.class,
             TaskGenerateIndexHtml.class,
             TaskGenerateIndexTs.class,
@@ -837,6 +838,8 @@ public class NodeTasks implements FallibleCommand {
             } else {
                 pwa = new PwaConfiguration();
             }
+            commands.add(new TaskNotifyWebpackConfExistenceWhileUsingVite(
+                    builder.npmFolder));
             commands.add(new TaskUpdateSettingsFile(builder, themeName, pwa));
             commands.add(new TaskUpdateVite(builder.npmFolder,
                     builder.buildDirectory));
