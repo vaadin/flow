@@ -15,15 +15,6 @@
  */
 package com.vaadin.flow.component;
 
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
-import java.util.stream.Stream;
-import java.util.stream.Stream.Builder;
-
 import com.vaadin.flow.component.internal.ComponentMetaData;
 import com.vaadin.flow.component.template.Id;
 import com.vaadin.flow.dom.Element;
@@ -34,8 +25,19 @@ import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.server.Attributes;
+import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.shared.Registration;
+
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.concurrent.Future;
+import java.util.stream.Stream;
+import java.util.stream.Stream.Builder;
 
 /**
  * A Component is a higher level abstraction of an {@link Element} or a
@@ -787,6 +789,51 @@ public abstract class Component
             }
         }
         return null;
+    }
+
+    /**
+     * Provides exclusive access to this component and the UI it is attached to
+     * from outside a request handling thread.
+     * <p>
+     * The given command is executed while holding the session lock to ensure
+     * exclusive access to this UI. If the session is not locked, the lock will
+     * be acquired and the command is run right away. If the session is
+     * currently locked, the command will be run before that lock is released.
+     * </p>
+     * <p>
+     * RPC handlers for components inside this UI do not need to use this method
+     * as the session is automatically locked by the framework during RPC
+     * handling.
+     * </p>
+     * <p>
+     * Please note that the command might be invoked on a different thread or
+     * later on the current thread, which means that custom thread locals might
+     * not have the expected values when the command is executed.
+     * {@link UI#getCurrent()}, {@link VaadinSession#getCurrent()} and
+     * {@link VaadinService#getCurrent()} are set according to this UI before
+     * executing the command. Other standard CurrentInstance values such as
+     * {@link VaadinService#getCurrentRequest()} and
+     * {@link VaadinService#getCurrentResponse()} will not be defined.
+     * </p>
+     * <p>
+     * The returned future can be used to check for task completion and to
+     * cancel the task.
+     * </p>
+     *
+     * @see UI#getCurrent()
+     *
+     * @param command
+     *            the command which accesses the UI
+     * @throws UIDetachedException
+     *             if the UI is not attached to a session (and locking can
+     *             therefore not be done)
+     * @return a future that can be used to check for task completion and to
+     *         cancel the task
+     * @since 23.3.0
+     */
+    public Future<Void> access(final Command command) {
+        UI ui = getUI().orElseThrow(() -> new UIDetachedException());
+        return ui.access(command);
     }
 
 }
