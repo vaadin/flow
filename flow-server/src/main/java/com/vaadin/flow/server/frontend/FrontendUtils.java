@@ -1367,7 +1367,7 @@ public class FrontendUtils {
      *         with a slash
      */
     public static String getFrontendServletPath(ServletContext servletContext) {
-        String mapping = VaadinServlet.getFirstMapping();
+        String mapping = VaadinServlet.getFrontendMapping();
         if (mapping.endsWith("/*")) {
             mapping = mapping.replace("/*", "");
         }

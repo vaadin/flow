@@ -598,9 +598,9 @@ public class VaadinServlet extends HttpServlet {
     /**
      * For internal use only.
      *
-     * @return the first vaadin servlet that was reqistered
+     * @return the vaadin servlet used for frontend files in development mode
      */
-    public static String getFirstMapping() {
+    public static String getFrontendMapping() {
         return frontendMapping;
     }
 

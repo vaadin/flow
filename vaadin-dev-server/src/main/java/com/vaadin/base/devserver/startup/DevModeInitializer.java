@@ -350,9 +350,9 @@ public class DevModeInitializer implements Serializable {
             if (!featureFlags.isEnabled(FeatureFlags.WEBPACK)) {
                 // For Vite, wait until a VaadinServlet is deployed so we know
                 // which frontend servlet path to use
-                if (VaadinServlet.getFirstMapping() == null) {
+                if (VaadinServlet.getFrontendMapping() == null) {
                     log().debug("Waiting for a VaadinServlet to be deployed");
-                    while (VaadinServlet.getFirstMapping() == null) {
+                    while (VaadinServlet.getFrontendMapping() == null) {
                         try {
                             Thread.sleep(100);
                         } catch (InterruptedException e) {
