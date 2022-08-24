@@ -696,12 +696,12 @@ public class ElementTest extends AbstractNodeTest {
 
     @Test
     public void testSetTextRepeatedly() {
-	    Element element = ElementFactory.createDiv();
-	    Element text = Element.createText("foo");
-	    element.appendChild(text);
-	    new StateTree(new UI().getInternals(), ElementChildrenList.class)
-                .getUI().getElement().appendChild(element);   
-                // element must be attached so collectChanges() works
+        Element element = ElementFactory.createDiv();
+        Element text = Element.createText("foo");
+        element.appendChild(text);
+        new StateTree(new UI().getInternals(), ElementChildrenList.class)
+                .getUI().getElement().appendChild(element);
+        // element must be attached so collectChanges() works
         StateNode node = element.getNode();
         StateNode textNode = text.getNode();
         List<NodeChange> changes = new ArrayList<>();
