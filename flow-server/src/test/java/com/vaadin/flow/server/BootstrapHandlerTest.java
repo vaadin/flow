@@ -1777,11 +1777,11 @@ public class BootstrapHandlerTest {
         Assert.assertTrue(
                 "Bundle should be gotten from index and added to bootstrap page",
                 bootstrapPage.head().toString()
-                        .contains("src=\"./VAADIN/build/main.d253dd35.js\""));
+                        .contains("src=\"VAADIN/build/main.d253dd35.js\""));
         Assert.assertTrue(
                 "Bundled css should be gotten from index and added to bootstrap page",
                 bootstrapPage.head().toString()
-                        .contains("href=\"./VAADIN/build/main.688a5538.css\""));
+                        .contains("href=\"VAADIN/build/main.688a5538.css\""));
     }
 
     private void enableWebpackFeature() {

@@ -22,8 +22,8 @@ import javax.servlet.annotation.WebServlet;
 
 import com.vaadin.flow.server.VaadinServlet;
 
-@WebServlet(asyncSupported = true, urlPatterns = { "/view/*",
-        "/VAADIN/*" }, initParams = @WebInitParam(name = "productionMode", value = "false"))
+@WebServlet(asyncSupported = true, urlPatterns = {
+        "/view/*" }, initParams = @WebInitParam(name = "productionMode", value = "false"))
 public class ViewTestServlet extends VaadinServlet {
 
     private static ViewClassLocator viewLocator;
