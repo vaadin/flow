@@ -1019,9 +1019,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     .matcher(index);
             while (scriptMatcher.find()) {
                 Element script = createJavaScriptModuleElement(
-                        context.getUriResolver().resolveVaadinUri("context://"
-                                + "VAADIN/build/" + scriptMatcher.group(1)),
-                        false);
+                        "VAADIN/build/" + scriptMatcher.group(1), false);
                 head.appendChild(script.attr("async", true)
                         // Fixes basic auth in Safari #6560
                         .attr("crossorigin", true));
@@ -1033,8 +1031,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     .matcher(index);
             while (cssMatcher.find()) {
                 Element link = createStylesheetElement(
-                        context.getUriResolver().resolveVaadinUri("context://"
-                                + "VAADIN/build/" + cssMatcher.group(1)));
+                        "VAADIN/build/" + cssMatcher.group(1));
                 head.appendChild(link);
             }
         }
@@ -1684,8 +1681,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         // Parameter appended to JS to bypass caches after version upgrade.
         String versionQueryParam = "?v=" + Version.getFullVersion();
         // Load client-side dependencies for push support
-        String pushJSPath = context.getService()
-                .getContextRootRelativePath(request);
+        String pushJSPath = BootstrapHandlerHelper.getServiceUrl(request) + "/";
 
         if (request.getService().getDeploymentConfiguration()
                 .isProductionMode()) {

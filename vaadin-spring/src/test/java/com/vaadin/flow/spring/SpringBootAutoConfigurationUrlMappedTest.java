@@ -24,7 +24,7 @@ public class SpringBootAutoConfigurationUrlMappedTest {
     public void urlMappingPassedToAtmosphere() {
         Assert.assertFalse(RootMappedCondition
                 .isRootMapping(RootMappedCondition.getUrlMapping(environment)));
-        Assert.assertEquals(Set.of("/zing/*", "/VAADIN/*"),
+        Assert.assertEquals(Set.of("/zing/*"),
                 servletRegistrationBean.getUrlMappings());
         Assert.assertEquals("/zing", servletRegistrationBean.getInitParameters()
                 .get(ApplicationConfig.JSR356_MAPPING_PATH));
