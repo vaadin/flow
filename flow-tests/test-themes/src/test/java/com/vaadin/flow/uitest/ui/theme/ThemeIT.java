@@ -114,9 +114,6 @@ public class ThemeIT extends ChromeBrowserTest {
         // No exception for bg-image should exist
         checkLogsForErrors();
 
-        // Vite ignores servlet path and assumes servlet with custom mapping
-        // also covers /VAADIN/*
-
         final WebElement body = findElement(By.tagName("body"));
         // Note themes/app-theme resources are served from VAADIN/build in
         // production mode

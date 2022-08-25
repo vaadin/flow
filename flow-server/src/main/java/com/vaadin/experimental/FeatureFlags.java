@@ -47,7 +47,7 @@ import org.slf4j.LoggerFactory;
 public class FeatureFlags implements Serializable {
 
     public static final String PROPERTIES_FILENAME = "vaadin-featureflags.properties";
-    public static final String SYSTEM_PROPERTY_PREFIX = "vaadin-";
+    public static final String SYSTEM_PROPERTY_PREFIX = "vaadin.";
 
     public static final Feature EXAMPLE = new Feature(
             "Example feature. Will be removed once the first real feature flag is added",

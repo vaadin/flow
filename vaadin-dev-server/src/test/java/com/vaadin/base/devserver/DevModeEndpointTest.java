@@ -7,7 +7,6 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_OPEN
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR;
 import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
 import static com.vaadin.flow.testutil.FrontendStubs.createStubViteServer;
-import static com.vaadin.flow.testutil.FrontendStubs.createStubWebpackServer;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
