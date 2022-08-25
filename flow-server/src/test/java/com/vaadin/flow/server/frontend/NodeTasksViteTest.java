@@ -299,9 +299,9 @@ public class NodeTasksViteTest {
     }
 
     @Test
-    public void should_failWithIllegalStateException_when_webpackConfigFileExist() {
-        try (MockedStatic<Paths> paths = Mockito.mockStatic(Paths.class);
-                MockedStatic<Files> files = Mockito.mockStatic(Files.class)) {
+    public void should_failWithIllegalStateException_when_customWebpackConfigFileExist()
+            throws IOException {
+        try (MockedStatic<Paths> paths = Mockito.mockStatic(Paths.class)) {
             File webpackConfigFile = new File(userDir, WEBPACK_CONFIG);
             Path webpackConfigFilePath = webpackConfigFile.toPath();
             paths.when(() -> Paths.get(webpackConfigFile.getPath()))
@@ -312,8 +312,13 @@ public class NodeTasksViteTest {
                     .thenReturn(targetPath);
             paths.when(() -> Paths.get(new File(userDir).getPath(),
                     WEBPACK_CONFIG)).thenReturn(webpackConfigFilePath);
-            files.when(() -> Files.exists(webpackConfigFilePath))
-                    .thenReturn(true);
+
+            String content = "const merge = require('webpack-merge');\n"
+                    + "const flowDefaults = require('./webpack.generated.js');\n"
+                    + "\n"
+                    + "module.exports = merge(flowDefaults, {\"some-config\": 1\n"
+                    + "\n" + "});\n";
+            Files.writeString(webpackConfigFilePath, content);
 
             Lookup mockedLookup = Mockito.mock(Lookup.class);
             Mockito.doReturn(
