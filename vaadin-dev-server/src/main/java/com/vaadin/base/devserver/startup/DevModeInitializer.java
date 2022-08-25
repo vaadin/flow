@@ -38,6 +38,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -574,33 +575,59 @@ public class DevModeInitializer implements Serializable {
             Path tempJar) throws IOException, IllegalAccessException,
             InvocationTargetException, NoSuchMethodException {
         // We should use reflection to use JBoss VFS API as we cannot
-        // afford a
-        // dependency to WildFly or JBoss
-        Class virtualFileClass = jarVirtualFile.getClass();
-        Method getChildrenRecursivelyMethod = virtualFileClass
-                .getMethod("getChildrenRecursively");
-        Method openStreamMethod = virtualFileClass.getMethod("openStream");
-        Method isFileMethod = virtualFileClass.getMethod("isFile");
-        Method getPathNameRelativeToMethod = virtualFileClass
-                .getMethod("getPathNameRelativeTo", virtualFileClass);
+        // afford a dependency to WildFly or JBoss
 
-        List jarVirtualChildren = (List) getChildrenRecursivelyMethod
-                .invoke(jarVirtualFile);
+        // class org.jboss.vfs.VirtualJarInputStream
+        Class virtualFileClass = jarVirtualFile.getClass();
+
+        Method getNextEntry = virtualFileClass.getMethod("getNextEntry");
+
         try (ZipOutputStream zipOutputStream = new ZipOutputStream(
                 Files.newOutputStream(tempJar))) {
-            for (Object child : jarVirtualChildren) {
-                if (!(Boolean) isFileMethod.invoke(child))
-                    continue;
 
-                String relativePath = (String) getPathNameRelativeToMethod
-                        .invoke(child, jarVirtualFile);
-                InputStream inputStream = (InputStream) openStreamMethod
-                        .invoke(child);
+            while (true) {
+                Object nextEntry = getNextEntry.invoke(jarVirtualFile);
+                if (nextEntry == null) {
+                    break;
+                }
+
+                // class org.jboss.vfs.VirtualJarInputStream$VirtualJarEntry
+                Class nextEntryClass = nextEntry.getClass();
+                Method isDirectory = nextEntryClass.getMethod("isDirectory");
+                if ((boolean) isDirectory.invoke(nextEntry)) {
+                    continue;
+                }
+
+                Field entryVirtualFileField = nextEntryClass
+                        .getDeclaredField("virtualFile");
+                entryVirtualFileField.setAccessible(true);
+
+                Object entryVirtualFile = entryVirtualFileField.get(nextEntry);
+
+                // class org.jboss.vfs.VirtualFile
+                Class entryVirtualFileClass = entryVirtualFile.getClass();
+
+                Method getEntryName = virtualFileClass.getDeclaredMethod(
+                        "getEntryName", entryVirtualFileClass);
+                getEntryName.setAccessible(true);
+
+                String relativePath = (String) getEntryName
+                        .invoke(jarVirtualFile, entryVirtualFile);
+
+                Method openStream = entryVirtualFileClass
+                        .getMethod("openStream");
+                InputStream inputStream = (InputStream) openStream
+                        .invoke(entryVirtualFile);
+
                 ZipEntry zipEntry = new ZipEntry(relativePath);
                 zipOutputStream.putNextEntry(zipEntry);
                 IOUtils.copy(inputStream, zipOutputStream);
                 zipOutputStream.closeEntry();
             }
+
+        } catch (NoSuchFieldException e) {
+            throw new RuntimeException(e);
         }
+
     }
 }
