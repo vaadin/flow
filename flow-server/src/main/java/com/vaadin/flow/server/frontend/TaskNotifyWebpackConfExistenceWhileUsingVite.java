@@ -141,7 +141,15 @@ public class TaskNotifyWebpackConfExistenceWhileUsingVite
         content = removeComments(content);
         content = removeWhiteSpaces(content);
         content = removeEmptyModuleExports(content);
+        content = removeDefaults(content);
         return content.hashCode();
+    }
+
+    private String removeDefaults(String content) {
+        return content.replace("constmerge=require('webpack-merge');", "")
+                .replace("constflowDefaults=require('./webpack.generated.js');",
+                        "")
+                .replace("module.exports=merge(flowDefaults,);", "");
     }
 
     private String removeEmptyModuleExports(String content) {
