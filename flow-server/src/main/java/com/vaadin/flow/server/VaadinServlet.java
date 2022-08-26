@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -138,40 +139,57 @@ public class VaadinServlet extends HttpServlet {
 
             staticFileHandler = createStaticFileHandler(servletService);
 
-            synchronized (VaadinServlet.class) {
-                if (frontendMapping == null) {
-                    String definedPath = null;
-                    DeploymentConfiguration deploymentConfiguration = getService()
-                            .getDeploymentConfiguration();
-                    if (deploymentConfiguration != null) {
-                        definedPath = deploymentConfiguration
-                                .getInitParameters().getProperty(
-                                        INTERNAL_VAADIN_SERVLET_VITE_DEV_MODE_FRONTEND_PATH);
-                    }
-                    if (definedPath != null) {
-                        frontendMapping = definedPath;
-                    } else {
-                        List<String> mappings = new ArrayList<>();
-                        Map<String, ? extends ServletRegistration> servletRegistrations = this
-                                .getServletContext().getServletRegistrations();
-                        if (servletRegistrations != null
-                                && !servletRegistrations.isEmpty()) {
-                            // This should only happen in unit tests
-                            mappings.addAll(servletRegistrations
-                                    .get(this.getServletName()).getMappings());
-                            Collections.sort(mappings);
-                            frontendMapping = mappings.get(0);
-                            getLogger().debug("Using mapping " + frontendMapping
-                                    + " from servlet "
-                                    + getClass().getSimpleName()
-                                    + " as the frontend servlet because this was the first deployed VaadinServlet");
-                        }
-                    }
-                }
-            }
+            detectFrontendMapping();
             servletInitialized();
         } finally {
             CurrentInstance.clearAll();
+        }
+    }
+
+    private void detectFrontendMapping() {
+        synchronized (VaadinServlet.class) {
+            if (frontendMapping != null) {
+                return;
+            }
+            String definedPath = null;
+            DeploymentConfiguration deploymentConfiguration = getService()
+                    .getDeploymentConfiguration();
+            if (deploymentConfiguration != null) {
+                definedPath = deploymentConfiguration.getInitParameters()
+                        .getProperty(
+                                INTERNAL_VAADIN_SERVLET_VITE_DEV_MODE_FRONTEND_PATH);
+            }
+            if (definedPath != null) {
+                // Use the path define in a property
+                frontendMapping = definedPath;
+                return;
+            }
+
+            List<String> mappings = new ArrayList<>();
+            Map<String, ? extends ServletRegistration> servletRegistrations = this
+                    .getServletContext().getServletRegistrations();
+            if (servletRegistrations != null
+                    && !servletRegistrations.isEmpty()) {
+                ServletRegistration registration = servletRegistrations
+                        .get(this.getServletName());
+                if (registration == null) {
+                    getLogger().warn(
+                            "Unable to determin servlet registration for {}. Ignoring",
+                            getServletName());
+                    return;
+                }
+                Collection<String> urlPatterns = registration.getMappings();
+                if (urlPatterns == null || urlPatterns.isEmpty()) {
+                    // Servlet has no mappings, ignore it
+                    return;
+                }
+                mappings.addAll(urlPatterns);
+                Collections.sort(mappings);
+                frontendMapping = mappings.get(0);
+                getLogger().debug("Using mapping " + frontendMapping
+                        + " from servlet " + getClass().getSimpleName()
+                        + " as the frontend servlet because this was the first deployed VaadinServlet");
+            }
         }
     }
 
