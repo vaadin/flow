@@ -26,6 +26,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
 
+import com.vaadin.flow.server.ExecutionFailedException;
+
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +38,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
  * Notifies the user about the existence of webpack.config.js while the project
  * is running Vite as the frontend build tool. This can be helpful especially
  * when migrating to 23.2 and later since it prevent any confusion or any
- * accidental misconfiguration in webpack related config files while using vite.
+ * accidental misconfiguration in webpack related config files while using Vite.
  * <p>
  * This task is only added to the list of executables for the application
  * startup if Vite is the active frontend build tool.
@@ -95,7 +97,7 @@ public class TaskNotifyWebpackConfExistenceWhileUsingVite
     }
 
     @Override
-    public void execute() {
+    public void execute() throws ExecutionFailedException {
         try {
             validate();
         } catch (IOException e) {
@@ -103,7 +105,7 @@ public class TaskNotifyWebpackConfExistenceWhileUsingVite
         }
     }
 
-    private void validate() throws IOException {
+    private void validate() throws IOException, ExecutionFailedException {
         Path webpackConfigFilePath = Paths.get(configFolder.getPath(),
                 WEBPACK_CONFIG);
         if (!Files.exists(webpackConfigFilePath)) {
@@ -116,7 +118,7 @@ public class TaskNotifyWebpackConfExistenceWhileUsingVite
 
         if (projectWebpackConfigContentHash != templateWebpackConfigContentHash) {
             // custom content exists in the project's webpack.config.js file:
-            throw new IllegalStateException(String.format(ERROR_MESSAGE));
+            throw new ExecutionFailedException(String.format(ERROR_MESSAGE));
         }
 
         log().warn(String.format(WARNING_MESSAGE));

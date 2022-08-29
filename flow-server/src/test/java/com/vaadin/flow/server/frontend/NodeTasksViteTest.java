@@ -299,7 +299,7 @@ public class NodeTasksViteTest {
     }
 
     @Test
-    public void should_failWithIllegalStateException_when_customWebpackConfigFileExist()
+    public void should_failWithExecutionFailedException_when_customWebpackConfigFileExist()
             throws IOException {
         try (MockedStatic<Paths> paths = Mockito.mockStatic(Paths.class)) {
             File webpackConfigFile = new File(userDir, WEBPACK_CONFIG);
@@ -330,8 +330,8 @@ public class NodeTasksViteTest {
                     .withEmbeddableWebComponents(false).withFlowResourcesFolder(
                             new File(userDir, TARGET + "flow-frontend"));
 
-            IllegalStateException exception = Assert.assertThrows(
-                    IllegalStateException.class,
+            ExecutionFailedException exception = Assert.assertThrows(
+                    ExecutionFailedException.class,
                     () -> builder.build().execute());
             Assert.assertTrue(exception.getMessage().contains(
                     "Webpack related config file 'webpack.config.js' is detected in your"));
