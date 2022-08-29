@@ -1069,13 +1069,14 @@ public class Element extends Node<Element> {
     }
 
     private void setTextContent(String textContent) {
+        Element child;
         if (getChildCount() == 1 && getChild(0).isTextNode()) {
-            getChild(0).setText(textContent);
+            child = getChild(0).setText(textContent);
         } else {
-            Element child = createText(textContent);
-            removeAllChildren();
-            appendChild(child);
+            child = createText(textContent);
         }
+        removeAllChildren();
+        appendChild(child);
     }
 
     /**
