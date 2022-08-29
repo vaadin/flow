@@ -35,11 +35,8 @@ import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.internal.NullOwner;
 import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.internal.StateTree;
-import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.internal.nodefeature.ComponentMapping;
 import com.vaadin.flow.internal.nodefeature.ElementAttributeMap;
-import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.internal.nodefeature.ElementListenersTest;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
@@ -692,36 +689,6 @@ public class ElementTest extends AbstractNodeTest {
 
         Assert.assertNull(child.getParent());
         Assert.assertEquals("foo", element.getTextRecursively());
-    }
-
-    @Test
-    public void testSetTextRepeatedly() {
-        Element element = ElementFactory.createDiv();
-        Element text = Element.createText("foo");
-        element.appendChild(text);
-        new StateTree(new UI().getInternals(), ElementChildrenList.class)
-                .getUI().getElement().appendChild(element);
-        // element must be attached so collectChanges() works
-        StateNode node = element.getNode();
-        StateNode textNode = text.getNode();
-        List<NodeChange> changes = new ArrayList<>();
-        node.collectChanges(ch -> changes.add(ch));// node-attach, put, list-add
-        Assert.assertEquals(3, changes.size());
-        textNode.collectChanges(ch -> changes.add(ch));// node-attach, put
-        Assert.assertEquals(5, changes.size());
-        changes.clear();
-        element.setText("foo");
-        node.collectChanges(ch -> changes.add(ch));
-        textNode.collectChanges(ch -> changes.add(ch));
-        // setting same text again should not trigger any changes
-        Assert.assertEquals(0, changes.size());
-
-        element.setText("bar");
-        node.collectChanges(ch -> changes.add(ch));
-        // replacing text does not trigger change on element
-        Assert.assertEquals(0, changes.size());
-        textNode.collectChanges(ch -> changes.add(ch));// put
-        Assert.assertEquals(1, changes.size());
     }
 
     @Test
