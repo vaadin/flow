@@ -638,6 +638,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
                 // Avoid creating a UI that is thrown away for polling requests
                 response.setContentType("text/html;charset=utf-8");
                 response.getWriter().write("Ready");
+                response.setHeader("Cache-Control", "no-cache");
                 return true;
             }
             return false;
@@ -653,6 +654,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
             }
             response.setContentType("text/html;charset=utf-8");
             response.setHeader("X-DevModePending", "true");
+            response.setHeader("Cache-Control", "no-cache");
             return true;
         }
     }
