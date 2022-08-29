@@ -334,7 +334,7 @@ public class NodeTasksViteTest {
                     IllegalStateException.class,
                     () -> builder.build().execute());
             Assert.assertTrue(exception.getMessage().contains(
-                    "webpack related config file 'webpack.config.js' is detected in your"));
+                    "Webpack related config file 'webpack.config.js' is detected in your"));
         }
     }
 
