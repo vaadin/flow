@@ -32,6 +32,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeoutException;
+import java.util.jar.Attributes;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
@@ -479,8 +482,9 @@ public class BuildFrontendUtil {
             throw new RuntimeException(
                     "Stats file " + statsFile + " does not exist");
         }
-        List<Product> commercialComponents = findCommercialComponents(
+        List<Product> commercialComponents = findCommercialFrontendComponents(
                 nodeModulesFolder, statsFile);
+        commercialComponents.addAll(findCommercialJavaComponents(adapter));
 
         for (Product component : commercialComponents) {
             try {
@@ -506,7 +510,7 @@ public class BuildFrontendUtil {
         return LoggerFactory.getLogger(BuildFrontendUtil.class);
     }
 
-    private static List<Product> findCommercialComponents(
+    private static List<Product> findCommercialFrontendComponents(
             File nodeModulesFolder, File statsFile) {
         List<Product> components = new ArrayList<>();
         try (InputStream in = new FileInputStream(statsFile)) {
@@ -524,7 +528,34 @@ public class BuildFrontendUtil {
         } catch (Exception e) {
             throw new RuntimeException("Error reading file " + statsFile, e);
         }
+    }
 
+    private static List<Product> findCommercialJavaComponents(
+            PluginAdapterBase adapter) {
+        List<Product> components = new ArrayList<>();
+
+        for (File f : adapter.getJarFiles()) {
+            try (JarFile jarFile = new JarFile(f)) {
+                Manifest manifest = jarFile.getManifest();
+                if (manifest == null) {
+                    continue;
+                }
+                Attributes attributes = manifest.getMainAttributes();
+                if (attributes == null) {
+                    continue;
+                }
+                String cvdlName = attributes.getValue("CvdlName");
+                if (cvdlName != null) {
+                    String version = attributes.getValue("Bundle-Version");
+                    Product p = new Product(cvdlName, version);
+                    components.add(p);
+                }
+            } catch (IOException e) {
+                getLogger().debug("Error reading manifest for jar " + f, e);
+            }
+        }
+
+        return components;
     }
 
     private static FeatureFlags getFeatureFlags(PluginAdapterBase adapter) {
