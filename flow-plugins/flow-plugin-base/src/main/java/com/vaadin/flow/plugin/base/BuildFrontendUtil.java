@@ -27,7 +27,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -531,7 +530,7 @@ public class BuildFrontendUtil {
         }
     }
 
-    private static Collection<? extends Product> findCommercialJavaComponents(
+    private static List<Product> findCommercialJavaComponents(
             PluginAdapterBase adapter) {
         List<Product> components = new ArrayList<>();
 
