@@ -48,7 +48,7 @@ const themeOptions = {
   frontendGeneratedFolder: path.resolve(frontendFolder, settings.generatedFolder)
 };
 
-const brotliPlugin = brotli;
+const brotliPlugin = brotli();
 brotliPlugin.writeBundle = {
   order: 'post',
   sequential: true,
@@ -153,7 +153,7 @@ function buildSWPlugin(opts): PluginOption {
           manifestTransforms: [rewriteManifestIndexHtmlUrl],
           maximumFileSizeToCacheInBytes: 100 * 1024 * 1024 // 100mb,
         }),
-        brotliPlugin()
+        brotliPlugin
       ]);
     }
   }
