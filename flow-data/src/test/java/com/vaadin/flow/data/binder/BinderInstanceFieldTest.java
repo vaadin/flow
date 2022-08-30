@@ -15,8 +15,12 @@
  */
 package com.vaadin.flow.data.binder;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.UUID;
+
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -33,6 +37,7 @@ import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.data.validator.StringLengthValidator;
 import com.vaadin.flow.tests.data.bean.Address;
 import com.vaadin.flow.tests.data.bean.Person;
+import com.vaadin.flow.tests.data.bean.ConvertibleValues;
 
 public class BinderInstanceFieldTest {
 
@@ -110,6 +115,23 @@ public class BinderInstanceFieldTest {
     public static class BindOneFieldRequiresConverter extends TestFormLayout {
         private TestTextField firstName;
         private TestTextField age;
+    }
+
+    public static class BindAutomaticConverter extends TestFormLayout {
+        private TestDatePicker localDateToDate;
+        private TestTextField stringToBigDecimal;
+        private TestTextField stringToBigInteger;
+        private TestTextField stringToBoolean;
+        private TestTextField stringToPrimitiveBoolean;
+        private TestTextField stringToDouble;
+        private TestTextField stringToPrimitiveDouble;
+        private TestTextField stringToFloat;
+        private TestTextField stringToPrimitiveFloat;
+        private TestTextField stringToInteger;
+        private TestTextField stringToPrimitiveInteger;
+        private TestTextField stringToLong;
+        private TestTextField stringToPrimitiveLong;
+        private TestTextField stringToUUID;
     }
 
     public static class BindGeneric<T> extends TestFormLayout {
@@ -649,6 +671,109 @@ public class BinderInstanceFieldTest {
         // anything as there is a binding in progress (an exception will be
         // thrown later if the binding is not completed)
         binder.bindInstanceFields(form);
+    }
+
+    @Test
+    public void bindInstanceFields_fieldsNeedConversion_knownConvertersApplied() {
+        BindAutomaticConverter form = new BindAutomaticConverter();
+        form.stringToInteger = new TestTextField();
+        form.localDateToDate = new TestDatePicker();
+        form.stringToBigDecimal = new TestTextField();
+        form.stringToBigInteger = new TestTextField();
+        form.stringToBoolean = new TestTextField();
+        form.stringToPrimitiveBoolean = new TestTextField();
+        form.stringToDouble = new TestTextField();
+        form.stringToPrimitiveDouble = new TestTextField();
+        form.stringToFloat = new TestTextField();
+        form.stringToPrimitiveFloat = new TestTextField();
+        form.stringToInteger = new TestTextField();
+        form.stringToPrimitiveInteger = new TestTextField();
+        form.stringToLong = new TestTextField();
+        form.stringToPrimitiveLong = new TestTextField();
+        form.stringToUUID = new TestTextField();
+
+        Binder<ConvertibleValues> binder = new Binder<>(
+                ConvertibleValues.class);
+        binder.bindInstanceFields(form);
+
+        LocalDate now = LocalDate.of(2022, 3, 27);
+        UUID uuid = UUID.randomUUID();
+
+        ConvertibleValues data = new ConvertibleValues();
+        data.setStringToBigDecimal(new BigDecimal("20.23"));
+        data.setStringToBigInteger(new BigInteger("30"));
+        data.setStringToDouble(40.56);
+        data.setStringToPrimitiveDouble(50.78);
+        data.setStringToFloat(60.23f);
+        data.setStringToPrimitiveFloat(70.12f);
+        data.setStringToInteger(80);
+        data.setStringToPrimitiveInteger(90);
+        data.setStringToLong(100L);
+        data.setStringToPrimitiveLong(110);
+        data.setStringToBoolean(true);
+        data.setStringToPrimitiveBoolean(false);
+        data.setLocalDateToDate(java.sql.Date.valueOf(now));
+        data.setStringToUUID(uuid);
+
+        binder.setBean(data);
+
+        Assert.assertEquals("20.23", form.stringToBigDecimal.getValue());
+        Assert.assertEquals("30", form.stringToBigInteger.getValue());
+        Assert.assertEquals("40.56", form.stringToDouble.getValue());
+        Assert.assertEquals("50.78", form.stringToPrimitiveDouble.getValue());
+        Assert.assertEquals("60.23", form.stringToFloat.getValue());
+        Assert.assertEquals("70.12", form.stringToPrimitiveFloat.getValue());
+        Assert.assertEquals("80", form.stringToInteger.getValue());
+        Assert.assertEquals("90", form.stringToPrimitiveInteger.getValue());
+        Assert.assertEquals("100", form.stringToLong.getValue());
+        Assert.assertEquals("110", form.stringToPrimitiveLong.getValue());
+        Assert.assertEquals("true", form.stringToBoolean.getValue());
+        Assert.assertEquals("false", form.stringToPrimitiveBoolean.getValue());
+        Assert.assertEquals(now, form.localDateToDate.getValue());
+        Assert.assertEquals(uuid.toString(), form.stringToUUID.getValue());
+    }
+
+    @Test
+    public void bindInstanceFields_fieldsNeedConversion_nullRepresentationIsConfigured() {
+        BindAutomaticConverter form = new BindAutomaticConverter();
+        form.stringToInteger = new TestTextField() {
+            @Override
+            public String getEmptyValue() {
+                return "EMPTY";
+            }
+        };
+
+        Binder<ConvertibleValues> binder = new Binder<>(
+                ConvertibleValues.class);
+        binder.bindInstanceFields(form);
+
+        ConvertibleValues data = new ConvertibleValues();
+        binder.setBean(data);
+
+        Assert.assertEquals("EMPTY", form.stringToInteger.getValue());
+    }
+
+    @Test
+    public void bindInstanceFields_incompleteBinding_converterNotAppliedAutomatically() {
+        BindOneFieldRequiresConverter form = new BindOneFieldRequiresConverter();
+        form.age = new TestTextField();
+        Binder<Person> binder = new Binder<>(Person.class);
+        Binder.BindingBuilder<Person, Integer> ageBinding = binder
+                .forField(form.age)
+                .withConverter(str -> Integer.parseInt(str) / 2,
+                        integer -> Integer.toString(integer * 2));
+        binder.bindInstanceFields(form);
+
+        Assert.assertFalse(
+                "Expecting incomplete binding to be ignored by Binder, but field was bound",
+                binder.getBinding("age").isPresent());
+
+        ageBinding.bind(Person::getAge, Person::setAge);
+
+        Person person = new Person();
+        person.setAge(45);
+        binder.setBean(person);
+        Assert.assertEquals("90", form.age.getValue());
     }
 
     @Test
