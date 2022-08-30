@@ -12,7 +12,7 @@ import { processThemeResources } from '#buildFolder#/plugins/application-theme-p
 import { rewriteCssUrls } from '#buildFolder#/plugins/theme-loader/theme-loader-utils';
 import settings from '#settingsImport#';
 import { defineConfig, mergeConfig, PluginOption, ResolvedConfig, UserConfigFn, OutputOptions, AssetInfo, ChunkInfo } from 'vite';
-import { injectManifest } from 'workbox-build';
+import { injectManifest } from 'rollup-plugin-workbox';
 
 import * as rollup from 'rollup';
 import brotli from 'rollup-plugin-brotli';
@@ -48,6 +48,13 @@ const themeOptions = {
   frontendGeneratedFolder: path.resolve(frontendFolder, settings.generatedFolder)
 };
 
+const brotliPlugin = brotli;
+brotliPlugin.writeBundle = {
+  order: 'post',
+  sequential: true,
+  handler: brotliPlugin.writeBundle
+}
+
 const hasExportedWebComponents = existsSync(path.resolve(frontendFolder, 'web-component.html'));
 
 // Block debug and trace logs.
@@ -60,7 +67,7 @@ function buildSWPlugin(opts): PluginOption {
 
   const swObj = {}
 
-  async function build(action: 'generate' | 'write') {
+  async function build(action: 'generate' | 'write', additionalPlugins: rollup.Plugin[] = []) {
     const includedPluginNames = [
       'alias',
       'vite:resolve',
@@ -81,6 +88,9 @@ function buildSWPlugin(opts): PluginOption {
         preventAssignment: true
       })
     );
+    if (additionalPlugins) {
+      plugins.push(...additionalPlugins);
+    }
     const bundle = await rollup.rollup({
       input: path.resolve(settings.clientServiceWorkerSource),
       plugins
@@ -110,8 +120,6 @@ function buildSWPlugin(opts): PluginOption {
         const { output } = await build('generate');
         swObj.code = output[0].code;
         swObj.map =  output[0].map;
-      } else {
-        await build('write');
       }
     },
     async load(id) {
@@ -124,58 +132,31 @@ function buildSWPlugin(opts): PluginOption {
         return swObj;
       }
     },
-  }
-}
-
-function injectManifestToSWPlugin(): PluginOption {
-  const rewriteManifestIndexHtmlUrl = (manifest) => {
-    const indexEntry = manifest.find((entry) => entry.url === 'index.html');
-    if (indexEntry) {
-      indexEntry.url = appShellUrl;
-    }
-
-    return { manifest, warnings: [] };
-  };
-  return {
-    name: 'vaadin:inject-manifest-to-sw',
-    enforce: 'post',
-    apply: 'build',
-    async writeBundle() {
-      await injectManifest({
-        swSrc: path.resolve(frontendBundleFolder, 'sw.js'),
-        swDest: path.resolve(frontendBundleFolder, 'sw.js'),
-        globDirectory: frontendBundleFolder,
-        globPatterns: ['**/*'],
-        globIgnores: ['**/*.br'],
-        injectionPoint: 'self.__WB_MANIFEST',
-        manifestTransforms: [rewriteManifestIndexHtmlUrl],
-        maximumFileSizeToCacheInBytes: 100 * 1024 * 1024 // 100mb,
-      });
-    }
-  };
-}
-
-function compressSWPlugin(): PluginOption {
-  return {
-    name: 'vaadin:compress-sw',
-    enforce: 'post',
-    apply: 'build',
     async closeBundle() {
-      const bundle = await rollup.rollup({
-        input: path.resolve(frontendBundleFolder, 'sw.js'),
-        plugins: [brotli({
-            test: /^sw\.js$/
-        })]
-      });
-      try {
-        bundle.write({
-            dir: frontendBundleFolder
-        });
-      } finally {
-        bundle.close();
-      }
+      const rewriteManifestIndexHtmlUrl = (manifest) => {
+        const indexEntry = manifest.find((entry) => entry.url === 'index.html');
+        if (indexEntry) {
+          indexEntry.url = appShellUrl;
+        }
+
+        return { manifest, warnings: [] };
+      };
+
+      await build('write', [
+        injectManifest({
+          swSrc: path.resolve(frontendBundleFolder, 'sw.js'),
+          swDest: path.resolve(frontendBundleFolder, 'sw.js'),
+          globDirectory: frontendBundleFolder,
+          globPatterns: ['**/*'],
+          globIgnores: ['**/*.br'],
+          injectionPoint: 'self.__WB_MANIFEST',
+          manifestTransforms: [rewriteManifestIndexHtmlUrl],
+          maximumFileSizeToCacheInBytes: 100 * 1024 * 1024 // 100mb,
+        }),
+        brotliPlugin()
+      ]);
     }
-  };
+  }
 }
 
 function statsExtracterPlugin(): PluginOption {
@@ -519,8 +500,6 @@ export const vaadinConfig: UserConfigFn = (env) => {
       devMode && vaadinBundlesPlugin(),
       devMode && setHmrPortToServerPort(),
       settings.offlineEnabled && buildSWPlugin({ devMode }),
-      settings.offlineEnabled && injectManifestToSWPlugin(),
-      !devMode && settings.offlineEnabled && compressSWPlugin(),
       !devMode && statsExtracterPlugin(),
       themePlugin({devMode}),
       postcssLit({
