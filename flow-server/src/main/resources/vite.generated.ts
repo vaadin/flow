@@ -12,7 +12,7 @@ import { processThemeResources } from '#buildFolder#/plugins/application-theme-p
 import { rewriteCssUrls } from '#buildFolder#/plugins/theme-loader/theme-loader-utils';
 import settings from '#settingsImport#';
 import { defineConfig, mergeConfig, PluginOption, ResolvedConfig, UserConfigFn, OutputOptions, AssetInfo, ChunkInfo } from 'vite';
-import { injectManifest } from 'rollup-plugin-workbox';
+import { getManifest } from 'workbox-build';
 
 import * as rollup from 'rollup';
 import brotli from 'rollup-plugin-brotli';
@@ -60,6 +60,34 @@ const hasExportedWebComponents = existsSync(path.resolve(frontendFolder, 'web-co
 // Block debug and trace logs.
 console.trace = () => {};
 console.debug = () => {};
+
+function injectManifestToSWPlugin(): rollup.Plugin {
+  const rewriteManifestIndexHtmlUrl = (manifest) => {
+    const indexEntry = manifest.find((entry) => entry.url === 'index.html');
+    if (indexEntry) {
+      indexEntry.url = appShellUrl;
+    }
+
+    return { manifest, warnings: [] };
+  };
+
+  return {
+    name: 'vaadin:inject-manifest-to-sw',
+    async transform(code, id) {
+      if (/sw\.(ts|js)$/.test(id)) {
+        const { manifestEntries } = await getManifest({
+          globDirectory: frontendBundleFolder,
+          globPatterns: ['**/*'],
+          globIgnores: ['**/*.br'],
+          manifestTransforms: [rewriteManifestIndexHtmlUrl],
+          maximumFileSizeToCacheInBytes: 100 * 1024 * 1024, // 100mb,
+        });
+
+        return code.replace('self.__WB_MANIFEST', JSON.stringify(manifestEntries));
+      }
+    }
+  }
+}
 
 function buildSWPlugin(opts): PluginOption {
   let config: ResolvedConfig;
@@ -133,27 +161,9 @@ function buildSWPlugin(opts): PluginOption {
       }
     },
     async closeBundle() {
-      const rewriteManifestIndexHtmlUrl = (manifest) => {
-        const indexEntry = manifest.find((entry) => entry.url === 'index.html');
-        if (indexEntry) {
-          indexEntry.url = appShellUrl;
-        }
-
-        return { manifest, warnings: [] };
-      };
-
       await build('write', [
-        injectManifest({
-          swSrc: path.resolve(frontendBundleFolder, 'sw.js'),
-          swDest: path.resolve(frontendBundleFolder, 'sw.js'),
-          globDirectory: frontendBundleFolder,
-          globPatterns: ['**/*'],
-          globIgnores: ['**/*.br'],
-          injectionPoint: 'self.__WB_MANIFEST',
-          manifestTransforms: [rewriteManifestIndexHtmlUrl],
-          maximumFileSizeToCacheInBytes: 100 * 1024 * 1024 // 100mb,
-        }),
-        brotliPlugin
+        injectManifestToSWPlugin(),
+        brotli(),
       ]);
     }
   }
