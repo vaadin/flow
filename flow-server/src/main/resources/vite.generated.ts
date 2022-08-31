@@ -419,7 +419,7 @@ function lenientLitImportPlugin(): PluginOption {
       ];
       const directiveImports = [
         /import (.*) from (['"])(lit\/directives\/)([^\\.]*)(['"])/,
-        /import (.*) from (['"])(lit-element\/directives\/)([^\\.]*)(['"])/
+        /import (.*) from (['"])(lit-html\/directives\/)([^\\.]*)(['"])/
       ];
 
       decoratorImports.forEach((decoratorImport) => {
