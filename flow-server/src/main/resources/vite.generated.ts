@@ -409,6 +409,24 @@ function themePlugin(opts): PluginOption {
     }
   }
 }
+function lenientLitImportPlugin(): PluginOption {
+  return {
+    name: 'vaadin:lenient-lit-import',
+    async transform(code, id) {
+      const re = /import (.*) from (['"])lit\/decorators(['"])/;
+      if (code.match(re)) {
+        console.warn(
+          `Warning: the file ${id} imports from 'lit/decorators' when it should import from 'lit/decorators.js'`
+        );
+        while (code.match(re)) {
+          code = code.replace(re, 'import $1 from $2lit/decorators.js$3');
+        }
+      }
+
+      return code;
+    },
+  };
+}
 
 function runWatchDog(watchDogPort, watchDogHost) {
   const client = net.Socket();
@@ -512,6 +530,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
       settings.offlineEnabled && buildSWPlugin({ devMode }),
       !devMode && statsExtracterPlugin(),
       themePlugin({devMode}),
+      lenientLitImportPlugin(),
       postcssLit({
         include: ['**/*.css', '**/*.css\?*'],
         exclude: [
