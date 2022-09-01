@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.io.IOUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
-import org.jsoup.safety.Whitelist;
+import org.jsoup.safety.Safelist;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,8 +64,8 @@ public class RouteNotFoundError extends Component
         if (parameter.hasCustomMessage()) {
             additionalInfo = "Reason: " + parameter.getCustomMessage();
         }
-        path = Jsoup.clean(path, Whitelist.none());
-        additionalInfo = Jsoup.clean(additionalInfo, Whitelist.none());
+        path = Jsoup.clean(path, Safelist.none());
+        additionalInfo = Jsoup.clean(additionalInfo, Safelist.none());
 
         boolean productionMode = event.getUI().getSession().getConfiguration()
                 .isProductionMode();
