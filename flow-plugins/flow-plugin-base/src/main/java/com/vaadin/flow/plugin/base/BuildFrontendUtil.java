@@ -546,7 +546,11 @@ public class BuildFrontendUtil {
                 }
                 String cvdlName = attributes.getValue("CvdlName");
                 if (cvdlName != null) {
-                    String version = attributes.getValue("Bundle-Version");
+                    String version = attributes
+                            .getValue("Implementation-Version");
+                    if (version == null) {
+                        version = attributes.getValue("Bundle-Version");
+                    }
                     Product p = new Product(cvdlName, version);
                     components.add(p);
                 }
