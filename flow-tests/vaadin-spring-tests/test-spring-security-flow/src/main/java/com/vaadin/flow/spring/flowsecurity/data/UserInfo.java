@@ -3,7 +3,6 @@ package com.vaadin.flow.spring.flowsecurity.data;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
 
 public class UserInfo {
 
