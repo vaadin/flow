@@ -30,8 +30,7 @@ public class SecurityUtils {
         }
         Object principal = context.getAuthentication().getPrincipal();
         if (principal instanceof UserDetails) {
-            return (UserDetails) context.getAuthentication()
-                    .getPrincipal();
+            return (UserDetails) context.getAuthentication().getPrincipal();
         }
         // Anonymous or no authentication.
         return null;
