@@ -48,13 +48,6 @@ const themeOptions = {
   frontendGeneratedFolder: path.resolve(frontendFolder, settings.generatedFolder)
 };
 
-const brotliPlugin = brotli();
-brotliPlugin.writeBundle = {
-  order: 'post',
-  sequential: true,
-  handler: brotliPlugin.writeBundle
-}
-
 const hasExportedWebComponents = existsSync(path.resolve(frontendFolder, 'web-component.html'));
 
 // Block debug and trace logs.
