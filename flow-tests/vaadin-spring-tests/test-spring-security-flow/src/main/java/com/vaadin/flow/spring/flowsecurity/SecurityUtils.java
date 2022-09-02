@@ -3,7 +3,7 @@ package com.vaadin.flow.spring.flowsecurity;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.spring.flowsecurity.data.UserInfo;
-import com.vaadin.flow.spring.flowsecurity.data.UserInfoRepository;
+import com.vaadin.flow.spring.flowsecurity.service.UserInfoService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContext;
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 public class SecurityUtils {
 
     @Autowired
-    private UserInfoRepository userInfoRepository;
+    private UserInfoService userInfoService;
     @Autowired
     private SecurityConfig securityConfig;
 
@@ -30,9 +30,8 @@ public class SecurityUtils {
         }
         Object principal = context.getAuthentication().getPrincipal();
         if (principal instanceof UserDetails) {
-            UserDetails userDetails = (UserDetails) context.getAuthentication()
+            return (UserDetails) context.getAuthentication()
                     .getPrincipal();
-            return userDetails;
         }
         // Anonymous or no authentication.
         return null;
@@ -43,7 +42,7 @@ public class SecurityUtils {
         if (details == null) {
             return null;
         }
-        return userInfoRepository.findByUsername(details.getUsername());
+        return userInfoService.findByUsername(details.getUsername());
     }
 
     public void logout() {

@@ -4,47 +4,38 @@ import javax.servlet.ServletContext;
 
 import java.util.stream.Collectors;
 
+import com.vaadin.flow.spring.flowsecurity.service.UserInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
-import org.springframework.security.web.SecurityFilterChain;
 
 import com.vaadin.flow.spring.RootMappedCondition;
 import com.vaadin.flow.spring.VaadinConfigurationProperties;
 import com.vaadin.flow.spring.flowsecurity.data.UserInfo;
-import com.vaadin.flow.spring.flowsecurity.data.UserInfoRepository;
 import com.vaadin.flow.spring.flowsecurity.views.LoginView;
 import com.vaadin.flow.spring.security.VaadinWebSecurity;
+
+import static com.vaadin.flow.spring.flowsecurity.service.UserInfoService.ROLE_ADMIN;
 
 @EnableWebSecurity
 @Configuration
 public class SecurityConfig extends VaadinWebSecurity {
 
-    public static String ROLE_USER = "user";
-    public static String ROLE_ADMIN = "admin";
     @Autowired
-    private UserInfoRepository userInfoRepository;
+    private UserInfoService userInfoService;
 
     @Autowired
     private ServletContext servletContext;
 
     @Autowired
     private VaadinConfigurationProperties vaadinConfigurationProperties;
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
 
     public String getLogoutSuccessUrl() {
         String logoutSuccessUrl;
@@ -76,7 +67,7 @@ public class SecurityConfig extends VaadinWebSecurity {
             @Override
             public UserDetails loadUserByUsername(String username)
                     throws UsernameNotFoundException {
-                UserInfo userInfo = userInfoRepository.findByUsername(username);
+                UserInfo userInfo = userInfoService.findByUsername(username);
                 if (userInfo == null) {
                     throw new UsernameNotFoundException(
                             "No user present with username: " + username);
