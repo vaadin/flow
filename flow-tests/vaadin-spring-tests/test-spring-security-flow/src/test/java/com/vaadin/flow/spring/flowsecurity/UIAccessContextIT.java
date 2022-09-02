@@ -23,7 +23,6 @@ import com.vaadin.testbench.TestBenchElement;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.openqa.selenium.SearchContext;
 import org.openqa.selenium.WebDriver;
 
 public class UIAccessContextIT extends AbstractIT {
