@@ -30,8 +30,8 @@ public class UIAccessContextIT extends AbstractIT {
 
     @Test
     public void securityContextSetForUIAccess() throws Exception {
-        String expectedUserBalance = "Hello John the User, your bank account balance is $10000.00.";
-        String expectedAdminBalance = "Hello Emma the Admin, your bank account balance is $200000.00.";
+        String expectedUserBalance = "Hello John the User, your bank account balance is $10000.";
+        String expectedAdminBalance = "Hello Emma the Admin, your bank account balance is $200000.";
 
         WebDriver adminBrowser = getDriver();
         try {
@@ -42,14 +42,7 @@ public class UIAccessContextIT extends AbstractIT {
             Assert.assertEquals(expectedUserBalance, balance.getText());
 
             open("private", adminBrowser);
-            HasElementQuery adminContext = new HasElementQuery() {
-
-                @Override
-                public SearchContext getContext() {
-                    return adminBrowser;
-                }
-
-            };
+            HasElementQuery adminContext = () -> adminBrowser;
             loginAdmin(adminContext);
             TestBenchElement adminBalance = adminContext.$("span")
                     .id("balanceText");
