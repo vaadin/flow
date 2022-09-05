@@ -407,12 +407,12 @@ function lenientLitImportPlugin(): PluginOption {
     name: 'vaadin:lenient-lit-import',
     async transform(code, id) {
       const decoratorImports = [
-        /import (.*) from (['"])(lit\/decorators)(['"])/,
-        /import (.*) from (['"])(lit-element\/decorators)(['"])/
+        /import (.*?) from (['"])(lit\/decorators)(['"])/,
+        /import (.*?) from (['"])(lit-element\/decorators)(['"])/
       ];
       const directiveImports = [
-        /import (.*) from (['"])(lit\/directives\/)([^\\.]*)(['"])/,
-        /import (.*) from (['"])(lit-html\/directives\/)([^\\.]*)(['"])/
+        /import (.*?) from (['"])(lit\/directives\/)([^\\.]*?)(['"])/,
+        /import (.*?) from (['"])(lit-html\/directives\/)([^\\.]*?)(['"])/
       ];
 
       decoratorImports.forEach((decoratorImport) => {
