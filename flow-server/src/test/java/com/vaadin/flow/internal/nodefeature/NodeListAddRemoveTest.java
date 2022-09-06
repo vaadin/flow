@@ -125,7 +125,7 @@ public class NodeListAddRemoveTest
                     ListAddChange<String> addChange = (ListAddChange<String>) change;
                     return addChange.getNewItems().contains(item);
                 }).findFirst();
-        Assert.assertFalse(optionalChange.isPresent());        
+        Assert.assertFalse(optionalChange.isPresent());
         Assert.assertEquals(2, nodeList.getChangeTracker().size());
 
         List<NodeChange> changes = collectChanges(nodeList);
