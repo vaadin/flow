@@ -116,6 +116,8 @@ public class NodeListAddRemoveTest
 
         int index = items.size();
         nodeList.remove(index);
+        // verify that nodelist is adjustd immediately to avoid memory leaks
+        Assert.assertEquals(2, nodeList.getChangeTracker().size());
 
         List<NodeChange> changes = collectChanges(nodeList);
 
