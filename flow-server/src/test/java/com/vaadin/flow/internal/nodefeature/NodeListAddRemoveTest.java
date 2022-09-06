@@ -3,6 +3,7 @@ package com.vaadin.flow.internal.nodefeature;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
@@ -116,7 +117,13 @@ public class NodeListAddRemoveTest
 
         int index = items.size();
         nodeList.remove(index);
-        // verify that nodelist is adjustd immediately to avoid memory leaks
+        // verify that nodelist is adjusted immediately to avoid memory leaks
+        Optional<AbstractListChange<String>> optionalChange = nodeList
+                .getChangeTracker().stream().filter(change -> {
+                    ListAddChange<String> addChange = (ListAddChange<String>) change;
+                    return addChange.getNewItems().contains(item);
+                }).findFirst();
+        Assert.assertFalse(optionalChange.isPresent());        
         Assert.assertEquals(2, nodeList.getChangeTracker().size());
 
         List<NodeChange> changes = collectChanges(nodeList);
