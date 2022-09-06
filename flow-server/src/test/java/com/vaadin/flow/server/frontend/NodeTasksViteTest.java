@@ -21,6 +21,7 @@ import java.lang.reflect.Field;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.stream.Collectors;
 
@@ -33,6 +34,7 @@ import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import com.vaadin.experimental.FeatureFlags;
@@ -54,6 +56,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.VITE_GENERATED_CONFIG;
+import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -293,6 +296,46 @@ public class NodeTasksViteTest {
 
         Assert.assertTrue(new File(userDir, "tsconfig.json").exists());
         Assert.assertTrue(new File(userDir, "types.d.ts").exists());
+    }
+
+    @Test
+    public void should_failWithExecutionFailedException_when_customWebpackConfigFileExist()
+            throws IOException {
+        try (MockedStatic<Paths> paths = Mockito.mockStatic(Paths.class)) {
+            File webpackConfigFile = new File(userDir, WEBPACK_CONFIG);
+            Path webpackConfigFilePath = webpackConfigFile.toPath();
+            paths.when(() -> Paths.get(webpackConfigFile.getPath()))
+                    .thenReturn(webpackConfigFilePath);
+            Path targetPath = new File(userDir,
+                    TARGET + "/" + DEFAULT_GENERATED_DIR).toPath();
+            paths.when(() -> Paths.get(TARGET, DEFAULT_GENERATED_DIR))
+                    .thenReturn(targetPath);
+            paths.when(() -> Paths.get(new File(userDir).getPath(),
+                    WEBPACK_CONFIG)).thenReturn(webpackConfigFilePath);
+
+            String content = "const merge = require('webpack-merge');\n"
+                    + "const flowDefaults = require('./webpack.generated.js');\n"
+                    + "\n"
+                    + "module.exports = merge(flowDefaults, {\"some-config\": 1\n"
+                    + "\n" + "});\n";
+            Files.writeString(webpackConfigFilePath, content);
+
+            Lookup mockedLookup = Mockito.mock(Lookup.class);
+            Mockito.doReturn(
+                    new DefaultClassFinder(this.getClass().getClassLoader()))
+                    .when(mockedLookup).lookup(ClassFinder.class);
+            Builder builder = new Builder(mockedLookup, new File(userDir),
+                    TARGET).enablePackagesUpdate(false)
+                    .enableImportsUpdate(true).runNpmInstall(false)
+                    .withEmbeddableWebComponents(false).withFlowResourcesFolder(
+                            new File(userDir, TARGET + "flow-frontend"));
+
+            ExecutionFailedException exception = Assert.assertThrows(
+                    ExecutionFailedException.class,
+                    () -> builder.build().execute());
+            Assert.assertTrue(exception.getMessage().contains(
+                    "Webpack related config file 'webpack.config.js' is detected in your"));
+        }
     }
 
     private static void setPropertyIfPresent(String key, String value) {

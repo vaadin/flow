@@ -11,7 +11,7 @@
     "target": "es2019",
     "moduleResolution": "node",
     "strict": true,
-    "skipDefaultLibCheck": true,
+    "skipLibCheck": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
     "noImplicitAny": true,

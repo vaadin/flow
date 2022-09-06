@@ -50,9 +50,7 @@ public abstract class VaadinMVCWebAppInitializer
         context.setServletContext(servletContext);
         registerConfiguration(context);
         servletContext.addListener(new ContextLoaderListener(context));
-
         context.refresh();
-
         Environment env = context.getBean(Environment.class);
         String mapping = RootMappedCondition.getUrlMapping(env);
         if (mapping == null) {
@@ -61,11 +59,9 @@ public abstract class VaadinMVCWebAppInitializer
         String pushRegistrationPath;
 
         boolean rootMapping = RootMappedCondition.isRootMapping(mapping);
-
         Dynamic registration = servletContext.addServlet(
                 ClassUtils.getShortNameAsProperty(SpringServlet.class),
                 new SpringServlet(context, rootMapping));
-
         Map<String, String> initParameters = new HashMap<>();
         if (rootMapping) {
             Dynamic dispatcherRegistration = servletContext
@@ -76,9 +72,7 @@ public abstract class VaadinMVCWebAppInitializer
         } else {
             pushRegistrationPath = mapping.replace("/*", "");
         }
-
         registration.addMapping(mapping);
-        registration.addMapping("/VAADIN/*");
 
         /*
          * Tell Atmosphere which servlet to use for the push endpoint. Servlet

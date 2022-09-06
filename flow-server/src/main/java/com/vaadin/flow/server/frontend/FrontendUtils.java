@@ -41,6 +41,8 @@ import java.util.Optional;
 import java.util.Scanner;
 import java.util.stream.Stream;
 
+import jakarta.servlet.ServletContext;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -55,6 +57,7 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
 
 import elemental.json.JsonArray;
@@ -1353,4 +1356,22 @@ public class FrontendUtils {
             }
         }
     }
+
+    /**
+     * Gets the servlet path (excluding the context path) for the servlet used
+     * for serving the VAADIN frontend bundle.
+     *
+     * @return the path to the servlet used for the frontend bundle. Empty for a
+     *         /* mapping, otherwise always starts with a slash but never ends
+     *         with a slash
+     */
+    public static String getFrontendServletPath(ServletContext servletContext) {
+        String mapping = VaadinServlet.getFrontendMapping();
+        if (mapping.endsWith("/*")) {
+            mapping = mapping.replace("/*", "");
+        }
+
+        return mapping;
+    }
+
 }

@@ -35,6 +35,8 @@ import org.springframework.util.ClassUtils;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.socket.server.standard.ServerEndpointExporter;
 
+import com.vaadin.flow.server.VaadinServlet;
+
 /**
  * Spring boot auto-configuration class for Flow.
  *
@@ -79,17 +81,18 @@ public class SpringBootAutoConfiguration {
         String mapping = configurationProperties.getUrlMapping();
         Map<String, String> initParameters = new HashMap<>();
         boolean rootMapping = RootMappedCondition.isRootMapping(mapping);
-        String[] urlMappings;
         String pushRegistrationPath;
 
         if (rootMapping) {
             mapping = VaadinServletConfiguration.VAADIN_SERVLET_MAPPING;
+            initParameters.put(
+                    VaadinServlet.INTERNAL_VAADIN_SERVLET_VITE_DEV_MODE_FRONTEND_PATH,
+                    "");
             pushRegistrationPath = "";
         } else {
             pushRegistrationPath = mapping.replace("/*", "");
         }
 
-        urlMappings = new String[] { mapping, "/VAADIN/*" };
         /*
          * Tell Atmosphere which servlet to use for the push endpoint. Servlet
          * mappings are returned as a Set from at least Tomcat so even if
@@ -100,7 +103,7 @@ public class SpringBootAutoConfiguration {
                 pushRegistrationPath);
 
         ServletRegistrationBean<SpringServlet> registration = new ServletRegistrationBean<>(
-                new SpringServlet(context, rootMapping), urlMappings);
+                new SpringServlet(context, rootMapping), mapping);
         registration.setInitParameters(initParameters);
         registration
                 .setAsyncSupported(configurationProperties.isAsyncSupported());

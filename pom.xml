@@ -90,7 +90,7 @@
         <hibernate.validator.version>7.0.2.Final</hibernate.validator.version>
         <slf4j.version>1.7.36</slf4j.version>
         <polymer.version>2.6.1</polymer.version>
-        <jackson.version>2.13.3</jackson.version>
+        <jackson.version>2.13.4</jackson.version>
         <jackson.databind.version>2.13.3</jackson.databind.version>
         <jakarta.validation.version>3.0.1</jakarta.validation.version>
         <jakarta.annotation.api.version>2.0.0</jakarta.annotation.api.version>
@@ -105,8 +105,8 @@
         <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
         <maven.clean.plugin.version>3.2.0</maven.clean.plugin.version>
         <maven.exec.plugin.version>1.6.0</maven.exec.plugin.version>
-        <testbench.version>8.1.0.beta3</testbench.version>
-        <webdrivermanager.version>5.2.3</webdrivermanager.version>
+        <testbench.version>8.1.0</testbench.version>
+        <webdrivermanager.version>5.3.0</webdrivermanager.version>
         <jetty.version>11.0.8</jetty.version>
         <properties-maven-plugin.version>1.0.0</properties-maven-plugin.version>
 
@@ -115,7 +115,7 @@
         <flow.dev.dependencies.file>devDependencies.json</flow.dev.dependencies.file>
 
         <!-- Used in OSGi manifests -->
-        <jsoup.version>1.15.2</jsoup.version>
+        <jsoup.version>1.15.3</jsoup.version>
         <!-- Note that this should be kept in sync with the class Constants -->
         <atmosphere.runtime.version>3.0.0.slf4jvaadin2</atmosphere.runtime.version>
         <atmosphere.client.version>3.1.3</atmosphere.client.version>
@@ -247,12 +247,12 @@
             <dependency>
                 <groupId>net.bytebuddy</groupId>
                 <artifactId>byte-buddy</artifactId>
-                <version>1.12.13</version>
+                <version>1.12.14</version>
             </dependency>
             <dependency>
                 <groupId>com.vaadin</groupId>
                 <artifactId>license-checker</artifactId>
-                <version>1.6.0</version>
+                <version>1.7.2</version>
             </dependency>
 
             <!-- Test dependencies -->

@@ -435,6 +435,23 @@ public abstract class VaadinWebSecurity {
         return requestUtil.applyUrlMapping(path);
     }
 
+    /**
+     * Vaadin views access checker bean.
+     * <p>
+     * This getter can be used in implementing class to override logic of
+     * <code>VaadinWebSecurity.setLoginView</code> methods and call
+     * {@link ViewAccessChecker} methods explicitly.
+     * <p>
+     * Note that this bean is a field-autowired, thus this getter returns
+     * <code>null</code> when called from the constructor of implementing class.
+     *
+     * @return {@link ViewAccessChecker} bean used by this VaadinWebSecurity
+     *         configuration.
+     */
+    protected ViewAccessChecker getViewAccessChecker() {
+        return viewAccessChecker;
+    }
+
     private VaadinSavedRequestAwareAuthenticationSuccessHandler getVaadinSavedRequestAwareAuthenticationSuccessHandler(
             HttpSecurity http) {
         VaadinSavedRequestAwareAuthenticationSuccessHandler vaadinSavedRequestAwareAuthenticationSuccessHandler = new VaadinSavedRequestAwareAuthenticationSuccessHandler();

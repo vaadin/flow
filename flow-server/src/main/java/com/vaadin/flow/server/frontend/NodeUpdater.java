@@ -435,7 +435,7 @@ public abstract class NodeUpdater implements FallibleCommand {
             defaults.put("chokidar", "^3.5.0");
         } else {
             // Use Vite
-            defaults.put("vite", "v3.0.7");
+            defaults.put("vite", "v3.1.0");
             defaults.put("@rollup/plugin-replace", "3.1.0");
             defaults.put("rollup-plugin-brotli", "3.1.0");
             defaults.put("vite-plugin-checker", "0.4.9");

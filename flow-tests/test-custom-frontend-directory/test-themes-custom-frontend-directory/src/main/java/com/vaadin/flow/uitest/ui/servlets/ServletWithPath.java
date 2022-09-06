@@ -19,7 +19,8 @@ import jakarta.servlet.annotation.WebServlet;
 
 import com.vaadin.flow.server.VaadinServlet;
 
-@WebServlet("/path/*")
+// Load on startup is set to 1 to ensure this servlet is used as the frontend servlet to paths are always the same in the tests
+@WebServlet(urlPatterns = "/path/*", loadOnStartup = 1)
 public class ServletWithPath extends VaadinServlet {
 
 }

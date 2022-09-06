@@ -47,6 +47,7 @@ import org.slf4j.LoggerFactory;
 public class FeatureFlags implements Serializable {
 
     public static final String PROPERTIES_FILENAME = "vaadin-featureflags.properties";
+    public static final String SYSTEM_PROPERTY_PREFIX = "vaadin.";
 
     public static final Feature EXAMPLE = new Feature(
             "Example feature. Will be removed once the first real feature flag is added",
@@ -201,17 +202,25 @@ public class FeatureFlags implements Serializable {
             for (Feature f : features) {
                 f.setEnabled(false);
             }
-            return;
+        } else {
+            try (FileInputStream propertiesStream = new FileInputStream(
+                    featureFlagFile)) {
+                getLogger().debug("Loading properties from file '{}'",
+                        featureFlagFile);
+                loadProperties(propertiesStream);
+            } catch (IOException e) {
+                throw new UncheckedIOException(
+                        "Failed to read properties file from filesystem", e);
+            }
         }
 
-        try (FileInputStream propertiesStream = new FileInputStream(
-                featureFlagFile)) {
-            getLogger().debug("Loading properties from file '{}'",
-                    featureFlagFile);
-            loadProperties(propertiesStream);
-        } catch (IOException e) {
-            throw new UncheckedIOException(
-                    "Failed to read properties file from filesystem", e);
+        // Allow users to override a feature flag with a system property
+        for (Feature f : features) {
+            var prop = System.getProperty(SYSTEM_PROPERTY_PREFIX + f.getId());
+
+            if (prop != null) {
+                f.setEnabled(Boolean.parseBoolean(prop));
+            }
         }
     }
 

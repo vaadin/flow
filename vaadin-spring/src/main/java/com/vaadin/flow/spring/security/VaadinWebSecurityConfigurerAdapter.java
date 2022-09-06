@@ -186,12 +186,6 @@ public abstract class VaadinWebSecurityConfigurerAdapter
                 .map(path -> RequestUtil.applyUrlMapping(urlMapping, path))
                 .forEach(paths::add);
 
-        String mappedRoot = RequestUtil.applyUrlMapping(urlMapping, "");
-        if (!"/".equals(mappedRoot)) {
-            // When using an url path, static resources are still fetched from
-            // /VAADIN/ in the context root
-            paths.add("/VAADIN/**");
-        }
         return new OrRequestMatcher(paths.build()
                 .map(AntPathRequestMatcher::new).collect(Collectors.toList()));
     }
