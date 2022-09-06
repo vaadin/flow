@@ -281,19 +281,21 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
         if (change instanceof ListRemoveChange) {
             ListRemoveChange<T> removeChange = (ListRemoveChange<T>) change;
             T item = removeChange.getRemovedItem();
-            getChangeTracker().forEach(c -> {
+            List<AbstractListChange<T>> tracker = getChangeTracker();
+            for (int i = 0; i < tracker.size(); i++) {
+                AbstractListChange<T> c = tracker.get(i);
                 if (c instanceof ListAddChange) {
                     ListAddChange<T> addChange = (ListAddChange<T>) c;
                     if (addChange.getNewItems().contains(item)) {
                         if (addChange.getNewItems().size() == 1) {
-                            getChangeTracker().remove(addChange);
+                            tracker.remove(addChange);
                         } else {
                             addChange.getNewItems().remove(item);
                         }
                         return;
                     }
                 }
-            });
+            }
         }
         // If clearing, previous pending changes can be pruned
         if (change instanceof ListClearChange) {
