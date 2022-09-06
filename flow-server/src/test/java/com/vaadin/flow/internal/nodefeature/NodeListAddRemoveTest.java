@@ -117,6 +117,7 @@ public class NodeListAddRemoveTest
         nodeList.add("bar1");
 
         int index = items.size();
+        String item = nodeList.get(index);
         nodeList.remove(index);
         // verify that nodelist is adjusted immediately to avoid memory leaks
         Optional<AbstractListChange<String>> optionalChange = nodeList
