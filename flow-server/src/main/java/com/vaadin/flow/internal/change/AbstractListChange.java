@@ -82,7 +82,7 @@ public abstract class AbstractListChange<T extends Serializable>
      * Set the index.
      * <p>
      * Note: This should be used only when list of changes is being adjusted.
-     * 
+     *
      * @param index
      *            Integer value.
      */
