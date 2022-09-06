@@ -139,8 +139,8 @@ public class ListAddChange<T extends Serializable>
      *            Item to be removed.
      */
     public void removeItem(T item) {
-        assert (newItems
-                .size() > 1) : "Item list can't be empty after item removal";
+        assert (newItems.size() > 1)
+                : "Item list can't be empty after item removal";
         newItems.remove(item);
     }
 
