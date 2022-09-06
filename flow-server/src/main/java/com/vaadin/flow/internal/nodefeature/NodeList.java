@@ -21,10 +21,8 @@ import java.util.AbstractSet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -287,10 +285,23 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
                 if (c instanceof ListAddChange) {
                     ListAddChange<T> addChange = (ListAddChange<T>) c;
                     if (addChange.getNewItems().contains(item)) {
+                        int indexToCorrect = 0;
                         if (addChange.getNewItems().size() == 1) {
                             tracker.remove(addChange);
                         } else {
-                            addChange.getNewItems().remove(item);
+                            indexToCorrect = addChange.getNewItems()
+                                    .indexOf(item);
+                            addChange.removeItem(item);
+                        }
+                        assert indexToCorrect != -1;
+                        indexToCorrect += addChange.getIndex();
+                        int removeChangeIndex = tracker.size();
+                        int addChangeIndex = i;
+                        for (int j = addChangeIndex; j < removeChangeIndex; j++) {
+                            AbstractListChange<T> listChange = tracker.get(j);
+                            if (listChange.getIndex() > indexToCorrect) {
+                                listChange.setIndex(listChange.getIndex() - 1);
+                            }
                         }
                         return;
                     }
@@ -314,41 +325,9 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
 
     @Override
     public void collectChanges(Consumer<NodeChange> collector) {
-        // This map contains items wrapped by AbstractListChanges as keys and
-        // index in the following allChanges list as a value (it allows to get
-        // AbstractListChange by the index)
-        Map<Object, Integer> indices = new IdentityHashMap<>();
-
-        // This list contains all changes in the tracker. These changes will be
-        // modified: each "remove" change following by a corresponding "add"
-        // will be replaced by null and "add" will be adjusted. Indeces in
-        // changes in between will be adjusted
         List<AbstractListChange<T>> allChanges = new ArrayList<>();
-        int index = 0;
         for (AbstractListChange<T> change : getChangeTracker()) {
-            if (change instanceof ListRemoveChange<?>) {
-                // the remove change => find an appropriate "add" event, adjust
-                // it and adjust everything in between
-                adjustChanges(index, (ListRemoveChange<T>) change, indices,
-                        allChanges);
-            } else if (change instanceof ListAddChange<?>) {
-                allChanges.add(change);
-                int i = index;
-                // put all items into "indices" as keys and "index" as a value
-                // so that the "change" can be retrieved from the "allChanges"
-                // by the index
-                ((ListAddChange<T>) change).getNewItems()
-                        .forEach(item -> indices.put(item, i));
-            } else if (change instanceof ListClearChange<?>) {
-                allChanges.clear();
-                indices.clear();
-                index = 0;
-                allChanges.add(change);
-            } else {
-                assert false
-                        : "AbstractListChange has only three subtypes: add, remove and clear";
-            }
-            index++;
+            allChanges.add(change);
         }
 
         List<AbstractListChange<T>> changes;
@@ -448,58 +427,6 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
             return Collections.<T> emptyList().iterator();
         }
         return new NodeListIterator();
-    }
-
-    private void adjustChanges(int removeChangeIndex,
-            ListRemoveChange<T> change, Map<Object, Integer> indices,
-            List<AbstractListChange<T>> allChanges) {
-        T removedItem = change.getRemovedItem();
-        // retrieve index of the item (it's supposed to be the index of an Add
-        // change)
-        Integer addChangeIndex = indices.get(removedItem);
-        if (addChangeIndex == null) {
-            // if there is no suitable "add" change then just add "remove"
-            // change as is
-            allChanges.add(change);
-        } else {
-            // retrieve the "add" change by the index
-            AbstractListChange<T> addChange = allChanges.get(addChangeIndex);
-            assert addChange instanceof ListAddChange<?>;
-
-            ListAddChange<T> add = (ListAddChange<T>) addChange;
-            // "add" change has to be adjusted : we need to remove "removedItem"
-            // from it
-            int indexToCorrect = add.getNewItems().indexOf(removedItem);
-            assert indexToCorrect != -1;
-            indexToCorrect += add.getIndex();
-            // replace "add" change whose index is "addChangeIndex" with a new
-            // change which is the copy of the original one but has newItems
-            allChanges.set(addChangeIndex,
-                    add.copy(add.getNewItems().stream()
-                            .filter(item -> item != removedItem)
-                            .collect(Collectors.toList())));
-
-            // now go through all the changes in between "add" and "remove" and
-            // reindex them
-            for (int i = addChangeIndex + 1; i < removeChangeIndex; i++) {
-                AbstractListChange<T> listChange = allChanges.get(i);
-                // listChange can be null for handled "removed" changes ( see
-                // the code below the cycle)
-                if (listChange != null
-                        && listChange.getIndex() > indexToCorrect) {
-                    // make a copy with the adjusted index in case change has an
-                    // index which is greater than index of the discarded item
-                    allChanges.set(i,
-                            listChange.copy(listChange.getIndex() - 1));
-                    // listChange can't be ListRemoveChange actually here since
-                    // it has to have the index greater than "indexToCorrect".
-                    // But it means that there was a corresponding ListAddChange
-                    // which has been already adjusted previously and the
-                    // "remove" has been replaced with "null".
-                }
-            }
-            allChanges.add(null);
-        }
     }
 
     @Override
