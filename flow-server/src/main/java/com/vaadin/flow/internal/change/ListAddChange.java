@@ -134,7 +134,7 @@ public class ListAddChange<T extends Serializable>
      * Remove item from the change.
      * <p>
      * Note: this should be used only when list of changes is adjusted.
-     * 
+     *
      * @param item
      *            Item to be removed.
      */
