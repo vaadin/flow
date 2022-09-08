@@ -323,13 +323,13 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         expectedLines.add("import 'unresolved/component';");
 
         expectedLines.add(
-                "import $cssFromFile_0 from '@vaadin/vaadin-mixed-component/bar.css';");
-        expectedLines.add("import $cssFromFile_1 from 'Frontend/foo.css';");
-        expectedLines.add("import $cssFromFile_2 from 'Frontend/foo.css';");
-        expectedLines.add("import $cssFromFile_3 from 'Frontend/foo.css';");
-        expectedLines.add("import $cssFromFile_4 from 'Frontend/foo.css';");
-        expectedLines.add("import $cssFromFile_5 from 'Frontend/foo.css';");
-        expectedLines.add("import $cssFromFile_6 from 'Frontend/foo.css';");
+                "import $cssFromFile_0 from '@vaadin/vaadin-mixed-component/bar.css?inline';");
+        expectedLines.add("import $cssFromFile_1 from 'Frontend/foo.css?inline';");
+        expectedLines.add("import $cssFromFile_2 from 'Frontend/foo.css?inline';");
+        expectedLines.add("import $cssFromFile_3 from 'Frontend/foo.css?inline';");
+        expectedLines.add("import $cssFromFile_4 from 'Frontend/foo.css?inline';");
+        expectedLines.add("import $cssFromFile_5 from 'Frontend/foo.css?inline';");
+        expectedLines.add("import $cssFromFile_6 from 'Frontend/foo.css?inline';");
         expectedLines.add("addCssBlock(`<style>${$css_0}</style>`);");
         expectedLines.add("addCssBlock(`<style>${$css_1}</style>`);");
         expectedLines.add(

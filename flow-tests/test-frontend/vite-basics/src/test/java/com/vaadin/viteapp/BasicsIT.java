@@ -54,6 +54,7 @@ public class BasicsIT extends ViteDevModeIT {
     @Test
     public void componentCssDoesNotLeakToDocument() {
         String bodyColor = $("body").first().getCssValue("backgroundColor");
-        Assert.assertEquals("rgb(211, 211, 211)", bodyColor);
+        Assert.assertTrue("Body should be grey, not red as specified for the component",
+                bodyColor.contains("211, 211, 211"));
     }
 }
