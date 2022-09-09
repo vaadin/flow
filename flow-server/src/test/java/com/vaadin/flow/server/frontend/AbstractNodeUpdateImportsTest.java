@@ -123,12 +123,18 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         expectedLines.add(
                 "import $cssFromFile_0 from '@vaadin/vaadin-mixed-component/bar.css?inline'");
-        expectedLines.add("import $cssFromFile_1 from 'Frontend/foo.css?inline';");
-        expectedLines.add("import $cssFromFile_2 from 'Frontend/foo.css?inline';");
-        expectedLines.add("import $cssFromFile_3 from 'Frontend/foo.css?inline';");
-        expectedLines.add("import $cssFromFile_4 from 'Frontend/foo.css?inline';");
-        expectedLines.add("import $cssFromFile_5 from 'Frontend/foo.css?inline';");
-        expectedLines.add("import $cssFromFile_6 from 'Frontend/foo.css?inline';");
+        expectedLines
+                .add("import $cssFromFile_1 from 'Frontend/foo.css?inline';");
+        expectedLines
+                .add("import $cssFromFile_2 from 'Frontend/foo.css?inline';");
+        expectedLines
+                .add("import $cssFromFile_3 from 'Frontend/foo.css?inline';");
+        expectedLines
+                .add("import $cssFromFile_4 from 'Frontend/foo.css?inline';");
+        expectedLines
+                .add("import $cssFromFile_5 from 'Frontend/foo.css?inline';");
+        expectedLines
+                .add("import $cssFromFile_6 from 'Frontend/foo.css?inline';");
         expectedLines.add(
                 "import { css, unsafeCSS, registerStyles } from '@vaadin/vaadin-themable-mixin';");
         expectedLines.add("addCssBlock(`<style>${$css_0}</style>`);");
