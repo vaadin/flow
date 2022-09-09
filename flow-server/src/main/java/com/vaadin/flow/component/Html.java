@@ -123,7 +123,7 @@ public class Html extends Component {
      * Any heading or trailing whitespace is removed while parsing but any
      * whitespace inside the root tag is preserved.
      *
-     * @param outerHtml
+     * @param html
      *            the HTML to wrap
      */
     public void setHtmlContent(String html) {
