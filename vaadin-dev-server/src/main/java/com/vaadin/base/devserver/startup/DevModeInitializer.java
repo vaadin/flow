@@ -75,6 +75,7 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -344,7 +345,22 @@ public class DevModeInitializer implements Serializable {
                         Arrays.asList(additionalPostinstallPackages))
                 .build();
 
-        Runnable runnable = () -> runNodeTasks(context, tokenFileData, tasks);
+        Runnable runnable = () -> {
+            runNodeTasks(context, tokenFileData, tasks);
+            if (!featureFlags.isEnabled(FeatureFlags.WEBPACK)) {
+                // For Vite, wait until a VaadinServlet is deployed so we know
+                // which frontend servlet path to use
+                if (VaadinServlet.getFrontendMapping() == null) {
+                    log().debug("Waiting for a VaadinServlet to be deployed");
+                    while (VaadinServlet.getFrontendMapping() == null) {
+                        try {
+                            Thread.sleep(100);
+                        } catch (InterruptedException e) {
+                        }
+                    }
+                }
+            }
+        };
 
         CompletableFuture<Void> nodeTasksFuture = CompletableFuture
                 .runAsync(runnable);

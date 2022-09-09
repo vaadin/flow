@@ -50,4 +50,12 @@ public class BasicsIT extends ViteDevModeIT {
         Assert.assertEquals("{\"hello\":\"World\"}",
                 $("*").id(MainView.JSON_CONTAINER).getText());
     }
+
+    @Test
+    public void componentCssDoesNotLeakToDocument() {
+        String bodyColor = $("body").first().getCssValue("backgroundColor");
+        Assert.assertTrue(
+                "Body should be grey, not red as specified for the component",
+                bodyColor.contains("211, 211, 211"));
+    }
 }

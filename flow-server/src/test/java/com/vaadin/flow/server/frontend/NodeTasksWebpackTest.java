@@ -22,6 +22,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
@@ -197,6 +198,27 @@ public class NodeTasksWebpackTest {
     }
 
     @Test
+    public void should_notExecuteTaskNotifyWebpackConfExistenceWhileUsingVite_whenWebpackIsInUse()
+            throws Exception {
+
+        Lookup mockedLookup = Mockito.mock(Lookup.class);
+        Mockito.doReturn(
+                new DefaultClassFinder(this.getClass().getClassLoader()))
+                .when(mockedLookup).lookup(ClassFinder.class);
+        Builder builder = new Builder(mockedLookup, new File(userDir), TARGET)
+                .enablePackagesUpdate(false).enableImportsUpdate(true)
+                .runNpmInstall(false).withEmbeddableWebComponents(false)
+                .setJavaResourceFolder(propertiesDir);
+
+        NodeTasks nodeTasks = builder.build();
+
+        Assert.assertFalse(
+                "TaskNotifyWebpackConfExistenceWhileUsingVite should not be in the list of node tasks when webpack is used.",
+                isTaskAddedToBeExecuted(nodeTasks,
+                        TaskNotifyWebpackConfExistenceWhileUsingVite.class));
+    }
+
+    @Test
     public void should_generateServiceWorkerWhenPwa() throws Exception {
         Lookup mockedLookup = mock(Lookup.class);
         Mockito.doReturn(
@@ -309,5 +331,13 @@ public class NodeTasksWebpackTest {
         Field field = obj.getClass().getDeclaredField(name);
         field.setAccessible(true);
         return field.get(obj);
+    }
+
+    private boolean isTaskAddedToBeExecuted(NodeTasks nodeTasks,
+            Class<?> taskClass) throws Exception {
+        List<FallibleCommand> commands = (List<FallibleCommand>) getFieldValue(
+                nodeTasks, "commands");
+        return commands.stream().anyMatch(fallibleCommand -> fallibleCommand
+                .getClass().equals(taskClass));
     }
 }

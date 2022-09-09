@@ -70,6 +70,8 @@ public class NodeTasksHillaTest {
     @Mock
     private TaskGenerateHilla taskGenerateHilla;
 
+    private Builder builder;
+
     @Before
     public void setup() throws Exception {
         userDir = temporaryFolder.getRoot().getAbsolutePath();
@@ -92,6 +94,16 @@ public class NodeTasksHillaTest {
 
         Mockito.doReturn(taskGenerateHilla).when(lookup)
                 .lookup(TaskGenerateHilla.class);
+
+        builder = new Builder(lookup, new File(userDir), TARGET)
+                .enablePackagesUpdate(false).enableImportsUpdate(true)
+                .runNpmInstall(false).withEmbeddableWebComponents(false)
+                .withFlowResourcesFolder(
+                        new File(userDir, TARGET + "flow-frontend"))
+                .withFrontendGeneratedFolder(new File(userDir))
+                .withEndpointSourceFolder(new File(userDir))
+                .withEndpointGeneratedOpenAPIFile(new File(userDir))
+                .setJavaResourceFolder(propertiesDir);
     }
 
     @BeforeClass
@@ -109,7 +121,7 @@ public class NodeTasksHillaTest {
     }
 
     @Test
-    public void should_useHillaGeneartor_whenEnabled()
+    public void should_useHillaEngine_whenEnabled()
             throws ExecutionFailedException, IOException {
         runEndpointTasks(true);
         verifyHillaTask(true);
@@ -124,6 +136,26 @@ public class NodeTasksHillaTest {
         verifyOldGenerator(true);
     }
 
+    @Test
+    public void should_notHillaEngine_whenOpenAPIFileIsNull()
+            throws ExecutionFailedException, IOException {
+        builder.withEndpointGeneratedOpenAPIFile(null);
+
+        runEndpointTasks(true);
+        verifyHillaTask(false);
+        verifyOldGenerator(false);
+    }
+
+    @Test
+    public void should_notUseOldGenerator_whenOpenAPIFileIsNull()
+            throws ExecutionFailedException, IOException {
+        builder.withEndpointGeneratedOpenAPIFile(null);
+
+        runEndpointTasks(false);
+        verifyHillaTask(false);
+        verifyOldGenerator(false);
+    }
+
     private void runEndpointTasks(boolean withHillaTask)
             throws ExecutionFailedException, IOException {
         FileUtils.write(
@@ -131,16 +163,6 @@ public class NodeTasksHillaTest {
                 String.format("com.vaadin.experimental.hillaEngine=%s\n",
                         withHillaTask),
                 StandardCharsets.UTF_8);
-
-        Builder builder = new Builder(lookup, new File(userDir), TARGET)
-                .enablePackagesUpdate(false).enableImportsUpdate(true)
-                .runNpmInstall(false).withEmbeddableWebComponents(false)
-                .withFlowResourcesFolder(
-                        new File(userDir, TARGET + "flow-frontend"))
-                .withFrontendGeneratedFolder(new File(userDir))
-                .withEndpointSourceFolder(new File(userDir))
-                .withEndpointGeneratedOpenAPIFile(new File(userDir))
-                .setJavaResourceFolder(propertiesDir);
 
         builder.build().execute();
     }

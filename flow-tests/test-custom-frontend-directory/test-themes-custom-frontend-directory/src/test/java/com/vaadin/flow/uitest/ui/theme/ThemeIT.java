@@ -27,7 +27,6 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.html.testbench.ImageElement;
 import com.vaadin.flow.component.html.testbench.SpanElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
@@ -51,8 +50,8 @@ public class ThemeIT extends ChromeBrowserTest {
 
         checkLogsForErrors();
 
-        final TestBenchElement helloWorld = $(TestBenchElement.class).first()
-                .findElement(By.tagName("hello-world-view"));
+        final TestBenchElement helloWorld = $("hello-world-view")
+                .waitForFirst();
 
         Assert.assertEquals("hello-world-view", helloWorld.getTagName());
 
@@ -99,6 +98,7 @@ public class ThemeIT extends ChromeBrowserTest {
                 driver.getPageSource().contains("HTTP ERROR 404 Not Found"));
 
         getDriver().get(getRootURL() + "/path/themes/no-copy/no-copy.txt");
+        waitForDevServer();
         String source = driver.getPageSource();
         Matcher m = Pattern.compile(
                 ".*Could not navigate to.*themes/no-copy/no-copy.txt.*",
@@ -112,13 +112,10 @@ public class ThemeIT extends ChromeBrowserTest {
         // No exception for bg-image should exist
         checkLogsForErrors();
 
-        // Vite ignores servlet path and assumes servlet with custom mapping
-        // also covers /VAADIN/*
-
         final WebElement body = findElement(By.tagName("body"));
         Assert.assertEquals("body background-image should come from styles.css",
                 "url(\"" + getRootURL()
-                        + "/VAADIN/themes/app-theme/img/bg.jpg\")",
+                        + "/path/VAADIN/themes/app-theme/img/bg.jpg\")",
                 body.getCssValue("background-image"));
 
         Assert.assertEquals("body font-family should come from styles.css",
@@ -127,7 +124,8 @@ public class ThemeIT extends ChromeBrowserTest {
         Assert.assertEquals("html color from styles.css should be applied.",
                 "rgba(0, 0, 0, 1)", body.getCssValue("color"));
 
-        getDriver().get(getRootURL() + "/VAADIN/themes/app-theme/img/bg.jpg");
+        getDriver()
+                .get(getRootURL() + "/path/VAADIN/themes/app-theme/img/bg.jpg");
         Assert.assertFalse("app-theme background file should be served",
                 driver.getPageSource().contains("Could not navigate"));
     }
@@ -199,11 +197,9 @@ public class ThemeIT extends ChromeBrowserTest {
         open();
         checkLogsForErrors();
 
-        // Vite ignores servlet path and assumes servlet with custom mapping
-        // also covers /VAADIN/*
         Assert.assertEquals("Imported css file URLs should have been handled.",
                 "url(\"" + getRootURL()
-                        + "/VAADIN/themes/app-theme/icons/archive.png\")",
+                        + "/path/VAADIN/themes/app-theme/icons/archive.png\")",
                 $(SpanElement.class).id(SUB_COMPONENT_ID)
                         .getCssValue("background-image"));
     }
@@ -262,6 +258,26 @@ public class ThemeIT extends ChromeBrowserTest {
     }
 
     @Test
+    public void documentCssImport_onlyExternalAddedToHeadAsLink() {
+        open();
+        checkLogsForErrors();
+
+        final WebElement documentHead = getDriver()
+                .findElement(By.xpath("/html/head"));
+        final List<WebElement> links = documentHead
+                .findElements(By.tagName("link"));
+
+        List<String> linkUrls = links.stream()
+                .map(link -> link.getAttribute("href"))
+                .collect(Collectors.toList());
+
+        Assert.assertTrue("Missing link for external url", linkUrls
+                .contains("https://fonts.googleapis.com/css?family=Itim"));
+        Assert.assertFalse("Found import that webpack should have resolved",
+                linkUrls.contains("sub-css/sub.css"));
+    }
+
+    @Test
     public void customFrontendDirectory_generatedFilesNotInDefaultFrontendFolder() {
         open();
 
@@ -285,26 +301,6 @@ public class ThemeIT extends ChromeBrowserTest {
                             + ", but was not",
                     new File(defaultGeneratedFolder, generatedFile).exists());
         }
-    }
-
-    @Test
-    public void documentCssImport_onlyExternalAddedToHeadAsLink() {
-        open();
-        checkLogsForErrors();
-
-        final WebElement documentHead = getDriver()
-                .findElement(By.xpath("/html/head"));
-        final List<WebElement> links = documentHead
-                .findElements(By.tagName("link"));
-
-        List<String> linkUrls = links.stream()
-                .map(link -> link.getAttribute("href"))
-                .collect(Collectors.toList());
-
-        Assert.assertTrue("Missing link for external url", linkUrls
-                .contains("https://fonts.googleapis.com/css?family=Itim"));
-        Assert.assertFalse("Found import that webpack should have resolved",
-                linkUrls.contains("sub-css/sub.css"));
     }
 
     @Override

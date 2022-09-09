@@ -727,7 +727,7 @@ public class AtmospherePushConnection implements PushConnection {
             Console.log("Loading " + pushJs);
             ResourceLoader loader = registry.getResourceLoader();
             String pushScriptUrl = registry.getApplicationConfiguration()
-                    .getContextRootUrl() + pushJs;
+                    .getServiceUrl() + pushJs;
             ResourceLoadListener loadListener = new ResourceLoadListener() {
                 @Override
                 public void onLoad(ResourceLoadEvent event) {
