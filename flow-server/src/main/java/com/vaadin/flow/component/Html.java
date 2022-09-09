@@ -115,7 +115,7 @@ public class Html extends Component {
 
     /**
      * Sets the content based on the given HTML fragment. The fragment must have
-     * exactly one root element.
+     * exactly one root element, which matches the existing one.
      * <p>
      * A best effort is done to parse broken HTML but no guarantees are given
      * for how invalid HTML is handled.
@@ -144,6 +144,12 @@ public class Html extends Component {
         org.jsoup.nodes.Element root = doc.body().child(0);
         Attributes attrs = root.attributes();
         attrs.forEach(this::setAttribute);
+
+        if (!root.tagName().equals(getElement().getTag())) {
+            throw new IllegalStateException(
+                    "Existing root tag '" + getElement().getTag()
+                            + "' can't be changed to '" + root.tagName() + "'");
+        }
 
         doc.outputSettings().prettyPrint(false);
         setInnerHtml(root.html());
