@@ -84,7 +84,7 @@ public class Html extends Component {
              * encoding in case one isn't defined.
              */
             setOuterHtml(UTF_8.decode(DataUtil.readToByteBuffer(stream, 0))
-                    .toString());
+                    .toString(), false);
         } catch (IOException e) {
             throw new UncheckedIOException("Unable to read HTML from stream",
                     e);
@@ -110,7 +110,7 @@ public class Html extends Component {
             throw new IllegalArgumentException("HTML cannot be null or empty");
         }
 
-        setOuterHtml(outerHtml);
+        setOuterHtml(outerHtml, false);
     }
 
     /**
@@ -127,35 +127,10 @@ public class Html extends Component {
      *            the HTML to wrap
      */
     public void setHtmlContent(String html) {
-        Document doc = Jsoup.parseBodyFragment(html);
-        int nrChildren = doc.body().children().size();
-        if (nrChildren != 1) {
-            String message = "HTML must contain exactly one top level element (ignoring text nodes). Found "
-                    + nrChildren;
-            if (nrChildren > 1) {
-                String tagNames = doc.body().children().stream()
-                        .map(org.jsoup.nodes.Element::tagName)
-                        .collect(Collectors.joining(", "));
-                message += " elements with the tag names " + tagNames;
-            }
-            throw new IllegalArgumentException(message);
-        }
-
-        org.jsoup.nodes.Element root = doc.body().child(0);
-        Attributes attrs = root.attributes();
-        attrs.forEach(this::setAttribute);
-
-        if (!root.tagName().equals(getElement().getTag())) {
-            throw new IllegalStateException(
-                    "Existing root tag '" + getElement().getTag()
-                            + "' can't be changed to '" + root.tagName() + "'");
-        }
-
-        doc.outputSettings().prettyPrint(false);
-        setInnerHtml(root.html());
+        setOuterHtml(html, true);
     }
 
-    private void setOuterHtml(String outerHtml) {
+    private void setOuterHtml(String outerHtml, boolean update) {
         Document doc = Jsoup.parseBodyFragment(outerHtml);
         int nrChildren = doc.body().children().size();
         if (nrChildren != 1) {
@@ -173,12 +148,19 @@ public class Html extends Component {
         org.jsoup.nodes.Element root = doc.body().child(0);
         Attributes attrs = root.attributes();
 
-        Component.setElement(this, new Element(root.tagName()));
+        if (!update) {
+            Component.setElement(this, new Element(root.tagName()));
+        }
         attrs.forEach(this::setAttribute);
+
+        if (update && !root.tagName().equals(getElement().getTag())) {
+            throw new IllegalStateException(
+                    "Existing root tag '" + getElement().getTag()
+                            + "' can't be changed to '" + root.tagName() + "'");
+        }
 
         doc.outputSettings().prettyPrint(false);
         setInnerHtml(root.html());
-
     }
 
     private void setAttribute(Attribute attribute) {
