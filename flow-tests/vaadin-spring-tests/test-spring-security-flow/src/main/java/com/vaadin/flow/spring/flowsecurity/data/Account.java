@@ -33,7 +33,8 @@ public class Account {
         if (o == null || getClass() != o.getClass())
             return false;
         Account account = (Account) o;
-        return owner.equals(account.owner) && getBalance().equals(account.getBalance());
+        return owner.equals(account.owner)
+                && getBalance().equals(account.getBalance());
     }
 
     @Override
