@@ -262,9 +262,7 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
 
     @Test
     public void offlineStub_backOnline_stubRemoved_serverViewShown() {
-        getDriver().get(getRootURL() + "/");
-        waitForDevServer();
-        waitForServiceWorkerReady();
+        openPageAndPreCacheWhenDevelopmentMode("/");
         getDevTools().setOfflineEnabled(true);
 
         try {

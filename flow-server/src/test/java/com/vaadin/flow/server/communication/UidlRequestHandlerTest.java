@@ -236,6 +236,24 @@ public class UidlRequestHandlerTest {
         assertEquals(expected, actual);
     }
 
+    @Test
+    public void should_not_update_browser_history_if_no_hash_in_location()
+            throws Exception {
+        JavaScriptBootstrapUI ui = mock(JavaScriptBootstrapUI.class);
+
+        UidlRequestHandler handler = spy(new UidlRequestHandler());
+        StringWriter writer = new StringWriter();
+
+        JsonObject uidl = getUidlWithNoHashInLocation();
+
+        doReturn(uidl).when(handler).createUidl(ui, false);
+
+        handler.writeUidl(ui, writer, false);
+
+        String out = writer.toString();
+        Assert.assertFalse(out.contains("history.pushState"));
+    }
+
     private JsonObject generateUidl(boolean withLocation, boolean withHash) {
 
         // @formatter:off
@@ -296,6 +314,32 @@ public class UidlRequestHandlerTest {
 
         uidl.getArray("execute").getArray(2).set(1, v7String);
         return uidl;
+    }
+
+    private JsonObject getUidlWithNoHashInLocation() {
+        // @formatter:off
+        return JsonUtil.parse(
+                "{" +
+                "  \"syncId\": 3," +
+                "  \"clientId\": 3," +
+                "  \"changes\": []," +
+                "  \"execute\": [" +
+                "    [" +
+                "      [" +
+                "        0," +
+                "        9" +
+                "      ]," +
+                "      '\"syncId\": 1, \"clientId\": 0, \"changes\" : [[\"change\",{\"pid\":\"0\"},[\"0\",{\"id\":\"0\",\"location\":\"http://localhost:8080/\",\"v\":{\"action\":\"\"}},[\"actions\",{}]]]], \"state\":{\"1\":{\"componentSettings\":[]}}, \"types\":{\"0\":\"0\",\"1\":\"2\"}, \"hierarchy\":{\"0\":[\"1\"]}, \"rpc\" : [], \"meta\" : {\"async\":true}, \"resources\" : {}, \"timings\":[113, 113]'," +
+                "      \"ROOT\"" +
+                "    ]" +
+                "  ]," +
+                "  \"timings\": [" +
+                "    20880," +
+                "    18181" +
+                "  ]" +
+                "}"
+        );
+        // @formatter:on
     }
 
 }

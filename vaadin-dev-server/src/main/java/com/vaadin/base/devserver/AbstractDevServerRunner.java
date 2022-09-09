@@ -630,6 +630,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
                 // Avoid creating a UI that is thrown away for polling requests
                 response.setContentType("text/html;charset=utf-8");
                 response.getWriter().write("Ready");
+                response.setHeader("Cache-Control", "no-cache");
                 return true;
             }
             return false;
@@ -645,6 +646,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
             }
             response.setContentType("text/html;charset=utf-8");
             response.setHeader("X-DevModePending", "true");
+            response.setHeader("Cache-Control", "no-cache");
             return true;
         }
     }
@@ -677,13 +679,11 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         }
         // Since we have 'publicPath=/VAADIN/' in the dev server config,
         // a valid request for the dev server should start with '/VAADIN/'
-
-        String requestFilename = UrlUtil.getStaticVaadinPathInfo(request);
+        String requestFilename = request.getPathInfo();
 
         if (HandlerHelper.isPathUnsafe(requestFilename)
-                || WEBPACK_ILLEGAL_CHAR_PATTERN.matcher(requestFilename).find())
-
-        {
+                || WEBPACK_ILLEGAL_CHAR_PATTERN.matcher(requestFilename)
+                        .find()) {
             getLogger().info("Blocked attempt to access file: {}",
                     requestFilename);
             response.setStatus(HttpStatusCode.FORBIDDEN.getCode());

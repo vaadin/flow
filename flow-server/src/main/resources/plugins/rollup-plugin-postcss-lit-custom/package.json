@@ -1,0 +1,18 @@
+{
+  "description": "rollup-plugin-postcss-lit-custom",
+  "keywords": [
+    "plugin"
+  ],
+  "repository": "vaadin/flow",
+  "name": "@vaadin/rollup-plugin-postcss-lit-custom",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Vaadin Ltd",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/vaadin/flow/issues"
+  },
+  "files": [
+    "rollup-plugin-postcss-lit.js"
+  ]
+}

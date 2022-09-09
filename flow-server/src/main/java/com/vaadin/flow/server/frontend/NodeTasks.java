@@ -689,6 +689,7 @@ public class NodeTasks implements FallibleCommand {
     // without depending on when they are added.
     private static final List<Class<? extends FallibleCommand>> commandOrder =
         Collections.unmodifiableList(Arrays.asList(
+            TaskNotifyWebpackConfExistenceWhileUsingVite.class,
             TaskGeneratePackageJson.class,
             TaskGenerateIndexHtml.class,
             TaskGenerateIndexTs.class,
@@ -696,7 +697,6 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateTsConfig.class,
             TaskGenerateTsDefinitions.class,
             TaskGenerateServiceWorker.class,
-            TaskGenerateHilla.class,
             TaskGenerateOpenAPI.class,
             TaskGenerateEndpoint.class,
             TaskGenerateBootstrap.class,
@@ -706,6 +706,7 @@ public class NodeTasks implements FallibleCommand {
             TaskInstallWebpackPlugins.class,
             TaskUpdatePackages.class,
             TaskRunNpmInstall.class,
+            TaskGenerateHilla.class,
             TaskCopyFrontendFiles.class,
             TaskCopyLocalFrontendFiles.class,
             TaskUpdateSettingsFile.class,
@@ -793,18 +794,18 @@ public class NodeTasks implements FallibleCommand {
 
             // use the new Hilla generator if enabled, otherwise use the old
             // generator.
-            if (featureFlags.isEnabled(FeatureFlags.HILLA_ENGINE)) {
-                TaskGenerateHilla hillaTask = builder.lookup
-                        .lookup(TaskGenerateHilla.class);
+            TaskGenerateHilla hillaTask;
+            if (builder.endpointGeneratedOpenAPIFile != null
+                    && featureFlags.isEnabled(FeatureFlags.HILLA_ENGINE)
+                    && (hillaTask = builder.lookup
+                            .lookup(TaskGenerateHilla.class)) != null) {
                 hillaTask.configure(builder.getNpmFolder(),
                         builder.getBuildDirectory());
                 commands.add(hillaTask);
-            } else {
-                if (builder.endpointSourceFolder != null
-                        && builder.endpointSourceFolder.exists()
-                        && builder.endpointGeneratedOpenAPIFile != null) {
-                    addEndpointServicesTasks(builder);
-                }
+            } else if (builder.endpointGeneratedOpenAPIFile != null
+                    && builder.endpointSourceFolder != null
+                    && builder.endpointSourceFolder.exists()) {
+                addEndpointServicesTasks(builder);
             }
 
             commands.add(new TaskGenerateBootstrap(frontendDependencies,
@@ -837,6 +838,8 @@ public class NodeTasks implements FallibleCommand {
             } else {
                 pwa = new PwaConfiguration();
             }
+            commands.add(new TaskNotifyWebpackConfExistenceWhileUsingVite(
+                    builder.npmFolder));
             commands.add(new TaskUpdateSettingsFile(builder, themeName, pwa));
             commands.add(new TaskUpdateVite(builder.npmFolder,
                     builder.buildDirectory));

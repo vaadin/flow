@@ -52,6 +52,12 @@ public final class ViteHandler extends AbstractDevServerRunner {
      * The local installation path of the server node script.
      */
     public static final String VITE_SERVER = "node_modules/vite/bin/vite.js";
+    /**
+     * Files that are loaded from the root path but Vite places them in the
+     * VAADIN folder.
+     */
+    private static final String[] FILES_IN_ROOT = new String[] { INDEX_HTML,
+            WEB_COMPONENT_HTML, SERVICE_WORKER_SRC_JS };
 
     /**
      * Creates and starts the dev mode handler if none has been started yet.
@@ -83,7 +89,7 @@ public final class ViteHandler extends AbstractDevServerRunner {
         command.add("--port");
         command.add(String.valueOf(getPort()));
         command.add("--base");
-        command.add(getContextPath() + "/" + VAADIN_MAPPING);
+        command.add(getPathToVaadin());
 
         String customParameters = getApplicationConfiguration()
                 .getStringProperty(
@@ -132,28 +138,35 @@ public final class ViteHandler extends AbstractDevServerRunner {
     @Override
     public HttpURLConnection prepareConnection(String path, String method)
             throws IOException {
-        if (path.equals("/" + INDEX_HTML)) {
-            return super.prepareConnection(
-                    getContextPath() + "/" + VAADIN_MAPPING + INDEX_HTML,
-                    method);
+        for (String fileInSerlvetPath : FILES_IN_ROOT) {
+            if (path.equals("/" + fileInSerlvetPath)) {
+                return super.prepareConnection(
+                        getPathToVaadin() + fileInSerlvetPath, method);
+            }
         }
 
-        if (path.equals("/" + WEB_COMPONENT_HTML)) {
-            return super.prepareConnection(getContextPath() + "/"
-                    + VAADIN_MAPPING + WEB_COMPONENT_HTML, method);
-        }
+        // The path passed to this method starts with /VAADIN and
+        // getPathToVaadin() also
+        // includes /VAADIN so one needs to be removed
+        String vitePath = getPathToVaadin().replace("/" + VAADIN_MAPPING, "")
+                + path;
+        return super.prepareConnection(vitePath, method);
+    }
 
-        if (path.equals("/" + SERVICE_WORKER_SRC_JS)) {
-            return super.prepareConnection(getContextPath() + "/"
-                    + VAADIN_MAPPING + SERVICE_WORKER_SRC_JS, method);
-        }
-
-        return super.prepareConnection(getContextPath() + path, method);
+    private String getPathToVaadin() {
+        return getContextPath()
+                + FrontendUtils.getFrontendServletPath(
+                        getServletContext().getContext())
+                + "/" + VAADIN_MAPPING;
     }
 
     private String getContextPath() {
-        VaadinServletContext servletContext = (VaadinServletContext) getApplicationConfiguration()
-                .getContext();
+        VaadinServletContext servletContext = getServletContext();
         return servletContext.getContext().getContextPath();
+    }
+
+    private VaadinServletContext getServletContext() {
+        return (VaadinServletContext) getApplicationConfiguration()
+                .getContext();
     }
 }

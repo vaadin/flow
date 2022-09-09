@@ -12,13 +12,13 @@ import { processThemeResources } from '#buildFolder#/plugins/application-theme-p
 import { rewriteCssUrls } from '#buildFolder#/plugins/theme-loader/theme-loader-utils';
 import settings from '#settingsImport#';
 import { defineConfig, mergeConfig, PluginOption, ResolvedConfig, UserConfigFn, OutputOptions, AssetInfo, ChunkInfo } from 'vite';
-import { injectManifest } from 'workbox-build';
+import { getManifest } from 'workbox-build';
 
 import * as rollup from 'rollup';
 import brotli from 'rollup-plugin-brotli';
 import replace from '@rollup/plugin-replace';
 import checker from 'vite-plugin-checker';
-import postcssLit from 'rollup-plugin-postcss-lit';
+import postcssLit from '#buildFolder#/plugins/rollup-plugin-postcss-lit-custom/rollup-plugin-postcss-lit.js';
 
 const appShellUrl = '.';
 
@@ -54,13 +54,41 @@ const hasExportedWebComponents = existsSync(path.resolve(frontendFolder, 'web-co
 console.trace = () => {};
 console.debug = () => {};
 
+function injectManifestToSWPlugin(): rollup.Plugin {
+  const rewriteManifestIndexHtmlUrl = (manifest) => {
+    const indexEntry = manifest.find((entry) => entry.url === 'index.html');
+    if (indexEntry) {
+      indexEntry.url = appShellUrl;
+    }
+
+    return { manifest, warnings: [] };
+  };
+
+  return {
+    name: 'vaadin:inject-manifest-to-sw',
+    async transform(code, id) {
+      if (/sw\.(ts|js)$/.test(id)) {
+        const { manifestEntries } = await getManifest({
+          globDirectory: frontendBundleFolder,
+          globPatterns: ['**/*'],
+          globIgnores: ['**/*.br'],
+          manifestTransforms: [rewriteManifestIndexHtmlUrl],
+          maximumFileSizeToCacheInBytes: 100 * 1024 * 1024, // 100mb,
+        });
+
+        return code.replace('self.__WB_MANIFEST', JSON.stringify(manifestEntries));
+      }
+    }
+  }
+}
+
 function buildSWPlugin(opts): PluginOption {
   let config: ResolvedConfig;
   const devMode = opts.devMode;
 
   const swObj = {}
 
-  async function build(action: 'generate' | 'write') {
+  async function build(action: 'generate' | 'write', additionalPlugins: rollup.Plugin[] = []) {
     const includedPluginNames = [
       'alias',
       'vite:resolve',
@@ -81,6 +109,9 @@ function buildSWPlugin(opts): PluginOption {
         preventAssignment: true
       })
     );
+    if (additionalPlugins) {
+      plugins.push(...additionalPlugins);
+    }
     const bundle = await rollup.rollup({
       input: path.resolve(settings.clientServiceWorkerSource),
       plugins
@@ -110,8 +141,6 @@ function buildSWPlugin(opts): PluginOption {
         const { output } = await build('generate');
         swObj.code = output[0].code;
         swObj.map =  output[0].map;
-      } else {
-        await build('write');
       }
     },
     async load(id) {
@@ -124,36 +153,13 @@ function buildSWPlugin(opts): PluginOption {
         return swObj;
       }
     },
-  }
-}
-
-function injectManifestToSWPlugin(): PluginOption {
-  const rewriteManifestIndexHtmlUrl = (manifest) => {
-    const indexEntry = manifest.find((entry) => entry.url === 'index.html');
-    if (indexEntry) {
-      indexEntry.url = appShellUrl;
-    }
-
-    return { manifest, warnings: [] };
-  };
-
-  return {
-    name: 'vaadin:inject-manifest-to-sw',
-    enforce: 'post',
-    apply: 'build',
     async closeBundle() {
-      await injectManifest({
-        swSrc: path.resolve(frontendBundleFolder, 'sw.js'),
-        swDest: path.resolve(frontendBundleFolder, 'sw.js'),
-        globDirectory: frontendBundleFolder,
-        globPatterns: ['**/*'],
-        globIgnores: ['**/*.br'],
-        injectionPoint: 'self.__WB_MANIFEST',
-        manifestTransforms: [rewriteManifestIndexHtmlUrl],
-        maximumFileSizeToCacheInBytes: 100 * 1024 * 1024 // 100mb,
-      });
+      await build('write', [
+        injectManifestToSWPlugin(),
+        brotli(),
+      ]);
     }
-  };
+  }
 }
 
 function statsExtracterPlugin(): PluginOption {
@@ -245,6 +251,14 @@ function vaadinBundlesPlugin(): PluginOption {
     return Array.from(exportsSet);
   }
 
+  function getExportBinding(binding: string) {
+    return binding === 'default' ? '_default as default' : binding;
+  }
+
+  function getImportAssigment(binding: string) {
+    return binding === 'default' ? 'default: _default' : binding;
+  }
+
   return {
     name: 'vaadin:bundles',
     enforce: 'pre',
@@ -311,16 +325,16 @@ function vaadinBundlesPlugin(): PluginOption {
       if (!path.startsWith(modulesDirectory)) return;
 
       const id = path.substring(modulesDirectory.length + 1);
-      const exports = getExports(id);
-      if (exports === undefined) return;
+      const bindings = getExports(id);
+      if (bindings === undefined) return;
 
       const cacheSuffix = params ? `?${params}` : '';
       const bundlePath = `@vaadin/bundles/vaadin.js${cacheSuffix}`;
 
       return `import { init as VaadinBundleInit, get as VaadinBundleGet } from '${bundlePath}';
 await VaadinBundleInit('default');
-const { ${exports.join(', ')} } = (await VaadinBundleGet('./node_modules/${id}'))();
-export { ${exports.map((binding) => `${binding} as ${binding}`).join(', ')} };`;
+const { ${bindings.map(getImportAssigment).join(', ')} } = (await VaadinBundleGet('./node_modules/${id}'))();
+export { ${bindings.map(getExportBinding).join(', ')} };`;
     }
   };
 }
@@ -380,13 +394,50 @@ function themePlugin(opts): PluginOption {
     async transform(raw, id, options) {
       // rewrite urls for the application theme css files
       const [bareId, query] = id.split('?');
-      if (!bareId?.startsWith(themeFolder) || !bareId?.endsWith(".css")) {
+      if (!bareId?.startsWith(themeFolder) || !bareId?.endsWith('.css')) {
         return;
       }
       const [themeName] = bareId.substring(themeFolder.length + 1).split('/');
       return rewriteCssUrls(raw, path.dirname(bareId), path.resolve(themeFolder, themeName), console, opts);
     }
-  }
+  };
+}
+function lenientLitImportPlugin(): PluginOption {
+  return {
+    name: 'vaadin:lenient-lit-import',
+    async transform(code, id) {
+      const decoratorImports = [
+        /import (.*?) from (['"])(lit\/decorators)(['"])/,
+        /import (.*?) from (['"])(lit-element\/decorators)(['"])/
+      ];
+      const directiveImports = [
+        /import (.*?) from (['"])(lit\/directives\/)([^\\.]*?)(['"])/,
+        /import (.*?) from (['"])(lit-html\/directives\/)([^\\.]*?)(['"])/
+      ];
+
+      decoratorImports.forEach((decoratorImport) => {
+        let decoratorMatch;
+        while ((decoratorMatch = code.match(decoratorImport))) {
+          console.warn(
+            `Warning: the file ${id} imports from '${decoratorMatch[3]}' when it should import from '${decoratorMatch[3]}.js'`
+          );
+          code = code.replace(decoratorImport, 'import $1 from $2$3.js$4');
+        }
+      });
+
+      directiveImports.forEach((directiveImport) => {
+        let directiveMatch;
+        while ((directiveMatch = code.match(directiveImport))) {
+          console.warn(
+            `Warning: the file ${id} imports from '${directiveMatch[3]}${directiveMatch[4]}' when it should import from '${directiveMatch[3]}${directiveMatch[4]}.js'`
+          );
+          code = code.replace(directiveImport, 'import $1 from $2$3$4.js$5');
+        }
+      });
+
+      return code;
+    }
+  };
 }
 
 function runWatchDog(watchDogPort, watchDogHost) {
@@ -489,9 +540,9 @@ export const vaadinConfig: UserConfigFn = (env) => {
       devMode && vaadinBundlesPlugin(),
       devMode && setHmrPortToServerPort(),
       settings.offlineEnabled && buildSWPlugin({ devMode }),
-      settings.offlineEnabled && injectManifestToSWPlugin(),
       !devMode && statsExtracterPlugin(),
       themePlugin({devMode}),
+      lenientLitImportPlugin(),
       postcssLit({
         include: ['**/*.css', '**/*.css\?*'],
         exclude: [

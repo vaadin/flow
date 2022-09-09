@@ -19,7 +19,6 @@ import javax.crypto.SecretKey;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Objects;
@@ -79,7 +78,11 @@ public class MySecurityConfigurerAdapter extends VaadinWebSecurityConfigurerAdap
 
 }
  * </code>
+ *
+ * @deprecated Use component-based security configuration
+ *             {@link VaadinWebSecurity}
  */
+@Deprecated
 public abstract class VaadinWebSecurityConfigurerAdapter
         extends WebSecurityConfigurerAdapter {
 
@@ -182,12 +185,6 @@ public abstract class VaadinWebSecurityConfigurerAdapter
                 .map(path -> RequestUtil.applyUrlMapping(urlMapping, path))
                 .forEach(paths::add);
 
-        String mappedRoot = RequestUtil.applyUrlMapping(urlMapping, "");
-        if (!"/".equals(mappedRoot)) {
-            // When using an url path, static resources are still fetched from
-            // /VAADIN/ in the context root
-            paths.add("/VAADIN/**");
-        }
         return new OrRequestMatcher(paths.build()
                 .map(AntPathRequestMatcher::new).collect(Collectors.toList()));
     }
