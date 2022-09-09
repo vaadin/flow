@@ -29,8 +29,8 @@ public class UIAccessContextIT extends AbstractIT {
 
     @Test
     public void securityContextSetForUIAccess() throws Exception {
-        String expectedUserBalance = "Hello John the User, your bank account balance is $10000.";
-        String expectedAdminBalance = "Hello Emma the Admin, your bank account balance is $200000.";
+        String expectedUserBalance = "Hello John the User, your bank account balance is $10000.00.";
+        String expectedAdminBalance = "Hello Emma the Admin, your bank account balance is $200000.00.";
 
         WebDriver adminBrowser = getDriver();
         try {

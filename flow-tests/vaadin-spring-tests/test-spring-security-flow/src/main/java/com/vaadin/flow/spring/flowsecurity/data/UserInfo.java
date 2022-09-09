@@ -3,6 +3,7 @@ package com.vaadin.flow.spring.flowsecurity.data;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 public class UserInfo {
 
@@ -61,5 +62,20 @@ public class UserInfo {
 
     public List<String> getRoles() {
         return roles;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        UserInfo userInfo = (UserInfo) o;
+        return username.equals(userInfo.username);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(username);
     }
 }
