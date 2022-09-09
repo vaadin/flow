@@ -113,6 +113,42 @@ public class Html extends Component {
         setOuterHtml(outerHtml);
     }
 
+    /**
+     * Sets the content based on the given HTML fragment. The fragment must have
+     * exactly one root element.
+     * <p>
+     * A best effort is done to parse broken HTML but no guarantees are given
+     * for how invalid HTML is handled.
+     * <p>
+     * Any heading or trailing whitespace is removed while parsing but any
+     * whitespace inside the root tag is preserved.
+     *
+     * @param outerHtml
+     *            the HTML to wrap
+     */
+    public void setHtmlContent(String html) {
+        Document doc = Jsoup.parseBodyFragment(html);
+        int nrChildren = doc.body().children().size();
+        if (nrChildren != 1) {
+            String message = "HTML must contain exactly one top level element (ignoring text nodes). Found "
+                    + nrChildren;
+            if (nrChildren > 1) {
+                String tagNames = doc.body().children().stream()
+                        .map(org.jsoup.nodes.Element::tagName)
+                        .collect(Collectors.joining(", "));
+                message += " elements with the tag names " + tagNames;
+            }
+            throw new IllegalArgumentException(message);
+        }
+
+        org.jsoup.nodes.Element root = doc.body().child(0);
+        Attributes attrs = root.attributes();
+        attrs.forEach(this::setAttribute);
+
+        doc.outputSettings().prettyPrint(false);
+        setInnerHtml(root.html());
+    }    
+
     private void setOuterHtml(String outerHtml) {
         Document doc = Jsoup.parseBodyFragment(outerHtml);
         int nrChildren = doc.body().children().size();
