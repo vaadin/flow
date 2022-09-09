@@ -148,12 +148,12 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         // Contains CSS import lines
         MatcherAssert.assertThat(mainContent, CoreMatchers.containsString(
-                "import $cssFromFile_0 from '@vaadin/vaadin-mixed-component/bar.css';"));
+                "import $cssFromFile_0 from '@vaadin/vaadin-mixed-component/bar.css?inline';"));
         MatcherAssert.assertThat(mainContent, CoreMatchers
                 .containsString("addCssBlock(`<style>${$css_0}</style>`);"));
 
         MatcherAssert.assertThat(mainContent, CoreMatchers.containsString(
-                "import $cssFromFile_5 from 'Frontend/foo.css';"));
+                "import $cssFromFile_5 from 'Frontend/foo.css?inline';"));
         MatcherAssert.assertThat(mainContent, CoreMatchers.containsString(
                 "registerStyles('foo-bar', $css_5, {moduleId: 'flow_css_mod_5'});"));
 
@@ -201,7 +201,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         // Does not contains CSS import lines
         MatcherAssert.assertThat(fallBackContent,
                 CoreMatchers.not(CoreMatchers.containsString(
-                        "import $cssFromFile_0 from '@vaadin/vaadin-mixed-component/bar.css';")));
+                        "import $cssFromFile_0 from '@vaadin/vaadin-mixed-component/bar.css?inline';")));
 
         // Contain lines to import exported modules from main file
         MatcherAssert.assertThat(fallBackContent, CoreMatchers.containsString(
@@ -209,7 +209,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         // Contains CSS import lines from CP not discovered by byte scanner
         MatcherAssert.assertThat(fallBackContent, CoreMatchers.containsString(
-                "import $cssFromFile_0 from 'Frontend/b-css.css';"));
+                "import $cssFromFile_0 from 'Frontend/b-css.css?inline';"));
         MatcherAssert.assertThat(fallBackContent, CoreMatchers.containsString(
                 "registerStyles('extra-foo', $css_2, {include: 'extra-bar', moduleId: 'fallback_flow_css_mod_2'});"));
 
@@ -304,7 +304,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         // Contains CSS import lines from CP not discovered by byte
         // scanner
         MatcherAssert.assertThat(fallBackContent, CoreMatchers.containsString(
-                "import $cssFromFile_0 from 'Frontend/foo.css';"));
+                "import $cssFromFile_0 from 'Frontend/foo.css?inline';"));
         MatcherAssert.assertThat(fallBackContent, CoreMatchers.containsString(
                 "registerStyles('', $css_0, {include: 'bar', moduleId: 'baz'});"));
 
