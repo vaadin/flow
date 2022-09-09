@@ -72,7 +72,7 @@ public class HTMLTest {
         Assert.assertEquals("hello", html.getInnerHtml());
         html.setHtmlContent("<span>world</span>");
         Assert.assertEquals("world", html.getInnerHtml());
-    }    
+    }
 
     @Test
     public void rootAttributes() {
