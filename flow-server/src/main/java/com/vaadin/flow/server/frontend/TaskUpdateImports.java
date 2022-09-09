@@ -92,9 +92,10 @@ public class TaskUpdateImports extends NodeUpdater {
         UpdateMainImportsFile(ClassFinder classFinder, File frontendDirectory,
                 File npmDirectory, File generatedDirectory,
                 File fallBackImports, File tokenFile, boolean productionMode,
-                boolean useLegacyV14Bootstrap) {
+                boolean useLegacyV14Bootstrap, FeatureFlags featureFlags) {
             super(frontendDirectory, npmDirectory, generatedDirectory,
-                    tokenFile, productionMode, useLegacyV14Bootstrap);
+                    tokenFile, productionMode, useLegacyV14Bootstrap,
+                    featureFlags);
             generatedFlowImports = new File(generatedDirectory, IMPORTS_NAME);
             generatedFlowDefinitions = new File(generatedDirectory,
                     IMPORTS_D_TS_NAME);
@@ -244,9 +245,10 @@ public class TaskUpdateImports extends NodeUpdater {
         UpdateFallBackImportsFile(ClassFinder classFinder,
                 File frontendDirectory, File npmDirectory,
                 File generatedDirectory, File tokenFile, boolean productionMode,
-                boolean useLegacyV14Bootstrap) {
+                boolean useLegacyV14Bootstrap, FeatureFlags featureFlags) {
             super(frontendDirectory, npmDirectory, generatedDirectory,
-                    tokenFile, productionMode, useLegacyV14Bootstrap);
+                    tokenFile, productionMode, useLegacyV14Bootstrap,
+                    featureFlags);
             generatedFallBack = new File(generatedDirectory,
                     FrontendUtils.FALLBACK_IMPORTS_NAME);
             finder = classFinder;
@@ -381,7 +383,8 @@ public class TaskUpdateImports extends NodeUpdater {
         if (fallbackScanner != null) {
             UpdateFallBackImportsFile fallBackUpdate = new UpdateFallBackImportsFile(
                     finder, frontendDirectory, npmFolder, generatedFolder,
-                    tokenFile, productionMode, useLegacyV14Bootstrap);
+                    tokenFile, productionMode, useLegacyV14Bootstrap,
+                    featureFlags);
             fallBackUpdate.run();
             fallBack = fallBackUpdate.getGeneratedFallbackFile();
             updateBuildFile(fallBackUpdate);
@@ -389,7 +392,7 @@ public class TaskUpdateImports extends NodeUpdater {
 
         UpdateMainImportsFile mainUpdate = new UpdateMainImportsFile(finder,
                 frontendDirectory, npmFolder, generatedFolder, fallBack,
-                tokenFile, productionMode, useLegacyV14Bootstrap);
+                tokenFile, productionMode, useLegacyV14Bootstrap, featureFlags);
         mainUpdate.run();
     }
 
