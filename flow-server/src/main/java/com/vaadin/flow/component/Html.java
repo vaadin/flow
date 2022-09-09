@@ -147,7 +147,7 @@ public class Html extends Component {
 
         doc.outputSettings().prettyPrint(false);
         setInnerHtml(root.html());
-    }    
+    }
 
     private void setOuterHtml(String outerHtml) {
         Document doc = Jsoup.parseBodyFragment(outerHtml);
