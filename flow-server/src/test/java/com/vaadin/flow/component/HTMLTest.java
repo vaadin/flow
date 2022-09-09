@@ -66,6 +66,15 @@ public class HTMLTest {
     }
 
     @Test
+    public void setHtmlContent() {
+        Html html = new Html("<span>hello</span>");
+        Assert.assertEquals(Tag.SPAN, html.getElement().getTag());
+        Assert.assertEquals("hello", html.getInnerHtml());
+        html.setHtmlContent("<span>world</span>");
+        Assert.assertEquals("world", html.getInnerHtml());
+    }    
+
+    @Test
     public void rootAttributes() {
         Html html = new Html("<span foo='bar'>hello</span>");
         Assert.assertEquals(Tag.SPAN, html.getElement().getTag());
