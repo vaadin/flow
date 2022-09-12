@@ -18,6 +18,7 @@ package com.vaadin.flow.component.html;
 import java.util.Optional;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
@@ -37,7 +38,9 @@ import com.vaadin.flow.component.Tag;
  * {@link Input}s.
  * <p>
  * For adding texts to the page without linking them to other components,
- * consider using a {@link Span} or a {@link Div} instead.
+ * consider using a {@link Span} or a {@link Div} instead. If the text should be
+ * interpreted as HTML, use a {@link Html} (but remember to guard against
+ * cross-site scripting attacks).
  *
  * @author Vaadin Ltd
  * @see <a href=
