@@ -3,34 +3,16 @@ package com.vaadin.flow.spring.flowsecurity.data;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
+import java.util.Objects;
 
-import javax.persistence.ElementCollection;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-
-import org.hibernate.annotations.Type;
-
-@Entity
 public class UserInfo {
-
-    @Id
-    @GeneratedValue
-    @Type(type = "uuid-char")
-    private UUID id;
 
     private String username;
     private String encodedPassword;
     private String fullName;
     private String imageUrl;
-    @ElementCollection(fetch = FetchType.EAGER)
+
     private List<String> roles;
-
-    public UserInfo() {
-
-    }
 
     public UserInfo(String username, String encodedPassword, String fullName,
             String imageUrl, String... roles) {
@@ -38,12 +20,8 @@ public class UserInfo {
         this.encodedPassword = encodedPassword;
         this.fullName = fullName;
         this.imageUrl = imageUrl;
-        this.roles = new ArrayList<String>();
+        this.roles = new ArrayList<>();
         Collections.addAll(this.roles, roles);
-    }
-
-    public UUID getId() {
-        return id;
     }
 
     public void setUsername(String username) {
@@ -84,5 +62,20 @@ public class UserInfo {
 
     public List<String> getRoles() {
         return roles;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        UserInfo userInfo = (UserInfo) o;
+        return username.equals(userInfo.username);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(username);
     }
 }
