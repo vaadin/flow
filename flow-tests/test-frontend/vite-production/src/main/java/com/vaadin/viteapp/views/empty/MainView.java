@@ -12,6 +12,7 @@ import com.vaadin.flow.router.Route;
 @Route("")
 @JsModule("@testscope/button")
 @JsModule("@testscope/map")
+@JsModule("./lit-invalid-imports.ts")
 public class MainView extends Div {
 
     public static final String PLANT = "plant";

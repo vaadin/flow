@@ -23,7 +23,6 @@ import com.vaadin.testbench.TestBenchElement;
 
 import org.junit.Assert;
 import org.junit.Test;
-import org.openqa.selenium.SearchContext;
 import org.openqa.selenium.WebDriver;
 
 public class UIAccessContextIT extends AbstractIT {
@@ -42,14 +41,7 @@ public class UIAccessContextIT extends AbstractIT {
             Assert.assertEquals(expectedUserBalance, balance.getText());
 
             open("private", adminBrowser);
-            HasElementQuery adminContext = new HasElementQuery() {
-
-                @Override
-                public SearchContext getContext() {
-                    return adminBrowser;
-                }
-
-            };
+            HasElementQuery adminContext = () -> adminBrowser;
             loginAdmin(adminContext);
             TestBenchElement adminBalance = adminContext.$("span")
                     .id("balanceText");
