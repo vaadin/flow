@@ -151,9 +151,6 @@ public class UI extends Component
         getNode().getFeature(ElementData.class).setTag("body");
         Component.setElement(this, Element.get(getNode()));
         pushConfiguration = new PushConfigurationImpl(this);
-        // Component::setVisible relies on hidden attribute.
-        // Adds a global display:none style to elements with hidden attribute
-        page.addStyleSheet("./frontend/styles/hidden.css");
     }
 
     /**
