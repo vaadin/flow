@@ -1179,6 +1179,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             // Basic reconnect and system error dialog styles just to make them
             // visible and outside of normal flow
             setupErrorDialogs(styles);
+
+            styles = head.appendElement("style").attr("type",
+                    CSS_TYPE_ATTRIBUTE_VALUE);
+            setupHiddenElement(styles);
         }
 
         private void setupMetaAndTitle(Element head, BootstrapContext context) {
@@ -1740,6 +1744,12 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 "color: red;" +
                 "}");
      // @formatter:on
+    }
+
+    protected static void setupHiddenElement(Element styles) {
+        // Component::setVisible relies on hidden attribute.
+        // Adds a global display:none style to elements with hidden attribute
+        styles.appendText("[hidden] { display: none !important; }");
     }
 
     protected static void setupPwa(Document document, VaadinService service) {
