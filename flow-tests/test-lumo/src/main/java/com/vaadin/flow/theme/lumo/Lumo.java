@@ -33,13 +33,16 @@ import com.vaadin.flow.uitest.ui.dependencies.TestVersion;
  *
  * @since 1.0
  */
+@NpmPackage(value = "@vaadin/vaadin-themable-mixin", version = TestVersion.VAADIN)
+@NpmPackage(value = "@vaadin/polymer-legacy-adapter", version = TestVersion.VAADIN)
+@JsModule("@vaadin/polymer-legacy-adapter/style-modules.js")
 @NpmPackage(value = "@vaadin/vaadin-lumo-styles", version = TestVersion.VAADIN)
 @JsModule("@vaadin/vaadin-lumo-styles/color.js")
 @JsModule("@vaadin/vaadin-lumo-styles/typography.js")
 @JsModule("@vaadin/vaadin-lumo-styles/sizing.js")
 @JsModule("@vaadin/vaadin-lumo-styles/spacing.js")
 @JsModule("@vaadin/vaadin-lumo-styles/style.js")
-@JsModule("@vaadin/vaadin-lumo-styles/icons.js")
+@JsModule("@vaadin/vaadin-lumo-styles/vaadin-iconset.js")
 @JsModule("./lumo-includes.ts")
 public class Lumo implements AbstractTheme {
 
