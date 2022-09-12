@@ -45,6 +45,6 @@ public class NpmOnlyIndexIT extends ChromeBrowserTest {
         List<TestBenchElement> styles = webComponent.$("style").all();
 
         // getAttribute wouldn't work, so we are counting the elements
-        Assert.assertEquals(3, styles.size());
+        Assert.assertEquals(2, styles.size());
     }
 }

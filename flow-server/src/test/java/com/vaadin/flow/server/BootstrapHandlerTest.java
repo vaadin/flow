@@ -1794,10 +1794,13 @@ public class BootstrapHandlerTest {
 
         Elements styles = page.head().getElementsByTag("style");
 
-        assertEquals(3, styles.size());
+        assertEquals(2, styles.size());
 
-        assertEquals("[hidden] { display: none !important; }",
-                styles.get(1).childNode(0).toString());
+        Element addedByBootstrapHandler = styles.get(0);
+        assertEquals(3, addedByBootstrapHandler.childNodeSize());
+
+        assertTrue(addedByBootstrapHandler.childNode(2).toString()
+                .contains("[hidden] { display: none !important; }"));
     }
 
     private void enableWebpackFeature() {
