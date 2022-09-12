@@ -1180,8 +1180,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             // visible and outside of normal flow
             setupErrorDialogs(styles);
 
-            styles = head.appendElement("style").attr("type",
-                    CSS_TYPE_ATTRIBUTE_VALUE);
             setupHiddenElement(styles);
         }
 
