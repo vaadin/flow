@@ -672,11 +672,15 @@ public class IndexHtmlRequestHandlerTest {
 
         Elements headInlineAndStyleElements = document.head()
                 .getElementsByTag("style");
-        assertEquals(2, headInlineAndStyleElements.size());
-        assertEquals("text/css",
-                headInlineAndStyleElements.get(1).attr("type"));
-        assertEquals("body,#outlet{width:my-width;height:my-height;}",
+        assertEquals(3, headInlineAndStyleElements.size());
+
+        assertEquals("[hidden] { display: none !important; }",
                 headInlineAndStyleElements.get(1).childNode(0).toString());
+
+        assertEquals("text/css",
+                headInlineAndStyleElements.get(2).attr("type"));
+        assertEquals("body,#outlet{width:my-width;height:my-height;}",
+                headInlineAndStyleElements.get(2).childNode(0).toString());
     }
 
     @Test
@@ -714,11 +718,15 @@ public class IndexHtmlRequestHandlerTest {
 
         Elements headInlineAndStyleElements = document.head()
                 .getElementsByTag("style");
-        assertEquals(3, headInlineAndStyleElements.size());
-        assertEquals("text/css",
-                headInlineAndStyleElements.get(2).attr("type"));
-        assertEquals("body,#outlet{width:my-width;height:my-height;}",
+        assertEquals(4, headInlineAndStyleElements.size());
+
+        assertEquals("[hidden] { display: none !important; }",
                 headInlineAndStyleElements.get(2).childNode(0).toString());
+
+        assertEquals("text/css",
+                headInlineAndStyleElements.get(3).attr("type"));
+        assertEquals("body,#outlet{width:my-width;height:my-height;}",
+                headInlineAndStyleElements.get(3).childNode(0).toString());
 
         Elements bodyInlineElements = document.body()
                 .getElementsByTag("script");

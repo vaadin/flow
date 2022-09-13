@@ -39,6 +39,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 public class ServletDeployerTest {
@@ -46,6 +47,7 @@ public class ServletDeployerTest {
 
     private List<String> servletNames;
     private List<String> servletMappings;
+    private List<Integer> servletLoadOnStartup;
 
     private boolean disableAutomaticServletRegistration = false;
 
@@ -84,6 +86,7 @@ public class ServletDeployerTest {
     public void clearCaptures() {
         servletNames = new ArrayList<>();
         servletMappings = new ArrayList<>();
+        servletLoadOnStartup = new ArrayList<>();
     }
 
     @Test
@@ -93,6 +96,7 @@ public class ServletDeployerTest {
 
         assertMappingsCount(1, 1);
         assertMappingIsRegistered(ServletDeployer.class.getName(), "/*");
+        assertLoadOnStartupSet();
     }
 
     @Test
@@ -114,6 +118,7 @@ public class ServletDeployerTest {
                         singletonList("/test/*"), Collections.emptyMap())));
 
         assertMappingsCount(1, 1);
+        assertLoadOnStartupSet();
     }
 
     @Test
@@ -126,6 +131,7 @@ public class ServletDeployerTest {
 
         assertMappingsCount(1, 1);
         assertMappingIsRegistered(ServletDeployer.class.getName(), "/*");
+        assertLoadOnStartupSet();
     }
 
     @Test
@@ -135,6 +141,7 @@ public class ServletDeployerTest {
 
         assertMappingsCount(1, 1);
         assertMappingIsRegistered(ServletDeployer.class.getName(), "/*");
+        assertLoadOnStartupSet();
     }
 
     @Test
@@ -156,6 +163,7 @@ public class ServletDeployerTest {
 
         assertMappingsCount(1, 1);
         assertMappingIsRegistered(ServletDeployer.class.getName(), "/*");
+        assertLoadOnStartupSet();
     }
 
     private void assertMappingsCount(int numServlets, int numMappings) {
@@ -184,6 +192,21 @@ public class ServletDeployerTest {
                 pathIndex, servletNameIndex);
     }
 
+    private void assertLoadOnStartupSet() {
+        assertEquals("Servlet loadOnStartup should be invoked only once", 1,
+                servletLoadOnStartup.size());
+        assertEquals(
+                String.format(
+                        "Expected servlet loadOnStartup to be '%d' but was '%d",
+                        1, servletLoadOnStartup.get(0)),
+                (Integer) 1, servletLoadOnStartup.get(0));
+    }
+
+    private void assertLoadOnStartupNotSet() {
+        assertTrue("Servlet loadOnStartup should not have been invoked ",
+                servletLoadOnStartup.isEmpty());
+    }
+
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private ServletContextEvent getContextEvent(
             ServletRegistration... servletRegistrations) throws Exception {
@@ -196,6 +219,8 @@ public class ServletDeployerTest {
                     this.servletMappings.addAll(Arrays.asList(mappings));
                     return Collections.emptySet();
                 });
+        Mockito.doAnswer(i -> this.servletLoadOnStartup.add(i.getArgument(0)))
+                .when(dynamicMock).setLoadOnStartup(ArgumentMatchers.anyInt());
 
         ServletContext contextMock = Mockito.mock(ServletContext.class);
 

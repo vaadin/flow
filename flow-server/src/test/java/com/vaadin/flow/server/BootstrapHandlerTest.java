@@ -1784,6 +1784,25 @@ public class BootstrapHandlerTest {
                         .contains("href=\"VAADIN/build/main.688a5538.css\""));
     }
 
+    @Test
+    public void getBootstrapPage_setsUpHiddenStyles() {
+        initUI(testUI, createVaadinRequest(), Collections
+                .singleton(InitialPageConfiguratorAppendFiles.class));
+
+        Document page = pageBuilder.getBootstrapPage(new BootstrapContext(
+                request, null, session, testUI, this::contextRootRelativePath));
+
+        Elements styles = page.head().getElementsByTag("style");
+
+        assertEquals(2, styles.size());
+
+        Element addedByBootstrapHandler = styles.get(0);
+        assertEquals(3, addedByBootstrapHandler.childNodeSize());
+
+        assertTrue(addedByBootstrapHandler.childNode(2).toString()
+                .contains("[hidden] { display: none !important; }"));
+    }
+
     private void enableWebpackFeature() {
         VaadinContext vaadinContext = Mockito.mock(VaadinContext.class);
         Lookup lookup = testUI.getSession().getService().getContext()
