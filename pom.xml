@@ -578,6 +578,7 @@
                 <plugin>
                     <groupId>com.github.siom79.japicmp</groupId>
                     <artifactId>japicmp-maven-plugin</artifactId>
+		    <version>0.16.0</version>
                     <dependencies>
                         <dependency>
                             <groupId>javax.activation</groupId>
