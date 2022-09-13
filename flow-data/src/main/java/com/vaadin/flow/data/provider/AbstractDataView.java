@@ -124,7 +124,7 @@ public abstract class AbstractDataView<T> implements DataView<T> {
     @Override
     public void refreshItem(T item) {
         Objects.requireNonNull(item, NULL_ITEM_ERROR_MESSAGE);
-        SerializablePredicate<T> filter = i -> item.equals(i);
+        SerializablePredicate<T> filter = i -> equals(item, i);
         if (dataProviderSupplier.get().fetch(new Query(filter)).findAny()
                 .isPresent()) {
             dataProviderSupplier.get().refreshItem(item);
