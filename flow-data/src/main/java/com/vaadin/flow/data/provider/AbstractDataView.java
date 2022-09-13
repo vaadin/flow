@@ -21,6 +21,7 @@ import java.util.stream.Stream;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.shared.Registration;
 
@@ -123,12 +124,11 @@ public abstract class AbstractDataView<T> implements DataView<T> {
     @Override
     public void refreshItem(T item) {
         Objects.requireNonNull(item, NULL_ITEM_ERROR_MESSAGE);
-        //@formatter:off
-        getItems()
-                .filter(i -> equals(item, i))
-                .findFirst()
-                .ifPresent(i -> dataProviderSupplier.get().refreshItem(item));
-        //@formatter:on
+        SerializablePredicate<T> filter = i -> item.equals(i);
+        if (dataProviderSupplier.get().fetch(new Query(filter)).findAny()
+                .isPresent()) {
+            dataProviderSupplier.get().refreshItem(item);
+        }
     }
 
     @Override
