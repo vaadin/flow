@@ -826,25 +826,6 @@ public class AbstractListDataViewTest {
     }
 
     @Test
-    public void refreshItem_itemNotPresent_itemNotRefreshed() {
-        Collection<Item> items = getTestItems();
-
-        ListDataProvider<Item> dataProvider = Mockito
-                .spy(DataProvider.ofCollection(items));
-
-        ItemListDataView dataView = new ItemListDataView(() -> dataProvider,
-                component);
-
-        Item updatedItem = new Item(42L, "updated", "descr1");
-        dataView.refreshItem(updatedItem);
-        Mockito.verify(dataProvider, Mockito.times(0)).refreshItem(updatedItem);
-
-        updatedItem = new Item(1L, "updated", "descr1");
-        dataView.refreshItem(updatedItem);
-        Mockito.verify(dataProvider, Mockito.times(0)).refreshItem(updatedItem);
-    }
-
-    @Test
     public void getItem_correctIndex_itemFound() {
         Assert.assertEquals("Wrong item returned for index", "first",
                 dataView.getItem(0));
