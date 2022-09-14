@@ -123,12 +123,7 @@ public abstract class AbstractDataView<T> implements DataView<T> {
     @Override
     public void refreshItem(T item) {
         Objects.requireNonNull(item, NULL_ITEM_ERROR_MESSAGE);
-        //@formatter:off
-        getItems()
-                .filter(i -> equals(item, i))
-                .findFirst()
-                .ifPresent(i -> dataProviderSupplier.get().refreshItem(item));
-        //@formatter:on
+        dataProviderSupplier.get().refreshItem(item);
     }
 
     @Override
