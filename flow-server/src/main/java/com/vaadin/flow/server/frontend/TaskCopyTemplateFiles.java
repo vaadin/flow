@@ -44,11 +44,14 @@ public class TaskCopyTemplateFiles implements FallibleCommand {
     private final File projectDirectory;
     private final File resourceOutputDirectory;
 
+    private final File frontendDirectory;
+
     TaskCopyTemplateFiles(ClassFinder classFinder, File projectDirectory,
-            File resourceOutputDirectory) {
+            File resourceOutputDirectory, File frontendDirectory) {
         this.classFinder = classFinder;
         this.projectDirectory = projectDirectory;
         this.resourceOutputDirectory = resourceOutputDirectory;
+        this.frontendDirectory = frontendDirectory;
     }
 
     @Override
@@ -70,8 +73,12 @@ public class TaskCopyTemplateFiles implements FallibleCommand {
                 File source = FrontendUtils
                         .resolveFrontendPath(projectDirectory, path);
                 if (source == null) {
-                    throw new ExecutionFailedException(
-                            "Unable to locate file " + path);
+                    // Check if not custom frontendDirectory
+                    source = new File(this.frontendDirectory, path);
+                    if (!source.exists()) {
+                        throw new ExecutionFailedException(
+                                "Unable to locate file " + path);
+                    }
                 }
                 File templateDirectory = new File(resourceOutputDirectory,
                         Constants.TEMPLATE_DIRECTORY);
