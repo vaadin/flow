@@ -19,6 +19,6 @@ Since [Vaadin platform 23.0](https://github.com/vaadin/platform), Flow major and
 |  1.0   |  10 (LTS)                                                       |  1.0                                                    |
 |  2.7   |  14.8.x (LTS)                                                   |  2.7.x                                                  |
 |  9.0   |  22.0.x (LATEST with Java 8+ support)                           |  9.x                                                    |
-|  23.0  |  23.0.x (LATEST with Java 11+ support)                          |  23.0.x                                                 |
-|  23.1  |  23.1.x (beta)                                                  |  23.1.x                                                 |
-|  master|  23.2 (NEXT)                                                    |  23.2                                                   |
+|  23.1  |  23.1.x                                                         |  23.1.x                                                 |
+|  23.2  |  23.2.x (LATEST with Java 11+ support)                          |  23.2.x                                                 |
+|  master|  23.3 (NEXT)                                                    |  23.3                                                   |

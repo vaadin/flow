@@ -336,6 +336,7 @@ public class ServletDeployer implements ServletContextListener {
 
         registration.setAsyncSupported(true);
         registration.addMapping(path);
+        registration.setLoadOnStartup(1);
         return VaadinServletCreation.SERVLET_CREATED;
     }
 
