@@ -710,8 +710,26 @@ public class FrontendUtils {
      * @return an existing {@link File} , or null if the file doesn't exist.
      */
     public static File resolveFrontendPath(File projectRoot, String path) {
-        File localFrontendFolder = new File(projectRoot,
-                FrontendUtils.FRONTEND);
+        return resolveFrontendPath(projectRoot, path,
+                new File(projectRoot, FrontendUtils.FRONTEND));
+    }
+
+    /**
+     * Looks up the front file at the given path. If the path starts with
+     * {@code ./}, first look in {@code projectRoot/frontendDirectory}, then in
+     * {@code projectRoot/node_modules/@vaadin/flow-frontend}. If the path does
+     * not start with {@code ./}, look in {@code node_modules} instead.
+     *
+     * @param projectRoot
+     *            the project root folder.
+     * @param path
+     *            the file path.
+     * @param localFrontendFolder
+     *            the local frontend folder.
+     * @return an existing {@link File} , or null if the file doesn't exist.
+     */
+    public static File resolveFrontendPath(File projectRoot, String path,
+            File localFrontendFolder) {
         File nodeModulesFolder = new File(projectRoot, NODE_MODULES);
         File flowFrontendFolder = new File(nodeModulesFolder,
                 "@vaadin/" + DEFAULT_FLOW_RESOURCES_FOLDER);

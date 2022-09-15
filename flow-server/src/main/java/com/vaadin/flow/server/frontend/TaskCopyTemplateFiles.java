@@ -70,15 +70,11 @@ public class TaskCopyTemplateFiles implements FallibleCommand {
             for (Annotation jsmAnnotation : clazz
                     .getAnnotationsByType(jsModuleAnnotationClass)) {
                 String path = getJsModuleAnnotationValue(jsmAnnotation);
-                File source = FrontendUtils
-                        .resolveFrontendPath(projectDirectory, path);
+                File source = FrontendUtils.resolveFrontendPath(
+                        projectDirectory, path, this.frontendDirectory);
                 if (source == null) {
-                    // Check if not custom frontendDirectory
-                    source = new File(this.frontendDirectory, path);
-                    if (!source.exists()) {
-                        throw new ExecutionFailedException(
-                                "Unable to locate file " + path);
-                    }
+                    throw new ExecutionFailedException(
+                            "Unable to locate file " + path);
                 }
                 File templateDirectory = new File(resourceOutputDirectory,
                         Constants.TEMPLATE_DIRECTORY);
