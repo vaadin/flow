@@ -88,9 +88,11 @@ public class TaskCopyTemplateFilesTest extends NodeUpdateTestUtil {
         executeTaskCopyTemplateFiles("frontend-custom");
     }
 
-    private void executeTaskCopyTemplateFiles(String frontedDirectoryName) throws Exception {
+    private void executeTaskCopyTemplateFiles(String frontedDirectoryName)
+            throws Exception {
         // prepare frontend resource
-        File frontendDirectory = new File(projectDirectory, frontedDirectoryName);
+        File frontendDirectory = new File(projectDirectory,
+                frontedDirectoryName);
         frontendDirectory.mkdirs();
         new File(frontendDirectory, "my-lit-element-view.js").createNewFile();
 
