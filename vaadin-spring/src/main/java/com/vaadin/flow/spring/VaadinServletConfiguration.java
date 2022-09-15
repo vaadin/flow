@@ -58,7 +58,6 @@ public class VaadinServletConfiguration {
     @Bean
     public SimpleUrlHandlerMapping vaadinRootMapping() {
         SimpleUrlHandlerMapping mapping = new SimpleUrlHandlerMapping();
-        mapping.setOrder(Ordered.LOWEST_PRECEDENCE - 1);
 
         mapping.setUrlMap(
                 Collections.singletonMap("/*", vaadinForwardingController()));
