@@ -312,12 +312,14 @@ class VaadinSmokeTest : AbstractGradleTest() {
             package org.vaadin.example;
 
             import com.vaadin.flow.component.dependency.CssImport;
+            import com.vaadin.flow.component.dependency.NpmPackage;
             import com.vaadin.flow.component.html.Div;
             import com.vaadin.flow.component.html.Span;
             import com.vaadin.flow.router.Route;
 
             @Route("")
             @CssImport("./mystyle.css")
+            @NpmPackage(value = "@vaadin/vaadin-themable-mixin", version = "23.3.0-alpha1")
             public class MainView extends Div {
 
                 public MainView() {
