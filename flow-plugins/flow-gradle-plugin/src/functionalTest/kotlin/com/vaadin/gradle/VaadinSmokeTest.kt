@@ -299,4 +299,47 @@ class VaadinSmokeTest : AbstractGradleTest() {
             File(testProject.dir, "src/main/frontend/generated/index.ts").exists()
         }
     }
+
+    /**
+     * Tests that build works with resources from classpath, not only from
+     * frontend directory
+     *
+     * https://github.com/vaadin/flow/issues/14420
+     */
+    @Test
+    fun vaadinBuildFrontendShouldScanForResourcesOnClasspath() {
+        testProject.newFile("src/main/java/org/vaadin/example/MainView.java", """
+            package org.vaadin.example;
+
+            import com.vaadin.flow.component.dependency.CssImport;
+            import com.vaadin.flow.component.html.Div;
+            import com.vaadin.flow.component.html.Span;
+            import com.vaadin.flow.router.Route;
+
+            @Route("")
+            @CssImport("./mystyle.css")
+            public class MainView extends Div {
+
+                public MainView() {
+                    add(new Span("It works!"));
+                }
+            }
+        """.trimIndent())
+        testProject.newFile("src/main/resources/META-INF/resources/frontend/mystyle.css", """
+            #testme {
+                background-color: red;
+                width: 100px;
+                height: 100px;
+                display: block;
+            }
+        """.trimIndent())
+
+        val result: BuildResult = testProject.build("-Pvaadin.productionMode", "build")
+        result.expectTaskSucceded("vaadinPrepareFrontend")
+        result.expectTaskSucceded("vaadinBuildFrontend")
+
+        val cssFile = File(testProject.dir, "build/flow-frontend/mystyle.css")
+        expect(true, cssFile.toString()) { cssFile.exists() }
+
+    }
 }
