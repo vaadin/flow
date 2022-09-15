@@ -79,9 +79,10 @@ public abstract class AbstractListChange<T extends Serializable>
     public abstract AbstractListChange<T> copy(int index);
 
     /**
-     * Set the index.
+     * Sets the index of this change in the change list.
      * <p>
-     * Note: This should be used only when list of changes is being adjusted.
+     * Note: This should be used only when list of changes is being re-indexed
+     * after adding a new change.
      *
      * @param index
      *            Integer value.

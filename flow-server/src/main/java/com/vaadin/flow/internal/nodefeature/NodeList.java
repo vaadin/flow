@@ -275,48 +275,78 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
     private void addChange(AbstractListChange<T> change) {
         getNode().markAsDirty();
 
-        // If removing pending add, prune it from adds insteads
+        // If removing pending "add" change, prune it from "ListAddChange"
+        // instead
         if (change instanceof ListRemoveChange) {
+
             ListRemoveChange<T> removeChange = (ListRemoveChange<T>) change;
             T item = removeChange.getRemovedItem();
             List<AbstractListChange<T>> tracker = getChangeTracker();
-            for (int i = 0; i < tracker.size(); i++) {
-                AbstractListChange<T> c = tracker.get(i);
-                if (c instanceof ListAddChange) {
-                    ListAddChange<T> addChange = (ListAddChange<T>) c;
+
+            for (int nextChangeIndex = 0; nextChangeIndex < tracker
+                    .size(); nextChangeIndex++) {
+                AbstractListChange<T> nextChange = tracker.get(nextChangeIndex);
+
+                // If next change in the change list is an "Add" change,
+                // it potentially might include a change that is being removed
+                // later in the change list, so needs to be checked
+                if (nextChange instanceof ListAddChange) {
+
+                    ListAddChange<T> addChange = (ListAddChange<T>) nextChange;
                     if (addChange.getNewItems().contains(item)) {
-                        int indexToCorrect = 0;
-                        if (addChange.getNewItems().size() == 1) {
-                            tracker.remove(addChange);
-                        } else {
-                            indexToCorrect = addChange.getNewItems()
-                                    .indexOf(item);
-                            addChange.removeItem(item);
-                        }
-                        assert indexToCorrect != -1;
-                        indexToCorrect += addChange.getIndex();
-                        int removeChangeIndex = tracker.size();
-                        int addChangeIndex = i;
-                        for (int j = addChangeIndex; j < removeChangeIndex; j++) {
-                            AbstractListChange<T> listChange = tracker.get(j);
-                            if (listChange.getIndex() > indexToCorrect) {
-                                listChange.setIndex(listChange.getIndex() - 1);
-                            }
-                        }
+
+                        int indexToCorrect = removeFromListAddChange(addChange,
+                                item);
+
+                        // indexToCorrect shows where to start the re-indexing,
+                        // i.e. from where to shift all items by one position
+                        // back
+                        reindexChanges(tracker, nextChangeIndex,
+                                indexToCorrect);
                         return;
                     }
                 }
             }
         }
+
         // If clearing, previous pending changes can be pruned
         if (change instanceof ListClearChange) {
             getChangeTracker().clear();
-            getChangeTracker().add(change);
-            return;
         }
+
         getChangeTracker().add(change);
 
         // TODO Fire some listeners
+    }
+
+    private void reindexChanges(List<AbstractListChange<T>> tracker,
+            int startFrom, int indexToCorrect) {
+        // Shift (re-index) all the changes back by 1 position, starting from a
+        // given position in the list and having a given indexes
+
+        for (int nextIndex = startFrom; nextIndex < tracker
+                .size(); nextIndex++) {
+            AbstractListChange<T> listChange = tracker.get(nextIndex);
+            if (listChange.getIndex() > indexToCorrect) {
+                listChange.setIndex(listChange.getIndex() - 1);
+            }
+        }
+    }
+
+    private int removeFromListAddChange(ListAddChange<T> listAddChange,
+            T item) {
+        int indexToCorrect = 0;
+        if (listAddChange.getNewItems().size() == 1) {
+            // remove the change completely, if it has only one item and this
+            // item is the one that removed
+            getChangeTracker().remove(listAddChange);
+        } else {
+            indexToCorrect = listAddChange.getNewItems().indexOf(item);
+            assert indexToCorrect != -1;
+            listAddChange.removeItem(item);
+        }
+        indexToCorrect += listAddChange.getIndex();
+        return indexToCorrect;
     }
 
     private void setAccessed() {
@@ -325,15 +355,8 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
 
     @Override
     public void collectChanges(Consumer<NodeChange> collector) {
-        List<AbstractListChange<T>> allChanges = new ArrayList<>();
-        for (AbstractListChange<T> change : getChangeTracker()) {
-            allChanges.add(change);
-        }
-
-        List<AbstractListChange<T>> changes;
-
-        changes = allChanges.stream().filter(this::acceptChange)
-                .collect(Collectors.toList());
+        List<AbstractListChange<T>> changes = getChangeTracker().stream()
+                .filter(this::acceptChange).collect(Collectors.toList());
 
         if (isPopulated) {
             changes.forEach(collector);

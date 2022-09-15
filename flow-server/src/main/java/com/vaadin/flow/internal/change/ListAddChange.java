@@ -74,7 +74,6 @@ public class ListAddChange<T extends Serializable>
      * @return the added items
      */
     public List<? extends T> getNewItems() {
-        // return newItems;
         return Collections.unmodifiableList(newItems);
     }
 
@@ -131,9 +130,10 @@ public class ListAddChange<T extends Serializable>
     }
 
     /**
-     * Remove item from the change.
+     * Removes item from the change list.
      * <p>
-     * Note: this should be used only when list of changes is adjusted.
+     * Note: This should be used only when list of changes is being re-indexed
+     * after adding a new change.
      *
      * @param item
      *            Item to be removed.
