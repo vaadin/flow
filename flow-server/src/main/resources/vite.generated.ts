@@ -477,6 +477,14 @@ function setHmrPortToServerPort(): PluginOption {
     }
   };
 }
+function showRecompileReason(): PluginOption {
+  return {
+    name: 'vaadin:why-you-compile',
+    handleHotUpdate(context) {
+      console.log('Recompiling because', context.file, 'changed');
+    }
+  };
+}
 
 export const vaadinConfig: UserConfigFn = (env) => {
   const devMode = env.mode === 'development';
@@ -539,6 +547,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
       !devMode && brotli(),
       devMode && vaadinBundlesPlugin(),
       devMode && setHmrPortToServerPort(),
+      devMode && showRecompileReason(),
       settings.offlineEnabled && buildSWPlugin({ devMode }),
       !devMode && statsExtracterPlugin(),
       themePlugin({devMode}),

@@ -107,7 +107,22 @@ public class DevServerOutputTracker {
             logLine = logLine.replaceAll("[0-9]+:[0-9]+:[0-9]+ [AP]M ", "");
             // Webpack often prepends with <i>
             logLine = logLine.replaceAll("^<i> ", "");
-            getLogger().info(logLine);
+
+            if (logLine.startsWith("Recompiling because ")) {
+                // Use a separate logger so these can be enabled like the
+                // similar Spring Boot
+                // log rows
+                LoggerFactory.getLogger(
+                        DevServerOutputTracker.class.getName() + ".Reloader")
+                        .debug(logLine);
+            } else if (logLine.startsWith("[vite] page reload")) {
+                // This is partly the same as "Recompiling because" but can
+                // batch some changes
+                // it seems. Mostly it just pollutes the log during development
+                getLogger().debug(logLine);
+            } else {
+                getLogger().info(logLine);
+            }
 
             boolean succeed = success != null && success.matcher(line).find();
             boolean failed = failure != null && failure.matcher(line).find();
