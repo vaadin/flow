@@ -24,6 +24,7 @@ import javax.servlet.http.HttpSession;
 
 import com.vaadin.flow.server.auth.ViewAccessChecker;
 
+import org.springframework.core.log.LogMessage;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.DefaultRedirectStrategy;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
@@ -31,6 +32,7 @@ import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.savedrequest.SavedRequest;
+import org.springframework.util.StringUtils;
 
 /**
  * A version of {@link SavedRequestAwareAuthenticationSuccessHandler} that
@@ -89,16 +91,9 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandler
         @Override
         public void sendRedirect(HttpServletRequest request,
                 HttpServletResponse response, String url) throws IOException {
-            String redirectUrl;
-            String savedRedirectUrl = response.getHeader(SAVED_URL_HEADER);
-            if (savedRedirectUrl != null) {
-                redirectUrl = savedRedirectUrl;
-            } else {
-                redirectUrl = url;
-            }
 
             if (!isTypescriptLogin(request)) {
-                super.sendRedirect(request, response, redirectUrl);
+                super.sendRedirect(request, response, url);
                 return;
             }
 
@@ -126,6 +121,7 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandler
      */
     public VaadinSavedRequestAwareAuthenticationSuccessHandler() {
         setRedirectStrategy(new RedirectStrategy());
+        setTargetUrlParameter(SAVED_URL_HEADER);
     }
 
     @Override
@@ -134,15 +130,22 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandler
             throws ServletException, IOException {
         SavedRequest savedRequest = this.requestCache.getRequest(request,
                 response);
-        String storedServerNavigation = getStoredServerNavigation(request);
-        if (storedServerNavigation != null) {
-            response.setHeader(SAVED_URL_HEADER, storedServerNavigation);
-        } else if (savedRequest != null) {
-            /*
-             * This is here instead of in sendRedirect as we do not want to
-             * fallback to the default URL but instead send that separately.
-             */
-            response.setHeader(SAVED_URL_HEADER, savedRequest.getRedirectUrl());
+        String fullySavedRequestUrl = getStoredServerNavigation(request);
+        if (savedRequest != null) {
+            String targetUrlParameter = this.getTargetUrlParameter();
+            if (!this.isAlwaysUseDefaultTargetUrl()
+                    && (targetUrlParameter == null || !StringUtils.hasText(
+                            request.getParameter(targetUrlParameter)))) {
+                this.clearAuthenticationAttributes(request);
+                String targetUrl = savedRequest.getRedirectUrl();
+                this.getRedirectStrategy().sendRedirect(request, response,
+                        targetUrl);
+                return;
+            } else {
+                this.requestCache.removeRequest(request, response);
+            }
+        } else if (fullySavedRequestUrl != null) {
+            response.setHeader(SAVED_URL_HEADER, fullySavedRequestUrl);
         }
 
         if (isTypescriptLogin(request)) {
@@ -151,6 +154,29 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandler
         }
 
         super.onAuthenticationSuccess(request, response, authentication);
+    }
+
+    @Override
+    protected String determineTargetUrl(HttpServletRequest request,
+            HttpServletResponse response) {
+        if (this.isAlwaysUseDefaultTargetUrl()) {
+            return this.getDefaultTargetUrl();
+        } else {
+            String targetUrl;
+            if (this.getTargetUrlParameter() != null) {
+                targetUrl = response.getHeader(this.getTargetUrlParameter());
+                if (StringUtils.hasText(targetUrl)) {
+                    if (this.logger.isTraceEnabled()) {
+                        this.logger.trace(LogMessage.format(
+                                "Using url %s from response header %s",
+                                targetUrl, this.getTargetUrlParameter()));
+                    }
+                    return targetUrl;
+                }
+            }
+
+            return super.determineTargetUrl(request, response);
+        }
     }
 
     /**
