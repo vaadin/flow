@@ -20,8 +20,7 @@ public class ProductionBasicsIT extends ChromeBrowserTest {
         getDriver().get(getRootURL());
         waitForDevServer();
         TestBenchElement testForm = $("test-form").first();
-        Assert.assertEquals("foo",
-                testForm.getText());
+        Assert.assertEquals("foo", testForm.getText());
     }
 
 }
