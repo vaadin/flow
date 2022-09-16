@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -355,8 +356,12 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
 
     @Override
     public void collectChanges(Consumer<NodeChange> collector) {
-        List<AbstractListChange<T>> changes = getChangeTracker().stream()
-                .filter(this::acceptChange).collect(Collectors.toList());
+        Collection<AbstractListChange<T>> changes = new LinkedList<>();
+        for (AbstractListChange<T> change : getChangeTracker()) {
+            if (acceptChange(change)) {
+                changes.add(change);
+            }
+        }
 
         if (isPopulated) {
             changes.forEach(collector);
