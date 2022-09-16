@@ -53,6 +53,7 @@ const moduleWeights = {
   'flow-tests/test-application-theme/test-theme-reusable': { pos: 3, weight: 2 },
   'flow-tests/test-application-theme/test-theme-reusable-vite': { pos: 3, weight: 2 },
   'flow-tests/test-frontend/vite-production': { pos: 3, weight: 2 },
+  'flow-tests/test-frontend/vite-production-custom-frontend': { pos: 3, weight: 2 },
   'flow-tests/test-frontend/vite-test-assets': { pos: 3 },
   'flow-tests/vaadin-spring-tests/test-spring-boot': { pos: 4, weight: 4 },
   'flow-tests/vaadin-spring-tests/test-spring-boot-only-prepare': { pos: 4, weight: 3 },
