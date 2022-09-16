@@ -125,7 +125,7 @@ public class ExtendedClientDetailsTest {
     }
 
     @Test
-    public void isIOS_notIPad_deprecatedIsNotIOS_returnsFalse() {
+    public void isIOS_notIPad_notIsIPhone_returnsFalse() {
         ExtendedClientDetails details = Mockito
                 .mock(ExtendedClientDetails.class);
         Mockito.doCallRealMethod().when(details).isIOS();
@@ -135,6 +135,7 @@ public class ExtendedClientDetailsTest {
 
         WebBrowser browser = Mockito.mock(WebBrowser.class);
         Mockito.when(session.getBrowser()).thenReturn(browser);
+        Mockito.when(browser.isIPhone()).thenReturn(false);
 
         Assert.assertFalse(details.isIOS());
     }
