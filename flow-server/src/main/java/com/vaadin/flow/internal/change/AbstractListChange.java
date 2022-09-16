@@ -34,7 +34,7 @@ import com.vaadin.flow.internal.nodefeature.NodeList;
 public abstract class AbstractListChange<T extends Serializable>
         extends NodeFeatureChange {
 
-    private final int index;
+    private int index;
     private final NodeList<T> list;
 
     /**
@@ -77,4 +77,18 @@ public abstract class AbstractListChange<T extends Serializable>
      * @return a copy of the change based on new index
      */
     public abstract AbstractListChange<T> copy(int index);
+
+    /**
+     * Sets the index of this change in the change list.
+     * <p>
+     * Note: This should be used only when list of changes is being re-indexed
+     * after adding a new change.
+     *
+     * @param index
+     *            Integer value.
+     */
+    public void setIndex(int index) {
+        assert (index > -1) : "Index can't be negative.";
+        this.index = index;
+    }
 }
