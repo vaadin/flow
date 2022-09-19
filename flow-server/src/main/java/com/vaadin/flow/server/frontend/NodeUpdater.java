@@ -44,6 +44,7 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 import elemental.json.Json;
+import elemental.json.JsonArray;
 import elemental.json.JsonException;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
@@ -98,8 +99,6 @@ public abstract class NodeUpdater implements FallibleCommand {
     private static final String DEP_MAIN_VALUE = "index";
     private static final String DEP_VERSION_KEY = "version";
     private static final String DEP_VERSION_DEFAULT = "1.0.0";
-    private static final String ROUTER_VERSION = "1.7.4";
-    protected static final String POLYMER_VERSION = "3.5.1";
 
     static final String VAADIN_VERSION = "vaadinVersion";
 
@@ -387,21 +386,29 @@ public abstract class NodeUpdater implements FallibleCommand {
     }
 
     Map<String, String> getDefaultDependencies() {
-        Map<String, String> defaults = new HashMap<>();
+        try {
+            Map<String, String> map = new HashMap<>();
+            JsonObject dependencies = readPackageJson("default")
+                    .getObject("dependencies");
+            for (String key : dependencies.keys()) {
+                map.put(key, dependencies.getString(key));
+            }
 
-        defaults.put("@vaadin/router", ROUTER_VERSION);
+            return map;
+        } catch (IOException e) {
+            log().error("Unable to read default dependencies", e);
+            return new HashMap<>();
+        }
+    }
 
-        defaults.put("@polymer/polymer", POLYMER_VERSION);
+    private JsonObject readPackageJson(String id) throws IOException {
+        try (InputStream packageJson = getClass()
+                .getResourceAsStream("dependencies/" + id + "/package.json")) {
+            JsonObject content = Json.parse(
+                    IOUtils.toString(packageJson, StandardCharsets.UTF_8));
+            return content;
+        }
 
-        defaults.put("lit", "2.3.0");
-
-        // Constructable style sheets is only implemented for chrome,
-        // polyfill needed for FireFox et.al. at the moment
-        defaults.put("construct-style-sheets-polyfill", "3.1.0");
-
-        defaults.put("@vaadin/common-frontend", "0.0.17");
-
-        return defaults;
     }
 
     Map<String, String> getDefaultDevDependencies() {
