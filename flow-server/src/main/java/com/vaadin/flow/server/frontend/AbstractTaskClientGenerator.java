@@ -97,7 +97,6 @@ public abstract class AbstractTaskClientGenerator implements FallibleCommand {
         if (!generatedFile.exists()) {
             return null;
         }
-        return FileUtils.readFileToString(generatedFile,
-                StandardCharsets.UTF_8);
+        return FileUtils.readFileToString(generatedFile, UTF_8);
     }
 }
