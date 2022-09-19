@@ -44,7 +44,6 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 import elemental.json.Json;
-import elemental.json.JsonArray;
 import elemental.json.JsonException;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;

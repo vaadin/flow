@@ -20,6 +20,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -133,6 +135,21 @@ public class NodeUpdaterTest {
         Assert.assertEquals(1, modules.size());
         // GENERATED/ is an added prefix for files from this method
         Assert.assertTrue(modules.contains("GENERATED/c.js"));
+    }
+
+    @Test
+    public void getDefaultDependencies_includesAllDependencies() {
+        Map<String, String> defaultDeps = nodeUpdater.getDefaultDependencies();
+        Set<String> expectedDependencies = new HashSet<>();
+        expectedDependencies.add("@polymer/polymer");
+        expectedDependencies.add("@vaadin/common-frontend");
+        expectedDependencies.add("@vaadin/router");
+        expectedDependencies.add("construct-style-sheets-polyfill");
+        expectedDependencies.add("lit");
+
+        Set<String> actualDependendencies = defaultDeps.keySet();
+
+        Assert.assertEquals(expectedDependencies, actualDependendencies);
     }
 
     @Test
