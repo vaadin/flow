@@ -53,8 +53,10 @@ public abstract class BeforeEvent extends EventObject {
     private NavigationState rerouteTargetState;
     private ErrorParameter<?> errorParameter;
 
-    private String forwardToUrl = null;
-    private String rerouteToUrl = null;
+    private String unknownForward = null;
+    private String unknownReroute = null;
+
+    private String externalForwardUrl = null;
 
     /**
      * Constructs event from a NavigationEvent.
@@ -165,7 +167,7 @@ public abstract class BeforeEvent extends EventObject {
      * @return forward route is not found in the route registry.
      */
     public boolean hasUnknownForward() {
-        return forwardToUrl != null;
+        return unknownForward != null;
     }
 
     /**
@@ -175,7 +177,7 @@ public abstract class BeforeEvent extends EventObject {
      * @return reroute is not found in the route registry.
      */
     public boolean hasUnknownReroute() {
-        return rerouteToUrl != null;
+        return unknownReroute != null;
     }
 
     /**
@@ -184,7 +186,7 @@ public abstract class BeforeEvent extends EventObject {
      * @return the unknown forward.
      */
     public String getUnknownForward() {
-        return forwardToUrl;
+        return unknownForward;
     }
 
     /**
@@ -193,7 +195,16 @@ public abstract class BeforeEvent extends EventObject {
      * @return the unknown reroute.
      */
     public String getUnknownReroute() {
-        return rerouteToUrl;
+        return unknownReroute;
+    }
+
+    /**
+     * Gets the external forward url
+     *
+     * @return the external forward url or {@code null) if none has been set
+     */
+    public String getExternalForwardUrl() {
+        return externalForwardUrl;
     }
 
     /**
@@ -227,6 +238,15 @@ public abstract class BeforeEvent extends EventObject {
      */
     public boolean hasForwardTarget() {
         return forwardTarget != null;
+    }
+
+    /**
+     * Check if we have a forward for an external URL.
+     *
+     * @return forward target exists
+     */
+    public boolean hasExternalForwardUrl() {
+        return externalForwardUrl != null;
     }
 
     /**
@@ -361,8 +381,20 @@ public abstract class BeforeEvent extends EventObject {
                     location));
         } else {
             // Inform that forward target location is not known.
-            forwardToUrl = PathUtil.trimPath(location);
+            unknownForward = PathUtil.trimPath(location);
         }
+    }
+
+    /**
+     * Forward to the given URL instead of the component about to be displayed.
+     * <p>
+     * This function performs a page reload in the browser with the new URL.
+     *
+     * @param location
+     *            forward target location string
+     */
+    public void forwardToUrl(String externalForwardUrl) {
+        this.externalForwardUrl = externalForwardUrl;
     }
 
     /**
@@ -505,7 +537,7 @@ public abstract class BeforeEvent extends EventObject {
                     route));
         } else {
             // Inform that reroute target location is not known.
-            rerouteToUrl = PathUtil.trimPath(route);
+            unknownReroute = PathUtil.trimPath(route);
         }
     }
 
