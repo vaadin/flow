@@ -400,7 +400,9 @@ public abstract class NodeUpdater implements FallibleCommand {
 
             return map;
         } catch (IOException e) {
-            log().error("Unable to read default dependencies", e);
+            log().error(
+                    "Unable to read " + packageJsonKey + " from '" + id + "'",
+                    e);
             return new HashMap<>();
         }
 
