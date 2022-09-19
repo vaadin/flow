@@ -53,6 +53,9 @@ internal class GradlePluginAdapter(val project: Project, private val isBeforePro
             .toList()
             .filter { it.exists() }
 
+        val resourcesDir: List<File> = listOfNotNull(sourceSet.getByName("main").output.resourcesDir)
+                .filter { it.exists() }
+
         // for Spring Boot project there is no "providedCompile" scope: the WAR plugin brings that in.
         val providedDeps: Configuration? = project.configurations.findByName("providedCompile")
         val servletJar: List<File> = providedDeps
@@ -60,7 +63,7 @@ internal class GradlePluginAdapter(val project: Project, private val isBeforePro
             ?.toList()
             ?: listOf()
 
-        val apis: Set<File> = (runtimeClasspathJars + classesDirs + servletJar).toSet()
+        val apis: Set<File> = (runtimeClasspathJars + classesDirs + resourcesDir + servletJar).toSet()
 
         // eagerly check that all the files/folders exist, to avoid spamming the console later on
         // see https://github.com/vaadin/vaadin-gradle-plugin/issues/38 for more details
