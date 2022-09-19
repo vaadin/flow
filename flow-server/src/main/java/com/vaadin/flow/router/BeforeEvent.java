@@ -199,9 +199,9 @@ public abstract class BeforeEvent extends EventObject {
     }
 
     /**
-     * Gets the external forward url
+     * Gets the external forward url.
      *
-     * @return the external forward url or {@code null) if none has been set
+     * @return the external forward url or {@code null} if none has been set
      */
     public String getExternalForwardUrl() {
         return externalForwardUrl;
@@ -390,7 +390,7 @@ public abstract class BeforeEvent extends EventObject {
      * <p>
      * This function performs a page reload in the browser with the new URL.
      *
-     * @param location
+     * @param externalForwardUrl
      *            forward target location string
      */
     public void forwardToUrl(String externalForwardUrl) {
