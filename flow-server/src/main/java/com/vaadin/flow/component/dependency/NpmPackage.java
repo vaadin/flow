@@ -58,8 +58,9 @@ public @interface NpmPackage {
      * 'd.d.d-suffix' pattern.
      * <p>
      * Troubleshooting: when two or more annotations with the same package value
-     * are found in the class-path, and their versions do not match the build
-     * process will fail.
+     * are found in the class-path, and their versions do not match, the build
+     * process will print a warning message informing about found versions and
+     * which one will be used.
      *
      * @return npm package version
      */

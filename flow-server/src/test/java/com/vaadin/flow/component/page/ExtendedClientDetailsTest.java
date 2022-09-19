@@ -68,13 +68,17 @@ public class ExtendedClientDetailsTest {
 
         Assert.assertTrue("'iPad' is an iPad", details.isIPad());
 
-        VaadinSession session = Mockito.mock(VaadinSession.class);
-        CurrentInstance.setCurrent(session);
-
-        detailsBuilder.setNavigatorPlatform(null);
+        // See https://github.com/vaadin/flow/issues/14517
+        detailsBuilder.setNavigatorPlatform("MacIntel");
         details = detailsBuilder.buildDetails();
+        Assert.assertFalse("MacIntel on non touch device is not an iPad",
+                details.isIPad());
 
-        CurrentInstance.clearAll();
+        // See https://github.com/vaadin/flow/issues/14517
+        detailsBuilder.setTouchDevice("true");
+        details = detailsBuilder.buildDetails();
+        Assert.assertTrue("MacIntel on touch device is an iPad",
+                details.isIPad());
     }
 
     @Test
@@ -121,7 +125,7 @@ public class ExtendedClientDetailsTest {
     }
 
     @Test
-    public void isIOS_notIPad_deprecatedIsNotIOS_returnsFalse() {
+    public void isIOS_notIPad_notIsIPhone_returnsFalse() {
         ExtendedClientDetails details = Mockito
                 .mock(ExtendedClientDetails.class);
         Mockito.doCallRealMethod().when(details).isIOS();
@@ -131,6 +135,7 @@ public class ExtendedClientDetailsTest {
 
         WebBrowser browser = Mockito.mock(WebBrowser.class);
         Mockito.when(session.getBrowser()).thenReturn(browser);
+        Mockito.when(browser.isIPhone()).thenReturn(false);
 
         Assert.assertFalse(details.isIOS());
     }
