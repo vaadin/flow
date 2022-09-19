@@ -407,12 +407,12 @@ function lenientLitImportPlugin(): PluginOption {
     name: 'vaadin:lenient-lit-import',
     async transform(code, id) {
       const decoratorImports = [
-        /import (.*) from (['"])(lit\/decorators)(['"])/,
-        /import (.*) from (['"])(lit-element\/decorators)(['"])/
+        /import (.*?) from (['"])(lit\/decorators)(['"])/,
+        /import (.*?) from (['"])(lit-element\/decorators)(['"])/
       ];
       const directiveImports = [
-        /import (.*) from (['"])(lit\/directives\/)([^\\.]*)(['"])/,
-        /import (.*) from (['"])(lit-html\/directives\/)([^\\.]*)(['"])/
+        /import (.*?) from (['"])(lit\/directives\/)([^\\.]*?)(['"])/,
+        /import (.*?) from (['"])(lit-html\/directives\/)([^\\.]*?)(['"])/
       ];
 
       decoratorImports.forEach((decoratorImport) => {
@@ -474,6 +474,14 @@ function setHmrPortToServerPort(): PluginOption {
         config.server.hmr = config.server.hmr || {};
         config.server.hmr.clientPort = config.server.port;
       }
+    }
+  };
+}
+function showRecompileReason(): PluginOption {
+  return {
+    name: 'vaadin:why-you-compile',
+    handleHotUpdate(context) {
+      console.log('Recompiling because', context.file, 'changed');
     }
   };
 }
@@ -539,6 +547,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
       !devMode && brotli(),
       devMode && vaadinBundlesPlugin(),
       devMode && setHmrPortToServerPort(),
+      devMode && showRecompileReason(),
       settings.offlineEnabled && buildSWPlugin({ devMode }),
       !devMode && statsExtracterPlugin(),
       themePlugin({devMode}),

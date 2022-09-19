@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-tests</artifactId>
-        <version>23.2-SNAPSHOT</version>
+        <version>23.3-SNAPSHOT</version>
     </parent>
     <artifactId>test-frontend</artifactId>
     <name>Frontend build (npm + Webpack + Vite)</name>
@@ -32,6 +32,7 @@
                 <!-- test modules -->
                 <module>vite-basics</module>
                 <module>vite-production</module>
+                <module>vite-production-custom-frontend</module>
                 <module>vite-context-path/pom-production.xml</module>
                 <module>vite-context-path</module>
                 <module>vite-pwa</module>
