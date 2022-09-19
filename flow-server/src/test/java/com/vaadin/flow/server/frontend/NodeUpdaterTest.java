@@ -39,6 +39,7 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.experimental.Feature;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -73,17 +74,26 @@ public class NodeUpdaterTest {
 
     private URL url;
 
+    private boolean useWebpack = false;
+
     @Before
     public void setUp() throws IOException {
         url = new URL("file://bar");
         npmFolder = temporaryFolder.newFolder();
         resourceFolder = temporaryFolder.newFolder();
         generatedPath = temporaryFolder.newFolder();
+        FeatureFlags featureFlags = Mockito.mock(FeatureFlags.class);
+        Mockito.when(featureFlags.isEnabled(Mockito.any(Feature.class)))
+                .thenAnswer((query) -> {
+                    if (query.getArgument(0).equals(FeatureFlags.WEBPACK)) {
+                        return useWebpack;
+                    }
+                    return false;
+                });
         finder = Mockito.mock(ClassFinder.class);
         nodeUpdater = new NodeUpdater(finder,
                 Mockito.mock(FrontendDependencies.class), npmFolder,
-                generatedPath, resourceFolder, TARGET,
-                Mockito.mock(FeatureFlags.class)) {
+                generatedPath, resourceFolder, TARGET, featureFlags) {
 
             @Override
             public void execute() {
@@ -150,6 +160,68 @@ public class NodeUpdaterTest {
         Set<String> actualDependendencies = defaultDeps.keySet();
 
         Assert.assertEquals(expectedDependencies, actualDependendencies);
+    }
+
+    @Test
+    public void getDefaultDevDependencies_includesAllDependencies_whenUsingVite() {
+        Map<String, String> defaultDeps = nodeUpdater
+                .getDefaultDevDependencies();
+        Set<String> expectedDependencies = getCommonDevDeps();
+
+        // Vite
+        expectedDependencies.add("vite");
+        expectedDependencies.add("rollup-plugin-brotli");
+        expectedDependencies.add("@rollup/plugin-replace");
+        expectedDependencies.add("@rollup/pluginutils");
+        expectedDependencies.add("vite-plugin-checker");
+        expectedDependencies.add("mkdirp");
+        expectedDependencies.add("workbox-build");
+        expectedDependencies.add("transform-ast");
+
+        Set<String> actualDependendencies = defaultDeps.keySet();
+
+        Assert.assertEquals(expectedDependencies, actualDependendencies);
+    }
+
+    @Test
+    public void getDefaultDevDependencies_includesAllDependencies_whenUsingWebpack() {
+        useWebpack = true;
+        Map<String, String> defaultDeps = nodeUpdater
+                .getDefaultDevDependencies();
+        Set<String> expectedDependencies = getCommonDevDeps();
+
+        // Webpack
+        // Webpack plugins and helpers
+        expectedDependencies.add("esbuild-loader");
+        expectedDependencies.add("html-webpack-plugin");
+        expectedDependencies.add("fork-ts-checker-webpack-plugin");
+        expectedDependencies.add("webpack");
+        expectedDependencies.add("webpack-cli");
+        expectedDependencies.add("webpack-dev-server");
+        expectedDependencies.add("compression-webpack-plugin");
+        expectedDependencies.add("extra-watch-webpack-plugin");
+        expectedDependencies.add("webpack-merge");
+        expectedDependencies.add("css-loader");
+        expectedDependencies.add("extract-loader");
+        expectedDependencies.add("lit-css-loader");
+        expectedDependencies.add("file-loader");
+        expectedDependencies.add("loader-utils");
+        expectedDependencies.add("workbox-webpack-plugin");
+        expectedDependencies.add("chokidar");
+
+        Set<String> actualDependendencies = defaultDeps.keySet();
+
+        Assert.assertEquals(expectedDependencies, actualDependendencies);
+    }
+
+    private Set<String> getCommonDevDeps() {
+        Set<String> expectedDependencies = new HashSet<>();
+        expectedDependencies.add("typescript");
+        expectedDependencies.add("workbox-core");
+        expectedDependencies.add("workbox-precaching");
+        expectedDependencies.add("glob");
+        expectedDependencies.add("async");
+        return expectedDependencies;
     }
 
     @Test

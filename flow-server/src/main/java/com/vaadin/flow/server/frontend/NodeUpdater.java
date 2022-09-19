@@ -385,10 +385,15 @@ public abstract class NodeUpdater implements FallibleCommand {
     }
 
     Map<String, String> getDefaultDependencies() {
+        return readDependencies("default", "dependencies");
+    }
+
+    private Map<String, String> readDependencies(String id,
+            String packageJsonKey) {
         try {
             Map<String, String> map = new HashMap<>();
-            JsonObject dependencies = readPackageJson("default")
-                    .getObject("dependencies");
+            JsonObject dependencies = readPackageJson(id)
+                    .getObject(packageJsonKey);
             for (String key : dependencies.keys()) {
                 map.put(key, dependencies.getString(key));
             }
@@ -398,6 +403,7 @@ public abstract class NodeUpdater implements FallibleCommand {
             log().error("Unable to read default dependencies", e);
             return new HashMap<>();
         }
+
     }
 
     private JsonObject readPackageJson(String id) throws IOException {
@@ -412,51 +418,13 @@ public abstract class NodeUpdater implements FallibleCommand {
 
     Map<String, String> getDefaultDevDependencies() {
         Map<String, String> defaults = new HashMap<>();
-
-        defaults.put("typescript", "4.7.4");
-
-        final String WORKBOX_VERSION = "6.5.0";
+        defaults.putAll(readDependencies("default", "devDependencies"));
 
         if (featureFlags.isEnabled(FeatureFlags.WEBPACK)) {
-            // Webpack plugins and helpers
-            defaults.put("esbuild-loader", "2.19.0");
-            defaults.put("html-webpack-plugin", "4.5.1");
-            defaults.put("fork-ts-checker-webpack-plugin", "6.2.1");
-            defaults.put("webpack", "4.46.0");
-            defaults.put("webpack-cli", "4.10.0");
-            defaults.put("webpack-dev-server", "4.10.0");
-            defaults.put("compression-webpack-plugin", "4.0.1");
-            defaults.put("extra-watch-webpack-plugin", "1.0.3");
-            defaults.put("webpack-merge", "4.2.2");
-            defaults.put("css-loader", "5.2.7");
-            defaults.put("extract-loader", "5.1.0");
-            defaults.put("lit-css-loader", "0.1.0");
-            defaults.put("file-loader", "6.2.0");
-            defaults.put("loader-utils", "2.0.0");
-            defaults.put("workbox-webpack-plugin", WORKBOX_VERSION);
-
-            // Forcing chokidar version for now until new babel version is
-            // available
-            // check out https://github.com/babel/babel/issues/11488
-            defaults.put("chokidar", "^3.5.0");
+            defaults.putAll(readDependencies("webpack", "devDependencies"));
         } else {
-            // Use Vite
-            defaults.put("vite", "v3.1.0");
-            defaults.put("@rollup/plugin-replace", "3.1.0");
-            defaults.put("rollup-plugin-brotli", "3.1.0");
-            defaults.put("vite-plugin-checker", "0.4.9");
-            defaults.put("mkdirp", "1.0.4"); // for application-theme-plugin
-            defaults.put("workbox-build", WORKBOX_VERSION);
-
-            // Dependencies of rollup-plugin-postcss-lit-custom
-            defaults.put("@rollup/pluginutils", "4.1.0");
-            defaults.put("transform-ast", "2.4.4");
-
+            defaults.putAll(readDependencies("vite", "devDependencies"));
         }
-        defaults.put("workbox-core", WORKBOX_VERSION);
-        defaults.put("workbox-precaching", WORKBOX_VERSION);
-        defaults.put("glob", "7.2.3");
-        defaults.put("async", "3.2.2");
 
         return defaults;
     }
