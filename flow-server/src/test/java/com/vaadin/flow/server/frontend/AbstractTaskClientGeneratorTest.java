@@ -28,6 +28,8 @@ public class AbstractTaskClientGeneratorTest {
         FileUtils.write(f, TEST_STRING, StandardCharset.UTF_8);
         FileTime modTime = getModificationTime(f);
 
+        Thread.sleep(1);
+
         AbstractTaskClientGenerator.writeIfChanged(f, TEST_STRING + "2");
         Assert.assertNotEquals(modTime, getModificationTime(f));
     }
@@ -37,6 +39,8 @@ public class AbstractTaskClientGeneratorTest {
         File f = File.createTempFile("writeIfChanged", "aaa");
         FileUtils.write(f, TEST_STRING, StandardCharset.UTF_8);
         FileTime modTime = getModificationTime(f);
+
+        Thread.sleep(1);
 
         AbstractTaskClientGenerator.writeIfChanged(f, TEST_STRING);
         Assert.assertEquals(modTime, getModificationTime(f));
