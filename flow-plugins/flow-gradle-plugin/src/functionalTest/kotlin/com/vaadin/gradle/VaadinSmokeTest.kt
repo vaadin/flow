@@ -188,7 +188,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
 
             @Route("")
             @CssImport("./mystyle.css")
-            @NpmPackage(value = "@vaadin/vaadin-themable-mixin", version = "23.3.0-alpha1")
+            @NpmPackage(value = "@vaadin/vaadin-themable-mixin", version = "22.0.0-alpha9")
             public class MainView extends Div {
 
                 public MainView() {
