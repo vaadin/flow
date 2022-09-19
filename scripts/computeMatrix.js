@@ -69,6 +69,7 @@ const moduleWeights = {
   'flow-tests/test-frontend/vite-basics': {pos: 3, weight: 10},
   'flow-tests/test-frontend/vite-test-assets': {pos: 3},
   'flow-tests/test-frontend/vite-production': {pos: 3, weight: 2},
+  'flow-tests/test-frontend/vite-production-custom-frontend': { pos: 3, weight: 2 },
   'flow-tests/test-application-theme/test-reusable-as-parent': {pos: 3, weight: 2},
   'flow-tests/test-application-theme/test-theme-reusable': {pos: 3, weight: 2},
   'flow-tests/test-mixed/pom-npm-production.xml': {pos: 3, weight: 3},

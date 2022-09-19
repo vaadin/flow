@@ -32,6 +32,7 @@
                 <!-- test modules -->
                 <module>vite-basics</module>
                 <module>vite-production</module>
+                <module>vite-production-custom-frontend</module>
                 <!-- npm and pnpm dev mode and prod mode -->
                 <module>test-npm</module>
                 <module>test-npm/pom-production.xml</module>
