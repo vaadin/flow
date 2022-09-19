@@ -5,6 +5,8 @@ on:
   pull_request:
     types: [opened, synchronize, reopened]
   workflow_dispatch:
+permissions:
+  contents: read
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -166,6 +168,11 @@ jobs:
             **/error-screenshots/*.png
             mvn-*.out
   test-results:
+    permissions:
+      # for EnricoMi/publish-unit-test-result-action
+      issues: read
+      checks: write
+      pull-requests: write 
     if: ${{ failure() || success() }}
     needs: [unit-tests, it-tests]
     runs-on: ubuntu-latest
