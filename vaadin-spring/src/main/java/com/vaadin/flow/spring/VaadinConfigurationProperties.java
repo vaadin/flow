@@ -282,7 +282,7 @@ public class VaadinConfigurationProperties {
      * Set a list of URL patterns that are not handled by the Vaadin servlet
      * when it is mapped to the context root.
      *
-     * @param excludePatterns
+     * @param excludeUrls
      *            a list of url patterns to exclude
      */
     public void setExcludeUrls(List<String> excludeUrls) {
