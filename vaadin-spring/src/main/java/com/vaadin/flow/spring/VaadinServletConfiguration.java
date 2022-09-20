@@ -54,6 +54,45 @@ public class VaadinServletConfiguration {
 
     static final String VAADIN_SERVLET_MAPPING = "/vaadinServlet/*";
 
+    private static class RootExcludeHandler extends SimpleUrlHandlerMapping {
+        private List<String> excludeUrls;
+        private AntPathMatcher matcher;
+
+        public RootExcludeHandler(List<String> excludeUrls, Controller vaadinForwardingController) {
+            this.excludeUrls = excludeUrls;
+            matcher = new AntPathMatcher();
+
+            setOrder(Ordered.LOWEST_PRECEDENCE - 1);
+
+            // This is /** and not /* so that it is not interpreted as a "default handler"
+            // and we can override the behavior in getHandlerInternal
+            setUrlMap(
+                    Collections.singletonMap("/**", vaadinForwardingController));
+        }
+
+        @Override
+        protected Object getHandlerInternal(HttpServletRequest request)
+                throws Exception {
+            if (excludeUrls != null && !excludeUrls.isEmpty()) {
+                String requestPath = request.getRequestURI();
+                for (String pattern : excludeUrls) {
+                    if (matcher.match(pattern, requestPath)) {
+                        getLogger().debug(
+                                "Ignoring request to {} excluded by {}",
+                                requestPath, pattern);
+                        return null;
+                    }
+                }
+            }
+            return super.getHandlerInternal(request);
+        }
+
+        protected Logger getLogger() {
+            return LoggerFactory.getLogger(getClass());
+        }
+
+    }
+
     /**
      * Makes an url handler mapping allowing to forward requests from a
      * {@link DispatcherServlet} to {@link VaadinServlet}.
@@ -62,43 +101,9 @@ public class VaadinServletConfiguration {
      *         servlet
      */
     @Bean
-    public SimpleUrlHandlerMapping vaadinRootMapping(
+    public RootExcludeHandler vaadinRootMapping(
             VaadinConfigurationProperties vaadinConfigurationProperties) {
-        AntPathMatcher matcher = new AntPathMatcher();
-        List<String> excludeUrls = vaadinConfigurationProperties
-                .getExcludeUrls();
-
-        SimpleUrlHandlerMapping mapping = new SimpleUrlHandlerMapping() {
-            @Override
-            protected Object getHandlerInternal(HttpServletRequest request)
-                    throws Exception {
-                if (excludeUrls != null && !excludeUrls.isEmpty()) {
-                    String requestPath = request.getRequestURI();
-                    for (String pattern : excludeUrls) {
-                        if (matcher.match(pattern, requestPath)) {
-                            getLogger().debug(
-                                    "Ignoring request to {} excluded by {}",
-                                    requestPath, pattern);
-                            return null;
-                        }
-                    }
-                }
-                return super.getHandlerInternal(request);
-            }
-        };
-        mapping.setOrder(Ordered.LOWEST_PRECEDENCE - 1);
-
-        // This is /** and not /* so that SimpleUrlHandlerMapping does not
-        // interpret it as a "default handler" and we can override the behavior
-        // in getHandlerInternal
-        mapping.setUrlMap(
-                Collections.singletonMap("/**", vaadinForwardingController()));
-
-        return mapping;
-    }
-
-    protected Logger getLogger() {
-        return LoggerFactory.getLogger(getClass());
+        return new RootExcludeHandler(vaadinConfigurationProperties.getExcludeUrls(), vaadinForwardingController());
     }
 
     /**
