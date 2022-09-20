@@ -658,6 +658,9 @@ public abstract class AbstractNavigationStateRenderer
     protected Optional<Integer> handleTriggeredBeforeEvent(
             NavigationEvent event, BeforeEvent beforeEvent) {
 
+        if (beforeEvent.hasExternalForwardUrl()) {
+            return Optional.of(forwardToExternalUrl(event, beforeEvent));
+        }
         if (beforeEvent.hasForwardTarget()
                 && !isSameNavigationState(beforeEvent.getForwardTargetType(),
                         beforeEvent.getForwardTargetRouteParameters())) {
@@ -682,6 +685,14 @@ public abstract class AbstractNavigationStateRenderer
                 .equals(navigationState.getRouteParameters());
 
         return sameTarget && sameParameters;
+    }
+
+    private int forwardToExternalUrl(NavigationEvent event,
+            BeforeEvent beforeNavigation) {
+        event.getUI().getPage()
+                .setLocation(beforeNavigation.getExternalForwardUrl());
+
+        return HttpStatusCode.OK.getCode();
     }
 
     private int forward(NavigationEvent event, BeforeEvent beforeNavigation) {
