@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.spring;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -26,6 +28,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
+import org.springframework.core.env.Environment;
 import org.springframework.util.AntPathMatcher;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.servlet.DispatcherServlet;
@@ -53,6 +56,39 @@ import com.vaadin.flow.server.VaadinServlet;
 public class VaadinServletConfiguration {
 
     static final String VAADIN_SERVLET_MAPPING = "/vaadinServlet/*";
+    public static final String EXCLUDED_URLS_PROPERTY = "vaadin.excludeUrls";
+
+    /**
+     * Gets the excluded URLs in a way compatible with both plain Spring and
+     * Spring Boot.
+     *
+     * @param environment
+     *            the application environment
+     * @return the excluded URLs or null if none is defined
+     */
+    private static List<String> getExcludedUrls(Environment environment) {
+        if (SpringUtil.isSpringBoot()) {
+            try {
+                return (List<String>) Class.forName(
+                        "com.vaadin.flow.spring.VaadinConfigurationProperties")
+                        .getMethod("getExcludeUrls", Environment.class)
+                        .invoke(null, environment);
+            } catch (IllegalAccessException | IllegalArgumentException
+                    | InvocationTargetException | NoSuchMethodException
+                    | SecurityException | ClassNotFoundException e) {
+                LoggerFactory.getLogger(RootMappedCondition.class).error(
+                        "Unable to find excluded URLs from properties", e);
+                return null;
+            }
+        } else {
+            String value = environment.getProperty(EXCLUDED_URLS_PROPERTY);
+            if (value == null || value.isEmpty()) {
+                return Collections.emptyList();
+            } else {
+                return Arrays.asList(value.split(","));
+            }
+        }
+    }
 
     private static class RootExcludeHandler extends SimpleUrlHandlerMapping {
         private List<String> excludeUrls;
@@ -103,10 +139,8 @@ public class VaadinServletConfiguration {
      *         servlet
      */
     @Bean
-    public RootExcludeHandler vaadinRootMapping(
-            VaadinConfigurationProperties vaadinConfigurationProperties) {
-        return new RootExcludeHandler(
-                vaadinConfigurationProperties.getExcludeUrls(),
+    public RootExcludeHandler vaadinRootMapping(Environment environment) {
+        return new RootExcludeHandler(getExcludedUrls(environment),
                 vaadinForwardingController());
     }
 

@@ -50,6 +50,22 @@ public class VaadinConfigurationProperties {
     }
 
     /**
+     * Gets the excluded URLs using the given environment.
+     *
+     * This is needed only when VaadinConfigurationProperties is not available
+     * for injection, e.g. when using Spring without Boot.
+     *
+     * @param environment
+     *            the application environment
+     * @return the excluded URLs or null if none is defined
+     */
+    public static List<String> getExcludedUrls(Environment environment) {
+        return Binder.get(environment)
+                .bind("vaadin", VaadinConfigurationProperties.class)
+                .map(conf -> conf.getExcludeUrls()).orElse(null);
+    }
+
+    /**
      * Base URL mapping of the Vaadin servlet.
      */
     private String urlMapping = "/*";
