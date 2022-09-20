@@ -88,7 +88,7 @@
         <spring.security.version>5.7.2</spring.security.version>
         <gwt.version>2.9.0</gwt.version>
         <hibernate.validator.version>6.2.4.Final</hibernate.validator.version>
-        <slf4j.version>2.0.0</slf4j.version>
+        <slf4j.version>2.0.1</slf4j.version>
         <polymer.version>2.6.1</polymer.version>
         <jackson.version>2.13.4</jackson.version>
         <jackson.databind.version>2.13.4</jackson.databind.version>
