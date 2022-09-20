@@ -421,7 +421,7 @@ public class FrontendUtilsTest {
 
         };
 
-        new TaskRunNpmInstall(nodeUpdater, false, true, "v16.16.0",
+        new TaskRunNpmInstall(nodeUpdater, false, true, "v16.17.0",
                 URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false,
                 false).execute();
 
