@@ -2,6 +2,7 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
@@ -10,7 +11,6 @@ import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.nimbusds.jose.util.StandardCharset;
 
 public class AbstractTaskClientGeneratorTest {
 
@@ -25,7 +25,7 @@ public class AbstractTaskClientGeneratorTest {
     @Test
     public void writeIfChanged_writesWithChanges() throws Exception {
         File f = File.createTempFile("writeIfChanged", "aaa");
-        FileUtils.write(f, TEST_STRING, StandardCharset.UTF_8);
+        FileUtils.write(f, TEST_STRING, StandardCharsets.UTF_8);
         FileTime modTime = getModificationTime(f);
 
         Thread.sleep(1);
@@ -37,7 +37,7 @@ public class AbstractTaskClientGeneratorTest {
     @Test
     public void writeIfChanged_doesNotWriteWithoutChanges() throws Exception {
         File f = File.createTempFile("writeIfChanged", "aaa");
-        FileUtils.write(f, TEST_STRING, StandardCharset.UTF_8);
+        FileUtils.write(f, TEST_STRING, StandardCharsets.UTF_8);
         FileTime modTime = getModificationTime(f);
 
         Thread.sleep(1);
