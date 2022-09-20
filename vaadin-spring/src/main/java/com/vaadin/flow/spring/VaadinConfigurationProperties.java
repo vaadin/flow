@@ -84,6 +84,12 @@ public class VaadinConfigurationProperties {
      */
     private boolean launchBrowser = false;
 
+    /**
+     * URL patterns that should not be handled by the Vaadin servlet when mapped
+     * to the context root.
+     */
+    private List<String> excludeUrls;
+
     public static class Pnpm {
         private boolean enable;
 
@@ -260,5 +266,26 @@ public class VaadinConfigurationProperties {
      */
     public void setWhitelistedPackages(List<String> whitelistedPackages) {
         this.whitelistedPackages = new ArrayList<>(whitelistedPackages);
+    }
+
+    /**
+     * Get a list of URL patterns that are not handled by the Vaadin servlet
+     * when it is mapped to the context root.
+     *
+     * @return a list of url patterns to exclude
+     */
+    public List<String> getExcludeUrls() {
+        return excludeUrls;
+    }
+
+    /**
+     * Set a list of URL patterns that are not handled by the Vaadin servlet
+     * when it is mapped to the context root.
+     *
+     * @param excludePatterns
+     *            a list of url patterns to exclude
+     */
+    public void setExcludeUrls(List<String> excludeUrls) {
+        this.excludeUrls = excludeUrls;
     }
 }

@@ -326,6 +326,7 @@
 
                 <module>test-spring-boot-only-prepare</module>
                 <module>test-spring-white-list</module>
+                <module>test-spring-boot-interop</module>
             </modules>
         </profile>
     </profiles>

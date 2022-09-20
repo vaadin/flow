@@ -16,11 +16,17 @@
 package com.vaadin.flow.spring;
 
 import java.util.Collections;
+import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.handler.SimpleUrlHandlerMapping;
@@ -56,14 +62,42 @@ public class VaadinServletConfiguration {
      *         servlet
      */
     @Bean
-    public SimpleUrlHandlerMapping vaadinRootMapping() {
-        SimpleUrlHandlerMapping mapping = new SimpleUrlHandlerMapping();
+    public SimpleUrlHandlerMapping vaadinRootMapping(
+            VaadinConfigurationProperties vaadinConfigurationProperties) {
+        AntPathMatcher matcher = new AntPathMatcher();
+        List<String> excludeUrls = vaadinConfigurationProperties
+                .getExcludeUrls();
+
+        SimpleUrlHandlerMapping mapping = new SimpleUrlHandlerMapping() {
+            @Override
+            protected Object getHandlerInternal(HttpServletRequest request)
+                    throws Exception {
+                if (excludeUrls != null && !excludeUrls.isEmpty()) {
+                    String requestPath = request.getRequestURI();
+                    for (String pattern : excludeUrls) {
+                        if (matcher.match(pattern, requestPath)) {
+                            getLogger().debug(
+                                    "Ignoring request to {} excluded by {}",
+                                    requestPath, pattern);
+                            return null;
+                        }
+                    }
+                }
+                return super.getHandlerInternal(request);
+            }
+        };
         mapping.setOrder(Ordered.LOWEST_PRECEDENCE - 1);
 
+        // This is /** and not /* so that SimpleUrlHandlerMapping does not interpret it
+        // as a "default handler" and we can override the behavior in getHandlerInternal
         mapping.setUrlMap(
-                Collections.singletonMap("/*", vaadinForwardingController()));
+                Collections.singletonMap("/**", vaadinForwardingController()));
 
         return mapping;
+    }
+
+    protected Logger getLogger() {
+        return LoggerFactory.getLogger(getClass());
     }
 
     /**
