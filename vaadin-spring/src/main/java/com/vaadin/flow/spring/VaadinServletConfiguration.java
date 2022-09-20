@@ -58,16 +58,18 @@ public class VaadinServletConfiguration {
         private List<String> excludeUrls;
         private AntPathMatcher matcher;
 
-        public RootExcludeHandler(List<String> excludeUrls, Controller vaadinForwardingController) {
+        public RootExcludeHandler(List<String> excludeUrls,
+                Controller vaadinForwardingController) {
             this.excludeUrls = excludeUrls;
             matcher = new AntPathMatcher();
 
             setOrder(Ordered.LOWEST_PRECEDENCE - 1);
 
-            // This is /** and not /* so that it is not interpreted as a "default handler"
+            // This is /** and not /* so that it is not interpreted as a
+            // "default handler"
             // and we can override the behavior in getHandlerInternal
-            setUrlMap(
-                    Collections.singletonMap("/**", vaadinForwardingController));
+            setUrlMap(Collections.singletonMap("/**",
+                    vaadinForwardingController));
         }
 
         @Override
@@ -103,7 +105,9 @@ public class VaadinServletConfiguration {
     @Bean
     public RootExcludeHandler vaadinRootMapping(
             VaadinConfigurationProperties vaadinConfigurationProperties) {
-        return new RootExcludeHandler(vaadinConfigurationProperties.getExcludeUrls(), vaadinForwardingController());
+        return new RootExcludeHandler(
+                vaadinConfigurationProperties.getExcludeUrls(),
+                vaadinForwardingController());
     }
 
     /**
