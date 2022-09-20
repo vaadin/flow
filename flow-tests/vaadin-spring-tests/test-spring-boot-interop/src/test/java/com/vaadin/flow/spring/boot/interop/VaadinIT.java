@@ -18,6 +18,7 @@ public class VaadinIT extends AbstractSpringTest {
     public void vaadinUIShown() {
         open();
         $(NativeButtonElement.class).first().click();
-        Assert.assertEquals("Hello", $(DivElement.class).id("output").getText());
+        Assert.assertEquals("Hello",
+                $(DivElement.class).id("output").getText());
     }
 }

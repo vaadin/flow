@@ -88,8 +88,9 @@ public class VaadinServletConfiguration {
         };
         mapping.setOrder(Ordered.LOWEST_PRECEDENCE - 1);
 
-        // This is /** and not /* so that SimpleUrlHandlerMapping does not interpret it
-        // as a "default handler" and we can override the behavior in getHandlerInternal
+        // This is /** and not /* so that SimpleUrlHandlerMapping does not
+        // interpret it as a "default handler" and we can override the behavior
+        // in getHandlerInternal
         mapping.setUrlMap(
                 Collections.singletonMap("/**", vaadinForwardingController()));
 

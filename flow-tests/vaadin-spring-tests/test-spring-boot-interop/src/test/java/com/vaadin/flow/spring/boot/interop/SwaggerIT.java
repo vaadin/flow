@@ -17,6 +17,7 @@ public class SwaggerIT extends AbstractSpringTest {
     @Test
     public void swaggerUIShown() {
         open();
-        Assert.assertTrue(getDriver().getPageSource().contains("OpenAPI definition"));
+        Assert.assertTrue(
+                getDriver().getPageSource().contains("OpenAPI definition"));
     }
 }
