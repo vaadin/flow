@@ -79,17 +79,29 @@ public abstract class AbstractTaskClientGenerator implements FallibleCommand {
         return LoggerFactory.getLogger(AbstractTaskClientGenerator.class);
     }
 
-    static void writeIfChanged(File file, String content) throws IOException {
+    /**
+     * Writes the given content into the given file unless the file already
+     * contains that content.
+     *
+     * @param file
+     *            the file to write to
+     * @param content
+     *            the content to write
+     * @return true if the string was written to the file, false otherwise
+     */
+    static boolean writeIfChanged(File file, String content)
+            throws IOException {
         String existingFileContent = getExistingFileContent(file);
         if (content.equals(existingFileContent)) {
             // Do not write the same contents to avoid frontend recompiles
-            return;
+            return false;
         }
 
         log().debug("writing file '{}'", file);
 
         FileUtils.forceMkdirParent(file);
         FileUtils.writeStringToFile(file, content, UTF_8);
+        return true;
     }
 
     private static String getExistingFileContent(File generatedFile)

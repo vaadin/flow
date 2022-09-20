@@ -15,34 +15,20 @@ public class AbstractTaskClientGeneratorTest {
 
     private static final String TEST_STRING = "Hello world";
 
-    private static FileTime getModificationTime(File f) throws IOException {
-        BasicFileAttributes attr = Files.readAttributes(f.toPath(),
-                BasicFileAttributes.class);
-        return attr.lastModifiedTime();
-    }
-
     @Test
     public void writeIfChanged_writesWithChanges() throws Exception {
         File f = File.createTempFile("writeIfChanged", "aaa");
         FileUtils.write(f, TEST_STRING, StandardCharsets.UTF_8);
-        FileTime modTime = getModificationTime(f);
 
-        Thread.sleep(1);
-
-        AbstractTaskClientGenerator.writeIfChanged(f, TEST_STRING + "2");
-        Assert.assertNotEquals(modTime, getModificationTime(f));
+        Assert.assertTrue(AbstractTaskClientGenerator.writeIfChanged(f,
+                TEST_STRING + "2"));
     }
 
     @Test
     public void writeIfChanged_doesNotWriteWithoutChanges() throws Exception {
         File f = File.createTempFile("writeIfChanged", "aaa");
         FileUtils.write(f, TEST_STRING, StandardCharsets.UTF_8);
-        FileTime modTime = getModificationTime(f);
-
-        Thread.sleep(1);
-
-        AbstractTaskClientGenerator.writeIfChanged(f, TEST_STRING);
-        Assert.assertEquals(modTime, getModificationTime(f));
-
+        Assert.assertFalse(
+                AbstractTaskClientGenerator.writeIfChanged(f, TEST_STRING));
     }
 }
