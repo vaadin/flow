@@ -11,7 +11,6 @@ import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
-
 public class AbstractTaskClientGeneratorTest {
 
     private static final String TEST_STRING = "Hello world";
