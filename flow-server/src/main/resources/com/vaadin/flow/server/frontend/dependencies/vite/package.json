@@ -1,0 +1,22 @@
+{
+  "name": "flow-vite-dependencies",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Artur Signell",
+  "license": "Apache-2.0",
+  "dependencies": {},
+  "devDependencies": {
+    "vite": "v3.1.0",
+    "@rollup/plugin-replace": "3.1.0",
+    "rollup-plugin-brotli": "3.1.0",
+    "vite-plugin-checker": "0.4.9",
+    "mkdirp": "1.0.4",
+    "workbox-build": "6.5.0",
+    "@rollup/pluginutils": "4.1.0",
+    "transform-ast": "2.4.4"
+  }
+}
