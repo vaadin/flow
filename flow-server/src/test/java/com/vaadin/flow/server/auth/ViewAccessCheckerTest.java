@@ -233,7 +233,9 @@ public class ViewAccessCheckerTest {
     public void redirectUrlStoredForAnonymousUsers() {
         Result result = checkAccess(RolesAllowedAdminView.class, null);
         Assert.assertFalse(result.wasTargetViewRendered());
-        Assert.assertEquals(getRoute(RolesAllowedAdminView.class),
+        Assert.assertEquals(
+                AccessAnnotationCheckerTest.REQUEST_URL
+                        + getRoute(RolesAllowedAdminView.class),
                 result.sessionAttributes
                         .get(ViewAccessChecker.SESSION_STORED_REDIRECT));
     }
@@ -658,7 +660,7 @@ public class ViewAccessCheckerTest {
         Mockito.when(vaadinServletRequest.getHttpServletRequest())
                 .thenReturn(httpServletRequest);
         Mockito.when(vaadinServletRequest.getUserPrincipal())
-                .thenAnswer(anasert -> httpServletRequest.getUserPrincipal());
+                .thenAnswer(answer -> httpServletRequest.getUserPrincipal());
         Mockito.when(vaadinServletRequest.isUserInRole(Mockito.any()))
                 .thenAnswer(answer -> httpServletRequest
                         .isUserInRole(answer.getArgument(0)));
