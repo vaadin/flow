@@ -71,7 +71,7 @@ public class VaadinServletConfiguration {
             try {
                 return (List<String>) Class.forName(
                         "com.vaadin.flow.spring.VaadinConfigurationProperties")
-                        .getMethod("getExcludeUrls", Environment.class)
+                        .getMethod("getExcludedUrls", Environment.class)
                         .invoke(null, environment);
             } catch (IllegalAccessException | IllegalArgumentException
                     | InvocationTargetException | NoSuchMethodException
