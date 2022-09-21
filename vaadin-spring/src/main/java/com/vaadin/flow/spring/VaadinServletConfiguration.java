@@ -35,6 +35,7 @@ import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.handler.SimpleUrlHandlerMapping;
 import org.springframework.web.servlet.mvc.Controller;
 import org.springframework.web.servlet.mvc.ServletForwardingController;
+import org.springframework.web.util.UrlPathHelper;
 
 import com.vaadin.flow.server.VaadinServlet;
 
@@ -93,6 +94,7 @@ public class VaadinServletConfiguration {
     private static class RootExcludeHandler extends SimpleUrlHandlerMapping {
         private List<String> excludeUrls;
         private AntPathMatcher matcher;
+        private UrlPathHelper urlPathHelper = new UrlPathHelper();
 
         public RootExcludeHandler(List<String> excludeUrls,
                 Controller vaadinForwardingController) {
@@ -112,7 +114,8 @@ public class VaadinServletConfiguration {
         protected Object getHandlerInternal(HttpServletRequest request)
                 throws Exception {
             if (excludeUrls != null && !excludeUrls.isEmpty()) {
-                String requestPath = request.getRequestURI();
+                String requestPath = urlPathHelper
+                        .getPathWithinApplication(request);
                 for (String pattern : excludeUrls) {
                     if (matcher.match(pattern, requestPath)) {
                         getLogger().debug(

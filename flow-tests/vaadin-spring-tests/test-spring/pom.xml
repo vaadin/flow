@@ -141,7 +141,7 @@
                                 <bannedDependencies>
                                     <excludes>
                                         <!-- This is a plain Spring project that cannot include any boot dependencies -->
-                                        <exclude>org.springframework.boot</exclude>
+                                        <!--<exclude>org.springframework.boot</exclude>-->
                                     </excludes>
                                 </bannedDependencies>
                             </rules>

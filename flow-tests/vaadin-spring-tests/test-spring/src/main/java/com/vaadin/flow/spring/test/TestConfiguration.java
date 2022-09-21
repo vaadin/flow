@@ -15,11 +15,15 @@
  */
 package com.vaadin.flow.spring.test;
 
+import org.springdoc.webmvc.ui.SwaggerWebMvcConfigurer;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
 
 /**
@@ -31,8 +35,25 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupp
  */
 @Configuration
 @EnableWebSecurity
-@ComponentScan(excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = ProfileEnableInitializer.class))
-@Import(DummyOAuth2Server.class)
+@ComponentScan(basePackages = { "org.springdoc",
+        "com.vaadin.flow.spring.test" }, excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = ProfileEnableInitializer.class))
+@Import({ DummyOAuth2Server.class,
+        org.springdoc.core.SpringDocConfiguration.class,
+        org.springdoc.webmvc.core.SpringDocWebMvcConfiguration.class,
+        org.springdoc.webmvc.ui.SwaggerConfig.class,
+        org.springdoc.core.SwaggerUiConfigProperties.class,
+        org.springdoc.core.SwaggerUiOAuthProperties.class,
+        org.springdoc.core.SpringDocConfigProperties.class,
+        org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration.class })
+@PropertySource("classpath:spring.properties")
 public class TestConfiguration extends WebMvcConfigurationSupport {
+    @Autowired
+    private SwaggerWebMvcConfigurer swaggerWebMvcConfigurer;
 
+    @Override
+    protected void addResourceHandlers(ResourceHandlerRegistry registry) {
+        super.addResourceHandlers(registry);
+        swaggerWebMvcConfigurer.addResourceHandlers(registry);
+
+    }
 }
