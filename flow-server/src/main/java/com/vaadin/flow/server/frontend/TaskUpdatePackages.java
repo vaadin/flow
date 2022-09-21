@@ -382,17 +382,13 @@ public class TaskUpdatePackages extends NodeUpdater {
             }
         }
         if (nodeModulesFolder.exists()) {
-            removeDir(nodeModulesFolder);
+            FrontendUtils.deleteNodeModules(nodeModulesFolder);
         }
         File generatedNodeModules = new File(generatedFolder,
                 FrontendUtils.NODE_MODULES);
         if (generatedNodeModules.exists()) {
-            removeDir(generatedNodeModules);
+            FrontendUtils.deleteNodeModules(generatedNodeModules);
         }
-    }
-
-    private void removeDir(File file) throws IOException {
-        Files.walkFileTree(file.toPath(), new RemoveFileVisitor());
     }
 
     private String getExistingShrinkWrapVersion() throws IOException {
