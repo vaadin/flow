@@ -35,25 +35,28 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupp
  */
 @Configuration
 @EnableWebSecurity
-@ComponentScan(basePackages = { "org.springdoc",
+@ComponentScan(basePackages = { /* "org.springdoc", */
         "com.vaadin.flow.spring.test" }, excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE, value = ProfileEnableInitializer.class))
 @Import({ DummyOAuth2Server.class,
-        org.springdoc.core.SpringDocConfiguration.class,
-        org.springdoc.webmvc.core.SpringDocWebMvcConfiguration.class,
-        org.springdoc.webmvc.ui.SwaggerConfig.class,
-        org.springdoc.core.SwaggerUiConfigProperties.class,
-        org.springdoc.core.SwaggerUiOAuthProperties.class,
-        org.springdoc.core.SpringDocConfigProperties.class,
-        org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration.class })
+/*
+ * org.springdoc.core.SpringDocConfiguration.class,
+ * org.springdoc.webmvc.core.SpringDocWebMvcConfiguration.class,
+ * org.springdoc.webmvc.ui.SwaggerConfig.class,
+ * org.springdoc.core.SwaggerUiConfigProperties.class,
+ * org.springdoc.core.SwaggerUiOAuthProperties.class,
+ * org.springdoc.core.SpringDocConfigProperties.class,
+ * org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration.class
+ */
+})
 @PropertySource("classpath:spring.properties")
 public class TestConfiguration extends WebMvcConfigurationSupport {
-    @Autowired
-    private SwaggerWebMvcConfigurer swaggerWebMvcConfigurer;
-
-    @Override
-    protected void addResourceHandlers(ResourceHandlerRegistry registry) {
-        super.addResourceHandlers(registry);
-        swaggerWebMvcConfigurer.addResourceHandlers(registry);
-
-    }
+    /*
+     * @Autowired private SwaggerWebMvcConfigurer swaggerWebMvcConfigurer;
+     *
+     * @Override protected void addResourceHandlers(ResourceHandlerRegistry
+     * registry) { super.addResourceHandlers(registry);
+     * swaggerWebMvcConfigurer.addResourceHandlers(registry);
+     *
+     * }
+     */
 }
