@@ -3,6 +3,7 @@ package com.vaadin.flow.uitest.ui.push;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 
@@ -45,9 +46,18 @@ public abstract class AbstractClientServerCounterIT extends ChromeBrowserTest {
     }
 
     public static int getServerCounter(TestBenchTestCase t) {
-        WebElement serverCounterElem = t
-                .findElement(By.id(ClientServerCounterUI.SERVER_COUNTER_ID));
-        return Integer.parseInt(serverCounterElem.getText());
+        WebDriverException lastException = null;
+        for (int i = 0; i < 10; i++) {
+            try {
+                WebElement serverCounterElem = t.findElement(
+                        By.id(ClientServerCounterUI.SERVER_COUNTER_ID));
+                return Integer.parseInt(serverCounterElem.getText());
+            } catch (WebDriverException e) {
+                lastException = e;
+            }
+        }
+
+        throw lastException;
     }
 
     public static WebElement getServerCounterStartButton(TestBenchTestCase t) {
