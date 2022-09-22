@@ -128,6 +128,12 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandler
     public void onAuthenticationSuccess(HttpServletRequest request,
             HttpServletResponse response, Authentication authentication)
             throws ServletException, IOException {
+
+        if (isTypescriptLogin(request)) {
+            response.setHeader(DEFAULT_URL_HEADER,
+                    determineTargetUrl(request, response));
+        }
+
         SavedRequest savedRequest = this.requestCache.getRequest(request,
                 response);
         String fullySavedRequestUrl = getStoredServerNavigation(request);
@@ -138,6 +144,7 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandler
                             request.getParameter(targetUrlParameter)))) {
                 this.clearAuthenticationAttributes(request);
                 String targetUrl = savedRequest.getRedirectUrl();
+                response.setHeader(SAVED_URL_HEADER, targetUrl);
                 this.getRedirectStrategy().sendRedirect(request, response,
                         targetUrl);
                 return;
@@ -146,11 +153,6 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandler
             }
         } else if (fullySavedRequestUrl != null) {
             response.setHeader(SAVED_URL_HEADER, fullySavedRequestUrl);
-        }
-
-        if (isTypescriptLogin(request)) {
-            response.setHeader(DEFAULT_URL_HEADER,
-                    determineTargetUrl(request, response));
         }
 
         super.onAuthenticationSuccess(request, response, authentication);

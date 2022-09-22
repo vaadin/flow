@@ -9,8 +9,8 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.web.csrf.CsrfToken;
-import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.csrf.DefaultCsrfToken;
+import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 
 public class VaadinSavedRequestAwareAuthenticationSuccessHandlerTest {
 
@@ -32,6 +32,97 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandlerTest {
 
         Assert.assertNull(loginResponse.getHeader("Result"));
         Assert.assertEquals(302, loginResponse.getStatus());
+        Assert.assertEquals("/", loginResponse.getHeader("Location"));
+    }
+
+    @Test
+    public void directLogin_nonTypescriptClientsAndDefaultTargetUrl_redirectToDefaultTargetUrl()
+            throws Exception {
+        MockHttpServletRequest loginRequest = RequestUtilTest
+                .createRequest("/login");
+        MockHttpServletResponse loginResponse = new MockHttpServletResponse();
+        vaadinSavedRequestAwareAuthenticationSuccessHandler
+                .setDefaultTargetUrl("/foo");
+        vaadinSavedRequestAwareAuthenticationSuccessHandler
+                .onAuthenticationSuccess(loginRequest, loginResponse,
+                        new UsernamePasswordAuthenticationToken("foo", "bar"));
+
+        Assert.assertNull(loginResponse.getHeader("Result"));
+        Assert.assertEquals(302, loginResponse.getStatus());
+        Assert.assertEquals("/foo", loginResponse.getHeader("Location"));
+    }
+
+    @Test
+    public void savedUrl_nonTypescriptClients_alwaysUseDefaultTargetUrl_redirectToDefaultTargetUrl()
+            throws Exception {
+        HttpSessionRequestCache cache = new HttpSessionRequestCache();
+        MockHttpServletRequest firstRequest = RequestUtilTest
+                .createRequest("/the-saved-url");
+        HttpSession session = firstRequest.getSession();
+        cache.saveRequest(firstRequest, new MockHttpServletResponse());
+
+        MockHttpServletRequest loginRequest = RequestUtilTest
+                .createRequest("/login");
+        loginRequest.setSession(session);
+        MockHttpServletResponse loginResponse = new MockHttpServletResponse();
+        vaadinSavedRequestAwareAuthenticationSuccessHandler
+                .setAlwaysUseDefaultTargetUrl(true);
+        vaadinSavedRequestAwareAuthenticationSuccessHandler
+                .setDefaultTargetUrl("/foo");
+        vaadinSavedRequestAwareAuthenticationSuccessHandler
+                .onAuthenticationSuccess(loginRequest, loginResponse,
+                        new UsernamePasswordAuthenticationToken("foo", "bar"));
+
+        Assert.assertNull(loginResponse.getHeader("Result"));
+        Assert.assertEquals(302, loginResponse.getStatus());
+        Assert.assertEquals("/foo", loginResponse.getHeader("Location"));
+    }
+
+    @Test
+    public void savedUrl_nonTypescriptClients_targetParameter_redirectToTargetParameter()
+            throws Exception {
+        HttpSessionRequestCache cache = new HttpSessionRequestCache();
+        MockHttpServletRequest firstRequest = RequestUtilTest
+                .createRequest("/the-saved-url");
+        HttpSession session = firstRequest.getSession();
+        cache.saveRequest(firstRequest, new MockHttpServletResponse());
+
+        MockHttpServletRequest loginRequest = RequestUtilTest
+                .createRequest("/login");
+        loginRequest.setParameter("Saved-url", "/foo");
+        loginRequest.setSession(session);
+        MockHttpServletResponse loginResponse = new MockHttpServletResponse();
+        vaadinSavedRequestAwareAuthenticationSuccessHandler
+                .onAuthenticationSuccess(loginRequest, loginResponse,
+                        new UsernamePasswordAuthenticationToken("foo", "bar"));
+
+        Assert.assertNull(loginResponse.getHeader("Result"));
+        Assert.assertEquals(302, loginResponse.getStatus());
+        Assert.assertEquals("/foo", loginResponse.getHeader("Location"));
+    }
+
+    @Test
+    public void savedUrl_nonTypescriptClients_redirectToSavedUrl()
+            throws Exception {
+        HttpSessionRequestCache cache = new HttpSessionRequestCache();
+        MockHttpServletRequest firstRequest = RequestUtilTest
+                .createRequest("/the-saved-url");
+        HttpSession session = firstRequest.getSession();
+        cache.saveRequest(firstRequest, new MockHttpServletResponse());
+
+        MockHttpServletRequest loginRequest = RequestUtilTest
+                .createRequest("/login");
+        loginRequest.setSession(session);
+
+        MockHttpServletResponse loginResponse = new MockHttpServletResponse();
+        vaadinSavedRequestAwareAuthenticationSuccessHandler
+                .onAuthenticationSuccess(loginRequest, loginResponse,
+                        new UsernamePasswordAuthenticationToken("foo", "bar"));
+
+        Assert.assertNull(loginResponse.getHeader("Result"));
+        Assert.assertEquals(302, loginResponse.getStatus());
+        Assert.assertEquals("http://localhost/the-saved-url",
+                loginResponse.getHeader("Location"));
     }
 
     @Test
