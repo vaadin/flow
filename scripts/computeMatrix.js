@@ -62,6 +62,7 @@ const moduleWeights = {
   'flow-tests/vaadin-spring-tests/test-spring-boot-scan': { pos: 4, weight: 3 },
   'flow-tests/vaadin-spring-tests/test-spring-war': { pos: 4, weight: 3 },
   'flow-tests/vaadin-spring-tests/test-spring-boot-contextpath': { pos: 4, weight: 3 },
+  'flow-tests/vaadin-spring-tests/test-spring-boot-reverseproxy': { pos: 4, weight: 3 },
   'flow-tests/vaadin-spring-tests/test-spring-white-list': { pos: 4, weight: 2 },
   'flow-tests/vaadin-spring-tests/test-spring-security-flow': { pos: 5, weight: 5 },
   'flow-tests/vaadin-spring-tests/test-spring-security-flow-contextpath': { pos: 5, weight: 4 },
