@@ -315,6 +315,8 @@
                 <module>test-spring-security-flow</module>
                 <module>test-spring-security-flow-contextpath</module>
                 <module>test-spring-security-flow-urlmapping</module>
+<!-- This can be included if it is set up to automatically start a reverse proxy as part of the build -->
+<!--                <module>test-spring-security-flow-reverseproxy</module> -->
 
                 <module>test-spring-boot-only-prepare</module>
                 <module>test-spring-white-list</module>
