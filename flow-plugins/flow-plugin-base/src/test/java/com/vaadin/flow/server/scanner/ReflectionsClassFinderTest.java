@@ -28,9 +28,8 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import org.hamcrest.CoreMatchers;
-import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -66,11 +65,11 @@ public class ReflectionsClassFinderTest {
 
         ClassLoader classLoader = new URLClassLoader(urls,
                 Thread.currentThread().getContextClassLoader());
-        defaultClassFinder = new ClassFinder.DefaultClassFinder(Set.of(
+        defaultClassFinder = new ClassFinder.DefaultClassFinder(Stream.of(
                 classLoader.loadClass("com.vaadin.flow.test.last.ComponentN"),
                 classLoader.loadClass("com.vaadin.flow.test.first.ComponentX"),
-                classLoader
-                        .loadClass("com.vaadin.flow.test.middle.ComponentA")));
+                classLoader.loadClass("com.vaadin.flow.test.middle.ComponentA"))
+                .collect(Collectors.toSet()));
     }
 
     @Test
@@ -133,8 +132,9 @@ public class ReflectionsClassFinderTest {
         File buildDir = externalModules.newFolder(moduleName + "/target");
 
         Path sourceFile = sourcePkg.toPath().resolve(className + ".java");
-        Files.writeString(sourceFile, String.format(CLASS_TEMPLATE, pkg,
-                npmPackageVersion, className), StandardCharsets.UTF_8);
+        Files.write(sourceFile,
+                String.format(CLASS_TEMPLATE, pkg, npmPackageVersion, className)
+                        .getBytes(StandardCharsets.UTF_8));
         compile(sourceFile.toFile(), sources, buildDir);
         return buildDir.toURI().toURL();
     }
