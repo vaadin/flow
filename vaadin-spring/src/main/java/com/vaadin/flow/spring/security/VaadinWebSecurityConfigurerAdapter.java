@@ -238,6 +238,11 @@ public abstract class VaadinWebSecurityConfigurerAdapter
      * This is used when your application uses a Fusion based login view
      * available at the given path.
      *
+     * NOTE: if the login path points to a Flow view, the corresponding java
+     * class must be annotated
+     * with @{@link com.vaadin.flow.server.auth.AnonymousAllowed} to ensure that
+     * the view is always accessible.
+     *
      * @param http
      *            the http security from {@link #configure(HttpSecurity)}
      * @param fusionLoginViewPath
@@ -256,6 +261,11 @@ public abstract class VaadinWebSecurityConfigurerAdapter
      * <p>
      * This is used when your application uses a Fusion based login view
      * available at the given path.
+     *
+     * NOTE: if the login path points to a Flow view, the corresponding java
+     * class must be annotated
+     * with @{@link com.vaadin.flow.server.auth.AnonymousAllowed} to ensure that
+     * the view is always accessible.
      *
      * @param http
      *            the http security from {@link #configure(HttpSecurity)}
