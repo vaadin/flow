@@ -272,6 +272,11 @@ public abstract class VaadinWebSecurity {
      * This is used when your application uses a Hilla based login view
      * available at the given path.
      *
+     * NOTE: if the login path points to a Flow view, the corresponding java
+     * class must be annotated
+     * with @{@link com.vaadin.flow.server.auth.AnonymousAllowed} to ensure that
+     * the view is always accessible.
+     *
      * @param http
      *            the http security from {@link #filterChain(HttpSecurity)}
      * @param hillaLoginViewPath
@@ -290,6 +295,11 @@ public abstract class VaadinWebSecurity {
      * <p>
      * This is used when your application uses a Hilla based login view
      * available at the given path.
+     *
+     * NOTE: if the login path points to a Flow view, the corresponding java
+     * class must be annotated
+     * with @{@link com.vaadin.flow.server.auth.AnonymousAllowed} to ensure that
+     * the view is always accessible.
      *
      * @param http
      *            the http security from {@link #filterChain(HttpSecurity)}
