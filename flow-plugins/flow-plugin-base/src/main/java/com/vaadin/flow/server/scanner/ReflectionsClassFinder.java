@@ -22,7 +22,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -63,7 +63,7 @@ public class ReflectionsClassFinder implements ClassFinder {
     @Override
     public Set<Class<?>> getAnnotatedClasses(
             Class<? extends Annotation> clazz) {
-        Set<Class<?>> classes = new HashSet<>();
+        Set<Class<?>> classes = new LinkedHashSet<>();
         classes.addAll(reflections.getTypesAnnotatedWith(clazz, true));
         classes.addAll(getAnnotatedByRepeatedAnnotation(clazz));
         return sortedByClassName(classes);
