@@ -1095,6 +1095,14 @@ public class DataCommunicator<T> implements Serializable {
     private void requestFlush(boolean forced) {
         if ((flushRequest == null || !flushRequest.canExecute(stateNode)
                 || forced) && fetchEnabled) {
+            if (flushRequest != null) {
+                // this cancels the previous request pushed into the queue,
+                // because a new one is going to be registered forcibly to cover
+                // @PreserveOnRefresh cases. Otherwise two flush requests in the
+                // pending queue may lead to a infinite loop, generating more
+                // and more new requests.
+                flushRequest.setCancelled();
+            }
             flushRequest = FlushRequest.register(stateNode, context -> {
                 if (!context.isClientSideInitialized()) {
                     reset();
@@ -1109,6 +1117,14 @@ public class DataCommunicator<T> implements Serializable {
     private void requestFlushUpdatedData() {
         if (flushUpdatedDataRequest == null
                 || !flushUpdatedDataRequest.canExecute(stateNode)) {
+            if (flushUpdatedDataRequest != null) {
+                // this cancels the previous request pushed into the queue,
+                // because a new one is going to be registered forcibly to cover
+                // @PreserveOnRefresh cases. Otherwise two flush requests in the
+                // pending queue may lead to a infinite loop, generating more
+                // and more new requests.
+                flushUpdatedDataRequest.setCancelled();
+            }
             flushUpdatedDataRequest = FlushRequest.register(stateNode,
                     context -> {
                         flushUpdatedData();
@@ -1478,6 +1494,7 @@ public class DataCommunicator<T> implements Serializable {
     private static class FlushRequest implements Serializable {
 
         private NodeOwner owner;
+        private boolean cancelled;
 
         static FlushRequest register(StateNode stateNode,
                 SerializableConsumer<ExecutionContext> action) {
@@ -1485,14 +1502,20 @@ public class DataCommunicator<T> implements Serializable {
             request.owner = stateNode.getOwner();
             stateNode.runWhenAttached(ui -> {
                 request.owner = stateNode.getOwner();
-                ui.getInternals().getStateTree().beforeClientResponse(stateNode,
-                        action);
+                if (!request.cancelled) {
+                    ui.getInternals().getStateTree().beforeClientResponse(stateNode,
+                            action);
+                }
             });
             return request;
         }
 
         boolean canExecute(StateNode stateNode) {
             return owner instanceof NullOwner || owner == stateNode.getOwner();
+        }
+
+        void setCancelled() {
+            cancelled = true;
         }
     }
 
