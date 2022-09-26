@@ -19,6 +19,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -86,7 +87,8 @@ public class VaadinServletConfiguration {
             if (value == null || value.isEmpty()) {
                 return Collections.emptyList();
             } else {
-                return Arrays.asList(value.split(","));
+                return Arrays.stream(value.split(",")).map(url -> url.trim())
+                        .collect(Collectors.toList());
             }
         }
     }
