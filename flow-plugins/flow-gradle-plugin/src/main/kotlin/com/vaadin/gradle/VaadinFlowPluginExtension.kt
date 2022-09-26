@@ -158,7 +158,8 @@ public open class VaadinFlowPluginExtension(project: Project) {
      *
      * Example: `"https://nodejs.org/dist/"`.
      */
-    public var nodeDownloadRoot: String = NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT
+    public var nodeDownloadRoot: String =
+        com.vaadin.flow.server.frontend.installer.Platform.guess().getNodeDownloadRoot()
 
     /**
      * Allow automatic update of node installed to alternate location. Default `false`
