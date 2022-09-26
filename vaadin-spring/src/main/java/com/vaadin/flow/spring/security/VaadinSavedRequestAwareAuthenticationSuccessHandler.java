@@ -136,10 +136,6 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandler
                 response);
         String storedServerNavigation = getStoredServerNavigation(request);
         if (storedServerNavigation != null) {
-            // The saved server navigation URL is relative to the context path
-            if (!"".equals(request.getContextPath())) {
-                storedServerNavigation = "/" + storedServerNavigation;
-            }
             response.setHeader(SAVED_URL_HEADER, storedServerNavigation);
         } else if (savedRequest != null) {
             /*
@@ -171,8 +167,11 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandler
         if (session == null) {
             return null;
         }
-        return (String) session
-                .getAttribute(ViewAccessChecker.SESSION_STORED_REDIRECT);
+        String redirectUrl = (String) session.getAttribute(
+                ViewAccessChecker.SESSION_STORED_REDIRECT_ABSOLUTE);
+        session.removeAttribute(
+                ViewAccessChecker.SESSION_STORED_REDIRECT_ABSOLUTE);
+        return redirectUrl;
     }
 
     static boolean isTypescriptLogin(HttpServletRequest request) {
