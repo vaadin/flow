@@ -101,6 +101,7 @@ public class SpringBootAutoConfiguration {
          */
         initParameters.put(ApplicationConfig.JSR356_MAPPING_PATH,
                 pushRegistrationPath);
+        initParameters.put(ApplicationConfig.JSR356_PATH_MAPPING_LENGTH, "0");
 
         ServletRegistrationBean<SpringServlet> registration = new ServletRegistrationBean<>(
                 new SpringServlet(context, rootMapping), mapping);
