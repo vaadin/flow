@@ -664,6 +664,9 @@ public class ViewAccessCheckerTest {
                         .isUserInRole(answer.getArgument(0)));
         Mockito.when(vaadinServletRequest.getSession())
                 .thenAnswer(answer -> httpServletRequest.getSession());
+        Mockito.when(vaadinServletRequest.getRequestURL())
+                .thenReturn(new StringBuffer("http://localhost:8080/"));
+
         CurrentInstance.set(VaadinRequest.class, vaadinServletRequest);
 
         Router router = Mockito.mock(Router.class);
