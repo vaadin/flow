@@ -22,6 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.server.auth.ViewAccessChecker;
 
 import org.springframework.core.log.LogMessage;
@@ -124,6 +125,40 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandler
         setTargetUrlParameter(SAVED_URL_HEADER);
     }
 
+    /**
+     * Called when a user has been successfully authenticated and finds out
+     * whether it should redirect the user back to a default success url or the
+     * originally requested url before the authentication.
+     * <p>
+     * As the user might have initiated the request to a restricted resource in
+     * different ways, this method is responsible for extracting the final
+     * target for redirection of the user and to set it on the response header,
+     * so that it can be used by the redirection strategy in a unified way. See
+     * {@link RedirectStrategy} and
+     * {@link VaadinSavedRequestAwareAuthenticationSuccessHandler#determineTargetUrl(HttpServletRequest, HttpServletResponse)}
+     * <p>
+     * If the redirection to the login page for authentication is initiated by
+     * spring security (such as entering some URI manually into the address bar
+     * and not navigating via Vaadin application), then a SavedRequest object
+     * containing the originally requested path is pushed to the request cache
+     * by the Spring Security so the redirect target url would be extracted from
+     * that.
+     * <p>
+     * Contrarily, navigating via Vaadin application router (e.g. via menus or
+     * the links within the application) will result in requests being sent to
+     * "/" or "/{app-context-root}", so the Spring Security will not intercept
+     * and the SavedRequest will be null. In this case, the target redirect url
+     * can be extracted from the session. See
+     * {@link ViewAccessChecker#beforeEnter(BeforeEnterEvent)}
+     *
+     * @param request
+     *            the request which caused the successful authentication
+     * @param response
+     *            the response
+     * @param authentication
+     *            the <tt>Authentication</tt> object which was created during
+     *            the authentication process.
+     */
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
             HttpServletResponse response, Authentication authentication)
@@ -137,6 +172,7 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandler
         SavedRequest savedRequest = this.requestCache.getRequest(request,
                 response);
         String fullySavedRequestUrl = getStoredServerNavigation(request);
+
         if (savedRequest != null) {
             String targetUrlParameter = this.getTargetUrlParameter();
             if (!this.isAlwaysUseDefaultTargetUrl()
@@ -158,27 +194,37 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandler
         super.onAuthenticationSuccess(request, response, authentication);
     }
 
+    /**
+     * Determines the originally requested path by the user before
+     * authentication by reading the target redirect url from the response
+     * header.
+     * <p>
+     * Note that if a defaultSuccessUrl has been configured on the http security
+     * configurer, or the value of {@code targetUrlParameter} is {@code null},
+     * it will fall back to the default super class implementation.
+     *
+     * @param request
+     *            the http servlet request instance
+     * @param response
+     *            the http servlet response instance
+     * @return the original requested path by the user before authentication.
+     */
     @Override
     protected String determineTargetUrl(HttpServletRequest request,
             HttpServletResponse response) {
-        if (this.isAlwaysUseDefaultTargetUrl()) {
-            return this.getDefaultTargetUrl();
-        } else {
-            String targetUrl;
-            if (this.getTargetUrlParameter() != null) {
-                targetUrl = response.getHeader(this.getTargetUrlParameter());
-                if (StringUtils.hasText(targetUrl)) {
-                    if (this.logger.isTraceEnabled()) {
-                        this.logger.trace(LogMessage.format(
-                                "Using url %s from response header %s",
-                                targetUrl, this.getTargetUrlParameter()));
-                    }
-                    return targetUrl;
+        if (!isAlwaysUseDefaultTargetUrl()
+                && this.getTargetUrlParameter() != null) {
+            String targetUrl = response.getHeader(this.getTargetUrlParameter());
+            if (StringUtils.hasText(targetUrl)) {
+                if (this.logger.isTraceEnabled()) {
+                    this.logger.trace(LogMessage.format(
+                            "Using url %s from response header %s", targetUrl,
+                            this.getTargetUrlParameter()));
                 }
+                return targetUrl;
             }
-
-            return super.determineTargetUrl(request, response);
         }
+        return super.determineTargetUrl(request, response);
     }
 
     /**
