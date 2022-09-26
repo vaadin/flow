@@ -102,7 +102,7 @@ public abstract class AbstractIT extends ChromeBrowserTest {
     }
 
     protected void assertLoginViewShown() {
-        assertPathShown("login");
+        assertPathShown("my/login/page");
         waitUntil(driver -> $(LoginOverlayElement.class).exists());
     }
 
