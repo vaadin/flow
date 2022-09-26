@@ -308,7 +308,7 @@ public class ViewAccessCheckerTest {
         viewAccessChecker.setLoginView("/log-in");
         Result result = checkAccess(RolesAllowedAdminView.class, null);
         Assert.assertFalse(result.wasTargetViewRendered());
-        Assert.assertEquals("/log-in", result.getRedirectUsingPageLocation());
+        Assert.assertEquals("/log-in", result.getExternalForwardUrl());
     }
 
     @Test
@@ -559,7 +559,6 @@ public class ViewAccessCheckerTest {
 
         public BeforeEnterEvent event;
         public Map<String, Object> sessionAttributes;
-        public String redirectUsingPageLocation;
 
         public Class<? extends Component> getReroutedTo() {
             if (!event.hasRerouteTarget()
@@ -594,10 +593,6 @@ public class ViewAccessCheckerTest {
             return event.getErrorParameter().getException().getClass();
         }
 
-        public String getRedirectUsingPageLocation() {
-            return redirectUsingPageLocation;
-        }
-
         public String getRerouteURL() {
             if (event.hasUnknownForward()) {
                 return event.getUnknownForward();
@@ -606,9 +601,18 @@ public class ViewAccessCheckerTest {
             }
         }
 
+        public String getExternalForwardUrl() {
+            if (event.hasExternalForwardUrl()) {
+                return event.getExternalForwardUrl();
+            } else {
+                return null;
+            }
+        }
+
         public boolean wasTargetViewRendered() {
             return getReroutedTo() == null && getForwardedTo() == null
-                    && getRerouteError() == null && getRerouteURL() == null;
+                    && getRerouteError() == null && getRerouteURL() == null
+                    && getExternalForwardUrl() == null;
         }
 
     }
@@ -725,11 +729,6 @@ public class ViewAccessCheckerTest {
         Result info = new Result();
         info.event = event;
         info.sessionAttributes = sessionAttributes;
-        Mockito.doAnswer(invocation -> {
-            info.redirectUsingPageLocation = (String) invocation
-                    .getArguments()[0];
-            return null;
-        }).when(page).setLocation(Mockito.anyString());
 
         return info;
     }
