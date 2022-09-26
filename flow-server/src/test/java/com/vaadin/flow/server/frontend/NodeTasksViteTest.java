@@ -57,6 +57,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.VITE_GENERATED_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
+import static com.vaadin.flow.server.frontend.installer.Platform.ALPINE_RELEASE_FILE_PATH;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -312,6 +313,8 @@ public class NodeTasksViteTest {
                     .thenReturn(targetPath);
             paths.when(() -> Paths.get(new File(userDir).getPath(),
                     WEBPACK_CONFIG)).thenReturn(webpackConfigFilePath);
+            paths.when(() -> Paths.get(ALPINE_RELEASE_FILE_PATH))
+                    .thenReturn(Path.of(ALPINE_RELEASE_FILE_PATH));
 
             String content = "const merge = require('webpack-merge');\n"
                     + "const flowDefaults = require('./webpack.generated.js');\n"
