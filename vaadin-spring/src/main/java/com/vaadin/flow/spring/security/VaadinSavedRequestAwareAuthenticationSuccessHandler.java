@@ -167,8 +167,11 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandler
         if (session == null) {
             return null;
         }
-        return (String) session.getAttribute(
+        String redirectUrl = (String) session.getAttribute(
                 ViewAccessChecker.SESSION_STORED_REDIRECT_ABSOLUTE);
+        session.removeAttribute(
+                ViewAccessChecker.SESSION_STORED_REDIRECT_ABSOLUTE);
+        return redirectUrl;
     }
 
     static boolean isTypescriptLogin(HttpServletRequest request) {
