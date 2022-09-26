@@ -1616,6 +1616,17 @@ public class RouterTest extends RoutingTestBase {
         }
     }
 
+    @Route("forwardtourl")
+    @Tag(Tag.DIV)
+    public static class RedirectToExternalUrl extends Component {
+        static AtomicInteger instancesCreated = new AtomicInteger(0);
+
+        public RedirectToExternalUrl() {
+            instancesCreated.incrementAndGet();
+        }
+
+    }
+
     @Override
     @Before
     public void init() throws NoSuchFieldException, SecurityException,
@@ -3906,6 +3917,37 @@ public class RouterTest extends RoutingTestBase {
                 ForwardSetParameterView.afterNavigationInvoked);
         Assert.assertTrue("forwardTo ForwardSetParameterBackView failed",
                 ForwardSetParameterView.backBeforeEnterInvoked);
+    }
+
+    @Test
+    public void forwardToExternalUrl_preventsViewFromBeingCreated() {
+        setNavigationTargets(RedirectToExternalUrl.class);
+        ui.addBeforeEnterListener(
+                e -> e.forwardToUrl("https://external/enter"));
+
+        navigate("forwardtourl");
+
+        Assert.assertEquals(0, RedirectToExternalUrl.instancesCreated.get());
+    }
+
+    @Test
+    public void forwardToExternalUrl_forwardsToUrl() {
+        String externalForwardUrl = "https://external/enter";
+        setNavigationTargets(RedirectToExternalUrl.class);
+        ui.addBeforeEnterListener(e -> {
+            e.forwardToUrl(externalForwardUrl);
+        });
+
+        navigate("forwardtourl");
+        long historyInvocations = ui.getInternals()
+                .dumpPendingJavaScriptInvocations().stream()
+                .filter(js -> js.getInvocation().getExpression()
+                        .contains("window.open")
+                        && ((String) js.getInvocation().getParameters().get(0))
+                                .contains(externalForwardUrl))
+                .count();
+        assertEquals(1, historyInvocations);
+
     }
 
     private void assertWrongRouteParametersRedirect() {
