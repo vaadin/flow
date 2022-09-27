@@ -156,8 +156,8 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandler
      * @param response
      *            the response
      * @param authentication
-     *            the <tt>Authentication</tt> object which was created during
-     *            the authentication process.
+     *            the <code>Authentication</code> object which was created
+     *            during the authentication process.
      */
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
