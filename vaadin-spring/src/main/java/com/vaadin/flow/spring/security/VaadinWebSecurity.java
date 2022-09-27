@@ -28,6 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
@@ -95,6 +96,9 @@ public abstract class VaadinWebSecurity {
 
     @Autowired
     private ViewAccessChecker viewAccessChecker;
+
+    @Value("#{servletContext.contextPath}")
+    private String servletContextPath;
 
     /**
      * Registers default {@link SecurityFilterChain} bean.
@@ -381,6 +385,27 @@ public abstract class VaadinWebSecurity {
                 new LoginUrlAuthenticationEntryPoint(loginPath),
                 AnyRequestMatcher.INSTANCE);
         viewAccessChecker.setLoginView(flowLoginView);
+    }
+
+    /**
+     * Sets up the login page URI of the OAuth2 provider on the specified
+     * HttpSecurity instance.
+     *
+     * @param http
+     *            the http security from {@link #filterChain(HttpSecurity)}
+     * @param oauth2LoginPage
+     *            the login page of the OAuth2 provider. This Specifies the URL
+     *            to send users to if login is required.
+     * @throws Exception
+     *             Re-throws the possible exceptions while activating
+     *             OAuth2LoginConfigurer
+     */
+    protected void setOAuth2LoginPage(HttpSecurity http, String oauth2LoginPage)
+            throws Exception {
+        http.oauth2Login().loginPage(oauth2LoginPage).successHandler(
+                getVaadinSavedRequestAwareAuthenticationSuccessHandler(http))
+                .permitAll();
+        viewAccessChecker.setLoginView(servletContextPath + oauth2LoginPage);
     }
 
     /**
