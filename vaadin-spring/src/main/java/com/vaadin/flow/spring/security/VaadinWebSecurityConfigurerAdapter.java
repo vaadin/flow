@@ -164,8 +164,7 @@ public abstract class VaadinWebSecurityConfigurerAdapter
      */
     @Bean
     public SecurityContextHolderStrategy securityContextHolderStrategy() {
-        VaadinAwareSecurityContextHolderStrategy vaadinAwareSecurityContextHolderStrategy =
-                new VaadinAwareSecurityContextHolderStrategy();
+        VaadinAwareSecurityContextHolderStrategy vaadinAwareSecurityContextHolderStrategy = new VaadinAwareSecurityContextHolderStrategy();
         // Use a security context holder that can find the context from Vaadin
         // specific classes
         SecurityContextHolder.setContextHolderStrategy(
