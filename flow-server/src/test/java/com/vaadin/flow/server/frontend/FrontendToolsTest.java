@@ -339,8 +339,12 @@ public class FrontendToolsTest {
         String nodeExecutable = installNodeToTempFolder();
         Assert.assertNotNull(nodeExecutable);
 
+        String npmInstallPath = FrontendUtils.isWindows()
+                ? "node/node_modules/npm/bin/npm"
+                : "node/lib/node_modules/npm/bin/npm";
+
         Assert.assertTrue("npm should have been copied to node_modules",
-                new File(vaadinHomeDir, "node/node_modules/npm/bin/npm")
+                new File(vaadinHomeDir, npmInstallPath)
                         .exists());
     }
 

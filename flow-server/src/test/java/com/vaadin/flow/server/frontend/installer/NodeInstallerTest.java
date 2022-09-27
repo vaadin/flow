@@ -92,7 +92,9 @@ public class NodeInstallerTest {
 
         // add a file to node/node_modules_npm that should be cleaned out
         File nodeDirectory = new File(targetDir, "node");
-        File nodeModulesDirectory = new File(nodeDirectory, "node_modules");
+        String nodeModulesPath = platform.isWindows() ? "node_modules"
+                : "lib/node_modules";
+        File nodeModulesDirectory = new File(nodeDirectory, nodeModulesPath);
         File npmDirectory = new File(nodeModulesDirectory, "npm");
         File garbage = new File(npmDirectory, "garbage");
         FileUtils.forceMkdir(npmDirectory);
@@ -112,8 +114,11 @@ public class NodeInstallerTest {
 
         Assert.assertTrue("npm should have been copied to node_modules",
                 new File(targetDir, "node/" + nodeExec).exists());
+        String npmInstallPath = platform.isWindows()
+                ? "node/node_modules/npm/bin/npm"
+                : "node/lib/node_modules/npm/bin/npm";
         Assert.assertTrue("npm should have been copied to node_modules",
-                new File(targetDir, "node/node_modules/npm/bin/npm").exists());
+                new File(targetDir, npmInstallPath).exists());
         Assert.assertFalse("old npm files should have been removed",
                 garbage.exists());
     }
