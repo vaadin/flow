@@ -369,7 +369,7 @@ public abstract class VaadinWebSecurityConfigurerAdapter
     protected void setOAuth2LoginPage(HttpSecurity http, String oauth2LoginPage)
             throws Exception {
         http.oauth2Login().loginPage(oauth2LoginPage).successHandler(
-                        getVaadinSavedRequestAwareAuthenticationSuccessHandler(http))
+                getVaadinSavedRequestAwareAuthenticationSuccessHandler(http))
                 .permitAll();
         viewAccessChecker.setLoginView(servletContextPath + oauth2LoginPage);
     }
