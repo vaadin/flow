@@ -1503,8 +1503,8 @@ public class DataCommunicator<T> implements Serializable {
             stateNode.runWhenAttached(ui -> {
                 request.owner = stateNode.getOwner();
                 if (!request.cancelled) {
-                    ui.getInternals().getStateTree().beforeClientResponse(stateNode,
-                            action);
+                    ui.getInternals().getStateTree()
+                            .beforeClientResponse(stateNode, action);
                 }
             });
             return request;
