@@ -20,6 +20,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
+import javax.servlet.http.HttpServletRequest;
+
 /**
  * Internal utility class for URL handling.
  * <p>
@@ -102,4 +104,50 @@ public class UrlUtil {
         }
     }
 
+    /**
+     * Returns the given absolute path as a path relative to the servlet path.
+     *
+     * @param absolutePath
+     *            the path to make relative
+     * @param request
+     *            a request with information about the servlet path
+     * @return a relative path that when applied to the servlet path, refers to
+     *         the absolute path without containing the context path or servlet
+     *         path
+     */
+    public static String getServletPathRelative(String absolutePath,
+            HttpServletRequest request) {
+        String pathToServlet = request.getContextPath()
+                + request.getServletPath();
+        if (pathToServlet.startsWith("/")) {
+            pathToServlet = pathToServlet.substring(1);
+        }
+        if (absolutePath.startsWith("/")) {
+            absolutePath = absolutePath.substring(1);
+        }
+        String[] servletPathSegments = pathToServlet.isEmpty() ? new String[0]
+                : pathToServlet.split("/");
+        String[] absolutePathSegments = absolutePath.isEmpty() ? new String[0]
+                : absolutePath.split("/");
+        int startFrom = 0;
+        while (absolutePathSegments.length > startFrom
+                && servletPathSegments.length > startFrom
+                && absolutePathSegments[startFrom]
+                        .equals(servletPathSegments[startFrom])) {
+            startFrom++;
+        }
+
+        String ret = "";
+
+        for (int i = startFrom; i < servletPathSegments.length; i++) {
+            ret += "../";
+        }
+        for (int i = startFrom; i < absolutePathSegments.length; i++) {
+            ret += absolutePathSegments[i] + "/";
+        }
+        if (ret.isEmpty()) {
+            return ".";
+        }
+        return ret.substring(0, ret.length() - 1);
+    }
 }

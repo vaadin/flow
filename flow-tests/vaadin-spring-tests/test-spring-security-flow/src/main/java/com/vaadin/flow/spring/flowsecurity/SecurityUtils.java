@@ -1,16 +1,17 @@
 package com.vaadin.flow.spring.flowsecurity;
 
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.server.VaadinServletRequest;
-import com.vaadin.flow.spring.flowsecurity.data.UserInfo;
-import com.vaadin.flow.spring.flowsecurity.service.UserInfoService;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Component;
+
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.internal.UrlUtil;
+import com.vaadin.flow.server.VaadinServletRequest;
+import com.vaadin.flow.spring.flowsecurity.data.UserInfo;
+import com.vaadin.flow.spring.flowsecurity.service.UserInfoService;
 
 @Component
 public class SecurityUtils {
@@ -47,11 +48,10 @@ public class SecurityUtils {
     public void logout() {
         SecurityContextLogoutHandler logoutHandler = new SecurityContextLogoutHandler();
         logoutHandler.setInvalidateHttpSession(false);
-        logoutHandler.logout(
-                VaadinServletRequest.getCurrent().getHttpServletRequest(), null,
-                null);
-        UI.getCurrent().getPage()
-                .setLocation(securityConfig.getLogoutSuccessUrl());
+        VaadinServletRequest request = VaadinServletRequest.getCurrent();
+        logoutHandler.logout(request, null, null);
+        UI.getCurrent().getPage().setLocation(UrlUtil.getServletPathRelative(
+                securityConfig.getLogoutSuccessUrl(), request));
     }
 
 }
