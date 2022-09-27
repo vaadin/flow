@@ -15,13 +15,16 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.commons.io.IOUtils;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
+import com.vaadin.experimental.Feature;
+import com.vaadin.experimental.FeatureFlags;
 
 /**
  * Generate <code>tsconfig.json</code> if it is missing in project folder.
@@ -34,22 +37,32 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
 
     static final String TSCONFIG_JSON = "tsconfig.json";
     private final File npmFolder;
+    private FeatureFlags featureFlags;
 
     /**
      * Create a task to generate <code>tsconfig.json</code> file.
      *
      * @param npmFolder
      *            project folder where the file will be generated.
+     * @param featureFlags
+     *            available feature flags and their status
      */
-    TaskGenerateTsConfig(File npmFolder) {
+    TaskGenerateTsConfig(File npmFolder, FeatureFlags featureFlags) {
         this.npmFolder = npmFolder;
+        this.featureFlags = featureFlags;
     }
 
     @Override
     protected String getFileContent() throws IOException {
         try (InputStream tsConfStream = getClass()
                 .getResourceAsStream(TSCONFIG_JSON)) {
-            return IOUtils.toString(tsConfStream, UTF_8);
+            String config = IOUtils.toString(tsConfStream, UTF_8);
+            if (featureFlags.isEnabled(FeatureFlags.WEBPACK)) {
+                // webpack 4 cannot use anything newer than es2019...
+                config = config.replaceFirst("\"target\".*",
+                        "\"target\": \"es2019\",");
+            }
+            return config;
         }
     }
 

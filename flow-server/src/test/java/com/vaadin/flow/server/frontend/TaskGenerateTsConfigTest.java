@@ -26,6 +26,10 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.Mockito;
+
+import com.vaadin.experimental.Feature;
+import com.vaadin.experimental.FeatureFlags;
 
 public class TaskGenerateTsConfigTest {
     @Rule
@@ -34,11 +38,14 @@ public class TaskGenerateTsConfigTest {
     private File npmFolder;
     private TaskGenerateTsConfig taskGenerateTsConfig;
 
+    private FeatureFlags featureFlags;
+
     @Before
     public void setUp() throws IOException {
         npmFolder = temporaryFolder.newFolder();
-
-        taskGenerateTsConfig = new TaskGenerateTsConfig(npmFolder);
+        featureFlags = Mockito.mock(FeatureFlags.class);
+        taskGenerateTsConfig = new TaskGenerateTsConfig(npmFolder,
+                featureFlags);
     }
 
     @Test
@@ -56,6 +63,32 @@ public class TaskGenerateTsConfigTest {
                 IOUtils.toString(
                         taskGenerateTsConfig.getGeneratedFile().toURI(),
                         StandardCharsets.UTF_8));
+    }
+
+    @Test
+    public void viteShouldNotUseEs2019() throws Exception {
+        taskGenerateTsConfig.execute();
+        Assert.assertFalse("The config file should not use es2019", IOUtils
+                .toString(taskGenerateTsConfig.getGeneratedFile().toURI(),
+                        StandardCharsets.UTF_8)
+                .contains("\"target\": \"es2019\""));
+    }
+
+    @Test
+    public void webpackShouldUseEs2019() throws Exception {
+        Mockito.when(featureFlags.isEnabled((Feature) Mockito.any()))
+                .thenAnswer(req -> {
+                    if (req.getArgument(0) == FeatureFlags.WEBPACK) {
+                        return true;
+                    }
+                    return false;
+                });
+
+        taskGenerateTsConfig.execute();
+        Assert.assertTrue("The config file should use es2019", IOUtils
+                .toString(taskGenerateTsConfig.getGeneratedFile().toURI(),
+                        StandardCharsets.UTF_8)
+                .contains("\"target\": \"es2019\""));
     }
 
     @Test
