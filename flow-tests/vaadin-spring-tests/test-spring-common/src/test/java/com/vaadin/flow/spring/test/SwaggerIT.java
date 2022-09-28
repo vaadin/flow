@@ -13,6 +13,8 @@ public class SwaggerIT extends AbstractSpringTest {
     public void swaggerUIShown() {
         open();
         waitUntil(driver -> driver.getPageSource()
-                .contains("OpenAPI definition"));
+                .contains("OpenAPI definition")
+                || driver.getPageSource()
+                        .contains("Swagger Petstore"));
     }
 }
