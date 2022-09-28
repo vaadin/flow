@@ -15,16 +15,16 @@
  */
 package com.vaadin.flow.spring.flowsecurity;
 
-import com.vaadin.flow.component.login.testbench.LoginFormElement;
-import com.vaadin.flow.component.login.testbench.LoginOverlayElement;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
-import com.vaadin.testbench.TestBenchElement;
-
 import org.junit.After;
 import org.junit.Assert;
 import org.openqa.selenium.WebDriver;
 
-public abstract class AbstractIT extends ChromeBrowserTest {
+import com.vaadin.flow.component.login.testbench.LoginFormElement;
+import com.vaadin.flow.component.login.testbench.LoginOverlayElement;
+import com.vaadin.flow.spring.test.AbstractSpringTest;
+import com.vaadin.testbench.TestBenchElement;
+
+public abstract class AbstractIT extends AbstractSpringTest {
 
     private static final String ROOT_PAGE_HEADER_TEXT = "Welcome to the Java Bank of Vaadin";
     private static final String ANOTHER_PUBLIC_PAGE_HEADER_TEXT = "Another public view for testing";
@@ -33,11 +33,6 @@ public abstract class AbstractIT extends ChromeBrowserTest {
     @Override
     protected int getDeploymentPort() {
         return SERVER_PORT;
-    }
-
-    @Override
-    protected String getRootURL() {
-        return super.getRootURL(); // + "/context";
     }
 
     @After
