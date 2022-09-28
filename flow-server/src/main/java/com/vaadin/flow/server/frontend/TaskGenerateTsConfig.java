@@ -29,6 +29,7 @@ import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.server.ExecutionFailedException;
 
 import elemental.json.Json;
+import elemental.json.JsonObject;
 
 /**
  * Generate <code>tsconfig.json</code> if it is missing in project folder.
@@ -74,33 +75,46 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
     public void execute() throws ExecutionFailedException {
         if (shouldGenerate()) {
             super.execute();
-        } else if (!featureFlags.isEnabled(FeatureFlags.WEBPACK)) {
-            // If Vite is used, we need to upgrade the target
-            File projectTsconfig = new File(npmFolder, TSCONFIG_JSON);
-            if (projectTsconfig.exists()) {
-                try {
-                    String current = FileUtils.readFileToString(projectTsconfig,
-                            StandardCharsets.UTF_8);
-                    if (current.contains("es2019")) {
-                        current = current.replace("es2019", getEsTarget());
-                    }
-                    writeIfChanged(projectTsconfig, current);
-                } catch (IOException e) {
-                    throw new ExecutionFailedException(
-                            "Error upgrading target value", e);
-                }
-
-            }
-
+        } else if (featureFlags.isEnabled(FeatureFlags.WEBPACK)) {
+            ensureTarget("es2019");
+        } else {
+            ensureTarget(getDefaultEsTargetVersion());
         }
     }
 
-    private String getEsTarget() throws IOException {
-        String defaultTsConfig = getFileContent();
-        defaultTsConfig = defaultTsConfig.replaceAll("//.*", ""); // remove
-                                                                  // comments
-        return Json.parse(defaultTsConfig).getObject("compilerOptions")
-                .getString("target");
+    private void ensureTarget(String esVersion)
+            throws ExecutionFailedException {
+        try {
+            File projectTsconfig = new File(npmFolder, TSCONFIG_JSON);
+            String current = FileUtils.readFileToString(projectTsconfig,
+                    StandardCharsets.UTF_8);
+            String currentEsVersion = getEsTargetVersion(current);
+            if (!currentEsVersion.equals(esVersion)) {
+                current = current.replace(currentEsVersion, esVersion);
+                writeIfChanged(projectTsconfig, current);
+            }
+        } catch (Exception e) {
+            // This could be a malformed tsconfig, leave it alone
+            log().debug("Unable to modify target version in tsconfig.json", e);
+        }
+    }
+
+    private String getDefaultEsTargetVersion() throws ExecutionFailedException {
+        try {
+            String defaultTsConfig = getFileContent();
+            return getEsTargetVersion(defaultTsConfig);
+        } catch (Exception e) {
+            throw new ExecutionFailedException(
+                    "Error finding default es target value", e);
+        }
+
+    }
+
+    private String getEsTargetVersion(String tsConfig) {
+        // remove comments so parser works
+        String json = tsConfig.replaceAll("//.*", "");
+        JsonObject parsed = Json.parse(json);
+        return parsed.getObject("compilerOptions").getString("target");
     }
 
     @Override

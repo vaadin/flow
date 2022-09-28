@@ -120,6 +120,33 @@ public class TaskGenerateTsConfigTest {
     }
 
     @Test
+    public void switchToWebpackShouldDowngradeToEs2019() throws Exception {
+        AtomicBoolean useWebpack = new AtomicBoolean(false);
+        Mockito.when(featureFlags.isEnabled((Feature) Mockito.any()))
+                .thenAnswer(req -> {
+                    if (req.getArgument(0) == FeatureFlags.WEBPACK) {
+                        return useWebpack.get();
+                    }
+                    return false;
+                });
+
+        taskGenerateTsConfig.execute(); // Write a file without es2019
+        Assert.assertFalse("The config file should not use es2019", IOUtils
+                .toString(taskGenerateTsConfig.getGeneratedFile().toURI(),
+                        StandardCharsets.UTF_8)
+                .contains("\"target\": \"es2019\""));
+        useWebpack.set(true);
+        taskGenerateTsConfig.execute();
+        Assert.assertTrue(
+                "Webpack should have downgraded the config file to use es2019",
+                IOUtils.toString(
+                        taskGenerateTsConfig.getGeneratedFile().toURI(),
+                        StandardCharsets.UTF_8)
+                        .contains("\"target\": \"es2019\""));
+
+    }
+
+    @Test
     public void should_notGenerateTsConfig_TsConfigExist() throws Exception {
         Files.createFile(new File(npmFolder, "tsconfig.json").toPath());
         taskGenerateTsConfig.execute();
