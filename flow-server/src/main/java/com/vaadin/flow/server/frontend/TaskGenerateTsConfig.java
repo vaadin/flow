@@ -20,11 +20,15 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
-import com.vaadin.experimental.Feature;
 import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.server.ExecutionFailedException;
+
+import elemental.json.Json;
 
 /**
  * Generate <code>tsconfig.json</code> if it is missing in project folder.
@@ -64,6 +68,39 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
             }
             return config;
         }
+    }
+
+    @Override
+    public void execute() throws ExecutionFailedException {
+        if (shouldGenerate()) {
+            super.execute();
+        } else if (!featureFlags.isEnabled(FeatureFlags.WEBPACK)) {
+            // If Vite is used, we need to upgrade the target
+            File projectTsconfig = new File(npmFolder, TSCONFIG_JSON);
+            if (projectTsconfig.exists()) {
+                try {
+                    String current = FileUtils.readFileToString(projectTsconfig,
+                            StandardCharsets.UTF_8);
+                    if (current.contains("es2019")) {
+                        current = current.replace("es2019", getEsTarget());
+                    }
+                    writeIfChanged(projectTsconfig, current);
+                } catch (IOException e) {
+                    throw new ExecutionFailedException(
+                            "Error upgrading target value", e);
+                }
+
+            }
+
+        }
+    }
+
+    private String getEsTarget() throws IOException {
+        String defaultTsConfig = getFileContent();
+        defaultTsConfig = defaultTsConfig.replaceAll("//.*", ""); // remove
+                                                                  // comments
+        return Json.parse(defaultTsConfig).getObject("compilerOptions")
+                .getString("target");
     }
 
     @Override

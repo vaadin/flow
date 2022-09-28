@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
@@ -89,6 +90,33 @@ public class TaskGenerateTsConfigTest {
                 .toString(taskGenerateTsConfig.getGeneratedFile().toURI(),
                         StandardCharsets.UTF_8)
                 .contains("\"target\": \"es2019\""));
+    }
+
+    @Test
+    public void viteShouldUpgradeFromEs2019() throws Exception {
+        AtomicBoolean useWebpack = new AtomicBoolean(true);
+        Mockito.when(featureFlags.isEnabled((Feature) Mockito.any()))
+                .thenAnswer(req -> {
+                    if (req.getArgument(0) == FeatureFlags.WEBPACK) {
+                        return useWebpack.get();
+                    }
+                    return false;
+                });
+
+        taskGenerateTsConfig.execute(); // Write a file with es2019
+        Assert.assertTrue("The config file should use es2019", IOUtils
+                .toString(taskGenerateTsConfig.getGeneratedFile().toURI(),
+                        StandardCharsets.UTF_8)
+                .contains("\"target\": \"es2019\""));
+        useWebpack.set(false);
+        taskGenerateTsConfig.execute();
+        Assert.assertFalse(
+                "Vite should have upgraded the config file to not use es2019",
+                IOUtils.toString(
+                        taskGenerateTsConfig.getGeneratedFile().toURI(),
+                        StandardCharsets.UTF_8)
+                        .contains("\"target\": \"es2019\""));
+
     }
 
     @Test
