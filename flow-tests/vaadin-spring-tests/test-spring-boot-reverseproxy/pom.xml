@@ -151,7 +151,7 @@
                 <configuration>
                     <excludes>
                         <!-- The proxy does not let push through -->
-                        <exclude>*PushIT*</exclude>
+                        <exclude>*PushIT*,*CustomWebSocketIT*</exclude>
                     </excludes>
                 </configuration>
             </plugin>
