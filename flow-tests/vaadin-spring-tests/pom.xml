@@ -287,6 +287,7 @@
             <!-- Modules shared by ITs -->
             <id>it-shared-spring-modules</id>
             <modules>
+                <module>test-spring-helpers</module>
                 <module>test-spring-common</module>
             </modules>
         </profile>
@@ -299,6 +300,7 @@
                 </property>
             </activation>
             <modules>
+                <module>test-spring-helpers</module>
                 <module>test-spring-common</module>
                 <module>test-spring-boot</module>
                 <!-- Disabled as the resource scanner does not work with Undertow
