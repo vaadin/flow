@@ -101,6 +101,12 @@ public class NodeInstallerTest {
         Assert.assertTrue("garbage file should be created",
                 garbage.createNewFile());
 
+        File oldNpm = new File(nodeDirectory, "node_modules/npm");
+        File oldGarbage = new File(oldNpm, "oldGarbage");
+        FileUtils.forceMkdir(oldNpm);
+        Assert.assertTrue("oldGarbage file should be created",
+                oldGarbage.createNewFile());
+
         NodeInstaller nodeInstaller = new NodeInstaller(targetDir,
                 Collections.emptyList())
                 .setNodeVersion(FrontendTools.DEFAULT_NODE_VERSION)
@@ -121,5 +127,8 @@ public class NodeInstallerTest {
                 new File(targetDir, npmInstallPath).exists());
         Assert.assertFalse("old npm files should have been removed",
                 garbage.exists());
+        Assert.assertFalse(
+                "old style node_modules files should have been removed",
+                oldGarbage.exists());
     }
 }
