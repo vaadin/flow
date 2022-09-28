@@ -344,8 +344,7 @@ public class FrontendToolsTest {
                 : "node/lib/node_modules/npm/bin/npm";
 
         Assert.assertTrue("npm should have been copied to node_modules",
-                new File(vaadinHomeDir, npmInstallPath)
-                        .exists());
+                new File(vaadinHomeDir, npmInstallPath).exists());
     }
 
     @Test
