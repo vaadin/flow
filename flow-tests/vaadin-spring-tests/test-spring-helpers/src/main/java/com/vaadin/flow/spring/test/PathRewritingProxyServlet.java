@@ -34,19 +34,30 @@ public class PathRewritingProxyServlet extends Transparent {
             return headerValue.replace("Path=/", "Path=" + prefix);
         } else if (headerName.equals("Location")) {
             // Location: http://localhost:8888/my/login/page
-            URL publicURL;
+            if ((headerValue.startsWith("http://") || headerValue.startsWith("https://"))
+                    && !headerValue.startsWith(proxyTo)) {
+                // External location
+                return headerValue;
+            }
+
             try {
-                publicURL = new java.net.URL(
+                URL publicURL = new URL(
                         clientRequest.getRequestURL().toString());
+                String hostAndBasePath = publicURL.getProtocol() + "://"
+                        + publicURL.getHost() + ":" + publicURL.getPort() + prefix
+                        + "/";
+
+                if (headerValue.startsWith(proxyTo)) {
+                    return headerValue.replace(proxyTo, hostAndBasePath);
+                } else {
+                    // Location: /foo/bar
+                    return prefix + headerValue;
+                }
             } catch (MalformedURLException e) {
                 e.printStackTrace();
                 return headerValue;
             }
-            String hostAndBasePath = publicURL.getProtocol() + "://"
-                    + publicURL.getHost() + ":" + publicURL.getPort() + prefix
-                    + "/";
 
-            return headerValue.replace(proxyTo, hostAndBasePath);
         }
         return super.filterServerResponseHeader(clientRequest, serverResponse,
                 headerName, headerValue);
