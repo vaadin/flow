@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import static com.vaadin.flow.server.frontend.FrontendTools.NPM_BIN_PATH;
 import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
@@ -73,9 +74,9 @@ public class FrontendToolsTest {
             ? "node\\node.exe"
             : "node/node";
 
-    public static final String NPM_CLI_STRING = Stream
-            .of("node", "node_modules", "npm", "bin", "npm-cli.js")
-            .collect(Collectors.joining(File.separator));
+    public static final String NPM_CLI_STRING = FrontendUtils.isWindows()
+            ? "node\\node_modules\\npm\\bin\\npm-cli.js"
+            : "node/lib/node_modules/npm/bin/npm-cli.js";
 
     private static final String OLD_PNPM_VERSION = "4.5.0";
 
@@ -339,9 +340,7 @@ public class FrontendToolsTest {
         String nodeExecutable = installNodeToTempFolder();
         Assert.assertNotNull(nodeExecutable);
 
-        String npmInstallPath = FrontendUtils.isWindows()
-                ? "node/node_modules/npm/bin/npm"
-                : "node/lib/node_modules/npm/bin/npm";
+        String npmInstallPath = NPM_BIN_PATH + "npm";
 
         Assert.assertTrue("npm should have been copied to node_modules",
                 new File(vaadinHomeDir, npmInstallPath).exists());
@@ -351,8 +350,7 @@ public class FrontendToolsTest {
     public void installNodeFromFileSystem_ForceAlternativeNodeExecutableInstallsToTargetDirectory()
             throws Exception {
         Assert.assertFalse("npm should not yet be present",
-                new File(vaadinHomeDir, "node/node_modules/npm/bin/npm")
-                        .exists());
+                new File(vaadinHomeDir, NPM_BIN_PATH + "npm").exists());
 
         settings.setNodeDownloadRoot(new File(baseDir).toURI());
         settings.setNodeVersion("v12.10.0");
@@ -360,9 +358,7 @@ public class FrontendToolsTest {
         prepareNodeDownloadableZipAt(baseDir, "v12.10.0");
         tools.forceAlternativeNodeExecutable();
 
-        String npmInstallPath = FrontendUtils.isWindows()
-                ? "node/node_modules/npm/bin/npm"
-                : "node/lib/node_modules/npm/bin/npm";
+        String npmInstallPath = NPM_BIN_PATH + "npm";
 
         Assert.assertTrue("npm should have been copied to node_modules",
                 new File(vaadinHomeDir, npmInstallPath).exists());
@@ -899,7 +895,8 @@ public class FrontendToolsTest {
     }
 
     private void createFakePnpm(String defaultPnpmVersion) throws Exception {
-        File npxJs = new File(baseDir, "node/node_modules/npm/bin/npx-cli.js");
+        final String npxPath = NPM_BIN_PATH + "npx-cli.js";
+        File npxJs = new File(baseDir, npxPath);
         FileUtils.forceMkdir(npxJs.getParentFile());
 
         FileWriter fileWriter = new FileWriter(npxJs);
