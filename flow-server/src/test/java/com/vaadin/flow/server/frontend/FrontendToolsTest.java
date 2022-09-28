@@ -360,9 +360,12 @@ public class FrontendToolsTest {
         prepareNodeDownloadableZipAt(baseDir, "v12.10.0");
         tools.forceAlternativeNodeExecutable();
 
+        String npmInstallPath = FrontendUtils.isWindows()
+                ? "node/node_modules/npm/bin/npm"
+                : "node/lib/node_modules/npm/bin/npm";
+
         Assert.assertTrue("npm should have been copied to node_modules",
-                new File(vaadinHomeDir, "node/node_modules/npm/bin/npm")
-                        .exists());
+                new File(vaadinHomeDir, npmInstallPath).exists());
     }
 
     @Test
