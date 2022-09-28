@@ -308,12 +308,15 @@
                 <module>test-spring-war</module>
                 <module>test-spring</module>
                 <module>test-spring-boot-contextpath</module>
+                <module>test-spring-boot-reverseproxy</module>
 
                 <module>test-mvc-without-endpoints</module>
 
                 <module>test-spring-security-flow</module>
                 <module>test-spring-security-flow-contextpath</module>
                 <module>test-spring-security-flow-urlmapping</module>
+<!-- This can be included if it is set up to automatically start a reverse proxy as part of the build -->
+<!--                <module>test-spring-security-flow-reverseproxy</module> -->
 
                 <module>test-spring-boot-only-prepare</module>
                 <module>test-spring-white-list</module>

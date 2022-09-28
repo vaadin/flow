@@ -135,8 +135,16 @@ public abstract class AbstractIT extends ChromeBrowserTest {
     }
 
     protected void assertPathShown(String path) {
-        waitUntil(driver -> driver.getCurrentUrl()
-                .equals(getRootURL() + getUrlMappingBasePath() + "/" + path));
+
+        waitUntil(driver -> {
+            String url = driver.getCurrentUrl();
+            if (!url.startsWith(getRootURL())) {
+                throw new IllegalStateException("URL should start with "
+                        + getRootURL() + " but is " + url);
+            }
+            return url.equals(
+                    getRootURL() + getUrlMappingBasePath() + "/" + path);
+        });
     }
 
     protected void assertResourceShown(String path) {
