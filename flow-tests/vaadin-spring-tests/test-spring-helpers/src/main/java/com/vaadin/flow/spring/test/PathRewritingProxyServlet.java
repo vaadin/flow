@@ -55,8 +55,8 @@ public class PathRewritingProxyServlet extends Transparent {
                     return prefix + headerValue;
                 }
             } catch (MalformedURLException e) {
-                e.printStackTrace();
-                return headerValue;
+                throw new IllegalArgumentException("Unable to rewrite header "
+                        + headerName + ": " + headerValue);
             }
 
         }
