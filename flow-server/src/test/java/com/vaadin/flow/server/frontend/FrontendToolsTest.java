@@ -131,8 +131,13 @@ public class FrontendToolsTest {
         npmVersionCommand.add("--version");
         FrontendVersion npm = FrontendUtils.getVersion("npm",
                 npmVersionCommand);
-        Assert.assertEquals(FrontendTools.DEFAULT_NPM_VERSION,
-                npm.getFullVersion());
+        final FrontendVersion npmDefault = new FrontendVersion(
+                FrontendTools.DEFAULT_NPM_VERSION);
+
+        Assert.assertEquals("Major version should match",
+                npmDefault.getMajorVersion(), npm.getMajorVersion());
+        Assert.assertEquals("Minor version should match",
+                npmDefault.getMinorVersion(), npm.getMinorVersion());
     }
 
     @Test
