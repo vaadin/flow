@@ -102,6 +102,7 @@ const moduleWeights = {
   'flow-tests/test-frontend/vite-pwa-custom-offline-path/pom-production.xml': { weight: 2 },
   'flow-tests/test-frontend/vite-pwa-custom-offline-path': { weight: 3 },
   'flow-tests/vaadin-spring-tests/test-spring-common': { weight: 2 },
+  'flow-tests/vaadin-spring-tests/test-spring-helpers': { weight: 1 },
   'flow-tests/test-frontend/vite-pwa': { weight: 5 },
   'flow-tests/test-frontend/vite-embedded/pom-production.xml': { weight: 2 },
   'flow-tests/test-frontend/vite-embedded': { weight: 2 },
