@@ -327,6 +327,13 @@ public class NodeInstaller {
         if (nodeModulesDirectory.exists()) {
             FileUtils.deleteDirectory(nodeModulesDirectory);
         }
+        // delete old/windows type node_modules so it is not messing
+        // up the installation
+        final File oldNodeModulesDirectory = new File(destinationDirectory
+                + File.separator + FrontendUtils.NODE_MODULES);
+        if (oldNodeModulesDirectory.exists()) {
+            FileUtils.deleteDirectory(oldNodeModulesDirectory);
+        }
 
         FileUtils.copyDirectory(tmpNodeModulesDir, nodeModulesDirectory);
         // create a copy of the npm scripts next to the node executable
