@@ -10,6 +10,7 @@ import javax.websocket.WebSocketContainer;
 import java.io.IOException;
 import java.net.URI;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -38,7 +39,7 @@ public class CustomWebSocketIT extends AbstractSpringTest {
         }
 
         public String waitForMessage() throws InterruptedException {
-            closureLatch.await();
+            closureLatch.await(1, TimeUnit.SECONDS);
             return message;
         }
     }
