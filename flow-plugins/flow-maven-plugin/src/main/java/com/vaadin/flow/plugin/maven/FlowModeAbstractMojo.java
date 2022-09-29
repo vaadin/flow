@@ -41,6 +41,7 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
+import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 /**
@@ -109,7 +110,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * </p>
      * Example: <code>"https://nodejs.org/dist/"</code>.
      */
-    @Parameter(property = InitParameters.NODE_DOWNLOAD_ROOT, defaultValue = NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT)
+    @Parameter(property = InitParameters.NODE_DOWNLOAD_ROOT)
     private String nodeDownloadRoot;
 
     /**
@@ -351,7 +352,9 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
 
     @Override
     public URI nodeDownloadRoot() throws URISyntaxException {
-
+        if (nodeDownloadRoot == null) {
+            nodeDownloadRoot = Platform.guess().getNodeDownloadRoot();
+        }
         try {
             return new URI(nodeDownloadRoot);
         } catch (URISyntaxException e) {
