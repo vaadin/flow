@@ -338,7 +338,7 @@ public class NodeUpdaterTest {
     }
 
     @Test
-    public void shouldThrowExceptionOnNewVersionNonParsable() {
+    public void canUpdateNonParseableVersions() throws IOException {
         JsonObject packageJson = Json.createObject();
         JsonObject dependencies = Json.createObject();
         packageJson.put(NodeUpdater.DEPENDENCIES, dependencies);
@@ -346,19 +346,17 @@ public class NodeUpdaterTest {
         vaadinDependencies.put(NodeUpdater.DEPENDENCIES, Json.createObject());
         packageJson.put(NodeUpdater.VAADIN_DEP_KEY, vaadinDependencies);
 
-        String formPackage = "@vaadin/form";
-        String existingVersion = "2.0.0";
-        String newVersion = "../../../some/local/path";
+        String pkg = "mypackage";
+        String existingVersion = "./some/path";
 
-        dependencies.put(formPackage, existingVersion);
+        dependencies.put(pkg, existingVersion);
 
-        NumberFormatException expectedException = Assert
-                .assertThrows(NumberFormatException.class,
-                        () -> nodeUpdater.addDependency(packageJson,
-                                NodeUpdater.DEPENDENCIES, formPackage,
-                                newVersion));
-        Assert.assertTrue(expectedException.getMessage()
-                .contains("is not a valid version"));
+        nodeUpdater.addDependency(packageJson, NodeUpdater.DEPENDENCIES, pkg,
+                existingVersion);
+
+        Assert.assertEquals(existingVersion,
+                packageJson.getObject(NodeUpdater.DEPENDENCIES).getString(pkg));
+
     }
 
     @Test
