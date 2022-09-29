@@ -15,16 +15,13 @@
  */
 package com.vaadin.flow.spring;
 
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRegistration.Dynamic;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
-
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRegistration.Dynamic;
-
-import com.vaadin.flow.server.Constants;
 
 import org.atmosphere.cpr.ApplicationConfig;
 import org.springframework.core.env.Environment;
@@ -33,6 +30,10 @@ import org.springframework.web.WebApplicationInitializer;
 import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
+
+import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.VaadinServletContext;
 
 /**
  * Abstract Vaadin Spring MVC {@link WebApplicationInitializer}.
@@ -61,6 +62,9 @@ public abstract class VaadinMVCWebAppInitializer
         }
         String pushRegistrationPath;
 
+        FeatureFlags featureFlags = FeatureFlags
+                .get(new VaadinServletContext(servletContext));
+
         boolean rootMapping = RootMappedCondition.isRootMapping(mapping);
         Dynamic registration = servletContext.addServlet(
                 ClassUtils.getShortNameAsProperty(SpringServlet.class),
@@ -70,6 +74,12 @@ public abstract class VaadinMVCWebAppInitializer
             Dynamic dispatcherRegistration = servletContext
                     .addServlet("dispatcher", new DispatcherServlet(context));
             dispatcherRegistration.addMapping("/*");
+
+            if (featureFlags.isEnabled(FeatureFlags.SERVLET_MAPPING)) {
+                initParameters.put(Constants.SERVLET_PARAMETER_PUSH_URL,
+                        makeContextRelative(mapping.replace("*", "")));
+            }
+
             mapping = VaadinServletConfiguration.VAADIN_SERVLET_MAPPING;
             pushRegistrationPath = "";
         } else {
@@ -83,9 +93,16 @@ public abstract class VaadinMVCWebAppInitializer
          * Atmosphere always picks the first, it might end up using /VAADIN/*
          * and websockets will fail.
          */
-        initParameters.put(ApplicationConfig.JSR356_MAPPING_PATH,
-                pushRegistrationPath);
-        initParameters.put(ApplicationConfig.JSR356_PATH_MAPPING_LENGTH, "0");
+
+        if (featureFlags.isEnabled(FeatureFlags.SERVLET_MAPPING)) {
+            initParameters.put(ApplicationConfig.JSR356_MAPPING_PATH,
+                    mapping.replace("/*", ""));
+        } else {
+            initParameters.put(ApplicationConfig.JSR356_MAPPING_PATH,
+                    pushRegistrationPath);
+            initParameters.put(ApplicationConfig.JSR356_PATH_MAPPING_LENGTH,
+                    "0");
+        }
 
         registration.setInitParameters(initParameters);
 

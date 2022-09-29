@@ -79,6 +79,11 @@ public class FeatureFlags implements Serializable {
             "Enforce client / constraint / binder validation",
             "enforceFieldValidation",
             "https://github.com/vaadin/platform/issues/3066", false, null);
+
+    public static final Feature SERVLET_MAPPING = new Feature(
+            "Use non-root servlet mapping (/vaadinServlet)", "vaadinServlet",
+            "https://github.com/vaadin/flow/issues/14641", true, null);
+
     private List<Feature> features = new ArrayList<>();
 
     File propertiesFolder = null;
@@ -103,6 +108,7 @@ public class FeatureFlags implements Serializable {
         features.add(new Feature(COLLABORATION_ENGINE_BACKEND));
         features.add(new Feature(WEBPACK));
         features.add(new Feature(ENFORCE_FIELD_VALIDATION));
+        features.add(new Feature(SERVLET_MAPPING));
         loadProperties();
     }
 

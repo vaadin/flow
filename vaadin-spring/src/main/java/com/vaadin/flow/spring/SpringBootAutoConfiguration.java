@@ -35,7 +35,10 @@ import org.springframework.util.ClassUtils;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.socket.server.standard.ServerEndpointExporter;
 
+import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinServletContext;
 
 /**
  * Spring boot auto-configuration class for Flow.
@@ -99,9 +102,15 @@ public class SpringBootAutoConfiguration {
          * Atmosphere always picks the first, it might end up using /VAADIN/*
          * and websockets will fail.
          */
-        initParameters.put(ApplicationConfig.JSR356_MAPPING_PATH,
-                pushRegistrationPath);
-        initParameters.put(ApplicationConfig.JSR356_PATH_MAPPING_LENGTH, "0");
+        if (isServletMappingFeatureEnabled()) {
+            initParameters.put(ApplicationConfig.JSR356_MAPPING_PATH,
+                    mapping.replace("/*", ""));
+        } else {
+            initParameters.put(ApplicationConfig.JSR356_MAPPING_PATH,
+                    pushRegistrationPath);
+            initParameters.put(ApplicationConfig.JSR356_PATH_MAPPING_LENGTH,
+                    "0");
+        }
 
         ServletRegistrationBean<SpringServlet> registration = new ServletRegistrationBean<>(
                 new SpringServlet(context, rootMapping), mapping);
@@ -128,6 +137,17 @@ public class SpringBootAutoConfiguration {
     @Bean
     public ServerEndpointExporter websocketEndpointDeployer() {
         return new VaadinWebsocketEndpointExporter();
+    }
+
+    private boolean isServletMappingFeatureEnabled() {
+        VaadinServletContext servletContext = new VaadinServletContext(
+                context.getServletContext());
+        // Lookup is not available during SpringBootTest autoconfiguration
+        if (servletContext.getAttribute(Lookup.class) != null) {
+            return FeatureFlags.get(servletContext)
+                    .isEnabled(FeatureFlags.SERVLET_MAPPING);
+        }
+        return false;
     }
 
 }
