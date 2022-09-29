@@ -34,6 +34,7 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
+import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
@@ -140,7 +141,7 @@ public class NodeTasks implements FallibleCommand {
          * {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT}.
          */
         private URI nodeDownloadRoot = URI
-                .create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT);
+                .create(Platform.guess().getNodeDownloadRoot());
 
         private boolean nodeAutoUpdate = false;
 
@@ -896,7 +897,7 @@ public class NodeTasks implements FallibleCommand {
 
     private void addGenerateTsConfigTask(Builder builder) {
         TaskGenerateTsConfig taskGenerateTsConfig = new TaskGenerateTsConfig(
-                builder.npmFolder);
+                builder.npmFolder, builder.getFeatureFlags());
         commands.add(taskGenerateTsConfig);
 
         TaskGenerateTsDefinitions taskGenerateTsDefinitions = new TaskGenerateTsDefinitions(
