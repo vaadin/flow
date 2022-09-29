@@ -46,6 +46,7 @@ import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
+import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.theme.Theme;
 
 import elemental.json.JsonObject;
@@ -176,6 +177,9 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
                 .map(Artifact::getFile).collect(Collectors.toSet());
 
         final URI nodeDownloadRootURI;
+        if(nodeDownloadRoot == null) {
+            nodeDownloadRoot = Platform.guess().getNodeDownloadRoot();
+        }
         try {
             nodeDownloadRootURI = new URI(nodeDownloadRoot);
         } catch (URISyntaxException e) {
