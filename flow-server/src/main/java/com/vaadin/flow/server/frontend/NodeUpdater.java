@@ -515,9 +515,9 @@ public abstract class NodeUpdater implements FallibleCommand {
 
     private boolean isNewerVersion(JsonObject json, String pkg,
             String version) {
-        FrontendVersion newVersion = new FrontendVersion(version);
 
         try {
+            FrontendVersion newVersion = new FrontendVersion(version);
             FrontendVersion existingVersion = toVersion(json, pkg);
             return newVersion.isNewerThan(existingVersion);
         } catch (NumberFormatException e) {
@@ -539,9 +539,10 @@ public abstract class NodeUpdater implements FallibleCommand {
     private int handleExistingVaadinDep(JsonObject json, String pkg,
             String version, JsonObject vaadinDeps) {
         boolean added = false;
-        FrontendVersion vaadinVersion = toVersion(vaadinDeps, pkg);
-        if (json.hasKey(pkg)) {
-            try {
+        boolean updatedVaadinVersionSection = false;
+        try {
+            FrontendVersion vaadinVersion = toVersion(vaadinDeps, pkg);
+            if (json.hasKey(pkg)) {
                 FrontendVersion packageVersion = toVersion(json, pkg);
                 FrontendVersion newVersion = new FrontendVersion(version);
                 // Vaadin and package.json versions are the same, but dependency
@@ -557,25 +558,28 @@ public abstract class NodeUpdater implements FallibleCommand {
                     json.put(pkg, version);
                     added = true;
                 }
-            } catch (NumberFormatException e) { // NOSONAR
-                /*
-                 * If the current version is not parseable, it can refer to a
-                 * file and we should leave it alone
-                 */
+            } else {
+                json.put(pkg, version);
+                added = true;
             }
-        } else {
-            json.put(pkg, version);
-            added = true;
+        } catch (NumberFormatException e) { // NOSONAR
+            /*
+             * If the current version is not parseable, it can refer to a file
+             * and we should leave it alone
+             */
         }
         // always update vaadin version to the latest set version
-        vaadinDeps.put(pkg, version);
+        if (!version.equals(vaadinDeps.getString(pkg))) {
+            vaadinDeps.put(pkg, version);
+            updatedVaadinVersionSection = true;
+        }
 
         if (added) {
             log().debug("Added \"{}\": \"{}\" line.", pkg, version);
         } else {
             // we made a change to the package json vaadin defaults
             // even if we didn't add to the dependencies.
-            added = !vaadinVersion.isEqualTo(new FrontendVersion(version));
+            added = updatedVaadinVersionSection;
         }
         return added ? 1 : 0;
     }
