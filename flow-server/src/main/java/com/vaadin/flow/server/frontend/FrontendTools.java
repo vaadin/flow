@@ -1095,7 +1095,7 @@ public class FrontendTools {
             // now at nodejs 16.14.0
             // see https://pnpm.io/installation#compatibility
             pnpmCommand = getNpmCliToolExecutable(BuildTool.NPX, "--yes",
-                    "--quiet", "pnpm@7.10.0");
+                    "--quiet", "pnpm@7.12.2");
             if (!validatePnpmVersion(pnpmCommand)) {
                 throw new IllegalStateException(
                         "Found too old globally installed 'pnpm'. Please upgrade 'pnpm' to at least "
