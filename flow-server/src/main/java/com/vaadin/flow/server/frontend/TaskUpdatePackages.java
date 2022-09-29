@@ -170,6 +170,12 @@ public class TaskUpdatePackages extends NodeUpdater {
         }
 
         if (projectDependencies.hasKey(dependency)) {
+            try {
+                new FrontendVersion(projectDependencies.getString(dependency));
+            } catch (Exception e) {
+                // Do not lock non-numeric versions, e.g. folder references
+                return false;
+            }
             return true;
         }
 
