@@ -66,6 +66,29 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>debug</id>
+                        <phase>post-integration-test</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <executable>cat</executable>
+                    <arguments>
+                        <argument>target/frontend/versions.json</argument>
+                    </arguments>
+
+                </configuration>
+            </plugin>
+
         </plugins>
     </build>
 
