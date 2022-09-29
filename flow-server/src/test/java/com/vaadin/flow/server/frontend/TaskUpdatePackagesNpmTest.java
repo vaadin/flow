@@ -387,7 +387,7 @@ public class TaskUpdatePackagesNpmTest {
 
         verifyVersions(PLATFORM_DIALOG_VERSION, expectedElementMixinVersion,
                 null);
-        verifyVersionLockingWithNpmOverrides(false, true, false);
+        verifyVersionLockingWithNpmOverrides(true, true, false);
         final JsonObject packageJson = getOrCreatePackageJson();
         JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
 

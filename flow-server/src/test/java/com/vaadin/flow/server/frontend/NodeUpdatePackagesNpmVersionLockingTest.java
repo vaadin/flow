@@ -103,7 +103,7 @@ public class NodeUpdatePackagesNpmVersionLockingTest
                 PLATFORM_PINNED_DEPENDENCY_VERSION);
         Assert.assertNull(packageJson.getObject(OVERRIDES));
 
-        String versionsPath = packageUpdater.generateVersionsJson();
+        String versionsPath = packageUpdater.generateVersionsJson(packageJson);
         packageUpdater.lockVersionForNpm(packageJson, versionsPath);
 
         Assert.assertEquals("$" + TEST_DEPENDENCY,
@@ -120,7 +120,7 @@ public class NodeUpdatePackagesNpmVersionLockingTest
         Assert.assertNull(
                 packageJson.getObject(DEPENDENCIES).get(TEST_DEPENDENCY));
 
-        String versionsPath = packageUpdater.generateVersionsJson();
+        String versionsPath = packageUpdater.generateVersionsJson(packageJson);
         packageUpdater.lockVersionForNpm(packageJson, versionsPath);
 
         Assert.assertNull(
@@ -139,7 +139,7 @@ public class NodeUpdatePackagesNpmVersionLockingTest
                 USER_PINNED_DEPENDENCY_VERSION);
         overridesSection.put(TEST_DEPENDENCY, USER_PINNED_DEPENDENCY_VERSION);
 
-        String versionsPath = packageUpdater.generateVersionsJson();
+        String versionsPath = packageUpdater.generateVersionsJson(packageJson);
         packageUpdater.lockVersionForNpm(packageJson, versionsPath);
 
         Assert.assertEquals(USER_PINNED_DEPENDENCY_VERSION,
@@ -155,10 +155,42 @@ public class NodeUpdatePackagesNpmVersionLockingTest
                 PLATFORM_PINNED_DEPENDENCY_VERSION);
         Assert.assertNull(packageJson.getObject(OVERRIDES));
 
-        String versionsPath = packageUpdater.generateVersionsJson();
+        String versionsPath = packageUpdater.generateVersionsJson(packageJson);
         packageUpdater.lockVersionForNpm(packageJson, versionsPath);
 
         Assert.assertNull(packageJson.getObject(OVERRIDES));
+    }
+
+    @Test
+    public void shouldRemoveUnusedLocking() throws IOException {
+        // Test when there is no vaadin-version-core.json available
+        Mockito.when(
+                classFinder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
+                .thenReturn(null);
+
+        TaskUpdatePackages packageUpdater = createPackageUpdater(true);
+        JsonObject packageJson = packageUpdater.getPackageJson();
+        packageJson.getObject(DEPENDENCIES).put(TEST_DEPENDENCY,
+                PLATFORM_PINNED_DEPENDENCY_VERSION);
+        Assert.assertNull(packageJson.getObject(OVERRIDES));
+        FileUtils.write(packageUpdater.getPackageJsonFile(),
+                packageJson.toJson(), StandardCharsets.UTF_8);
+
+        String versionsPath = packageUpdater.generateVersionsJson(packageJson);
+        File output = new File(packageUpdater.npmFolder, versionsPath);
+        Assert.assertTrue(
+                FileUtils.readFileToString(output, StandardCharsets.UTF_8)
+                        .contains(TEST_DEPENDENCY));
+
+        packageJson.getObject(DEPENDENCIES).remove(TEST_DEPENDENCY);
+        FileUtils.write(packageUpdater.getPackageJsonFile(),
+                packageJson.toJson(), StandardCharsets.UTF_8);
+
+        packageUpdater.generateVersionsJson(packageJson);
+        Assert.assertFalse(
+                FileUtils.readFileToString(output, StandardCharsets.UTF_8)
+                        .contains(TEST_DEPENDENCY));
+
     }
 
     private TaskUpdatePackages createPackageUpdater(boolean enablePnpm) {
