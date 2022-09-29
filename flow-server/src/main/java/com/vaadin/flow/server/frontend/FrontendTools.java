@@ -43,6 +43,7 @@ import com.vaadin.flow.server.frontend.FrontendUtils.CommandExecutionException;
 import com.vaadin.flow.server.frontend.FrontendUtils.UnknownVersionException;
 import com.vaadin.flow.server.frontend.installer.InstallationException;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
+import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.frontend.installer.ProxyConfig;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
@@ -241,7 +242,7 @@ public class FrontendTools {
     public FrontendTools(String baseDir,
             Supplier<String> alternativeDirGetter) {
         this(baseDir, alternativeDirGetter, DEFAULT_NODE_VERSION,
-                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false,
+                URI.create(Platform.guess().getNodeDownloadRoot()), false,
                 false);
     }
 
@@ -271,7 +272,7 @@ public class FrontendTools {
     public FrontendTools(String baseDir, Supplier<String> alternativeDirGetter,
             boolean forceAlternativeNode) {
         this(baseDir, alternativeDirGetter, DEFAULT_NODE_VERSION,
-                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT),
+                URI.create(Platform.guess().getNodeDownloadRoot()),
                 forceAlternativeNode, false);
     }
 
@@ -429,7 +430,7 @@ public class FrontendTools {
                 NODE_VERSION, FrontendTools.DEFAULT_NODE_VERSION);
         final String nodeDownloadRoot = applicationConfiguration
                 .getStringProperty(NODE_DOWNLOAD_ROOT,
-                        NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT);
+                        Platform.guess().getNodeDownloadRoot());
 
         FrontendToolsSettings settings = new FrontendToolsSettings(
                 projectRoot.getAbsolutePath(),
