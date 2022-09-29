@@ -102,6 +102,7 @@ public class SpringBootAutoConfiguration {
          * Atmosphere always picks the first, it might end up using /VAADIN/*
          * and websockets will fail.
          */
+
         if (isServletMappingFeatureEnabled()) {
             initParameters.put(ApplicationConfig.JSR356_MAPPING_PATH,
                     mapping.replace("/*", ""));

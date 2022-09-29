@@ -34,7 +34,7 @@ public class Proxy {
         ServletContextHandler context = new ServletContextHandler(proxy, "/",
                 ServletContextHandler.SESSIONS);
         ServletHolder proxyServlet = new ServletHolder(
-                ProxyServlet.Transparent.class);
+                PathRewritingProxyServlet.class);
         proxyServlet.setInitParameter("proxyTo", "http://localhost:8888/");
         proxyServlet.setInitParameter("prefix", proxyPath);
         context.addServlet(proxyServlet, "/*");
