@@ -60,8 +60,7 @@ import elemental.json.JsonValue;
  * to write {@link JsonObject}s representing each data object to be sent to the
  * client-side.
  *
- * @param <T>
- *            the bean type
+ * @param <T> the bean type
  * @since 1.0
  */
 public class DataCommunicator<T> implements Serializable {
@@ -139,14 +138,10 @@ public class DataCommunicator<T> implements Serializable {
     /**
      * Creates a new instance.
      *
-     * @param dataGenerator
-     *            the data generator function
-     * @param arrayUpdater
-     *            array updater strategy
-     * @param dataUpdater
-     *            data updater strategy
-     * @param stateNode
-     *            the state node used to communicate for
+     * @param dataGenerator the data generator function
+     * @param arrayUpdater  array updater strategy
+     * @param dataUpdater   data updater strategy
+     * @param stateNode     the state node used to communicate for
      */
     public DataCommunicator(DataGenerator<T> dataGenerator,
             ArrayUpdater arrayUpdater,
@@ -165,10 +160,8 @@ public class DataCommunicator<T> implements Serializable {
     /**
      * Sets the requested range of data to be sent.
      *
-     * @param start
-     *            the start of the requested range
-     * @param length
-     *            the end of the requested range
+     * @param start  the start of the requested range
+     * @param length the end of the requested range
      */
     public void setRequestedRange(int start, int length) {
         if (length > MAXIMUM_ALLOWED_ITEMS) {
@@ -193,8 +186,7 @@ public class DataCommunicator<T> implements Serializable {
      * Note: This works only with Grid component. If set to true, Push needs to
      * be enabled and set to PushMode.AUTOMATIC in order this to work.
      *
-     * @param executor
-     *            The Executor used for async updates.
+     * @param executor The Executor used for async updates.
      */
     public void enablePushUpdates(Executor executor) {
         if (this.executor != null && future != null) {
@@ -219,8 +211,7 @@ public class DataCommunicator<T> implements Serializable {
     /**
      * Informs the DataCommunicator that a data object has been updated.
      *
-     * @param data
-     *            updated data object; not {@code null}
+     * @param data updated data object; not {@code null}
      */
     public void refresh(T data) {
         Objects.requireNonNull(data,
@@ -234,8 +225,7 @@ public class DataCommunicator<T> implements Serializable {
     /**
      * Confirm update with the given {@code updateId}.
      *
-     * @param updateId
-     *            the update identifier
+     * @param updateId the update identifier
      */
     public void confirmUpdate(int updateId) {
         confirmedUpdates.add(Integer.valueOf(updateId));
@@ -261,15 +251,10 @@ public class DataCommunicator<T> implements Serializable {
      * should be included in queries sent to the data provider. It is only valid
      * until another data provider is set.
      *
-     * @param dataProvider
-     *            the data provider to set, not <code>null</code>
-     * @param initialFilter
-     *            the initial filter value to use, or <code>null</code> to not
-     *            use any initial filter value
-     *
-     * @param <F>
-     *            the filter type
-     *
+     * @param dataProvider  the data provider to set, not <code>null</code>
+     * @param initialFilter the initial filter value to use, or <code>null</code> to not
+     *                      use any initial filter value
+     * @param <F>           the filter type
      * @return a consumer that accepts a new filter value to use
      */
     public <F> SerializableConsumer<F> setDataProvider(
@@ -317,8 +302,7 @@ public class DataCommunicator<T> implements Serializable {
      * mapper can be used to map keys sent to the client-side back to their
      * respective data objects.
      *
-     * @param keyMapper
-     *            the keyMapper
+     * @param keyMapper the keyMapper
      */
     protected void setKeyMapper(DataKeyMapper<T> keyMapper) {
         this.keyMapper = keyMapper;
@@ -327,8 +311,7 @@ public class DataCommunicator<T> implements Serializable {
     /**
      * Sets the {@link Comparator} to use with in-memory sorting.
      *
-     * @param comparator
-     *            comparator used to sort data
+     * @param comparator comparator used to sort data
      */
     public void setInMemorySorting(SerializableComparator<T> comparator) {
         inMemorySorting = comparator;
@@ -347,8 +330,7 @@ public class DataCommunicator<T> implements Serializable {
     /**
      * Sets the {@link QuerySortOrder}s to use with backend sorting.
      *
-     * @param sortOrder
-     *            list of sort order information to pass to a query
+     * @param sortOrder list of sort order information to pass to a query
      */
     public void setBackEndSorting(List<QuerySortOrder> sortOrder) {
         backEndSorting.clear();
@@ -388,12 +370,9 @@ public class DataCommunicator<T> implements Serializable {
     /**
      * Fetches a list of items from the DataProvider.
      *
-     * @param offset
-     *            the starting index of the range
-     * @param limit
-     *            the max number of results
+     * @param offset the starting index of the range
+     * @param limit  the max number of results
      * @return the list of items in given range
-     *
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     protected Stream<T> fetchFromProvider(int offset, int limit) {
@@ -471,6 +450,14 @@ public class DataCommunicator<T> implements Serializable {
     private void requestFlush(boolean forced) {
         if (flushRequest == null || !flushRequest.canExecute(stateNode)
                 || forced) {
+            if (flushRequest != null) {
+                // this cancels the previous request pushed into the queue,
+                // because a new one is going to be registered forcibly to cover
+                // @PreserveOnRefresh cases. Otherwise two flush requests in the
+                // pending queue may lead to a infinite loop, generating more
+                // and more new requests.
+                flushRequest.setCancelled();
+            }
             flushRequest = FlushRequest.register(stateNode, context -> {
                 if (!context.isClientSideInitialized()) {
                     reset();
@@ -485,6 +472,14 @@ public class DataCommunicator<T> implements Serializable {
     private void requestFlushUpdatedData() {
         if (flushUpdatedDataRequest == null
                 || !flushUpdatedDataRequest.canExecute(stateNode)) {
+            if (flushUpdatedDataRequest != null) {
+                // this cancels the previous request pushed into the queue,
+                // because a new one is going to be registered forcibly to cover
+                // @PreserveOnRefresh cases. Otherwise two flush requests in the
+                // pending queue may lead to a infinite loop, generating more
+                // and more new requests.
+                flushUpdatedDataRequest.setCancelled();
+            }
             flushUpdatedDataRequest = FlushRequest.register(stateNode,
                     context -> {
                         flushUpdatedData();
@@ -760,7 +755,7 @@ public class DataCommunicator<T> implements Serializable {
         }
         return null;
     }
-	
+
     private static class Activation implements Serializable {
         private final List<String> activeKeys;
         private final boolean sizeRecheckNeeded;
@@ -786,6 +781,7 @@ public class DataCommunicator<T> implements Serializable {
     private static class FlushRequest implements Serializable {
 
         private NodeOwner owner;
+        private boolean cancelled;
 
         static FlushRequest register(StateNode stateNode,
                 SerializableConsumer<ExecutionContext> action) {
@@ -793,14 +789,20 @@ public class DataCommunicator<T> implements Serializable {
             request.owner = stateNode.getOwner();
             stateNode.runWhenAttached(ui -> {
                 request.owner = stateNode.getOwner();
-                ui.getInternals().getStateTree().beforeClientResponse(stateNode,
-                        action);
+                if (!request.cancelled) {
+                    ui.getInternals().getStateTree()
+                            .beforeClientResponse(stateNode, action);
+                }
             });
             return request;
         }
 
         boolean canExecute(StateNode stateNode) {
             return owner instanceof NullOwner || owner == stateNode.getOwner();
+        }
+
+        void setCancelled() {
+            cancelled = true;
         }
     }
 
