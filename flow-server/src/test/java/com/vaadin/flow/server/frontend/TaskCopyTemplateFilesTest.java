@@ -21,9 +21,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -32,21 +29,14 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.internal.Template;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.testutil.TestUtils;
-import com.vaadin.flow.theme.AbstractTheme;
 
-import elemental.json.JsonObject;
-import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.Constants.TARGET;
-
-public class TaskCopyTemplateFilesTest extends NodeUpdateTestUtil {
+public class TaskCopyTemplateFilesTest {
 
     @Tag("my-lit-element-view")
     @JsModule("./my-lit-element-view.js")
@@ -102,8 +92,8 @@ public class TaskCopyTemplateFilesTest extends NodeUpdateTestUtil {
 
         List<String> files = TestUtils
                 .listFilesRecursively(resourceOutputDirectory);
-        Assert.assertTrue("TS resource should have been copied", files.contains(
-                Constants.TEMPLATE_DIRECTORY + "my-lit-element-view.js"));
+        Assert.assertTrue("TS resource should have been copied", files.stream()
+                .anyMatch(file -> file.contains("my-lit-element-view.js")));
     }
 
 }
