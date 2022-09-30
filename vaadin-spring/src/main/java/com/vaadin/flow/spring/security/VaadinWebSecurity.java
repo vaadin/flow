@@ -39,6 +39,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer;
 import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextHolderStrategy;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
@@ -128,11 +129,6 @@ public abstract class VaadinWebSecurity {
      *             if an error occurs
      */
     protected void configure(HttpSecurity http) throws Exception {
-        // Use a security context holder that can find the context from Vaadin
-        // specific classes
-        SecurityContextHolder.setStrategyName(
-                VaadinAwareSecurityContextHolderStrategy.class.getName());
-
         // Respond with 401 Unauthorized HTTP status code for unauthorized
         // requests for protected Hilla endpoints, so that the response could
         // be handled on the client side using e.g. `InvalidSessionMiddleware`.
@@ -178,6 +174,23 @@ public abstract class VaadinWebSecurity {
 
         // Enable view access control
         viewAccessChecker.enable();
+    }
+
+    /**
+     * Registers {@link SecurityContextHolderStrategy} bean.
+     * <p>
+     * Beans of this type will automatically be used by
+     * {@link org.springframework.security.config.annotation.method.configuration.GlobalMethodSecurityConfiguration}
+     * to configure the current {@link SecurityContextHolderStrategy}.
+     */
+    @Bean
+    public SecurityContextHolderStrategy securityContextHolderStrategy() {
+        VaadinAwareSecurityContextHolderStrategy vaadinAwareSecurityContextHolderStrategy = new VaadinAwareSecurityContextHolderStrategy();
+        // Use a security context holder that can find the context from Vaadin
+        // specific classes
+        SecurityContextHolder.setContextHolderStrategy(
+                vaadinAwareSecurityContextHolderStrategy);
+        return vaadinAwareSecurityContextHolderStrategy;
     }
 
     /**
