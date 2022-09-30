@@ -42,6 +42,7 @@ import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
+import com.vaadin.flow.server.frontend.installer.Platform;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -125,6 +126,10 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         super.execute();
+
+        if(nodeDownloadRoot == null) {
+            nodeDownloadRoot = Platform.guess().getNodeDownloadRoot();
+        }
 
         // propagate info via System properties and token file
         propagateBuildInfo();
