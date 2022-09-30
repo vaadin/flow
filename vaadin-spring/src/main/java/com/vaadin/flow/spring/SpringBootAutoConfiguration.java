@@ -35,10 +35,7 @@ import org.springframework.util.ClassUtils;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.socket.server.standard.ServerEndpointExporter;
 
-import com.vaadin.experimental.FeatureFlags;
-import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.VaadinServletContext;
 
 /**
  * Spring boot auto-configuration class for Flow.
@@ -51,7 +48,7 @@ import com.vaadin.flow.server.VaadinServletContext;
 @ConditionalOnClass(ServletContextInitializer.class)
 @EnableConfigurationProperties(VaadinConfigurationProperties.class)
 @Import({ VaadinApplicationConfiguration.class,
-        VaadinServletConfiguration.class })
+        VaadinServletConfiguration.class, FeatureFlagsUtil.class })
 public class SpringBootAutoConfiguration {
 
     @Autowired
@@ -103,7 +100,7 @@ public class SpringBootAutoConfiguration {
          * and websockets will fail.
          */
 
-        if (isServletMappingFeatureEnabled()) {
+        if (FeatureFlagsUtil.isServletMappingFeatureEnabled(context)) {
             initParameters.put(ApplicationConfig.JSR356_MAPPING_PATH,
                     mapping.replace("/*", ""));
         } else {
@@ -138,17 +135,6 @@ public class SpringBootAutoConfiguration {
     @Bean
     public ServerEndpointExporter websocketEndpointDeployer() {
         return new VaadinWebsocketEndpointExporter();
-    }
-
-    private boolean isServletMappingFeatureEnabled() {
-        VaadinServletContext servletContext = new VaadinServletContext(
-                context.getServletContext());
-        // Lookup is not available during SpringBootTest autoconfiguration
-        if (servletContext.getAttribute(Lookup.class) != null) {
-            return FeatureFlags.get(servletContext)
-                    .isEnabled(FeatureFlags.SERVLET_MAPPING);
-        }
-        return false;
     }
 
 }

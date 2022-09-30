@@ -31,9 +31,7 @@ import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
 
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.VaadinServletContext;
 
 /**
  * Abstract Vaadin Spring MVC {@link WebApplicationInitializer}.
@@ -62,9 +60,6 @@ public abstract class VaadinMVCWebAppInitializer
         }
         String pushRegistrationPath;
 
-        FeatureFlags featureFlags = FeatureFlags
-                .get(new VaadinServletContext(servletContext));
-
         boolean rootMapping = RootMappedCondition.isRootMapping(mapping);
         Dynamic registration = servletContext.addServlet(
                 ClassUtils.getShortNameAsProperty(SpringServlet.class),
@@ -75,7 +70,7 @@ public abstract class VaadinMVCWebAppInitializer
                     .addServlet("dispatcher", new DispatcherServlet(context));
             dispatcherRegistration.addMapping("/*");
 
-            if (featureFlags.isEnabled(FeatureFlags.SERVLET_MAPPING)) {
+            if (FeatureFlagsUtil.isServletMappingFeatureEnabled()) {
                 initParameters.put(Constants.SERVLET_PARAMETER_PUSH_URL,
                         makeContextRelative(mapping.replace("*", "")));
             }
@@ -94,7 +89,7 @@ public abstract class VaadinMVCWebAppInitializer
          * and websockets will fail.
          */
 
-        if (featureFlags.isEnabled(FeatureFlags.SERVLET_MAPPING)) {
+        if (FeatureFlagsUtil.isServletMappingFeatureEnabled()) {
             initParameters.put(ApplicationConfig.JSR356_MAPPING_PATH,
                     mapping.replace("/*", ""));
         } else {

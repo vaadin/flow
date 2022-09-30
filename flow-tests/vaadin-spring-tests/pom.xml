@@ -315,6 +315,7 @@
                 <module>test-spring-war</module>
                 <module>test-spring</module>
                 <module>test-spring-boot-contextpath</module>
+                <module>test-spring-boot-push-mapping</module>
                 <module>test-spring-boot-reverseproxy</module>
 
                 <module>test-mvc-without-endpoints</module>

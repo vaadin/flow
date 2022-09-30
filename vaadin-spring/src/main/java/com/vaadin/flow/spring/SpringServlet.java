@@ -30,12 +30,10 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.Environment;
 import org.springframework.web.servlet.mvc.ServletForwardingController;
 
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.shared.util.SharedUtil;
 
@@ -122,10 +120,8 @@ public class SpringServlet extends VaadinServlet {
     protected DeploymentConfiguration createDeploymentConfiguration(
             Properties initParameters) {
         Properties properties = config(initParameters);
-        FeatureFlags featureFlags = FeatureFlags
-                .get(new VaadinServletContext(getServletContext()));
         if (rootMapping
-                && featureFlags.isEnabled(FeatureFlags.SERVLET_MAPPING)) {
+                && FeatureFlagsUtil.isServletMappingFeatureEnabled(context)) {
             // in the case of root mapping, push requests should go to
             // /vaadinServlet/pushUrl
             String customPushUrl = properties

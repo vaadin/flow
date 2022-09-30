@@ -15,17 +15,16 @@
  */
 package com.vaadin.flow.spring.security;
 
+import javax.crypto.SecretKey;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import javax.crypto.SecretKey;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -50,14 +49,13 @@ import org.springframework.security.web.util.matcher.AnyRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.HandlerHelper;
-import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.auth.ViewAccessChecker;
+import com.vaadin.flow.spring.FeatureFlagsUtil;
 import com.vaadin.flow.spring.security.stateless.VaadinStatelessSecurityConfigurer;
 
 /**
@@ -188,8 +186,7 @@ public abstract class VaadinWebSecurityConfigurerAdapter
                 .map(path -> RequestUtil.applyUrlMapping(urlMapping, path))
                 .forEach(paths::add);
 
-        if (FeatureFlags.get(VaadinService.getCurrent().getContext())
-                .isEnabled(FeatureFlags.SERVLET_MAPPING)) {
+        if (FeatureFlagsUtil.isServletMappingFeatureEnabled()) {
             String mappedRoot = RequestUtil.applyUrlMapping(urlMapping, "");
             if ("/".equals(mappedRoot)) {
                 // Permit should be needed only on /vaadinServlet/, not on sub
