@@ -20,6 +20,7 @@ import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -229,7 +230,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                 + "}", PINNED_VERSION), StandardCharsets.UTF_8);
         // @formatter:on
 
-        JsonObject object = getGeneratedVersionsContent(versions);
+        JsonObject object = getGeneratedVersionsContent(versions, packageJson);
         Assert.assertTrue(object.hasKey("@vaadin/vaadin-overlay"));
 
         // Platform version takes precedence over dev deps
@@ -281,7 +282,8 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                 + "}", PINNED_VERSION), StandardCharsets.UTF_8);
         // @formatter:on
 
-        JsonObject versionsJson = getGeneratedVersionsContent(versions);
+        JsonObject versionsJson = getGeneratedVersionsContent(versions,
+                packageJson);
         Assert.assertEquals(
                 "Generated versions json should have keys for each dependency",
                 3, versionsJson.keys().length);
@@ -334,7 +336,8 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                         + "}", PINNED_VERSION), StandardCharsets.UTF_8);
         // @formatter:on
 
-        JsonObject versionsJson = getGeneratedVersionsContent(versions);
+        JsonObject versionsJson = getGeneratedVersionsContent(versions,
+                packageJson);
         Assert.assertEquals(
                 "Generated versions json should have keys for package.json dependencies (also dev)",
                 3, versionsJson.keys().length);
@@ -408,7 +411,8 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                 versionsNotificationVersion, versionsUploadVersion), StandardCharsets.UTF_8);
         // @formatter:on
 
-        JsonObject generatedVersions = getGeneratedVersionsContent(versions);
+        JsonObject generatedVersions = getGeneratedVersionsContent(versions,
+                packageJson);
 
         Assert.assertEquals("Login version is the same for user and platform.",
                 loginVersion,
@@ -656,14 +660,16 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                 false, new ArrayList<>());
     }
 
-    private JsonObject getGeneratedVersionsContent(File versions)
-            throws IOException {
+    private JsonObject getGeneratedVersionsContent(File versions,
+            File packageJsonFile) throws IOException {
         ClassFinder classFinder = getClassFinder();
         Mockito.when(
                 classFinder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
                 .thenReturn(versions.toURI().toURL());
 
-        String path = getNodeUpdater().generateVersionsJson();
+        JsonObject packageJson = Json.parse(FileUtils
+                .readFileToString(packageJsonFile, StandardCharsets.UTF_8));
+        String path = getNodeUpdater().generateVersionsJson(packageJson);
 
         File generatedVersionsFile = new File(getNodeUpdater().npmFolder, path);
         return Json.parse(FileUtils.readFileToString(generatedVersionsFile,
@@ -691,14 +697,15 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
             @Override
             public void execute() {
                 try {
-                    versionsPath = generateVersionsJson();
+                    versionsPath = generateVersionsJson(Json.createObject());
                 } catch (Exception e) {
                     versionsPath = null;
                 }
             }
 
             @Override
-            protected String generateVersionsJson() {
+            protected String generateVersionsJson(JsonObject packageJson)
+                    throws IOException {
                 try {
                     if (versionsContent != null) {
                         FileUtils.write(new File(npmFolder, "versions.json"),
