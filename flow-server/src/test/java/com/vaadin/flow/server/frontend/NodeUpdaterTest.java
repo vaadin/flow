@@ -306,7 +306,8 @@ public class NodeUpdaterTest {
     @Test
     public void generateVersionsJson_noVersions_noDevDeps_versionsGeneratedFromPackageJson()
             throws IOException {
-        final String versions = nodeUpdater.generateVersionsJson();
+        final String versions = nodeUpdater
+                .generateVersionsJson(Json.createObject());
         Assert.assertNotNull(versions);
 
         File generatedVersionsFile = new File(npmFolder, versions);
@@ -349,7 +350,9 @@ public class NodeUpdaterTest {
             + "}", StandardCharsets.UTF_8);
         // @formatter:on
 
-        final String versions = nodeUpdater.generateVersionsJson();
+        final String versions = nodeUpdater.generateVersionsJson(
+                Json.parse(FileUtils.readFileToString(packageJson,
+                        StandardCharsets.UTF_8)));
         Assert.assertNotNull(versions);
 
         File generatedVersionsFile = new File(npmFolder, versions);
