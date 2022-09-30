@@ -685,6 +685,17 @@ public class NodeTasks implements FallibleCommand {
         }
     }
 
+    //@formatter:off
+    private static final String V14_BOOTSTRAPPING_VITE_ERROR_MESSAGE =
+            "\n\n************************************************************************************"
+            + "\n*  Vite build tool is not supported when 'useDeprecatedV14Bootstrapping' is used.  *"
+            + "\n*  Please fallback to Webpack build tool via setting the                           *"
+            + "\n*  'com.vaadin.experimental.webpackForFrontendBuild=true' feature flag             *"
+            + "\n*  in [project-root]/src/main/resources/vaadin-featureflags.properties             *"
+            + "\n*  (you may create the file if not exists) and restart the application.            *"
+            + "\n************************************************************************************\n\n";
+    //@formatter:on
+
     // @formatter:off
     // This list keeps the tasks in order so that they are executed
     // without depending on when they are added.
@@ -790,7 +801,12 @@ public class NodeTasks implements FallibleCommand {
             addGenerateTsConfigTask(builder);
         }
 
-        if (!builder.useLegacyV14Bootstrap) {
+        if (builder.useLegacyV14Bootstrap) {
+            if (!featureFlags.isEnabled(FeatureFlags.WEBPACK)) {
+                throw new IllegalStateException(
+                        V14_BOOTSTRAPPING_VITE_ERROR_MESSAGE);
+            }
+        } else {
             addBootstrapTasks(builder);
 
             // use the new Hilla generator if enabled, otherwise use the old
