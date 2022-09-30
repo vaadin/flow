@@ -173,8 +173,6 @@ public class NodeUpdatePackagesNpmVersionLockingTest
         packageJson.getObject(DEPENDENCIES).put(TEST_DEPENDENCY,
                 PLATFORM_PINNED_DEPENDENCY_VERSION);
         Assert.assertNull(packageJson.getObject(OVERRIDES));
-        FileUtils.write(packageUpdater.getPackageJsonFile(),
-                packageJson.toJson(), StandardCharsets.UTF_8);
 
         String versionsPath = packageUpdater.generateVersionsJson(packageJson);
         File output = new File(packageUpdater.npmFolder, versionsPath);
@@ -183,8 +181,6 @@ public class NodeUpdatePackagesNpmVersionLockingTest
                         .contains(TEST_DEPENDENCY));
 
         packageJson.getObject(DEPENDENCIES).remove(TEST_DEPENDENCY);
-        FileUtils.write(packageUpdater.getPackageJsonFile(),
-                packageJson.toJson(), StandardCharsets.UTF_8);
 
         packageUpdater.generateVersionsJson(packageJson);
         Assert.assertFalse(
