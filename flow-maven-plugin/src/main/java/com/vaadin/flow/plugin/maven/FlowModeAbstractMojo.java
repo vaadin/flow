@@ -108,7 +108,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
      * <p></p>
      * Example: <code>"https://nodejs.org/dist/"</code>.
      */
-    @Parameter(property = NODE_DOWNLOAD_ROOT, defaultValue = NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT)
+    @Parameter(property = NODE_DOWNLOAD_ROOT)
     protected String nodeDownloadRoot;
 
     /**

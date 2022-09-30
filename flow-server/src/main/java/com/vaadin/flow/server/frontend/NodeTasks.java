@@ -27,6 +27,7 @@ import java.util.Set;
 
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
+import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
@@ -118,7 +119,7 @@ public class NodeTasks implements FallibleCommand {
          * {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT}.
          */
         private URI nodeDownloadRoot = URI
-                .create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT);
+                .create(Platform.guess().getNodeDownloadRoot());
 
         /**
          * Create a builder instance given an specific npm folder.
