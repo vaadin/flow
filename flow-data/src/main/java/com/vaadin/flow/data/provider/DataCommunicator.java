@@ -119,8 +119,10 @@ public class DataCommunicator<T> implements Serializable {
         public void accept(T t) {
             size++;
             if (size > limit) {
-                throw new IllegalStateException(String.format("The number of items returned by "
-                        + "the data provider exceeds the limit specified by the query (%d).", limit));
+                throw new IllegalStateException(String.format(
+                        "The number of items returned by "
+                                + "the data provider exceeds the limit specified by the query (%d).",
+                        limit));
             }
         }
 
@@ -138,7 +140,8 @@ public class DataCommunicator<T> implements Serializable {
      * @param stateNode
      *            the state node used to communicate for
      */
-    public DataCommunicator(DataGenerator<T> dataGenerator, ArrayUpdater arrayUpdater,
+    public DataCommunicator(DataGenerator<T> dataGenerator,
+            ArrayUpdater arrayUpdater,
             SerializableConsumer<JsonArray> dataUpdater, StateNode stateNode) {
         this.dataGenerator = dataGenerator;
         this.arrayUpdater = arrayUpdater;
@@ -163,10 +166,12 @@ public class DataCommunicator<T> implements Serializable {
         if (length > MAXIMUM_ALLOWED_ITEMS) {
             getLogger().warn(
                     "Attempted to fetch more items from server than allowed "
-                            + "in one go: number of items requested '{}', maximum " + "items allowed '{}'.",
+                            + "in one go: number of items requested '{}', maximum "
+                            + "items allowed '{}'.",
                     length, MAXIMUM_ALLOWED_ITEMS);
         }
-        requestedRange = Range.withLength(start, Math.min(length, MAXIMUM_ALLOWED_ITEMS));
+        requestedRange = Range.withLength(start,
+                Math.min(length, MAXIMUM_ALLOWED_ITEMS));
 
         requestFlush();
     }
@@ -190,7 +195,8 @@ public class DataCommunicator<T> implements Serializable {
      *            updated data object; not {@code null}
      */
     public void refresh(T data) {
-        Objects.requireNonNull(data, "DataCommunicator can not refresh null object");
+        Objects.requireNonNull(data,
+                "DataCommunicator can not refresh null object");
         getKeyMapper().refresh(data);
         dataGenerator.refreshData(data);
         updatedData.add(data);
@@ -236,7 +242,8 @@ public class DataCommunicator<T> implements Serializable {
      *
      * @return a consumer that accepts a new filter value to use
      */
-    public <F> SerializableConsumer<F> setDataProvider(DataProvider<T, F> dataProvider, F initialFilter) {
+    public <F> SerializableConsumer<F> setDataProvider(
+            DataProvider<T, F> dataProvider, F initialFilter) {
         Objects.requireNonNull(dataProvider, "data provider cannot be null");
         filter = initialFilter;
 
@@ -253,7 +260,8 @@ public class DataCommunicator<T> implements Serializable {
 
         return filter -> {
             if (this.dataProvider != dataProvider) {
-                throw new IllegalStateException("Filter slot is no longer valid after data provider has been changed");
+                throw new IllegalStateException(
+                        "Filter slot is no longer valid after data provider has been changed");
             }
 
             if (!Objects.equals(this.filter, filter)) {
@@ -358,10 +366,12 @@ public class DataCommunicator<T> implements Serializable {
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     protected Stream<T> fetchFromProvider(int offset, int limit) {
-        QueryTrace query = new QueryTrace(offset, limit, backEndSorting, inMemorySorting, filter);
+        QueryTrace query = new QueryTrace(offset, limit, backEndSorting,
+                inMemorySorting, filter);
         Stream<T> stream = getDataProvider().fetch(query);
         if (stream.isParallel()) {
-            getLogger().debug("Data provider {} has returned parallel stream on 'fetch' call",
+            getLogger().debug(
+                    "Data provider {} has returned parallel stream on 'fetch' call",
                     getDataProvider().getClass());
             stream = stream.collect(Collectors.toList()).stream();
             assert !stream.isParallel();
@@ -370,18 +380,22 @@ public class DataCommunicator<T> implements Serializable {
         stream = stream.peek(verifier);
 
         if (!query.isLimitCalled()) {
-            throw new IllegalStateException(getInvalidContractMessage("getLimit"));
+            throw new IllegalStateException(
+                    getInvalidContractMessage("getLimit"));
         }
         if (!query.isOffsetCalled()) {
-            throw new IllegalStateException(getInvalidContractMessage("getOffset"));
+            throw new IllegalStateException(
+                    getInvalidContractMessage("getOffset"));
         }
         return stream;
     }
 
     private String getInvalidContractMessage(String method) {
-        return String.format("The data provider hasn't ever called %s() method on the provided query. "
-                + "It means that the the data provider breaks the contract "
-                + "and the returned stream contains unxpected data.", method);
+        return String.format(
+                "The data provider hasn't ever called %s() method on the provided query. "
+                        + "It means that the the data provider breaks the contract "
+                        + "and the returned stream contains unxpected data.",
+                method);
     }
 
     private void handleAttach() {
@@ -389,13 +403,14 @@ public class DataCommunicator<T> implements Serializable {
             dataProviderUpdateRegistration.remove();
         }
 
-        dataProviderUpdateRegistration = getDataProvider().addDataProviderListener(event -> {
-            if (event instanceof DataRefreshEvent) {
-                handleDataRefreshEvent((DataRefreshEvent<T>) event);
-            } else {
-                reset();
-            }
-        });
+        dataProviderUpdateRegistration = getDataProvider()
+                .addDataProviderListener(event -> {
+                    if (event instanceof DataRefreshEvent) {
+                        handleDataRefreshEvent((DataRefreshEvent<T>) event);
+                    } else {
+                        reset();
+                    }
+                });
 
         // Ensure the initialize check is done
         requestFlush();
@@ -418,7 +433,16 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     private void requestFlush(boolean forced) {
-        if (flushRequest == null || !flushRequest.canExecute(stateNode) || forced) {
+        if (flushRequest == null || !flushRequest.canExecute(stateNode)
+                || forced) {
+            if (flushRequest != null) {
+                // this cancels the previous request pushed into the queue,
+                // because a new one is going to be registered forcibly to cover
+                // @PreserveOnRefresh cases. Otherwise two flush requests in the
+                // pending queue may lead to a infinite loop, generating more
+                // and more new requests.
+                flushRequest.setCancelled();
+            }
             flushRequest = FlushRequest.register(stateNode, context -> {
                 if (!context.isClientSideInitialized()) {
                     reset();
@@ -431,11 +455,21 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     private void requestFlushUpdatedData() {
-        if (flushUpdatedDataRequest == null || !flushUpdatedDataRequest.canExecute(stateNode)) {
-            flushUpdatedDataRequest = FlushRequest.register(stateNode, context -> {
-                flushUpdatedData();
-                flushUpdatedDataRequest = null;
-            });
+        if (flushUpdatedDataRequest == null
+                || !flushUpdatedDataRequest.canExecute(stateNode)) {
+            if (flushUpdatedDataRequest != null) {
+                // this cancels the previous request pushed into the queue,
+                // because a new one is going to be registered forcibly to cover
+                // @PreserveOnRefresh cases. Otherwise two flush requests in the
+                // pending queue may lead to a infinite loop, generating more
+                // and more new requests.
+                flushUpdatedDataRequest.setCancelled();
+            }
+            flushUpdatedDataRequest = FlushRequest.register(stateNode,
+                    context -> {
+                        flushUpdatedData();
+                        flushUpdatedDataRequest = null;
+                    });
         }
     }
 
@@ -443,24 +477,28 @@ public class DataCommunicator<T> implements Serializable {
         Set<String> oldActive = new HashSet<>(activeKeyOrder);
 
         Range effectiveRequested;
-        final Range previousActive = Range.withLength(activeStart, activeKeyOrder.size());
+        final Range previousActive = Range.withLength(activeStart,
+                activeKeyOrder.size());
 
         // Phase 1: Find all items that the client should have
         if (resendEntireRange) {
             assumedSize = getDataProviderSize();
         }
-        effectiveRequested = requestedRange.restrictTo(Range.withLength(0, assumedSize));
+        effectiveRequested = requestedRange
+                .restrictTo(Range.withLength(0, assumedSize));
 
         resendEntireRange |= !(previousActive.intersects(effectiveRequested)
                 || (previousActive.isEmpty() && effectiveRequested.isEmpty()));
 
-        Activation activation = collectKeysToFlush(previousActive, effectiveRequested);
+        Activation activation = collectKeysToFlush(previousActive,
+                effectiveRequested);
 
         // If the returned stream from the DataProvider is smaller than it
         // should, a new query for the actual size needs to be done
         if (activation.isSizeRecheckNeeded()) {
             assumedSize = getDataProviderSize();
-            effectiveRequested = requestedRange.restrictTo(Range.withLength(0, assumedSize));
+            effectiveRequested = requestedRange
+                    .restrictTo(Range.withLength(0, assumedSize));
         }
 
         activeKeyOrder = activation.getActiveKeys();
@@ -468,7 +506,8 @@ public class DataCommunicator<T> implements Serializable {
 
         // Phase 2: Collect changes to send
         Update update = arrayUpdater.startUpdate(assumedSize);
-        boolean updated = collectChangesToSend(previousActive, effectiveRequested, update);
+        boolean updated = collectChangesToSend(previousActive,
+                effectiveRequested, update);
 
         resendEntireRange = false;
         assumeEmptyClient = false;
@@ -484,7 +523,8 @@ public class DataCommunicator<T> implements Serializable {
         if (updatedData.isEmpty()) {
             return;
         }
-        dataUpdater.accept(updatedData.stream().map(this::generateJson).collect(JsonUtils.asArray()));
+        dataUpdater.accept(updatedData.stream().map(this::generateJson)
+                .collect(JsonUtils.asArray()));
         updatedData.clear();
     }
 
@@ -511,7 +551,8 @@ public class DataCommunicator<T> implements Serializable {
         }
     }
 
-    private void passivateInactiveKeys(Set<String> oldActive, Update update, boolean updated) {
+    private void passivateInactiveKeys(Set<String> oldActive, Update update,
+            boolean updated) {
         /*
          * We cannot immediately unregister keys that we have asked the client to remove, since the client might send a
          * message using that key before our message about removal arrives at the client and is applied.
@@ -528,7 +569,8 @@ public class DataCommunicator<T> implements Serializable {
         }
     }
 
-    private boolean collectChangesToSend(final Range previousActive, final Range effectiveRequested, Update update) {
+    private boolean collectChangesToSend(final Range previousActive,
+            final Range effectiveRequested, Update update) {
         boolean updated = false;
         if (assumeEmptyClient || resendEntireRange) {
             if (!assumeEmptyClient) {
@@ -538,7 +580,8 @@ public class DataCommunicator<T> implements Serializable {
                  * It's not that straightforward because one has to care about indexes aligned with pageSize (because of
                  * the code on the client side).
                  */
-                update.clear(previousActive.getStart(), previousActive.length());
+                update.clear(previousActive.getStart(),
+                        previousActive.length());
             }
 
             update.set(activeStart, getJsonItems(effectiveRequested));
@@ -550,16 +593,19 @@ public class DataCommunicator<T> implements Serializable {
              */
 
             // Clear previously active items missing from requested
-            withMissing(previousActive, effectiveRequested, range -> update.clear(range.getStart(), range.length()));
+            withMissing(previousActive, effectiveRequested,
+                    range -> update.clear(range.getStart(), range.length()));
 
             // Set requested items missing from previously active
-            withMissing(effectiveRequested, previousActive, range -> update.set(range.getStart(), getJsonItems(range)));
+            withMissing(effectiveRequested, previousActive,
+                    range -> update.set(range.getStart(), getJsonItems(range)));
             updated = true;
         }
         return updated;
     }
 
-    private Activation collectKeysToFlush(final Range previousActive, final Range effectiveRequested) {
+    private Activation collectKeysToFlush(final Range previousActive,
+            final Range effectiveRequested) {
         /*
          * Collecting all items even though only some small sub range would actually be useful can be optimized away
          * once we have some actual test coverage for the logic here.
@@ -570,7 +616,8 @@ public class DataCommunicator<T> implements Serializable {
             List<String> newActiveKeyOrder = new ArrayList<>();
             boolean sizeRecheckNeeded = false;
 
-            Range[] partitionWith = effectiveRequested.partitionWith(previousActive);
+            Range[] partitionWith = effectiveRequested
+                    .partitionWith(previousActive);
 
             Activation activation = activate(partitionWith[0]);
             newActiveKeyOrder.addAll(activation.getActiveKeys());
@@ -583,7 +630,8 @@ public class DataCommunicator<T> implements Serializable {
                 // needs to be returned
                 return Activation.empty();
             }
-            newActiveKeyOrder.addAll(activeKeyOrder.subList(overlap.getStart(), overlap.getEnd()));
+            newActiveKeyOrder.addAll(activeKeyOrder.subList(overlap.getStart(),
+                    overlap.getEnd()));
 
             activation = activate(partitionWith[2]);
             newActiveKeyOrder.addAll(activation.getActiveKeys());
@@ -593,18 +641,22 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     private List<JsonValue> getJsonItems(Range range) {
-        return range.stream().mapToObj(index -> activeKeyOrder.get(index - activeStart)).map(keyMapper::get)
-                .map(this::generateJson).collect(Collectors.toList());
+        return range.stream()
+                .mapToObj(index -> activeKeyOrder.get(index - activeStart))
+                .map(keyMapper::get).map(this::generateJson)
+                .collect(Collectors.toList());
     }
 
-    private static final void withMissing(Range expected, Range actual, Consumer<Range> action) {
+    private static final void withMissing(Range expected, Range actual,
+            Consumer<Range> action) {
         Range[] partition = expected.partitionWith(actual);
 
         applyIfNotEmpty(partition[0], action);
         applyIfNotEmpty(partition[2], action);
     }
 
-    private static final void applyIfNotEmpty(Range range, Consumer<Range> action) {
+    private static final void applyIfNotEmpty(Range range,
+            Consumer<Range> action) {
         if (!range.isEmpty()) {
             action.accept(range);
         }
@@ -623,7 +675,8 @@ public class DataCommunicator<T> implements Serializable {
             if (mapperHasKey) {
                 // Ensure latest instance from provider is used
                 keyMapper.refresh(bean);
-                passivatedByUpdate.values().stream().forEach(set -> set.remove(key));
+                passivatedByUpdate.values().stream()
+                        .forEach(set -> set.remove(key));
             }
             activeKeys.add(key);
         });
@@ -663,19 +716,28 @@ public class DataCommunicator<T> implements Serializable {
     private static class FlushRequest implements Serializable {
 
         private NodeOwner owner;
+        private boolean cancelled;
 
-        static FlushRequest register(StateNode stateNode, SerializableConsumer<ExecutionContext> action) {
+        static FlushRequest register(StateNode stateNode,
+                SerializableConsumer<ExecutionContext> action) {
             FlushRequest request = new FlushRequest();
             request.owner = stateNode.getOwner();
             stateNode.runWhenAttached(ui -> {
                 request.owner = stateNode.getOwner();
-                ui.getInternals().getStateTree().beforeClientResponse(stateNode, action);
+                if (!request.cancelled) {
+                    ui.getInternals().getStateTree()
+                            .beforeClientResponse(stateNode, action);
+                }
             });
             return request;
         }
 
         boolean canExecute(StateNode stateNode) {
             return owner instanceof NullOwner || owner == stateNode.getOwner();
+        }
+
+        void setCancelled() {
+            cancelled = true;
         }
     }
 
