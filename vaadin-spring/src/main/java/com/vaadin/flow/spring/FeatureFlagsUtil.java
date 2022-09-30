@@ -29,7 +29,7 @@ public class FeatureFlagsUtil implements ApplicationContextAware {
      * Returns if vaadinServletForPush feature is enabled considering both
      * FeatureFlags and Spring application property.
      *
-     * @return
+     *
      */
     public static boolean isServletMappingFeatureEnabled() {
         if (VaadinService.getCurrent() != null
