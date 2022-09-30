@@ -98,8 +98,6 @@ public abstract class NodeUpdater implements FallibleCommand {
     private static final String DEP_MAIN_VALUE = "index";
     private static final String DEP_VERSION_KEY = "version";
     private static final String DEP_VERSION_DEFAULT = "1.0.0";
-    private static final String ROUTER_VERSION = "1.7.4";
-    protected static final String POLYMER_VERSION = "3.5.1";
 
     static final String VAADIN_VERSION = "vaadinVersion";
 
@@ -387,70 +385,48 @@ public abstract class NodeUpdater implements FallibleCommand {
     }
 
     Map<String, String> getDefaultDependencies() {
-        Map<String, String> defaults = new HashMap<>();
+        return readDependencies("default", "dependencies");
+    }
 
-        defaults.put("@vaadin/router", ROUTER_VERSION);
+    private Map<String, String> readDependencies(String id,
+            String packageJsonKey) {
+        try {
+            Map<String, String> map = new HashMap<>();
+            JsonObject dependencies = readPackageJson(id)
+                    .getObject(packageJsonKey);
+            for (String key : dependencies.keys()) {
+                map.put(key, dependencies.getString(key));
+            }
 
-        defaults.put("@polymer/polymer", POLYMER_VERSION);
+            return map;
+        } catch (IOException e) {
+            log().error(
+                    "Unable to read " + packageJsonKey + " from '" + id + "'",
+                    e);
+            return new HashMap<>();
+        }
 
-        defaults.put("lit", "2.3.0");
+    }
 
-        // Constructable style sheets is only implemented for chrome,
-        // polyfill needed for FireFox et.al. at the moment
-        defaults.put("construct-style-sheets-polyfill", "3.1.0");
+    private JsonObject readPackageJson(String id) throws IOException {
+        try (InputStream packageJson = getClass()
+                .getResourceAsStream("dependencies/" + id + "/package.json")) {
+            JsonObject content = Json.parse(
+                    IOUtils.toString(packageJson, StandardCharsets.UTF_8));
+            return content;
+        }
 
-        defaults.put("@vaadin/common-frontend", "0.0.17");
-
-        return defaults;
     }
 
     Map<String, String> getDefaultDevDependencies() {
         Map<String, String> defaults = new HashMap<>();
-
-        defaults.put("typescript", "4.7.4");
-
-        final String WORKBOX_VERSION = "6.5.0";
+        defaults.putAll(readDependencies("default", "devDependencies"));
 
         if (featureFlags.isEnabled(FeatureFlags.WEBPACK)) {
-            // Webpack plugins and helpers
-            defaults.put("esbuild-loader", "2.19.0");
-            defaults.put("html-webpack-plugin", "4.5.1");
-            defaults.put("fork-ts-checker-webpack-plugin", "6.2.1");
-            defaults.put("webpack", "4.46.0");
-            defaults.put("webpack-cli", "4.10.0");
-            defaults.put("webpack-dev-server", "4.10.0");
-            defaults.put("compression-webpack-plugin", "4.0.1");
-            defaults.put("extra-watch-webpack-plugin", "1.0.3");
-            defaults.put("webpack-merge", "4.2.2");
-            defaults.put("css-loader", "5.2.7");
-            defaults.put("extract-loader", "5.1.0");
-            defaults.put("lit-css-loader", "0.1.0");
-            defaults.put("file-loader", "6.2.0");
-            defaults.put("loader-utils", "2.0.0");
-            defaults.put("workbox-webpack-plugin", WORKBOX_VERSION);
-
-            // Forcing chokidar version for now until new babel version is
-            // available
-            // check out https://github.com/babel/babel/issues/11488
-            defaults.put("chokidar", "^3.5.0");
+            defaults.putAll(readDependencies("webpack", "devDependencies"));
         } else {
-            // Use Vite
-            defaults.put("vite", "v3.1.0");
-            defaults.put("@rollup/plugin-replace", "3.1.0");
-            defaults.put("rollup-plugin-brotli", "3.1.0");
-            defaults.put("vite-plugin-checker", "0.4.9");
-            defaults.put("mkdirp", "1.0.4"); // for application-theme-plugin
-            defaults.put("workbox-build", WORKBOX_VERSION);
-
-            // Dependencies of rollup-plugin-postcss-lit-custom
-            defaults.put("@rollup/pluginutils", "4.1.0");
-            defaults.put("transform-ast", "2.4.4");
-
+            defaults.putAll(readDependencies("vite", "devDependencies"));
         }
-        defaults.put("workbox-core", WORKBOX_VERSION);
-        defaults.put("workbox-precaching", WORKBOX_VERSION);
-        defaults.put("glob", "7.2.3");
-        defaults.put("async", "3.2.2");
 
         return defaults;
     }
@@ -515,9 +491,9 @@ public abstract class NodeUpdater implements FallibleCommand {
 
     private boolean isNewerVersion(JsonObject json, String pkg,
             String version) {
-        FrontendVersion newVersion = new FrontendVersion(version);
 
         try {
+            FrontendVersion newVersion = new FrontendVersion(version);
             FrontendVersion existingVersion = toVersion(json, pkg);
             return newVersion.isNewerThan(existingVersion);
         } catch (NumberFormatException e) {
@@ -539,9 +515,10 @@ public abstract class NodeUpdater implements FallibleCommand {
     private int handleExistingVaadinDep(JsonObject json, String pkg,
             String version, JsonObject vaadinDeps) {
         boolean added = false;
-        FrontendVersion vaadinVersion = toVersion(vaadinDeps, pkg);
-        if (json.hasKey(pkg)) {
-            try {
+        boolean updatedVaadinVersionSection = false;
+        try {
+            FrontendVersion vaadinVersion = toVersion(vaadinDeps, pkg);
+            if (json.hasKey(pkg)) {
                 FrontendVersion packageVersion = toVersion(json, pkg);
                 FrontendVersion newVersion = new FrontendVersion(version);
                 // Vaadin and package.json versions are the same, but dependency
@@ -557,25 +534,28 @@ public abstract class NodeUpdater implements FallibleCommand {
                     json.put(pkg, version);
                     added = true;
                 }
-            } catch (NumberFormatException e) { // NOSONAR
-                /*
-                 * If the current version is not parseable, it can refer to a
-                 * file and we should leave it alone
-                 */
+            } else {
+                json.put(pkg, version);
+                added = true;
             }
-        } else {
-            json.put(pkg, version);
-            added = true;
+        } catch (NumberFormatException e) { // NOSONAR
+            /*
+             * If the current version is not parseable, it can refer to a file
+             * and we should leave it alone
+             */
         }
         // always update vaadin version to the latest set version
-        vaadinDeps.put(pkg, version);
+        if (!version.equals(vaadinDeps.getString(pkg))) {
+            vaadinDeps.put(pkg, version);
+            updatedVaadinVersionSection = true;
+        }
 
         if (added) {
             log().debug("Added \"{}\": \"{}\" line.", pkg, version);
         } else {
             // we made a change to the package json vaadin defaults
             // even if we didn't add to the dependencies.
-            added = !vaadinVersion.isEqualTo(new FrontendVersion(version));
+            added = updatedVaadinVersionSection;
         }
         return added ? 1 : 0;
     }
@@ -639,12 +619,14 @@ public abstract class NodeUpdater implements FallibleCommand {
      * @throws IOException
      *             when file IO fails
      */
-    protected String generateVersionsJson() throws IOException {
+    protected String generateVersionsJson(JsonObject packageJson)
+            throws IOException {
         File versions = new File(generatedFolder, "versions.json");
 
         JsonObject versionsJson = getPlatformPinnedDependencies();
-        JsonObject packageJsonVersions = generateVersionsFromPackageJson();
-        if (versionsJson == null) {
+        JsonObject packageJsonVersions = generateVersionsFromPackageJson(
+                packageJson);
+        if (versionsJson.keys().length == 0) {
             versionsJson = packageJsonVersions;
         } else {
             for (String key : packageJsonVersions.keys()) {
@@ -673,10 +655,10 @@ public abstract class NodeUpdater implements FallibleCommand {
      * @throws IOException
      *             If reading package.json fails
      */
-    private JsonObject generateVersionsFromPackageJson() throws IOException {
+    private JsonObject generateVersionsFromPackageJson(JsonObject packageJson)
+            throws IOException {
         JsonObject versionsJson = Json.createObject();
         // if we don't have versionsJson lock package dependency versions.
-        final JsonObject packageJson = getPackageJson();
         final JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
         final JsonObject devDependencies = packageJson
                 .getObject(DEV_DEPENDENCIES);

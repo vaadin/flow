@@ -91,7 +91,7 @@
         <slf4j.version>1.7.36</slf4j.version>
         <polymer.version>2.6.1</polymer.version>
         <jackson.version>2.13.4</jackson.version>
-        <jackson.databind.version>2.13.3</jackson.databind.version>
+        <jackson.databind.version>2.13.4</jackson.databind.version>
         <jakarta.validation.version>3.0.1</jakarta.validation.version>
         <jakarta.annotation.api.version>2.0.0</jakarta.annotation.api.version>
         <jaxb.version>4.0.0</jaxb.version>
@@ -105,7 +105,7 @@
         <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
         <maven.clean.plugin.version>3.2.0</maven.clean.plugin.version>
         <maven.exec.plugin.version>1.6.0</maven.exec.plugin.version>
-        <testbench.version>8.1.0</testbench.version>
+        <testbench.version>8.1.1</testbench.version>
         <webdrivermanager.version>5.3.0</webdrivermanager.version>
         <jetty.version>11.0.8</jetty.version>
         <properties-maven-plugin.version>1.0.0</properties-maven-plugin.version>
@@ -238,21 +238,16 @@
                 <artifactId>jakarta.servlet-api</artifactId>
                 <version>5.0.0</version>
             </dependency>
-            <dependency>
-                <groupId>javax.portlet</groupId>
-                <artifactId>portlet-api</artifactId>
-                <version>2.0</version>
-            </dependency>
 
             <dependency>
                 <groupId>net.bytebuddy</groupId>
                 <artifactId>byte-buddy</artifactId>
-                <version>1.12.14</version>
+                <version>1.12.17</version>
             </dependency>
             <dependency>
                 <groupId>com.vaadin</groupId>
                 <artifactId>license-checker</artifactId>
-                <version>1.7.2</version>
+                <version>1.10.0</version>
             </dependency>
 
             <!-- Test dependencies -->
@@ -493,7 +488,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
-                    <version>3.2.2</version>
+                    <version>3.3.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
@@ -701,6 +696,6 @@
 		    </plugin>
 	        </plugins>
 	    </build>
-        </profile>	    
+        </profile>
     </profiles>
 </project>

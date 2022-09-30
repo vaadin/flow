@@ -200,7 +200,8 @@ public class FeatureFlags implements Serializable {
         if (featureFlagFile == null || !featureFlagFile.exists()) {
             // Disable all features if no file exists
             for (Feature f : features) {
-                f.setEnabled(false);
+                f.setEnabled(
+                        Boolean.getBoolean(SYSTEM_PROPERTY_PREFIX + f.getId()));
             }
         } else {
             try (FileInputStream propertiesStream = new FileInputStream(
@@ -213,15 +214,6 @@ public class FeatureFlags implements Serializable {
                         "Failed to read properties file from filesystem", e);
             }
         }
-
-        // Allow users to override a feature flag with a system property
-        for (Feature f : features) {
-            var prop = System.getProperty(SYSTEM_PROPERTY_PREFIX + f.getId());
-
-            if (prop != null) {
-                f.setEnabled(Boolean.parseBoolean(prop));
-            }
-        }
     }
 
     void loadProperties(InputStream propertiesStream) {
@@ -232,9 +224,14 @@ public class FeatureFlags implements Serializable {
                 props.load(propertiesStream);
             }
             for (Feature f : features) {
-                f.setEnabled(Boolean.valueOf(
-                        props.getProperty(getPropertyName(f.getId()))));
+                // Allow users to override a feature flag with a system property
+                String propertyValue = System.getProperty(
+                        SYSTEM_PROPERTY_PREFIX + f.getId(),
+                        props.getProperty(getPropertyName(f.getId())));
+
+                f.setEnabled(Boolean.parseBoolean(propertyValue));
             }
+
         } catch (IOException e) {
             getLogger().error("Unable to read feature flags", e);
         }

@@ -9,21 +9,25 @@
     "@vaadin/bundles": "../vite-test-assets/packages/@vaadin/bundles-old",
     "@vaadin/common-frontend": "0.0.17",
     "@vaadin/flow-frontend": "./target/flow-frontend",
+    "@vaadin/polymer-legacy-adapter": "23.3.0-alpha2",
     "@vaadin/router": "1.7.4",
-    "@vaadin/vaadin-lumo-styles": "23.2.0-alpha5",
-    "@vaadin/vaadin-text-field": "23.2.0-alpha5",
+    "@vaadin/vaadin-lumo-styles": "23.3.0-alpha2",
+    "@vaadin/vaadin-text-field": "23.3.0-alpha2",
+    "@vaadin/vaadin-themable-mixin": "23.3.0-alpha2",
     "construct-style-sheets-polyfill": "3.1.0",
-    "lit": "2.2.7"
+    "lit": "2.3.0"
   },
   "devDependencies": {
     "@rollup/plugin-replace": "3.1.0",
+    "@rollup/pluginutils": "4.1.0",
     "async": "3.2.2",
     "glob": "7.2.3",
     "mkdirp": "1.0.4",
     "rollup-plugin-brotli": "3.1.0",
+    "transform-ast": "2.4.4",
     "typescript": "4.7.4",
-    "vite": "v3.0.2",
-    "vite-plugin-checker": "0.4.6",
+    "vite": "v3.1.0",
+    "vite-plugin-checker": "0.4.9",
     "workbox-build": "6.5.0",
     "workbox-core": "6.5.0",
     "workbox-precaching": "6.5.0"
@@ -32,25 +36,29 @@
     "dependencies": {
       "@polymer/polymer": "3.5.1",
       "@vaadin/common-frontend": "0.0.17",
+      "@vaadin/polymer-legacy-adapter": "23.3.0-alpha2",
       "@vaadin/router": "1.7.4",
-      "@vaadin/vaadin-lumo-styles": "23.2.0-alpha5",
-      "@vaadin/vaadin-text-field": "23.2.0-alpha5",
+      "@vaadin/vaadin-lumo-styles": "23.3.0-alpha2",
+      "@vaadin/vaadin-text-field": "23.3.0-alpha2",
+      "@vaadin/vaadin-themable-mixin": "23.3.0-alpha2",
       "construct-style-sheets-polyfill": "3.1.0",
-      "lit": "2.2.7"
+      "lit": "2.3.0"
     },
     "devDependencies": {
       "@rollup/plugin-replace": "3.1.0",
+      "@rollup/pluginutils": "4.1.0",
       "async": "3.2.2",
       "glob": "7.2.3",
       "mkdirp": "1.0.4",
       "rollup-plugin-brotli": "3.1.0",
+      "transform-ast": "2.4.4",
       "typescript": "4.7.4",
-      "vite": "v3.0.2",
-      "vite-plugin-checker": "0.4.6",
+      "vite": "v3.1.0",
+      "vite-plugin-checker": "0.4.9",
       "workbox-build": "6.5.0",
       "workbox-core": "6.5.0",
       "workbox-precaching": "6.5.0"
     },
-    "hash": "b671e22c24ea0c9f4a6c39ad34c957226a371ba8f518a8ac1e090e741ff4b664"
+    "hash": "36de7b44fdcbb041898eec48c9407116cb0c0bcbda2341464130b6d091af84e1"
   }
 }

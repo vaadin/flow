@@ -38,6 +38,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.experimental.FeatureFlags;
@@ -112,43 +113,56 @@ public class PwaRegistry implements Serializable {
                 : new PwaConfiguration(pwa, useV14Bootstrap);
 
         // Build pwa elements only if they are enabled
-        if (pwaConfiguration.isEnabled()) {
-            URL logo = getResourceUrl(servletContext,
-                    pwaConfiguration.relIconPath());
+        initializeResources(servletContext);
+    }
 
-            URL offlinePage = pwaConfiguration.isOfflinePathEnabled()
-                    ? getResourceUrl(servletContext,
-                            pwaConfiguration.relOfflinePath())
-                    : null;
-
-            // Load base logo from servlet context if available
-            // fall back to local image if unavailable
-            BufferedImage baseImage = getBaseImage(logo);
-
-            if (baseImage == null) {
-                LoggerFactory.getLogger(PwaRegistry.class).error(
-                        "Image is not found or can't be loaded: " + logo);
-            } else {
-                // Pick top-left pixel as fill color if needed for image
-                // resizing
-                int bgColor = baseImage.getRGB(0, 0);
-
-                // initialize icons
-                icons = initializeIcons(baseImage, bgColor);
-            }
-
-            // Load offline page as string, from servlet context if
-            // available, fall back to default page
-            offlineHtml = initializeOfflinePage(pwaConfiguration, offlinePage);
-            offlineHash = offlineHtml.hashCode();
-
-            // Initialize manifest.webmanifest
-            manifestJson = initializeManifest().toJson();
-
-            // Initialize sw-runtime.js
-            runtimeServiceWorkerJs = initializeRuntimeServiceWorker(
-                    servletContext);
+    private void initializeResources(ServletContext servletContext)
+            throws MalformedURLException, IOException {
+        if (!pwaConfiguration.isEnabled()) {
+            return;
         }
+        long start = System.currentTimeMillis();
+
+        URL logo = getResourceUrl(servletContext,
+                pwaConfiguration.relIconPath());
+
+        URL offlinePage = pwaConfiguration.isOfflinePathEnabled()
+                ? getResourceUrl(servletContext,
+                        pwaConfiguration.relOfflinePath())
+                : null;
+
+        // Load base logo from servlet context if available
+        // fall back to local image if unavailable
+        BufferedImage baseImage = getBaseImage(logo);
+
+        if (baseImage == null) {
+            getLogger().error("Image is not found or can't be loaded: " + logo);
+        } else {
+            // Pick top-left pixel as fill color if needed for image
+            // resizing
+            int bgColor = baseImage.getRGB(0, 0);
+
+            // initialize icons
+            icons = initializeIcons(baseImage, bgColor);
+        }
+
+        // Load offline page as string, from servlet context if
+        // available, fall back to default page
+        offlineHtml = initializeOfflinePage(pwaConfiguration, offlinePage);
+        offlineHash = offlineHtml.hashCode();
+
+        // Initialize manifest.webmanifest
+        manifestJson = initializeManifest().toJson();
+
+        // Initialize sw-runtime.js
+        runtimeServiceWorkerJs = initializeRuntimeServiceWorker(servletContext);
+        getLogger().debug(
+                getClass().getSimpleName() + " initialization took {}ms",
+                System.currentTimeMillis() - start);
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(PwaRegistry.class);
     }
 
     private URL getResourceUrl(ServletContext context, String path)

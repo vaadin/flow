@@ -15,17 +15,28 @@
  */
 package com.vaadin.flow.spring;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
+import jakarta.servlet.http.HttpServletRequest;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
+import org.springframework.core.env.Environment;
+import org.springframework.util.AntPathMatcher;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.handler.SimpleUrlHandlerMapping;
 import org.springframework.web.servlet.mvc.Controller;
 import org.springframework.web.servlet.mvc.ServletForwardingController;
+import org.springframework.web.util.UrlPathHelper;
 
 import com.vaadin.flow.server.VaadinServlet;
 
@@ -47,6 +58,83 @@ import com.vaadin.flow.server.VaadinServlet;
 public class VaadinServletConfiguration {
 
     static final String VAADIN_SERVLET_MAPPING = "/vaadinServlet/*";
+    public static final String EXCLUDED_URLS_PROPERTY = "vaadin.excludeUrls";
+
+    /**
+     * Gets the excluded URLs in a way compatible with both plain Spring and
+     * Spring Boot.
+     *
+     * @param environment
+     *            the application environment
+     * @return the excluded URLs or null if none is defined
+     */
+    private static List<String> getExcludedUrls(Environment environment) {
+        if (SpringUtil.isSpringBoot()) {
+            try {
+                return (List<String>) Class.forName(
+                        "com.vaadin.flow.spring.VaadinConfigurationProperties")
+                        .getMethod("getExcludedUrls", Environment.class)
+                        .invoke(null, environment);
+            } catch (IllegalAccessException | IllegalArgumentException
+                    | InvocationTargetException | NoSuchMethodException
+                    | SecurityException | ClassNotFoundException e) {
+                LoggerFactory.getLogger(RootMappedCondition.class).error(
+                        "Unable to find excluded URLs from properties", e);
+                return null;
+            }
+        } else {
+            String value = environment.getProperty(EXCLUDED_URLS_PROPERTY);
+            if (value == null || value.isEmpty()) {
+                return Collections.emptyList();
+            } else {
+                return Arrays.stream(value.split(",")).map(url -> url.trim())
+                        .collect(Collectors.toList());
+            }
+        }
+    }
+
+    private static class RootExcludeHandler extends SimpleUrlHandlerMapping {
+        private List<String> excludeUrls;
+        private AntPathMatcher matcher;
+        private UrlPathHelper urlPathHelper = new UrlPathHelper();
+
+        public RootExcludeHandler(List<String> excludeUrls,
+                Controller vaadinForwardingController) {
+            this.excludeUrls = excludeUrls;
+            matcher = new AntPathMatcher();
+
+            setOrder(Ordered.LOWEST_PRECEDENCE - 1);
+
+            // This is /** and not /* so that it is not interpreted as a
+            // "default handler"
+            // and we can override the behavior in getHandlerInternal
+            setUrlMap(Collections.singletonMap("/**",
+                    vaadinForwardingController));
+        }
+
+        @Override
+        protected Object getHandlerInternal(HttpServletRequest request)
+                throws Exception {
+            if (excludeUrls != null && !excludeUrls.isEmpty()) {
+                String requestPath = urlPathHelper
+                        .getPathWithinApplication(request);
+                for (String pattern : excludeUrls) {
+                    if (matcher.match(pattern, requestPath)) {
+                        getLogger().debug(
+                                "Ignoring request to {} excluded by {}",
+                                requestPath, pattern);
+                        return null;
+                    }
+                }
+            }
+            return super.getHandlerInternal(request);
+        }
+
+        protected Logger getLogger() {
+            return LoggerFactory.getLogger(getClass());
+        }
+
+    }
 
     /**
      * Makes an url handler mapping allowing to forward requests from a
@@ -56,14 +144,9 @@ public class VaadinServletConfiguration {
      *         servlet
      */
     @Bean
-    public SimpleUrlHandlerMapping vaadinRootMapping() {
-        SimpleUrlHandlerMapping mapping = new SimpleUrlHandlerMapping();
-        mapping.setOrder(Ordered.LOWEST_PRECEDENCE - 1);
-
-        mapping.setUrlMap(
-                Collections.singletonMap("/*", vaadinForwardingController()));
-
-        return mapping;
+    public RootExcludeHandler vaadinRootMapping(Environment environment) {
+        return new RootExcludeHandler(getExcludedUrls(environment),
+                vaadinForwardingController());
     }
 
     /**

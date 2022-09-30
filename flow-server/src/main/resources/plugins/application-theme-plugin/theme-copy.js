@@ -120,7 +120,7 @@ function collectFolders(folderToCopy, logger) {
 function copyStaticAssets(themeName, themeProperties, projectStaticAssetsOutputFolder, logger) {
   const assets = themeProperties['assets'];
   if (!assets) {
-    logger.log('no assets to handle no static assets were copied');
+    logger.debug('no assets to handle no static assets were copied');
     return;
   }
 

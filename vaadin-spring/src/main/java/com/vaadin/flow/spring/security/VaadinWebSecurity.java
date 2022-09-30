@@ -26,7 +26,9 @@ import java.util.stream.Stream;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
@@ -94,6 +96,9 @@ public abstract class VaadinWebSecurity {
 
     @Autowired
     private ViewAccessChecker viewAccessChecker;
+
+    @Value("#{servletContext.contextPath}")
+    private String servletContextPath;
 
     /**
      * Registers default {@link SecurityFilterChain} bean.
@@ -229,12 +234,6 @@ public abstract class VaadinWebSecurity {
                 .map(path -> RequestUtil.applyUrlMapping(urlMapping, path))
                 .forEach(paths::add);
 
-        String mappedRoot = RequestUtil.applyUrlMapping(urlMapping, "");
-        if (!"/".equals(mappedRoot)) {
-            // When using an url path, static resources are still fetched from
-            // /VAADIN/ in the context root
-            paths.add("/VAADIN/**");
-        }
         return new OrRequestMatcher(paths.build()
                 .map(AntPathRequestMatcher::new).collect(Collectors.toList()));
     }
@@ -277,6 +276,11 @@ public abstract class VaadinWebSecurity {
      * This is used when your application uses a Hilla based login view
      * available at the given path.
      *
+     * NOTE: if the login path points to a Flow view, the corresponding java
+     * class must be annotated
+     * with @{@link com.vaadin.flow.server.auth.AnonymousAllowed} to ensure that
+     * the view is always accessible.
+     *
      * @param http
      *            the http security from {@link #filterChain(HttpSecurity)}
      * @param hillaLoginViewPath
@@ -296,23 +300,28 @@ public abstract class VaadinWebSecurity {
      * This is used when your application uses a Hilla based login view
      * available at the given path.
      *
+     * NOTE: if the login path points to a Flow view, the corresponding java
+     * class must be annotated
+     * with @{@link com.vaadin.flow.server.auth.AnonymousAllowed} to ensure that
+     * the view is always accessible.
+     *
      * @param http
      *            the http security from {@link #filterChain(HttpSecurity)}
      * @param hillaLoginViewPath
      *            the path to the login view
-     * @param logoutUrl
+     * @param logoutSuccessUrl
      *            the URL to redirect the user to after logging out
      * @throws Exception
      *             if something goes wrong
      */
     protected void setLoginView(HttpSecurity http, String hillaLoginViewPath,
-            String logoutUrl) throws Exception {
+            String logoutSuccessUrl) throws Exception {
         hillaLoginViewPath = applyUrlMapping(hillaLoginViewPath);
         FormLoginConfigurer<HttpSecurity> formLogin = http.formLogin();
         formLogin.loginPage(hillaLoginViewPath).permitAll();
         formLogin.successHandler(
                 getVaadinSavedRequestAwareAuthenticationSuccessHandler(http));
-        http.logout().logoutSuccessUrl(logoutUrl);
+        http.logout().logoutSuccessUrl(logoutSuccessUrl);
         http.exceptionHandling().defaultAuthenticationEntryPointFor(
                 new LoginUrlAuthenticationEntryPoint(hillaLoginViewPath),
                 AnyRequestMatcher.INSTANCE);
@@ -341,14 +350,14 @@ public abstract class VaadinWebSecurity {
      *            the http security from {@link #filterChain(HttpSecurity)}
      * @param flowLoginView
      *            the login view to use
-     * @param logoutUrl
+     * @param logoutSuccessUrl
      *            the URL to redirect the user to after logging out
      *
      * @throws Exception
      *             if something goes wrong
      */
     protected void setLoginView(HttpSecurity http,
-            Class<? extends Component> flowLoginView, String logoutUrl)
+            Class<? extends Component> flowLoginView, String logoutSuccessUrl)
             throws Exception {
         Optional<Route> route = AnnotationReader.getAnnotationFor(flowLoginView,
                 Route.class);
@@ -371,11 +380,32 @@ public abstract class VaadinWebSecurity {
         formLogin.successHandler(
                 getVaadinSavedRequestAwareAuthenticationSuccessHandler(http));
         http.csrf().ignoringAntMatchers(loginPath);
-        http.logout().logoutSuccessUrl(logoutUrl);
+        http.logout().logoutSuccessUrl(logoutSuccessUrl);
         http.exceptionHandling().defaultAuthenticationEntryPointFor(
                 new LoginUrlAuthenticationEntryPoint(loginPath),
                 AnyRequestMatcher.INSTANCE);
         viewAccessChecker.setLoginView(flowLoginView);
+    }
+
+    /**
+     * Sets up the login page URI of the OAuth2 provider on the specified
+     * HttpSecurity instance.
+     *
+     * @param http
+     *            the http security from {@link #filterChain(HttpSecurity)}
+     * @param oauth2LoginPage
+     *            the login page of the OAuth2 provider. This Specifies the URL
+     *            to send users to if login is required.
+     * @throws Exception
+     *             Re-throws the possible exceptions while activating
+     *             OAuth2LoginConfigurer
+     */
+    protected void setOAuth2LoginPage(HttpSecurity http, String oauth2LoginPage)
+            throws Exception {
+        http.oauth2Login().loginPage(oauth2LoginPage).successHandler(
+                getVaadinSavedRequestAwareAuthenticationSuccessHandler(http))
+                .permitAll();
+        viewAccessChecker.setLoginView(servletContextPath + oauth2LoginPage);
     }
 
     /**

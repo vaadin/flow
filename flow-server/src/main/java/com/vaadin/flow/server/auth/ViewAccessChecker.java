@@ -21,9 +21,8 @@ import java.util.function.Function;
 import jakarta.annotation.security.DenyAll;
 import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -31,6 +30,9 @@ import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServletRequest;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Checks access to views using an {@link AccessAnnotationChecker}.
@@ -42,6 +44,8 @@ public class ViewAccessChecker implements BeforeEnterListener {
 
     public static final String SESSION_STORED_REDIRECT = ViewAccessChecker.class
             .getName() + ".redirect";
+    public static final String SESSION_STORED_REDIRECT_ABSOLUTE = ViewAccessChecker.class
+            .getName() + ".redirectAbsolute";
     private final AccessAnnotationChecker accessAnnotationChecker;
     private Class<? extends Component> loginView;
     private String loginUrl;
@@ -172,8 +176,15 @@ public class ViewAccessChecker implements BeforeEnterListener {
                     ? ((VaadinServletRequest) request).getSession()
                     : null;
             if (session != null) {
-                session.setAttribute(SESSION_STORED_REDIRECT, beforeEnterEvent
-                        .getLocation().getPathWithQueryParameters());
+                VaadinServletRequest servletRequest = (VaadinServletRequest) request;
+                String servletHostAndPath = servletRequest.getRequestURL()
+                        .toString();
+                String viewPathAndParameters = beforeEnterEvent.getLocation()
+                        .getPathWithQueryParameters();
+                session.setAttribute(SESSION_STORED_REDIRECT,
+                        viewPathAndParameters);
+                session.setAttribute(SESSION_STORED_REDIRECT_ABSOLUTE,
+                        servletHostAndPath + viewPathAndParameters);
             } else {
                 if (request == null) {
                     getLogger().debug(
@@ -187,11 +198,10 @@ public class ViewAccessChecker implements BeforeEnterListener {
             if (loginView != null) {
                 beforeEnterEvent.forwardTo(loginView);
             } else {
-                // Prevent the view from being created
-                beforeEnterEvent.rerouteToError(NotFoundException.class);
-
                 if (loginUrl != null) {
-                    beforeEnterEvent.getUI().getPage().setLocation(loginUrl);
+                    beforeEnterEvent.forwardToUrl(loginUrl);
+                } else {
+                    beforeEnterEvent.rerouteToError(NotFoundException.class);
                 }
             }
         } else if (isProductionMode(beforeEnterEvent)) {

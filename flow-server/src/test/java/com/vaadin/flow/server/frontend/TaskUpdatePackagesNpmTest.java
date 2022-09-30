@@ -387,7 +387,7 @@ public class TaskUpdatePackagesNpmTest {
 
         verifyVersions(PLATFORM_DIALOG_VERSION, expectedElementMixinVersion,
                 null);
-        verifyVersionLockingWithNpmOverrides(false, true, false);
+        verifyVersionLockingWithNpmOverrides(true, true, false);
         final JsonObject packageJson = getOrCreatePackageJson();
         JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
 
@@ -523,6 +523,29 @@ public class TaskUpdatePackagesNpmTest {
         task.execute();
         Assert.assertFalse("PackageJson modified without changes.",
                 task.modified);
+    }
+
+    @Test
+    public void nonNumericVersionsNotPinned() throws IOException {
+        final JsonObject packageJson = getOrCreatePackageJson();
+        createBasicVaadinVersionsJson();
+        JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
+        dependencies.put("localdep", "./localdeps/localdep");
+        File file = new File(npmFolder, PACKAGE_JSON);
+        FileUtils.writeStringToFile(file, packageJson.toJson(),
+                StandardCharsets.UTF_8);
+
+        Assert.assertFalse(packageJson.hasKey("overrides")
+                && packageJson.getObject("overrides").hasKey("localdep"));
+
+        final TaskUpdatePackages task = createTask(
+                createApplicationDependencies());
+        task.execute();
+
+        final JsonObject newPackageJson = getOrCreatePackageJson();
+
+        Assert.assertFalse(newPackageJson.hasKey("overrides")
+                && newPackageJson.getObject("overrides").hasKey("localdep"));
     }
 
     private void createBasicVaadinVersionsJson() {

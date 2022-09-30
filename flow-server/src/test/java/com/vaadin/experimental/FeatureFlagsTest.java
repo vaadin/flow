@@ -15,12 +15,12 @@
  */
 package com.vaadin.experimental;
 
+import net.jcip.annotations.NotThreadSafe;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Before;
@@ -29,11 +29,15 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
+
+import static com.vaadin.experimental.FeatureFlags.PROPERTIES_FILENAME;
 
 @NotThreadSafe
 public class FeatureFlagsTest {
@@ -45,6 +49,7 @@ public class FeatureFlagsTest {
     private FeatureFlags featureFlags;
     private File propertiesDir;
     private ApplicationConfiguration configuration;
+    private File featureFlagsFile;
 
     @Before
     public void before() throws IOException {
@@ -60,6 +65,9 @@ public class FeatureFlagsTest {
         featureFlags.setPropertiesLocation(propertiesDir);
 
         mockResourcesLocation();
+
+        featureFlagsFile = new File(propertiesDir, PROPERTIES_FILENAME);
+        Files.deleteIfExists(featureFlagsFile.toPath());
     }
 
     @Test
@@ -121,9 +129,7 @@ public class FeatureFlagsTest {
                 featureFlags.isEnabled(FeatureFlags.EXAMPLE));
         Assert.assertEquals(
                 "# Example feature. Will be removed once the first real feature flag is added\ncom.vaadin.experimental.exampleFeatureFlag=true\n",
-                FileUtils.readFileToString(
-                        new File(propertiesDir,
-                                FeatureFlags.PROPERTIES_FILENAME),
+                FileUtils.readFileToString(featureFlagsFile,
                         StandardCharsets.UTF_8));
 
         featureFlags.setEnabled(FeatureFlags.EXAMPLE.getId(), false);
@@ -131,10 +137,7 @@ public class FeatureFlagsTest {
                 featureFlags.isEnabled(FeatureFlags.EXAMPLE));
         Assert.assertEquals(
                 "Feature flags file should be empty when no features are enabled",
-                "",
-                FileUtils.readFileToString(
-                        new File(propertiesDir,
-                                FeatureFlags.PROPERTIES_FILENAME),
+                "", FileUtils.readFileToString(featureFlagsFile,
                         StandardCharsets.UTF_8));
     }
 
@@ -201,14 +204,105 @@ public class FeatureFlagsTest {
 
         try {
             System.setProperty(propertyName, "true");
-            createFeatureFlagsFile(String
-                    .format("com.vaadin.experimental.%s=false\n", feature));
+            String fileContents = String
+                    .format("com.vaadin.experimental.%s=false\n", feature);
+            createFeatureFlagsFile(fileContents);
             featureFlags.loadProperties();
             Assert.assertTrue(featureFlags.isEnabled(FeatureFlags.EXAMPLE));
+            Assert.assertEquals(
+                    "Feature flags file should not be overwritten by system property value",
+                    fileContents, FileUtils.readFileToString(featureFlagsFile,
+                            StandardCharsets.UTF_8));
         } finally {
             if (previousValue == null) {
                 System.clearProperty(propertyName);
             } else {
+                System.setProperty(propertyName, previousValue);
+            }
+        }
+    }
+
+    @Test
+    public void featureFlagLoadedByResourceProviderShouldBeOverridableWithSystemProperty()
+            throws IOException {
+        var feature = "exampleFeatureFlag";
+        var propertyName = FeatureFlags.SYSTEM_PROPERTY_PREFIX + feature;
+        var previousValue = System.getProperty(propertyName);
+
+        File flagsFile = new File(propertiesDir,
+                "another-" + PROPERTIES_FILENAME);
+
+        ResourceProvider resourceProvider = Mockito
+                .mock(ResourceProvider.class);
+        Mockito.when(
+                resourceProvider.getApplicationResource(PROPERTIES_FILENAME))
+                .thenReturn(flagsFile.toURI().toURL());
+        Lookup lookup = context.getAttribute(Lookup.class);
+        Mockito.when(lookup.lookup(ResourceProvider.class))
+                .thenReturn(resourceProvider);
+
+        try {
+            String fileContents = String
+                    .format("com.vaadin.experimental.%s=false\n", feature);
+            FileUtils.write(flagsFile, fileContents, StandardCharsets.UTF_8);
+
+            System.setProperty(propertyName, "true");
+            featureFlags.loadProperties();
+            Assert.assertTrue(featureFlags.isEnabled(FeatureFlags.EXAMPLE));
+            Assert.assertFalse(
+                    "Setting feature flag by system properties should not create feature flag file",
+                    featureFlagsFile.exists());
+        } finally {
+            if (previousValue == null) {
+                System.clearProperty(propertyName);
+            } else {
+                System.setProperty(propertyName, previousValue);
+            }
+        }
+    }
+
+    @Test
+    public void noFeatureFlagFile_systemPropertyProvided_featureEnabled()
+            throws IOException {
+        var feature = "exampleFeatureFlag";
+        var propertyName = FeatureFlags.SYSTEM_PROPERTY_PREFIX + feature;
+        var previousValue = System.getProperty(propertyName);
+
+        try {
+            System.setProperty(propertyName, "true");
+            featureFlags.loadProperties();
+            Assert.assertTrue(
+                    "Feature set with system property should be enabled",
+                    featureFlags.isEnabled(FeatureFlags.EXAMPLE));
+            Assert.assertFalse(
+                    "Setting feature flag by system properties should not create feature flag file",
+                    featureFlagsFile.exists());
+        } finally {
+            if (previousValue == null) {
+                System.clearProperty(propertyName);
+            } else {
+                System.setProperty(propertyName, previousValue);
+            }
+        }
+    }
+
+    @Test
+    public void noFeatureFlagFile_noSystemPropertyProvided_allFeatureDisabled()
+            throws IOException {
+        var feature = "exampleFeatureFlag";
+        var propertyName = FeatureFlags.SYSTEM_PROPERTY_PREFIX + feature;
+        var previousValue = System.getProperty(propertyName);
+
+        try {
+            if (previousValue != null) {
+                System.clearProperty(propertyName);
+            }
+            featureFlags.loadProperties();
+            Assert.assertFalse(
+                    "Feature not set with system property should be disabled by default",
+                    featureFlags.isEnabled(FeatureFlags.EXAMPLE));
+        } finally {
+            if (previousValue != null) {
                 System.setProperty(propertyName, previousValue);
             }
         }
@@ -237,8 +331,6 @@ public class FeatureFlagsTest {
     }
 
     private void createFeatureFlagsFile(String data) throws IOException {
-        FileUtils.write(
-                new File(propertiesDir, FeatureFlags.PROPERTIES_FILENAME), data,
-                StandardCharsets.UTF_8);
+        FileUtils.write(featureFlagsFile, data, StandardCharsets.UTF_8);
     }
 }

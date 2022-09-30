@@ -697,7 +697,7 @@ public class FrontendUtils {
     }
 
     /**
-     * Looks up the front file at the given path. If the path starts with
+     * Looks up the frontend resource at the given path. If the path starts with
      * {@code ./}, first look in {@code projectRoot/frontend}, then in
      * {@code projectRoot/node_modules/@vaadin/flow-frontend}. If the path does
      * not start with {@code ./}, look in {@code node_modules} instead.
@@ -709,14 +709,32 @@ public class FrontendUtils {
      * @return an existing {@link File} , or null if the file doesn't exist.
      */
     public static File resolveFrontendPath(File projectRoot, String path) {
-        File localFrontendFolder = new File(projectRoot,
-                FrontendUtils.FRONTEND);
+        return resolveFrontendPath(projectRoot, path,
+                new File(projectRoot, FrontendUtils.FRONTEND));
+    }
+
+    /**
+     * Looks up the fronted resource at the given path. If the path starts with
+     * {@code ./}, first look in {@code projectRoot/frontendDirectory}, then in
+     * {@code projectRoot/node_modules/@vaadin/flow-frontend}. If the path does
+     * not start with {@code ./}, look in {@code node_modules} instead.
+     *
+     * @param projectRoot
+     *            the project root folder.
+     * @param path
+     *            the file path.
+     * @param frontendDirectory
+     *            the frontend directory.
+     * @return an existing {@link File} , or null if the file doesn't exist.
+     */
+    public static File resolveFrontendPath(File projectRoot, String path,
+            File frontendDirectory) {
         File nodeModulesFolder = new File(projectRoot, NODE_MODULES);
         File flowFrontendFolder = new File(nodeModulesFolder,
                 "@vaadin/" + DEFAULT_FLOW_RESOURCES_FOLDER);
         List<File> candidateParents = path.startsWith("./")
-                ? Arrays.asList(localFrontendFolder, flowFrontendFolder)
-                : Arrays.asList(nodeModulesFolder, localFrontendFolder,
+                ? Arrays.asList(frontendDirectory, flowFrontendFolder)
+                : Arrays.asList(nodeModulesFolder, frontendDirectory,
                         flowFrontendFolder);
         return candidateParents.stream().map(parent -> new File(parent, path))
                 .filter(File::exists).findFirst().orElse(null);
