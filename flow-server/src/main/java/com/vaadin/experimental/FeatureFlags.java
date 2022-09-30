@@ -80,8 +80,8 @@ public class FeatureFlags implements Serializable {
             "enforceFieldValidation",
             "https://github.com/vaadin/platform/issues/3066", false, null);
 
-    public static final Feature SERVLET_MAPPING = new Feature(
-            "Use non-root servlet mapping (/vaadinServlet)", "vaadinServlet",
+    public static final Feature VAADINSERVLET_PUSH_MAPPING = new Feature(
+            "Use /vaadinServlet mapping for push (deprecated)", "vaadinServletForPush",
             "https://github.com/vaadin/flow/issues/14641", true, null);
 
     private List<Feature> features = new ArrayList<>();
