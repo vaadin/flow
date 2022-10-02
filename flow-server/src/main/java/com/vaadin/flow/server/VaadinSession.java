@@ -134,6 +134,10 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
     private final StreamResourceRegistry resourceRegistry;
 
+    private long lastUnlocked;
+
+    private long lastLocked;
+
     /**
      * Creates a new VaadinSession tied to a VaadinService.
      *
@@ -684,6 +688,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     public void lock() {
         getLockInstance().lock();
+        lastLocked = System.currentTimeMillis();
     }
 
     /**
@@ -721,6 +726,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
                         }
                     }
                 }
+                this.lastUnlocked = System.currentTimeMillis();
             }
         } finally {
             getLockInstance().unlock();
@@ -1129,4 +1135,11 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         return isInitialized;
     }
 
+    public long getLastLocked() {
+        return lastLocked;
+    }
+
+    public long getLastUnlocked() {
+        return lastUnlocked;
+    }
 }
