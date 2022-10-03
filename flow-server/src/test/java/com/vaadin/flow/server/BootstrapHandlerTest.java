@@ -27,6 +27,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -629,6 +630,10 @@ public class BootstrapHandlerTest {
     public void page_configurator_append_inline_form_files()
             throws InvalidRouteConfigurationException {
 
+        // https://github.com/vaadin/flow/issues/14714 fails on Windows
+        Assume.assumeFalse(System.getProperty("os.name").toLowerCase()
+                .contains("windows"));
+
         initUI(testUI, createVaadinRequest(), Collections
                 .singleton(InitialPageConfiguratorAppendFiles.class));
 
@@ -979,6 +984,11 @@ public class BootstrapHandlerTest {
     @Test // 3010
     public void force_wrapping_of_file()
             throws InvalidRouteConfigurationException {
+
+        // https://github.com/vaadin/flow/issues/14714 fails on Windows
+        Assume.assumeFalse(System.getProperty("os.name").toLowerCase()
+                .contains("windows"));
+
         initUI(testUI, createVaadinRequest(),
                 Collections.singleton(ForcedWrapping.class));
 
