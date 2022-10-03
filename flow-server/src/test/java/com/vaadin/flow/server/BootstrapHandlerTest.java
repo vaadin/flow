@@ -59,6 +59,7 @@ import com.vaadin.flow.router.TestRouteRegistry;
 import com.vaadin.flow.server.BootstrapHandler.BootstrapContext;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
+import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.VaadinUriResolver;
 import com.vaadin.flow.shared.communication.PushMode;
