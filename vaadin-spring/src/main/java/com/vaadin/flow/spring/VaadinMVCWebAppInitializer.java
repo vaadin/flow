@@ -95,8 +95,6 @@ public abstract class VaadinMVCWebAppInitializer
         } else {
             initParameters.put(ApplicationConfig.JSR356_MAPPING_PATH,
                     pushRegistrationPath);
-            initParameters.put(ApplicationConfig.JSR356_PATH_MAPPING_LENGTH,
-                    "0");
         }
 
         registration.setInitParameters(initParameters);
