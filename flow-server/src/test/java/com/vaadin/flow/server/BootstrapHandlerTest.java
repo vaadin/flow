@@ -630,10 +630,6 @@ public class BootstrapHandlerTest {
     public void page_configurator_append_inline_form_files()
             throws InvalidRouteConfigurationException {
 
-        // https://github.com/vaadin/flow/issues/14714 fails on Windows
-        Assume.assumeFalse(System.getProperty("os.name").toLowerCase()
-                .contains("windows"));
-
         initUI(testUI, createVaadinRequest(), Collections
                 .singleton(InitialPageConfiguratorAppendFiles.class));
 
@@ -644,23 +640,26 @@ public class BootstrapHandlerTest {
         // Note element 0 is the full head element.
         Assert.assertTrue(
                 "File javascript should have been appended to head element",
-                scripts.contains(
-                        "<script type=\"text/javascript\">window.messages = window.messages || [];\n"
-                                + "window.messages.push(\"inline.js\");</script>"));
+                scripts.contains(String.format(
+                        "<script type=\"text/javascript\">window.messages = window.messages || [];%n"
+                                + "window.messages.push(\"inline.js\");</script>")));
         Assert.assertTrue("File html should have been appended to head element",
-                scripts.contains("<script type=\"text/javascript\">\n"
-                        + "    // document.body might not yet be accessible, so just leave a message\n"
-                        + "    window.messages = window.messages || [];\n"
-                        + "    window.messages.push(\"inline.html\");\n"
-                        + "</script>"));
+                scripts.contains(
+                        String.format("<script type=\"text/javascript\">%n"
+                                + "    // document.body might not yet be accessible, so just leave a message%n"
+                                + "    window.messages = window.messages || [];%n"
+                                + "    window.messages.push(\"inline.html\");%n"
+                                + "</script>")));
 
         String styles = page.getElementsByTag("style").toString();
         Assert.assertTrue("File css should have been appended to head element",
-                styles.contains("<style type=\"text/css\">/* inline.css */\n"
-                        + "\n" + "#preloadedDiv {\n"
-                        + "    color: rgba(255, 255, 0, 1);\n" + "}\n" + "\n"
-                        + "#inlineCssTestDiv {\n"
-                        + "    color: rgba(255, 255, 0, 1);\n" + "}</style>"));
+                styles.contains(String
+                        .format("<style type=\"text/css\">/* inline.css */%n"
+                                + "%n" + "#preloadedDiv {%n"
+                                + "    color: rgba(255, 255, 0, 1);%n" + "}%n"
+                                + "%n" + "#inlineCssTestDiv {%n"
+                                + "    color: rgba(255, 255, 0, 1);%n"
+                                + "}</style>")));
     }
 
     @Test // 3036
@@ -985,20 +984,17 @@ public class BootstrapHandlerTest {
     public void force_wrapping_of_file()
             throws InvalidRouteConfigurationException {
 
-        // https://github.com/vaadin/flow/issues/14714 fails on Windows
-        Assume.assumeFalse(System.getProperty("os.name").toLowerCase()
-                .contains("windows"));
-
         initUI(testUI, createVaadinRequest(),
                 Collections.singleton(ForcedWrapping.class));
 
         Document page = pageBuilder.getBootstrapPage(new BootstrapContext(
                 request, null, session, testUI, this::contextRootRelativePath));
 
-        assertTrue("File css should have been prepended to body element",
-                page.getElementsByTag("style").toString().contains(
-                        "<style type=\"text/css\">window.messages = window.messages || [];\n"
-                                + "window.messages.push(\"inline.js\");</style>"));
+        assertTrue("File css should have been prepended to body element", page
+                .getElementsByTag("style").toString()
+                .contains(String.format(
+                        "<style type=\"text/css\">window.messages = window.messages || [];%n"
+                                + "window.messages.push(\"inline.js\");</style>")));
     }
 
     @Test
