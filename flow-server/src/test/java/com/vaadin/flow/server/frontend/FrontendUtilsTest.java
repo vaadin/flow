@@ -29,6 +29,7 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -393,6 +394,10 @@ public class FrontendUtilsTest {
     @Test
     public void deleteNodeModules_canDeleteSymlinksAndNotFollowThem()
             throws IOException {
+
+        // Test fails on Windows due to UAC FileSystemException
+        Assume.assumeFalse(FrontendUtils.isWindows());
+
         File externalDir = new File(tmpDir.getRoot(), "external");
         File externalLicense = new File(externalDir, "LICENSE");
 
