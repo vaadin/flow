@@ -134,6 +134,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
     private final StreamResourceRegistry resourceRegistry;
 
+    private boolean serializeUIs = true;
+
     private long lastUnlocked;
 
     private long lastLocked;
@@ -147,6 +149,12 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     public VaadinSession(VaadinService service) {
         this.service = service;
         resourceRegistry = createStreamResourceRegistry();
+        ApplicationConfiguration appConfiguration = ApplicationConfiguration
+                .get(getService().getContext());
+        if (!appConfiguration.isProductionMode()
+                && !appConfiguration.isDevModeSessionSerializationEnabled()) {
+            serializeUIs = false;
+        }
     }
 
     /**
@@ -1070,20 +1078,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
     private void writeObject(java.io.ObjectOutputStream stream)
             throws IOException {
-        boolean serializeUIs = true;
-
-        // If service is null it has just been deserialized and should be
-        // serialized in
-        // the same way again
-        if (getService() != null) {
-            ApplicationConfiguration appConfiguration = ApplicationConfiguration
-                    .get(getService().getContext());
-            if (!appConfiguration.isProductionMode() && !appConfiguration
-                    .isDevModeSessionSerializationEnabled()) {
-                serializeUIs = false;
-            }
-        }
-
         stream.defaultWriteObject();
         if (serializeUIs) {
             stream.writeObject(uIs);
@@ -1141,6 +1135,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     public long getLastLocked() {
         return lastLocked;
     }
+
     public long getLastUnlocked() {
         return lastUnlocked;
     }
