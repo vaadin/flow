@@ -279,7 +279,15 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
       } else if ( @com.vaadin.client.PolymerUtils::mayBePolymerElement(*)(element) ) {
           var self = this;
           try {
-              $wnd.customElements.whenDefined(element.localName).then( function () {
+              var whenDefinedPromise = $wnd.customElements.whenDefined(element.localName);
+              var promiseTimeout = new Promise(function(r) { setTimeout(r, 1000); });
+              // if element is not a web component, the promise returned by
+              // whenDefined may never complete, causing memory leaks because of
+              // closures in chained function.
+              // Using `Promise.race` with a secondary promise that resolves after
+              // a defined interval and chaining on this one, will always resolve,
+              // execute the function and allow the garbage collector to free resources
+              Promise.race([whenDefinedPromise, promiseTimeout]).then( function () {
                   if ( @com.vaadin.client.PolymerUtils::isPolymerElement(*)(element) ) {
                       self.@SimpleElementBindingStrategy::hookUpPolymerElement(*)(node, element);
                   }

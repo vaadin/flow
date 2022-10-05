@@ -6,6 +6,7 @@ import java.util.function.Function;
 
 import com.google.gwt.core.client.impl.SchedulerImpl;
 
+import com.vaadin.client.ClientEngineTestBase;
 import com.vaadin.client.CustomScheduler;
 import com.vaadin.client.PolymerUtils;
 import com.vaadin.client.WidgetUtil;
@@ -407,17 +408,14 @@ public class GwtPolymerModelTest extends GwtPropertyElementBinderTest {
         element._propertiesChanged = function() {
             element.propertiesChangedCallCount += 1;
         };
-    
         element.callbackCallCount = 0;
         $wnd.customElements = {
             whenDefined: function() {
-                return {
-                    then: function (callback) {
-                        $wnd.Polymer = $wnd.OldPolymer;
-                        element.callbackCallCount += 1;
-                        callback();
-                    }
-                }
+                return new Promise(function(resolve) {
+                    $wnd.Polymer = $wnd.OldPolymer;
+                    element.callbackCallCount += 1;
+                    resolve();
+                });
             }
         };
         if( !element.removeAttribute ) {
