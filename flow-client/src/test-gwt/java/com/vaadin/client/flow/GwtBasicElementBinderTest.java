@@ -1955,11 +1955,9 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
         $wnd.Polymer = null;
         $wnd.customElements = {
             whenDefined: function() {
-                return {
-                    then: function (callback) {
-                        element.callback = callback;
-                    }
-                }
+                return new Promise(function(resolve) {
+                    element.completeWhenDefinedPromise = resolve;
+                });
             }
         };
     }-*/;
@@ -1967,7 +1965,7 @@ public class GwtBasicElementBinderTest extends GwtPropertyElementBinderTest {
     private native void runWhenDefined(Element element)
     /*-{
         $wnd.Polymer = $wnd.OldPolymer;
-        element.callback();
+        element.completeWhenDefinedPromise();
     }-*/;
 
     private native void initPolymer(Element element)
