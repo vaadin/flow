@@ -67,7 +67,7 @@ public class VaadinServletContext implements VaadinContext {
     @Override
     public <T> T getAttribute(Class<T> type, Supplier<T> defaultValueSupplier) {
         ensureServletContext();
-        synchronized (getContext()) {
+        synchronized (this) {
             Object result = getContext().getAttribute(type.getName());
             if (result == null && defaultValueSupplier != null) {
                 result = defaultValueSupplier.get();
@@ -82,7 +82,7 @@ public class VaadinServletContext implements VaadinContext {
         if (value == null) {
             removeAttribute(clazz);
         } else {
-            synchronized (getContext()) {
+            synchronized (this) {
                 checkLookupDuplicate(clazz);
                 getContext().setAttribute(clazz.getName(), value);
             }
@@ -91,7 +91,7 @@ public class VaadinServletContext implements VaadinContext {
 
     @Override
     public void removeAttribute(Class<?> clazz) {
-        synchronized (getContext()) {
+        synchronized (this) {
             checkLookupDuplicate(clazz);
             getContext().removeAttribute(clazz.getName());
         }
