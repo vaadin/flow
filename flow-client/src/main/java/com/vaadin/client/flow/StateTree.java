@@ -158,6 +158,7 @@ public class StateTree {
 
     /**
      * Check if tree is resynchronizing after a {@link #prepareForResync}
+     *
      * @return true if resync called
      */
     public boolean isResync() {
@@ -166,7 +167,9 @@ public class StateTree {
 
     /**
      * Set the resynchronization state for the StateTree.
-     * @param resync resynchronization state to set
+     *
+     * @param resync
+     *            resynchronization state to set
      */
     public void setResync(boolean resync) {
         this.resync = resync;

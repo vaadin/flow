@@ -73,7 +73,7 @@ public class TreeChangeProcessorTest {
 
         try {
             TreeChangeProcessor.processChange(tree, change);
-        }catch (AssertionError ae) {
+        } catch (AssertionError ae) {
             Assert.fail("Should not fail for an nonexistent node on resync");
         }
     }

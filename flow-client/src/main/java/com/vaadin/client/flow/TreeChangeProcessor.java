@@ -65,7 +65,7 @@ public class TreeChangeProcessor {
                 JsonObject change = changes.getObject(i);
                 if (!isAttach(change)) {
                     final StateNode value = processChange(tree, change);
-                    if(value != null) {
+                    if (value != null) {
                         nodes.add(value);
                     }
                 }
