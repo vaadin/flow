@@ -62,7 +62,7 @@ public class VaadinConfigurationProperties {
     public static boolean isPushServletMappingEnabled(Environment environment) {
         return Binder.get(environment)
                 .bind("vaadin", VaadinConfigurationProperties.class)
-                .map(conf -> conf.isPushServletMapping()).orElse(false);
+                .map(conf -> conf.isPushServletMapping()).orElse(true);
     }
 
     /**
@@ -96,7 +96,7 @@ public class VaadinConfigurationProperties {
      */
     private boolean loadOnStartup = true;
 
-    private boolean pushServletMapping = false;
+    private boolean pushServletMapping = true;
 
     /**
      * Whether pnpm support is enabled

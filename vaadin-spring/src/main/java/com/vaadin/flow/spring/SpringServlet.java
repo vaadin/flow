@@ -219,7 +219,7 @@ public class SpringServlet extends VaadinServlet {
                 LoggerFactory.getLogger(SpringServlet.class).error(
                         "Unable to find isPushMappingEnabled from properties",
                         e);
-                return false;
+                return true;
             }
         } else {
             return Boolean.parseBoolean(

@@ -173,7 +173,7 @@ public abstract class VaadinMVCWebAppInitializer
                 LoggerFactory.getLogger(VaadinMVCWebAppInitializer.class).error(
                         "Unable to find isPushMappingEnabled from properties",
                         e);
-                return false;
+                return true;
             }
         } else {
             return Boolean.parseBoolean(
