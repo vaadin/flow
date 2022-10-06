@@ -18,12 +18,14 @@ package com.vaadin.flow.spring;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRegistration.Dynamic;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
 import org.atmosphere.cpr.ApplicationConfig;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.WebApplicationInitializer;
@@ -31,7 +33,7 @@ import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
 
-import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.InitParameters;
 
 /**
  * Abstract Vaadin Spring MVC {@link WebApplicationInitializer}.
@@ -65,17 +67,19 @@ public abstract class VaadinMVCWebAppInitializer
                 ClassUtils.getShortNameAsProperty(SpringServlet.class),
                 new SpringServlet(context, rootMapping));
         Map<String, String> initParameters = new HashMap<>();
+        boolean pushServletMappingEnabled = isPushServletMappingEnabled(
+                context.getEnvironment());
         if (rootMapping) {
             Dynamic dispatcherRegistration = servletContext
                     .addServlet("dispatcher", new DispatcherServlet(context));
             dispatcherRegistration.addMapping("/*");
 
-            if (FeatureFlagsUtil.isServletMappingFeatureEnabled()) {
-                initParameters.put(Constants.SERVLET_PARAMETER_PUSH_URL,
+            if (pushServletMappingEnabled) {
+                initParameters.put(InitParameters.SERVLET_PARAMETER_PUSH_URL,
                         makeContextRelative(mapping.replace("*", "")));
             }
 
-            mapping = VaadinServletConfiguration.VAADIN_SERVLET_MAPPING;
+            mapping = VaadinServletConfiguration.VAADIN_SERVLET_PUSH_MAPPING;
             pushRegistrationPath = "";
         } else {
             pushRegistrationPath = mapping.replace("/*", "");
@@ -89,7 +93,7 @@ public abstract class VaadinMVCWebAppInitializer
          * and websockets will fail.
          */
 
-        if (FeatureFlagsUtil.isServletMappingFeatureEnabled()) {
+        if (pushServletMappingEnabled) {
             initParameters.put(ApplicationConfig.JSR356_MAPPING_PATH,
                     mapping.replace("/*", ""));
         } else {
@@ -146,5 +150,35 @@ public abstract class VaadinMVCWebAppInitializer
      * @return a collection of configuration classes
      */
     protected abstract Collection<Class<?>> getConfigurationClasses();
+
+    /**
+     * Gets the url mapping in a way compatible with both plain Spring and
+     * Spring Boot.
+     *
+     * @param environment
+     *            the application environment
+     * @return the url mapping or null if none is defined
+     */
+    protected boolean isPushServletMappingEnabled(Environment environment) {
+        if (SpringUtil.isSpringBoot()) {
+            try {
+                return (boolean) Class.forName(
+                        "com.vaadin.flow.spring.VaadinConfigurationProperties")
+                        .getMethod("isPushServletMappingEnabled",
+                                Environment.class)
+                        .invoke(null, environment);
+            } catch (IllegalAccessException | IllegalArgumentException
+                    | InvocationTargetException | NoSuchMethodException
+                    | SecurityException | ClassNotFoundException e) {
+                LoggerFactory.getLogger(VaadinMVCWebAppInitializer.class).error(
+                        "Unable to find isPushMappingEnabled from properties",
+                        e);
+                return false;
+            }
+        } else {
+            return Boolean.parseBoolean(
+                    environment.getProperty("vaadin.pushServletMapping"));
+        }
+    }
 
 }

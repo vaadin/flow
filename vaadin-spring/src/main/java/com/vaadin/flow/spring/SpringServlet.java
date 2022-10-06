@@ -19,6 +19,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -26,6 +27,7 @@ import java.util.Properties;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.Environment;
 import org.springframework.web.servlet.mvc.ServletForwardingController;
@@ -121,7 +123,7 @@ public class SpringServlet extends VaadinServlet {
             Properties initParameters) {
         Properties properties = config(initParameters);
         if (rootMapping
-                && FeatureFlagsUtil.isServletMappingFeatureEnabled(context)) {
+                && isPushServletMappingEnabled(context.getEnvironment())) {
             // in the case of root mapping, push requests should go to
             // /vaadinServlet/pushUrl
             String customPushUrl = properties
@@ -129,7 +131,7 @@ public class SpringServlet extends VaadinServlet {
             if (customPushUrl == null) {
                 customPushUrl = "";
             }
-            final String mapping = VaadinServletConfiguration.VAADIN_SERVLET_MAPPING
+            final String mapping = VaadinServletConfiguration.VAADIN_SERVLET_PUSH_MAPPING
                     .replace("/*", "");
             customPushUrl = customPushUrl.replaceFirst("context://", "/");
             customPushUrl = customPushUrl.replaceFirst(Pattern.quote(mapping),
@@ -193,6 +195,36 @@ public class SpringServlet extends VaadinServlet {
             result = SharedUtil.camelCaseToDashSeparated(result);
         }
         return result;
+    }
+
+    /**
+     * Gets the url mapping in a way compatible with both plain Spring and
+     * Spring Boot.
+     *
+     * @param environment
+     *            the application environment
+     * @return the url mapping or null if none is defined
+     */
+    protected boolean isPushServletMappingEnabled(Environment environment) {
+        if (SpringUtil.isSpringBoot()) {
+            try {
+                return (boolean) Class.forName(
+                        "com.vaadin.flow.spring.VaadinConfigurationProperties")
+                        .getMethod("isPushServletMappingEnabled",
+                                Environment.class)
+                        .invoke(null, environment);
+            } catch (IllegalAccessException | IllegalArgumentException
+                    | InvocationTargetException | NoSuchMethodException
+                    | SecurityException | ClassNotFoundException e) {
+                LoggerFactory.getLogger(SpringServlet.class).error(
+                        "Unable to find isPushMappingEnabled from properties",
+                        e);
+                return false;
+            }
+        } else {
+            return Boolean.parseBoolean(
+                    environment.getProperty("vaadin.pushServletMapping"));
+        }
     }
 
 }

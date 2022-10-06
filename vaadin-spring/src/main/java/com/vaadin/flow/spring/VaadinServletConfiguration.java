@@ -58,6 +58,9 @@ import com.vaadin.flow.server.VaadinServlet;
 public class VaadinServletConfiguration {
 
     static final String VAADIN_SERVLET_MAPPING = "/vaadinServlet/*";
+
+    static final String VAADIN_SERVLET_PUSH_MAPPING = "/VAADIN/push/*";
+
     public static final String EXCLUDED_URLS_PROPERTY = "vaadin.excludeUrls";
 
     /**

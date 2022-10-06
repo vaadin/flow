@@ -79,12 +79,6 @@ public class FeatureFlags implements Serializable {
             "Enforce client / constraint / binder validation",
             "enforceFieldValidation",
             "https://github.com/vaadin/platform/issues/3066", false, null);
-
-    public static final Feature VAADINSERVLET_PUSH_MAPPING = new Feature(
-            "Use /vaadinServlet mapping for push (deprecated). While using SpringBoot vaadin.vaadinServletForPush application property must be set to true.",
-            "vaadinServletForPush",
-            "https://github.com/vaadin/flow/issues/14641", true, null);
-
     private List<Feature> features = new ArrayList<>();
 
     File propertiesFolder = null;
@@ -109,7 +103,6 @@ public class FeatureFlags implements Serializable {
         features.add(new Feature(COLLABORATION_ENGINE_BACKEND));
         features.add(new Feature(WEBPACK));
         features.add(new Feature(ENFORCE_FIELD_VALIDATION));
-        features.add(new Feature(VAADINSERVLET_PUSH_MAPPING));
         loadProperties();
     }
 

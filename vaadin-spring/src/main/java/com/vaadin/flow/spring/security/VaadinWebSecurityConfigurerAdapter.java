@@ -55,7 +55,6 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.auth.ViewAccessChecker;
-import com.vaadin.flow.spring.FeatureFlagsUtil;
 import com.vaadin.flow.spring.security.stateless.VaadinStatelessSecurityConfigurer;
 
 /**
@@ -185,17 +184,6 @@ public abstract class VaadinWebSecurityConfigurerAdapter
         Stream.of(HandlerHelper.getPublicResourcesRequiringSecurityContext())
                 .map(path -> RequestUtil.applyUrlMapping(urlMapping, path))
                 .forEach(paths::add);
-
-        if (FeatureFlagsUtil.isServletMappingFeatureEnabled()) {
-            String mappedRoot = RequestUtil.applyUrlMapping(urlMapping, "");
-            if ("/".equals(mappedRoot)) {
-                // Permit should be needed only on /vaadinServlet/, not on sub
-                // paths
-                // The '**' suffix is left for backward compatibility.
-                // Should we remove it?
-                paths.add("/vaadinServlet/**");
-            }
-        }
 
         return new OrRequestMatcher(paths.build()
                 .map(AntPathRequestMatcher::new).collect(Collectors.toList()));

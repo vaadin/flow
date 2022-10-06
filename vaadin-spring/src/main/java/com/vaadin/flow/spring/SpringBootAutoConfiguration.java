@@ -48,7 +48,7 @@ import com.vaadin.flow.server.VaadinServlet;
 @ConditionalOnClass(ServletContextInitializer.class)
 @EnableConfigurationProperties(VaadinConfigurationProperties.class)
 @Import({ VaadinApplicationConfiguration.class,
-        VaadinServletConfiguration.class, FeatureFlagsUtil.class })
+        VaadinServletConfiguration.class })
 public class SpringBootAutoConfiguration {
 
     @Autowired
@@ -84,7 +84,7 @@ public class SpringBootAutoConfiguration {
         String pushRegistrationPath;
 
         if (rootMapping) {
-            mapping = VaadinServletConfiguration.VAADIN_SERVLET_MAPPING;
+            mapping = VaadinServletConfiguration.VAADIN_SERVLET_PUSH_MAPPING;
             initParameters.put(
                     VaadinServlet.INTERNAL_VAADIN_SERVLET_VITE_DEV_MODE_FRONTEND_PATH,
                     "");
@@ -100,7 +100,7 @@ public class SpringBootAutoConfiguration {
          * and websockets will fail.
          */
 
-        if (FeatureFlagsUtil.isServletMappingFeatureEnabled(context)) {
+        if (configurationProperties.isPushServletMapping()) {
             initParameters.put(ApplicationConfig.JSR356_MAPPING_PATH,
                     mapping.replace("/*", ""));
         } else {

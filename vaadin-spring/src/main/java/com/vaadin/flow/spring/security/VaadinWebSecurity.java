@@ -15,16 +15,17 @@
  */
 package com.vaadin.flow.spring.security;
 
-import javax.crypto.SecretKey;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import javax.crypto.SecretKey;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -59,7 +60,6 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.auth.ViewAccessChecker;
-import com.vaadin.flow.spring.FeatureFlagsUtil;
 import com.vaadin.flow.spring.security.stateless.VaadinStatelessSecurityConfigurer;
 
 /**
@@ -233,17 +233,6 @@ public abstract class VaadinWebSecurity {
         Stream.of(HandlerHelper.getPublicResourcesRequiringSecurityContext())
                 .map(path -> RequestUtil.applyUrlMapping(urlMapping, path))
                 .forEach(paths::add);
-
-        if (FeatureFlagsUtil.isServletMappingFeatureEnabled()) {
-            String mappedRoot = RequestUtil.applyUrlMapping(urlMapping, "");
-            if ("/".equals(mappedRoot)) {
-                // Permit should be needed only on /vaadinServlet/, not on sub
-                // paths
-                // The '**' suffix is left for backward compatibility.
-                // Should we remove it?
-                paths.add("/vaadinServlet/**");
-            }
-        }
 
         return new OrRequestMatcher(paths.build()
                 .map(AntPathRequestMatcher::new).collect(Collectors.toList()));

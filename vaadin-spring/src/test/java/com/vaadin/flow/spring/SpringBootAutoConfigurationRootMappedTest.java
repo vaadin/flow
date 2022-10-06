@@ -25,7 +25,7 @@ public class SpringBootAutoConfigurationRootMappedTest {
         Assert.assertTrue(RootMappedCondition
                 .isRootMapping(RootMappedCondition.getUrlMapping(environment)));
         Assert.assertEquals(
-                Set.of(VaadinServletConfiguration.VAADIN_SERVLET_MAPPING),
+                Set.of(VaadinServletConfiguration.VAADIN_SERVLET_PUSH_MAPPING),
                 servletRegistrationBean.getUrlMappings());
         Assert.assertEquals("", servletRegistrationBean.getInitParameters()
                 .get(ApplicationConfig.JSR356_MAPPING_PATH));

@@ -50,6 +50,22 @@ public class VaadinConfigurationProperties {
     }
 
     /**
+     * Gets the boolean flag defining if push servlet mapping should be enabled.
+     *
+     * This is needed only when VaadinConfigurationProperties is not available
+     * for injection, e.g. in a condition.
+     *
+     * @param environment
+     *            the application environment
+     * @return true if push mapping servlet should be enabled, false otherwise
+     */
+    public static boolean isPushServletMappingEnabled(Environment environment) {
+        return Binder.get(environment)
+                .bind("vaadin", VaadinConfigurationProperties.class)
+                .map(conf -> conf.isPushServletMapping()).orElse(false);
+    }
+
+    /**
      * Gets the excluded URLs using the given environment.
      *
      * This is needed only when VaadinConfigurationProperties is not available
@@ -79,6 +95,8 @@ public class VaadinConfigurationProperties {
      * Whether servlet is loaded on startup.
      */
     private boolean loadOnStartup = true;
+
+    private boolean pushServletMapping = false;
 
     /**
      * Whether pnpm support is enabled
@@ -303,5 +321,13 @@ public class VaadinConfigurationProperties {
      */
     public void setExcludeUrls(List<String> excludeUrls) {
         this.excludeUrls = excludeUrls;
+    }
+
+    public boolean isPushServletMapping() {
+        return pushServletMapping;
+    }
+
+    public void setPushServletMapping(boolean pushServletMapping) {
+        this.pushServletMapping = pushServletMapping;
     }
 }
