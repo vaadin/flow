@@ -619,12 +619,14 @@ public abstract class NodeUpdater implements FallibleCommand {
      * @throws IOException
      *             when file IO fails
      */
-    protected String generateVersionsJson() throws IOException {
+    protected String generateVersionsJson(JsonObject packageJson)
+            throws IOException {
         File versions = new File(generatedFolder, "versions.json");
 
         JsonObject versionsJson = getPlatformPinnedDependencies();
-        JsonObject packageJsonVersions = generateVersionsFromPackageJson();
-        if (versionsJson == null) {
+        JsonObject packageJsonVersions = generateVersionsFromPackageJson(
+                packageJson);
+        if (versionsJson.keys().length == 0) {
             versionsJson = packageJsonVersions;
         } else {
             for (String key : packageJsonVersions.keys()) {
@@ -653,10 +655,10 @@ public abstract class NodeUpdater implements FallibleCommand {
      * @throws IOException
      *             If reading package.json fails
      */
-    private JsonObject generateVersionsFromPackageJson() throws IOException {
+    private JsonObject generateVersionsFromPackageJson(JsonObject packageJson)
+            throws IOException {
         JsonObject versionsJson = Json.createObject();
         // if we don't have versionsJson lock package dependency versions.
-        final JsonObject packageJson = getPackageJson();
         final JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
         final JsonObject devDependencies = packageJson
                 .getObject(DEV_DEPENDENCIES);

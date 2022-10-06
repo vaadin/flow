@@ -65,7 +65,7 @@
         <dependency>
             <groupId>com.typesafe.akka</groupId>
             <artifactId>akka-actor_2.13</artifactId>
-            <version>2.6.19</version>
+            <version>2.6.20</version>
         </dependency>
     </dependencies>
 

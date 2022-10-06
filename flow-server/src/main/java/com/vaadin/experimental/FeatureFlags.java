@@ -232,7 +232,7 @@ public class FeatureFlags implements Serializable {
             }
             for (Feature f : features) {
                 // Allow users to override a feature flag with a system property
-                var propertyValue = System.getProperty(
+                String propertyValue = System.getProperty(
                         SYSTEM_PROPERTY_PREFIX + f.getId(),
                         props.getProperty(getPropertyName(f.getId())));
 
