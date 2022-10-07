@@ -15,10 +15,12 @@
  */
 package com.vaadin.flow.internal;
 
+import java.io.Serializable;
+
 /**
  * A message sent to the debug window.
  */
-public class DebugWindowMessage {
+public class DebugWindowMessage implements Serializable {
 
     private final String command;
     private final Object data;

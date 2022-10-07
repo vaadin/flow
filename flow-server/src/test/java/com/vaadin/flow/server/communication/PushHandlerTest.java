@@ -31,7 +31,9 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.internal.BrowserLiveReload;
+import com.vaadin.flow.internal.BrowserLiveReloadAccess;
 import com.vaadin.flow.internal.DebugWindowConnectionTest;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
@@ -39,6 +41,7 @@ import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.SessionExpiredException;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -128,8 +131,7 @@ public class PushHandlerTest {
         deploymentConfiguration.setDevModeLiveReloadEnabled(true);
 
         service.init();
-
-        VaadinContext context = service.getContext();
+        mockBrowserLiveReload(service);
 
         AtomicReference<AtmosphereResource> res = new AtomicReference<>();
         runTest(service, (handler, resource) -> {
@@ -255,5 +257,19 @@ public class PushHandlerTest {
         testExec.accept(handler, resource);
 
         return service;
+    }
+
+    private void mockBrowserLiveReload(MockVaadinServletService service) {
+        Instantiator instantiator = Mockito.mock(Instantiator.class);
+        Mockito.when(service.getInstantiator()).thenReturn(instantiator);
+
+        BrowserLiveReloadAccess browserLiveReloadAccess = Mockito
+                .mock(BrowserLiveReloadAccess.class);
+        Mockito.when(instantiator.getOrCreate(BrowserLiveReloadAccess.class))
+                .thenReturn(browserLiveReloadAccess);
+
+        BrowserLiveReload liveReload = Mockito.mock(BrowserLiveReload.class);
+        Mockito.when(browserLiveReloadAccess.getLiveReload(service))
+                .thenReturn(liveReload);
     }
 }
