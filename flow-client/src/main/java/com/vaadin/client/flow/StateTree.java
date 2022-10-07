@@ -49,6 +49,7 @@ public class StateTree {
     private JsMap<Integer, String> nodeFeatureDebugName;
 
     private boolean updateInProgress;
+    private boolean resync;
 
     /**
      * Creates a new instance connected to the given registry.
@@ -157,6 +158,26 @@ public class StateTree {
                 }
             }
         });
+        setResync(true);
+    }
+
+    /**
+     * Check if tree is resynchronizing after a {@link #prepareForResync}
+     *
+     * @return true if resync called
+     */
+    public boolean isResync() {
+        return resync;
+    }
+
+    /**
+     * Set the resynchronization state for the StateTree.
+     *
+     * @param resync
+     *            resynchronization state to set
+     */
+    public void setResync(boolean resync) {
+        this.resync = resync;
     }
 
     /**
@@ -454,5 +475,4 @@ public class StateTree {
             return "Unknown node feature: " + id;
         }
     }
-
 }
