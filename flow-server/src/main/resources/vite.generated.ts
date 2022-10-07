@@ -313,6 +313,7 @@ function vaadinBundlesPlugin(): PluginOption {
             exclude: [
               // Vaadin bundle
               '@vaadin/bundles',
+              '@vaadin/flow-frontend',
               ...Object.keys(vaadinBundleJson.packages)
             ]
           }
@@ -513,6 +514,9 @@ export const vaadinConfig: UserConfigFn = (env) => {
       strictPort: true,
       fs: {
         allow: allowedFrontendFolders
+      },
+      watch: {
+        ignored: ['!**/node_modules/@vaadin/flow-frontend/**']
       }
     },
     build: {
