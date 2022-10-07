@@ -280,7 +280,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
           var self = this;
           try {
               var whenDefinedPromise = $wnd.customElements.whenDefined(element.localName);
-              var promiseTimeout = new Promise(function(r) { setTimeout(r, 1000); });
+              var promiseTimeout = new Promise(function(r) { setTimeout(r, 3000); });
               // if element is not a web component, the promise returned by
               // whenDefined may never complete, causing memory leaks because of
               // closures in chained function.
