@@ -29,6 +29,12 @@ import org.atmosphere.cpr.AtmosphereResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import elemental.json.Json;
+import elemental.json.JsonObject;
+
+import com.vaadin.pro.licensechecker.LicenseChecker;
+import com.vaadin.pro.licensechecker.Product;
+
 /**
  * {@link BrowserLiveReload} implementation class.
  * <p>
@@ -152,7 +158,41 @@ public class DebugWindowConnection implements BrowserLiveReload {
     }
 
     @Override
-    public void onMessage(String message) {
-        // No messages supported yet
+    public void onMessage(AtmosphereResource resource, String message) {
+        if (message.isEmpty()) {
+            getLogger().debug("Received live reload heartbeat");
+            return;
+        }
+        JsonObject json = Json.parse(message);
+        String command = json.getString("command");
+       if ("checkLicense".equals(command)) {
+            JsonObject data = json.getObject("data");
+            String name = data.getString("name");
+            String version = data.getString("version");
+            Product product = new Product(name, version);
+            boolean ok;
+            String errorMessage = "";
+
+            try {
+                LicenseChecker.checkLicense(product.getName(),
+                        product.getVersion(), keyUrl -> {
+                            send(resource, "license-check-nokey",
+                                    new ProductAndMessage(product, keyUrl));
+                        });
+                ok = true;
+            } catch (Exception e) {
+                ok = false;
+                errorMessage = e.getMessage();
+            }
+            if (ok) {
+                send(resource, "license-check-ok", product);
+            } else {
+                ProductAndMessage pm = new ProductAndMessage(product,
+                        errorMessage);
+                send(resource, "license-check-failed", pm);
+            }
+        } else {
+            getLogger().info("Unknown command from the browser: " + command);
+        }
     }
 }

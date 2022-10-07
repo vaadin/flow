@@ -37,7 +37,7 @@ public interface BrowserLiveReload {
 
     /**
      * Detects and return enabling live reload backend technology.
-     * 
+     *
      * @return enabling technology, or <code>null</code> if none
      */
     Backend getBackend();
@@ -69,7 +69,7 @@ public interface BrowserLiveReload {
     /**
      * Returns whether the passed connection is a browser live-reload
      * connection.
-     * 
+     *
      * @param resource
      *            a web socket connection resource,  not <code>null</code>.
      * @return whether the web socket connection is for live reload
@@ -84,7 +84,12 @@ public interface BrowserLiveReload {
 
     /**
      * Called when any message is received through the connection.
+     *
+     * @param resource
+     *            the atmosphere resource that received the message
+     * @param msg
+     *            the received message
      */
-    void onMessage(String msg);
+    void onMessage(AtmosphereResource resource, String msg);
 
 }

@@ -92,7 +92,7 @@
         <apache.httpclient.version>4.5.13</apache.httpclient.version>
         <jackson.databind.version>2.13.3</jackson.databind.version>
         <guava.version>31.1-jre</guava.version>
-        <bouncycastle.version>1.70</bouncycastle.version>       
+        <bouncycastle.version>1.70</bouncycastle.version>
         <jaxb.version>2.3.5</jaxb.version>
 
         <!-- Plugins -->
@@ -243,6 +243,12 @@
                 <groupId>net.bytebuddy</groupId>
                 <artifactId>byte-buddy</artifactId>
                 <version>1.11.22</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.vaadin</groupId>
+                <artifactId>license-checker</artifactId>
+                <version>1.10.0</version>
             </dependency>
 
             <dependency>

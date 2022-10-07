@@ -102,6 +102,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     public static final String POLYFILLS_JS = "frontend://bower_components/webcomponentsjs/webcomponents-loader.js";
     public static final String SERVICE_WORKER_HEADER = "Service-Worker";
 
+    private static final String SCRIPT = "script";
+    private static final String SCRIPT_INITIAL = "initial";
+
     private static final CharSequence GWT_STAT_EVENTS_JS = "if (typeof window.__gwtStatsEvent != 'function') {"
             + "window.Vaadin.Flow.gwtStatsEvents = [];"
             + "window.__gwtStatsEvent = function(event) {"
@@ -518,9 +521,54 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     /**
+     * Adds the needed overrides for the license checker to work when in
+     * development mode.
+     */
+    public static void addLicenseChecker(Document indexDocument) {
+        // maybeCheck is invoked by the WC license checker
+        addScript(indexDocument, "" + //
+                                 "window.Vaadin = window.Vaadin || {};" + //
+                                 "window.Vaadin.VaadinLicenseChecker = {" + //
+                                 "  maybeCheck: (productInfo) => {" + //
+                                 // This disables the license check that the web components are
+                                 // still using
+                                 "  }" + //
+                                 "};" + //
+                                 "window.Vaadin.devTools = window.Vaadin.devTools || {};"
+                                 + "window.Vaadin.devTools.createdCvdlElements = window.Vaadin.devTools.createdCvdlElements || [];"
+                                 + //
+                                 "const originalCustomElementDefineFn = window.customElements.define;"
+                                 + //
+                                 "window.customElements.define = function (tagName, constructor, ...args) {"
+                                 + //
+                                 "const { cvdlName, version } = constructor;" + //
+                                 "if (cvdlName && version) {" + //
+                                 "  const { connectedCallback } = constructor.prototype;" + //
+                                 "  constructor.prototype.connectedCallback = function () {" + //
+                                 "    window.Vaadin.devTools.createdCvdlElements.push(this);" + //
+                                 "    if (connectedCallback) {" + //
+                                 "      connectedCallback.call(this);" + //
+                                 "    }" + //
+                                 "  }" + //
+                                 "}" + //
+
+                                 "originalCustomElementDefineFn.call(this, tagName, constructor, ...args);"
+                                 + //
+                                 "};");
+
+    }
+
+    private static void addScript(Document indexDocument, String script) {
+        Element elm = new Element(SCRIPT);
+        elm.attr(SCRIPT_INITIAL, "");
+        elm.appendChild(new DataNode(script));
+        indexDocument.head().insertChildren(0, elm);
+    }
+
+    /**
      * Checks whether the request is for a valid location, and if not, writes
      * the error code for the response.
-     * 
+     *
      * @param request
      *            the request to check
      * @param response
@@ -627,6 +675,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             }
 
             if (!config.isProductionMode()) {
+                addLicenseChecker(document);
                 if (config.isBowerMode()) {
                     exportBowerUsageStatistics(document);
                 } else {

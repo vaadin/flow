@@ -543,7 +543,7 @@ public class PushHandler {
             String msg = IOUtils.toString(req.getReader());
             BrowserLiveReload browserLiveReload = getBrowserLiveReload();
             if (browserLiveReload != null) {
-                browserLiveReload.onMessage(msg);
+                browserLiveReload.onMessage(resource, msg);
             } else {
                 getLogger().error(
                         "Received message for debug window but there is no debug window connection available");

@@ -326,7 +326,8 @@ public class DevModeInitializer
                 .enableImportsUpdate(true).runNpmInstall(true)
                 .populateTokenFileData(tokenFileData)
                 .withEmbeddableWebComponents(true).enablePnpm(enablePnpm)
-                .withHomeNodeExecRequired(useHomeNodeExec).build();
+                .withHomeNodeExecRequired(useHomeNodeExec)
+                .withProductionMode(config.isProductionMode()).build();
 
         // Check whether executor is provided by the caller (framework)
         Object service = config.getInitParameters().get(Executor.class);

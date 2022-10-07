@@ -122,6 +122,12 @@ public class NodeTasks implements FallibleCommand {
                 .create(Platform.guess().getNodeDownloadRoot());
 
         /**
+         * Default is true here so we do not accidentally include development
+         * stuff into production.
+         */
+        private boolean productionMode = true;
+
+        /**
          * Create a builder instance given an specific npm folder.
          *
          * @param classFinder
@@ -390,7 +396,7 @@ public class NodeTasks implements FallibleCommand {
          * gizmo module
          * (<code>@vaadin/flow-frontend/VaadinDevModeGizmo.js</code>) is added
          * via this mechanism.
-         * 
+         *
          * @param frontendModules
          *            List of module names.
          * @return the builder, for chaining
@@ -427,6 +433,19 @@ public class NodeTasks implements FallibleCommand {
          */
         public Builder withNodeDownloadRoot(URI nodeDownloadRoot) {
             this.nodeDownloadRoot = Objects.requireNonNull(nodeDownloadRoot);
+            return this;
+        }
+
+        /**
+         * Sets the production mode.
+         *
+         * @param productionMode
+         *            <code>true</code> to enable production mode, otherwise
+         *            <code>false</code>
+         * @return this builder
+         */
+        public Builder withProductionMode(boolean productionMode) {
+            this.productionMode = productionMode;
             return this;
         }
     }
@@ -505,7 +524,7 @@ public class NodeTasks implements FallibleCommand {
                             builder.npmFolder, builder.generatedFolder,
                             builder.frontendDirectory, builder.tokenFile,
                             builder.tokenFileData, builder.enablePnpm,
-                            builder.additionalFrontendModules));
+                            builder.additionalFrontendModules, builder.productionMode));
 
             commands.add(new TaskUpdateThemeImport(builder.npmFolder,
                     frontendDependencies.getThemeDefinition(),

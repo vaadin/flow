@@ -1,4 +1,5 @@
 import {css, html, LitElement, property} from 'lit-element';
+import { licenseCheckFailed, licenseCheckNoKey, licenseCheckOk, Product } from './License';
 
 /* tslint:disable: no-console max-classes-per-file */
 
@@ -792,6 +793,14 @@ export class VaadinDevmodeGizmo extends LitElement {
     this.showSplashMessage(undefined);
   }
 
+  checkLicense(productInfo: Product) {
+    if (this.frontendConnection) {
+      this.frontendConnection.sendLicenseCheck(productInfo);
+    } else {
+      licenseCheckFailed({ message: 'Internal error: no connection', product: productInfo });
+    }
+  }
+
   showMessage(type: MessageType, message: string, details?: string, link?: string) {
     const id = this.nextMessageId++;
     this.messages.push({
@@ -1026,6 +1035,11 @@ class Connection extends Object {
   onStatusChange(_: ConnectionStatus) {
   }
 
+  onMessage(message: any) {
+    // eslint-disable-next-line no-console
+    console.error('Unknown message received from the live reload server:', message);
+  }
+
   handleMessage(msg: any) {
     let json;
     try {
@@ -1034,23 +1048,21 @@ class Connection extends Object {
       this.handleError(`[${e.name}: ${e.message}`);
       return;
     }
-    const command = json.command;
-    switch (command) {
-      case 'hello': {
-        this.setStatus(ConnectionStatus.ACTIVE);
-        this.onHandshake();
-        break;
+    if (json.command === 'hello') {
+      this.setStatus(ConnectionStatus.ACTIVE);
+      this.onHandshake();
+    } else if (json.command === 'reload') {
+      if (this.status === ConnectionStatus.ACTIVE) {
+        this.onReload();
       }
-
-      case 'reload':
-        if (this.status === ConnectionStatus.ACTIVE) {
-          this.onReload();
-        }
-        break;
-
-      default:
-        // eslint-disable-next-line no-console
-        console.error('Unknown command received from the live reload server:', command);
+    } else if (json.command === 'license-check-ok') {
+      licenseCheckOk(json.data);
+    } else if (json.command === 'license-check-failed') {
+      licenseCheckFailed(json.data);
+    } else if (json.command === 'license-check-nokey') {
+      licenseCheckNoKey(json.data);
+    } else {
+      this.onMessage(json);
     }
   }
 
@@ -1062,6 +1074,18 @@ class Connection extends Object {
       this.onConnectionError('Error in WebSocket connection to ' + this.webSocket.url);
     } else {
       this.onConnectionError(msg);
+    }
+  }
+
+  private send(command: string, data: any) {
+    const message = JSON.stringify({ command, data });
+    if (!this.webSocket) {
+      // eslint-disable-next-line no-console
+      console.error(`Unable to send message ${command}. No websocket is available`);
+    } else if (this.webSocket.readyState !== WebSocket.OPEN) {
+      this.webSocket.addEventListener('open', () => this.webSocket!.send(message));
+    } else {
+      this.webSocket.send(message);
     }
   }
 
@@ -1078,6 +1102,10 @@ class Connection extends Object {
       this.status = status;
       this.onStatusChange(status);
     }
+  }
+
+  sendLicenseCheck(product: Product) {
+    this.send('checkLicense', product);
   }
 }
 
