@@ -3,6 +3,7 @@ import { nothing } from 'lit-html';
 import { classMap } from 'lit-html/directives/class-map.js';
 // @ts-ignore
 import { copy } from './copy-to-clipboard.js';
+import { licenseCheckFailed, licenseCheckNoKey, licenseCheckOk, Product } from './License';
 
 interface ServerInfo {
   vaadinVersion: string;
@@ -806,9 +807,9 @@ export class VaadinDevmodeGizmo extends LitElement {
     this.transitionDuration = parseInt(window.getComputedStyle(this)
         .getPropertyValue('--gizmo-transition-duration'), 10);
 
-    if ((window as any).Vaadin && (window as any).Vaadin.Flow) {
-      (window as any).Vaadin.Flow.devModeGizmo = this;
-    }
+    const windowAny = window as any;
+    windowAny.Vaadin = windowAny.Vaadin || {};
+    windowAny.Vaadin.devTools = Object.assign(this, windowAny.Vaadin.devTools);
   }
 
   format(o: any): string {
@@ -816,14 +817,14 @@ export class VaadinDevmodeGizmo extends LitElement {
   }
   catchErrors() {
     // Process stored messages
-    const queue = (window as any).Vaadin.Flow.ConsoleErrors as any[];
+    const queue = (window as any).Vaadin.ConsoleErrors as any[];
     if (queue) {
       queue.forEach((args: any[]) => {
         this.log(MessageType.ERROR, args.map((o) => this.format(o)).join(' '));
       });
     }
     // Install new handler that immediately processes messages
-    (window as any).Vaadin.Flow.ConsoleErrors = {
+    (window as any).Vaadin.ConsoleErrors = {
       push: (args: any[]) => {
         this.log(MessageType.ERROR, args.map((o) => this.format(o)).join(' '));
       }
@@ -863,6 +864,14 @@ export class VaadinDevmodeGizmo extends LitElement {
       this.log(MessageType.LOG, this.splashMessage);
     }
     this.showSplashMessage(undefined);
+  }
+
+  checkLicense(productInfo: Product) {
+    if (this.frontendConnection) {
+      this.frontendConnection.sendLicenseCheck(productInfo);
+    } else {
+      licenseCheckFailed({ message: 'Internal error: no connection', product: productInfo });
+    }
   }
 
   log(type: MessageType, message: string, details?: string, link?: string) {
@@ -1165,6 +1174,12 @@ class Connection extends Object {
       if (this.status === ConnectionStatus.ACTIVE) {
         this.onReload();
       }
+    } else if (json.command === 'license-check-ok') {
+      licenseCheckOk(json.data);
+    } else if (json.command === 'license-check-failed') {
+      licenseCheckFailed(json.data);
+    } else if (json.command === 'license-check-nokey') {
+      licenseCheckNoKey(json.data);
     } else {
       this.onMessage(json);
     }
@@ -1181,6 +1196,18 @@ class Connection extends Object {
     }
   }
 
+  private send(command: string, data: any) {
+    const message = JSON.stringify({ command, data });
+    if (!this.webSocket) {
+      // eslint-disable-next-line no-console
+      console.error(`Unable to send message ${command}. No websocket is available`);
+    } else if (this.webSocket.readyState !== WebSocket.OPEN) {
+      this.webSocket.addEventListener('open', () => this.webSocket!.send(message));
+    } else {
+      this.webSocket.send(message);
+    }
+  }
+
   setActive(yes: boolean) {
     if (!yes && this.status === ConnectionStatus.ACTIVE) {
       this.setStatus(ConnectionStatus.INACTIVE);
@@ -1194,6 +1221,10 @@ class Connection extends Object {
       this.status = status;
       this.onStatusChange(status);
     }
+  }
+
+  sendLicenseCheck(product: Product) {
+    this.send('checkLicense', product);
   }
 }
 

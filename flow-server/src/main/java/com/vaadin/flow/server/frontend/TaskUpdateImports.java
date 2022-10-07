@@ -29,9 +29,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
-
-import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.vaadin.flow.component.dependency.HtmlImport;
 import com.vaadin.flow.component.dependency.JsModule;
@@ -42,6 +41,9 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
+
+import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -78,6 +80,7 @@ public class TaskUpdateImports extends NodeUpdater {
     private final JsonObject tokenFileData;
 
     private final boolean disablePnpm;
+    private final boolean productionMode;
     private final List<String> additionalFrontendModules;
 
     private class UpdateMainImportsFile extends AbstractUpdateImports {
@@ -266,7 +269,7 @@ public class TaskUpdateImports extends NodeUpdater {
             LinkedHashSet<String> set = new LinkedHashSet<>(
                     fallbackScanner.getModules());
             set.removeAll(frontDeps.getModules());
-            return new ArrayList<String>(set);
+            return filter(set.stream()).collect(Collectors.toList());
         }
 
         @Override
@@ -274,7 +277,7 @@ public class TaskUpdateImports extends NodeUpdater {
             LinkedHashSet<String> set = new LinkedHashSet<>(
                     fallbackScanner.getScripts());
             set.removeAll(frontDeps.getScripts());
-            return set;
+            return filter(set.stream()).collect(Collectors.toSet());
         }
 
         @Override
@@ -350,10 +353,10 @@ public class TaskUpdateImports extends NodeUpdater {
             FrontendDependenciesScanner frontendDepScanner,
             SerializableFunction<ClassFinder, FrontendDependenciesScanner> fallBackScannerProvider,
             File npmFolder, File generatedPath, File frontendDirectory,
-            File tokenFile, boolean disablePnpm) {
+            File tokenFile, boolean disablePnpm, boolean productionMode) {
         this(finder, frontendDepScanner, fallBackScannerProvider, npmFolder,
                 generatedPath, frontendDirectory, tokenFile, null, disablePnpm,
-                Collections.emptyList());
+                Collections.emptyList(), productionMode);
     }
 
     /**
@@ -384,7 +387,7 @@ public class TaskUpdateImports extends NodeUpdater {
             SerializableFunction<ClassFinder, FrontendDependenciesScanner> fallBackScannerProvider,
             File npmFolder, File generatedPath, File frontendDirectory,
             File tokenFile, JsonObject tokenFileData, boolean disablePnpm,
-            List<String> additionalFrontendModules) {
+            List<String> additionalFrontendModules, boolean productionMode) {
         super(finder, frontendDepScanner, npmFolder, generatedPath);
         this.frontendDirectory = frontendDirectory;
         fallbackScanner = fallBackScannerProvider.apply(finder);
@@ -393,6 +396,7 @@ public class TaskUpdateImports extends NodeUpdater {
         this.tokenFileData = tokenFileData;
         this.disablePnpm = disablePnpm;
         this.additionalFrontendModules = additionalFrontendModules;
+        this.productionMode = productionMode;
     }
 
     @Override
@@ -496,6 +500,14 @@ public class TaskUpdateImports extends NodeUpdater {
 
         }
         return array;
+    }
+
+    private Stream<String> filter(Stream<String> modules) {
+        if (!productionMode) {
+            return modules;
+        }
+        return modules.filter(module -> CvdlProducts
+                .includeInFallbackBundle(module, nodeModulesFolder));
     }
 
     private JsonArray makeFallbackCssImports(AbstractUpdateImports updater) {

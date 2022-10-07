@@ -40,28 +40,24 @@ public class TaskGenerateTsFiles implements FallibleCommand {
     private static final String TSCONFIG_JSON = "tsconfig.json";
     private static final String TS_DEFINITIONS = "types.d.ts";
     private final File npmFolder;
-    private final List<String> modules;
 
     /**
      * Create a task to generate <code>tsconfig.json</code> file.
      *
      * @param npmFolder
      *            project folder where the file will be generated.
-     * @param modules
      */
-    TaskGenerateTsFiles(File npmFolder, List<String> modules) {
+    TaskGenerateTsFiles(File npmFolder) {
         this.npmFolder = npmFolder;
-        this.modules = modules;
     }
 
     /**
-     * Only generate if there exists typescript modules in the project.
+     * Generate typescript config if it doesn't exist.
      *
-     * @return if we have modules for typescript files
+     * @return if typescript config file should be created
      */
     protected boolean shouldGenerate() {
-        return modules.stream().filter(file -> file.endsWith(".ts"))
-                .count() >= 1;
+        return !new File(npmFolder, TSCONFIG_JSON).exists();
     }
 
     @Override

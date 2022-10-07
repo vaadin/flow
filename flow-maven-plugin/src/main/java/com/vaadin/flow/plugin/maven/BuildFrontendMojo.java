@@ -16,12 +16,14 @@
 package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -37,18 +39,25 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 import org.apache.maven.project.MavenProject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.frontend.CvdlProducts;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.theme.Theme;
+import com.vaadin.pro.licensechecker.LicenseChecker;
+import com.vaadin.pro.licensechecker.Product;
 
+import elemental.json.Json;
+import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
 
@@ -200,6 +209,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
                         .withHomeNodeExecRequired(requireHomeNodeExec)
                         .withNodeVersion(nodeVersion)
                         .withNodeDownloadRoot(nodeDownloadRootURI)
+                        .withProductionMode(productionMode)
                         .build()
                         .execute();
     }
@@ -249,6 +259,69 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
                 webpackLaunch.destroyForcibly();
             }
         }
+
+        // Check License
+        validateLicenses();
+    }
+
+    private void validateLicenses() {
+        File nodeModulesFolder = new File(npmFolder,
+                FrontendUtils.NODE_MODULES);
+
+        File outputFolder = webpackOutputDirectory;
+        File statsFile = new File(webpackOutputDirectory,
+                Constants.VAADIN_CONFIGURATION + "/stats.json");
+
+        if (!statsFile.exists()) {
+            throw new RuntimeException(
+                    "Stats file " + statsFile + " does not exist");
+        }
+        List<Product> commercialComponents = findCommercialComponents(
+                nodeModulesFolder, statsFile);
+
+        for (Product component : commercialComponents) {
+            try {
+                LicenseChecker.checkLicense(component.getName(),
+                        component.getVersion());
+            } catch (Exception e) {
+                try {
+                    getLogger().debug(
+                            "License check for {} failed. Invalidating output",
+                            component);
+
+                    FileUtils.deleteDirectory(outputFolder);
+                } catch (IOException e1) {
+                    getLogger().debug("Failed to remove {}", outputFolder);
+                }
+                throw e;
+            }
+        }
+
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(BuildFrontendMojo.class);
+    }
+
+    private static List<Product> findCommercialComponents(
+            File nodeModulesFolder, File statsFile) {
+        List<Product> components = new ArrayList<>();
+        try (InputStream in = new FileInputStream(statsFile)) {
+            String contents = IOUtils.toString(in, StandardCharsets.UTF_8);
+            JsonArray npmModules = Json.parse(contents).getArray("npmModules");
+            for (int i = 0; i < npmModules.length(); i++) {
+                String npmModule = npmModules.getString(i);
+                Product product = CvdlProducts
+                        .getProductIfCvdl(nodeModulesFolder, npmModule);
+                if (product != null) {
+                    components.add(product);
+                }
+            }
+            return components;
+        } catch (Exception e) {
+            throw new RuntimeException("Error reading file " + statsFile, e);
+        }
+
     }
 
     private FrontendTools getFrontendTools() throws MojoExecutionException {

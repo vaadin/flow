@@ -95,7 +95,6 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_GENERATED;
 
 /**
  * Servlet initializer starting node updaters as well as the webpack-dev-mode
@@ -326,7 +325,8 @@ public class DevModeInitializer
                 .enableImportsUpdate(true).runNpmInstall(true)
                 .populateTokenFileData(tokenFileData)
                 .withEmbeddableWebComponents(true).enablePnpm(enablePnpm)
-                .withHomeNodeExecRequired(useHomeNodeExec).build();
+                .withHomeNodeExecRequired(useHomeNodeExec)
+                .withProductionMode(config.isProductionMode()).build();
 
         // Check whether executor is provided by the caller (framework)
         Object service = config.getInitParameters().get(Executor.class);
