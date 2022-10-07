@@ -64,6 +64,21 @@ public class TreeChangeProcessorTest {
     }
 
     @Test
+    public void resync_withDetachForNonexistentNode_noAssertionFailure() {
+        StateNode child = new StateNode(2, tree);
+
+        JsonObject change = detachChange(child.getId());
+
+        tree.prepareForResync();
+
+        try {
+            TreeChangeProcessor.processChange(tree, change);
+        } catch (AssertionError ae) {
+            Assert.fail("Should not fail for an nonexistent node on resync");
+        }
+    }
+
+    @Test
     public void testMapRemoveChange() {
         MapProperty property = tree.getRootNode().getMap(ns).getProperty(myKey);
         property.setValue(myValue);
