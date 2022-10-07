@@ -37,59 +37,35 @@ public class LoadingIndicator {
 
     private static final String PRIMARY_STYLE_NAME = "v-loading-indicator";
 
-    private static final String DEFAULT_THEMING = "@-webkit-keyframes v-progress-start {" +
-            "0% {width: 0%;}" +
-            "100% {width: 50%;}}" +
-            "@-moz-keyframes v-progress-start {" +
-            "0% {width: 0%;}" +
-            "100% {width: 50%;}}" +
-            "@keyframes v-progress-start {" +
-            "0% {width: 0%;}" +
-            "100% {width: 50%;}}" +
-            "@keyframes v-progress-delay {" +
-            "0% {width: 50%;}" +
-            "100% {width: 90%;}}" +
-            "@keyframes v-progress-wait {" +
-            "0% {width: 90%;height: 4px;}" +
-            "3% {width: 91%;height: 7px;}" +
-            "100% {width: 96%;height: 7px;}}" +
-            "@-webkit-keyframes v-progress-wait-pulse {" +
-            "0% {opacity: 1;}" +
-            "50% {opacity: 0.1;}" +
-            "100% {opacity: 1;}}" +
-            "@-moz-keyframes v-progress-wait-pulse {" +
-            "0% {opacity: 1;}" +
-            "50% {opacity: 0.1;}" +
-            "100% {opacity: 1;}}" +
-            "@keyframes v-progress-wait-pulse {" +
-            "0% {opacity: 1;}" +
-            "50% {opacity: 0.1;}" +
-            "100% {opacity: 1;}}" +
-            ".v-loading-indicator {" +
-            "position: fixed !important;" +
-            "z-index: 99999;" +
-            "left: 0;" +
-            "right: auto;" +
-            "top: 0;" +
-            "width: 50%;" +
-            "opacity: 1;" +
-            "height: 4px;" +
-            "background-color: var(--lumo-primary-color, var(--material-primary-color, blue));" +
-            "pointer-events: none;" +
-            "transition: none;" +
-            "animation: v-progress-start 1000ms 200ms both;}" +
-            ".v-loading-indicator[style*=\"none\"] {" +
-            "display: block !important;" +
-            "width: 100% !important;" +
-            "opacity: 0;" +
-            "animation: none !important;" +
-            "transition: opacity 500ms 300ms, width 300ms;}" +
-            ".v-loading-indicator.second {" +
-            "width: 90%;" +
-            "animation: v-progress-delay 3.8s forwards;}" +
-            ".v-loading-indicator.third {" +
-            "width: 96%;" +
-            "animation: v-progress-wait 5s forwards, v-progress-wait-pulse 1s 4s infinite backwards;}";
+    private static final String DEFAULT_THEMING = "@-webkit-keyframes v-progress-start {"
+            + "0% {width: 0%;}" + "100% {width: 50%;}}"
+            + "@-moz-keyframes v-progress-start {" + "0% {width: 0%;}"
+            + "100% {width: 50%;}}" + "@keyframes v-progress-start {"
+            + "0% {width: 0%;}" + "100% {width: 50%;}}"
+            + "@keyframes v-progress-delay {" + "0% {width: 50%;}"
+            + "100% {width: 90%;}}" + "@keyframes v-progress-wait {"
+            + "0% {width: 90%;height: 4px;}" + "3% {width: 91%;height: 7px;}"
+            + "100% {width: 96%;height: 7px;}}"
+            + "@-webkit-keyframes v-progress-wait-pulse {" + "0% {opacity: 1;}"
+            + "50% {opacity: 0.1;}" + "100% {opacity: 1;}}"
+            + "@-moz-keyframes v-progress-wait-pulse {" + "0% {opacity: 1;}"
+            + "50% {opacity: 0.1;}" + "100% {opacity: 1;}}"
+            + "@keyframes v-progress-wait-pulse {" + "0% {opacity: 1;}"
+            + "50% {opacity: 0.1;}" + "100% {opacity: 1;}}"
+            + ".v-loading-indicator {" + "position: fixed !important;"
+            + "z-index: 99999;" + "left: 0;" + "right: auto;" + "top: 0;"
+            + "width: 50%;" + "opacity: 1;" + "height: 4px;"
+            + "background-color: var(--lumo-primary-color, var(--material-primary-color, blue));"
+            + "pointer-events: none;" + "transition: none;"
+            + "animation: v-progress-start 1000ms 200ms both;}"
+            + ".v-loading-indicator[style*=\"none\"] {"
+            + "display: block !important;" + "width: 100% !important;"
+            + "opacity: 0;" + "animation: none !important;"
+            + "transition: opacity 500ms 300ms, width 300ms;}"
+            + ".v-loading-indicator.second {" + "width: 90%;"
+            + "animation: v-progress-delay 3.8s forwards;}"
+            + ".v-loading-indicator.third {" + "width: 96%;"
+            + "animation: v-progress-wait 5s forwards, v-progress-wait-pulse 1s 4s infinite backwards;}";
 
     private int firstDelay = LoadingIndicatorConfigurationMap.FIRST_DELAY_DEFAULT;
     private int secondDelay = LoadingIndicatorConfigurationMap.SECOND_DELAY_DEFAULT;

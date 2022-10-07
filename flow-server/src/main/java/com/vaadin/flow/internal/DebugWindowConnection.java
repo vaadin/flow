@@ -165,7 +165,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
         }
         JsonObject json = Json.parse(message);
         String command = json.getString("command");
-       if ("checkLicense".equals(command)) {
+        if ("checkLicense".equals(command)) {
             JsonObject data = json.getObject("data");
             String name = data.getString("name");
             String version = data.getString("version");

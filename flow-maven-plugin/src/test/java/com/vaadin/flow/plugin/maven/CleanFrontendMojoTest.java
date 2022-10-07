@@ -81,10 +81,14 @@ public class CleanFrontendMojoTest {
                 new File(projectFrontendResourcesDirectory,
                         TEST_PROJECT_RESOURCE_JS).createNewFile());
 
-        ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", projectBase);
-        ReflectionUtils.setVariableValueInObject(mojo, "projectBuildDir", projectBase.toPath().resolve("target").toString());
-        ReflectionUtils.setVariableValueInObject(mojo, "projectBasedir", projectBase);
-        ReflectionUtils.setVariableValueInObject(mojo, "frontendDirectory", frontendDirectory);
+        ReflectionUtils.setVariableValueInObject(mojo, "npmFolder",
+                projectBase);
+        ReflectionUtils.setVariableValueInObject(mojo, "projectBuildDir",
+                projectBase.toPath().resolve("target").toString());
+        ReflectionUtils.setVariableValueInObject(mojo, "projectBasedir",
+                projectBase);
+        ReflectionUtils.setVariableValueInObject(mojo, "frontendDirectory",
+                frontendDirectory);
         ReflectionUtils.setVariableValueInObject(mojo, "compatibilityMode",
                 "false");
         ReflectionUtils.setVariableValueInObject(mojo, "nodeVersion",

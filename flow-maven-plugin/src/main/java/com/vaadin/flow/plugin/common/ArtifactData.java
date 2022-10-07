@@ -87,9 +87,9 @@ public final class ArtifactData {
             return false;
         }
         ArtifactData that = (ArtifactData) o;
-        return Objects.equals(fileOrDirectory, that.fileOrDirectory) &&
-                Objects.equals(artifactId, that.artifactId) &&
-                Objects.equals(version, that.version);
+        return Objects.equals(fileOrDirectory, that.fileOrDirectory)
+                && Objects.equals(artifactId, that.artifactId)
+                && Objects.equals(version, that.version);
     }
 
     @Override
@@ -99,10 +99,7 @@ public final class ArtifactData {
 
     @Override
     public String toString() {
-        return "ArtifactData{" +
-                "file=" + fileOrDirectory +
-                ", artifactId='" + artifactId + '\'' +
-                ", version='" + version + '\'' +
-                '}';
+        return "ArtifactData{" + "file=" + fileOrDirectory + ", artifactId='"
+                + artifactId + '\'' + ", version='" + version + '\'' + '}';
     }
 }

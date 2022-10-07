@@ -52,7 +52,10 @@ import static org.mockito.Mockito.when;
  */
 public class ProductionModeCopyStepTest {
     private ArtifactData getWebJarData(String version, String artifactId) {
-        return new ArtifactData(TestUtils.getTestJar(String.format("%s-%s.jar", artifactId, version)), artifactId, version);
+        return new ArtifactData(
+                TestUtils.getTestJar(
+                        String.format("%s-%s.jar", artifactId, version)),
+                artifactId, version);
     }
 
     @Rule
@@ -69,10 +72,15 @@ public class ProductionModeCopyStepTest {
         String artifactId = "paper-button";
 
         JarContentsManager noBowerJsonManager = mock(JarContentsManager.class);
-        when(noBowerJsonManager.findFiles(any(File.class), anyString(), anyString())).thenReturn(Collections.singletonList("test"));
-        when(noBowerJsonManager.getFileContents(any(File.class), any())).thenReturn(String.format("{'name' : '%s'}", artifactId).getBytes(StandardCharsets.UTF_8));
+        when(noBowerJsonManager.findFiles(any(File.class), anyString(),
+                anyString())).thenReturn(Collections.singletonList("test"));
+        when(noBowerJsonManager.getFileContents(any(File.class), any()))
+                .thenReturn(String.format("{'name' : '%s'}", artifactId)
+                        .getBytes(StandardCharsets.UTF_8));
 
-        new ProductionModeCopyStep(noBowerJsonManager, Arrays.asList(new ArtifactData(testJar, artifactId, version1), new ArtifactData(testJar, artifactId, version2)));
+        new ProductionModeCopyStep(noBowerJsonManager,
+                Arrays.asList(new ArtifactData(testJar, artifactId, version1),
+                        new ArtifactData(testJar, artifactId, version2)));
     }
 
     /**
@@ -87,7 +95,9 @@ public class ProductionModeCopyStepTest {
 
         String prefixedArtifactId = "github-com-polymerelements-" + artifactId;
 
-        new ProductionModeCopyStep(Arrays.asList(getWebJarData(version, artifactId), getWebJarData(version, prefixedArtifactId)));
+        new ProductionModeCopyStep(
+                Arrays.asList(getWebJarData(version, artifactId),
+                        getWebJarData(version, prefixedArtifactId)));
     }
 
     @Test
@@ -99,8 +109,8 @@ public class ProductionModeCopyStepTest {
 
         new ProductionModeCopyStep(Collections
                 .singleton(getWebJarData("10.0.0-alpha1", "TimeSelector")))
-                .copyFrontendJavaScriptFiles(outputDirectory, null,
-                        "META-INF/frontend");
+                        .copyFrontendJavaScriptFiles(outputDirectory, null,
+                                "META-INF/frontend");
 
         List<String> resultingFiles = TestUtils
                 .listFilesRecursively(outputDirectory);
@@ -117,8 +127,8 @@ public class ProductionModeCopyStepTest {
 
         new ProductionModeCopyStep(Collections
                 .singleton(getWebJarData("10.0.0-alpha1", "TimeSelector")))
-                .copyFrontendJavaScriptFiles(outputDirectory, "**/*.js",
-                        "META-INF/frontend");
+                        .copyFrontendJavaScriptFiles(outputDirectory, "**/*.js",
+                                "META-INF/frontend");
 
         List<String> resultingFiles = TestUtils
                 .listFilesRecursively(outputDirectory);
@@ -128,19 +138,23 @@ public class ProductionModeCopyStepTest {
                 resultingFiles.stream().filter(path -> path.endsWith(".js"))
                         .count());
 
-        assertTrue("Missing 'test/test.js'", resultingFiles.stream()
-                .filter(path -> path
-                        .endsWith("test" + File.separator + "test.js"))
-                .findFirst().isPresent());
-        assertTrue("Missing 'CircleSelector.js'", resultingFiles.stream()
-                .filter(path -> path.endsWith("CircleSelector.js")).findFirst()
-                .isPresent());
-        assertTrue("Missing 'PopupSelector.js'", resultingFiles.stream()
-                .filter(path -> path.endsWith("PopupSelector.js")).findFirst()
-                .isPresent());
-        assertTrue("Missing 'TimeSelector.js'", resultingFiles.stream()
-                .filter(path -> path.endsWith("TimeSelector.js")).findFirst()
-                .isPresent());
+        assertTrue("Missing 'test/test.js'",
+                resultingFiles.stream()
+                        .filter(path -> path
+                                .endsWith("test" + File.separator + "test.js"))
+                        .findFirst().isPresent());
+        assertTrue("Missing 'CircleSelector.js'",
+                resultingFiles.stream()
+                        .filter(path -> path.endsWith("CircleSelector.js"))
+                        .findFirst().isPresent());
+        assertTrue("Missing 'PopupSelector.js'",
+                resultingFiles.stream()
+                        .filter(path -> path.endsWith("PopupSelector.js"))
+                        .findFirst().isPresent());
+        assertTrue("Missing 'TimeSelector.js'",
+                resultingFiles.stream()
+                        .filter(path -> path.endsWith("TimeSelector.js"))
+                        .findFirst().isPresent());
     }
 
     @Test
@@ -152,8 +166,8 @@ public class ProductionModeCopyStepTest {
 
         new ProductionModeCopyStep(Collections
                 .singleton(getWebJarData("10.0.0-alpha1", "TimeSelector")))
-                .copyFrontendJavaScriptFiles(outputDirectory,
-                        "**/*.js,**/*.html", "META-INF");
+                        .copyFrontendJavaScriptFiles(outputDirectory,
+                                "**/*.js,**/*.html", "META-INF");
 
         List<String> resultingFiles = TestUtils
                 .listFilesRecursively(outputDirectory);
@@ -170,53 +184,66 @@ public class ProductionModeCopyStepTest {
                 resultingFiles.stream().filter(path -> path.endsWith(".html"))
                         .count());
 
-        assertTrue("Missing 'frontend/test/test.js'", resultingFiles.stream()
+        assertTrue("Missing 'frontend/test/test.js'",
+                resultingFiles.stream().filter(path -> path.endsWith("frontend"
+                        + File.separator + "test" + File.separator + "test.js"))
+                        .findFirst().isPresent());
+        assertTrue("Missing 'frontend/CircleSelector.js'", resultingFiles
+                .stream()
                 .filter(path -> path.endsWith(
-                        "frontend" + File.separator + "test" + File.separator
-                                + "test.js")).findFirst().isPresent());
-        assertTrue("Missing 'frontend/CircleSelector.js'",
-                resultingFiles.stream().filter(path -> path.endsWith(
                         "frontend" + File.separator + "CircleSelector.js"))
-                        .findFirst().isPresent());
-        assertTrue("Missing 'frontend/PopupSelector.js'",
-                resultingFiles.stream().filter(path -> path.endsWith(
+                .findFirst().isPresent());
+        assertTrue("Missing 'frontend/PopupSelector.js'", resultingFiles
+                .stream()
+                .filter(path -> path.endsWith(
                         "frontend" + File.separator + "PopupSelector.js"))
-                        .findFirst().isPresent());
+                .findFirst().isPresent());
         assertTrue("Missing 'frontend/TimeSelector.js'", resultingFiles.stream()
                 .filter(path -> path.endsWith(
                         "frontend" + File.separator + "TimeSelector.js"))
                 .findFirst().isPresent());
 
         assertTrue("Missing 'resources/frontend/CircleSelector.html'",
-                resultingFiles.stream().filter(path -> path.endsWith(
-                        "resources" + File.separator + "frontend"
-                                + File.separator + "CircleSelector.html"))
+                resultingFiles.stream()
+                        .filter(path -> path.endsWith("resources"
+                                + File.separator + "frontend" + File.separator
+                                + "CircleSelector.html"))
                         .findFirst().isPresent());
         assertTrue("Missing 'resources/frontend/PopupSelector.html'",
-                resultingFiles.stream().filter(path -> path.endsWith(
-                        "resources" + File.separator + "frontend"
-                                + File.separator + "PopupSelector.html"))
+                resultingFiles.stream()
+                        .filter(path -> path.endsWith("resources"
+                                + File.separator + "frontend" + File.separator
+                                + "PopupSelector.html"))
                         .findFirst().isPresent());
         assertTrue("Missing 'resources/frontend/TimeSelector.html'",
-                resultingFiles.stream().filter(path -> path.endsWith(
-                        "resources" + File.separator + "frontend"
-                                + File.separator + "TimeSelector.html"))
+                resultingFiles.stream()
+                        .filter(path -> path.endsWith(
+                                "resources" + File.separator + "frontend"
+                                        + File.separator + "TimeSelector.html"))
                         .findFirst().isPresent());
     }
 
     @Test
     public void webJarsWithMultiplePackages_work() {
         File outputDirectory = testDirectory.getRoot();
-        assertTrue("No files should be in output directory before the beginning", TestUtils.listFilesRecursively(outputDirectory).isEmpty());
+        assertTrue(
+                "No files should be in output directory before the beginning",
+                TestUtils.listFilesRecursively(outputDirectory).isEmpty());
 
         new ProductionModeCopyStep(Collections.singleton(
                 getWebJarData("6.0.0-alpha3", "vaadin-charts-webjar")))
                         .copyWebApplicationFiles(outputDirectory, null, null);
 
-        List<String> resultingFiles = TestUtils.listFilesRecursively(outputDirectory);
-        assertFalse("Files should be copied from the test WebJar", resultingFiles.isEmpty());
-        assertEquals("WebJar with multiple bower.json are handled correctly and copied",
-                2, resultingFiles.stream().filter(path -> path.endsWith(File.separator + "bower.json")).count());
+        List<String> resultingFiles = TestUtils
+                .listFilesRecursively(outputDirectory);
+        assertFalse("Files should be copied from the test WebJar",
+                resultingFiles.isEmpty());
+        assertEquals(
+                "WebJar with multiple bower.json are handled correctly and copied",
+                2,
+                resultingFiles.stream().filter(
+                        path -> path.endsWith(File.separator + "bower.json"))
+                        .count());
     }
 
     /*
@@ -227,26 +254,31 @@ public class ProductionModeCopyStepTest {
     @Test
     public void webJarsWithMissingDirectoryListings_work() {
         File outputDirectory = testDirectory.getRoot();
-        assertTrue("No files should be in output directory before the beginning", TestUtils.listFilesRecursively(outputDirectory).isEmpty());
+        assertTrue(
+                "No files should be in output directory before the beginning",
+                TestUtils.listFilesRecursively(outputDirectory).isEmpty());
 
-        new ProductionModeCopyStep(Collections.singleton(
-                getWebJarData("6241", "test-jar-issue")))
-                .copyWebApplicationFiles(outputDirectory, null, null);
+        new ProductionModeCopyStep(
+                Collections.singleton(getWebJarData("6241", "test-jar-issue")))
+                        .copyWebApplicationFiles(outputDirectory, null, null);
 
-        List<String> resultingFiles =
-                TestUtils.listFilesRecursively(outputDirectory);
-        assertFalse("Files should be copied from the test WebJar", resultingFiles.isEmpty());
+        List<String> resultingFiles = TestUtils
+                .listFilesRecursively(outputDirectory);
+        assertFalse("Files should be copied from the test WebJar",
+                resultingFiles.isEmpty());
     }
 
     @Test
-    public void copyWebApplicationFiles_fileInsteadOfOutputDirectory() throws IOException {
+    public void copyWebApplicationFiles_fileInsteadOfOutputDirectory()
+            throws IOException {
         File fileNotDirectory = testDirectory.newFile("test");
 
         exception.expect(UncheckedIOException.class);
         exception.expectMessage(fileNotDirectory.getAbsolutePath());
 
         new ProductionModeCopyStep(Collections.emptySet())
-                .copyWebApplicationFiles(fileNotDirectory, testDirectory.getRoot(), "sss");
+                .copyWebApplicationFiles(fileNotDirectory,
+                        testDirectory.getRoot(), "sss");
     }
 
     @Test
@@ -254,9 +286,11 @@ public class ProductionModeCopyStepTest {
         File outputDirectory = testDirectory.getRoot();
         new ProductionModeCopyStep(Collections.emptySet())
                 .copyWebApplicationFiles(outputDirectory, null, null);
-        List<String> resultingFiles = TestUtils.listFilesRecursively(outputDirectory);
+        List<String> resultingFiles = TestUtils
+                .listFilesRecursively(outputDirectory);
 
-        assertTrue("Output directory should not contain any files since no frontend directory or jars are specified",
+        assertTrue(
+                "Output directory should not contain any files since no frontend directory or jars are specified",
                 resultingFiles.isEmpty());
     }
 
@@ -264,28 +298,39 @@ public class ProductionModeCopyStepTest {
     public void copyWebApplicationFiles_copyFrontendDirectory_noExclusions() {
         File outputDirectory = testDirectory.getRoot();
         File frontendOutputDirectory = new File(".").getAbsoluteFile();
-        SortedSet<String> originalFiles = new TreeSet<>(TestUtils.listFilesRecursively(frontendOutputDirectory));
+        SortedSet<String> originalFiles = new TreeSet<>(
+                TestUtils.listFilesRecursively(frontendOutputDirectory));
 
         new ProductionModeCopyStep(Collections.emptySet())
-                .copyWebApplicationFiles(outputDirectory, frontendOutputDirectory, null);
-        assertEquals("Output directory should contain all files from frontend directory '%s' and only them",
-                originalFiles, new TreeSet<>(TestUtils.listFilesRecursively(outputDirectory)));
+                .copyWebApplicationFiles(outputDirectory,
+                        frontendOutputDirectory, null);
+        assertEquals(
+                "Output directory should contain all files from frontend directory '%s' and only them",
+                originalFiles,
+                new TreeSet<>(TestUtils.listFilesRecursively(outputDirectory)));
     }
 
     @Test
     public void copyWebApplicationFiles_copyFrontendDirectory_withExclusions() {
         File outputDirectory = testDirectory.getRoot();
         File frontendOutputDirectory = new File(".").getAbsoluteFile();
-        List<String> originalFiles = TestUtils.listFilesRecursively(frontendOutputDirectory);
+        List<String> originalFiles = TestUtils
+                .listFilesRecursively(frontendOutputDirectory);
 
         new ProductionModeCopyStep(Collections.emptySet())
-                .copyWebApplicationFiles(outputDirectory, frontendOutputDirectory, "*.jar, *.class");
+                .copyWebApplicationFiles(outputDirectory,
+                        frontendOutputDirectory, "*.jar, *.class");
 
-        SortedSet<String> filteredPaths = originalFiles.stream().filter(path -> !path.endsWith(".jar") && !path.endsWith(".class"))
+        SortedSet<String> filteredPaths = originalFiles.stream().filter(
+                path -> !path.endsWith(".jar") && !path.endsWith(".class"))
                 .collect(Collectors.toCollection(TreeSet::new));
-        assertFalse("Original directory should contain files that are not filtered", filteredPaths.isEmpty());
-        assertEquals("Output directory should contain filtered files from frontend directory '%s' and only them",
-                filteredPaths, new TreeSet<>(TestUtils.listFilesRecursively(outputDirectory)));
+        assertFalse(
+                "Original directory should contain files that are not filtered",
+                filteredPaths.isEmpty());
+        assertEquals(
+                "Output directory should contain filtered files from frontend directory '%s' and only them",
+                filteredPaths,
+                new TreeSet<>(TestUtils.listFilesRecursively(outputDirectory)));
     }
 
     @Test
@@ -294,16 +339,21 @@ public class ProductionModeCopyStepTest {
         String artifactId = "paper-button";
         File outputDirectory = testDirectory.getRoot();
 
-        new ProductionModeCopyStep(Collections.singleton(getWebJarData(version, artifactId)))
-                .copyWebApplicationFiles(outputDirectory, null, null);
+        new ProductionModeCopyStep(
+                Collections.singleton(getWebJarData(version, artifactId)))
+                        .copyWebApplicationFiles(outputDirectory, null, null);
 
-        String expectedPathPrefix = "bower_components" + File.separator + artifactId;
-        List<String> resultingFiles = TestUtils.listFilesRecursively(outputDirectory);
+        String expectedPathPrefix = "bower_components" + File.separator
+                + artifactId;
+        List<String> resultingFiles = TestUtils
+                .listFilesRecursively(outputDirectory);
 
         assertFalse("WebJar files should be present in output directory",
                 resultingFiles.isEmpty());
-        assertTrue("All WebJar files should be put into (bower_components + File.separator + bower name for WebJar) directory",
-                resultingFiles.stream().allMatch(path -> path.startsWith(expectedPathPrefix)));
+        assertTrue(
+                "All WebJar files should be put into (bower_components + File.separator + bower name for WebJar) directory",
+                resultingFiles.stream()
+                        .allMatch(path -> path.startsWith(expectedPathPrefix)));
     }
 
     @Test
@@ -312,33 +362,40 @@ public class ProductionModeCopyStepTest {
         String artifactId = "paper-button";
         File outputDirectory = testDirectory.getRoot();
 
-        new ProductionModeCopyStep(Collections.singleton(getWebJarData(version, artifactId)))
-                .copyWebApplicationFiles(outputDirectory, null, "*");
+        new ProductionModeCopyStep(
+                Collections.singleton(getWebJarData(version, artifactId)))
+                        .copyWebApplicationFiles(outputDirectory, null, "*");
 
         assertTrue("WebJar files should not be copied due to exclusions",
                 TestUtils.listFilesRecursively(outputDirectory).isEmpty());
     }
 
     @Test
-    public void copyWebApplicationFiles_copyWebJar_bowerJsonShouldBePresent() throws IOException {
+    public void copyWebApplicationFiles_copyWebJar_bowerJsonShouldBePresent()
+            throws IOException {
         String version = "2.0.0";
         String artifactId = "github-com-polymerelements-paper-button";
         ArtifactData webJarToCopy = getWebJarData(version, artifactId);
 
         JarContentsManager noBowerJsonManager = mock(JarContentsManager.class);
         String expectedFilePath = "bower.json";
-        when(noBowerJsonManager.containsPath(webJarToCopy.getFileOrDirectory(), ProductionModeCopyStep.WEB_JAR_FILES_BASE)).thenReturn(true);
-        when(noBowerJsonManager.findFiles(webJarToCopy.getFileOrDirectory(), ProductionModeCopyStep.WEB_JAR_FILES_BASE, expectedFilePath))
-                .thenReturn(Collections.emptyList());
+        when(noBowerJsonManager.containsPath(webJarToCopy.getFileOrDirectory(),
+                ProductionModeCopyStep.WEB_JAR_FILES_BASE)).thenReturn(true);
+        when(noBowerJsonManager.findFiles(webJarToCopy.getFileOrDirectory(),
+                ProductionModeCopyStep.WEB_JAR_FILES_BASE, expectedFilePath))
+                        .thenReturn(Collections.emptyList());
 
         File outputDirectory = testDirectory.getRoot();
-        assertTrue("No files should be in output directory before the beginning",
+        assertTrue(
+                "No files should be in output directory before the beginning",
                 TestUtils.listFilesRecursively(outputDirectory).isEmpty());
 
-        new ProductionModeCopyStep(noBowerJsonManager, Collections.singleton(webJarToCopy))
-                .copyWebApplicationFiles(outputDirectory, null, null);
+        new ProductionModeCopyStep(noBowerJsonManager,
+                Collections.singleton(webJarToCopy))
+                        .copyWebApplicationFiles(outputDirectory, null, null);
 
-        assertTrue("WebJar with no bower.json is not unpacked into output directory.",
+        assertTrue(
+                "WebJar with no bower.json is not unpacked into output directory.",
                 TestUtils.listFilesRecursively(outputDirectory).isEmpty());
 
         verify(noBowerJsonManager, times(1)).containsPath(
@@ -352,28 +409,34 @@ public class ProductionModeCopyStepTest {
     @Test
     public void copyWebApplicationFiles_copyNonWebJar_noFrontendFiles() {
         File outputDirectory = testDirectory.getRoot();
-        ArtifactData noFrontendFilesJar = getTestArtifact("jar-without-frontend-resources.jar");
+        ArtifactData noFrontendFilesJar = getTestArtifact(
+                "jar-without-frontend-resources.jar");
         new ProductionModeCopyStep(Collections.singleton(noFrontendFilesJar))
                 .copyWebApplicationFiles(outputDirectory, null, null);
-        assertEquals("Non WebJar with no web resources should not be copied to output directory",
+        assertEquals(
+                "Non WebJar with no web resources should not be copied to output directory",
                 TestUtils.listFilesRecursively(outputDirectory).size(), 0);
     }
 
     @Test
     public void copyWebApplicationFiles_copyNonWebJar_withFrontendFiles_noExclusions() {
         File outputDirectory = testDirectory.getRoot();
-        ArtifactData jarWithFrontendFiles = getTestArtifact("jar-with-frontend-resources.jar");
+        ArtifactData jarWithFrontendFiles = getTestArtifact(
+                "jar-with-frontend-resources.jar");
         new ProductionModeCopyStep(Collections.singleton(jarWithFrontendFiles))
                 .copyWebApplicationFiles(outputDirectory, null, null);
-        assertTrue("Non WebJar with web resources should be copied to output directory",
+        assertTrue(
+                "Non WebJar with web resources should be copied to output directory",
                 TestUtils.listFilesRecursively(outputDirectory).size() > 0);
     }
 
     @Test
     public void copyWebApplicationFiles_directoryPathsAndNonExistingFilesIgnored() {
         File outputDirectory = testDirectory.getRoot();
-        ArtifactData directoryInsteadOfFile = new ArtifactData(outputDirectory, "whatever", "whatever");
-        ArtifactData nonExistingFile = new ArtifactData(new File("nope"), "whatever", "whatever");
+        ArtifactData directoryInsteadOfFile = new ArtifactData(outputDirectory,
+                "whatever", "whatever");
+        ArtifactData nonExistingFile = new ArtifactData(new File("nope"),
+                "whatever", "whatever");
 
         new ProductionModeCopyStep(
                 Arrays.asList(directoryInsteadOfFile, nonExistingFile))
@@ -385,25 +448,38 @@ public class ProductionModeCopyStepTest {
     }
 
     @Test
-    public void copyWebApplicationFiles_copyNonWebJar_withFrontendFiles_withExclusions() throws IOException {
-        ArtifactData jarWithFrontendFiles = getTestArtifact("jar-with-frontend-resources.jar");
+    public void copyWebApplicationFiles_copyNonWebJar_withFrontendFiles_withExclusions()
+            throws IOException {
+        ArtifactData jarWithFrontendFiles = getTestArtifact(
+                "jar-with-frontend-resources.jar");
 
         File noExclusionsDirectory = testDirectory.newFolder("noExclusions");
         new ProductionModeCopyStep(Collections.singleton(jarWithFrontendFiles))
                 .copyWebApplicationFiles(noExclusionsDirectory, null, null);
-        List<String> allFiles = TestUtils.listFilesRecursively(noExclusionsDirectory);
-        assertTrue("Files copied without filters should contain *.html and *.json files",
-                allFiles.stream().anyMatch(path -> path.endsWith(".json") || path.endsWith(".html")));
+        List<String> allFiles = TestUtils
+                .listFilesRecursively(noExclusionsDirectory);
+        assertTrue(
+                "Files copied without filters should contain *.html and *.json files",
+                allFiles.stream().anyMatch(path -> path.endsWith(".json")
+                        || path.endsWith(".html")));
 
         File exclusionsDirectory = testDirectory.newFolder("exclusions");
         new ProductionModeCopyStep(Collections.singleton(jarWithFrontendFiles))
-                .copyWebApplicationFiles(exclusionsDirectory, null, "*.json, *.html");
-        List<String> filteredFiles = TestUtils.listFilesRecursively(exclusionsDirectory);
+                .copyWebApplicationFiles(exclusionsDirectory, null,
+                        "*.json, *.html");
+        List<String> filteredFiles = TestUtils
+                .listFilesRecursively(exclusionsDirectory);
 
-        assertTrue("Files copied without filter should contain more files than the filtered ones",
+        assertTrue(
+                "Files copied without filter should contain more files than the filtered ones",
                 allFiles.size() > filteredFiles.size());
-        assertTrue("Files copied without filters should not contain *.html and *.json files", filteredFiles.stream().noneMatch(path -> path.endsWith(".json") || path.endsWith(".html")));
-        assertTrue("Files copied without filter should contain all filtered files", allFiles.containsAll(filteredFiles));
+        assertTrue(
+                "Files copied without filters should not contain *.html and *.json files",
+                filteredFiles.stream().noneMatch(path -> path.endsWith(".json")
+                        || path.endsWith(".html")));
+        assertTrue(
+                "Files copied without filter should contain all filtered files",
+                allFiles.containsAll(filteredFiles));
     }
 
     /**
@@ -415,7 +491,8 @@ public class ProductionModeCopyStepTest {
     @Test
     public void copyWebApplicationFiles_webJarWithWrongCasedInside() {
         File outputDirectory = testDirectory.getRoot();
-        assertTrue("No files should be in output directory before the beginning",
+        assertTrue(
+                "No files should be in output directory before the beginning",
                 TestUtils.listFilesRecursively(outputDirectory).isEmpty());
         String version = "2.0.0";
         String artifactId = "github-com-PolymerElements-iron-behaviors";
@@ -426,12 +503,16 @@ public class ProductionModeCopyStepTest {
                                 .copyWebApplicationFiles(outputDirectory, null,
                                         null);
 
-        List<String> resultingFiles = TestUtils.listFilesRecursively(outputDirectory);
+        List<String> resultingFiles = TestUtils
+                .listFilesRecursively(outputDirectory);
 
         assertFalse("WebJar files should be present in output directory",
                 resultingFiles.isEmpty());
-        assertTrue("All WebJar files should be put into (bower_components + File.separator + bower name for WebJar) directory",
-                resultingFiles.stream().allMatch(path -> path.startsWith("bower_components" + File.separator + "iron-behaviors")));
+        assertTrue(
+                "All WebJar files should be put into (bower_components + File.separator + bower name for WebJar) directory",
+                resultingFiles.stream()
+                        .allMatch(path -> path.startsWith("bower_components"
+                                + File.separator + "iron-behaviors")));
     }
 
     private ArtifactData getTestArtifact(String jarName) {

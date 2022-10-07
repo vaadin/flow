@@ -48,9 +48,6 @@ public class Fragment {
 
     @Override
     public String toString() {
-        return "Fragment{" +
-                "name='" + name + '\'' +
-                ", files=" + files +
-                '}';
+        return "Fragment{" + "name='" + name + '\'' + ", files=" + files + '}';
     }
 }

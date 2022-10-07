@@ -405,9 +405,9 @@ public class MessageHandler {
                 // is called after all added post listeners).
                 Reactive.addPostFlushListener(
                         () -> Reactive.addPostFlushListener(() -> registry
-                                .getExecuteJavaScriptProcessor()
-                                .execute(json.getArray(
-                                        JsonConstants.UIDL_KEY_EXECUTE))));
+                                .getExecuteJavaScriptProcessor().execute(
+                                        json.getArray(
+                                                JsonConstants.UIDL_KEY_EXECUTE))));
             }
 
             Console.log("handleUIDLMessage: "

@@ -38,7 +38,8 @@ public class WebJarPackage {
      * @param packageName   name of a package inside the WebJar, not {@code null}
      * @param pathToPackage path to package inside the WebJar, not {@code null}
      */
-    public WebJarPackage(ArtifactData webJar, String packageName, String pathToPackage) {
+    public WebJarPackage(ArtifactData webJar, String packageName,
+            String pathToPackage) {
         this.webJar = Objects.requireNonNull(webJar);
         this.packageName = Objects.requireNonNull(packageName);
         this.pathToPackage = Objects.requireNonNull(pathToPackage);
@@ -108,7 +109,7 @@ public class WebJarPackage {
                 "Two webJars have same name and different versions: '%s' and '%s', there should be no version differences",
                 package1.webJar, package2.webJar));
     }
-    
+
     private static Optional<WebJarPackage> selectTopmostPackage(
             WebJarPackage package1, WebJarPackage package2) {
         String path1 = package1.getPathToPackage();
@@ -128,8 +129,7 @@ public class WebJarPackage {
             WebJarPackage package1, WebJarPackage package2,
             String normalizedVersion1) {
         return Objects.equals(normalizedVersion1, package1.webJar.getVersion())
-                ? package1
-                : package2;
+                ? package1 : package2;
     }
 
     private static String normalizeVersion(String version) {

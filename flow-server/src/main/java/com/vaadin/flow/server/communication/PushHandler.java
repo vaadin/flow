@@ -557,7 +557,8 @@ public class PushHandler {
     }
 
     private BrowserLiveReload getBrowserLiveReload() {
-        BrowserLiveReloadAccess access = service.getInstantiator().getOrCreate(BrowserLiveReloadAccess.class);
+        BrowserLiveReloadAccess access = service.getInstantiator()
+                .getOrCreate(BrowserLiveReloadAccess.class);
         return access.getLiveReload(service);
     }
 

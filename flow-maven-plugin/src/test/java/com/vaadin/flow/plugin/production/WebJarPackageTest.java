@@ -102,7 +102,8 @@ public class WebJarPackageTest {
                 path);
     }
 
-    private void assertPackagesEqual(WebJarPackage expected, WebJarPackage actual) {
+    private void assertPackagesEqual(WebJarPackage expected,
+            WebJarPackage actual) {
         assertEquals("Expected to have version without prefix after merge",
                 expected.getPackageName(), actual.getPackageName());
         assertEquals("Got different package name after merge",

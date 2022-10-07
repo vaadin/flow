@@ -21,12 +21,10 @@ import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 
-
 public class HasLabelTest {
 
     @Tag(Tag.DIV)
-    private static class TestComponent extends Component
-            implements HasLabel {
+    private static class TestComponent extends Component implements HasLabel {
 
     }
 
@@ -48,9 +46,8 @@ public class HasLabelTest {
     public void withEmptyLabel_getLabelReturnsEmptyString() {
         TestComponent component = new TestComponent();
         component.setLabel("");
-        assertEquals("",component.getLabel());
+        assertEquals("", component.getLabel());
     }
-
 
     @Test
     public void setLabel() {

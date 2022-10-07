@@ -150,8 +150,8 @@ public class ProductionModeCopyStep {
     private String getPackageName(ArtifactData webJar,
             String nameSourceJarPath) {
         String fileContents = IOUtils.toString(
-                jarContentsManager.getFileContents(
-                        webJar.getFileOrDirectory(), nameSourceJarPath),
+                jarContentsManager.getFileContents(webJar.getFileOrDirectory(),
+                        nameSourceJarPath),
                 StandardCharsets.UTF_8.displayName());
         JsonObject jsonObject = Json.parse(fileContents);
         if (jsonObject.hasKey("name")) {

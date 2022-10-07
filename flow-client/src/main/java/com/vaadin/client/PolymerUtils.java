@@ -178,8 +178,7 @@ public final class PolymerUtils {
             assert feature instanceof NodeMap : "Received an inconsistent NodeFeature for a node that has a ELEMENT_PROPERTIES feature. It should be NodeMap, but it is: "
                     + feature;
             NodeMap map = (NodeMap) feature;
-            registerPropertyChangeHandlers(value, registrations,
-                    map);
+            registerPropertyChangeHandlers(value, registrations, map);
             registerPropertyAddHandler(value, registrations, map);
         } else if (node.hasFeature(NodeFeatures.TEMPLATE_MODELLIST)) {
             assert feature instanceof NodeList : "Received an inconsistent NodeFeature for a node that has a TEMPLATE_MODELLIST feature. It should be NodeList, but it is: "
@@ -205,8 +204,8 @@ public final class PolymerUtils {
         }));
     }
 
-    private static void registerPropertyChangeHandlers(
-            JsonValue value, JsArray<EventRemover> registrations, NodeMap map) {
+    private static void registerPropertyChangeHandlers(JsonValue value,
+            JsArray<EventRemover> registrations, NodeMap map) {
         map.forEachProperty((property, propertyName) -> registrations
                 .push(property.addChangeListener(
                         event -> handlePropertyChange(property, value))));
@@ -379,7 +378,7 @@ public final class PolymerUtils {
     /*-{
         var isP2Element = (typeof $wnd.Polymer === 'function') && $wnd.Polymer.Element && htmlNode instanceof $wnd.Polymer.Element;
         var isP3Element = htmlNode.constructor.polymerElementVersion !== undefined;
-
+    
         return (isP2Element || isP3Element);
     }-*/;
 

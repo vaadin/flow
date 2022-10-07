@@ -518,13 +518,13 @@ public class NodeTasks implements FallibleCommand {
         }
 
         if (builder.enableImportsUpdate) {
-            commands.add(
-                    new TaskUpdateImports(classFinder, frontendDependencies,
-                            finder -> getFallbackScanner(builder, finder),
-                            builder.npmFolder, builder.generatedFolder,
-                            builder.frontendDirectory, builder.tokenFile,
-                            builder.tokenFileData, builder.enablePnpm,
-                            builder.additionalFrontendModules, builder.productionMode));
+            commands.add(new TaskUpdateImports(classFinder,
+                    frontendDependencies,
+                    finder -> getFallbackScanner(builder, finder),
+                    builder.npmFolder, builder.generatedFolder,
+                    builder.frontendDirectory, builder.tokenFile,
+                    builder.tokenFileData, builder.enablePnpm,
+                    builder.additionalFrontendModules, builder.productionMode));
 
             commands.add(new TaskUpdateThemeImport(builder.npmFolder,
                     frontendDependencies.getThemeDefinition(),

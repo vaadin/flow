@@ -127,8 +127,8 @@ public class Bootstrapper implements EntryPoint {
         String serviceUrl = jsoConfiguration
                 .getConfigString(ApplicationConstants.SERVICE_URL);
 
-        conf.setWebComponentMode(
-                jsoConfiguration.getConfigBoolean(ApplicationConstants.APP_WC_MODE));
+        conf.setWebComponentMode(jsoConfiguration
+                .getConfigBoolean(ApplicationConstants.APP_WC_MODE));
 
         if (serviceUrl == null) {
             conf.setServiceUrl(WidgetUtil.getAbsoluteUrl("."));

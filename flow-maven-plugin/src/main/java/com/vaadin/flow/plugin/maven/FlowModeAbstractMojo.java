@@ -86,8 +86,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo {
         }
         // Default mode for V14 is bower true
         compatibility = compatibilityMode != null
-                ? Boolean.valueOf(compatibilityMode)
-                : isDefaultCompatibility();
+                ? Boolean.valueOf(compatibilityMode) : isDefaultCompatibility();
     }
 
     abstract boolean isDefaultCompatibility();

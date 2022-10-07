@@ -180,19 +180,21 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
         getLog().info("update-frontend took " + ms + "ms.");
     }
 
-    private void runNodeUpdater() throws ExecutionFailedException, MojoExecutionException {
+    private void runNodeUpdater()
+            throws ExecutionFailedException, MojoExecutionException {
         Set<File> jarFiles = project.getArtifacts().stream()
                 .filter(artifact -> "jar".equals(artifact.getType()))
                 .map(Artifact::getFile).collect(Collectors.toSet());
 
         final URI nodeDownloadRootURI;
-        if(nodeDownloadRoot == null) {
+        if (nodeDownloadRoot == null) {
             nodeDownloadRoot = Platform.guess().getNodeDownloadRoot();
         }
         try {
             nodeDownloadRootURI = new URI(nodeDownloadRoot);
         } catch (URISyntaxException e) {
-            throw new MojoExecutionException("Failed to parse " + nodeDownloadRoot, e);
+            throw new MojoExecutionException(
+                    "Failed to parse " + nodeDownloadRoot, e);
         }
         // @formatter:off
         new NodeTasks.Builder(getClassFinder(project),

@@ -73,9 +73,10 @@ public class AnnotationValuesExtractor extends ClassPathIntrospector {
         Stream<Class<?>> concat = getAnnotatedClasses(
                 annotationInProjectContext);
         return concat
-                .map(type -> type.getAnnotationsByType(annotationInProjectContext))
+                .map(type -> type
+                        .getAnnotationsByType(annotationInProjectContext))
                 .flatMap(Stream::of)
-                .map(annotation -> (String)invokeAnnotationMethod(annotation,
+                .map(annotation -> (String) invokeAnnotationMethod(annotation,
                         valueGetterMethodName))
                 .collect(Collectors.toSet());
     }

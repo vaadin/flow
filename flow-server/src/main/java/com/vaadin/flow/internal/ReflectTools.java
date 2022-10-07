@@ -601,7 +601,7 @@ public class ReflectTools implements Serializable {
      * @return List of Class if found else empty List, never {@literal null}
      */
     public static List<Class<?>> getGenericInterfaceTypes(Class<?> clazz,
-                                                          Class<?> interfaceType) {
+            Class<?> interfaceType) {
         return Stream.of(interfaceType.getTypeParameters())
                 .map(typeParam -> GenericTypeReflector.getTypeParameter(clazz,
                         typeParam))
