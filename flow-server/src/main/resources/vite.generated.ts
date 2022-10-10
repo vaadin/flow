@@ -313,7 +313,6 @@ function vaadinBundlesPlugin(): PluginOption {
             exclude: [
               // Vaadin bundle
               '@vaadin/bundles',
-              '@vaadin/flow-frontend',
               ...Object.keys(vaadinBundleJson.packages)
             ]
           }
@@ -541,6 +540,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
         '@vaadin/router',
         '@vaadin/vaadin-license-checker',
         '@vaadin/vaadin-usage-statistics',
+        '@vaadin/flow-frontend',
         'workbox-core',
         'workbox-precaching',
         'workbox-routing',
