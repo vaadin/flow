@@ -34,7 +34,6 @@ import org.springframework.util.ClassUtils;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.socket.server.standard.ServerEndpointExporter;
 
-import com.vaadin.flow.router.internal.PathUtil;
 import com.vaadin.flow.server.VaadinServlet;
 
 import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
@@ -94,13 +93,13 @@ public class SpringBootAutoConfiguration {
 
         String pushUrl = context.getEnvironment()
                 .getProperty(VAADIN_PREFIX + SERVLET_PARAMETER_PUSH_URL);
-        if (pushUrl != null) {
-            if (!pushUrl.startsWith("/")) {
-                pushUrl = (rootMapping ? ""
-                        : PathUtil.trimSegmentsString(mapping)) + "/" + pushUrl;
-            }
-            initParameters.put(SERVLET_PARAMETER_PUSH_URL, pushUrl);
+        String defaultPushUrl = rootMapping ? "" : mapping.replace("/*", "");
+        if (pushUrl == null) {
+            pushUrl = defaultPushUrl;
+        } else if (!pushUrl.startsWith("/")) {
+            pushUrl = defaultPushUrl + "/" + pushUrl;
         }
+        initParameters.put(SERVLET_PARAMETER_PUSH_URL, pushUrl);
 
         ServletRegistrationBean<SpringServlet> registration = new ServletRegistrationBean<>(
                 new SpringServlet(context, rootMapping), mapping);

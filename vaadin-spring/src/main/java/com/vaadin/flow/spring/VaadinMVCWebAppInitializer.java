@@ -30,8 +30,6 @@ import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
 
-import com.vaadin.flow.router.internal.PathUtil;
-
 import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PUSH_URL;
 
@@ -74,15 +72,15 @@ public abstract class VaadinMVCWebAppInitializer
         }
         registration.addMapping(mapping);
 
-        String pushUrl = env
+        String pushUrl = context.getEnvironment()
                 .getProperty(VAADIN_PREFIX + SERVLET_PARAMETER_PUSH_URL);
-        if (pushUrl != null) {
-            if (!pushUrl.startsWith("/")) {
-                pushUrl = (rootMapping ? ""
-                        : PathUtil.trimSegmentsString(mapping)) + "/" + pushUrl;
-            }
-            initParameters.put(SERVLET_PARAMETER_PUSH_URL, pushUrl);
+        String defaultPushUrl = rootMapping ? "" : mapping.replace("/*", "");
+        if (pushUrl == null) {
+            pushUrl = defaultPushUrl;
+        } else if (!pushUrl.startsWith("/")) {
+            pushUrl = defaultPushUrl + "/" + pushUrl;
         }
+        initParameters.put(SERVLET_PARAMETER_PUSH_URL, pushUrl);
 
         registration.setInitParameters(initParameters);
 
