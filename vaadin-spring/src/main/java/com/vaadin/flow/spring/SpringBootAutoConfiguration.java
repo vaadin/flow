@@ -19,7 +19,6 @@ import javax.servlet.MultipartConfigElement;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.atmosphere.cpr.ApplicationConfig;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
@@ -35,7 +34,11 @@ import org.springframework.util.ClassUtils;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.socket.server.standard.ServerEndpointExporter;
 
+import com.vaadin.flow.router.internal.PathUtil;
 import com.vaadin.flow.server.VaadinServlet;
+
+import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PUSH_URL;
 
 /**
  * Spring boot auto-configuration class for Flow.
@@ -81,27 +84,23 @@ public class SpringBootAutoConfiguration {
         String mapping = configurationProperties.getUrlMapping();
         Map<String, String> initParameters = new HashMap<>();
         boolean rootMapping = RootMappedCondition.isRootMapping(mapping);
-        String pushRegistrationPath;
 
         if (rootMapping) {
             mapping = VaadinServletConfiguration.VAADIN_SERVLET_MAPPING;
             initParameters.put(
                     VaadinServlet.INTERNAL_VAADIN_SERVLET_VITE_DEV_MODE_FRONTEND_PATH,
                     "");
-            pushRegistrationPath = "";
-        } else {
-            pushRegistrationPath = mapping.replace("/*", "");
         }
 
-        /*
-         * Tell Atmosphere which servlet to use for the push endpoint. Servlet
-         * mappings are returned as a Set from at least Tomcat so even if
-         * Atmosphere always picks the first, it might end up using /VAADIN/*
-         * and websockets will fail.
-         */
-        initParameters.put(ApplicationConfig.JSR356_MAPPING_PATH,
-                pushRegistrationPath);
-        initParameters.put(ApplicationConfig.JSR356_PATH_MAPPING_LENGTH, "0");
+        String pushUrl = context.getEnvironment()
+                .getProperty(VAADIN_PREFIX + SERVLET_PARAMETER_PUSH_URL);
+        if (pushUrl != null) {
+            if (!pushUrl.startsWith("/")) {
+                pushUrl = (rootMapping ? ""
+                        : PathUtil.trimSegmentsString(mapping)) + "/" + pushUrl;
+            }
+            initParameters.put(SERVLET_PARAMETER_PUSH_URL, pushUrl);
+        }
 
         ServletRegistrationBean<SpringServlet> registration = new ServletRegistrationBean<>(
                 new SpringServlet(context, rootMapping), mapping);
