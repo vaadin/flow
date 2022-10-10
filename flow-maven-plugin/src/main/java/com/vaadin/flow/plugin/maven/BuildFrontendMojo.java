@@ -27,6 +27,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.jar.Attributes;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
@@ -183,9 +186,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
 
     private void runNodeUpdater()
             throws ExecutionFailedException, MojoExecutionException {
-        Set<File> jarFiles = project.getArtifacts().stream()
-                .filter(artifact -> "jar".equals(artifact.getType()))
-                .map(Artifact::getFile).collect(Collectors.toSet());
+        Set<File> jarFiles = getJarFiles();
 
         final URI nodeDownloadRootURI;
         if (nodeDownloadRoot == null) {
@@ -280,8 +281,9 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
             throw new RuntimeException(
                     "Stats file " + statsFile + " does not exist");
         }
-        List<Product> commercialComponents = findCommercialComponents(
+        List<Product> commercialComponents = findCommercialFrontendComponents(
                 nodeModulesFolder, statsFile);
+        commercialComponents.addAll(findCommercialJavaComponents());
 
         for (Product component : commercialComponents) {
             try {
@@ -307,7 +309,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
         return LoggerFactory.getLogger(BuildFrontendMojo.class);
     }
 
-    private static List<Product> findCommercialComponents(
+    private static List<Product> findCommercialFrontendComponents(
             File nodeModulesFolder, File statsFile) {
         List<Product> components = new ArrayList<>();
         try (InputStream in = new FileInputStream(statsFile)) {
@@ -326,6 +328,37 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
             throw new RuntimeException("Error reading file " + statsFile, e);
         }
 
+    }
+
+    private List<Product> findCommercialJavaComponents() {
+        List<Product> components = new ArrayList<>();
+
+        for (File f : getJarFiles()) {
+            try (JarFile jarFile = new JarFile(f)) {
+                Manifest manifest = jarFile.getManifest();
+                if (manifest == null) {
+                    continue;
+                }
+                Attributes attributes = manifest.getMainAttributes();
+                if (attributes == null) {
+                    continue;
+                }
+                String cvdlName = attributes.getValue("CvdlName");
+                if (cvdlName != null) {
+                    String version = attributes.getValue("Bundle-Version");
+                    Product p = new Product(cvdlName, version);
+                    components.add(p);
+                }
+            } catch (IOException e) {
+                getLogger().debug("Error reading manifest for jar " + f, e);
+            }
+        }
+
+        return components;
+    }
+
+    private Set<File> getJarFiles() {
+        return project.getArtifacts().stream().filter(artifact -> "jar".equals(artifact.getType())).map(Artifact::getFile).collect(Collectors.toSet());
     }
 
     private FrontendTools getFrontendTools() throws MojoExecutionException {
