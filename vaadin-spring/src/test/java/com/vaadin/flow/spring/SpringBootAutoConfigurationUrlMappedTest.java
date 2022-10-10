@@ -2,7 +2,6 @@ package com.vaadin.flow.spring;
 
 import java.util.Set;
 
-import org.atmosphere.cpr.ApplicationConfig;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +25,5 @@ public class SpringBootAutoConfigurationUrlMappedTest {
                 .isRootMapping(RootMappedCondition.getUrlMapping(environment)));
         Assert.assertEquals(Set.of("/zing/*"),
                 servletRegistrationBean.getUrlMappings());
-        Assert.assertEquals("/zing", servletRegistrationBean.getInitParameters()
-                .get(ApplicationConfig.JSR356_MAPPING_PATH));
     }
 }

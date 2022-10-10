@@ -2,7 +2,6 @@ package com.vaadin.flow.spring;
 
 import java.util.Set;
 
-import org.atmosphere.cpr.ApplicationConfig;
 import org.junit.Assert;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +26,5 @@ public class SpringBootAutoConfigurationRootMappedTest {
         Assert.assertEquals(
                 Set.of(VaadinServletConfiguration.VAADIN_SERVLET_MAPPING),
                 servletRegistrationBean.getUrlMappings());
-        Assert.assertEquals("", servletRegistrationBean.getInitParameters()
-                .get(ApplicationConfig.JSR356_MAPPING_PATH));
     }
 }
