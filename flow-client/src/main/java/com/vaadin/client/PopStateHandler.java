@@ -17,6 +17,7 @@ package com.vaadin.client;
 
 import java.util.Objects;
 
+import com.google.gwt.core.client.Scheduler;
 import com.vaadin.client.flow.RouterLinkHandler;
 
 import elemental.client.Browser;
@@ -62,13 +63,19 @@ public class PopStateHandler {
     public void bind() {
         // track the location and query string (#6107) after the latest response
         // from server
-        registry.getRequestResponseTracker().addResponseHandlingEndedHandler(
-                event -> {
-                    pathAfterPreviousResponse = Browser.getWindow()
-                            .getLocation().getPathname();
-                    queryAfterPreviousResponse = Browser.getWindow()
-                            .getLocation().getSearch();
-                });
+        registry.getRequestResponseTracker()
+                .addResponseHandlingEndedHandler(event ->
+        // history.pushState(...) instruction from server side
+        // is invoked within a setTimeout(), so we need to defer
+        // the retrieval of window.location properties on next
+        // event loop cycle, otherwise we get values before
+        // they change (#14323)
+        Scheduler.get().scheduleDeferred(() -> {
+            pathAfterPreviousResponse = Browser.getWindow().getLocation()
+                    .getPathname();
+            queryAfterPreviousResponse = Browser.getWindow().getLocation()
+                    .getSearch();
+        }));
         Browser.getWindow().addEventListener("popstate", this::onPopStateEvent);
     }
 
@@ -85,9 +92,9 @@ public class PopStateHandler {
         assert pathAfterPreviousResponse != null : "Initial response has not ended before pop state event was triggered";
 
         // don't visit server on pop state events caused by fragment change
-        boolean requiresServerSideRoundtrip =
-                !(Objects.equals(path, pathAfterPreviousResponse)
-                        && Objects.equals(query, queryAfterPreviousResponse));
+        boolean requiresServerSideRoundtrip = !(Objects.equals(path,
+                pathAfterPreviousResponse)
+                && Objects.equals(query, queryAfterPreviousResponse));
         registry.getScrollPositionHandler().onPopStateEvent((PopStateEvent) e,
                 requiresServerSideRoundtrip);
         if (!requiresServerSideRoundtrip) {
