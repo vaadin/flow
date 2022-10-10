@@ -78,13 +78,16 @@ import com.vaadin.flow.spring.security.stateless.VaadinStatelessSecurityConfigur
  * annotate it with <code>@EnableWebSecurity</code> and
  * <code>@Configuration</code>.
  * <p>
- * For example <code>
-&#64;EnableWebSecurity
-&#64;Configuration
-public class MyWebSecurity extends VaadinWebSecurity {
-
-}
+ * For example:
+ *
+ * <pre>
+ * <code>
+ * &#64;EnableWebSecurity
+ * &#64;Configuration
+ * public class MyWebSecurity extends VaadinWebSecurity {
+ * }
  * </code>
+ * </pre>
  */
 public abstract class VaadinWebSecurity {
 

@@ -53,6 +53,9 @@ import com.vaadin.flow.server.AppShellSettings;
  * application shell class.
  * <p>
  *
+ * Example:
+ *
+ * <pre>
  * <code>
  * &#64;Meta(name = "Author", content = "Donald Duck")
  * &#64;PWA(name = "My Fun Application", shortName = "fun-app")
@@ -64,6 +67,7 @@ import com.vaadin.flow.server.AppShellSettings;
  * public class AppShell implements AppShellConfigurator {
  * }
  * </code>
+ * </pre>
  *
  * @since 3.0
  */
