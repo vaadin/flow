@@ -50,12 +50,12 @@ public interface ApplicationConfiguration extends AbstractConfiguration {
             if (lookup == null) {
                 throw new IllegalStateException("The application "
                         + Lookup.class.getSimpleName()
-                        + " instance is not found in the " + VaadinContext.class
-                        + " instance. It means that "
-                        + "the container has not executed "
-                        + Lookup.class.getSimpleName()
-                        + " initialization code: so either the container is not Servlet 5.0 compatible"
-                        + " or project configuration is broken.");
+                        + " instance is not found in "
+                        + VaadinContext.class.getSimpleName()
+                        + ". The instance is suppoed to be created by a ServletContainerInitializer. Issues known to cause this problem are:\n"
+                        + "- A Spring Boot application deployed as a war-file but the main application class does not extend SpringBootServletInitializer\n"
+                        + "- An embedded server that is not set up to execute ServletContainerInitializers\n"
+                        + "- Unit tests which do not properly set up the context for the test\n");
             }
             ApplicationConfigurationFactory factory = lookup
                     .lookup(ApplicationConfigurationFactory.class);

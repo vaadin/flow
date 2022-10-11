@@ -2796,9 +2796,10 @@ public class Binder<BEAN> implements Serializable {
     /**
      * Adds field value change listener to all the fields in the binder.
      * <p>
-     * Added listener is notified every time whenever any bound field value is
-     * changed, i.e. the UI component value was changed, passed all the
-     * conversions and validations then propagated to the bound bean field. The
+     * Added listener is notified every time after any bound field value is
+     * changed, i.e. the UI component value was changed and passed or failed any
+     * conversions and validations. If conversions and validations passed, the
+     * value in the bean will be updated before the listener is executed. The
      * same functionality can be achieved by adding a
      * {@link ValueChangeListener} to all fields in the {@link Binder}.
      * <p>

@@ -61,7 +61,6 @@ import com.vaadin.flow.router.TestRouteRegistry;
 import com.vaadin.flow.server.BootstrapHandler.BootstrapContext;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
-import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.VaadinUriResolver;
 import com.vaadin.flow.shared.communication.PushMode;
@@ -76,7 +75,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 
 public class BootstrapHandlerTest {
@@ -639,23 +637,26 @@ public class BootstrapHandlerTest {
         // Note element 0 is the full head element.
         Assert.assertTrue(
                 "File javascript should have been appended to head element",
-                scripts.contains(
-                        "<script type=\"text/javascript\">window.messages = window.messages || [];\n"
-                                + "window.messages.push(\"inline.js\");</script>"));
+                scripts.contains(String.format(
+                        "<script type=\"text/javascript\">window.messages = window.messages || [];%n"
+                                + "window.messages.push(\"inline.js\");</script>")));
         Assert.assertTrue("File html should have been appended to head element",
-                scripts.contains("<script type=\"text/javascript\">\n"
-                        + "    // document.body might not yet be accessible, so just leave a message\n"
-                        + "    window.messages = window.messages || [];\n"
-                        + "    window.messages.push(\"inline.html\");\n"
-                        + "</script>"));
+                scripts.contains(
+                        String.format("<script type=\"text/javascript\">%n"
+                                + "    // document.body might not yet be accessible, so just leave a message%n"
+                                + "    window.messages = window.messages || [];%n"
+                                + "    window.messages.push(\"inline.html\");%n"
+                                + "</script>")));
 
         String styles = page.getElementsByTag("style").toString();
         Assert.assertTrue("File css should have been appended to head element",
-                styles.contains("<style type=\"text/css\">/* inline.css */\n"
-                        + "\n" + "#preloadedDiv {\n"
-                        + "    color: rgba(255, 255, 0, 1);\n" + "}\n" + "\n"
-                        + "#inlineCssTestDiv {\n"
-                        + "    color: rgba(255, 255, 0, 1);\n" + "}</style>"));
+                styles.contains(String
+                        .format("<style type=\"text/css\">/* inline.css */%n"
+                                + "%n" + "#preloadedDiv {%n"
+                                + "    color: rgba(255, 255, 0, 1);%n" + "}%n"
+                                + "%n" + "#inlineCssTestDiv {%n"
+                                + "    color: rgba(255, 255, 0, 1);%n"
+                                + "}</style>")));
     }
 
     @Test // 3036
@@ -979,16 +980,18 @@ public class BootstrapHandlerTest {
     @Test // 3010
     public void force_wrapping_of_file()
             throws InvalidRouteConfigurationException {
+
         initUI(testUI, createVaadinRequest(),
                 Collections.singleton(ForcedWrapping.class));
 
         Document page = pageBuilder.getBootstrapPage(new BootstrapContext(
                 request, null, session, testUI, this::contextRootRelativePath));
 
-        assertTrue("File css should have been prepended to body element",
-                page.getElementsByTag("style").toString().contains(
-                        "<style type=\"text/css\">window.messages = window.messages || [];\n"
-                                + "window.messages.push(\"inline.js\");</style>"));
+        assertTrue("File css should have been prepended to body element", page
+                .getElementsByTag("style").toString()
+                .contains(String.format(
+                        "<style type=\"text/css\">window.messages = window.messages || [];%n"
+                                + "window.messages.push(\"inline.js\");</style>")));
     }
 
     @Test

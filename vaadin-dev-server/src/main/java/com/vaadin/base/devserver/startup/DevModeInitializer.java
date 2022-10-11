@@ -368,12 +368,14 @@ public class DevModeInitializer implements Serializable {
 
         Lookup devServerLookup = Lookup.compose(lookup,
                 Lookup.of(config, ApplicationConfiguration.class));
+        int port = Integer
+                .parseInt(config.getStringProperty("devServerPort", "0"));
         if (featureFlags.isEnabled(FeatureFlags.WEBPACK)) {
-            return new WebpackHandler(devServerLookup, 0,
+            return new WebpackHandler(devServerLookup, port,
                     builder.getNpmFolder(), nodeTasksFuture);
         } else {
-            return new ViteHandler(devServerLookup, 0, builder.getNpmFolder(),
-                    nodeTasksFuture);
+            return new ViteHandler(devServerLookup, port,
+                    builder.getNpmFolder(), nodeTasksFuture);
         }
     }
 
