@@ -649,12 +649,11 @@
                         <excludedScopes>system,test</excludedScopes>
                     </configuration>
                 </plugin>
-    			<plugin>
-					<groupId>org.jboss.bridger</groupId>
-					<artifactId>bridger</artifactId>
-					<version>1.6.Final</version>
-				</plugin>
-
+                <plugin>
+                    <groupId>org.jboss.bridger</groupId>
+                    <artifactId>bridger</artifactId>
+                    <version>1.6.Final</version>
+                </plugin>
                 <plugin>
                     <groupId>org.sonatype.plugins</groupId>
                     <artifactId>nexus-staging-maven-plugin</artifactId>
