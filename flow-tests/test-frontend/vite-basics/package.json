@@ -12,9 +12,11 @@
     "@vaadin/bundles": "../vite-test-assets/packages/@vaadin/bundles",
     "@vaadin/common-frontend": "0.0.17",
     "@vaadin/flow-frontend": "./target/flow-frontend",
+    "@vaadin/polymer-legacy-adapter": "23.3.0-alpha2",
     "@vaadin/router": "1.7.4",
-    "@vaadin/vaadin-lumo-styles": "23.2.0-alpha5",
-    "@vaadin/vaadin-text-field": "23.2.0-alpha5",
+    "@vaadin/vaadin-lumo-styles": "23.3.0-alpha2",
+    "@vaadin/vaadin-text-field": "23.3.0-alpha2",
+    "@vaadin/vaadin-themable-mixin": "23.3.0-alpha2",
     "construct-style-sheets-polyfill": "3.1.0",
     "copy-to-clipboard": "^3.3.1",
     "lit": "2.3.0",
@@ -58,9 +60,11 @@
     "dependencies": {
       "@polymer/polymer": "3.5.1",
       "@vaadin/common-frontend": "0.0.17",
+      "@vaadin/polymer-legacy-adapter": "23.3.0-alpha2",
       "@vaadin/router": "1.7.4",
-      "@vaadin/vaadin-lumo-styles": "23.2.0-alpha5",
-      "@vaadin/vaadin-text-field": "23.2.0-alpha5",
+      "@vaadin/vaadin-lumo-styles": "23.3.0-alpha2",
+      "@vaadin/vaadin-text-field": "23.3.0-alpha2",
+      "@vaadin/vaadin-themable-mixin": "23.3.0-alpha2",
       "construct-style-sheets-polyfill": "3.1.0",
       "lit": "2.3.0"
     },
@@ -79,6 +83,6 @@
       "workbox-core": "6.5.0",
       "workbox-precaching": "6.5.0"
     },
-    "hash": "76479f31f149306b0f80175765bbf6841468cb36bb94dba5a4c5d47e366452f9"
+    "hash": "328e76222cae1e4bcbf91769d7bb67f022c7b1e1271e1fa86544c05224b39af9"
   }
 }
