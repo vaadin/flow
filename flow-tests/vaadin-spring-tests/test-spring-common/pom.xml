@@ -85,7 +85,7 @@
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-ui</artifactId>
-            <version>1.6.11</version>
+            <version>v2.0.0-M6</version>
         </dependency>
         <dependency>
             <groupId>io.github.classgraph</groupId>
