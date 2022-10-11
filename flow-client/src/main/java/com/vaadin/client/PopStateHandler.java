@@ -17,6 +17,7 @@ package com.vaadin.client;
 
 import java.util.Objects;
 
+import com.google.gwt.core.client.Scheduler;
 import com.vaadin.client.flow.RouterLinkHandler;
 
 import elemental.client.Browser;
@@ -63,12 +64,18 @@ public class PopStateHandler {
         // track the location and query string (#6107) after the latest response
         // from server
         registry.getRequestResponseTracker()
-                .addResponseHandlingEndedHandler(event -> {
-                    pathAfterPreviousResponse = Browser.getWindow()
-                            .getLocation().getPathname();
-                    queryAfterPreviousResponse = Browser.getWindow()
-                            .getLocation().getSearch();
-                });
+                .addResponseHandlingEndedHandler(event ->
+        // history.pushState(...) instruction from server side
+        // is invoked within a setTimeout(), so we need to defer
+        // the retrieval of window.location properties on next
+        // event loop cycle, otherwise we get values before
+        // they change (#14323)
+        Scheduler.get().scheduleDeferred(() -> {
+            pathAfterPreviousResponse = Browser.getWindow().getLocation()
+                    .getPathname();
+            queryAfterPreviousResponse = Browser.getWindow().getLocation()
+                    .getSearch();
+        }));
         Browser.getWindow().addEventListener("popstate", this::onPopStateEvent);
     }
 
