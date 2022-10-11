@@ -84,6 +84,7 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 import com.vaadin.flow.server.startup.ServletDeployer.StubServletConfig;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.Theme;
+import com.vaadin.pro.licensechecker.LicenseChecker;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;

@@ -24,10 +24,6 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vaadin.base.devserver.stats.DevModeUsageStatistics;
-import com.vaadin.experimental.FeatureFlags;
-import com.vaadin.flow.internal.BrowserLiveReload;
-import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.pro.licensechecker.BuildType;
 import com.vaadin.pro.licensechecker.LicenseChecker;
 import com.vaadin.pro.licensechecker.Product;
