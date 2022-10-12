@@ -123,7 +123,9 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandlerTest {
 
         Assert.assertNull(loginResponse.getHeader("Result"));
         Assert.assertEquals(302, loginResponse.getStatus());
-        Assert.assertEquals("http://localhost/the-saved-url",
+        // HttpSessionRequestCache uses request parameter "continue",
+        // see HttpSessionRequestCache::setMatchingRequestParameterName
+        Assert.assertEquals("http://localhost/the-saved-url?continue",
                 loginResponse.getHeader("Location"));
     }
 
@@ -170,7 +172,9 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandlerTest {
 
         Assert.assertNull(loginResponse.getHeader("Result"));
         Assert.assertEquals(302, loginResponse.getStatus());
-        Assert.assertEquals("http://localhost/a-previous-saved-url",
+        // HttpSessionRequestCache uses request parameter "continue",
+        // see HttpSessionRequestCache::setMatchingRequestParameterName
+        Assert.assertEquals("http://localhost/a-previous-saved-url?continue",
                 loginResponse.getHeader("Location"));
     }
 
@@ -209,7 +213,9 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandlerTest {
 
         Assert.assertEquals("success", loginResponse.getHeader("Result"));
         Assert.assertEquals(200, loginResponse.getStatus());
-        Assert.assertEquals("http://localhost/the-saved-url",
+        // HttpSessionRequestCache uses request parameter "continue",
+        // see HttpSessionRequestCache::setMatchingRequestParameterName
+        Assert.assertEquals("http://localhost/the-saved-url?continue",
                 loginResponse.getHeader("Saved-url"));
         Assert.assertEquals("/", loginResponse.getHeader("Default-url"));
     }
