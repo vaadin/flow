@@ -15,7 +15,6 @@ import com.vaadin.testbench.TestBenchElement;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 
 public class AppViewIT extends AbstractIT {
@@ -182,8 +181,6 @@ public class AppViewIT extends AbstractIT {
         assertLoginViewShown();
     }
 
-    @Ignore("Temporary ignored, because it fails with latest Spring Boot "
-            + "version, see https://github.com/vaadin/flow/issues/14809")
     @Test
     public void access_restricted_to_admin() {
         String contents = "Secret document for admin";
