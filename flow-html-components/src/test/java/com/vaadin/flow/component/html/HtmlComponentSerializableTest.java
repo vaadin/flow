@@ -15,13 +15,8 @@
  */
 package com.vaadin.flow.component.html;
 
-import org.junit.Ignore;
-
 import com.vaadin.flow.testutil.ClassesSerializableTest;
 
-// Temporary ignored because throws
-// java.lang.NoClassDefFoundError: com/vaadin/pro/licensechecker/Product for unknown reason
-@Ignore
 public class HtmlComponentSerializableTest extends ClassesSerializableTest {
 
 }
