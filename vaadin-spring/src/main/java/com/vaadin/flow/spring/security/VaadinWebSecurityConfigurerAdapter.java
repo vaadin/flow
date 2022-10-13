@@ -22,12 +22,12 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.crypto.SecretKey;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -36,6 +36,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer;
 import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextHolderStrategy;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.access.AccessDeniedHandlerImpl;
@@ -114,11 +115,6 @@ public abstract class VaadinWebSecurityConfigurerAdapter
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        // Use a security context holder that can find the context from Vaadin
-        // specific classes
-        SecurityContextHolder.setStrategyName(
-                VaadinAwareSecurityContextHolderStrategy.class.getName());
-
         // Respond with 401 Unauthorized HTTP status code for unauthorized
         // requests for protected Hilla endpoints, so that the response could
         // be handled on the client side using e.g. `InvalidSessionMiddleware`.
@@ -159,6 +155,23 @@ public abstract class VaadinWebSecurityConfigurerAdapter
 
         // Enable view access control
         viewAccessChecker.enable();
+    }
+
+    /**
+     * Registers {@link SecurityContextHolderStrategy} bean.
+     * <p>
+     * Beans of this type will automatically be used by
+     * {@link org.springframework.security.config.annotation.method.configuration.GlobalMethodSecurityConfiguration}
+     * to configure the current {@link SecurityContextHolderStrategy}.
+     */
+    @Bean
+    public SecurityContextHolderStrategy securityContextHolderStrategy() {
+        VaadinAwareSecurityContextHolderStrategy vaadinAwareSecurityContextHolderStrategy = new VaadinAwareSecurityContextHolderStrategy();
+        // Use a security context holder that can find the context from Vaadin
+        // specific classes
+        SecurityContextHolder.setContextHolderStrategy(
+                vaadinAwareSecurityContextHolderStrategy);
+        return vaadinAwareSecurityContextHolderStrategy;
     }
 
     /**

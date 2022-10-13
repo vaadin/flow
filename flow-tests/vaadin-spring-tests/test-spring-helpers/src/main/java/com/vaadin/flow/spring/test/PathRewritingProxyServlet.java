@@ -6,7 +6,6 @@ import java.util.Locale;
 
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.eclipse.jetty.client.api.Response;

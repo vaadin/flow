@@ -16,8 +16,9 @@
 
 package com.vaadin.flow.internal.hilla;
 
-import jakarta.servlet.http.HttpServletRequest;
 import java.io.Serializable;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * A container for utility methods related with Hilla endpoints.
