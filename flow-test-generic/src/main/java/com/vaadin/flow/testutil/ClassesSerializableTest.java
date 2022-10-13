@@ -150,7 +150,6 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.server\\.communication\\.JavaScriptBootstrapHandler(\\$.*)?",
                 "com\\.vaadin\\.flow\\.templatemodel\\.PathLookup",
                 "com\\.vaadin\\.flow\\.server\\.startup\\.ErrorNavigationTargetInitializer",
-                "com\\.vaadin\\.flow\\.server\\.startup\\.ServletVerifier",
                 "com\\.vaadin\\.flow\\.server\\.startup\\.RouteRegistryInitializer",
                 "com\\.vaadin\\.flow\\.server\\.startup\\.WebComponentConfigurationRegistryInitializer",
                 "com\\.vaadin\\.flow\\.server\\.VaadinResponse",
