@@ -630,11 +630,11 @@ public class FrontendTools {
             foundNodeVersionAndExe = getNodeVersionAndExecutable();
             FrontendVersion foundNodeVersion = foundNodeVersionAndExe
                     .getFirst();
-            FrontendUtils.validateToolVersion("node", foundNodeVersion,
-                    SUPPORTED_NODE_VERSION);
             getLogger().debug("Using node {} located at {}",
                     foundNodeVersion.getFullVersion(),
                     foundNodeVersionAndExe.getSecond());
+            FrontendUtils.validateToolVersion("node", foundNodeVersion,
+                    SUPPORTED_NODE_VERSION);
         } catch (UnknownVersionException e) {
             getLogger().warn("Error checking if node is new enough", e);
         } catch (IllegalStateException ise) {
@@ -649,10 +649,10 @@ public class FrontendTools {
             FrontendVersion foundNpmVersion = getNpmVersion();
             FrontendUtils.validateToolVersion("npm", foundNpmVersion,
                     SUPPORTED_NPM_VERSION);
-            checkForFaultyNpmVersion(foundNpmVersion);
             getLogger().debug("Using npm {} located at {}",
                     foundNpmVersion.getFullVersion(),
                     getNpmExecutable(false).get(0));
+            checkForFaultyNpmVersion(foundNpmVersion);
         } catch (UnknownVersionException e) {
             getLogger().warn("Error checking if npm is new enough", e);
         }
