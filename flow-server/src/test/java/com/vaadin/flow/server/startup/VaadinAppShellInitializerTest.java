@@ -1,6 +1,6 @@
 package com.vaadin.flow.server.startup;
 
-import jakarta.annotation.concurrent.NotThreadSafe;
+import net.jcip.annotations.NotThreadSafe;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletRegistration;
 import jakarta.servlet.http.HttpServletRequest;

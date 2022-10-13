@@ -29,7 +29,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 
-import jakarta.annotation.concurrent.NotThreadSafe;
+import net.jcip.annotations.NotThreadSafe;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
