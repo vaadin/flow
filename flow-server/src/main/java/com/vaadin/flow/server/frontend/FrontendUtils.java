@@ -42,7 +42,7 @@ import java.util.Optional;
 import java.util.Scanner;
 import java.util.stream.Stream;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;

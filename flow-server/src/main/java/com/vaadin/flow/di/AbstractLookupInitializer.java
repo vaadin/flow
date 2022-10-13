@@ -15,8 +15,8 @@
  */
 package com.vaadin.flow.di;
 
-import javax.servlet.ServletContainerInitializer;
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletContainerInitializer;
+import jakarta.servlet.ServletException;
 
 import java.util.Collection;
 import java.util.Map;

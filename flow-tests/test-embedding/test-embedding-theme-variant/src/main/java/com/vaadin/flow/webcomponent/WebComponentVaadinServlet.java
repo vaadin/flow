@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.webcomponent;
 
-import javax.servlet.annotation.WebServlet;
+import jakarta.servlet.annotation.WebServlet;
 
 import com.vaadin.flow.server.VaadinServlet;
 

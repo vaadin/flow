@@ -1,7 +1,7 @@
 package com.vaadin.flow.server;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -175,9 +175,11 @@ public class VaadinServletServiceTest {
             throws Exception {
         HttpServletRequest request = createRequest(base, realContextPath,
                 realServletPath, pathInfo);
-        Mockito.when(request.getAttribute("javax.servlet.include.context_path"))
+        Mockito.when(
+                request.getAttribute("jakarta.servlet.include.context_path"))
                 .thenReturn(null);
-        Mockito.when(request.getAttribute("javax.servlet.include.servlet_path"))
+        Mockito.when(
+                request.getAttribute("jakarta.servlet.include.servlet_path"))
                 .thenReturn(null);
 
         return request;

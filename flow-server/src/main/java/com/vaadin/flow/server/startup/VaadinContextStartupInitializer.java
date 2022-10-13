@@ -17,7 +17,7 @@ package com.vaadin.flow.server.startup;
 
 import com.vaadin.flow.server.VaadinContext;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 import java.util.Set;
 
 /**

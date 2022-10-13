@@ -17,7 +17,7 @@ package com.vaadin.flow.spring;
 
 import java.io.Serializable;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 import com.vaadin.base.devserver.util.BrowserLauncher;
 import com.vaadin.flow.server.VaadinContext;

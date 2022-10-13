@@ -1,6 +1,6 @@
 package com.vaadin.base.devserver;
 
-import javax.servlet.ServletRegistration;
+import jakarta.servlet.ServletRegistration;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;

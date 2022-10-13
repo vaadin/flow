@@ -1,7 +1,7 @@
 package com.vaadin.base.devserver.startup;
 
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletRegistration;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletRegistration;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;

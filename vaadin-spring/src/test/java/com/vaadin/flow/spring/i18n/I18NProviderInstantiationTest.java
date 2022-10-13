@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletException;
 
 import org.junit.Assert;
 import org.junit.Test;
