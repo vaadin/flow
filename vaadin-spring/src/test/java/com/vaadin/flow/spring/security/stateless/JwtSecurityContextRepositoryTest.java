@@ -22,12 +22,12 @@ import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 import com.nimbusds.jose.proc.BadJOSEException;
 import com.nimbusds.jose.proc.JWSVerificationKeySelector;
-import com.nimbusds.jose.shaded.json.JSONArray;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.PlainJWT;
 import com.nimbusds.jwt.SignedJWT;
 import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 import com.nimbusds.jwt.proc.JWTProcessor;
+import org.assertj.core.util.Lists;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -57,8 +57,8 @@ public class JwtSecurityContextRepositoryTest {
     static private final String TEST_USERNAME = "username@example.com";
     static private final String TEST_ISSUER = "https://app.example.com";
     static private final String TEST_OTHER_ISSUER = "https://other.example.com";
-    static private final JSONArray TEST_ROLES = new JSONArray()
-            .appendElement("user").appendElement("employee");
+    static private final ArrayList<String> TEST_ROLES = Lists
+            .newArrayList("user", "employee");
     static private final Collection<? extends GrantedAuthority> TEST_AUTHORITIES = TEST_ROLES
             .stream().map(role -> "ROLE_" + role)
             .map(SimpleGrantedAuthority::new).collect(Collectors.toList());
@@ -578,8 +578,9 @@ public class JwtSecurityContextRepositoryTest {
         String serializedJwt = getSavedSerializedJwt();
         JWTClaimsSet decodedClaimsSet = decodeSerializedJwt(serializedJwt,
                 jwtProcessor);
+
         assertClaims(decodedClaimsSet, "anonymous",
-                new JSONArray().appendElement("ANONYMOUS"), 1800);
+                Lists.newArrayList("ANONYMOUS"), 1800);
         Assert.assertEquals(null, decodedClaimsSet.getIssuer());
     }
 
@@ -702,7 +703,7 @@ public class JwtSecurityContextRepositoryTest {
     }
 
     private void assertClaims(JWTClaimsSet claimsSet, String username,
-            JSONArray roles, long expiresIn) {
+            ArrayList<String> roles, long expiresIn) {
         Assert.assertEquals(username, claimsSet.getSubject());
         Assert.assertEquals(roles, claimsSet.getClaim("roles"));
         Assert.assertTrue(
