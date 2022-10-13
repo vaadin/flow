@@ -3,7 +3,7 @@ const fs = require("fs");
 
 /****************** START CONFIG */
 // Do not run the following modules except 'flow-tests' that is handled separatelly in this script
-const globalExclusions = ['flow-tests/servlet-containers/tomcat10', 'flow-tests/servlet-containers/tomcat9', 'flow-tests/servlet-containers/tomcat85'];
+const globalExclusions = ['flow-tests/servlet-containers/tomcat9', 'flow-tests/servlet-containers/tomcat85'];
 
 // Set modules or tests weights and fixed slice position for better distribution
 //  weight: it's time in half-minutes, default 1 = 30secs

@@ -672,18 +672,5 @@
                 <sonar.issuesReport.html.enable/>
             </properties>
         </profile>
-	<!-- TEMPORARY override apicmp profile in vaadin-parent until we release it with this change -->
-        <profile>
-	    <id>apicmp</id>
-	    <build>
-	        <plugins>
-                    <plugin>
-	 	        <groupId>com.github.siom79.japicmp</groupId>
-		        <artifactId>japicmp-maven-plugin</artifactId>
-		        <version>0.16.0</version>
-		    </plugin>
-	        </plugins>
-	    </build>
-        </profile>
     </profiles>
 </project>
