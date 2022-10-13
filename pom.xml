@@ -226,11 +226,6 @@
                 <artifactId>javax.servlet-api</artifactId>
                 <version>3.1.0</version>
             </dependency>
-            <dependency>
-                <groupId>javax.portlet</groupId>
-                <artifactId>portlet-api</artifactId>
-                <version>2.0</version>
-            </dependency>
 
             <dependency>
                 <groupId>net.bytebuddy</groupId>
