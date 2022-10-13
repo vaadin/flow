@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.server;
 
-import javax.annotation.concurrent.NotThreadSafe;
+import jakarta.annotation.concurrent.NotThreadSafe;
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpSessionBindingEvent;
