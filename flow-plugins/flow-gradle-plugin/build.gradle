@@ -8,8 +8,8 @@ plugins {
 	id 'maven-publish'
     id 'idea'
     id 'com.gradle.plugin-publish' version '0.11.0'
-    id 'org.jetbrains.kotlin.jvm' version '1.5.31'
-    id 'org.jetbrains.dokka' version '1.4.32'
+    id 'org.jetbrains.kotlin.jvm' version '1.7.20'
+    id 'org.jetbrains.dokka' version '1.7.20'
 }
 
 /***********************************************************************************************************************
@@ -23,8 +23,8 @@ defaultTasks 'jar'
 group pom.parent.groupId
 version = project.hasProperty('vaadin.version') ? project.getProperty('vaadin.version') : pom.parent.version
 archivesBaseName = pom.artifactId
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+sourceCompatibility = 17
+targetCompatibility = 17
 
 /***********************************************************************************************************************
  *
@@ -62,12 +62,12 @@ repositories {
 }
 
 dependencies {
-    implementation('org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.5.31')
+    implementation('org.jetbrains.kotlin:kotlin-stdlib:1.7.20')
 
     implementation("com.vaadin:flow-plugin-base:${pom.parent.version}")
 
     testImplementation("junit:junit:4.13.2")
-    testImplementation("org.jetbrains.kotlin:kotlin-test:1.5.31")
+    testImplementation("org.jetbrains.kotlin:kotlin-test:1.7.20")
 }
 
 idea {
@@ -184,7 +184,7 @@ publishing {
  *
  **********************************************************************************************************************/
 wrapper {
-    gradleVersion = '5.0'
+    gradleVersion = '7.5.1'
     distributionType = Wrapper.DistributionType.ALL
 }
 
@@ -202,6 +202,6 @@ kotlin {
 
 compileKotlin {
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "17"
     }
 }
