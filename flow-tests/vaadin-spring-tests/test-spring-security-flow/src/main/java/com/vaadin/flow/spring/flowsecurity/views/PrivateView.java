@@ -5,7 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.util.concurrent.Executor;
 
-import javax.annotation.security.PermitAll;
+import jakarta.annotation.security.PermitAll;
 
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ClickEvent;

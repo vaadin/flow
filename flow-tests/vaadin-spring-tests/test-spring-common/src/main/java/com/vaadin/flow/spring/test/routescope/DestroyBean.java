@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.spring.test.routescope;
 
-import javax.annotation.PreDestroy;
+import jakarta.annotation.PreDestroy;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
