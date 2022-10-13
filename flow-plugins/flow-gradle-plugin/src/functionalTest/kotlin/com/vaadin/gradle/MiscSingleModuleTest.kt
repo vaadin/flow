@@ -215,8 +215,8 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                 compile("org.eclipse.jetty:jetty-continuation:${"$"}{jettyVersion}")
                 compile("org.eclipse.jetty:jetty-server:${"$"}{jettyVersion}")
                 compile("org.eclipse.jetty.websocket:websocket-server:${"$"}{jettyVersion}")
-                compile("org.eclipse.jetty.websocket:javax-websocket-server-impl:${"$"}{jettyVersion}") {
-                    exclude(module: "javax.websocket-client-api")
+                compile("org.eclipse.jetty.websocket:jakarta.websocket-server-impl:${"$"}{jettyVersion}") {
+                    exclude(module: "jakarta.websocket-client-api")
                 }
             }
         """.trimIndent()
