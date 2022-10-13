@@ -16,6 +16,7 @@
 package com.vaadin.flow.spring;
 
 import java.io.Serializable;
+import java.time.Duration;
 
 import jakarta.servlet.ServletContext;
 
@@ -46,7 +47,8 @@ public class DevModeBrowserLauncher
     }
 
     @Override
-    public void running(ConfigurableApplicationContext context) {
+    public void ready(ConfigurableApplicationContext context,
+            Duration timeTaken) {
         try {
             VaadinConfigurationProperties properties = context
                     .getBean(VaadinConfigurationProperties.class);
