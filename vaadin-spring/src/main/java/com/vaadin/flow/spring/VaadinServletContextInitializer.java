@@ -78,7 +78,6 @@ import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.server.startup.ClassLoaderAwareServletContainerInitializer;
 import com.vaadin.flow.server.startup.LookupServletContainerInitializer;
 import com.vaadin.flow.server.startup.ServletDeployer;
-import com.vaadin.flow.server.startup.ServletVerifier;
 import com.vaadin.flow.server.startup.VaadinAppShellInitializer;
 import com.vaadin.flow.server.startup.VaadinInitializerException;
 import com.vaadin.flow.server.startup.WebComponentConfigurationRegistryInitializer;
@@ -602,9 +601,6 @@ public class VaadinServletContextInitializer
     @Override
     public void onStartup(ServletContext servletContext)
             throws ServletException {
-
-        // Verify servlet version also for SpringBoot.
-        ServletVerifier.verifyServletVersion();
 
         VaadinServletContext vaadinContext = new VaadinServletContext(
                 servletContext);
