@@ -1,6 +1,6 @@
 package com.vaadin.flow.spring.security;
 
-import javax.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSession;
 
 import org.junit.Assert;
 import org.junit.Before;

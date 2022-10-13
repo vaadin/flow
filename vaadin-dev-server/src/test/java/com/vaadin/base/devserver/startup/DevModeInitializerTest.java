@@ -61,7 +61,7 @@ import org.mockito.Mockito;
 
 import net.jcip.annotations.NotThreadSafe;
 
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletException;
 
 @NotThreadSafe
 public class DevModeInitializerTest extends DevModeInitializerTestBase {

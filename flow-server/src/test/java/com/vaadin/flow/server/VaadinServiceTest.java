@@ -16,9 +16,9 @@
 package com.vaadin.flow.server;
 
 import javax.annotation.concurrent.NotThreadSafe;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpSessionBindingEvent;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpSessionBindingEvent;
 
 import java.util.ArrayList;
 import java.util.Arrays;

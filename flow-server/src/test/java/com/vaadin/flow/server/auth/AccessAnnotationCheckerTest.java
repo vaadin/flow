@@ -12,7 +12,7 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import com.vaadin.flow.component.internal.JavaScriptBootstrapUI.ClientViewPlaceholder;
 import com.vaadin.flow.internal.CurrentInstance;

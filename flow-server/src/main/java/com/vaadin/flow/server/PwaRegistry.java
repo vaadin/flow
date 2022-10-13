@@ -16,7 +16,7 @@
 package com.vaadin.flow.server;
 
 import javax.imageio.ImageIO;
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 import java.awt.Color;
 import java.awt.Graphics2D;

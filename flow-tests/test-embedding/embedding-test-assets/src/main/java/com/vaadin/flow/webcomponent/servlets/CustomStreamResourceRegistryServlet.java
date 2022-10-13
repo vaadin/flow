@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.webcomponent.servlets;
 
-import javax.servlet.annotation.WebServlet;
+import jakarta.servlet.annotation.WebServlet;
 
 import java.net.URI;
 

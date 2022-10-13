@@ -1,6 +1,6 @@
 package com.vaadin.flow.spring.flowsecurity;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 import java.util.stream.Collectors;
 

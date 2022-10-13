@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.internal;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.junit.Assert;
 import org.junit.Test;
