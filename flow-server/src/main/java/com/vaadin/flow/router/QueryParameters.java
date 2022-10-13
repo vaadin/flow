@@ -197,8 +197,9 @@ public class QueryParameters implements Serializable {
         if (values.size() == 1 && "".equals(values.get(0))) {
             return Stream.of(UrlUtil.encodeURIComponent(entry.getKey()));
         }
-        return values.stream().map(
-                value -> "".equals(value) ? UrlUtil.encodeURIComponent(param)
+        return values.stream()
+                .map(value -> "".equals(value)
+                        ? UrlUtil.encodeURIComponent(param)
                         : UrlUtil.encodeURIComponent(param)
                                 + PARAMETER_VALUES_SEPARATOR
                                 + UrlUtil.encodeURIComponent(value));

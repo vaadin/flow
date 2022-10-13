@@ -526,39 +526,35 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      */
     public static void addLicenseChecker(Document indexDocument) {
         // maybeCheck is invoked by the WC license checker
-        addScript(indexDocument,
-                "" + //
-                        "window.Vaadin = window.Vaadin || {};" + //
-                        "window.Vaadin.VaadinLicenseChecker = {" + //
-                        "  maybeCheck: (productInfo) => {" + //
-                        // This disables the license check that the web components are
-                        // still using
-                        "  }" + //
-                        "};" + //
-                        "window.Vaadin.devTools = window.Vaadin.devTools || {};"
-                        + "window.Vaadin.devTools.createdCvdlElements = window.Vaadin.devTools.createdCvdlElements || [];"
-                        + //
-                        "const originalCustomElementDefineFn = window.customElements.define;"
-                        + //
-                        "window.customElements.define = function (tagName, constructor, ...args) {"
-                        + //
-                        "const { cvdlName, version } = constructor;" + //
-                        "if (cvdlName && version) {" + //
-                        "  const { connectedCallback } = constructor.prototype;"
-                        + //
-                        "  constructor.prototype.connectedCallback = function () {"
-                        + //
-                        "    window.Vaadin.devTools.createdCvdlElements.push(this);"
-                        + //
-                        "    if (connectedCallback) {" + //
-                        "      connectedCallback.call(this);" + //
-                        "    }" + //
-                        "  }" + //
-                        "}" + //
+        addScript(indexDocument, "" + //
+                                 "window.Vaadin = window.Vaadin || {};" + //
+                                 "window.Vaadin.VaadinLicenseChecker = {" + //
+                                 "  maybeCheck: (productInfo) => {" + //
+                                 // This disables the license check that the web components are
+                                 // still using
+                                 "  }" + //
+                                 "};" + //
+                                 "window.Vaadin.devTools = window.Vaadin.devTools || {};"
+                                 + "window.Vaadin.devTools.createdCvdlElements = window.Vaadin.devTools.createdCvdlElements || [];"
+                                 + //
+                                 "const originalCustomElementDefineFn = window.customElements.define;"
+                                 + //
+                                 "window.customElements.define = function (tagName, constructor, ...args) {"
+                                 + //
+                                 "const { cvdlName, version } = constructor;" + //
+                                 "if (cvdlName && version) {" + //
+                                 "  const { connectedCallback } = constructor.prototype;" + //
+                                 "  constructor.prototype.connectedCallback = function () {" + //
+                                 "    window.Vaadin.devTools.createdCvdlElements.push(this);" + //
+                                 "    if (connectedCallback) {" + //
+                                 "      connectedCallback.call(this);" + //
+                                 "    }" + //
+                                 "  }" + //
+                                 "}" + //
 
-                        "originalCustomElementDefineFn.call(this, tagName, constructor, ...args);"
-                        + //
-                        "};");
+                                 "originalCustomElementDefineFn.call(this, tagName, constructor, ...args);"
+                                 + //
+                                 "};");
 
     }
 

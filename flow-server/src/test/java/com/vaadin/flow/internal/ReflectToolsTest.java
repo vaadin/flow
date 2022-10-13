@@ -276,6 +276,7 @@ public class ReflectToolsTest {
                 genericInterfaceTypes.toArray());
     }
 
+
     @Test
     public void findCommonBaseType_sameType() {
         assertSame(Number.class,

@@ -111,9 +111,8 @@ public class ThemedURLTranslator extends ClassPathIntrospector {
                         url, translatedUrl, themeClass.getSimpleName());
                 resultingUrls.add(translatedUrl);
             } else {
-                LOGGER.debug(
-                        "The theme '{}' gives '{}' as a "
-                                + "translation for url '{}' but the file is not found on the filesystem",
+                LOGGER.debug("The theme '{}' gives '{}' as a "
+                        + "translation for url '{}' but the file is not found on the filesystem",
                         themeClass.getSimpleName(), translatedUrl, url);
                 resultingUrls.add(url);
             }
@@ -133,10 +132,9 @@ public class ThemedURLTranslator extends ClassPathIntrospector {
             return (String) translateMethod.invoke(theme, url);
         } catch (IllegalAccessException | IllegalArgumentException
                 | InvocationTargetException exception) {
-            throw new RuntimeException(
-                    String.format(
-                            "Unable to invoke '%s' on the theme instance with type '%s' and the given URL '%s'",
-                            TRANSLATE_URL_METHOD, themeClass.getName(), url),
+            throw new RuntimeException(String.format(
+                    "Unable to invoke '%s' on the theme instance with type '%s' and the given URL '%s'",
+                    TRANSLATE_URL_METHOD, themeClass.getName(), url),
                     exception);
         }
     }

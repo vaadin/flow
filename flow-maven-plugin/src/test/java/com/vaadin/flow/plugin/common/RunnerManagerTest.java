@@ -187,9 +187,9 @@ public class RunnerManagerTest {
 
         RunnerManager runnerManager = new RunnerManager.Builder(
                 downloadDirectory.getRoot(), proxyConfig)
-                        .localInstallations(null, yarnPath)
-                        .autodetectTools(true).frontendToolsLocator(locatorMock)
-                        .build();
+                .localInstallations(null, yarnPath)
+                .autodetectTools(true).frontendToolsLocator(locatorMock)
+                .build();
 
         assertNotNull("Frontend tool runners should be present",
                 runnerManager.getGulpRunner());

@@ -272,7 +272,8 @@ public class FrontendDataProvider {
                         HtmlImport.class, ThemedURLTranslator.VALUE))
                 .values();
         Set<String> htmlImportUrls = htmlImports.isEmpty()
-                ? Collections.emptySet() : htmlImports.iterator().next();
+                ? Collections.emptySet()
+                : htmlImports.iterator().next();
 
         annotationValues.put(HtmlImport.class,
                 getTranslator(es6SourceDirectory, annotationValuesExtractor)
@@ -357,8 +358,8 @@ public class FrontendDataProvider {
         try {
             FileUtils.forceMkdir(outputDir);
         } catch (IOException e) {
-            throw new IllegalStateException("Unable to create output "
-                    + "directory for generated web components!", e);
+            throw new IllegalStateException("Unable to create output " +
+                    "directory for generated web components!", e);
         }
 
         WebComponentModulesGenerator generator = getWebComponentGenerator(

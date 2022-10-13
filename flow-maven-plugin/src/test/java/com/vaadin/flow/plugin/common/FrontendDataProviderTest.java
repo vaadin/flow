@@ -444,10 +444,9 @@ public class FrontendDataProviderTest {
                         .noneMatch(line -> line.contains("shouldBeIgnored")));
 
         for (String expectedFile : expectedFiles) {
-            assertTrue(
-                    String.format(
-                            "Regular files or files with frontend:// prefix should be imported in the shell file, but the file '%s' is missing",
-                            expectedFile),
+            assertTrue(String.format(
+                    "Regular files or files with frontend:// prefix should be imported in the shell file, but the file '%s' is missing",
+                    expectedFile),
                     shellFileContents.stream()
                             .anyMatch(line -> line.contains(expectedFile)));
         }

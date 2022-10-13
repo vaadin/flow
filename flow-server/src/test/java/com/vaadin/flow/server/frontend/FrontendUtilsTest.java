@@ -473,14 +473,15 @@ public class FrontendUtilsTest {
         };
 
         new TaskRunNpmInstall(finder, nodeUpdater, false, true, "v16.16.0",
-                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT))
-                        .execute();
+                URI.create(
+                        NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT)).execute();
 
         FrontendUtils.deleteNodeModules(new File(npmFolder, "node_modules"));
 
         Assert.assertTrue("Linked folder contents should not be removed.",
                 linkFolderFile.exists());
     }
+
 
     private ResourceProvider mockResourceProvider(VaadinService service,
             VaadinContext context) {

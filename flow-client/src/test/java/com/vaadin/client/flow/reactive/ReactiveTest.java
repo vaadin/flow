@@ -175,7 +175,6 @@ public class ReactiveTest {
 
         Reactive.flush();
 
-        Assert.assertEquals(Arrays.asList("flush", "flush2", "postFlush"),
-                order);
+        Assert.assertEquals(Arrays.asList("flush", "flush2", "postFlush"), order);
     }
 }

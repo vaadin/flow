@@ -50,7 +50,7 @@ public class Reactive {
 
     private static Computation currentComputation = null;
 
-    private static boolean flushing = false;
+    private static boolean flushing =false;
 
     private Reactive() {
         // Only static stuff in this class
@@ -97,7 +97,7 @@ public class Reactive {
      * @see #addPostFlushListener(FlushListener)
      */
     public static void flush() {
-        if (flushing) {
+        if(flushing) {
             return;
         }
         try {
@@ -116,7 +116,7 @@ public class Reactive {
                     oldestListener.flush();
                 }
             }
-        } finally {
+        }finally {
             flushing = false;
         }
     }

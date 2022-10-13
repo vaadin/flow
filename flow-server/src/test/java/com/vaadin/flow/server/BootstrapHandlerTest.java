@@ -688,8 +688,8 @@ public class BootstrapHandlerTest {
 
         Assert.assertTrue(
                 "File javascript should have been appended to head element",
-                scripts.contains(String
-                        .format("<script type=\"text/javascript\">window.messages = window.messages || [];%n"
+                scripts.contains(String.format(
+                        "<script type=\"text/javascript\">window.messages = window.messages || [];%n"
                                 + "window.messages.push(\"inline.js\");</script>")));
         Assert.assertTrue("File html should have been appended to head element",
                 scripts.contains(
@@ -1038,9 +1038,10 @@ public class BootstrapHandlerTest {
         Document page = pageBuilder.getBootstrapPage(new BootstrapContext(
                 request, null, session, testUI, this::contextRootRelativePath));
 
-        assertTrue("File css should have been prepended to body element",
-                page.getElementsByTag("style").toString().contains(String
-                        .format("<style type=\"text/css\">window.messages = window.messages || [];%n"
+        assertTrue("File css should have been prepended to body element", page
+                .getElementsByTag("style").toString()
+                .contains(String.format(
+                        "<style type=\"text/css\">window.messages = window.messages || [];%n"
                                 + "window.messages.push(\"inline.js\");</style>")));
     }
 

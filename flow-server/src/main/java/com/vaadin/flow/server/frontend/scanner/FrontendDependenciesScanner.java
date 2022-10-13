@@ -82,7 +82,8 @@ public interface FrontendDependenciesScanner extends Serializable {
          */
         public FrontendDependenciesScanner createScanner(
                 boolean allDependenciesScan, ClassFinder finder,
-                boolean generateEmbeddableWebComponents, boolean fallback) {
+                boolean generateEmbeddableWebComponents,
+                boolean fallback) {
             if (allDependenciesScan) {
                 // this dep scanner can't distinguish embeddable web component
                 // frontend related annotations

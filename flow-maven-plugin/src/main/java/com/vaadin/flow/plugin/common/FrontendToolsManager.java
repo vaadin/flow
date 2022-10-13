@@ -87,7 +87,8 @@ public class FrontendToolsManager {
             String es5OutputDirectoryName, String es6OutputDirectoryName,
             FrontendDataProvider frontendDataProvider,
             RunnerManager runnerManager) {
-        FlowFileUtils.forceMkdir(Objects.requireNonNull(workingDirectory));
+        FlowFileUtils
+                .forceMkdir(Objects.requireNonNull(workingDirectory));
         this.runnerManager = Objects.requireNonNull(runnerManager);
         this.workingDirectory = workingDirectory;
         this.es5OutputDirectoryName = Objects

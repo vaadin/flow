@@ -594,13 +594,15 @@ public class FrontendTools {
                 environment.put("NODE_OPTIONS", "--openssl-legacy-provider");
             }
         } catch (IOException e) {
-            getLogger()
-                    .error("IO error while determining --openssl-legacy-provider "
-                            + "parameter requirement", e);
+            getLogger().error(
+                    "IO error while determining --openssl-legacy-provider "
+                            + "parameter requirement",
+                    e);
         } catch (InterruptedException e) {
-            getLogger()
-                    .error("Interrupted while determining --openssl-legacy-provider "
-                            + "parameter requirement", e);
+            getLogger().error(
+                    "Interrupted while determining --openssl-legacy-provider "
+                            + "parameter requirement",
+                    e);
             // re-interrupt the thread
             Thread.currentThread().interrupt();
         }
