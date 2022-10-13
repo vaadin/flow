@@ -15,7 +15,7 @@
  */
 package com.vaadin.experimental;
 
-import jakarta.annotation.concurrent.NotThreadSafe;
+import net.jcip.annotations.NotThreadSafe;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
