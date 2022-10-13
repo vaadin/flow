@@ -1,5 +1,6 @@
 package com.vaadin.base.devserver;
 
+import jakarta.servlet.ServletRegistration;
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_JAVA_SOURCE_FOLDER;
@@ -17,8 +18,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
-import jakarta.servlet.ServletRegistration;
 
 import com.vaadin.base.devserver.startup.AbstractDevModeTest;
 import com.vaadin.base.devserver.startup.DevModeStartupListener;
