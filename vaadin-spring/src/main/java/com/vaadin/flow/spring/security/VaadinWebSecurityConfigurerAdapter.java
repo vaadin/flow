@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.spring.security;
 
+import javax.crypto.SecretKey;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Objects;
