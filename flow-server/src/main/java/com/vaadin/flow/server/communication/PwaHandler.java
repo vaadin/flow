@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,7 +50,7 @@ public class PwaHandler implements RequestHandler {
     public static final String SW_RUNTIME_PRECACHE_PATH = "/sw-runtime-resources-precache.js";
     public static final String DEFAULT_OFFLINE_STUB_PATH = "offline-stub.html";
 
-    private final Map<String, RequestHandler> requestHandlerMap = new HashMap<>();
+    private final Map<String, RequestHandler> requestHandlerMap = Collections.synchronizedMap(new HashMap<>());
     private final SerializableSupplier<PwaRegistry> pwaRegistryGetter;
 
     private boolean isInitialized;
@@ -132,20 +133,16 @@ public class PwaHandler implements RequestHandler {
         boolean hasPwa = pwaRegistry != null
                 && pwaRegistry.getPwaConfiguration().isEnabled();
         RequestHandler handler = null;
-        session.lock();
-        try {
-            if (isInitialized && !hasPwa) {
-                requestHandlerMap.clear();
-            } else if (!isInitialized && hasPwa) {
-                init(pwaRegistry);
-                isInitialized = true;
-            }
-
+        synchronized (requestHandlerMap) {
             if (hasPwa) {
+                if(!isInitialized) {
+                    init(pwaRegistry);
+                    isInitialized = true;
+                }
                 handler = requestHandlerMap.get(request.getPathInfo());
+            } else if (isInitialized) {
+                requestHandlerMap.clear();
             }
-        } finally {
-            session.unlock();
         }
 
         if (handler == null) {
