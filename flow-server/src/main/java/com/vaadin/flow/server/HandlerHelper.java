@@ -178,6 +178,8 @@ public class HandlerHelper implements Serializable {
             return true;
         } else if (isUploadRequest(requestedPathWithoutServletMapping.get())) {
             return true;
+        } else if (isHillaPush(requestedPathWithoutServletMapping.get())) {
+            return true;
         }
 
         return false;
@@ -190,6 +192,11 @@ public class HandlerHelper implements Serializable {
         return requestedPathWithoutServletMapping
                 .matches(StreamRequestHandler.DYN_RES_PREFIX
                         + "(\\d+)/([0-9a-z-]*)/upload");
+    }
+
+    private static boolean isHillaPush(
+            String requestedPathWithoutServletMapping) {
+        return "HILLA/push".equals(requestedPathWithoutServletMapping);
     }
 
     static boolean isInternalRequestInsideServlet(

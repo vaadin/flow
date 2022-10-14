@@ -206,6 +206,15 @@ public class HandlerHelperTest {
         Assert.assertTrue(HandlerHelper.isFrameworkInternalRequest("/*",
                 request.getHttpServletRequest()));
     }
+    @Test
+    public void isFrameworkInternalRequest_hillaPushUrl() {
+        VaadinServletRequest request = createVaadinRequest(
+                "HILLA/push",
+                "", null);
+
+        Assert.assertTrue(HandlerHelper.isFrameworkInternalRequest("/*",
+                request.getHttpServletRequest()));
+    }
 
     @Test
     public void isFrameworkInternalRequest_fakeUploadUrl() {
