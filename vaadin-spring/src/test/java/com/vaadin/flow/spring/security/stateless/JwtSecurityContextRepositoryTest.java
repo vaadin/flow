@@ -50,8 +50,6 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
-import org.springframework.security.web.context.HttpRequestResponseHolder;
-import org.springframework.security.web.context.SaveContextOnUpdateOrErrorResponseWrapper;
 
 public class JwtSecurityContextRepositoryTest {
     static private final String TEST_USERNAME = "username@example.com";
@@ -93,8 +91,6 @@ public class JwtSecurityContextRepositoryTest {
     @Mock
     private HttpServletResponse response;
 
-    private HttpRequestResponseHolder holder;
-
     private static JWTClaimsSet.Builder getClaimsSetBuilder() {
         return new JWTClaimsSet.Builder().issueTime(Date.from(TEST_PAST))
                 .expirationTime(Date.from(TEST_FUTURE)).subject(TEST_USERNAME)
@@ -123,7 +119,6 @@ public class JwtSecurityContextRepositoryTest {
 
         final ImmutableSecret secret = new ImmutableSecret<>(TEST_KEY);
 
-        holder = new HttpRequestResponseHolder(request, response);
         jwtSecurityContextRepository = new JwtSecurityContextRepository(
                 serializedJwtSplitCookieRepository);
         jwtSecurityContextRepository.setJwkSource(secret);
@@ -143,7 +138,7 @@ public class JwtSecurityContextRepositoryTest {
     @Test
     public void loadContext_returnsEmptyContext_when_nullJwt() {
         SecurityContext securityContext = jwtSecurityContextRepository
-                .loadContext(holder);
+                .loadContext(request).get();
 
         Mockito.verify(serializedJwtSplitCookieRepository)
                 .loadSerializedJwt(request);
@@ -159,7 +154,7 @@ public class JwtSecurityContextRepositoryTest {
                 .loadSerializedJwt(request);
 
         SecurityContext securityContext = jwtSecurityContextRepository
-                .loadContext(holder);
+                .loadContext(request).get();
 
         assertEmptySecurityContext(securityContext);
     }
@@ -175,7 +170,7 @@ public class JwtSecurityContextRepositoryTest {
                 .setJwkSource((jwkSelector, context) -> null);
 
         SecurityContext securityContext = jwtSecurityContextRepository
-                .loadContext(holder);
+                .loadContext(request).get();
 
         assertEmptySecurityContext(securityContext);
     }
@@ -191,7 +186,7 @@ public class JwtSecurityContextRepositoryTest {
                 .setJwkSource((jwkSelector, context) -> new ArrayList<>());
 
         SecurityContext securityContext = jwtSecurityContextRepository
-                .loadContext(holder);
+                .loadContext(request).get();
 
         assertEmptySecurityContext(securityContext);
     }
@@ -206,7 +201,7 @@ public class JwtSecurityContextRepositoryTest {
                 .loadSerializedJwt(request);
 
         SecurityContext securityContext = jwtSecurityContextRepository
-                .loadContext(holder);
+                .loadContext(request).get();
 
         assertEmptySecurityContext(securityContext);
     }
@@ -221,7 +216,7 @@ public class JwtSecurityContextRepositoryTest {
                 .loadSerializedJwt(request);
 
         SecurityContext securityContext = jwtSecurityContextRepository
-                .loadContext(holder);
+                .loadContext(request).get();
 
         assertEmptySecurityContext(securityContext);
     }
@@ -237,7 +232,7 @@ public class JwtSecurityContextRepositoryTest {
                 .loadSerializedJwt(request);
 
         SecurityContext securityContext = jwtSecurityContextRepository
-                .loadContext(holder);
+                .loadContext(request).get();
 
         assertEmptySecurityContext(securityContext);
     }
@@ -252,7 +247,7 @@ public class JwtSecurityContextRepositoryTest {
                 .loadSerializedJwt(request);
 
         SecurityContext securityContext = jwtSecurityContextRepository
-                .loadContext(holder);
+                .loadContext(request).get();
 
         assertEmptySecurityContext(securityContext);
     }
@@ -267,7 +262,7 @@ public class JwtSecurityContextRepositoryTest {
                 .loadSerializedJwt(request);
 
         SecurityContext securityContext = jwtSecurityContextRepository
-                .loadContext(holder);
+                .loadContext(request).get();
 
         assertEmptySecurityContext(securityContext);
     }
@@ -282,7 +277,7 @@ public class JwtSecurityContextRepositoryTest {
         jwtSecurityContextRepository.setJwsAlgorithm(JWSAlgorithm.HS512);
 
         SecurityContext securityContext = jwtSecurityContextRepository
-                .loadContext(holder);
+                .loadContext(request).get();
 
         assertEmptySecurityContext(securityContext);
     }
@@ -296,7 +291,7 @@ public class JwtSecurityContextRepositoryTest {
                 .loadSerializedJwt(request);
 
         SecurityContext securityContext = jwtSecurityContextRepository
-                .loadContext(holder);
+                .loadContext(request).get();
 
         assertSecurityContext(TEST_USERNAME, TEST_AUTHORITIES, securityContext);
     }
@@ -311,7 +306,7 @@ public class JwtSecurityContextRepositoryTest {
                 .loadSerializedJwt(request);
 
         SecurityContext securityContext = jwtSecurityContextRepository
-                .loadContext(holder);
+                .loadContext(request).get();
 
         assertSecurityContext(TEST_USERNAME, TEST_AUTHORITIES, securityContext);
     }
@@ -326,7 +321,7 @@ public class JwtSecurityContextRepositoryTest {
         jwtSecurityContextRepository.setJwsAlgorithm(null);
 
         Assert.assertThrows(IllegalArgumentException.class,
-                () -> jwtSecurityContextRepository.loadContext(holder));
+                () -> jwtSecurityContextRepository.loadContext(request).get());
     }
 
     @Test
@@ -338,7 +333,7 @@ public class JwtSecurityContextRepositoryTest {
         jwtSecurityContextRepository.setJwkSource(null);
 
         Assert.assertThrows(IllegalArgumentException.class,
-                () -> jwtSecurityContextRepository.loadContext(holder));
+                () -> jwtSecurityContextRepository.loadContext(request).get());
     }
 
     @Test
