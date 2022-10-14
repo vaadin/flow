@@ -673,18 +673,8 @@ public class JwtSecurityContextRepositoryTest {
         assertClaims(decodedClaimsSet, TEST_USERNAME, TEST_ROLES, 1800);
     }
 
-    private void assertRequestResponseHolder() {
-        Assert.assertEquals(request, holder.getRequest());
-        Assert.assertTrue(holder
-                .getResponse() instanceof SaveContextOnUpdateOrErrorResponseWrapper);
-        Assert.assertEquals(response,
-                ((SaveContextOnUpdateOrErrorResponseWrapper) holder
-                        .getResponse()).getResponse());
-    }
-
     private void assertEmptySecurityContext(SecurityContext securityContext) {
         Mockito.verifyNoInteractions(securityContext);
-        assertRequestResponseHolder();
     }
 
     private void assertSecurityContext(String username,
@@ -699,7 +689,6 @@ public class JwtSecurityContextRepositoryTest {
         Assert.assertTrue(actualAuthentication.isAuthenticated());
         Assert.assertEquals(username, actualAuthentication.getName());
         Assert.assertEquals(authorities, actualAuthentication.getAuthorities());
-        assertRequestResponseHolder();
     }
 
     private void assertClaims(JWTClaimsSet claimsSet, String username,

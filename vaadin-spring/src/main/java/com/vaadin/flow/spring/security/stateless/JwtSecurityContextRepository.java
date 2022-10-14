@@ -20,6 +20,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import com.nimbusds.jose.JOSEException;
@@ -180,22 +181,25 @@ class JwtSecurityContextRepository implements SecurityContextRepository {
     }
 
     @Override
-    public SecurityContext loadContext(
-            HttpRequestResponseHolder requestResponseHolder) {
-        SecurityContext context = SecurityContextHolder.createEmptyContext();
+    public SecurityContext loadContext(HttpRequestResponseHolder holder) {
+        return loadContext(holder.getRequest()).get();
+    }
 
-        HttpServletRequest request = requestResponseHolder.getRequest();
+    @Override
+    public Supplier<SecurityContext> loadContext(HttpServletRequest request) {
+        return () -> {
+            SecurityContext context = SecurityContextHolder
+                    .createEmptyContext();
 
-        Jwt jwt = decodeJwt(request);
-        if (jwt != null) {
-            Authentication authentication = jwtAuthenticationConverter
-                    .convert(jwt);
-            context.setAuthentication(authentication);
-        }
+            Jwt jwt = decodeJwt(request);
+            if (jwt != null) {
+                Authentication authentication = jwtAuthenticationConverter
+                        .convert(jwt);
+                context.setAuthentication(authentication);
+            }
 
-        requestResponseHolder.setResponse(new UpdateJwtResponseWrapper(request,
-                requestResponseHolder.getResponse()));
-        return context;
+            return context;
+        };
     }
 
     @Override
@@ -218,20 +222,4 @@ class JwtSecurityContextRepository implements SecurityContextRepository {
                 .containsSerializedJwt(request);
     }
 
-    private final class UpdateJwtResponseWrapper
-            extends SaveContextOnUpdateOrErrorResponseWrapper {
-        private final HttpServletRequest request;
-
-        private UpdateJwtResponseWrapper(HttpServletRequest request,
-                HttpServletResponse response) {
-            super(response, true);
-            this.request = request;
-        }
-
-        @Override
-        protected void saveContext(SecurityContext context) {
-            JwtSecurityContextRepository.this.saveContext(context, this.request,
-                    this);
-        }
-    }
 }
