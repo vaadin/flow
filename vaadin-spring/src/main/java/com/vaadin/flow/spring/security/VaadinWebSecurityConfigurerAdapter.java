@@ -165,7 +165,7 @@ public abstract class VaadinWebSecurityConfigurerAdapter
      * {@link org.springframework.security.config.annotation.method.configuration.GlobalMethodSecurityConfiguration}
      * to configure the current {@link SecurityContextHolderStrategy}.
      */
-    @Bean
+    @Bean(name = "VaadinSecurityContextHolderStrategy")
     public SecurityContextHolderStrategy securityContextHolderStrategy() {
         VaadinAwareSecurityContextHolderStrategy vaadinAwareSecurityContextHolderStrategy = new VaadinAwareSecurityContextHolderStrategy();
         // Use a security context holder that can find the context from Vaadin
