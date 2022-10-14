@@ -651,11 +651,11 @@ public class FrontendTools {
 
         try {
             FrontendVersion foundNpmVersion = getNpmVersion();
-            FrontendUtils.validateToolVersion("npm", foundNpmVersion,
-                    SUPPORTED_NPM_VERSION);
             getLogger().debug("Using npm {} located at {}",
                     foundNpmVersion.getFullVersion(),
                     getNpmExecutable(false).get(0));
+            FrontendUtils.validateToolVersion("npm", foundNpmVersion,
+                    SUPPORTED_NPM_VERSION);
             checkForFaultyNpmVersion(foundNpmVersion);
         } catch (UnknownVersionException e) {
             getLogger().warn("Error checking if npm is new enough", e);
