@@ -50,7 +50,8 @@ public class PwaHandler implements RequestHandler {
     public static final String SW_RUNTIME_PRECACHE_PATH = "/sw-runtime-resources-precache.js";
     public static final String DEFAULT_OFFLINE_STUB_PATH = "offline-stub.html";
 
-    private final Map<String, RequestHandler> requestHandlerMap = Collections.synchronizedMap(new HashMap<>());
+    private final Map<String, RequestHandler> requestHandlerMap = Collections
+            .synchronizedMap(new HashMap<>());
     private final SerializableSupplier<PwaRegistry> pwaRegistryGetter;
 
     private boolean isInitialized;
@@ -135,7 +136,7 @@ public class PwaHandler implements RequestHandler {
         RequestHandler handler = null;
         synchronized (requestHandlerMap) {
             if (hasPwa) {
-                if(!isInitialized) {
+                if (!isInitialized) {
                     init(pwaRegistry);
                     isInitialized = true;
                 }
