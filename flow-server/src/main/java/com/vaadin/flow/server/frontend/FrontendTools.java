@@ -67,11 +67,11 @@ public class FrontendTools {
      * the installed version is older than {@link #SUPPORTED_NODE_VERSION}, i.e.
      * {@value #SUPPORTED_NODE_MAJOR_VERSION}.{@value #SUPPORTED_NODE_MINOR_VERSION}.
      */
-    public static final String DEFAULT_NODE_VERSION = "v18.9.1";
+    public static final String DEFAULT_NODE_VERSION = "v18.11.0";
     /**
      * This is the version shipped with the default Node version.
      */
-    public static final String DEFAULT_NPM_VERSION = "8.19.1";
+    public static final String DEFAULT_NPM_VERSION = "8.19.2";
 
     public static final String DEFAULT_PNPM_VERSION = "5.18.10";
 
@@ -651,11 +651,11 @@ public class FrontendTools {
 
         try {
             FrontendVersion foundNpmVersion = getNpmVersion();
-            FrontendUtils.validateToolVersion("npm", foundNpmVersion,
-                    SUPPORTED_NPM_VERSION);
             getLogger().debug("Using npm {} located at {}",
                     foundNpmVersion.getFullVersion(),
                     getNpmExecutable(false).get(0));
+            FrontendUtils.validateToolVersion("npm", foundNpmVersion,
+                    SUPPORTED_NPM_VERSION);
             checkForFaultyNpmVersion(foundNpmVersion);
         } catch (UnknownVersionException e) {
             getLogger().warn("Error checking if npm is new enough", e);
