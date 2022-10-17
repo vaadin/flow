@@ -82,6 +82,8 @@ public class FrontendTools {
             ? "node/node_modules/npm/bin/"
             : "node/lib/node_modules/npm/bin/";
 
+    private static final String NPM_BIN_LINUX_LEGACY_PATH = "node/node_modules/npm/bin/";
+
     private static final String MSG_PREFIX = "%n%n======================================================================================================";
     private static final String MSG_SUFFIX = "%n======================================================================================================%n";
 
@@ -1067,6 +1069,9 @@ public class FrontendTools {
         // not work because it's a shell or windows script that looks for node
         // and will fail. Thus we look for the `npm-cli` node script instead
         File file = new File(dir, NPM_BIN_PATH + scriptName);
+        if (!FrontendUtils.isWindows() && !file.canRead()) {
+            file = new File(dir, NPM_BIN_LINUX_LEGACY_PATH + scriptName);
+        }
         List<String> returnCommand = new ArrayList<>();
         if (file.canRead()) {
             // We return a two element list with node binary and npm-cli script
