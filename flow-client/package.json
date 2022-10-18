@@ -9,7 +9,7 @@
     "url": "https://github.com/vaadin/flow/issues"
   },
   "scripts": {
-    "lint": "eslint \"src/main/resources/META-INF/resources/frontend/*.js\" && tslint --project .",
+    "lint": "eslint \"src/main/frontend\"",
     "client": "node scripts/client.js",
     "version": "node scripts/version.js",
     "webpack": "webpack --config=webpack.tests.config.js",
@@ -24,35 +24,37 @@
     "url": "git://github.com/vaadin/flow.git"
   },
   "files": [
-    "src/main/resources/META-INF/resources/frontend"
+    "src/main/frontend"
   ],
   "devDependencies": {
-    "@types/sinon": "^9.0.0",
-    "abort-controller": "^2.0.0",
-    "chai": "^4.2.0",
-    "eslint": "^5.8.0",
-    "eslint-config-vaadin": "^0.2.7",
-    "fetch-mock": "^7.3.0",
-    "idb": "^5.0.6",
-    "intern": "^4.4.3",
-    "lit-element": "^2.3.1",
-    "node-fetch": "^2.3.0",
-    "sinon": "^7.1.1",
-    "sinon-chai": "^3.2.0",
-    "ts-loader": "^6.0.4",
-    "tslint": "^5.12.1",
-    "tslint-config-prettier": "^1.18.0",
-    "tslint-eslint-rules": "^5.4.0",
-    "typescript": "4.0.3",
-    "webpack": "^4.39.1",
-    "webpack-cli": "^3.3.6",
-    "workbox-core": "^5.1.4",
-    "workbox-precaching": "^5.1.4",
-    "xhr-mock": "^2.5.0"
+    "@types/sinon": "9.0.0",
+    "abort-controller": "2.0.0",
+    "chai": "4.2.0",
+    "eslint": "7.21.0",
+    "eslint-config-vaadin": "0.4.0",
+    "eslint-plugin-lit": "1.4.1",
+    "fetch-mock": "7.3.0",
+    "intern": "4.4.3",
+    "mkdirp": "0.5.5",
+    "node-fetch": "2.3.0",
+    "prettier": "2.2.1",
+    "sinon": "7.5.0",
+    "sinon-chai": "3.6.0",
+    "ts-loader": "6.0.4",
+    "@types/express-serve-static-core": "4.17.20",
+    "@types/express": "4.17.2",
+    "typescript": "^3.8.3",
+    "webpack": "4.39.1",
+    "webpack-cli": "3.3.6",
+    "workbox-core": "5.1.4",
+    "workbox-precaching": "5.1.4",
+    "xhr-mock": "2.5.0"
   },
   "dependencies": {
-    "lit-html": "^1.2.1",
     "@types/validator": "13.1.0",
+    "idb": "^7.1.0",
+    "lit-element": "^2.3.1",
+    "lit-html": "^1.2.1",
     "validator": "13.1.17"
   }
 }
