@@ -31,6 +31,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
@@ -451,6 +452,12 @@ public class VaadinSessionTest {
                 return lock;
             }
 
+            @Override
+            public Future<Void> accessSession(VaadinSession session,
+                    Command command) {
+                command.execute();
+                return Mockito.mock(Future.class);
+            }
         };
 
         VaadinSession vaadinSession = new VaadinSession(mockService) {
