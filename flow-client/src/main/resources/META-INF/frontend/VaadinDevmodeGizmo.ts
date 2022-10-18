@@ -19,7 +19,7 @@ export class VaadinDevmodeGizmo extends LitElement {
   static YELLOW_HSL = css`38, 98%, 64%`;
   static RED_HSL = css`355, 100%, 68%`;
   static MAX_LOG_ROWS = 1000;
-  static copyO = svg`<svg style="width: 16px; height: 16px"><g id="copy-o"><path d="M13 3h-3l-3-3h-7v13h6v3h10v-10l-3-3zM7 1l2 2h-2v-2zM1 12v-11h5v3h3v8h-8zM15 15h-8v-2h3v-9h2v3h3v8zM13 6v-2l2 2h-2z"></path></g></svg>`;
+  static copyLogo = svg`<svg style="width: 16px; height: 16px"><g id="copy-o"><path d="M13 3h-3l-3-3h-7v13h6v3h10v-10l-3-3zM7 1l2 2h-2v-2zM1 12v-11h5v3h3v8h-8zM15 15h-8v-2h3v-9h2v3h3v8zM13 6v-2l2 2h-2z"></path></g></svg>`;
 
   static get styles() {
     return css`
@@ -272,13 +272,13 @@ export class VaadinDevmodeGizmo extends LitElement {
       }
 
       .tab {
-        color: var(--gizmo-text-color-secondary);
-        font-weight: 600;
-        padding-inline-end: 0.5rem;
+          color: var(--gizmo-text-color-secondary);
+          font-weight: 600;
+          padding-inline-end: 0.5rem;
       }
 
       .tab.active {
-        color: var(--gizmo-text-color-active);
+          color: var(--gizmo-text-color-active);
       }
 
       .ahreflike {
@@ -530,19 +530,19 @@ export class VaadinDevmodeGizmo extends LitElement {
       }
       
       .info-tray {
-        position: relative;
+          position: relative;
       }
       .info-message {
-        display: flex;
-        padding: 0.125rem 0.75rem 0.125rem 0.5rem;
-        background-clip: padding-box;
-        user-select: text;
+          display: flex;
+          padding: 0.125rem 0.75rem 0.125rem 0.5rem;
+          background-clip: padding-box;
+          user-select: text;
       }
       .copy {
-        position: absolute;
-        fill: white;
-        top: 0.125rem;
-        right: 0.75rem;
+          position: absolute;
+          fill: white;
+          top: 0.125rem;
+          right: 0.75rem;
       }
       @keyframes slideIn {
           from {
@@ -1060,7 +1060,7 @@ export class VaadinDevmodeGizmo extends LitElement {
         : nothing}
         ${this.activeTab === 'info'
         ? html`<div class="info-tray">
-              <span class="copy" @click=${this.copyInfoToClipboard}>${VaadinDevmodeGizmo.copyO}</span>
+              <span class="copy" @click=${this.copyInfoToClipboard}>${VaadinDevmodeGizmo.copyLogo}</span>
               <div class="info-message">Vaadin version: ${this.serverInfo.vaadinVersion}</div>
               <div class="info-message">Flow version: ${this.serverInfo.flowVersion}</div>
               <div class="info-message">Java version: ${this.serverInfo.javaVersion}</div>

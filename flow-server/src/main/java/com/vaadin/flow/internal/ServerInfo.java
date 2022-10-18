@@ -17,18 +17,21 @@ package com.vaadin.flow.internal;
 
 import java.io.InputStream;
 import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.Version;
 
+import org.apache.commons.io.IOUtils;
 import org.slf4j.LoggerFactory;
+
+import elemental.json.Json;
+import elemental.json.JsonObject;
 
 /**
  * Data for a info message to the debug window.
  */
-public class ServerInfo implements Serializable {
+public class ServerInfo implements Serializable, DebugWindowData {
 
     private final String flowVersion;
     private final String vaadinVersion;
@@ -65,9 +68,9 @@ public class ServerInfo implements Serializable {
         try (InputStream vaadinVersionsStream = getClass().getClassLoader()
                 .getResourceAsStream(Constants.VAADIN_VERSIONS_JSON)) {
             if (vaadinVersionsStream != null) {
-                ObjectMapper m = new ObjectMapper();
-                JsonNode vaadinVersions = m.readTree(vaadinVersionsStream);
-                return vaadinVersions.get("platform").asText();
+                JsonObject vaadinVersions = Json.parse(IOUtils.toString(
+                        vaadinVersionsStream, StandardCharsets.UTF_8));
+                return vaadinVersions.get("platform").toJson();
             } else {
                 LoggerFactory.getLogger(getClass()).info(
                         "Unable to determine version information. No vaadin_versions.json found");
@@ -94,5 +97,11 @@ public class ServerInfo implements Serializable {
 
     public String getOsVersion() {
         return osVersion;
+    }
+
+    public String toJson() {
+        return String.format(
+                "{\"flowVersion\": \"%s\", \"vaadinVersion\": \"%s\", \"javaVersion\": \"%s\", \"osVersion\": \"%s\"}",
+                flowVersion, vaadinVersion, javaVersion, osVersion);
     }
 }

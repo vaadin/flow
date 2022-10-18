@@ -23,7 +23,7 @@ import java.io.Serializable;
 public class DebugWindowMessage implements Serializable {
 
     private final String command;
-    private final Object data;
+    private final DebugWindowData data;
 
     /**
      * Creates a new instance.
@@ -33,7 +33,7 @@ public class DebugWindowMessage implements Serializable {
      * @param data
      *            the data that is specific to the command
      */
-    public DebugWindowMessage(String command, Object data) {
+    public DebugWindowMessage(String command, DebugWindowData data) {
         this.command = command;
         this.data = data;
 
@@ -43,7 +43,12 @@ public class DebugWindowMessage implements Serializable {
         return command;
     }
 
-    public Object getData() {
+    public DebugWindowData getData() {
         return data;
+    }
+
+    public String toJson() {
+        return String.format("{\"command\": \"%s\", \"data\": %s}", command,
+                data.toJson());
     }
 }

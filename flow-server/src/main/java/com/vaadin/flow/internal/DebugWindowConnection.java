@@ -23,8 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.atmosphere.cpr.AtmosphereResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,8 +47,6 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
     private static final EnumMap<Backend, List<String>> IDENTIFIER_CLASSES = new EnumMap<>(
             Backend.class);
-
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
     static {
         IDENTIFIER_CLASSES.put(Backend.JREBEL, Collections.singletonList(
@@ -119,10 +115,10 @@ public class DebugWindowConnection implements BrowserLiveReload {
     }
 
     private void send(AtmosphereResource resource, String command,
-            Object data) {
+            DebugWindowData data) {
         try {
-            resource.getBroadcaster().broadcast(objectMapper.writeValueAsString(
-                    new DebugWindowMessage(command, data)), resource);
+            DebugWindowMessage message = new DebugWindowMessage(command, data);
+            resource.getBroadcaster().broadcast(message.toJson(), resource);
         } catch (Exception e) {
             getLogger().error("Error sending message", e);
         }
@@ -160,8 +156,4 @@ public class DebugWindowConnection implements BrowserLiveReload {
         return LoggerFactory.getLogger(DebugWindowConnection.class.getName());
     }
 
-    @Override
-    public void onMessage(String message) {
-        // No messages supported yet
-    }
 }
