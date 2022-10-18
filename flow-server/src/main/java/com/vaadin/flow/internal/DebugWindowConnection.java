@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2020 Vaadin Ltd.
+ * Copyright 2000-2021 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -37,7 +37,7 @@ import com.vaadin.flow.server.DevModeHandler;
  * @author Vaadin Ltd
  *
  */
-class BrowserLiveReloadImpl implements BrowserLiveReload {
+public class DebugWindowConnection implements BrowserLiveReload {
 
     private final ClassLoader classLoader;
 
@@ -50,7 +50,7 @@ class BrowserLiveReloadImpl implements BrowserLiveReload {
 
     static {
         IDENTIFIER_CLASSES.put(Backend.JREBEL, Collections.singletonList(
-                "com.vaadin.flow.server.jrebel.JRebelInitializer"));
+                "org.zeroturnaround.jrebel.vaadin.JRebelClassEventListener"));
         IDENTIFIER_CLASSES.put(Backend.HOTSWAP_AGENT, Collections.singletonList(
                 "org.hotswap.agent.plugin.vaadin.VaadinIntegration"));
         IDENTIFIER_CLASSES.put(Backend.SPRING_BOOT_DEVTOOLS, Arrays.asList(
@@ -58,11 +58,11 @@ class BrowserLiveReloadImpl implements BrowserLiveReload {
                 "org.springframework.boot.devtools.livereload.LiveReloadServer"));
     }
 
-    BrowserLiveReloadImpl() {
-        this(BrowserLiveReloadImpl.class.getClassLoader());
+    DebugWindowConnection() {
+        this(DebugWindowConnection.class.getClassLoader());
     }
 
-    BrowserLiveReloadImpl(ClassLoader classLoader) {
+    DebugWindowConnection(ClassLoader classLoader) {
         this.classLoader = classLoader;
 
         DevModeHandler devModeHandler = DevModeHandler.getDevModeHandler();
@@ -110,6 +110,18 @@ class BrowserLiveReloadImpl implements BrowserLiveReload {
         atmosphereResources.add(new WeakReference<>(resource));
         resource.getBroadcaster().broadcast("{\"command\": \"hello\"}",
                 resource);
+
+        send(resource, "serverInfo", new ServerInfo());
+    }
+
+    private void send(AtmosphereResource resource, String command,
+            DebugWindowData data) {
+        try {
+            DebugWindowMessage message = new DebugWindowMessage(command, data);
+            resource.getBroadcaster().broadcast(message.toJson(), resource);
+        } catch (Exception e) {
+            getLogger().error("Error sending message", e);
+        }
     }
 
     @Override
@@ -141,6 +153,7 @@ class BrowserLiveReloadImpl implements BrowserLiveReload {
     }
 
     private static Logger getLogger() {
-        return LoggerFactory.getLogger(BrowserLiveReloadImpl.class.getName());
+        return LoggerFactory.getLogger(DebugWindowConnection.class.getName());
     }
+
 }

@@ -77,19 +77,11 @@ public class BrowserLiveReloadAccessTest {
         VaadinContext context = Mockito.mock(VaadinContext.class);
         Mockito.when(service.getContext()).thenReturn(context);
 
-        BrowserLiveReloadImpl reload = Mockito
-                .mock(BrowserLiveReloadImpl.class);
-        Mockito.when(context.getAttribute(BrowserLiveReloadImpl.class))
+        DebugWindowConnection reload = Mockito
+                .mock(DebugWindowConnection.class);
+        Mockito.when(context.getAttribute(DebugWindowConnection.class))
                 .thenReturn(reload);
 
         Assert.assertSame(reload, access.getLiveReload(service));
-    }
-
-    public static BrowserLiveReload mockBrowserLiveReloadImpl(
-            VaadinContext context) {
-        BrowserLiveReloadImpl liveReload = Mockito
-                .mock(BrowserLiveReloadImpl.class);
-        context.setAttribute(BrowserLiveReloadImpl.class, liveReload);
-        return liveReload;
     }
 }
