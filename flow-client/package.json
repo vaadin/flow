@@ -14,7 +14,7 @@
     "version": "node scripts/version.js",
     "webpack": "webpack --config=webpack.tests.config.js",
     "build": "npm run client && npm run version && tsc",
-    "compile": "npm run build && npm run lint",
+    "compile": "npm run build",
     "test": "npm run build && npm run webpack && intern",
     "debug": "npm run build && webpack --config=webpack.tests.config.js -w >&2 | intern serveOnly"
   },
