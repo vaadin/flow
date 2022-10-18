@@ -15,11 +15,13 @@
  */
 package com.vaadin.flow.internal;
 
+import java.io.Serializable;
+
 /**
  * Defines data that can be converted to a JSON message and sent to the debug
  * window.
  */
-public interface DebugWindowData {
+public interface DebugWindowData extends Serializable {
     /**
      * Converts data object to a JSON string.
      * @return JSON representation if the debug window data.

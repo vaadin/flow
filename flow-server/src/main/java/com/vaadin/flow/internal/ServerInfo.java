@@ -31,7 +31,7 @@ import elemental.json.JsonObject;
 /**
  * Data for a info message to the debug window.
  */
-public class ServerInfo implements Serializable, DebugWindowData {
+public class ServerInfo implements DebugWindowData {
 
     private final String flowVersion;
     private final String vaadinVersion;
