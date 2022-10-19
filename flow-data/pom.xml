@@ -81,11 +81,6 @@
             <version>1.2.0</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>license-checker</artifactId>
-            <scope>provided</scope>
-        </dependency>
     </dependencies>
 
     <build>
