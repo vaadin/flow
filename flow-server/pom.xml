@@ -43,6 +43,10 @@
         </dependency>
 
         <!-- Library dependencies -->
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>license-checker</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>com.vaadin.external.gwt</groupId>

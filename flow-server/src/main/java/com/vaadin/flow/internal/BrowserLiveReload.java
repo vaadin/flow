@@ -82,4 +82,14 @@ public interface BrowserLiveReload {
      */
     void reload();
 
+    /**
+     * Called when any message is received through the connection.
+     *
+     * @param resource
+     *            the atmosphere resource that received the message
+     * @param msg
+     *            the received message
+     */
+    void onMessage(AtmosphereResource resource, String msg);
+
 }

@@ -21,6 +21,7 @@ import java.io.Serializable;
  * Defines data that can be converted to a JSON message and sent to the debug
  * window.
  */
+@FunctionalInterface
 public interface DebugWindowData extends Serializable {
     /**
      * Converts data object to a JSON string.

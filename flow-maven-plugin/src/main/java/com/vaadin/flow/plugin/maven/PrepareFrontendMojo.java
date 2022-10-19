@@ -173,7 +173,8 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
                             .runNpmInstall(false)
                             .withNodeVersion(nodeVersion)
                             .withNodeDownloadRoot(nodeDownloadRootURI)
-                            .withHomeNodeExecRequired(requireHomeNodeExec);
+                            .withHomeNodeExecRequired(requireHomeNodeExec)
+                            .withProductionMode(productionMode);
             // If building a jar project copy jar artifact contents now as we might
             // not be able to read files from jar path.
             if("jar".equals(project.getPackaging())) {

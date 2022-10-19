@@ -17,6 +17,7 @@
 package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URL;
@@ -36,6 +37,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.maven.model.Build;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -156,6 +158,16 @@ public class BuildFrontendMojoTest {
         createExpectedImports(frontendDirectory, nodeModulesPath);
         FileUtils.fileWrite(packageJson, "UTF-8",
                 TestUtils.getInitalPackageJson().toJson());
+
+        File resourceOutput = new File(npmFolder, "resOut");
+        ReflectionUtils.setVariableValueInObject(mojo, "webpackOutputDirectory",
+                resourceOutput);
+        File statsJson = new File(new File(resourceOutput, "config"),
+                "stats.json");
+        statsJson.getParentFile().mkdirs();
+        try (FileOutputStream out = new FileOutputStream(statsJson)) {
+            IOUtils.write("{\"npmModules\":[]}", out, StandardCharsets.UTF_8);
+        }
     }
 
     @After

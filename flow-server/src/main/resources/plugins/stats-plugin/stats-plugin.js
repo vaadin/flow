@@ -45,11 +45,28 @@ class StatsPlugin {
       // Collect accepted chunks and their modules
       const chunks = collectChunks(statsJson, acceptedKeys);
 
+      const nodeModulesFolders = statsJson.modules
+          .map((module) => module.identifier)
+          .filter((id) => id.includes('node_modules'));
+      const npmModules = nodeModulesFolders
+          .map((id) => id.replace(/.*node_modules./, ''))
+          .map((id) => {
+            const parts = id.split('/');
+            if (id.startsWith('@')) {
+              return parts[0] + '/' + parts[1];
+            } else {
+              return parts[0];
+            }
+          })
+          .sort()
+          .filter((value, index, self) => self.indexOf(value) === index);
+
       let customStats = {
         hash: statsJson.hash,
         assetsByChunkName: statsJson.assetsByChunkName,
         chunks: chunks,
-        modules: modules
+        modules: modules,
+        npmModules: npmModules
       };
 
       if (!this.options.devMode) {
