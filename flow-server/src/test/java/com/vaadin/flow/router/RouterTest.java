@@ -2230,7 +2230,7 @@ public class RouterTest extends RoutingTestBase {
 
         Assert.assertEquals("Expected event amount was wrong", 1,
                 RootParameter.events.size());
-        Assert.assertEquals("Parameter should be empty", "hello",
+        Assert.assertEquals("Parameter should match the one in url", "hello",
                 RootParameter.param);
     }
 
@@ -2244,22 +2244,49 @@ public class RouterTest extends RoutingTestBase {
                 NavigationTrigger.PROGRAMMATIC);
         Assert.assertEquals("Expected event amount was wrong", 1,
                 IntegerParameter.events.size());
-        Assert.assertEquals("Parameter should be empty", 5,
+        Assert.assertEquals("Parameter should the one in url", 5,
                 IntegerParameter.param.intValue());
 
         router.navigate(ui, new Location("long/5"),
                 NavigationTrigger.PROGRAMMATIC);
         Assert.assertEquals("Expected event amount was wrong", 1,
                 LongParameter.events.size());
-        Assert.assertEquals("Parameter should be empty", 5,
+        Assert.assertEquals("Parameter should the one in url", 5,
                 LongParameter.param.longValue());
 
         router.navigate(ui, new Location("boolean/true"),
                 NavigationTrigger.PROGRAMMATIC);
         Assert.assertEquals("Expected event amount was wrong", 1,
                 BooleanParameter.events.size());
-        Assert.assertEquals("Parameter should be empty", true,
+        Assert.assertEquals("Parameter should the one in url", true,
                 BooleanParameter.param);
+    }
+
+    @Test
+    public void longParameter_deserialization()
+            throws InvalidRouteConfigurationException {
+        setNavigationTargets(LongParameter.class);
+
+        router.navigate(ui, new Location("long/+" + Long.MAX_VALUE),
+                NavigationTrigger.PROGRAMMATIC);
+        Assert.assertEquals("Expected event amount was wrong", 1,
+                LongParameter.events.size());
+        Assert.assertEquals("Parameter should accept long max with +",
+                Long.MAX_VALUE, LongParameter.param.longValue());
+
+        router.navigate(ui, new Location("long/" + Long.MIN_VALUE),
+                NavigationTrigger.PROGRAMMATIC);
+        Assert.assertEquals("Expected negative and positive event", 2,
+                LongParameter.events.size());
+        Assert.assertEquals("Parameter should accept long max with +",
+                Long.MIN_VALUE, LongParameter.param.longValue());
+
+        // Navigation will give a 404 not found if the deserialization fails.
+        Assert.assertEquals(404,
+                router.navigate(ui, new Location("long/9223372036854775817"),
+                        NavigationTrigger.PROGRAMMATIC));
+        Assert.assertEquals("No faulty event recorded", 2,
+                LongParameter.events.size());
     }
 
     @Test
