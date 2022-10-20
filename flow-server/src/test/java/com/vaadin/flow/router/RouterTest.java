@@ -409,7 +409,7 @@ public class RouterTest extends RoutingTestBase {
     public static class IntegerParameter extends Component
             implements HasUrlParameter<Integer> {
 
-        private static List<BeforeEvent> events = new ArrayList<>();
+        protected static List<BeforeEvent> events = new ArrayList<>();
 
         private static Integer param;
 
@@ -425,7 +425,7 @@ public class RouterTest extends RoutingTestBase {
     public static class LongParameter extends Component
             implements HasUrlParameter<Long> {
 
-        private static List<BeforeEvent> events = new ArrayList<>();
+        protected static List<BeforeEvent> events = new ArrayList<>();
 
         private static Long param;
 
@@ -441,7 +441,7 @@ public class RouterTest extends RoutingTestBase {
     public static class BooleanParameter extends Component
             implements HasUrlParameter<Boolean> {
 
-        private static List<BeforeEvent> events = new ArrayList<>();
+        protected static List<BeforeEvent> events = new ArrayList<>();
 
         private static Boolean param;
 
@@ -2237,6 +2237,9 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void has_url_with_supported_parameters_navigation()
             throws InvalidRouteConfigurationException {
+        IntegerParameter.events.clear();
+        LongParameter.events.clear();
+        BooleanParameter.events.clear();
         setNavigationTargets(IntegerParameter.class, LongParameter.class,
                 BooleanParameter.class);
 
@@ -2265,6 +2268,7 @@ public class RouterTest extends RoutingTestBase {
     @Test
     public void longParameter_deserialization()
             throws InvalidRouteConfigurationException {
+        LongParameter.events.clear();
         setNavigationTargets(LongParameter.class);
 
         router.navigate(ui, new Location("long/+" + Long.MAX_VALUE),
