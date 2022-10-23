@@ -20,7 +20,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import com.nimbusds.jose.JOSEException;
@@ -52,7 +51,6 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.context.HttpRequestResponseHolder;
-import org.springframework.security.web.context.SaveContextOnUpdateOrErrorResponseWrapper;
 import org.springframework.security.web.context.SecurityContextRepository;
 
 /**
@@ -181,25 +179,20 @@ class JwtSecurityContextRepository implements SecurityContextRepository {
     }
 
     @Override
-    public SecurityContext loadContext(HttpRequestResponseHolder holder) {
-        return loadContext(holder.getRequest()).get();
-    }
+    public SecurityContext loadContext(
+            HttpRequestResponseHolder requestResponseHolder) {
+        SecurityContext context = SecurityContextHolder.createEmptyContext();
 
-    @Override
-    public Supplier<SecurityContext> loadContext(HttpServletRequest request) {
-        return () -> {
-            SecurityContext context = SecurityContextHolder
-                    .createEmptyContext();
+        HttpServletRequest request = requestResponseHolder.getRequest();
 
-            Jwt jwt = decodeJwt(request);
-            if (jwt != null) {
-                Authentication authentication = jwtAuthenticationConverter
-                        .convert(jwt);
-                context.setAuthentication(authentication);
-            }
+        Jwt jwt = decodeJwt(request);
+        if (jwt != null) {
+            Authentication authentication = jwtAuthenticationConverter
+                    .convert(jwt);
+            context.setAuthentication(authentication);
+        }
 
-            return context;
-        };
+        return context;
     }
 
     @Override
@@ -221,5 +214,4 @@ class JwtSecurityContextRepository implements SecurityContextRepository {
         return serializedJwtSplitCookieRepository
                 .containsSerializedJwt(request);
     }
-
 }
