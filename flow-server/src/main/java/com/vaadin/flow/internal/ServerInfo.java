@@ -70,7 +70,7 @@ public class ServerInfo implements DebugWindowData {
             if (vaadinVersionsStream != null) {
                 JsonObject vaadinVersions = Json.parse(IOUtils.toString(
                         vaadinVersionsStream, StandardCharsets.UTF_8));
-                return vaadinVersions.get("platform").toJson();
+                return vaadinVersions.get("platform").asString();
             } else {
                 LoggerFactory.getLogger(getClass()).info(
                         "Unable to determine version information. No vaadin_versions.json found");
