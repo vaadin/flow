@@ -82,6 +82,7 @@ public class TaskUpdateImports extends NodeUpdater {
     private final boolean disablePnpm;
     private final boolean productionMode;
     private final List<String> additionalFrontendModules;
+    private final boolean enableNewLicenseChecker;
 
     private class UpdateMainImportsFile extends AbstractUpdateImports {
 
@@ -353,10 +354,10 @@ public class TaskUpdateImports extends NodeUpdater {
             FrontendDependenciesScanner frontendDepScanner,
             SerializableFunction<ClassFinder, FrontendDependenciesScanner> fallBackScannerProvider,
             File npmFolder, File generatedPath, File frontendDirectory,
-            File tokenFile, boolean disablePnpm, boolean productionMode) {
+            File tokenFile, boolean disablePnpm, boolean productionMode, boolean enableNewLicenseChecker) {
         this(finder, frontendDepScanner, fallBackScannerProvider, npmFolder,
                 generatedPath, frontendDirectory, tokenFile, null, disablePnpm,
-                Collections.emptyList(), productionMode);
+                Collections.emptyList(), productionMode, enableNewLicenseChecker);
     }
 
     /**
@@ -387,7 +388,8 @@ public class TaskUpdateImports extends NodeUpdater {
             SerializableFunction<ClassFinder, FrontendDependenciesScanner> fallBackScannerProvider,
             File npmFolder, File generatedPath, File frontendDirectory,
             File tokenFile, JsonObject tokenFileData, boolean disablePnpm,
-            List<String> additionalFrontendModules, boolean productionMode) {
+            List<String> additionalFrontendModules, boolean productionMode,
+            boolean enableNewLicenseChecker) {
         super(finder, frontendDepScanner, npmFolder, generatedPath);
         this.frontendDirectory = frontendDirectory;
         fallbackScanner = fallBackScannerProvider.apply(finder);
@@ -397,6 +399,7 @@ public class TaskUpdateImports extends NodeUpdater {
         this.disablePnpm = disablePnpm;
         this.additionalFrontendModules = additionalFrontendModules;
         this.productionMode = productionMode;
+        this.enableNewLicenseChecker = enableNewLicenseChecker;
     }
 
     @Override
@@ -503,11 +506,11 @@ public class TaskUpdateImports extends NodeUpdater {
     }
 
     private Stream<String> filter(Stream<String> modules) {
-        if (!productionMode) {
-            return modules;
+        if (productionMode && enableNewLicenseChecker) {
+            return modules.filter(module -> CvdlProducts
+                    .includeInFallbackBundle(module, nodeModulesFolder));
         }
-        return modules.filter(module -> CvdlProducts
-                .includeInFallbackBundle(module, nodeModulesFolder));
+        return modules;
     }
 
     private JsonArray makeFallbackCssImports(AbstractUpdateImports updater) {

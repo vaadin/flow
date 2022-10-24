@@ -257,7 +257,9 @@ public class DevModeInitializer
             return;
         }
 
-        LicenseChecker.setStrictOffline(true);
+        if (config.isNewLicenseCheckerEnabled()) {
+            LicenseChecker.setStrictOffline(true);
+        }
 
         String baseDir = config.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
                 null);
@@ -329,7 +331,9 @@ public class DevModeInitializer
                 .populateTokenFileData(tokenFileData)
                 .withEmbeddableWebComponents(true).enablePnpm(enablePnpm)
                 .withHomeNodeExecRequired(useHomeNodeExec)
-                .withProductionMode(config.isProductionMode()).build();
+                .withProductionMode(config.isProductionMode())
+                .enableNewLicenseChecker(config.isNewLicenseCheckerEnabled())
+                .build();
 
         // Check whether executor is provided by the caller (framework)
         Object service = config.getInitParameters().get(Executor.class);

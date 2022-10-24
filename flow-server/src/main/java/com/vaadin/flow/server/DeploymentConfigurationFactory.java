@@ -58,6 +58,7 @@ import static com.vaadin.flow.server.InitParameters.NODE_DOWNLOAD_ROOT;
 import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_ENABLE_NEW_LICENSE_CHECKER;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_REUSE_DEV_SERVER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_TOKEN_FILE;
@@ -284,6 +285,12 @@ public final class DeploymentConfigurationFactory implements Serializable {
             initParameters.setProperty(SERVLET_PARAMETER_REUSE_DEV_SERVER,
                     String.valueOf(buildInfo
                             .getBoolean(SERVLET_PARAMETER_REUSE_DEV_SERVER)));
+        }
+
+        if (buildInfo.hasKey(SERVLET_PARAMETER_ENABLE_NEW_LICENSE_CHECKER)) {
+            initParameters.setProperty(SERVLET_PARAMETER_ENABLE_NEW_LICENSE_CHECKER,
+                    String.valueOf(buildInfo.
+                            getBoolean(SERVLET_PARAMETER_ENABLE_NEW_LICENSE_CHECKER)));
         }
 
         setDevModePropertiesUsingTokenData(initParameters, buildInfo);

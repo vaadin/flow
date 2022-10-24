@@ -128,6 +128,11 @@ public class NodeTasks implements FallibleCommand {
         private boolean productionMode = true;
 
         /**
+         * Whether to enable server-side and offline license checking features.
+         */
+        private boolean enableNewLicenseChecker = false;
+
+        /**
          * Create a builder instance given an specific npm folder.
          *
          * @param classFinder
@@ -448,6 +453,18 @@ public class NodeTasks implements FallibleCommand {
             this.productionMode = productionMode;
             return this;
         }
+
+        /**
+         * Enables server-side and offline license checking features.
+         *
+         * @param enable
+         *            enables new license checker.
+         * @return the builder, for chaining
+         */
+        public Builder enableNewLicenseChecker(boolean enable) {
+            this.enableNewLicenseChecker = enable;
+            return this;
+        }
     }
 
     private final Collection<FallibleCommand> commands = new ArrayList<>();
@@ -523,7 +540,8 @@ public class NodeTasks implements FallibleCommand {
                             builder.npmFolder, builder.generatedFolder,
                             builder.frontendDirectory, builder.tokenFile,
                             builder.tokenFileData, builder.enablePnpm,
-                            builder.additionalFrontendModules, builder.productionMode));
+                            builder.additionalFrontendModules, builder.productionMode,
+                            builder.enableNewLicenseChecker));
 
             commands.add(new TaskUpdateThemeImport(builder.npmFolder,
                     frontendDependencies.getThemeDefinition(),

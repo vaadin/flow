@@ -458,4 +458,17 @@ public interface DeploymentConfiguration extends Serializable {
         return getBooleanProperty(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM,
                 false);
     }
+
+    /**
+     * Returns whether server-side and offline license checking are enabled or
+     * not.
+     *
+     * @return {@code true} if enabled, {@code false} if not
+     * @since 2.8
+     */
+    default boolean isNewLicenseCheckerEnabled() {
+        return getBooleanProperty(
+                InitParameters.SERVLET_PARAMETER_ENABLE_NEW_LICENSE_CHECKER,
+                false);
+    }
 }
