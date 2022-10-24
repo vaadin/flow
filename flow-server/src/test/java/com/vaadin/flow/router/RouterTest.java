@@ -2247,21 +2247,21 @@ public class RouterTest extends RoutingTestBase {
                 NavigationTrigger.PROGRAMMATIC);
         Assert.assertEquals("Expected event amount was wrong", 1,
                 IntegerParameter.events.size());
-        Assert.assertEquals("Parameter should the one in url", 5,
+        Assert.assertEquals("Parameter should match the one in url", 5,
                 IntegerParameter.param.intValue());
 
         router.navigate(ui, new Location("long/5"),
                 NavigationTrigger.PROGRAMMATIC);
         Assert.assertEquals("Expected event amount was wrong", 1,
                 LongParameter.events.size());
-        Assert.assertEquals("Parameter should the one in url", 5,
+        Assert.assertEquals("Parameter should match the one in url", 5,
                 LongParameter.param.longValue());
 
         router.navigate(ui, new Location("boolean/true"),
                 NavigationTrigger.PROGRAMMATIC);
         Assert.assertEquals("Expected event amount was wrong", 1,
                 BooleanParameter.events.size());
-        Assert.assertEquals("Parameter should the one in url", true,
+        Assert.assertEquals("Parameter should match the one in url", true,
                 BooleanParameter.param);
     }
 
