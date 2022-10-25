@@ -471,7 +471,7 @@ public interface DeploymentConfiguration extends Serializable {
      * @since 2.8
      */
     default boolean isOldLicenseCheckerEnabled() {
-        return !isCompatibilityMode() && getBooleanProperty(
+        return isCompatibilityMode() || getBooleanProperty(
                 InitParameters.SERVLET_PARAMETER_ENABLE_OLD_LICENSE_CHECKER,
                 false);
     }
