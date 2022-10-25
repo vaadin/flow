@@ -152,6 +152,8 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
     /**
      * Whether to use old JavaScript license checker and disable server-side
      * and offline features of the new license checker.
+     * <p>
+     * Compatibility/Bower mode always uses old license checking.
      */
     @Parameter(defaultValue = "false")
     public boolean enableOldLicenseChecker;
@@ -225,7 +227,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
     }
 
     void runWebpack(FrontendTools tools) throws MojoExecutionException {
-        if (!enableOldLicenseChecker) {
+        if (!enableOldLicenseChecker && !compatibility) {
             LicenseChecker.setStrictOffline(true);
         }
         String webpackCommand = "webpack/bin/webpack.js";
@@ -278,7 +280,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
     }
 
     private void validateLicenses() {
-        if (enableOldLicenseChecker) {
+        if (compatibility || enableOldLicenseChecker) {
             return;
         }
 

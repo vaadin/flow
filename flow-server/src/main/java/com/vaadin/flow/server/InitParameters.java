@@ -215,6 +215,8 @@ public class InitParameters implements Serializable {
     /**
      * Configuration parameter name for enabling old JavaScript license checker
      * and disable server-side and offline license checker features.
+     * <p>
+     * Compatibility/Bower mode always uses old license checking.
      *
      * @since 2.8
      */
