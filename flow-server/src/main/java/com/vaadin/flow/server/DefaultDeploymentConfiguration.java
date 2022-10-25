@@ -46,10 +46,10 @@ public class DefaultDeploymentConfiguration
             + "The default mode in Vaadin 14+ (Flow 2+) is based on npm for dependency management and JavaScript modules for dependency inclusion.\n\n"
             + "See http://vaadin.com/docs for more information.";
 
-    public static final String WARNING_COMPATIBILITY_MODE_AND_NEW_LICENSE_CHECKER = "Vaadin application is running in compatibility mode with the "
-            + "server-side and offline new license checking features enabled.\n\n"
-            + "New license checking is not supported in compatibility mode and would fallback to old license checker.\n\n"
-            + "Run the application in NPM mode to use new license checker.";
+    public static final String WARNING_LIVERELOAD_DISABLED_AND_NEW_LICENSE_CHECKER = "Server-side and offline new license checking features are enabled "
+            + "while the development mode live reload is not available.\n"
+            + "New license checking requires enabled live reload and would fallback to old license checker otherwise.\n"
+            + "Check that the application is not running in compatibility mode, live reload is not disabled and dev server is enabled.";
 
     public static final String NOT_PRODUCTION_MODE_WARNING = "\nWARNING: Vaadin is running in DEBUG MODE with debug features enabled, but with a prebuild frontend bundle (production ready).\n"
             + "When deploying application for production, disable debug features by enabling production mode!\n"
@@ -334,13 +334,14 @@ public class DefaultDeploymentConfiguration
     }
 
     /**
-     * Log a warning if new license checker is enabled in compatibility mode.
+     * Log a warning if new license checker is enabled in compatibility mode
+     * or while the live reload is off.
      */
     private void checkNewLicenseChecker(boolean loggWarning) {
         boolean enableNewLicenseChecker = !getBooleanProperty(
                 InitParameters.SERVLET_PARAMETER_ENABLE_OLD_LICENSE_CHECKER, false);
-        if (loggWarning && compatibilityMode && enableNewLicenseChecker) {
-            warnings.add(WARNING_COMPATIBILITY_MODE_AND_NEW_LICENSE_CHECKER);
+        if (loggWarning && !isDevModeLiveReloadEnabled() && enableNewLicenseChecker) {
+            warnings.add(WARNING_LIVERELOAD_DISABLED_AND_NEW_LICENSE_CHECKER);
         }
     }
 
