@@ -213,10 +213,10 @@ public class InitParameters implements Serializable {
     public static final String EXTERNAL_STATS_URL = "external.stats.url";
 
     /**
-     * Configuration parameter name for enabling server-side and offline license
-     * checker features.
+     * Configuration parameter name for enabling old JavaScript license checker
+     * and disable server-side and offline license checker features.
      *
      * @since 2.8
      */
-    public static final String SERVLET_PARAMETER_ENABLE_NEW_LICENSE_CHECKER = "enableNewLicenseChecker";
+    public static final String SERVLET_PARAMETER_ENABLE_OLD_LICENSE_CHECKER = "enableOldLicenseChecker";
 }

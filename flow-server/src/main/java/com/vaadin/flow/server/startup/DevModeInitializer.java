@@ -257,7 +257,7 @@ public class DevModeInitializer
             return;
         }
 
-        if (config.isNewLicenseCheckerEnabled()) {
+        if (!config.isOldLicenseCheckerEnabled()) {
             LicenseChecker.setStrictOffline(true);
         }
 
@@ -332,7 +332,7 @@ public class DevModeInitializer
                 .withEmbeddableWebComponents(true).enablePnpm(enablePnpm)
                 .withHomeNodeExecRequired(useHomeNodeExec)
                 .withProductionMode(config.isProductionMode())
-                .enableNewLicenseChecker(config.isNewLicenseCheckerEnabled())
+                .enableOldLicenseChecker(config.isOldLicenseCheckerEnabled())
                 .build();
 
         // Check whether executor is provided by the caller (framework)

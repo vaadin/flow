@@ -525,7 +525,13 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      * development mode.
      */
     public static void addLicenseChecker(Document indexDocument, DeploymentConfiguration config) {
-        if (config.isNewLicenseCheckerEnabled()) {
+        if (config.isOldLicenseCheckerEnabled()) {
+            addScript(indexDocument,
+                    "window.Vaadin = window.Vaadin || {};" +
+                    "window.Vaadin.devTools = window.Vaadin.devTools || {};" +
+                    "window.Vaadin.devTools.createdCvdlElements = window.Vaadin.devTools.createdCvdlElements || [];"
+            );
+        } else {
             // maybeCheck is invoked by the WC license checker
             addScript(indexDocument, "" + //
                      "window.Vaadin = window.Vaadin || {};" + //
@@ -556,12 +562,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                      "originalCustomElementDefineFn.call(this, tagName, constructor, ...args);"
                      + //
                      "};");
-        } else {
-            addScript(indexDocument,
-                    "window.Vaadin = window.Vaadin || {};" +
-                    "window.Vaadin.devTools = window.Vaadin.devTools || {};" +
-                    "window.Vaadin.devTools.createdCvdlElements = window.Vaadin.devTools.createdCvdlElements || [];"
-                    );
         }
     }
 

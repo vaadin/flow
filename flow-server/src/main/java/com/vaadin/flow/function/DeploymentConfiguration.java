@@ -463,12 +463,13 @@ public interface DeploymentConfiguration extends Serializable {
      * Returns whether server-side and offline license checking are enabled or
      * not.
      *
-     * @return {@code true} if enabled, {@code false} if not
+     * @return {@code true} if disabled - old JavaScript license checker is used,
+     * {@code false} if new license checker enabled
      * @since 2.8
      */
-    default boolean isNewLicenseCheckerEnabled() {
+    default boolean isOldLicenseCheckerEnabled() {
         return getBooleanProperty(
-                InitParameters.SERVLET_PARAMETER_ENABLE_NEW_LICENSE_CHECKER,
+                InitParameters.SERVLET_PARAMETER_ENABLE_OLD_LICENSE_CHECKER,
                 false);
     }
 }

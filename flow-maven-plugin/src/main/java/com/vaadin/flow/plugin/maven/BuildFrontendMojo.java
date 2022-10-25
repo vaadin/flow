@@ -150,11 +150,11 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
     private boolean optimizeBundle;
 
     /**
-     * Whether to use server-side and offline features of the new license
-     * checker.
+     * Whether to use old JavaScript license checker and disable server-side
+     * and offline features of the new license checker.
      */
     @Parameter(defaultValue = "false")
-    public boolean enableNewLicenseChecker;
+    public boolean enableOldLicenseChecker;
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
@@ -225,7 +225,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
     }
 
     void runWebpack(FrontendTools tools) throws MojoExecutionException {
-        if (enableNewLicenseChecker) {
+        if (!enableOldLicenseChecker) {
             LicenseChecker.setStrictOffline(true);
         }
         String webpackCommand = "webpack/bin/webpack.js";
@@ -278,7 +278,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
     }
 
     private void validateLicenses() {
-        if (!enableNewLicenseChecker) {
+        if (enableOldLicenseChecker) {
             return;
         }
 
