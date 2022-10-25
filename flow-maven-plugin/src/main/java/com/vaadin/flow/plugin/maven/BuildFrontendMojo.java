@@ -50,7 +50,6 @@ import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
-import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.CvdlProducts;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -154,8 +153,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
      * Whether to use old JavaScript license checker and disable server-side
      * and offline features of the new license checker.
      */
-    @Parameter(property = InitParameters.SERVLET_PARAMETER_ENABLE_OLD_LICENSE_CHECKER,
-            defaultValue = "false")
+    @Parameter(defaultValue = "false")
     public boolean enableOldLicenseChecker;
 
     @Override
