@@ -54,9 +54,9 @@ public class SecurityConfig extends VaadinWebSecurity {
 
     @Override
     public void configure(HttpSecurity http) throws Exception {
-        http.authorizeRequests().antMatchers("/admin-only/**")
+        http.authorizeRequests().requestMatchers("/admin-only/**")
                 .hasAnyRole(ROLE_ADMIN);
-        http.authorizeRequests().antMatchers("/public/**").permitAll();
+        http.authorizeRequests().requestMatchers("/public/**").permitAll();
         super.configure(http);
         setLoginView(http, LoginView.class, getLogoutSuccessUrl());
     }
