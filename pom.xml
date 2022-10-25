@@ -93,7 +93,7 @@
         <polymer.version>2.6.1</polymer.version>
         <jackson.version>2.13.4</jackson.version>
         <jackson.databind.version>2.13.4.2</jackson.databind.version>
-        <jakarta.validation.version>3.0.1</jakarta.validation.version>
+        <jakarta.validation.version>3.0.2</jakarta.validation.version>
         <jakarta.annotation.api.version>2.0.0</jakarta.annotation.api.version>
         <jaxb.version>4.0.1</jaxb.version>
 
