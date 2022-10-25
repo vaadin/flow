@@ -30,7 +30,7 @@ public class RouteParameterRegex implements Serializable {
     /**
      * Long type regex.
      */
-    public static final String LONG = "^[+-]?[0-8]?[0-9]{1,18}$";
+    public static final String LONG = "^[+-]?[0-9]{1,19}$";
 
     /**
      * Boolean type regex.
