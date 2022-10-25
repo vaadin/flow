@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.googlecode.gentyref.GenericTypeReflector;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.internal.ReflectTools;
 
@@ -69,7 +70,18 @@ public final class ParameterDeserializer {
         } else if (parameterType.isAssignableFrom(Integer.class)) {
             return (T) Integer.valueOf(parameter);
         } else if (parameterType.isAssignableFrom(Long.class)) {
-            return (T) Long.valueOf(parameter);
+            try {
+                return (T) Long.valueOf(parameter);
+            } catch (NumberFormatException nfe) {
+                // RouteParameterRegex.LONG accepts value outside Long.MAX and
+                // Long.MIN so inform this clearly in the exception.
+                final String error = String.format(
+                        "Received faulty Long value '%s' for class %s.",
+                        parameter, targetClass);
+                LoggerFactory.getLogger(ParameterDeserializer.class)
+                        .error(error);
+                throw new IllegalArgumentException(error);
+            }
         } else if (parameterType.isAssignableFrom(Boolean.class)) {
             return (T) Boolean.valueOf(parameter);
         } else {
