@@ -11,6 +11,11 @@ import {NavigationRoute, registerRoute} from 'workbox-routing';
 import {PrecacheEntry} from 'workbox-precaching/_types';
 import {NetworkOnly} from 'workbox-strategies';
 
+declare var self: ServiceWorkerGlobalScope & {
+  __WB_MANIFEST: Array<PrecacheEntry>,
+  additionalManifestEntries?: Array<PrecacheEntry>
+};
+
 skipWaiting();
 clientsClaim();
 
