@@ -395,7 +395,7 @@ public abstract class VaadinWebSecurity {
         formLogin.loginPage(loginPath).permitAll();
         formLogin.successHandler(
                 getVaadinSavedRequestAwareAuthenticationSuccessHandler(http));
-        http.csrf().ignoringAntMatchers(loginPath);
+        http.csrf().ignoringRequestMatchers(loginPath);
         http.logout().logoutSuccessUrl(logoutSuccessUrl);
         http.exceptionHandling().defaultAuthenticationEntryPointFor(
                 new LoginUrlAuthenticationEntryPoint(loginPath),
