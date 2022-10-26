@@ -458,4 +458,22 @@ public interface DeploymentConfiguration extends Serializable {
         return getBooleanProperty(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM,
                 false);
     }
+
+    /**
+     * Returns whether server-side and offline license checking are enabled or
+     * not.
+     * <p>
+     * New license checker is only available in npm mode with enabled live reload.
+     * Once compatibility/bower mode is used or live reload is disabled,
+     * the old license checker is used.
+     *
+     * @return {@code true} if old JavaScript license checker is used,
+     * {@code false} if new license checker enabled
+     * @since 2.8
+     */
+    default boolean isOldLicenseCheckerEnabled() {
+        return !isDevModeLiveReloadEnabled() || getBooleanProperty(
+                InitParameters.SERVLET_PARAMETER_ENABLE_OLD_LICENSE_CHECKER,
+                false);
+    }
 }

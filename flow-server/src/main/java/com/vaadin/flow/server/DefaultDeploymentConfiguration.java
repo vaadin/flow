@@ -46,6 +46,11 @@ public class DefaultDeploymentConfiguration
             + "The default mode in Vaadin 14+ (Flow 2+) is based on npm for dependency management and JavaScript modules for dependency inclusion.\n\n"
             + "See http://vaadin.com/docs for more information.";
 
+    public static final String WARNING_LIVERELOAD_DISABLED_AND_NEW_LICENSE_CHECKER = "Server-side and offline new license checking features are enabled "
+            + "while the development mode live reload is not available.\n"
+            + "New license checking requires enabled live reload and would fallback to old license checker otherwise.\n"
+            + "Check that the application is not running in compatibility mode, live reload is not disabled and dev server is enabled.";
+
     public static final String NOT_PRODUCTION_MODE_WARNING = "\nWARNING: Vaadin is running in DEBUG MODE with debug features enabled, but with a prebuild frontend bundle (production ready).\n"
             + "When deploying application for production, disable debug features by enabling production mode!\n"
             + "See more from https://vaadin.com/docs/v14/flow/production/overview";
@@ -123,6 +128,7 @@ public class DefaultDeploymentConfiguration
 
         checkProductionMode(log);
         checkCompatibilityMode(log);
+        checkNewLicenseChecker(log);
         checkRequestTiming();
         checkXsrfProtection(log);
         checkHeartbeatInterval();
@@ -296,7 +302,7 @@ public class DefaultDeploymentConfiguration
      * {@link IllegalStateException} if the mode could not be determined from
      * parameters.
      */
-    private void checkCompatibilityMode(boolean loggWarning) {
+    private void checkCompatibilityMode(boolean logWarning) {
         boolean explicitlySet = false;
         if (getStringProperty(InitParameters.SERVLET_PARAMETER_BOWER_MODE,
                 null) != null) {
@@ -322,8 +328,20 @@ public class DefaultDeploymentConfiguration
             }
         }
 
-        if (compatibilityMode && loggWarning) {
+        if (compatibilityMode && logWarning) {
             warnings.add(WARNING_COMPATIBILITY_MODE);
+        }
+    }
+
+    /**
+     * Log a warning if new license checker is enabled in compatibility mode
+     * or while the live reload is off.
+     */
+    private void checkNewLicenseChecker(boolean logWarning) {
+        boolean enableNewLicenseChecker = !getBooleanProperty(
+                InitParameters.SERVLET_PARAMETER_ENABLE_OLD_LICENSE_CHECKER, false);
+        if (logWarning && !isDevModeLiveReloadEnabled() && enableNewLicenseChecker) {
+            warnings.add(WARNING_LIVERELOAD_DISABLED_AND_NEW_LICENSE_CHECKER);
         }
     }
 
@@ -339,11 +357,11 @@ public class DefaultDeploymentConfiguration
     /**
      * Log a warning if cross-site request forgery protection is disabled.
      */
-    private void checkXsrfProtection(boolean loggWarning) {
+    private void checkXsrfProtection(boolean logWarning) {
         xsrfProtectionEnabled = !getBooleanProperty(
                 InitParameters.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION,
                 false);
-        if (!xsrfProtectionEnabled && loggWarning) {
+        if (!xsrfProtectionEnabled && logWarning) {
             warnings.add(WARNING_XSRF_PROTECTION_DISABLED);
         }
     }

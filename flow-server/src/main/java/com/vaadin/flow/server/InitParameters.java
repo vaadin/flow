@@ -211,4 +211,14 @@ public class InitParameters implements Serializable {
      * Property String for external stats.json location url.
      */
     public static final String EXTERNAL_STATS_URL = "external.stats.url";
+
+    /**
+     * Configuration parameter name for enabling old JavaScript license checker
+     * and disable server-side and offline license checker features.
+     * <p>
+     * Compatibility/Bower mode always uses old license checking.
+     *
+     * @since 2.8
+     */
+    public static final String SERVLET_PARAMETER_ENABLE_OLD_LICENSE_CHECKER = "oldLicenseChecker";
 }

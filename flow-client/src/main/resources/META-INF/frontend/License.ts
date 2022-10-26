@@ -139,6 +139,10 @@ export const licenseCheckNoKey = (data: ProductAndMessage) => {
 };
 
 export const licenseInit = () => {
+  if (!(window as any).Vaadin || !(window as any).Vaadin.devTools ||
+      !(window as any).Vaadin.devTools.createdCvdlElements) {
+    return;
+  }
   // Process already registered elements
   (window as any).Vaadin.devTools.createdCvdlElements.forEach((element: Element) => {
     checkLicenseIfNeeded(element);
