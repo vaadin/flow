@@ -337,7 +337,7 @@ public class DefaultDeploymentConfiguration
      * Log a warning if new license checker is enabled in compatibility mode
      * or while the live reload is off.
      */
-    private void checkNewLicenseChecker(boolean loggWarning) {
+    private void checkNewLicenseChecker(boolean logWarning) {
         boolean enableNewLicenseChecker = !getBooleanProperty(
                 InitParameters.SERVLET_PARAMETER_ENABLE_OLD_LICENSE_CHECKER, false);
         if (loggWarning && !isDevModeLiveReloadEnabled() && enableNewLicenseChecker) {

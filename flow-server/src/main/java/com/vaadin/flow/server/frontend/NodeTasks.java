@@ -131,7 +131,7 @@ public class NodeTasks implements FallibleCommand {
          * Whether to disable server-side and offline new license checking
          * features and enable old JavaScript license checker.
          */
-        private boolean enableOldLicenseChecker = false;
+        private boolean oldLicenseChecker = false;
 
         /**
          * Create a builder instance given an specific npm folder.

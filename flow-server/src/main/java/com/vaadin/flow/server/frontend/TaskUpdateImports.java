@@ -82,7 +82,7 @@ public class TaskUpdateImports extends NodeUpdater {
     private final boolean disablePnpm;
     private final boolean productionMode;
     private final List<String> additionalFrontendModules;
-    private final boolean enableOldLicenseChecker;
+    private final boolean oldLicenseChecker;
 
     private class UpdateMainImportsFile extends AbstractUpdateImports {
 

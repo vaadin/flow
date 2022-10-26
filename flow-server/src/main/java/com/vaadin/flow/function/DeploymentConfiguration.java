@@ -463,11 +463,11 @@ public interface DeploymentConfiguration extends Serializable {
      * Returns whether server-side and offline license checking are enabled or
      * not.
      * <p>
-     * New license checker is only available in NPM mode with enabled live reload.
+     * New license checker is only available in npm mode with enabled live reload.
      * Once compatibility/bower mode is used or live reload is disabled,
      * the old license checker is used.
      *
-     * @return {@code true} if disabled - old JavaScript license checker is used,
+     * @return {@code true} if old JavaScript license checker is used,
      * {@code false} if new license checker enabled
      * @since 2.8
      */
