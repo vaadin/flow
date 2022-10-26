@@ -36,7 +36,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
-import org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer;
+import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
 import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextHolderStrategy;
@@ -49,6 +49,7 @@ import org.springframework.security.web.access.RequestMatcherDelegatingAccessDen
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.csrf.CsrfException;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.AnyRequestMatcher;
@@ -141,6 +142,11 @@ public abstract class VaadinWebSecurity {
                         new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
                         requestUtil::isEndpointRequest);
 
+        // Enforce the deprecated CSRF handler temporarily
+        // to make Hilla auth work.
+        http.csrf(csrf -> csrf.csrfTokenRequestHandler(
+                new CsrfTokenRequestAttributeHandler()));
+
         // Vaadin has its own CSRF protection.
         // Spring CSRF is not compatible with Vaadin internal requests
         http.csrf().ignoringRequestMatchers(
@@ -152,8 +158,8 @@ public abstract class VaadinWebSecurity {
         // login
         http.requestCache().requestCache(vaadinDefaultRequestCache);
 
-        ExpressionUrlAuthorizationConfigurer<HttpSecurity>.ExpressionInterceptUrlRegistry urlRegistry = http
-                .authorizeRequests();
+        AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry urlRegistry = http
+                .authorizeHttpRequests();
         // Vaadin internal requests must always be allowed to allow public Flow
         // pages
         // and/or login page implemented using Flow.
@@ -395,7 +401,7 @@ public abstract class VaadinWebSecurity {
         formLogin.loginPage(loginPath).permitAll();
         formLogin.successHandler(
                 getVaadinSavedRequestAwareAuthenticationSuccessHandler(http));
-        http.csrf().ignoringAntMatchers(loginPath);
+        http.csrf().ignoringRequestMatchers(loginPath);
         http.logout().logoutSuccessUrl(logoutSuccessUrl);
         http.exceptionHandling().defaultAuthenticationEntryPointFor(
                 new LoginUrlAuthenticationEntryPoint(loginPath),
