@@ -34,6 +34,69 @@ const stylesCssFile = 'styles.css';
 const headerImport = `import 'construct-style-sheets-polyfill';
 `;
 
+// Strip comments is made according to StringUtil.removeComments that is tested in StringUtilTest
+// No line comments accepted checked as css only supports block comments!
+const stripCommentsMethod = `
+const State = Object.freeze({
+  NORMAL: Symbol("normal"),
+  IN_BLOCK_COMMENT: Symbol("block_comment"),
+  IN_STRING: Symbol("string"),
+  IN_STRING_APOSTROPHE: Symbol("string_apostrophe")
+});
+
+const removeComments = (code) => {
+  var state = State.NORMAL;
+  var result = "";
+  for (var i = 0; i < code.length; i++) {
+    var character = code.charAt(i);
+    switch (state) {
+      case State.NORMAL:
+        if(character == "/" && (i+1) < code.length) {
+          i++;
+          var nextCharacter = code.charAt(i);
+          if(nextCharacter == "*") {
+            state = State.IN_BLOCK_COMMENT;
+          } else {
+            result += character + nextCharacter;
+          }
+        } else {
+          result += character;
+          if(character == "\\"") {
+            state = State.IN_STRING;
+          } else if(character == "'") {
+            state = State.IN_STRING_APOSTROPHE;
+          }
+        }
+        break;
+      case State.IN_STRING:
+        result += character;
+        if(character == "\\"") {
+          state = State.NORMAL;
+        } else if(character == "\\\\" && (i+1) < code.length) {
+          result += code.charAt(i+1);
+          i++;
+        }
+        break;
+      case State.IN_STRING_APOSTROPHE:
+        result += character;
+        if(character == "'") {
+          state = State.NORMAL;
+        } else if(character == "\\\\" && (i+1) < code.length) {
+          result += code.charAt(i+1);
+          i++;
+        }
+        break;
+      case State.IN_BLOCK_COMMENT:
+        if(character == "*" && (i+1) < code.length && code.charAt(i+1) == "/") {
+          i++;
+          state = State.NORMAL;
+        }
+    }
+  }
+  return result;
+};
+`;
+
 const createLinkReferences = `
 const createLinkReferences = (css, target) => {
   // Unresolved urls are written as '@import url(text);' or '@import "text";' to the css
@@ -46,6 +109,12 @@ const createLinkReferences = (css, target) => {
   // [4] matches the url in '@import "..."'
   // [5] matches media query on @import statement
   const importMatcher = /(?:@media\\s(.+?))?(?:\\s{)?\\@import\\s*(?:url\\(\\s*['"]?(.+?)['"]?\\s*\\)|(["'])((?:\\\\.|[^\\\\])*?)\\3)([^;]*);(?:})?/g
+  
+  // Only cleanup if comment exist
+  if(/\\/\\*(.|[\\r\\n])*?\\*\\//gm.exec(css) != null) {
+    // clean up comments
+    css = removeComments(css);
+  }
   
   var match;
   var styleCss = css;
@@ -118,6 +187,7 @@ function generateThemeFile(themeFolder, themeName, themeProperties, productionMo
     themeFile += `import {applyTheme as applyBaseTheme} from './theme-${themeProperties.parent}.generated.js';`;
   }
 
+  themeFile += stripCommentsMethod;
   themeFile += createLinkReferences;
   themeFile += injectGlobalCssMethod;
 
