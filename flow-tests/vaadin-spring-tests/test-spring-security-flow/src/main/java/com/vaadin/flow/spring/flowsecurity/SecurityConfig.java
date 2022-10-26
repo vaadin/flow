@@ -14,6 +14,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import com.vaadin.flow.spring.RootMappedCondition;
 import com.vaadin.flow.spring.VaadinConfigurationProperties;
@@ -54,9 +55,12 @@ public class SecurityConfig extends VaadinWebSecurity {
 
     @Override
     public void configure(HttpSecurity http) throws Exception {
-        http.authorizeHttpRequests().requestMatchers("/admin-only/**")
+        http.authorizeHttpRequests()
+                .requestMatchers(new AntPathRequestMatcher("/admin-only/**"))
                 .hasAnyRole(ROLE_ADMIN);
-        http.authorizeHttpRequests().requestMatchers("/public/**").permitAll();
+        http.authorizeHttpRequests()
+                .requestMatchers(new AntPathRequestMatcher("/public/**"))
+                .permitAll();
         super.configure(http);
         setLoginView(http, LoginView.class, getLogoutSuccessUrl());
     }
