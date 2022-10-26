@@ -652,7 +652,7 @@ public class BootstrapHandlerTest {
                 "Content javascript should have been prepended to head element",
                 "<script type=\"text/javascript\">window.messages = window.messages || [];\n"
                         + "window.messages.push(\"content script\");</script>",
-                allElements.get(2).toString());
+                allElements.get(1).toString());
     }
 
     @Test // 3036
@@ -671,7 +671,7 @@ public class BootstrapHandlerTest {
                 "Content javascript should have been prepended to head element",
                 "<script type=\"text/javascript\">window.messages = window.messages || [];\n"
                         + "window.messages.push(\"inline.js\");</script>",
-                allElements.get(2).toString());
+                allElements.get(1).toString());
     }
 
     @Test // 3036
@@ -743,7 +743,7 @@ public class BootstrapHandlerTest {
         Elements allElements = page.head().getAllElements();
 
         Assert.assertEquals("<meta name=\"theme-color\" content=\"#227aef\">",
-                allElements.get(2).toString());
+                allElements.get(1).toString());
     }
 
     @Test // 3203
@@ -943,7 +943,7 @@ public class BootstrapHandlerTest {
                 "File javascript should have been prepended to head element",
                 "<script type=\"text/javascript\">window.messages = window.messages || [];\n"
                         + "window.messages.push(\"inline.js\");</script>",
-                allElements.get(2).toString());
+                allElements.get(1).toString());
         assertStringEquals(
                 "File html should have been prepended to head element",
                 "<script type=\"text/javascript\">\n"
@@ -951,7 +951,7 @@ public class BootstrapHandlerTest {
                         + "    window.messages = window.messages || [];\n"
                         + "    window.messages.push(\"inline.html\");\n"
                         + "</script>",
-                allElements.get(3).toString());
+                allElements.get(2).toString());
         assertStringEquals(
                 "File css should have been prepended to head element",
                 "<style type=\"text/css\">/* inline.css */\n" + "\n"
@@ -959,7 +959,7 @@ public class BootstrapHandlerTest {
                         + "    color: rgba(255, 255, 0, 1);\n" + "}\n" + "\n"
                         + "#inlineCssTestDiv {\n"
                         + "    color: rgba(255, 255, 0, 1);\n" + "}</style>",
-                allElements.get(4).toString());
+                allElements.get(3).toString());
     }
 
     @Test // 3010
