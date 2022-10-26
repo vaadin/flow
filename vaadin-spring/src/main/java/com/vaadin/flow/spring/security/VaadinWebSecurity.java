@@ -49,6 +49,7 @@ import org.springframework.security.web.access.RequestMatcherDelegatingAccessDen
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.csrf.CsrfException;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.AnyRequestMatcher;
@@ -140,6 +141,11 @@ public abstract class VaadinWebSecurity {
                 .defaultAuthenticationEntryPointFor(
                         new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED),
                         requestUtil::isEndpointRequest);
+
+        // Enforce the deprecated CSRF handler temporarily
+        // to make Hilla auth work.
+        http.csrf(csrf -> csrf.csrfTokenRequestHandler(
+                new CsrfTokenRequestAttributeHandler()));
 
         // Vaadin has its own CSRF protection.
         // Spring CSRF is not compatible with Vaadin internal requests
