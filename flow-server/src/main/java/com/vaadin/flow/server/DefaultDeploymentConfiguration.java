@@ -302,7 +302,7 @@ public class DefaultDeploymentConfiguration
      * {@link IllegalStateException} if the mode could not be determined from
      * parameters.
      */
-    private void checkCompatibilityMode(boolean loggWarning) {
+    private void checkCompatibilityMode(boolean logWarning) {
         boolean explicitlySet = false;
         if (getStringProperty(InitParameters.SERVLET_PARAMETER_BOWER_MODE,
                 null) != null) {
@@ -328,7 +328,7 @@ public class DefaultDeploymentConfiguration
             }
         }
 
-        if (compatibilityMode && loggWarning) {
+        if (compatibilityMode && logWarning) {
             warnings.add(WARNING_COMPATIBILITY_MODE);
         }
     }
@@ -340,7 +340,7 @@ public class DefaultDeploymentConfiguration
     private void checkNewLicenseChecker(boolean logWarning) {
         boolean enableNewLicenseChecker = !getBooleanProperty(
                 InitParameters.SERVLET_PARAMETER_ENABLE_OLD_LICENSE_CHECKER, false);
-        if (loggWarning && !isDevModeLiveReloadEnabled() && enableNewLicenseChecker) {
+        if (logWarning && !isDevModeLiveReloadEnabled() && enableNewLicenseChecker) {
             warnings.add(WARNING_LIVERELOAD_DISABLED_AND_NEW_LICENSE_CHECKER);
         }
     }
@@ -357,11 +357,11 @@ public class DefaultDeploymentConfiguration
     /**
      * Log a warning if cross-site request forgery protection is disabled.
      */
-    private void checkXsrfProtection(boolean loggWarning) {
+    private void checkXsrfProtection(boolean logWarning) {
         xsrfProtectionEnabled = !getBooleanProperty(
                 InitParameters.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION,
                 false);
-        if (!xsrfProtectionEnabled && loggWarning) {
+        if (!xsrfProtectionEnabled && logWarning) {
             warnings.add(WARNING_XSRF_PROTECTION_DISABLED);
         }
     }

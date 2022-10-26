@@ -456,14 +456,15 @@ public class NodeTasks implements FallibleCommand {
         }
 
         /**
-         * Enables server-side and offline license checking features.
+         * Falls back to the old license checking and disables server-side and
+         * offline new license checking features.
          *
          * @param enable
-         *            enables new license checker.
+         *            falls back to the old license checker if {@code true}.
          * @return the builder, for chaining
          */
-        public Builder enableOldLicenseChecker(boolean enable) {
-            this.enableOldLicenseChecker = enable;
+        public Builder withOldLicenseChecker(boolean enable) {
+            this.oldLicenseChecker = enable;
             return this;
         }
     }
@@ -542,7 +543,7 @@ public class NodeTasks implements FallibleCommand {
                             builder.frontendDirectory, builder.tokenFile,
                             builder.tokenFileData, builder.enablePnpm,
                             builder.additionalFrontendModules, builder.productionMode,
-                            builder.enableOldLicenseChecker));
+                            builder.oldLicenseChecker));
 
             commands.add(new TaskUpdateThemeImport(builder.npmFolder,
                     frontendDependencies.getThemeDefinition(),

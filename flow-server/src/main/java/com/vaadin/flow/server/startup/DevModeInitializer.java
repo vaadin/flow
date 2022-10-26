@@ -332,7 +332,7 @@ public class DevModeInitializer
                 .withEmbeddableWebComponents(true).enablePnpm(enablePnpm)
                 .withHomeNodeExecRequired(useHomeNodeExec)
                 .withProductionMode(config.isProductionMode())
-                .enableOldLicenseChecker(config.isOldLicenseCheckerEnabled())
+                .withOldLicenseChecker(config.isOldLicenseCheckerEnabled())
                 .build();
 
         // Check whether executor is provided by the caller (framework)
