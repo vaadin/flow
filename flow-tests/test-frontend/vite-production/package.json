@@ -15,7 +15,7 @@
     "@vaadin/vaadin-text-field": "23.3.0-alpha2",
     "@vaadin/vaadin-themable-mixin": "23.3.0-alpha2",
     "construct-style-sheets-polyfill": "3.1.0",
-    "lit": "2.3.0"
+    "lit": "2.4.0"
   },
   "devDependencies": {
     "@rollup/plugin-replace": "3.1.0",
