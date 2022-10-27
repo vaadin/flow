@@ -177,6 +177,7 @@ public class NodeUpdaterTest {
         expectedDependencies.add("mkdirp");
         expectedDependencies.add("workbox-build");
         expectedDependencies.add("transform-ast");
+        expectedDependencies.add("strip-comments");
 
         Set<String> actualDependendencies = defaultDeps.keySet();
 
@@ -208,6 +209,7 @@ public class NodeUpdaterTest {
         expectedDependencies.add("loader-utils");
         expectedDependencies.add("workbox-webpack-plugin");
         expectedDependencies.add("chokidar");
+        expectedDependencies.add("strip-comments");
 
         Set<String> actualDependendencies = defaultDeps.keySet();
 
