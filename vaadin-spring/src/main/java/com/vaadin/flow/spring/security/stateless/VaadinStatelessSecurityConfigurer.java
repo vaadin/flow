@@ -39,6 +39,7 @@ import org.springframework.security.web.savedrequest.CookieRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
 
 import com.vaadin.flow.spring.security.VaadinDefaultRequestCache;
+import com.vaadin.flow.spring.security.VaadinSavedRequestAwareAuthenticationSuccessHandler;
 
 /**
  * Enables authentication that relies on JWT instead of sessions.
@@ -63,6 +64,10 @@ import com.vaadin.flow.spring.security.VaadinDefaultRequestCache;
  * <li>{@link VaadinDefaultRequestCache} - if present, this uses
  * {@link VaadinDefaultRequestCache#setDelegateRequestCache(RequestCache)} to
  * delegate saving requests to {@link CookieRequestCache}</li>
+ * <li>{@link VaadinSavedRequestAwareAuthenticationSuccessHandler} - if present,
+ * this uses
+ * {@link VaadinSavedRequestAwareAuthenticationSuccessHandler#setCsrfTokenRepository(CsrfTokenRepository)}
+ * to allow the success handler to set the new csrf cookie</li>
  * </ul>
  *
  * @param <H>
@@ -96,9 +101,13 @@ public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuild
         if (csrf != null) {
             // Use cookie for storing CSRF token, as it does not require a
             // session (double-submit cookie pattern)
-            CsrfTokenRepository csrfTokenRepository = new LazyCsrfTokenRepository(
-                    CookieCsrfTokenRepository.withHttpOnlyFalse());
+            CsrfTokenRepository csrfTokenRepository = CookieCsrfTokenRepository
+                    .withHttpOnlyFalse();
             csrf.csrfTokenRepository(csrfTokenRepository);
+            http.getSharedObject(
+                    VaadinSavedRequestAwareAuthenticationSuccessHandler.class)
+                    .setCsrfTokenRepository(csrfTokenRepository);
+
         }
     }
 
