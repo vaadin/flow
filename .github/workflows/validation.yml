@@ -106,7 +106,7 @@ jobs:
             ARGS="-pl ${{matrix.args}}"
           cmd="mvn -B -ntp -T 1C $ARGS"
           set -x -e -o pipefail
-          $cmd verify | tee mvn-unit-tests-${{matrix.current}}.out
+          $cmd verify -Dmaven.javadoc.skip=false | tee mvn-unit-tests-${{matrix.current}}.out
       - name: Set build status flag
         id: set-failure
         if: ${{ failure() || cancelled() }}
