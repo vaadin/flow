@@ -30,6 +30,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.web.DefaultRedirectStrategy;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
 import org.springframework.security.web.csrf.CsrfToken;
+import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.savedrequest.SavedRequest;
@@ -117,6 +118,8 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandler
      */
     private RequestCache requestCache = new HttpSessionRequestCache();
 
+    private CsrfTokenRepository csrfTokenRepository;
+
     /**
      * Creates a new instance.
      */
@@ -167,6 +170,12 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandler
         if (isTypescriptLogin(request)) {
             response.setHeader(DEFAULT_URL_HEADER,
                     determineTargetUrl(request, response));
+            if (this.csrfTokenRepository != null) {
+                this.csrfTokenRepository.saveToken(
+                        csrfTokenRepository.generateToken(request), request,
+                        response);
+            }
+
         }
 
         SavedRequest savedRequest = this.requestCache.getRequest(request,
@@ -256,5 +265,18 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandler
     public void setRequestCache(RequestCache requestCache) {
         super.setRequestCache(requestCache);
         this.requestCache = requestCache;
+    }
+
+    /**
+     * Sets the csrf token repository which is used to generate the csrf token
+     * when using a cookie based (stateless) csrf store.
+     *
+     * @param csrfTokenRepository
+     *            the csrf token repository
+     */
+    public void setCsrfTokenRepository(
+            CsrfTokenRepository csrfTokenRepository) {
+        this.csrfTokenRepository = csrfTokenRepository;
+
     }
 }

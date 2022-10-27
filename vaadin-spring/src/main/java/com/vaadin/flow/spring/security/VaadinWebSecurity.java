@@ -514,6 +514,9 @@ public abstract class VaadinWebSecurity {
             vaadinSavedRequestAwareAuthenticationSuccessHandler
                     .setRequestCache(requestCache);
         }
+        http.setSharedObject(
+                VaadinSavedRequestAwareAuthenticationSuccessHandler.class,
+                vaadinSavedRequestAwareAuthenticationSuccessHandler);
         return vaadinSavedRequestAwareAuthenticationSuccessHandler;
     }
 
