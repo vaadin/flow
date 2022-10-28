@@ -133,7 +133,7 @@ task functionalTest(type: Test) {
     }
 }
 // Tests are temporarily disabled, see https://github.com/vaadin/flow/issues/14812
-//check.dependsOn functionalTest
+check.dependsOn functionalTest
 /***********************************************************************************************************************
  *
  * Deployment
