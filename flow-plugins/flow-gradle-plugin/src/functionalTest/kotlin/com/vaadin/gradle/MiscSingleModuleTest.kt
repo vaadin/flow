@@ -250,8 +250,18 @@ class MiscSingleModuleTest : AbstractGradleTest() {
 
     private fun doTestSpringProjectProductionMode(compressedExtension: String = "*.br") {
 
-        val springBootVersion = "2.2.4.RELEASE"
+        val springBootVersion = "3.0.0-RC1"
 
+        testProject.settingsFile.writeText(
+            """
+            pluginManagement {
+                repositories {
+                  maven { url 'https://repo.spring.io/milestone' }
+                  gradlePluginPortal()
+                }
+              }
+            """
+        )
         testProject.buildFile.writeText(
                 """
             plugins {
@@ -264,7 +274,8 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             repositories {
                 mavenLocal()
                 mavenCentral()
-                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+                maven { url 'https://maven.vaadin.com/vaadin-prereleases' }
+                maven { url 'https://repo.spring.io/milestone' }
             }
 
             configurations {
@@ -289,7 +300,12 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                     mavenBom "com.vaadin:flow:$flowVersion"
                 }
             }
-        """
+
+            jar {
+                enabled = false // Do not build a separate "plain" jar, see https://docs.spring.io/spring-boot/docs/current/gradle-plugin/reference/htmlsingle/#packaging-executable.and-plain-archives
+            }
+
+            """
         )
 
         // need to create the Application.java file otherwise bootJar will fail

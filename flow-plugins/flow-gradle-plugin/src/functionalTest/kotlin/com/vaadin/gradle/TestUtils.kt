@@ -142,7 +142,6 @@ fun expectArchiveContainsVaadinBundle(archive: File,
     val isStandaloneJar: Boolean = !isWar && !isSpringBootJar
     val resourcePackaging: String = when {
         isWar -> "WEB-INF/classes/"
-        isSpringBootJar -> "BOOT-INF/classes/"
         else -> ""
     }
     expectArchiveContains(
