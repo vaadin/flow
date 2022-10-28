@@ -76,7 +76,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             dependencies {
                 compile("com.vaadin:flow:$flowVersion")
                 providedCompile("jakarta.servlet:jakarta.servlet-api:5.0.0")
-                compile("org.slf4j:slf4j-simple:1.7.30")
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
         """.trimIndent()
         )
@@ -124,7 +124,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             dependencies {
                 compile("com.vaadin:flow:$flowVersion")
                 providedCompile("jakarta.servlet:jakarta.servlet-api:5.0.0")
-                compile("org.slf4j:slf4j-simple:1.7.30")
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
         """.trimIndent()
         )
@@ -157,7 +157,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             def jettyVersion = "11.0.7"
             dependencies {
                 compile("com.vaadin:flow:$flowVersion")
-                compile("org.slf4j:slf4j-simple:1.7.30")
+                compile("org.slf4j:slf4j-simple:$slf4jVersion")
                 compile("jakarta.servlet:jakarta.servlet-api:5.0.0")
 
                 compile("org.eclipse.jetty:jetty-server:${"$"}{jettyVersion}")
@@ -209,7 +209,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             }
             dependencies {
                 compile("com.vaadin:flow:$flowVersion")
-                compile("org.slf4j:slf4j-simple:1.7.30")
+                compile("org.slf4j:slf4j-simple:$slf4jVersion")
                 compile("jakarta.servlet:jakarta.servlet-api:5.0.0")
 
                 compile("org.eclipse.jetty:jetty-continuation:${"$"}{jettyVersion}")
@@ -371,7 +371,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             dependencies {
                 compile("com.vaadin:flow:$flowVersion")
                 providedCompile("jakarta.servlet:jakarta.servlet-api:5.0.0")
-                compile("org.slf4j:slf4j-simple:1.7.30")
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
             
             sourceSets {
