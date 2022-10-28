@@ -292,6 +292,10 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                     mavenBom "com.vaadin:flow:$flowVersion"
                 }
             }
+
+            jar {
+                enabled = false // Do not build a separate "plain" jar, see https://docs.spring.io/spring-boot/docs/current/gradle-plugin/reference/htmlsingle/#packaging-executable.and-plain-archives
+            }
         """
         )
 
