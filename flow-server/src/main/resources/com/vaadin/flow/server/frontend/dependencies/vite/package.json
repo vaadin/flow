@@ -10,7 +10,7 @@
   "license": "Apache-2.0",
   "dependencies": {},
   "devDependencies": {
-    "vite": "v3.1.0",
+    "vite": "v3.2.2",
     "@rollup/plugin-replace": "3.1.0",
     "rollup-plugin-brotli": "3.1.0",
     "vite-plugin-checker": "0.4.9",

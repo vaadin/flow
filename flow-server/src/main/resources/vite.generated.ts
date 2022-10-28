@@ -571,7 +571,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
             if (server && !spaMiddlewareForceRemoved) {
               server.middlewares.stack = server.middlewares.stack.filter((mw) => {
                 const handleName = '' + mw.handle;
-                return !handleName.includes('viteSpaFallbackMiddleware');
+                return !handleName.includes('htmlFallbackMiddleware');
               });
               spaMiddlewareForceRemoved = true;
             }
