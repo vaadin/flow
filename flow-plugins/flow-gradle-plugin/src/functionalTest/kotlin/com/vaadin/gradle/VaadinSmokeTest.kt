@@ -45,7 +45,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
                 maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
             }
             dependencies {
-                compile("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow:$flowVersion")
                 providedCompile("jakarta.servlet:jakarta.servlet-api:5.0.0")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
@@ -218,7 +218,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
                 maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
             }
             dependencies {
-                compile("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow:$flowVersion")
                 providedCompile("jakarta.servlet:jakarta.servlet-api:5.0.0")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
@@ -249,7 +249,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
                 maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
             }
             dependencies {
-                compile("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow:$flowVersion")
                 providedCompile("jakarta.servlet:jakarta.servlet-api:5.0.0")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
@@ -280,7 +280,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
                 maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
             }
             dependencies {
-                compile("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow:$flowVersion")
                 providedCompile("jakarta.servlet:jakarta.servlet-api:5.0.0")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }

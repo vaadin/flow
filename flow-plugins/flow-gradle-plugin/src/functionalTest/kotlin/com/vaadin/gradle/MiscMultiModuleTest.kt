@@ -47,8 +47,8 @@ class MiscMultiModuleTest : AbstractGradleTest() {
                 apply plugin: 'com.vaadin'
                 
                 dependencies {
-                    compile project(':lib')
-                    compile("com.vaadin:flow:$flowVersion")
+                    implementation project(':lib')
+                    implementation("com.vaadin:flow:$flowVersion")
                 }
 
                 vaadin {
@@ -91,8 +91,8 @@ class MiscMultiModuleTest : AbstractGradleTest() {
                 apply plugin: 'com.vaadin'
                 
                 dependencies {
-                    compile project(':lib')
-                    compile("com.vaadin:flow:$flowVersion")
+                    implementation project(':lib')
+                    implementation("com.vaadin:flow:$flowVersion")
                 }
 
                 vaadin {
