@@ -45,9 +45,9 @@ class VaadinSmokeTest : AbstractGradleTest() {
                 maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
             }
             dependencies {
-                compile("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow:$flowVersion")
                 providedCompile("jakarta.servlet:jakarta.servlet-api:5.0.0")
-                compile("org.slf4j:slf4j-simple:1.7.30")
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
             vaadin {
                 pnpmEnable = true
@@ -218,9 +218,9 @@ class VaadinSmokeTest : AbstractGradleTest() {
                 maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
             }
             dependencies {
-                compile("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow:$flowVersion")
                 providedCompile("jakarta.servlet:jakarta.servlet-api:5.0.0")
-                compile("org.slf4j:slf4j-simple:1.7.30")
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
             vaadin {
                 frontendDirectory = file("src/main/frontend")
@@ -249,9 +249,9 @@ class VaadinSmokeTest : AbstractGradleTest() {
                 maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
             }
             dependencies {
-                compile("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow:$flowVersion")
                 providedCompile("jakarta.servlet:jakarta.servlet-api:5.0.0")
-                compile("org.slf4j:slf4j-simple:1.7.30")
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
             vaadin {
                 generatedTsFolder = file("api")
@@ -280,9 +280,9 @@ class VaadinSmokeTest : AbstractGradleTest() {
                 maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
             }
             dependencies {
-                compile("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow:$flowVersion")
                 providedCompile("jakarta.servlet:jakarta.servlet-api:5.0.0")
-                compile("org.slf4j:slf4j-simple:1.7.30")
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
             vaadin {
                 frontendDirectory = file("src/main/frontend")

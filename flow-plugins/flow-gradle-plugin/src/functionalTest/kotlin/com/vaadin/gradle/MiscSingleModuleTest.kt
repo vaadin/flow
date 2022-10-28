@@ -27,6 +27,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
     /**
      * Tests https://github.com/vaadin/vaadin-gradle-plugin/issues/26
      */
+    @Ignore("The devsoap plugin does not work with Gradle 7")
     @Test
     fun testVaadin8VaadinPlatformMPRProject() {
         testProject.buildFile.writeText(
@@ -74,9 +75,9 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                 maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
             }
             dependencies {
-                compile("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow:$flowVersion")
                 providedCompile("jakarta.servlet:jakarta.servlet-api:5.0.0")
-                compile("org.slf4j:slf4j-simple:1.7.30")
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
         """.trimIndent()
         )
@@ -122,9 +123,9 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                 maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
             }
             dependencies {
-                compile("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow:$flowVersion")
                 providedCompile("jakarta.servlet:jakarta.servlet-api:5.0.0")
-                compile("org.slf4j:slf4j-simple:1.7.30")
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
         """.trimIndent()
         )
@@ -156,12 +157,12 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             }
             def jettyVersion = "11.0.7"
             dependencies {
-                compile("com.vaadin:flow:$flowVersion")
-                compile("org.slf4j:slf4j-simple:1.7.30")
-                compile("jakarta.servlet:jakarta.servlet-api:5.0.0")
+                implementation("com.vaadin:flow:$flowVersion")
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
+                implementation("jakarta.servlet:jakarta.servlet-api:5.0.0")
 
-                compile("org.eclipse.jetty:jetty-server:${"$"}{jettyVersion}")
-                compile("org.eclipse.jetty.websocket:websocket-jetty-server:${"$"}{jettyVersion}")
+                implementation("org.eclipse.jetty:jetty-server:${"$"}{jettyVersion}")
+                implementation("org.eclipse.jetty.websocket:websocket-jetty-server:${"$"}{jettyVersion}")
             }
         """.trimIndent()
         )
@@ -203,21 +204,17 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                 mavenCentral()
                 maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
             }
-            def jettyVersion = "9.4.20.v20190813"
+            def jettyVersion = "11.0.12"
             vaadin {
                 pnpmEnable = true
             }
             dependencies {
-                compile("com.vaadin:flow:$flowVersion")
-                compile("org.slf4j:slf4j-simple:1.7.30")
-                compile("jakarta.servlet:jakarta.servlet-api:5.0.0")
+                implementation("com.vaadin:flow:$flowVersion")
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
+                implementation("jakarta.servlet:jakarta.servlet-api:5.0.0")
 
-                compile("org.eclipse.jetty:jetty-continuation:${"$"}{jettyVersion}")
-                compile("org.eclipse.jetty:jetty-server:${"$"}{jettyVersion}")
-                compile("org.eclipse.jetty.websocket:websocket-server:${"$"}{jettyVersion}")
-                compile("org.eclipse.jetty.websocket:jakarta.websocket-server-impl:${"$"}{jettyVersion}") {
-                    exclude(module: "jakarta.websocket-client-api")
-                }
+                implementation("org.eclipse.jetty:jetty-server:${"$"}{jettyVersion}")
+                implementation("org.eclipse.jetty.websocket:websocket-jakarta-server:${"$"}{jettyVersion}")
             }
         """.trimIndent()
         )
@@ -253,8 +250,18 @@ class MiscSingleModuleTest : AbstractGradleTest() {
 
     private fun doTestSpringProjectProductionMode(compressedExtension: String = "*.br") {
 
-        val springBootVersion = "2.2.4.RELEASE"
+        val springBootVersion = "3.0.0-RC1"
 
+        testProject.settingsFile.writeText(
+            """
+            pluginManagement {
+                repositories {
+                  maven { url 'https://repo.spring.io/milestone' }
+                  gradlePluginPortal()
+                }
+              }
+            """
+        )
         testProject.buildFile.writeText(
                 """
             plugins {
@@ -267,7 +274,8 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             repositories {
                 mavenLocal()
                 mavenCentral()
-                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+                maven { url 'https://maven.vaadin.com/vaadin-prereleases' }
+                maven { url 'https://repo.spring.io/milestone' }
             }
 
             configurations {
@@ -292,7 +300,12 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                     mavenBom "com.vaadin:flow:$flowVersion"
                 }
             }
-        """
+
+            jar {
+                enabled = false // Do not build a separate "plain" jar, see https://docs.spring.io/spring-boot/docs/current/gradle-plugin/reference/htmlsingle/#packaging-executable.and-plain-archives
+            }
+
+            """
         )
 
         // need to create the Application.java file otherwise bootJar will fail
@@ -369,9 +382,9 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                 maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
             }
             dependencies {
-                compile("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow:$flowVersion")
                 providedCompile("jakarta.servlet:jakarta.servlet-api:5.0.0")
-                compile("org.slf4j:slf4j-simple:1.7.30")
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
             
             sourceSets {
@@ -379,7 +392,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             }
 
             configurations {
-              guiceConfigCompile.extendsFrom compile
+              guiceConfigCompile.extendsFrom implementation
             }
 
             dependencies {
@@ -425,7 +438,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                 maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
             }
             dependencies {
-                compile("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow:$flowVersion")
             }
             vaadin {
                 requireHomeNodeExec = true
@@ -476,7 +489,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                 maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
             }
             dependencies {
-                compile("com.vaadin:flow:$flowVersion")
+                implementation("com.vaadin:flow:$flowVersion")
             }
         """
         )
