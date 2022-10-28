@@ -50,7 +50,7 @@ const createLinkReferences = (css, target) => {
   // Only cleanup if comment exist
   if(/\\/\\*(.|[\\r\\n])*?\\*\\//gm.exec(css) != null) {
     // clean up comments
-    css = strip(css, { line: false });
+    css = stripCssComments(css);
   }
   
   var match;
@@ -123,7 +123,7 @@ function generateThemeFile(themeFolder, themeName, themeProperties, productionMo
   if (themeProperties.parent) {
     themeFile += `import {applyTheme as applyBaseTheme} from './theme-${themeProperties.parent}.generated.js';\n`;
   }
-  themeFile += `import strip from 'strip-comments';\n`;
+  themeFile += `import stripCssComments from 'strip-css-comments';\n`;
 
   themeFile += createLinkReferences;
   themeFile += injectGlobalCssMethod;
