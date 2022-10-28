@@ -445,6 +445,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         defaults.put("workbox-precaching", WORKBOX_VERSION);
         defaults.put("glob", "7.1.6");
         defaults.put("async", "3.2.2");
+        defaults.put("strip-css-comments", "5.0.0");
 
         return defaults;
     }
