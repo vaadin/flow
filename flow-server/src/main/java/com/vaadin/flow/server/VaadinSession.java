@@ -1155,7 +1155,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      * Value is expressed as the difference, measured in milliseconds, between
      * the current time and midnight, January 1, 1970 UTC.
      *
-     * @return last lock operation timestamp.
+     * @return last unlock operation timestamp.
      */
     public long getLastUnlocked() {
         return lastUnlocked;
