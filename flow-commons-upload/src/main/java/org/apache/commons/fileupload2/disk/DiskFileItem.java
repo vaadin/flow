@@ -45,8 +45,7 @@ import org.apache.commons.io.output.DeferredFileOutputStream;
  *
  * <p> After retrieving an instance of this class from a {@link
  * DiskFileItemFactory} instance (see
- * {@link org.apache.commons.fileupload2.servlet.ServletFileUpload
- * #parseRequest(javax.servlet.http.HttpServletRequest)}), you may
+ * {@link org.apache.commons.fileupload2.jaksrvlt.JakSrvltFileUpload#parseRequest(jakarta.servlet.http.HttpServletRequest)}), you may
  * either request all contents of file at once using {@link #get()} or
  * request an {@link java.io.InputStream InputStream} with
  * {@link #getInputStream()} and process the file without attempting to load
