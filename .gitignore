@@ -64,3 +64,5 @@ flow-tests/**/.pnpmfile.cjs
 flow-tests/**/*.npmrc
 
 *.xml.versionsBackup
+
+polymer2lit/**/frontend/generated
