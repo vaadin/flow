@@ -21,8 +21,8 @@ import java.io.IOException;
 import com.vaadin.external.apache.commons.fileupload2.FileUploadException;
 
 /**
- * This exception is thrown for hiding an inner
- * {@link FileUploadException} in an {@link IOException}.
+ * This exception is thrown for hiding an inner {@link FileUploadException} in
+ * an {@link IOException}.
  */
 public class FileUploadIOException extends IOException {
 
@@ -32,17 +32,16 @@ public class FileUploadIOException extends IOException {
     private static final long serialVersionUID = -7047616958165584154L;
 
     /**
-     * The exceptions cause; we overwrite the parent
-     * classes field, which is available since Java
-     * 1.4 only.
+     * The exceptions cause; we overwrite the parent classes field, which is
+     * available since Java 1.4 only.
      */
     private final FileUploadException cause;
 
     /**
-     * Creates a {@code FileUploadIOException} with the
-     * given cause.
+     * Creates a {@code FileUploadIOException} with the given cause.
      *
-     * @param pCause The exceptions cause, if any, or null.
+     * @param pCause
+     *            The exceptions cause, if any, or null.
      */
     public FileUploadIOException(final FileUploadException pCause) {
         // We're not doing super(pCause) cause of 1.3 compatibility.

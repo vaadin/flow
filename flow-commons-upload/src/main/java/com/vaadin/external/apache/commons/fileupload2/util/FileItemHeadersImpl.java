@@ -40,8 +40,7 @@ public class FileItemHeadersImpl implements FileItemHeaders, Serializable {
     private static final long serialVersionUID = -4455695752627032559L;
 
     /**
-     * Map of {@code String} keys to a {@code List} of
-     * {@code String} instances.
+     * Map of {@code String} keys to a {@code List} of {@code String} instances.
      */
     private final Map<String, List<String>> headerNameToValueListMap = new LinkedHashMap<>();
 
@@ -51,7 +50,8 @@ public class FileItemHeadersImpl implements FileItemHeaders, Serializable {
     @Override
     public String getHeader(final String name) {
         final String nameLower = name.toLowerCase(Locale.ENGLISH);
-        final List<String> headerValueList = headerNameToValueListMap.get(nameLower);
+        final List<String> headerValueList = headerNameToValueListMap
+                .get(nameLower);
         if (null == headerValueList) {
             return null;
         }
@@ -82,13 +82,15 @@ public class FileItemHeadersImpl implements FileItemHeaders, Serializable {
     /**
      * Method to add header values to this instance.
      *
-     * @param name name of this header
-     * @param value value of this header
+     * @param name
+     *            name of this header
+     * @param value
+     *            value of this header
      */
     public synchronized void addHeader(final String name, final String value) {
         final String nameLower = name.toLowerCase(Locale.ENGLISH);
-        final List<String> headerValueList = headerNameToValueListMap.
-                computeIfAbsent(nameLower, k -> new ArrayList<>());
+        final List<String> headerValueList = headerNameToValueListMap
+                .computeIfAbsent(nameLower, k -> new ArrayList<>());
         headerValueList.add(value);
     }
 

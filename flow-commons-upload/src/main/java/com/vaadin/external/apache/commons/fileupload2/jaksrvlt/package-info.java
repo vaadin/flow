@@ -16,26 +16,27 @@
  */
 
 /**
- *    <p>
- *      An implementation of
- *      {@link com.vaadin.external.apache.commons.fileupload2.FileUpload FileUpload}
- *      for use in servlets conforming to the namespace {@code jakarta.servlet}.
+ * <p>
+ * An implementation of
+ * {@link com.vaadin.external.apache.commons.fileupload2.FileUpload FileUpload}
+ * for use in servlets conforming to the namespace {@code jakarta.servlet}.
  *
- *    </p>
- *    <p>
- *      The following code fragment demonstrates typical usage.
- *    </p>
+ * </p>
+ * <p>
+ * The following code fragment demonstrates typical usage.
+ * </p>
+ *
  * <pre>
- *        DiskFileItemFactory factory = new DiskFileItemFactory();
- *        // Configure the factory here, if desired.
- *        JakSrvltFileUpload upload = new JakSrvltFileUpload(factory);
- *        // Configure the uploader here, if desired.
- *        List fileItems = upload.parseRequest(request);
+ * DiskFileItemFactory factory = new DiskFileItemFactory();
+ * // Configure the factory here, if desired.
+ * JakSrvltFileUpload upload = new JakSrvltFileUpload(factory);
+ * // Configure the uploader here, if desired.
+ * List fileItems = upload.parseRequest(request);
  * </pre>
- *    <p>
- *      Please see the FileUpload
- *      <a href="https://commons.apache.org/fileupload/using.html" target="_top">User Guide</a>
- *      for further details and examples of how to use this package.
- *    </p>
+ * <p>
+ * Please see the FileUpload
+ * <a href="https://commons.apache.org/fileupload/using.html" target="_top">User
+ * Guide</a> for further details and examples of how to use this package.
+ * </p>
  */
 package com.vaadin.external.apache.commons.fileupload2.jaksrvlt;

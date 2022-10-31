@@ -19,8 +19,7 @@ package com.vaadin.external.apache.commons.fileupload2.pub;
 /**
  * Thrown to indicate that the request size exceeds the configured maximum.
  */
-public class SizeLimitExceededException
-        extends SizeException {
+public class SizeLimitExceededException extends SizeException {
 
     /**
      * The exceptions UID, for serializing an instance.
@@ -28,12 +27,15 @@ public class SizeLimitExceededException
     private static final long serialVersionUID = -2474893167098052828L;
 
     /**
-     * Constructs a {@code SizeExceededException} with
-     * the specified detail message, and actual and permitted sizes.
+     * Constructs a {@code SizeExceededException} with the specified detail
+     * message, and actual and permitted sizes.
      *
-     * @param message   The detail message.
-     * @param actual    The actual request size.
-     * @param permitted The maximum permitted request size.
+     * @param message
+     *            The detail message.
+     * @param actual
+     *            The actual request size.
+     * @param permitted
+     *            The maximum permitted request size.
      */
     public SizeLimitExceededException(final String message, final long actual,
             final long permitted) {

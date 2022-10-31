@@ -26,7 +26,8 @@ public interface Closeable {
     /**
      * Closes the object.
      *
-     * @throws IOException An I/O error occurred.
+     * @throws IOException
+     *             An I/O error occurred.
      */
     void close() throws IOException;
 
@@ -34,7 +35,8 @@ public interface Closeable {
      * Returns, whether the object is already closed.
      *
      * @return True, if the object is closed, otherwise false.
-     * @throws IOException An I/O error occurred.
+     * @throws IOException
+     *             An I/O error occurred.
      */
     boolean isClosed() throws IOException;
 

@@ -31,19 +31,21 @@ public class IOFileUploadException extends FileUploadException {
     private static final long serialVersionUID = 1749796615868477269L;
 
     /**
-     * The exceptions cause; we overwrite the parent
-     * classes field, which is available since Java
-     * 1.4 only.
+     * The exceptions cause; we overwrite the parent classes field, which is
+     * available since Java 1.4 only.
      */
     private final IOException cause;
 
     /**
      * Creates a new instance with the given cause.
      *
-     * @param pMsg The detail message.
-     * @param pException The exceptions cause.
+     * @param pMsg
+     *            The detail message.
+     * @param pException
+     *            The exceptions cause.
      */
-    public IOFileUploadException(final String pMsg, final IOException pException) {
+    public IOFileUploadException(final String pMsg,
+            final IOException pException) {
         super(pMsg);
         cause = pException;
     }

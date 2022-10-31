@@ -16,7 +16,7 @@
  */
 
 /**
- * Exceptions, and other classes, that are known to be used outside
- * of FileUpload.
+ * Exceptions, and other classes, that are known to be used outside of
+ * FileUpload.
  */
 package com.vaadin.external.apache.commons.fileupload2.pub;

@@ -35,36 +35,46 @@ import com.vaadin.external.apache.commons.fileupload2.util.FileItemHeadersImpl;
 import com.vaadin.external.apache.commons.fileupload2.util.Streams;
 
 /**
- * <p>High level API for processing file uploads.</p>
+ * <p>
+ * High level API for processing file uploads.
+ * </p>
  *
- * <p>This class handles multiple files per single HTML widget, sent using
+ * <p>
+ * This class handles multiple files per single HTML widget, sent using
  * {@code multipart/mixed} encoding type, as specified by
- * <a href="http://www.ietf.org/rfc/rfc1867.txt">RFC 1867</a>.  Use {@link
- * #parseRequest(RequestContext)} to acquire a list of {@link
- * com.vaadin.external.apache.commons.fileupload2.FileItem}s associated with a given HTML
- * widget.</p>
+ * <a href="http://www.ietf.org/rfc/rfc1867.txt">RFC 1867</a>. Use
+ * {@link #parseRequest(RequestContext)} to acquire a list of
+ * {@link com.vaadin.external.apache.commons.fileupload2.FileItem}s associated
+ * with a given HTML widget.
+ * </p>
  *
- * <p>How the data for individual parts is stored is determined by the factory
- * used to create them; a given part may be in memory, on disk, or somewhere
- * else.</p>
+ * <p>
+ * How the data for individual parts is stored is determined by the factory used
+ * to create them; a given part may be in memory, on disk, or somewhere else.
+ * </p>
  */
 public abstract class FileUploadBase {
 
     // ---------------------------------------------------------- Class methods
 
     /**
-     * <p>Utility method that determines whether the request contains multipart
-     * content.</p>
+     * <p>
+     * Utility method that determines whether the request contains multipart
+     * content.
+     * </p>
      *
-     * <p><strong>NOTE:</strong>This method will be moved to the
+     * <p>
+     * <strong>NOTE:</strong>This method will be moved to the
      * {@code ServletFileUpload} class after the FileUpload 1.1 release.
-     * Unfortunately, since this method is static, it is not possible to
-     * provide its replacement until this method is removed.</p>
+     * Unfortunately, since this method is static, it is not possible to provide
+     * its replacement until this method is removed.
+     * </p>
      *
-     * @param ctx The request context to be evaluated. Must be non-null.
+     * @param ctx
+     *            The request context to be evaluated. Must be non-null.
      *
-     * @return {@code true} if the request is multipart;
-     *         {@code false} otherwise.
+     * @return {@code true} if the request is multipart; {@code false}
+     *         otherwise.
      */
     public static final boolean isMultipartContent(final RequestContext ctx) {
         final String contentType = ctx.getContentType();
@@ -117,11 +127,12 @@ public abstract class FileUploadBase {
     public static final String MULTIPART_MIXED = "multipart/mixed";
 
     /**
-     * The maximum length of a single header line that will be parsed
-     * (1024 bytes).
+     * The maximum length of a single header line that will be parsed (1024
+     * bytes).
+     *
      * @deprecated This constant is no longer used. As of commons-fileupload
-     *   1.2, the only applicable limit is the total size of a parts headers,
-     *   {@link MultipartStream#HEADER_PART_SIZE_MAX}.
+     *             1.2, the only applicable limit is the total size of a parts
+     *             headers, {@link MultipartStream#HEADER_PART_SIZE_MAX}.
      */
     @Deprecated
     public static final int MAX_HEADER_SIZE = 1024;
@@ -135,8 +146,8 @@ public abstract class FileUploadBase {
     private long sizeMax = -1;
 
     /**
-     * The maximum size permitted for a single uploaded file, as opposed
-     * to {@link #sizeMax}. A value of -1 indicates no maximum.
+     * The maximum size permitted for a single uploaded file, as opposed to
+     * {@link #sizeMax}. A value of -1 indicates no maximum.
      */
     private long fileSizeMax = -1;
 
@@ -162,16 +173,17 @@ public abstract class FileUploadBase {
     /**
      * Sets the factory class to use when creating file items.
      *
-     * @param factory The factory class for new file items.
+     * @param factory
+     *            The factory class for new file items.
      */
     public abstract void setFileItemFactory(FileItemFactory factory);
 
     /**
-     * Returns the maximum allowed size of a complete request, as opposed
-     * to {@link #getFileSizeMax()}.
+     * Returns the maximum allowed size of a complete request, as opposed to
+     * {@link #getFileSizeMax()}.
      *
-     * @return The maximum allowed size, in bytes. The default value of
-     *   -1 indicates, that there is no limit.
+     * @return The maximum allowed size, in bytes. The default value of -1
+     *         indicates, that there is no limit.
      *
      * @see #setSizeMax(long)
      *
@@ -181,11 +193,12 @@ public abstract class FileUploadBase {
     }
 
     /**
-     * Sets the maximum allowed size of a complete request, as opposed
-     * to {@link #setFileSizeMax(long)}.
+     * Sets the maximum allowed size of a complete request, as opposed to
+     * {@link #setFileSizeMax(long)}.
      *
-     * @param sizeMax The maximum allowed size, in bytes. The default value of
-     *   -1 indicates, that there is no limit.
+     * @param sizeMax
+     *            The maximum allowed size, in bytes. The default value of -1
+     *            indicates, that there is no limit.
      *
      * @see #getSizeMax()
      *
@@ -195,8 +208,8 @@ public abstract class FileUploadBase {
     }
 
     /**
-     * Returns the maximum allowed size of a single uploaded file,
-     * as opposed to {@link #getSizeMax()}.
+     * Returns the maximum allowed size of a single uploaded file, as opposed to
+     * {@link #getSizeMax()}.
      *
      * @see #setFileSizeMax(long)
      * @return Maximum size of a single uploaded file.
@@ -206,11 +219,12 @@ public abstract class FileUploadBase {
     }
 
     /**
-     * Sets the maximum allowed size of a single uploaded file,
-     * as opposed to {@link #getSizeMax()}.
+     * Sets the maximum allowed size of a single uploaded file, as opposed to
+     * {@link #getSizeMax()}.
      *
      * @see #getFileSizeMax()
-     * @param fileSizeMax Maximum size of a single uploaded file.
+     * @param fileSizeMax
+     *            Maximum size of a single uploaded file.
      */
     public void setFileSizeMax(final long fileSizeMax) {
         this.fileSizeMax = fileSizeMax;
@@ -219,8 +233,8 @@ public abstract class FileUploadBase {
     /**
      * Retrieves the character encoding used when reading the headers of an
      * individual part. When not specified, or {@code null}, the request
-     * encoding is used. If that is also not specified, or {@code null},
-     * the platform default encoding is used.
+     * encoding is used. If that is also not specified, or {@code null}, the
+     * platform default encoding is used.
      *
      * @return The encoding used to read part headers.
      */
@@ -231,10 +245,11 @@ public abstract class FileUploadBase {
     /**
      * Specifies the character encoding to be used when reading the headers of
      * individual part. When not specified, or {@code null}, the request
-     * encoding is used. If that is also not specified, or {@code null},
-     * the platform default encoding is used.
+     * encoding is used. If that is also not specified, or {@code null}, the
+     * platform default encoding is used.
      *
-     * @param encoding The encoding used to read part headers.
+     * @param encoding
+     *            The encoding used to read part headers.
      */
     public void setHeaderEncoding(final String encoding) {
         headerEncoding = encoding;
@@ -246,20 +261,22 @@ public abstract class FileUploadBase {
      * Processes an <a href="http://www.ietf.org/rfc/rfc1867.txt">RFC 1867</a>
      * compliant {@code multipart/form-data} stream.
      *
-     * @param ctx The context for the request to be parsed.
+     * @param ctx
+     *            The context for the request to be parsed.
      *
-     * @return An iterator to instances of {@code FileItemStream}
-     *         parsed from the request, in the order that they were
-     *         transmitted.
+     * @return An iterator to instances of {@code FileItemStream} parsed from
+     *         the request, in the order that they were transmitted.
      *
-     * @throws FileUploadException if there are problems reading/parsing
-     *                             the request or storing files.
-     * @throws IOException An I/O error occurred. This may be a network
-     *   error while communicating with the client or a problem while
-     *   storing the uploaded content.
+     * @throws FileUploadException
+     *             if there are problems reading/parsing the request or storing
+     *             files.
+     * @throws IOException
+     *             An I/O error occurred. This may be a network error while
+     *             communicating with the client or a problem while storing the
+     *             uploaded content.
      */
     public FileItemIterator getItemIterator(final RequestContext ctx)
-    throws FileUploadException, IOException {
+            throws FileUploadException, IOException {
         try {
             return new FileItemIteratorImpl(this, ctx);
         } catch (final FileUploadIOException e) {
@@ -272,13 +289,15 @@ public abstract class FileUploadBase {
      * Processes an <a href="http://www.ietf.org/rfc/rfc1867.txt">RFC 1867</a>
      * compliant {@code multipart/form-data} stream.
      *
-     * @param ctx The context for the request to be parsed.
+     * @param ctx
+     *            The context for the request to be parsed.
      *
-     * @return A list of {@code FileItem} instances parsed from the
-     *         request, in the order that they were transmitted.
+     * @return A list of {@code FileItem} instances parsed from the request, in
+     *         the order that they were transmitted.
      *
-     * @throws FileUploadException if there are problems reading/parsing
-     *                             the request or storing files.
+     * @throws FileUploadException
+     *             if there are problems reading/parsing the request or storing
+     *             files.
      */
     public List<FileItem> parseRequest(final RequestContext ctx)
             throws FileUploadException {
@@ -286,23 +305,28 @@ public abstract class FileUploadBase {
         boolean successful = false;
         try {
             final FileItemIterator iter = getItemIterator(ctx);
-            final FileItemFactory fileItemFactory = Objects.requireNonNull(getFileItemFactory(),
-                    "No FileItemFactory has been set.");
+            final FileItemFactory fileItemFactory = Objects.requireNonNull(
+                    getFileItemFactory(), "No FileItemFactory has been set.");
             final byte[] buffer = new byte[Streams.DEFAULT_BUFFER_SIZE];
             while (iter.hasNext()) {
                 final FileItemStream item = iter.next();
-                // Don't use getName() here to prevent an InvalidFileNameException.
+                // Don't use getName() here to prevent an
+                // InvalidFileNameException.
                 final String fileName = item.getName();
-                final FileItem fileItem = fileItemFactory.createItem(item.getFieldName(), item.getContentType(),
-                                                   item.isFormField(), fileName);
+                final FileItem fileItem = fileItemFactory.createItem(
+                        item.getFieldName(), item.getContentType(),
+                        item.isFormField(), fileName);
                 items.add(fileItem);
                 try {
-                    Streams.copy(item.openStream(), fileItem.getOutputStream(), true, buffer);
+                    Streams.copy(item.openStream(), fileItem.getOutputStream(),
+                            true, buffer);
                 } catch (final FileUploadIOException e) {
                     throw (FileUploadException) e.getCause();
                 } catch (final IOException e) {
-                    throw new IOFileUploadException(format("Processing of %s request failed. %s",
-                                                           MULTIPART_FORM_DATA, e.getMessage()), e);
+                    throw new IOFileUploadException(
+                            format("Processing of %s request failed. %s",
+                                    MULTIPART_FORM_DATA, e.getMessage()),
+                            e);
                 }
                 final FileItemHeaders fih = item.getHeaders();
                 fileItem.setHeaders(fih);
@@ -319,7 +343,8 @@ public abstract class FileUploadBase {
                     try {
                         fileItem.delete();
                     } catch (final Exception ignored) {
-                        // ignored TODO perhaps add to tracker delete failure list somehow?
+                        // ignored TODO perhaps add to tracker delete failure
+                        // list somehow?
                     }
                 }
             }
@@ -330,23 +355,27 @@ public abstract class FileUploadBase {
      * Processes an <a href="http://www.ietf.org/rfc/rfc1867.txt">RFC 1867</a>
      * compliant {@code multipart/form-data} stream.
      *
-     * @param ctx The context for the request to be parsed.
+     * @param ctx
+     *            The context for the request to be parsed.
      *
      * @return A map of {@code FileItem} instances parsed from the request.
      *
-     * @throws FileUploadException if there are problems reading/parsing
-     *                             the request or storing files.
+     * @throws FileUploadException
+     *             if there are problems reading/parsing the request or storing
+     *             files.
      *
      * @since 1.3
      */
-    public Map<String, List<FileItem>> parseParameterMap(final RequestContext ctx)
-            throws FileUploadException {
+    public Map<String, List<FileItem>> parseParameterMap(
+            final RequestContext ctx) throws FileUploadException {
         final List<FileItem> items = parseRequest(ctx);
-        final Map<String, List<FileItem>> itemsMap = new HashMap<>(items.size());
+        final Map<String, List<FileItem>> itemsMap = new HashMap<>(
+                items.size());
 
         for (final FileItem fileItem : items) {
             final String fieldName = fileItem.getFieldName();
-            final List<FileItem> mappedItems = itemsMap.computeIfAbsent(fieldName, k -> new ArrayList<>());
+            final List<FileItem> mappedItems = itemsMap
+                    .computeIfAbsent(fieldName, k -> new ArrayList<>());
 
             mappedItems.add(fileItem);
         }
@@ -359,8 +388,9 @@ public abstract class FileUploadBase {
     /**
      * Retrieves the boundary from the {@code Content-type} header.
      *
-     * @param contentType The value of the content type header from which to
-     *                    extract the boundary value.
+     * @param contentType
+     *            The value of the content type header from which to extract the
+     *            boundary value.
      *
      * @return The boundary, as a byte array.
      */
@@ -368,7 +398,8 @@ public abstract class FileUploadBase {
         final ParameterParser parser = new ParameterParser();
         parser.setLowerCaseNames(true);
         // Parameter parser can handle null input
-        final Map<String, String> params = parser.parse(contentType, new char[] {';', ','});
+        final Map<String, String> params = parser.parse(contentType,
+                new char[] { ';', ',' });
         final String boundaryStr = params.get("boundary");
 
         if (boundaryStr == null) {
@@ -380,10 +411,10 @@ public abstract class FileUploadBase {
     }
 
     /**
-     * Retrieves the file name from the {@code Content-disposition}
-     * header.
+     * Retrieves the file name from the {@code Content-disposition} header.
      *
-     * @param headers A {@code Map} containing the HTTP request headers.
+     * @param headers
+     *            A {@code Map} containing the HTTP request headers.
      *
      * @return The file name for the current {@code encapsulation}.
      * @deprecated 1.2.1 Use {@link #getFileName(FileItemHeaders)}.
@@ -394,10 +425,10 @@ public abstract class FileUploadBase {
     }
 
     /**
-     * Retrieves the file name from the {@code Content-disposition}
-     * header.
+     * Retrieves the file name from the {@code Content-disposition} header.
      *
-     * @param headers The HTTP headers object.
+     * @param headers
+     *            The HTTP headers object.
      *
      * @return The file name for the current {@code encapsulation}.
      */
@@ -407,7 +438,9 @@ public abstract class FileUploadBase {
 
     /**
      * Returns the given content-disposition headers file name.
-     * @param pContentDisposition The content-disposition headers value.
+     *
+     * @param pContentDisposition
+     *            The content-disposition headers value.
      * @return The file name
      */
     private String getFileName(final String pContentDisposition) {
@@ -418,7 +451,8 @@ public abstract class FileUploadBase {
                 final ParameterParser parser = new ParameterParser();
                 parser.setLowerCaseNames(true);
                 // Parameter parser can handle null input
-                final Map<String, String> params = parser.parse(pContentDisposition, ';');
+                final Map<String, String> params = parser
+                        .parse(pContentDisposition, ';');
                 if (params.containsKey("filename")) {
                     fileName = params.get("filename");
                     if (fileName != null) {
@@ -436,10 +470,10 @@ public abstract class FileUploadBase {
     }
 
     /**
-     * Retrieves the field name from the {@code Content-disposition}
-     * header.
+     * Retrieves the field name from the {@code Content-disposition} header.
      *
-     * @param headers A {@code Map} containing the HTTP request headers.
+     * @param headers
+     *            A {@code Map} containing the HTTP request headers.
      *
      * @return The field name for the current {@code encapsulation}.
      */
@@ -448,19 +482,21 @@ public abstract class FileUploadBase {
     }
 
     /**
-     * Returns the field name, which is given by the content-disposition
-     * header.
-     * @param pContentDisposition The content-dispositions header value.
+     * Returns the field name, which is given by the content-disposition header.
+     *
+     * @param pContentDisposition
+     *            The content-dispositions header value.
      * @return The field jake
      */
     private String getFieldName(final String pContentDisposition) {
         String fieldName = null;
-        if (pContentDisposition != null
-                && pContentDisposition.toLowerCase(Locale.ENGLISH).startsWith(FORM_DATA)) {
+        if (pContentDisposition != null && pContentDisposition
+                .toLowerCase(Locale.ENGLISH).startsWith(FORM_DATA)) {
             final ParameterParser parser = new ParameterParser();
             parser.setLowerCaseNames(true);
             // Parameter parser can handle null input
-            final Map<String, String> params = parser.parse(pContentDisposition, ';');
+            final Map<String, String> params = parser.parse(pContentDisposition,
+                    ';');
             fieldName = params.get("name");
             if (fieldName != null) {
                 fieldName = fieldName.trim();
@@ -470,10 +506,10 @@ public abstract class FileUploadBase {
     }
 
     /**
-     * Retrieves the field name from the {@code Content-disposition}
-     * header.
+     * Retrieves the field name from the {@code Content-disposition} header.
      *
-     * @param headers A {@code Map} containing the HTTP request headers.
+     * @param headers
+     *            A {@code Map} containing the HTTP request headers.
      *
      * @return The field name for the current {@code encapsulation}.
      * @deprecated 1.2.1 Use {@link #getFieldName(FileItemHeaders)}.
@@ -486,36 +522,37 @@ public abstract class FileUploadBase {
     /**
      * Creates a new {@link FileItem} instance.
      *
-     * @param headers       A {@code Map} containing the HTTP request
-     *                      headers.
-     * @param isFormField   Whether or not this item is a form field, as
-     *                      opposed to a file.
+     * @param headers
+     *            A {@code Map} containing the HTTP request headers.
+     * @param isFormField
+     *            Whether or not this item is a form field, as opposed to a
+     *            file.
      *
      * @return A newly created {@code FileItem} instance.
      *
-     * @throws FileUploadException if an error occurs.
-     * @deprecated 1.2 This method is no longer used in favour of
-     *   internally created instances of {@link FileItem}.
+     * @throws FileUploadException
+     *             if an error occurs.
+     * @deprecated 1.2 This method is no longer used in favour of internally
+     *             created instances of {@link FileItem}.
      */
     @Deprecated
     protected FileItem createItem(final Map<String, String> headers,
-                                  final boolean isFormField)
-        throws FileUploadException {
+            final boolean isFormField) throws FileUploadException {
         return getFileItemFactory().createItem(getFieldName(headers),
-                getHeader(headers, CONTENT_TYPE),
-                isFormField,
+                getHeader(headers, CONTENT_TYPE), isFormField,
                 getFileName(headers));
     }
 
     /**
-     * <p> Parses the {@code header-part} and returns as key/value
-     * pairs.
+     * <p>
+     * Parses the {@code header-part} and returns as key/value pairs.
      *
-     * <p> If there are multiple headers of the same names, the name
-     * will map to a comma-separated list containing the values.
+     * <p>
+     * If there are multiple headers of the same names, the name will map to a
+     * comma-separated list containing the values.
      *
-     * @param headerPart The {@code header-part} of the current
-     *                   {@code encapsulation}.
+     * @param headerPart
+     *            The {@code header-part} of the current {@code encapsulation}.
      *
      * @return A {@code Map} containing the parsed HTTP request headers.
      */
@@ -528,13 +565,14 @@ public abstract class FileUploadBase {
             if (start == end) {
                 break;
             }
-            final StringBuilder header = new StringBuilder(headerPart.substring(start, end));
+            final StringBuilder header = new StringBuilder(
+                    headerPart.substring(start, end));
             start = end + 2;
             while (start < len) {
                 int nonWs = start;
                 while (nonWs < len) {
                     final char c = headerPart.charAt(nonWs);
-                    if (c != ' '  &&  c != '\t') {
+                    if (c != ' ' && c != '\t') {
                         break;
                     }
                     ++nonWs;
@@ -554,6 +592,7 @@ public abstract class FileUploadBase {
 
     /**
      * Creates a new instance of {@link FileItemHeaders}.
+     *
      * @return The new instance.
      */
     protected FileItemHeadersImpl newFileItemHeaders() {
@@ -561,14 +600,15 @@ public abstract class FileUploadBase {
     }
 
     /**
-     * <p> Parses the {@code header-part} and returns as key/value
-     * pairs.
+     * <p>
+     * Parses the {@code header-part} and returns as key/value pairs.
      *
-     * <p> If there are multiple headers of the same names, the name
-     * will map to a comma-separated list containing the values.
+     * <p>
+     * If there are multiple headers of the same names, the name will map to a
+     * comma-separated list containing the values.
      *
-     * @param headerPart The {@code header-part} of the current
-     *                   {@code encapsulation}.
+     * @param headerPart
+     *            The {@code header-part} of the current {@code encapsulation}.
      *
      * @return A {@code Map} containing the parsed HTTP request headers.
      * @deprecated 1.2.1 Use {@link #getParsedHeaders(String)}
@@ -577,7 +617,8 @@ public abstract class FileUploadBase {
     protected Map<String, String> parseHeaders(final String headerPart) {
         final FileItemHeaders headers = getParsedHeaders(headerPart);
         final Map<String, String> result = new HashMap<>();
-        for (final Iterator<String> iter = headers.getHeaderNames();  iter.hasNext();) {
+        for (final Iterator<String> iter = headers.getHeaderNames(); iter
+                .hasNext();) {
             final String headerName = iter.next();
             final Iterator<String> iter2 = headers.getHeaders(headerName);
             final StringBuilder headerValue = new StringBuilder(iter2.next());
@@ -591,19 +632,20 @@ public abstract class FileUploadBase {
 
     /**
      * Skips bytes until the end of the current line.
-     * @param headerPart The headers, which are being parsed.
-     * @param end Index of the last byte, which has yet been
-     *   processed.
-     * @return Index of the \r\n sequence, which indicates
-     *   end of line.
+     *
+     * @param headerPart
+     *            The headers, which are being parsed.
+     * @param end
+     *            Index of the last byte, which has yet been processed.
+     * @return Index of the \r\n sequence, which indicates end of line.
      */
     private int parseEndOfLine(final String headerPart, final int end) {
         int index = end;
         for (;;) {
             final int offset = headerPart.indexOf('\r', index);
-            if (offset == -1  ||  offset + 1 >= headerPart.length()) {
+            if (offset == -1 || offset + 1 >= headerPart.length()) {
                 throw new IllegalStateException(
-                    "Expected headers to be terminated by an empty line.");
+                        "Expected headers to be terminated by an empty line.");
             }
             if (headerPart.charAt(offset + 1) == '\n') {
                 return offset;
@@ -614,18 +656,21 @@ public abstract class FileUploadBase {
 
     /**
      * Reads the next header line.
-     * @param headers String with all headers.
-     * @param header Map where to store the current header.
+     *
+     * @param headers
+     *            String with all headers.
+     * @param header
+     *            Map where to store the current header.
      */
-    private void parseHeaderLine(final FileItemHeadersImpl headers, final String header) {
+    private void parseHeaderLine(final FileItemHeadersImpl headers,
+            final String header) {
         final int colonOffset = header.indexOf(':');
         if (colonOffset == -1) {
             // This header line is malformed, skip it.
             return;
         }
         final String headerName = header.substring(0, colonOffset).trim();
-        final String headerValue =
-            header.substring(colonOffset + 1).trim();
+        final String headerValue = header.substring(colonOffset + 1).trim();
         headers.addHeader(headerName, headerValue);
     }
 
@@ -633,11 +678,13 @@ public abstract class FileUploadBase {
      * Returns the header with the specified name from the supplied map. The
      * header lookup is case-insensitive.
      *
-     * @param headers A {@code Map} containing the HTTP request headers.
-     * @param name    The name of the header to return.
+     * @param headers
+     *            A {@code Map} containing the HTTP request headers.
+     * @param name
+     *            The name of the header to return.
      *
-     * @return The value of specified header, or a comma-separated list if
-     *         there were multiple headers of that name.
+     * @return The value of specified header, or a comma-separated list if there
+     *         were multiple headers of that name.
      * @deprecated 1.2.1 Use {@link FileItemHeaders#getHeader(String)}.
      */
     @Deprecated
@@ -658,7 +705,8 @@ public abstract class FileUploadBase {
     /**
      * Sets the progress listener.
      *
-     * @param pListener The progress listener, if any. Defaults to null.
+     * @param pListener
+     *            The progress listener, if any. Defaults to null.
      */
     public void setProgressListener(final ProgressListener pListener) {
         listener = pListener;

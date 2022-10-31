@@ -16,7 +16,6 @@
  */
 package com.vaadin.external.apache.commons.fileupload2.jaksrvlt;
 
-
 import org.apache.commons.io.FileCleaningTracker;
 
 import jakarta.servlet.ServletContext;
@@ -25,8 +24,8 @@ import jakarta.servlet.ServletContextListener;
 
 /**
  * A servlet context listener, which ensures that the
- * {@link FileCleaningTracker}'s reaper thread is terminated,
- * when the web application is destroyed.
+ * {@link FileCleaningTracker}'s reaper thread is terminated, when the web
+ * application is destroyed.
  */
 public class JakSrvltFileCleaner implements ServletContextListener {
 
@@ -34,40 +33,44 @@ public class JakSrvltFileCleaner implements ServletContextListener {
      * Attribute name, which is used for storing an instance of
      * {@link FileCleaningTracker} in the web application.
      */
-    public static final String FILE_CLEANING_TRACKER_ATTRIBUTE
-        = JakSrvltFileCleaner.class.getName() + ".FileCleaningTracker";
+    public static final String FILE_CLEANING_TRACKER_ATTRIBUTE = JakSrvltFileCleaner.class
+            .getName() + ".FileCleaningTracker";
 
     /**
-     * Returns the instance of {@link FileCleaningTracker}, which is
-     * associated with the given {@link ServletContext}.
+     * Returns the instance of {@link FileCleaningTracker}, which is associated
+     * with the given {@link ServletContext}.
      *
-     * @param pServletContext The servlet context to query
+     * @param pServletContext
+     *            The servlet context to query
      * @return The contexts tracker
      */
-    public static FileCleaningTracker
-            getFileCleaningTracker(final ServletContext pServletContext) {
-        return (FileCleaningTracker)
-            pServletContext.getAttribute(FILE_CLEANING_TRACKER_ATTRIBUTE);
+    public static FileCleaningTracker getFileCleaningTracker(
+            final ServletContext pServletContext) {
+        return (FileCleaningTracker) pServletContext
+                .getAttribute(FILE_CLEANING_TRACKER_ATTRIBUTE);
     }
 
     /**
-     * Sets the instance of {@link FileCleaningTracker}, which is
-     * associated with the given {@link ServletContext}.
+     * Sets the instance of {@link FileCleaningTracker}, which is associated
+     * with the given {@link ServletContext}.
      *
-     * @param pServletContext The servlet context to modify
-     * @param pTracker The tracker to set
+     * @param pServletContext
+     *            The servlet context to modify
+     * @param pTracker
+     *            The tracker to set
      */
-    public static void setFileCleaningTracker(final ServletContext pServletContext,
+    public static void setFileCleaningTracker(
+            final ServletContext pServletContext,
             final FileCleaningTracker pTracker) {
         pServletContext.setAttribute(FILE_CLEANING_TRACKER_ATTRIBUTE, pTracker);
     }
 
     /**
-     * Called when the web application is initialized. Does
-     * nothing.
+     * Called when the web application is initialized. Does nothing.
      *
-     * @param sce The servlet context, used for calling
-     *   {@link #setFileCleaningTracker(ServletContext, FileCleaningTracker)}.
+     * @param sce
+     *            The servlet context, used for calling
+     *            {@link #setFileCleaningTracker(ServletContext, FileCleaningTracker)}.
      */
     @Override
     public void contextInitialized(final ServletContextEvent sce) {
@@ -76,11 +79,12 @@ public class JakSrvltFileCleaner implements ServletContextListener {
     }
 
     /**
-     * Called when the web application is being destroyed.
-     * Calls {@link FileCleaningTracker#exitWhenFinished()}.
+     * Called when the web application is being destroyed. Calls
+     * {@link FileCleaningTracker#exitWhenFinished()}.
      *
-     * @param sce The servlet context, used for calling
-     *     {@link #getFileCleaningTracker(ServletContext)}.
+     * @param sce
+     *            The servlet context, used for calling
+     *            {@link #getFileCleaningTracker(ServletContext)}.
      */
     @Override
     public void contextDestroyed(final ServletContextEvent sce) {

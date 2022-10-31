@@ -21,8 +21,7 @@ import com.vaadin.external.apache.commons.fileupload2.FileUploadException;
 /**
  * Thrown to indicate that the request is not a multipart request.
  */
-public class InvalidContentTypeException
-        extends FileUploadException {
+public class InvalidContentTypeException extends FileUploadException {
 
     /**
      * The exceptions UID, for serializing an instance.
@@ -30,32 +29,35 @@ public class InvalidContentTypeException
     private static final long serialVersionUID = -9073026332015646668L;
 
     /**
-     * Constructs a {@code InvalidContentTypeException} with no
-     * detail message.
+     * Constructs a {@code InvalidContentTypeException} with no detail message.
      */
     public InvalidContentTypeException() {
     }
 
     /**
-     * Constructs an {@code InvalidContentTypeException} with
-     * the specified detail message.
+     * Constructs an {@code InvalidContentTypeException} with the specified
+     * detail message.
      *
-     * @param message The detail message.
+     * @param message
+     *            The detail message.
      */
     public InvalidContentTypeException(final String message) {
         super(message);
     }
 
     /**
-     * Constructs an {@code InvalidContentTypeException} with
-     * the specified detail message and cause.
+     * Constructs an {@code InvalidContentTypeException} with the specified
+     * detail message and cause.
      *
-     * @param msg The detail message.
-     * @param cause the original cause
+     * @param msg
+     *            The detail message.
+     * @param cause
+     *            the original cause
      *
      * @since 1.3.1
      */
-    public InvalidContentTypeException(final String msg, final Throwable cause) {
+    public InvalidContentTypeException(final String msg,
+            final Throwable cause) {
         super(msg, cause);
     }
 }

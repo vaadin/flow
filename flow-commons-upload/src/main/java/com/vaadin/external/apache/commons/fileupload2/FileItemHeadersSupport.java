@@ -35,13 +35,13 @@ public interface FileItemHeadersSupport {
     FileItemHeaders getHeaders();
 
     /**
-     * Sets the headers read from within an item.  Implementations of
+     * Sets the headers read from within an item. Implementations of
      * {@link FileItem} or {@link FileItemStream} should implement this
-     * interface to be able to get the raw headers found within the item
-     * header block.
+     * interface to be able to get the raw headers found within the item header
+     * block.
      *
-     * @param headers the instance that holds onto the headers
-     *         for this instance.
+     * @param headers
+     *            the instance that holds onto the headers for this instance.
      */
     void setHeaders(FileItemHeaders headers);
 

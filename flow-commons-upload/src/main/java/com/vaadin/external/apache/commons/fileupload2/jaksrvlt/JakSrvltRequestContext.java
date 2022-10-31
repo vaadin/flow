@@ -27,8 +27,10 @@ import com.vaadin.external.apache.commons.fileupload2.FileUploadBase;
 import com.vaadin.external.apache.commons.fileupload2.UploadContext;
 
 /**
- * <p>Provides access to the request information needed for a request made to
- * an HTTP servlet.</p>
+ * <p>
+ * Provides access to the request information needed for a request made to an
+ * HTTP servlet.
+ * </p>
  *
  * @since FileUpload 1.1
  */
@@ -46,7 +48,8 @@ public class JakSrvltRequestContext implements UploadContext {
     /**
      * Construct a context for this request.
      *
-     * @param request The request to which this context applies.
+     * @param request
+     *            The request to which this context applies.
      */
     public JakSrvltRequestContext(final HttpServletRequest request) {
         this.request = request;
@@ -96,7 +99,8 @@ public class JakSrvltRequestContext implements UploadContext {
     public long contentLength() {
         long size;
         try {
-            size = Long.parseLong(request.getHeader(FileUploadBase.CONTENT_LENGTH));
+            size = Long.parseLong(
+                    request.getHeader(FileUploadBase.CONTENT_LENGTH));
         } catch (final NumberFormatException e) {
             size = request.getContentLength();
         }
@@ -108,7 +112,8 @@ public class JakSrvltRequestContext implements UploadContext {
      *
      * @return The input stream for the request.
      *
-     * @throws IOException if a problem occurs.
+     * @throws IOException
+     *             if a problem occurs.
      */
     @Override
     public InputStream getInputStream() throws IOException {
@@ -122,8 +127,7 @@ public class JakSrvltRequestContext implements UploadContext {
      */
     @Override
     public String toString() {
-        return format("ContentLength=%s, ContentType=%s",
-                this.contentLength(),
+        return format("ContentLength=%s, ContentType=%s", this.contentLength(),
                 this.getContentType());
     }
 

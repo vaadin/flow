@@ -18,26 +18,30 @@
 /**
  * <p>
  * A component for handling HTML file uploads as specified by
- * <a href="http://www.ietf.org/rfc/rfc1867.txt" target="_top">RFC&nbsp;1867</a>.
- * This component provides support for uploads within both servlets (JSR 53)
- * and portlets (JSR 168).
+ * <a href="http://www.ietf.org/rfc/rfc1867.txt" target=
+ * "_top">RFC&nbsp;1867</a>. This component provides support for uploads within
+ * both servlets (JSR 53) and portlets (JSR 168).
  * </p>
  * <p>
- * While this package provides the generic functionality for file uploads,
- * these classes are not typically used directly. Instead, normal usage
- * involves one of the provided extensions of
- * {@link com.vaadin.external.apache.commons.fileupload2.FileUpload FileUpload} such as
- * {@link com.vaadin.external.apache.commons.fileupload2.jaksrvlt.JakSrvltFileUpload JakSrvltFileUpload}
- * together with a factory for
- * {@link com.vaadin.external.apache.commons.fileupload2.FileItem FileItem} instances,
+ * While this package provides the generic functionality for file uploads, these
+ * classes are not typically used directly. Instead, normal usage involves one
+ * of the provided extensions of
+ * {@link com.vaadin.external.apache.commons.fileupload2.FileUpload FileUpload}
  * such as
- * {@link com.vaadin.external.apache.commons.fileupload2.disk.DiskFileItemFactory DiskFileItemFactory}.
+ * {@link com.vaadin.external.apache.commons.fileupload2.jaksrvlt.JakSrvltFileUpload
+ * JakSrvltFileUpload} together with a factory for
+ * {@link com.vaadin.external.apache.commons.fileupload2.FileItem FileItem}
+ * instances, such as
+ * {@link com.vaadin.external.apache.commons.fileupload2.disk.DiskFileItemFactory
+ * DiskFileItemFactory}.
  * </p>
  * <p>
- * The following is a brief example of typical usage in a servlet, storing
- * the uploaded files on disk.
+ * The following is a brief example of typical usage in a servlet, storing the
+ * uploaded files on disk.
  * </p>
- * <pre>public void doPost(HttpServletRequest req, HttpServletResponse res) {
+ *
+ * <pre>
+ * public void doPost(HttpServletRequest req, HttpServletResponse res) {
  *   DiskFileItemFactory factory = new DiskFileItemFactory();
  *   // maximum size that will be stored in memory
  *   factory.setSizeThreshold(4096);
@@ -65,19 +69,19 @@
  * </pre>
  * <p>
  * In the example above, the first file is loaded into memory as a
- * {@code String}. Before calling the {@code getString} method,
- * the data may have been in memory or on disk depending on its size. The
- * second file we assume it will be large and therefore never explicitly
- * load it into memory, though if it is less than 4096 bytes it will be
- * in memory before it is written to its final location. When writing to
- * the final location, if the data is larger than the threshold, an attempt
- * is made to rename the temporary file to the given location.  If it cannot
- * be renamed, it is streamed to the new location.
+ * {@code String}. Before calling the {@code getString} method, the data may
+ * have been in memory or on disk depending on its size. The second file we
+ * assume it will be large and therefore never explicitly load it into memory,
+ * though if it is less than 4096 bytes it will be in memory before it is
+ * written to its final location. When writing to the final location, if the
+ * data is larger than the threshold, an attempt is made to rename the temporary
+ * file to the given location. If it cannot be renamed, it is streamed to the
+ * new location.
  * </p>
  * <p>
  * Please see the FileUpload
- * <a href="https://commons.apache.org/fileupload/using.html" target="_top">User Guide</a>
- * for further details and examples of how to use this package.
+ * <a href="https://commons.apache.org/fileupload/using.html" target="_top">User
+ * Guide</a> for further details and examples of how to use this package.
  * </p>
  */
 package com.vaadin.external.apache.commons.fileupload2;

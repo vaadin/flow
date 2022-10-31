@@ -26,14 +26,13 @@ import java.io.PrintWriter;
 public class FileUploadException extends IOException {
 
     /**
-     * Serial version UID, being used, if the exception
-     * is serialized.
+     * Serial version UID, being used, if the exception is serialized.
      */
     private static final long serialVersionUID = 8881893724388807504L;
 
     /**
-     * The exceptions cause. We overwrite the cause of
-     * the super class, which isn't available in Java 1.3.
+     * The exceptions cause. We overwrite the cause of the super class, which
+     * isn't available in Java 1.3.
      */
     private final Throwable cause;
 
@@ -48,18 +47,21 @@ public class FileUploadException extends IOException {
      * Constructs a new {@code FileUploadException} with specified detail
      * message.
      *
-     * @param msg the error message.
+     * @param msg
+     *            the error message.
      */
     public FileUploadException(final String msg) {
         this(msg, null);
     }
 
     /**
-     * Creates a new {@code FileUploadException} with the given
-     * detail message and cause.
+     * Creates a new {@code FileUploadException} with the given detail message
+     * and cause.
      *
-     * @param msg The exceptions detail message.
-     * @param cause The exceptions cause.
+     * @param msg
+     *            The exceptions detail message.
+     * @param cause
+     *            The exceptions cause.
      */
     public FileUploadException(final String msg, final Throwable cause) {
         super(msg);
@@ -69,7 +71,8 @@ public class FileUploadException extends IOException {
     /**
      * Prints this throwable and its backtrace to the specified print stream.
      *
-     * @param stream {@code PrintStream} to use for output
+     * @param stream
+     *            {@code PrintStream} to use for output
      */
     @Override
     public void printStackTrace(final PrintStream stream) {
@@ -81,10 +84,10 @@ public class FileUploadException extends IOException {
     }
 
     /**
-     * Prints this throwable and its backtrace to the specified
-     * print writer.
+     * Prints this throwable and its backtrace to the specified print writer.
      *
-     * @param writer {@code PrintWriter} to use for output
+     * @param writer
+     *            {@code PrintWriter} to use for output
      */
     @Override
     public void printStackTrace(final PrintWriter writer) {

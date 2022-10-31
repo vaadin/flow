@@ -27,12 +27,12 @@ import com.vaadin.external.apache.commons.fileupload2.util.mime.RFC2231Utility;
 /**
  * A simple parser intended to parse sequences of name/value pairs.
  *
- * Parameter values are expected to be enclosed in quotes if they
- * contain unsafe characters, such as '=' characters or separators.
- * Parameter values are optional and can be omitted.
+ * Parameter values are expected to be enclosed in quotes if they contain unsafe
+ * characters, such as '=' characters or separators. Parameter values are
+ * optional and can be omitted.
  *
  * <p>
- *  {@code param1 = value; param2 = "anything goes; really"; param3}
+ * {@code param1 = value; param2 = "anything goes; really"; param3}
  * </p>
  */
 public class ParameterParser {
@@ -76,20 +76,20 @@ public class ParameterParser {
     /**
      * Are there any characters left to parse?
      *
-     * @return {@code true} if there are unparsed characters,
-     *         {@code false} otherwise.
+     * @return {@code true} if there are unparsed characters, {@code false}
+     *         otherwise.
      */
     private boolean hasChar() {
         return this.pos < this.len;
     }
 
     /**
-     * A helper method to process the parsed token. This method removes
-     * leading and trailing blanks as well as enclosing quotation marks,
-     * when necessary.
+     * A helper method to process the parsed token. This method removes leading
+     * and trailing blanks as well as enclosing quotation marks, when necessary.
      *
-     * @param quoted {@code true} if quotation marks are expected,
-     *               {@code false} otherwise.
+     * @param quoted
+     *            {@code true} if quotation marks are expected, {@code false}
+     *            otherwise.
      * @return the token
      */
     private String getToken(final boolean quoted) {
@@ -102,10 +102,8 @@ public class ParameterParser {
             i2--;
         }
         // Strip away quotation marks if necessary
-        if (quoted
-            && ((i2 - i1) >= 2)
-            && (chars[i1] == '"')
-            && (chars[i2 - 1] == '"')) {
+        if (quoted && ((i2 - i1) >= 2) && (chars[i1] == '"')
+                && (chars[i2 - 1] == '"')) {
             i1++;
             i2--;
         }
@@ -119,11 +117,13 @@ public class ParameterParser {
     /**
      * Tests if the given character is present in the array of characters.
      *
-     * @param ch the character to test for presence in the array of characters
-     * @param charray the array of characters to test against
+     * @param ch
+     *            the character to test for presence in the array of characters
+     * @param charray
+     *            the array of characters to test against
      *
      * @return {@code true} if the character is present in the array of
-     *   characters, {@code false} otherwise.
+     *         characters, {@code false} otherwise.
      */
     private boolean isOneOf(final char ch, final char[] charray) {
         boolean result = false;
@@ -137,11 +137,11 @@ public class ParameterParser {
     }
 
     /**
-     * Parses out a token until any of the given terminators
-     * is encountered.
+     * Parses out a token until any of the given terminators is encountered.
      *
-     * @param terminators the array of terminating characters. Any of these
-     * characters when encountered signify the end of the token
+     * @param terminators
+     *            the array of terminating characters. Any of these characters
+     *            when encountered signify the end of the token
      *
      * @return the token
      */
@@ -161,12 +161,13 @@ public class ParameterParser {
     }
 
     /**
-     * Parses out a token until any of the given terminators
-     * is encountered outside the quotation marks.
+     * Parses out a token until any of the given terminators is encountered
+     * outside the quotation marks.
      *
-     * @param terminators the array of terminating characters. Any of these
-     * characters when encountered outside the quotation marks signify the end
-     * of the token
+     * @param terminators
+     *            the array of terminating characters. Any of these characters
+     *            when encountered outside the quotation marks signify the end
+     *            of the token
      *
      * @return the token
      */
@@ -193,12 +194,11 @@ public class ParameterParser {
     }
 
     /**
-     * Returns {@code true} if parameter names are to be converted to lower
-     * case when name/value pairs are parsed.
+     * Returns {@code true} if parameter names are to be converted to lower case
+     * when name/value pairs are parsed.
      *
-     * @return {@code true} if parameter names are to be
-     * converted to lower case when name/value pairs are parsed.
-     * Otherwise returns {@code false}
+     * @return {@code true} if parameter names are to be converted to lower case
+     *         when name/value pairs are parsed. Otherwise returns {@code false}
      */
     public boolean isLowerCaseNames() {
         return this.lowerCaseNames;
@@ -208,9 +208,10 @@ public class ParameterParser {
      * Sets the flag if parameter names are to be converted to lower case when
      * name/value pairs are parsed.
      *
-     * @param b {@code true} if parameter names are to be
-     * converted to lower case when name/value pairs are parsed.
-     * {@code false} otherwise.
+     * @param b
+     *            {@code true} if parameter names are to be converted to lower
+     *            case when name/value pairs are parsed. {@code false}
+     *            otherwise.
      */
     public void setLowerCaseNames(final boolean b) {
         this.lowerCaseNames = b;
@@ -218,15 +219,18 @@ public class ParameterParser {
 
     /**
      * Extracts a map of name/value pairs from the given string. Names are
-     * expected to be unique. Multiple separators may be specified and
-     * the earliest found in the input string is used.
+     * expected to be unique. Multiple separators may be specified and the
+     * earliest found in the input string is used.
      *
-     * @param str the string that contains a sequence of name/value pairs
-     * @param separators the name/value pairs separators
+     * @param str
+     *            the string that contains a sequence of name/value pairs
+     * @param separators
+     *            the name/value pairs separators
      *
      * @return a map of name/value pairs
      */
-    public Map<String, String> parse(final String str, final char[] separators) {
+    public Map<String, String> parse(final String str,
+            final char[] separators) {
         if (separators == null || separators.length == 0) {
             return new HashMap<>();
         }
@@ -248,8 +252,10 @@ public class ParameterParser {
      * Extracts a map of name/value pairs from the given string. Names are
      * expected to be unique.
      *
-     * @param str the string that contains a sequence of name/value pairs
-     * @param separator the name/value pairs separator
+     * @param str
+     *            the string that contains a sequence of name/value pairs
+     * @param separator
+     *            the name/value pairs separator
      *
      * @return a map of name/value pairs
      */
@@ -261,16 +267,19 @@ public class ParameterParser {
     }
 
     /**
-     * Extracts a map of name/value pairs from the given array of
-     * characters. Names are expected to be unique.
+     * Extracts a map of name/value pairs from the given array of characters.
+     * Names are expected to be unique.
      *
-     * @param charArray the array of characters that contains a sequence of
-     * name/value pairs
-     * @param separator the name/value pairs separator
+     * @param charArray
+     *            the array of characters that contains a sequence of name/value
+     *            pairs
+     * @param separator
+     *            the name/value pairs separator
      *
      * @return a map of name/value pairs
      */
-    public Map<String, String> parse(final char[] charArray, final char separator) {
+    public Map<String, String> parse(final char[] charArray,
+            final char separator) {
         if (charArray == null) {
             return new HashMap<>();
         }
@@ -278,22 +287,23 @@ public class ParameterParser {
     }
 
     /**
-     * Extracts a map of name/value pairs from the given array of
-     * characters. Names are expected to be unique.
+     * Extracts a map of name/value pairs from the given array of characters.
+     * Names are expected to be unique.
      *
-     * @param charArray the array of characters that contains a sequence of
-     * name/value pairs
-     * @param offset - the initial offset.
-     * @param length - the length.
-     * @param separator the name/value pairs separator
+     * @param charArray
+     *            the array of characters that contains a sequence of name/value
+     *            pairs
+     * @param offset
+     *            - the initial offset.
+     * @param length
+     *            - the length.
+     * @param separator
+     *            the name/value pairs separator
      *
      * @return a map of name/value pairs
      */
-    public Map<String, String> parse(
-        final char[] charArray,
-        final int offset,
-        final int length,
-        final char separator) {
+    public Map<String, String> parse(final char[] charArray, final int offset,
+            final int length, final char separator) {
 
         if (charArray == null) {
             return new HashMap<>();
@@ -306,17 +316,16 @@ public class ParameterParser {
         String paramName;
         String paramValue;
         while (hasChar()) {
-            paramName = parseToken(new char[] {
-                    '=', separator });
+            paramName = parseToken(new char[] { '=', separator });
             paramValue = null;
             if (hasChar() && (charArray[pos] == '=')) {
                 pos++; // skip '='
-                paramValue = parseQuotedToken(new char[] {
-                        separator });
+                paramValue = parseQuotedToken(new char[] { separator });
 
                 if (paramValue != null) {
                     try {
-                        paramValue = RFC2231Utility.hasEncodedValue(paramName) ? RFC2231Utility.decodeText(paramValue)
+                        paramValue = RFC2231Utility.hasEncodedValue(paramName)
+                                ? RFC2231Utility.decodeText(paramValue)
                                 : MimeUtility.decodeText(paramValue);
                     } catch (final UnsupportedEncodingException e) {
                         // let's keep the original value in this case
