@@ -28,6 +28,7 @@ import java.io.File
 abstract class AbstractGradleTest {
 
     val flowVersion = System.getenv("vaadin.version").takeUnless { it.isNullOrEmpty() } ?: "23.3-SNAPSHOT"
+    val slf4jVersion = "1.7.30"
 
     /**
      * The testing Gradle project. Automatically deleted after every test.
