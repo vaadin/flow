@@ -134,6 +134,10 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
     private final StreamResourceRegistry resourceRegistry;
 
+    private long lastUnlocked;
+
+    private long lastLocked;
+
     /**
      * Creates a new VaadinSession tied to a VaadinService.
      *
@@ -687,6 +691,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     public void lock() {
         getLockInstance().lock();
+        lastLocked = System.currentTimeMillis();
     }
 
     /**
@@ -724,6 +729,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
                         }
                     }
                 }
+                this.lastUnlocked = System.currentTimeMillis();
             }
         } finally {
             getLockInstance().unlock();
@@ -1132,4 +1138,29 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         return isInitialized;
     }
 
+    /**
+     * Gets the timestamp of the most recent lock operation performed on this
+     * session.
+     *
+     * Value is expressed as the difference, measured in milliseconds, between
+     * the current time and midnight, January 1, 1970 UTC.
+     *
+     * @return last lock operation timestamp.
+     */
+    public long getLastLocked() {
+        return lastLocked;
+    }
+
+    /**
+     * Gets the timestamp of the most recent unlock operation performed on this
+     * session.
+     *
+     * Value is expressed as the difference, measured in milliseconds, between
+     * the current time and midnight, January 1, 1970 UTC.
+     *
+     * @return last unlock operation timestamp.
+     */
+    public long getLastUnlocked() {
+        return lastUnlocked;
+    }
 }
