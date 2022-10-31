@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Implementation-Title: Apache Commons FileUpload
+Implementation-Version: 2.0-SNAPSHOT
+Specification-Vendor: The Apache Software Foundation
+Specification-Title: Apache Commons FileUpload
+Created-By: Maven Source Plugin 3.2.1
+Specification-Version: 2.0
+Implementation-Vendor: The Apache Software Foundation
+
