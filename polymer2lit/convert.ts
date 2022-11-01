@@ -12,13 +12,15 @@ const assumeBooleanAttributes = ["hidden", "checked"];
 
 // Comparison of Lit and Polymer in https://43081j.com/2018/08/future-of-polymer
 
-const inputArg = process.argv[2];
-if (!inputArg) {
-  console.error(`Usage: ${process.argv[1]} <file or directory to convert>`);
+/* -------------------------------------- */
+
+const filePath = process.argv[2];
+const stat = fs.lstatSync(filePath);
+if (!stat.isFile()) {
+  console.error('The input file does not exist.');
   process.exit();
 }
 
-const stat = fs.lstatSync(inputArg);
 let useLit1 = false;
 if (process.argv.includes("-1")) {
   useLit1 = true;
@@ -32,92 +34,10 @@ let outputSuffix = "";
 if (process.argv.includes("-out")) {
   outputSuffix = ".out.js";
 }
-if (stat.isFile()) {
-  convertFile(inputArg, useLit1, useOptionalChaining, outputSuffix);
-} else if (stat.isDirectory()) {
-  const vaadinVersion = readVaadinVersion(inputArg);
-  if (vaadinVersion && vaadinVersion.startsWith("14.")) {
-    useLit1 = true;
-  }
 
-  const jsFilePattern = inputArg + "/**/*.js";
-  console.log("inputArg", inputArg);
-  console.log("jsFiles", jsFilePattern);
-  try {
-    const jsFiles = glob.sync(jsFilePattern);
+convertFile(filePath, useLit1, useOptionalChaining, outputSuffix);
 
-    jsFiles
-      .filter((jsFile) => !jsFile.includes("node_modules"))
-      .forEach((file) =>
-        convertFile(file, useLit1, useOptionalChaining, outputSuffix)
-      );
-  } catch (e) {
-    console.error("Error listing directory", e);
-    process.exit();
-  }
-
-  // Also convert Java if the needed tools are installed
-  try {
-    run("mvn --version");
-  } catch (e) {
-    console.warn("");
-    console.warn(
-      "Maven (mvn) was not found. Skipping conversion of potential Java files."
-    );
-    console.warn("");
-    process.exit();
-  }
-
-  try {
-    run("java --version");
-  } catch (e) {
-    console.warn("");
-    console.warn(
-      "Java (java) was not found. Skipping conversion of potential Java files."
-    );
-    console.warn("");
-
-    process.exit();
-  }
-
-  const jarVersion = "0.6.0.rc1";
-  const groupId = "org.vaadin.artur";
-  const artifactId = "polymer-to-lit";
-  const repo =
-    "-DremoteRepositories=prereleases::default::https://maven.vaadin.com/vaadin-prereleases/";
-  console.log("Downloading Java dependencies if needed...");
-  try {
-    run(
-      `mvn dependency:get -Dartifact=${groupId}:${artifactId}:${jarVersion} ${repo}`
-    );
-  } catch (e) {
-    console.error(e);
-    process.exit();
-  }
-
-  console.log("Running Java converter...");
-  let jarPath = "";
-
-  try {
-    jarPath = run(
-      `mvn help:evaluate -q -DforceStdout -Dexpression="settings.localRepository/${groupId.replace(
-        /\./g,
-        pathSeparator
-      )}/${artifactId}/${jarVersion}/${artifactId}-${jarVersion}.jar"`
-    );
-  } catch (e) {
-    console.error(e);
-    process.exit();
-  }
-
-  try {
-    const result = run(`java -jar "${jarPath}" "${inputArg}"`);
-
-    console.log(result);
-  } catch (e) {
-    console.error(e);
-  }
-}
+/* -------------------------------------- */
 
 type BindingOrText = {
   type: "text" | "oneway" | "twoway";
@@ -1147,21 +1067,4 @@ function convertFile(
     }
     return undefined;
   }
-}
-function run(cmd: string) {
-  //  console.log("Running", cmd);
-  return execSync(cmd, { encoding: "utf-8" });
-}
-function readVaadinVersion(projectFolder: string): string | undefined {
-  const pomFile = projectFolder + pathSeparator + "pom.xml";
-  if (!fs.existsSync(pomFile)) {
-    return undefined;
-  }
-
-  const pomXml = fs.readFileSync(pomFile, { encoding: "utf-8" });
-  const match = pomXml.match(/<vaadin.version>(.*?)<\/vaadin.version>/);
-  if (match) {
-    return match[1];
-  }
-  return undefined;
 }
