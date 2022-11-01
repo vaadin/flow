@@ -56,7 +56,8 @@ public class ConvertPolymerServerMojo extends FlowModeAbstractMojo {
                 .getPathMatcher("glob:" + glob);
 
         try (Stream<Path> walk = Files.walk(project.getBasedir().toPath())) {
-            return walk.filter(path -> matcher.matches(path)).collect(Collectors.toList());
+            return walk.filter(path -> matcher.matches(path))
+                    .collect(Collectors.toList());
         }
     }
 }

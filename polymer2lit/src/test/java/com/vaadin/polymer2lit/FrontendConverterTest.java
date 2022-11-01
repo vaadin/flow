@@ -70,7 +70,8 @@ public class FrontendConverterTest {
                 .getResourceAsStream("frontend/expected/" + fileName);
 
         Path tmpInputFilePath = tmpDir.newFile().toPath();
-        Files.copy(inputFileStream, tmpInputFilePath, StandardCopyOption.REPLACE_EXISTING);
+        Files.copy(inputFileStream, tmpInputFilePath,
+                StandardCopyOption.REPLACE_EXISTING);
 
         frontendConverter.convertFile(tmpInputFilePath);
 
@@ -79,7 +80,8 @@ public class FrontendConverterTest {
         String actualContent = Files.readString(tmpInputFilePath,
                 StandardCharsets.UTF_8);
         Assert.assertEquals(
-                "The output " + fileName + " file does not match the expected one.",
+                "The output " + fileName
+                        + " file does not match the expected one.",
                 expectedContent, actualContent);
     }
 }

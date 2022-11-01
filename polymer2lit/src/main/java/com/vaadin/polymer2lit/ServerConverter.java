@@ -55,30 +55,35 @@ public class ServerConverter {
         }
 
         String superType = javaClass.getSuperType();
-        if (!superType.startsWith("PolymerTemplate")
-                && !superType.startsWith("com.vaadin.flow.component.polymertemplate.PolymerTemplate")) {
+        if (!superType.startsWith("PolymerTemplate") && !superType.startsWith(
+                "com.vaadin.flow.component.polymertemplate.PolymerTemplate")) {
             return source;
         }
 
         if (superType.contains("<")) {
-            String modelType = superType.substring(superType.indexOf("<") + 1, superType.indexOf(">"));
+            String modelType = superType.substring(superType.indexOf("<") + 1,
+                    superType.indexOf(">"));
             if (!modelType.equals("TemplateModel")) {
                 transformModel(modelType, javaClass);
             }
         }
 
-        javaClass.setSuperType("com.vaadin.flow.component.littemplate.LitTemplate");
+        javaClass.setSuperType(
+                "com.vaadin.flow.component.littemplate.LitTemplate");
         javaClass.removeImport("com.vaadin.flow.component.polymertemplate.Id");
         javaClass.removeImport("com.vaadin.flow.templatemodel.TemplateModel");
-        javaClass.removeImport("com.vaadin.flow.component.polymertemplate.PolymerTemplate");
+        javaClass.removeImport(
+                "com.vaadin.flow.component.polymertemplate.PolymerTemplate");
         javaClass.addImport("com.vaadin.flow.component.template.Id");
         String result = javaClass.toUnformattedString();
         return result;
     }
 
-    private static void transformModel(String modelType, JavaClassSource javaClass) {
+    private static void transformModel(String modelType,
+            JavaClassSource javaClass) {
         if (modelType.startsWith(javaClass.getName() + ".")) {
-            String internalName = modelType.substring(javaClass.getName().length() + 1);
+            String internalName = modelType
+                    .substring(javaClass.getName().length() + 1);
             // Sub interface
             JavaSource<?> nested = javaClass.getNestedType(internalName);
             // System.out.println("Sub: " + nested.isInterface());
@@ -89,7 +94,8 @@ public class ServerConverter {
             LinkedHashSet<String> setters = new LinkedHashSet<>();
             LinkedHashMap<String, Type<?>> types = new LinkedHashMap<String, Type<?>>();
 
-            for (MemberSource<JavaInterfaceSource, ?> member : model.getMembers()) {
+            for (MemberSource<JavaInterfaceSource, ?> member : model
+                    .getMembers()) {
                 MethodSource<?> method = (MethodSource<?>) member;
                 String name = member.getName();
                 String property = getProperty(name);
@@ -122,44 +128,53 @@ public class ServerConverter {
 
                 if (setters.contains(property)) {
 
-                    // System.out.println("Setter: " + property + "(" + type + ")");
+                    // System.out.println("Setter: " + property + "(" + type +
+                    // ")");
 
-                    replacements.put("methodName", "set" + capitalize(property));
+                    replacements.put("methodName",
+                            "set" + capitalize(property));
 
                     StringSubstitutor sub = new StringSubstitutor(replacements);
 
                     body.append(sub.replace("@Override\n"));
-                    body.append(sub.replace("public void ${methodName}(${type} ${property}) {\n"));
+                    body.append(sub.replace(
+                            "public void ${methodName}(${type} ${property}) {\n"));
                     if (defaultValue == null) {
-                        body.append("/* FIXME Implement this method which could not be automatically generated*/\n");
+                        body.append(
+                                "/* FIXME Implement this method which could not be automatically generated*/\n");
                         // body.append("// The model method was defined as");
                     } else {
-                        body.append(
-                                sub.replace("getElement().setProperty(\"${property}\", ${property});\n"));
+                        body.append(sub.replace(
+                                "getElement().setProperty(\"${property}\", ${property});\n"));
                     }
                     body.append(sub.replace("}\n"));
 
                 }
                 if (getters.contains(property)) {
 
-                    // System.out.println("Getter: " + property + "(" + type + ")");
+                    // System.out.println("Getter: " + property + "(" + type +
+                    // ")");
 
                     if (type.getName().equals("boolean")) {
-                        replacements.put("methodName", "is" + capitalize(property));
+                        replacements.put("methodName",
+                                "is" + capitalize(property));
                     } else {
-                        replacements.put("methodName", "get" + capitalize(property));
+                        replacements.put("methodName",
+                                "get" + capitalize(property));
                     }
 
                     StringSubstitutor sub = new StringSubstitutor(replacements);
 
                     body.append(sub.replace("@Override\n"));
-                    body.append(sub.replace("public ${type} ${methodName}() {\n"));
+                    body.append(
+                            sub.replace("public ${type} ${methodName}() {\n"));
                     if (defaultValue == null) {
-                        body.append("/* FIXME Implement this method which could not be automatically generated*/\n");
+                        body.append(
+                                "/* FIXME Implement this method which could not be automatically generated*/\n");
                         // body.append("// The model method was defined as");
                     } else {
-                        body.append(
-                                sub.replace("return getElement().getProperty(\"${property}\", ${defaultValue});\n"));
+                        body.append(sub.replace(
+                                "return getElement().getProperty(\"${property}\", ${defaultValue});\n"));
                     }
                     body.append(sub.replace("}\n"));
 
@@ -189,7 +204,8 @@ public class ServerConverter {
     }
 
     private static String capitalize(String property) {
-        return property.substring(0, 1).toUpperCase(Locale.ENGLISH) + property.substring(1);
+        return property.substring(0, 1).toUpperCase(Locale.ENGLISH)
+                + property.substring(1);
     }
 
     private static boolean isSetter(String methodName) {
@@ -198,20 +214,18 @@ public class ServerConverter {
 
     private static String getProperty(String methodName) {
         String name = methodName.replaceFirst("^(set|is|get)", "");
-        return name.substring(0, 1).toLowerCase(Locale.ENGLISH) + name.substring(1);
+        return name.substring(0, 1).toLowerCase(Locale.ENGLISH)
+                + name.substring(1);
     }
 
     private static String readResource(String resource) throws IOException {
-        return IOUtils
-                .toString(ServerConverter.class.getClassLoader().getResourceAsStream(resource),
-                        StandardCharsets.UTF_8);
+        return IOUtils.toString(ServerConverter.class.getClassLoader()
+                .getResourceAsStream(resource), StandardCharsets.UTF_8);
     }
 
     private static String read(Path filePath) throws IOException {
         try (FileInputStream stream = new FileInputStream(filePath.toFile())) {
-            return IOUtils
-                    .toString(stream,
-                            StandardCharsets.UTF_8);
+            return IOUtils.toString(stream, StandardCharsets.UTF_8);
         }
     }
 }

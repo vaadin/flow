@@ -71,7 +71,8 @@ public class ConvertPolymerFrontendMojo extends FlowModeAbstractMojo {
         }
     }
 
-    private FrontendToolsSettings getFrontendToolsSettings() throws URISyntaxException {
+    private FrontendToolsSettings getFrontendToolsSettings()
+            throws URISyntaxException {
         FrontendToolsSettings settings = new FrontendToolsSettings(
                 this.npmFolder().getAbsolutePath(),
                 () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
