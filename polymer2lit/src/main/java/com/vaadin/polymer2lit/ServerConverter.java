@@ -203,7 +203,7 @@ public class ServerConverter {
 
     private static String readResource(String resource) throws IOException {
         return IOUtils
-                .toString(ServerConvertor.class.getClassLoader().getResourceAsStream(resource),
+                .toString(ServerConverter.class.getClassLoader().getResourceAsStream(resource),
                         StandardCharsets.UTF_8);
     }
 
