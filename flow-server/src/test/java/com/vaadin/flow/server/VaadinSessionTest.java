@@ -383,8 +383,7 @@ public class VaadinSessionTest {
             }
         };
 
-        vaadinSession.setAttribute(VaadinSession.CLOSE_SESSION_EXPLICITLY,
-                true);
+        vaadinSession.sessionClosedExplicitly = true;
 
         WrappedSession httpSession = Mockito.mock(WrappedSession.class);
         vaadinSession.refreshTransients(httpSession, mockService);
@@ -411,13 +410,6 @@ public class VaadinSessionTest {
             @Override
             protected Lock getSessionLock(WrappedSession wrappedSession) {
                 return lock;
-            }
-
-            @Override
-            public Future<Void> accessSession(VaadinSession session,
-                    Command command) {
-                command.execute();
-                return Mockito.mock(Future.class);
             }
         };
 
