@@ -33,13 +33,13 @@ public class FrontendConverter implements AutoCloseable {
         Files.deleteIfExists(tempDirPath);
     }
 
-    public int convertFile(String filePath) throws IOException, InterruptedException {
+    public int convertFile(Path filePath) throws IOException, InterruptedException {
         String nodeExecutablePath = findNodeExecutable();
 
         List<String> command = new ArrayList<>();
         command.add(nodeExecutablePath);
         command.add(converterTempPath.toFile().getAbsolutePath());
-        command.add(filePath);
+        command.add(filePath.toFile().getAbsolutePath());
 
         ProcessBuilder builder = FrontendUtils.createProcessBuilder(command);
         builder.inheritIO();

@@ -16,29 +16,52 @@
 package com.vaadin.flow.plugin.maven;
 
 import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.PathMatcher;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.maven.plugins.annotations.Mojo;
+import org.apache.maven.plugins.annotations.Parameter;
 
 import com.vaadin.polymer2lit.FrontendConverter;
 
 @Mojo(name = "convert-polymer-frontend")
 public class ConvertPolymerFrontendMojo extends FlowModeAbstractMojo {
 
+    @Parameter(defaultValue = "**/*.js")
+    private String glob;
+
     @Override
     public void execute() {
         try (FrontendConverter converter = new FrontendConverter()) {
 
-            try {
-                converter.convertFile("test");
-            } catch (IOException | InterruptedException e) {
-                logError("Could not convert the provided file.", e);
+            for (Path filePath : getFilePathsByGlob(glob)) {
+                try {
+                    logInfo("Processing " + filePath.toString());
+
+                    converter.convertFile(filePath);
+                } catch (IOException | InterruptedException e) {
+                    logError("Processing has failed", e);
+                }
             }
 
         } catch (IOException e) {
-            logError("Could not resolve convertor.js executable.", e);
-            return;
+            logError("Could not create an instance of FrontendConvertor", e);
         }
+    }
 
+    private List<Path> getFilePathsByGlob(String glob) throws IOException {
+        PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:" + glob);
 
+        try (Stream<Path> walk = Files.walk(project.getBasedir().toPath())) {
+            return walk
+                .filter(path -> !path.toString().contains("node_modules"))
+                .filter(path -> matcher.matches(path))
+                .collect(Collectors.toList());
+        }
     }
 }
