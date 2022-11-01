@@ -23,9 +23,6 @@
             <version>${project.version}</version>
             <scope>provided</scope>
         </dependency>
-    </dependencies>
-
-    <!-- <dependencies>
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
@@ -47,7 +44,7 @@
             <version>${version.roaster}</version>
             <scope>runtime</scope>
         </dependency>
-    </dependencies> -->
+    </dependencies>
 
     <build>
         <plugins>
