@@ -63,7 +63,8 @@ public abstract class ClassesSerializableTest extends ClassFinder {
         return Stream.of(
                 "com\\.vaadin\\.flow\\.data\\.validator\\.BeanValidator\\$LazyFactoryInitializer",
                 "com\\.vaadin\\.flow\\.internal\\.BeanUtil\\$LazyValidationAvailability",
-                ".*\\.slf4j\\..*", ".*\\.testbench\\..*", ".*\\.testutil\\..*",
+                ".*\\.fileupload2\\..*", ".*\\.slf4j\\..*",
+                ".*\\.testbench\\..*", ".*\\.testutil\\..*",
                 // Various utils with inner classes
                 ".*\\.demo\\..*", "com\\.vaadin\\..*Util(s)?(\\$\\w+)?$",
                 "com\\.vaadin\\.flow\\.osgi\\.support\\..*",

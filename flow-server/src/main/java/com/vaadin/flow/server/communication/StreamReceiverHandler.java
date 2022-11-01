@@ -15,8 +15,7 @@
  */
 package com.vaadin.flow.server.communication;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.Part;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -30,13 +29,13 @@ import java.security.MessageDigest;
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.apache.commons.fileupload2.FileItemIterator;
-import org.apache.commons.fileupload2.FileItemStream;
-import org.apache.commons.fileupload2.FileUploadException;
-import org.apache.commons.fileupload2.jaksrvlt.JakSrvltFileUpload;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.external.apache.commons.fileupload2.FileItemIterator;
+import com.vaadin.external.apache.commons.fileupload2.FileItemStream;
+import com.vaadin.external.apache.commons.fileupload2.FileUploadException;
+import com.vaadin.external.apache.commons.fileupload2.jaksrvlt.JakSrvltFileUpload;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.internal.StateNode;
@@ -56,7 +55,8 @@ import com.vaadin.flow.server.communication.streaming.StreamingProgressEventImpl
 import com.vaadin.flow.server.communication.streaming.StreamingStartEventImpl;
 import com.vaadin.flow.shared.ApplicationConstants;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.Part;
 
 /**
  * Handles {@link StreamReceiver} instances registered in {@link VaadinSession}.
