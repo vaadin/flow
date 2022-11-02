@@ -50,13 +50,12 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.plugin.TestUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.FrontendTools;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
@@ -69,11 +68,9 @@ import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FALLBACK_IMPORTS_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_D_TS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
@@ -93,7 +90,7 @@ public class BuildFrontendMojoTest {
     private File importsFile;
     private File generatedFolder;
     private File nodeModulesPath;
-    private File flowResourcesFolder;
+    private File jarResourcesFolder;
     private File projectBase;
     private File projectFrontendResourcesDirectory;
     private String packageJson;
@@ -104,7 +101,6 @@ public class BuildFrontendMojoTest {
     private File defaultJavaSource;
     private File openApiJsonFile;
     private File generatedTsFolder;
-
     private File tokenFile;
 
     private final BuildFrontendMojo mojo = Mockito.spy(new BuildFrontendMojo());
@@ -130,15 +126,15 @@ public class BuildFrontendMojoTest {
         tokenFile = new File(temporaryFolder.getRoot(),
                 VAADIN_SERVLET_RESOURCES + TOKEN_FILE);
 
-        File npmFolder = temporaryFolder.getRoot();
+        File npmFolder = projectBase;
         generatedFolder = new File(npmFolder,
                 "target/" + DEFAULT_GENERATED_DIR);
         importsFile = new File(generatedFolder, IMPORTS_NAME);
         nodeModulesPath = new File(npmFolder, NODE_MODULES);
-        flowResourcesFolder = new File(npmFolder,
-                "target/" + DEFAULT_FLOW_RESOURCES_FOLDER);
         File frontendDirectory = new File(npmFolder, DEFAULT_FRONTEND_DIR);
-
+        jarResourcesFolder = new File(
+                new File(frontendDirectory, FrontendUtils.GENERATED),
+                FrontendUtils.JAR_RESOURCES_FOLDER);
         packageJson = new File(npmFolder, PACKAGE_JSON).getAbsolutePath();
         viteConfig = new File(npmFolder, VITE_CONFIG).getAbsolutePath();
         viteGenerated = new File(npmFolder, VITE_GENERATED_CONFIG)
@@ -199,7 +195,6 @@ public class BuildFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "projectBuildDir",
                 Paths.get(projectBase.toString(), "target").toString());
 
-        flowResourcesFolder.mkdirs();
         generatedFolder.mkdirs();
 
         setProject(mojo, npmFolder);
@@ -262,7 +257,7 @@ public class BuildFrontendMojoTest {
     public void should_copyProjectFrontendResources()
             throws MojoExecutionException, MojoFailureException {
 
-        List<File> initialFiles = gatherFiles(flowResourcesFolder);
+        List<File> initialFiles = gatherFiles(jarResourcesFolder);
         initialFiles.forEach(file -> Assert.assertFalse(String.format(
                 "Test resource shouldn't exist before running mojo.", file),
                 TEST_PROJECT_RESOURCE_JS.equals(file.getName())));
@@ -273,7 +268,7 @@ public class BuildFrontendMojoTest {
                 .map(File::getName).collect(Collectors.toSet());
 
         Set<String> filesInFlowResourcesFolder = Stream
-                .of(flowResourcesFolder.listFiles()).map(File::getName)
+                .of(jarResourcesFolder.listFiles()).map(File::getName)
                 .collect(Collectors.toSet());
 
         projectFrontendResources.forEach(fileName -> {
@@ -297,8 +292,6 @@ public class BuildFrontendMojoTest {
         generatedFolder = new File(projectBase,
                 "build/" + DEFAULT_GENERATED_DIR);
         importsFile = new File(generatedFolder, IMPORTS_NAME);
-        flowResourcesFolder = new File(projectBase,
-                "build/" + DEFAULT_FLOW_RESOURCES_FOLDER);
 
         ReflectionUtils.setVariableValueInObject(mojo, "openApiJsonFile",
                 openApiJsonFile);
@@ -307,7 +300,7 @@ public class BuildFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "projectBuildDir",
                 "build");
 
-        List<File> initialFiles = gatherFiles(flowResourcesFolder);
+        List<File> initialFiles = gatherFiles(jarResourcesFolder);
         initialFiles.forEach(file -> Assert.assertFalse(String.format(
                 "Test resource shouldn't exist before running mojo.", file),
                 TEST_PROJECT_RESOURCE_JS.equals(file.getName())));
@@ -318,7 +311,7 @@ public class BuildFrontendMojoTest {
                 .map(File::getName).collect(Collectors.toSet());
 
         Set<String> filesInFlowResourcesFolder = Stream
-                .of(flowResourcesFolder.listFiles()).map(File::getName)
+                .of(jarResourcesFolder.listFiles()).map(File::getName)
                 .collect(Collectors.toSet());
 
         projectFrontendResources.forEach(fileName -> {
@@ -363,9 +356,8 @@ public class BuildFrontendMojoTest {
 
         assertContainsImports(true, expectedLines.toArray(new String[0]));
 
-        File flowFrontend = new File(nodeModulesPath, FLOW_NPM_PACKAGE_NAME);
         Assert.assertTrue(
-                new File(flowFrontend, "/ExampleConnector.js").exists());
+                new File(jarResourcesFolder, "/ExampleConnector.js").exists());
     }
 
     @Test
@@ -651,7 +643,7 @@ public class BuildFrontendMojoTest {
                 "@vaadin/vaadin-element-mixin/vaadin-element-mixin.js",
                 "@vaadin/vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
                 "@vaadin/vaadin-mixed-component/theme/lumo/vaadin-something-else.js",
-                "@vaadin/flow-frontend/ExampleConnector.js",
+                "./generated/jarResources/ExampleConnector.js",
                 "./local-p3-template.js", "./foo.js",
                 "./vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
                 "./local-template.js", "./foo-dir/vaadin-npm-component.js");

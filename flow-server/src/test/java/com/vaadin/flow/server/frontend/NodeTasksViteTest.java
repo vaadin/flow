@@ -113,8 +113,8 @@ public class NodeTasksViteTest {
         Builder builder = new Builder(mockedLookup, new File(userDir), TARGET)
                 .enablePackagesUpdate(false).enableImportsUpdate(true)
                 .runNpmInstall(false).withEmbeddableWebComponents(false)
-                .withFlowResourcesFolder(
-                        new File(userDir, TARGET + "flow-frontend"));
+                .withJarFrontendResourcesFolder(
+                        getJarFrontendResourcesFolder());
 
         assertEquals(1, finder.getAnnotatedClasses(JsModule.class).size());
         assertEquals(1, finder.getAnnotatedClasses(JavaScript.class).size());
@@ -152,8 +152,9 @@ public class NodeTasksViteTest {
         Builder builder = new Builder(mockedLookup, new File(userDir), TARGET)
                 .enablePackagesUpdate(false).enableImportsUpdate(true)
                 .runNpmInstall(false).withEmbeddableWebComponents(false)
-                .setJavaResourceFolder(propertiesDir).withFlowResourcesFolder(
-                        new File(userDir, TARGET + "flow-frontend"));
+                .setJavaResourceFolder(propertiesDir)
+                .withJarFrontendResourcesFolder(
+                        getJarFrontendResourcesFolder());
 
         builder.build().execute();
         File importsFile = Paths
@@ -178,8 +179,8 @@ public class NodeTasksViteTest {
         Builder builder = new Builder(mockedLookup, new File(userDir), TARGET)
                 .enablePackagesUpdate(false).enableImportsUpdate(true)
                 .runNpmInstall(false).withEmbeddableWebComponents(false)
-                .withFlowResourcesFolder(
-                        new File(userDir, TARGET + "flow-frontend"));
+                .withJarFrontendResourcesFolder(
+                        getJarFrontendResourcesFolder());
 
         Assert.assertEquals(
                 new File(userDir, DEFAULT_FRONTEND_DIR).getAbsolutePath(),
@@ -206,8 +207,8 @@ public class NodeTasksViteTest {
         Builder builder = new Builder(mockedLookup, new File(userDir), TARGET)
                 .enablePackagesUpdate(false).enableImportsUpdate(true)
                 .runNpmInstall(false).withEmbeddableWebComponents(false)
-                .withFlowResourcesFolder(
-                        new File(userDir, TARGET + "flow-frontend"));
+                .withJarFrontendResourcesFolder(
+                        getJarFrontendResourcesFolder());
 
         Assert.assertEquals(
                 new File(userDir, DEFAULT_FRONTEND_DIR).getAbsolutePath(),
@@ -237,8 +238,8 @@ public class NodeTasksViteTest {
         Builder builder = new Builder(mockedLookup, new File(userDir), TARGET)
                 .enablePackagesUpdate(false).enableImportsUpdate(true)
                 .runNpmInstall(false).withEmbeddableWebComponents(false)
-                .withFlowResourcesFolder(
-                        new File(userDir, TARGET + "flow-frontend"));
+                .withJarFrontendResourcesFolder(
+                        getJarFrontendResourcesFolder());
 
         Assert.assertEquals(
                 new File(userDir, "my_custom_sources_folder").getAbsolutePath(),
@@ -256,6 +257,11 @@ public class NodeTasksViteTest {
                         .exists());
     }
 
+    private File getJarFrontendResourcesFolder() {
+        return new File(userDir, "frontend/" + FrontendUtils.GENERATED
+                + FrontendUtils.JAR_RESOURCES_FOLDER);
+    }
+
     @Ignore("Making Vite support v14 bootstrapping is not planned. V14 bootstrapping requires Webpack to be enabled.")
     @Test
     public void should_SetIsClientBootstrapMode_When_EnableClientSideBootstrapMode()
@@ -268,8 +274,7 @@ public class NodeTasksViteTest {
                 .enablePackagesUpdate(false).enableImportsUpdate(true)
                 .runNpmInstall(false).withEmbeddableWebComponents(false)
                 .useV14Bootstrap(false)
-                .withFlowResourcesFolder(
-                        new File(userDir, TARGET + "flow-frontend"))
+                .withJarFrontendResourcesFolder(getJarFrontendResourcesFolder())
                 .withFrontendGeneratedFolder(new File(userDir,
                         DEFAULT_PROJECT_FRONTEND_GENERATED_DIR));
         builder.build().execute();
@@ -292,8 +297,8 @@ public class NodeTasksViteTest {
         Builder builder = new Builder(mockedLookup, new File(userDir), TARGET)
                 .enablePackagesUpdate(false).enableImportsUpdate(true)
                 .runNpmInstall(false).withEmbeddableWebComponents(false)
-                .useV14Bootstrap(false).withFlowResourcesFolder(
-                        new File(userDir, TARGET + "flow-frontend"));
+                .useV14Bootstrap(false).withJarFrontendResourcesFolder(
+                        getJarFrontendResourcesFolder());
         builder.build().execute();
 
         Assert.assertTrue(new File(userDir, "tsconfig.json").exists());
@@ -347,8 +352,9 @@ public class NodeTasksViteTest {
             Builder builder = new Builder(mockedLookup, new File(userDir),
                     TARGET).enablePackagesUpdate(false)
                     .enableImportsUpdate(true).runNpmInstall(false)
-                    .withEmbeddableWebComponents(false).withFlowResourcesFolder(
-                            new File(userDir, TARGET + "flow-frontend"));
+                    .withEmbeddableWebComponents(false)
+                    .withJarFrontendResourcesFolder(
+                            getJarFrontendResourcesFolder());
 
             ExecutionFailedException exception = Assert.assertThrows(
                     ExecutionFailedException.class,

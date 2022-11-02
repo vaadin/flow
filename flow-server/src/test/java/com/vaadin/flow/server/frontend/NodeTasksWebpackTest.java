@@ -288,8 +288,10 @@ public class NodeTasksWebpackTest {
                         new File(userDir, TARGET + "classes"))
                 .enableImportsUpdate(true).runNpmInstall(false)
                 .withEmbeddableWebComponents(false).useV14Bootstrap(false)
-                .withFlowResourcesFolder(
-                        new File(userDir, TARGET + "flow-frontend"))
+                .withJarFrontendResourcesFolder(new File(
+                        new File(userDir,
+                                DEFAULT_PROJECT_FRONTEND_GENERATED_DIR),
+                        FrontendUtils.JAR_RESOURCES_FOLDER))
                 .withFrontendGeneratedFolder(new File(userDir,
                         DEFAULT_PROJECT_FRONTEND_GENERATED_DIR))
                 .setJavaResourceFolder(propertiesDir);

@@ -86,7 +86,7 @@ public class NodeTasks implements FallibleCommand {
 
         private boolean cleanNpmFiles = false;
 
-        private File flowResourcesFolder = null;
+        private File jarFrontendResourcesFolder = null;
 
         private File localResourcesFolder = null;
 
@@ -321,14 +321,16 @@ public class NodeTasks implements FallibleCommand {
          * Sets the appropriate npm package folder for copying flow resources in
          * jars.
          *
-         * @param flowResourcesFolder
+         * @param jarFrontendResourcesFolder
          *            target folder
          * @return the builder
          */
-        public Builder withFlowResourcesFolder(File flowResourcesFolder) {
-            this.flowResourcesFolder = flowResourcesFolder.isAbsolute()
-                    ? flowResourcesFolder
-                    : new File(npmFolder, flowResourcesFolder.getPath());
+        public Builder withJarFrontendResourcesFolder(
+                File jarFrontendResourcesFolder) {
+            this.jarFrontendResourcesFolder = jarFrontendResourcesFolder
+                    .isAbsolute() ? jarFrontendResourcesFolder
+                            : new File(npmFolder,
+                                    jarFrontendResourcesFolder.getPath());
             return this;
         }
 
@@ -680,8 +682,8 @@ public class NodeTasks implements FallibleCommand {
             return this;
         }
 
-        public File getFlowResourcesFolder() {
-            return flowResourcesFolder;
+        public File getJarFrontendResourcesFolder() {
+            return jarFrontendResourcesFolder;
         }
     }
 
@@ -765,10 +767,11 @@ public class NodeTasks implements FallibleCommand {
 
             TaskUpdatePackages packageUpdater = null;
             if (builder.enablePackagesUpdate
-                    && builder.flowResourcesFolder != null) {
+                    && builder.jarFrontendResourcesFolder != null) {
                 packageUpdater = new TaskUpdatePackages(classFinder,
                         frontendDependencies, builder.npmFolder,
-                        builder.generatedFolder, builder.flowResourcesFolder,
+                        builder.generatedFolder,
+                        builder.jarFrontendResourcesFolder,
                         builder.cleanNpmFiles, builder.enablePnpm,
                         builder.buildDirectory, featureFlags);
                 commands.add(packageUpdater);
@@ -790,8 +793,7 @@ public class NodeTasks implements FallibleCommand {
         if (builder.createMissingPackageJson) {
             TaskGeneratePackageJson packageCreator = new TaskGeneratePackageJson(
                     builder.npmFolder, builder.generatedFolder,
-                    builder.flowResourcesFolder, builder.buildDirectory,
-                    featureFlags);
+                    builder.buildDirectory, featureFlags);
             commands.add(packageCreator);
         }
 
@@ -832,15 +834,17 @@ public class NodeTasks implements FallibleCommand {
                     featureFlags));
         }
 
-        if (builder.jarFiles != null && builder.flowResourcesFolder != null) {
-            commands.add(new TaskCopyFrontendFiles(builder.flowResourcesFolder,
-                    builder.jarFiles));
+        if (builder.jarFiles != null
+                && builder.jarFrontendResourcesFolder != null) {
+            commands.add(new TaskCopyFrontendFiles(
+                    builder.jarFrontendResourcesFolder, builder.jarFiles));
         }
 
         if (builder.localResourcesFolder != null
-                && builder.flowResourcesFolder != null) {
+                && builder.jarFrontendResourcesFolder != null) {
             commands.add(new TaskCopyLocalFrontendFiles(
-                    builder.flowResourcesFolder, builder.localResourcesFolder));
+                    builder.jarFrontendResourcesFolder,
+                    builder.localResourcesFolder));
         }
 
         if (!featureFlags.isEnabled(FeatureFlags.WEBPACK)) {
@@ -867,8 +871,8 @@ public class NodeTasks implements FallibleCommand {
                     builder.npmFolder, builder.webappResourcesDirectory,
                     builder.resourceOutputDirectory,
                     new File(builder.generatedFolder, IMPORTS_NAME),
-                    builder.useLegacyV14Bootstrap, builder.flowResourcesFolder,
-                    pwaConfiguration, builder.buildDirectory));
+                    builder.useLegacyV14Bootstrap, pwaConfiguration,
+                    builder.buildDirectory));
         }
 
         if (builder.enableImportsUpdate) {

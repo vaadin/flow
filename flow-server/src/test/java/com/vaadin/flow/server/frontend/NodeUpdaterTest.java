@@ -48,11 +48,8 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import elemental.json.Json;
 import elemental.json.JsonException;
 import elemental.json.JsonObject;
-import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class NodeUpdaterTest {
@@ -68,8 +65,6 @@ public class NodeUpdaterTest {
 
     private File generatedPath;
 
-    private File resourceFolder;
-
     private ClassFinder finder;
 
     private URL url;
@@ -80,7 +75,6 @@ public class NodeUpdaterTest {
     public void setUp() throws IOException {
         url = new URL("file://bar");
         npmFolder = temporaryFolder.newFolder();
-        resourceFolder = temporaryFolder.newFolder();
         generatedPath = temporaryFolder.newFolder();
         FeatureFlags featureFlags = Mockito.mock(FeatureFlags.class);
         Mockito.when(featureFlags.isEnabled(Mockito.any(Feature.class)))
@@ -93,7 +87,7 @@ public class NodeUpdaterTest {
         finder = Mockito.mock(ClassFinder.class);
         nodeUpdater = new NodeUpdater(finder,
                 Mockito.mock(FrontendDependencies.class), npmFolder,
-                generatedPath, resourceFolder, TARGET, featureFlags) {
+                generatedPath, TARGET, featureFlags) {
 
             @Override
             public void execute() {

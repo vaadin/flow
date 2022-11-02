@@ -405,7 +405,7 @@ public class FrontendUtilsTest {
 
         NodeUpdater nodeUpdater = new NodeUpdater(finder,
                 Mockito.mock(FrontendDependencies.class), npmFolder,
-                generatedPath, null, TARGET, Mockito.mock(FeatureFlags.class)) {
+                generatedPath, TARGET, Mockito.mock(FeatureFlags.class)) {
 
             @Override
             public void execute() {

@@ -95,11 +95,10 @@ public class TaskInstallWebpackPluginsTest {
 
     @Test
     public void pluginsNotAddedToPackageJson() throws IOException {
-        File resourceFolder = temporaryFolder.newFolder();
         ClassFinder finder = Mockito.mock(ClassFinder.class);
         NodeUpdater nodeUpdater = new NodeUpdater(finder,
                 Mockito.mock(FrontendDependencies.class), rootFolder,
-                new File(""), resourceFolder, BUILD_DIRECTORY,
+                new File(""), BUILD_DIRECTORY,
                 Mockito.mock(FeatureFlags.class)) {
 
             @Override

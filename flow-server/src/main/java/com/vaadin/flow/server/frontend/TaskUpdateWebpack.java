@@ -57,7 +57,6 @@ public class TaskUpdateWebpack implements FallibleCommand {
     private final Path webpackConfigPath;
     private final Path frontendDirectory;
     private final boolean useV14Bootstrapping;
-    private final Path flowResourcesFolder;
     private final PwaConfiguration pwaConfiguration;
     private final Path resourceFolder;
     private final Path frontendGeneratedFolder;
@@ -79,8 +78,6 @@ public class TaskUpdateWebpack implements FallibleCommand {
      * @param useV14Bootstrapping
      *            whether the application running with deprecated V14
      *            bootstrapping
-     * @param flowResourcesFolder
-     *            relative path to `flow-frontend` package
      * @param buildFolder
      *            build target folder
      */
@@ -88,15 +85,13 @@ public class TaskUpdateWebpack implements FallibleCommand {
     TaskUpdateWebpack(File frontendDirectory, File webpackConfigFolder,
             File webpackOutputDirectory, File resourceOutputDirectory,
             File generatedFlowImports, boolean useV14Bootstrapping,
-            File flowResourcesFolder, PwaConfiguration pwaConfiguration,
-            String buildFolder) {
+            PwaConfiguration pwaConfiguration, String buildFolder) {
         this.frontendDirectory = frontendDirectory.toPath();
         this.webpackOutputPath = webpackOutputDirectory.toPath();
         this.resourceOutputPath = resourceOutputDirectory.toPath();
         this.flowImportsFilePath = generatedFlowImports.toPath();
         this.webpackConfigPath = webpackConfigFolder.toPath();
         this.useV14Bootstrapping = useV14Bootstrapping;
-        this.flowResourcesFolder = flowResourcesFolder.toPath();
         this.pwaConfiguration = pwaConfiguration;
         this.resourceFolder = new File(webpackOutputDirectory,
                 VAADIN_STATIC_FILES_PATH).toPath();
@@ -198,13 +193,18 @@ public class TaskUpdateWebpack implements FallibleCommand {
                         getClientServiceWorker()),
                 new Pair<>("const flowFrontendFolder",
                         formatPathResolve(getEscapedRelativeWebpackPath(
-                                flowResourcesFolder))),
+                                getJarFrontendResourcesFolder()))),
                 new Pair<>("const projectStaticAssetsOutputFolder",
                         formatPathResolve(
                                 getEscapedRelativeWebpackPath(resourceFolder))),
                 new Pair<>("const buildDirectory",
                         formatPathResolve(getEscapedRelativeWebpackPath(
                                 Paths.get(buildFolder)))));
+    }
+
+    private Path getJarFrontendResourcesFolder() {
+        return frontendGeneratedFolder
+                .resolve(FrontendUtils.JAR_RESOURCES_FOLDER);
     }
 
     private String getClientEntryPoint() {

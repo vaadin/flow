@@ -41,7 +41,6 @@ import java.util.stream.Stream;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 
-import com.vaadin.experimental.Feature;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.Constants;
@@ -53,7 +52,6 @@ import com.vaadin.flow.theme.ThemeDefinition;
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
 
@@ -286,8 +284,7 @@ abstract class AbstractUpdateImports implements Runnable {
         if (!importPath.startsWith("@")) {
 
             // We only should check here those paths starting with './' when all
-            // flow components
-            // have the './' prefix
+            // flow components have the './' prefix
             String resource = resolved.replaceFirst("^\\./+", "");
             if (hasMetaInfResource(resource)) {
                 if (!resolved.startsWith("./")) {
@@ -295,7 +292,7 @@ abstract class AbstractUpdateImports implements Runnable {
                             "Use the './' prefix for files in JAR files: '{}', please update your component.",
                             importPath);
                 }
-                resolved = FLOW_NPM_PACKAGE_NAME + resource;
+                resolved = FrontendUtils.JAR_RESOURCES_IMPORT + resource;
             }
         }
         return resolved;
@@ -448,17 +445,14 @@ abstract class AbstractUpdateImports implements Runnable {
 
     /**
      * Returns a file for the {@code jsImport} path ONLY if it's either in the
-     * {@code "frontend"} folder or
-     * {@code "node_modules/@vaadin/flow-frontend/"} folder.
-     *
+     * {@code frontend} or {@value FrontendUtils#JAR_RESOURCES_IMPORT} folder.
      * <p>
      * This method doesn't care about "published" WC paths (like
      * "@vaadin/vaadin-grid" and so on). See the
      * {@link #importedFileExists(String)} method implementation.
      *
-     * @return a file on FS if it exists and it's inside a frontend folder or in
-     *         node_modules/@vaadin/flow-frontend/, otherwise returns
-     *         {@code null}
+     * @return a file on FS if it exists and it's inside the frontend folder or
+     *         the jar resources folder, otherwise returns {@code null}
      */
     private File getImportedFrontendFile(String jsImport) {
         // file is in /frontend
@@ -467,9 +461,13 @@ abstract class AbstractUpdateImports implements Runnable {
             return file;
         }
         // file is a flow resource e.g.
-        // /node_modules/@vaadin/flow-frontend/gridConnector.js
-        file = getFile(getNodeModulesDir(), FLOW_NPM_PACKAGE_NAME, jsImport);
+        // Frontend/generated/addons/gridConnector.js
+        file = getFile(getJarResourcesFolder(), jsImport);
         return file.exists() ? file : null;
+    }
+
+    private File getJarResourcesFolder() {
+        return new File(generatedDir, FrontendUtils.JAR_RESOURCES_FOLDER);
     }
 
     private File getNodeModulesDir() {

@@ -93,7 +93,7 @@ public class NodeUpdateTestUtil {
                 "@vaadin/vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
                 "@vaadin/vaadin-mixed-component/theme/lumo/vaadin-something-else.js",
                 "./theme/lumo/vaadin-custom-themed-component.js",
-                "@vaadin/flow-frontend/ExampleConnector.js",
+                "./generated/jarResources/ExampleConnector.js",
                 "3rdparty/component.js", "./local-p3-template.js", "./foo.js",
                 "./vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
                 "./local-template.js", "./foo-dir/vaadin-npm-component.js",

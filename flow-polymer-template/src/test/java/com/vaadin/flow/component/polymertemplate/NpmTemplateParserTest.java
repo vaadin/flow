@@ -56,8 +56,6 @@ public class NpmTemplateParserTest {
         Mockito.when(configuration.getStringProperty(Mockito.anyString(),
                 Mockito.anyString()))
                 .thenAnswer(invocation -> invocation.getArgument(1));
-        Mockito.when(configuration.getFlowResourcesFolder()).thenReturn(
-                "target/" + FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER);
 
         Properties properties = new Properties();
         Mockito.when(configuration.getInitParameters()).thenReturn(properties);

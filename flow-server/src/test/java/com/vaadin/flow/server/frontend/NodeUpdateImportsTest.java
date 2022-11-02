@@ -51,7 +51,6 @@ import elemental.json.JsonObject;
 import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_D_TS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
@@ -96,8 +95,13 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         assertTrue(nodeModulesPath.mkdirs());
         createExpectedImports(frontendDirectory, nodeModulesPath);
-        assertTrue(new File(nodeModulesPath,
-                FLOW_NPM_PACKAGE_NAME + "ExampleConnector.js").exists());
+        assertTrue(
+                new File(
+                        new File(
+                                new File(frontendDirectory,
+                                        FrontendUtils.GENERATED),
+                                FrontendUtils.JAR_RESOURCES_FOLDER),
+                        "ExampleConnector.js").exists());
 
         new File(frontendDirectory, "extra-javascript.js").createNewFile();
         new File(frontendDirectory, "extra-css.css").createNewFile();
@@ -316,7 +320,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         // Contains Javascript imports
         MatcherAssert.assertThat(fallBackContent, CoreMatchers.containsString(
-                "import '@vaadin/flow-frontend/ExampleConnector.js';"));
+                "import 'Frontend/generated/jarResources/ExampleConnector.js';"));
     }
 
     @Test
