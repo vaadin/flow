@@ -35,10 +35,24 @@ public class FrontendConverter implements AutoCloseable {
 
     public int convertFile(Path filePath)
             throws IOException, InterruptedException {
+        return convertFile(filePath, false, false);
+    }
+
+    public int convertFile(Path filePath, boolean useLit1,
+            boolean disableOptionalChaining)
+            throws IOException, InterruptedException {
         List<String> command = new ArrayList<>();
         command.add(this.frontendTools.getNodeExecutable());
         command.add(this.converterTempPath.toFile().getAbsolutePath());
         command.add(filePath.toFile().getAbsolutePath());
+
+        if (useLit1) {
+            command.add("-1");
+        }
+
+        if (disableOptionalChaining) {
+            command.add("-disable-optional-chaining");
+        }
 
         ProcessBuilder builder = FrontendUtils.createProcessBuilder(command);
         builder.inheritIO();

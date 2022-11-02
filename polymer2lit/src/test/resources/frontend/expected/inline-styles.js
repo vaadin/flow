@@ -7,32 +7,12 @@ import "@vaadin/vaadin-vertical-layout";
 class InlineStyles extends LitElement {
   static get styles() {
     const includedStyles = {};
-    includedStyles["shared-styles"] =
-      document.querySelector("dom-module[id='shared-styles']") &&
-      document.querySelector("dom-module[id='shared-styles']")
-        .firstElementChild &&
-      document.querySelector("dom-module[id='shared-styles']").firstElementChild
-        .content &&
-      document.querySelector("dom-module[id='shared-styles']").firstElementChild
-        .content.firstElementChild &&
-      document.querySelector("dom-module[id='shared-styles']").firstElementChild
-        .content.firstElementChild.innerText
-        ? document.querySelector("dom-module[id='shared-styles']")
-            .firstElementChild.content.firstElementChild.innerText
-        : "";
-    includedStyles["something-else"] =
-      document.querySelector("dom-module[id='something-else']") &&
-      document.querySelector("dom-module[id='something-else']")
-        .firstElementChild &&
-      document.querySelector("dom-module[id='something-else']")
-        .firstElementChild.content &&
-      document.querySelector("dom-module[id='something-else']")
-        .firstElementChild.content.firstElementChild &&
-      document.querySelector("dom-module[id='something-else']")
-        .firstElementChild.content.firstElementChild.innerText
-        ? document.querySelector("dom-module[id='something-else']")
-            .firstElementChild.content.firstElementChild.innerText
-        : "";
+    includedStyles["shared-styles"] = document.querySelector(
+      "dom-module[id='shared-styles']"
+    )?.firstElementChild?.content?.firstElementChild?.innerText;
+    includedStyles["something-else"] = document.querySelector(
+      "dom-module[id='something-else']"
+    )?.firstElementChild?.content?.firstElementChild?.innerText;
     return [
       unsafeCSS(includedStyles["shared-styles"]),
       unsafeCSS(includedStyles["something-else"]),

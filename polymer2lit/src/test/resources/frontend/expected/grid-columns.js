@@ -63,9 +63,7 @@ class GridColumns extends LitElement {
               `
           )}
           ${columnBodyRenderer(
-            (item) =>
-              html`${item.address ? item.address.street : undefined},
-              ${item.address ? item.address.city : undefined}`
+            (item) => html`${item.address?.street}, ${item.address?.city}`
           )}
           ${columnFooterRenderer((column) => html`Address`)}
         >

@@ -3,23 +3,11 @@ import { html, LitElement, css } from "lit";
 class SubProperties extends LitElement {
   render() {
     return html`
+      <div>${this.prop?.sub?.something}</div>
       <div>
-        ${this.prop && this.prop.sub ? this.prop.sub.something : undefined}
+        Method: ${this.abc(this.prop?.sub?.something, this.prop?.value)}
       </div>
-      <div>
-        Method:
-        ${this.abc(
-          this.prop && this.prop.sub ? this.prop.sub.something : undefined,
-          this.prop ? this.prop.value : undefined
-        )}
-      </div>
-      <div
-        .foo="${this.prop && this.prop.sub
-          ? this.prop.sub.something
-          : undefined}"
-      >
-        maybe with foo
-      </div>
+      <div .foo="${this.prop?.sub?.something}">maybe with foo</div>
     `;
   }
 

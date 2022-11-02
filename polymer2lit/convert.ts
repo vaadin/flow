@@ -23,9 +23,9 @@ if (process.argv.includes('-1')) {
   useLit1 = true;
 }
 
-let useOptionalChaining = false;
-if (process.argv.includes('-chain')) {
-  useOptionalChaining = true;
+let useOptionalChaining = true;
+if (process.argv.includes('-disable-optional-chaining')) {
+  useOptionalChaining = false;
 }
 let outputSuffix = '';
 if (process.argv.includes('-out')) {

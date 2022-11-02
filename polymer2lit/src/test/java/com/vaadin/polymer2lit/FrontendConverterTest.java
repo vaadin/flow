@@ -34,7 +34,7 @@ public class FrontendConverterTest {
     }
 
     @After
-    public void close() throws IOException {
+    public void teardown() throws IOException {
         frontendConverter.close();
     }
 
@@ -114,6 +114,11 @@ public class FrontendConverterTest {
     }
 
     @Test
+    public void subPropertiesWithDisabledOptionalChaining() throws IOException, InterruptedException {
+        convertFile_outputFileMatchesExpectedOne("sub-properties-with-disabled-optional-chaining.js", false, true);
+    }
+
+    @Test
     public void thisDollarMappedElementIds()
             throws IOException, InterruptedException {
         convertFile_outputFileMatchesExpectedOne(
@@ -127,6 +132,12 @@ public class FrontendConverterTest {
 
     private void convertFile_outputFileMatchesExpectedOne(String fileName)
             throws IOException, InterruptedException {
+        convertFile_outputFileMatchesExpectedOne(fileName, false, false);
+    }
+
+    private void convertFile_outputFileMatchesExpectedOne(String fileName,
+            boolean useLit1, boolean disableOptionalChaining)
+            throws IOException, InterruptedException {
         InputStream inputFileStream = getClass().getClassLoader()
                 .getResourceAsStream("frontend/in/" + fileName);
         InputStream expectedFileStream = getClass().getClassLoader()
@@ -136,7 +147,8 @@ public class FrontendConverterTest {
         Files.copy(inputFileStream, tmpInputFilePath,
                 StandardCopyOption.REPLACE_EXISTING);
 
-        frontendConverter.convertFile(tmpInputFilePath);
+        frontendConverter.convertFile(tmpInputFilePath, useLit1,
+                disableOptionalChaining);
 
         String expectedContent = new String(expectedFileStream.readAllBytes(),
                 StandardCharsets.UTF_8);

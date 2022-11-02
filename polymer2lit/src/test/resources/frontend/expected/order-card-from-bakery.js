@@ -7,19 +7,9 @@ import "./order-status-badge.js";
 class OrderCard extends LitElement {
   static get styles() {
     const includedStyles = {};
-    includedStyles["shared-styles"] =
-      document.querySelector("dom-module[id='shared-styles']") &&
-      document.querySelector("dom-module[id='shared-styles']")
-        .firstElementChild &&
-      document.querySelector("dom-module[id='shared-styles']").firstElementChild
-        .content &&
-      document.querySelector("dom-module[id='shared-styles']").firstElementChild
-        .content.firstElementChild &&
-      document.querySelector("dom-module[id='shared-styles']").firstElementChild
-        .content.firstElementChild.innerText
-        ? document.querySelector("dom-module[id='shared-styles']")
-            .firstElementChild.content.firstElementChild.innerText
-        : "";
+    includedStyles["shared-styles"] = document.querySelector(
+      "dom-module[id='shared-styles']"
+    )?.firstElementChild?.content?.firstElementChild?.innerText;
     return [
       unsafeCSS(includedStyles["shared-styles"]),
       css`
@@ -157,53 +147,32 @@ class OrderCard extends LitElement {
     return html`
       <div class="content">
         <div class="group-heading" ?hidden="${!this.header}">
-          <span class="main"
-            >${this.header ? this.header.main : undefined}</span
-          >
-          <span class="secondary"
-            >${this.header ? this.header.secondary : undefined}</span
-          >
+          <span class="main">${this.header?.main}</span>
+          <span class="secondary">${this.header?.secondary}</span>
         </div>
         <div class="wrapper" @click="${this._cardClick}">
           <div class="info-wrapper">
             <order-status-badge
               class="badge"
-              .status="${this.orderCard ? this.orderCard.state : undefined}"
+              .status="${this.orderCard?.state}"
             ></order-status-badge>
             <div class="time-place">
-              <h3 class="time">
-                ${this.orderCard ? this.orderCard.time : undefined}
-              </h3>
-              <h3 class="short-day">
-                ${this.orderCard ? this.orderCard.shortDay : undefined}
-              </h3>
-              <h3 class="month">
-                ${this.orderCard ? this.orderCard.month : undefined}
-              </h3>
-              <div class="secondary-time">
-                ${this.orderCard ? this.orderCard.secondaryTime : undefined}
-              </div>
-              <div class="full-day">
-                ${this.orderCard ? this.orderCard.fullDay : undefined}
-              </div>
-              <div class="place">
-                ${this.orderCard ? this.orderCard.place : undefined}
-              </div>
+              <h3 class="time">${this.orderCard?.time}</h3>
+              <h3 class="short-day">${this.orderCard?.shortDay}</h3>
+              <h3 class="month">${this.orderCard?.month}</h3>
+              <div class="secondary-time">${this.orderCard?.secondaryTime}</div>
+              <div class="full-day">${this.orderCard?.fullDay}</div>
+              <div class="place">${this.orderCard?.place}</div>
             </div>
           </div>
           <div class="name-items">
-            <h3 class="name">
-              ${this.orderCard ? this.orderCard.fullName : undefined}
-            </h3>
+            <h3 class="name">${this.orderCard?.fullName}</h3>
             <div class="goods">
-              ${(this.orderCard && this.orderCard.items
-                ? this.orderCard.items
-                : []
-              ).map(
+              ${(this.orderCard?.items).map(
                 (item, index) => html`
                   <div class="goods-item">
                     <span class="count">${item.quantity}</span>
-                    <div>${item.product ? item.product.name : undefined}</div>
+                    <div>${item.product?.name}</div>
                   </div>
                 `
               )}
