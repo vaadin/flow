@@ -23,8 +23,22 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import org.apache.maven.artifact.DependencyResolutionRequiredException;
+import org.apache.maven.model.Build;
+import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.util.ReflectionUtils;
+import org.mockito.Mockito;
+
+import com.vaadin.flow.server.frontend.installer.NodeInstaller;
+import com.vaadin.flow.plugin.base.PluginAdapterBase;
+import com.vaadin.flow.plugin.maven.FlowModeAbstractMojo;
+import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.frontend.FrontendTools;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -92,8 +106,8 @@ public final class TestUtils {
      * @return list of paths, relative to the directory specified
      */
     public static List<String> listFilesRecursively(File directory) {
-        assert directory != null && directory.isDirectory()
-                : "This method expects valid directory as input, but got: "
+        assert directory != null && directory
+                .isDirectory() : "This method expects valid directory as input, but got: "
                         + directory;
 
         try {
@@ -135,5 +149,57 @@ public final class TestUtils {
         packageJson.put("vaadin", vaadinPackages);
 
         return packageJson;
+    }
+
+    public static void mockPluginAdapter(PluginAdapterBase mojo,
+            File baseDir) throws DependencyResolutionRequiredException,
+            IllegalAccessException {
+        MavenProject project = Mockito.mock(MavenProject.class);
+
+        List<String> packages = Arrays
+                .stream(System.getProperty("java.class.path")
+                        .split(File.pathSeparatorChar + ""))
+                .collect(Collectors.toList());
+        Mockito.when(project.getRuntimeClasspathElements())
+                .thenReturn(packages);
+        Mockito.when(project.getCompileClasspathElements())
+                .thenReturn(Collections.emptyList());
+        Mockito.when(project.getBasedir()).thenReturn(baseDir);
+
+        Build build = Mockito.mock(Build.class);
+        Mockito.when(build.getFinalName()).thenReturn("finalName");
+        Mockito.when(project.getBuild()).thenReturn(build);
+
+        ReflectionUtils.setVariableValueInObject(mojo, "project", project);
+        ReflectionUtils.setVariableValueInObject(mojo, "npmFolder", baseDir);
+        ReflectionUtils.setVariableValueInObject(mojo, "generatedFolder",
+                baseDir);
+        ReflectionUtils.setVariableValueInObject(mojo, "webpackOutputDirectory",
+                new File(baseDir, Constants.VAADIN_WEBAPP_RESOURCES));
+        ReflectionUtils.setVariableValueInObject(mojo,
+                "resourceOutputDirectory",
+                new File(baseDir, Constants.VAADIN_SERVLET_RESOURCES));
+        ReflectionUtils.setVariableValueInObject(mojo, "frontendDirectory",
+                new File(baseDir, "frontend"));
+        ReflectionUtils.setVariableValueInObject(mojo, "openApiJsonFile",
+                new File(baseDir, "target/generated-resources/openapi.json"));
+        ReflectionUtils.setVariableValueInObject(mojo, "applicationProperties",
+                new File(baseDir, "src/main/resources/application.properties"));
+        ReflectionUtils.setVariableValueInObject(mojo, "javaSourceFolder",
+                new File(baseDir, "src/test/java"));
+        ReflectionUtils.setVariableValueInObject(mojo, "javaResourceFolder",
+                new File(baseDir, "src/test/resources"));
+        ReflectionUtils.setVariableValueInObject(mojo, "generatedTsFolder",
+                new File(baseDir, "frontend/generated"));
+        ReflectionUtils.setVariableValueInObject(mojo, "pnpmEnable",
+                Constants.ENABLE_PNPM_DEFAULT);
+        ReflectionUtils.setVariableValueInObject(mojo, "requireHomeNodeExec",
+                true);
+        ReflectionUtils.setVariableValueInObject(mojo, "nodeVersion",
+                FrontendTools.DEFAULT_NODE_VERSION);
+        ReflectionUtils.setVariableValueInObject(mojo, "nodeDownloadRoot",
+                NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT);
+        ReflectionUtils.setVariableValueInObject(mojo, "projectBuildDir",
+                new File(baseDir, "target").toPath().toString());
     }
 }
