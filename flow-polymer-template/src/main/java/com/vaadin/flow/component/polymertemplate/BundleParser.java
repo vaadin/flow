@@ -34,7 +34,6 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonType;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static elemental.json.JsonType.ARRAY;
 import static elemental.json.JsonType.OBJECT;
 import static elemental.json.JsonType.STRING;
@@ -261,17 +260,6 @@ public final class BundleParser {
                     .replaceFirst("^(\\./)frontend/", "$1")
                     // Replace the flow frontend protocol
                     .replaceFirst("^frontend://", ".");
-
-            // For polymer templates inside add-ons we will not find the sources
-            // using ./ as the actual path contains
-            // "node_modules/@vaadin/flow-frontend/" instead of "./"
-            // "target/flow-frontend/" instead of "./"
-            if (name.contains(FLOW_NPM_PACKAGE_NAME) || name.contains(service
-                    .getDeploymentConfiguration().getFlowResourcesFolder()
-                    .replaceAll("\\\\", "/"))) {
-                alternativeFileName = alternativeFileName.replaceFirst("\\./",
-                        "");
-            }
 
             // Remove query-string used by webpack modules like babel (e.g
             // ?babel-target=es6)
