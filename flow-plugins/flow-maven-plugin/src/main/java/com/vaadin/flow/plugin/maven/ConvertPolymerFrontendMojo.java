@@ -56,7 +56,8 @@ public class ConvertPolymerFrontendMojo extends FlowModeAbstractMojo {
                 for (Path filePath : getFilePathsByGlob(glob)) {
                     logInfo("Processing " + filePath.toString() + "...");
 
-                    converter.convertFile(filePath, useLit1, disableOptionalChaining);
+                    converter.convertFile(filePath, useLit1,
+                            disableOptionalChaining);
                 }
             }
         } catch (Exception e) {
