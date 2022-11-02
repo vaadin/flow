@@ -453,8 +453,15 @@ public class NodeTasks implements FallibleCommand {
                         frontendDependencies.getThemeDefinition());
             }
 
-            commands.add(new TaskGenerateTsFiles(builder.npmFolder,
-                    frontendDependencies.getModules()));
+            final FrontendDependenciesScanner fallbackScanner = getFallbackScanner(
+                    builder, classFinder);
+            if(fallbackScanner == null) {
+                commands.add(new TaskGenerateTsFiles(builder.npmFolder,
+                        frontendDependencies.getModules()));
+            } else {
+                commands.add(new TaskGenerateTsFiles(builder.npmFolder,
+                        fallbackScanner.getModules()));
+            }
         }
 
         if (builder.createMissingPackageJson) {
