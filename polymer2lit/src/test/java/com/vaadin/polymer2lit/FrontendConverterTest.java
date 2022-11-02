@@ -114,8 +114,10 @@ public class FrontendConverterTest {
     }
 
     @Test
-    public void thisDollarMappedElementIds() throws IOException, InterruptedException {
-        convertFile_outputFileMatchesExpectedOne("this-dollar-mapped-element-ids.js");
+    public void thisDollarMappedElementIds()
+            throws IOException, InterruptedException {
+        convertFile_outputFileMatchesExpectedOne(
+                "this-dollar-mapped-element-ids.js");
     }
 
     @Test
@@ -140,6 +142,14 @@ public class FrontendConverterTest {
                 StandardCharsets.UTF_8);
         String actualContent = Files.readString(tmpInputFilePath,
                 StandardCharsets.UTF_8);
+
+        // TIP: Uncomment if you would like to update snapshots.
+        // @formatter:off
+        // Files.writeString(
+        //         Path.of("src/test/resources/frontend/expected/" + fileName),
+        //         actualContent, StandardCharsets.UTF_8);
+        // @formatter:on
+
         Assert.assertEquals(
                 "The output " + fileName
                         + " file does not match the expected one.",

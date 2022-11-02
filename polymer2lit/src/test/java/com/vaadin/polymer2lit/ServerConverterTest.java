@@ -43,6 +43,14 @@ public class ServerConverterTest {
                 StandardCharsets.UTF_8);
         String actualContent = Files.readString(tmpInputFilePath,
                 StandardCharsets.UTF_8);
+
+        // TIP: Uncomment if you would like to update snapshots.
+        // @formatter:off
+        // Files.writeString(
+        //         Path.of("src/test/resources/server/expected/" + fileName),
+        //         actualContent, StandardCharsets.UTF_8);
+        // @formatter:on
+
         Assert.assertEquals(
                 "The output " + fileName
                         + " file does not match the expected one.",
