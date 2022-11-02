@@ -19,7 +19,7 @@ import com.vaadin.flow.component.template.Id;
 @JsModule("./src/components/search-bar.js")
 public class SearchBar extends LitTemplate {
 
-	public interface Model extends TemplateModel {
+	public interface Model {
 		boolean isCheckboxChecked();
 
 		void setCheckboxChecked(boolean checkboxChecked);
