@@ -44,6 +44,12 @@ public class FrontendConverterTest {
     }
 
     @Test
+    public void basicBinding_lit1() throws IOException, InterruptedException {
+        convertFile_outputFileMatchesExpectedOne("basic-bindings.js",
+                "basic-bindings-with-lit1.js", true, false);
+    }
+
+    @Test
     public void computedProperty() throws IOException, InterruptedException {
         convertFile_outputFileMatchesExpectedOne("computed-property.js");
     }
@@ -114,8 +120,11 @@ public class FrontendConverterTest {
     }
 
     @Test
-    public void subPropertiesWithDisabledOptionalChaining() throws IOException, InterruptedException {
-        convertFile_outputFileMatchesExpectedOne("sub-properties-with-disabled-optional-chaining.js", false, true);
+    public void subProperties_disabledOptionalChaining()
+            throws IOException, InterruptedException {
+        convertFile_outputFileMatchesExpectedOne("sub-properties.js",
+                "sub-properties-with-disabled-optional-chaining.js", false,
+                true);
     }
 
     @Test
@@ -132,19 +141,21 @@ public class FrontendConverterTest {
 
     private void convertFile_outputFileMatchesExpectedOne(String fileName)
             throws IOException, InterruptedException {
-        convertFile_outputFileMatchesExpectedOne(fileName, false, false);
+        convertFile_outputFileMatchesExpectedOne(fileName, fileName, false,
+                false);
     }
 
-    private void convertFile_outputFileMatchesExpectedOne(String fileName,
-            boolean useLit1, boolean disableOptionalChaining)
+    private void convertFile_outputFileMatchesExpectedOne(String inFileName,
+            String expectedFileName, boolean useLit1,
+            boolean disableOptionalChaining)
             throws IOException, InterruptedException {
-        InputStream inputFileStream = getClass().getClassLoader()
-                .getResourceAsStream("frontend/in/" + fileName);
+        InputStream inFileStream = getClass().getClassLoader()
+                .getResourceAsStream("frontend/in/" + inFileName);
         InputStream expectedFileStream = getClass().getClassLoader()
-                .getResourceAsStream("frontend/expected/" + fileName);
+                .getResourceAsStream("frontend/expected/" + expectedFileName);
 
         Path tmpInputFilePath = tmpDir.newFile().toPath();
-        Files.copy(inputFileStream, tmpInputFilePath,
+        Files.copy(inFileStream, tmpInputFilePath,
                 StandardCopyOption.REPLACE_EXISTING);
 
         frontendConverter.convertFile(tmpInputFilePath, useLit1,
@@ -158,12 +169,12 @@ public class FrontendConverterTest {
         // TIP: Uncomment if you would like to update snapshots.
         // @formatter:off
         // Files.writeString(
-        //         Path.of("src/test/resources/frontend/expected/" + fileName),
+        //         Path.of("src/test/resources/frontend/expected/" + expectedFileName),
         //         actualContent, StandardCharsets.UTF_8);
         // @formatter:on
 
         Assert.assertEquals(
-                "The output " + fileName
+                "The output " + inFileName
                         + " file does not match the expected one.",
                 expectedContent, actualContent);
     }
