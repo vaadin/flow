@@ -37,13 +37,13 @@ import com.vaadin.polymer2lit.FrontendConverter;
 @Mojo(name = "convert-polymer-frontend")
 public class ConvertPolymerFrontendMojo extends FlowModeAbstractMojo {
 
-    @Parameter(defaultValue = "**/*.js")
+    @Parameter(property = "glob", defaultValue = "**/*.js")
     private String glob;
 
-    @Parameter(defaultValue = "${false}")
+    @Parameter(property = "useLit1", defaultValue = "${false}")
     private boolean useLit1;
 
-    @Parameter(defaultValue = "${false}")
+    @Parameter(property = "disableOptionalChaining", defaultValue = "${false}")
     private boolean disableOptionalChaining;
 
     @Override

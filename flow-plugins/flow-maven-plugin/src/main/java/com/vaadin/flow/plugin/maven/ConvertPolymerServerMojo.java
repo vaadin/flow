@@ -34,7 +34,7 @@ import com.vaadin.polymer2lit.ServerConverter;
 @Mojo(name = "convert-polymer-server")
 public class ConvertPolymerServerMojo extends FlowModeAbstractMojo {
 
-    @Parameter(defaultValue = "**/*.java")
+    @Parameter(property = "glob", defaultValue = "**/*.java")
     private String glob;
 
     @Override
