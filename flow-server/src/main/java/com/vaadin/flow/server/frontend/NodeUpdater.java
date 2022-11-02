@@ -258,26 +258,6 @@ public abstract class NodeUpdater implements FallibleCommand {
                 .collect(Collectors.toSet());
     }
 
-    String resolveResource(String importPath) {
-        String resolved = importPath;
-        if (!importPath.startsWith("@")) {
-
-            // We only should check here those paths starting with './' when all
-            // flow components
-            // have the './' prefix
-            String resource = resolved.replaceFirst("^\\./+", "");
-            if (hasMetaInfResource(resource)) {
-                if (!resolved.startsWith("./")) {
-                    log().warn(
-                            "Use the './' prefix for files in JAR files: '{}', please update your component.",
-                            importPath);
-                }
-                resolved = FLOW_NPM_PACKAGE_NAME + resource;
-            }
-        }
-        return resolved;
-    }
-
     private boolean hasMetaInfResource(String resource) {
         return finder.getResource(
                 RESOURCES_FRONTEND_DEFAULT + "/" + resource) != null
