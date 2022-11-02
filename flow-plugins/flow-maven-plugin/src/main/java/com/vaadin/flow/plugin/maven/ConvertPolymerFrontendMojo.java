@@ -40,6 +40,12 @@ public class ConvertPolymerFrontendMojo extends FlowModeAbstractMojo {
     @Parameter(defaultValue = "**/*.js")
     private String glob;
 
+    @Parameter(defaultValue = "${false}")
+    private boolean useLit1;
+
+    @Parameter(defaultValue = "${false}")
+    private boolean disableOptionalChaining;
+
     @Override
     public void execute() throws MojoFailureException {
         try {
@@ -50,7 +56,7 @@ public class ConvertPolymerFrontendMojo extends FlowModeAbstractMojo {
                 for (Path filePath : getFilePathsByGlob(glob)) {
                     logInfo("Processing " + filePath.toString() + "...");
 
-                    converter.convertFile(filePath);
+                    converter.convertFile(filePath, useLit1, disableOptionalChaining);
                 }
             }
         } catch (Exception e) {
