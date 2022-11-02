@@ -218,11 +218,6 @@ public class ServerConverter {
                 + name.substring(1);
     }
 
-    private static String readResource(String resource) throws IOException {
-        return IOUtils.toString(ServerConverter.class.getClassLoader()
-                .getResourceAsStream(resource), StandardCharsets.UTF_8);
-    }
-
     private static String read(Path filePath) throws IOException {
         try (FileInputStream stream = new FileInputStream(filePath.toFile())) {
             return IOUtils.toString(stream, StandardCharsets.UTF_8);
