@@ -144,8 +144,6 @@ public abstract class NodeUpdater implements FallibleCommand {
      *            folder with the `package.json` file
      * @param generatedPath
      *            folder where flow generated files will be placed.
-     * @param jarFrontendResourcesFolder
-     *            folder where flow dependencies will be copied to.
      * @param buildDir
      *            the used build directory
      * @param featureFlags
