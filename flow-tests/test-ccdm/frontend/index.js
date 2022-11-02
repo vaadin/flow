@@ -1,4 +1,4 @@
-import { Flow } from '@vaadin/flow-frontend';
+import { Flow } from 'Frontend/generated/jarResources';
 
 document.getElementById("button1").addEventListener('click', async e => {
     // Uses the 'Frontend' path alias defined in generated webpack config
