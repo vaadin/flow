@@ -18,11 +18,6 @@
     <dependencies>
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>polymer2lit</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.vaadin</groupId>
             <artifactId>flow-plugin-base</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -92,6 +87,12 @@
             <groupId>org.sonatype.plexus</groupId>
             <artifactId>plexus-build-api</artifactId>
             <version>0.0.7</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>polymer2lit</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 
