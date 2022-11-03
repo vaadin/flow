@@ -78,8 +78,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     @Deprecated
     public static final String UI_PARAMETER = InitParameters.UI_PARAMETER;
 
-    static final String CLOSE_SESSION_EXPLICITLY = "vaadin.close-session."
-            + UUID.randomUUID().toString();
+    volatile boolean sessionClosedExplicitly = false;
 
     /**
      * Configuration for the session.
@@ -214,15 +213,10 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         // the latter case the session field should be set to {@code null}
         // immediately to avoid using HTTP session object which is invalid (all
         // methods throw exceptions).
-        lock();
-        try {
-            if (getAttribute(CLOSE_SESSION_EXPLICITLY) == null) {
-                session = null;
-            }
-            setAttribute(CLOSE_SESSION_EXPLICITLY, null);
-        } finally {
-            unlock();
+        if (!sessionClosedExplicitly) {
+            session = null;
         }
+        sessionClosedExplicitly = false;
     }
 
     /**
