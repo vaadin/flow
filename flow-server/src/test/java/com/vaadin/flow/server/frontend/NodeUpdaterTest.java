@@ -103,32 +103,6 @@ public class NodeUpdaterTest {
     }
 
     @Test
-    public void resolveResource_startsWithAt_returnsPassedArg() {
-        Assert.assertEquals("@foo", nodeUpdater.resolveResource("@foo"));
-        Assert.assertEquals("@foo", nodeUpdater.resolveResource("@foo"));
-    }
-
-    @Test
-    public void resolveResource_hasObsoleteResourcesFolder() {
-        resolveResource_happyPath(COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT);
-    }
-
-    @Test
-    public void resolveResource_hasModernResourcesFolder() {
-        resolveResource_happyPath(RESOURCES_FRONTEND_DEFAULT);
-    }
-
-    @Test
-    public void resolveResource_doesNotHaveObsoleteResourcesFolder() {
-        resolveResource_unhappyPath(COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT);
-    }
-
-    @Test
-    public void resolveResource_doesNotHaveModernResourcesFolder() {
-        resolveResource_unhappyPath(RESOURCES_FRONTEND_DEFAULT);
-    }
-
-    @Test
     public void getGeneratedModules_should_excludeByFileName()
             throws IOException {
         File generated = temporaryFolder.newFolder();
@@ -551,22 +525,6 @@ public class NodeUpdaterTest {
         JsonObject deps = object.get("dependencies");
         String version = deps.getString("@polymer/polymer");
         return version;
-    }
-
-    private void resolveResource_happyPath(String resourceFolder) {
-        Mockito.when(finder.getResource(resourceFolder + "/foo"))
-                .thenReturn(url);
-        Assert.assertEquals(FLOW_NPM_PACKAGE_NAME + "foo",
-                nodeUpdater.resolveResource("foo"));
-        Assert.assertEquals(FLOW_NPM_PACKAGE_NAME + "foo",
-                nodeUpdater.resolveResource("foo"));
-    }
-
-    private void resolveResource_unhappyPath(String resourceFolder) {
-        Mockito.when(finder.getResource(resourceFolder + "/foo"))
-                .thenReturn(null);
-        Assert.assertEquals("foo", nodeUpdater.resolveResource("foo"));
-        Assert.assertEquals("foo", nodeUpdater.resolveResource("foo"));
     }
 
     private JsonObject getMockVaadinCoreVersionsJson() {
