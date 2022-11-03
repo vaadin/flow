@@ -39,7 +39,9 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
  */
 public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
 
-    static final String DEV_TOOLS_IMPORT = String.format("import '%svaadin-dev-tools.js';%n", FrontendUtils.JAR_RESOURCES_IMPORT );
+    static final String DEV_TOOLS_IMPORT = String.format(
+            "import '%svaadin-dev-tools.js';%n",
+            FrontendUtils.JAR_RESOURCES_IMPORT);
     private final FrontendDependenciesScanner frontDeps;
     private final File frontendGeneratedDirectory;
     private final File frontendDirectory;
