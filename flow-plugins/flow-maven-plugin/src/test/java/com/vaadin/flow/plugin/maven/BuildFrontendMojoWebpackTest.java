@@ -646,7 +646,7 @@ public class BuildFrontendMojoWebpackTest {
                 "@vaadin/vaadin-element-mixin/vaadin-element-mixin.js",
                 "@vaadin/vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
                 "@vaadin/vaadin-mixed-component/theme/lumo/vaadin-something-else.js",
-                "./generated/jarResources/ExampleConnector.js",
+                "./generated/jar-resources/ExampleConnector.js",
                 "./local-p3-template.js", "./foo.js",
                 "./vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
                 "./local-template.js", "./foo-dir/vaadin-npm-component.js");

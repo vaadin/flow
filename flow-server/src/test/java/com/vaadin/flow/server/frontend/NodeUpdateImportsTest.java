@@ -320,7 +320,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         // Contains Javascript imports
         MatcherAssert.assertThat(fallBackContent, CoreMatchers.containsString(
-                "import 'Frontend/generated/jarResources/ExampleConnector.js';"));
+                "import 'Frontend/generated/jar-resources/ExampleConnector.js';"));
     }
 
     @Test

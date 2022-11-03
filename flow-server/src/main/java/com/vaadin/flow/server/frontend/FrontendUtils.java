@@ -155,7 +155,7 @@ public class FrontendUtils {
      * The folder inside the 'generated' folder where frontend resources from
      * jars are copied.
      */
-    public static final String JAR_RESOURCES_FOLDER = "jarResources";
+    public static final String JAR_RESOURCES_FOLDER = "jar-resources";
     /**
      * The location where javascript files present in jar resources are copied
      * and can be imported from.

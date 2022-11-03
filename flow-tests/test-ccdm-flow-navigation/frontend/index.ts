@@ -1,4 +1,4 @@
-import {Flow} from 'Frontend/generated/jarResources/Flow';
+import {Flow} from 'Frontend/generated/jar-resources/Flow';
 import {Router} from '@vaadin/router';
 import {connectionIndicator} from '@vaadin/common-frontend';
 
