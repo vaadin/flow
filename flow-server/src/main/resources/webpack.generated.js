@@ -305,8 +305,8 @@ module.exports = {
                 if (resourcePath.match(/(\\|\/)node_modules\1/)) {
                   return /(\\|\/)node_modules\1(?!.*node_modules)([\S]+)/.exec(resourcePath)[2].replace(/\\/g, '/');
                 }
-                if (resourcePath.match(/(\\|\/)generated\1jarResources\1/)) {
-                  return /(\\|\/)generated\1jarResources\1(?!.*jarResources)([\S]+)/.exec(resourcePath)[2].replace(/\\/g, '/');
+                if (resourcePath.match(/(\\|\/)generated\1jar-resources\1/)) {
+                  return /(\\|\/)generated\1jar-resources\1(?!.*jar-resources)([\S]+)/.exec(resourcePath)[2].replace(/\\/g, '/');
                 }
                 return '[path][name].[ext]';
               }
