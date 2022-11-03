@@ -14,7 +14,7 @@
 import { Router } from '@vaadin/router';
 
 // import Flow module to enable navigation to Vaadin server-side views
-import { Flow } from '@vaadin/flow-frontend/Flow';
+import { Flow } from 'Frontend/generated/jar-resources/Flow';
 
 const { serverSideRoutes } = new Flow({
   imports: () => import('[to-be-generated-by-flow]')

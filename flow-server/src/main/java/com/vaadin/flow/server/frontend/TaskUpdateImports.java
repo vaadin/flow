@@ -57,7 +57,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 /**
  * An updater that it's run when the servlet context is initialised in dev-mode
  * or when flow-maven-plugin goals are run in order to update Flow imports file
- * and <code>node_module/@vaadin/flow-frontend</code> contents by visiting all
+ * and {@value FrontendUtils#JAR_RESOURCES_FOLDER} contents by visiting all
  * classes with {@link JsModule} and {@link Theme} annotations.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
@@ -366,8 +366,8 @@ public class TaskUpdateImports extends NodeUpdater {
             File tokenFile, JsonObject tokenFileData, boolean enablePnpm,
             String buildDir, boolean productionMode,
             boolean useLegacyV14Bootstrap, FeatureFlags featureFlags) {
-        super(finder, frontendDepScanner, npmFolder, generatedPath, null,
-                buildDir, featureFlags);
+        super(finder, frontendDepScanner, npmFolder, generatedPath, buildDir,
+                featureFlags);
         this.frontendDirectory = frontendDirectory;
         fallbackScanner = fallBackScannerProvider.apply(finder);
         this.tokenFile = tokenFile;

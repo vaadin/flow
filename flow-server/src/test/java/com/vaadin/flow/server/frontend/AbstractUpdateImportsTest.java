@@ -65,7 +65,6 @@ import com.vaadin.flow.theme.ThemeDefinition;
 import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -189,8 +188,13 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 tmpRoot, tokenFile, true, featureFlags);
         assertTrue(nodeModulesPath.mkdirs());
         createExpectedImports(frontendDirectory, nodeModulesPath);
-        assertTrue(new File(nodeModulesPath,
-                FLOW_NPM_PACKAGE_NAME + "ExampleConnector.js").exists());
+        assertTrue(
+                new File(
+                        new File(
+                                new File(frontendDirectory,
+                                        FrontendUtils.GENERATED),
+                                FrontendUtils.JAR_RESOURCES_FOLDER),
+                        "ExampleConnector.js").exists());
     }
 
     protected abstract FrontendDependenciesScanner getScanner(

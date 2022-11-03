@@ -48,7 +48,7 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
     public static final String DEV_SETTINGS_FILE = "vaadin-dev-server-settings.json";
     File npmFolder;
     File frontendDirectory;
-    File flowResourcesFolder;
+    File jarFrontendResourcesFolder;
     File webappResourcesDirectory;
     String buildDirectory;
     String themeName;
@@ -58,7 +58,8 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
             PwaConfiguration pwaConfiguration) {
         this.npmFolder = builder.getNpmFolder();
         this.frontendDirectory = builder.getFrontendDirectory();
-        this.flowResourcesFolder = builder.getFlowResourcesFolder();
+        this.jarFrontendResourcesFolder = builder
+                .getJarFrontendResourcesFolder();
         this.webappResourcesDirectory = builder.getWebappResourcesDirectory();
         this.buildDirectory = builder.getBuildDirectory();
         this.themeName = themeName;
@@ -75,7 +76,7 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
                 FrontendUtils.getUnixPath(frontendDirectory.toPath()));
         settings.put("themeFolder", "themes");
         settings.put("themeResourceFolder",
-                FrontendUtils.getUnixPath(flowResourcesFolder.toPath()));
+                FrontendUtils.getUnixPath(jarFrontendResourcesFolder.toPath()));
         String webappResources;
         if (webappResourcesDirectory == null) {
             webappResources = combinePath(buildDirectory, "classes",
@@ -90,8 +91,10 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
                 FrontendUtils.getUnixPath(new File(staticOutput).toPath()));
         settings.put("generatedFolder", "generated");
         settings.put("frontendBundleOutput", webappResources);
-        settings.put("addonFrontendFolder", combinePath(buildDirectory,
-                FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER));
+        settings.put("jarResourcesFolder",
+                FrontendUtils.getUnixPath(jarFrontendResourcesFolder.toPath()));
+        settings.put("generatedFlowImportsFolder",
+                buildDirectory + "/frontend");
 
         settings.put("themeName", themeName);
 

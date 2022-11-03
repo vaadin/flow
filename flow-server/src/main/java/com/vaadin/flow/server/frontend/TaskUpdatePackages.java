@@ -59,6 +59,7 @@ public class TaskUpdatePackages extends NodeUpdater {
     protected static final String VAADIN_APP_PACKAGE_HASH = "vaadinAppPackageHash";
     private final boolean forceCleanUp;
     private final boolean enablePnpm;
+    private File jarResourcesFolder;
 
     /**
      * Create an instance of the updater given all configurable parameters.
@@ -71,9 +72,8 @@ public class TaskUpdatePackages extends NodeUpdater {
      *            folder with the `package.json` file
      * @param generatedPath
      *            folder where flow generated files will be placed.
-     * @param flowResourcesPath
-     *            folder where flow dependencies taken from resources files will
-     *            be placed. folder where flow generated files will be placed.
+     * @param jarResourcesFolder
+     *            folder where frontend resources from jar files will be placed.
      * @param forceCleanUp
      *            forces the clean up process to be run. If {@code false}, clean
      *            up will be performed when platform version update is detected.
@@ -85,10 +85,11 @@ public class TaskUpdatePackages extends NodeUpdater {
      */
     TaskUpdatePackages(ClassFinder finder,
             FrontendDependenciesScanner frontendDependencies, File npmFolder,
-            File generatedPath, File flowResourcesPath, boolean forceCleanUp,
+            File generatedPath, File jarResourcesFolder, boolean forceCleanUp,
             boolean enablePnpm, String buildDir, FeatureFlags featureFlags) {
-        super(finder, frontendDependencies, npmFolder, generatedPath,
-                flowResourcesPath, buildDir, featureFlags);
+        super(finder, frontendDependencies, npmFolder, generatedPath, buildDir,
+                featureFlags);
+        this.jarResourcesFolder = jarResourcesFolder;
         this.forceCleanUp = forceCleanUp;
         this.enablePnpm = enablePnpm;
     }
@@ -241,10 +242,6 @@ public class TaskUpdatePackages extends NodeUpdater {
             Map<String, String> applicationDependencies) throws IOException {
         int added = 0;
 
-        JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
-        // Update the dependency for the folder with resources
-        updateFlowFrontendDependencies(dependencies);
-
         // Add application dependencies
         for (Entry<String, String> dep : applicationDependencies.entrySet()) {
             added += addDependency(packageJson, DEPENDENCIES, dep.getKey(),
@@ -366,33 +363,6 @@ public class TaskUpdatePackages extends NodeUpdater {
         return false;
     }
 
-    private int updateFlowFrontendDependencies(JsonObject dependenciesObject) {
-        return updateNpmLocalDependency(dependenciesObject, DEP_NAME_FLOW_JARS,
-                flowResourcesFolder);
-    }
-
-    private int updateNpmLocalDependency(JsonObject dependenciesObject,
-            String packageName, File folder) {
-        assert dependenciesObject != null
-                : "dependency object should not be null in package.json";
-        if (folder != null) {
-            String depsPkg = "./" + FrontendUtils.getUnixRelativePath(
-                    npmFolder.getAbsoluteFile().toPath(),
-                    folder.getAbsoluteFile().toPath());
-            if (!dependenciesObject.hasKey(packageName) || !depsPkg
-                    .equals(dependenciesObject.getString(packageName))) {
-                dependenciesObject.put(packageName, depsPkg);
-                return 1;
-            }
-        } else {
-            if (dependenciesObject.hasKey(packageName)) {
-                dependenciesObject.remove(packageName);
-                return 1;
-            }
-        }
-        return 0;
-    }
-
     /**
      * Compares current platform version with the one last recorded as installed
      * in node_modules/.vaadin/vaadin_version. In case there was no existing
@@ -444,6 +414,12 @@ public class TaskUpdatePackages extends NodeUpdater {
                         DEP_NAME_FLOW_DEPS);
                 result++;
             }
+            if (object.hasKey(DEP_NAME_FLOW_JARS)) {
+                object.remove(DEP_NAME_FLOW_JARS);
+                log().debug("Removed \"{}\" as it's not needed anymore.",
+                        DEP_NAME_FLOW_JARS);
+                result++;
+            }
         }
         if (packageJson.hasKey(VAADIN_APP_PACKAGE_HASH)) {
             packageJson.remove(VAADIN_APP_PACKAGE_HASH);
@@ -467,12 +443,11 @@ public class TaskUpdatePackages extends NodeUpdater {
     private void cleanUp() throws IOException {
         FrontendUtils.deleteNodeModules(nodeModulesFolder);
 
-        if (flowResourcesFolder != null && flowResourcesFolder.exists()) {
-            // Clean all files but `package.json`
-            for (File file : flowResourcesFolder.listFiles()) {
-                if (!file.getName().equals(PACKAGE_JSON)) {
-                    file.delete();
-                }
+        if (jarResourcesFolder != null && jarResourcesFolder.exists()) {
+            // This feels like cleanup done in the wrong place but is left here
+            // for historical reasons
+            for (File file : jarResourcesFolder.listFiles()) {
+                file.delete();
             }
         }
 

@@ -57,7 +57,6 @@ import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
 public class PrepareFrontendMojoTest {
@@ -68,7 +67,6 @@ public class PrepareFrontendMojoTest {
     public ExpectedException exception = ExpectedException.none();
 
     private final PrepareFrontendMojo mojo = new PrepareFrontendMojo();
-    private File flowResourcesFolder;
     private String packageJson;
     private File projectBase;
     private File webpackOutputDirectory;
@@ -99,8 +97,6 @@ public class PrepareFrontendMojoTest {
                 .thenReturn(Collections.emptyList());
         Mockito.when(project.getBasedir()).thenReturn(projectBase);
 
-        flowResourcesFolder = new File(projectBase,
-                "target/" + DEFAULT_FLOW_RESOURCES_FOLDER);
         packageJson = new File(projectBase, PACKAGE_JSON).getAbsolutePath();
         webpackOutputDirectory = new File(projectBase, VAADIN_WEBAPP_RESOURCES);
         resourceOutputDirectory = new File(projectBase,
@@ -146,7 +142,6 @@ public class PrepareFrontendMojoTest {
         ReflectionUtils.setVariableValueInObject(mojo, "projectBuildDir",
                 Paths.get(projectBase.toString(), "target").toString());
 
-        Assert.assertTrue(flowResourcesFolder.mkdirs());
         setProject(mojo, projectBase);
     }
 

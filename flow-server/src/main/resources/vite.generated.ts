@@ -25,7 +25,8 @@ const appShellUrl = '.';
 const frontendFolder = path.resolve(__dirname, settings.frontendFolder);
 const themeFolder = path.resolve(frontendFolder, settings.themeFolder);
 const frontendBundleFolder = path.resolve(__dirname, settings.frontendBundleOutput);
-const addonFrontendFolder = path.resolve(__dirname, settings.addonFrontendFolder);
+const jarResourcesFolder = path.resolve(__dirname, settings.jarResourcesFolder);
+const generatedFlowImportsFolder = path.resolve(__dirname, settings.generatedFlowImportsFolder);
 const themeResourceFolder = path.resolve(__dirname, settings.themeResourceFolder);
 const statsFile = path.resolve(frontendBundleFolder, '..', 'config', 'stats.json');
 
@@ -40,7 +41,7 @@ const themeProjectFolders = projectStaticAssetsFolders.map((folder) => path.reso
 
 const themeOptions = {
   devMode: false,
-  // The following matches folder 'target/flow-frontend/themes/'
+  // The following matches folder 'frontend/generated/themes/'
   // (not 'frontend/themes') for theme in JAR that is copied there
   themeResourceFolder: path.resolve(themeResourceFolder, settings.themeFolder),
   themeProjectFolders: themeProjectFolders,
@@ -460,8 +461,8 @@ let spaMiddlewareForceRemoved = false;
 
 const allowedFrontendFolders = [
   frontendFolder,
-  addonFrontendFolder,
-  path.resolve(addonFrontendFolder, '..', 'frontend'), // Contains only generated-flow-imports
+  jarResourcesFolder,
+  path.resolve(generatedFlowImportsFolder), // Contains only generated-flow-imports
   path.resolve(__dirname, 'node_modules')
 ];
 

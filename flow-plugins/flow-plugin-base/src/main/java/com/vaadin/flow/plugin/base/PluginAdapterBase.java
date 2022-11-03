@@ -313,4 +313,5 @@ public interface PluginAdapterBase {
      * @return a list of packages
      */
     List<String> postinstallPackages();
+
 }

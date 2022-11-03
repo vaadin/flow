@@ -48,7 +48,6 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static org.junit.Assert.assertFalse;
@@ -95,8 +94,13 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         assertTrue(nodeModulesPath.mkdirs());
         createExpectedImports(frontendDirectory, nodeModulesPath);
-        assertTrue(new File(nodeModulesPath,
-                FLOW_NPM_PACKAGE_NAME + "ExampleConnector.js").exists());
+        assertTrue(
+                new File(
+                        new File(
+                                new File(frontendDirectory,
+                                        FrontendUtils.GENERATED),
+                                FrontendUtils.JAR_RESOURCES_FOLDER),
+                        "ExampleConnector.js").exists());
     }
 
     protected abstract FrontendDependenciesScanner getScanner(

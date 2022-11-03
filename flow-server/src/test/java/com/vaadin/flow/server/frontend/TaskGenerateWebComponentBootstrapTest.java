@@ -63,7 +63,7 @@ public class TaskGenerateWebComponentBootstrapTest {
         taskGenerateWebComponentBootstrap.execute();
         String content = taskGenerateWebComponentBootstrap.getFileContent();
         Assert.assertTrue(content.contains(
-                "import { init } from '@vaadin/flow-frontend/FlowClient';\n"
-                        + "init()"));
+                "import { init } from '" + FrontendUtils.JAR_RESOURCES_IMPORT
+                        + "FlowClient';\n" + "init()"));
     }
 }

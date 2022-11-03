@@ -41,7 +41,6 @@ import com.vaadin.flow.testutil.FrontendStubs;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 
 @Category(SlowTests.class)
@@ -59,7 +58,6 @@ public class NodeUpdatePackagesNpmVersionLockingTest
 
     private File baseDir;
     private File generatedDir;
-    private File resourcesDir;
 
     private ClassFinder classFinder;
 
@@ -73,8 +71,6 @@ public class NodeUpdatePackagesNpmVersionLockingTest
 
         generatedDir = new File(baseDir,
                 Paths.get(TARGET, DEFAULT_GENERATED_DIR).toString());
-        resourcesDir = new File(baseDir,
-                Paths.get(TARGET, DEFAULT_FLOW_RESOURCES_FOLDER).toString());
 
         FrontendStubs.createStubNode(true, true, baseDir.getAbsolutePath());
 
@@ -193,8 +189,7 @@ public class NodeUpdatePackagesNpmVersionLockingTest
         FrontendDependenciesScanner scanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
         return new TaskUpdatePackages(classFinder, scanner, baseDir,
-                generatedDir, resourcesDir, false, enablePnpm, TARGET,
-                featureFlags);
+                generatedDir, null, false, enablePnpm, TARGET, featureFlags);
     }
 
     private TaskUpdatePackages createPackageUpdater() {
