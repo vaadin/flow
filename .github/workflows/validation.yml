@@ -50,8 +50,8 @@ jobs:
       - name: Generate matrices
         id: set-matrix
         run: |
-          echo "::set-output name=matrix-it::$(./scripts/computeMatrix.js it-tests --parallel=13 current module args)"
-          echo "::set-output name=matrix-unit::$(./scripts/computeMatrix.js unit-tests --parallel=1 current module args)"
+          echo "matrix-it=$(./scripts/computeMatrix.js it-tests --parallel=13 current module args)" >> $GITHUB_OUTPUT
+          echo "matrix-unit=$(./scripts/computeMatrix.js unit-tests --parallel=1 current module args)" >> $GITHUB_OUTPUT
       - name: Compile and Install Flow
         run: |
           cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
@@ -110,7 +110,7 @@ jobs:
       - name: Set build status flag
         id: set-failure
         if: ${{ failure() || cancelled() }}
-        run: echo "::set-output name=failure::true"
+        run: echo "failure=true" >> $GITHUB_OUTPUT
       - uses: actions/upload-artifact@v3
         if: ${{ failure() || success() }}
         with:
@@ -187,7 +187,7 @@ jobs:
       - name: Set build status flag
         id: set-failure
         if: ${{ failure() || cancelled() }}
-        run: echo "::set-output name=failure::true"
+        run: echo "failure::true" >> $GITHUB_OUTPUT
       - uses: actions/upload-artifact@v3
         if: ${{ failure() || success() }}
         with:
