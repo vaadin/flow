@@ -174,7 +174,7 @@ const createServiceWorkerPlugin = function () {
 const flowFrontendThemesFolder = path.resolve(flowFrontendFolder, 'themes');
 const themeOptions = {
   devMode: devMode,
-  // The following matches folder 'frontend/generated/jarResources/themes/'
+  // The following matches folder 'frontend/generated/jar-resources/themes/'
   // (not 'frontend/themes') for theme in JAR that is copied there
   themeResourceFolder: flowFrontendThemesFolder,
   themeProjectFolders: themeProjectFolders,
