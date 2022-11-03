@@ -106,8 +106,8 @@ public final class TestUtils {
      * @return list of paths, relative to the directory specified
      */
     public static List<String> listFilesRecursively(File directory) {
-        assert directory != null && directory
-                .isDirectory() : "This method expects valid directory as input, but got: "
+        assert directory != null && directory.isDirectory()
+                : "This method expects valid directory as input, but got: "
                         + directory;
 
         try {
@@ -151,8 +151,8 @@ public final class TestUtils {
         return packageJson;
     }
 
-    public static void mockPluginAdapter(PluginAdapterBase mojo,
-            File baseDir) throws DependencyResolutionRequiredException,
+    public static void mockPluginAdapter(PluginAdapterBase mojo, File baseDir)
+            throws DependencyResolutionRequiredException,
             IllegalAccessException {
         MavenProject project = Mockito.mock(MavenProject.class);
 

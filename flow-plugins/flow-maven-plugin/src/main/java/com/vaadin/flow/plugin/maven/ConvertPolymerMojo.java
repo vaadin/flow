@@ -27,7 +27,7 @@ public class ConvertPolymerMojo extends FlowModeAbstractMojo {
     @Parameter(property = "serverGlob", defaultValue = "**/*.java")
     private String serverGlob;
 
-    @Parameter(property = "frontendGlob", defaultValue = "!(node_modules)/**/*.js")
+    @Parameter(property = "frontendGlob", defaultValue = "**/*.js")
     private String frontendGlob;
 
     @Parameter(property = "useLit1", defaultValue = "${false}")

@@ -56,6 +56,7 @@ public class ConvertPolymerUtil {
 
         try (Stream<Path> walk = Files.walk(baseDir)) {
             return walk.filter(path -> matcher.matches(path))
+                    .filter(path -> !path.toString().contains("node_modules"))
                     .collect(Collectors.toList());
         }
     }
