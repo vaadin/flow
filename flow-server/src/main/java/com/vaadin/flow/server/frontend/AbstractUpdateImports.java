@@ -292,7 +292,8 @@ abstract class AbstractUpdateImports implements Runnable {
                             "Use the './' prefix for files in JAR files: '{}', please update your component.",
                             importPath);
                 }
-                resolved = FrontendUtils.JAR_RESOURCES_IMPORT + resource;
+                resolved = FrontendUtils.JAR_RESOURCES_IMPORT_FRONTEND_RELATIVE
+                        + resource;
             }
         }
         return resolved;

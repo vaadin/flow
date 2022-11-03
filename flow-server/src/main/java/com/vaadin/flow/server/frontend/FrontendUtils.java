@@ -156,12 +156,19 @@ public class FrontendUtils {
      * jars are copied.
      */
     public static final String JAR_RESOURCES_FOLDER = "jar-resources";
+
     /**
      * The location where javascript files present in jar resources are copied
      * and can be imported from.
      */
     public static final String JAR_RESOURCES_IMPORT = "Frontend/generated/"
             + JAR_RESOURCES_FOLDER + "/";
+    /**
+     * The location where javascript files present in jar resources are copied
+     * and can be imported from, relative to the frontend folder.
+     */
+    public static final String JAR_RESOURCES_IMPORT_FRONTEND_RELATIVE = JAR_RESOURCES_IMPORT
+            .replace("Frontend/", "./");
 
     /**
      * Default folder name for flow generated stuff relative to the

@@ -246,13 +246,6 @@ public abstract class NodeUpdater implements FallibleCommand {
                 .collect(Collectors.toSet());
     }
 
-    private boolean hasMetaInfResource(String resource) {
-        return finder.getResource(
-                RESOURCES_FRONTEND_DEFAULT + "/" + resource) != null
-                || finder.getResource(COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT
-                        + "/" + resource) != null;
-    }
-
     JsonObject getPackageJson() throws IOException {
         JsonObject packageJson = getJsonFileContent(getPackageJsonFile());
         if (packageJson == null) {
