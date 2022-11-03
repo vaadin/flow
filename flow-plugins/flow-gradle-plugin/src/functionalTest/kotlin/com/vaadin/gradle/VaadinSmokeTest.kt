@@ -340,7 +340,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
         result.expectTaskSucceded("vaadinPrepareFrontend")
         result.expectTaskSucceded("vaadinBuildFrontend")
 
-        val cssFile = File(testProject.dir, "build/flow-frontend/mystyle.css")
+        val cssFile = File(testProject.dir, "frontend/generated/jar-resources/mystyle.css")
         expect(true, cssFile.toString()) { cssFile.exists() }
 
     }
