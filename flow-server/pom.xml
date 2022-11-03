@@ -57,7 +57,7 @@
         <dependency>
             <groupId>commons-fileupload</groupId>
             <artifactId>commons-fileupload</artifactId>
-            <version>1.4.0</version>
+            <version>1.4</version>
             <!-- commons-fileupload depends on commons-io, override
                 it with Flow declaration -->
             <exclusions>
