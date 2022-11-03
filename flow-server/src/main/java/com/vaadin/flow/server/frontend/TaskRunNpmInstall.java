@@ -41,7 +41,6 @@ import com.vaadin.flow.shared.util.SharedUtil;
 
 import elemental.json.JsonObject;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
 import static com.vaadin.flow.server.frontend.NodeUpdater.HASH_KEY;
 import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
@@ -240,10 +239,6 @@ public class TaskRunNpmInstall implements FallibleCommand {
         assert installedPackages != null;
         if (installedPackages.length == 0) {
             // Nothing installed
-            return true;
-        } else if (installedPackages.length == 1 && FLOW_NPM_PACKAGE_NAME
-                .startsWith(installedPackages[0].getName())) {
-            // Only flow-frontend installed
             return true;
         } else {
             return isVaadinHashUpdated();

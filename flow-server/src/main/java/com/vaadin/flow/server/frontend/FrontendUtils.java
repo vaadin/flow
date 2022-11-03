@@ -152,30 +152,23 @@ public class FrontendUtils {
     public static final String SERVICE_WORKER_SRC_JS = "sw.js";
 
     /**
-     * The npm package name that will be used for the javascript files present
-     * in jar resources that will to be copied to the npm folder so as they are
-     * accessible to webpack.
+     * The folder inside the 'generated' folder where frontend resources from
+     * jars are copied.
      */
-    public static final String FLOW_NPM_PACKAGE_NAME = NodeUpdater.DEP_NAME_FLOW_JARS
-            + "/";
+    public static final String JAR_RESOURCES_FOLDER = "jar-resources";
 
     /**
-     * Default folder where front-end resources present in the classpath jars
-     * are copied to. Relative to the
-     * {@link com.vaadin.flow.server.InitParameters#BUILD_FOLDER}.
+     * The location where javascript files present in jar resources are copied
+     * and can be imported from.
      */
-    public static final String DEFAULT_FLOW_RESOURCES_FOLDER = "flow-frontend";
-
+    public static final String JAR_RESOURCES_IMPORT = "Frontend/generated/"
+            + JAR_RESOURCES_FOLDER + "/";
     /**
-     * Default folder under build folder for copying front-end resources present
-     * in the classpath jars.
-     *
-     * @deprecated This is deprecated due to a typo. Use
-     *             DEFAULT_FLOW_RESOURCES_FOLDER instead.
-     * @see #DEFAULT_FLOW_RESOURCES_FOLDER
+     * The location where javascript files present in jar resources are copied
+     * and can be imported from, relative to the frontend folder.
      */
-    @Deprecated
-    public static final String DEAULT_FLOW_RESOURCES_FOLDER = DEFAULT_FLOW_RESOURCES_FOLDER;
+    public static final String JAR_RESOURCES_IMPORT_FRONTEND_RELATIVE = JAR_RESOURCES_IMPORT
+            .replace("Frontend/", "./");
 
     /**
      * Default folder name for flow generated stuff relative to the
@@ -699,9 +692,9 @@ public class FrontendUtils {
 
     /**
      * Looks up the frontend resource at the given path. If the path starts with
-     * {@code ./}, first look in {@code projectRoot/frontend}, then in
-     * {@code projectRoot/node_modules/@vaadin/flow-frontend}. If the path does
-     * not start with {@code ./}, look in {@code node_modules} instead.
+     * {@code ./}, first look in {@code frontend}, then in
+     * {@value FrontendUtils#JAR_RESOURCES_FOLDER}. If the path does not start
+     * with {@code ./}, look in {@code node_modules} instead.
      *
      * @param projectRoot
      *            the project root folder.
@@ -716,9 +709,9 @@ public class FrontendUtils {
 
     /**
      * Looks up the fronted resource at the given path. If the path starts with
-     * {@code ./}, first look in {@code projectRoot/frontendDirectory}, then in
-     * {@code projectRoot/node_modules/@vaadin/flow-frontend}. If the path does
-     * not start with {@code ./}, look in {@code node_modules} instead.
+     * {@code ./}, first look in {@code frontend}, then in
+     * {@value FrontendUtils#JAR_RESOURCES_FOLDER}. If the path does not start
+     * with {@code ./}, look in {@code node_modules} instead.
      *
      * @param projectRoot
      *            the project root folder.
@@ -731,14 +724,22 @@ public class FrontendUtils {
     public static File resolveFrontendPath(File projectRoot, String path,
             File frontendDirectory) {
         File nodeModulesFolder = new File(projectRoot, NODE_MODULES);
-        File flowFrontendFolder = new File(nodeModulesFolder,
-                "@vaadin/" + DEFAULT_FLOW_RESOURCES_FOLDER);
+        File addonsFolder = getJarResourcesFolder(frontendDirectory);
         List<File> candidateParents = path.startsWith("./")
-                ? Arrays.asList(frontendDirectory, flowFrontendFolder)
+                ? Arrays.asList(frontendDirectory, addonsFolder)
                 : Arrays.asList(nodeModulesFolder, frontendDirectory,
-                        flowFrontendFolder);
+                        addonsFolder);
         return candidateParents.stream().map(parent -> new File(parent, path))
                 .filter(File::exists).findFirst().orElse(null);
+    }
+
+    private static File getJarResourcesFolder(File frontendDirectory) {
+        return new File(getFrontendGeneratedFolder(frontendDirectory),
+                JAR_RESOURCES_FOLDER);
+    }
+
+    private static File getFrontendGeneratedFolder(File frontendDirectory) {
+        return new File(frontendDirectory, GENERATED);
     }
 
     /**

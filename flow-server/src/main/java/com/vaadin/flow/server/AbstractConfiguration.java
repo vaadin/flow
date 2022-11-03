@@ -161,22 +161,6 @@ public interface AbstractConfiguration extends Serializable {
     }
 
     /**
-     * Get the location for flow resources inside the build folder.
-     * <p>
-     * Default will be <code>target/flow-frontend</code> where target is the
-     * defined buildFolder see {@link #getBuildFolder()}.
-     * <p>
-     * Note! The path is made using Paths.get which will use File.separator that
-     * is OS dependent.
-     *
-     * @return flow resources folder, default {@code target/flow-frontend}
-     */
-    default String getFlowResourcesFolder() {
-        return Paths.get(getBuildFolder(),
-                FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER).toString();
-    }
-
-    /**
      * Gets the folder where resource sources are stored.
      * <p>
      * Only available in development mode.

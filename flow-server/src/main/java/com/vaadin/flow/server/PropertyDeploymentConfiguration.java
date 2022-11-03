@@ -216,11 +216,6 @@ public class PropertyDeploymentConfiguration
     }
 
     @Override
-    public String getFlowResourcesFolder() {
-        return super.getFlowResourcesFolder();
-    }
-
-    @Override
     public File getJavaResourceFolder() {
         return super.getJavaResourceFolder();
     }

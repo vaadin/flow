@@ -40,7 +40,6 @@ import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.testutil.FrontendStubs;
 
 import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
@@ -72,7 +71,6 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
     private File webpackGenerated;
     private File baseDir;
     private File frontendFolder;
-    private File frontendGeneratedFolder;
     private PwaConfiguration pwaConfiguration;
     private boolean useV14Bootstrapping = false;
 
@@ -80,8 +78,6 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
     public void setup() throws Exception {
         baseDir = temporaryFolder.getRoot();
         frontendFolder = new File(baseDir, "frontend");
-        frontendGeneratedFolder = new File(baseDir,
-                DEFAULT_PROJECT_FRONTEND_GENERATED_DIR);
 
         FrontendStubs.createStubNode(true, true, baseDir.getAbsolutePath());
 
@@ -172,10 +168,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
 
         TaskUpdateWebpack newUpdater = new TaskUpdateWebpack(frontendFolder,
                 baseDir, new File(baseDir, "baz"), new File(baseDir, "foo"),
-                new File(baseDir, "bar"), false,
-                new File(baseDir, Paths
-                        .get(TARGET, DEFAULT_FLOW_RESOURCES_FOLDER).toString()),
-                pwaConfiguration, TARGET);
+                new File(baseDir, "bar"), false, pwaConfiguration, TARGET);
 
         newUpdater.execute();
 
@@ -343,11 +336,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
                 new File(baseDir,
                         Paths.get(Constants.TARGET, DEFAULT_GENERATED_DIR,
                                 IMPORTS_NAME).toString()),
-                useV14Bootstrapping,
-                new File(baseDir,
-                        Paths.get(Constants.TARGET,
-                                DEFAULT_FLOW_RESOURCES_FOLDER).toString()),
-                pwaConfiguration, TARGET);
+                useV14Bootstrapping, pwaConfiguration, TARGET);
     }
 
     private void assertWebpackGeneratedConfigContent(String entryPoint,

@@ -229,9 +229,6 @@ public class DevModeInitializer implements Serializable {
         String frontendFolder = config.getStringProperty(PARAM_FRONTEND_DIR,
                 System.getProperty(PARAM_FRONTEND_DIR, DEFAULT_FRONTEND_DIR));
 
-        File flowResourcesFolder = new File(baseDir,
-                config.getFlowResourcesFolder());
-
         Lookup lookupFromContext = context.getAttribute(Lookup.class);
         Lookup lookupForClassFinder = Lookup.of(new DevModeClassFinder(classes),
                 ClassFinder.class);
@@ -322,16 +319,18 @@ public class DevModeInitializer implements Serializable {
                         InitParameters.ADDITIONAL_POSTINSTALL_PACKAGES, "")
                 .split(",");
 
-        String frontendGeneratedFolder = config.getStringProperty(
+        String frontendGeneratedFolderName = config.getStringProperty(
                 PROJECT_FRONTEND_GENERATED_DIR_TOKEN,
                 Paths.get(baseDir, DEFAULT_PROJECT_FRONTEND_GENERATED_DIR)
                         .toString());
-
+        File frontendGeneratedFolder = new File(frontendGeneratedFolderName);
+        File jarFrontendResourcesFolder = new File(frontendGeneratedFolder,
+                FrontendUtils.JAR_RESOURCES_FOLDER);
         JsonObject tokenFileData = Json.createObject();
         NodeTasks tasks = builder.enablePackagesUpdate(true)
                 .useByteCodeScanner(useByteCodeScanner)
-                .withFlowResourcesFolder(flowResourcesFolder)
-                .withFrontendGeneratedFolder(new File(frontendGeneratedFolder))
+                .withFrontendGeneratedFolder(frontendGeneratedFolder)
+                .withJarFrontendResourcesFolder(jarFrontendResourcesFolder)
                 .copyResources(frontendLocations)
                 .copyLocalResources(new File(baseDir,
                         Constants.LOCAL_FRONTEND_RESOURCES_PATH))

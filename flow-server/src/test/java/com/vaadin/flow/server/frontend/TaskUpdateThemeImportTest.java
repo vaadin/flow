@@ -34,7 +34,6 @@ import com.vaadin.flow.theme.ThemeDefinition;
 
 import static com.vaadin.flow.server.Constants.APPLICATION_THEME_ROOT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.THEME_IMPORTS_D_TS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.THEME_IMPORTS_NAME;
@@ -173,18 +172,18 @@ public class TaskUpdateThemeImportTest {
     public void taskExecuted_customThemeWithThemeFolderInClasspath_ensuresThemeGeneratedJsCreatedSuccessfully()
             throws Exception {
 
-        File correctNodeModulesDirectory = new File(projectRoot, NODE_MODULES);
-        File vaadinNpmPackageDir = new File(correctNodeModulesDirectory,
-                FLOW_NPM_PACKAGE_NAME);
-        File themesDir = new File(vaadinNpmPackageDir, APPLICATION_THEME_ROOT);
+        File jarResourcesFolder = new File(
+                new File(frontendDirectory, FrontendUtils.GENERATED),
+                FrontendUtils.JAR_RESOURCES_FOLDER);
+        File themesDir = new File(jarResourcesFolder, APPLICATION_THEME_ROOT);
         File aCustomThemeDir = new File(themesDir, CUSTOM_THEME_NAME);
 
         boolean customThemeDirCreatedSuccessfully = aCustomThemeDir.mkdirs();
 
-        Assert.assertTrue(String.format(
-                "%s directory should be created at '%s%s%s/%s' but failed.",
-                CUSTOM_THEME_NAME, NODE_MODULES, FLOW_NPM_PACKAGE_NAME,
-                APPLICATION_THEME_ROOT, CUSTOM_THEME_NAME),
+        Assert.assertTrue(
+                String.format(
+                        "%s directory should be created at '%s' but failed.",
+                        CUSTOM_THEME_NAME, aCustomThemeDir),
                 customThemeDirCreatedSuccessfully);
 
         assertNoThemeGeneratedDefinitionFilesExist(EMPTY_BEFORE_EXECUTION);
@@ -242,8 +241,8 @@ public class TaskUpdateThemeImportTest {
         File themeDir = new File(frontendDirectory, CUSTOM_THEME_PATH);
         Assert.assertTrue(themeDir.mkdirs());
 
-        String classPathThemePath = NODE_MODULES + FLOW_NPM_PACKAGE_NAME
-                + CUSTOM_THEME_PATH;
+        String classPathThemePath = "frontend/" + FrontendUtils.GENERATED
+                + FrontendUtils.JAR_RESOURCES_FOLDER + "/" + CUSTOM_THEME_PATH;
         File classPathThemeDir = new File(projectRoot, classPathThemePath);
         Assert.assertTrue(classPathThemeDir.mkdirs());
 
@@ -265,8 +264,8 @@ public class TaskUpdateThemeImportTest {
         File themeDir = new File(projectRoot, metaInfResources);
         Assert.assertTrue(themeDir.mkdirs());
 
-        String classPathThemePath = NODE_MODULES + FLOW_NPM_PACKAGE_NAME
-                + CUSTOM_THEME_PATH;
+        String classPathThemePath = "frontend/" + FrontendUtils.GENERATED
+                + FrontendUtils.JAR_RESOURCES_FOLDER + "/" + CUSTOM_THEME_PATH;
         File classPathThemeDir = new File(projectRoot, classPathThemePath);
         Assert.assertTrue(classPathThemeDir.mkdirs());
 
@@ -288,8 +287,8 @@ public class TaskUpdateThemeImportTest {
         File themeDir = new File(projectRoot, staticResources);
         Assert.assertTrue(themeDir.mkdirs());
 
-        String classPathThemePath = NODE_MODULES + FLOW_NPM_PACKAGE_NAME
-                + CUSTOM_THEME_PATH;
+        String classPathThemePath = "frontend/" + FrontendUtils.GENERATED
+                + FrontendUtils.JAR_RESOURCES_FOLDER + "/" + CUSTOM_THEME_PATH;
         File classPathThemeDir = new File(projectRoot, classPathThemePath);
         Assert.assertTrue(classPathThemeDir.mkdirs());
 
@@ -401,8 +400,8 @@ public class TaskUpdateThemeImportTest {
     @Test
     public void taskExecuted_customThemeFolderExistsInClassPathAndStaticAndMetaInfResources_throwsException() {
 
-        String classPathThemePath = NODE_MODULES + FLOW_NPM_PACKAGE_NAME
-                + CUSTOM_THEME_PATH;
+        String classPathThemePath = "frontend/" + FrontendUtils.GENERATED
+                + FrontendUtils.JAR_RESOURCES_FOLDER + "/" + CUSTOM_THEME_PATH;
         File classPathThemeDir = new File(projectRoot, classPathThemePath);
         Assert.assertTrue(classPathThemeDir.mkdirs());
 

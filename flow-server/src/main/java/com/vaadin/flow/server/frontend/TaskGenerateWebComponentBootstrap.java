@@ -65,7 +65,8 @@ public class TaskGenerateWebComponentBootstrap
                 .replaceFirst("\\.(js|ts)$", "");
 
         lines.add(String.format("import '%s';", generatedImportsRelativePath));
-        lines.add("import { init } from '@vaadin/flow-frontend/FlowClient';");
+        lines.add("import { init } from '" + FrontendUtils.JAR_RESOURCES_IMPORT
+                + "FlowClient';");
         lines.add("init();");
 
         return String.join("\n", lines);
