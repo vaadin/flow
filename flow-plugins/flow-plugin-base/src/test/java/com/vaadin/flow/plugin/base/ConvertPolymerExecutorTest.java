@@ -1,5 +1,6 @@
 package com.vaadin.flow.plugin.base;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
@@ -16,8 +17,6 @@ import org.mockito.MockitoAnnotations;
 
 import com.vaadin.polymer2lit.FrontendConverter;
 import com.vaadin.polymer2lit.ServerConverter;
-
-import org.codehaus.plexus.util.ReflectionUtils;
 
 public class ConvertPolymerExecutorTest {
     @Rule
@@ -42,6 +41,14 @@ public class ConvertPolymerExecutorTest {
             throws IOException, URISyntaxException, IllegalAccessException {
         closeable = MockitoAnnotations.openMocks(this);
         TestUtil.stubPluginAdapterBase(adapter, tmpDir.getRoot());
+
+        tmpDir.newFile("component.js");
+        tmpDir.newFolder("nested");
+        tmpDir.newFile("nested/component.js");
+        tmpDir.newFolder("node_modules");
+        tmpDir.newFile("node_modules/component.js");
+        tmpDir.newFile("Component.java");
+        tmpDir.newFile("nested/Component.java");
     }
 
     @After
@@ -50,20 +57,69 @@ public class ConvertPolymerExecutorTest {
     }
 
     @Test
-    public void convertFrontend()
+    public void execute()
             throws URISyntaxException, IOException, InterruptedException {
         try (ConvertPolymerExecutor executor = new ConvertPolymerExecutor(
                 adapter, "**/*.java", "**/*.js", false, false)) {
             executor.execute();
 
-            Mockito.verify(frontendConverterMock.constructed().get(0))
-                    .convertFile(Path.of("/file1.js"), false, false);
-        }
+            FrontendConverter frontendConverter = frontendConverterMock
+                    .constructed().get(0);
+            Mockito.verify(frontendConverter)
+                    .convertFile(getTmpFilePath("component.js"), false, false);
+            Mockito.verify(frontendConverter).convertFile(
+                    getTmpFilePath("nested/component.js"), false, false);
+            Mockito.verify(frontendConverter, Mockito.never()).convertFile(
+                    getTmpFilePath("node_modules/component.js"), false, false);
+            Mockito.verify(frontendConverter, Mockito.never()).convertFile(
+                    getTmpFilePath("Component.java"), false, false);
 
+            ServerConverter serverConverter = serverConverterMock.constructed()
+                    .get(0);
+            Mockito.verify(serverConverter)
+                    .convertFile(getTmpFilePath("Component.java"));
+            Mockito.verify(serverConverter)
+                    .convertFile(getTmpFilePath("nested/Component.java"));
+            Mockito.verify(serverConverter, Mockito.never())
+                    .convertFile(getTmpFilePath("component.js"));
+            Mockito.verify(serverConverter, Mockito.never())
+                    .convertFile(getTmpFilePath("nested/component.js"));
+        }
     }
 
-    // @Test
-    // public void convertServer() {
+    @Test
+    public void specificFrontendFileAsGlob_execute()
+            throws URISyntaxException, IOException, InterruptedException {
+        try (ConvertPolymerExecutor executor = new ConvertPolymerExecutor(
+                adapter, "**/*.java", "/nested/component.js", false, false)) {
+            executor.execute();
 
-    // }
+            FrontendConverter frontendConverter = frontendConverterMock
+                    .constructed().get(0);
+            Mockito.verify(frontendConverter, Mockito.never())
+                    .convertFile(getTmpFilePath("component.js"), false, false);
+            Mockito.verify(frontendConverter).convertFile(
+                    getTmpFilePath("nested/component.js"), false, false);
+        }
+    }
+
+    @Test
+    public void specificServerFileAsGlob_execute()
+            throws URISyntaxException, IOException, InterruptedException {
+        try (ConvertPolymerExecutor executor = new ConvertPolymerExecutor(
+                adapter, "/nested/Component.java", "**/*.js", false, false)) {
+            executor.execute();
+
+            ServerConverter serverConverter = serverConverterMock.constructed()
+                    .get(0);
+            Mockito.verify(serverConverter, Mockito.never())
+                    .convertFile(getTmpFilePath("Component.java"));
+            Mockito.verify(serverConverter)
+                    .convertFile(getTmpFilePath("nested/Component.java"));
+        }
+    }
+
+    private Path getTmpFilePath(String path) {
+        return new File(tmpDir.getRoot(), path).toPath();
+    }
 }

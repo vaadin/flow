@@ -71,7 +71,7 @@ public class ConvertPolymerExecutor implements AutoCloseable {
                 frontendGlob)) {
             adapter.logInfo("Processing " + filePath.toString() + "...");
 
-            this.frontendConverter.convertFile(filePath, useLit1,
+            frontendConverter.convertFile(filePath, useLit1,
                     disableOptionalChaining);
         }
     }

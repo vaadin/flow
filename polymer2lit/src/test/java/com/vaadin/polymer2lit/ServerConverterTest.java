@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -15,6 +16,13 @@ import org.junit.rules.TemporaryFolder;
 public class ServerConverterTest {
     @Rule
     public final TemporaryFolder tmpDir = new TemporaryFolder();
+
+    private ServerConverter serverConverter;
+
+    @Before
+    public void init() throws IOException {
+        serverConverter = new ServerConverter();
+    }
 
     @Test
     public void noModel() throws IOException {
@@ -37,7 +45,7 @@ public class ServerConverterTest {
         Files.copy(inputFileStream, tmpInputFilePath,
                 StandardCopyOption.REPLACE_EXISTING);
 
-        ServerConverter.convertFile(tmpInputFilePath);
+        serverConverter.convertFile(tmpInputFilePath);
 
         String expectedContent = new String(expectedFileStream.readAllBytes(),
                 StandardCharsets.UTF_8);
