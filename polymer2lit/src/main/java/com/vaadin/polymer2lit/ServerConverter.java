@@ -72,8 +72,7 @@ public class ServerConverter {
         return result;
     }
 
-    private void transformModel(String modelType,
-            JavaClassSource javaClass) {
+    private void transformModel(String modelType, JavaClassSource javaClass) {
         if (modelType.startsWith(javaClass.getName() + ".")) {
             String internalName = modelType
                     .substring(javaClass.getName().length() + 1);

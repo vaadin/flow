@@ -14,8 +14,8 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.utils.LookupImpl;
 
 public class TestUtil {
-    public static void stubPluginAdapterBase(PluginAdapterBase adapter, File baseDir)
-            throws URISyntaxException {
+    public static void stubPluginAdapterBase(PluginAdapterBase adapter,
+            File baseDir) throws URISyntaxException {
         ClassFinder classFinder = Mockito.mock(ClassFinder.class);
         LookupImpl lookup = Mockito.spy(new LookupImpl(classFinder));
         Mockito.when(adapter.createLookup(Mockito.any())).thenReturn(lookup);
