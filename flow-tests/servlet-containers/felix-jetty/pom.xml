@@ -14,7 +14,7 @@
     <packaging>jar</packaging>
 
     <properties>
-        <felix.version>6.0.0</felix.version>
+        <felix.version>7.0.5</felix.version>
         <felix.distribution>https://repo1.maven.org/maven2/org/apache/felix/org.apache.felix.main.distribution/${felix.version}/org.apache.felix.main.distribution-${felix.version}.zip</felix.distribution>
         <felix.home>felix-framework-${felix.version}</felix.home>
         <jetty.version>9.4.11.v20180605</jetty.version>
@@ -34,6 +34,13 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-osgi</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <!-- Add flow-server dependency so its dependencies are used in copy-dependencies -->
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-server</artifactId>
             <version>${project.version}</version>
         </dependency>
 
@@ -59,7 +66,7 @@
         <dependency>
             <groupId>org.apache.felix</groupId>
             <artifactId>org.apache.felix.scr</artifactId>
-            <version>2.1.10</version>
+            <version>2.2.4</version>
             <scope>provided</scope>
         </dependency>
 
@@ -94,14 +101,14 @@
         <dependency>
             <groupId>org.apache.felix</groupId>
             <artifactId>org.apache.felix.http.servlet-api</artifactId>
-            <version>1.1.2</version>
+            <version>2.1.0</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.apache.felix</groupId>
             <artifactId>org.apache.felix.http.jetty</artifactId>
-            <version>4.0.6</version>
+            <version>4.2.2</version>
             <scope>provided</scope>
         </dependency>
 
