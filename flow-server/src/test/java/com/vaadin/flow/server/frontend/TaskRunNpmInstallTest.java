@@ -88,7 +88,7 @@ public class TaskRunNpmInstallTest {
         finder = Mockito.mock(ClassFinder.class);
         nodeUpdater = new NodeUpdater(finder,
                 Mockito.mock(FrontendDependencies.class), npmFolder,
-                generatedPath, null, TARGET, Mockito.mock(FeatureFlags.class)) {
+                generatedPath, TARGET, Mockito.mock(FeatureFlags.class)) {
 
             @Override
             public void execute() {
@@ -241,19 +241,6 @@ public class TaskRunNpmInstallTest {
                 ".vaadin/vaadin.json");
         FileUtils.forceMkdirParent(localHashFile);
         getNodeUpdater().writePackageFile(localHash, localHashFile);
-    }
-
-    @Test
-    public void runNpmInstall_dirContainsOnlyFlowNpmPackage_npmInstallIsExecuted()
-            throws ExecutionFailedException, IOException {
-        File nodeModules = getNodeUpdater().nodeModulesFolder;
-        nodeModules.mkdir();
-        new File(nodeModules, "@vaadin/flow-frontend/").mkdirs();
-        getNodeUpdater().modified = false;
-        ensurePackageJson();
-        task.execute();
-
-        Mockito.verify(logger).info(getRunningMsg());
     }
 
     @Test

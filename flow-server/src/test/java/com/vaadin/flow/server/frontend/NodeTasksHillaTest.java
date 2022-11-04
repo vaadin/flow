@@ -98,8 +98,9 @@ public class NodeTasksHillaTest {
         builder = new Builder(lookup, new File(userDir), TARGET)
                 .enablePackagesUpdate(false).enableImportsUpdate(true)
                 .runNpmInstall(false).withEmbeddableWebComponents(false)
-                .withFlowResourcesFolder(
-                        new File(userDir, TARGET + "flow-frontend"))
+                .withJarFrontendResourcesFolder(new File(userDir,
+                        FrontendUtils.GENERATED
+                                + FrontendUtils.JAR_RESOURCES_FOLDER))
                 .withFrontendGeneratedFolder(new File(userDir))
                 .withEndpointSourceFolder(new File(userDir))
                 .withEndpointGeneratedOpenAPIFile(new File(userDir))

@@ -691,7 +691,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
     private NodeUpdater createNodeUpdater(String versionsContent) {
         return new NodeUpdater(finder, Mockito.mock(FrontendDependencies.class),
-                npmFolder, generatedPath, null, TARGET,
+                npmFolder, generatedPath, TARGET,
                 Mockito.mock(FeatureFlags.class)) {
 
             @Override

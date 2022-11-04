@@ -132,11 +132,6 @@ public abstract class AbstractDevModeTest {
         Mockito.when(appConfig.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
                 null)).thenReturn(baseDir);
         Mockito.when(appConfig.getBuildFolder()).thenReturn(Constants.TARGET);
-        Mockito.when(appConfig.getFlowResourcesFolder())
-                .thenReturn(Paths
-                        .get(Constants.TARGET,
-                                FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER)
-                        .toString());
         Mockito.when(appConfig.getPropertyNames())
                 .thenReturn(Collections.enumeration(Collections.emptyList()));
         Mockito.when(appConfig.getContext()).thenReturn(vaadinContext);

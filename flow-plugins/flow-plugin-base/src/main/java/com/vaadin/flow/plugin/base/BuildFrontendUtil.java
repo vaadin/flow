@@ -79,7 +79,6 @@ import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_ENABLE_DEV
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_INITIAL_UIDL;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
@@ -151,9 +150,6 @@ public class BuildFrontendUtil {
                             + "'. Verify that you may write to path.",
                     e);
         }
-        File flowResourcesFolder = new File(adapter.npmFolder(),
-                Paths.get(adapter.buildFolder(), DEFAULT_FLOW_RESOURCES_FOLDER)
-                        .toString());
         ClassFinder classFinder = adapter.getClassFinder();
         Lookup lookup = adapter.createLookup(classFinder);
 
@@ -161,7 +157,8 @@ public class BuildFrontendUtil {
                 adapter.npmFolder(), adapter.generatedFolder(),
                 adapter.frontendDirectory(), adapter.buildFolder())
                 .useV14Bootstrap(adapter.isUseDeprecatedV14Bootstrapping())
-                .withFlowResourcesFolder(flowResourcesFolder)
+                .withJarFrontendResourcesFolder(
+                        getJarFrontendResourcesFolder(adapter))
                 .createMissingPackageJson(true).enableImportsUpdate(false)
                 .enablePackagesUpdate(false).runNpmInstall(false)
                 .withFrontendGeneratedFolder(adapter.generatedTsFolder())
@@ -187,6 +184,13 @@ public class BuildFrontendUtil {
                     throwable);
         }
 
+    }
+
+    private static File getJarFrontendResourcesFolder(
+            PluginAdapterBase adapter) {
+        return new File(
+                new File(adapter.frontendDirectory(), FrontendUtils.GENERATED),
+                FrontendUtils.JAR_RESOURCES_FOLDER);
     }
 
     private static FrontendToolsSettings getFrontendToolsSettings(
@@ -297,9 +301,6 @@ public class BuildFrontendUtil {
             throws ExecutionFailedException, URISyntaxException {
 
         Set<File> jarFiles = adapter.getJarFiles();
-        File flowResourcesFolder = new File(adapter.npmFolder(),
-                Paths.get(adapter.buildFolder(), DEFAULT_FLOW_RESOURCES_FOLDER)
-                        .toString());
         final URI nodeDownloadRootURI;
 
         nodeDownloadRootURI = adapter.nodeDownloadRoot();
@@ -318,7 +319,8 @@ public class BuildFrontendUtil {
                     .useV14Bootstrap(adapter.isUseDeprecatedV14Bootstrapping())
                     .enablePackagesUpdate(true)
                     .useByteCodeScanner(adapter.optimizeBundle())
-                    .withFlowResourcesFolder(flowResourcesFolder)
+                    .withJarFrontendResourcesFolder(
+                            getJarFrontendResourcesFolder(adapter))
                     .copyResources(jarFiles).copyTemplates(true)
                     .copyLocalResources(adapter.frontendResourcesDirectory())
                     .enableImportsUpdate(true)

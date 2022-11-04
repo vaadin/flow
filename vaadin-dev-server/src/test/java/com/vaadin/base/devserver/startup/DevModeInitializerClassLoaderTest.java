@@ -11,10 +11,10 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.testutil.TestUtils;
 
 import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER;
 
 public class DevModeInitializerClassLoaderTest {
 
@@ -56,8 +56,9 @@ public class DevModeInitializerClassLoaderTest {
 
         customLoader.close();
 
-        List<String> files = TestUtils.listFilesRecursively(Paths
-                .get(baseDir, TARGET, DEFAULT_FLOW_RESOURCES_FOLDER).toFile());
+        List<String> files = TestUtils.listFilesRecursively(
+                Paths.get(baseDir, "frontend", FrontendUtils.GENERATED,
+                        FrontendUtils.JAR_RESOURCES_FOLDER).toFile());
         Assert.assertEquals(5, files.size());
 
         Assert.assertTrue("A package.json file should be created",

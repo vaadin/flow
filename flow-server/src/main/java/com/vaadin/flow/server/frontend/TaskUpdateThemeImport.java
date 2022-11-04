@@ -17,13 +17,11 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.FileUtils;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.ExecutionFailedException;
@@ -47,6 +45,8 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.THEME_IMPORTS_NAME;
  */
 public class TaskUpdateThemeImport implements FallibleCommand {
 
+    private static final String JAR_RESOURCES = "frontend/"
+            + FrontendUtils.GENERATED + FrontendUtils.JAR_RESOURCES_FOLDER;
     public static final String APPLICATION_META_INF_RESOURCES = "src/main/resources/META-INF/resources";
     public static final String APPLICATION_STATIC_RESOURCES = "src/main/resources/static";
     private static final String EXPORT_MODULES_DEF = "export declare const applyTheme: (target: Node) => void;";
@@ -127,10 +127,8 @@ public class TaskUpdateThemeImport implements FallibleCommand {
         if (existingAppThemeDirectories.size() >= 2) {
 
             boolean themeFoundInJar = existingAppThemeDirectories.stream()
-                    .map(File::getPath)
-                    .anyMatch(path -> path.contains(
-                            Paths.get(FrontendUtils.FLOW_NPM_PACKAGE_NAME)
-                                    .toString()));
+                    .map(File::getPath).anyMatch(path -> path
+                            .contains(Paths.get(JAR_RESOURCES).toString()));
 
             if (themeFoundInJar) {
                 String errorMessage = "Theme '%s' should not exist inside a "
@@ -165,9 +163,8 @@ public class TaskUpdateThemeImport implements FallibleCommand {
         String themePathInStaticResources = String.join("/",
                 APPLICATION_STATIC_RESOURCES, themePath);
 
-        String themePathInClassPathResources = String.join("",
-                FrontendUtils.NODE_MODULES, FrontendUtils.FLOW_NPM_PACKAGE_NAME,
-                themePath);
+        String themePathInClassPathResources = String.join("", JAR_RESOURCES,
+                "/", themePath);
 
         return Arrays.asList(frontendTheme, themePathInMetaInfResources,
                 themePathInStaticResources, themePathInClassPathResources);

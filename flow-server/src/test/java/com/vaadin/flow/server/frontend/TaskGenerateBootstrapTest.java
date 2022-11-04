@@ -43,7 +43,8 @@ import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.getClassFinder;
 
 public class TaskGenerateBootstrapTest {
 
-    private static final String DEV_TOOLS_IMPORT = "import '@vaadin/flow-frontend/vaadin-dev-tools.js';";
+    private static final String DEV_TOOLS_IMPORT = "import '"
+            + FrontendUtils.JAR_RESOURCES_IMPORT + "vaadin-dev-tools.js';";
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();

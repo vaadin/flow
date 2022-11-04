@@ -73,14 +73,13 @@ public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
     @Test
     public void should_createPackageJson() throws IOException {
         TaskGeneratePackageJson task = new TaskGeneratePackageJson(npmFolder,
-                generatedFolder, frontendDepsFolder, TARGET,
-                Mockito.mock(FeatureFlags.class));
+                generatedFolder, TARGET, Mockito.mock(FeatureFlags.class));
         task.execute();
         Assert.assertTrue(new File(npmFolder, PACKAGE_JSON).exists());
         Assert.assertFalse(new File(generatedFolder, PACKAGE_JSON).exists());
-        Assert.assertTrue(new File(frontendDepsFolder, PACKAGE_JSON).exists());
         JsonObject deps = task.getPackageJson().getObject("dependencies");
-        Assert.assertFalse(deps.hasKey("@vaadin/flow-deps"));
+        Assert.assertFalse(deps.hasKey(NodeUpdater.DEP_NAME_FLOW_DEPS));
+        Assert.assertFalse(deps.hasKey(NodeUpdater.DEP_NAME_FLOW_JARS));
     }
 
     private void should_collectJsAndCssFilesFromJars(String jarFile,
