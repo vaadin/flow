@@ -1,22 +1,15 @@
 package com.vaadin.polymer2lit;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileVisitOption;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.stream.Collectors;
-
-import javax.swing.plaf.synth.SynthScrollBarUI;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.text.StringSubstitutor;
@@ -30,7 +23,7 @@ import org.jboss.forge.roaster.model.source.MethodSource;
 
 public class ServerConverter {
 
-    static public void convertFile(Path filePath) throws IOException {
+    public void convertFile(Path filePath) throws IOException {
         String source = read(filePath);
         if (!source.contains("PolymerTemplate")) {
             return;
@@ -46,7 +39,7 @@ public class ServerConverter {
         }
     }
 
-    static String transform(String source) throws IOException {
+    private String transform(String source) throws IOException {
         JavaClassSource javaClass;
         try {
             javaClass = Roaster.parse(JavaClassSource.class, source);
@@ -79,7 +72,7 @@ public class ServerConverter {
         return result;
     }
 
-    private static void transformModel(String modelType,
+    private void transformModel(String modelType,
             JavaClassSource javaClass) {
         if (modelType.startsWith(javaClass.getName() + ".")) {
             String internalName = modelType
@@ -193,7 +186,7 @@ public class ServerConverter {
 
     }
 
-    private static String getDefaultValue(Type<?> type) {
+    private String getDefaultValue(Type<?> type) {
         if (type.getName().equalsIgnoreCase("boolean")) {
             return "false";
         } else if (type.getQualifiedName().equals(String.class.getName())) {
@@ -203,22 +196,22 @@ public class ServerConverter {
 
     }
 
-    private static String capitalize(String property) {
+    private String capitalize(String property) {
         return property.substring(0, 1).toUpperCase(Locale.ENGLISH)
                 + property.substring(1);
     }
 
-    private static boolean isSetter(String methodName) {
+    private boolean isSetter(String methodName) {
         return methodName.startsWith("set");
     }
 
-    private static String getProperty(String methodName) {
+    private String getProperty(String methodName) {
         String name = methodName.replaceFirst("^(set|is|get)", "");
         return name.substring(0, 1).toLowerCase(Locale.ENGLISH)
                 + name.substring(1);
     }
 
-    private static String read(Path filePath) throws IOException {
+    private String read(Path filePath) throws IOException {
         try (FileInputStream stream = new FileInputStream(filePath.toFile())) {
             return IOUtils.toString(stream, StandardCharsets.UTF_8);
         }

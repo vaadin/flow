@@ -19,7 +19,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
-import com.vaadin.flow.plugin.base.ConvertPolymerUtil;
+import com.vaadin.flow.plugin.base.ConvertPolymerExecutor;
 
 @Mojo(name = "convert-polymer")
 public class ConvertPolymerMojo extends FlowModeAbstractMojo {
@@ -39,9 +39,11 @@ public class ConvertPolymerMojo extends FlowModeAbstractMojo {
     @Override
     public void execute() throws MojoFailureException {
         try {
-            ConvertPolymerUtil.convertFrontend(this, frontendGlob, useLit1,
-                    disableOptionalChaining);
-            ConvertPolymerUtil.convertServer(this, serverGlob);
+            try (ConvertPolymerExecutor executor = new ConvertPolymerExecutor(
+                    this, serverGlob, frontendGlob, useLit1,
+                    disableOptionalChaining)) {
+                executor.execute();
+            }
         } catch (Exception e) {
             throw new MojoFailureException(
                     "Could not execute convert-polymer-to-lit goal.", e);
