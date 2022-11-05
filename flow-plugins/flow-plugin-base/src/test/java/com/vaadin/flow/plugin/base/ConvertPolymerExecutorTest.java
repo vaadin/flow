@@ -60,7 +60,7 @@ public class ConvertPolymerExecutorTest {
     public void execute()
             throws URISyntaxException, IOException, InterruptedException {
         try (ConvertPolymerExecutor executor = new ConvertPolymerExecutor(
-                adapter, "**/*.java", "**/*.js", false, false)) {
+                adapter, null, false, false)) {
             executor.execute();
 
             FrontendConverter frontendConverter = frontendConverterMock
@@ -73,6 +73,8 @@ public class ConvertPolymerExecutorTest {
                     getTmpFilePath("node_modules/component.js"), false, false);
             Mockito.verify(frontendConverter, Mockito.never()).convertFile(
                     getTmpFilePath("Component.java"), false, false);
+            Mockito.verify(frontendConverter, Mockito.never()).convertFile(
+                    getTmpFilePath("nested/Component.java"), false, false);
 
             ServerConverter serverConverter = serverConverterMock.constructed()
                     .get(0);
@@ -88,10 +90,10 @@ public class ConvertPolymerExecutorTest {
     }
 
     @Test
-    public void specificFrontendFileAsGlob_execute()
+    public void setSpecificFrontendFile_execute()
             throws URISyntaxException, IOException, InterruptedException {
         try (ConvertPolymerExecutor executor = new ConvertPolymerExecutor(
-                adapter, "**/*.java", "/nested/component.js", false, false)) {
+                adapter, "/nested/component.js", false, false)) {
             executor.execute();
 
             FrontendConverter frontendConverter = frontendConverterMock
@@ -100,15 +102,29 @@ public class ConvertPolymerExecutorTest {
                     .convertFile(getTmpFilePath("component.js"), false, false);
             Mockito.verify(frontendConverter).convertFile(
                     getTmpFilePath("nested/component.js"), false, false);
+
+            ServerConverter serverConverter = serverConverterMock.constructed()
+                    .get(0);
+            Mockito.verify(serverConverter, Mockito.never())
+                    .convertFile(getTmpFilePath("Component.java"));
+            Mockito.verify(serverConverter, Mockito.never())
+                    .convertFile(getTmpFilePath("nested/Component.java"));
         }
     }
 
     @Test
-    public void specificServerFileAsGlob_execute()
+    public void setSpecificServerFile_execute()
             throws URISyntaxException, IOException, InterruptedException {
         try (ConvertPolymerExecutor executor = new ConvertPolymerExecutor(
-                adapter, "/nested/Component.java", "**/*.js", false, false)) {
+                adapter, "/nested/Component.java", false, false)) {
             executor.execute();
+
+            FrontendConverter frontendConverter = frontendConverterMock
+                    .constructed().get(0);
+            Mockito.verify(frontendConverter, Mockito.never())
+                    .convertFile(getTmpFilePath("component.js"), true, false);
+            Mockito.verify(frontendConverter, Mockito.never()).convertFile(
+                    getTmpFilePath("nested/component.js"), true, false);
 
             ServerConverter serverConverter = serverConverterMock.constructed()
                     .get(0);
@@ -123,7 +139,7 @@ public class ConvertPolymerExecutorTest {
     public void useLit1_execute()
             throws URISyntaxException, IOException, InterruptedException {
         try (ConvertPolymerExecutor executor = new ConvertPolymerExecutor(
-                adapter, "/**/*.java", "**/*.js", true, false)) {
+                adapter, null, true, false)) {
             executor.execute();
 
             FrontendConverter frontendConverter = frontendConverterMock
@@ -139,7 +155,7 @@ public class ConvertPolymerExecutorTest {
     public void disableOptionalChaining_execute()
             throws URISyntaxException, IOException, InterruptedException {
         try (ConvertPolymerExecutor executor = new ConvertPolymerExecutor(
-                adapter, "/**/*.java", "**/*.js", false, true)) {
+                adapter, null, false, true)) {
             executor.execute();
 
             FrontendConverter frontendConverter = frontendConverterMock

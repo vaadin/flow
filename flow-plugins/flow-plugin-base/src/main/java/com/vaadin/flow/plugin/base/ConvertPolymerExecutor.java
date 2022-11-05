@@ -6,6 +6,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -17,35 +18,31 @@ import com.vaadin.polymer2lit.FrontendConverter;
 import com.vaadin.polymer2lit.ServerConverter;
 
 public class ConvertPolymerExecutor implements AutoCloseable {
+    private static final String SERVER_GLOB = "**/*.java";
+    private static final String FRONTEND_GLOB = "**/*.js";
+
     private PluginAdapterBase adapter;
 
-    private String frontendGlob;
-
-    private String serverGlob;
+    private String customPath;
 
     private boolean useLit1;
 
     private boolean disableOptionalChaining;
 
-    private FrontendConverter frontendConverter;
-
     private ServerConverter serverConverter;
 
-    public ConvertPolymerExecutor(PluginAdapterBase adapter, String serverGlob,
-            String frontendGlob, boolean useLit1,
-            boolean disableOptionalChaining)
+    private FrontendConverter frontendConverter;
+
+    public ConvertPolymerExecutor(PluginAdapterBase adapter, String customPath,
+            boolean useLit1, boolean disableOptionalChaining)
             throws URISyntaxException, IOException {
         this.adapter = adapter;
-        this.serverGlob = serverGlob;
-        this.frontendGlob = frontendGlob;
+        this.customPath = customPath;
         this.useLit1 = useLit1;
         this.disableOptionalChaining = disableOptionalChaining;
-
         this.serverConverter = new ServerConverter();
-
-        FrontendTools tools = new FrontendTools(
-                getFrontendToolsSettings(adapter));
-        this.frontendConverter = new FrontendConverter(tools);
+        this.frontendConverter = new FrontendConverter(
+                new FrontendTools(getFrontendToolsSettings()));
     }
 
     @Override
@@ -54,23 +51,15 @@ public class ConvertPolymerExecutor implements AutoCloseable {
     }
 
     public void execute() throws IOException, InterruptedException {
-        adapter.logInfo(
-                "Collecting server files by the glob " + serverGlob + "...");
+        Path lookupPath = getLookupPath();
 
-        for (Path filePath : getFilePathsByGlob(adapter.projectBaseDirectory(),
-                serverGlob)) {
+        for (Path filePath : getFilePathsByGlob(lookupPath, SERVER_GLOB)) {
             adapter.logInfo("Processing " + filePath.toString() + "...");
-
             serverConverter.convertFile(filePath);
         }
 
-        adapter.logInfo("Collecting frontend files by the glob " + frontendGlob
-                + "...");
-
-        for (Path filePath : getFilePathsByGlob(adapter.projectBaseDirectory(),
-                frontendGlob)) {
+        for (Path filePath : getFilePathsByGlob(lookupPath, FRONTEND_GLOB)) {
             adapter.logInfo("Processing " + filePath.toString() + "...");
-
             frontendConverter.convertFile(filePath, useLit1,
                     disableOptionalChaining);
         }
@@ -88,8 +77,17 @@ public class ConvertPolymerExecutor implements AutoCloseable {
         }
     }
 
-    private FrontendToolsSettings getFrontendToolsSettings(
-            PluginAdapterBase adapter) throws URISyntaxException {
+    private Path getLookupPath() {
+        if (customPath != null) {
+            return Paths.get(adapter.projectBaseDirectory().toString(),
+                    customPath);
+        }
+
+        return adapter.projectBaseDirectory();
+    }
+
+    private FrontendToolsSettings getFrontendToolsSettings()
+            throws URISyntaxException {
         FrontendToolsSettings settings = new FrontendToolsSettings(
                 adapter.npmFolder().getAbsolutePath(),
                 () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());

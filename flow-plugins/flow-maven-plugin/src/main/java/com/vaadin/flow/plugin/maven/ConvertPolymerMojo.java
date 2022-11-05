@@ -24,11 +24,8 @@ import com.vaadin.flow.plugin.base.ConvertPolymerExecutor;
 @Mojo(name = "convert-polymer")
 public class ConvertPolymerMojo extends FlowModeAbstractMojo {
 
-    @Parameter(property = "serverGlob", defaultValue = "**/*.java")
-    private String serverGlob;
-
-    @Parameter(property = "frontendGlob", defaultValue = "**/*.js")
-    private String frontendGlob;
+    @Parameter(property = "path")
+    private String path;
 
     @Parameter(property = "useLit1", defaultValue = "${false}")
     private boolean useLit1;
@@ -40,8 +37,7 @@ public class ConvertPolymerMojo extends FlowModeAbstractMojo {
     public void execute() throws MojoFailureException {
         try {
             try (ConvertPolymerExecutor executor = new ConvertPolymerExecutor(
-                    this, serverGlob, frontendGlob, useLit1,
-                    disableOptionalChaining)) {
+                    this, path, useLit1, disableOptionalChaining)) {
                 executor.execute();
             }
         } catch (Exception e) {
