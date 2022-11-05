@@ -119,6 +119,38 @@ public class ConvertPolymerExecutorTest {
         }
     }
 
+    @Test
+    public void useLit1_execute()
+            throws URISyntaxException, IOException, InterruptedException {
+        try (ConvertPolymerExecutor executor = new ConvertPolymerExecutor(
+                adapter, "/**/*.java", "**/*.js", true, false)) {
+            executor.execute();
+
+            FrontendConverter frontendConverter = frontendConverterMock
+                    .constructed().get(0);
+            Mockito.verify(frontendConverter)
+                    .convertFile(getTmpFilePath("component.js"), true, false);
+            Mockito.verify(frontendConverter).convertFile(
+                    getTmpFilePath("nested/component.js"), true, false);
+        }
+    }
+
+    @Test
+    public void disableOptionalChaining_execute()
+            throws URISyntaxException, IOException, InterruptedException {
+        try (ConvertPolymerExecutor executor = new ConvertPolymerExecutor(
+                adapter, "/**/*.java", "**/*.js", false, true)) {
+            executor.execute();
+
+            FrontendConverter frontendConverter = frontendConverterMock
+                    .constructed().get(0);
+            Mockito.verify(frontendConverter)
+                    .convertFile(getTmpFilePath("component.js"), false, true);
+            Mockito.verify(frontendConverter).convertFile(
+                    getTmpFilePath("nested/component.js"), false, true);
+        }
+    }
+
     private Path getTmpFilePath(String path) {
         return new File(tmpDir.getRoot(), path).toPath();
     }
