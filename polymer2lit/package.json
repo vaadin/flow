@@ -12,7 +12,7 @@
     "src/main/frontend"
   ],
   "scripts": {
-    "compile": "esbuild convert.ts --bundle --platform=node --outdir=src/main/resources/META-INF/frontend/generated/"
+    "postinstall": "esbuild convert.ts --bundle --platform=node --outdir=src/main/resources/META-INF/frontend/generated/"
   },
   "dependencies": {
     "esbuild": "0.15.12",
