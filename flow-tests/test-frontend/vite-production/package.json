@@ -8,14 +8,13 @@
     "@testscope/map": "../vite-test-assets/packages/@testscope/map",
     "@vaadin/bundles": "../vite-test-assets/packages/@vaadin/bundles",
     "@vaadin/common-frontend": "0.0.17",
-    "@vaadin/flow-frontend": "./target/flow-frontend",
     "@vaadin/polymer-legacy-adapter": "23.3.0-alpha2",
     "@vaadin/router": "1.7.4",
     "@vaadin/vaadin-lumo-styles": "23.3.0-alpha2",
     "@vaadin/vaadin-text-field": "23.3.0-alpha2",
     "@vaadin/vaadin-themable-mixin": "23.3.0-alpha2",
     "construct-style-sheets-polyfill": "3.1.0",
-    "lit": "2.3.0"
+    "lit": "2.4.1"
   },
   "devDependencies": {
     "@rollup/plugin-replace": "3.1.0",
@@ -24,6 +23,7 @@
     "glob": "7.2.3",
     "mkdirp": "1.0.4",
     "rollup-plugin-brotli": "3.1.0",
+    "strip-css-comments": "5.0.0",
     "transform-ast": "2.4.4",
     "typescript": "4.7.4",
     "vite": "v3.1.0",
@@ -42,7 +42,7 @@
       "@vaadin/vaadin-text-field": "23.3.0-alpha2",
       "@vaadin/vaadin-themable-mixin": "23.3.0-alpha2",
       "construct-style-sheets-polyfill": "3.1.0",
-      "lit": "2.3.0"
+      "lit": "2.4.1"
     },
     "devDependencies": {
       "@rollup/plugin-replace": "3.1.0",
@@ -51,6 +51,7 @@
       "glob": "7.2.3",
       "mkdirp": "1.0.4",
       "rollup-plugin-brotli": "3.1.0",
+      "strip-css-comments": "5.0.0",
       "transform-ast": "2.4.4",
       "typescript": "4.7.4",
       "vite": "v3.1.0",
@@ -59,6 +60,6 @@
       "workbox-core": "6.5.0",
       "workbox-precaching": "6.5.0"
     },
-    "hash": "b60e74df7551b361daf2134c8344f0b231d3e0046b9f203a8c2d602e6c48b5e1"
+    "hash": "99084a79bf446ab137fdde68940350ff29e9009907d60cf2e1b9e46aa387c69a"
   }
 }
