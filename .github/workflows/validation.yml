@@ -187,7 +187,7 @@ jobs:
       - name: Set build status flag
         id: set-failure
         if: ${{ failure() || cancelled() }}
-        run: echo "failure::true" >> $GITHUB_OUTPUT
+        run: echo "failure=true" >> $GITHUB_OUTPUT
       - uses: actions/upload-artifact@v3
         if: ${{ failure() || success() }}
         with:
