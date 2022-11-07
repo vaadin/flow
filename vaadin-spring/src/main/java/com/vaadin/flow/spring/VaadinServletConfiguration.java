@@ -93,7 +93,7 @@ public class VaadinServletConfiguration {
         }
     }
 
-    private static class RootExcludeHandler extends SimpleUrlHandlerMapping {
+    public static class RootExcludeHandler extends SimpleUrlHandlerMapping {
         private List<String> excludeUrls;
         private AntPathMatcher matcher;
         private UrlPathHelper urlPathHelper = new UrlPathHelper();
