@@ -42,7 +42,7 @@ public class ConvertPolymerMojo extends FlowModeAbstractMojo {
             }
         } catch (Exception e) {
             throw new MojoFailureException(
-                    "Could not execute convert-polymer-to-lit goal.", e);
+                    "Could not execute convert-polymer goal.", e);
         }
     }
 }
