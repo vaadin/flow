@@ -7,7 +7,7 @@ Prerequisites:
 * Java 8 or higher
 * node.js and npm. Vaadin will now automatically install node.js and npm, but you can also install those locally:
   * Windows/Mac: [node.js Download site](https://nodejs.org/en/download/)
-  * Linux: Use package manager e.g. `sudo apt install npm` 
+  * Linux: Use package manager e.g. `sudo apt install npm`
 
 As opposed to the older version of Gradle plugin, the new plugin doesn't create
 projects any more. You can obtain a project example from:
@@ -19,7 +19,7 @@ projects any more. You can obtain a project example from:
 
 You need to add the following lines to your `build.gradle` file
 (please check the latest version at
-[plugins.gradle.org](https://plugins.gradle.org/plugin/com.vaadin)): 
+[plugins.gradle.org](https://plugins.gradle.org/plugin/com.vaadin)):
 
 ```
 plugins {
@@ -174,6 +174,8 @@ Just right-click the test class and select "Run". If running the test fails, try
 
 ## Developing the plugin and testing it on-the-fly at the same time
 
+### Composite builds
+
 You can take advantage of [composite builds](https://docs.gradle.org/current/userguide/composite_builds.html),
 which will allow you to join together the plugin itself along with an example project using that plugin,
 into one composite project. The easiest way is to use the [Base Starter Gradle](https://github.com/vaadin/base-starter-gradle)
@@ -200,9 +202,20 @@ buildscript {
 }
 ```
 
+### Local Maven repository
+
+Alternatively, you can build and publish the Flow Gradle plugin into the local Maven repository which allows using it in your Gradle project afterward:
+
+1. Clone the Base Starter Gradle project.
+2. Add `mavenLocal()` to `buildscript.repositories`.
+3. Add `dependencies { classpath 'com.vaadin:flow-gradle-plugin:24.0-SNAPSHOT' }` to `buildscript.repositories`.
+4. Run `./flow-plugins/flow-gradle-plugin/gradlew clean build publishToMavenLocal` in the Flow repo folder.
+5. If you now run `./gradlew vaadinPrepareFrontend` in the Starter project folder, Gradle will use the local version of the Flow plugin. You can verify that by adding `println()` statements into the `VaadinPrepareFrontendTask` class.
+
+
 ## License
 
-This plugin is distributed under the Apache License 2.0 license. For more information about the license see the LICENSE file 
+This plugin is distributed under the Apache License 2.0 license. For more information about the license see the LICENSE file
 in the root directory of the repository. A signed CLA is required when contributing to the project.
 
 See [CONTRIBUTING](CONTRIBUTING.md) for instructions for getting the plugin sources, and for compiling and using the plugin locally.
