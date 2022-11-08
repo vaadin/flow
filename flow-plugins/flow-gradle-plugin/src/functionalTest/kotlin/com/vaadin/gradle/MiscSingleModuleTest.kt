@@ -66,7 +66,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                 """
             plugins {
                 id 'war'
-                id 'org.gretty' version '3.0.1'
+                id 'org.gretty' version '4.0.3'
                 id("com.vaadin")
             }
             repositories {
@@ -114,7 +114,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                 """
             plugins {
                 id 'war'
-                id 'org.gretty' version '3.0.1'
+                id 'org.gretty' version '4.0.3'
                 id("com.vaadin")
             }
             repositories {
@@ -366,7 +366,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                 """
             plugins {
                 id 'war'
-                id 'org.gretty' version '3.0.1'
+                id 'org.gretty' version '4.0.3'
                 id("com.vaadin")
             }
             repositories {
