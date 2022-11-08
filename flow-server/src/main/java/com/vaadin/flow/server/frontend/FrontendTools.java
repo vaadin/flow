@@ -75,6 +75,12 @@ public class FrontendTools {
 
     public static final String DEFAULT_PNPM_VERSION = "5.18.10";
 
+    static final FrontendVersion SUPPORTED_NODE_VERSION = new FrontendVersion(
+            18, 12, 1);
+
+    private static final FrontendVersion SUPPORTED_NPM_VERSION = new FrontendVersion(
+            8, 3);
+
     public static final String INSTALL_NODE_LOCALLY = "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.10.0:install-node-and-npm "
             + "-DnodeVersion=\"" + DEFAULT_NODE_VERSION + "\" ";
 
@@ -108,24 +114,8 @@ public class FrontendTools {
             + FrontendUtils.DISABLE_CHECK //
             + MSG_SUFFIX;
 
-    private static final List<FrontendVersion> NPM_BLACKLISTED_VERSIONS = Arrays
-            .asList(new FrontendVersion("6.11.0"),
-                    new FrontendVersion("6.11.1"),
-                    new FrontendVersion("6.11.2"));
-
     private static final FrontendVersion WHITESPACE_ACCEPTING_NPM_VERSION = new FrontendVersion(
             7, 0);
-
-    private static final int SUPPORTED_NODE_MAJOR_VERSION = 16;
-    private static final int SUPPORTED_NODE_MINOR_VERSION = 14;
-    private static final int SUPPORTED_NPM_MAJOR_VERSION = 8;
-    private static final int SUPPORTED_NPM_MINOR_VERSION = 3;
-
-    static final FrontendVersion SUPPORTED_NODE_VERSION = new FrontendVersion(
-            SUPPORTED_NODE_MAJOR_VERSION, SUPPORTED_NODE_MINOR_VERSION);
-
-    private static final FrontendVersion SUPPORTED_NPM_VERSION = new FrontendVersion(
-            SUPPORTED_NPM_MAJOR_VERSION, SUPPORTED_NPM_MINOR_VERSION);
 
     static final String NPMRC_NOPROXY_PROPERTY_KEY = "noproxy";
     static final String NPMRC_HTTPS_PROXY_PROPERTY_KEY = "https-proxy";
