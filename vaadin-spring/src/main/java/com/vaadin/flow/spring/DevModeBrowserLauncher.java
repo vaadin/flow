@@ -18,13 +18,6 @@ package com.vaadin.flow.spring;
 import java.io.Serializable;
 import java.time.Duration;
 
-import jakarta.servlet.ServletContext;
-
-import com.vaadin.base.devserver.util.BrowserLauncher;
-import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.VaadinServletContext;
-import com.vaadin.flow.server.startup.ApplicationConfiguration;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
@@ -32,6 +25,13 @@ import org.springframework.boot.SpringApplicationRunListener;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.web.context.support.GenericWebApplicationContext;
+import org.vaadin.artur.open.Open;
+
+import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinServletContext;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
+
+import jakarta.servlet.ServletContext;
 
 /**
  * Utilities for launching a browser when running in development mode.
@@ -86,7 +86,9 @@ public class DevModeBrowserLauncher
             String location = getUrl(webAppContext);
             String outputOnFailure = "Application started at " + location;
             try {
-                BrowserLauncher.launch(location, outputOnFailure);
+                if (!Open.open(location)) {
+                    getLogger().info(outputOnFailure);
+                }
                 setLaunched();
             } catch (Exception | NoClassDefFoundError e) { // NOSONAR
                 // NoClassDefFoundError happens if vaadin-dev-server is not on
