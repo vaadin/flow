@@ -114,6 +114,11 @@ public class FrontendTools {
             + FrontendUtils.DISABLE_CHECK //
             + MSG_SUFFIX;
 
+    private static final List<FrontendVersion> NPM_BLACKLISTED_VERSIONS = Arrays
+            .asList(new FrontendVersion("6.11.0"),
+                    new FrontendVersion("6.11.1"),
+                    new FrontendVersion("6.11.2"));
+
     private static final FrontendVersion WHITESPACE_ACCEPTING_NPM_VERSION = new FrontendVersion(
             7, 0);
 
