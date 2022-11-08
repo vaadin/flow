@@ -66,7 +66,7 @@
       "workbox-precaching": "6.5.0",
       "workbox-webpack-plugin": "6.5.0"
     },
-    "hash": "8066f3577301a88150617db141cdb380762afb63f2ef6364c81b204e5a5bedcb"
+    "hash": "63198582609d01d2fe0adee8d19bfd9931764f3298ac53728d3c63cb3bda8374"
   },
   "overrides": {
     "@vaadin/common-frontend": "$@vaadin/common-frontend",
