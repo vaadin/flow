@@ -446,19 +446,32 @@ abstract class AbstractUpdateImports implements Runnable {
      */
     private File getImportedFrontendFile(String jsImport) {
         // file is in /frontend
-        File file = getFile(frontendDir, jsImport);
+        File file = getJsImportFile(frontendDir, jsImport);
         if (file.exists()) {
             return file;
         }
         // file is a flow resource e.g.
         // /node_modules/@vaadin/flow-frontend/gridConnector.js
-        file = getFile(new File(getNodeModulesDir(), NODE_MODULES),
-                FLOW_NPM_PACKAGE_NAME, jsImport);
+        file = getJsImportFile(
+                getFile(new File(getNodeModulesDir(), NODE_MODULES),
+                        FLOW_NPM_PACKAGE_NAME),
+                jsImport);
         return file.exists() ? file : null;
     }
 
     private File getNodeModulesDir() {
         return new File(npmDir, NODE_MODULES);
+    }
+
+    private File getJsImportFile(File base, String path) {
+        File file = getFile(base, path);
+
+        if (file.isDirectory()) {
+            // import './foo' seems to be valid according to tools when 'foo' is
+            // a directory. What is imported is 'foo/index.js'.
+            file = new File(file, "index.js");
+        }
+        return file;
     }
 
     private File getFile(File base, String... path) {
