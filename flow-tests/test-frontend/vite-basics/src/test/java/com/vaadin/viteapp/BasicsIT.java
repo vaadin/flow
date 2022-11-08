@@ -58,4 +58,10 @@ public class BasicsIT extends ViteDevModeIT {
         Assert.assertEquals("{\"hello\":\"World\"}",
                 $("*").id(MainView.JSON_CONTAINER).getText());
     }
+
+    @Test
+    public void importFromDirectoryWorks() {
+        String importResult = $("div").id("directoryImportResult").getText();
+        Assert.assertEquals("Directory import ok", importResult);
+    }
 }

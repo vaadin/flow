@@ -14,6 +14,7 @@ import com.vaadin.flow.router.Route;
 @JsModule("./jsonloader.js")
 @JsModule("package-outside-npm/index.js")
 @JsModule("package2-outside-npm/index.js")
+@JsModule("./importdir.js")
 public class MainView extends Div {
 
     public static final String LOAD_AND_SHOW_JSON = "loadAndShowJson";
