@@ -87,6 +87,7 @@ public class SpringClassesSerializableTest extends ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.spring\\.SpringApplicationConfigurationFactory(\\$.*)?",
                 "com\\.vaadin\\.flow\\.spring\\.SpringLookupInitializer(\\$.*)?",
                 "com\\.vaadin\\.flow\\.spring\\.VaadinConfigurationProperties",
+                "com\\.vaadin\\.flow\\.spring\\.VaadinHintsRegistrar",
                 "com\\.vaadin\\.flow\\.spring\\.scopes\\.VaadinSessionScope",
                 "com\\.vaadin\\.flow\\.spring\\.scopes\\.AbstractScope",
                 "com\\.vaadin\\.flow\\.spring\\.scopes\\.VaadinUIScope",
