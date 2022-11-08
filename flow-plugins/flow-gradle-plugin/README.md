@@ -207,7 +207,7 @@ buildscript {
 Alternatively, you can build and publish the Flow Gradle plugin into the local Maven repository which allows using it in your Gradle project afterward:
 
 1. Clone the Base Starter Gradle project.
-2. Add `mavenLocal()` to `buildscript.repositories`.
+2. Add `mavenLocal()` to `buildscript.repositories` as the first place to look up.
 3. Add `dependencies { classpath 'com.vaadin:flow-gradle-plugin:24.0-SNAPSHOT' }` to `buildscript.repositories`.
 4. Run `./flow-plugins/flow-gradle-plugin/gradlew clean build publishToMavenLocal` in the Flow repo folder.
 5. If you now run `./gradlew vaadinPrepareFrontend` in the Starter project folder, Gradle will use the local version of the Flow plugin. You can verify that by adding `println()` statements into the `VaadinPrepareFrontendTask` class.
