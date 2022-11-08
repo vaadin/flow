@@ -27,6 +27,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
     /**
      * Tests https://github.com/vaadin/vaadin-gradle-plugin/issues/26
      */
+    @Ignore("The devsoap plugin does not work with Gradle 6.9")
     @Test
     fun testVaadin8VaadinPlatformMPRProject() {
         testProject.buildFile.writeText(
