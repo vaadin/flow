@@ -337,7 +337,7 @@ public final class Constants implements Serializable {
     /**
      * The default value for {@link InitParameters#NODE_AUTO_UPDATE}.
      */
-    public static final boolean DEFAULT_NODE_AUTO_UPDATE = false;
+    public static final boolean DEFAULT_NODE_AUTO_UPDATE = true;
 
     /**
      * The default value for {@link #REQUIRE_HOME_NODE_EXECUTABLE}.
