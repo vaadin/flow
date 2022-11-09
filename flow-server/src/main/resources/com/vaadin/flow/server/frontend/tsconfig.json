@@ -21,9 +21,9 @@
     "experimentalDecorators": true,
     "baseUrl": "frontend",
     "paths": {
-      "Frontend/*": [
-        "*"
-      ]
+      "@vaadin/flow-frontend": ["generated/jar-resources"],
+      "@vaadin/flow-frontend/*": ["generated/jar-resources/*"],
+      "Frontend/*": ["*"]
     }
   },
   "include": [
