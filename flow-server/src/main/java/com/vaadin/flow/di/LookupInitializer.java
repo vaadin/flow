@@ -355,4 +355,18 @@ public class LookupInitializer implements AbstractLookupInitializer {
         return serviceClass.cast(ReflectTools.createInstance(implementation));
     }
 
+    /**
+     * Returns the default implementation classes included.
+     * <p>
+     * This method is public only for internal purposes.
+     *
+     * @return a set of classes
+     */
+    public static Set<Class<?>> getDefaultImplementations() {
+        return Set.of(RegularOneTimeInitializerPredicate.class,
+                StaticFileHandlerFactoryImpl.class, LookupImpl.class,
+                ResourceProviderImpl.class, AppShellPredicateImpl.class,
+                DefaultRoutePathProvider.class,
+                DefaultApplicationConfigurationFactory.class);
+    }
 }
