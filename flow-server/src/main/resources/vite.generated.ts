@@ -501,7 +501,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
     base: '',
     resolve: {
       alias: {
-        '@vaadin/flow-frontend': path.resolve(frontendFolder, 'generated', 'jar-resources'),
+        '@vaadin/flow-frontend': jarResourcesFolder,
         Frontend: frontendFolder
       },
       preserveSymlinks: true
