@@ -24,13 +24,13 @@ import com.vaadin.flow.plugin.base.ConvertPolymerExecutor;
 @Mojo(name = "convert-polymer")
 public class ConvertPolymerMojo extends FlowModeAbstractMojo {
 
-    @Parameter(property = "path")
+    @Parameter(property = "vaadin.path")
     private String path;
 
-    @Parameter(property = "useLit1", defaultValue = "${false}")
+    @Parameter(property = "vaadin.useLit1", defaultValue = "${false}")
     private boolean useLit1;
 
-    @Parameter(property = "disableOptionalChaining", defaultValue = "${false}")
+    @Parameter(property = "vaadin.disableOptionalChaining", defaultValue = "${false}")
     private boolean disableOptionalChaining;
 
     @Override

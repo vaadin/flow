@@ -24,7 +24,7 @@ mvn com.vaadin:vaadin-maven-plugin:24.0-SNAPSHOT:convert-polymer
 
 The converter accepts the following arguments:
 
-**-Dpath=path/to/your/file**
+**-Dvaadin.path=path/to/your/file**
 
 By default, the converter scans all the files that match `**/*.js` and `**/*.java` and tries to convert them into Lit.
 
@@ -36,7 +36,7 @@ mvn vaadin:convert-polymer -Dpath=path/to/your/file
 
 The path is always relative to your project's root folder.
 
-**-DuseLit1**
+**-Dvaadin.useLit1**
 
 By default, the converter transforms Polymer imports into their Lit 2 equivalents.
 
@@ -46,7 +46,7 @@ If your project is using Lit 1, you can use the `useLit1` argument to enforce Li
 mvn vaadin:convert-polymer -DuseLit1
 ```
 
-**-DdisableOptionalChaining**
+**-Dvaadin.disableOptionalChaining**
 
 By default, the converter transforms `[[prop.sub.something]]` expressions into `${prop?.sub?.something}`.
 
