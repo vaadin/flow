@@ -98,13 +98,24 @@ public class ConvertPolymerCommand implements AutoCloseable {
 
         for (Path filePath : getFilePathsByGlob(lookupPath, SERVER_GLOB)) {
             adapter.logInfo("Processing " + filePath.toString() + "...");
-            serverConverter.convertFile(filePath);
+            try {
+                serverConverter.convertFile(filePath);
+            } catch (Exception e) {
+                adapter.logError("An error occured while processing "
+                        + filePath.toString(), e);
+            }
         }
 
         for (Path filePath : getFilePathsByGlob(lookupPath, FRONTEND_GLOB)) {
             adapter.logInfo("Processing " + filePath.toString() + "...");
-            frontendConverter.convertFile(filePath, useLit1,
-                    disableOptionalChaining);
+            try {
+                frontendConverter.convertFile(filePath, useLit1,
+                        disableOptionalChaining);
+            } catch (Exception e) {
+                adapter.logError("An error occured while processing "
+                        + filePath.toString(), e);
+            }
+
         }
     }
 

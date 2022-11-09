@@ -44,11 +44,15 @@ public class ServerConverter {
     public void convertFile(Path filePath) throws IOException {
         String source = read(filePath);
         if (!source.contains("PolymerTemplate")) {
+            System.out.println(
+                    "No occurence of PolymerTemplate was found. Skipping.");
             return;
         }
 
         String out = transform(source);
         if (source.equals(out)) {
+            System.out.println(
+                    "No occurence of PolymerTemplate was found. Skipping.");
             return;
         }
 
@@ -58,12 +62,8 @@ public class ServerConverter {
     }
 
     private String transform(String source) throws IOException {
-        JavaClassSource javaClass;
-        try {
-            javaClass = Roaster.parse(JavaClassSource.class, source);
-        } catch (org.jboss.forge.roaster.ParserException e) {
-            return source;
-        }
+        JavaClassSource javaClass = Roaster.parse(JavaClassSource.class,
+                source);
 
         String superType = javaClass.getSuperType();
         if (!superType.startsWith("PolymerTemplate") && !superType.startsWith(

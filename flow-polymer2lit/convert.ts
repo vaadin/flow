@@ -96,9 +96,9 @@ function convertFile(filename: string, useLit1: boolean, useOptionalChaining: bo
   let jsOutputFile = jsInputFile + outputSuffix;
   const jsContents = fs.readFileSync(jsInputFile, { encoding: 'UTF-8' });
   if (!jsContents.includes('PolymerElement')) {
+    console.log('No occurence of PolymerElement was found. Skipping.');
     return;
   }
-  console.log('Processing ' + jsInputFile);
 
   const tsOutput: MagicString = new MagicString(jsContents);
   const polymerJs = acorn.parse(jsContents, { sourceType: 'module' });
@@ -118,9 +118,6 @@ function convertFile(filename: string, useLit1: boolean, useOptionalChaining: bo
   }
   function warn(message?: any, ...optionalParams: any[]) {
     console.warn('WARNING', message, optionalParams);
-  }
-  function debug(message?: any, ...optionalParams: any[]) {
-    console.log(message, optionalParams);
   }
   const body = (polymerJs as any).body;
   const modifyClass = (node: any, resolve: Resolver) => {
@@ -182,7 +179,6 @@ function convertFile(filename: string, useLit1: boolean, useOptionalChaining: bo
         tsOutput.overwrite(classContent.start, classContent.end, (hasStyles ? stylesGetter : '') + renderMethod);
       } else if (classContent.type == 'MethodDefinition' && classContent.key.name == 'is') {
         tag = classContent.value.body.body[0].argument.value;
-        // debug(getSource(classContent));
       } else if (classContent.type == 'MethodDefinition' && classContent.key.name == '_attachDom') {
         // Assume this means it it using light dom
         tsOutput.overwrite(
@@ -197,7 +193,6 @@ function convertFile(filename: string, useLit1: boolean, useOptionalChaining: bo
       } else if (classContent.type == 'MethodDefinition' && classContent.key.name == 'ready') {
         // There is no 'ready' callback but it is approximately run at the same time as 'firstUpdated'
         // tsOutput.overwrite(classContent.key.start, classContent.key.end, "firstUpdated");
-        // debug(classContent);
         const src = getSource(classContent);
         tsOutput.overwrite(
           classContent.start,
@@ -215,7 +210,6 @@ function convertFile(filename: string, useLit1: boolean, useOptionalChaining: bo
           const returnStatment = classContent.value.body.body;
 
           returnStatment[0].argument.properties.forEach((prop) => {
-            // debug(prop);
             const propName = prop.key.name;
 
             if (prop.value.type === 'Identifier') {
@@ -310,7 +304,6 @@ function convertFile(filename: string, useLit1: boolean, useOptionalChaining: bo
       // or
       // @property({ type: Boolean })
       // myProperty = false;
-      // debug(getSource(classContent));
     }
     return { className, parentClass, template, tag };
   };
@@ -321,11 +314,6 @@ function convertFile(filename: string, useLit1: boolean, useOptionalChaining: bo
     } else {
       tsOutput.remove(node.start, node.end);
     }
-    // debug(
-    //   getSource(node),
-    //   "and then",
-    //   jsContents.substring(node.end, node.end + 1+5)
-    // );
     // if (jsContents.charAt(node.end+1)===',') {
     //   tsOutput.remove(node.end+1,node.end+1);
     // }
@@ -460,7 +448,6 @@ function convertFile(filename: string, useLit1: boolean, useOptionalChaining: bo
           } else {
             // property binding prop="[[foo]]" => .prop=${this.foo}
             // prop="[[!and(property1, property2)]]" => .prop=${!this.and(this.property1, this.property2)}
-            // debug("Rewrite prop: ", key, value);
             element.setAttribute('.' + key, '${' + resolveExpressions(expressions, true, resolver) + '}');
             element.removeAttribute(key);
           }
@@ -492,12 +479,10 @@ function convertFile(filename: string, useLit1: boolean, useOptionalChaining: bo
       pre: true,
       comment: true
     });
-    // debug(root.innerHTML);
     const htmls: string[] = [];
     const styles: string[] = [];
     const styleIncludes: string[] = [];
     for (const child of root.childNodes) {
-      // debug(child);
       if (child.tagName == 'CUSTOM-STYLE' || child.tagName == 'STYLE') {
         let style;
         if (child.tagName == 'CUSTOM-STYLE') {
@@ -526,7 +511,6 @@ function convertFile(filename: string, useLit1: boolean, useOptionalChaining: bo
     htmls.push(root.innerHTML);
 
     const ret = { htmls, styles, styleIncludes };
-    //debug(ret);
     return ret;
   };
 
@@ -668,8 +652,6 @@ function convertFile(filename: string, useLit1: boolean, useOptionalChaining: bo
   ) {
     try {
       const expr: any = (acorn.parse(expression) as any).body[0];
-      // debug("resolveExpression", expression); //, inspect(expr, { depth: null }));
-
       return resolver(expression, expr, makeNullSafe, resolver, undefinedValue, qualifiedPrefixes);
     } catch (e) {
       throw new Error('Unable to parse expression: ' + expression);
@@ -683,7 +665,6 @@ function convertFile(filename: string, useLit1: boolean, useOptionalChaining: bo
     undefinedValue: string,
     qualifiedPrefixes: string[]
   ) {
-    // debug("thisResolver", expr.type);
     if (expr.type === 'ExpressionStatement') {
       return resolve(originalExpression, expr.expression, makeNullSafe, resolve, undefinedValue, qualifiedPrefixes);
     } else if (expr.type === 'MemberExpression') {
@@ -710,11 +691,8 @@ function convertFile(filename: string, useLit1: boolean, useOptionalChaining: bo
         .join(', ');
       const caller = resolve(originalExpression, expr.callee, makeNullSafe, resolve, undefinedValue, qualifiedPrefixes);
       const retval = '(' + caller + ')(' + args + ')';
-      // debug("Caller", caller);
-      // debug("Call ret", retval);
       return retval;
     }
-    // debug(expr);
     const retval = originalExpression.substring(expr.start, expr.end);
     warn('Unresolved expression', expr, 'returning', retval);
     return retval;
@@ -772,9 +750,7 @@ function convertFile(filename: string, useLit1: boolean, useOptionalChaining: bo
   function replaceWithLitRepeat(element: any, polymerItemsExpression: string, outerResolver: Resolver, template: any) {
     const expression = polymerItemsExpression.substring(2, polymerItemsExpression.length - 2);
 
-    // debug("expression", expression);
     const litExpression = resolveExpression(expression, true, outerResolver, '[]');
-    // debug("litExpression", litExpression);
 
     const itemResolver = (
       originalExpression: string,
@@ -797,7 +773,6 @@ function convertFile(filename: string, useLit1: boolean, useOptionalChaining: bo
     element.replaceWith(litRepeat);
   }
   function nullSafe(name: any, assumedNonNull: string[], undefinedValue: string) {
-    // debug("nullSafe", name);
     // Polymer allows using "a.b.c" when "a" or "b" is undefined
     // webpack 4 does not support ?. so to be compati
     if (useOptionalChaining) {
@@ -812,8 +787,6 @@ function convertFile(filename: string, useLit1: boolean, useOptionalChaining: bo
       // this.a.b.c -> (this.a && this.a.b) ? this.a.b.c : undefined
       // item.foo -> (item) ? item.foo
       // item.foo.bar -> (item && item.foo) ? item.foo.bar : undefined
-
-      // debug("nullSafe", name, 'using undef',undefinedValue);
 
       const parts = name.split('.');
 
@@ -842,7 +815,6 @@ function convertFile(filename: string, useLit1: boolean, useOptionalChaining: bo
       }
       if (condition) {
         const ret = `(${condition}) ? ${name} : ${undefinedValue}`;
-        // debug(ret);
         return ret;
       } else {
         return name;
