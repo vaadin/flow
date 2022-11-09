@@ -65,4 +65,4 @@ flow-tests/**/*.npmrc
 
 *.xml.versionsBackup
 
-polymer2lit/**/frontend/generated
+flow-polymer2lit/**/frontend/generated

@@ -1,5 +1,5 @@
 {
-  "name": "polymer2lit",
+  "name": "flow-polymer2lit",
   "version": "0.0.1",
   "description": "A migration tool for Polymer to Lit for selected cases",
   "author": "Vaadin Ltd",

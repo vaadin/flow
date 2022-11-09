@@ -8,7 +8,7 @@
         <artifactId>flow-project</artifactId>
         <version>24.0-SNAPSHOT</version>
     </parent>
-    <artifactId>polymer2lit</artifactId>
+    <artifactId>flow-polymer2lit</artifactId>
     <name>Polymer to Lit converter</name>
     <packaging>jar</packaging>
 

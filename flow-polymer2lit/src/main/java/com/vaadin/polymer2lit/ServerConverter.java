@@ -1,4 +1,4 @@
-package com.vaadin.polymer2lit;
+package com.vaadin.flow.polymer2lit;
 
 import java.io.FileInputStream;
 import java.io.FileWriter;

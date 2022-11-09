@@ -14,8 +14,8 @@ import java.util.stream.Stream;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendToolsSettings;
 import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.polymer2lit.FrontendConverter;
-import com.vaadin.polymer2lit.ServerConverter;
+import com.vaadin.flow.polymer2lit.FrontendConverter;
+import com.vaadin.flow.polymer2lit.ServerConverter;
 
 public class ConvertPolymerExecutor implements AutoCloseable {
     private static final String SERVER_GLOB = "**/*.java";
