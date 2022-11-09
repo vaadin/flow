@@ -59,8 +59,8 @@ public class ConvertPolymerExecutorTest {
     @Test
     public void execute()
             throws URISyntaxException, IOException, InterruptedException {
-        try (ConvertPolymerCommand command = new ConvertPolymerCommand(
-                adapter, null, false, false)) {
+        try (ConvertPolymerCommand command = new ConvertPolymerCommand(adapter,
+                null, false, false)) {
             command.execute();
 
             FrontendConverter frontendConverter = frontendConverterMock
@@ -92,8 +92,8 @@ public class ConvertPolymerExecutorTest {
     @Test
     public void setSpecificFrontendFile_execute()
             throws URISyntaxException, IOException, InterruptedException {
-        try (ConvertPolymerCommand command = new ConvertPolymerCommand(
-                adapter, "/nested/component.js", false, false)) {
+        try (ConvertPolymerCommand command = new ConvertPolymerCommand(adapter,
+                "/nested/component.js", false, false)) {
             command.execute();
 
             FrontendConverter frontendConverter = frontendConverterMock
@@ -115,8 +115,8 @@ public class ConvertPolymerExecutorTest {
     @Test
     public void setSpecificServerFile_execute()
             throws URISyntaxException, IOException, InterruptedException {
-        try (ConvertPolymerCommand command = new ConvertPolymerCommand(
-                adapter, "/nested/Component.java", false, false)) {
+        try (ConvertPolymerCommand command = new ConvertPolymerCommand(adapter,
+                "/nested/Component.java", false, false)) {
             command.execute();
 
             FrontendConverter frontendConverter = frontendConverterMock
@@ -138,8 +138,8 @@ public class ConvertPolymerExecutorTest {
     @Test
     public void useLit1_execute()
             throws URISyntaxException, IOException, InterruptedException {
-        try (ConvertPolymerCommand command = new ConvertPolymerCommand(
-                adapter, null, true, false)) {
+        try (ConvertPolymerCommand command = new ConvertPolymerCommand(adapter,
+                null, true, false)) {
             command.execute();
 
             FrontendConverter frontendConverter = frontendConverterMock
@@ -154,8 +154,8 @@ public class ConvertPolymerExecutorTest {
     @Test
     public void disableOptionalChaining_execute()
             throws URISyntaxException, IOException, InterruptedException {
-        try (ConvertPolymerCommand command = new ConvertPolymerCommand(
-                adapter, null, false, true)) {
+        try (ConvertPolymerCommand command = new ConvertPolymerCommand(adapter,
+                null, false, true)) {
             command.execute();
 
             FrontendConverter frontendConverter = frontendConverterMock
