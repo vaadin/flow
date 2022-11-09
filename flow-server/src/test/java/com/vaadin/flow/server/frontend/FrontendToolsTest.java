@@ -35,8 +35,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -156,6 +154,7 @@ public class FrontendToolsTest {
     @Test
     public void nodeIsBeingLocated_supportedNodeInstalled_autoUpdateFalse_NodeNotUpdated()
             throws FrontendUtils.UnknownVersionException {
+        settings.setAutoUpdate(false);
         FrontendVersion updatedNodeVersion = getUpdatedAlternativeNodeVersion(
                 "16.14.0", () -> tools.getNodeExecutable());
 
@@ -167,7 +166,6 @@ public class FrontendToolsTest {
     @Test
     public void nodeIsBeingLocated_supportedNodeInstalled_autoUpdateTrue_NodeUpdated()
             throws FrontendUtils.UnknownVersionException {
-        settings.setAutoUpdate(true);
         FrontendVersion updatedNodeVersion = getUpdatedAlternativeNodeVersion(
                 "16.14.0", () -> tools.getNodeExecutable());
 
@@ -209,7 +207,7 @@ public class FrontendToolsTest {
         FrontendStubs.ToolStubInfo npmStub = FrontendStubs.ToolStubInfo.none();
         createStubNode(nodeStub, npmStub, baseDir);
 
-        tools.installNode("v16.14.0", null);
+        tools.installNode(FrontendTools.DEFAULT_NODE_VERSION, null);
 
         List<String> nodeVersionCommand = new ArrayList<>();
         nodeVersionCommand.add(tools.getNodeExecutable());
@@ -219,7 +217,8 @@ public class FrontendToolsTest {
 
         Assert.assertEquals(
                 "Locate unsupported Node version: Expecting Node in alternative directory to be used, but was not.",
-                "16.14.0", usedNodeVersion.getFullVersion());
+                FrontendTools.DEFAULT_NODE_VERSION.replace("v", ""),
+                usedNodeVersion.getFullVersion());
     }
 
     @Test
@@ -238,6 +237,7 @@ public class FrontendToolsTest {
     @Test
     public void forceAlternativeDirectory_supportedNodeInstalled_autoUpdateFalse_NodeNotUpdated()
             throws FrontendUtils.UnknownVersionException {
+        settings.setAutoUpdate(false);
         FrontendVersion updatedNodeVersion = getUpdatedAlternativeNodeVersion(
                 "16.14.0", () -> tools.forceAlternativeNodeExecutable());
 
@@ -249,7 +249,6 @@ public class FrontendToolsTest {
     @Test
     public void forceAlternativeDirectory_supportedNodeInstalled_autoUpdateTrue_NodeUpdated()
             throws FrontendUtils.UnknownVersionException {
-        settings.setAutoUpdate(true);
         FrontendVersion updatedNodeVersion = getUpdatedAlternativeNodeVersion(
                 "16.14.0", () -> tools.forceAlternativeNodeExecutable());
 
