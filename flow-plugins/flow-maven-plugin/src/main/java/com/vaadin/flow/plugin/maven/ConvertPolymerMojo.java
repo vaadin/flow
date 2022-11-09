@@ -35,11 +35,9 @@ public class ConvertPolymerMojo extends FlowModeAbstractMojo {
 
     @Override
     public void execute() throws MojoFailureException {
-        try {
-            try (ConvertPolymerExecutor executor = new ConvertPolymerExecutor(
-                    this, path, useLit1, disableOptionalChaining)) {
-                executor.execute();
-            }
+        try (ConvertPolymerExecutor executor = new ConvertPolymerExecutor(this,
+                path, useLit1, disableOptionalChaining)) {
+            executor.execute();
         } catch (Exception e) {
             throw new MojoFailureException(
                     "Could not execute convert-polymer goal.", e);
