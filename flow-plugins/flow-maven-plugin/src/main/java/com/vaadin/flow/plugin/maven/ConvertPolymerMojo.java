@@ -21,15 +21,31 @@ import org.apache.maven.plugins.annotations.Parameter;
 
 import com.vaadin.flow.plugin.base.ConvertPolymerExecutor;
 
+/**
+ * A Maven goal that converts Polymer-based source files into Lit.
+ */
 @Mojo(name = "convert-polymer")
 public class ConvertPolymerMojo extends FlowModeAbstractMojo {
 
+    /**
+     * A path to a specific file or directory that needs to be converted. By
+     * default, the goal scans and tries to convert all {@code *.js} and
+     * {@code *.java} files in the project except for the {@code node_modules}
+     * folder.
+     */
     @Parameter(property = "vaadin.path")
     private String path;
 
+    /**
+     * Whether to enforce Lit 1 compatible imports.
+     */
     @Parameter(property = "vaadin.useLit1", defaultValue = "${false}")
     private boolean useLit1;
 
+    /**
+     * Whether to disable the usage of the JavaScript optional chaining operator
+     * (?.) in the output.
+     */
     @Parameter(property = "vaadin.disableOptionalChaining", defaultValue = "${false}")
     private boolean disableOptionalChaining;
 
