@@ -19,7 +19,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
-import com.vaadin.flow.plugin.base.ConvertPolymerExecutor;
+import com.vaadin.flow.plugin.base.ConvertPolymerCommand;
 
 /**
  * A Maven goal that converts Polymer-based source files into Lit.
@@ -51,9 +51,9 @@ public class ConvertPolymerMojo extends FlowModeAbstractMojo {
 
     @Override
     public void execute() throws MojoFailureException {
-        try (ConvertPolymerExecutor executor = new ConvertPolymerExecutor(this,
+        try (ConvertPolymerCommand command = new ConvertPolymerCommand(this,
                 path, useLit1, disableOptionalChaining)) {
-            executor.execute();
+            command.execute();
         } catch (Exception e) {
             throw new MojoFailureException(
                     "Could not execute convert-polymer goal.", e);

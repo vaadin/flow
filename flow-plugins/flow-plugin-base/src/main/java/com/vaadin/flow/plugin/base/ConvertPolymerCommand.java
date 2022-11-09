@@ -33,17 +33,17 @@ import com.vaadin.flow.polymer2lit.FrontendConverter;
 import com.vaadin.flow.polymer2lit.ServerConverter;
 
 /**
- * A tool-independent implementation of a {@code convert-polymer} task that
- * converts Polymer-based source files into Lit. The executor is supposed to be
+ * A tool-independent implementation of a {@code convert-polymer} command that
+ * converts Polymer-based source files into Lit. The command is supposed to be
  * called by the corresponding Mojo and Gradle tasks.
  */
-public class ConvertPolymerExecutor implements AutoCloseable {
+public class ConvertPolymerCommand implements AutoCloseable {
     private static final String SERVER_GLOB = "**/*.java";
     private static final String FRONTEND_GLOB = "**/*.js";
 
     /**
-     * A reference to the plugin adapter to access the environment
-     * configuration.
+     * A reference to the plugin adapter providing access to the environment of
+     * the tool that runs the command.
      */
     private PluginAdapterBase adapter;
 
@@ -76,7 +76,7 @@ public class ConvertPolymerExecutor implements AutoCloseable {
      */
     private FrontendConverter frontendConverter;
 
-    public ConvertPolymerExecutor(PluginAdapterBase adapter, String path,
+    public ConvertPolymerCommand(PluginAdapterBase adapter, String path,
             boolean useLit1, boolean disableOptionalChaining)
             throws URISyntaxException, IOException {
         this.adapter = adapter;
