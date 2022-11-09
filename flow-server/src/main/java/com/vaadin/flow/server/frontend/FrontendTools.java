@@ -57,7 +57,12 @@ import com.vaadin.flow.server.frontend.installer.ProxyConfig;
  */
 public class FrontendTools {
 
-    public static final String DEFAULT_NODE_VERSION = "v14.20.1";
+    /**
+     * This is the version that is installed if there is no node installed or
+     * the installed version is older than {@link #SUPPORTED_NODE_VERSION}, i.e.
+     * {@value #SUPPORTED_NODE_MAJOR_VERSION}.{@value #SUPPORTED_NODE_MINOR_VERSION}.
+     */
+    public static final String DEFAULT_NODE_VERSION = "v14.21.1";
 
     public static final String DEFAULT_PNPM_VERSION = "5";
 
