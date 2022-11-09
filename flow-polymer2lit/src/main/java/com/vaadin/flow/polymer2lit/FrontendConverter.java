@@ -24,6 +24,11 @@ import java.util.List;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
+/**
+ * A converter that converts Polymer-based {@code *.js} source files into Lit.
+ *
+ * Effectively, this is a wrapper around the {@code convert.ts} script.
+ */
 public class FrontendConverter implements AutoCloseable {
     private static final String CONVERTER_EXECUTABLE_PATH = "/META-INF/frontend/generated/convert.js";
 
