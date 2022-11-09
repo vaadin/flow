@@ -78,7 +78,6 @@ public class ServerConverter {
                     .substring(javaClass.getName().length() + 1);
             // Sub interface
             JavaSource<?> nested = javaClass.getNestedType(internalName);
-            // System.out.println("Sub: " + nested.isInterface());
             JavaInterfaceSource model = (JavaInterfaceSource) nested;
 
             model.removeInterface("TemplateModel");
@@ -92,11 +91,8 @@ public class ServerConverter {
                 String name = member.getName();
                 String property = getProperty(name);
                 if (isSetter(name)) {
-                    // System.out.println(method.getParameters());
                     Type<?> type = method.getParameters().get(0).getType();
-                    // System.out.println(property + ": " + type);
                     types.put(property, type);
-                    // createSetterCode(property, )
                     setters.add(property);
                 } else {
                     Type<?> type = method.getReturnType();
@@ -119,10 +115,6 @@ public class ServerConverter {
                 replacements.put("defaultValue", defaultValue);
 
                 if (setters.contains(property)) {
-
-                    // System.out.println("Setter: " + property + "(" + type +
-                    // ")");
-
                     replacements.put("methodName",
                             "set" + capitalize(property));
 
@@ -134,7 +126,6 @@ public class ServerConverter {
                     if (defaultValue == null) {
                         body.append(
                                 "/* FIXME Implement this method which could not be automatically generated*/\n");
-                        // body.append("// The model method was defined as");
                     } else {
                         body.append(sub.replace(
                                 "getElement().setProperty(\"${property}\", ${property});\n"));
@@ -143,9 +134,6 @@ public class ServerConverter {
 
                 }
                 if (getters.contains(property)) {
-
-                    // System.out.println("Getter: " + property + "(" + type +
-                    // ")");
 
                     if (type.getName().equals("boolean")) {
                         replacements.put("methodName",
@@ -163,7 +151,6 @@ public class ServerConverter {
                     if (defaultValue == null) {
                         body.append(
                                 "/* FIXME Implement this method which could not be automatically generated*/\n");
-                        // body.append("// The model method was defined as");
                     } else {
                         body.append(sub.replace(
                                 "return getElement().getProperty(\"${property}\", ${defaultValue});\n"));
