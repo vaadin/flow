@@ -32,27 +32,55 @@ import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.polymer2lit.FrontendConverter;
 import com.vaadin.flow.polymer2lit.ServerConverter;
 
+/**
+ * A tool-independent implementation of a {@code convert-polymer} task that
+ * converts Polymer-based source files into Lit. The executor is supposed to be
+ * called by the corresponding Mojo and Gradle tasks.
+ */
 public class ConvertPolymerExecutor implements AutoCloseable {
     private static final String SERVER_GLOB = "**/*.java";
     private static final String FRONTEND_GLOB = "**/*.js";
 
+    /**
+     * A reference to the plugin adapter to access the environment
+     * configuration.
+     */
     private PluginAdapterBase adapter;
 
-    private String customPath;
+    /**
+     * A path to a specific file or directory that needs to be converted. By
+     * default, the converter scans and tries to convert all {@code *.js} and
+     * {@code *.java} files in the project except for the {@code node_modules}
+     * folder.
+     */
+    private String path;
 
+    /**
+     * Whether to enforce Lit 1 compatible imports.
+     */
     private boolean useLit1;
 
+    /**
+     * Whether to disable the usage of the JavaScript optional chaining operator
+     * (?.) in the output.
+     */
     private boolean disableOptionalChaining;
 
+    /**
+     * A server converter instance for converting *.java files.
+     */
     private ServerConverter serverConverter;
 
+    /**
+     * A frontend converter instance for converting *.js files.
+     */
     private FrontendConverter frontendConverter;
 
-    public ConvertPolymerExecutor(PluginAdapterBase adapter, String customPath,
+    public ConvertPolymerExecutor(PluginAdapterBase adapter, String path,
             boolean useLit1, boolean disableOptionalChaining)
             throws URISyntaxException, IOException {
         this.adapter = adapter;
-        this.customPath = customPath;
+        this.path = path;
         this.useLit1 = useLit1;
         this.disableOptionalChaining = disableOptionalChaining;
         this.serverConverter = new ServerConverter();
@@ -93,9 +121,8 @@ public class ConvertPolymerExecutor implements AutoCloseable {
     }
 
     private Path getLookupPath() {
-        if (customPath != null) {
-            return Paths.get(adapter.projectBaseDirectory().toString(),
-                    customPath);
+        if (path != null) {
+            return Paths.get(adapter.projectBaseDirectory().toString(), path);
         }
 
         return adapter.projectBaseDirectory();
