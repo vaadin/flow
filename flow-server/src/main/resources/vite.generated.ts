@@ -461,7 +461,6 @@ let spaMiddlewareForceRemoved = false;
 
 const allowedFrontendFolders = [
   frontendFolder,
-  jarResourcesFolder,
   path.resolve(generatedFlowImportsFolder), // Contains only generated-flow-imports
   path.resolve(__dirname, 'node_modules')
 ];
