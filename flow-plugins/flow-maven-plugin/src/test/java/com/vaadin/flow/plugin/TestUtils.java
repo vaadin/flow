@@ -23,22 +23,8 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import org.apache.maven.artifact.DependencyResolutionRequiredException;
-import org.apache.maven.model.Build;
-import org.apache.maven.project.MavenProject;
-import org.codehaus.plexus.util.ReflectionUtils;
-import org.mockito.Mockito;
-
-import com.vaadin.flow.server.frontend.installer.NodeInstaller;
-import com.vaadin.flow.plugin.base.PluginAdapterBase;
-import com.vaadin.flow.plugin.maven.FlowModeAbstractMojo;
-import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.frontend.FrontendTools;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
