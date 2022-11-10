@@ -781,14 +781,14 @@ function convertFile(filename: string, useLit1: boolean, useOptionalChaining: bo
         if (parts.length === 1) {
           // index -> index
           return parts[0]
+        } else {
+          // item.user.name -> item.user?.name
+          return `${parts[0]}.${parts.slice(1).join('?.')}`;
         }
-
-        // item.user.name -> item.user?.name
-        return `${parts[0]}.${parts.slice(1).join('?.')}`;
+      } else {
+        // item.user.name -> item?.user?.name
+        return parts.join('?.');
       }
-
-      // item.user.name -> item?.user?.name
-      return parts.join('?.');
     } else {
       // this.a -> this.a
       // this.a.b -> (this.a) ? this.a.b : undefined
