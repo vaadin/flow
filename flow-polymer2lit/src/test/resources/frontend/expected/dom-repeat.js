@@ -1,23 +1,25 @@
-import { html, PolymerElement } from "@polymer/polymer/polymer-element.js";
-import "@vaadin/vaadin-vertical-layout";
-import "@polymer/polymer/lib/elements/dom-repeat.js";
+import { html, LitElement, css } from "lit";
 
-class DomRepeatTest extends PolymerElement {
-  static get template() {
+import "@vaadin/vaadin-vertical-layout";
+
+class DomRepeatTest extends LitElement {
+  render() {
     return html`
       <div>Employee list:</div>
-      <template is="dom-repeat" items="{{employees.list}}">
-        <div><br /># [[index]]</div>
-        <div>Given name: <span>[[item.given]]</span></div>
-        <div>Family name: <span>[[item.family]]</span></div>
-      </template>
-      <dom-repeat items="{{employees.list}}">
-        <template>
-          <div><br /># [[index]]</div>
-          <div>Given name: <span>[[item.given]]</span></div>
-          <div>Family name: <span>[[item.family]]</span></div>
-        </template>
-      </dom-repeat>
+      ${(this.employees && this.employees.list ? this.employees.list : []).map(
+        (item, index) => html`
+          <div><br /># ${index}</div>
+          <div>Given name: <span>${item.given}</span></div>
+          <div>Family name: <span>${item.family}</span></div>
+        `
+      )}
+      ${(this.employees && this.employees.list ? this.employees.list : []).map(
+        (item, index) => html`
+          <div><br /># ${index}</div>
+          <div>Given name: <span>${item.given}</span></div>
+          <div>Family name: <span>${item.family}</span></div>
+        `
+      )}
     `;
   }
 
@@ -25,20 +27,21 @@ class DomRepeatTest extends PolymerElement {
     return {
       employees: {
         type: Object,
-        value() {
-          return {
-            list: [
-              { given: "Kamil", family: "Smith" },
-              { given: "Sally", family: "Johnson" },
-            ],
-          };
-        },
       },
     };
   }
 
   static get is() {
     return "dom-repeat-test";
+  }
+  constructor() {
+    super();
+    this.employees = {
+      list: [
+        { given: "Kamil", family: "Smith" },
+        { given: "Sally", family: "Johnson" },
+      ],
+    };
   }
 }
 

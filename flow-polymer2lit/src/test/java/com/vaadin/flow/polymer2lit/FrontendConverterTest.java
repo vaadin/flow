@@ -70,6 +70,11 @@ public class FrontendConverterTest {
     }
 
     @Test
+    public void domRepeat_disabledOptionalChaining() throws IOException, InterruptedException {
+        convertFile_outputFileMatchesExpectedOne("dom-repeat-disabled-optional-chaining.js");
+    }
+
+    @Test
     public void eventHandlers() throws IOException, InterruptedException {
         convertFile_outputFileMatchesExpectedOne("event-handlers.js");
     }
