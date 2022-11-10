@@ -88,6 +88,12 @@
             <artifactId>plexus-build-api</artifactId>
             <version>0.0.7</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-polymer2lit</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 
     <!-- Needed for lambdas in Mojos -->

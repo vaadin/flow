@@ -35,6 +35,7 @@
         <module>flow-jandex</module>
         <module>vaadin-spring</module>
         <module>flow-commons-upload</module>
+        <module>flow-polymer2lit</module>
     </modules>
 
     <organization>
