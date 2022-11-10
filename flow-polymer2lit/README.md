@@ -13,6 +13,9 @@ Run the converter in your project's root folder as follows:
 ```bash
 mvn vaadin:convert-polymer
 ```
+```bash
+./gradlew vaadinConvertPolymer
+```
 
 If your project is using an older Flow version < 24.0, use the full Maven goal instead:
 
@@ -20,40 +23,58 @@ If your project is using an older Flow version < 24.0, use the full Maven goal i
 mvn com.vaadin:vaadin-maven-plugin:24.0-SNAPSHOT:convert-polymer
 ```
 
+Or, in the case of Gradle, add the following to `build.gradle`:
+
+```gradle
+buildscript {
+  repositories {
+    classpath 'com.vaadin:flow-gradle-plugin:24.0-SNAPSHOT'
+  }
+}
+```
+
 ## Configuring
 
 The converter accepts the following arguments:
 
-**-Dvaadin.path=path/to/your/file**
+### -Dvaadin.path=path/to/your/file
 
 By default, the converter scans all the files that match `**/*.js` and `**/*.java` and tries to convert them into Lit.
 
-To limit conversion to a specific file or directory, you can use the `path` argument:
+To limit conversion to a specific file or directory, you can use the `vaadin.path` argument:
 
 ```bash
-mvn vaadin:convert-polymer -Dpath=path/to/your/file
+mvn vaadin:convert-polymer -Dvaadin.path=path/to/your/file
+```
+```bash
+./gradlew vaadinConvertPolymer -Dvaadin.path=path/to/your/file
 ```
 
 The path is always relative to your project's root folder.
 
-**-Dvaadin.useLit1**
+### -Dvaadin.useLit1
 
 By default, the converter transforms Polymer imports into their Lit 2 equivalents.
 
-If your project is using Lit 1, you can use the `useLit1` argument to enforce Lit 1 compatible imports:
+If your project is using Lit 1, you can use the `vaadin.useLit1` argument to enforce Lit 1 compatible imports:
 
 ```bash
-mvn vaadin:convert-polymer -DuseLit1
+mvn vaadin:convert-polymer -Dvaadin.useLit1
+```
+```bash
+./gradlew vaadinConvertPolymer -Dvaadin.useLit1
 ```
 
-**-Dvaadin.disableOptionalChaining**
+### -Dvaadin.disableOptionalChaining**
 
 By default, the converter transforms `[[prop.sub.something]]` expressions into `${prop?.sub?.something}`.
 
-If your project is using the Vaadin Webpack config, which doesn't support the optional chaining operator, you can use the `disableOptionalChaining` argument:
+If your project is using the Vaadin Webpack config, which doesn't support the optional chaining operator, you can use the `vaadin.disableOptionalChaining` argument:
 
 ```bash
-mvn vaadin:convert-polymer -DdisableOptionalChaining
+mvn vaadin:convert-polymer -Dvaadin.disableOptionalChaining
 ```
-
+```bash
+./gradlew vaadinConvertPolymer -Dvaadin.disableOptionalChaining
+```
 
