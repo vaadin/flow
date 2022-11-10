@@ -2,9 +2,9 @@
 
 An automatic tool that facilitates migration from Polymer to Lit by automatically converting basic Polymer constructions into their Lit equivalents in Java and JavaScript source files.
 
-## Limitations
+## Motivation
 
-The converter only targets basic cases. More advanced cases such as TypeScript source files or usage of internal Polymer API should be still converted manually.
+Polymer support has been deprecated since Vaadin 18 (released in November 2020), in favor of faster and simpler Lit templates. In Vaadin 24, the built-in support for Polymer templates is removed. Polymer support is still available in Vaadin 24 for Prime and Enterprise customers.
 
 ## Usage
 
@@ -69,7 +69,7 @@ mvn vaadin:convert-polymer -Dvaadin.useLit1
 
 By default, the converter transforms `[[prop.sub.something]]` expressions into `${prop?.sub?.something}`.
 
-If your project is using the Vaadin Webpack config, which doesn't support the optional chaining operator, you can use the `vaadin.disableOptionalChaining` argument:
+If your project is using the Vaadin Webpack config, which doesn't support the JavaScript optional chaining operator (?.), you can use the `vaadin.disableOptionalChaining` argument:
 
 ```bash
 mvn vaadin:convert-polymer -Dvaadin.disableOptionalChaining
@@ -77,4 +77,98 @@ mvn vaadin:convert-polymer -Dvaadin.disableOptionalChaining
 ```bash
 ./gradlew vaadinConvertPolymer -Dvaadin.disableOptionalChaining
 ```
+
+## Supported transformations
+
+This is a basic overview of the transformations that can be performed automatically by the converter:
+
+### JavaScript
+
+**Template bindings**
+
+Example:
+```diff
+-[[person.name]]
++${this.person?.name}
+```
+
+More complex expressions, including two-way binding, are also supported.
+
+**Computed properties**
+
+Computed properties are replaced with getters.
+
+Example:
+```diff
+static get properties() {
+  return {
+    firstName: String,
+    lastName: String,
+-    fullName: {
+-      type: String,
+-      computed: 'computeFullName(firstName, lastName)',
+-    },
+  };
+}
+
++get fullName() {
++  return this.computeFullName(this.firstName, this.lastName);
++}
+
+computeFullName(firstName, lastName) {
+  return `${firstName} ${lastName}`;
+}
+```
+
+**Event handlers**
+
+```diff
+-<div on-click="onClick"></div>
++<div @click="${this.onClick}></div>
+```
+
+**Observers**
+
+Observers are replaced with getter and setters.
+
+Example:
+```diff
+static get properties() {
+  return {
+    firstName: {
+      type: String,
+-      observer: '_firstNameChanged'
+    }
+  };
+}
+
++set firstName() { ... }
++get firstName() { ... }
+
+_firstNameChanged(newValue, oldValue) {
+
+}
+```
+
+**`<dom-if>`**
+
+Example:
+```diff
+-<dom-if if="{{condition}}">...</dom-if>
++${condition && ...}
+```
+
+**`<dom-repeat>`**
+
+Example:
+```diff
+-<template is="dom-repeat" items="{{items}}">
+-  <div>[[item]] [[index]]</div>
+-</template>
++${items.map((item, index) =>
++  html`<div>${item} ${index}</div>`
++)}
+```
+
+### Java
 
