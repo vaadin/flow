@@ -16,7 +16,7 @@
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
         <maven.failsafe.plugin.version>3.0.0-M1</maven.failsafe.plugin.version>
-        <vaadin.version>23.3-SNAPSHOT</vaadin.version>
+        <component.version>23.3-SNAPSHOT</component.version>
     </properties>
 
     <dependencyManagement>
@@ -36,14 +36,6 @@
             </dependency>
 
             <dependency>
-                <groupId>com.vaadin</groupId>
-                <artifactId>vaadin-testbench-bom</artifactId>
-                <type>pom</type>
-                <scope>import</scope>
-                <version>${testbench.version}</version>
-            </dependency>
-
-            <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-dependencies</artifactId>
                 <version>${spring.boot.version}</version>
@@ -55,13 +47,6 @@
                 <groupId>com.vaadin</groupId>
                 <artifactId>flow-bom</artifactId>
                 <version>${project.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-            <dependency>
-                <groupId>com.vaadin</groupId>
-                <artifactId>vaadin-bom</artifactId>
-                <version>${vaadin.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
@@ -78,7 +63,7 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin-lumo-theme</artifactId>
-            <version>${vaadin.version}</version>
+            <version>${component.version}</version>
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
@@ -88,7 +73,8 @@
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-testbench</artifactId>
+            <artifactId>vaadin-testbench-core</artifactId>
+            <version>${testbench.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
