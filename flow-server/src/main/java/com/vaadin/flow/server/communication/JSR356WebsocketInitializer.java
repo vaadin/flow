@@ -238,7 +238,8 @@ public class JSR356WebsocketInitializer implements ServletContextListener {
                 // dynamically added
                 return false;
             }
-            if (servletClassName.equals("com.ibm.websphere.jaxrs.server.IBMRestServlet")) {
+            if (servletClassName
+                    .equals("com.ibm.websphere.jaxrs.server.IBMRestServlet")) {
                 // Websphere servlet which implements websocket endpoints,
                 // dynamically added
                 return false;
