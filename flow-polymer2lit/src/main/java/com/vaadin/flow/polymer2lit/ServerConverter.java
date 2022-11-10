@@ -37,7 +37,7 @@ import org.jboss.forge.roaster.model.source.MemberSource;
 import org.jboss.forge.roaster.model.source.MethodSource;
 
 /**
- * A server converter that converts Polymer-based *.java source files into Lit.
+ * A server converter that converts Polymer-based *.java source files to Lit.
  */
 public class ServerConverter {
 
