@@ -14,6 +14,9 @@ import settings from '#settingsImport#';
 import { defineConfig, mergeConfig, PluginOption, ResolvedConfig, UserConfigFn, OutputOptions, AssetInfo, ChunkInfo } from 'vite';
 import { getManifest } from 'workbox-build';
 
+import { createRequire } from 'node:module';
+const require = createRequire(import.meta.url);
+
 import * as rollup from 'rollup';
 import brotli from 'rollup-plugin-brotli';
 import replace from '@rollup/plugin-replace';
