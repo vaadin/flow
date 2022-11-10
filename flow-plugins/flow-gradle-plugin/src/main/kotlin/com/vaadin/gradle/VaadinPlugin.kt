@@ -40,6 +40,7 @@ public class VaadinPlugin : Plugin<Project> {
             register("vaadinClean", VaadinCleanTask::class.java)
             register("vaadinPrepareFrontend", VaadinPrepareFrontendTask::class.java)
             register("vaadinBuildFrontend", VaadinBuildFrontendTask::class.java)
+            register("vaadinConvertPolymer", VaadinConvertPolymerTask::class.java)
         }
 
         project.afterEvaluate {
