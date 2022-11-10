@@ -217,7 +217,9 @@ public class ServletDeployer implements ServletContextListener {
         if (servletCreation == null || productionMode) {
             // the servlet creation is explicitly disabled or production mode
             // activated - just info
-            logger.info(servletCreationMessage);
+            if (servletCreationMessage != null) {
+                logger.info(servletCreationMessage);
+            }
         } else if (servletCreation == VaadinServletCreation.NO_CREATION) {
             // debug mode and servlet not created for some reason - make it more
             // visible with warning
