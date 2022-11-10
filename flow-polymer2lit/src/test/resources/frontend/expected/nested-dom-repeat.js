@@ -6,12 +6,12 @@ class DomRepeatTest extends LitElement {
   render() {
     return html`
       <div>Employee list:</div>
-      ${(this.managers ? this.managers : []).map(
+      ${this.managers.map(
         (item, index) => html`
           <div><br /># ${index}</div>
           <div>Given name: <span>${item.given}</span></div>
           <div>Family name: <span>${item.family}</span></div>
-          ${(item.employees ? item.employees : []).map(
+          ${item.employees.map(
             (item, index) => html`
               <div><br />Employee # ${index}</div>
               <div>

@@ -70,8 +70,10 @@ public class FrontendConverterTest {
     }
 
     @Test
-    public void domRepeat_disabledOptionalChaining() throws IOException, InterruptedException {
-        convertFile_outputFileMatchesExpectedOne("dom-repeat-disabled-optional-chaining.js");
+    public void domRepeat_disabledOptionalChaining()
+            throws IOException, InterruptedException {
+        convertFile_outputFileMatchesExpectedOne("dom-repeat.js",
+                "dom-repeat-disabled-optional-chaining.js", false, true);
     }
 
     @Test
@@ -102,6 +104,13 @@ public class FrontendConverterTest {
     @Test
     public void nestedDomRepeat() throws IOException, InterruptedException {
         convertFile_outputFileMatchesExpectedOne("nested-dom-repeat.js");
+    }
+
+    @Test
+    public void nestedDomRepeatDisabledOptionalChaining()
+            throws IOException, InterruptedException {
+        convertFile_outputFileMatchesExpectedOne("nested-dom-repeat.js",
+                "nested-dom-repeat-disabled-optional-chaining.js", false, true);
     }
 
     @Test
