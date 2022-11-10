@@ -13,7 +13,7 @@
     <packaging>jar</packaging>
 
     <properties>
-        <version.roaster>2.26.0.Final</version.roaster>
+        <version.roaster>2.27.1.Final</version.roaster>
     </properties>
 
     <dependencies>
