@@ -36,7 +36,6 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.mobile.NetworkConnection;
 
 import com.vaadin.flow.testutil.ChromeDeviceTest;
 
@@ -141,10 +140,10 @@ public class PwaTestIT extends ChromeDeviceTest {
     }
 
     @Test
-    public void testPwaResourcesOffline() throws IOException {
+    public void testPwaResourcesOffline() {
         open();
         waitForServiceWorkerReady();
-        setConnectionType(NetworkConnection.ConnectionType.AIRPLANE_MODE);
+        getDevTools().setOfflineEnabled(true);
         try {
             // Ensure we are offline
             Assert.assertEquals("navigator.onLine should be false", false,
@@ -156,12 +155,12 @@ public class PwaTestIT extends ChromeDeviceTest {
             // not all icons are precached.
             checkResources("icons/icon-32x32.png", "yes.png", "offline.html");
         } finally {
-            setConnectionType(NetworkConnection.ConnectionType.ALL);
+            getDevTools().setOfflineEnabled(false);
         }
     }
 
     @Test
-    public void testPwaOfflinePath() throws IOException {
+    public void testPwaOfflinePath() {
         open();
         waitForServiceWorkerReady();
 
@@ -170,7 +169,7 @@ public class PwaTestIT extends ChromeDeviceTest {
                 findElement(By.id("outlet")));
 
         // Set offline network conditions in ChromeDriver
-        setConnectionType(NetworkConnection.ConnectionType.AIRPLANE_MODE);
+        getDevTools().setOfflineEnabled(true);
 
         try {
             Assert.assertEquals("navigator.onLine should be false", false,
@@ -205,7 +204,7 @@ public class PwaTestIT extends ChromeDeviceTest {
                     message.getText().toLowerCase().contains("offline"));
         } finally {
             // Reset network conditions back
-            setConnectionType(NetworkConnection.ConnectionType.ALL);
+            getDevTools().setOfflineEnabled(false);
         }
     }
 
