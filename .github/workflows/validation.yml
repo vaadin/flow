@@ -28,7 +28,7 @@ jobs:
           [ -z "$TB_LICENSE" ] \
             && echo "::error::!! ERROR NO TB_LICENSE: Check that this repo has a valid TB_LICENSE secret !!" \
             && exit 1 || exit 0
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.sha }}
       - uses: actions/setup-node@v3
@@ -49,8 +49,8 @@ jobs:
       - name: Generate matrices
         id: set-matrix
         run: |
-          echo "::set-output name=matrix-it::$(./scripts/computeMatrix.js it-tests --parallel=13 current module args)"
-          echo "::set-output name=matrix-unit::$(./scripts/computeMatrix.js unit-tests --parallel=1 current module args)"
+          echo "matrix-it=$(./scripts/computeMatrix.js it-tests --parallel=13 current module args)" >> $GITHUB_OUTPUT
+          echo "matrix-unit=$(./scripts/computeMatrix.js unit-tests --parallel=1 current module args)" >> $GITHUB_OUTPUT
       - name: Compile and Install Flow
         run: |
           cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
@@ -73,7 +73,7 @@ jobs:
       matrix: ${{fromJson(needs.build.outputs.matrix-unit)}}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.sha }}
       - uses: actions/setup-java@v3
@@ -108,7 +108,7 @@ jobs:
       - name: Set build status flag
         id: set-failure
         if: ${{ failure() || cancelled() }}
-        run: echo "::set-output name=failure::true"
+        run: echo "failure=true" >> $GITHUB_OUTPUT
       - uses: actions/upload-artifact@v3
         if: ${{ failure() || success() }}
         with:
@@ -126,7 +126,7 @@ jobs:
       matrix: ${{fromJson(needs.build.outputs.matrix-it)}}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.sha }}
       - uses: actions/setup-node@v3
@@ -185,7 +185,7 @@ jobs:
       - name: Set build status flag
         id: set-failure
         if: ${{ failure() || cancelled() }}
-        run: echo "::set-output name=failure::true"
+        run: echo "failure=true" >> $GITHUB_OUTPUT
       - uses: actions/upload-artifact@v3
         if: ${{ failure() || success() }}
         with:
@@ -204,7 +204,7 @@ jobs:
     needs: [unit-tests, it-tests]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.sha }}
       - uses: actions/download-artifact@v3
