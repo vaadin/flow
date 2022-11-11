@@ -152,14 +152,32 @@ computeFullName(firstName, lastName) {
 
 **Observers**
 
-Observers are replaced with getter and setters.
+Observers are replaced with a pair of getters and setters.
 
 Example:
+
 ```diff
 static get properties() {
   return {
     firstName: {
       type: String,
+-      observer: '_firstNameChanged'
+    }
+  };
+}
+
++set firstName() { ... }
++get firstName() { ... }
+
+_firstNameChanged(newValue, oldValue) {
+}
+```
+
+**`<dom-if>`**
+
+Example:
+```diff
+-<dom-if if="{{condition}}">...</dom-if>
 +${condition && ...}
 ```
 
