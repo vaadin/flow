@@ -18,7 +18,7 @@ import org.mockito.MockitoAnnotations;
 import com.vaadin.flow.polymer2lit.FrontendConverter;
 import com.vaadin.flow.polymer2lit.ServerConverter;
 
-public class ConvertPolymerExecutorTest {
+public class ConvertPolymerCommandTest {
     @Rule
     public TemporaryFolder tmpDir = new TemporaryFolder();
 

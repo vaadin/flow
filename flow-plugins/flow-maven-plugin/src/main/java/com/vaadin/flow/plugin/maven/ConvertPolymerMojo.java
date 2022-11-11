@@ -22,7 +22,7 @@ import org.apache.maven.plugins.annotations.Parameter;
 import com.vaadin.flow.plugin.base.ConvertPolymerCommand;
 
 /**
- * A Maven goal that converts Polymer-based source files into Lit.
+ * A Maven goal that converts Polymer-based source files to Lit.
  */
 @Mojo(name = "convert-polymer")
 public class ConvertPolymerMojo extends FlowModeAbstractMojo {

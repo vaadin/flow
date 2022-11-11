@@ -141,52 +141,10 @@ public class MockServletContext implements ServletContext {
     /*
      * (non-Javadoc)
      *
-     * @see jakarta.servlet.ServletContext#getServlet(java.lang.String)
-     */
-    @Override
-    public Servlet getServlet(String name) throws ServletException {
-        return null;
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see jakarta.servlet.ServletContext#getServlets()
-     */
-    @Override
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Enumeration getServlets() {
-        return Collections.enumeration(Collections.EMPTY_SET);
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see jakarta.servlet.ServletContext#getServletNames()
-     */
-    @Override
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Enumeration getServletNames() {
-        return null;
-    }
-
-    /*
-     * (non-Javadoc)
-     *
      * @see jakarta.servlet.ServletContext#log(java.lang.String)
      */
     @Override
     public void log(String msg) {
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see jakarta.servlet.ServletContext#log(java.lang.Exception,
-     * java.lang.String)
-     */
-    @Override
-    public void log(Exception exception, String msg) {
     }
 
     /*

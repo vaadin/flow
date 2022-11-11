@@ -776,11 +776,26 @@ function convertFile(filename: string, useLit1: boolean, useOptionalChaining: bo
     // Polymer allows using "a.b.c" when "a" or "b" is undefined
     // webpack 4 does not support ?. so to be compati
     if (useOptionalChaining) {
-      const first = name.split('.')[0];
-      if (assumedNonNull.includes(first)) {
-        return first + '.' + name.substring(first.length + 1).replace(/\./g, '?.');
+      const parts = name.split('.');
+      let result: string;
+      if (assumedNonNull.includes(parts[0])) {
+        if (parts.length === 1) {
+          // index -> index
+          result = parts[0]
+        } else {
+          // item.user.name -> item.user?.name
+          result = `${parts[0]}.${parts.slice(1).join('?.')}`;
+        }
+      } else {
+        // item.user.name -> item?.user?.name
+        result = parts.join('?.');
       }
-      return name.replace(/\./g, '?.');
+
+      if (undefinedValue !== 'undefined') {
+        return `(${result} ?? ${undefinedValue})`;
+      } else {
+        return result;
+      }
     } else {
       // this.a -> this.a
       // this.a.b -> (this.a) ? this.a.b : undefined
@@ -814,8 +829,7 @@ function convertFile(filename: string, useLit1: boolean, useOptionalChaining: bo
         }
       }
       if (condition) {
-        const ret = `(${condition}) ? ${name} : ${undefinedValue}`;
-        return ret;
+        return `(${condition}) ? ${name} : ${undefinedValue}`;
       } else {
         return name;
       }

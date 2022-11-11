@@ -6,19 +6,18 @@ class DomRepeatTest extends LitElement {
   render() {
     return html`
       <div>Employee list:</div>
-      ${(this.managers ?? []).map(
+      ${(this.employees && this.employees.list ? this.employees.list : []).map(
         (item, index) => html`
           <div><br /># ${index}</div>
           <div>Given name: <span>${item.given}</span></div>
           <div>Family name: <span>${item.family}</span></div>
-          ${(item.employees ?? []).map(
-            (item, index) => html`
-              <div><br />Employee # ${index}</div>
-              <div>
-                Employee name: <span>${item.given} ${item.family}</span>
-              </div>
-            `
-          )}
+        `
+      )}
+      ${(this.employees && this.employees.list ? this.employees.list : []).map(
+        (item, index) => html`
+          <div><br /># ${index}</div>
+          <div>Given name: <span>${item.given}</span></div>
+          <div>Family name: <span>${item.family}</span></div>
         `
       )}
     `;
@@ -27,7 +26,7 @@ class DomRepeatTest extends LitElement {
   static get properties() {
     return {
       employees: {
-        type: Array,
+        type: Object,
       },
     };
   }
@@ -37,10 +36,12 @@ class DomRepeatTest extends LitElement {
   }
   constructor() {
     super();
-    this.employees = [
-      { given: "Kamil", family: "Smith" },
-      { given: "Sally", family: "Johnson" },
-    ];
+    this.employees = {
+      list: [
+        { given: "Kamil", family: "Smith" },
+        { given: "Sally", family: "Johnson" },
+      ],
+    };
   }
 }
 
