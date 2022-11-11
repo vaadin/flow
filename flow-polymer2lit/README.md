@@ -105,7 +105,6 @@ This is a basic overview of the transformations that can be performed automatica
 
 **Imports**
 
-Example:
 ```diff
 -import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
 +import { html, LitElement, css } from 'lit';
@@ -113,7 +112,6 @@ Example:
 
 **Lifecycle callbacks**
 
-Example:
 ```diff
 -ready() { ... }
 +firstUpdated() { ... }
@@ -121,7 +119,6 @@ Example:
 
 **Templates and bindings**
 
-Example:
 ```diff
 -static get template() {
 -  return html`
@@ -143,7 +140,6 @@ More complex expressions, such as containing method invocations, are also suppor
 
 Initializing default property values is moved to the constructor.
 
-Example:
 ```diff
 static get properties() {
   return {
@@ -164,7 +160,6 @@ static get properties() {
 
 Computed properties are replaced with getters.
 
-Example:
 ```diff
 static get properties() {
   return {
@@ -188,7 +183,6 @@ computeFullName(firstName, lastName) {
 
 **Event handlers**
 
-Example:
 ```diff
 -<div on-click="onClick"></div>
 +<div @click="${this.onClick}></div>
@@ -197,8 +191,6 @@ Example:
 **Two-way binding**
 
 Two-way binding is replaced with a pair of one-way binding and event handler.
-
-Example:
 
 ```diff
 -<input value="{{value}}" />
@@ -211,8 +203,6 @@ Example:
 **Observers**
 
 Observers are replaced with a pair of getters and setters.
-
-Example:
 
 ```diff
 static get properties() {
@@ -232,7 +222,6 @@ _firstNameChanged(newValue, oldValue) { ... }
 
 **`<dom-if>`**
 
-Example:
 ```diff
 -<dom-if if="{{condition}}">...</dom-if>
 +${condition && html`...`}
@@ -240,7 +229,6 @@ Example:
 
 **`<dom-repeat>`**
 
-Example:
 ```diff
 -<template is="dom-repeat" items="{{items}}">
 -  <div>[[item]] [[index]]</div>
@@ -252,7 +240,6 @@ Example:
 
 **`<style>`**
 
-Example:
 ```diff
 -<style>
 -  :host {
@@ -270,11 +257,64 @@ Example:
 
 **Static node map**
 
-Example:
 ```diff
 -this.$.container.textContent = 'Content';
 +this.shadowRoot.querySelector('#container').textContent = 'Content';
 ```
 
 ### Java
+
+**Imports**
+
+```diff
+-import com.vaadin.flow.component.polymertemplate.Id;
++import com.vaadin.flow.component.template.Id;
+-import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
++import com.vaadin.flow.component.littemplate.LitTemplate;
+-import com.vaadin.flow.templatemodel.TemplateModel;
+```
+
+**View**
+
+PolymerTemplate extend is replaced with LitTemplate extend.
+
+```diff
+-public class UserListView extends PolymerTemplate {
++public class UserListView extends LitTemplate {
+```
+
+**Model**
+
+TemplateModel extend is removed.
+
+```diff
+-public interface Model extend TemplateModel { ... }
++public interface Model { ... }
+```
+
+**Model implementation**
+
+As `Model` no longer extends `TemplateModel`, the `getModel()` method is added with a basic implementation of setters and getters.
+
+```diff
+public interface Model {
+	String getValue();
+
+	void setValue(String value);
+}
+
++private Model getModel() {
++  return new Model() {
++    @Override
++    public void setValue(String value) {
++      getElement().setProperty("value", value);
++    }
++
++    @Override
++    public String getValue() {
++      return getElement().getProperty("value", "");
++    }
++  }
++}
+```
 
