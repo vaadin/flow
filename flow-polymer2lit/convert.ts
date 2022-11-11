@@ -776,11 +776,19 @@ function convertFile(filename: string, useLit1: boolean, useOptionalChaining: bo
     // Polymer allows using "a.b.c" when "a" or "b" is undefined
     // webpack 4 does not support ?. so to be compati
     if (useOptionalChaining) {
-      const first = name.split('.')[0];
-      if (assumedNonNull.includes(first)) {
-        return first + '.' + name.substring(first.length + 1).replace(/\./g, '?.');
+      const parts = name.split('.');
+      if (assumedNonNull.includes(parts[0])) {
+        if (parts.length === 1) {
+          // index -> index
+          return parts[0]
+        } else {
+          // item.user.name -> item.user?.name
+          return `${parts[0]}.${parts.slice(1).join('?.')}`;
+        }
+      } else {
+        // item.user.name -> item?.user?.name
+        return parts.join('?.');
       }
-      return name.replace(/\./g, '?.');
     } else {
       // this.a -> this.a
       // this.a.b -> (this.a) ? this.a.b : undefined

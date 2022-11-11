@@ -1,20 +1,26 @@
-import { html, PolymerElement } from "@polymer/polymer/polymer-element.js";
-import "@vaadin/vaadin-vertical-layout";
-import "@polymer/polymer/lib/elements/dom-repeat.js";
+import { html, LitElement, css } from "lit";
 
-class DomRepeatTest extends PolymerElement {
-  static get template() {
+import "@vaadin/vaadin-vertical-layout";
+
+class DomRepeatTest extends LitElement {
+  render() {
     return html`
       <div>Employee list:</div>
-      <template is="dom-repeat" items="{{managers}}">
-        <div><br /># [[index]]</div>
-        <div>Given name: <span>[[item.given]]</span></div>
-        <div>Family name: <span>[[item.family]]</span></div>
-        <template is="dom-repeat" items="{{item.employees}}">
-          <div><br />Employee # [[index]]</div>
-          <div>Employee name: <span>[[item.given]] [[item.family]]</span></div>
-        </template>
-      </template>
+      ${this.managers.map(
+        (item, index) => html`
+          <div><br /># ${index}</div>
+          <div>Given name: <span>${item.given}</span></div>
+          <div>Family name: <span>${item.family}</span></div>
+          ${item.employees.map(
+            (item, index) => html`
+              <div><br />Employee # ${index}</div>
+              <div>
+                Employee name: <span>${item.given} ${item.family}</span>
+              </div>
+            `
+          )}
+        `
+      )}
     `;
   }
 
@@ -22,18 +28,19 @@ class DomRepeatTest extends PolymerElement {
     return {
       employees: {
         type: Array,
-        value() {
-          return [
-            { given: "Kamil", family: "Smith" },
-            { given: "Sally", family: "Johnson" },
-          ];
-        },
       },
     };
   }
 
   static get is() {
     return "dom-repeat-test";
+  }
+  constructor() {
+    super();
+    this.employees = [
+      { given: "Kamil", family: "Smith" },
+      { given: "Sally", family: "Johnson" },
+    ];
   }
 }
 

@@ -6,18 +6,19 @@ class DomRepeatTest extends LitElement {
   render() {
     return html`
       <div>Employee list:</div>
-      ${(this.employees?.list).map(
+      ${(this.managers ? this.managers : []).map(
         (item, index) => html`
           <div><br /># ${index}</div>
           <div>Given name: <span>${item.given}</span></div>
           <div>Family name: <span>${item.family}</span></div>
-        `
-      )}
-      ${(this.employees?.list).map(
-        (item, index) => html`
-          <div><br /># ${index}</div>
-          <div>Given name: <span>${item.given}</span></div>
-          <div>Family name: <span>${item.family}</span></div>
+          ${(item.employees ? item.employees : []).map(
+            (item, index) => html`
+              <div><br />Employee # ${index}</div>
+              <div>
+                Employee name: <span>${item.given} ${item.family}</span>
+              </div>
+            `
+          )}
         `
       )}
     `;
@@ -26,7 +27,7 @@ class DomRepeatTest extends LitElement {
   static get properties() {
     return {
       employees: {
-        type: Object,
+        type: Array,
       },
     };
   }
@@ -36,12 +37,10 @@ class DomRepeatTest extends LitElement {
   }
   constructor() {
     super();
-    this.employees = {
-      list: [
-        { given: "Kamil", family: "Smith" },
-        { given: "Sally", family: "Johnson" },
-      ],
-    };
+    this.employees = [
+      { given: "Kamil", family: "Smith" },
+      { given: "Sally", family: "Johnson" },
+    ];
   }
 }
 
