@@ -15,19 +15,11 @@
  */
 package com.vaadin.flow.testutil;
 
-import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.ServerSocket;
 import java.net.UnknownHostException;
 import java.util.List;
 import java.util.function.Consumer;
-
-import com.vaadin.flow.testcategory.ChromeTests;
-import com.vaadin.flow.testutil.net.PortProber;
-import com.vaadin.testbench.TestBench;
-import com.vaadin.testbench.parallel.Browser;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -39,6 +31,11 @@ import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.testcategory.ChromeTests;
+import com.vaadin.flow.testutil.net.PortProber;
+import com.vaadin.testbench.TestBench;
+import com.vaadin.testbench.parallel.Browser;
 
 /**
  * Base class for TestBench tests to run locally in the Chrome browser.
@@ -135,11 +132,6 @@ public class ChromeBrowserTest extends ViewOrUITest {
 
     @Override
     protected List<DesiredCapabilities> getHubBrowsersToTest() {
-        if (!getLocalExecution().isPresent() && USE_BROWSERSTACK) {
-            // Use IE11 when running with Browserstack
-            return getBrowserCapabilities(Browser.IE11);
-        }
-
         return getBrowserCapabilities(Browser.CHROME);
     }
 

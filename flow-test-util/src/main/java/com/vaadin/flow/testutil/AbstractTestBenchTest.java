@@ -122,9 +122,6 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
             }
             serverAvailabilityChecked = true;
         }
-
-        getDesiredCapabilities().setCapability("name", String.format("%s.%s",
-                getClass().getCanonicalName(), testName.getMethodName()));
     }
 
     protected void open() {
@@ -263,8 +260,7 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
      * @return the browsers capabilities list to execute test on the tests Hub
      */
     protected List<DesiredCapabilities> getHubBrowsersToTest() {
-        return getBrowserCapabilities(Browser.IE11, Browser.FIREFOX,
-                Browser.CHROME);
+        return getBrowserCapabilities(Browser.FIREFOX, Browser.CHROME);
     }
 
     /**
@@ -281,9 +277,6 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
             DesiredCapabilities caps = browser.getDesiredCapabilities();
 
             if (USE_BROWSERSTACK) {
-                if (browser.equals(Browser.IE11)) {
-                    caps.setVersion("11");
-                }
                 caps.setCapability("os", "Windows");
                 caps.setCapability("os_version", "7");
                 caps.setPlatform(Platform.WINDOWS);
@@ -300,7 +293,6 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
                 caps.setCapability("resolution", "1680x1050");
             }
 
-            caps.setCapability("project", "Flow");
             capabilities.add(caps);
         }
         return capabilities;
