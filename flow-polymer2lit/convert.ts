@@ -792,7 +792,7 @@ function convertFile(filename: string, useLit1: boolean, useOptionalChaining: bo
       }
 
       if (undefinedValue !== 'undefined') {
-        return `(${result} || ${undefinedValue})`;
+        return `(${result} ?? ${undefinedValue})`;
       } else {
         return result;
       }
