@@ -39,7 +39,7 @@ The converter accepts the following arguments:
 
 ### -Dvaadin.path=path/to/your/file
 
-By default, the converter scans all the files that match `**/*.js` and `**/*.java` and tries to convert them into Lit.
+By default, the converter scans all the files that match `**/*.js` and `**/*.java` and tries to convert them to Lit.
 
 To limit conversion to a specific file or directory, you can use the `vaadin.path` argument:
 

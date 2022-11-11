@@ -34,7 +34,7 @@ import com.vaadin.flow.polymer2lit.ServerConverter;
 
 /**
  * A tool-independent implementation of a {@code convert-polymer} command that
- * converts Polymer-based source files into Lit. The command is supposed to be
+ * converts Polymer-based source files to Lit. The command is supposed to be
  * called by the corresponding Mojo and Gradle tasks.
  */
 public class ConvertPolymerCommand implements AutoCloseable {

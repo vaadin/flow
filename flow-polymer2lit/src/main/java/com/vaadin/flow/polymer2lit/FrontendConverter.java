@@ -25,7 +25,7 @@ import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 /**
- * A converter that converts Polymer-based {@code *.js} source files into Lit.
+ * A converter that converts Polymer-based {@code *.js} source files to Lit.
  *
  * Effectively, this is a wrapper around the {@code convert.ts} script.
  */
