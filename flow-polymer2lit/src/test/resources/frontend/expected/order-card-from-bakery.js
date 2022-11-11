@@ -9,7 +9,7 @@ class OrderCard extends LitElement {
     const includedStyles = {};
     includedStyles["shared-styles"] =
       document.querySelector("dom-module[id='shared-styles']")
-        ?.firstElementChild?.content?.firstElementChild?.innerText || "";
+        ?.firstElementChild?.content?.firstElementChild?.innerText ?? "";
     return [
       unsafeCSS(includedStyles["shared-styles"]),
       css`
@@ -168,7 +168,7 @@ class OrderCard extends LitElement {
           <div class="name-items">
             <h3 class="name">${this.orderCard?.fullName}</h3>
             <div class="goods">
-              ${(this.orderCard?.items || []).map(
+              ${(this.orderCard?.items ?? []).map(
                 (item, index) => html`
                   <div class="goods-item">
                     <span class="count">${item.quantity}</span>

@@ -9,10 +9,10 @@ class InlineStyles extends LitElement {
     const includedStyles = {};
     includedStyles["shared-styles"] =
       document.querySelector("dom-module[id='shared-styles']")
-        ?.firstElementChild?.content?.firstElementChild?.innerText || "";
+        ?.firstElementChild?.content?.firstElementChild?.innerText ?? "";
     includedStyles["something-else"] =
       document.querySelector("dom-module[id='something-else']")
-        ?.firstElementChild?.content?.firstElementChild?.innerText || "";
+        ?.firstElementChild?.content?.firstElementChild?.innerText ?? "";
     return [
       unsafeCSS(includedStyles["shared-styles"]),
       unsafeCSS(includedStyles["something-else"]),
