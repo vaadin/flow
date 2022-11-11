@@ -84,12 +84,20 @@ This is a basic overview of the transformations that can be performed automatica
 
 ### JavaScript
 
-**Template bindings**
+**Templates and bindings**
 
 Example:
 ```diff
--[[person.name]]
-+${this.person?.name}
+-static get template() {
+-  return html`
+-    <div>[[person.name]]</div>
+-  `
+-}
++render() {
++  return html`
++    <div>${this.person?.name}</div>
++  `
++}
 ```
 
 More complex expressions, including two-way binding, are also supported.
@@ -168,6 +176,23 @@ Example:
 +${items.map((item, index) =>
 +  html`<div>${item} ${index}</div>`
 +)}
+```
+
+**`<style>`**
+
+```diff
+-<style>
+-  :host {
+-    color: black;
+-  }
+-</style>
++static get styles() {
++  return css`
++    :host {
++      color: black;
++    }
++  `
++}
 ```
 
 ### Java
