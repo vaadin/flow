@@ -273,7 +273,7 @@ _firstNameChanged(newValue, oldValue) { ... }
 -import com.vaadin.flow.templatemodel.TemplateModel;
 ```
 
-**View**
+**Views extending PolymerTemplate**
 
 PolymerTemplate extend is replaced with LitTemplate extend.
 
@@ -282,7 +282,7 @@ PolymerTemplate extend is replaced with LitTemplate extend.
 +public class UserListView extends LitTemplate {
 ```
 
-**Model**
+**Models extending TemplateModel**
 
 TemplateModel extend is removed.
 
