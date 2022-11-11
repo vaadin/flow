@@ -53,14 +53,9 @@ public class FrontendConverter implements AutoCloseable {
         Files.deleteIfExists(tempDirPath);
     }
 
-    public int convertFile(Path filePath)
-            throws IOException, InterruptedException {
-        return convertFile(filePath, false, false);
-    }
-
-    public int convertFile(Path filePath, boolean useLit1,
-            boolean disableOptionalChaining)
-            throws IOException, InterruptedException {
+    public void convertFile(Path filePath, boolean useLit1,
+            boolean disableOptionalChaining) throws IOException,
+            InterruptedException, ConversionFailedException {
         List<String> command = new ArrayList<>();
         command.add(this.frontendTools.getNodeExecutable());
         command.add(this.converterTempPath.toFile().getAbsolutePath());
@@ -77,6 +72,15 @@ public class FrontendConverter implements AutoCloseable {
         ProcessBuilder builder = FrontendUtils.createProcessBuilder(command);
         builder.inheritIO();
         Process process = builder.start();
-        return process.waitFor();
+        if (process.waitFor() != 0) {
+            throw new ConversionFailedException(
+                    "An error occurred while the conversion. See logs for more details.");
+        }
+    }
+
+    public class ConversionFailedException extends Exception {
+        public ConversionFailedException(String errorMessage) {
+            super(errorMessage);
+        }
     }
 }

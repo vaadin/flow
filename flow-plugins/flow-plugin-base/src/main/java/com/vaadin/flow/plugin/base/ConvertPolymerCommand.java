@@ -101,8 +101,7 @@ public class ConvertPolymerCommand implements AutoCloseable {
             try {
                 serverConverter.convertFile(filePath);
             } catch (Exception e) {
-                adapter.logError("An error occured while processing "
-                        + filePath.toString(), e);
+                adapter.logError("An error occurred while processing.", e);
             }
         }
 
@@ -112,8 +111,7 @@ public class ConvertPolymerCommand implements AutoCloseable {
                 frontendConverter.convertFile(filePath, useLit1,
                         disableOptionalChaining);
             } catch (Exception e) {
-                adapter.logError("An error occured while processing "
-                        + filePath.toString(), e);
+                adapter.logError("An error occurred while processing.", e);
             }
 
         }
