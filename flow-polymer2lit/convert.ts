@@ -777,17 +777,24 @@ function convertFile(filename: string, useLit1: boolean, useOptionalChaining: bo
     // webpack 4 does not support ?. so to be compati
     if (useOptionalChaining) {
       const parts = name.split('.');
+      let result: string;
       if (assumedNonNull.includes(parts[0])) {
         if (parts.length === 1) {
           // index -> index
-          return parts[0]
+          result = parts[0]
         } else {
           // item.user.name -> item.user?.name
-          return `${parts[0]}.${parts.slice(1).join('?.')}`;
+          result = `${parts[0]}.${parts.slice(1).join('?.')}`;
         }
       } else {
         // item.user.name -> item?.user?.name
-        return parts.join('?.');
+        result = parts.join('?.');
+      }
+
+      if (undefinedValue !== 'undefined') {
+        return `(${result} ?? ${undefinedValue})`;
+      } else {
+        return result;
       }
     } else {
       // this.a -> this.a
@@ -822,8 +829,7 @@ function convertFile(filename: string, useLit1: boolean, useOptionalChaining: bo
         }
       }
       if (condition) {
-        const ret = `(${condition}) ? ${name} : ${undefinedValue}`;
-        return ret;
+        return `(${condition}) ? ${name} : ${undefinedValue}`;
       } else {
         return name;
       }
