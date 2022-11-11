@@ -84,6 +84,17 @@ This is a basic overview of the transformations that can be performed automatica
 
 ### JavaScript
 
+**Lifecycle callbacks**
+
+```diff
+-ready() {
+-  ...
+-}
++firstUpdated() {
++  ...
++}
+```
+
 **Templates and bindings**
 
 Example:
@@ -100,7 +111,7 @@ Example:
 +}
 ```
 
-More complex expressions, including two-way binding, are also supported.
+More complex expressions, including method invocations, are also supported.
 
 **Computed properties**
 
@@ -135,6 +146,10 @@ computeFullName(firstName, lastName) {
 +<div @click="${this.onClick}></div>
 ```
 
+**Two-way binding**
+
+
+
 **Observers**
 
 Observers are replaced with getter and setters.
@@ -145,24 +160,6 @@ static get properties() {
   return {
     firstName: {
       type: String,
--      observer: '_firstNameChanged'
-    }
-  };
-}
-
-+set firstName() { ... }
-+get firstName() { ... }
-
-_firstNameChanged(newValue, oldValue) {
-
-}
-```
-
-**`<dom-if>`**
-
-Example:
-```diff
--<dom-if if="{{condition}}">...</dom-if>
 +${condition && ...}
 ```
 
