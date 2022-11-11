@@ -219,14 +219,14 @@ static get properties() {
 _firstNameChanged(newValue, oldValue) { ... }
 ```
 
-**<dom-if>**
+**\<dom-if>**
 
 ```diff
 -<dom-if if="{{condition}}">...</dom-if>
 +${condition && html`...`}
 ```
 
-**<dom-repeat>**
+**\<dom-repeat>**
 
 ```diff
 -<template is="dom-repeat" items="{{items}}">
