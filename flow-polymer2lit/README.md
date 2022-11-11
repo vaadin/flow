@@ -199,7 +199,6 @@ Two-way binding is replaced with a pair of one-way binding and event handler.
 +  @value-changed="${(e) => (this.value = e.detail.value)}" />
 ```
 
-
 **Observers**
 
 Observers are replaced with a pair of getters and setters.
