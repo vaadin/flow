@@ -1060,8 +1060,7 @@ public class FrontendUtils {
     }
 
     /**
-     * 
-     * /** Intentionally send to console instead to log, useful when executing
+     * Intentionally send to console instead to log, useful when executing
      * external processes.
      *
      * @param format
