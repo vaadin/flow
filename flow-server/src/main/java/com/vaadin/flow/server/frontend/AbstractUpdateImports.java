@@ -41,7 +41,6 @@ import java.util.stream.Stream;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.CssData;
@@ -484,10 +483,8 @@ abstract class AbstractUpdateImports implements Runnable {
         String cssFile = resolveResource(cssData.getValue());
         boolean found = importedFileExists(cssFile);
         String cssImport = toValidBrowserImport(cssFile);
-        if (!options.getFeatureFlags().isEnabled(FeatureFlags.WEBPACK)) {
-            // Without this, Vite adds the CSS also to the document
-            cssImport += "?inline";
-        }
+        // Without this, Vite adds the CSS also to the document
+        cssImport += "?inline";
 
         Map<String, String> optionalsMap = new LinkedHashMap<>();
         if (cssData.getInclude() != null) {

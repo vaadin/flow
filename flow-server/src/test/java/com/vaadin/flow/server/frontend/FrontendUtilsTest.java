@@ -138,43 +138,6 @@ public class FrontendUtilsTest {
     }
 
     @Test
-    public void assetsByChunkIsCorrectlyParsedFromStats()
-            throws IOException, ServiceException {
-        VaadinService service = setupStatsAssetMocks("ValidStats.json");
-
-        String statsAssetsByChunkName = FrontendUtils
-                .getStatsAssetsByChunkName(service);
-
-        Assert.assertEquals(
-                "{\"bundle\": \"build/vaadin-bundle-1111.cache.js\",\"export\": \"build/vaadin-export-2222.cache.js\"}",
-                statsAssetsByChunkName);
-    }
-
-    @Test
-    public void formattingError_assetsByChunkIsCorrectlyParsedFromStats()
-            throws IOException, ServiceException {
-        VaadinService service = setupStatsAssetMocks("MissFormatStats.json");
-
-        String statsAssetsByChunkName = FrontendUtils
-                .getStatsAssetsByChunkName(service);
-
-        Assert.assertEquals(
-                "{\"bundle\": \"build/vaadin-bundle-1111.cache.js\"}",
-                statsAssetsByChunkName);
-    }
-
-    @Test
-    public void noStatsFile_assetsByChunkReturnsNull()
-            throws IOException, ServiceException {
-        VaadinService service = getServiceWithResource(null);
-
-        String statsAssetsByChunkName = FrontendUtils
-                .getStatsAssetsByChunkName(service);
-
-        Assert.assertNull(statsAssetsByChunkName);
-    }
-
-    @Test
     public void should_getUnixRelativePath_when_givenTwoPaths() {
         Path sourcePath = Mockito.mock(Path.class);
         Path relativePath = Mockito.mock(Path.class);
@@ -195,17 +158,6 @@ public class FrontendUtilsTest {
         Assert.assertEquals(
                 "Should keep the same path when it uses unix path separator",
                 "this/is/unix/path", relativeUnixPath);
-    }
-
-    @Test
-    public void faultyStatsFileReturnsNull()
-            throws IOException, ServiceException {
-        VaadinService service = setupStatsAssetMocks("InvalidStats.json");
-
-        String statsAssetsByChunkName = FrontendUtils
-                .getStatsAssetsByChunkName(service);
-
-        Assert.assertNull(statsAssetsByChunkName);
     }
 
     @Test
@@ -272,53 +224,6 @@ public class FrontendUtilsTest {
         Assert.assertEquals("\n" + "./node/node \\ \n"
                 + "    ./node_modules/webpack-dev-server/bin/webpack-dev-server.js \n",
                 wrappedCommand);
-    }
-
-    @Test
-    public void getStatsAssetsByChunkName_getStatsFromClassPath_delegateToGetApplicationResource()
-            throws IOException {
-        VaadinServletService service = mockServletService();
-
-        ResourceProvider provider = mockResourceProvider(service);
-
-        FrontendUtils.getStatsAssetsByChunkName(service);
-
-        Mockito.verify(provider).getApplicationResource("foo");
-    }
-
-    @Test
-    public void getStatsAssetsByChunkName_getStatsFromClassPath_populatesStatsCache()
-            throws IOException, ServiceException {
-        VaadinService service = setupStatsAssetMocks("ValidStats.json");
-
-        assertNull("Stats cache should not be present",
-                service.getContext().getAttribute(CACHE_KEY));
-
-        // Populates cache
-        FrontendUtils.getStatsAssetsByChunkName(service);
-
-        assertNotNull("Stats cache should be created",
-                service.getContext().getAttribute(CACHE_KEY));
-    }
-
-    @Test
-    public void clearCachedStatsContent_clearsCache()
-            throws IOException, ServiceException {
-        VaadinService service = setupStatsAssetMocks("ValidStats.json");
-
-        assertNull("Stats cache should not be present",
-                service.getContext().getAttribute(CACHE_KEY));
-        // Can be invoked without cache - throws no exception
-        FrontendUtils.clearCachedStatsContent(service);
-
-        // Populates cache
-        FrontendUtils.getStatsAssetsByChunkName(service);
-
-        // Clears cache
-        FrontendUtils.clearCachedStatsContent(service);
-
-        assertNull("Stats cache should not be present",
-                service.getContext().getAttribute(CACHE_KEY));
     }
 
     @Test

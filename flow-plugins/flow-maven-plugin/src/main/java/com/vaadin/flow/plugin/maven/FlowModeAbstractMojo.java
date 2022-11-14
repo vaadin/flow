@@ -77,8 +77,8 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     private File frontendDirectory;
 
     /**
-     * The folder where flow will put generated files that will be used by
-     * webpack.
+     * The folder where flow will put generated files that will be used by the
+     * frontend build tool.
      */
     @Parameter(defaultValue = "${project.build.directory}/" + FRONTEND)
     private File generatedFolder;
@@ -199,8 +199,8 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     private String useDeprecatedV14Bootstrapping;
 
     /**
-     * The folder where webpack should output index.js and other generated
-     * files.
+     * The folder where the frontend build tool should output index.js and other
+     * generated files.
      */
     @Parameter(defaultValue = "${project.build.outputDirectory}/"
             + VAADIN_WEBAPP_RESOURCES)

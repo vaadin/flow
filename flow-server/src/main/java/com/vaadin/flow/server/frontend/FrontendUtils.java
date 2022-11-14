@@ -85,8 +85,7 @@ public class FrontendUtils {
 
     /**
      * Default folder for the node related content. It's the base directory for
-     * {@link Constants#PACKAGE_JSON}, {@link FrontendUtils#WEBPACK_CONFIG},
-     * {@link FrontendUtils#NODE_MODULES}.
+     * {@link Constants#PACKAGE_JSON} and {@link FrontendUtils#NODE_MODULES}.
      *
      * By default it's the project root folder.
      */
@@ -120,11 +119,6 @@ public class FrontendUtils {
             + FRONTEND;
 
     /**
-     * The name of the webpack configuration file.
-     */
-    public static final String WEBPACK_CONFIG = "webpack.config.js";
-
-    /**
      * The name of the vite configuration file.
      */
     public static final String VITE_CONFIG = "vite.config.ts";
@@ -135,13 +129,8 @@ public class FrontendUtils {
     public static final String VITE_GENERATED_CONFIG = "vite.generated.ts";
 
     /**
-     * The name of the webpack generated configuration file.
-     */
-    public static final String WEBPACK_GENERATED = "webpack.generated.js";
-
-    /**
      * The name of the service worker source file for InjectManifest method of
-     * workbox-webpack-plugin.
+     * the workbox plugin.
      */
     public static final String SERVICE_WORKER_SRC = "sw.ts";
 
@@ -178,8 +167,8 @@ public class FrontendUtils {
 
     /**
      * Name of the file that contains application imports, javascript, theme and
-     * style annotations. It is also the entry-point for webpack. It is always
-     * generated in the {@link FrontendUtils#DEFAULT_GENERATED_DIR} folder.
+     * style annotations. It is always generated in the
+     * {@link FrontendUtils#DEFAULT_GENERATED_DIR} folder.
      */
     public static final String IMPORTS_NAME = "generated-flow-imports.js";
 
@@ -334,10 +323,6 @@ public class FrontendUtils {
 
     public static final String DISABLE_CHECK = "%nYou can disable the version check using -D%s=true";
 
-    private static final String NO_CONNECTION = "Webpack-dev-server couldn't be reached for %s.%n"
-            + "Check the startup logs for exceptions in running webpack-dev-server.%n"
-            + "If server should be running in production mode check that production mode flag is set correctly.";
-
     private static final String TOO_OLD = "%n%n======================================================================================================"
             + "%nYour installed '%s' version (%s) is too old. Supported versions are %d.%d+" //
             + "%nPlease install a new one either:"
@@ -469,13 +454,12 @@ public class FrontendUtils {
 
     /**
      * Gets the content of the <code>frontend/index.html</code> file which is
-     * served by webpack or vite in dev-mode and read from classpath in
-     * production mode.
+     * served by vite in dev-mode and read from classpath in production mode.
      * <p>
      * NOTE: In dev mode, the file content is fetched using an http request so
      * that we don't need to have a separate index.html's content watcher.
-     * Auto-reloading will work automatically, like other files managed by
-     * webpack in `frontend/` folder.
+     * Auto-reloading will work automatically, like other files in the
+     * `frontend/` folder.
      *
      * @param service
      *            the vaadin service
@@ -492,13 +476,13 @@ public class FrontendUtils {
 
     /**
      * Gets the content of the <code>frontend/web-component.html</code> file
-     * which is served by webpack or vite in dev-mode and read from classpath in
-     * production mode.
+     * which is served by vite in dev-mode and read from classpath in production
+     * mode.
      * <p>
      * NOTE: In dev mode, the file content is fetched using an http request so
      * that we don't need to have a separate web-component.html's content
-     * watcher. Auto-reloading will work automatically, like other files managed
-     * by webpack in `frontend/` folder.
+     * watcher. Auto-reloading will work automatically, like other files in the
+     * `frontend/` folder.
      *
      * @param service
      *            the vaadin service
@@ -566,18 +550,6 @@ public class FrontendUtils {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
-    }
-
-    private static InputStream getResourceFromWebpack(
-            DevModeHandler devModeHandler, String resource,
-            String exceptionMessage) throws IOException {
-        HttpURLConnection statsConnection = devModeHandler
-                .prepareConnection(resource, "GET");
-        if (statsConnection.getResponseCode() != HttpURLConnection.HTTP_OK) {
-            throw new WebpackConnectionException(
-                    String.format(NO_CONNECTION, exceptionMessage));
-        }
-        return statsConnection.getInputStream();
     }
 
     private static InputStream getStatsFromExternalUrl(String externalStatsUrl,
@@ -758,94 +730,6 @@ public class FrontendUtils {
         return new File(frontendDirectory, GENERATED);
     }
 
-    /**
-     * Load the asset chunks from <code>stats.json</code>. We will only read the
-     * file until we have reached the assetsByChunkName json and return that as
-     * a json object string.
-     *
-     * Note: The <code>stats.json</code> is cached when external stats is
-     * enabled or <code>stats.json</code> is provided from the class path. To
-     * clear the cache use {@link #clearCachedStatsContent(VaadinService)}.
-     *
-     * @param service
-     *            the Vaadin service.
-     * @return json for assetsByChunkName object in stats.json or {@code null}
-     *         if stats.json not found or content not found.
-     * @throws IOException
-     *             if an I/O error occurs while creating the input stream.
-     */
-    public static String getStatsAssetsByChunkName(VaadinService service)
-            throws IOException {
-        DeploymentConfiguration config = service.getDeploymentConfiguration();
-        Optional<DevModeHandler> devModeHandler = DevModeHandlerManager
-                .getDevModeHandler(service);
-        if (!config.isProductionMode() && config.enableDevServer()
-                && devModeHandler.isPresent()) {
-            return streamToString(getResourceFromWebpack(devModeHandler.get(),
-                    "/assetsByChunkName", "getting assets by chunk name."));
-        }
-        InputStream resourceAsStream;
-        if (config.isStatsExternal()) {
-            resourceAsStream = getStatsFromExternalUrl(
-                    config.getExternalStatsUrl(), service.getContext());
-        } else {
-            resourceAsStream = getStatsFromClassPath(service);
-        }
-        if (resourceAsStream == null) {
-            return null;
-        }
-        try (Scanner scan = new Scanner(resourceAsStream,
-                StandardCharsets.UTF_8.name())) {
-            StringBuilder assets = new StringBuilder();
-            assets.append("{");
-            // Scan until we reach the assetsByChunkName object line
-            scanToAssetChunkStart(scan, assets);
-            // Add lines until we reach the first } breaking the object
-            while (scan.hasNextLine()) {
-                String line = scan.nextLine().trim();
-                if ("}".equals(line) || "},".equals(line)) {
-                    // Encountering } or }, means end of asset chunk
-                    return assets.append("}").toString();
-                } else if (line.endsWith("}") || line.endsWith("},")) {
-                    return assets
-                            .append(line.substring(0, line.indexOf('}')).trim())
-                            .append("}").toString();
-                } else if (line.contains("{")) {
-                    // Encountering { means something is wrong as the assets
-                    // should only contain key-value pairs.
-                    break;
-                }
-                assets.append(line);
-            }
-            getLogger()
-                    .error("Could not parse assetsByChunkName from stats.json");
-        }
-        return null;
-    }
-
-    /**
-     * Scan until we reach the assetsByChunkName json object start. If faulty
-     * format add first jsonObject to assets builder.
-     *
-     * @param scan
-     *            Scanner used to scan data
-     * @param assets
-     *            assets builder
-     */
-    private static void scanToAssetChunkStart(Scanner scan,
-            StringBuilder assets) {
-        do {
-            String line = scan.nextLine().trim();
-            // Walk file until we get to the assetsByChunkName object.
-            if (line.startsWith("\"assetsByChunkName\"")) {
-                if (!line.endsWith("{")) {
-                    assets.append(line.substring(line.indexOf('{') + 1).trim());
-                }
-                break;
-            }
-        } while (scan.hasNextLine());
-    }
-
     private static String buildTooOldString(String tool, String version,
             int supportedMajor, int supportedMinor) {
         return String.format(TOO_OLD, tool, version, supportedMajor,
@@ -865,23 +749,6 @@ public class FrontendUtils {
             DeploymentConfiguration configuration) {
         return configuration.getStringProperty(PARAM_FRONTEND_DIR,
                 DEFAULT_FRONTEND_DIR);
-    }
-
-    /**
-     * Checks whether the {@code file} is a webpack configuration file with the
-     * expected content (includes a configuration generated by Flow).
-     *
-     * @param file
-     *            a file to check
-     * @return {@code true} iff the file exists and includes a generated
-     *         configuration
-     * @throws IOException
-     *             if an I/O error occurs while reading the file
-     */
-    public static boolean isWebpackConfigFile(File file) throws IOException {
-        return file.exists()
-                && FileUtils.readFileToString(file, StandardCharsets.UTF_8)
-                        .contains("./webpack.generated.js");
     }
 
     /**

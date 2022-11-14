@@ -50,7 +50,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DI
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
+import static com.vaadin.flow.server.frontend.FrontendUtils.VITE_GENERATED_CONFIG;
 import static com.vaadin.flow.server.frontend.installer.Platform.ALPINE_RELEASE_FILE_PATH;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -274,46 +274,19 @@ public class NodeTasksViteTest {
     }
 
     @Test
-    public void should_failWithExecutionFailedException_when_customWebpackConfigFileExist()
-            throws IOException {
-        try (MockedStatic<Paths> paths = Mockito.mockStatic(Paths.class)) {
-            File webpackConfigFile = new File(userDir, WEBPACK_CONFIG);
-            Path webpackConfigFilePath = webpackConfigFile.toPath();
-            paths.when(() -> Paths.get(webpackConfigFile.getPath()))
-                    .thenReturn(webpackConfigFilePath);
-            Path targetPath = new File(userDir,
-                    TARGET + "/" + DEFAULT_GENERATED_DIR).toPath();
-            paths.when(() -> Paths.get(TARGET, DEFAULT_GENERATED_DIR))
-                    .thenReturn(targetPath);
-            paths.when(() -> Paths.get(new File(userDir).getPath(),
-                    WEBPACK_CONFIG)).thenReturn(webpackConfigFilePath);
-            paths.when(() -> Paths.get(ALPINE_RELEASE_FILE_PATH))
-                    .thenReturn(Path.of(ALPINE_RELEASE_FILE_PATH));
+    public void should_failWithMessage_When_Vaadin14BootstrapModeAndViteAreUsed() {
+        Lookup mockedLookup = mock(Lookup.class);
+        Mockito.doReturn(
+                new DefaultClassFinder(this.getClass().getClassLoader()))
+                .when(mockedLookup).lookup(ClassFinder.class);
+        Builder builder = new Builder(mockedLookup, new File(userDir), TARGET)
+                .useV14Bootstrap(true);
 
-            String content = "const merge = require('webpack-merge');\n"
-                    + "const flowDefaults = require('./webpack.generated.js');\n"
-                    + "\n"
-                    + "module.exports = merge(flowDefaults, {\"some-config\": 1\n"
-                    + "\n" + "});\n";
-            Files.writeString(webpackConfigFilePath, content);
-
-            Lookup mockedLookup = Mockito.mock(Lookup.class);
-            Mockito.doReturn(
-                    new DefaultClassFinder(this.getClass().getClassLoader()))
-                    .when(mockedLookup).lookup(ClassFinder.class);
-            Options options = new Options(mockedLookup, new File(userDir))
-                    .withBuildDirectory(TARGET).enablePackagesUpdate(false)
-                    .enableImportsUpdate(true).runNpmInstall(false)
-                    .withEmbeddableWebComponents(false)
-                    .withJarFrontendResourcesFolder(
-                            getJarFrontendResourcesFolder());
-
-            ExecutionFailedException exception = Assert.assertThrows(
-                    ExecutionFailedException.class,
-                    () -> new NodeTasks(options).execute());
-            Assert.assertTrue(exception.getMessage().contains(
-                    "Webpack related config file 'webpack.config.js' is detected in your"));
-        }
+        IllegalStateException exception = Assert.assertThrows(
+                IllegalStateException.class, () -> builder.build().execute());
+        MatcherAssert.assertThat(exception.getMessage(),
+                CoreMatchers.containsString(
+                        "Vite build tool is not supported when 'useDeprecatedV14Bootstrapping' is used"));
     }
 
     private static void setPropertyIfPresent(String key, String value) {

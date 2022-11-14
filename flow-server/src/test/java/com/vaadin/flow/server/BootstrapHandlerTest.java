@@ -984,31 +984,6 @@ public class BootstrapHandlerTest {
     }
 
     @Test
-    public void webpack_index_appended_to_head_in_npm()
-            throws InvalidRouteConfigurationException, IOException {
-
-        initUI(testUI, createVaadinRequest(),
-                Collections.singleton(AliasLayout.class));
-
-        enableWebpackFeature();
-
-        Document page = pageBuilder.getBootstrapPage(new BootstrapContext(
-                request, null, session, testUI, this::contextRootRelativePath));
-
-        Elements allElements = page.head().getAllElements();
-
-        Assert.assertTrue(
-                "index.js should be added to head for ES6 browsers. (type module with crossorigin)",
-                allElements.stream().map(Object::toString)
-                        .anyMatch(element -> element
-                                .equals("<script type=\"module\" src=\"./"
-                                        + VAADIN_MAPPING
-                                        + "build/vaadin-bundle-1111.cache.js\" data-app-id=\""
-                                        + testUI.getInternals().getAppId()
-                                        + "\" crossorigin></script>")));
-    }
-
-    @Test
     public void headHasMetaTags() throws Exception {
         initUI(testUI, createVaadinRequest());
 
@@ -1324,121 +1299,11 @@ public class BootstrapHandlerTest {
                 session, testUI, this::contextRootRelativePath));
     }
 
-    @Test
-    public void webpack_getBootstrapPage_jsModulesDoNotContainDeferAttribute()
-            throws ServiceException, IOException {
-        List<DependencyFilter> filters = Arrays.asList((list, context) -> {
-            list.clear(); // remove everything
-            return list;
-        }, (list, context) -> {
-            list.add(new Dependency(Dependency.Type.JS_MODULE, "//module.js",
-                    LoadMode.EAGER));
-            return list;
-        });
-        service.setDependencyFilters(filters);
-
-        initUI(testUI);
-
-        enableWebpackFeature();
-
-        BootstrapContext bootstrapContext = new BootstrapContext(request, null,
-                session, testUI, this::contextRootRelativePath);
-        Document page = pageBuilder.getBootstrapPage(bootstrapContext);
-
-        Elements scripts = page.head().getElementsByTag("script");
-
-        Element element = scripts.stream()
-                .filter(elem -> elem.attr("src").equals("//module.js"))
-                .findFirst().get();
-        Assert.assertFalse(element.hasAttr("defer"));
-
-        Element bundle = scripts.stream()
-                .filter(el -> el.attr("src")
-                        .equals("./VAADIN/build/vaadin-bundle-1111.cache.js"))
-                .findFirst().get();
-        Assert.assertFalse(bundle.hasAttr("defer"));
-    }
-
-    @Test
-    public void webpack_getBootstrapPage_removesExportScript()
-            throws IOException {
-        initUI(testUI);
-        enableWebpackFeature();
-
-        BootstrapContext bootstrapContext = new BootstrapContext(request, null,
-                session, testUI, this::contextRootRelativePath);
-        Document page = pageBuilder.getBootstrapPage(bootstrapContext);
-
-        Elements scripts = page.head().getElementsByTag("script");
-
-        Assert.assertTrue(scripts.stream()
-                .filter(el -> el.attr("src")
-                        .equals("./VAADIN/build/vaadin-bundle-1111.cache.js"))
-                .findFirst().isPresent());
-        Assert.assertFalse(scripts.stream()
-                .filter(el -> el.attr("src")
-                        .equals("./VAADIN/build/vaadin-export-2222.cache.js"))
-                .findFirst().isPresent());
-    }
-
-    @Test // #7158
-    public void webpack_getBootstrapPage_assetChunksIsAnARRAY_bootstrapParsesOk()
-            throws ServiceException, IOException {
-
-        initUI(testUI);
-
-        enableWebpackFeature();
-
-        String statsJson = "{\n" + " \"errors\": [],\n" + " \"warnings\": [],\n"
-                + " \"assetsByChunkName\": {\n" + "  \"bundle\": [\n"
-                + "    \"VAADIN/build/vaadin-bundle-e77008557c8d410bf0dc"
-                + ".cache.js\",\n"
-                + "    \"VAADIN/build/vaadin-bundle-e77008557c8d410bf0dc"
-                + ".cache.js.map\"\n" + "  ],\n" + " }" + "}";
-
-        File tmpFile = tmpDir.newFile();
-        try (FileOutputStream stream = new FileOutputStream(tmpFile)) {
-            IOUtils.write(statsJson, stream, StandardCharsets.UTF_8);
-        }
-
-        Lookup lookup = testUI.getSession().getService().getContext()
-                .getAttribute(Lookup.class);
-        ResourceProvider provider = lookup.lookup(ResourceProvider.class);
-        Mockito.when(provider.getApplicationResource(Mockito.anyString()))
-                .thenReturn(tmpFile.toURI().toURL());
-
-        BootstrapContext bootstrapContext = new BootstrapContext(request, null,
-                session, testUI, this::contextRootRelativePath);
-        Document page = pageBuilder.getBootstrapPage(bootstrapContext);
-
-        Elements scripts = page.head().getElementsByTag("script");
-
-        Element bundle = scripts.stream().filter(el -> el.attr("src").equals(
-                "./VAADIN/build/vaadin-bundle-e77008557c8d410bf0dc.cache.js"))
-                .findFirst().get();
-        Assert.assertFalse(bundle.hasAttr("defer"));
-    }
-
     private void assertStringEquals(String message, String expected,
             String actual) {
         MatcherAssert.assertThat(message,
                 actual.replaceAll(System.getProperty("line.separator"), "\n"),
                 CoreMatchers.equalTo(expected));
-    }
-
-    private Element initTestUI() {
-        TestUI anotherUI = new TestUI();
-        initUI(testUI);
-        anotherUI.getInternals().setSession(session);
-        VaadinServletRequest vaadinRequest = createVaadinRequest();
-        anotherUI.doInit(vaadinRequest, 0);
-        anotherUI.getInternals().getRouter().initializeUI(anotherUI,
-                requestToLocation(request));
-        BootstrapContext bootstrapContext = new BootstrapContext(vaadinRequest,
-                null, session, anotherUI, this::contextRootRelativePath);
-        anotherUI.getInternals()
-                .setContextRoot(contextRootRelativePath(vaadinRequest));
-        return pageBuilder.getBootstrapPage(bootstrapContext).head();
     }
 
     private String contextRootRelativePath(VaadinRequest request) {
@@ -1791,41 +1656,6 @@ public class BootstrapHandlerTest {
 
         assertTrue(addedByBootstrapHandler.childNode(2).toString()
                 .contains("[hidden] { display: none !important; }"));
-    }
-
-    private void enableWebpackFeature() {
-        VaadinContext vaadinContext = Mockito.mock(VaadinContext.class);
-        Lookup lookup = testUI.getSession().getService().getContext()
-                .getAttribute(Lookup.class);
-
-        Map<Object, Object> vaadinContextStore = new HashMap<>();
-        vaadinContextStore.put(Lookup.class, lookup);
-
-        Mockito.when(vaadinContext.getAttribute(any()))
-                .then(i -> vaadinContextStore.get(i.getArgument(0)));
-        Mockito.when(vaadinContext.getAttribute(any(), any()))
-                .then(i -> vaadinContextStore.get(i.getArgument(0)));
-        Mockito.doAnswer(
-                i -> vaadinContextStore.put(i.getArgument(0), i.getArgument(1)))
-                .when(vaadinContext).setAttribute(any(), any());
-        Mockito.doAnswer(i -> vaadinContextStore
-                .put(i.getArgument(0).getClass(), i.getArgument(0)))
-                .when(vaadinContext).setAttribute(any());
-
-        service.setContext(vaadinContext);
-
-        ApplicationConfiguration configuration = Mockito
-                .mock(ApplicationConfiguration.class);
-        Mockito.when(configuration.isProductionMode()).thenReturn(false);
-        Mockito.when(configuration.getJavaResourceFolder())
-                .thenReturn(tmpDir.getRoot());
-        vaadinContextStore.put(ApplicationConfiguration.class, configuration);
-
-        final FeatureFlags featureFlags = FeatureFlags
-                .get(testUI.getSession().getService().getContext());
-
-        featureFlags.setEnabled(FeatureFlags.WEBPACK.getId(), true);
-
     }
 
     public static Location requestToLocation(VaadinRequest request) {

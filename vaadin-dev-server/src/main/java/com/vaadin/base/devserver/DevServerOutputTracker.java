@@ -91,10 +91,6 @@ public class DevServerOutputTracker {
         }
 
         private void processLine(String line) {
-            // skip webpack progress lines
-            if (line.contains("\b")) {
-                return;
-            }
             // remove color escape codes
             String cleanLine = line.replaceAll("(\u001b\\[[;\\d]*m|[\b\r]+)",
                     "");
@@ -105,8 +101,6 @@ public class DevServerOutputTracker {
 
             // Vite preprends a timestamp
             logLine = logLine.replaceAll("[0-9]+:[0-9]+:[0-9]+ [AP]M ", "");
-            // Webpack often prepends with <i>
-            logLine = logLine.replaceAll("^<i> ", "");
 
             if (logLine.startsWith("Recompiling because ")) {
                 // Use a separate logger so these can be enabled like the

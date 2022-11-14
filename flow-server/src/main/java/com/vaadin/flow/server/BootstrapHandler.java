@@ -16,6 +16,10 @@
 
 package com.vaadin.flow.server;
 
+import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
+import static com.vaadin.flow.server.frontend.FrontendUtils.EXPORT_CHUNK;
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -56,7 +60,6 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.Inline;
@@ -69,8 +72,6 @@ import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
-import com.vaadin.flow.internal.DevModeHandler;
-import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.UsageStatisticsExporter;
 import com.vaadin.flow.router.InvalidLocationException;
@@ -91,12 +92,8 @@ import com.vaadin.flow.shared.ui.LoadMode;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
-import elemental.json.JsonType;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
-import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
-import static com.vaadin.flow.server.frontend.FrontendUtils.EXPORT_CHUNK;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Request handler which handles bootstrapping of the application, i.e. the
@@ -761,10 +758,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
             setupPwa(document, context);
 
-            if (!config.isProductionMode()) {
-                showDevServerErrors(context.getService(), document);
-            }
-
             BootstrapPageResponse response = new BootstrapPageResponse(
                     context.getRequest(), context.getSession(),
                     context.getResponse(), document, context.getUI(),
@@ -973,8 +966,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             try {
                 appendNpmBundle(head, service, context);
             } catch (IOException e) {
-                throw new BootstrapException(
-                        "Unable to read webpack stats file.", e);
+                throw new BootstrapException("Unable to append bundle", e);
             }
 
             if (context.getPushMode().isEnabled()) {
@@ -989,13 +981,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         private void appendNpmBundle(Element head, VaadinService service,
                 BootstrapContext context) throws IOException {
-            if (FeatureFlags.get(service.getContext())
-                    .isEnabled(FeatureFlags.WEBPACK)) {
-                appendWebpackNpmBundle(head, service, context);
-            } else {
-                // Use Vite
-                appendViteNpmBundle(head, service, context);
-            }
+            appendViteNpmBundle(head, service, context);
         }
 
         private void appendViteNpmBundle(Element head, VaadinService service,
@@ -1030,53 +1016,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 Element link = createStylesheetElement(
                         "VAADIN/build/" + cssMatcher.group(1));
                 head.appendChild(link);
-            }
-        }
-
-        private void appendWebpackNpmBundle(Element head, VaadinService service,
-                BootstrapContext context) throws IOException {
-            String content = FrontendUtils.getStatsAssetsByChunkName(service);
-            if (content == null) {
-                StringBuilder message = new StringBuilder(
-                        "The stats file from webpack (stats.json) was not found.\n");
-                if (service.getDeploymentConfiguration().isProductionMode()) {
-                    message.append(
-                            "The application is running in production mode.");
-                    message.append(
-                            "Verify that build-frontend task has executed successfully and that stats.json is on the classpath.");
-                    message.append(
-                            "Or switch application to development mode.");
-                } else if (!service.getDeploymentConfiguration()
-                        .enableDevServer()) {
-                    message.append(
-                            "Dev server is disabled for the application.");
-                    message.append(
-                            "Verify that build-frontend task has executed successfully and that stats.json is on the classpath.");
-                } else {
-                    message.append(
-                            "This typically mean that you have started the application without executing the 'prepare-frontend' Maven target.\n");
-                    message.append(
-                            "If you are using Spring Boot and are launching the Application class directly, ");
-                    message.append(
-                            "you need to run \"mvn install\" once first or launch the application using \"mvn spring-boot:run\"");
-                }
-                throw new IOException(message.toString());
-            }
-            JsonObject chunks = Json.parse(content);
-            for (String key : getChunkKeys(chunks)) {
-                String chunkName;
-                if (chunks.get(key).getType().equals(JsonType.ARRAY)) {
-                    chunkName = getArrayChunkName(chunks, key);
-                } else {
-                    chunkName = chunks.getString(key);
-                }
-                Element script = createJavaScriptModuleElement("./" + chunkName,
-                        false);
-                head.appendChild(script
-                        .attr("data-app-id",
-                                context.getUI().getInternals().getAppId())
-                        // Fixes basic auth in Safari #6560
-                        .attr("crossorigin", true));
             }
         }
 
@@ -1690,29 +1629,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         pushJSPath += versionQueryParam;
         return pushJSPath;
-    }
-
-    protected static void showDevServerErrors(VaadinService service,
-            Document document) {
-        Optional<DevModeHandler> devServer = DevModeHandlerManager
-                .getDevModeHandler(service);
-        if (devServer.isPresent()) {
-            String errorMsg = devServer.get().getFailedOutput();
-            if (errorMsg != null) {
-                // Make error lines more prominent
-                errorMsg = errorMsg.replaceAll("(ERROR.+?\n)", "<b>$1</b>");
-
-                Element errorElement = document.createElement("div");
-                errorElement.setBaseUri("");
-                errorElement.attr("class", "v-system-error");
-                errorElement
-                        .html("<h3 style=\"display:inline;\">Webpack Error</h3>"
-                                + "<h6 style=\"display:inline; padding-left:10px;\" "
-                                + "onclick=\"this.parentElement.parentElement.removeChild(this.parentElement)\">Close</h6>"
-                                + "<pre>" + errorMsg + "</pre>");
-                document.body().appendChild(errorElement);
-            }
-        }
     }
 
     protected static void setupErrorDialogs(Element style) {

@@ -15,6 +15,10 @@
  */
 package com.vaadin.flow.server.communication;
 
+import static com.vaadin.flow.server.frontend.FrontendUtils.EXPORT_CHUNK;
+import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8;
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
@@ -33,7 +37,6 @@ import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.webcomponent.WebComponentUI;
 import com.vaadin.flow.dom.ElementUtil;
@@ -55,9 +58,6 @@ import com.vaadin.flow.shared.ApplicationConstants;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
-import static com.vaadin.flow.server.frontend.FrontendUtils.EXPORT_CHUNK;
-import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Bootstrap handler for WebComponent requests.
@@ -108,44 +108,39 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         public Document getBootstrapPage(BootstrapContext context) {
             VaadinService service = context.getSession().getService();
 
-            if (!FeatureFlags.get(service.getContext())
-                    .isEnabled(FeatureFlags.WEBPACK)) {
-                try {
-                    Document document = Jsoup.parse(
-                            FrontendUtils.getWebComponentHtmlContent(service));
-                    Element head = document.head();
+            try {
+                Document document = Jsoup.parse(
+                        FrontendUtils.getWebComponentHtmlContent(service));
+                Element head = document.head();
 
-                    // Specify the application ID for scripts of the
-                    // web-component.html
-                    head.select("script[src]").attr("data-app-id",
-                            context.getUI().getInternals().getAppId());
+                // Specify the application ID for scripts of the
+                // web-component.html
+                head.select("script[src]").attr("data-app-id",
+                        context.getUI().getInternals().getAppId());
 
-                    // Add `crossorigin` to fix basic auth in Safari #6560
-                    head.select("script[src], link[href]").attr("crossorigin",
-                            "true");
+                // Add `crossorigin` to fix basic auth in Safari #6560
+                head.select("script[src], link[href]").attr("crossorigin",
+                        "true");
 
-                    JsonObject initialUIDL = getInitialUidl(context.getUI());
+                JsonObject initialUIDL = getInitialUidl(context.getUI());
 
-                    head.prependChild(createInlineJavaScriptElement(
-                            "window.JSCompiler_renameProperty = function(a) { return a; }"));
+                head.prependChild(createInlineJavaScriptElement(
+                        "window.JSCompiler_renameProperty = function(a) { return a; }"));
 
-                    head.prependChild(getBootstrapScript(initialUIDL, context));
+                head.prependChild(getBootstrapScript(initialUIDL, context));
 
-                    if (context.getPushMode().isEnabled()) {
-                        head.prependChild(createJavaScriptModuleElement(
-                                getPushScript(context), true));
-                    }
-
-                    setupCss(head, context);
-
-                    return document;
-                } catch (IOException e) {
-                    throw new BootstrapException(
-                            "Unable to read the web-component.html file.", e);
+                if (context.getPushMode().isEnabled()) {
+                    head.prependChild(createJavaScriptModuleElement(
+                            getPushScript(context), true));
                 }
-            }
 
-            return super.getBootstrapPage(context);
+                setupCss(head, context);
+
+                return document;
+            } catch (IOException e) {
+                throw new BootstrapException(
+                        "Unable to read the web-component.html file.", e);
+            }
         }
 
         @Override

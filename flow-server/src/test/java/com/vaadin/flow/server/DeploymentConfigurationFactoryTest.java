@@ -192,21 +192,6 @@ public class DeploymentConfigurationFactoryTest {
     }
 
     @Test
-    public void shouldNotThrow_noTokenFile_correctWebPackConfigExists()
-            throws Exception {
-        Map<String, String> map = new HashMap<>();
-        map.put(FrontendUtils.PROJECT_BASEDIR,
-                temporaryFolder.getRoot().getAbsolutePath());
-
-        File webPack = new File(temporaryFolder.getRoot().getAbsolutePath(),
-                FrontendUtils.WEBPACK_CONFIG);
-        FileUtils.writeLines(webPack, Arrays.asList("./webpack.generated.js"));
-
-        new DeploymentConfigurationFactory().createDeploymentConfiguration(
-                VaadinServlet.class, createVaadinConfigMock(map, emptyMap()));
-    }
-
-    @Test
     public void should_readConfigurationFromTokenFile() throws Exception {
         FileUtils.writeLines(tokenFile,
                 Arrays.asList("{", "\"productionMode\": true", "}"));
@@ -340,10 +325,6 @@ public class DeploymentConfigurationFactoryTest {
                 InitParameters.SERVLET_PARAMETER_PUSH_SUSPEND_TIMEOUT_LONGPOLLING,
                 InitParameters.SERVLET_PARAMETER_MAX_MESSAGE_SUSPEND_TIMEOUT,
                 InitParameters.SERVLET_PARAMETER_STATISTICS_JSON,
-                InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN,
-                InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN,
-                InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT,
-                InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS,
                 InitParameters.SERVLET_PARAMETER_DEVMODE_VITE_OPTIONS,
                 InitParameters.COMPILED_WEB_COMPONENTS_PATH,
                 InitParameters.NODE_VERSION, InitParameters.NODE_DOWNLOAD_ROOT,

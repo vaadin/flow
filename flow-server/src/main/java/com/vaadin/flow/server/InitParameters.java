@@ -73,7 +73,7 @@ public class InitParameters implements Serializable {
     public static final String SERVLET_PARAMETER_BROTLI = "brotli";
 
     /**
-     * Configuration name for the WebPack profile statistics json file to use to
+     * Configuration name for the frontend statistics json file to use to
      * determine template contents.
      * <p>
      * File needs to be available either for the ClassLoader as a resource, or
@@ -83,31 +83,10 @@ public class InitParameters implements Serializable {
     public static final String SERVLET_PARAMETER_STATISTICS_JSON = "statistics.file.path";
 
     /**
-     * Configuration name for the time waiting for webpack output success or
-     * error pattern defined in
-     * {@link Constants#SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN} and
-     * {@link Constants#SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN}
-     * parameters.
+     * Configuration name for the time waiting for the frontend build tool to
+     * output a success or error pattern.
      */
     public static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT = "devmode.webpack.output.pattern.timeout";
-
-    /**
-     * Configuration name for the pattern used to inspect the webpack output to
-     * assure it is up and running. Default value is <code>: Compiled</code>.
-     */
-    public static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN = "devmode.webpack.output.success.pattern";
-
-    /**
-     * Configuration name for the pattern used to inspect the webpack output to
-     * detecting when compilation failed. Default value is
-     * <code>: Failed</code>.
-     */
-    public static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN = "devmode.webpack.output.error.pattern";
-
-    /**
-     * Configuration name for adding extra options to the webpack-dev-server.
-     */
-    public static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS = "devmode.webpack.options";
 
     /**
      * Configuration name for adding extra options to the vite.
