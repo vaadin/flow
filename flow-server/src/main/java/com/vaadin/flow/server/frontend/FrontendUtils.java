@@ -288,12 +288,12 @@ public class FrontendUtils {
     public static final String PARAM_IGNORE_VERSION_CHECKS = "vaadin.ignoreVersionChecks";
 
     /**
-     * A special prefix used by webpack to map imports placed in the
+     * A special prefix used to map imports placed in the
      * {@link FrontendUtils#DEFAULT_FRONTEND_DIR}. e.g.
      * <code>import 'Frontend/foo.js';</code> references the
      * file<code>frontend/foo.js</code>.
      */
-    public static final String WEBPACK_PREFIX_ALIAS = "Frontend/";
+    public static final String FRONTEND_FOLDER_ALIAS = "Frontend/";
 
     /**
      * File used to enable npm mode.
@@ -1014,6 +1014,23 @@ public class FrontendUtils {
         }
 
         /**
+         * Constructs an exception telling what code the command execution
+         * process was exited with and the output that it produced.
+         *
+         * @param processExitCode
+         *            process exit code
+         * @param output
+         *            the output from the command
+         * @param errorOutput
+         *            the error output from the command
+         */
+        public CommandExecutionException(int processExitCode, String output,
+                String errorOutput) {
+            super("Process execution failed with exit code " + processExitCode
+                    + "\nOutput: " + output + "\nError output: " + errorOutput);
+        }
+
+        /**
          * Constructs an exception telling what was the original exception the
          * command execution process failed with.
          *
@@ -1062,7 +1079,9 @@ public class FrontendUtils {
                     .start();
             int exitCode = process.waitFor();
             if (exitCode != 0) {
-                throw new CommandExecutionException(exitCode);
+                throw new CommandExecutionException(exitCode,
+                        streamToString(process.getInputStream()),
+                        streamToString(process.getErrorStream()));
             }
             return streamToString(process.getInputStream());
         } catch (IOException | InterruptedException e) {
