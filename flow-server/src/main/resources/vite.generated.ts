@@ -564,14 +564,14 @@ export const vaadinConfig: UserConfigFn = (env) => {
         ]
       }),
       {
-        name: 'vaadin:force-remove-spa-middleware',
+        name: 'vaadin:force-remove-html-middleware',
         transformIndexHtml: {
           enforce: 'pre',
           transform(_html, { server }) {
             if (server && !spaMiddlewareForceRemoved) {
               server.middlewares.stack = server.middlewares.stack.filter((mw) => {
                 const handleName = '' + mw.handle;
-                return !handleName.includes('viteSpaFallbackMiddleware');
+                return !handleName.includes('viteHtmlFallbackMiddleware');
               });
               spaMiddlewareForceRemoved = true;
             }
