@@ -69,9 +69,8 @@ public class FrontendConverter implements AutoCloseable {
             command.add("-disable-optional-chaining");
         }
 
-        ProcessBuilder builder = FrontendUtils.createProcessBuilder(command);
-        builder.inheritIO();
-        Process process = builder.start();
+        Process process = FrontendUtils.createProcessBuilder(command)
+                .inheritIO().start();
         if (process.waitFor() != 0) {
             throw new ConversionFailedException(
                     "An error occurred while the conversion. See logs for more details.");
