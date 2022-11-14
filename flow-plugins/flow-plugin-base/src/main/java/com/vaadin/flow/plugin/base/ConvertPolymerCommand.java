@@ -100,7 +100,7 @@ public class ConvertPolymerCommand implements AutoCloseable {
 
         for (Path filePath : getFilePathsByGlob(lookupPath, SERVER_GLOB)) {
             try {
-                adapter.logInfo("Processing " + filePath.toString() + "...");
+                adapter.logInfo(String.format("Processing %s...", filePath));
                 if (serverConverter.convertFile(filePath)) {
                     adapter.logInfo(
                             "The file has been successfully converted.");
@@ -115,7 +115,7 @@ public class ConvertPolymerCommand implements AutoCloseable {
 
         for (Path filePath : getFilePathsByGlob(lookupPath, FRONTEND_GLOB)) {
             try {
-                adapter.logInfo("Processing " + filePath.toString() + "...");
+                adapter.logInfo(String.format("Processing %s...", filePath));
                 if (frontendConverter.convertFile(filePath, useLit1,
                         disableOptionalChaining)) {
                     adapter.logInfo(
