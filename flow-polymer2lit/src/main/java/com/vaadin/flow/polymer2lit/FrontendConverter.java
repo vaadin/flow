@@ -57,13 +57,11 @@ public class FrontendConverter implements AutoCloseable {
         Files.deleteIfExists(tempDirPath);
     }
 
-    public void convertFile(Path filePath, boolean useLit1,
+    public boolean convertFile(Path filePath, boolean useLit1,
             boolean disableOptionalChaining)
-            throws IOException, InterruptedException, ConversionFailedException,
-            ConversionSkippedException {
+            throws IOException, InterruptedException {
         if (!readFile(filePath).contains("PolymerElement")) {
-            throw new ConversionSkippedException(
-                    "No occurence of PolymerElement was found. Skipping.");
+            return false;
         }
 
         List<String> command = new ArrayList<>();
@@ -79,29 +77,13 @@ public class FrontendConverter implements AutoCloseable {
             command.add("-disable-optional-chaining");
         }
 
-        Process process = FrontendUtils.createProcessBuilder(command)
-                .inheritIO().start();
-        if (process.waitFor() != 0) {
-            throw new ConversionFailedException(
-                    "An error occurred while the conversion. See logs for more details.");
-        }
+        FrontendUtils.executeCommand(command);
+        return true;
     }
 
     private String readFile(Path filePath) throws IOException {
         try (FileInputStream stream = new FileInputStream(filePath.toFile())) {
             return IOUtils.toString(stream, StandardCharsets.UTF_8);
-        }
-    }
-
-    public class ConversionFailedException extends Exception {
-        public ConversionFailedException(String message) {
-            super(message);
-        }
-    }
-
-    public class ConversionSkippedException extends Exception {
-        public ConversionSkippedException(String message) {
-            super(message);
         }
     }
 }
