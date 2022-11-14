@@ -278,8 +278,8 @@ _firstNameChanged(newValue, oldValue) { ... }
 PolymerTemplate extend is replaced with LitTemplate extend.
 
 ```diff
--public class UserListView extends PolymerTemplate {
-+public class UserListView extends LitTemplate {
+-public class UserEditView extends PolymerTemplate {
++public class UserEditView extends LitTemplate {
 ```
 
 **Models extending TemplateModel**
@@ -287,8 +287,10 @@ PolymerTemplate extend is replaced with LitTemplate extend.
 TemplateModel extend is removed.
 
 ```diff
--public interface Model extend TemplateModel { ... }
-+public interface Model { ... }
+public class UserEditView extends LitTemplate {
+-  public interface Model extend TemplateModel { ... }
++  public interface Model { ... }
+}
 ```
 
 **Model implementation**
@@ -296,24 +298,26 @@ TemplateModel extend is removed.
 As `Model` no longer extends `TemplateModel`, the `getModel()` method is added with a basic implementation of setters and getters.
 
 ```diff
-public interface Model {
-	String getValue();
+public class UserEditView extends LitTemplate {
+  public interface Model {
+    String getFirstName();
 
-	void setValue(String value);
-}
+    void setFirstName(String value);
+  }
 
-+private Model getModel() {
-+  return new Model() {
-+    @Override
-+    public void setValue(String value) {
-+      getElement().setProperty("value", value);
-+    }
++  private Model getModel() {
++    return new Model() {
++      @Override
++      public void setFirstName(String firstName) {
++        getElement().setProperty("firstName", firstName);
++      }
 +
-+    @Override
-+    public String getValue() {
-+      return getElement().getProperty("value", "");
++      @Override
++      public String getFirstName() {
++        return getElement().getProperty("firstName", "");
++      }
 +    }
 +  }
-+}
+}
 ```
 
