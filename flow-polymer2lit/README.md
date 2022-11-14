@@ -289,6 +289,8 @@ public class UserEditView extends LitTemplate {
 
 As `Model` no longer extends `TemplateModel`, the `getModel()` method is added with a basic implementation of setters and getters.
 
+The converter is only able to generate an implementation for String and Boolean fields. For others, it generates empty methods with a FIXME comment.
+
 ```diff
 public class UserEditView extends LitTemplate {
   public interface Model {
