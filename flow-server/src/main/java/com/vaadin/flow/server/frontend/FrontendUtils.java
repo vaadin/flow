@@ -288,12 +288,12 @@ public class FrontendUtils {
     public static final String PARAM_IGNORE_VERSION_CHECKS = "vaadin.ignoreVersionChecks";
 
     /**
-     * A special prefix used by webpack to map imports placed in the
+     * A special prefix used to map imports placed in the
      * {@link FrontendUtils#DEFAULT_FRONTEND_DIR}. e.g.
      * <code>import 'Frontend/foo.js';</code> references the
      * file<code>frontend/foo.js</code>.
      */
-    public static final String WEBPACK_PREFIX_ALIAS = "Frontend/";
+    public static final String FRONTEND_FOLDER_ALIAS = "Frontend/";
 
     /**
      * File used to enable npm mode.
