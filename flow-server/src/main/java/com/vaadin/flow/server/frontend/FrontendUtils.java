@@ -15,9 +15,9 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,8 +34,6 @@ import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -63,7 +61,6 @@ import elemental.json.JsonObject;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_STATISTICS_JSON;
-import static com.vaadin.flow.server.frontend.FrontendTools.INSTALL_NODE_LOCALLY;
 
 /**
  * A class for static methods and definitions that might be used in different
@@ -221,6 +218,7 @@ public class FrontendUtils {
      */
     public static final String PARAM_TOKEN_FILE = "vaadin.frontend.token.file";
 
+    public static final String INSTALL_NODE_LOCALLY = "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.7.6:install-node-and-npm -DnodeVersion=\"v12.14.0\" ";
     public static final String DISABLE_CHECK = "%nYou can disable the version check using -D%s=true";
 
     private static final String NO_CONNECTION = "Webpack-dev-server couldn't be reached for %s.%n"
@@ -315,8 +313,10 @@ public class FrontendUtils {
     public static String streamToString(InputStream inputStream) {
         String ret = "";
         try (InputStream handledStream = inputStream) {
-            return IOUtils.toString(handledStream, StandardCharsets.UTF_8)
-                    .replaceAll("\\R", System.lineSeparator());
+            return new String(
+                    new BufferedInputStream(handledStream).readAllBytes(),
+                    StandardCharsets.UTF_8).replaceAll("\\R",
+                            System.lineSeparator());
         } catch (IOException exception) {
             // ignore exception on close()
             LoggerFactory.getLogger(FrontendUtils.class)
@@ -376,8 +376,8 @@ public class FrontendUtils {
     /**
      * Gets the content of the <code>stats.json</code> file produced by webpack.
      *
-     * Note: Caches the <code>stats.json</code> when external stats is enabled or
-     * <code>stats.json</code> is provided from the class path. To clear the
+     * Note: Caches the <code>stats.json</code> when external stats is enabled
+     * or <code>stats.json</code> is provided from the class path. To clear the
      * cache use {@link #clearCachedStatsContent(VaadinService)}.
      *
      * @param service
@@ -405,7 +405,10 @@ public class FrontendUtils {
                 content = getStatsFromClassPath(service);
             }
             return content != null
-                    ? IOUtils.toString(content, StandardCharsets.UTF_8) : null;
+                    ? new String(
+                            new BufferedInputStream(content).readAllBytes(),
+                            StandardCharsets.UTF_8)
+                    : null;
         } finally {
             IOUtils.closeQuietly(content);
         }
@@ -444,7 +447,8 @@ public class FrontendUtils {
     }
 
     /**
-     * Clears the <code>stats.json</code> cache within this {@link VaadinContext}.
+     * Clears the <code>stats.json</code> cache within this
+     * {@link VaadinContext}.
      *
      * @param service
      *            the vaadin service.
@@ -542,6 +546,7 @@ public class FrontendUtils {
         if (statsUrl != null) {
             try (InputStream statsStream = statsUrl.openStream()) {
                 byte[] buffer = IOUtils.toByteArray(statsStream);
+                IOUtils.toString(statsStream, StandardCharsets.UTF_8);
                 statistics = new Stats(buffer, null);
                 service.getContext().setAttribute(statistics);
                 stream = new ByteArrayInputStream(buffer);
@@ -564,9 +569,9 @@ public class FrontendUtils {
      * file until we have reached the assetsByChunkName json and return that as
      * a json object string.
      *
-     * Note: The <code>stats.json</code> is cached when external stats is enabled
-     * or <code>stats.json</code> is provided from the class path. To clear the
-     * cache use {@link #clearCachedStatsContent(VaadinService)}.
+     * Note: The <code>stats.json</code> is cached when external stats is
+     * enabled or <code>stats.json</code> is provided from the class path. To
+     * clear the cache use {@link #clearCachedStatsContent(VaadinService)}.
      *
      * @param service
      *            the Vaadin service.
@@ -1055,9 +1060,8 @@ public class FrontendUtils {
     }
 
     /**
-    
-    /**
-     * Intentionally send to console instead to log, useful when executing
+     * 
+     * /** Intentionally send to console instead to log, useful when executing
      * external processes.
      *
      * @param format
