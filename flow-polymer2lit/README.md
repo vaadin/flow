@@ -12,10 +12,21 @@ The converter only supports a limited set of transformations intended to reduce 
 
 Here are a few examples of what the converter cannot handle:
 
-- TypeScript source files are not supported because proper type conversion almost always requires knowing project specifics.
-- Complex Polymer observers are not supported (`userListChanged(users.*, filter)`).
 - A Java Model implementation can be only generated for internal models i.e that are declared within the View class.
 - A Java Model implementation can be only generated for String and Boolean fields.
+- TypeScript source files are not supported because proper type conversion almost always requires knowing project specifics.
+- Complex Polymer observers are not supported.
+  ```js
+  static get properties() {
+    return {
+      userList: {
+        type: String,
+        observer: 'userListChanged(users.*, filter)"
+      },
+    }
+  }
+  ```
+
 
 ## Usage
 
