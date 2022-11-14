@@ -23,7 +23,7 @@ static get properties() {
 }
 ```
 
-TypeScript source files are not supported.
+TypeScript source files are not supported because proper type conversion almost always requires knowing project specifics.
 
 ## Usage
 
