@@ -30,7 +30,9 @@ public class FrontendStubs {
     public static final String WEBPACK_SERVER = "node_modules/webpack-dev-server/bin/webpack-dev-server.js";
     public static final String WEBPACK_TEST_OUT_FILE = "webpack-out.test";
 
-    private static final String NPM_BIN_PATH = "node/node_modules/npm/bin";
+    private static final String NPM_BIN_PATH = System.getProperty("os.name")
+            .startsWith("Windows") ? "node/node_modules/npm/bin/"
+                    : "node/lib/node_modules/npm/bin/";
     private static final String NPM_CACHE_PATH_STUB = "cache";
 
     /**
