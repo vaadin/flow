@@ -77,7 +77,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.VITE_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.VITE_GENERATED_CONFIG;
-import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND_FOLDER_ALIAS;
 import static java.io.File.pathSeparator;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -594,7 +594,7 @@ public class BuildFrontendMojoTest {
 
     private String addWebpackPrefix(String s) {
         if (s.startsWith("./")) {
-            return WEBPACK_PREFIX_ALIAS + s.substring(2);
+            return FRONTEND_FOLDER_ALIAS + s.substring(2);
         }
         return s;
     }
