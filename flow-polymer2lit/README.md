@@ -75,7 +75,7 @@ The path is always relative to your project's root folder.
 
 By default, the converter transforms Polymer imports into their Lit 2 equivalents.
 
-If your project is using Lit 1 (Vaadin < 23), you can use the `vaadin.useLit1` argument to enforce Lit 1 compatible imports:
+If your project is using Lit 1 (Vaadin < 21), you can use the `vaadin.useLit1` argument to enforce Lit 1 compatible imports:
 
 ```bash
 mvn vaadin:convert-polymer -Dvaadin.useLit1
@@ -99,7 +99,7 @@ mvn vaadin:convert-polymer -Dvaadin.disableOptionalChaining
 
 ## Supported transformations
 
-This is a basic overview of the transformations that can be performed automatically by the converter:
+This is an overview of the transformations that can be performed automatically by the converter:
 
 ### JavaScript
 
