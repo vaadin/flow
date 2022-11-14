@@ -41,24 +41,21 @@ import org.jboss.forge.roaster.model.source.MethodSource;
  */
 public class ServerConverter {
 
-    public void convertFile(Path filePath) throws IOException {
-        String source = read(filePath);
+    public boolean convertFile(Path filePath) throws IOException {
+        String source = readFile(filePath);
         if (!source.contains("PolymerTemplate")) {
-            System.out.println(
-                    "No occurence of PolymerTemplate was found. Skipping.");
-            return;
+            return false;
         }
 
         String out = transform(source);
         if (source.equals(out)) {
-            System.out.println(
-                    "No occurence of PolymerTemplate was found. Skipping.");
-            return;
+            return false;
         }
 
         try (FileWriter fw = new FileWriter(filePath.toFile())) {
             fw.write(out);
         }
+        return true;
     }
 
     private String transform(String source) throws IOException {
@@ -215,7 +212,7 @@ public class ServerConverter {
                 + name.substring(1);
     }
 
-    private String read(Path filePath) throws IOException {
+    private String readFile(Path filePath) throws IOException {
         try (FileInputStream stream = new FileInputStream(filePath.toFile())) {
             return IOUtils.toString(stream, StandardCharsets.UTF_8);
         }

@@ -95,11 +95,6 @@ function convertFile(filename: string, useLit1: boolean, useOptionalChaining: bo
   const jsInputFile = filename;
   let jsOutputFile = jsInputFile + outputSuffix;
   const jsContents = fs.readFileSync(jsInputFile, { encoding: 'UTF-8' });
-  if (!jsContents.includes('PolymerElement')) {
-    console.log('No occurence of PolymerElement was found. Skipping.');
-    return;
-  }
-
   const tsOutput: MagicString = new MagicString(jsContents);
   const polymerJs = acorn.parse(jsContents, { sourceType: 'module' });
   const initValues: any[] = [];

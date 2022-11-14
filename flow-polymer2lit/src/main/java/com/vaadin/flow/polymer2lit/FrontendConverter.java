@@ -15,14 +15,19 @@
  */
 package com.vaadin.flow.polymer2lit;
 
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.io.IOUtils;
+
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.frontend.FrontendUtils.CommandExecutionException;
 
 /**
  * A converter that converts Polymer-based {@code *.js} source files to Lit.
@@ -53,14 +58,13 @@ public class FrontendConverter implements AutoCloseable {
         Files.deleteIfExists(tempDirPath);
     }
 
-    public int convertFile(Path filePath)
-            throws IOException, InterruptedException {
-        return convertFile(filePath, false, false);
-    }
+    public boolean convertFile(Path filePath, boolean useLit1,
+            boolean disableOptionalChaining) throws IOException,
+            InterruptedException, CommandExecutionException {
+        if (!readFile(filePath).contains("PolymerElement")) {
+            return false;
+        }
 
-    public int convertFile(Path filePath, boolean useLit1,
-            boolean disableOptionalChaining)
-            throws IOException, InterruptedException {
         List<String> command = new ArrayList<>();
         command.add(this.frontendTools.getNodeExecutable());
         command.add(this.converterTempPath.toFile().getAbsolutePath());
@@ -74,9 +78,13 @@ public class FrontendConverter implements AutoCloseable {
             command.add("-disable-optional-chaining");
         }
 
-        ProcessBuilder builder = FrontendUtils.createProcessBuilder(command);
-        builder.inheritIO();
-        Process process = builder.start();
-        return process.waitFor();
+        FrontendUtils.executeCommand(command);
+        return true;
+    }
+
+    private String readFile(Path filePath) throws IOException {
+        try (FileInputStream stream = new FileInputStream(filePath.toFile())) {
+            return IOUtils.toString(stream, StandardCharsets.UTF_8);
+        }
     }
 }

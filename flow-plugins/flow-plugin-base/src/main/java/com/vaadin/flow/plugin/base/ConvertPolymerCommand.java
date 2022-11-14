@@ -29,6 +29,7 @@ import java.util.stream.Stream;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendToolsSettings;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.frontend.FrontendUtils.CommandExecutionException;
 import com.vaadin.flow.polymer2lit.FrontendConverter;
 import com.vaadin.flow.polymer2lit.ServerConverter;
 
@@ -93,27 +94,38 @@ public class ConvertPolymerCommand implements AutoCloseable {
         this.frontendConverter.close();
     }
 
-    public void execute() throws IOException, InterruptedException {
+    public void execute() throws IOException, InterruptedException,
+            CommandExecutionException {
         Path lookupPath = getLookupPath();
 
         for (Path filePath : getFilePathsByGlob(lookupPath, SERVER_GLOB)) {
-            adapter.logInfo("Processing " + filePath.toString() + "...");
             try {
-                serverConverter.convertFile(filePath);
+                adapter.logInfo(String.format("Processing %s...", filePath));
+                if (serverConverter.convertFile(filePath)) {
+                    adapter.logInfo(
+                            "The file has been successfully converted.");
+                } else {
+                    adapter.logInfo(
+                            "No occurences of PolymerTemplate was found. Skipping.");
+                }
             } catch (Exception e) {
-                adapter.logError("An error occured while processing "
-                        + filePath.toString(), e);
+                adapter.logError("An error occurred while processing.", e);
             }
         }
 
         for (Path filePath : getFilePathsByGlob(lookupPath, FRONTEND_GLOB)) {
-            adapter.logInfo("Processing " + filePath.toString() + "...");
             try {
-                frontendConverter.convertFile(filePath, useLit1,
-                        disableOptionalChaining);
+                adapter.logInfo(String.format("Processing %s...", filePath));
+                if (frontendConverter.convertFile(filePath, useLit1,
+                        disableOptionalChaining)) {
+                    adapter.logInfo(
+                            "The file has been successfully converted.");
+                } else {
+                    adapter.logInfo(
+                            "No occurences of PolymerElement was found. Skipping.");
+                }
             } catch (Exception e) {
-                adapter.logError("An error occured while processing "
-                        + filePath.toString(), e);
+                adapter.logError("An error occurred while processing.", e);
             }
 
         }
