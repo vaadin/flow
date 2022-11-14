@@ -15,11 +15,15 @@
  */
 package com.vaadin.flow.polymer2lit;
 
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.commons.io.IOUtils;
 
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -54,8 +58,14 @@ public class FrontendConverter implements AutoCloseable {
     }
 
     public void convertFile(Path filePath, boolean useLit1,
-            boolean disableOptionalChaining) throws IOException,
-            InterruptedException, ConversionFailedException {
+            boolean disableOptionalChaining)
+            throws IOException, InterruptedException, ConversionFailedException,
+            ConversionSkippedException {
+        if (!readFile(filePath).contains("PolymerElement")) {
+            throw new ConversionSkippedException(
+                    "No occurence of PolymerElement was found. Skipping.");
+        }
+
         List<String> command = new ArrayList<>();
         command.add(this.frontendTools.getNodeExecutable());
         command.add(this.converterTempPath.toFile().getAbsolutePath());
@@ -77,9 +87,21 @@ public class FrontendConverter implements AutoCloseable {
         }
     }
 
+    private String readFile(Path filePath) throws IOException {
+        try (FileInputStream stream = new FileInputStream(filePath.toFile())) {
+            return IOUtils.toString(stream, StandardCharsets.UTF_8);
+        }
+    }
+
     public class ConversionFailedException extends Exception {
-        public ConversionFailedException(String errorMessage) {
-            super(errorMessage);
+        public ConversionFailedException(String message) {
+            super(message);
+        }
+    }
+
+    public class ConversionSkippedException extends Exception {
+        public ConversionSkippedException(String message) {
+            super(message);
         }
     }
 }

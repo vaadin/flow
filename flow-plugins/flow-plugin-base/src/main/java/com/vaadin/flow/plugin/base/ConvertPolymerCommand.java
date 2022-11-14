@@ -31,6 +31,7 @@ import com.vaadin.flow.server.frontend.FrontendToolsSettings;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.polymer2lit.FrontendConverter;
 import com.vaadin.flow.polymer2lit.ServerConverter;
+import com.vaadin.flow.polymer2lit.FrontendConverter.ConversionSkippedException;
 
 /**
  * A tool-independent implementation of a {@code convert-polymer} command that
@@ -97,19 +98,25 @@ public class ConvertPolymerCommand implements AutoCloseable {
         Path lookupPath = getLookupPath();
 
         for (Path filePath : getFilePathsByGlob(lookupPath, SERVER_GLOB)) {
-            adapter.logInfo("Processing " + filePath.toString() + "...");
             try {
+                adapter.logInfo("Processing " + filePath.toString() + "...");
                 serverConverter.convertFile(filePath);
+                adapter.logInfo("OK.");
+            } catch (ServerConverter.ConversionSkippedException e) {
+                adapter.logInfo(e.getMessage());
             } catch (Exception e) {
                 adapter.logError("An error occurred while processing.", e);
             }
         }
 
         for (Path filePath : getFilePathsByGlob(lookupPath, FRONTEND_GLOB)) {
-            adapter.logInfo("Processing " + filePath.toString() + "...");
             try {
+                adapter.logInfo("Processing " + filePath.toString() + "...");
                 frontendConverter.convertFile(filePath, useLit1,
                         disableOptionalChaining);
+                adapter.logInfo("OK");
+            } catch (FrontendConverter.ConversionSkippedException e) {
+                adapter.logInfo(e.getMessage());
             } catch (Exception e) {
                 adapter.logError("An error occurred while processing.", e);
             }
