@@ -13,6 +13,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import com.vaadin.flow.polymer2lit.ServerConverter.ConversionSkippedException;
+
 public class ServerConverterTest {
     @Rule
     public final TemporaryFolder tmpDir = new TemporaryFolder();
@@ -20,22 +22,23 @@ public class ServerConverterTest {
     private ServerConverter serverConverter;
 
     @Before
-    public void init() throws IOException {
+    public void init() throws IOException, ConversionSkippedException {
         serverConverter = new ServerConverter();
     }
 
     @Test
-    public void noModel() throws IOException {
+    public void noModel() throws IOException, ConversionSkippedException {
         convertFile_outputFileMatchesExpectedOne("NoModel.java");
     }
 
     @Test
-    public void basicGettersSetters() throws IOException {
+    public void basicGettersSetters()
+            throws IOException, ConversionSkippedException {
         convertFile_outputFileMatchesExpectedOne("BasicGettersSetters.java");
     }
 
     private void convertFile_outputFileMatchesExpectedOne(String fileName)
-            throws IOException {
+            throws IOException, ConversionSkippedException {
         InputStream inputFileStream = getClass().getClassLoader()
                 .getResourceAsStream("server/in/" + fileName);
         InputStream expectedFileStream = getClass().getClassLoader()

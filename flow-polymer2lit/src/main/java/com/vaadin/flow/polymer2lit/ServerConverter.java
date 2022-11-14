@@ -47,7 +47,8 @@ public class ServerConverter {
         }
     }
 
-    public void convertFile(Path filePath) throws IOException, ConversionSkippedException {
+    public void convertFile(Path filePath)
+            throws IOException, ConversionSkippedException {
         String source = readFile(filePath);
         if (!source.contains("PolymerTemplate")) {
             throw new ConversionSkippedException(

@@ -15,6 +15,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import com.vaadin.flow.polymer2lit.FrontendConverter.ConversionFailedException;
+import com.vaadin.flow.polymer2lit.FrontendConverter.ConversionSkippedException;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendToolsSettings;
 
@@ -41,147 +42,152 @@ public class FrontendConverterTest {
 
     @Test
     public void basicBinding() throws IOException, InterruptedException,
-            ConversionFailedException {
+            ConversionFailedException, ConversionSkippedException {
         convertFile_outputFileMatchesExpectedOne("basic-bindings.js");
     }
 
     @Test
     public void basicBinding_lit1() throws IOException, InterruptedException,
-            ConversionFailedException {
+            ConversionFailedException, ConversionSkippedException {
         convertFile_outputFileMatchesExpectedOne("basic-bindings.js",
                 "basic-bindings-with-lit1.js", true, false);
     }
 
     @Test
     public void computedProperty() throws IOException, InterruptedException,
-            ConversionFailedException {
+            ConversionFailedException, ConversionSkippedException {
         convertFile_outputFileMatchesExpectedOne("computed-property.js");
     }
 
     @Test
     public void disabledUsingMethod() throws IOException, InterruptedException,
-            ConversionFailedException {
+            ConversionFailedException, ConversionSkippedException {
         convertFile_outputFileMatchesExpectedOne("disabled-using-method.js");
     }
 
     @Test
     public void domIf() throws IOException, InterruptedException,
-            ConversionFailedException {
+            ConversionFailedException, ConversionSkippedException {
         convertFile_outputFileMatchesExpectedOne("dom-if.js");
     }
 
     @Test
     public void domRepeat() throws IOException, InterruptedException,
-            ConversionFailedException {
+            ConversionFailedException, ConversionSkippedException {
         convertFile_outputFileMatchesExpectedOne("dom-repeat.js");
     }
 
     @Test
-    public void domRepeat_disabledOptionalChaining() throws IOException,
-            InterruptedException, ConversionFailedException {
+    public void domRepeat_disabledOptionalChaining()
+            throws IOException, InterruptedException, ConversionFailedException,
+            ConversionSkippedException {
         convertFile_outputFileMatchesExpectedOne("dom-repeat.js",
                 "dom-repeat-disabled-optional-chaining.js", false, true);
     }
 
     @Test
     public void eventHandlers() throws IOException, InterruptedException,
-            ConversionFailedException {
+            ConversionFailedException, ConversionSkippedException {
         convertFile_outputFileMatchesExpectedOne("event-handlers.js");
     }
 
     @Test
     public void gridColumns() throws IOException, InterruptedException,
-            ConversionFailedException {
+            ConversionFailedException, ConversionSkippedException {
         convertFile_outputFileMatchesExpectedOne("grid-columns.js");
     }
 
     @Test
     public void inlineStyles() throws IOException, InterruptedException,
-            ConversionFailedException {
+            ConversionFailedException, ConversionSkippedException {
         convertFile_outputFileMatchesExpectedOne("inline-styles.js");
     }
 
     @Test
     public void lightDom() throws IOException, InterruptedException,
-            ConversionFailedException {
+            ConversionFailedException, ConversionSkippedException {
         convertFile_outputFileMatchesExpectedOne("light-dom.js");
     }
 
     @Test
     public void multipleBindings() throws IOException, InterruptedException,
-            ConversionFailedException {
+            ConversionFailedException, ConversionSkippedException {
         convertFile_outputFileMatchesExpectedOne("multiple-bindings.js");
     }
 
     @Test
     public void nestedDomRepeat() throws IOException, InterruptedException,
-            ConversionFailedException {
+            ConversionFailedException, ConversionSkippedException {
         convertFile_outputFileMatchesExpectedOne("nested-dom-repeat.js");
     }
 
     @Test
-    public void nestedDomRepeatDisabledOptionalChaining() throws IOException,
-            InterruptedException, ConversionFailedException {
+    public void nestedDomRepeatDisabledOptionalChaining()
+            throws IOException, InterruptedException, ConversionFailedException,
+            ConversionSkippedException {
         convertFile_outputFileMatchesExpectedOne("nested-dom-repeat.js",
                 "nested-dom-repeat-disabled-optional-chaining.js", false, true);
     }
 
     @Test
     public void orderCardFromBakery() throws IOException, InterruptedException,
-            ConversionFailedException {
+            ConversionFailedException, ConversionSkippedException {
         convertFile_outputFileMatchesExpectedOne("order-card-from-bakery.js");
     }
 
     @Test
     public void readyCallback() throws IOException, InterruptedException,
-            ConversionFailedException {
+            ConversionFailedException, ConversionSkippedException {
         convertFile_outputFileMatchesExpectedOne("ready-callback.js");
     }
 
     @Test
     public void simpleObserver() throws IOException, InterruptedException,
-            ConversionFailedException {
+            ConversionFailedException, ConversionSkippedException {
         convertFile_outputFileMatchesExpectedOne("simple-observer.js");
     }
 
     @Test
     public void subProperties() throws IOException, InterruptedException,
-            ConversionFailedException {
+            ConversionFailedException, ConversionSkippedException {
         convertFile_outputFileMatchesExpectedOne("sub-properties.js");
     }
 
     @Test
-    public void subProperties_disabledOptionalChaining() throws IOException,
-            InterruptedException, ConversionFailedException {
+    public void subProperties_disabledOptionalChaining()
+            throws IOException, InterruptedException, ConversionFailedException,
+            ConversionSkippedException {
         convertFile_outputFileMatchesExpectedOne("sub-properties.js",
                 "sub-properties-with-disabled-optional-chaining.js", false,
                 true);
     }
 
     @Test
-    public void thisDollarMappedElementIds() throws IOException,
-            InterruptedException, ConversionFailedException {
+    public void thisDollarMappedElementIds()
+            throws IOException, InterruptedException, ConversionFailedException,
+            ConversionSkippedException {
         convertFile_outputFileMatchesExpectedOne(
                 "this-dollar-mapped-element-ids.js");
     }
 
     @Test
     public void twoWayBinding() throws IOException, InterruptedException,
-            ConversionFailedException {
+            ConversionFailedException, ConversionSkippedException {
         convertFile_outputFileMatchesExpectedOne("two-way-binding.js");
     }
 
     private void convertFile_outputFileMatchesExpectedOne(String fileName)
-            throws IOException, InterruptedException,
-            ConversionFailedException {
+            throws IOException, InterruptedException, ConversionFailedException,
+            ConversionSkippedException {
         convertFile_outputFileMatchesExpectedOne(fileName, fileName, false,
                 false);
     }
 
     private void convertFile_outputFileMatchesExpectedOne(String inFileName,
             String expectedFileName, boolean useLit1,
-            boolean disableOptionalChaining) throws IOException,
-            InterruptedException, ConversionFailedException {
+            boolean disableOptionalChaining)
+            throws IOException, InterruptedException, ConversionFailedException,
+            ConversionSkippedException, ConversionSkippedException {
         InputStream inFileStream = getClass().getClassLoader()
                 .getResourceAsStream("frontend/in/" + inFileName);
         InputStream expectedFileStream = getClass().getClassLoader()
