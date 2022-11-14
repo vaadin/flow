@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 
-import org.apache.commons.lang3.Conversion;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
