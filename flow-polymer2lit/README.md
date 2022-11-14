@@ -10,20 +10,12 @@ Polymer support has been deprecated since Vaadin 18 (released in November 2020),
 
 The converter only supports a limited set of transformations intended to reduce the effort for basic cases while everything else should be still converted by hand.
 
-An example of what the converter cannot handle is complex Polymer observers:
+Here are a few examples of what the converter cannot handle:
 
-```js
-static get properties() {
-  return {
-    userList: {
-      type: String,
-      observer: 'userListChanged(users.*, filter)"
-    },
-  }
-}
-```
-
-TypeScript source files are not supported because proper type conversion almost always requires knowing project specifics.
+- TypeScript source files are not supported because proper type conversion almost always requires knowing project specifics.
+- Complex Polymer observers are not supported (`userListChanged(users.*, filter)`).
+- A Java Model implementation can be only generated for internal models i.e that are declared within the View class.
+- A Java Model implementation can be only generated for String and Boolean fields.
 
 ## Usage
 
