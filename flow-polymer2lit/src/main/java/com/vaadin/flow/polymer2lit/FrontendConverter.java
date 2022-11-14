@@ -27,6 +27,7 @@ import org.apache.commons.io.IOUtils;
 
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.frontend.FrontendUtils.CommandExecutionException;
 
 /**
  * A converter that converts Polymer-based {@code *.js} source files to Lit.
@@ -58,8 +59,8 @@ public class FrontendConverter implements AutoCloseable {
     }
 
     public boolean convertFile(Path filePath, boolean useLit1,
-            boolean disableOptionalChaining)
-            throws IOException, InterruptedException {
+            boolean disableOptionalChaining) throws IOException,
+            InterruptedException, CommandExecutionException {
         if (!readFile(filePath).contains("PolymerElement")) {
             return false;
         }
