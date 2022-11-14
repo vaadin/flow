@@ -53,7 +53,7 @@ import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND_FOLDER_ALIAS;
 
 /**
  * Common logic for generate import file JS content.
@@ -86,7 +86,7 @@ abstract class AbstractUpdateImports implements Runnable {
     // Used to recognize and sort FRONTEND/ imports in the final
     // generated-flow-imports.js
     private static final Pattern FRONTEND_IMPORT_LINE = Pattern.compile(
-            String.format(IMPORT_TEMPLATE, WEBPACK_PREFIX_ALIAS + "\\S*"));
+            String.format(IMPORT_TEMPLATE, FRONTEND_FOLDER_ALIAS + "\\S*"));
 
     private final File frontendDir;
 
@@ -569,7 +569,7 @@ abstract class AbstractUpdateImports implements Runnable {
                         "Use the './' prefix for files in the '{}' folder: '{}', please update your annotations.",
                         frontendDir, jsImport);
             }
-            return WEBPACK_PREFIX_ALIAS + jsImport.replaceFirst("^\\./", "");
+            return FRONTEND_FOLDER_ALIAS + jsImport.replaceFirst("^\\./", "");
         }
         return jsImport;
     }
