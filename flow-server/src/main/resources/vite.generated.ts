@@ -498,7 +498,6 @@ export const vaadinConfig: UserConfigFn = (env) => {
   return {
     root: frontendFolder,
     base: '',
-    appType: 'mpa',
     resolve: {
       alias: {
         '@vaadin/flow-frontend': jarResourcesFolder,
@@ -564,6 +563,21 @@ export const vaadinConfig: UserConfigFn = (env) => {
           '**/*\?html-proxy*'
         ]
       }),
+      {
+        name: 'vaadin:force-remove-html-middleware',
+        transformIndexHtml: {
+          enforce: 'pre',
+          transform(_html, { server }) {
+            if (server && !spaMiddlewareForceRemoved) {
+              server.middlewares.stack = server.middlewares.stack.filter((mw) => {
+                const handleName = '' + mw.handle;
+                return !handleName.includes('viteHtmlFallbackMiddleware');
+              });
+              spaMiddlewareForceRemoved = true;
+            }
+          }
+        }
+      },
       hasExportedWebComponents && {
         name: 'vaadin:inject-entrypoints-to-web-component-html',
         transformIndexHtml: {
