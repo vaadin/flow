@@ -577,7 +577,8 @@ public class IndexHtmlRequestHandlerWebpackTest {
             }
 
             @Override
-            public void launchBrowserInDevelopmentMode(String url) {
+            public void launchBrowserInDevelopmentMode(String url,
+                    String browserId) {
             }
 
         };

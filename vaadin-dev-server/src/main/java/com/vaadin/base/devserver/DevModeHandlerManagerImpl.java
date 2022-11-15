@@ -85,8 +85,8 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
     }
 
     @Override
-    public void launchBrowserInDevelopmentMode(String url) {
-        browserLauncher.launchBrowserInDevelopmentMode(url);
+    public void launchBrowserInDevelopmentMode(String url, String browserId) {
+        browserLauncher.launchBrowserInDevelopmentMode(url, browserId);
     }
 
     private void setDevModeStarted(VaadinContext context) {

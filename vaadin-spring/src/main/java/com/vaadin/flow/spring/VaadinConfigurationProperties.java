@@ -101,6 +101,12 @@ public class VaadinConfigurationProperties {
     private boolean launchBrowser = false;
 
     /**
+     * The browser id to use when opening the application url in development
+     * mode.
+     */
+    private String launchBrowserId = null;
+
+    /**
      * URL patterns that should not be handled by the Vaadin servlet when mapped
      * to the context root.
      */
@@ -210,6 +216,31 @@ public class VaadinConfigurationProperties {
      */
     public boolean isLaunchBrowser() {
         return launchBrowser;
+    }
+
+    /**
+     * Returns the browser id to use when launching a browser on startup, when
+     * in development mode.
+     * <p>
+     *
+     * @return the browser id to use when opening the application in development
+     *         mode
+     */
+    public String getLaunchBrowserId() {
+        return launchBrowserId;
+    }
+
+    /**
+     * Sets the browser id to use when launching a browser on startup, when in
+     * development mode.
+     * <p>
+     *
+     * @param launchBrowserId
+     *            the browser id to use when opening the application in
+     *            development mode
+     */
+    public void setLaunchBrowserId(String launchBrowserId) {
+        this.launchBrowserId = launchBrowserId;
     }
 
     /**

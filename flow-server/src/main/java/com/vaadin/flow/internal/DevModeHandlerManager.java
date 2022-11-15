@@ -78,8 +78,11 @@ public interface DevModeHandlerManager {
      *
      * @param url
      *            the url to open
+     * @param browserId
+     *            an id for the browser (chrome/firefox/edge) to open in or
+     *            {@code null} to use the default browser
      */
-    void launchBrowserInDevelopmentMode(String url);
+    void launchBrowserInDevelopmentMode(String url, String browserId);
 
     /**
      * Gets the {@link DevModeHandler}.

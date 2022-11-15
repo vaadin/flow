@@ -562,7 +562,8 @@ public class IndexHtmlRequestHandlerTest {
             }
 
             @Override
-            public void launchBrowserInDevelopmentMode(String url) {
+            public void launchBrowserInDevelopmentMode(String url,
+                    String browserId) {
             }
 
         };

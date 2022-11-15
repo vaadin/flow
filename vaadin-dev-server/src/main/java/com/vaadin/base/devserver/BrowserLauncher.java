@@ -1,7 +1,10 @@
 package com.vaadin.base.devserver;
 
+import java.util.Locale;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.vaadin.artur.open.App;
 import org.vaadin.artur.open.Open;
 
 import com.vaadin.flow.server.VaadinContext;
@@ -27,14 +30,29 @@ public class BrowserLauncher {
     /**
      * Open the given URL in the default browser.
      */
-    public void launchBrowserInDevelopmentMode(String url) {
+    public void launchBrowserInDevelopmentMode(String url, String browserId) {
         if (isLaunched()) {
             // Only launch browser on startup, not on reload
             return;
         }
         if (!isProductionMode()) {
             String outputOnFailure = "Application started at " + url;
-            if (!Open.open(url)) {
+            App app = null;
+            if (browserId != null) {
+                try {
+                    app = App.valueOf(browserId.toUpperCase(Locale.ENGLISH));
+                } catch (IllegalArgumentException e) {
+                    getLogger().warn("Unknown browser id " + browserId
+                            + ". Valid values are " + App.values());
+                }
+            }
+            boolean opened;
+            if (app != null) {
+                opened = Open.open(url, app);
+            } else {
+                opened = Open.open(url);
+            }
+            if (!opened) {
                 getLogger().info(outputOnFailure);
             }
             setLaunched();
