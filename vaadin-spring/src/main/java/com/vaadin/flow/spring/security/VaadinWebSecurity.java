@@ -141,10 +141,10 @@ public abstract class VaadinWebSecurity {
      * @return the authentication-context bean
      */
     @Bean(name = "VaadinAuthenticationContext")
-    public AuthenticationContext getAuthenticationContext(HttpSecurity http) throws Exception {
+    public AuthenticationContext getAuthenticationContext(HttpSecurity http)
+            throws Exception {
         LogoutConfigurer<HttpSecurity> logoutConfigurer = http.logout();
-        DefaultAuthenticationContext authenticationContext =
-                new DefaultAuthenticationContext();
+        DefaultAuthenticationContext authenticationContext = new DefaultAuthenticationContext();
         authenticationContext.setLogoutHandlers(
                 logoutConfigurer.getLogoutSuccessHandler(),
                 logoutConfigurer.getLogoutHandlers());
@@ -609,16 +609,19 @@ public abstract class VaadinWebSecurity {
             logoutHandler.logout(request, response, auth);
             ui.accessSynchronously(() -> {
                 try {
-                    logoutSuccessHandler.onLogoutSuccess(request, response, auth);
+                    logoutSuccessHandler.onLogoutSuccess(request, response,
+                            auth);
                 } catch (IOException | ServletException e) {
                     // Raise a warning log message about the failure.
-                    LOGGER.warn("There was an error notifying the logout handler about the user logout", e);
+                    LOGGER.warn(
+                            "There was an error notifying the logout handler about the user logout",
+                            e);
                 }
             });
         }
 
         void setLogoutHandlers(LogoutSuccessHandler logoutSuccessHandler,
-                               List<LogoutHandler> logoutHandlers) {
+                List<LogoutHandler> logoutHandlers) {
             this.logoutSuccessHandler = logoutSuccessHandler;
             this.logoutHandler = new CompositeLogoutHandler(logoutHandlers);
         }

@@ -31,7 +31,8 @@ public class BankService {
     }
 
     private void applyForLoan(int amount) {
-        String name = authenticationContext.getAuthenticatedUser().orElseThrow().getUsername();
+        String name = authenticationContext.getAuthenticatedUser().orElseThrow()
+                .getUsername();
         Optional<Account> acc = accountService.findByOwner(name);
         if (acc.isEmpty()) {
             return;
@@ -42,7 +43,8 @@ public class BankService {
     }
 
     public BigDecimal getBalance() {
-        String name = authenticationContext.getAuthenticatedUser().orElseThrow().getUsername();
+        String name = authenticationContext.getAuthenticatedUser().orElseThrow()
+                .getUsername();
         return accountService.findByOwner(name).map(Account::getBalance)
                 .orElse(null);
     }

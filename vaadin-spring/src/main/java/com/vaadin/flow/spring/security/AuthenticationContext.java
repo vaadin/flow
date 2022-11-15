@@ -39,8 +39,8 @@ public interface AuthenticationContext {
      * @param userType
      *            the type of the expected user instance, a subclass of
      *            {@link UserDetails}
-     * @return an {@link Optional} with the current authenticated user, or
-     *         empty if none available
+     * @return an {@link Optional} with the current authenticated user, or empty
+     *         if none available
      */
     <U extends UserDetails> Optional<U> getAuthenticatedUser(Class<U> userType);
 
@@ -48,8 +48,8 @@ public interface AuthenticationContext {
      * Gets an {@link Optional} with an instance of the current user if it has
      * been authenticated, or empty if the user is not authenticated.
      *
-     * @return an {@link Optional} with the current authenticated user, or
-     *         empty if none available
+     * @return an {@link Optional} with the current authenticated user, or empty
+     *         if none available
      */
     default Optional<UserDetails> getAuthenticatedUser() {
         return getAuthenticatedUser(UserDetails.class);

@@ -25,7 +25,8 @@ public class SecurityUtils {
     private AuthenticationContext authenticationContext;
 
     public UserInfo getAuthenticatedUserInfo() {
-        UserDetails details = authenticationContext.getAuthenticatedUser().orElseThrow();
+        UserDetails details = authenticationContext.getAuthenticatedUser()
+                .orElseThrow();
         if (details == null) {
             return null;
         }
