@@ -284,8 +284,6 @@
                 <module>test-dev-mode</module>
                 <module>test-pwa</module>
                 <module>test-pwa/pom-production.xml</module>
-                <module>test-pwa/pom-webpack.xml</module>
-                <module>test-pwa/pom-production-webpack.xml</module>
                 <module>test-pwa-disabled-offline</module>
                 <module>test-pwa-disabled-offline/pom-production.xml</module>
                 <module>test-root-ui-context</module>
