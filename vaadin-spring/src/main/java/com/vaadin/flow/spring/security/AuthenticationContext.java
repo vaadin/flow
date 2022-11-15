@@ -17,7 +17,7 @@ package com.vaadin.flow.spring.security;
 
 import java.util.Optional;
 
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.AuthenticatedPrincipal;
 
 /**
  * An interface to access the authentication context of the application.
@@ -37,22 +37,22 @@ public interface AuthenticationContext {
      * @param <U>
      *            the type parameter of the expected user instance
      * @param userType
-     *            the type of the expected user instance, a subclass of
-     *            {@link UserDetails}
+     *            the type of the expected user instance
      * @return an {@link Optional} with the current authenticated user, or empty
      *         if none available
      */
-    <U extends UserDetails> Optional<U> getAuthenticatedUser(Class<U> userType);
+    <U> Optional<U> getAuthenticatedUser(Class<U> userType);
 
     /**
-     * Gets an {@link Optional} with an instance of the current user if it has
-     * been authenticated, or empty if the user is not authenticated.
+     * Gets an {@link Optional} subclass of {@link AuthenticatedPrincipal} with
+     * an instance of the current user if it has been authenticated, or empty if
+     * the user is not authenticated.
      *
      * @return an {@link Optional} with the current authenticated user, or empty
      *         if none available
      */
-    default Optional<UserDetails> getAuthenticatedUser() {
-        return getAuthenticatedUser(UserDetails.class);
+    default Optional<AuthenticatedPrincipal> getAuthenticatedUser() {
+        return getAuthenticatedUser(AuthenticatedPrincipal.class);
     }
 
     /**

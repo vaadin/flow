@@ -1,10 +1,9 @@
 package com.vaadin.flow.spring.flowsecurity;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Component;
 
 import com.vaadin.flow.component.UI;
@@ -25,12 +24,12 @@ public class SecurityUtils {
     private AuthenticationContext authenticationContext;
 
     public UserInfo getAuthenticatedUserInfo() {
-        UserDetails details = authenticationContext.getAuthenticatedUser()
-                .orElseThrow();
-        if (details == null) {
+        Optional<UserDetails> userDetails = authenticationContext
+                .getAuthenticatedUser(UserDetails.class);
+        if (userDetails.isEmpty()) {
             return null;
         }
-        return userInfoService.findByUsername(details.getUsername());
+        return userInfoService.findByUsername(userDetails.get().getUsername());
     }
 
     public void logout() {

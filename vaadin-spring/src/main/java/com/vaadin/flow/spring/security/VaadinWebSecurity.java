@@ -42,13 +42,12 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
 import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
 import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
-import org.springframework.security.core.AuthenticatedPrincipal;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextHolderStrategy;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.access.AccessDeniedHandlerImpl;
@@ -119,6 +118,9 @@ public abstract class VaadinWebSecurity {
     @Value("#{servletContext.contextPath}")
     private String servletContextPath;
 
+    private final DefaultAuthenticationContext authenticationContext =
+            new DefaultAuthenticationContext();
+
     /**
      * Registers default {@link SecurityFilterChain} bean.
      * <p>
@@ -132,7 +134,13 @@ public abstract class VaadinWebSecurity {
     @Bean(name = "VaadinSecurityFilterChainBean")
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         configure(http);
-        return http.build();
+        DefaultSecurityFilterChain securityFilterChain = http.build();
+        LogoutConfigurer<HttpSecurity> logoutConfigurer = http.logout();
+        logoutConfigurer.invalidateHttpSession(false);
+        authenticationContext.setLogoutHandlers(
+                logoutConfigurer.getLogoutSuccessHandler(),
+                logoutConfigurer.getLogoutHandlers());
+        return securityFilterChain;
     }
 
     /**
@@ -141,13 +149,7 @@ public abstract class VaadinWebSecurity {
      * @return the authentication-context bean
      */
     @Bean(name = "VaadinAuthenticationContext")
-    public AuthenticationContext getAuthenticationContext(HttpSecurity http)
-            throws Exception {
-        LogoutConfigurer<HttpSecurity> logoutConfigurer = http.logout();
-        DefaultAuthenticationContext authenticationContext = new DefaultAuthenticationContext();
-        authenticationContext.setLogoutHandlers(
-                logoutConfigurer.getLogoutSuccessHandler(),
-                logoutConfigurer.getLogoutHandlers());
+    public AuthenticationContext getAuthenticationContext() {
         return authenticationContext;
     }
 
@@ -588,8 +590,7 @@ public abstract class VaadinWebSecurity {
         private CompositeLogoutHandler logoutHandler;
 
         @Override
-        public <U extends UserDetails> Optional<U> getAuthenticatedUser(
-                Class<U> userType) {
+        public <U> Optional<U> getAuthenticatedUser(Class<U> userType) {
             return Optional.of(SecurityContextHolder.getContext())
                     .map(SecurityContext::getAuthentication)
                     .map(Authentication::getPrincipal)
