@@ -77,7 +77,6 @@ public class DevModeBrowserLauncher
             return;
         }
         GenericWebApplicationContext webAppContext = (GenericWebApplicationContext) appContext;
-        String location = getUrl(webAppContext);
 
         ServletContext servletContext = webAppContext.getServletContext();
         VaadinContext vaadinContext = new VaadinServletContext(servletContext);
