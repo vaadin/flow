@@ -112,8 +112,8 @@ function collectChunks(statsJson, acceptedChunks) {
             if (module.modules) {
               slimModule.modules = collectSubModules(module);
             }
+            modules.push(slimModule);
           }
-          modules.push(slimModule);
         });
         if(chunk.modules.size > 0) {
           const slimChunk = {
