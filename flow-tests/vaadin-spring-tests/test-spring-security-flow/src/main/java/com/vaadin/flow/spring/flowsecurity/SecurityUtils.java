@@ -12,6 +12,7 @@ import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.spring.flowsecurity.data.UserInfo;
 import com.vaadin.flow.spring.flowsecurity.service.UserInfoService;
+import com.vaadin.flow.spring.security.AuthenticationContext;
 
 @Component
 public class SecurityUtils {
@@ -20,25 +21,11 @@ public class SecurityUtils {
     private UserInfoService userInfoService;
     @Autowired
     private SecurityConfig securityConfig;
-
-    public UserDetails getAuthenticatedUser() {
-        SecurityContext context = SecurityContextHolder.getContext();
-        if (context == null) {
-            throw new IllegalStateException("No security context available");
-        }
-        if (context.getAuthentication() == null) {
-            return null;
-        }
-        Object principal = context.getAuthentication().getPrincipal();
-        if (principal instanceof UserDetails) {
-            return (UserDetails) context.getAuthentication().getPrincipal();
-        }
-        // Anonymous or no authentication.
-        return null;
-    }
+    @Autowired
+    private AuthenticationContext authenticationContext;
 
     public UserInfo getAuthenticatedUserInfo() {
-        UserDetails details = getAuthenticatedUser();
+        UserDetails details = authenticationContext.getAuthenticatedUser().orElseThrow();
         if (details == null) {
             return null;
         }
@@ -46,12 +33,10 @@ public class SecurityUtils {
     }
 
     public void logout() {
-        SecurityContextLogoutHandler logoutHandler = new SecurityContextLogoutHandler();
-        logoutHandler.setInvalidateHttpSession(false);
-        VaadinServletRequest request = VaadinServletRequest.getCurrent();
-        logoutHandler.logout(request, null, null);
+        authenticationContext.logout();
         UI.getCurrent().getPage().setLocation(UrlUtil.getServletPathRelative(
-                securityConfig.getLogoutSuccessUrl(), request));
+                securityConfig.getLogoutSuccessUrl(),
+                VaadinServletRequest.getCurrent().getHttpServletRequest()));
     }
 
 }
