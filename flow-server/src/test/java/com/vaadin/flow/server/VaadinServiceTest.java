@@ -412,8 +412,7 @@ public class VaadinServiceTest {
 
         service.removeFromHttpSession(httpSession);
 
-        Mockito.verify(session)
-                .setAttribute(VaadinSession.CLOSE_SESSION_EXPLICITLY, true);
+        Assert.assertTrue(session.sessionClosedExplicitly);
     }
 
     @Test

@@ -309,6 +309,20 @@ public class TaskRunNpmInstallTest {
         Mockito.verify(logger).info(getRunningMsg());
     }
 
+    @Test
+    public void differentNpmFolderName_returnsDifferentHash()
+            throws IOException {
+        final JsonObject packageJson = getNodeUpdater().getPackageJson();
+        final String originalHash = TaskUpdatePackages
+                .generatePackageJsonHash(packageJson, npmFolder);
+
+        final String newFolderHash = TaskUpdatePackages.generatePackageJsonHash(
+                packageJson, new File(npmFolder, "change"));
+
+        Assert.assertNotEquals("Changing base folder should change hash value.",
+                originalHash, newFolderHash);
+    }
+
     /**
      * Update the vaadin package hash to match dependencies. The hash is
      * calculated from dependencies and devDependencies but not from the vaadin
@@ -335,8 +349,8 @@ public class TaskRunNpmInstallTest {
         }
         packageJson.put(DEPENDENCIES, dependencies);
         packageJson.put(DEV_DEPENDENCIES, devDependencies);
-        packageJson.getObject(VAADIN_DEP_KEY).put(HASH_KEY,
-                TaskUpdatePackages.generatePackageJsonHash(packageJson));
+        packageJson.getObject(VAADIN_DEP_KEY).put(HASH_KEY, TaskUpdatePackages
+                .generatePackageJsonHash(packageJson, npmFolder));
         packageJson.remove(DEPENDENCIES);
         packageJson.remove(DEV_DEPENDENCIES);
     }

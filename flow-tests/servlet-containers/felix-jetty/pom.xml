@@ -37,6 +37,13 @@
             <version>${project.version}</version>
         </dependency>
 
+        <!-- Add flow-server dependency so its dependencies are used in copy-dependencies -->
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-server</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
         <dependency>
             <groupId>net.bytebuddy</groupId>
             <artifactId>byte-buddy</artifactId>
