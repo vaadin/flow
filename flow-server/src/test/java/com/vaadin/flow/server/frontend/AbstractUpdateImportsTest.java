@@ -507,7 +507,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
         List<String> internals = expectedImports.stream()
                 .filter(importValue -> importValue
-                        .contains(FrontendUtils.WEBPACK_PREFIX_ALIAS))
+                        .contains(FrontendUtils.FRONTEND_FOLDER_ALIAS))
                 .sorted().collect(Collectors.toList());
         updater.getGeneratedModules().stream().map(this::updateToImport)
                 .forEach(expectedImports::add);
@@ -531,7 +531,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
     private String updateToImport(String value) {
         if (value.startsWith("./")) {
-            value = value.replace("./", FrontendUtils.WEBPACK_PREFIX_ALIAS);
+            value = value.replace("./", FrontendUtils.FRONTEND_FOLDER_ALIAS);
         }
         return String.format("import '%s';", value);
     }
