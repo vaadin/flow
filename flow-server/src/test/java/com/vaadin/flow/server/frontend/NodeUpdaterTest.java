@@ -240,12 +240,12 @@ public class NodeUpdaterTest {
         JsonObject packageJson = nodeUpdater.getPackageJson();
         packageJson.put(NodeUpdater.DEPENDENCIES, Json.createObject());
         packageJson.put(NodeUpdater.DEV_DEPENDENCIES, Json.createObject());
-        packageJson.getObject(NodeUpdater.DEV_DEPENDENCIES).put("vite",
-                "v2.7.10");
+        packageJson.getObject(NodeUpdater.DEV_DEPENDENCIES).put("glob",
+                "7.0.0");
         nodeUpdater.updateDefaultDependencies(packageJson);
 
-        Assert.assertEquals("v3.1.0", packageJson
-                .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("vite"));
+        Assert.assertEquals("7.2.3", packageJson
+                .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("glob"));
     }
 
     @Test // #6907 test when user has set newer versions
