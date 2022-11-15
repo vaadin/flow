@@ -521,8 +521,7 @@ public class FrontendUtils {
         try {
             Optional<DevModeHandler> devModeHandler = DevModeHandlerManager
                     .getDevModeHandler(service);
-            if (!config.isProductionMode() && config.enableDevServer()
-                    && devModeHandler.isPresent()) {
+            if (!config.isProductionMode() && devModeHandler.isPresent()) {
                 content = getFileFromDevModeHandler(devModeHandler.get(), path);
             }
 
