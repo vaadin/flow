@@ -43,8 +43,6 @@ public class DefaultDeploymentConfiguration
 
     public static final String NOT_PRODUCTION_MODE_INFO = "\nVaadin is running in DEVELOPMENT mode - do not use for production deployments.";
 
-    public static final String NOT_PRODUCTION_MODE_WARNING = "\nWARNING: Vaadin is running in DEVELOPMENT mode - do not use for production deployments.";
-
     public static final String WARNING_V14_BOOTSTRAP = "Using deprecated Vaadin 14 bootstrap mode.\n"
             + "Client-side views written in TypeScript are not supported.";
 
@@ -283,11 +281,7 @@ public class DefaultDeploymentConfiguration
             if (productionMode) {
                 info.add("Vaadin is running in production mode.");
             } else {
-                if (enableDevServer()) {
-                    info.add(NOT_PRODUCTION_MODE_INFO);
-                } else {
-                    warnings.add(NOT_PRODUCTION_MODE_WARNING);
-                }
+                info.add(NOT_PRODUCTION_MODE_INFO);
             }
         }
     }
