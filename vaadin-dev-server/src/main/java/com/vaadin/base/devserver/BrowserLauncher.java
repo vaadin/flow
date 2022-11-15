@@ -7,6 +7,9 @@ import org.vaadin.artur.open.Open;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
+/**
+ * Util for launching a browser instance.
+ */
 public class BrowserLauncher {
 
     private static final String LAUNCH_TRACKER = "LaunchUtil.hasLaunched";
@@ -14,10 +17,16 @@ public class BrowserLauncher {
 
     private VaadinContext context;
 
+    /**
+     * Init a launcher for the given context.
+     */
     public BrowserLauncher(VaadinContext context) {
         this.context = context;
     }
 
+    /**
+     * Open the given URL in the default browser.
+     */
     public void launchBrowserInDevelopmentMode(String url) {
         if (isLaunched()) {
             // Only launch browser on startup, not on reload
