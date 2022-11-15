@@ -1009,6 +1009,23 @@ public class FrontendUtils {
         }
 
         /**
+         * Constructs an exception telling what code the command execution
+         * process was exited with and the output that it produced.
+         *
+         * @param processExitCode
+         *            process exit code
+         * @param output
+         *            the output from the command
+         * @param errorOutput
+         *            the error output from the command
+         */
+        public CommandExecutionException(int processExitCode, String output,
+                String errorOutput) {
+            super("Process execution failed with exit code " + processExitCode
+                    + "\nOutput: " + output + "\nError output: " + errorOutput);
+        }
+
+        /**
          * Constructs an exception telling what was the original exception the
          * command execution process failed with.
          *
@@ -1018,6 +1035,7 @@ public class FrontendUtils {
         public CommandExecutionException(Throwable cause) {
             super("Process execution failed", cause);
         }
+
     }
 
     protected static FrontendVersion getVersion(String tool,
@@ -1057,7 +1075,9 @@ public class FrontendUtils {
                     .start();
             int exitCode = process.waitFor();
             if (exitCode != 0) {
-                throw new CommandExecutionException(exitCode);
+                throw new CommandExecutionException(exitCode,
+                        streamToString(process.getInputStream()),
+                        streamToString(process.getErrorStream()));
             }
             return streamToString(process.getInputStream());
         } catch (IOException | InterruptedException e) {
