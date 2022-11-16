@@ -53,6 +53,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.plugin.TestUtils;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -485,10 +486,11 @@ public class BuildFrontendMojoTest {
         initialBuildInfo.put(Constants.GENERATED_TOKEN, "generated");
         initialBuildInfo.put(Constants.FRONTEND_TOKEN, "frontend");
 
-        initialBuildInfo.put(Constants.SERVLET_PARAMETER_ENABLE_PNPM, true);
-        initialBuildInfo.put(Constants.REQUIRE_HOME_NODE_EXECUTABLE, true);
-        initialBuildInfo
-                .put(Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE, true);
+        initialBuildInfo.put(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM,
+                true);
+        initialBuildInfo.put(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE, true);
+        initialBuildInfo.put(
+                InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE, true);
 
         org.apache.commons.io.FileUtils.forceMkdir(tokenFile.getParentFile());
         org.apache.commons.io.FileUtils.write(tokenFile,
@@ -511,18 +513,18 @@ public class BuildFrontendMojoTest {
                 buildInfo.get(Constants.FRONTEND_TOKEN));
 
         Assert.assertNull(
-                Constants.SERVLET_PARAMETER_ENABLE_PNPM
+                InitParameters.SERVLET_PARAMETER_ENABLE_PNPM
                         + "should have been removed",
-                buildInfo.get(Constants.SERVLET_PARAMETER_ENABLE_PNPM));
+                buildInfo.get(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM));
         Assert.assertNull(
-                Constants.REQUIRE_HOME_NODE_EXECUTABLE
+                InitParameters.REQUIRE_HOME_NODE_EXECUTABLE
                         + "should have been removed",
-                buildInfo.get(Constants.REQUIRE_HOME_NODE_EXECUTABLE));
+                buildInfo.get(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE));
         Assert.assertNull(
-                Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE
+                InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE
                         + "should have been removed",
                 buildInfo.get(
-                        Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE));
+                        InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE));
     }
 
     @Test
