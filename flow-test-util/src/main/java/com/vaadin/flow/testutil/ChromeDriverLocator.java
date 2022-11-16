@@ -26,7 +26,7 @@ import io.github.bonigarcia.wdm.WebDriverManager;
  * @author Vaadin Ltd
  * @since 1.0.
  */
-final class ChromeDriverLocator {
+final public class ChromeDriverLocator {
     private static final String WEBDRIVER_CHROME_DRIVER = "webdriver.chrome.driver";
 
     private ChromeDriverLocator() {
@@ -36,7 +36,7 @@ final class ChromeDriverLocator {
      * Fills {@link ChromeDriverLocator#WEBDRIVER_CHROME_DRIVER} system property
      * with chromedriver path, does not override already existing value.
      */
-    static void fillEnvironmentProperty() {
+    static public void fillEnvironmentProperty() {
         if (AbstractTestBenchTest.USE_HUB) {
             return;
         }

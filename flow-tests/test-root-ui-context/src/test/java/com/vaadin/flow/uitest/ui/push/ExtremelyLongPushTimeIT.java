@@ -15,22 +15,22 @@
  */
 package com.vaadin.flow.uitest.ui.push;
 
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
 import org.openqa.selenium.By;
 
-import com.vaadin.flow.testcategory.ExtremelySlowTest;
+import com.vaadin.flow.testutil.TestTag;
+import com.vaadin.testbench.BrowserTest;
 import com.vaadin.testbench.parallel.ExcludeFromSuite;
 
 @ExcludeFromSuite
-@Category(ExtremelySlowTest.class)
-@Ignore
+@Tag(TestTag.EXTREMELY_SLOW_TEST)
+@Disabled
 public class ExtremelyLongPushTimeIT extends AbstractLogTest {
 
     private static final int ONE_HOUR_IN_MS = 60 * 60 * 1000;
 
-    @Test
+    @BrowserTest
     public void test24HourPush() throws Exception {
         open();
 

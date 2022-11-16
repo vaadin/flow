@@ -3,14 +3,15 @@ package com.vaadin.viteapp;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.testbench.BrowserTest;
+
 public class ThemeIT extends ViteDevModeIT {
 
-    @Test
+    @BrowserTest
     public void themeStylesShouldNotBeAddedToHead() {
         String styleFromTheme = "color: darkgreen";
 
@@ -21,28 +22,27 @@ public class ThemeIT extends ViteDevModeIT {
                 "return Array.from(document.querySelectorAll('style')).map(style => style.textContent).filter(text => text.includes(arguments[0]))",
                 styleFromTheme);
 
-        Assert.assertEquals(
-                "Theme rule should have been added once using adoptedStyleSheets",
-                1, adoptedStyleSheetsWithString.size());
-        Assert.assertEquals("Theme rule should not have been added to <head>",
-                0, styleTagsWithString.size());
+        Assertions.assertEquals(1, adoptedStyleSheetsWithString.size(),
+                "Theme rule should have been added once using adoptedStyleSheets");
+        Assertions.assertEquals(0, styleTagsWithString.size(),
+                "Theme rule should not have been added to <head>");
     }
 
-    @Test
+    @BrowserTest
     public void cssImportAnnotation() {
         String bodyBackground = (String) executeScript(
                 "return getComputedStyle(document.body).backgroundColor");
-        Assert.assertEquals("rgb(211, 211, 211)", bodyBackground);
+        Assertions.assertEquals("rgb(211, 211, 211)", bodyBackground);
     }
 
-    @Test
+    @BrowserTest
     public void cssImportAnnotationForComponent() {
         String fieldBackground = (String) executeScript(
                 "return getComputedStyle(document.querySelector('#themedfield')).backgroundColor");
-        Assert.assertEquals("rgb(173, 216, 230)", fieldBackground);
+        Assertions.assertEquals("rgb(173, 216, 230)", fieldBackground);
     }
 
-    @Test
+    @BrowserTest
     public void documentCssImport_externalAddedToHeadAsLink() {
         checkLogsForErrors();
 
@@ -55,8 +55,10 @@ public class ThemeIT extends ViteDevModeIT {
                 .map(link -> link.getAttribute("href"))
                 .collect(Collectors.toList());
 
-        Assert.assertTrue("Missing link for external url", linkUrls
-                .contains("https://fonts.googleapis.com/css?family=Itim"));
+        Assertions.assertTrue(
+                linkUrls.contains(
+                        "https://fonts.googleapis.com/css?family=Itim"),
+                "Missing link for external url");
     }
 
 }

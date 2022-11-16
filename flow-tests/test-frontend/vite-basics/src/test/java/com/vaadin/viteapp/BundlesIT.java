@@ -1,51 +1,50 @@
 package com.vaadin.viteapp;
 
-import com.vaadin.testbench.TestBench;
-import com.vaadin.testbench.TestBenchElement;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.By;
+
+import com.vaadin.testbench.BrowserTest;
 
 public class BundlesIT extends ViteDevModeIT {
 
-    @Test
+    @BrowserTest
     public void bundlesIsUsed() {
-        Assert.assertTrue((Boolean) $("testscope-button").first()
+        Assertions.assertTrue((Boolean) $("testscope-button").first()
                 .getProperty("isFromBundle"));
     }
 
-    @Test
+    @BrowserTest
     public void bundleExportWorks() {
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 (Boolean) executeScript("return !!window.BundleButtonClass"));
     }
 
-    @Test // for https://github.com/vaadin/flow/issues/14355
+    @BrowserTest // for https://github.com/vaadin/flow/issues/14355
     public void bundleDefaultExportWorks() {
         waitUntilNot(driver -> driver.findElement(By.tagName("testscope-map"))
                 .getText().isEmpty());
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 (Boolean) executeScript("return !!window.BundleMapClass"));
-        Assert.assertTrue((Boolean) $("testscope-map").first()
+        Assertions.assertTrue((Boolean) $("testscope-map").first()
                 .getProperty("isFromBundle"));
     }
 
-    @Test
+    @BrowserTest
     public void optimizeDepsConfigHasEntrypoint() {
-        Assert.assertTrue((Boolean) executeScript(
+        Assertions.assertTrue((Boolean) executeScript(
                 "return window.ViteConfigOptimizeDeps.entries.includes('generated/vaadin.ts')"));
     }
 
-    @Test
+    @BrowserTest
     public void optimizeDepsExcludesBundles() {
-        Assert.assertTrue(isExcluded("@vaadin/bundles"));
+        Assertions.assertTrue(isExcluded("@vaadin/bundles"));
     }
 
-    @Test
+    @BrowserTest
     public void optimizeDepsExcludeBundleContents() {
-        Assert.assertTrue(isExcluded("@testscope/all"));
-        Assert.assertTrue(isExcluded("@testscope/button"));
-        Assert.assertTrue(isExcluded("@testscope/map"));
+        Assertions.assertTrue(isExcluded("@testscope/all"));
+        Assertions.assertTrue(isExcluded("@testscope/button"));
+        Assertions.assertTrue(isExcluded("@testscope/map"));
     }
 
     private boolean isExcluded(String dependency) {

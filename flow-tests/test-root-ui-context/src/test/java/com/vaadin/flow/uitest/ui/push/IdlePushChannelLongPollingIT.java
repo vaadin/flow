@@ -1,11 +1,11 @@
 package com.vaadin.flow.uitest.ui.push;
 
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.Tag;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.testcategory.PushTests;
+import com.vaadin.flow.testutil.TestTag;
 
-@Category(PushTests.class)
+@Tag(TestTag.PUSH_TESTS)
 public class IdlePushChannelLongPollingIT extends IdlePushChannelIT {
     @Override
     protected Class<? extends UI> getUIClass() {

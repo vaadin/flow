@@ -18,15 +18,15 @@ package com.vaadin.flow.uitest.ui;
 import java.net.URISyntaxException;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 
 import com.vaadin.flow.internal.nodefeature.NodeFeatures;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.flow.testutil.jupiter.ChromeBrowserTest;
+import com.vaadin.testbench.BrowserTest;
 
 /**
  * @author Vaadin Ltd
@@ -35,7 +35,7 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
  */
 public class RPCLoggerIT extends ChromeBrowserTest {
 
-    @Test
+    @BrowserTest
     public void interceptRpcInvocations()
             throws URISyntaxException, InterruptedException {
         open();
@@ -45,12 +45,12 @@ public class RPCLoggerIT extends ChromeBrowserTest {
                 .perform();
         // button click -> one log item with type event and required node
         List<WebElement> logs = findElements(By.className("log"));
-        Assert.assertEquals(1, logs.size());
-        Assert.assertEquals("Node is 5",
+        Assertions.assertEquals(1, logs.size());
+        Assertions.assertEquals("Node is 5",
                 logs.get(0).findElement(By.className("node")).getText());
         String json = logs.get(0).findElement(By.className("json")).getText();
-        Assert.assertTrue(json.contains("\"type\":\"event\""));
-        Assert.assertTrue(json.contains("\"node\":5"));
+        Assertions.assertTrue(json.contains("\"type\":\"event\""));
+        Assertions.assertTrue(json.contains("\"node\":5"));
 
         WebElement input = findElement(By.tagName("input"));
         input.sendKeys("foo");
@@ -58,23 +58,23 @@ public class RPCLoggerIT extends ChromeBrowserTest {
         // set text in the input -> RPCs for property synchronization, and dom
         // event
         logs = findElements(By.className("log"));
-        Assert.assertEquals(3, logs.size());
+        Assertions.assertEquals(3, logs.size());
 
-        Assert.assertEquals("Node is 3",
+        Assertions.assertEquals("Node is 3",
                 logs.get(1).findElement(By.className("node")).getText());
         json = logs.get(1).findElement(By.className("json")).getText();
-        Assert.assertTrue(json.contains("\"type\":\"mSync\""));
-        Assert.assertTrue(json
+        Assertions.assertTrue(json.contains("\"type\":\"mSync\""));
+        Assertions.assertTrue(json
                 .contains("\"feature\":" + NodeFeatures.ELEMENT_PROPERTIES));
-        Assert.assertTrue(json.contains("\"node\":3"));
-        Assert.assertTrue(json.contains("\"value\":\"foo\""));
+        Assertions.assertTrue(json.contains("\"node\":3"));
+        Assertions.assertTrue(json.contains("\"value\":\"foo\""));
 
-        Assert.assertEquals("Node is 3",
+        Assertions.assertEquals("Node is 3",
                 logs.get(2).findElement(By.className("node")).getText());
         json = logs.get(2).findElement(By.className("json")).getText();
-        Assert.assertTrue(json.contains("\"type\":\"event\""));
-        Assert.assertTrue(json.contains("\"node\":3"));
-        Assert.assertTrue(json.contains("\"event\":\"change\""));
+        Assertions.assertTrue(json.contains("\"type\":\"event\""));
+        Assertions.assertTrue(json.contains("\"node\":3"));
+        Assertions.assertTrue(json.contains("\"event\":\"change\""));
     }
 
     @Override

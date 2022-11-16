@@ -1,21 +1,22 @@
 package com.vaadin.flow.uitest.ui.push;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
 import org.openqa.selenium.By;
 
-import com.vaadin.flow.testcategory.PushTests;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.flow.testutil.TestTag;
+import com.vaadin.flow.testutil.jupiter.ChromeBrowserTest;
+import com.vaadin.testbench.BrowserTest;
 
-@Category(PushTests.class)
+@Tag(TestTag.PUSH_TESTS)
 public class PushErrorHandlingIT extends ChromeBrowserTest {
 
-    @Test
+    @BrowserTest
     public void errorHandling() {
         open();
         findElement(By.id("npeButton")).click();
-        Assert.assertEquals("An error! class java.lang.NullPointerException",
+        Assertions.assertEquals(
+                "An error! class java.lang.NullPointerException",
                 findElement(By.className("error")).getText());
     }
 }

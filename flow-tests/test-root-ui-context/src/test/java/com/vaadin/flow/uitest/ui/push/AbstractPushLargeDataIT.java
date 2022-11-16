@@ -1,15 +1,15 @@
 package com.vaadin.flow.uitest.ui.push;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.Tag;
 import org.openqa.selenium.By;
 
-import com.vaadin.flow.testcategory.PushTests;
+import com.vaadin.flow.testutil.TestTag;
+import com.vaadin.testbench.BrowserTest;
 
-@Category(PushTests.class)
+@Tag(TestTag.PUSH_TESTS)
 public abstract class AbstractPushLargeDataIT extends AbstractLogTest {
 
-    @Test
+    @BrowserTest
     public void pushLargeData() throws Exception {
         open();
 

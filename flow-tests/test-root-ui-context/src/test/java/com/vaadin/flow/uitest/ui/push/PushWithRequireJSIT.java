@@ -1,15 +1,15 @@
 package com.vaadin.flow.uitest.ui.push;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.Tag;
 
-import com.vaadin.flow.testcategory.PushTests;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.flow.testutil.TestTag;
+import com.vaadin.flow.testutil.jupiter.ChromeBrowserTest;
+import com.vaadin.testbench.BrowserTest;
 
-@Category(PushTests.class)
+@Tag(TestTag.PUSH_TESTS)
 public class PushWithRequireJSIT extends ChromeBrowserTest {
 
-    @Test
+    @BrowserTest
     public void pushWithRequireJS() {
         open();
 

@@ -1,7 +1,7 @@
 package com.vaadin.flow.uitest.ui.push;
 
-import org.junit.Ignore;
+import org.junit.jupiter.api.Disabled;
 
-@Ignore
+@Disabled
 public class ExtremelyLongPushTimeWebsocketIT extends ExtremelyLongPushTimeIT {
 }

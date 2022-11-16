@@ -3,20 +3,20 @@ package com.vaadin.flow.uitest.ui.push;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 
-import com.vaadin.flow.testcategory.PushTests;
+import com.vaadin.flow.testutil.TestTag;
+import com.vaadin.testbench.BrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
-@Category(PushTests.class)
+@Tag(TestTag.PUSH_TESTS)
 public abstract class SendMultibyteCharactersTest
         extends AbstractBrowserConsoleTest {
 
-    @Test
+    @BrowserTest
     public void transportSupportsMultibyteCharacters() {
         open();
 
@@ -46,7 +46,7 @@ public abstract class SendMultibyteCharactersTest
         checkLogsForErrors(
                 msg -> msg.contains("sockjs-node") || msg.contains("[WDS]"));
 
-        Assert.assertTrue(
+        Assertions.assertTrue(
                 messages.stream().anyMatch(msg -> msg.startsWith("Received ")
                         && msg.contains("message:")));
     }

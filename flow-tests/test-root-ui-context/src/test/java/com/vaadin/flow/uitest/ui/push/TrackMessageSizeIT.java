@@ -1,17 +1,17 @@
 package com.vaadin.flow.uitest.ui.push;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
 
-import com.vaadin.flow.testcategory.PushTests;
+import com.vaadin.flow.testutil.TestTag;
+import com.vaadin.testbench.BrowserTest;
 
-@Category(PushTests.class)
+@Tag(TestTag.PUSH_TESTS)
 public class TrackMessageSizeIT extends AbstractLogTest {
-    @Test
+    @BrowserTest
     public void runTests() {
         open();
 
-        Assert.assertEquals("1. All tests run", getLastLog().getText());
+        Assertions.assertEquals("1. All tests run", getLastLog().getText());
     }
 }

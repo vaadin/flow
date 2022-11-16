@@ -15,13 +15,13 @@
  */
 package com.vaadin.flow.uitest.ui.theme;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.component.html.testbench.SpanElement;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.flow.testutil.jupiter.ChromeBrowserTest;
+import com.vaadin.testbench.BrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
 import static com.vaadin.flow.uitest.ui.theme.ParentThemeView.BUTTERFLY_ID;
@@ -30,7 +30,7 @@ import static com.vaadin.flow.uitest.ui.theme.ParentThemeView.OCTOPUSS_ID;
 
 public class ParentThemeIT extends ChromeBrowserTest {
 
-    @Test
+    @BrowserTest
     public void childTheme_overridesParentTheme() {
         open();
         // No exception for bg-image should exist
@@ -38,38 +38,42 @@ public class ParentThemeIT extends ChromeBrowserTest {
 
         final WebElement body = findElement(By.tagName("body"));
 
-        Assert.assertEquals(
+        Assertions.assertEquals(
                 "url(\"" + getRootURL()
                         + "/VAADIN/static/themes/child-theme/bg.jpg\")",
                 body.getCssValue("background-image"));
 
-        Assert.assertEquals("\"IBM Plex Mono\"",
+        Assertions.assertEquals("\"IBM Plex Mono\"",
                 body.getCssValue("font-family"));
 
-        Assert.assertEquals("Child should override parent external.",
+        Assertions.assertEquals(
                 "url(\"" + getRootURL()
                         + "/VAADIN/static/themes/child-theme/img/gobo.png\")",
                 $(SpanElement.class).id(BUTTERFLY_ID)
-                        .getCssValue("background-image"));
+                        .getCssValue("background-image"),
+                "Child should override parent external.");
 
-        Assert.assertEquals("Child img selector should be used",
+        Assertions.assertEquals(
                 "url(\"" + getRootURL()
                         + "/VAADIN/static/themes/child-theme/img/viking.png\")",
                 $(SpanElement.class).id(OCTOPUSS_ID)
-                        .getCssValue("background-image"));
+                        .getCssValue("background-image"),
+                "Child img selector should be used");
     }
 
-    @Test
+    @BrowserTest
     public void componentThemeIsApplied_childThemeTextColorIsApplied() {
         open();
         TestBenchElement myField = $(TestBenchElement.class).id(MY_POLYMER_ID);
         TestBenchElement input = myField.$("vaadin-input-container")
                 .attribute("part", "input-field").first();
-        Assert.assertEquals("Polymer text field should have red background",
-                "rgba(255, 0, 0, 1)", input.getCssValue("background-color"));
+        Assertions.assertEquals("rgba(255, 0, 0, 1)",
+                input.getCssValue("background-color"),
+                "Polymer text field should have red background");
 
-        Assert.assertEquals("Text field should have color as green",
-                "rgba(0, 128, 0, 1)", input.getCssValue("color"));
+        Assertions.assertEquals("rgba(0, 128, 0, 1)",
+                input.getCssValue("color"),
+                "Text field should have color as green");
 
     }
 

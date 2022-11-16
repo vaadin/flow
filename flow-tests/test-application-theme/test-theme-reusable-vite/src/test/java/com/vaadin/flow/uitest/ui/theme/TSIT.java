@@ -16,15 +16,15 @@
  */
 package com.vaadin.flow.uitest.ui.theme;
 
-import com.vaadin.flow.component.html.testbench.DivElement;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
+import org.junit.jupiter.api.Assertions;
 
-import org.junit.Assert;
-import org.junit.Test;
+import com.vaadin.flow.component.html.testbench.DivElement;
+import com.vaadin.flow.testutil.jupiter.ChromeBrowserTest;
+import com.vaadin.testbench.BrowserTest;
 
 public class TSIT extends ChromeBrowserTest {
 
-    @Test
+    @BrowserTest
     public void lumoBadgeIsRenderedCorrectly() {
         open();
         checkLogsForErrors();
@@ -32,7 +32,8 @@ public class TSIT extends ChromeBrowserTest {
         DivElement badge = $("ts-component").first().$(DivElement.class)
                 .attribute("theme", "badge").first();
         String badgeBackgroundColor = badge.getCssValue("backgroundColor");
-        Assert.assertEquals("rgba(51, 139, 255, 0.13)", badgeBackgroundColor);
+        Assertions.assertEquals("rgba(51, 139, 255, 0.13)",
+                badgeBackgroundColor);
     }
 
     @Override

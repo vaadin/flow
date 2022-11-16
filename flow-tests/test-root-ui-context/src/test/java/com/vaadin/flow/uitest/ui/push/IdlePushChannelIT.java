@@ -1,25 +1,25 @@
 package com.vaadin.flow.uitest.ui.push;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
 
-import com.vaadin.flow.testcategory.PushTests;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.flow.testutil.TestTag;
+import com.vaadin.flow.testutil.jupiter.ChromeBrowserTest;
+import com.vaadin.testbench.BrowserTest;
 
-@Category(PushTests.class)
+@Tag(TestTag.PUSH_TESTS)
 public abstract class IdlePushChannelIT extends ChromeBrowserTest {
 
     private static final int SEVEN_MINUTES_IN_MS = 7 * 60 * 1000;
 
-    @Test
+    @BrowserTest
     public void longWaitBetweenActions() throws Exception {
         open();
         BasicPushIT.getIncrementButton(this).click();
-        Assert.assertEquals(1, BasicPushIT.getClientCounter(this));
+        Assertions.assertEquals(1, BasicPushIT.getClientCounter(this));
         Thread.sleep(SEVEN_MINUTES_IN_MS);
         BasicPushIT.getIncrementButton(this).click();
-        Assert.assertEquals(2, BasicPushIT.getClientCounter(this));
+        Assertions.assertEquals(2, BasicPushIT.getClientCounter(this));
     }
 
 }

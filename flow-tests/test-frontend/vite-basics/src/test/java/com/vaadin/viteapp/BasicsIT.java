@@ -1,23 +1,23 @@
 package com.vaadin.viteapp;
 
+import org.junit.jupiter.api.Assertions;
+
 import com.vaadin.flow.component.html.testbench.ParagraphElement;
 import com.vaadin.flow.testutil.DevToolsElement;
+import com.vaadin.testbench.BrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 import com.vaadin.viteapp.views.empty.MainView;
 
-import org.junit.Assert;
-import org.junit.Test;
-
 public class BasicsIT extends ViteDevModeIT {
 
-    @Test
+    @BrowserTest
     public void applicationStarts() {
         TestBenchElement header = $("h2").first();
-        Assert.assertEquals("This place intentionally left empty",
+        Assertions.assertEquals("This place intentionally left empty",
                 header.getText());
     }
 
-    @Test
+    @BrowserTest
     public void imageFromThemeShown() {
         TestBenchElement img = $("img").id(MainView.PLANT);
         waitUntil(driver -> {
@@ -29,34 +29,33 @@ public class BasicsIT extends ViteDevModeIT {
         });
     }
 
-    @Test
+    @BrowserTest
     public void applicationUsesVite() {
         TestBenchElement viteStatus = $(ParagraphElement.class).id("status");
-        Assert.assertEquals("Vite feature is true", viteStatus.getText());
+        Assertions.assertEquals("Vite feature is true", viteStatus.getText());
     }
 
-    @Test
+    @BrowserTest
     public void debugWindowShown() {
         DevToolsElement devTools = $(DevToolsElement.class).waitForFirst();
         devTools.expand();
-        Assert.assertNotNull(
+        Assertions.assertNotNull(
                 devTools.$("div").attributeContains("class", "window")
                         .attributeContains("class", "visible").waitForFirst());
     }
 
-    @Test
+    @BrowserTest
     public void canImportJson() {
         $("button").id(MainView.LOAD_AND_SHOW_JSON).click();
-        Assert.assertEquals("{\"hello\":\"World\"}",
+        Assertions.assertEquals("{\"hello\":\"World\"}",
                 $("*").id(MainView.JSON_CONTAINER).getText());
     }
 
-    @Test
+    @BrowserTest
     public void componentCssDoesNotLeakToDocument() {
         String bodyColor = $("body").first().getCssValue("backgroundColor");
-        Assert.assertTrue(
-                "Body should be grey, not red as specified for the component",
-                bodyColor.contains("211, 211, 211"));
+        Assertions.assertTrue(bodyColor.contains("211, 211, 211"),
+                "Body should be grey, not red as specified for the component");
     }
 
     @Test

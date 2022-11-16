@@ -1,18 +1,18 @@
 package com.vaadin.flow.uitest.ui.push;
 
-import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
-import com.vaadin.testbench.TestBenchTestCase;
+import com.vaadin.flow.testutil.jupiter.ChromeBrowserTest;
+import com.vaadin.testbench.BrowserTest;
+import com.vaadin.testbench.BrowserTestBase;
 
 public abstract class AbstractClientServerCounterIT extends ChromeBrowserTest {
 
-    @Test
+    @BrowserTest
     public void testServerInitiatedCommunication() throws InterruptedException {
         open();
 
@@ -31,7 +31,7 @@ public abstract class AbstractClientServerCounterIT extends ChromeBrowserTest {
         waitUntilServerCounterChanges();
     }
 
-    public static int getClientCounter(TestBenchTestCase t) {
+    public static int getClientCounter(BrowserTestBase t) {
         WebElement clientCounterElem = t
                 .findElement(By.id(ClientServerCounterUI.CLIENT_COUNTER_ID));
         return Integer.parseInt(clientCounterElem.getText());
@@ -45,7 +45,7 @@ public abstract class AbstractClientServerCounterIT extends ChromeBrowserTest {
         return getServerCounterStartButton(this);
     }
 
-    public static int getServerCounter(TestBenchTestCase t) {
+    public static int getServerCounter(BrowserTestBase t) {
         WebDriverException lastException = null;
         for (int i = 0; i < 10; i++) {
             try {
@@ -60,15 +60,15 @@ public abstract class AbstractClientServerCounterIT extends ChromeBrowserTest {
         throw lastException;
     }
 
-    public static WebElement getServerCounterStartButton(TestBenchTestCase t) {
+    public static WebElement getServerCounterStartButton(BrowserTestBase t) {
         return t.findElement(By.id(ClientServerCounterUI.START_TIMER_ID));
     }
 
-    public static WebElement getServerCounterStopButton(TestBenchTestCase t) {
+    public static WebElement getServerCounterStopButton(BrowserTestBase t) {
         return t.findElement(By.id(ClientServerCounterUI.STOP_TIMER_ID));
     }
 
-    public static WebElement getIncrementButton(TestBenchTestCase t) {
+    public static WebElement getIncrementButton(BrowserTestBase t) {
         return t.findElement(By.id(ClientServerCounterUI.INCREMENT_BUTTON_ID));
     }
 

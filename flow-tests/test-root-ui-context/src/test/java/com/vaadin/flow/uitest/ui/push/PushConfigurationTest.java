@@ -3,17 +3,18 @@ package com.vaadin.flow.uitest.ui.push;
 import java.util.Locale;
 import java.util.Map;
 
-import org.junit.Assert;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.shared.communication.PushMode;
-import com.vaadin.flow.testcategory.PushTests;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.flow.testutil.TestTag;
+import com.vaadin.flow.testutil.jupiter.ChromeBrowserTest;
 
-@Category(PushTests.class)
+@Tag(TestTag.PUSH_TESTS)
 abstract class PushConfigurationTest extends ChromeBrowserTest {
 
     @Override
@@ -21,10 +22,8 @@ abstract class PushConfigurationTest extends ChromeBrowserTest {
         return PushConfigurationUI.class;
     }
 
-    @Override
+    @BeforeEach
     public void setup() throws Exception {
-        super.setup();
-
         open();
         disablePush();
     }
@@ -41,8 +40,8 @@ abstract class PushConfigurationTest extends ChromeBrowserTest {
 
         int counter = getServerCounter();
         Thread.sleep(2000);
-        Assert.assertEquals("Server count changed without push enabled",
-                counter, getServerCounter());
+        Assertions.assertEquals(counter, getServerCounter(),
+                "Server count changed without push enabled");
     }
 
     protected int getServerCounter() {

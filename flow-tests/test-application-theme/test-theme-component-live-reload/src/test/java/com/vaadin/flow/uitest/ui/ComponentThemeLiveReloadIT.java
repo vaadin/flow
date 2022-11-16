@@ -22,10 +22,9 @@ import java.nio.charset.StandardCharsets;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.StaleElementReferenceException;
@@ -34,7 +33,8 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 
 import com.vaadin.flow.component.html.testbench.DivElement;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.flow.testutil.jupiter.ChromeBrowserTest;
+import com.vaadin.testbench.BrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
 import static com.vaadin.flow.uitest.ui.ComponentThemeLiveReloadView.ATTACH_IDENTIFIER;
@@ -63,7 +63,7 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
     private File parentThemeComponentCSSFile;
     private File parentThemeGeneratedFile;
 
-    @Before
+    @BeforeEach
     public void init() {
         File baseDir = new File(System.getProperty("user.dir", "."));
 
@@ -80,11 +80,12 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
                 String.format(THEME_GENERATED_PATTERN, PARENT_THEME));
     }
 
-    @After
+    @AfterEach
     public void cleanUp() {
         if (currentThemeComponentCSSFile.exists()) {
             // This waits until live reload complete to not affect the second
-            // re-run in CI (if any) and to not affect other @Test methods
+            // re-run in CI (if any) and to not affect other @BrowserTest
+            // methods
             // (if any appear in the future)
             doActionAndWaitUntilLiveReloadComplete(
                     this::deleteCurrentThemeComponentStyles);
@@ -92,14 +93,15 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
 
         if (parentThemeComponentCSSFile.exists()) {
             // This waits until live reload complete to not affect the second
-            // re-run in CI (if any) and to not affect other @Test methods
+            // re-run in CI (if any) and to not affect other @BrowserTest
+            // methods
             // (if any appear in the future)
             doActionAndWaitUntilLiveReloadComplete(
                     this::deleteParentThemeComponentStyles);
         }
     }
 
-    @Test
+    @BrowserTest
     public void webpackLiveReload_newComponentStylesCreatedAndDeleted_stylesUpdatedOnFly() {
         open();
 
@@ -110,11 +112,11 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
          */
         getLogEntries(java.util.logging.Level.ALL);
 
-        Assert.assertFalse(
-                "Border radius for themed component is not expected before "
-                        + "applying the styles",
+        Assertions.assertFalse(
                 isComponentCustomStyle(BORDER_RADIUS)
-                        || isComponentCustomStyle(OTHER_BORDER_RADIUS));
+                        || isComponentCustomStyle(OTHER_BORDER_RADIUS),
+                "Border radius for themed component is not expected before "
+                        + "applying the styles");
 
         // Test current theme live reload:
 
@@ -201,8 +203,8 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
     }
 
     private void deleteCurrentThemeComponentStyles() {
-        Assert.assertTrue("Expected theme generated file to be present",
-                currentThemeGeneratedFile.exists());
+        Assertions.assertTrue(currentThemeGeneratedFile.exists(),
+                "Expected theme generated file to be present");
         // workaround for https://github.com/vaadin/flow/issues/9948
         // delete theme generated with component styles in one run
         deleteFile(currentThemeGeneratedFile);
@@ -210,8 +212,8 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
     }
 
     private void deleteParentThemeComponentStyles() {
-        Assert.assertTrue("Expected parent theme generated file to be present",
-                parentThemeGeneratedFile.exists());
+        Assertions.assertTrue(parentThemeGeneratedFile.exists(),
+                "Expected parent theme generated file to be present");
         // workaround for https://github.com/vaadin/flow/issues/9948
         // delete theme generated with component styles in one run
         deleteFile(parentThemeGeneratedFile);
@@ -221,7 +223,7 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
     private void deleteFile(File fileToDelete) {
         if (fileToDelete != null && fileToDelete.exists()
                 && !fileToDelete.delete()) {
-            Assert.fail("Unable to delete " + fileToDelete);
+            Assertions.fail("Unable to delete " + fileToDelete);
         }
     }
 
@@ -245,11 +247,11 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {
-                Assert.fail(
+                Assertions.fail(
                         "Test interrupted while waiting for attach identifier");
             }
         }
-        Assert.fail("Attach Identifier Element waiting timeout");
+        Assertions.fail("Attach Identifier Element waiting timeout");
         return null;
     }
 
@@ -269,14 +271,14 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
         try {
             waitUntil(condition);
         } catch (TimeoutException te) {
-            Assert.fail(message);
+            Assertions.fail(message);
         }
     }
 
     private void checkNoWebpackErrors(String theme) {
         getLogEntries(java.util.logging.Level.ALL).forEach(logEntry -> {
             if (logEntry.getMessage().contains("Module build failed")) {
-                Assert.fail(String.format(
+                Assertions.fail(String.format(
                         "Webpack error detected in the browser console after "
                                 + "deleting '%s' component style sheet: %s\n\n",
                         theme, logEntry.getMessage()));
@@ -288,7 +290,7 @@ public class ComponentThemeLiveReloadIT extends ChromeBrowserTest {
             waitForElementNotPresent(byErrorOverlayClass);
         } catch (TimeoutException e) {
             WebElement error = findElement(byErrorOverlayClass);
-            Assert.fail(String.format(
+            Assertions.fail(String.format(
                     "Webpack error overlay detected after deleting '%s' "
                             + "component style sheet: %s\n\n",
                     theme, error.getText()));

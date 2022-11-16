@@ -3,12 +3,13 @@ package com.vaadin.flow.uitest.ui.push;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.junit.After;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 
-import com.vaadin.flow.testcategory.PushTests;
+import com.vaadin.flow.testutil.TestTag;
 
-@Category(PushTests.class)
+@Tag(TestTag.PUSH_TESTS)
 public abstract class ChromeBrowserTestWithProxy
         extends AbstractBrowserConsoleTest {
 
@@ -18,13 +19,12 @@ public abstract class ChromeBrowserTestWithProxy
 
     private String rootUrl;
 
-    @Override
+    @BeforeEach
     public void setup() throws Exception {
-        super.setup();
         connectProxy();
     }
 
-    @After
+    @AfterEach
     public void teardownProxy() {
         disconnectProxy();
     }

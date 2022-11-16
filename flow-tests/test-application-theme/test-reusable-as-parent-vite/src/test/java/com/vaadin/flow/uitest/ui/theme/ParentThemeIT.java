@@ -15,15 +15,16 @@
  */
 package com.vaadin.flow.uitest.ui.theme;
 
-import org.junit.Assert;
-import org.junit.Test;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
-import java.util.regex.Pattern;
-import java.util.regex.Matcher;
 
 import com.vaadin.flow.component.html.testbench.SpanElement;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.flow.testutil.jupiter.ChromeBrowserTest;
+import com.vaadin.testbench.BrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
 import static com.vaadin.flow.uitest.ui.theme.ParentThemeView.BUTTERFLY_ID;
@@ -43,7 +44,7 @@ public class ParentThemeIT extends ChromeBrowserTest {
             ("url\\(\"" + getRootURL() + "/VAADIN/build/viking(.*)\\.png\"\\)")
                     .replaceAll("/", "\\\\/"));
 
-    @Test
+    @BrowserTest
     public void childTheme_overridesParentTheme() {
         open();
         // No exception for bg-image should exist
@@ -51,38 +52,40 @@ public class ParentThemeIT extends ChromeBrowserTest {
 
         final WebElement body = findElement(By.tagName("body"));
 
-        Assert.assertEquals("\"IBM Plex Mono\"",
+        Assertions.assertEquals("\"IBM Plex Mono\"",
                 body.getCssValue("font-family"));
 
         Matcher bodyImageMatcher = BODY_IMAGE_PATTERN
                 .matcher(body.getCssValue("background-image"));
-        Assert.assertTrue("Should override the body background image",
-                bodyImageMatcher.matches());
+        Assertions.assertTrue(bodyImageMatcher.matches(),
+                "Should override the body background image");
 
         Matcher butterflyImageMatcher = BUTTERFLY_IMAGE_PATTERN
                 .matcher($(SpanElement.class).id(BUTTERFLY_ID)
                         .getCssValue("background-image"));
-        Assert.assertTrue("Should override the butterfly background image",
-                butterflyImageMatcher.matches());
+        Assertions.assertTrue(butterflyImageMatcher.matches(),
+                "Should override the butterfly background image");
 
         Matcher octupussImageMatcher = OCTOPUSS_IMAGE_PATTERN
                 .matcher($(SpanElement.class).id(OCTOPUSS_ID)
                         .getCssValue("background-image"));
-        Assert.assertTrue("Should override the octupuss background image",
-                octupussImageMatcher.matches());
+        Assertions.assertTrue(octupussImageMatcher.matches(),
+                "Should override the octupuss background image");
     }
 
-    @Test
+    @BrowserTest
     public void componentThemeIsApplied_childThemeTextColorIsApplied() {
         open();
         TestBenchElement myField = $(TestBenchElement.class).id(MY_POLYMER_ID);
         TestBenchElement input = myField.$("vaadin-input-container")
                 .attribute("part", "input-field").first();
-        Assert.assertEquals("Polymer text field should have red background",
-                "rgba(255, 0, 0, 1)", input.getCssValue("background-color"));
+        Assertions.assertEquals("rgba(255, 0, 0, 1)",
+                input.getCssValue("background-color"),
+                "Polymer text field should have red background");
 
-        Assert.assertEquals("Text field should have color as green",
-                "rgba(0, 128, 0, 1)", input.getCssValue("color"));
+        Assertions.assertEquals("rgba(0, 128, 0, 1)",
+                input.getCssValue("color"),
+                "Text field should have color as green");
 
     }
 

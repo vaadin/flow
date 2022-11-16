@@ -5,12 +5,13 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+
+import com.vaadin.testbench.BrowserTest;
 
 public class FileAccessIT extends ViteDevModeIT {
 
-    @Test
+    @BrowserTest
     public void expectedFoldersAccessible() throws Exception {
         /*
          * This just tests a few sample folders to see that there is not a
@@ -23,10 +24,10 @@ public class FileAccessIT extends ViteDevModeIT {
     private void assertAllowed(String fileInProject) throws IOException {
         String result = IOUtils.toString(getFsUrl(fileInProject),
                 StandardCharsets.UTF_8);
-        Assert.assertFalse(result.isEmpty());
+        Assertions.assertFalse(result.isEmpty());
     }
 
-    @Test
+    @BrowserTest
     public void mostFoldersNotAccessible() throws Exception {
         /*
          * This just tests a few sample folders to see that there is not a
@@ -41,12 +42,12 @@ public class FileAccessIT extends ViteDevModeIT {
         try {
             URL url = getFsUrl(fileInProject);
             IOUtils.toString(url, StandardCharsets.UTF_8);
-            Assert.fail("Request for " + url + " should not succeed");
+            Assertions.fail("Request for " + url + " should not succeed");
         } catch (IOException e) {
-            Assert.assertTrue(
-                    "Request for " + fileInProject + " should have failed",
+            Assertions.assertTrue(
                     e.getMessage().contains(
-                            "Server returned HTTP response code: 403"));
+                            "Server returned HTTP response code: 403"),
+                    "Request for " + fileInProject + " should have failed");
         }
 
     }

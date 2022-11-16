@@ -15,8 +15,8 @@
  */
 package com.vaadin.flow;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * Test that tests are run with assertions activated
@@ -29,8 +29,7 @@ public class AssertionTest {
         // *assigns* true if assertions are on.
         assert assertOn = true;
 
-        Assert.assertTrue(
-                "Assertions are turned off for the root-context package",
-                assertOn);
+        Assertions.assertTrue(assertOn,
+                "Assertions are turned off for the root-context package");
     }
 }

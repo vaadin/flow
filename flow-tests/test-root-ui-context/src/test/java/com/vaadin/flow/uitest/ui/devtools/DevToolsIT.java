@@ -15,11 +15,11 @@
  */
 package com.vaadin.flow.uitest.ui.devtools;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.By;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.flow.testutil.jupiter.ChromeBrowserTest;
+import com.vaadin.testbench.BrowserTest;
 
 public class DevToolsIT extends ChromeBrowserTest {
 
@@ -28,15 +28,15 @@ public class DevToolsIT extends ChromeBrowserTest {
         return "/view-disabled-dev-tools/com.vaadin.flow.uitest.devtools.DevToolsView";
     }
 
-    @Test
+    @BrowserTest
     public void devMode_devTools_disabled_shouldNotRenderDevTools() {
         open();
-        Assert.assertTrue("No dev tools popup expected when it is disabled",
-                findElements(By.tagName("vaadin-dev-tools")).isEmpty());
+        Assertions.assertTrue(
+                findElements(By.tagName("vaadin-dev-tools")).isEmpty(),
+                "No dev tools popup expected when it is disabled");
 
-        Assert.assertTrue(
-                "Live reload is expected to be disabled when dev tools are "
-                        + "disabled",
-                findElements(By.id("vaadin-live-reload-indicator")).isEmpty());
+        Assertions.assertTrue(
+                findElements(By.id("vaadin-live-reload-indicator")).isEmpty(),
+                "Live reload is expected to be disabled when dev tools are disabled");
     }
 }

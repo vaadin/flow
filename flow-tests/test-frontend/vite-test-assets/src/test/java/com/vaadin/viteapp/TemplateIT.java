@@ -1,63 +1,64 @@
 package com.vaadin.viteapp;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.vaadin.example.addon.AddonLitComponent;
+
 import com.vaadin.flow.component.html.testbench.InputTextElement;
 import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.component.html.testbench.SpanElement;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.flow.testutil.jupiter.ChromeBrowserTest;
+import com.vaadin.testbench.BrowserTest;
 import com.vaadin.viteapp.views.template.LitComponent;
 import com.vaadin.viteapp.views.template.PolymerComponent;
 import com.vaadin.viteapp.views.template.ReflectivelyReferencedComponent;
 import com.vaadin.viteapp.views.template.TemplateView;
 
 public class TemplateIT extends ChromeBrowserTest {
-    @BeforeClass
+    @BeforeAll
     public static void driver() {
         WebDriverManager.chromedriver().setup();
     }
 
-    @Before
+    @BeforeEach
     public void openView() {
         getDriver().get(getRootURL() + "/" + TemplateView.ROUTE);
         waitForDevServer();
         getCommandExecutor().waitForVaadin();
     }
 
-    @Test
+    @BrowserTest
     public void testElementIdMapping() {
         final String initialValue = "Default";
 
         SpanElement litSpan = $(LitComponent.TAG).first().$(SpanElement.class)
                 .first();
-        Assert.assertEquals(initialValue, litSpan.getText());
+        Assertions.assertEquals(initialValue, litSpan.getText());
 
         SpanElement polymerSpan = $(PolymerComponent.TAG).first()
                 .$(SpanElement.class).first();
-        Assert.assertEquals(initialValue, polymerSpan.getText());
+        Assertions.assertEquals(initialValue, polymerSpan.getText());
 
         SpanElement addonLitSpan = $(AddonLitComponent.TAG).first()
                 .$(SpanElement.class).first();
-        Assert.assertEquals(initialValue, addonLitSpan.getText());
+        Assertions.assertEquals(initialValue, addonLitSpan.getText());
 
         final String newLabel = "New label";
         $(InputTextElement.class).first().setValue(newLabel);
         $(NativeButtonElement.class).first().click();
 
-        Assert.assertEquals(newLabel, litSpan.getText());
-        Assert.assertEquals(newLabel, polymerSpan.getText());
-        Assert.assertEquals(newLabel, addonLitSpan.getText());
+        Assertions.assertEquals(newLabel, litSpan.getText());
+        Assertions.assertEquals(newLabel, polymerSpan.getText());
+        Assertions.assertEquals(newLabel, addonLitSpan.getText());
     }
 
-    @Test
+    @BrowserTest
     public void testElementReferencedByReflection() {
         SpanElement span = $(ReflectivelyReferencedComponent.TAG).first()
                 .$(SpanElement.class).first();
-        Assert.assertEquals("ReflectivelyReferencedComponent contents",
+        Assertions.assertEquals("ReflectivelyReferencedComponent contents",
                 span.getText());
     }
 }

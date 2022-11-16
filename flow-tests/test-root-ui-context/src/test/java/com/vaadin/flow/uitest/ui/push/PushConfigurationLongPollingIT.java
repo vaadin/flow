@@ -2,26 +2,26 @@ package com.vaadin.flow.uitest.ui.push;
 
 import java.util.Locale;
 
-import org.hamcrest.CoreMatchers;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.By;
 
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Transport;
+import com.vaadin.testbench.BrowserTest;
 
 public class PushConfigurationLongPollingIT extends PushConfigurationTest {
 
-    @Test
+    @BrowserTest
     public void testLongPolling() throws InterruptedException {
         findElement(By.id("transport")).findElement(By
                 .id(Transport.LONG_POLLING.name().toLowerCase(Locale.ENGLISH)))
                 .click();
 
-        Assert.assertThat(getStatusText(),
-                CoreMatchers.containsString("fallbackTransport: long-polling"));
-        Assert.assertThat(getStatusText(),
-                CoreMatchers.containsString("transport: long-polling"));
+        Assertions.assertNotNull(getStatusText());
+        Assertions.assertTrue(
+                getStatusText().contains("fallbackTransport: long-polling"));
+        Assertions.assertTrue(
+                getStatusText().contains("transport: long-polling"));
 
         findElement(By.id("push-mode"))
                 .findElement(By.id(

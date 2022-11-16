@@ -2,17 +2,16 @@ package com.vaadin.flow.uitest.ui.push;
 
 import java.util.Locale;
 
-import org.hamcrest.CoreMatchers;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.By;
 
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Transport;
+import com.vaadin.testbench.BrowserTest;
 
 public class PushConfigurationWebSocketIT extends PushConfigurationTest {
 
-    @Test
+    @BrowserTest
     public void testWebsocket() throws InterruptedException {
         findElement(By.id("transport"))
                 .findElement(By.id(
@@ -24,14 +23,14 @@ public class PushConfigurationWebSocketIT extends PushConfigurationTest {
                         PushMode.AUTOMATIC.name().toLowerCase(Locale.ENGLISH)))
                 .click();
 
-        Assert.assertThat(getStatusText(),
-                CoreMatchers.containsString("fallbackTransport: long-polling"));
-        Assert.assertThat(getStatusText(),
-                CoreMatchers.containsString("transport: websocket"));
+        Assertions.assertNotNull(getStatusText());
+        Assertions.assertTrue(
+                getStatusText().contains("fallbackTransport: long-polling"));
+        Assertions.assertTrue(getStatusText().contains("transport: websocket"));
 
         waitForServerCounterToUpdate();
 
-        Assert.assertEquals(Transport.WEBSOCKET.getIdentifier(),
+        Assertions.assertEquals(Transport.WEBSOCKET.getIdentifier(),
                 getTransport());
     }
 }

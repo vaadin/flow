@@ -2,10 +2,10 @@ package com.vaadin.flow.uitest.ui.push;
 
 import java.io.IOException;
 
-import org.junit.Test;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.remote.DesiredCapabilities;
+
+import com.vaadin.testbench.BrowserTest;
 
 public abstract class ReconnectTest extends ChromeBrowserTestWithProxy {
 
@@ -21,7 +21,7 @@ public abstract class ReconnectTest extends ChromeBrowserTestWithProxy {
         testBench().disableWaitForVaadin();
     }
 
-    @Test
+    @BrowserTest
     public void messageIsQueuedOnDisconnect() throws IOException {
         disconnectProxy();
 
@@ -31,7 +31,7 @@ public abstract class ReconnectTest extends ChromeBrowserTestWithProxy {
         waitUntilClientCounterChanges(1);
     }
 
-    @Test
+    @BrowserTest
     public void messageIsNotSentBeforeConnectionIsEstablished()
             throws IOException, InterruptedException {
         disconnectProxy();
@@ -41,11 +41,6 @@ public abstract class ReconnectTest extends ChromeBrowserTestWithProxy {
 
         connectAndVerifyConnectionEstablished();
         waitUntilClientCounterChanges(1);
-    }
-
-    @Override
-    protected DesiredCapabilities getDesiredCapabilities() {
-        return super.getDesiredCapabilities();
     }
 
     private void clickButtonAndWaitForTwoReconnectAttempts() {

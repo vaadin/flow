@@ -1,30 +1,30 @@
 package com.vaadin.flow.uitest.ui.push;
 
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
 import org.openqa.selenium.By;
 
-import com.vaadin.flow.testcategory.PushTests;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.flow.testutil.TestTag;
+import com.vaadin.flow.testutil.jupiter.ChromeBrowserTest;
+import com.vaadin.testbench.BrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
-@Category(PushTests.class)
+@Tag(TestTag.PUSH_TESTS)
 public class PushToggleComponentVisibilityIT extends ChromeBrowserTest {
 
     private static final String HIDE = "hide";
 
-    @Test
+    @BrowserTest
     public void ensureComponentVisible() {
         open();
 
         $(TestBenchElement.class).id(HIDE).click();
-        Assert.assertEquals("Please wait",
+        Assertions.assertEquals("Please wait",
                 $(TestBenchElement.class).id("label").getText());
 
         waitUntil(driver -> isElementPresent(By.id(HIDE)));
         $(TestBenchElement.class).id(HIDE).click();
-        Assert.assertEquals("Please wait",
+        Assertions.assertEquals("Please wait",
                 $(TestBenchElement.class).id("label").getText());
     }
 }

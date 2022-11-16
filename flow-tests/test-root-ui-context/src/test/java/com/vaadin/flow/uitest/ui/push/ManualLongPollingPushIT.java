@@ -1,15 +1,15 @@
 package com.vaadin.flow.uitest.ui.push;
 
-import org.junit.Test;
-import org.junit.experimental.categories.Category;
+import org.junit.jupiter.api.Tag;
 
-import com.vaadin.flow.testcategory.PushTests;
+import com.vaadin.flow.testutil.TestTag;
+import com.vaadin.testbench.BrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
-@Category(PushTests.class)
+@Tag(TestTag.PUSH_TESTS)
 public class ManualLongPollingPushIT extends AbstractLogTest {
 
-    @Test
+    @BrowserTest
     public void doubleManualPushDoesNotFreezeApplication() {
         open();
         $(TestBenchElement.class).id("double-manual-push").click();

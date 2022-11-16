@@ -2,7 +2,7 @@ package com.vaadin.flow.uitest.ui.push;
 
 import java.util.List;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.flow.testutil.jupiter.ChromeBrowserTest;
 
 public abstract class AbstractBrowserConsoleTest extends ChromeBrowserTest {
 

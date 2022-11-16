@@ -15,17 +15,17 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
 import org.openqa.selenium.By;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.flow.testutil.jupiter.ChromeBrowserTest;
+import com.vaadin.testbench.BrowserTest;
 
 public class NotSyncedPropertyUpdateIT extends ChromeBrowserTest {
 
-    @Test
+    @BrowserTest
     public void unsyncedPropertyUpdate_internalError() {
         open();
 
@@ -33,7 +33,7 @@ public class NotSyncedPropertyUpdateIT extends ChromeBrowserTest {
         input.sendKeys("bar", Keys.ENTER);
 
         // system error which means there is an exception on the server side
-        Assert.assertTrue(isElementPresent(By.className("v-system-error")));
+        Assertions.assertTrue(isElementPresent(By.className("v-system-error")));
     }
 
     @Override
