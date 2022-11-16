@@ -601,10 +601,10 @@ public class BuildFrontendUtil {
             buildInfo.remove(NODE_DOWNLOAD_ROOT);
             buildInfo.remove(GENERATED_TOKEN);
             buildInfo.remove(FRONTEND_TOKEN);
-            buildInfo.remove(Constants.SERVLET_PARAMETER_ENABLE_PNPM);
-            buildInfo.remove(Constants.REQUIRE_HOME_NODE_EXECUTABLE);
+            buildInfo.remove(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM);
+            buildInfo.remove(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE);
             buildInfo.remove(
-                    Constants.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE);
+                    InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE);
             buildInfo.remove(Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN);
             buildInfo.remove(Constants.JAVA_RESOURCE_FOLDER_TOKEN);
             buildInfo.remove(Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN);
