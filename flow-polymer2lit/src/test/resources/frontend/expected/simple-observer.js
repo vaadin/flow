@@ -1,4 +1,4 @@
-import { html, LitElement, css } from "lit";
+import { html, LitElement, css } from 'lit';
 
 class SimpleObserver extends LitElement {
   render() {
@@ -18,8 +18,7 @@ class SimpleObserver extends LitElement {
       previousLast: String,
       example: {
         type: String,
-        /* TODO: Convert this complex observer manually */
-        observer: "userListChanged(users.*, filter)",
+        /* TODO: Convert this complex observer manually */ observer: 'userListChanged(users.*, filter)',
       },
     };
   }
@@ -33,18 +32,14 @@ class SimpleObserver extends LitElement {
   }
 
   static get is() {
-    return "simple-observer";
+    return 'simple-observer';
   }
   set first(newValue) {
     const oldValue = this.first;
     this._first = newValue;
     if (oldValue !== newValue) {
       this._firstChanged(newValue, oldValue);
-      this.requestUpdateInternal(
-        "first",
-        oldValue,
-        this.constructor.properties.first
-      );
+      this.requestUpdateInternal('first', oldValue, this.constructor.properties.first);
     }
   }
   get first() {
@@ -56,11 +51,7 @@ class SimpleObserver extends LitElement {
     this._last = newValue;
     if (oldValue !== newValue) {
       this._lastChanged(newValue, oldValue);
-      this.requestUpdateInternal(
-        "last",
-        oldValue,
-        this.constructor.properties.last
-      );
+      this.requestUpdateInternal('last', oldValue, this.constructor.properties.last);
     }
   }
   get last() {

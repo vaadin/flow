@@ -698,6 +698,11 @@ function convertFile(filename: string, useLit1: boolean, useOptionalChaining: bo
   output = output.replace(/this.\$\[['"]([^;., ()]*['"]\])/g, `this.renderRoot.querySelector("#$1")`);
   output = output.replace(/this\.\$\.([^;., ()]*)/g, `this.renderRoot.querySelector("#$1")`);
   const prettified = prettier.format(output, {
+    bracketSpacing: true,
+    printWidth: 120,
+    trailingComma: 'all',
+    tabWidth: 2,
+    singleQuote: true,
     parser: 'typescript'
   });
   fs.writeFileSync(jsOutputFile, prettified);
