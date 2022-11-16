@@ -24,11 +24,13 @@ const appShellUrl = '.';
 
 const frontendFolder = path.resolve(__dirname, settings.frontendFolder);
 const themeFolder = path.resolve(frontendFolder, settings.themeFolder);
+const statsFolder = path.resolve(__dirname, settings.statsOutput);
 const frontendBundleFolder = path.resolve(__dirname, settings.frontendBundleOutput);
 const jarResourcesFolder = path.resolve(__dirname, settings.jarResourcesFolder);
 const generatedFlowImportsFolder = path.resolve(__dirname, settings.generatedFlowImportsFolder);
 const themeResourceFolder = path.resolve(__dirname, settings.themeResourceFolder);
-const statsFile = path.resolve(frontendBundleFolder, '..', 'config', 'stats.json');
+
+const statsFile = path.resolve(statsFolder, 'stats.json');
 
 const projectStaticAssetsFolders = [
   path.resolve(__dirname, 'src', 'main', 'resources', 'META-INF', 'resources'),

@@ -77,12 +77,16 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
         settings.put("themeFolder", "themes");
         settings.put("themeResourceFolder",
                 FrontendUtils.getUnixPath(jarFrontendResourcesFolder.toPath()));
-        String webappResources;
+        String webappResources, statsOutput;
         if (webappResourcesDirectory == null) {
             webappResources = combinePath(buildDirectory, "classes",
                     VAADIN_WEBAPP_RESOURCES);
+            statsOutput = combinePath(buildDirectory, "classes",
+                    VAADIN_WEBAPP_RESOURCES, "..", "config");
         } else {
             webappResources = webappResourcesDirectory.getPath();
+            statsOutput = new File(webappResourcesDirectory.getParentFile(),
+                    "config").getPath();
         }
         String staticOutput = combinePath(webappResources,
                 VAADIN_STATIC_FILES_PATH);
@@ -90,6 +94,7 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
         settings.put("staticOutput",
                 FrontendUtils.getUnixPath(new File(staticOutput).toPath()));
         settings.put("generatedFolder", "generated");
+        settings.put("statsOutput", statsOutput);
         settings.put("frontendBundleOutput", webappResources);
         settings.put("jarResourcesFolder",
                 FrontendUtils.getUnixPath(jarFrontendResourcesFolder.toPath()));
