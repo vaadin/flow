@@ -2,10 +2,10 @@ package com.vaadin.base.devserver;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.vaadin.artur.open.Open;
 
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
+import com.vaadin.open.Open;
 
 /**
  * Util for launching a browser instance.
