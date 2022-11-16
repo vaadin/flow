@@ -64,8 +64,8 @@ public abstract class PolymerTemplate<M extends TemplateModel>
             properties.load(PolymerTemplate.class
                     .getResourceAsStream("version.properties"));
         } catch (Exception e) {
-            LoggerFactory.getLogger(PolymerTemplate.class.getName()).warn(
-                    "Unable to read the version.properties file.", e);
+            LoggerFactory.getLogger(PolymerTemplate.class.getName())
+                    .warn("Unable to read the version.properties file.", e);
             throw new ExceptionInInitializerError(e);
         }
 
