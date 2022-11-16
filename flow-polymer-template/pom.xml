@@ -25,6 +25,10 @@
             <artifactId>flow-server</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>license-checker</artifactId>
+        </dependency>
 
 
         <!-- TESTING DEPENDENCIES -->
@@ -71,6 +75,15 @@
         </dependency>
     </dependencies>
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>**/version.properties</include>
+                </includes>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

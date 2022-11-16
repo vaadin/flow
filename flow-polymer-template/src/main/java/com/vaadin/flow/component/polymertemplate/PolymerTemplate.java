@@ -15,8 +15,11 @@
  */
 package com.vaadin.flow.component.polymertemplate;
 
+import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Stream;
+
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
@@ -28,6 +31,7 @@ import com.vaadin.flow.internal.Template;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.templatemodel.TemplateModel;
+import com.vaadin.pro.licensechecker.LicenseChecker;
 
 /**
  * Component for an HTML element declared as a polymer component. The HTML
@@ -60,6 +64,19 @@ public abstract class PolymerTemplate<M extends TemplateModel>
 
     static {
         UsageStatistics.markAsUsed("flow/PolymerTemplate", null);
+
+        Properties properties = new Properties();
+        try {
+            properties.load(PolymerTemplate.class
+                    .getResourceAsStream("version.properties"));
+        } catch (Exception e) {
+            LoggerFactory.getLogger(PolymerTemplate.class.getName()).warn(
+                    "Unable to read the version.properties file.", e);
+            throw new ExceptionInInitializerError(e);
+        }
+
+        LicenseChecker.checkLicenseFromStaticBlock("flow-polymer-template",
+                properties.getProperty("polymertemplate.version"), null);
     }
 
     /**
