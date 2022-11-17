@@ -2,6 +2,6 @@ Bundle-SymbolicName: ${project.groupId}.flow.polymer-template
 Bundle-Name: Vaadin Flow Polymer Templates Support
 Bundle-Version: ${osgi.bundle.version}
 Bundle-RequiredExecutionEnvironment: JavaSE-17
-Bundle-License: http://www.apache.org/licenses/LICENSE-2.0
+Bundle-License: https://vaadin.com/license/cvdl-4.0
 Export-Package: com.vaadin.flow.component.polymertemplate,\
     com.vaadin.flow.templatemodel,;-noimport:=true
