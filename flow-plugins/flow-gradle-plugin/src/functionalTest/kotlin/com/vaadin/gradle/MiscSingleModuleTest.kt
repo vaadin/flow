@@ -76,7 +76,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             }
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
-                providedCompile("jakarta.servlet:jakarta.servlet-api:5.0.0")
+                providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
         """.trimIndent()
@@ -124,7 +124,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             }
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
-                providedCompile("jakarta.servlet:jakarta.servlet-api:5.0.0")
+                providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
         """.trimIndent()
@@ -155,11 +155,11 @@ class MiscSingleModuleTest : AbstractGradleTest() {
                 mavenCentral()
                 maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
             }
-            def jettyVersion = "11.0.7"
+            def jettyVersion = "11.0.12"
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
-                implementation("jakarta.servlet:jakarta.servlet-api:5.0.0")
+                implementation("jakarta.servlet:jakarta.servlet-api:6.0.0")
 
                 implementation("org.eclipse.jetty:jetty-server:${"$"}{jettyVersion}")
                 implementation("org.eclipse.jetty.websocket:websocket-jetty-server:${"$"}{jettyVersion}")
@@ -211,7 +211,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
-                implementation("jakarta.servlet:jakarta.servlet-api:5.0.0")
+                implementation("jakarta.servlet:jakarta.servlet-api:6.0.0")
 
                 implementation("org.eclipse.jetty:jetty-server:${"$"}{jettyVersion}")
                 implementation("org.eclipse.jetty.websocket:websocket-jakarta-server:${"$"}{jettyVersion}")
@@ -250,7 +250,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
 
     private fun doTestSpringProjectProductionMode(compressedExtension: String = "*.br") {
 
-        val springBootVersion = "3.0.0-RC1"
+        val springBootVersion = "3.0.0-RC2"
 
         testProject.settingsFile.writeText(
             """
@@ -383,7 +383,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             }
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
-                providedCompile("jakarta.servlet:jakarta.servlet-api:5.0.0")
+                providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
             

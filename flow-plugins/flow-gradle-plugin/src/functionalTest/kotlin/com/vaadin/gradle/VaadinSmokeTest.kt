@@ -46,7 +46,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
             }
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
-                providedCompile("jakarta.servlet:jakarta.servlet-api:5.0.0")
+                providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
             vaadin {
@@ -219,7 +219,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
             }
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
-                providedCompile("jakarta.servlet:jakarta.servlet-api:5.0.0")
+                providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
             vaadin {
@@ -250,7 +250,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
             }
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
-                providedCompile("jakarta.servlet:jakarta.servlet-api:5.0.0")
+                providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
             vaadin {
@@ -281,7 +281,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
             }
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
-                providedCompile("jakarta.servlet:jakarta.servlet-api:5.0.0")
+                providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
             vaadin {
@@ -319,7 +319,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
 
             @Route("")
             @CssImport("./mystyle.css")
-            @NpmPackage(value = "@vaadin/vaadin-themable-mixin", version = "23.3.0-alpha2")
+            @NpmPackage(value = "@vaadin/vaadin-themable-mixin", version = "24.0.0-alpha4")
             public class MainView extends Div {
 
                 public MainView() {
