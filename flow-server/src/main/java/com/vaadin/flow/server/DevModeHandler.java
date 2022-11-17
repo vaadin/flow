@@ -658,6 +658,8 @@ public final class DevModeHandler implements RequestHandler {
         long start = System.nanoTime();
 
         processBuilder.command(command);
+        processBuilder.environment().put("watchDogPort",
+                Integer.toString(watchDog.get().getWatchDogPort()));
         try {
             webpackProcess.set(
                     processBuilder.redirectError(ProcessBuilder.Redirect.PIPE)
@@ -730,8 +732,6 @@ public final class DevModeHandler implements RequestHandler {
         command.add(webpackConfig.getAbsolutePath());
         command.add("--port");
         command.add(String.valueOf(port));
-        command.add("--watchDogPort=" + watchDog.get().getWatchDogPort());
-
         // Workaround for issue with Node 17 webpack dev server denying
         // request to localhost. See https://github.com/vaadin/flow/issues/12546
         command.add("--host=127.0.0.1");

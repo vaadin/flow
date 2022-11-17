@@ -103,24 +103,28 @@ function collectChunks(statsJson, acceptedChunks) {
         const modules = [];
         // Add all modules for chunk as slimmed down modules
         chunk.modules.forEach(function (module) {
-          const slimModule = {
-            id: module.id,
-            name: module.name,
-            source: module.source
-          };
-          if (module.modules) {
-            slimModule.modules = collectSubModules(module);
+          if(module.name.includes("generated-flow-imports.js") || module.name.includes("generated-flow-imports-fallback.js")) {
+            const slimModule = {
+              id: module.id,
+              name: module.name,
+              source: module.source
+            };
+            if (module.modules) {
+              slimModule.modules = collectSubModules(module);
+            }
+            modules.push(slimModule);
           }
-          modules.push(slimModule);
         });
-        const slimChunk = {
-          id: chunk.id,
-          names: chunk.names,
-          files: chunk.files,
-          hash: chunk.hash,
-          modules: modules
+        if(chunk.modules.size > 0) {
+          const slimChunk = {
+            id: chunk.id,
+            names: chunk.names,
+            files: chunk.files,
+            hash: chunk.hash,
+            modules: modules
+          }
+          chunks.push(slimChunk);
         }
-        chunks.push(slimChunk);
       }
     });
   }
