@@ -95,9 +95,6 @@
                         <manifest>
                             <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                         </manifest>
-                        <manifestEntries>
-                            <CvdlName>${cvdlName}</CvdlName>
-                        </manifestEntries>
                     </archive>
                 </configuration>
             </plugin>

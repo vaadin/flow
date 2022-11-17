@@ -5,3 +5,4 @@ Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-License: https://vaadin.com/license/cvdl-4.0
 Export-Package: com.vaadin.flow.component.polymertemplate,\
     com.vaadin.flow.templatemodel,;-noimport:=true
+CvdlName: ${cvdlName}
