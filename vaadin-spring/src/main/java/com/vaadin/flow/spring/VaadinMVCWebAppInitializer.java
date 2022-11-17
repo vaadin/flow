@@ -23,16 +23,14 @@ import java.util.stream.Stream;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRegistration.Dynamic;
-
-import com.vaadin.flow.server.Constants;
-
-import org.atmosphere.cpr.ApplicationConfig;
 import org.springframework.core.env.Environment;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.WebApplicationInitializer;
 import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
+
+import com.vaadin.flow.server.Constants;
 
 /**
  * Abstract Vaadin Spring MVC {@link WebApplicationInitializer}.
@@ -59,7 +57,6 @@ public abstract class VaadinMVCWebAppInitializer
         if (mapping == null) {
             mapping = "/*";
         }
-        String pushRegistrationPath;
 
         boolean rootMapping = RootMappedCondition.isRootMapping(mapping);
         Dynamic registration = servletContext.addServlet(
@@ -71,21 +68,14 @@ public abstract class VaadinMVCWebAppInitializer
                     .addServlet("dispatcher", new DispatcherServlet(context));
             dispatcherRegistration.addMapping("/*");
             mapping = VaadinServletConfiguration.VAADIN_SERVLET_MAPPING;
-            pushRegistrationPath = "";
-        } else {
-            pushRegistrationPath = mapping.replace("/*", "");
         }
         registration.addMapping(mapping);
 
-        /*
-         * Tell Atmosphere which servlet to use for the push endpoint. Servlet
-         * mappings are returned as a Set from at least Tomcat so even if
-         * Atmosphere always picks the first, it might end up using /VAADIN/*
-         * and websockets will fail.
-         */
-        initParameters.put(ApplicationConfig.JSR356_MAPPING_PATH,
-                pushRegistrationPath);
-        initParameters.put(ApplicationConfig.JSR356_PATH_MAPPING_LENGTH, "0");
+        String pushUrl = rootMapping ? "" : mapping.replace("/*", "");
+        pushUrl += "/" + Constants.PUSH_MAPPING;
+
+        initParameters.put(Constants.INTERNAL_SERVLET_PARAMETER_PUSH_URL,
+                pushUrl);
 
         registration.setInitParameters(initParameters);
 

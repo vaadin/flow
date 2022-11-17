@@ -141,17 +141,6 @@ public class DefaultDeploymentConfigurationTest {
     }
 
     @Test
-    public void pushUrl() {
-        Properties initParameters = new Properties();
-        initParameters.setProperty(InitParameters.SERVLET_PARAMETER_PUSH_URL,
-                "foo");
-
-        DefaultDeploymentConfiguration config = createDeploymentConfig(
-                initParameters);
-        assertThat(config.getPushURL(), is("foo"));
-    }
-
-    @Test
     public void maxMessageSuspendTimeout_validValue_accepted() {
         Properties initParameters = new Properties();
         initParameters.setProperty(

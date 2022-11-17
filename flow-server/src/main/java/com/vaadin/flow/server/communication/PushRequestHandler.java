@@ -35,6 +35,7 @@ import org.atmosphere.util.VoidAnnotationProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.InitParameters;
@@ -220,6 +221,18 @@ public class PushRequestHandler
         // Disable Atmosphere's message about commercial support
         atmosphere.addInitParameter("org.atmosphere.cpr.showSupportMessage",
                 "false");
+
+        String pushUrl = vaadinServletConfig.getInitParameter(
+                Constants.INTERNAL_SERVLET_PARAMETER_PUSH_URL);
+        if (pushUrl == null) {
+            pushUrl = "/" + Constants.PUSH_MAPPING;
+        }
+
+        atmosphere.addInitParameter(ApplicationConfig.JSR356_MAPPING_PATH,
+                pushUrl);
+
+        atmosphere.addInitParameter(
+                ApplicationConfig.JSR356_PATH_MAPPING_LENGTH, "0");
 
         try {
             atmosphere.init(vaadinServletConfig);
