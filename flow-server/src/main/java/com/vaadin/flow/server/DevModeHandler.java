@@ -658,6 +658,8 @@ public final class DevModeHandler implements RequestHandler {
         long start = System.nanoTime();
 
         processBuilder.command(command);
+        processBuilder.environment().put("watchDogPort",
+                Integer.toString(watchDog.get().getWatchDogPort()));
         try {
             webpackProcess.set(
                     processBuilder.redirectError(ProcessBuilder.Redirect.PIPE)
@@ -734,8 +736,6 @@ public final class DevModeHandler implements RequestHandler {
         // request to localhost. See https://github.com/vaadin/flow/issues/12546
         command.add("--host=127.0.0.1");
 
-        command.add("--env");
-        command.add("watchDogPort=" + watchDog.get().getWatchDogPort());
         command.addAll(Arrays.asList(config
                 .getStringProperty(SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS,
                         "-d --inline=false")
