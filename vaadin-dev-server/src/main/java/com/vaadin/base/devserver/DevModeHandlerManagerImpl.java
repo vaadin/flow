@@ -51,6 +51,7 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
     }
 
     private DevModeHandler devModeHandler;
+    private BrowserLauncher browserLauncher;
 
     @Override
     public Class<?>[] getHandlesTypes() {
@@ -79,7 +80,13 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
         setDevModeHandler(
                 DevModeInitializer.initDevModeHandler(classes, context));
         setDevModeStarted(context);
+        this.browserLauncher = new BrowserLauncher(context);
 
+    }
+
+    @Override
+    public void launchBrowserInDevelopmentMode(String url) {
+        browserLauncher.launchBrowserInDevelopmentMode(url);
     }
 
     private void setDevModeStarted(VaadinContext context) {
