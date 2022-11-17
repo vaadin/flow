@@ -66,13 +66,8 @@ public class StartupPerformanceIT extends ChromeBrowserTest {
         int startupTimeWithoutNpmInstallTime = startupTime - npmInstallTime;
 
         // https://github.com/vaadin/flow/issues/7596
-        boolean deprecatedBootstrap = Boolean.getBoolean(
-                System.getProperty("vaadin.useDeprecatedV14Bootstrapping"));
-        final int thresholdMs = deprecatedBootstrap ? 5500 : 20000;
+        final int thresholdMs = 20000;
         String key = "webpack-time";
-        if (deprecatedBootstrap) {
-            key += "-v14boostrap";
-        }
         printTeamcityStats(key, startupTimeWithoutNpmInstallTime);
 
         Assert.assertTrue(
