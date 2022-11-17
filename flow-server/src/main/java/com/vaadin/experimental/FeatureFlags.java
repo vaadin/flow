@@ -64,9 +64,6 @@ public class FeatureFlags implements Serializable {
     public static final Feature HILLA_ENGINE = new Feature(
             "Multi-module engine in Hilla", "hillaEngine",
             "https://github.com/vaadin/flow/issues/9010", true, null);
-    public static final Feature OLD_LICENSE_CHECKER = new Feature(
-            "Old license checker", "oldLicenseChecker",
-            "https://github.com/vaadin/platform/issues/2984", false, null);
     public static final Feature COLLABORATION_ENGINE_BACKEND = new Feature(
             "Collaboration Engine backend for clustering support",
             "collaborationEngineBackend",
@@ -94,7 +91,6 @@ public class FeatureFlags implements Serializable {
         features.add(new Feature(EXAMPLE));
         features.add(new Feature(HILLA_PUSH));
         features.add(new Feature(HILLA_ENGINE));
-        features.add(new Feature(OLD_LICENSE_CHECKER));
         features.add(new Feature(COLLABORATION_ENGINE_BACKEND));
         features.add(new Feature(WEBPACK));
         features.add(new Feature(ENFORCE_FIELD_VALIDATION));
