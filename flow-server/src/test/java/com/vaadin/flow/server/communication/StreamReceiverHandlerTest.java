@@ -420,6 +420,26 @@ public class StreamReceiverHandlerTest {
     }
 
     @Test
+    public void handleFileUploadValidationAndData_inputStreamThrowsIOExceptionOnClose_exceptionIsNotRethrown_exceptionIsNotHandlerByErrorHandler()
+            throws UploadException {
+        InputStream inputStream = new InputStream() {
+            @Override
+            public int read() {
+                return -1;
+            }
+
+            @Override
+            public void close() throws IOException {
+                throw new IOException();
+            }
+        };
+        handler.handleFileUploadValidationAndData(session, inputStream,
+                streamReceiver, null, null, 0, stateNode);
+
+        Mockito.verifyNoInteractions(errorHandler);
+    }
+
+    @Test
     public void doHandleMultipartFileUpload_IOExceptionIsThrown_exceptionIsNotRethrown_exceptionIsNotHandlerByErrorHandler()
             throws IOException, ServletException {
         VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
