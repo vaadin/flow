@@ -98,37 +98,53 @@ public class ConvertPolymerCommand implements AutoCloseable {
             CommandExecutionException {
         Path lookupPath = getLookupPath();
 
+        int totalCount = 0;
+        int convertedCount = 0;
+        int skippedCount = 0;
+        int failedCount = 0;
+
         for (Path filePath : getFilePathsByGlob(lookupPath, SERVER_GLOB)) {
             try {
+                totalCount++;
                 adapter.logInfo(String.format("Processing %s...", filePath));
                 if (serverConverter.convertFile(filePath)) {
-                    adapter.logInfo(
-                            "The file has been successfully converted.");
+                    adapter.logInfo("The file was successfully converted.");
+                    convertedCount++;
                 } else {
                     adapter.logInfo(
                             "No occurences of PolymerTemplate was found. Skipping.");
+                    skippedCount++;
                 }
             } catch (Exception e) {
                 adapter.logError("An error occurred while processing.", e);
+                failedCount++;
             }
         }
 
         for (Path filePath : getFilePathsByGlob(lookupPath, FRONTEND_GLOB)) {
             try {
+                totalCount++;
                 adapter.logInfo(String.format("Processing %s...", filePath));
                 if (frontendConverter.convertFile(filePath, useLit1,
                         disableOptionalChaining)) {
-                    adapter.logInfo(
-                            "The file has been successfully converted.");
+                    adapter.logInfo("The file was successfully converted.");
+                    convertedCount++;
                 } else {
                     adapter.logInfo(
                             "No occurences of PolymerElement was found. Skipping.");
+                    skippedCount++;
                 }
             } catch (Exception e) {
                 adapter.logError("An error occurred while processing.", e);
+                failedCount++;
             }
-
         }
+
+        adapter.logInfo(
+                "------------------------------------------------------------------------");
+        adapter.logInfo(String.format(
+                "Total: %d | Converted: %d | Failed: %d | Skipped: %d",
+                totalCount, convertedCount, failedCount, skippedCount));
     }
 
     private List<Path> getFilePathsByGlob(Path baseDir, String glob)
