@@ -72,7 +72,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.base\\.devserver\\.stats..*",
                 "com\\.vaadin\\.flow\\.internal\\.VaadinContextInitializer",
                 "com\\.vaadin\\.flow\\.internal\\.ApplicationClassLoaderAccess",
-                "com\\.vaadin\\.base\\.devserver\\.BrowserLiveReloadAccessorImpl",
+                "com\\.vaadin\\.base\\.devserver\\.BrowserLauncher",
                 "com\\.vaadin\\.base\\.devserver\\.BrowserLiveReloadAccessorImpl",
                 "com\\.vaadin\\.base\\.devserver\\.DebugWindowConnection",
                 "com\\.vaadin\\.base\\.devserver\\.DevModeHandlerManagerImpl",
