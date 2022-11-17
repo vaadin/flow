@@ -73,6 +73,15 @@ public interface DevModeHandlerManager {
     DevModeHandler getDevModeHandler();
 
     /**
+     * Opens the given application URL in a browser if the application is
+     * running in development mode.
+     *
+     * @param url
+     *            the url to open
+     */
+    void launchBrowserInDevelopmentMode(String url);
+
+    /**
      * Gets the {@link DevModeHandler}.
      *
      * @param service
