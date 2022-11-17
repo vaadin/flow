@@ -65,8 +65,7 @@ public abstract class PolymerTemplate<M extends TemplateModel>
                     .getResourceAsStream("version.properties"));
         } catch (Exception e) {
             LoggerFactory.getLogger(PolymerTemplate.class.getName())
-                    .warn("Unable to read the version.properties file.", e);
-            throw new ExceptionInInitializerError(e);
+                    .error("Unable to read the version.properties file.", e);
         }
 
         LicenseChecker.checkLicenseFromStaticBlock("flow-polymer-template",
