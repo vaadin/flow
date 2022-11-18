@@ -21,6 +21,7 @@ import com.vaadin.flow.server.Constants
 import com.vaadin.flow.server.frontend.scanner.ClassFinder
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.ResolvedArtifact
 import org.gradle.api.tasks.SourceSetContainer
 import org.gradle.api.tasks.bundling.War
 import java.io.File
@@ -44,8 +45,15 @@ internal class GradlePluginAdapter(val project: Project, private val isBeforePro
     override fun generatedTsFolder(): File = extension.generatedTsFolder
 
     override fun getClassFinder(): ClassFinder {
-        val runtimeClasspathJars: List<File> = project.configurations.findByName("runtimeClasspath")
-            ?.toList() ?: listOf()
+        val runtimeClasspath: Configuration? = project.configurations.findByName("runtimeClasspath")
+        val runtimeClasspathJars: List<File> = if (runtimeClasspath != null) {
+            var artifacts: List<ResolvedArtifact> =
+                runtimeClasspath.resolvedConfiguration.resolvedArtifacts.toList()
+            val extension = VaadinFlowPluginExtension.get(project)
+            val artifactFilter = extension.classpathFilter.toPredicate()
+            artifacts = artifacts.filter { artifactFilter.test(it.moduleVersion.id.module) }
+            artifacts.map { it.file }
+        } else listOf()
 
         // we need to also analyze the project's classes
         val sourceSet: SourceSetContainer = project.properties["sourceSets"] as SourceSetContainer
