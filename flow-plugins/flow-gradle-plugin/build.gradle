@@ -19,7 +19,7 @@ plugins {
  **********************************************************************************************************************/
 
 def pom = new XmlSlurper().parse(rootProject.file('pom.xml'))
-defaultTasks 'jar'
+defaultTasks('jar', 'test')
 group pom.parent.groupId
 version = project.hasProperty('vaadin.version') ? project.getProperty('vaadin.version') : pom.parent.version
 archivesBaseName = pom.artifactId
