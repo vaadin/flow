@@ -484,4 +484,40 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         val result = testProject.build("vaadinPrepareFrontend", debug = true)
         expect(false) { result.output.contains("org.reflections.ReflectionsException") }
     }
+
+    @Test
+    fun testIncludeExclude() {
+        testProject.buildFile.writeText("""
+            plugins {
+                id 'com.vaadin'
+            }
+            repositories {
+                mavenLocal()
+                mavenCentral()
+                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+            }
+            dependencies {
+                implementation("com.vaadin:flow:$flowVersion")
+            }
+            vaadin {
+                pnpmEnable = true
+                filterClasspath {
+                    include("com.vaadin:flow-*")
+                    exclude("com.vaadin:flow-data")
+                    exclude("com.vaadin:flow-dnd")
+                }
+            }
+        """)
+
+        val output = testProject.build("vaadinPrepareFrontend").output
+        val classpathLines = output.lines().filter { it.startsWith("Passing this classpath to NodeTasks.Builder") }
+        expect(1, output) { classpathLines.size }
+        // parse the list of jars out of the classpath line
+        val classpath = classpathLines[0].dropWhile { it != '[' } .trim('[', ']') .split(',')
+            .map { it.trim() } .sorted()
+        // remove version numbers to make the test more stable: drop -2.7.4.jar from flow-dnd-2.7.4.jar
+        expect(listOf("flow-client-", "flow-html-components-", "flow-lit-template-", "flow-polymer-template-", "flow-push-", "flow-server-")) {
+            classpath.map { it.removeSuffix("-SNAPSHOT.jar").dropLastWhile { it != '-' } }
+        }
+    }
 }
