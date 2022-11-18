@@ -109,7 +109,7 @@ export const injectGlobalCss = (css, target, first) => {
 function generateThemeFile(themeFolder, themeName, themeProperties, productionMode) {
   const styles = path.resolve(themeFolder, stylesCssFile);
   const document = path.resolve(themeFolder, documentCssFile);
-  const autoInjectComponents = themeProperties.autoInjectComponents !== undefined ? themeProperties.autoInjectComponents : true;
+  const autoInjectComponents = themeProperties.autoInjectComponents ?? true;
   let themeFile = headerImport;
   var componentsFiles;
 
