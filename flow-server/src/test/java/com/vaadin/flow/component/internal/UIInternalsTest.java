@@ -167,49 +167,6 @@ public class UIInternalsTest {
     }
 
     @Test
-    public void showRouteTarget_usePushConfigFromComponent() {
-        PushConfiguration pushConfig = setUpInitialPush();
-        useV14Bootstrap();
-
-        internals.showRouteTarget(Mockito.mock(Location.class),
-                new RouteTarget(), Collections.emptyList());
-
-        Mockito.verify(pushConfig).setPushMode(PushMode.AUTOMATIC);
-        Mockito.verify(pushConfig).setTransport(Transport.WEBSOCKET_XHR);
-    }
-
-    @Test
-    public void showRouteTarget_usePushConfigFromParentLayout() {
-        PushConfiguration pushConfig = setUpInitialPush();
-        useV14Bootstrap();
-
-        internals.showRouteTarget(Mockito.mock(Location.class),
-                new RouteTarget1(),
-                Collections.singletonList(new RouteTarget()));
-
-        Mockito.verify(pushConfig).setPushMode(PushMode.AUTOMATIC);
-        Mockito.verify(pushConfig).setTransport(Transport.WEBSOCKET_XHR);
-    }
-
-    @Test
-    public void showRouteTarget_componentHasNoPush_pushIsDisabled() {
-        PushConfiguration pushConfig = setUpInitialPush();
-        useV14Bootstrap();
-
-        DeploymentConfiguration deploymentConfiguration = vaadinService
-                .getDeploymentConfiguration();
-        Mockito.when(deploymentConfiguration.getPushMode())
-                .thenReturn(PushMode.AUTOMATIC);
-
-        internals.showRouteTarget(Mockito.mock(Location.class), new Text(""),
-                Collections.emptyList());
-
-        Mockito.verify(pushConfig).setPushMode(PushMode.AUTOMATIC);
-        Mockito.verify(pushConfig, Mockito.times(0))
-                .setTransport(Mockito.any());
-    }
-
-    @Test
     public void showRouteTarget_clientSideBootstrap() {
         PushConfiguration pushConfig = setUpInitialPush();
 
@@ -330,13 +287,6 @@ public class UIInternalsTest {
 
         Mockito.when(config.getPushMode()).thenReturn(PushMode.DISABLED);
         return pushConfig;
-    }
-
-    private void useV14Bootstrap() {
-        DeploymentConfiguration deploymentConfiguration = vaadinService
-                .getDeploymentConfiguration();
-        Mockito.when(deploymentConfiguration.useV14Bootstrap())
-                .thenReturn(true);
     }
 
 }
