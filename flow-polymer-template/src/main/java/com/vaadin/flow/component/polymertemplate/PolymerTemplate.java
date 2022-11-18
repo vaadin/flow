@@ -24,6 +24,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.Template;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.Version;
 import com.vaadin.flow.templatemodel.TemplateModel;
 import com.vaadin.pro.licensechecker.LicenseChecker;
 
@@ -59,18 +60,8 @@ public abstract class PolymerTemplate<M extends TemplateModel>
     static {
         UsageStatistics.markAsUsed("flow/PolymerTemplate", null);
 
-        Properties properties = new Properties();
-        try {
-            properties.load(PolymerTemplate.class
-                    .getResourceAsStream("version.properties"));
-        } catch (Exception e) {
-            LoggerFactory.getLogger(PolymerTemplate.class.getName())
-                    .error("Unable to read the version.properties file.");
-            throw new ExceptionInInitializerError(e);
-        }
-
         LicenseChecker.checkLicenseFromStaticBlock("flow-polymer-template",
-                properties.getProperty("polymertemplate.version"), null);
+                Version.getFullVersion(), null);
     }
 
     /**
