@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -104,7 +105,7 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void componentThemeApplied() {
+    public void componentThemeIsApplied() {
         open();
 
         final TestBenchElement themedComponent = $("themed-component").first();
