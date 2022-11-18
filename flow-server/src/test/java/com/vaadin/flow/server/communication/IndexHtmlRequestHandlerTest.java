@@ -106,7 +106,6 @@ public class IndexHtmlRequestHandlerTest {
         Mockito.when(response.getOutputStream()).thenReturn(responseOutput);
         deploymentConfiguration = mocks.getDeploymentConfiguration();
         deploymentConfiguration.setEnableDevServer(false);
-        deploymentConfiguration.useDeprecatedV14Bootstrapping(false);
         indexHtmlRequestHandler = new IndexHtmlRequestHandler();
         context = Mockito.mock(VaadinContext.class);
         springTokenString = UUID.randomUUID().toString();

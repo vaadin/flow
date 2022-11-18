@@ -72,7 +72,6 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
     private File baseDir;
     private File frontendFolder;
     private PwaConfiguration pwaConfiguration;
-    private boolean useV14Bootstrapping = false;
 
     @Before
     public void setup() throws Exception {
@@ -182,23 +181,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void should_notSetClientSideBootstrapMode_when_runningV14Bootstrapping()
-            throws IOException {
-        useV14Bootstrapping = true;
-        createWebpackUpdater();
-        webpackUpdater.execute();
-        String webpackGeneratedContents = Files.lines(webpackGenerated.toPath())
-                .collect(Collectors.joining("\n"));
-        Assert.assertTrue(
-                "useClientSideIndexFileForBootstrapping should be false by "
-                        + "default",
-                webpackGeneratedContents.contains(
-                        "const useClientSideIndexFileForBootstrapping = false;"));
-    }
-
-    @Test
-    public void should_setClientSideBootstrapMode_when_runningV15Bootstrapping()
-            throws IOException {
+    public void should_setClientSideBootstrapMode() throws IOException {
         webpackUpdater.execute();
         String webpackGeneratedContents = Files.lines(webpackGenerated.toPath())
                 .collect(Collectors.joining("\n"));
@@ -336,7 +319,7 @@ public class TaskUpdateWebpackTest extends NodeUpdateTestUtil {
                 new File(baseDir,
                         Paths.get(Constants.TARGET, DEFAULT_GENERATED_DIR,
                                 IMPORTS_NAME).toString()),
-                useV14Bootstrapping, pwaConfiguration, TARGET);
+                false, pwaConfiguration, TARGET);
     }
 
     private void assertWebpackGeneratedConfigContent(String entryPoint,

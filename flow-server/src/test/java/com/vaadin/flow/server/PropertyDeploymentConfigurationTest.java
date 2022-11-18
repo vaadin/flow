@@ -103,31 +103,6 @@ public class PropertyDeploymentConfigurationTest {
     }
 
     @Test
-    public void useV14Bootstrap_valueIsProvidedViaParentOnly_valueFromParentIsReturned() {
-        ApplicationConfiguration appConfig = mockAppConfig();
-        Mockito.when(appConfig.useV14Bootstrap()).thenReturn(true);
-        PropertyDeploymentConfiguration config = createConfiguration(appConfig,
-                new Properties());
-        Assert.assertTrue(config.useV14Bootstrap());
-        // there is no any property
-        Assert.assertTrue(config.getInitParameters().isEmpty());
-    }
-
-    @Test
-    public void useV14Bootstrap_valueIsProvidedViaPropertiesAndParent_valueFromPropertiesIsReturned() {
-        ApplicationConfiguration appConfig = mockAppConfig();
-        Mockito.when(appConfig.useV14Bootstrap()).thenReturn(false);
-
-        Properties properties = new Properties();
-        properties.put(InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP,
-                Boolean.TRUE.toString());
-        PropertyDeploymentConfiguration config = createConfiguration(appConfig,
-                properties);
-        Assert.assertTrue(config.useV14Bootstrap());
-        Assert.assertEquals(properties, config.getInitParameters());
-    }
-
-    @Test
     public void isPnpmEnabled_valueIsProvidedViaParentOnly_valueFromParentIsReturned() {
         ApplicationConfiguration appConfig = mockAppConfig();
         Mockito.when(appConfig.isPnpmEnabled()).thenReturn(true);
@@ -263,34 +238,6 @@ public class PropertyDeploymentConfigurationTest {
         Assert.assertTrue(config.enableDevServer());
         Assert.assertTrue(config.getInitParameters().containsKey(
                 InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER));
-    }
-
-    @Test
-    public void useV14Bootstrap_valueIsProvidedViaParentOnly_propertyIsSetToAnotherValue_valueFromParentIsReturnedViaAPI() {
-        ApplicationConfiguration appConfig = mockAppConfig();
-
-        // The property value is provided via API
-        Mockito.when(appConfig.useV14Bootstrap()).thenReturn(true);
-
-        // The property whose value is overridden above via API is different
-        Mockito.when(appConfig.getPropertyNames())
-                .thenReturn(Collections.enumeration(Collections.singleton(
-                        InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP)));
-
-        Mockito.when(appConfig.getStringProperty(
-                InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP, null))
-                .thenReturn(Boolean.FALSE.toString());
-
-        PropertyDeploymentConfiguration config = createConfiguration(appConfig,
-                new Properties());
-        // Several things are checked: the value from parent is used via API and
-        // deployment configuration doesn't read the property directly even
-        // though its "getInitParameters" method returns the property. Also
-        // "getApplicationProperty" method checks the parent properties which
-        // should not be taken into account here
-        Assert.assertTrue(config.useV14Bootstrap());
-        Assert.assertTrue(config.getInitParameters().containsKey(
-                InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP));
     }
 
     @Test

@@ -206,39 +206,6 @@ public class DefaultDeploymentConfigurationTest {
     }
 
     @Test
-    public void useV14Bootstrap_v14ModeIsSetViaParentOnly_v14ModeIsTakenFromParent() {
-        ApplicationConfiguration appConfig = setupAppConfig();
-        Mockito.when(appConfig.useV14Bootstrap()).thenReturn(true);
-
-        // Note: application configuration doesn't contain production mode
-        // parameter !
-        Assert.assertNull(appConfig.getStringProperty(
-                InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP, null));
-
-        DefaultDeploymentConfiguration config = createDeploymentConfig(
-                appConfig, new Properties());
-        Assert.assertTrue(config.useV14Bootstrap());
-        Assert.assertTrue(config.getProperties().isEmpty());
-    }
-
-    @Test
-    public void useV14Bootstrap_v14ModeIsSetViaParentOnlyAndViaParent_v14ModeIsTakenFromParent() {
-        ApplicationConfiguration appConfig = setupAppConfig();
-        Mockito.when(appConfig.useV14Bootstrap()).thenReturn(true);
-
-        Properties initParameters = new Properties();
-        initParameters.setProperty(
-                InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP,
-                Boolean.TRUE.toString());
-
-        DefaultDeploymentConfiguration config = createDeploymentConfig(
-                appConfig, initParameters);
-        // the deployment configuration parameter takes precedence over parent
-        // config
-        Assert.assertTrue(config.useV14Bootstrap());
-    }
-
-    @Test
     public void isXsrfProtectionEnabled_valueIsSetViaParentOnly_valueIsTakenFromParent() {
         ApplicationConfiguration appConfig = setupAppConfig();
         Mockito.when(appConfig.isXsrfProtectionEnabled()).thenReturn(true);

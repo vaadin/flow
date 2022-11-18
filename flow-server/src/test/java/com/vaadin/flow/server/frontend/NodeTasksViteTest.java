@@ -262,31 +262,6 @@ public class NodeTasksViteTest {
                 + FrontendUtils.JAR_RESOURCES_FOLDER);
     }
 
-    @Ignore("Making Vite support v14 bootstrapping is not planned. V14 bootstrapping requires Webpack to be enabled.")
-    @Test
-    public void should_SetIsClientBootstrapMode_When_EnableClientSideBootstrapMode()
-            throws ExecutionFailedException, IOException {
-        Lookup mockedLookup = mock(Lookup.class);
-        Mockito.doReturn(
-                new DefaultClassFinder(this.getClass().getClassLoader()))
-                .when(mockedLookup).lookup(ClassFinder.class);
-        Builder builder = new Builder(mockedLookup, new File(userDir), TARGET)
-                .enablePackagesUpdate(false).enableImportsUpdate(true)
-                .runNpmInstall(false).withEmbeddableWebComponents(false)
-                .useV14Bootstrap(false)
-                .withJarFrontendResourcesFolder(getJarFrontendResourcesFolder())
-                .withFrontendGeneratedFolder(new File(userDir,
-                        DEFAULT_PROJECT_FRONTEND_GENERATED_DIR));
-        builder.build().execute();
-        String viteGeneratedContent = Files
-                .lines(new File(userDir, VITE_GENERATED_CONFIG).toPath())
-                .collect(Collectors.joining("\n"));
-        Assert.assertTrue(
-                "useClientSideIndexFileForBootstrapping should be true",
-                viteGeneratedContent.contains(
-                        "const useClientSideIndexFileForBootstrapping = true;"));
-    }
-
     @Test
     public void should_GenerateTsConfigAndTsDefinitions_When_Vaadin14BootstrapMode()
             throws ExecutionFailedException {
@@ -297,28 +272,12 @@ public class NodeTasksViteTest {
         Builder builder = new Builder(mockedLookup, new File(userDir), TARGET)
                 .enablePackagesUpdate(false).enableImportsUpdate(true)
                 .runNpmInstall(false).withEmbeddableWebComponents(false)
-                .useV14Bootstrap(false).withJarFrontendResourcesFolder(
+                .withJarFrontendResourcesFolder(
                         getJarFrontendResourcesFolder());
         builder.build().execute();
 
         Assert.assertTrue(new File(userDir, "tsconfig.json").exists());
         Assert.assertTrue(new File(userDir, "types.d.ts").exists());
-    }
-
-    @Test
-    public void should_failWithMessage_When_Vaadin14BootstrapModeAndViteAreUsed() {
-        Lookup mockedLookup = mock(Lookup.class);
-        Mockito.doReturn(
-                new DefaultClassFinder(this.getClass().getClassLoader()))
-                .when(mockedLookup).lookup(ClassFinder.class);
-        Builder builder = new Builder(mockedLookup, new File(userDir), TARGET)
-                .useV14Bootstrap(true);
-
-        IllegalStateException exception = Assert.assertThrows(
-                IllegalStateException.class, () -> builder.build().execute());
-        MatcherAssert.assertThat(exception.getMessage(),
-                CoreMatchers.containsString(
-                        "Vite build tool is not supported when 'useDeprecatedV14Bootstrapping' is used"));
     }
 
     @Test

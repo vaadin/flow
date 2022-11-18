@@ -681,7 +681,6 @@ public class DeploymentConfigurationFactoryTest {
                 .mock(ApplicationConfiguration.class);
         Mockito.when(configuration.enableDevServer()).thenReturn(true);
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
-        Mockito.when(configuration.useV14Bootstrap()).thenReturn(false);
         Mockito.when(configuration.getContext()).thenReturn(context);
         Mockito.when(configuration.getStringProperty(Mockito.anyString(),
                 Mockito.anyString())).thenReturn(null);

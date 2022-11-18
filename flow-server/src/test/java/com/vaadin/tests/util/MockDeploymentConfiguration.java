@@ -15,7 +15,7 @@ public class MockDeploymentConfiguration
     private boolean productionMode = false;
     private boolean enableDevServer = true;
     private boolean reuseDevServer = true;
-    private boolean useDeprecatedV14Bootstrapping = true;
+    private boolean useDeprecatedV14Bootstrapping = false;
     private boolean xsrfProtectionEnabled = true;
     private int heartbeatInterval = 300;
     private int maxMessageSuspendTimeout = 5000;

@@ -287,7 +287,7 @@ public class NodeTasksWebpackTest {
                 .withWebpack(new File(userDir, TARGET + "webapp"),
                         new File(userDir, TARGET + "classes"))
                 .enableImportsUpdate(true).runNpmInstall(false)
-                .withEmbeddableWebComponents(false).useV14Bootstrap(false)
+                .withEmbeddableWebComponents(false)
                 .withJarFrontendResourcesFolder(new File(
                         new File(userDir,
                                 DEFAULT_PROJECT_FRONTEND_GENERATED_DIR),
@@ -303,24 +303,6 @@ public class NodeTasksWebpackTest {
                 "useClientSideIndexFileForBootstrapping should be true",
                 webpackGeneratedContent.contains(
                         "const useClientSideIndexFileForBootstrapping = true;"));
-    }
-
-    @Test
-    public void should_GenerateTsConfigAndTsDefinitions_When_Vaadin14BootstrapMode()
-            throws ExecutionFailedException {
-        Lookup mockedLookup = mock(Lookup.class);
-        Mockito.doReturn(
-                new DefaultClassFinder(this.getClass().getClassLoader()))
-                .when(mockedLookup).lookup(ClassFinder.class);
-        Builder builder = new Builder(mockedLookup, new File(userDir), TARGET)
-                .enablePackagesUpdate(false).useV14Bootstrap(true)
-                .enableImportsUpdate(true).runNpmInstall(false)
-                .withEmbeddableWebComponents(false).useV14Bootstrap(false)
-                .setJavaResourceFolder(propertiesDir);
-        builder.build().execute();
-
-        Assert.assertTrue(new File(userDir, "tsconfig.json").exists());
-        Assert.assertTrue(new File(userDir, "types.d.ts").exists());
     }
 
     private static void setPropertyIfPresent(String key, String value) {
