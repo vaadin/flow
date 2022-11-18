@@ -23,8 +23,6 @@ const path = require('path');
 const fs = require('fs');
 const { checkModules } = require('./theme-copy');
 
-// Special folder inside a theme for component themes that go inside the component shadow root
-const legacyThemeComponentsFolder = 'components';
 // The contents of a global CSS file with this name in a theme is always added to
 // the document. E.g. @font-face must be in this
 const documentCssFile = 'document.css';
@@ -107,14 +105,13 @@ export const injectGlobalCss = (css, target, first) => {
  * @returns {string} theme file content
  */
 function generateThemeFile(themeFolder, themeName, themeProperties, productionMode) {
-  const autoInjectFolder = themeProperties.autoInjectFolder;
+  const themeComponentsFolder = themeProperties.autoInjectFolder;
   const styles = path.resolve(themeFolder, stylesCssFile);
   const document = path.resolve(themeFolder, documentCssFile);
-  const themeComponentsFolder = autoInjectFolder === undefined ? legacyThemeComponentsFolder : autoInjectFolder;
   let themeFile = headerImport;
   var componentsFiles;
 
-  if (themeComponentsFolder !== null) {
+  if (themeComponentsFolder) {
       componentsFiles = glob.sync('*.css', {
         cwd: path.resolve(themeFolder, themeComponentsFolder),
         nodir: true
@@ -217,7 +214,7 @@ function generateThemeFile(themeFolder, themeName, themeProperties, productionMo
       globalCssCode.push(`injectGlobalCss(${variable}.toString(), target);\n`);
     });
   }
-  if (themeComponentsFolder !== null) {
+  if (themeComponentsFolder) {
       componentsFiles.forEach((componentCss) => {
         const filename = path.basename(componentCss);
         const tag = filename.replace('.css', '');
