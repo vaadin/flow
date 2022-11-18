@@ -57,13 +57,13 @@ buildscript {
 
 ## Configuring
 
-The converter accepts the following arguments:
+The converter accepts the following properties:
 
 ### -Dvaadin.path=path/to/your/file
 
 By default, the converter scans all the files that match `**/*.js` and `**/*.java` and tries to convert them to Lit.
 
-To limit conversion to a specific file or directory, you can use the `vaadin.path` argument:
+To limit conversion to a specific file or directory, you can use the `vaadin.path` property:
 
 ```bash
 mvn vaadin:convert-polymer -Dvaadin.path=path/to/your/file
@@ -78,7 +78,7 @@ The path is always relative to your project's root folder.
 
 By default, the converter transforms Polymer imports into their Lit 2 equivalents.
 
-If your project is using Lit 1 (Vaadin < 21), you can use the `vaadin.useLit1` argument to enforce Lit 1 compatible imports:
+If your project is using Lit 1 (Vaadin < 21), you can use the `vaadin.useLit1` flag to enforce Lit 1 compatible imports:
 
 ```bash
 mvn vaadin:convert-polymer -Dvaadin.useLit1
@@ -91,7 +91,7 @@ mvn vaadin:convert-polymer -Dvaadin.useLit1
 
 By default, the converter transforms `[[prop.sub.something]]` expressions into `${this.prop?.sub?.something}`.
 
-If your project is using the Vaadin Webpack config, which doesn't support the JavaScript optional chaining operator (?.), you can use the `vaadin.disableOptionalChaining` argument:
+If your project is using the Vaadin Webpack config, which doesn't support the JavaScript optional chaining operator (?.), you can use the `vaadin.disableOptionalChaining` flag:
 
 ```bash
 mvn vaadin:convert-polymer -Dvaadin.disableOptionalChaining
@@ -300,7 +300,7 @@ public class UserEditView extends LitTemplate {
 
 As `Model` no longer extends `TemplateModel`, the `getModel()` method is added with a basic implementation of setters and getters.
 
-The converter is only able to generate an implementation for String and Boolean fields. For others, it generates empty methods with a FIXME comment.
+The converter is only able to generate an implementation for String and Boolean fields. For others, it generates empty methods.
 
 ```diff
 public class UserEditView extends LitTemplate {
