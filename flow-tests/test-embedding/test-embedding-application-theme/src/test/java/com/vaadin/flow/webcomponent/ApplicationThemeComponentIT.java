@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -105,7 +104,7 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void componentThemeIsApplied() {
+    public void componentThemeIsNotApplied() {
         open();
 
         final TestBenchElement themedComponent = $("themed-component").first();
@@ -116,7 +115,7 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
                 .id(MY_COMPONENT_ID);
         TestBenchElement input = myField.$("vaadin-input-container")
                 .attribute("part", "input-field").first();
-        Assert.assertEquals("Polymer text field should have red background",
+        Assert.assertNotEquals("Polymer text field should not have red background",
                 "rgba(255, 0, 0, 1)", input.getCssValue("background-color"));
     }
 

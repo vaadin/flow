@@ -109,16 +109,21 @@ export const injectGlobalCss = (css, target, first) => {
 function generateThemeFile(themeFolder, themeName, themeProperties, productionMode) {
   const styles = path.resolve(themeFolder, stylesCssFile);
   const document = path.resolve(themeFolder, documentCssFile);
-  const componentsFiles = glob.sync('*.css', {
-    cwd: path.resolve(themeFolder, themeComponentsFolder),
-    nodir: true
-  });
-
+  const autoInjectComponents = themeProperties.autoInjectComponents !== undefined ? themeProperties.autoInjectComponents : true;
   let themeFile = headerImport;
+  var componentsFiles;
 
-  if (componentsFiles.length > 0) {
-    themeFile += "import { unsafeCSS, registerStyles } from '@vaadin/vaadin-themable-mixin/register-styles';\n";
+  if (autoInjectComponents) {
+      componentsFiles = glob.sync('*.css', {
+        cwd: path.resolve(themeFolder, themeComponentsFolder),
+        nodir: true
+      });
+
+      if (componentsFiles.length > 0) {
+        themeFile += "import { unsafeCSS, registerStyles } from '@vaadin/vaadin-themable-mixin/register-styles';\n";
+      }
   }
+
 
   if (themeProperties.parent) {
     themeFile += `import {applyTheme as applyBaseTheme} from './theme-${themeProperties.parent}.generated.js';\n`;
@@ -213,19 +218,21 @@ function generateThemeFile(themeFolder, themeName, themeProperties, productionMo
     });
   }
 
-  componentsFiles.forEach((componentCss) => {
-    const filename = path.basename(componentCss);
-    const tag = filename.replace('.css', '');
-    const variable = camelCase(filename);
-    imports.push(`import ${variable} from 'themes/${themeName}/${themeComponentsFolder}/${filename}?inline';\n`);
-    // Don't format as the generated file formatting will get wonky!
-    const componentString = `registerStyles(
-      '${tag}',
-      unsafeCSS(${variable}.toString())
-    );
-    `;
-    componentCssCode.push(componentString);
-  });
+  if (autoInjectComponents) {
+    componentsFiles.forEach((componentCss) => {
+      const filename = path.basename(componentCss);
+      const tag = filename.replace('.css', '');
+      const variable = camelCase(filename);
+      imports.push(`import ${variable} from 'themes/${themeName}/${themeComponentsFolder}/${filename}?inline';\n`);
+      // Don't format as the generated file formatting will get wonky!
+      const componentString = `registerStyles(
+        '${tag}',
+        unsafeCSS(${variable}.toString())
+      );
+      `;
+      componentCssCode.push(componentString);
+    });
+  }
 
   themeFile += imports.join('');
   themeFile += `
