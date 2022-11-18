@@ -28,7 +28,11 @@
             <groupId>com.vaadin</groupId>
             <artifactId>license-checker</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>open</artifactId>
+            <version>8.4.0.2</version>
+        </dependency>
 
         <!-- API dependencies -->
 
