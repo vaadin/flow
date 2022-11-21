@@ -410,6 +410,58 @@ class MiscSingleModuleTest : AbstractGradleTest() {
     }
 
     /**
+     * https://github.com/vaadin/vaadin-gradle-plugin/issues/76
+     */
+    @Test
+    fun testRequireHomeNodeProperty() {
+
+        testProject.buildFile.writeText(
+            """
+            plugins {
+                id 'com.vaadin'
+            }
+            repositories {
+                mavenLocal()
+                mavenCentral()
+                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+            }
+            dependencies {
+                compile("com.vaadin:flow:$flowVersion")
+            }
+            vaadin {
+                
+                nodeVersion = "v12.10.0"
+                nodeDownloadRoot = "http://localhost:8080/non-existent"
+            }
+        """
+        )
+
+
+        val result: BuildResult
+
+        // Vaadin downloads the node to ${user.home}/.vaadin.
+        // Set user.home to be the testProject root directory
+        val originalUserHome = System.getProperty("user.home")
+        System.setProperty("user.home", testProject.dir.absolutePath)
+
+        try {
+            result = testProject.buildAndFail("vaadinPrepareFrontend","-Pvaadin.require.home.node=true",
+                    "-Duser.home=${testProject.dir.absolutePath}")
+        } finally {
+            // Return original user home value
+            System.setProperty("user.home", originalUserHome)
+        }
+        // the task should fail to download the node.js
+        result.expectTaskOutcome("vaadinPrepareFrontend", TaskOutcome.FAILED)
+        expect(true, result.output) {
+            result.output.contains("Could not download http://localhost:8080/v12.10.0/")
+        }
+        expect(true, result.output) {
+            result.output.contains("Could not download Node.js")
+        }
+    }
+
+    /**
      * Tests https://github.com/vaadin/vaadin-gradle-plugin/issues/99
      */
     @Test

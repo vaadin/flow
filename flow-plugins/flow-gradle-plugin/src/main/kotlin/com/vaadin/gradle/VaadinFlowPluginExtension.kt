@@ -227,6 +227,11 @@ public open class VaadinFlowPluginExtension(project: Project) {
         if (useGlobalPnpmProperty != null) {
             useGlobalPnpm = useGlobalPnpmProperty
         }
+
+        val useRequireHomeNodeExecProperty: Boolean? = project.getBooleanProperty(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE)
+        if(useRequireHomeNodeExecProperty != null) {
+            requireHomeNodeExec = useRequireHomeNodeExecProperty
+        }
     }
 
     override fun toString(): String = "VaadinFlowPluginExtension(" +
