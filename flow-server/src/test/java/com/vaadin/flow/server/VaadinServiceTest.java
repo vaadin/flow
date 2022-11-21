@@ -271,45 +271,6 @@ public class VaadinServiceTest {
     }
 
     @Test
-    public void testBootstrapListenersCreation() throws ServiceException {
-        // in this test the actual behavior of the listeners is not evaluated.
-        // That test can be found at the BootstrapHandlerTest.
-        AtomicBoolean listener1Run = new AtomicBoolean(false);
-        AtomicBoolean listener2Run = new AtomicBoolean(false);
-
-        BootstrapListener listener1 = evt -> listener1Run.set(true);
-        BootstrapListener listener2 = evt -> listener2Run.set(true);
-
-        VaadinServiceInitListener initListener = evt -> evt
-                .addBootstrapListener(listener1);
-        MockInstantiator instantiator = new MockInstantiator(initListener) {
-            @Override
-            public Stream<BootstrapListener> getBootstrapListeners(
-                    Stream<BootstrapListener> serviceInitListeners) {
-                List<BootstrapListener> defaultListeners = serviceInitListeners
-                        .collect(Collectors.toList());
-
-                assertEquals(Collections.singletonList(listener1),
-                        defaultListeners);
-
-                return Stream.of(listener2);
-            }
-        };
-
-        MockVaadinServletService service = new MockVaadinServletService();
-
-        service.init(instantiator);
-
-        Assert.assertFalse(listener1Run.get());
-        Assert.assertFalse(listener2Run.get());
-
-        service.modifyBootstrapPage(null);
-
-        Assert.assertFalse(listener1Run.get());
-        Assert.assertTrue(listener2Run.get());
-    }
-
-    @Test
     public void testServiceInitListener_accessApplicationRouteRegistry_registryAvailable() {
 
         VaadinServiceInitListener initListener = event -> {

@@ -118,26 +118,6 @@ public class DefaultApplicationConfigurationFactoryTest {
     }
 
     @Test
-    public void create_tokenFileIsSetViaContext_tokenFileIsReadViaContextProperty_propertiesAreReadFromContext()
-            throws IOException {
-        VaadinContext context = mockTokenFileViaContextParam(
-                "{ '" + SERVLET_PARAMETER_USE_V14_BOOTSTRAP + "':true }");
-
-        DefaultApplicationConfigurationFactory factory = new DefaultApplicationConfigurationFactory();
-        ApplicationConfiguration configuration = factory.create(context);
-
-        List<String> propertyNames = Collections
-                .list(configuration.getPropertyNames());
-        Assert.assertEquals(2, propertyNames.size());
-        Assert.assertEquals(FrontendUtils.PARAM_TOKEN_FILE,
-                propertyNames.get(0));
-        Assert.assertEquals(SERVLET_PARAMETER_USE_V14_BOOTSTRAP,
-                propertyNames.get(1));
-
-        Assert.assertTrue(configuration.useV14Bootstrap());
-    }
-
-    @Test
     public void create_tokenFileIsSetViaContext_externalStatsUrlIsReadFromTokenFile_predefinedContext()
             throws MalformedURLException, IOException {
         String content = "{ 'externalStatsUrl': 'http://my.server/static/stats.json'}";
