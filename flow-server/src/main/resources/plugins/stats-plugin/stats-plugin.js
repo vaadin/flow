@@ -103,7 +103,7 @@ function collectChunks(statsJson, acceptedChunks) {
         const modules = [];
         // Add all modules for chunk as slimmed down modules
         chunk.modules.forEach(function (module) {
-          if(module.name.includes("generated-flow-imports.js") || module.name.includes("generated-flow-imports-fallback.js")) {
+          if(module.name.includes("flow-frontend")) {
             const slimModule = {
               id: module.id,
               name: module.name,
@@ -115,7 +115,7 @@ function collectChunks(statsJson, acceptedChunks) {
             modules.push(slimModule);
           }
         });
-        if(chunk.modules.size > 0) {
+        if(modules) {
           const slimChunk = {
             id: chunk.id,
             names: chunk.names,

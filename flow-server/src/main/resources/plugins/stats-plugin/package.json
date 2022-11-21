@@ -5,7 +5,7 @@
   ],
   "repository": "vaadin/flow",
   "name": "@vaadin/stats-plugin",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "main": "stats-plugin.js",
   "author": "Vaadin Ltd",
   "license": "Apache-2.0",
