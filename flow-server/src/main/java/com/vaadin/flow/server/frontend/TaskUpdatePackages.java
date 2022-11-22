@@ -307,7 +307,7 @@ public class TaskUpdatePackages extends NodeUpdater {
 
         String oldHash = packageJson.getObject(VAADIN_DEP_KEY)
                 .getString(HASH_KEY);
-        String newHash = generatePackageJsonHash(packageJson, npmFolder);
+        String newHash = generatePackageJsonHash(packageJson);
         // update packageJson hash value, if no changes it will not be written
         packageJson.getObject(VAADIN_DEP_KEY).put(HASH_KEY, newHash);
 
@@ -474,12 +474,9 @@ public class TaskUpdatePackages extends NodeUpdater {
      *
      * @param packageJson
      *            JsonObject built in the same format as package.json
-     * @param npmFolder
-     *            project base folder to use in hash
      * @return has for dependencies and devDependencies
      */
-    static String generatePackageJsonHash(JsonObject packageJson,
-            File npmFolder) {
+    static String generatePackageJsonHash(JsonObject packageJson) {
         StringBuilder hashContent = new StringBuilder();
         if (packageJson.hasKey(DEPENDENCIES)) {
             JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
@@ -507,10 +504,6 @@ public class TaskUpdatePackages extends NodeUpdater {
             hashContent.append(sortedDevDependencies);
             hashContent.append("}");
         }
-        if (hashContent.length() > 0) {
-            hashContent.append("\n");
-        }
-        hashContent.append(npmFolder.getAbsolutePath());
         return StringUtil.getHash(hashContent.toString());
     }
 
