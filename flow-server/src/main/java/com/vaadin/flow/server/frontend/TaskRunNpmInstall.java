@@ -260,8 +260,10 @@ public class TaskRunNpmInstall implements FallibleCommand {
                     return true;
                 }
 
-                if (!packageUpdater.npmFolder.getAbsolutePath().equals(
-                        nodeModulesVaadinJson.getString(PROJECT_FOLDER))) {
+                if (nodeModulesVaadinJson.hasKey(PROJECT_FOLDER)
+                        && !packageUpdater.npmFolder.getAbsolutePath()
+                                .equals(nodeModulesVaadinJson
+                                        .getString(PROJECT_FOLDER))) {
                     return true;
                 }
 
