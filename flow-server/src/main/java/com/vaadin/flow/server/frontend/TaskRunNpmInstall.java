@@ -46,6 +46,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
 import static com.vaadin.flow.server.frontend.NodeUpdater.HASH_KEY;
 import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
 import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_VERSION;
+import static com.vaadin.flow.server.frontend.NodeUpdater.PROJECT_FOLDER;;
 
 /**
  * Run <code>npm install</code> after dependencies have been updated.
@@ -202,7 +203,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
      * node_modules/.vaadin/vaadin.json
      * </pre>
      *
-     * with package.json hash and the platform version.
+     * with package.json hash, project folder and the platform version.
      * <p>
      * This is for handling updated package to the code repository by another
      * developer as then the hash is updated and we may just be missing one
@@ -223,6 +224,8 @@ public class TaskRunNpmInstall implements FallibleCommand {
             updates.put(HASH_KEY, hash);
             Platform.getVaadinVersion()
                     .ifPresent(s -> updates.put(VAADIN_VERSION, s));
+            updates.put(PROJECT_FOLDER,
+                    packageUpdater.npmFolder.getAbsolutePath());
             packageUpdater.updateVaadinJsonContents(updates);
         } catch (IOException e) {
             packageUpdater.log().warn("Failed to update node_modules hash.", e);
@@ -245,18 +248,31 @@ public class TaskRunNpmInstall implements FallibleCommand {
                 .startsWith(installedPackages[0].getName())) {
             // Only flow-frontend installed
             return true;
-        } else {
-            return isVaadinHashUpdated();
         }
+
+        return isVaadinHashOrProjectFolderUpdated();
     }
 
-    private boolean isVaadinHashUpdated() {
+    boolean isVaadinHashOrProjectFolderUpdated() {
         try {
-            JsonObject content = packageUpdater.getVaadinJsonContents();
-            if (content.hasKey(HASH_KEY)) {
+            JsonObject nodeModulesVaadinJson = packageUpdater
+                    .getVaadinJsonContents();
+            if (nodeModulesVaadinJson.hasKey(HASH_KEY)) {
                 final JsonObject packageJson = packageUpdater.getPackageJson();
-                return !content.getString(HASH_KEY).equals(packageJson
-                        .getObject(VAADIN_DEP_KEY).getString(HASH_KEY));
+                if (!nodeModulesVaadinJson.getString(HASH_KEY)
+                        .equals(packageJson.getObject(VAADIN_DEP_KEY)
+                                .getString(HASH_KEY))) {
+                    return true;
+                }
+
+                if (nodeModulesVaadinJson.hasKey(PROJECT_FOLDER)
+                        && !packageUpdater.npmFolder.getAbsolutePath()
+                                .equals(nodeModulesVaadinJson
+                                        .getString(PROJECT_FOLDER))) {
+                    return true;
+                }
+
+                return false;
             }
         } catch (IOException e) {
             packageUpdater.log()

@@ -102,6 +102,7 @@ public abstract class NodeUpdater implements FallibleCommand {
     protected static final String POLYMER_VERSION = "3.5.1";
 
     static final String VAADIN_VERSION = "vaadinVersion";
+    static final String PROJECT_FOLDER = "projectFolder";
 
     /**
      * Base directory for {@link Constants#PACKAGE_JSON},
