@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.apache.commons.io.IOUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.internal.StringUtil;
 import org.jsoup.nodes.Document;
@@ -39,6 +40,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
@@ -57,6 +59,7 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.AppShellWithPWA;
 import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.MyAppShellWithConfigurator;
@@ -95,6 +98,7 @@ public class IndexHtmlRequestHandlerTest {
     private String springTokenParamName = SPRING_CSRF_ATTRIBUTE_IN_SESSION;
 
     private int expectedScriptsTagsOnBootstrapPage = 4;
+    private MockedStatic<FrontendUtils> indexHtmlFinder;
 
     @Before
     public void setUp() throws Exception {
@@ -109,6 +113,15 @@ public class IndexHtmlRequestHandlerTest {
         indexHtmlRequestHandler = new IndexHtmlRequestHandler();
         context = Mockito.mock(VaadinContext.class);
         springTokenString = UUID.randomUUID().toString();
+
+        String indexHtml = IOUtils.toString(
+                getClass().getClassLoader()
+                        .getResource("METa-INF/VAADIN/webapp/index.html"),
+                StandardCharsets.UTF_8);
+        indexHtmlFinder = Mockito.mockStatic(FrontendUtils.class);
+        indexHtmlFinder
+                .when(() -> FrontendUtils.getIndexHtmlContent(Mockito.any()))
+                .thenReturn(indexHtml);
     }
 
     @Test
@@ -842,6 +855,7 @@ public class IndexHtmlRequestHandlerTest {
     public void tearDown() throws Exception {
         session.unlock();
         mocks.cleanup();
+        indexHtmlFinder.close();
     }
 
     private Optional<Element> findFirstElementByNameAttrEqualTo(
