@@ -1543,6 +1543,22 @@ public class DataCommunicatorTest {
     }
 
     @Test
+    public void setSmallPageSize_fetchMaximumItemsLowerLimit() {
+        DataProvider<Item, Object> dataProvider = Mockito
+                .spy(createDataProvider(1000));
+        dataCommunicator.setDataProvider(dataProvider, null);
+        dataCommunicator.setPageSize(2);
+        dataCommunicator.setRequestedRange(0, 1000);
+        fakeClientCommunication();
+
+        ArgumentCaptor<Query> queryCaptor = ArgumentCaptor
+                .forClass(Query.class);
+        // to fetch 500 items 250 requests to dataProvider are required
+        Mockito.verify(dataProvider, Mockito.times(250))
+                .fetch(queryCaptor.capture());
+    }
+
+    @Test
     public void setRequestedRange_customPageSize_customPageSizeConsidered_itemsRequested() {
         int newPageSize = 300;
         dataCommunicator.setPageSize(newPageSize);

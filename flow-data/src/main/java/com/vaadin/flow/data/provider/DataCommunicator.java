@@ -70,6 +70,7 @@ public class DataCommunicator<T> implements Serializable {
 
     private static final int DEFAULT_PAGE_SIZE = 50;
     private static final int MAXIMUM_ALLOWED_PAGES = 10;
+    private static final int MAXIMUM_ALLOWED_ITEMS_LOWER_LIMIT = 500;
 
     private final DataGenerator<T> dataGenerator;
     private final ArrayUpdater arrayUpdater;
@@ -1393,7 +1394,8 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     private int getMaximumAllowedItems() {
-        return MAXIMUM_ALLOWED_PAGES * pageSize;
+        return Math.max(MAXIMUM_ALLOWED_ITEMS_LOWER_LIMIT,
+                MAXIMUM_ALLOWED_PAGES * pageSize);
     }
 
     private static class Activation implements Serializable {
