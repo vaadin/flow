@@ -374,6 +374,7 @@ public final class Constants implements Serializable {
      * Internal servlet parameter for push url configuration.
      */
     public static final String INTERNAL_SERVLET_PARAMETER_PUSH_URL = "internalPushURL";
+
     /**
      * The static build resources folder.
      */
