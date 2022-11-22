@@ -319,30 +319,23 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
     private static Document getIndexHtmlDocument(VaadinService service)
             throws IOException {
+        DeploymentConfiguration config = service.getDeploymentConfiguration();
         String index = FrontendUtils.getIndexHtmlContent(service);
-        if (index != null) {
-            Document indexHtmlDocument = Jsoup.parse(index);
-            if (!getFeatureFlags(service).isEnabled(FeatureFlags.WEBPACK)) {
-                modifyIndexHtmlForVite(indexHtmlDocument);
+        if (index == null) {
+            if (config.isProductionMode()) {
+                throw new IOException(
+                        "Unable to find index.html. It should be available on the classpath when running in production mode");
+            } else {
+                throw new IOException(
+                        "Unable to find index.html. It should be available in the frontend folder when running in development mode");
             }
-            return indexHtmlDocument;
         }
-        String frontendDir = FrontendUtils
-                .getProjectFrontendDir(service.getDeploymentConfiguration());
-        String indexHtmlFilePath;
-        if (frontendDir.endsWith("/") || frontendDir.endsWith(File.separator)) {
-            indexHtmlFilePath = frontendDir + "index.html";
-        } else if (frontendDir.contains(File.separator)) {
-            indexHtmlFilePath = frontendDir + File.separatorChar + "index.html";
-        } else {
-            indexHtmlFilePath = frontendDir + "/index.html";
+
+        Document indexHtmlDocument = Jsoup.parse(index);
+        if (!getFeatureFlags(service).isEnabled(FeatureFlags.WEBPACK)) {
+            modifyIndexHtmlForVite(indexHtmlDocument);
         }
-        String message = String.format(
-                "Failed to load content of '%1$s'. "
-                        + "It is required to have '%1$s' file when "
-                        + "using client side bootstrapping.",
-                indexHtmlFilePath);
-        throw new IOException(message);
+        return indexHtmlDocument;
     }
 
     private static FeatureFlags getFeatureFlags(VaadinService service) {

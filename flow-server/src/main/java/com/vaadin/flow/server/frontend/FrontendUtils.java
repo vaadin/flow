@@ -521,17 +521,42 @@ public class FrontendUtils {
         try {
             Optional<DevModeHandler> devModeHandler = DevModeHandlerManager
                     .getDevModeHandler(service);
-            if (!config.isProductionMode() && devModeHandler.isPresent()) {
+            if (config.isProductionMode()) {
+                // In production mode, this is on the class path
+                content = getFileFromClassPath(service, path);
+            } else if (devModeHandler.isPresent()) {
                 content = getFileFromDevModeHandler(devModeHandler.get(), path);
+            } else {
+                // Get directly from the frontend folder in the project
+                content = getFileFromProjectFrontendDir(config, path);
             }
 
-            if (content == null) {
-                content = getFileFromClassPath(service, path);
-            }
             return content != null ? streamToString(content) : null;
         } finally {
             IOUtils.closeQuietly(content);
         }
+    }
+
+    private static InputStream getFileFromProjectFrontendDir(
+            DeploymentConfiguration config, String path) {
+        File f = new File(getProjectFrontendDir(config), path);
+        if (f.exists()) {
+            try {
+                return new FileInputStream(f);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        }
+        return null;
+    }
+
+    public static File getFileFromProjectDir(DeploymentConfiguration config,
+            String path) {
+        File f = new File(getProjectDir(config), path);
+        if (f.exists()) {
+            return f;
+        }
+        return null;
     }
 
     private static InputStream getFileFromClassPath(VaadinService service,
@@ -848,6 +873,18 @@ public class FrontendUtils {
             DeploymentConfiguration configuration) {
         return configuration.getStringProperty(PARAM_FRONTEND_DIR,
                 DEFAULT_FRONTEND_DIR);
+    }
+
+    /**
+     * Get base directory for the project.
+     *
+     * @param configuration
+     *            the current deployment configuration
+     *
+     * @return the project base directory
+     */
+    public static String getProjectDir(DeploymentConfiguration configuration) {
+        return configuration.getStringProperty(PROJECT_BASEDIR, null);
     }
 
     /**
