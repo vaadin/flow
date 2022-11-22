@@ -43,6 +43,13 @@ public class ThemeIT extends ViteDevModeIT {
     }
 
     @Test
+    public void autoInjectComponentsIsFalse_cssNotImported() {
+        String fieldBorder = (String) executeScript(
+                "return getComputedStyle(document.querySelector('#themedfield').shadowRoot.querySelector('[part=input-field]')).border");
+        Assert.assertNotEquals("10px solid rgb(255, 0, 0)", fieldBorder);
+    }
+
+    @Test
     public void documentCssImport_externalAddedToHeadAsLink() {
         checkLogsForErrors();
 

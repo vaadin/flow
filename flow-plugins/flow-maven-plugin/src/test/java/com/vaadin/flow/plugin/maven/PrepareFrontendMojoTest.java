@@ -158,9 +158,6 @@ public class PrepareFrontendMojoTest {
                 buildInfo.get(SERVLET_PARAMETER_ENABLE_DEV_SERVER));
         Assert.assertNotNull("productionMode token should be available",
                 buildInfo.get(SERVLET_PARAMETER_PRODUCTION_MODE));
-        Assert.assertNotNull(
-                "useDeprecatedV14Bootstrapping token should be available",
-                buildInfo.get(SERVLET_PARAMETER_USE_V14_BOOTSTRAP));
     }
 
     @Test
@@ -184,9 +181,6 @@ public class PrepareFrontendMojoTest {
                 buildInfo.get(SERVLET_PARAMETER_ENABLE_DEV_SERVER));
         Assert.assertNotNull("productionMode token should be available",
                 buildInfo.get(SERVLET_PARAMETER_PRODUCTION_MODE));
-        Assert.assertNotNull(
-                "useDeprecatedV14Bootstrapping token should be available",
-                buildInfo.get(SERVLET_PARAMETER_USE_V14_BOOTSTRAP));
     }
 
     @Test

@@ -558,19 +558,6 @@ public class BuildFrontendMojoTest {
         Assert.assertTrue(endpointClientApi.exists());
     }
 
-    @Ignore("Vite is not supported when deprecatedV14Bootstrapping is used")
-    @Test
-    public void mavenGoal_notGenerateOpenApiJson_when_usingDeprecatedV14Bootstrapping()
-            throws Exception {
-        ReflectionUtils.setVariableValueInObject(mojo,
-                "useDeprecatedV14Bootstrapping", "true");
-        Assert.assertFalse(
-                FileUtils.fileExists(openApiJsonFile.getAbsolutePath()));
-        mojo.execute();
-        Assert.assertFalse(
-                FileUtils.fileExists(openApiJsonFile.getAbsolutePath()));
-    }
-
     static void assertContainsPackage(JsonObject dependencies,
             String... packages) {
         Arrays.asList(packages).forEach(dep -> Assert
