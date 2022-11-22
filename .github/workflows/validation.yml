@@ -119,7 +119,7 @@ jobs:
       - uses: actions/upload-artifact@v3
         if: ${{ failure() || success() }}
         with:
-          name: saved-outputs
+          name: unit-tests-output
           path: |
             **/target/*-reports/*
             mvn-*.out
@@ -196,7 +196,7 @@ jobs:
       - uses: actions/upload-artifact@v3
         if: ${{ failure() || success() }}
         with:
-          name: saved-outputs
+          name: it-tests-output
           path: |
             **/target/*-reports/*
             **/error-screenshots/*.png
@@ -216,7 +216,10 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
       - uses: actions/download-artifact@v3
         with:
-          name: saved-outputs
+          name: unit-tests-output
+      - uses: actions/download-artifact@v3
+        with:
+          name: it-tests-output
       - name: Publish Unit Test Results
         uses: EnricoMi/publish-unit-test-result-action@v1
         with:
@@ -227,7 +230,8 @@ jobs:
         with:
           name: |
             saved-workspace
-            saved-outputs
+            unit-tests-output
+            it-tests-output
       - name: Compute Stats
         run: |
           ./scripts/computeMatrix.js test-results
