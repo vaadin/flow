@@ -20,6 +20,7 @@ import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.NodeUpdater.DEPENDENCIES;
 import static com.vaadin.flow.server.frontend.NodeUpdater.DEV_DEPENDENCIES;
 import static com.vaadin.flow.server.frontend.NodeUpdater.HASH_KEY;
+import static com.vaadin.flow.server.frontend.NodeUpdater.PROJECT_FOLDER;
 import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -400,6 +401,27 @@ public class TaskRunNpmInstallTest {
         Assert.assertTrue("Postinstall for 'foo' was not run",
                 new File(new File(getNodeUpdater().nodeModulesFolder, "foo"),
                         "postinstall-file.txt").exists());
+    }
+
+    @Test
+    public void shouldRunNpmInstallWhenFolderChanges() throws Exception {
+        setupEsbuildAndFooInstallation();
+
+        String packageJsonHash = getNodeUpdater().getPackageJson()
+                .getObject(VAADIN_DEP_KEY).getString(HASH_KEY);
+        JsonObject vaadinJson = Json.createObject();
+        vaadinJson.put(HASH_KEY, packageJsonHash);
+        vaadinJson.put(PROJECT_FOLDER,
+                getNodeUpdater().npmFolder.getAbsolutePath());
+        File vaadinJsonFile = getNodeUpdater().getVaadinJsonFile();
+
+        FileUtils.writeStringToFile(vaadinJsonFile, vaadinJson.toJson(), UTF_8);
+
+        Assert.assertFalse(task.isVaadinHashOrProjectFolderUpdated());
+        vaadinJson.put(PROJECT_FOLDER,
+                getNodeUpdater().npmFolder.getAbsolutePath() + "foo");
+        FileUtils.writeStringToFile(vaadinJsonFile, vaadinJson.toJson(), UTF_8);
+        Assert.assertTrue(task.isVaadinHashOrProjectFolderUpdated());
     }
 
     /**
