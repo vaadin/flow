@@ -24,9 +24,7 @@ import com.vaadin.base.devserver.startup.AbstractDevModeTest;
 import com.vaadin.base.devserver.startup.DevModeStartupListener;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.ResourceProvider;
-import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
@@ -38,6 +36,7 @@ import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
 import static com.vaadin.flow.testutil.FrontendStubs.createStubWebpackServer;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.when;
 
 @NotThreadSafe
@@ -54,11 +53,8 @@ public class DevModeEndpointWebpackTest extends AbstractDevModeTest {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     public void setup() throws Exception {
         super.setup();
-        assertFalse("No DevModeHandler should be available at test start",
-                DevModeHandlerManager
-                        .getDevModeHandler(
-                                new VaadinServletContext(servletContext))
-                        .isPresent());
+        assertNull("No DevModeHandler should be available at test start",
+                devModeHandlerManager.getDevModeHandler());
 
         createStubNode(false, true, baseDir);
         createStubWebpackServer("Compiled", 500, baseDir, true);

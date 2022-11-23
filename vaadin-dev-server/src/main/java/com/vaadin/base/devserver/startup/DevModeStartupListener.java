@@ -82,10 +82,14 @@ public class DevModeStartupListener
 
     @Override
     public void contextDestroyed(ServletContextEvent ctx) {
-        DevModeHandlerManager
-                .getDevModeHandler(
-                        new VaadinServletContext(ctx.getServletContext()))
-                .ifPresent(DevModeHandler::stop);
+        VaadinServletContext context = new VaadinServletContext(
+                ctx.getServletContext());
+        Lookup lookup = context.getAttribute(Lookup.class);
+        DevModeHandlerManager devModeHandlerManager = lookup
+                .lookup(DevModeHandlerManager.class);
+        if (devModeHandlerManager != null) {
+            devModeHandlerManager.stopDevModeHandler();
+        }
     }
 
 }
