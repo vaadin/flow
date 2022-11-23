@@ -88,9 +88,7 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
         if (shouldGenerate()) {
             super.execute();
         } else {
-            if (shouldOverride()) {
-                super.execute();
-            }
+            overrideOrThrow();
             if (featureFlags.isEnabled(FeatureFlags.WEBPACK)) {
                 ensureTarget("es2019");
             } else {
@@ -147,7 +145,7 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
         return !new File(projectRootDir, TSCONFIG_JSON).exists();
     }
 
-    private boolean shouldOverride() throws ExecutionFailedException {
+    private void overrideOrThrow() throws ExecutionFailedException {
         File tsConfigFile = new File(projectRootDir.getPath(), TSCONFIG_JSON);
 
         JsonObject tsConfigContent;
@@ -156,25 +154,25 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
             String tsConfigAsString = FileUtils.readFileToString(tsConfigFile, UTF_8);
             tsConfigContent = parseTsConfig(tsConfigAsString);
             template = getFileContent();
+
+            JsonObject templateJson = parseTsConfig(template);
+
+            if (tsConfigContent.hasKey("version")) {
+                String version = tsConfigContent.getString("version");
+                String templateVersion = templateJson.getString("version");
+                if (templateVersion.equals(version)) {
+                    return;
+                }
+            }
+
+            writeIfChanged(tsConfigFile, template);
+
+            if (!tsConfigEquals(templateJson, tsConfigContent)) {
+                throw new ExecutionFailedException(String.format(ERROR_MESSAGE));
+            }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
-
-        JsonObject templateJson = parseTsConfig(template);
-
-        if (tsConfigContent.hasKey("version")) {
-            String version = tsConfigContent.getString("version");
-            String templateVersion = templateJson.getString("version");
-            if (templateVersion.equals(version)) {
-                return false;
-            }
-        }
-
-        if (!tsConfigEquals(templateJson, tsConfigContent)) {
-            throw new ExecutionFailedException(String.format(ERROR_MESSAGE));
-        }
-
-        return true;
     }
 
     private String removeWhiteSpaces(String content) {
@@ -185,7 +183,9 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
         // exclude ES version from comparison, because it might be different
         // for webpack and vite
         template.remove("target");
+        template.remove("version");
         projectTsConfig.remove("target");
+        projectTsConfig.remove("version");
         return removeWhiteSpaces(template.toJson()).hashCode() ==
                removeWhiteSpaces(projectTsConfig.toJson()).hashCode();
     }
