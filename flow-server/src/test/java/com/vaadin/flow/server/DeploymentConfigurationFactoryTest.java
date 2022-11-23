@@ -237,10 +237,10 @@ public class DeploymentConfigurationFactoryTest {
             throws Exception {
         exception.expect(IllegalStateException.class);
         exception.expectMessage(
-                String.format(DEV_FOLDER_MISSING_MESSAGE, "frontend"));
+                String.format(DEV_FOLDER_MISSING_MESSAGE, "foo-bar-frontend"));
         FileUtils.writeLines(tokenFile,
                 Arrays.asList("{", "\"productionMode\": false,",
-                        "\"frontendFolder\": \"frontend\"", "}"));
+                        "\"frontendFolder\": \"foo-bar-frontend\"", "}"));
 
         createConfig(Collections.singletonMap(PARAM_TOKEN_FILE,
                 tokenFile.getPath()));
@@ -251,14 +251,14 @@ public class DeploymentConfigurationFactoryTest {
             throws Exception {
         exception.expect(IllegalStateException.class);
         exception.expectMessage(
-                String.format(DEV_FOLDER_MISSING_MESSAGE, "frontend"));
+                String.format(DEV_FOLDER_MISSING_MESSAGE, "foo-bar-frontend"));
         temporaryFolder.newFolder("npm");
         String tempFolder = temporaryFolder.getRoot().getAbsolutePath()
                 .replace("\\", "/");
         FileUtils.writeLines(tokenFile,
                 Arrays.asList("{", "\"productionMode\": false,",
                         "\"npmFolder\": \"" + tempFolder + "/npm\",",
-                        "\"frontendFolder\": \"frontend\"", "}"));
+                        "\"frontendFolder\": \"foo-bar-frontend\"", "}"));
 
         createConfig(Collections.singletonMap(PARAM_TOKEN_FILE,
                 tokenFile.getPath()));
