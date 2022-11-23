@@ -138,9 +138,7 @@ public abstract class AbstractDevModeTest {
     }
 
     protected DevModeHandler getDevModeHandler() {
-        return DevModeHandlerManager
-                .getDevModeHandler(new VaadinServletContext(servletContext))
-                .orElse(null);
+        return devModeHandlerManager.getDevModeHandler();
     }
 
     protected int getDevServerPort() {
