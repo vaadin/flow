@@ -81,7 +81,13 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
                 DevModeInitializer.initDevModeHandler(classes, context));
         setDevModeStarted(context);
         this.browserLauncher = new BrowserLauncher(context);
+    }
 
+    public void stopDevModeHandler() {
+        if (devModeHandler != null) {
+            devModeHandler.stop();
+            devModeHandler = null;
+        }
     }
 
     @Override

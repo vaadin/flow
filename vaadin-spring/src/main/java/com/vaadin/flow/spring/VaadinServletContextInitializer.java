@@ -487,9 +487,7 @@ public class VaadinServletContextInitializer
         @Override
         public void contextDestroyed(ServletContextEvent sce) {
             if (devModeHandlerManager != null) {
-                DevModeHandler devModeHandler = devModeHandlerManager
-                        .getDevModeHandler();
-                devModeHandler.stop();
+                devModeHandlerManager.stopDevModeHandler();
             }
         }
 

@@ -580,6 +580,10 @@ public class IndexHtmlRequestHandlerWebpackTest {
             public void launchBrowserInDevelopmentMode(String url) {
             }
 
+            @Override
+            public void stopDevModeHandler() {
+            }
+
         };
         ResourceProvider resourceProvider = Mockito
                 .mock(ResourceProvider.class);
