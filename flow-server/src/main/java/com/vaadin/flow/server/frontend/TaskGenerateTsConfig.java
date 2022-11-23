@@ -43,6 +43,9 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
 
     static final String TSCONFIG_JSON = "tsconfig.json";
 
+    private static final String VERSION = "version";
+    private static final String ES_TARGET_VERSION = "target";
+
     //@formatter:off
     static final String ERROR_MESSAGE =
             "%n%n**************************************************************************"
@@ -54,7 +57,7 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
     //@formatter:on
 
     private final File projectRootDir;
-    private FeatureFlags featureFlags;
+    private final FeatureFlags featureFlags;
 
     /**
      * Create a task to generate <code>tsconfig.json</code> file.
@@ -88,7 +91,7 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
         if (shouldGenerate()) {
             super.execute();
         } else {
-            overrideOrThrow();
+            overrideIfObsolete();
             if (featureFlags.isEnabled(FeatureFlags.WEBPACK)) {
                 ensureTarget("es2019");
             } else {
@@ -126,7 +129,7 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
 
     private String getEsTargetVersion(String tsConfig) {
         JsonObject parsed = parseTsConfig(tsConfig);
-        return parsed.getObject("compilerOptions").getString("target");
+        return parsed.getObject("compilerOptions").getString(ES_TARGET_VERSION);
     }
 
     private JsonObject parseTsConfig(String tsConfig) {
@@ -145,30 +148,32 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
         return !new File(projectRootDir, TSCONFIG_JSON).exists();
     }
 
-    private void overrideOrThrow() throws ExecutionFailedException {
-        File tsConfigFile = new File(projectRootDir.getPath(), TSCONFIG_JSON);
-
-        JsonObject tsConfigContent;
-        String template;
+    private void overrideIfObsolete() throws ExecutionFailedException {
         try {
-            String tsConfigAsString = FileUtils.readFileToString(tsConfigFile, UTF_8);
-            tsConfigContent = parseTsConfig(tsConfigAsString);
-            template = getFileContent();
+            File projectTsConfigFile = new File(projectRootDir.getPath(),
+                    TSCONFIG_JSON);
+            String projectRsConfigAsString = FileUtils
+                    .readFileToString(projectTsConfigFile, UTF_8);
+            JsonObject projectTsConfigContent = parseTsConfig(
+                    projectRsConfigAsString);
+            String tsConfigTemplate = getFileContent();
 
-            JsonObject templateJson = parseTsConfig(template);
+            JsonObject tsConfigTemplateJson = parseTsConfig(tsConfigTemplate);
 
-            if (tsConfigContent.hasKey("version")) {
-                String version = tsConfigContent.getString("version");
-                String templateVersion = templateJson.getString("version");
+            if (projectTsConfigContent.hasKey(VERSION)) {
+                String version = projectTsConfigContent.getString(VERSION);
+                String templateVersion = tsConfigTemplateJson
+                        .getString(VERSION);
                 if (templateVersion.equals(version)) {
                     return;
                 }
             }
 
-            writeIfChanged(tsConfigFile, template);
+            writeIfChanged(projectTsConfigFile, tsConfigTemplate);
 
-            if (!tsConfigEquals(templateJson, tsConfigContent)) {
-                throw new ExecutionFailedException(String.format(ERROR_MESSAGE));
+            if (!tsConfigEquals(tsConfigTemplateJson, projectTsConfigContent)) {
+                throw new ExecutionFailedException(
+                        String.format(ERROR_MESSAGE));
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -179,14 +184,16 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
         return content.replaceAll("\\s", "");
     }
 
-    private boolean tsConfigEquals(JsonObject template, JsonObject projectTsConfig) {
-        // exclude ES version from comparison, because it might be different
-        // for webpack and vite
-        template.remove("target");
-        template.remove("version");
-        projectTsConfig.remove("target");
-        projectTsConfig.remove("version");
-        return removeWhiteSpaces(template.toJson()).hashCode() ==
-               removeWhiteSpaces(projectTsConfig.toJson()).hashCode();
+    private boolean tsConfigEquals(JsonObject template,
+            JsonObject projectTsConfig) {
+        // exclude ES version and file version from comparison, because it might
+        // be different for webpack and vite
+        template.remove(ES_TARGET_VERSION);
+        template.remove(VERSION);
+        projectTsConfig.remove(ES_TARGET_VERSION);
+        projectTsConfig.remove(VERSION);
+        return removeWhiteSpaces(template.toJson())
+                .hashCode() == removeWhiteSpaces(projectTsConfig.toJson())
+                        .hashCode();
     }
 }
