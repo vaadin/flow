@@ -58,6 +58,12 @@ public interface DevModeHandlerManager {
             throws VaadinInitializerException;
 
     /**
+     * Stops a running {@link DevModeHandler}.
+     *
+     */
+    void stopDevModeHandler();
+
+    /**
      * Defines the handler to use with this manager.
      *
      * @param devModeHandler
