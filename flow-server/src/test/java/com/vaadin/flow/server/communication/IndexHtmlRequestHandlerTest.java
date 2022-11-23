@@ -73,7 +73,6 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
@@ -99,6 +98,7 @@ public class IndexHtmlRequestHandlerTest {
 
     private int expectedScriptsTagsOnBootstrapPage = 4;
     private MockedStatic<FrontendUtils> indexHtmlFinder;
+    private String indexHtml;
 
     @Before
     public void setUp() throws Exception {
@@ -114,14 +114,14 @@ public class IndexHtmlRequestHandlerTest {
         context = Mockito.mock(VaadinContext.class);
         springTokenString = UUID.randomUUID().toString();
 
-        String indexHtml = IOUtils.toString(
+        indexHtml = IOUtils.toString(
                 getClass().getClassLoader()
-                        .getResource("METa-INF/VAADIN/webapp/index.html"),
+                        .getResource("META-INF/VAADIN/webapp/index.html"),
                 StandardCharsets.UTF_8);
         indexHtmlFinder = Mockito.mockStatic(FrontendUtils.class);
         indexHtmlFinder
                 .when(() -> FrontendUtils.getIndexHtmlContent(Mockito.any()))
-                .thenReturn(indexHtml);
+                .thenAnswer((arg) -> indexHtml);
     }
 
     @Test
@@ -154,22 +154,14 @@ public class IndexHtmlRequestHandlerTest {
         Mockito.when(context.getAttribute(Lookup.class)).thenReturn(lookup);
         Mockito.when(lookup.lookup(ResourceProvider.class))
                 .thenReturn(resourceProvider);
-        URL resource = Mockito.mock(URL.class);
-        Mockito.when(resourceProvider
-                .getApplicationResource(VAADIN_WEBAPP_RESOURCES + INDEX_HTML))
-                .thenReturn(resource);
-        when(resource.openStream()).thenReturn(null);
+        indexHtml = null;
 
         VaadinServletRequest vaadinRequest = Mockito
                 .mock(VaadinServletRequest.class);
         Mockito.when(vaadinRequest.getService()).thenReturn(vaadinService);
 
-        String path = DEFAULT_FRONTEND_DIR + "index.html";
-
-        String expectedError = String
-                .format("Failed to load content of '%1$s'. "
-                        + "It is required to have '%1$s' file when "
-                        + "using client side bootstrapping.", path);
+        String expectedError = String.format(
+                "Unable to find index.html. It should be available in the frontend folder when running in development mode");
 
         IOException expectedException = assertThrows(IOException.class,
                 () -> indexHtmlRequestHandler.synchronizedHandleRequest(session,

@@ -21,13 +21,17 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
+import org.apache.commons.io.IOUtils;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
@@ -42,10 +46,10 @@ import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
@@ -69,6 +73,27 @@ public class WebComponentBootstrapHandlerViteTest {
                 VaadinResponse response) {
             return "/";
         }
+    }
+
+    private String webComponentHtml;
+    private MockedStatic<FrontendUtils> webComponentHtmlFinder;
+
+    @Before
+    public void setup() throws IOException {
+        webComponentHtml = IOUtils.toString(
+                getClass().getClassLoader().getResource(
+                        "META-INF/VAADIN/webapp/web-component.html"),
+                StandardCharsets.UTF_8);
+        webComponentHtmlFinder = Mockito.mockStatic(FrontendUtils.class);
+        webComponentHtmlFinder.when(
+                () -> FrontendUtils.getWebComponentHtmlContent(Mockito.any()))
+                .thenAnswer((arg) -> webComponentHtml);
+
+    }
+
+    @After
+    public void teardown() {
+        webComponentHtmlFinder.close();
     }
 
     @Test
