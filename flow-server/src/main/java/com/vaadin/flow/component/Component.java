@@ -788,7 +788,7 @@ public abstract class Component
         }
         return null;
     }
- 
+
     /**
      * Removes the component from its parent.
      */
