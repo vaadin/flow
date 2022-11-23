@@ -20,6 +20,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.FileUtils;
@@ -41,19 +42,30 @@ import elemental.json.JsonObject;
 public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
 
     static final String TSCONFIG_JSON = "tsconfig.json";
-    private final File npmFolder;
+
+    //@formatter:off
+    static final String ERROR_MESSAGE =
+            "%n%n**************************************************************************"
+            + "%n*  TypeScript config file 'tsconfig.json' has been updated to the latest *"
+            + "%n*  version by Vaadin. Please verify that the updated 'tsconfig.json'     *"
+            + "%n*  file contains configuration needed for your project (add missing part *"
+            + "%n*  from the old file if needed) and restart the application.             *"
+            + "%n**************************************************************************%n%n";
+    //@formatter:on
+
+    private final File projectRootDir;
     private FeatureFlags featureFlags;
 
     /**
      * Create a task to generate <code>tsconfig.json</code> file.
      *
-     * @param npmFolder
+     * @param projectRootDir
      *            project folder where the file will be generated.
      * @param featureFlags
      *            available feature flags and their status
      */
-    TaskGenerateTsConfig(File npmFolder, FeatureFlags featureFlags) {
-        this.npmFolder = npmFolder;
+    TaskGenerateTsConfig(File projectRootDir, FeatureFlags featureFlags) {
+        this.projectRootDir = projectRootDir;
         this.featureFlags = featureFlags;
     }
 
@@ -75,17 +87,21 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
     public void execute() throws ExecutionFailedException {
         if (shouldGenerate()) {
             super.execute();
-        } else if (featureFlags.isEnabled(FeatureFlags.WEBPACK)) {
-            ensureTarget("es2019");
         } else {
-            ensureTarget(getDefaultEsTargetVersion());
+            if (shouldOverride()) {
+                super.execute();
+            }
+            if (featureFlags.isEnabled(FeatureFlags.WEBPACK)) {
+                ensureTarget("es2019");
+            } else {
+                ensureTarget(getDefaultEsTargetVersion());
+            }
         }
     }
 
-    private void ensureTarget(String esVersion)
-            throws ExecutionFailedException {
+    private void ensureTarget(String esVersion) {
         try {
-            File projectTsconfig = new File(npmFolder, TSCONFIG_JSON);
+            File projectTsconfig = new File(projectRootDir, TSCONFIG_JSON);
             String current = FileUtils.readFileToString(projectTsconfig,
                     StandardCharsets.UTF_8);
             String currentEsVersion = getEsTargetVersion(current);
@@ -111,19 +127,66 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
     }
 
     private String getEsTargetVersion(String tsConfig) {
+        JsonObject parsed = parseTsConfig(tsConfig);
+        return parsed.getObject("compilerOptions").getString("target");
+    }
+
+    private JsonObject parseTsConfig(String tsConfig) {
         // remove comments so parser works
         String json = tsConfig.replaceAll("//.*", "");
-        JsonObject parsed = Json.parse(json);
-        return parsed.getObject("compilerOptions").getString("target");
+        return Json.parse(json);
     }
 
     @Override
     protected File getGeneratedFile() {
-        return new File(npmFolder, TSCONFIG_JSON);
+        return new File(projectRootDir, TSCONFIG_JSON);
     }
 
     @Override
     protected boolean shouldGenerate() {
-        return !new File(npmFolder, TSCONFIG_JSON).exists();
+        return !new File(projectRootDir, TSCONFIG_JSON).exists();
+    }
+
+    private boolean shouldOverride() throws ExecutionFailedException {
+        File tsConfigFile = new File(projectRootDir.getPath(), TSCONFIG_JSON);
+
+        JsonObject tsConfigContent;
+        String template;
+        try {
+            String tsConfigAsString = FileUtils.readFileToString(tsConfigFile, UTF_8);
+            tsConfigContent = parseTsConfig(tsConfigAsString);
+            template = getFileContent();
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+
+        JsonObject templateJson = parseTsConfig(template);
+
+        if (tsConfigContent.hasKey("version")) {
+            String version = tsConfigContent.getString("version");
+            String templateVersion = templateJson.getString("version");
+            if (templateVersion.equals(version)) {
+                return false;
+            }
+        }
+
+        if (!tsConfigEquals(templateJson, tsConfigContent)) {
+            throw new ExecutionFailedException(String.format(ERROR_MESSAGE));
+        }
+
+        return true;
+    }
+
+    private String removeWhiteSpaces(String content) {
+        return content.replaceAll("\\s", "");
+    }
+
+    private boolean tsConfigEquals(JsonObject template, JsonObject projectTsConfig) {
+        // exclude ES version from comparison, because it might be different
+        // for webpack and vite
+        template.remove("target");
+        projectTsConfig.remove("target");
+        return removeWhiteSpaces(template.toJson()).hashCode() ==
+               removeWhiteSpaces(projectTsConfig.toJson()).hashCode();
     }
 }
