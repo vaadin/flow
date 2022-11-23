@@ -788,5 +788,12 @@ public abstract class Component
         }
         return null;
     }
+ 
+    /**
+     * Removes the component from its parent.
+     */
+    public void removeFromParent() {
+        findAncestor(HasComponents.class).remove(this);
+    }
 
 }
