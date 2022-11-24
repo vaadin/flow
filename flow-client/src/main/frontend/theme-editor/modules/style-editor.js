@@ -40,66 +40,65 @@ document.head.appendChild($_documentContainer.content);
 class Style extends EditorModule {
   static get template() {
     return html`
-    <style include="shared-editor-module-styles">
-    </style>
+      <style include="shared-editor-module-styles"></style>
 
-    <select-editor label="Roundness" name="--lumo-border-radius">
-      <template>
-        <vaadin-list-box>
-          <vaadin-item value="0px">Sharp</vaadin-item>
-          <hr>
-          <vaadin-item value="0.125em">Extra small</vaadin-item>
-          <vaadin-item value="">Small</vaadin-item>
-          <vaadin-item value="0.5em">Medium</vaadin-item>
-          <vaadin-item value="0.75em">Large</vaadin-item>
-          <vaadin-item value="calc(var(--lumo-size-m) / 2)">Round</vaadin-item>
-        </vaadin-list-box>
-      </template>
-    </select-editor>
+      <select-editor label="Roundness" name="--lumo-border-radius">
+        <template>
+          <vaadin-list-box>
+            <vaadin-item value="0px">Sharp</vaadin-item>
+            <hr />
+            <vaadin-item value="0.125em">Extra small</vaadin-item>
+            <vaadin-item value="">Small</vaadin-item>
+            <vaadin-item value="0.5em">Medium</vaadin-item>
+            <vaadin-item value="0.75em">Large</vaadin-item>
+            <vaadin-item value="calc(var(--lumo-size-m) / 2)">Round</vaadin-item>
+          </vaadin-list-box>
+        </template>
+      </select-editor>
 
-    <details>
-      <summary>Advanced</summary>
+      <details>
+        <summary>Advanced</summary>
 
-      <table>
-        <tbody>
-          <tr>
-            <th>Radius</th>
-            <td><property-editor name="--lumo-border-radius"></property-editor></td>
-          </tr>
-          <tr>
-            <th>Radius S</th>
-            <td><property-editor name="--lumo-border-radius-s"></property-editor></td>
-          </tr>
-          <tr>
-            <th>Radius M</th>
-            <td><property-editor name="--lumo-border-radius-m"></property-editor></td>
-          </tr>
-          <tr>
-            <th>Radius L</th>
-            <td><property-editor name="--lumo-border-radius-l"></property-editor></td>
-          </tr>
-        </tbody>
-      </table>
-    </details>
+        <table>
+          <tbody>
+            <tr>
+              <th>Radius</th>
+              <td><property-editor name="--lumo-border-radius"></property-editor></td>
+            </tr>
+            <tr>
+              <th>Radius S</th>
+              <td><property-editor name="--lumo-border-radius-s"></property-editor></td>
+            </tr>
+            <tr>
+              <th>Radius M</th>
+              <td><property-editor name="--lumo-border-radius-m"></property-editor></td>
+            </tr>
+            <tr>
+              <th>Radius L</th>
+              <td><property-editor name="--lumo-border-radius-l"></property-editor></td>
+            </tr>
+          </tbody>
+        </table>
+      </details>
 
-    <select-editor label="Button style" name="style-module:button">
-      <template>
-        <vaadin-list-box>
-          <vaadin-item value="">Fill</vaadin-item>
-          <vaadin-item value="gradient">Border &amp; gradient</vaadin-item>
-        </vaadin-list-box>
-      </template>
-    </select-editor>
+      <select-editor label="Button style" name="style-module:button">
+        <template>
+          <vaadin-list-box>
+            <vaadin-item value="">Fill</vaadin-item>
+            <vaadin-item value="gradient">Border &amp; gradient</vaadin-item>
+          </vaadin-list-box>
+        </template>
+      </select-editor>
 
-    <select-editor label="Text field style" name="style-module:text-field">
-      <template>
-        <vaadin-list-box>
-          <vaadin-item value="">Fill</vaadin-item>
-          <vaadin-item value="border">Border</vaadin-item>
-        </vaadin-list-box>
-      </template>
-    </select-editor>
-`;
+      <select-editor label="Text field style" name="style-module:text-field">
+        <template>
+          <vaadin-list-box>
+            <vaadin-item value="">Fill</vaadin-item>
+            <vaadin-item value="border">Border</vaadin-item>
+          </vaadin-list-box>
+        </template>
+      </select-editor>
+    `;
   }
 
   static get is() {
@@ -116,20 +115,19 @@ class Style extends EditorModule {
 
     let buttons = Array.from(document.querySelectorAll('vaadin-button'));
 
-    document.addEventListener(LumoEditor.PROPERTY_CHANGED, e => {
+    document.addEventListener(LumoEditor.PROPERTY_CHANGED, (e) => {
       var entry = e.detail;
 
       for (var prop in entry.properties) {
         if (prop.indexOf('style-module') > -1) {
-          var value = entry.properties[prop] || '';
+          var value = entry.properties[prop] || '';
 
           if (prop.indexOf('text-field') > -1) {
-            textfields.forEach(tf => {
+            textfields.forEach((tf) => {
               tf.setAttribute('theme', value);
             });
-
           } else if (prop.indexOf('button') > -1) {
-            buttons.forEach(b => {
+            buttons.forEach((b) => {
               if (!value) {
                 b.setAttribute('theme', b.__originalTheme);
               } else {

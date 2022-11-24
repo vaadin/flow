@@ -39,7 +39,7 @@ class SelectEditor extends PropertyEditor {
     return {
       label: String,
       placeholder: String
-    }
+    };
   }
 
   static get template() {
@@ -55,7 +55,7 @@ class SelectEditor extends PropertyEditor {
 
   ready() {
     super.ready();
-    this.shadowRoot.querySelector('vaadin-select').addEventListener('value-changed', e => {
+    this.shadowRoot.querySelector('vaadin-select').addEventListener('value-changed', (e) => {
       this.value = e.target.value;
     });
   }

@@ -131,224 +131,240 @@ document.head.appendChild($_documentContainer.content);
 export class LumoEditor extends PolymerElement {
   static get template() {
     return html`
-    <style include="lumo-color lumo-typography">
-      :host {
-        display: block;
-        width: 320px;
-        height: 100%;
-        --lumo-font-family: -apple-system, BlinkMacSystemFont, "Roboto", "Segoe UI", Helvetica, Arial, sans-serif;
-        --lumo-font-size-xs: 11px;
-        --lumo-font-size-s: 12px;
-        --lumo-font-size-m: 14px;
-        --lumo-size-m: 30px;
-        --lumo-size-s: 24px;
-        --lumo-space-m: 16px;
-        --lumo-space-s: 8px;
-        --lumo-space-xs: 4px;
-        --lumo-border-radius: 4px;
-        font-family: var(--lumo-font-family);
-        font-size: var(--lumo-font-size-m);
-      }
+      <style include="lumo-color lumo-typography">
+        :host {
+          display: block;
+          width: 320px;
+          height: 100%;
+          --lumo-font-family: -apple-system, BlinkMacSystemFont, 'Roboto', 'Segoe UI', Helvetica, Arial, sans-serif;
+          --lumo-font-size-xs: 11px;
+          --lumo-font-size-s: 12px;
+          --lumo-font-size-m: 14px;
+          --lumo-size-m: 30px;
+          --lumo-size-s: 24px;
+          --lumo-space-m: 16px;
+          --lumo-space-s: 8px;
+          --lumo-space-xs: 4px;
+          --lumo-border-radius: 4px;
+          font-family: var(--lumo-font-family);
+          font-size: var(--lumo-font-size-m);
+        }
 
-      .tools {
-        display: flex;
-        align-items: center;
-        background: var(--lumo-contrast-5pct);
-        height: 2em;
-        padding: 0.5em;
-      }
-      .tools[hidden] {
-        display: none;
-      }
+        .tools {
+          display: flex;
+          align-items: center;
+          background: var(--lumo-contrast-5pct);
+          height: 2em;
+          padding: 0.5em;
+        }
+        .tools[hidden] {
+          display: none;
+        }
 
-      .tools button {
-        border: 0;
-        background: transparent;
-        font: inherit;
-        color: var(--lumo-tertiary-text-color);
-        min-width: 2em;
-        height: 2em;
-        padding: 0;
-        margin: 0 0.5em 0 0;
-        outline: none;
-        border-radius: var(--lumo-border-radius);
-      }
+        .tools button {
+          border: 0;
+          background: transparent;
+          font: inherit;
+          color: var(--lumo-tertiary-text-color);
+          min-width: 2em;
+          height: 2em;
+          padding: 0;
+          margin: 0 0.5em 0 0;
+          outline: none;
+          border-radius: var(--lumo-border-radius);
+        }
 
-      .tools button:disabled {
-        pointer-events: none;
-        color: var(--lumo-disabled-text-color);
-      }
+        .tools button:disabled {
+          pointer-events: none;
+          color: var(--lumo-disabled-text-color);
+        }
 
-      .tools button:focus,
-      .tools button:hover {
-        color: var(--lumo-body-text-color);
-        background-color: var(--lumo-contrast-5pct);
-      }
+        .tools button:focus,
+        .tools button:hover {
+          color: var(--lumo-body-text-color);
+          background-color: var(--lumo-contrast-5pct);
+        }
 
-      .tools button:active {
-        background-color: var(--lumo-contrast-10pct);
-      }
+        .tools button:active {
+          background-color: var(--lumo-contrast-10pct);
+        }
 
-      .tools button iron-icon {
-        vertical-align: -0.5em;
-      }
+        .tools button iron-icon {
+          vertical-align: -0.5em;
+        }
 
-      .tools .reset iron-icon {
-        transform: scaleX(-1);
-      }
+        .tools .reset iron-icon {
+          transform: scaleX(-1);
+        }
 
-      .tools .download {
-        margin-left: auto;
-        margin-right: 0;
-        padding: 0 0.5em 0 0.25em;
-        font-weight: 500;
-      }
-      .tools .primary:not(:disabled) {
-        background-color: var(--lumo-primary-color);
-        color: var(--lumo-primary-contrast-color);
-      }
+        .tools .download {
+          margin-left: auto;
+          margin-right: 0;
+          padding: 0 0.5em 0 0.25em;
+          font-weight: 500;
+        }
+        .tools .primary:not(:disabled) {
+          background-color: var(--lumo-primary-color);
+          color: var(--lumo-primary-contrast-color);
+        }
 
-      .tools .divider {
-        width: 1px;
-        background-color: var(--lumo-contrast-10pct);
-        height: 20px;
-        margin: 0 10px;
-      }
+        .tools .divider {
+          width: 1px;
+          background-color: var(--lumo-contrast-10pct);
+          height: 20px;
+          margin: 0 10px;
+        }
 
-      .tabs {
-        display: flex;
-        flex-wrap: wrap;
-        height: calc(100% - 3em);
-      }
+        .tabs {
+          display: flex;
+          flex-wrap: wrap;
+          height: calc(100% - 3em);
+        }
 
-      .tab {
-        flex: auto;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 500;
-        font-size: 14px;
-        color: var(--lumo-tertiary-text-color);
-        white-space: nowrap;
-        height: 3em;
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
-      }
+        .tab {
+          flex: auto;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 500;
+          font-size: 14px;
+          color: var(--lumo-tertiary-text-color);
+          white-space: nowrap;
+          height: 3em;
+          -webkit-user-select: none;
+          -moz-user-select: none;
+          -ms-user-select: none;
+          user-select: none;
+        }
 
-      .tabs > input:checked + .tab {
-        color: var(--lumo-primary-text-color);
-      }
+        .tabs > input:checked + .tab {
+          color: var(--lumo-primary-text-color);
+        }
 
-      .tabs > input {
-        position: absolute;
-        opacity: 0;
-        pointer-events: none;
-      }
+        .tabs > input {
+          position: absolute;
+          opacity: 0;
+          pointer-events: none;
+        }
 
-      .tab-content {
-        order: 1;
-        width: 100%;
-        padding: 0 16px 32px;
-        box-sizing: border-box;
-        height: calc(100% - 3em);
-        overflow: auto;
-        -webkit-overflow-scrolling: touch;
-      }
+        .tab-content {
+          order: 1;
+          width: 100%;
+          padding: 0 16px 32px;
+          box-sizing: border-box;
+          height: calc(100% - 3em);
+          overflow: auto;
+          -webkit-overflow-scrolling: touch;
+        }
 
-      .tabs > input:not(:checked) + .tab + .tab-content {
-        display: none;
-      }
+        .tabs > input:not(:checked) + .tab + .tab-content {
+          display: none;
+        }
 
-      #output {
-        display: flex;
-        flex: auto;
-        width: 100%;
-        max-height: 100%;
-        font-family: monospace;
-        white-space: pre;
-      }
+        #output {
+          display: flex;
+          flex: auto;
+          width: 100%;
+          max-height: 100%;
+          font-family: monospace;
+          white-space: pre;
+        }
 
-      .download-dialog {
-        display: flex;
-        flex-direction: column;
-        height: 80vh;
-        width: 50em;
-        max-width: 100%;
-        box-sizing: border-box;
-      }
-      .download-dialog h2 {
-        margin-top: 0;
-      }
-      .download-dialog vaadin-text-area {
-        flex: 1;
-      }
-      .download-dialog .footer {
-        margin: calc(var(--lumo-space-l) * -1);
-        margin-top: var(--lumo-space-l);
-        background-color: var(--lumo-contrast-5pct);
-        padding: var(--lumo-space-wide-m);
-      }
-      .download-dialog vaadin-button {
-        float: right;
-      }
-    </style>
+        .download-dialog {
+          display: flex;
+          flex-direction: column;
+          height: 80vh;
+          width: 50em;
+          max-width: 100%;
+          box-sizing: border-box;
+        }
+        .download-dialog h2 {
+          margin-top: 0;
+        }
+        .download-dialog vaadin-text-area {
+          flex: 1;
+        }
+        .download-dialog .footer {
+          margin: calc(var(--lumo-space-l) * -1);
+          margin-top: var(--lumo-space-l);
+          background-color: var(--lumo-contrast-5pct);
+          padding: var(--lumo-space-wide-m);
+        }
+        .download-dialog vaadin-button {
+          float: right;
+        }
+      </style>
 
-    <div class="tools" hidden="[[hideTools]]">
-      <button on-click="undo" class="undo" title="Undo (Ctrl + Z / ⌘Z)" disabled=""><iron-icon icon="lumo:undo"></iron-icon></button>
-      <button on-click="redo" class="redo" title="Redo (Ctrl + Y / ⇧⌘Z)" disabled=""><iron-icon icon="lumo:redo"></iron-icon></button>
-      <div class="divider"></div>
-      <button on-click="_confirmReset" class="reset" title="Reset all" disabled=""><iron-icon icon="lumo:reload"></iron-icon></button>
-      <button on-click="_download" class="download primary" title="Download" disabled><iron-icon icon="lumo:download"></iron-icon> Download</button>
-    </div>
+      <div class="tools" hidden="[[hideTools]]">
+        <button on-click="undo" class="undo" title="Undo (Ctrl + Z / ⌘Z)" disabled="">
+          <iron-icon icon="lumo:undo"></iron-icon>
+        </button>
+        <button on-click="redo" class="redo" title="Redo (Ctrl + Y / ⇧⌘Z)" disabled="">
+          <iron-icon icon="lumo:redo"></iron-icon>
+        </button>
+        <div class="divider"></div>
+        <button on-click="_confirmReset" class="reset" title="Reset all" disabled="">
+          <iron-icon icon="lumo:reload"></iron-icon>
+        </button>
+        <button on-click="_download" class="download primary" title="Download" disabled>
+          <iron-icon icon="lumo:download"></iron-icon> Download
+        </button>
+      </div>
 
-    <main class="tabs">
-      <!-- Color -->
-      <input type="radio" name="main-tabs" id="color" checked="">
-      <label for="color" class="tab">Color</label>
-      <section class="tab-content">
-        <palette-editor></palette-editor>
-      </section>
+      <main class="tabs">
+        <!-- Color -->
+        <input type="radio" name="main-tabs" id="color" checked="" />
+        <label for="color" class="tab">Color</label>
+        <section class="tab-content">
+          <palette-editor></palette-editor>
+        </section>
 
-      <!-- Typography -->
-      <input type="radio" name="main-tabs" id="typography">
-      <label for="typography" class="tab">Typography</label>
-      <section class="tab-content">
-        <typography-editor></typography-editor>
-      </section>
+        <!-- Typography -->
+        <input type="radio" name="main-tabs" id="typography" />
+        <label for="typography" class="tab">Typography</label>
+        <section class="tab-content">
+          <typography-editor></typography-editor>
+        </section>
 
-      <!-- Style -->
-      <input type="radio" name="main-tabs" id="style">
-      <label for="style" class="tab">Style</label>
-      <section class="tab-content">
-        <style-editor></style-editor>
-      </section>
+        <!-- Style -->
+        <input type="radio" name="main-tabs" id="style" />
+        <label for="style" class="tab">Style</label>
+        <section class="tab-content">
+          <style-editor></style-editor>
+        </section>
 
-      <!-- Sixing & Spacing -->
-      <input type="radio" name="main-tabs" id="ss">
-      <label for="ss" class="tab">Size &amp; Space</label>
-      <section class="tab-content">
-        <size-and-space-editor></size-and-space-editor>
-      </section>
-    </main>
+        <!-- Sixing & Spacing -->
+        <input type="radio" name="main-tabs" id="ss" />
+        <label for="ss" class="tab">Size &amp; Space</label>
+        <section class="tab-content">
+          <size-and-space-editor></size-and-space-editor>
+        </section>
+      </main>
 
-    <vaadin-dialog id="downloadDialog" theme="editor output">
-      <template>
-        <div class="download-dialog">
-          <h2>Download</h2>
-          <p>Copy the HTML below to a new <code>.html</code> file and import it in your app after the default Lumo theme imports.</p>
-          <p>For example: <code>&lt;link rel="import" href="my-lumo-theme.html"&gt;</code></p>
-          <vaadin-text-area id="output" label=""></vaadin-text-area>
-          <h4>Need more help?</h4>
-          <p>See the <a href="https://vaadin.com/themes/lumo">Lumo theme documentation</a> and the <a href="https://vaadin.com/docs/flow/theme/theming-overview.html">theming documentation for Vaadin Flow</a>.</p>
-          <div class="footer">
-            <vaadin-button theme="primary" class="close">Close</vaadin-button>
+      <vaadin-dialog id="downloadDialog" theme="editor output">
+        <template>
+          <div class="download-dialog">
+            <h2>Download</h2>
+            <p>
+              Copy the HTML below to a new <code>.html</code> file and import it in your app after the default Lumo
+              theme imports.
+            </p>
+            <p>For example: <code>&lt;link rel="import" href="my-lumo-theme.html"&gt;</code></p>
+            <vaadin-text-area id="output" label=""></vaadin-text-area>
+            <h4>Need more help?</h4>
+            <p>
+              See the <a href="https://vaadin.com/themes/lumo">Lumo theme documentation</a> and the
+              <a href="https://vaadin.com/docs/flow/theme/theming-overview.html"
+                >theming documentation for Vaadin Flow</a
+              >.
+            </p>
+            <div class="footer">
+              <vaadin-button theme="primary" class="close">Close</vaadin-button>
+            </div>
           </div>
-        </div>
-      </template>
-    </vaadin-dialog>
-`;
+        </template>
+      </vaadin-dialog>
+    `;
   }
 
   static get PROPERTY_CHANGED() {
@@ -383,12 +399,12 @@ export class LumoEditor extends PolymerElement {
       hideTools: {
         type: Boolean
       }
-    }
+    };
   }
 
   getDefault(name, mode) {
     if (!mode) {
-      mode = "light";
+      mode = 'light';
     }
     if (!this.defaults[mode]) {
       console.error("Missing defaults for mode '" + mode + "'");
@@ -481,7 +497,8 @@ export class LumoEditor extends PolymerElement {
       '--lumo-error-color-50pct': 'hsla(3, 90%, 63%, 0.5)',
       '--lumo-error-contrast-color': '#FFF',
       '--lumo-error-text-color': 'hsl(3, 100%, 67%)',
-      '--lumo-font-family': '-apple-system, BlinkMacSystemFont, "Roboto", "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
+      '--lumo-font-family':
+        '-apple-system, BlinkMacSystemFont, "Roboto", "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
       '--lumo-font-size-l': '1.125rem',
       '--lumo-font-size-m': '1rem',
       '--lumo-font-size-s': '0.875rem',
@@ -554,7 +571,7 @@ export class LumoEditor extends PolymerElement {
       '--lumo-tint-90pct': 'hsla(214, 96%, 96%, 0.9)',
       '--lumo-border-radius-s': 'calc(var(--lumo-border-radius-m) / 2)',
       '--lumo-border-radius-m': 'var(--lumo-border-radius)',
-      '--lumo-border-radius-l': 'calc(var(--lumo-border-radius-m) * 2)',
+      '--lumo-border-radius-l': 'calc(var(--lumo-border-radius-m) * 2)'
     };
 
     this.defaults['light'] = {
@@ -635,7 +652,8 @@ export class LumoEditor extends PolymerElement {
       '--lumo-error-color-50pct': 'hsla(3, 100%, 60%, 0.5)',
       '--lumo-error-contrast-color': '#FFF',
       '--lumo-error-text-color': 'hsl(3, 92%, 53%)',
-      '--lumo-font-family': '-apple-system, BlinkMacSystemFont, "Roboto", "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
+      '--lumo-font-family':
+        '-apple-system, BlinkMacSystemFont, "Roboto", "Segoe UI", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
       '--lumo-font-size-l': '1.125rem',
       '--lumo-font-size-m': '1rem',
       '--lumo-font-size-s': '0.875rem',
@@ -708,17 +726,17 @@ export class LumoEditor extends PolymerElement {
       '--lumo-tint-90pct': 'hsla(0, 0%, 100%, 0.9)',
       '--lumo-border-radius-s': 'calc(var(--lumo-border-radius-m) / 2)',
       '--lumo-border-radius-m': 'var(--lumo-border-radius)',
-      '--lumo-border-radius-l': 'calc(var(--lumo-border-radius-m) * 2)',
+      '--lumo-border-radius-l': 'calc(var(--lumo-border-radius-m) * 2)'
     };
   }
 
   ready() {
     super.ready();
-    document.addEventListener(LumoEditor.PROPERTY_CHANGED, e => this._handlePropertyChange(e.detail));
+    document.addEventListener(LumoEditor.PROPERTY_CHANGED, (e) => this._handlePropertyChange(e.detail));
     if (!this.previewDocument) {
       this.previewDocument = document;
     }
-    document.addEventListener('keydown', e => {
+    document.addEventListener('keydown', (e) => {
       if (e.metaKey || e.ctrlKey) {
         if (e.key == 'z') {
           if (e.shiftKey) {
@@ -732,7 +750,7 @@ export class LumoEditor extends PolymerElement {
       }
     });
 
-    this.$.confirmReset.addEventListener('confirm', e => {
+    this.$.confirmReset.addEventListener('confirm', (e) => {
       this.reset();
     });
   }
@@ -742,7 +760,6 @@ export class LumoEditor extends PolymerElement {
       // Update from an editor (i.e. not from undo/redo)
       this._addHistoryEntry(entry);
     }
-
 
     // Update undo & redo button state
     this._updateButtonState();
@@ -802,7 +819,11 @@ export class LumoEditor extends PolymerElement {
 
         // Look for a matching property in the history entry
         for (var prop in historyEntry.properties) {
-          if (prop == currentEntryProp && historyEntry.paletteMode == currentEntry.paletteMode && i <= this.historyIndex) {
+          if (
+            prop == currentEntryProp &&
+            historyEntry.paletteMode == currentEntry.paletteMode &&
+            i <= this.historyIndex
+          ) {
             diffEntry.properties[prop] = historyEntry.properties[prop];
             break loop1;
           }
@@ -833,7 +854,7 @@ export class LumoEditor extends PolymerElement {
   _download() {
     this.$.downloadDialog.opened = true;
     this.$.downloadDialog.$.overlay.content.querySelector('#output').value = this.getThemeHtml();
-    this.$.downloadDialog.$.overlay.content.querySelector('vaadin-button.close').addEventListener('click', e => {
+    this.$.downloadDialog.$.overlay.content.querySelector('vaadin-button.close').addEventListener('click', (e) => {
       this.$.downloadDialog.opened = false;
     });
   }
@@ -846,11 +867,13 @@ export class LumoEditor extends PolymerElement {
   }
 
   _notifyPropertyChange(entry) {
-    this.dispatchEvent(new CustomEvent(LumoEditor.PROPERTY_CHANGED, {
-      detail: entry,
-      bubbles: true,
-      composed: true,
-    }));
+    this.dispatchEvent(
+      new CustomEvent(LumoEditor.PROPERTY_CHANGED, {
+        detail: entry,
+        bubbles: true,
+        composed: true
+      })
+    );
   }
 
   _updateGlobalStyleSheet() {
@@ -915,7 +938,7 @@ export class LumoEditor extends PolymerElement {
 <template>
 <style>`;
 
-        var styleModule = DomModule.prototype.modules[component + "--" + val];
+        var styleModule = DomModule.prototype.modules[component + '--' + val];
         var css = styleModule.querySelector('template').content.querySelector('style').innerHTML;
         var regexp = new RegExp(`\\[theme~="${val}"\\]`, 'gi');
 
@@ -931,7 +954,7 @@ export class LumoEditor extends PolymerElement {
   getThemeHtml() {
     let output = '<custom-style>\n  <style>\n';
     output += this._getStyleExport();
-    output += '\n  </style>\n</custom-style>\n'
+    output += '\n  </style>\n</custom-style>\n';
     output += this._getStyleModuleExport();
     return output;
   }

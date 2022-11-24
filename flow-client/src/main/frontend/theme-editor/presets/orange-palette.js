@@ -50,7 +50,6 @@ class OrangePalette extends PalettePreset {
       '--lumo-secondary-text-color': undefined,
       '--lumo-tertiary-text-color': undefined,
       '--lumo-disabled-text-color': undefined
-
     };
   }
 }

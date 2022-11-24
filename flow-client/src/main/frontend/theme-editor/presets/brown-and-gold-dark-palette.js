@@ -1,7 +1,7 @@
-import { PalettePreset } from "./palette-preset.js";
+import { PalettePreset } from './palette-preset.js';
 class BrownAndGoldDarkPalette extends PalettePreset {
   static get is() {
-    return "brown-and-gold-dark-palette";
+    return 'brown-and-gold-dark-palette';
   }
 
   ready() {

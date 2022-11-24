@@ -68,27 +68,32 @@ document.head.appendChild($_documentContainer.content);
 export class PropertyEditor extends PolymerElement {
   static get template() {
     return html`
-    <style include="property-editor-shared-styles">
-      :host {
-        display: inline-flex;
-        align-items: center;
-        position: relative;
-      }
+      <style include="property-editor-shared-styles">
+        :host {
+          display: inline-flex;
+          align-items: center;
+          position: relative;
+        }
 
-      .clear-button {
-        position: absolute;
-        right: calc(var(--lumo-size-s) / 2 - 10px);
-      }
+        .clear-button {
+          position: absolute;
+          right: calc(var(--lumo-size-s) / 2 - 10px);
+        }
 
-      input.editor {
-        padding-right: calc(20px + 0.5em);
-      }
-    </style>
-    <input type="text" value="{{value::change}}" placeholder="[[_valueOrDefault(value,forceValueUpdate)]]" class="editor">
-    <button on-click="_clear" title="Reset to default" class="clear-button">
-      <iron-icon icon="lumo:reload"></iron-icon>
-    </button>
-`;
+        input.editor {
+          padding-right: calc(20px + 0.5em);
+        }
+      </style>
+      <input
+        type="text"
+        value="{{value::change}}"
+        placeholder="[[_valueOrDefault(value,forceValueUpdate)]]"
+        class="editor"
+      />
+      <button on-click="_clear" title="Reset to default" class="clear-button">
+        <iron-icon icon="lumo:reload"></iron-icon>
+      </button>
+    `;
   }
 
   static get is() {
@@ -108,7 +113,7 @@ export class PropertyEditor extends PolymerElement {
         type: Number,
         value: 0
       }
-    }
+    };
   }
 
   ready() {
@@ -116,7 +121,7 @@ export class PropertyEditor extends PolymerElement {
     this._updateUndefinedClass();
     this.value = '';
 
-    document.addEventListener(LumoEditor.PROPERTY_CHANGED, e => {
+    document.addEventListener(LumoEditor.PROPERTY_CHANGED, (e) => {
       if (e.composedPath()[0] == this) return;
 
       // If the property change event contains a new value for this editor, update the value
@@ -136,7 +141,7 @@ export class PropertyEditor extends PolymerElement {
 
   _computedValue() {
     if (!this.lumoEditor.previewDocument) {
-      return "";
+      return '';
     }
     return getComputedStyle(this.lumoEditor.previewDocument.documentElement).getPropertyValue(this.name).trim();
   }
@@ -169,20 +174,20 @@ export class PropertyEditor extends PolymerElement {
     var props = {};
     props[this.name] = this.value;
 
-    this.dispatchEvent(new CustomEvent(LumoEditor.PROPERTY_CHANGED, {
-      detail: {
-        properties: props
-      },
-      bubbles: true,
-      composed: true
-    }));
+    this.dispatchEvent(
+      new CustomEvent(LumoEditor.PROPERTY_CHANGED, {
+        detail: {
+          properties: props
+        },
+        bubbles: true,
+        composed: true
+      })
+    );
   }
 
   _valueOrDefault(value) {
-    if (value)
-      return value;
-    else
-      return this._defaultValue();
+    if (value) return value;
+    else return this._defaultValue();
   }
 
   _defaultValue() {

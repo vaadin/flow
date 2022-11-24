@@ -21,9 +21,9 @@ document.body.appendChild($_documentContainer.content);
 export class PresetItem extends ItemMixin(PolymerElement) {
   static get template() {
     return html`
-    <style include="preset-item"></style>
-    <slot></slot>
-`;
+      <style include="preset-item"></style>
+      <slot></slot>
+    `;
   }
 
   static get is() {
@@ -37,7 +37,7 @@ export class PresetItem extends ItemMixin(PolymerElement) {
         observer: '_propsChanged'
       },
       preview: Boolean
-    }
+    };
   }
 
   _propsChanged() {

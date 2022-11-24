@@ -1,7 +1,7 @@
-import { PalettePreset } from "./palette-preset.js";
+import { PalettePreset } from './palette-preset.js';
 class PurplePalette extends PalettePreset {
   static get is() {
-    return "purple-palette";
+    return 'purple-palette';
   }
 
   ready() {

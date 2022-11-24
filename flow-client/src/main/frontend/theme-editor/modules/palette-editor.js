@@ -2,176 +2,178 @@ import { EditorModule } from './editor-module.js';
 import './preset-picker.js';
 import '../presets/default-palette.js';
 import '../presets/orange-palette.js';
-import '../presets/brown-and-gold-palette.js'
-import '../presets/brown-and-gold-dark-palette.js'
-import '../presets/purple-palette.js'
-import '../presets/purple-dark-palette.js'
+import '../presets/brown-and-gold-palette.js';
+import '../presets/brown-and-gold-dark-palette.js';
+import '../presets/purple-palette.js';
+import '../presets/purple-dark-palette.js';
 import '../property-editors/color-editor.js';
 import { html } from '@polymer/polymer/lib/utils/html-tag.js';
-import { colorToRgba } from "./colors";
+import { colorToRgba } from './colors';
 
 import { LumoEditor } from '../lumo-editor.js';
 class Palette extends EditorModule {
   static get template() {
     return html`
-    <style include="shared-editor-module-styles">
-      :host {
-        display: block;
-        font-size: var(--lumo-font-size-m);
-      }
+      <style include="shared-editor-module-styles">
+        :host {
+          display: block;
+          font-size: var(--lumo-font-size-m);
+        }
 
-      .mode {
-        display: flex;
-        flex-wrap: wrap;
-        margin: 0.5em 0;
-        border-radius: 4px;
-        overflow: hidden;
-        -webkit-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
-      }
+        .mode {
+          display: flex;
+          flex-wrap: wrap;
+          margin: 0.5em 0;
+          border-radius: 4px;
+          overflow: hidden;
+          -webkit-user-select: none;
+          -moz-user-select: none;
+          -ms-user-select: none;
+          user-select: none;
+        }
 
-      .mode > label {
-        flex: 1;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 500;
-        font-size: 14px;
-        line-height: 2;
-        background-color: var(--lumo-contrast-5pct);
-        color: var(--lumo-secondary-text-color);
-      }
+        .mode > label {
+          flex: 1;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 500;
+          font-size: 14px;
+          line-height: 2;
+          background-color: var(--lumo-contrast-5pct);
+          color: var(--lumo-secondary-text-color);
+        }
 
-      .mode > input:checked + label {
-        color: var(--lumo-primary-contrast-color);
-        background-color: var(--lumo-primary-color);
-      }
+        .mode > input:checked + label {
+          color: var(--lumo-primary-contrast-color);
+          background-color: var(--lumo-primary-color);
+        }
 
-      .mode > input {
-        position: absolute;
-        opacity: 0;
-        pointer-events: none;
-      }
+        .mode > input {
+          position: absolute;
+          opacity: 0;
+          pointer-events: none;
+        }
 
-      details div {
-        display: flex;
-        flex-wrap: wrap;
-        justify-content: space-around;
-      }
+        details div {
+          display: flex;
+          flex-wrap: wrap;
+          justify-content: space-around;
+        }
 
-      details div color-editor {
-        min-width: 20%;
-        flex: 1;
-        margin: 0 0 0.5em;
-      }
-    </style>
+        details div color-editor {
+          min-width: 20%;
+          flex: 1;
+          margin: 0 0 0.5em;
+        }
+      </style>
 
-    <main class="mode">
-      <input type="radio" name="mode" id="light" checked="">
-      <label for="light">Light</label>
+      <main class="mode">
+        <input type="radio" name="mode" id="light" checked="" />
+        <label for="light">Light</label>
 
-      <input type="radio" name="mode" id="dark">
-      <label for="dark">Dark</label>
-    </main>
+        <input type="radio" name="mode" id="dark" />
+        <label for="dark">Dark</label>
+      </main>
 
+      <preset-picker label="Preset">
+        <template>
+          <vaadin-list-box>
+            <default-palette value="">Default</default-palette>
+            <orange-palette value="orange">Orange</orange-palette>
+            <brown-and-gold-palette value="brown" light>Brown &amp; Gold</brown-and-gold-palette>
+            <brown-and-gold-dark-palette value="brown-dark" dark>Brown &amp; Gold, Dark</brown-and-gold-dark-palette>
+            <purple-palette value="purple" light>Purple</purple-palette>
+            <purple-dark-palette value="purple-dark" dark>Purple Dark</purple-dark-palette>
+            <preset-item value="-" disabled style="height: 48px;">Custom</preset-item>
+          </vaadin-list-box>
+          <style>
+            preset-item[disabled] {
+              display: none;
+            }
+          </style>
+        </template>
+      </preset-picker>
 
-    <preset-picker label="Preset">
-      <template>
-        <vaadin-list-box>
-          <default-palette value="">Default</default-palette>
-          <orange-palette value="orange">Orange</orange-palette>
-          <brown-and-gold-palette value="brown" light>Brown &amp; Gold</brown-and-gold-palette>
-          <brown-and-gold-dark-palette value="brown-dark" dark>Brown &amp; Gold, Dark</brown-and-gold-dark-palette>
-          <purple-palette value="purple" light>Purple</purple-palette>
-          <purple-dark-palette value="purple-dark" dark>Purple Dark</purple-dark-palette>
-          <preset-item value="-" disabled style="height: 48px;">Custom</preset-item>
-        </vaadin-list-box>
-        <style>preset-item[disabled] { display: none; }</style>
-      </template>
-    </preset-picker>
+      <details open="">
+        <summary>Basic</summary>
+        <div>
+          <color-editor name="--lumo-base-color">Base</color-editor>
+          <color-editor name="--lumo-shade">Shade</color-editor>
+          <color-editor name="--lumo-tint">Tint</color-editor>
+        </div>
+      </details>
 
+      <details open="">
+        <summary>Primary</summary>
+        <div>
+          <color-editor name="--lumo-primary-color">Main</color-editor>
+          <color-editor name="--lumo-primary-contrast-color">Contrast</color-editor>
+          <color-editor name="--lumo-primary-text-color">Text</color-editor>
+        </div>
+      </details>
 
-    <details open="">
-      <summary>Basic</summary>
-      <div>
-        <color-editor name="--lumo-base-color">Base</color-editor>
-        <color-editor name="--lumo-shade">Shade</color-editor>
-        <color-editor name="--lumo-tint">Tint</color-editor>
-      </div>
-    </details>
+      <details open="">
+        <summary>Error</summary>
+        <div>
+          <color-editor name="--lumo-error-color">Main</color-editor>
+          <color-editor name="--lumo-error-contrast-color">Contrast</color-editor>
+          <color-editor name="--lumo-error-text-color">Text</color-editor>
+        </div>
+      </details>
 
-    <details open="">
-      <summary>Primary</summary>
-      <div>
-        <color-editor name="--lumo-primary-color">Main</color-editor>
-        <color-editor name="--lumo-primary-contrast-color">Contrast</color-editor>
-        <color-editor name="--lumo-primary-text-color">Text</color-editor>
-      </div>
-    </details>
+      <details open="">
+        <summary>Success</summary>
+        <div>
+          <color-editor name="--lumo-success-color">Main</color-editor>
+          <color-editor name="--lumo-success-contrast-color">Contrast</color-editor>
+          <color-editor name="--lumo-success-text-color">Text</color-editor>
+        </div>
+      </details>
 
-    <details open="">
-      <summary>Error</summary>
-      <div>
-        <color-editor name="--lumo-error-color">Main</color-editor>
-        <color-editor name="--lumo-error-contrast-color">Contrast</color-editor>
-        <color-editor name="--lumo-error-text-color">Text</color-editor>
-      </div>
-    </details>
+      <details>
+        <summary>Text</summary>
+        <div>
+          <color-editor name="--lumo-header-text-color">Heading</color-editor>
+          <color-editor name="--lumo-body-text-color">Body</color-editor>
+          <color-editor name="--lumo-secondary-text-color">Secondary</color-editor>
+          <color-editor name="--lumo-tertiary-text-color">Tertiary</color-editor>
+          <color-editor name="--lumo-disabled-text-color">Disabled</color-editor>
+        </div>
+      </details>
 
-    <details open="">
-      <summary>Success</summary>
-      <div>
-        <color-editor name="--lumo-success-color">Main</color-editor>
-        <color-editor name="--lumo-success-contrast-color">Contrast</color-editor>
-        <color-editor name="--lumo-success-text-color">Text</color-editor>
-      </div>
-    </details>
+      <details>
+        <summary>Shade</summary>
+        <div>
+          <color-editor name="--lumo-shade-90pct">90%</color-editor>
+          <color-editor name="--lumo-shade-80pct">80%</color-editor>
+          <color-editor name="--lumo-shade-70pct">70%</color-editor>
+          <color-editor name="--lumo-shade-60pct">60%</color-editor>
+          <color-editor name="--lumo-shade-50pct">50%</color-editor>
+          <color-editor name="--lumo-shade-40pct">40%</color-editor>
+          <color-editor name="--lumo-shade-30pct">30%</color-editor>
+          <color-editor name="--lumo-shade-20pct">20%</color-editor>
+          <color-editor name="--lumo-shade-10pct">10%</color-editor>
+          <color-editor name="--lumo-shade-5pct">5%</color-editor>
+        </div>
+      </details>
 
-    <details>
-      <summary>Text</summary>
-      <div>
-        <color-editor name="--lumo-header-text-color">Heading</color-editor>
-        <color-editor name="--lumo-body-text-color">Body</color-editor>
-        <color-editor name="--lumo-secondary-text-color">Secondary</color-editor>
-        <color-editor name="--lumo-tertiary-text-color">Tertiary</color-editor>
-        <color-editor name="--lumo-disabled-text-color">Disabled</color-editor>
-      </div>
-    </details>
-
-    <details>
-      <summary>Shade</summary>
-      <div>
-        <color-editor name="--lumo-shade-90pct">90%</color-editor>
-        <color-editor name="--lumo-shade-80pct">80%</color-editor>
-        <color-editor name="--lumo-shade-70pct">70%</color-editor>
-        <color-editor name="--lumo-shade-60pct">60%</color-editor>
-        <color-editor name="--lumo-shade-50pct">50%</color-editor>
-        <color-editor name="--lumo-shade-40pct">40%</color-editor>
-        <color-editor name="--lumo-shade-30pct">30%</color-editor>
-        <color-editor name="--lumo-shade-20pct">20%</color-editor>
-        <color-editor name="--lumo-shade-10pct">10%</color-editor>
-        <color-editor name="--lumo-shade-5pct">5%</color-editor>
-      </div>
-    </details>
-
-    <details>
-      <summary>Tint</summary>
-      <div>
-        <color-editor name="--lumo-tint-90pct">90%</color-editor>
-        <color-editor name="--lumo-tint-80pct">80%</color-editor>
-        <color-editor name="--lumo-tint-70pct">70%</color-editor>
-        <color-editor name="--lumo-tint-60pct">60%</color-editor>
-        <color-editor name="--lumo-tint-50pct">50%</color-editor>
-        <color-editor name="--lumo-tint-40pct">40%</color-editor>
-        <color-editor name="--lumo-tint-30pct">30%</color-editor>
-        <color-editor name="--lumo-tint-20pct">20%</color-editor>
-        <color-editor name="--lumo-tint-10pct">10%</color-editor>
-        <color-editor name="--lumo-tint-5pct">5%</color-editor>
-      </div>
-    </details>
-`;
+      <details>
+        <summary>Tint</summary>
+        <div>
+          <color-editor name="--lumo-tint-90pct">90%</color-editor>
+          <color-editor name="--lumo-tint-80pct">80%</color-editor>
+          <color-editor name="--lumo-tint-70pct">70%</color-editor>
+          <color-editor name="--lumo-tint-60pct">60%</color-editor>
+          <color-editor name="--lumo-tint-50pct">50%</color-editor>
+          <color-editor name="--lumo-tint-40pct">40%</color-editor>
+          <color-editor name="--lumo-tint-30pct">30%</color-editor>
+          <color-editor name="--lumo-tint-20pct">20%</color-editor>
+          <color-editor name="--lumo-tint-10pct">10%</color-editor>
+          <color-editor name="--lumo-tint-5pct">5%</color-editor>
+        </div>
+      </details>
+    `;
   }
 
   static get is() {
@@ -185,7 +187,7 @@ class Palette extends EditorModule {
         value: 'light',
         observer: '_modeChanged'
       }
-    }
+    };
   }
   get lumoEditor() {
     const lumoEditor = this.getRootNode().host;
@@ -195,11 +197,11 @@ class Palette extends EditorModule {
     super.ready();
 
     // Light/dark mode selector
-    this.shadowRoot.querySelector('.mode').addEventListener('change', e => {
+    this.shadowRoot.querySelector('.mode').addEventListener('change', (e) => {
       this.mode = e.target.id;
     });
 
-    this.lumoEditor.addEventListener(LumoEditor.PROPERTY_CHANGED, e => {
+    this.lumoEditor.addEventListener(LumoEditor.PROPERTY_CHANGED, (e) => {
       var entry = e.detail;
 
       if (e.composedPath().indexOf(this) > -1) {
@@ -233,7 +235,7 @@ class Palette extends EditorModule {
 
     // TODO this feels like a hack
 
-    Array.from(this.shadowRoot.querySelectorAll('color-editor')).forEach(editor => {
+    Array.from(this.shadowRoot.querySelectorAll('color-editor')).forEach((editor) => {
       editor.mode = this.mode;
     });
 
@@ -248,7 +250,7 @@ class Palette extends EditorModule {
       paletteMode: entry.paletteMode,
       history: true
     };
-    
+
     var dependentPropText = `--lumo-${which}-text-color`;
     var dependentProp50 = `--lumo-${which}-color-50pct`;
     var dependentProp10 = `--lumo-${which}-color-10pct`;
@@ -279,7 +281,7 @@ class Palette extends EditorModule {
       var dependentProp = `--lumo-${which}-${i}pct`;
       if (val) {
         // TODO needs a better formula (than just a linear progression of opacity)
-        entry.properties[dependentProp] = dependentEntry.properties[dependentProp] = colorToRgba(val, i/100);
+        entry.properties[dependentProp] = dependentEntry.properties[dependentProp] = colorToRgba(val, i / 100);
       } else {
         entry.properties[dependentProp] = dependentEntry.properties[dependentProp] = undefined;
       }

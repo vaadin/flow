@@ -8,19 +8,19 @@ import { LumoEditor } from '../lumo-editor.js';
 class PresetPicker extends PolymerElement {
   static get template() {
     return html`
-    <style>
-      :host {
-        display: block;
-      }
+      <style>
+        :host {
+          display: block;
+        }
 
-      vaadin-select {
-        width: 100%;
-      }
-    </style>
-    <vaadin-select id="picker" label="[[label]]" theme="editor" placeholder="Custom">
-      <slot></slot>
-    </vaadin-select>
-`;
+        vaadin-select {
+          width: 100%;
+        }
+      </style>
+      <vaadin-select id="picker" label="[[label]]" theme="editor" placeholder="Custom">
+        <slot></slot>
+      </vaadin-select>
+    `;
   }
 
   static get is() {
@@ -35,13 +35,13 @@ class PresetPicker extends PolymerElement {
       },
       label: String,
       name: String
-    }
+    };
   }
 
   ready() {
     super.ready();
 
-    document.addEventListener(LumoEditor.PROPERTY_CHANGED, e => {
+    document.addEventListener(LumoEditor.PROPERTY_CHANGED, (e) => {
       if (e.composedPath()[0] == this) return;
 
       // Wait until the property change has been handled by LumoEditor
@@ -50,7 +50,7 @@ class PresetPicker extends PolymerElement {
       });
     });
 
-    this.$.picker.addEventListener('value-changed', e => {
+    this.$.picker.addEventListener('value-changed', (e) => {
       if (!this.__preventApply) {
         this._applyPreset(this.$.picker.value);
       }
@@ -65,18 +65,20 @@ class PresetPicker extends PolymerElement {
       return;
     }
 
-    this.dispatchEvent(new CustomEvent(LumoEditor.PROPERTY_CHANGED, {
-      detail: {
-        properties: item.properties
-      },
-      bubbles: true,
-      composed: true
-    }));
+    this.dispatchEvent(
+      new CustomEvent(LumoEditor.PROPERTY_CHANGED, {
+        detail: {
+          properties: item.properties
+        },
+        bubbles: true,
+        composed: true
+      })
+    );
   }
 
   _getItemByValue(value) {
     if (this.$.picker._items) {
-      return this.$.picker._items.find(item => {
+      return this.$.picker._items.find((item) => {
         if (item.value == value) {
           return item;
         }
@@ -91,7 +93,7 @@ class PresetPicker extends PolymerElement {
     var theme = lumoEditor.properties;
     var matchesPreset;
 
-    this.$.picker._items.forEach(preset => {
+    this.$.picker._items.forEach((preset) => {
       if (matchesPreset) return;
 
       for (var prop in preset.properties) {
