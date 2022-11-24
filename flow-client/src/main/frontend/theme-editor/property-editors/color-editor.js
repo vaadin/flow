@@ -66,7 +66,7 @@ class ColorEditor extends PropertyEditor {
         <slot></slot>
       </div>
 
-      <vaadin-overlay id="overlay" theme="editor" on-opened-changed="_openedChanged">
+      <vaadin-overlay id="overlay" theme="dev-tools-theme-editor" on-opened-changed="_openedChanged">
         <template>
           <style>
             color-element {

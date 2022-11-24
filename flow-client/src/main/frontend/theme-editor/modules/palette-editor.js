@@ -20,39 +20,89 @@ class Palette extends EditorModule {
           font-size: var(--lumo-font-size-m);
         }
 
+        .mode-label {
+          font-size: var(--lumo-font-size-s);
+          font-weight: 500;
+          color: var(--lumo-secondary-text-color);
+        }
+
         .mode {
           display: flex;
           flex-wrap: wrap;
           margin: 0.5em 0;
           border-radius: 4px;
-          overflow: hidden;
           -webkit-user-select: none;
           -moz-user-select: none;
           -ms-user-select: none;
           user-select: none;
         }
 
-        .mode > label {
+        .mode > div {
           flex: 1;
-          display: inline-flex;
+          position: relative;
+        }
+
+        .mode label {
+          display: flex;
           align-items: center;
-          justify-content: center;
           font-weight: 500;
           font-size: 14px;
-          line-height: 2;
-          background-color: var(--lumo-contrast-5pct);
-          color: var(--lumo-secondary-text-color);
+          line-height: 28px;
+          background-color: var(--lumo-contrast-40pct);
+          color: var(--dev-tools-background-color-active);
+          border-radius: var(--lumo-border-radius-m) 0 0 var(--lumo-border-radius-m);
+          padding: 0 1em;
         }
 
-        .mode > input:checked + label {
-          color: var(--lumo-primary-contrast-color);
-          background-color: var(--lumo-primary-color);
+        .mode input:focus-visible + label {
+          outline: 2px solid var(--lumo-primary-color);
         }
 
-        .mode > input {
+        .mode input:checked + label {
+          background-color: var(--lumo-contrast-90pct);
+          color: var(--dev-tools-background-color-active);
+        }
+
+        .mode button {
+          float: right;
+          font: inherit;
+          font-size: 12px;
+          background: transparent;
+          border: 0;
+          -webkit-appearance: none;
+          appearance: none;
+          padding: 0 0.7em;
+          margin: 2px;
+          height: 24px;
+          margin-top: -26px;
+          border-radius: var(--lumo-border-radius-m);
+          cursor: pointer;
+          color: var(--lumo-header-text-color);
+          background-color: var(--lumo-base-color);
+        }
+
+        .mode button:hover {
+          opacity: 0.8;
+        }
+
+        .mode button:disabled {
+          color: var(--dev-tools-background-color-active);
+          background-color: transparent;
+          pointer-events: none;
+        }
+
+        .mode input:not(:checked) ~ button {
+          visibility: hidden !important;
+        }
+
+        .mode input {
           position: absolute;
           opacity: 0;
           pointer-events: none;
+        }
+
+        .mode :last-child label {
+          border-radius: 0 var(--lumo-border-radius-m) var(--lumo-border-radius-m) 0;
         }
 
         details div {
@@ -68,12 +118,19 @@ class Palette extends EditorModule {
         }
       </style>
 
+      <div class="mode-label">Mode</div>
       <main class="mode">
-        <input type="radio" name="mode" id="light" checked="" />
-        <label for="light">Light</label>
+        <div>
+          <input type="radio" name="mode" id="light" checked="" />
+          <label for="light">Light</label>
+          <button id="default-light"></button>
+        </div>
 
-        <input type="radio" name="mode" id="dark" />
-        <label for="dark">Dark</label>
+        <div>
+          <input type="radio" name="mode" id="dark" />
+          <label for="dark">Dark</label>
+          <button id="default-dark"></button>
+        </div>
       </main>
 
       <preset-picker label="Preset">
@@ -197,9 +254,19 @@ class Palette extends EditorModule {
     super.ready();
 
     // Light/dark mode selector
-    this.shadowRoot.querySelector('.mode').addEventListener('change', (e) => {
+    const mode = this.shadowRoot.querySelector('.mode');
+    mode.addEventListener('change', (e) => {
       this.mode = e.target.id;
     });
+
+    const light = this.shadowRoot.querySelector('#default-light');
+    const dark = this.shadowRoot.querySelector('#default-dark');
+
+    light.addEventListener('click', () => this.setDefaultThemePalette('light', true));
+    dark.addEventListener('click', () => this.setDefaultThemePalette('dark', true));
+
+    const documentDark = document.documentElement.getAttribute('theme') === 'dark';
+    this.setDefaultThemePalette(documentDark ? 'dark' : 'light', false);
 
     this.lumoEditor.addEventListener(LumoEditor.PROPERTY_CHANGED, (e) => {
       var entry = e.detail;
@@ -226,12 +293,39 @@ class Palette extends EditorModule {
     });
   }
 
+  setDefaultThemePalette(palette, emitEvent) {
+    const documentDark = palette == 'dark';
+    const light = this.shadowRoot.querySelector('#default-light');
+    const dark = this.shadowRoot.querySelector('#default-dark');
+
+    setTimeout(() => (this.mode = documentDark ? 'dark' : 'light'), 0);
+
+    if (documentDark) {
+      light.innerText = 'Set as default';
+      dark.innerText = 'Default';
+    } else {
+      dark.innerText = 'Set as default';
+      light.innerText = 'Default';
+    }
+
+    dark.toggleAttribute('disabled', documentDark);
+    light.toggleAttribute('disabled', !documentDark);
+
+    if (emitEvent) {
+      this.dispatchEvent(
+        new CustomEvent('default-theme-palette-updated', {
+          detail: { palette },
+          bubbles: true,
+          composed: true
+        })
+      );
+    }
+  }
   _modeChanged(newVal, oldVal) {
     if (oldVal == undefined) return;
 
     this.shadowRoot.querySelector('#' + newVal).checked = true;
-    this.lumoEditor.previewDocument.documentElement.setAttribute('theme', this.mode);
-    this.lumoEditor.$.defaultsIframe.contentDocument.documentElement.setAttribute('theme', this.mode);
+    document.documentElement.setAttribute('theme', this.mode);
 
     // TODO this feels like a hack
 

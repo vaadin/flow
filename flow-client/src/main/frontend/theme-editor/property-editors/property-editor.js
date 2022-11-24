@@ -140,10 +140,7 @@ export class PropertyEditor extends PolymerElement {
   }
 
   _computedValue() {
-    if (!this.lumoEditor.previewDocument) {
-      return '';
-    }
-    return getComputedStyle(this.lumoEditor.previewDocument.documentElement).getPropertyValue(this.name).trim();
+    return getComputedStyle(document.documentElement).getPropertyValue(this.name).trim();
   }
   get lumoEditor() {
     const lumoEditor = this.getRootNode().host.getRootNode().host;

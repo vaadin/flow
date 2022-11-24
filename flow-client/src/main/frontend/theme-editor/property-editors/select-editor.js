@@ -20,11 +20,11 @@ $_documentContainer.innerHTML = `<dom-module id="select-editor-extension">
         top: 1em;
       }
     </style>
-    <vaadin-select value="[[_valueForSelect(value)]]" label="[[label]]" placeholder="[[placeholder]]" theme="editor">
+    <vaadin-select value="[[_valueForSelect(value)]]" label="[[label]]" placeholder="[[placeholder]]" theme="dev-tools-theme-editor">
       <slot></slot>
     </vaadin-select>
   </template>
-  
+
 </dom-module>`;
 
 document.head.appendChild($_documentContainer.content);

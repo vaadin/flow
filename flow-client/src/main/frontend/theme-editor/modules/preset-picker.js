@@ -17,7 +17,7 @@ class PresetPicker extends PolymerElement {
           width: 100%;
         }
       </style>
-      <vaadin-select id="picker" label="[[label]]" theme="editor" placeholder="Custom">
+      <vaadin-select id="picker" label="[[label]]" theme="dev-tools-theme-editor" placeholder="Custom">
         <slot></slot>
       </vaadin-select>
     `;

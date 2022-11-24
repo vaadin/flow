@@ -5,10 +5,11 @@ import './modules/palette-editor.js';
 import './modules/typography-editor.js';
 import './modules/style-editor.js';
 import './modules/size-and-space-editor.js';
-import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import { html, htmlLiteral } from '@polymer/polymer/lib/utils/html-tag.js';
 import { DomModule } from '@polymer/polymer/lib/elements/dom-module.js';
+import { registerStyles, css, unsafeCSS } from '@vaadin/vaadin-themable-mixin';
+import './login-to-access.ts';
 const $_documentContainer = document.createElement('template');
-
 $_documentContainer.innerHTML = `<dom-module id="shared-editor-module-styles">
   <template>
     <style include="lumo-typography">
@@ -34,7 +35,6 @@ $_documentContainer.innerHTML = `<dom-module id="shared-editor-module-styles">
         cursor: default;
         font-weight: 500;
         color: var(--lumo-secondary-text-color);
-        outline: none;
         margin: -1em;
         padding: 0 1em;
         height: var(--lumo-size-m);
@@ -108,24 +108,72 @@ $_documentContainer.innerHTML = `<dom-module id="shared-editor-module-styles">
       }
     </style>
   </template>
-</dom-module><dom-module id="editor-overlay" theme-for="vaadin-combo-box-overlay vaadin-select-overlay vaadin-overlay vaadin-dialog-overlay">
-  <template>
-    <style>
-      :host([theme~="editor"]) [part="overlay"] {
-        --lumo-font-size-xs: 11px;
-        --lumo-font-size-s: 12px;
-        --lumo-font-size-m: 14px;
-        --lumo-size-m: 30px;
-        --lumo-size-s: 24px;
-        --lumo-space-m: 16px;
-        --lumo-space-s: 8px;
-        --lumo-space-xs: 4px;
-        --lumo-border-radius: 4px;
-        --lumo-font-family: -apple-system, BlinkMacSystemFont, "Roboto", "Segoe UI", Helvetica, Arial, sans-serif;
-      }
-    </style>
-  </template>
 </dom-module>`;
+
+const editorLumoPropertyOverrides = htmlLiteral`
+:host {
+  --lumo-font-family: var(--dev-tools-font-family);
+  --lumo-font-size-xs: var(--dev-tools-font-size-small);
+  --lumo-font-size-s: var(--dev-tools-font-size-small);
+  --lumo-font-size-m: var(--dev-tools-font-size);
+
+  --lumo-size-xs: 20px;
+  --lumo-size-s: 24px;
+  --lumo-size-m: 30px;
+  --lumo-size-l: 36px;
+  --lumo-size-xl: 44px;
+  --lumo-space-xs: 4px;
+  --lumo-space-s: 8px;
+  --lumo-space-m: 16px;
+  --lumo-space-l: 24px;
+  --lumo-space-xl: 32px;
+
+  --lumo-header-text-color: var(--dev-tools-text-color-emphasis);
+  --lumo-body-text-color: var(--dev-tools-text-color);
+  --lumo-secondary-text-color: var(--dev-tools-text-color-secondary);
+  --lumo-tertiary-text-color: var(--dev-tools-text-color-secondary);
+  --lumo-disabled-text-color: rgba(255, 255, 255, 0.4);
+  --lumo-primary-color: var(--dev-tools-blue-color);
+  --lumo-primary-color-50pct: var(--dev-tools-blue-color);
+  --lumo-primary-text-color: var(--dev-tools-blue-color);
+  --lumo-error-color: var(--dev-tools-red-color);
+  --lumo-error-color-50pct: var(--dev-tools-red-color);
+  --lumo-error-text-color: var(--dev-tools-red-color);
+  --lumo-success-color: var(--dev-tools-green-color);
+  --lumo-success-color-50pct: var(--dev-tools-green-color);
+  --lumo-success-text-color: var(--dev-tools-green-color);
+
+  --lumo-base-color: var(--dev-tools-background-color-active);
+
+  --lumo-tint-5pct: rgba(255, 255, 255, 0.04);
+  --lumo-tint-10pct: rgba(255, 255, 255, 0.08);
+  --lumo-tint-20pct: rgba(255, 255, 255, 0.14);
+  --lumo-tint-30pct: rgba(255, 255, 255, 0.25);
+  --lumo-tint-40pct: rgba(255, 255, 255, 0.36);
+  --lumo-tint-50pct: rgba(255, 255, 255, 0.47);
+  --lumo-tint-60pct: rgba(255, 255, 255, 0.58);
+  --lumo-tint-70pct: rgba(255, 255, 255, 0.69);
+  --lumo-tint-80pct: rgba(255, 255, 255, 0.80);
+  --lumo-tint-90pct: rgba(255, 255, 255, 0.9);
+  --lumo-tint: rgba(255, 255, 255, 1);
+
+  --lumo-contrast-5pct: var(--lumo-tint-5pct);
+  --lumo-contrast-10pct: var(--lumo-tint-10pct);
+  --lumo-contrast-20pct: var(--lumo-tint-20pct);
+  --lumo-contrast-30pct: var(--lumo-tint-30pct);
+  --lumo-contrast-40pct: var(--lumo-tint-40pct);
+  --lumo-contrast-50pct: var(--lumo-tint-50pct);
+  --lumo-contrast-60pct: var(--lumo-tint-60pct);
+  --lumo-contrast-70pct: var(--lumo-tint-70pct);
+  --lumo-contrast-80pct: var(--lumo-tint-80pct);
+  --lumo-contrast-90pct: var(--lumo-tint-90pct);
+  --lumo-contrast: var(--lumo-tint);
+
+  --lumo-border-radius-s: 3px;
+  --lumo-border-radius-m: 6px;
+  --lumo-border-radius-l: 9px;
+}
+`;
 
 document.head.appendChild($_documentContainer.content);
 export class LumoEditor extends PolymerElement {
@@ -134,23 +182,15 @@ export class LumoEditor extends PolymerElement {
       <style include="lumo-color lumo-typography">
         :host {
           display: block;
-          width: 320px;
-          height: 100%;
-          --lumo-font-family: -apple-system, BlinkMacSystemFont, 'Roboto', 'Segoe UI', Helvetica, Arial, sans-serif;
-          --lumo-font-size-xs: 11px;
-          --lumo-font-size-s: 12px;
-          --lumo-font-size-m: 14px;
-          --lumo-size-m: 30px;
-          --lumo-size-s: 24px;
-          --lumo-space-m: 16px;
-          --lumo-space-s: 8px;
-          --lumo-space-xs: 4px;
-          --lumo-border-radius: 4px;
-          font-family: var(--lumo-font-family);
-          font-size: var(--lumo-font-size-m);
+          overflow: auto;
+          height: 80vh;
+          font-family: var(--dev-tools-font-family);
+          font-size: var(--dev-tools-font-size);
+          position: relative;
+          animation: fade-in var(--dev-tools-transition-duration) ease-in;
         }
 
-        .tools {
+        ${editorLumoPropertyOverrides} .tools {
           display: flex;
           align-items: center;
           background: var(--lumo-contrast-5pct);
@@ -197,12 +237,6 @@ export class LumoEditor extends PolymerElement {
           transform: scaleX(-1);
         }
 
-        .tools .download {
-          margin-left: auto;
-          margin-right: 0;
-          padding: 0 0.5em 0 0.25em;
-          font-weight: 500;
-        }
         .tools .primary:not(:disabled) {
           background-color: var(--lumo-primary-color);
           color: var(--lumo-primary-contrast-color);
@@ -237,8 +271,12 @@ export class LumoEditor extends PolymerElement {
           user-select: none;
         }
 
+        .tabs > input:focus-visible + .tab {
+          outline: 2px solid var(--lumo-primary-color);
+        }
+
         .tabs > input:checked + .tab {
-          color: var(--lumo-primary-text-color);
+          color: var(--lumo-header-text-color);
         }
 
         .tabs > input {
@@ -269,30 +307,6 @@ export class LumoEditor extends PolymerElement {
           font-family: monospace;
           white-space: pre;
         }
-
-        .download-dialog {
-          display: flex;
-          flex-direction: column;
-          height: 80vh;
-          width: 50em;
-          max-width: 100%;
-          box-sizing: border-box;
-        }
-        .download-dialog h2 {
-          margin-top: 0;
-        }
-        .download-dialog vaadin-text-area {
-          flex: 1;
-        }
-        .download-dialog .footer {
-          margin: calc(var(--lumo-space-l) * -1);
-          margin-top: var(--lumo-space-l);
-          background-color: var(--lumo-contrast-5pct);
-          padding: var(--lumo-space-wide-m);
-        }
-        .download-dialog vaadin-button {
-          float: right;
-        }
       </style>
 
       <div class="tools" hidden="[[hideTools]]">
@@ -305,9 +319,6 @@ export class LumoEditor extends PolymerElement {
         <div class="divider"></div>
         <button on-click="_confirmReset" class="reset" title="Reset all" disabled="">
           <iron-icon icon="lumo:reload"></iron-icon>
-        </button>
-        <button on-click="_download" class="download primary" title="Download" disabled>
-          <iron-icon icon="lumo:download"></iron-icon> Download
         </button>
       </div>
 
@@ -339,31 +350,9 @@ export class LumoEditor extends PolymerElement {
         <section class="tab-content">
           <size-and-space-editor></size-and-space-editor>
         </section>
-      </main>
 
-      <vaadin-dialog id="downloadDialog" theme="editor output">
-        <template>
-          <div class="download-dialog">
-            <h2>Download</h2>
-            <p>
-              Copy the HTML below to a new <code>.html</code> file and import it in your app after the default Lumo
-              theme imports.
-            </p>
-            <p>For example: <code>&lt;link rel="import" href="my-lumo-theme.html"&gt;</code></p>
-            <vaadin-text-area id="output" label=""></vaadin-text-area>
-            <h4>Need more help?</h4>
-            <p>
-              See the <a href="https://vaadin.com/themes/lumo">Lumo theme documentation</a> and the
-              <a href="https://vaadin.com/docs/flow/theme/theming-overview.html"
-                >theming documentation for Vaadin Flow</a
-              >.
-            </p>
-            <div class="footer">
-              <vaadin-button theme="primary" class="close">Close</vaadin-button>
-            </div>
-          </div>
-        </template>
-      </vaadin-dialog>
+        <slot></slot>
+      </main>
     `;
   }
 
@@ -414,7 +403,8 @@ export class LumoEditor extends PolymerElement {
       return '';
     }
 
-    return this.defaults[mode][name];
+    // return this.defaults[mode][name];
+    return window.getComputedStyle(document.documentElement).getPropertyValue(name);
   }
   constructor() {
     super();
@@ -749,10 +739,6 @@ export class LumoEditor extends PolymerElement {
         }
       }
     });
-
-    this.$.confirmReset.addEventListener('confirm', (e) => {
-      this.reset();
-    });
   }
 
   _handlePropertyChange(entry) {
@@ -783,6 +769,19 @@ export class LumoEditor extends PolymerElement {
 
     // Update preview
     this._updateGlobalStyleSheet();
+
+    // Update file
+    for (var property in entry.properties) {
+      const value = entry.properties[property];
+
+      this.dispatchEvent(
+        new CustomEvent('css-property-updated', {
+          detail: { property, value, paletteMode: entry.paletteMode },
+          bubbles: true,
+          composed: true
+        })
+      );
+    }
   }
 
   _addHistoryEntry(entry) {
@@ -851,19 +850,10 @@ export class LumoEditor extends PolymerElement {
     this.$.confirmReset.opened = true;
   }
 
-  _download() {
-    this.$.downloadDialog.opened = true;
-    this.$.downloadDialog.$.overlay.content.querySelector('#output').value = this.getThemeHtml();
-    this.$.downloadDialog.$.overlay.content.querySelector('vaadin-button.close').addEventListener('click', (e) => {
-      this.$.downloadDialog.opened = false;
-    });
-  }
-
   _updateButtonState() {
     this.shadowRoot.querySelector('.undo').disabled = this.historyIndex == -1;
     this.shadowRoot.querySelector('.redo').disabled = this.historyIndex == this.historyEntries.length - 1;
     this.shadowRoot.querySelector('.reset').disabled = this.historyIndex == -1;
-    this.shadowRoot.querySelector('.download').disabled = this.historyIndex == -1;
   }
 
   _notifyPropertyChange(entry) {
@@ -877,19 +867,16 @@ export class LumoEditor extends PolymerElement {
   }
 
   _updateGlobalStyleSheet() {
-    var style = this._getGlobalStyleSheet();
-    style.innerHTML = this._getStyleExport();
+    this._getGlobalStyleSheet().replaceSync(this._getStyleExport());
   }
 
   _getGlobalStyleSheet() {
-    const id = 'lumo';
-    var style = this.previewDocument.querySelector('style#' + id);
-    if (!style) {
-      style = this.previewDocument.createElement('style');
-      style.id = id;
-      this.previewDocument.body.appendChild(style);
+    if (!this.lumoEditorSheet) {
+      this.lumoEditorSheet = new CSSStyleSheet();
+      this.lumoEditorSheet.replaceSync('');
+      this.previewDocument.adoptedStyleSheets = [...this.previewDocument.adoptedStyleSheets, this.lumoEditorSheet];
     }
-    return style;
+    return this.lumoEditorSheet;
   }
 
   _getStyleExport() {
@@ -950,14 +937,25 @@ export class LumoEditor extends PolymerElement {
 
     return modules;
   }
-
-  getThemeHtml() {
-    let output = '<custom-style>\n  <style>\n';
-    output += this._getStyleExport();
-    output += '\n  </style>\n</custom-style>\n';
-    output += this._getStyleModuleExport();
-    return output;
-  }
 }
 
 customElements.define(LumoEditor.is, LumoEditor);
+
+// Workaround to show all Vaadin component overlays on top of the dev tools window and adapt the same styles
+registerStyles(
+  'vaadin-*-overlay, vaadin-overlay',
+  css`
+    ${unsafeCSS(editorLumoPropertyOverrides)}
+
+    :host([theme~="dev-tools-theme-editor"]) {
+      z-index: 20001;
+    }
+
+    @supports (backdrop-filter: blur(1px)) {
+      [part='overlay'] {
+        backdrop-filter: blur(8px);
+        background-color: var(--dev-tools-background-color-active-blurred);
+      }
+    }
+  `
+);

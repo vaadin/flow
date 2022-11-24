@@ -103,6 +103,8 @@ export class Connection extends Object {
       if (this.status === ConnectionStatus.ACTIVE) {
         this.onReload();
       }
+    } else if (json.command.startsWith('license-') && json.data.name !== 'vaadin-dev-tools-theme-editor') {
+      this.onMessage(json);
     } else if (json.command === 'license-check-ok') {
       licenseCheckOk(json.data);
     } else if (json.command === 'license-check-failed') {
@@ -161,6 +163,12 @@ export class Connection extends Object {
   sendLicenseCheck(product: Product) {
     this.send('checkLicense', product);
   }
+  sendUpdateCssProperty(prop: string, value: string, paletteMode: string) {
+    this.send('updateCssProperty', { property: prop, value, paletteMode });
+  }
+  sendSetDefaultThemePalette(palette: string) {
+    this.send('setDefaultThemePalette', { palette });
+  }
 }
 
 enum MessageType {
@@ -180,7 +188,6 @@ interface Message {
   dontShowAgain: boolean;
   deleted: boolean;
 }
-
 export class VaadinDevTools extends LitElement {
   static BLUE_HSL = css`206, 100%, 70%`;
   static GREEN_HSL = css`145, 80%, 42%`;
@@ -189,43 +196,49 @@ export class VaadinDevTools extends LitElement {
   static RED_HSL = css`355, 100%, 68%`;
   static MAX_LOG_ROWS = 1000;
 
+  static devToolsProps = `   --dev-tools-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell,
+  'Helvetica Neue', sans-serif;
+  --dev-tools-font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
+  monospace;
+  
+  --dev-tools-font-size: 0.8125rem;
+  --dev-tools-font-size-small: 0.75rem;
+  
+  --dev-tools-text-color: rgba(255, 255, 255, 0.8);
+  --dev-tools-text-color-secondary: rgba(255, 255, 255, 0.65);
+  --dev-tools-text-color-emphasis: rgba(255, 255, 255, 0.95);
+  --dev-tools-text-color-active: rgba(255, 255, 255, 1);
+  
+  --dev-tools-background-color-inactive: rgba(45, 45, 45, 0.25);
+  --dev-tools-background-color-active: rgba(45, 45, 45, 0.98);
+  --dev-tools-background-color-active-blurred: rgba(45, 45, 45, 0.85);
+  
+  --dev-tools-border-radius: 0.5rem;
+  --dev-tools-box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05), 0 4px 12px -2px rgba(0, 0, 0, 0.4);
+  
+  --dev-tools-blue-hsl: ${VaadinDevTools.BLUE_HSL};
+  --dev-tools-blue-color: hsl(var(--dev-tools-blue-hsl));
+  --dev-tools-green-hsl: ${VaadinDevTools.GREEN_HSL};
+  --dev-tools-green-color: hsl(var(--dev-tools-green-hsl));
+  --dev-tools-grey-hsl: ${VaadinDevTools.GREY_HSL};
+  --dev-tools-grey-color: hsl(var(--dev-tools-grey-hsl));
+  --dev-tools-yellow-hsl: ${VaadinDevTools.YELLOW_HSL};
+  --dev-tools-yellow-color: hsl(var(--dev-tools-yellow-hsl));
+  --dev-tools-red-hsl: ${VaadinDevTools.RED_HSL};
+  --dev-tools-red-color: hsl(var(--dev-tools-red-hsl));
+  
+  /* Needs to be in ms, used in JavaScript as well */
+  --dev-tools-transition-duration: 180ms;
+  `;
+  activeTimer?: ReturnType<typeof setTimeout>;
+  @property({ type: String })
+  themeEditorLoginLink?: string;
+  @property({ type: Boolean })
+  hasThemeEditorAccess: boolean = false;
+
   static get styles() {
     return css`
       :host {
-        --dev-tools-font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell,
-          'Helvetica Neue', sans-serif;
-        --dev-tools-font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
-          monospace;
-
-        --dev-tools-font-size: 0.8125rem;
-        --dev-tools-font-size-small: 0.75rem;
-
-        --dev-tools-text-color: rgba(255, 255, 255, 0.8);
-        --dev-tools-text-color-secondary: rgba(255, 255, 255, 0.65);
-        --dev-tools-text-color-emphasis: rgba(255, 255, 255, 0.95);
-        --dev-tools-text-color-active: rgba(255, 255, 255, 1);
-
-        --dev-tools-background-color-inactive: rgba(45, 45, 45, 0.25);
-        --dev-tools-background-color-active: rgba(45, 45, 45, 0.98);
-        --dev-tools-background-color-active-blurred: rgba(45, 45, 45, 0.85);
-
-        --dev-tools-border-radius: 0.5rem;
-        --dev-tools-box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.05), 0 4px 12px -2px rgba(0, 0, 0, 0.4);
-
-        --dev-tools-blue-hsl: ${this.BLUE_HSL};
-        --dev-tools-blue-color: hsl(var(--dev-tools-blue-hsl));
-        --dev-tools-green-hsl: ${this.GREEN_HSL};
-        --dev-tools-green-color: hsl(var(--dev-tools-green-hsl));
-        --dev-tools-grey-hsl: ${this.GREY_HSL};
-        --dev-tools-grey-color: hsl(var(--dev-tools-grey-hsl));
-        --dev-tools-yellow-hsl: ${this.YELLOW_HSL};
-        --dev-tools-yellow-color: hsl(var(--dev-tools-yellow-hsl));
-        --dev-tools-red-hsl: ${this.RED_HSL};
-        --dev-tools-red-color: hsl(var(--dev-tools-red-hsl));
-
-        /* Needs to be in ms, used in JavaScript as well */
-        --dev-tools-transition-duration: 180ms;
-
         all: initial;
 
         direction: ltr;
@@ -985,6 +998,12 @@ export class VaadinDevTools extends LitElement {
     if (this.frontendConnection) {
       this.frontendConnection.sendTelemetry(data);
     }
+
+    // Set custom properties in global scope so that we can use them to style Vaadin overlay components
+    const editorPropsStyleSheet: any = new CSSStyleSheet();
+    editorPropsStyleSheet.replaceSync(VaadinDevTools.devToolsProps);
+    const anydoc = document as any;
+    anydoc.adoptedStyleSheets = [...anydoc.adoptedStyleSheets, editorPropsStyleSheet];
   }
 
   openWebSocketConnection() {
@@ -1022,6 +1041,15 @@ export class VaadinDevTools extends LitElement {
         this.serverInfo = message.data as ServerInfo;
       } else if (message?.command === 'featureFlags') {
         this.features = message.data.features as Feature[];
+      } else if (message?.command === 'cssPropertyUpdated') {
+        this.activeTimer = setTimeout(() => this.setActive(true), 500);
+      } else if (message?.command === 'license-check-ok' && message.data.name === 'vaadin-dev-tools-theme-editor') {
+        this.hasThemeEditorAccess = true;
+      } else if (
+        message?.command === 'license-check-nokey' &&
+        message.data.product.name === 'vaadin-dev-tools-theme-editor'
+      ) {
+        this.themeEditorLoginLink = message.data.message;
       } else {
         // eslint-disable-next-line no-console
         console.error('Unknown message from front-end connection:', JSON.stringify(message));
@@ -1197,6 +1225,22 @@ export class VaadinDevTools extends LitElement {
     } else {
       licenseCheckFailed({ message: 'Internal error: no connection', product: productInfo });
     }
+  }
+  cssPropertyUpdated(e: CustomEvent) {
+    if (this.activeTimer) {
+      clearTimeout(this.activeTimer);
+      this.activeTimer = undefined;
+    }
+    this.setActive(false);
+    this.frontendConnection!.sendUpdateCssProperty(e.detail.property, e.detail.value, e.detail.paletteMode);
+  }
+  defaultThemePaletteUpdated(e: CustomEvent) {
+    if (this.activeTimer) {
+      clearTimeout(this.activeTimer);
+      this.activeTimer = undefined;
+    }
+    this.setActive(false);
+    this.frontendConnection!.sendSetDefaultThemePalette(e.detail.palette);
   }
 
   log(type: MessageType, message: string, details?: string, link?: string) {
@@ -1539,7 +1583,18 @@ export class VaadinDevTools extends LitElement {
   }
 
   private renderThemeEditor() {
-    return html`<lumo-editor></lumo-editor>`;
+    if (this.hasThemeEditorAccess === undefined) {
+      this.hasThemeEditorAccess = false;
+      this.checkLicense({ name: 'vaadin-dev-tools-theme-editor', version: '0.0.1' });
+    }
+    return html`<lumo-editor
+      @css-property-updated=${this.cssPropertyUpdated}
+      @default-theme-palette-updated=${this.defaultThemePaletteUpdated}
+    >
+      ${this.hasThemeEditorAccess
+        ? html``
+        : html`<login-to-access .loginLink=${this.themeEditorLoginLink}></login-to-access>`}</lumo-editor
+    >`;
   }
 
   copyInfoToClipboard() {
