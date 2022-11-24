@@ -6,6 +6,9 @@ import { classMap } from 'lit/directives/class-map.js';
 import { copy } from './copy-to-clipboard.js';
 import { licenseCheckFailed, licenseCheckNoKey, licenseCheckOk, Product, licenseInit } from './License';
 
+// @ts-ignore
+import './theme-editor/lumo-editor.js';
+
 interface ServerInfo {
   vaadinVersion: string;
   flowVersion: string;
@@ -23,7 +26,7 @@ interface Feature {
 }
 
 interface Tab {
-  id: 'log' | 'info' | 'features';
+  id: 'log' | 'info' | 'features' | 'theme-editor';
   title: string;
   render: () => unknown;
   activate?: () => void;
@@ -930,7 +933,8 @@ export class VaadinDevTools extends LitElement {
   private tabs: readonly Tab[] = [
     { id: 'log', title: 'Log', render: this.renderLog, activate: this.activateLog },
     { id: 'info', title: 'Info', render: this.renderInfo },
-    { id: 'features', title: 'Experimental Features', render: this.renderFeatures }
+    { id: 'features', title: 'Experimental Features', render: this.renderFeatures },
+    { id: 'theme-editor', title: 'Theme Editor', render: this.renderThemeEditor }
   ];
 
   @state()
@@ -1532,6 +1536,10 @@ export class VaadinDevTools extends LitElement {
         </div>`
       )}
     </div>`;
+  }
+
+  private renderThemeEditor() {
+    return html`<lumo-editor></lumo-editor>`;
   }
 
   copyInfoToClipboard() {

@@ -157,6 +157,13 @@
                 <directory>src/main/resources</directory>
             </resource>
             <resource>
+                <directory>src/main/frontend</directory>
+                <targetPath>META-INF/frontend</targetPath>
+                <includes>
+                    <include>**/*.js</include>
+                </includes>
+            </resource>
+            <resource>
                 <directory>src/main/resources</directory>
                 <includes>
                     <include>version.txt</include>
