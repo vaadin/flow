@@ -4,7 +4,6 @@
 // You might want to change the configurations to fit your preferences
 // For more information about the configurations, please refer to http://www.typescriptlang.org/docs/handbook/tsconfig-json.html
 {
-  "flow_version": "23.3.0",
   "compilerOptions": {
     "sourceMap": true,
     "inlineSources": true,
@@ -12,7 +11,6 @@
     "target": "es2020",
     "moduleResolution": "node",
     "strict": true,
-    "skipLibCheck": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
     "noImplicitAny": true,
@@ -20,12 +18,11 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "experimentalDecorators": true,
-    "useDefineForClassFields": false,
     "baseUrl": "frontend",
     "paths": {
-      "@vaadin/flow-frontend": ["generated/jar-resources"],
-      "@vaadin/flow-frontend/*": ["generated/jar-resources/*"],
-      "Frontend/*": ["*"]
+      "Frontend/*": [
+        "*"
+      ]
     }
   },
   "include": [
