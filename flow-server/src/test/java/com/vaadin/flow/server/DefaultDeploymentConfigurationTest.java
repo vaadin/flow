@@ -133,14 +133,6 @@ public class DefaultDeploymentConfigurationTest {
     }
 
     @Test
-    public void defaultPushUrl() {
-        Properties initParameters = new Properties();
-        DefaultDeploymentConfiguration config = createDeploymentConfig(
-                initParameters);
-        assertThat(config.getPushURL(), is(""));
-    }
-
-    @Test
     public void maxMessageSuspendTimeout_validValue_accepted() {
         Properties initParameters = new Properties();
         initParameters.setProperty(

@@ -19,6 +19,7 @@ import jakarta.servlet.MultipartConfigElement;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.atmosphere.cpr.ApplicationConfig;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
@@ -92,8 +93,7 @@ public class SpringBootAutoConfiguration {
         String pushUrl = rootMapping ? "" : mapping.replace("/*", "");
         pushUrl += "/" + Constants.PUSH_MAPPING;
 
-        initParameters.put(Constants.INTERNAL_SERVLET_PARAMETER_PUSH_URL,
-                pushUrl);
+        initParameters.put(ApplicationConfig.JSR356_MAPPING_PATH, pushUrl);
 
         ServletRegistrationBean<SpringServlet> registration = new ServletRegistrationBean<>(
                 new SpringServlet(context, rootMapping), mapping);

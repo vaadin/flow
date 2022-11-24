@@ -256,16 +256,6 @@ public class DefaultDeploymentConfiguration
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * The default mode is <code>""</code> which uses the servlet URL.
-     */
-    @Override
-    public String getPushURL() {
-        return Constants.PUSH_MAPPING;
-    }
-
-    /**
      * Log a warning if Vaadin is not running in production mode.
      */
     private void checkProductionMode(boolean log) {

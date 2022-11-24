@@ -222,14 +222,8 @@ public class PushRequestHandler
         atmosphere.addInitParameter("org.atmosphere.cpr.showSupportMessage",
                 "false");
 
-        String pushUrl = vaadinServletConfig.getInitParameter(
-                Constants.INTERNAL_SERVLET_PARAMETER_PUSH_URL);
-        if (pushUrl == null) {
-            pushUrl = "/" + Constants.PUSH_MAPPING;
-        }
-
         atmosphere.addInitParameter(ApplicationConfig.JSR356_MAPPING_PATH,
-                pushUrl);
+                "/" + Constants.PUSH_MAPPING);
 
         atmosphere.addInitParameter(
                 ApplicationConfig.JSR356_PATH_MAPPING_LENGTH, "0");

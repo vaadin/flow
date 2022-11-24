@@ -23,6 +23,7 @@ import java.util.stream.Stream;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRegistration.Dynamic;
+import org.atmosphere.cpr.ApplicationConfig;
 import org.springframework.core.env.Environment;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.WebApplicationInitializer;
@@ -74,8 +75,7 @@ public abstract class VaadinMVCWebAppInitializer
         String pushUrl = rootMapping ? "" : mapping.replace("/*", "");
         pushUrl += "/" + Constants.PUSH_MAPPING;
 
-        initParameters.put(Constants.INTERNAL_SERVLET_PARAMETER_PUSH_URL,
-                pushUrl);
+        initParameters.put(ApplicationConfig.JSR356_MAPPING_PATH, pushUrl);
 
         registration.setInitParameters(initParameters);
 

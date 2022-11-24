@@ -371,11 +371,6 @@ public final class Constants implements Serializable {
     public static final String PUSH_MAPPING = VAADIN_MAPPING + "push/";
 
     /**
-     * Internal servlet parameter for push url configuration.
-     */
-    public static final String INTERNAL_SERVLET_PARAMETER_PUSH_URL = "internalPushURL";
-
-    /**
      * The static build resources folder.
      */
     public static final String VAADIN_BUILD = "build/";
