@@ -103,7 +103,7 @@ export class Connection extends Object {
       if (this.status === ConnectionStatus.ACTIVE) {
         this.onReload();
       }
-    } else if (json.command.startsWith('license-') && json.data.name !== 'vaadin-dev-tools-theme-editor') {
+    } else if (json.command.startsWith('license-') && json.data.name === 'vaadin-dev-tools-theme-editor') {
       this.onMessage(json);
     } else if (json.command === 'license-check-ok') {
       licenseCheckOk(json.data);
@@ -234,7 +234,7 @@ export class VaadinDevTools extends LitElement {
   @property({ type: String })
   themeEditorLoginLink?: string;
   @property({ type: Boolean })
-  hasThemeEditorAccess: boolean = false;
+  hasThemeEditorAccess?: boolean;
 
   static get styles() {
     return css`
