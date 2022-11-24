@@ -62,6 +62,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
             Backend.class);
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private ThemeModifier themeModifier;
 
     static {
         IDENTIFIER_CLASSES.put(Backend.JREBEL, Collections.singletonList(
@@ -80,6 +81,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
     DebugWindowConnection(ClassLoader classLoader, VaadinContext context) {
         this.classLoader = classLoader;
         this.context = context;
+        this.themeModifier = new ThemeModifier(context);
     }
 
     @Override
@@ -213,13 +215,13 @@ public class DebugWindowConnection implements BrowserLiveReload {
             String value = data.hasKey("value") ? data.getString("value") : null;
             String paletteMode = data.hasKey("paletteMode") ? data.getString("paletteMode") : null;
 
-            ThemeModifier.updateCssProperty(data.getString("property"), value, paletteMode);
+            themeModifier.updateCssProperty(data.getString("property"), value, paletteMode);
             send(resource, "cssPropertyUpdated", null);
         } else if ("setDefaultThemePalette".equals(command)) {
             JsonObject data = json.getObject("data");
             String palette = data.getString("palette");
 
-            ThemeModifier.setDefaultThemePalette(palette);
+            themeModifier.setDefaultThemePalette(palette);
             send(resource, "cssPropertyUpdated", null);
         } else {
             getLogger().info("Unknown command from the browser: " + command);

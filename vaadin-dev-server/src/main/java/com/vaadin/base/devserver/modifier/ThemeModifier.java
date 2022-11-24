@@ -20,16 +20,28 @@ import com.helger.css.decl.CSSStyleRule;
 import com.helger.css.decl.CascadingStyleSheet;
 import com.helger.css.reader.CSSReader;
 import com.helger.css.writer.CSSWriter;
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 public class ThemeModifier {
 
-    private static File projectFolder = new File(".");
-    private static File frontend = new File(projectFolder, "frontend");
+    private VaadinContext context;
 
-    public static void updateCssProperty(String property, String value, String paletteMode) {
-        String themeName = "hello-theme-editor"; // FIXME
+    public ThemeModifier(VaadinContext context) {
+        this.context = context;
+    }
 
-        File themes = new File(frontend, "themes");
+    private File getFrontendFolder() {
+        return new File(ApplicationConfiguration.get(context).getStringProperty(FrontendUtils.PROJECT_BASEDIR,
+                null));
+    }
+
+    public void updateCssProperty(String property, String value, String paletteMode) {
+        File themes = new File(getFrontendFolder(), "themes");
+        String themeName = getThemeName(themes);
         File theme = new File(themes, themeName);
         File styles = new File(theme, "styles.css");
         CascadingStyleSheet styleSheet = CSSReader.readFromFile(styles, StandardCharsets.UTF_8, ECSSVersion.LATEST);
@@ -56,6 +68,18 @@ public class ThemeModifier {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+    }
+
+    private String getThemeName(File themes) {
+        String[] themeFolders = themes.list();
+        if (themeFolders.length == 0) {
+            throw new IllegalStateException("No theme folder found in " + themes.getAbsolutePath());
+        } else if (themeFolders.length > 1) {
+            throw new IllegalStateException(
+                    "Multiple theme folders found in " + themes.getAbsolutePath() + ". I don't know which to update");
+        }
+
+        return themeFolders[0];
     }
 
     private static CSSStyleRule findHtmlHostrule(CascadingStyleSheet csss, String paletteMode) {
@@ -113,8 +137,8 @@ public class ThemeModifier {
 
     }
 
-    public static void setDefaultThemePalette(String palette) {
-        File indexHtml = new File(frontend, "index.html");
+    public void setDefaultThemePalette(String palette) {
+        File indexHtml = new File(getFrontendFolder(), "index.html");
         Document doc;
         try {
             doc = Jsoup.parse(indexHtml, "utf-8");
