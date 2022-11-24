@@ -1,4 +1,4 @@
-import { css, html, LitElement, nothing } from 'lit';
+import { css, html, LitElement, nothing, unsafeCSS } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -240,6 +240,7 @@ export class VaadinDevTools extends LitElement {
     return css`
       :host {
         all: initial;
+        ${unsafeCSS(VaadinDevTools.devToolsProps)}
 
         direction: ltr;
         cursor: default;
