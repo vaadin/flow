@@ -183,7 +183,7 @@ public class TaskGenerateTsConfigTest {
                 StandardCharsets.UTF_8);
 
         Assert.assertEquals("tsconfig.json content has been updated. "
-                + "Please also: 1. Increment version in tsconfig.json (\"version\" property) "
+                + "Please also: 1. Increment version in tsconfig.json (\"flow_version\" property) "
                 + "2. create a new tsconfig-vX.Y.json template in flow-server resources and put the old content there "
                 + "3. update vaadinVersion array in TaskGenerateTsConfig with X.Y "
                 + "4. put a new content in tsconfig-reference.json in tests",
@@ -196,7 +196,7 @@ public class TaskGenerateTsConfigTest {
             throws IOException, ExecutionFailedException {
         File tsconfig = new File(npmFolder, "tsconfig.json");
         Files.createFile(tsconfig.toPath());
-        FileUtils.writeStringToFile(tsconfig, "{\"version\": \"23.3.0\"}",
+        FileUtils.writeStringToFile(tsconfig, "{\"flow_version\": \"23.3.0\"}",
                 UTF_8);
         taskGenerateTsConfig.execute();
 

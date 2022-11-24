@@ -43,7 +43,7 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
 
     static final String TSCONFIG_JSON = "tsconfig.json";
 
-    private static final String VERSION = "version";
+    private static final String VERSION = "flow_version";
     private static final String ES_TARGET_VERSION = "target";
     private static final String TSCONFIG_JSON_OLDER_VERSIONS_TEMPLATE = "tsconfig-v%s.json";
     private static final String[] vaadinVersions = { "latest", "23.2", "23.1",
@@ -176,7 +176,7 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
                 projectTsConfigContent = parseTsConfig(projectTsConfigAsString);
             } catch (Exception e) {
                 // This could be a malformed tsconfig, leave it alone
-                log().debug("Unable to parse tsconfig.json", e);
+                log().error("Unable to parse tsconfig.json", e);
                 return;
             }
 
