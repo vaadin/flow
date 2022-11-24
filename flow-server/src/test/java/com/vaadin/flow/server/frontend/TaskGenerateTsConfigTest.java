@@ -238,6 +238,16 @@ public class TaskGenerateTsConfigTest {
                 "\"@vaadin/flow-frontend\": [\"generated/jar-resources\"],"));
     }
 
+    @Test
+    public void olderTsConfig_updatesSilently()
+            throws IOException, ExecutionFailedException {
+        File tsconfig = writeTestTsConfigContent("tsconfig-older.json");
+        taskGenerateTsConfig.execute();
+        String tsConfigString = FileUtils.readFileToString(tsconfig, UTF_8);
+        Assert.assertTrue(tsConfigString.contains(
+                "\"@vaadin/flow-frontend\": [\"generated/jar-resources\"],"));
+    }
+
     private File writeTestTsConfigContent(String s) throws IOException {
         File tsconfig = new File(npmFolder, "tsconfig.json");
         Files.createFile(tsconfig.toPath());

@@ -41,6 +41,8 @@ import elemental.json.JsonObject;
  */
 public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
 
+    private static final String COMPILER_OPTIONS = "compilerOptions";
+
     static final String TSCONFIG_JSON = "tsconfig.json";
 
     private static final String VERSION = "flow_version";
@@ -144,7 +146,7 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
 
     private String getEsTargetVersion(String tsConfig) {
         JsonObject parsed = parseTsConfig(tsConfig);
-        return parsed.getObject("compilerOptions").getString(ES_TARGET_VERSION);
+        return parsed.getObject(COMPILER_OPTIONS).getString(ES_TARGET_VERSION);
     }
 
     private JsonObject parseTsConfig(String tsConfig) {
@@ -225,10 +227,16 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
             JsonObject projectTsConfig) {
         // exclude ES version from comparison, because it
         // might be different for webpack and vite
-        template.remove(ES_TARGET_VERSION);
+        if (template.hasKey(COMPILER_OPTIONS)) {
+            template.getObject(COMPILER_OPTIONS).remove(ES_TARGET_VERSION);
+        }
+        if (projectTsConfig.hasKey(COMPILER_OPTIONS)) {
+            projectTsConfig.getObject(COMPILER_OPTIONS)
+                    .remove(ES_TARGET_VERSION);
+        }
+
         // exclude tsconfig version, because it's already compared
         template.remove(VERSION);
-        projectTsConfig.remove(ES_TARGET_VERSION);
         projectTsConfig.remove(VERSION);
         return removeWhiteSpaces(template.toJson())
                 .equals(removeWhiteSpaces(projectTsConfig.toJson()));
