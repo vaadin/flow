@@ -793,7 +793,7 @@ public abstract class Component
      * Removes the component from its parent.
      */
     public void removeFromParent() {
-        findAncestor(HasComponents.class).remove(this);
+        getElement().removeFromParent();
     }
 
 }
