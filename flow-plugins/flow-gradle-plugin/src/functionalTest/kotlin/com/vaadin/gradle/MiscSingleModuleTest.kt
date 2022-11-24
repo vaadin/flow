@@ -250,7 +250,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
 
     private fun doTestSpringProjectProductionMode(compressedExtension: String = "*.br") {
 
-        val springBootVersion = "3.0.0-RC2"
+        val springBootVersion = "3.0.0"
 
         testProject.settingsFile.writeText(
             """
