@@ -212,6 +212,8 @@ public class PushRequestHandler
         atmosphere.addInitParameter(
                 ApplicationConfig.PROPERTY_ALLOW_SESSION_TIMEOUT_REMOVAL,
                 "false");
+        atmosphere.addInitParameter(
+                ApplicationConfig.JSR356_PATH_MAPPING_LENGTH, "0");
         // This prevents Atmosphere from recreating a broadcaster after it has
         // already been destroyed when the servlet is being undeployed
         // (see #20026)

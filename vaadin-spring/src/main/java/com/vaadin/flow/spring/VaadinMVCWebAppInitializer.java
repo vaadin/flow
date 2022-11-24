@@ -71,9 +71,6 @@ public abstract class VaadinMVCWebAppInitializer
                     .addServlet("dispatcher", new DispatcherServlet(context));
             dispatcherRegistration.addMapping("/*");
             mapping = VaadinServletConfiguration.VAADIN_SERVLET_MAPPING;
-            pushRegistrationPath = "";
-        } else {
-            pushRegistrationPath = mapping.replace("/*", "");
         }
         registration.addMapping(mapping);
 
@@ -84,7 +81,7 @@ public abstract class VaadinMVCWebAppInitializer
          * and websockets will fail.
          */
         initParameters.put(ApplicationConfig.JSR356_MAPPING_PATH,
-                pushRegistrationPath);
+                mapping.replace("/*", "") + "/VAADIN/push");
         initParameters.put(ApplicationConfig.JSR356_PATH_MAPPING_LENGTH, "0");
 
         registration.setInitParameters(initParameters);
