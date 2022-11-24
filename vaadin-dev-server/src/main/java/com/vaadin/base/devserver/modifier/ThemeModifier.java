@@ -20,12 +20,12 @@ import com.helger.css.decl.CSSStyleRule;
 import com.helger.css.decl.CascadingStyleSheet;
 import com.helger.css.reader.CSSReader;
 import com.helger.css.writer.CSSWriter;
-import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
+@NpmPackage(value = "@fooloomanzoo/color-picker", version = "3.0.2")
 public class ThemeModifier {
 
     private VaadinContext context;
