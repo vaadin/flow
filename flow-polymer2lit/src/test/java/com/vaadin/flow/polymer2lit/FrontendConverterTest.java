@@ -12,12 +12,15 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendToolsSettings;
 import com.vaadin.flow.server.frontend.FrontendUtils.CommandExecutionException;
+import com.vaadin.flow.testcategory.SlowTests;
 
+@Category(SlowTests.class)
 public class FrontendConverterTest {
     @Rule
     public final TemporaryFolder tmpDir = new TemporaryFolder();
