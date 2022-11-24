@@ -70,7 +70,7 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
         String imageUrl = body.getCssValue("background-image");
         Assert.assertFalse("background-image should not be applied to body",
                 imageUrl.matches("url\\(\"" + getRootURL()
-                        + "/VAADIN/build/bg\\.[^.]+\\.jpg\"\\)"));
+                        + "/VAADIN/build/bg.+\\.jpg\"\\)"));
 
         Assert.assertNotEquals("Ostrich", body.getCssValue("font-family"));
 
@@ -89,8 +89,7 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
         String imageUrl = themedComponent.getCssValue("background-image");
         Assert.assertTrue(target + " didn't contain the background image",
                 imageUrl.matches("url\\(\"" + getRootURL()
-                        + "/VAADIN/build/bg\\.[^.]+\\.jpg\"\\)"));
-
+                        + "/VAADIN/build/bg.+\\.jpg\"\\)"));
         Assert.assertEquals(target + " didn't contain font-family", "Ostrich",
                 themedComponent.getCssValue("font-family"));
 
