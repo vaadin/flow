@@ -19,8 +19,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Before;
@@ -31,6 +33,9 @@ import org.mockito.Mockito;
 
 import com.vaadin.experimental.Feature;
 import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.server.ExecutionFailedException;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class TaskGenerateTsConfigTest {
     @Rule
@@ -155,5 +160,102 @@ public class TaskGenerateTsConfigTest {
                 taskGenerateTsConfig.shouldGenerate());
         Assert.assertTrue("The tsconfig.json should already exist",
                 taskGenerateTsConfig.getGeneratedFile().exists());
+    }
+
+    @Test
+    public void tsConfigUpdated_remindsUpdateVersionAndTemplates()
+            throws IOException {
+        File tsconfig = new File(npmFolder, "tsconfig.json");
+        Files.createFile(tsconfig.toPath());
+        FileUtils.writeStringToFile(tsconfig, "{}", UTF_8);
+        try {
+            taskGenerateTsConfig.execute();
+        } catch (Exception ignore) {
+
+        }
+
+        String tsConfigLatest = FileUtils.readFileToString(tsconfig, UTF_8);
+
+        String testTsConfig = IOUtils.toString(
+                Objects.requireNonNull(TaskGenerateTsConfigTest.class
+                        .getClassLoader()
+                        .getResourceAsStream("tsconfig-reference.json")),
+                StandardCharsets.UTF_8);
+
+        Assert.assertEquals("tsconfig.json content has been updated. "
+                + "Please also: 1. Increment version in tsconfig.json (\"flow_version\" property) "
+                + "2. create a new tsconfig-vX.Y.json template in flow-server resources and put the old content there "
+                + "3. update vaadinVersion array in TaskGenerateTsConfig with X.Y "
+                + "4. put a new content in tsconfig-reference.json in tests",
+                testTsConfig, tsConfigLatest);
+
+    }
+
+    @Test
+    public void tsConfigHasLatestVersion_noUpdates()
+            throws IOException, ExecutionFailedException {
+        File tsconfig = new File(npmFolder, "tsconfig.json");
+        Files.createFile(tsconfig.toPath());
+        FileUtils.writeStringToFile(tsconfig, "{\"flow_version\": \"23.3.0\"}",
+                UTF_8);
+        taskGenerateTsConfig.execute();
+
+        String tsConfigString = FileUtils.readFileToString(tsconfig, UTF_8);
+
+        String expected = IOUtils.toString(
+                Objects.requireNonNull(TaskGenerateTsConfigTest.class
+                        .getClassLoader()
+                        .getResourceAsStream("tsconfig-latest-version.json")),
+                StandardCharsets.UTF_8);
+
+        Assert.assertEquals(expected, tsConfigString);
+    }
+
+    @Test
+    public void tsConfigHasCustomCodes_updatesAndThrows() throws IOException {
+        File tsconfig = writeTestTsConfigContent(
+                "tsconfig-custom-content.json");
+        try {
+            taskGenerateTsConfig.execute();
+        } catch (Exception e) {
+            Assert.assertTrue(e.getMessage().contains(
+                    "TypeScript config file 'tsconfig.json' has been updated to the latest"));
+            String tsConfigString = FileUtils.readFileToString(tsconfig, UTF_8);
+            Assert.assertTrue(tsConfigString.contains(
+                    "\"@vaadin/flow-frontend\": [\"generated/jar-resources\"],"));
+            return;
+        }
+        Assert.fail("Expected exception to be thrown");
+    }
+
+    @Test
+    public void defaultTsConfig_updatesSilently()
+            throws IOException, ExecutionFailedException {
+        File tsconfig = writeTestTsConfigContent("tsconfig-default.json");
+        taskGenerateTsConfig.execute();
+        String tsConfigString = FileUtils.readFileToString(tsconfig, UTF_8);
+        Assert.assertTrue(tsConfigString.contains(
+                "\"@vaadin/flow-frontend\": [\"generated/jar-resources\"],"));
+    }
+
+    @Test
+    public void olderTsConfig_updatesSilently()
+            throws IOException, ExecutionFailedException {
+        File tsconfig = writeTestTsConfigContent("tsconfig-older.json");
+        taskGenerateTsConfig.execute();
+        String tsConfigString = FileUtils.readFileToString(tsconfig, UTF_8);
+        Assert.assertTrue(tsConfigString.contains(
+                "\"@vaadin/flow-frontend\": [\"generated/jar-resources\"],"));
+    }
+
+    private File writeTestTsConfigContent(String s) throws IOException {
+        File tsconfig = new File(npmFolder, "tsconfig.json");
+        Files.createFile(tsconfig.toPath());
+        String content = IOUtils.toString(
+                Objects.requireNonNull(TaskGenerateTsConfigTest.class
+                        .getClassLoader().getResourceAsStream(s)),
+                StandardCharsets.UTF_8);
+        FileUtils.writeStringToFile(tsconfig, content, UTF_8);
+        return tsconfig;
     }
 }
