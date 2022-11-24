@@ -36,7 +36,7 @@ public class ThemeModifier {
 
     private File getFrontendFolder() {
         return new File(ApplicationConfiguration.get(context).getStringProperty(FrontendUtils.PROJECT_BASEDIR,
-                null));
+                null), "frontend");
     }
 
     public void updateCssProperty(String property, String value, String paletteMode) {
