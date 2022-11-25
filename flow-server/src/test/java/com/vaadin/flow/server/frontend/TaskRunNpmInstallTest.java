@@ -60,8 +60,7 @@ import net.jcip.annotations.NotThreadSafe;
 import org.slf4j.event.Level;
 
 @NotThreadSafe
-@Category(SlowTests.class)
-public class TaskRunNpmInstallTest {
+public abstract class TaskRunNpmInstallTest {
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
