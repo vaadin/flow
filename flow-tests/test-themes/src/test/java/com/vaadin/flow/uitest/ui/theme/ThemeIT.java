@@ -120,7 +120,7 @@ public class ThemeIT extends ChromeBrowserTest {
         String imageUrl = body.getCssValue("background-image");
         Assert.assertTrue("body background-image should come from styles.css",
                 imageUrl.matches("url\\(\"" + getRootURL()
-                        + "/path/VAADIN/build/bg\\.[^.]+\\.jpg\"\\)"));
+                        + "/path/VAADIN/build/bg.+\\.jpg\"\\)"));
 
         Assert.assertEquals("body font-family should come from styles.css",
                 "Ostrich", body.getCssValue("font-family"));

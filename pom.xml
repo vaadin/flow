@@ -73,8 +73,7 @@
         <maven.compiler.source>${maven.compiler.release}</maven.compiler.source>
         <maven.compiler.target>${maven.compiler.release}</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8
-        </project.reporting.outputEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <jsinterop.version>1.0.2</jsinterop.version>
         <sonar.java.source>17</sonar.java.source>
         <sonar.analysis.mode>preview</sonar.analysis.mode>
@@ -85,16 +84,16 @@
         <failOnMissingWebXml>false</failOnMissingWebXml>
 
         <!-- Dependencies -->
-        <spring.version>6.0.0-RC4</spring.version>
-        <spring.boot.version>3.0.0-RC2</spring.boot.version>
-        <spring.security.version>6.0.0-RC2</spring.security.version>
-        <spring.security.oauth2.authorization.server.version>1.0.0-RC1</spring.security.oauth2.authorization.server.version>
+        <spring.version>6.0.2</spring.version>
+        <spring.boot.version>3.0.0</spring.boot.version>
+        <spring.security.version>6.0.0</spring.security.version>
+        <spring.security.oauth2.authorization.server.version>1.0.0</spring.security.oauth2.authorization.server.version>
         <gwt.version>2.9.0</gwt.version>
         <hibernate.validator.version>8.0.0.Final</hibernate.validator.version>
-        <slf4j.version>2.0.3</slf4j.version>
+        <slf4j.version>2.0.4</slf4j.version>
         <polymer.version>2.6.1</polymer.version>
-        <jackson.version>2.14.0</jackson.version>
-        <jackson.databind.version>2.14.0</jackson.databind.version>
+        <jackson.version>2.14.1</jackson.version>
+        <jackson.databind.version>2.14.1</jackson.databind.version>
         <jakarta.validation.version>3.0.2</jakarta.validation.version>
         <jakarta.annotation.api.version>2.1.1</jakarta.annotation.api.version>
         <jaxb.version>4.0.1</jaxb.version>
@@ -170,10 +169,6 @@
                 <enabled>false</enabled>
             </snapshots>
         </repository>
-        <repository>
-            <id>spring milestones</id>
-            <url>https://repo.spring.io/milestone</url>
-        </repository>
     </repositories>
 
     <pluginRepositories>
@@ -192,10 +187,6 @@
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
-        </pluginRepository>
-        <pluginRepository>
-            <id>spring milestones</id>
-            <url>https://repo.spring.io/milestone</url>
         </pluginRepository>
     </pluginRepositories>
 
@@ -241,7 +232,7 @@
             <dependency>
                 <groupId>net.bytebuddy</groupId>
                 <artifactId>byte-buddy</artifactId>
-                <version>1.12.18</version>
+                <version>1.12.19</version>
             </dependency>
             <dependency>
                 <groupId>com.vaadin</groupId>
