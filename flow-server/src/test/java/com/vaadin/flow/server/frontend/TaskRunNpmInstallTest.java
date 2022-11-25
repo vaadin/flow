@@ -60,178 +60,24 @@ import net.jcip.annotations.NotThreadSafe;
 import org.slf4j.event.Level;
 
 @NotThreadSafe
-public abstract class TaskRunNpmInstallTest {
+public class TaskRunNpmInstallTest {
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
-    private NodeUpdater nodeUpdater;
-
-    private TaskRunNpmInstall task;
+    protected NodeUpdater nodeUpdater;
 
     protected File npmFolder;
 
     protected ClassFinder finder;
 
-    private Logger logger = Mockito
+    protected Logger logger = Mockito
             .spy(LoggerFactory.getLogger(NodeUpdater.class));
     protected File generatedPath;
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
-    @Before
-    public void setUp() throws IOException {
-        npmFolder = temporaryFolder.newFolder();
-        generatedPath = new File(npmFolder, "generated");
-        generatedPath.mkdir();
-        finder = Mockito.mock(ClassFinder.class);
-        nodeUpdater = new NodeUpdater(finder,
-                Mockito.mock(FrontendDependencies.class), npmFolder,
-                generatedPath, TARGET, Mockito.mock(FeatureFlags.class)) {
-
-            @Override
-            public void execute() {
-            }
-
-            @Override
-            Logger log() {
-                return logger;
-            }
-
-        };
-        task = createTask(new ArrayList<>());
-    }
-
-    protected TaskRunNpmInstall createTask(List<String> additionalPostInstall) {
-        return new TaskRunNpmInstall(getNodeUpdater(), false, false,
-                FrontendTools.DEFAULT_NODE_VERSION,
-                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false,
-                false, additionalPostInstall);
-    }
-
-    @Test
-    public void runNpmInstall_emptyDir_npmInstallIsExecuted()
-            throws ExecutionFailedException, IOException {
-        File nodeModules = getNodeUpdater().nodeModulesFolder;
-        nodeModules.mkdir();
-        getNodeUpdater().modified = false;
-
-        ensurePackageJson();
-        task.execute();
-
-        Mockito.verify(logger).info(getRunningMsg());
-    }
-
-    @Test
-    public void runNpmInstall_nodeModulesContainsStaging_npmInstallIsExecuted()
-            throws ExecutionFailedException, IOException {
-        File nodeModules = getNodeUpdater().nodeModulesFolder;
-        nodeModules.mkdir();
-        File staging = new File(nodeModules, ".staging");
-        staging.mkdir();
-        getNodeUpdater().modified = false;
-        ensurePackageJson();
-        task.execute();
-
-        Mockito.verify(logger).info(getRunningMsg());
-    }
-
-    @Test
-    public void runNpmInstall_toolIsChanged_nodeModulesIsRemoved()
-            throws ExecutionFailedException, IOException {
-        File nodeModules = getNodeUpdater().nodeModulesFolder;
-        nodeModules.mkdir();
-
-        ensurePackageJson();
-
-        getNodeUpdater().modified = true;
-        File yaml = new File(nodeModules, ".modules.yaml");
-        yaml.createNewFile();
-        task.execute();
-
-        Assert.assertFalse(yaml.exists());
-    }
-
-    @Test
-    public void runNpmInstall_toolIsNotChanged_nodeModulesIsNotRemoved()
-            throws ExecutionFailedException, IOException {
-        File nodeModules = getNodeUpdater().nodeModulesFolder;
-        nodeModules.mkdir();
-
-        getNodeUpdater().modified = true;
-        File fakeFile = new File(nodeModules, ".fake.file");
-        fakeFile.createNewFile();
-        ensurePackageJson();
-        task.execute();
-
-        Assert.assertTrue(fakeFile.exists());
-    }
-
-    @Test
-    public void runNpmInstall_nonEmptyDirNoLocalHash_npmInstallIsExecuted()
-            throws IOException, ExecutionFailedException {
-        File nodeModules = getNodeUpdater().nodeModulesFolder;
-        nodeModules.mkdir();
-        new File(nodeModules, "foo").createNewFile();
-        getNodeUpdater().modified = false;
-        ensurePackageJson();
-        task.execute();
-
-        Mockito.verify(logger).info(getRunningMsg());
-    }
-
-    @Test
-    public void runNpmInstall_nonEmptyDirNoHashMatch_npmInstallIsExecuted()
-            throws IOException, ExecutionFailedException {
-        File nodeModules = getNodeUpdater().nodeModulesFolder;
-        nodeModules.mkdir();
-        new File(nodeModules, "foo").createNewFile();
-        writeLocalHash("faulty");
-        getNodeUpdater().modified = false;
-
-        ensurePackageJson();
-        task.execute();
-
-        Mockito.verify(logger).info(getRunningMsg());
-    }
-
-    @Test
-    public void runNpmInstall_matchingHash_npmInstallIsNotExecuted()
-            throws IOException, ExecutionFailedException {
-        File nodeModules = getNodeUpdater().nodeModulesFolder;
-        nodeModules.mkdir();
-
-        new File(nodeModules, "foo").createNewFile();
-
-        writeLocalHash("");
-        getNodeUpdater().modified = false;
-        task.execute();
-
-        ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
-        Mockito.verify(logger).info(captor.capture(),
-                Mockito.matches(getToolName()),
-                Mockito.matches(nodeModules.getAbsolutePath().replaceAll("\\\\",
-                        "\\\\\\\\")),
-                Mockito.any(), Mockito.matches(Constants.PACKAGE_JSON));
-        Assert.assertEquals(
-                "Skipping `{} install` because the frontend packages are already installed in the folder '{}' and the hash in the file '{}' is the same as in '{}'",
-                captor.getValue());
-    }
-
-    @Test
-    public void runNpmInstall_matchingHashButEmptyModules_npmInstallIsExecuted()
-            throws IOException, ExecutionFailedException {
-        File nodeModules = getNodeUpdater().nodeModulesFolder;
-        nodeModules.mkdir();
-
-        writeLocalHash("");
-        getNodeUpdater().modified = false;
-        ensurePackageJson();
-        task.execute();
-
-        Mockito.verify(logger).info(getRunningMsg());
-    }
 
     public void writeLocalHash(String hash) throws IOException {
         final JsonObject localHash = Json.createObject();
@@ -241,69 +87,6 @@ public abstract class TaskRunNpmInstallTest {
                 ".vaadin/vaadin.json");
         FileUtils.forceMkdirParent(localHashFile);
         getNodeUpdater().writePackageFile(localHash, localHashFile);
-    }
-
-    @Test
-    public void runNpmInstall_modified_npmInstallIsExecuted()
-            throws ExecutionFailedException, IOException {
-        getNodeUpdater().modified = true;
-        ensurePackageJson();
-        task.execute();
-
-        Mockito.verify(logger).info(getRunningMsg());
-    }
-
-    @Test
-    public void runNpmInstall_vaadinHomeNodeIsAFolder_throws()
-            throws IOException, ExecutionFailedException {
-        exception.expectMessage(
-                "it's either not a file or not a 'node' executable.");
-        assertRunNpmInstallThrows_vaadinHomeNodeIsAFolder(
-                new TaskRunNpmInstall(getNodeUpdater(), false, true,
-                        FrontendTools.DEFAULT_NODE_VERSION,
-                        URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT),
-                        false, false, new ArrayList<>()));
-    }
-
-    @Test
-    public void runNpmInstall_externalUpdateOfPackages_npmInstallIsRerun()
-            throws ExecutionFailedException, IOException {
-        getNodeUpdater().modified = true;
-
-        // manually fake TaskUpdatePackages.
-        JsonObject packageJson = getNodeUpdater().getPackageJson();
-        updatePackageHash(packageJson);
-        getNodeUpdater().writePackageFile(packageJson);
-
-        task.execute();
-
-        final File localHashFile = new File(getNodeUpdater().nodeModulesFolder,
-                ".vaadin/vaadin.json");
-        Assert.assertTrue("Local has file was not created after install.",
-                localHashFile.exists());
-
-        String fileContent = FileUtils.readFileToString(localHashFile,
-                UTF_8.name());
-        JsonObject localHash = Json.parse(fileContent);
-        Assert.assertNotEquals("We should have a non empty hash key", "",
-                localHash.getString(HASH_KEY));
-
-        // Update package json and hash as if someone had pushed to code repo.
-        packageJson = getNodeUpdater().getPackageJson();
-        packageJson.getObject(VAADIN_DEP_KEY).getObject(DEPENDENCIES)
-                .put("a-avataaar", "^1.2.5");
-        String hash = packageJson.getObject(VAADIN_DEP_KEY).getString(HASH_KEY);
-        updatePackageHash(packageJson);
-
-        Assert.assertNotEquals("Hash should have been updated", hash,
-                packageJson.getObject(VAADIN_DEP_KEY).getString(HASH_KEY));
-
-        getNodeUpdater().writePackageFile(packageJson);
-        logger = Mockito.mock(Logger.class);
-
-        task.execute();
-
-        Mockito.verify(logger).info(getRunningMsg());
     }
 
     protected void setupEsbuildAndFooInstallation() throws IOException {
@@ -341,86 +124,6 @@ public abstract class TaskRunNpmInstallTest {
         FileUtils.write(packageJsonFile, packageJson.toJson(),
                 StandardCharsets.UTF_8);
 
-    }
-
-    @Test
-    public void runNpmInstall_noPostinstallScript_postIntstallNotExecuted()
-            throws IOException, ExecutionFailedException {
-        setupEsbuildAndFooInstallation();
-
-        // Remove postinstall script from "esbuild"
-        File esbuildPackageJson = new File(
-                new File(getNodeUpdater().nodeModulesFolder.getParentFile(),
-                        "fake-esbuild"),
-                "package.json");
-        JsonObject esbuildPackageJsonContents = Json.parse(IOUtils.toString(
-                getClass().getResourceAsStream(
-                        "fake-package-with-postinstall.json"),
-                StandardCharsets.UTF_8));
-        esbuildPackageJsonContents.getObject("scripts").remove("postinstall");
-        FileUtils.write(esbuildPackageJson, esbuildPackageJsonContents.toJson(),
-                StandardCharsets.UTF_8);
-
-        logger = new MockLogger();
-        Assert.assertTrue(logger.isDebugEnabled());
-        task.execute();
-
-        Assert.assertFalse(
-                "esbuild without postinstall should not have been executed",
-                ((MockLogger) logger).getLogs()
-                        .contains("Running postinstall for 'esbuild'"));
-    }
-
-    @Test
-    public void runNpmInstall_postInstall_runOnlyForDefaultPackages()
-            throws ExecutionFailedException, IOException {
-        setupEsbuildAndFooInstallation();
-        task.execute();
-
-        Assert.assertTrue("Postinstall for 'esbuild' was not run",
-                new File(
-                        new File(getNodeUpdater().nodeModulesFolder, "esbuild"),
-                        "postinstall-file.txt").exists());
-        Assert.assertFalse("Postinstall for 'foo' should not have been run",
-                new File(new File(getNodeUpdater().nodeModulesFolder, "foo"),
-                        "postinstall-file.txt").exists());
-    }
-
-    @Test
-    public void runNpmInstall_postInstall_runForDefinedAdditionalPackages()
-            throws ExecutionFailedException, IOException {
-        setupEsbuildAndFooInstallation();
-        task = createTask(Collections.singletonList("foo"));
-        task.execute();
-
-        Assert.assertTrue("Postinstall for 'esbuild' was not run",
-                new File(
-                        new File(getNodeUpdater().nodeModulesFolder, "esbuild"),
-                        "postinstall-file.txt").exists());
-        Assert.assertTrue("Postinstall for 'foo' was not run",
-                new File(new File(getNodeUpdater().nodeModulesFolder, "foo"),
-                        "postinstall-file.txt").exists());
-    }
-
-    @Test
-    public void shouldRunNpmInstallWhenFolderChanges() throws Exception {
-        setupEsbuildAndFooInstallation();
-
-        String packageJsonHash = getNodeUpdater().getPackageJson()
-                .getObject(VAADIN_DEP_KEY).getString(HASH_KEY);
-        JsonObject vaadinJson = Json.createObject();
-        vaadinJson.put(HASH_KEY, packageJsonHash);
-        vaadinJson.put(PROJECT_FOLDER,
-                getNodeUpdater().npmFolder.getAbsolutePath());
-        File vaadinJsonFile = getNodeUpdater().getVaadinJsonFile();
-
-        FileUtils.writeStringToFile(vaadinJsonFile, vaadinJson.toJson(), UTF_8);
-
-        Assert.assertFalse(task.isVaadinHashOrProjectFolderUpdated());
-        vaadinJson.put(PROJECT_FOLDER,
-                getNodeUpdater().npmFolder.getAbsolutePath() + "foo");
-        FileUtils.writeStringToFile(vaadinJsonFile, vaadinJson.toJson(), UTF_8);
-        Assert.assertTrue(task.isVaadinHashOrProjectFolderUpdated());
     }
 
     /**
@@ -489,7 +192,7 @@ public abstract class TaskRunNpmInstallTest {
     }
 
     protected String getToolName() {
-        return "npm";
+        return "pnpm";
     }
 
     private File ensurePackageJson() throws IOException {
