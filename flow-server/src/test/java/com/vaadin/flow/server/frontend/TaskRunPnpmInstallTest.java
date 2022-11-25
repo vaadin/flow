@@ -26,7 +26,6 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
@@ -43,7 +42,6 @@ import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
-import com.vaadin.flow.shared.util.SharedUtil;
 
 public class TaskRunPnpmInstallTest {
 
@@ -181,7 +179,11 @@ public class TaskRunPnpmInstallTest {
         }
 
         public void tst()
-                        throws IOException, ExecutionFailedException {
+                        throws Exception {
+tst2();
+        }
+
+        public void tst2() throws Exception {
                 File packageJson = new File(nodeUpdater.npmFolder, PACKAGE_JSON);
                 packageJson.createNewFile();
                 FileUtils.write(packageJson,
@@ -192,7 +194,7 @@ public class TaskRunPnpmInstallTest {
                 runNpmInstall();
         }
 
-        private void runNpmInstall() throws ExecutionFailedException {
+        private void runNpmInstall() throws Exception {
                 String baseDir = nodeUpdater.npmFolder.getAbsolutePath();
 
                 FrontendToolsSettings settings = new FrontendToolsSettings(baseDir,
@@ -205,28 +207,36 @@ public class TaskRunPnpmInstallTest {
                 FrontendTools tools = new FrontendTools(settings);
                 // tools.validateNodeAndNpmVersion();
 
-                List<String> npmExecutable;
-                List<String> npmInstallCommand;
-
-                try {
-                        // TaskRunNpmInstall.validateInstalledNpm(tools);
-                        npmExecutable = tools.getPnpmExecutable();
-                        npmInstallCommand = new ArrayList<>(npmExecutable);
-
-                } catch (IllegalStateException exception) {
-                        throw new ExecutionFailedException(exception.getMessage(),
-                                        exception);
-                }
-
+                List<String> npmExecutable = tools.getPnpmExecutable();
+                List<String> npmInstallCommand = new ArrayList<>(npmExecutable);
                 npmInstallCommand.add("--ignore-scripts");
                 npmInstallCommand.add("install");
 
-                String toolName = "pnpm";
+                runCommand(npmInstallCommand,
+                                nodeUpdater.npmFolder);
 
-                Process process = null;
+        }
+
+        private void runCommand(List<String> command, File workingDirectory) throws Exception {
+
+                ProcessBuilder builder = FrontendUtils.createProcessBuilder(command);
+                builder.directory(workingDirectory);
+                builder.redirectInput(ProcessBuilder.Redirect.INHERIT);
+                builder.redirectError(ProcessBuilder.Redirect.INHERIT);
+
+                System.err.println("Running '" + command.stream().collect(Collectors.joining(" ")) + "'");
+                Process process = builder.start();
                 try {
-                        process = runNpmCommand(npmInstallCommand,
-                                        nodeUpdater.npmFolder);
+                        // This will allow to destroy the process which does IO regardless
+                        // whether it's executed in the same thread or another (may be
+                        // daemon) thread
+                        Runtime.getRuntime()
+                                        .addShutdownHook(new Thread(() -> {
+                                                System.err.println("Shutdown hook");
+                                                if (process != null) {
+                                                        process.destroyForcibly();
+                                                }
+                                        }));
 
                         // logger.debug("Output of `{}`:", commandString);
                         StringBuilder toolOutput = new StringBuilder();
@@ -244,46 +254,22 @@ public class TaskRunPnpmInstallTest {
                         int errorCode = process.waitFor();
 
                         if (errorCode != 0) {
-                                throw new ExecutionFailedException(
-                                                SharedUtil.capitalize(toolName)
-                                                                + " install has exited with non zero status. "
-                                                                + "Some dependencies are not installed. Check "
-                                                                + toolName + " command output");
+                                throw new RuntimeException("It failed");
                         }
-                } catch (InterruptedException | IOException e) {
+                } catch (Exception e) {
                         if (e instanceof InterruptedException) {
                                 // Restore interrupted state
                                 Thread.currentThread().interrupt();
                         }
-                        throw new ExecutionFailedException(
-                                        "Command '" + toolName + " install' failed to finish", e);
+                        throw new RuntimeException(
+                                        "Command failed to finish", e);
                 } finally {
                         if (process != null) {
+                                System.err.println("Destroy forcible at end");
+
                                 process.destroyForcibly();
                         }
                 }
-
-        }
-
-        private Process runNpmCommand(List<String> command, File workingDirectory)
-                        throws IOException {
-                ProcessBuilder builder = FrontendUtils.createProcessBuilder(command);
-                builder.environment().put("ADBLOCK", "1");
-                builder.environment().put("NO_UPDATE_NOTIFIER", "1");
-                builder.directory(workingDirectory);
-                builder.redirectInput(ProcessBuilder.Redirect.INHERIT);
-                builder.redirectError(ProcessBuilder.Redirect.INHERIT);
-
-                System.err.println("Running '" + command.stream().collect(Collectors.joining(" ")) + "'");
-                Process process = builder.start();
-
-                // This will allow to destroy the process which does IO regardless
-                // whether it's executed in the same thread or another (may be
-                // daemon) thread
-                Runtime.getRuntime()
-                                .addShutdownHook(new Thread(process::destroyForcibly));
-
-                return process;
         }
 
 }
