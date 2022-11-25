@@ -21,6 +21,7 @@ import jakarta.servlet.ServletException;
 
 import java.io.IOException;
 
+import jakarta.servlet.ServletRegistration;
 import org.atmosphere.cache.UUIDBroadcasterCache;
 import org.atmosphere.client.TrackMessageSizeInterceptor;
 import org.atmosphere.cpr.ApplicationConfig;
@@ -223,7 +224,8 @@ public class PushRequestHandler
                 "false");
 
         atmosphere.addInitParameter(ApplicationConfig.JSR356_MAPPING_PATH,
-                "/" + Constants.PUSH_MAPPING);
+                findFirstUrlMapping(vaadinServletConfig)
+                        + Constants.PUSH_MAPPING);
 
         atmosphere.addInitParameter(
                 ApplicationConfig.JSR356_PATH_MAPPING_LENGTH, "0");
@@ -241,6 +243,17 @@ public class PushRequestHandler
             throw new RuntimeException("Atmosphere init failed", e);
         }
         return atmosphere;
+    }
+
+    private static String findFirstUrlMapping(ServletConfig config) {
+        String name = config.getServletName();
+        String firstMapping = "/";
+        if (name != null) {
+            ServletRegistration reg = config.getServletContext()
+                    .getServletRegistrations().get(name);
+            firstMapping = reg.getMappings().stream().findFirst().orElse("/");
+        }
+        return firstMapping.replace("/*", "/");
     }
 
     @Override

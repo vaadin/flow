@@ -368,7 +368,7 @@ public final class Constants implements Serializable {
     /**
      * The path used in the vaadin servlet for handling push.
      */
-    public static final String PUSH_MAPPING = VAADIN_MAPPING + "push/";
+    public static final String PUSH_MAPPING = VAADIN_MAPPING + "push";
 
     /**
      * The static build resources folder.
