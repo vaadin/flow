@@ -103,7 +103,7 @@ function collectChunks(statsJson, acceptedChunks) {
         const modules = [];
         // Add all modules for chunk as slimmed down modules
         chunk.modules.forEach(function (module) {
-          if(module.name.includes("flow-frontend")) {
+          if(module.name.includes("flow-frontend") || module.name.startsWith("./")) {
             const slimModule = {
               id: module.id,
               name: module.name,
