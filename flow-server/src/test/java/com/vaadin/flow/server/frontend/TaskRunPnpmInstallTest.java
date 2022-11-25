@@ -18,11 +18,15 @@ package com.vaadin.flow.server.frontend;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.TARGET;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
@@ -38,6 +42,7 @@ import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
+import com.vaadin.flow.shared.util.SharedUtil;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -192,10 +197,105 @@ public class TaskRunPnpmInstallTest {
                                                 + "\"@vaadin/vaadin-dialog\": \"2.2.1\"}}",
                                 StandardCharsets.UTF_8);
 
-                // Platform defines a pinned version
-                TaskRunNpmInstall task = createTask(
-                                "{ \"@vaadin/vaadin-overlay\":\"" + PINNED_VERSION + "\"}");
-                task.execute();
+                runNpmInstall();
+                // // Platform defines a pinned version
+                // TaskRunNpmInstall task = createTask(
+                // "{ \"@vaadin/vaadin-overlay\":\"" + PINNED_VERSION + "\"}");
+                // task.execute();
+        }
+
+        private void runNpmInstall() throws ExecutionFailedException {
+                String baseDir = nodeUpdater.npmFolder.getAbsolutePath();
+
+                FrontendToolsSettings settings = new FrontendToolsSettings(baseDir,
+                                () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
+                settings.setNodeDownloadRoot(URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT));
+                settings.setForceAlternativeNode(false);
+                settings.setUseGlobalPnpm(false);
+                settings.setAutoUpdate(false);
+                settings.setNodeVersion(FrontendTools.DEFAULT_NODE_VERSION);
+                FrontendTools tools = new FrontendTools(settings);
+                // tools.validateNodeAndNpmVersion();
+
+
+                List<String> npmExecutable;
+                List<String> npmInstallCommand;
+
+                try {
+                        // TaskRunNpmInstall.validateInstalledNpm(tools);
+                        npmExecutable = tools.getPnpmExecutable();
+                        npmInstallCommand = new ArrayList<>(npmExecutable);
+
+                } catch (IllegalStateException exception) {
+                        throw new ExecutionFailedException(exception.getMessage(),
+                                        exception);
+                }
+
+                npmInstallCommand.add("--ignore-scripts");
+                npmInstallCommand.add("install");
+
+                String toolName = "pnpm";
+
+                Process process = null;
+                try {
+                        process = runNpmCommand(npmInstallCommand,
+                                        nodeUpdater.npmFolder);
+
+                        // logger.debug("Output of `{}`:", commandString);
+                        StringBuilder toolOutput = new StringBuilder();
+                        try (BufferedReader reader = new BufferedReader(
+                                        new InputStreamReader(process.getInputStream(),
+                                                        StandardCharsets.UTF_8))) {
+                                String stdoutLine;
+                                while ((stdoutLine = reader.readLine()) != null) {
+                                        // logger.debug(stdoutLine);
+                                        toolOutput.append(stdoutLine)
+                                                        .append(System.lineSeparator());
+                                }
+                        }
+
+                        int errorCode = process.waitFor();
+
+                        if (errorCode != 0) {
+                                throw new ExecutionFailedException(
+                                                SharedUtil.capitalize(toolName)
+                                                                + " install has exited with non zero status. "
+                                                                + "Some dependencies are not installed. Check "
+                                                                + toolName + " command output");
+                        }
+                } catch (InterruptedException | IOException e) {
+                        if (e instanceof InterruptedException) {
+                                // Restore interrupted state
+                                Thread.currentThread().interrupt();
+                        }
+                        throw new ExecutionFailedException(
+                                        "Command '" + toolName + " install' failed to finish", e);
+                } finally {
+                        if (process != null) {
+                                process.destroyForcibly();
+                        }
+                }
+
+        }
+
+        private Process runNpmCommand(List<String> command, File workingDirectory)
+                        throws IOException {
+                ProcessBuilder builder = FrontendUtils.createProcessBuilder(command);
+                builder.environment().put("ADBLOCK", "1");
+                builder.environment().put("NO_UPDATE_NOTIFIER", "1");
+                builder.directory(workingDirectory);
+                builder.redirectInput(ProcessBuilder.Redirect.INHERIT);
+                builder.redirectError(ProcessBuilder.Redirect.INHERIT);
+
+                Process process = builder.start();
+
+                // This will allow to destroy the process which does IO regardless
+                // whether it's executed in the same thread or another (may be
+                // daemon) thread
+                Runtime.getRuntime()
+                                .addShutdownHook(new Thread(process::destroyForcibly));
+
+                return process;
         }
 
         protected TaskRunNpmInstall createTask(String versionsContent) {
