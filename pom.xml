@@ -235,9 +235,8 @@
             <dependency>
                 <groupId>net.bytebuddy</groupId>
                 <artifactId>byte-buddy</artifactId>
-                <version>1.12.1</version>
+                <version>1.12.19</version>
             </dependency>
-
 
             <!-- Test dependencies -->
             <dependency>
