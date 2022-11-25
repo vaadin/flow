@@ -26,6 +26,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
@@ -44,12 +45,7 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import com.vaadin.flow.shared.util.SharedUtil;
 
-import elemental.json.Json;
-import elemental.json.JsonObject;
-
 public class TaskRunPnpmInstallTest {
-
-        private static final String PINNED_VERSION = "3.2.17";
 
         protected NodeUpdater nodeUpdater;
 
@@ -188,20 +184,12 @@ public class TaskRunPnpmInstallTest {
                         throws IOException, ExecutionFailedException {
                 File packageJson = new File(nodeUpdater.npmFolder, PACKAGE_JSON);
                 packageJson.createNewFile();
-
-                // Write package json file: dialog doesn't pin its Overlay
-                // version which
-                // is transitive dependency.
                 FileUtils.write(packageJson,
                                 "{\"dependencies\": {"
                                                 + "\"@vaadin/vaadin-dialog\": \"2.2.1\"}}",
                                 StandardCharsets.UTF_8);
 
                 runNpmInstall();
-                // // Platform defines a pinned version
-                // TaskRunNpmInstall task = createTask(
-                // "{ \"@vaadin/vaadin-overlay\":\"" + PINNED_VERSION + "\"}");
-                // task.execute();
         }
 
         private void runNpmInstall() throws ExecutionFailedException {
@@ -216,7 +204,6 @@ public class TaskRunPnpmInstallTest {
                 settings.setNodeVersion(FrontendTools.DEFAULT_NODE_VERSION);
                 FrontendTools tools = new FrontendTools(settings);
                 // tools.validateNodeAndNpmVersion();
-
 
                 List<String> npmExecutable;
                 List<String> npmInstallCommand;
@@ -287,6 +274,7 @@ public class TaskRunPnpmInstallTest {
                 builder.redirectInput(ProcessBuilder.Redirect.INHERIT);
                 builder.redirectError(ProcessBuilder.Redirect.INHERIT);
 
+                System.err.println("Running '" + command.stream().collect(Collectors.joining(" ")) + "'");
                 Process process = builder.start();
 
                 // This will allow to destroy the process which does IO regardless
@@ -296,55 +284,6 @@ public class TaskRunPnpmInstallTest {
                                 .addShutdownHook(new Thread(process::destroyForcibly));
 
                 return process;
-        }
-
-        protected TaskRunNpmInstall createTask(String versionsContent) {
-                return new TaskRunNpmInstall(createAndRunNodeUpdater(versionsContent),
-                                true, false, FrontendTools.DEFAULT_NODE_VERSION,
-                                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false,
-                                false, new ArrayList<>());
-        }
-
-        private NodeUpdater createAndRunNodeUpdater(String versionsContent) {
-                NodeUpdater nodeUpdater = createNodeUpdater(versionsContent);
-                try {
-                        nodeUpdater.execute();
-                } catch (Exception e) {
-                        throw new IllegalStateException(
-                                        "NodeUpdater failed to genereate the versions.json file");
-                }
-
-                return nodeUpdater;
-        }
-
-        private NodeUpdater createNodeUpdater(String versionsContent) {
-                return new NodeUpdater(finder, Mockito.mock(FrontendDependencies.class),
-                                npmFolder, generatedPath, TARGET,
-                                Mockito.mock(FeatureFlags.class)) {
-
-                        @Override
-                        public void execute() {
-                                try {
-                                        versionsPath = generateVersionsJson(Json.createObject());
-                                } catch (Exception e) {
-                                        versionsPath = null;
-                                }
-                        }
-
-                        @Override
-                        protected String generateVersionsJson(JsonObject packageJson)
-                                        throws IOException {
-                                try {
-                                        if (versionsContent != null) {
-                                                FileUtils.write(new File(npmFolder, "versions.json"),
-                                                                versionsContent, StandardCharsets.UTF_8);
-                                        }
-                                } catch (IOException e) {
-                                        throw new RuntimeException(e);
-                                }
-                                return "./versions.json";
-                        }
-                };
         }
 
 }
