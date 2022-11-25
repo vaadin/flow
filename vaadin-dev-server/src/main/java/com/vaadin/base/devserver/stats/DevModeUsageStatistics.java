@@ -87,10 +87,6 @@ public class DevModeUsageStatistics {
         getLogger().debug("Telemetry enabled");
 
         storage.access(() -> {
-            if (instance != null) {
-                getLogger().warn("init should only be called once");
-            }
-
             instance = new DevModeUsageStatistics(projectFolder, storage);
             // Make sure we are tracking the right project
             String projectId = ProjectHelpers.generateProjectId(projectFolder);
