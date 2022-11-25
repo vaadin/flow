@@ -26,7 +26,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.IntStream;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
@@ -1007,10 +1006,15 @@ public class NodeTasks implements FallibleCommand {
      * @return index of command or -1 if not available
      */
     private int getIndex(FallibleCommand command) {
-        return IntStream.range(0, commandOrder.size())
-                .filter(i -> commandOrder.get(i)
-                        .isAssignableFrom(command.getClass()))
-                .findFirst()
-                .orElseThrow(() -> new UnknownTaskException(command));
+        int index = commandOrder.indexOf(command.getClass());
+        if (index != -1) {
+            return index;
+        }
+        for (int i = 0; i < commandOrder.size(); i++) {
+            if (commandOrder.get(i).isAssignableFrom(command.getClass())) {
+                return i;
+            }
+        }
+        throw new UnknownTaskException(command);
     }
 }
