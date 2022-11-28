@@ -131,7 +131,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
     private final Attributes attributes = new Attributes();
 
-    private final StreamResourceRegistry resourceRegistry;
+    private transient StreamResourceRegistry resourceRegistry;
 
     private long lastUnlocked;
 
@@ -1056,6 +1056,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         try {
             stream.defaultReadObject();
             uIs = (Map<Integer, UI>) stream.readObject();
+            resourceRegistry = (StreamResourceRegistry) stream.readObject();
             pendingAccessQueue = new ConcurrentLinkedQueue<>();
         } finally {
             CurrentInstance.restoreInstances(old);
@@ -1081,8 +1082,10 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         stream.defaultWriteObject();
         if (serializeUIs) {
             stream.writeObject(uIs);
+            stream.writeObject(resourceRegistry);
         } else {
             stream.writeObject(new HashMap<>());
+            stream.writeObject(new StreamResourceRegistry(this));
         }
     }
 
