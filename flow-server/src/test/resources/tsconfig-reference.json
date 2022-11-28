@@ -7,6 +7,7 @@
   "flow_version": "23.3.0",
   "compilerOptions": {
     "sourceMap": true,
+    "jsx": "react-jsx",
     "inlineSources": true,
     "module": "esNext",
     "target": "es2020",
@@ -29,8 +30,7 @@
     }
   },
   "include": [
-    "frontend/**/*.ts",
-    "frontend/index.js",
+    "frontend/**/*",
     "types.d.ts"
   ],
   "exclude": []
