@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.html;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 public class ImageTest extends ComponentTest {
@@ -31,5 +32,18 @@ public class ImageTest extends ComponentTest {
     @Override
     public void testHasAriaLabelIsImplemented() {
         super.testHasAriaLabelIsImplemented();
+    }
+
+    @Test
+    public void setEmptyAltInConstructor_altPropertExists() {
+        Image img = new Image("test.png", "");
+        Assert.assertTrue(
+                "'alt' property should have been retained with constructor",
+                img.getElement().hasProperty("alt"));
+
+        img.setAlt("");
+
+        Assert.assertTrue("'alt' property should have been cleared with setAlt",
+                img.getElement().hasProperty("alt"));
     }
 }
