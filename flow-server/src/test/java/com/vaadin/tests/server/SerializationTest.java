@@ -84,10 +84,10 @@ public class SerializationTest {
                 session.getUIs());
         Assert.assertTrue("UIs should be empty after devmode deserialization",
                 session.getUIs().isEmpty());
-        Assert.assertTrue(
+        Assert.assertFalse(
                 "StreamResources should be empty after devmode deserialization",
                 session.getResourceRegistry().getResource(name.getResourceUri())
-                        .isEmpty());
+                        .isPresent());
     }
 
     @Test
