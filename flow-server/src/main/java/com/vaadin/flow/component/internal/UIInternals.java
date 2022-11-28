@@ -18,6 +18,7 @@ package com.vaadin.flow.component.internal;
 import java.io.Serializable;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -78,6 +79,7 @@ import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -316,6 +318,12 @@ public class UIInternals implements Serializable {
      */
     public void incrementServerId() {
         serverSyncId++;
+        if (getLogger().isDebugEnabled()) {
+            getLogger().debug("Increment syncId:\n{}", Arrays
+                    .stream(Thread.currentThread().getStackTrace()).skip(1)
+                    .map(String::valueOf)
+                    .collect(Collectors.joining(System.lineSeparator())));
+        }
     }
 
     /**
@@ -325,10 +333,9 @@ public class UIInternals implements Serializable {
      * should be taken since this method might be called in situations where
      * {@link UI#getCurrent()} does not return the UI.
      *
-     * @see VaadinService#closeInactiveUIs(VaadinSession)
-     *
      * @return The time the last heartbeat request occurred, in milliseconds
      *         since the epoch.
+     * @see VaadinService#closeInactiveUIs(VaadinSession)
      */
     public long getLastHeartbeatTimestamp() {
         return lastHeartbeatTimestamp;
@@ -389,10 +396,8 @@ public class UIInternals implements Serializable {
      *
      * @param session
      *            the session to set
-     *
      * @throws IllegalStateException
      *             if the session has already been set
-     *
      * @see #getSession()
      */
     public void setSession(VaadinSession session) {
