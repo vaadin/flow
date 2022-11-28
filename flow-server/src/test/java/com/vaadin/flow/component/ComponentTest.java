@@ -1676,6 +1676,28 @@ public class ComponentTest {
         Assert.assertEquals(ui, component.findAncestor(UI.class));
         Assert.assertEquals(ui, component.findAncestor(PollNotifier.class));
         Assert.assertNull(component.findAncestor(TestButton.class));
+    }
+
+    @Test
+    public void removeFromParentTest() {
+        UI ui = new UI();
+        TestComponentContainer componentContainer = new TestComponentContainer();
+        TestComponent component = new TestComponent();
+        componentContainer.add(component);
+        ui.add(componentContainer);
+
+        Assert.assertEquals(componentContainer, component.getParent().get());
+        Assert.assertEquals(1, componentContainer.getChildren().count());
+        Assert.assertEquals(ui, componentContainer.getParent().get());
+        Assert.assertEquals(1, ui.getChildren().count());
+
+        component.removeFromParent();
+        Assert.assertTrue(component.getParent().isEmpty());
+        Assert.assertEquals(0, componentContainer.getChildren().count());
+
+        componentContainer.removeFromParent();
+        Assert.assertTrue(componentContainer.getParent().isEmpty());
+        Assert.assertEquals(0, ui.getChildren().count());
 
     }
 
