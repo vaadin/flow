@@ -210,7 +210,7 @@ public class HierarchicalCommunicationController<T> implements Serializable {
     }
 
     private void clear(int start, int length, HierarchicalUpdate update) {
-        if (length == 0 || start >= assumedSize) {
+        if (length == 0) {
             return;
         }
         if (parentKey == null) {
