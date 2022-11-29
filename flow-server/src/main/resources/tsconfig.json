@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "sourceMap": true,
+    "jsx": "react-jsx",
     "inlineSources": true,
     "module": "esNext",
     "target": "es2020",

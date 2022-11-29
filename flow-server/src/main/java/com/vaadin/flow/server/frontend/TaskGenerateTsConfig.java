@@ -48,8 +48,8 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
     private static final String VERSION = "flow_version";
     private static final String ES_TARGET_VERSION = "target";
     private static final String TSCONFIG_JSON_OLDER_VERSIONS_TEMPLATE = "tsconfig-%s.json";
-    private static final String[] vaadinVersions = { "latest", "v23.2", "v23.1",
-            "v22", "v14", "osgi" };
+    private static final String[] vaadinVersions = { "latest", "v23.3.0",
+            "v23.2", "v23.1", "v22", "v14", "osgi" };
 
     //@formatter:off
     static final String ERROR_MESSAGE =
