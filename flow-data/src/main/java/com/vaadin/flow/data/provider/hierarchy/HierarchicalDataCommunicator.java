@@ -19,9 +19,12 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.data.provider.CompositeDataGenerator;
@@ -537,6 +540,13 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         JsonObject json = Json.createObject();
         json.put("key", getKeyMapper().key(item));
         return json;
+    }
+
+    @Override
+    protected Set<String> getPassivatedKeys(Set<String> oldActive) {
+        return super.getPassivatedKeys(oldActive).stream().filter(key ->
+                !isExpanded(getKeyMapper().get(key)))
+                .collect(Collectors.toCollection(HashSet::new));
     }
 
     /**

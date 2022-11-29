@@ -1321,11 +1321,16 @@ public class DataCommunicator<T> implements Serializable {
             update.commit(updateId);
 
             // Finally clear any passivated items that have now been confirmed
-            oldActive.removeAll(activeKeyOrder);
-            if (!oldActive.isEmpty()) {
-                passivatedByUpdate.put(Integer.valueOf(updateId), oldActive);
+            Set<String> passivatedKeys = getPassivatedKeys(oldActive);
+            if (!passivatedKeys.isEmpty()) {
+                passivatedByUpdate.put(Integer.valueOf(updateId), passivatedKeys);
             }
         }
+    }
+
+    protected Set<String> getPassivatedKeys(Set<String> oldActive) {
+        oldActive.removeAll(activeKeyOrder);
+        return oldActive;
     }
 
     private boolean collectChangesToSend(final Range previousActive,
