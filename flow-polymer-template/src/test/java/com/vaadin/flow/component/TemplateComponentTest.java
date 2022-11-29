@@ -1,11 +1,10 @@
 /**
  * Copyright (C) 2022 Vaadin Ltd
  *
- * This program is available under Commercial Vaadin Developer License
- * 4.0 (CVDLv4).
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- *
- * For the full License, see <https://vaadin.com/license/cvdl-4.0>.
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
  */
 package com.vaadin.flow.component;
 
