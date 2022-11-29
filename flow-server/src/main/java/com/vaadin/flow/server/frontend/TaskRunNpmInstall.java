@@ -46,7 +46,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
 import static com.vaadin.flow.server.frontend.NodeUpdater.HASH_KEY;
 import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
 import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_VERSION;
-import static com.vaadin.flow.server.frontend.NodeUpdater.PROJECT_FOLDER;;
+import static com.vaadin.flow.server.frontend.NodeUpdater.PROJECT_FOLDER;
 
 /**
  * Run <code>npm install</code> after dependencies have been updated.
