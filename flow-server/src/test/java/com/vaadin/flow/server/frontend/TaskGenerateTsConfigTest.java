@@ -38,6 +38,8 @@ import com.vaadin.flow.server.ExecutionFailedException;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class TaskGenerateTsConfigTest {
+    static private String LATEST_VERSION = "23.3.0.1";
+
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
@@ -186,7 +188,8 @@ public class TaskGenerateTsConfigTest {
                 + "Please also: 1. Increment version in tsconfig.json (\"flow_version\" property) "
                 + "2. create a new tsconfig-vX.Y.json template in flow-server resources and put the old content there "
                 + "3. update vaadinVersion array in TaskGenerateTsConfig with X.Y "
-                + "4. put a new content in tsconfig-reference.json in tests",
+                + "4. put a new content in tsconfig-reference.json in tests "
+                + "5. update LATEST_VERSION in TaskGenerateTsConfigTest",
                 testTsConfig, tsConfigLatest);
 
     }
@@ -196,17 +199,19 @@ public class TaskGenerateTsConfigTest {
             throws IOException, ExecutionFailedException {
         File tsconfig = new File(npmFolder, "tsconfig.json");
         Files.createFile(tsconfig.toPath());
-        FileUtils.writeStringToFile(tsconfig, "{\"flow_version\": \"23.3.0\"}",
-                UTF_8);
+        FileUtils.writeStringToFile(tsconfig,
+                "{\"flow_version\": \"" + LATEST_VERSION + "\"}", UTF_8);
         taskGenerateTsConfig.execute();
 
         String tsConfigString = FileUtils.readFileToString(tsconfig, UTF_8);
 
-        String expected = IOUtils.toString(
-                Objects.requireNonNull(TaskGenerateTsConfigTest.class
-                        .getClassLoader()
-                        .getResourceAsStream("tsconfig-latest-version.json")),
-                StandardCharsets.UTF_8);
+        String expected = IOUtils
+                .toString(
+                        Objects.requireNonNull(TaskGenerateTsConfigTest.class
+                                .getClassLoader().getResourceAsStream(
+                                        "tsconfig-latest-version.json")),
+                        StandardCharsets.UTF_8)
+                .replace("latest", LATEST_VERSION);
 
         Assert.assertEquals(expected, tsConfigString);
     }
