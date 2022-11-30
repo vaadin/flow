@@ -198,6 +198,9 @@ public abstract class AbstractNavigationStateRenderer
 
         BeforeEnterEvent beforeNavigationActivating = new BeforeEnterEvent(
                 event, routeTargetType, parameters, routeLayoutTypes);
+        final boolean isRefreshEvent = preserveOnRefreshTarget
+                && !chain.isEmpty();
+        beforeNavigationActivating.setRefreshEvent(isRefreshEvent);
 
         result = createChainIfEmptyAndExecuteBeforeEnterNavigation(
                 beforeNavigationActivating, event, chain);
@@ -232,7 +235,7 @@ public abstract class AbstractNavigationStateRenderer
                 .addAll(EventUtil.collectAfterNavigationObservers(ui));
 
         fireAfterNavigationListeners(
-                new AfterNavigationEvent(locationChangeEvent),
+                new AfterNavigationEvent(locationChangeEvent, isRefreshEvent),
                 afterNavigationHandlers);
 
         updatePageTitle(event, componentInstance);

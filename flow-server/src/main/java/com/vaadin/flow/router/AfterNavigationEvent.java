@@ -30,6 +30,7 @@ import com.vaadin.flow.component.HasElement;
 public class AfterNavigationEvent extends EventObject {
 
     private final LocationChangeEvent event;
+    private final boolean refreshEvent;
 
     /**
      * Construct event from a NavigationEvent.
@@ -40,6 +41,22 @@ public class AfterNavigationEvent extends EventObject {
     public AfterNavigationEvent(LocationChangeEvent event) {
         super(event.getSource());
         this.event = event;
+        this.refreshEvent = false;
+    }
+
+    /**
+     * Construct event from a NavigationEvent.
+     *
+     * @param event
+     *            NavigationEvent that is on going
+     * @param refreshEvent
+     *            if event for refresh of a preserve on refresh view
+     */
+    public AfterNavigationEvent(LocationChangeEvent event,
+            boolean refreshEvent) {
+        super(event.getSource());
+        this.event = event;
+        this.refreshEvent = refreshEvent;
     }
 
     /**
@@ -72,5 +89,14 @@ public class AfterNavigationEvent extends EventObject {
     @Override
     public Router getSource() {
         return (Router) super.getSource();
+    }
+
+    /**
+     * Check if event is for a refresh of a preserveOnRefresh view.
+     *
+     * @return true if refresh of a preserve on refresh view
+     */
+    public boolean isRefreshEvent() {
+        return refreshEvent;
     }
 }
