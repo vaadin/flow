@@ -93,9 +93,7 @@ public class TaskGenerateIndexTs extends AbstractTaskClientGenerator {
 
         relativizedImport = relativizedImport
                 // replace `./` with `../../target/` to make it work
-                .replaceFirst("^./", generatedDirRelativePathToBuildDir + "/")
-                // remove extension
-                .replaceFirst("\\.(ts|js)$", "");
+                .replaceFirst("^./", generatedDirRelativePathToBuildDir + "/");
 
         return indexTemplate.replace("[to-be-generated-by-flow]",
                 relativizedImport);
