@@ -131,13 +131,6 @@ public final class Constants implements Serializable {
     public static final String SERVLET_PARAMETER_PUSH_MODE = InitParameters.SERVLET_PARAMETER_PUSH_MODE;
 
     /**
-     * @deprecated Use {@link InitParameters#SERVLET_PARAMETER_PUSH_URL}
-     *             instead.
-     */
-    @Deprecated
-    public static final String SERVLET_PARAMETER_PUSH_URL = InitParameters.SERVLET_PARAMETER_PUSH_URL;
-
-    /**
      * @deprecated Use {@link InitParameters#SERVLET_PARAMETER_SYNC_ID_CHECK}
      *             instead.
      */
@@ -371,6 +364,11 @@ public final class Constants implements Serializable {
      * The path used in the vaadin servlet for handling static resources.
      */
     public static final String VAADIN_MAPPING = "VAADIN/";
+
+    /**
+     * The path used in the vaadin servlet for handling push.
+     */
+    public static final String PUSH_MAPPING = VAADIN_MAPPING + "push";
 
     /**
      * The static build resources folder.

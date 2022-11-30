@@ -21,6 +21,7 @@ import jakarta.servlet.ServletException;
 
 import java.io.IOException;
 
+import jakarta.servlet.ServletRegistration;
 import org.atmosphere.cache.UUIDBroadcasterCache;
 import org.atmosphere.client.TrackMessageSizeInterceptor;
 import org.atmosphere.cpr.ApplicationConfig;
@@ -35,6 +36,7 @@ import org.atmosphere.util.VoidAnnotationProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.InitParameters;
@@ -221,6 +223,13 @@ public class PushRequestHandler
         atmosphere.addInitParameter("org.atmosphere.cpr.showSupportMessage",
                 "false");
 
+        atmosphere.addInitParameter(ApplicationConfig.JSR356_MAPPING_PATH,
+                findFirstUrlMapping(vaadinServletConfig)
+                        + Constants.PUSH_MAPPING);
+
+        atmosphere.addInitParameter(
+                ApplicationConfig.JSR356_PATH_MAPPING_LENGTH, "0");
+
         try {
             atmosphere.init(vaadinServletConfig);
 
@@ -234,6 +243,18 @@ public class PushRequestHandler
             throw new RuntimeException("Atmosphere init failed", e);
         }
         return atmosphere;
+    }
+
+    private static String findFirstUrlMapping(ServletConfig config) {
+        String name = config.getServletName();
+        String firstMapping = "/";
+        if (name != null) {
+            ServletRegistration reg = config.getServletContext()
+                    .getServletRegistrations().get(name);
+            firstMapping = reg.getMappings().stream().sorted().findFirst()
+                    .orElse("/");
+        }
+        return firstMapping.replace("/*", "/");
     }
 
     @Override
