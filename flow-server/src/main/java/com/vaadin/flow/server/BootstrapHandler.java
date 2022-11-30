@@ -1525,7 +1525,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 .orElseGet(deploymentConfiguration::getPushMode);
         setupPushConnectionFactory(pushConfiguration, context);
         pushConfiguration.setPushMode(pushMode);
-        pushConfiguration.setPushUrl(deploymentConfiguration.getPushURL());
         push.map(Push::transport).ifPresent(pushConfiguration::setTransport);
 
         // Set thread local here so it is available in init

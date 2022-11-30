@@ -153,15 +153,9 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
         JsonObject config = context.getApplicationParameters();
 
         String requestURL = getRequestUrl(request);
-        String serviceUrl = getServiceUrl(request);
 
-        String pushURL = context.getSession().getConfiguration().getPushURL();
-        if (pushURL == null) {
-            pushURL = serviceUrl;
-        }
         PushConfiguration pushConfiguration = context.getUI()
                 .getPushConfiguration();
-        pushConfiguration.setPushUrl(pushURL);
 
         AppShellRegistry registry = AppShellRegistry
                 .getInstance(session.getService().getContext());

@@ -35,6 +35,7 @@ import org.springframework.util.ClassUtils;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.socket.server.standard.ServerEndpointExporter;
 
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinServlet;
 
 /**
@@ -81,27 +82,18 @@ public class SpringBootAutoConfiguration {
         String mapping = configurationProperties.getUrlMapping();
         Map<String, String> initParameters = new HashMap<>();
         boolean rootMapping = RootMappedCondition.isRootMapping(mapping);
-        String pushRegistrationPath;
 
         if (rootMapping) {
             mapping = VaadinServletConfiguration.VAADIN_SERVLET_MAPPING;
             initParameters.put(
                     VaadinServlet.INTERNAL_VAADIN_SERVLET_VITE_DEV_MODE_FRONTEND_PATH,
                     "");
-            pushRegistrationPath = "";
-        } else {
-            pushRegistrationPath = mapping.replace("/*", "");
         }
 
-        /*
-         * Tell Atmosphere which servlet to use for the push endpoint. Servlet
-         * mappings are returned as a Set from at least Tomcat so even if
-         * Atmosphere always picks the first, it might end up using /VAADIN/*
-         * and websockets will fail.
-         */
-        initParameters.put(ApplicationConfig.JSR356_MAPPING_PATH,
-                pushRegistrationPath);
-        initParameters.put(ApplicationConfig.JSR356_PATH_MAPPING_LENGTH, "0");
+        String pushUrl = rootMapping ? "" : mapping.replace("/*", "");
+        pushUrl += "/" + Constants.PUSH_MAPPING;
+
+        initParameters.put(ApplicationConfig.JSR356_MAPPING_PATH, pushUrl);
 
         ServletRegistrationBean<SpringServlet> registration = new ServletRegistrationBean<>(
                 new SpringServlet(context, rootMapping), mapping);
