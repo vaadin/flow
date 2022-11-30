@@ -193,6 +193,9 @@ public class AtmospherePushConnection implements PushConnection {
         String serviceUrl = registry.getApplicationConfiguration()
                 .getServiceUrl();
         if (!serviceUrl.equals(".")) {
+            if (!serviceUrl.endsWith("/")) {
+                serviceUrl += "/";
+            }
             url = serviceUrl + url;
         }
         runWhenAtmosphereLoaded(

@@ -251,7 +251,8 @@ public class PushRequestHandler
         if (name != null) {
             ServletRegistration reg = config.getServletContext()
                     .getServletRegistrations().get(name);
-            firstMapping = reg.getMappings().stream().findFirst().orElse("/");
+            firstMapping = reg.getMappings().stream().sorted().findFirst()
+                    .orElse("/");
         }
         return firstMapping.replace("/*", "/");
     }

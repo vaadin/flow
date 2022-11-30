@@ -91,7 +91,7 @@ public class PushConfiguration {
     /**
      * Gets the fixed push URL.
      *
-     * @return the fixed push URL
+     * @return the fixed push URL (VAADIN/push)
      */
     public String getPushUrl() {
         return Constants.PUSH_MAPPING;
