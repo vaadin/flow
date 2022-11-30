@@ -88,15 +88,15 @@ public class TaskUpdateViteTest {
 
         String template = IOUtils.toString(generatedConfigFile.toURI(),
                 StandardCharsets.UTF_8);
-        Options builder = new Options(Mockito.mock(Lookup.class),
-                temporaryFolder.getRoot(),
-                temporaryFolder.newFolder("generated"),
-                temporaryFolder.newFolder("frontend"), "target");
-        builder.withJarFrontendResourcesFolder(
-                temporaryFolder.newFolder("resources"));
+        Options options = new Options(Mockito.mock(Lookup.class))
+                .withNpmFolder(temporaryFolder.getRoot())
+                .withGeneratedFolder(temporaryFolder.newFolder("generated"))
+                .withFrontendDirectory(temporaryFolder.newFolder("frontend"))
+                .withBuildDirectory("target").withJarFrontendResourcesFolder(
+                        temporaryFolder.newFolder("resources"));
 
         TaskUpdateSettingsFile updateSettings = new TaskUpdateSettingsFile(
-                builder, "theme", new PwaConfiguration());
+                options, "theme", new PwaConfiguration());
         updateSettings.execute();
         File settings = new File(temporaryFolder.getRoot(),
                 "target/" + DEV_SETTINGS_FILE);

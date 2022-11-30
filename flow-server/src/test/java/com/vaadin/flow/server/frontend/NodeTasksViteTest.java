@@ -103,7 +103,8 @@ public class NodeTasksViteTest {
         ClassFinder finder = NodeUpdateTestUtil.getClassFinder(classes);
         Mockito.doReturn(finder).when(mockedLookup).lookup(ClassFinder.class);
 
-        Options options = new Options(mockedLookup, new File(userDir), TARGET)
+        Options options = new Options(mockedLookup)
+                .withNpmFolder(new File(userDir)).withBuildDirectory(TARGET)
                 .enablePackagesUpdate(false).enableImportsUpdate(true)
                 .runNpmInstall(false).withEmbeddableWebComponents(false)
                 .withJarFrontendResourcesFolder(
@@ -142,7 +143,8 @@ public class NodeTasksViteTest {
         ClassFinder finder = NodeUpdateTestUtil.getClassFinder(classes);
         Mockito.doReturn(finder).when(mockedLookup).lookup(ClassFinder.class);
 
-        Options options = new Options(mockedLookup, new File(userDir), TARGET)
+        Options options = new Options(mockedLookup)
+                .withNpmFolder(new File(userDir)).withBuildDirectory(TARGET)
                 .enablePackagesUpdate(false).enableImportsUpdate(true)
                 .runNpmInstall(false).withEmbeddableWebComponents(false)
                 .setJavaResourceFolder(propertiesDir)
@@ -169,7 +171,8 @@ public class NodeTasksViteTest {
         Mockito.doReturn(
                 new DefaultClassFinder(this.getClass().getClassLoader()))
                 .when(mockedLookup).lookup(ClassFinder.class);
-        Options options = new Options(mockedLookup, new File(userDir), TARGET)
+        Options options = new Options(mockedLookup)
+                .withNpmFolder(new File(userDir)).withBuildDirectory(TARGET)
                 .enablePackagesUpdate(false).enableImportsUpdate(true)
                 .runNpmInstall(false).withEmbeddableWebComponents(false)
                 .withJarFrontendResourcesFolder(
@@ -197,7 +200,8 @@ public class NodeTasksViteTest {
         Mockito.doReturn(
                 new DefaultClassFinder(this.getClass().getClassLoader()))
                 .when(mockedLookup).lookup(ClassFinder.class);
-        Options options = new Options(mockedLookup, new File(userDir), TARGET)
+        Options options = new Options(mockedLookup)
+                .withNpmFolder(new File(userDir)).withBuildDirectory(TARGET)
                 .enablePackagesUpdate(false).enableImportsUpdate(true)
                 .runNpmInstall(false).withEmbeddableWebComponents(false)
                 .withJarFrontendResourcesFolder(
@@ -228,7 +232,8 @@ public class NodeTasksViteTest {
         Mockito.doReturn(
                 new DefaultClassFinder(this.getClass().getClassLoader()))
                 .when(mockedLookup).lookup(ClassFinder.class);
-        Options options = new Options(mockedLookup, new File(userDir), TARGET)
+        Options options = new Options(mockedLookup)
+                .withNpmFolder(new File(userDir)).withBuildDirectory(TARGET)
                 .enablePackagesUpdate(false).enableImportsUpdate(true)
                 .runNpmInstall(false).withEmbeddableWebComponents(false)
                 .withJarFrontendResourcesFolder(
@@ -262,7 +267,8 @@ public class NodeTasksViteTest {
         Mockito.doReturn(
                 new DefaultClassFinder(this.getClass().getClassLoader()))
                 .when(mockedLookup).lookup(ClassFinder.class);
-        Options options = new Options(mockedLookup, new File(userDir), TARGET)
+        Options options = new Options(mockedLookup)
+                .withNpmFolder(new File(userDir)).withBuildDirectory(TARGET)
                 .enablePackagesUpdate(false).enableImportsUpdate(true)
                 .runNpmInstall(false).withEmbeddableWebComponents(false)
                 .withJarFrontendResourcesFolder(
@@ -301,10 +307,10 @@ public class NodeTasksViteTest {
             Mockito.doReturn(
                     new DefaultClassFinder(this.getClass().getClassLoader()))
                     .when(mockedLookup).lookup(ClassFinder.class);
-            Options options = new Options(mockedLookup, new File(userDir),
-                    TARGET).enablePackagesUpdate(false)
-                    .enableImportsUpdate(true).runNpmInstall(false)
-                    .withEmbeddableWebComponents(false)
+            Options options = new Options(mockedLookup)
+                    .withNpmFolder(new File(userDir)).withBuildDirectory(TARGET)
+                    .enablePackagesUpdate(false).enableImportsUpdate(true)
+                    .runNpmInstall(false).withEmbeddableWebComponents(false)
                     .withJarFrontendResourcesFolder(
                             getJarFrontendResourcesFolder());
 

@@ -61,7 +61,10 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import jakarta.servlet.annotation.HandlesTypes;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.base.devserver.ViteHandler;
 import com.vaadin.base.devserver.WebpackHandler;
@@ -80,20 +83,16 @@ import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
-import com.vaadin.flow.server.frontend.NodeTasks.Options;
+import com.vaadin.flow.server.frontend.Options;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.VaadinInitializerException;
 import com.vaadin.pro.licensechecker.LicenseChecker;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import elemental.json.Json;
 import elemental.json.JsonObject;
+import jakarta.servlet.annotation.HandlesTypes;
 
 /**
  * Initializer for starting node updaters as well as the dev mode server.
@@ -232,9 +231,10 @@ public class DevModeInitializer implements Serializable {
         Lookup lookupForClassFinder = Lookup.of(new DevModeClassFinder(classes),
                 ClassFinder.class);
         Lookup lookup = Lookup.compose(lookupForClassFinder, lookupFromContext);
-        Options options = new Options(lookup, new File(baseDir),
-                new File(generatedDir), new File(frontendFolder),
-                config.getBuildFolder());
+        Options options = new Options(lookup).withNpmFolder(new File(baseDir))
+                .withGeneratedFolder(new File(generatedDir))
+                .withFrontendDirectory(new File(frontendFolder))
+                .withBuildDirectory(config.getBuildFolder());
 
         log().info("Starting dev-mode updaters in {} folder.",
                 options.getNpmFolder());
