@@ -544,8 +544,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
     @Override
     protected Set<String> getPassivatedKeys(Set<String> oldActive) {
-        return super.getPassivatedKeys(oldActive).stream().filter(key ->
-                !isExpanded(getKeyMapper().get(key)))
+        return super.getPassivatedKeys(oldActive).stream()
+                .filter(key -> !isExpanded(getKeyMapper().get(key)))
                 .collect(Collectors.toCollection(HashSet::new));
     }
 

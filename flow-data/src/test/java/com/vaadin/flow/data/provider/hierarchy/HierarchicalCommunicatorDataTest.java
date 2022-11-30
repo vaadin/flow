@@ -266,7 +266,8 @@ public class HierarchicalCommunicatorDataTest {
         String initialKey = communicator.getKeyMapper().key(itemToTest);
 
         communicator.expand(itemToTest);
-        communicator.setRequestedRange(requestedRangeLength * 2, requestedRangeLength);
+        communicator.setRequestedRange(requestedRangeLength * 2,
+                requestedRangeLength);
         fakeClientCommunication();
         assertKeyItemPairIsPresentInKeyMapper(initialKey, itemToTest);
 

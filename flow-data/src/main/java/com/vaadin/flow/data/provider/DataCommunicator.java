@@ -1323,7 +1323,8 @@ public class DataCommunicator<T> implements Serializable {
             // Finally clear any passivated items that have now been confirmed
             Set<String> passivatedKeys = getPassivatedKeys(oldActive);
             if (!passivatedKeys.isEmpty()) {
-                passivatedByUpdate.put(Integer.valueOf(updateId), passivatedKeys);
+                passivatedByUpdate.put(Integer.valueOf(updateId),
+                        passivatedKeys);
             }
         }
     }
