@@ -89,15 +89,15 @@ public class FrontendResourcesAreCopiedAfterCleaningTest {
         Lookup mockLookup = Mockito.mock(Lookup.class);
         Mockito.doReturn(classFinder).when(mockLookup)
                 .lookup(ClassFinder.class);
-        NodeTasks.Builder builder = new NodeTasks.Builder(mockLookup, npmFolder,
+        NodeTasks.Options options = new NodeTasks.Options(mockLookup, npmFolder,
                 TARGET);
 
-        builder.withEmbeddableWebComponents(false).enableImportsUpdate(false)
-                .createMissingPackageJson(true).enableImportsUpdate(true)
-                .runNpmInstall(false).enablePackagesUpdate(true)
+        new NodeTasks(options.withEmbeddableWebComponents(false)
+                .enableImportsUpdate(false).createMissingPackageJson(true)
+                .enableImportsUpdate(true).runNpmInstall(false)
+                .enablePackagesUpdate(true)
                 .withJarFrontendResourcesFolder(getJarFrontendResourcesFolder())
-                .copyResources(Collections.singleton(testJar)).build()
-                .execute();
+                .copyResources(Collections.singleton(testJar))).execute();
     }
 
     private void performPackageClean() throws ExecutionFailedException {
@@ -107,13 +107,14 @@ public class FrontendResourcesAreCopiedAfterCleaningTest {
         Lookup mockLookup = Mockito.mock(Lookup.class);
         Mockito.doReturn(classFinder).when(mockLookup)
                 .lookup(ClassFinder.class);
-        NodeTasks.Builder builder = new NodeTasks.Builder(mockLookup, npmFolder,
+        NodeTasks.Options options = new NodeTasks.Options(mockLookup, npmFolder,
                 TARGET);
-        builder.withEmbeddableWebComponents(false).enableImportsUpdate(false)
-                .createMissingPackageJson(true).enableImportsUpdate(true)
-                .runNpmInstall(false).enableNpmFileCleaning(true)
+        new NodeTasks(options.withEmbeddableWebComponents(false)
+                .enableImportsUpdate(false).createMissingPackageJson(true)
+                .enableImportsUpdate(true).runNpmInstall(false)
+                .enableNpmFileCleaning(true)
                 .withJarFrontendResourcesFolder(getJarFrontendResourcesFolder())
                 .copyResources(Collections.emptySet())
-                .enablePackagesUpdate(true).build().execute();
+                .enablePackagesUpdate(true)).execute();
     }
 }
