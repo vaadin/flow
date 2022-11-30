@@ -54,7 +54,7 @@ public class TaskGenerateWebComponentBootstrapTest {
         taskGenerateWebComponentBootstrap.execute();
         String content = taskGenerateWebComponentBootstrap.getFileContent();
         Assert.assertTrue(content.contains(
-                "import '../../target/frontend/flow-generated-imports'"));
+                "import '../../target/frontend/flow-generated-imports.js'"));
     }
 
     @Test
@@ -64,6 +64,6 @@ public class TaskGenerateWebComponentBootstrapTest {
         String content = taskGenerateWebComponentBootstrap.getFileContent();
         Assert.assertTrue(content.contains(
                 "import { init } from '" + FrontendUtils.JAR_RESOURCES_IMPORT
-                        + "FlowClient';\n" + "init()"));
+                        + "FlowClient.js';\n" + "init()"));
     }
 }
