@@ -8,8 +8,8 @@ import path from 'path';
 import { readFileSync, existsSync, writeFileSync, mkdirSync } from 'fs';
 import * as net from 'net';
 
-import { processThemeResources } from '#buildFolder#/plugins/application-theme-plugin/theme-handle';
-import { rewriteCssUrls } from '#buildFolder#/plugins/theme-loader/theme-loader-utils';
+import { processThemeResources } from '#buildFolder#/plugins/application-theme-plugin/theme-handle.js';
+import { rewriteCssUrls } from '#buildFolder#/plugins/theme-loader/theme-loader-utils.js';
 import settings from '#settingsImport#';
 import { defineConfig, mergeConfig, PluginOption, ResolvedConfig, UserConfigFn, OutputOptions, AssetInfo, ChunkInfo } from 'vite';
 import { getManifest } from 'workbox-build';
