@@ -84,14 +84,11 @@ public class TaskUpdatePackages extends NodeUpdater {
      *            the used build directory
      */
     TaskUpdatePackages(ClassFinder finder,
-            FrontendDependenciesScanner frontendDependencies, File npmFolder,
-            File generatedPath, File jarResourcesFolder, boolean forceCleanUp,
-            boolean enablePnpm, String buildDir, FeatureFlags featureFlags) {
-        super(finder, frontendDependencies, npmFolder, generatedPath, buildDir,
-                featureFlags);
-        this.jarResourcesFolder = jarResourcesFolder;
-        this.forceCleanUp = forceCleanUp;
-        this.enablePnpm = enablePnpm;
+            FrontendDependenciesScanner frontendDependencies, Options options) {
+        super(finder, frontendDependencies, options);
+        this.jarResourcesFolder = options.jarFrontendResourcesFolder;
+        this.forceCleanUp = options.cleanNpmFiles;
+        this.enablePnpm = options.enablePnpm;
     }
 
     @Override

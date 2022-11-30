@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.Serializable;
 import java.net.URI;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -115,7 +116,9 @@ public class Options implements Serializable {
     /**
      * Additional npm packages to run postinstall for.
      */
-    List<String> postinstallPackages;
+    List<String> postinstallPackages = new ArrayList<>();
+
+    private FeatureFlags featureFlags;
 
     /**
      * Creates a new instance.
@@ -205,13 +208,15 @@ public class Options implements Serializable {
      * <code>false</code>. When the value is false, npm related files will only
      * be removed when a platform version update is detected.
      *
+     * This method is only for tests.
+     *
      * @param forceClean
      *            <code>true</code> to clean npm files always, otherwise
      *            <code>false</code>
      * @return this builder
      */
-    // This method is only used in tests ...
-    Options enableNpmFileCleaning(boolean forceClean) {
+    @Deprecated
+    public Options enableNpmFileCleaning(boolean forceClean) {
         this.cleanNpmFiles = forceClean;
         return this;
     }
@@ -622,12 +627,21 @@ public class Options implements Serializable {
         return buildDirectory;
     }
 
+    public Options withFeatureFlags(FeatureFlags featureFlags) {
+        this.featureFlags = featureFlags;
+        return this;
+    }
+
     protected FeatureFlags getFeatureFlags() {
-        final FeatureFlags featureFlags = new FeatureFlags(lookup);
-        if (javaResourceFolder != null) {
-            featureFlags.setPropertiesLocation(javaResourceFolder);
+        if (featureFlags != null) {
+            return featureFlags;
         }
-        return featureFlags;
+
+        final FeatureFlags flags = new FeatureFlags(lookup);
+        if (javaResourceFolder != null) {
+            flags.setPropertiesLocation(javaResourceFolder);
+        }
+        return flags;
     }
 
     public File getJarFrontendResourcesFolder() {

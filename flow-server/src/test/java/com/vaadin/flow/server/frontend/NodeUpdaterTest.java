@@ -41,6 +41,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.experimental.Feature;
 import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
@@ -67,13 +68,10 @@ public class NodeUpdaterTest {
 
     private ClassFinder finder;
 
-    private URL url;
-
     private boolean useWebpack = false;
 
     @Before
     public void setUp() throws IOException {
-        url = new URL("file://bar");
         npmFolder = temporaryFolder.newFolder();
         generatedPath = temporaryFolder.newFolder();
         FeatureFlags featureFlags = Mockito.mock(FeatureFlags.class);
@@ -85,9 +83,12 @@ public class NodeUpdaterTest {
                     return false;
                 });
         finder = Mockito.mock(ClassFinder.class);
+        Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
+                .withGeneratedFolder(generatedPath).withBuildDirectory(TARGET)
+                .withFeatureFlags(featureFlags);
+
         nodeUpdater = new NodeUpdater(finder,
-                Mockito.mock(FrontendDependencies.class), npmFolder,
-                generatedPath, TARGET, featureFlags) {
+                Mockito.mock(FrontendDependencies.class), options) {
 
             @Override
             public void execute() {

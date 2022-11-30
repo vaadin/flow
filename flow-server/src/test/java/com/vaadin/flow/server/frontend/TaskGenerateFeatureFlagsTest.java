@@ -15,12 +15,10 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import com.vaadin.experimental.Feature;
-import com.vaadin.experimental.FeatureFlags;
-import com.vaadin.flow.server.ExecutionFailedException;
-import com.vaadin.flow.server.MockVaadinContext;
-import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.startup.ApplicationConfiguration;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
+
+import java.io.File;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -28,9 +26,13 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
-import java.io.File;
-
-import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
+import com.vaadin.experimental.Feature;
+import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.MockVaadinContext;
+import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 public class TaskGenerateFeatureFlagsTest {
 
@@ -49,8 +51,10 @@ public class TaskGenerateFeatureFlagsTest {
 
         File frontendFolder = temporaryFolder.newFolder(FRONTEND);
         featureFlags = FeatureFlags.get(context);
-        taskGenerateFeatureFlags = new TaskGenerateFeatureFlags(frontendFolder,
-                featureFlags);
+        Options options = new Options(Mockito.mock(Lookup.class), null)
+                .withFrontendDirectory(frontendFolder)
+                .withFeatureFlags(featureFlags);
+        taskGenerateFeatureFlags = new TaskGenerateFeatureFlags(options);
     }
 
     @Test

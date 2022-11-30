@@ -32,14 +32,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import com.vaadin.experimental.FeatureFlags;
-import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.ExecutionFailedException;
-import com.vaadin.flow.server.frontend.installer.NodeInstaller;
-import com.vaadin.flow.server.frontend.scanner.ClassFinder;
-import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
-import com.vaadin.flow.testcategory.SlowTests;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
@@ -54,10 +46,17 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.frontend.installer.NodeInstaller;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
+import com.vaadin.flow.testcategory.SlowTests;
+
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import net.jcip.annotations.NotThreadSafe;
-import org.slf4j.event.Level;
 
 @NotThreadSafe
 @Category(SlowTests.class)
@@ -87,9 +86,10 @@ public class TaskRunNpmInstallTest {
         generatedPath = new File(npmFolder, "generated");
         generatedPath.mkdir();
         finder = Mockito.mock(ClassFinder.class);
+        Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
+                .withGeneratedFolder(generatedPath).withBuildDirectory(TARGET);
         nodeUpdater = new NodeUpdater(finder,
-                Mockito.mock(FrontendDependencies.class), npmFolder,
-                generatedPath, TARGET, Mockito.mock(FeatureFlags.class)) {
+                Mockito.mock(FrontendDependencies.class), options) {
 
             @Override
             public void execute() {
@@ -105,10 +105,13 @@ public class TaskRunNpmInstallTest {
     }
 
     protected TaskRunNpmInstall createTask(List<String> additionalPostInstall) {
-        return new TaskRunNpmInstall(getNodeUpdater(), false, false,
-                FrontendTools.DEFAULT_NODE_VERSION,
-                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false,
-                false, additionalPostInstall);
+        Options options = new Options(Mockito.mock(Lookup.class), null);
+        options.withPostinstallPackages(additionalPostInstall);
+        options.withNodeVersion(FrontendTools.DEFAULT_NODE_VERSION)
+                .withNodeDownloadRoot(
+                        URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT));
+
+        return new TaskRunNpmInstall(getNodeUpdater(), options);
     }
 
     @Test
@@ -259,11 +262,15 @@ public class TaskRunNpmInstallTest {
             throws IOException, ExecutionFailedException {
         exception.expectMessage(
                 "it's either not a file or not a 'node' executable.");
+
+        Options options = new Options(Mockito.mock(Lookup.class), null);
+        options.withHomeNodeExecRequired(true)
+                .withNodeVersion(FrontendTools.DEFAULT_NODE_VERSION)
+                .withNodeDownloadRoot(
+                        URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT));
+
         assertRunNpmInstallThrows_vaadinHomeNodeIsAFolder(
-                new TaskRunNpmInstall(getNodeUpdater(), false, true,
-                        FrontendTools.DEFAULT_NODE_VERSION,
-                        URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT),
-                        false, false, new ArrayList<>()));
+                new TaskRunNpmInstall(getNodeUpdater(), options));
     }
 
     @Test

@@ -20,7 +20,6 @@ import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -38,7 +37,7 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
 
-import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
@@ -151,11 +150,15 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
             throws IOException, ExecutionFailedException {
         exception.expectMessage(
                 "it's either not a file or not a 'node' executable.");
+        Options options = new Options(Mockito.mock(Lookup.class), null);
+        options.withHomeNodeExecRequired(true).enablePnpm(true)
+                .withNodeVersion(FrontendTools.DEFAULT_NODE_VERSION)
+                .withNodeDownloadRoot(
+                        URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT));
+        options.withPostinstallPackages(POSTINSTALL_PACKAGES);
+
         assertRunNpmInstallThrows_vaadinHomeNodeIsAFolder(
-                new TaskRunNpmInstall(getNodeUpdater(), true, true,
-                        FrontendTools.DEFAULT_NODE_VERSION,
-                        URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT),
-                        false, false, POSTINSTALL_PACKAGES));
+                new TaskRunNpmInstall(getNodeUpdater(), options));
     }
 
     @Test
@@ -647,17 +650,26 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
     @Override
     protected TaskRunNpmInstall createTask(List<String> additionalPostInstall) {
-        return new TaskRunNpmInstall(getNodeUpdater(), true, false,
-                FrontendTools.DEFAULT_NODE_VERSION,
-                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false,
-                false, additionalPostInstall);
+        NodeUpdater updater = getNodeUpdater();
+        Options options = new Options(Mockito.mock(Lookup.class),
+                updater.npmFolder);
+        options.enablePnpm(true)
+                .withNodeVersion(FrontendTools.DEFAULT_NODE_VERSION)
+                .withNodeDownloadRoot(
+                        URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT))
+                .withPostinstallPackages(additionalPostInstall);
+        return new TaskRunNpmInstall(updater, options);
     }
 
     protected TaskRunNpmInstall createTask(String versionsContent) {
-        return new TaskRunNpmInstall(createAndRunNodeUpdater(versionsContent),
-                true, false, FrontendTools.DEFAULT_NODE_VERSION,
-                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false,
-                false, new ArrayList<>());
+        NodeUpdater updater = createAndRunNodeUpdater(versionsContent);
+        Options options = new Options(Mockito.mock(Lookup.class),
+                updater.npmFolder);
+        options.enablePnpm(true)
+                .withNodeVersion(FrontendTools.DEFAULT_NODE_VERSION)
+                .withNodeDownloadRoot(
+                        URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT));
+        return new TaskRunNpmInstall(updater, options);
     }
 
     private JsonObject getGeneratedVersionsContent(File versions,
@@ -690,9 +702,11 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     }
 
     private NodeUpdater createNodeUpdater(String versionsContent) {
+        Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
+                .withGeneratedFolder(generatedPath).withBuildDirectory(TARGET);
+
         return new NodeUpdater(finder, Mockito.mock(FrontendDependencies.class),
-                npmFolder, generatedPath, TARGET,
-                Mockito.mock(FeatureFlags.class)) {
+                options) {
 
             @Override
             public void execute() {

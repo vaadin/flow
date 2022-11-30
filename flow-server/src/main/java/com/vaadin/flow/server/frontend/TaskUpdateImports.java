@@ -362,19 +362,15 @@ public class TaskUpdateImports extends NodeUpdater {
     TaskUpdateImports(ClassFinder finder,
             FrontendDependenciesScanner frontendDepScanner,
             SerializableFunction<ClassFinder, FrontendDependenciesScanner> fallBackScannerProvider,
-            File npmFolder, File generatedPath, File frontendDirectory,
-            File tokenFile, JsonObject tokenFileData, boolean enablePnpm,
-            String buildDir, boolean productionMode,
-            boolean useLegacyV14Bootstrap, FeatureFlags featureFlags) {
-        super(finder, frontendDepScanner, npmFolder, generatedPath, buildDir,
-                featureFlags);
-        this.frontendDirectory = frontendDirectory;
+            Options options) {
+        super(finder, frontendDepScanner, options);
+        this.frontendDirectory = options.getFrontendDirectory();
         fallbackScanner = fallBackScannerProvider.apply(finder);
-        this.tokenFile = tokenFile;
-        this.tokenFileData = tokenFileData;
-        this.enablePnpm = enablePnpm;
-        this.productionMode = productionMode;
-        this.useLegacyV14Bootstrap = useLegacyV14Bootstrap;
+        this.tokenFile = options.tokenFile;
+        this.tokenFileData = options.tokenFileData;
+        this.enablePnpm = options.enablePnpm;
+        this.productionMode = options.productionMode;
+        this.useLegacyV14Bootstrap = options.useLegacyV14Bootstrap;
     }
 
     @Override

@@ -48,10 +48,8 @@ import elemental.json.JsonException;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
-import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.PACKAGE_LOCK_JSON;
-import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static elemental.json.impl.JsonUtil.stringify;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -141,25 +139,18 @@ public abstract class NodeUpdater implements FallibleCommand {
      *            a reusable class finder
      * @param frontendDependencies
      *            a reusable frontend dependencies
-     * @param npmFolder
-     *            folder with the `package.json` file
-     * @param generatedPath
-     *            folder where flow generated files will be placed.
-     * @param buildDir
-     *            the used build directory
-     * @param featureFlags
-     *            FeatureFlags for this build
+     * @param options
+     *            the task options
      */
     protected NodeUpdater(ClassFinder finder,
-            FrontendDependenciesScanner frontendDependencies, File npmFolder,
-            File generatedPath, String buildDir, FeatureFlags featureFlags) {
+            FrontendDependenciesScanner frontendDependencies, Options options) {
         this.frontDeps = frontendDependencies;
         this.finder = finder;
-        this.npmFolder = npmFolder;
+        this.npmFolder = options.npmFolder;
         this.nodeModulesFolder = new File(npmFolder, NODE_MODULES);
-        this.generatedFolder = generatedPath;
-        this.buildDir = buildDir;
-        this.featureFlags = featureFlags;
+        this.generatedFolder = options.getGeneratedFolder();
+        this.buildDir = options.getBuildDirectory();
+        this.featureFlags = options.getFeatureFlags();
     }
 
     protected File getPackageJsonFile() {
