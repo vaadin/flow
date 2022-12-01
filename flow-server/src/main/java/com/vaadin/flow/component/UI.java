@@ -223,6 +223,8 @@ public class UI extends Component
      *            the initialization request
      * @param uiId
      *            the id of the new ui
+     * @param appId
+     *            the application id
      *
      * @see #getUIId()
      */
