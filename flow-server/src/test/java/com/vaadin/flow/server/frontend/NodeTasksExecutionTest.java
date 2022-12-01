@@ -53,8 +53,7 @@ public class NodeTasksExecutionTest {
     public void init() throws Exception {
 
         // Make a builder that doesn't add any commands.
-        NodeTasks.Options options = new NodeTasks.Options(
-                Mockito.mock(Lookup.class), null, TARGET);
+        Options options = new Options(Mockito.mock(Lookup.class), null, TARGET);
         options.withProductionMode(false);
 
         if (DEV_SERVER_WEBPACK.equals(devServerImpl)) {

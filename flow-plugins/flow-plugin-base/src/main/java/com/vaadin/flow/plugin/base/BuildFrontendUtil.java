@@ -46,7 +46,7 @@ import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendToolsSettings;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
-import com.vaadin.flow.server.frontend.NodeTasks.Options;
+import com.vaadin.flow.server.frontend.Options;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.scanner.ReflectionsClassFinder;
 import com.vaadin.flow.utils.FlowFileUtils;
