@@ -53,7 +53,7 @@ public class NodeTasksExecutionTest {
     public void init() throws Exception {
 
         // Make a builder that doesn't add any commands.
-        Options options = new Options(Mockito.mock(Lookup.class))
+        Options options = new Options(Mockito.mock(Lookup.class), null)
                 .withBuildDirectory(TARGET);
         options.withProductionMode(false);
 

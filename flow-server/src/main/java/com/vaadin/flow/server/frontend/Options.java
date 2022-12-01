@@ -123,21 +123,10 @@ public class Options implements Serializable {
      * @param lookup
      *            a {@link Lookup} to discover services used by Flow (SPI)
      */
-    public Options(Lookup lookup) {
+    public Options(Lookup lookup, File npmFolder) {
         this.lookup = lookup;
         this.classFinder = lookup.lookup(ClassFinder.class);
-    }
-
-    /**
-     * Sets the directory for npm and folders and files.
-     *
-     * @param npmFolder
-     *            folder with the `package.json` file
-     * @return this
-     */
-    public Options withNpmFolder(File npmFolder) {
         this.npmFolder = npmFolder;
-        return this;
     }
 
     /**

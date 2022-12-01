@@ -88,8 +88,8 @@ public class TaskUpdateViteTest {
 
         String template = IOUtils.toString(generatedConfigFile.toURI(),
                 StandardCharsets.UTF_8);
-        Options options = new Options(Mockito.mock(Lookup.class))
-                .withNpmFolder(temporaryFolder.getRoot())
+        Options options = new Options(Mockito.mock(Lookup.class),
+                temporaryFolder.getRoot())
                 .withGeneratedFolder(temporaryFolder.newFolder("generated"))
                 .withFrontendDirectory(temporaryFolder.newFolder("frontend"))
                 .withBuildDirectory("target").withJarFrontendResourcesFolder(

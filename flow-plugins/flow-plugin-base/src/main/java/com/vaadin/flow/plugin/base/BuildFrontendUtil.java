@@ -153,7 +153,7 @@ public class BuildFrontendUtil {
         ClassFinder classFinder = adapter.getClassFinder();
         Lookup lookup = adapter.createLookup(classFinder);
 
-        Options options = new Options(lookup).withNpmFolder(adapter.npmFolder())
+        Options options = new Options(lookup, adapter.npmFolder())
                 .withGeneratedFolder(adapter.generatedFolder())
                 .withFrontendDirectory(adapter.frontendDirectory())
                 .withBuildDirectory(adapter.buildFolder())
@@ -312,7 +312,7 @@ public class BuildFrontendUtil {
 
         try {
             Options options = new com.vaadin.flow.server.frontend.Options(
-                    lookup).withNpmFolder(adapter.npmFolder())
+                    lookup, adapter.npmFolder())
                     .withGeneratedFolder(adapter.generatedFolder())
                     .withFrontendDirectory(adapter.frontendDirectory())
                     .withBuildDirectory(adapter.buildFolder())

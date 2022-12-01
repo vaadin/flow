@@ -231,7 +231,7 @@ public class DevModeInitializer implements Serializable {
         Lookup lookupForClassFinder = Lookup.of(new DevModeClassFinder(classes),
                 ClassFinder.class);
         Lookup lookup = Lookup.compose(lookupForClassFinder, lookupFromContext);
-        Options options = new Options(lookup).withNpmFolder(new File(baseDir))
+        Options options = new Options(lookup, new File(baseDir))
                 .withGeneratedFolder(new File(generatedDir))
                 .withFrontendDirectory(new File(frontendFolder))
                 .withBuildDirectory(config.getBuildFolder());

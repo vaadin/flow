@@ -112,10 +112,10 @@ public class NodeTasksWebpackTest {
         ClassFinder finder = NodeUpdateTestUtil.getClassFinder(classes);
         Mockito.doReturn(finder).when(mockedLookup).lookup(ClassFinder.class);
 
-        Options options = new Options(mockedLookup)
-                .withNpmFolder(new File(userDir)).withBuildDirectory(TARGET)
-                .enablePackagesUpdate(false).enableImportsUpdate(true)
-                .runNpmInstall(false).withEmbeddableWebComponents(false)
+        Options options = new Options(mockedLookup, new File(userDir))
+                .withBuildDirectory(TARGET).enablePackagesUpdate(false)
+                .enableImportsUpdate(true).runNpmInstall(false)
+                .withEmbeddableWebComponents(false)
                 .setJavaResourceFolder(propertiesDir);
 
         assertEquals(1, finder.getAnnotatedClasses(JsModule.class).size());
@@ -151,10 +151,10 @@ public class NodeTasksWebpackTest {
         ClassFinder finder = NodeUpdateTestUtil.getClassFinder(classes);
         Mockito.doReturn(finder).when(mockedLookup).lookup(ClassFinder.class);
 
-        Options options = new Options(mockedLookup)
-                .withNpmFolder(new File(userDir)).withBuildDirectory(TARGET)
-                .enablePackagesUpdate(false).enableImportsUpdate(true)
-                .runNpmInstall(false).withEmbeddableWebComponents(false)
+        Options options = new Options(mockedLookup, new File(userDir))
+                .withBuildDirectory(TARGET).enablePackagesUpdate(false)
+                .enableImportsUpdate(true).runNpmInstall(false)
+                .withEmbeddableWebComponents(false)
                 .setJavaResourceFolder(propertiesDir);
 
         new NodeTasks(options).execute();
@@ -177,10 +177,10 @@ public class NodeTasksWebpackTest {
         Mockito.doReturn(
                 new DefaultClassFinder(this.getClass().getClassLoader()))
                 .when(mockedLookup).lookup(ClassFinder.class);
-        Options options = new Options(mockedLookup)
-                .withNpmFolder(new File(userDir)).withBuildDirectory(TARGET)
-                .enablePackagesUpdate(false).enableImportsUpdate(true)
-                .runNpmInstall(false).withEmbeddableWebComponents(false)
+        Options options = new Options(mockedLookup, new File(userDir))
+                .withBuildDirectory(TARGET).enablePackagesUpdate(false)
+                .enableImportsUpdate(true).runNpmInstall(false)
+                .withEmbeddableWebComponents(false)
                 .setJavaResourceFolder(propertiesDir);
 
         Assert.assertEquals(
@@ -205,10 +205,10 @@ public class NodeTasksWebpackTest {
         Mockito.doReturn(
                 new DefaultClassFinder(this.getClass().getClassLoader()))
                 .when(mockedLookup).lookup(ClassFinder.class);
-        Options options = new Options(mockedLookup)
-                .withNpmFolder(new File(userDir)).withBuildDirectory(TARGET)
-                .enablePackagesUpdate(false).enableImportsUpdate(true)
-                .runNpmInstall(false).withEmbeddableWebComponents(false)
+        Options options = new Options(mockedLookup, new File(userDir))
+                .withBuildDirectory(TARGET).enablePackagesUpdate(false)
+                .enableImportsUpdate(true).runNpmInstall(false)
+                .withEmbeddableWebComponents(false)
                 .setJavaResourceFolder(propertiesDir);
 
         NodeTasks nodeTasks = new NodeTasks(options);
@@ -225,10 +225,10 @@ public class NodeTasksWebpackTest {
         Mockito.doReturn(
                 new DefaultClassFinder(this.getClass().getClassLoader()))
                 .when(mockedLookup).lookup(ClassFinder.class);
-        Options options = new Options(mockedLookup)
-                .withNpmFolder(new File(userDir)).withBuildDirectory(TARGET)
-                .enablePackagesUpdate(false).enableImportsUpdate(true)
-                .runNpmInstall(false).withEmbeddableWebComponents(false)
+        Options options = new Options(mockedLookup, new File(userDir))
+                .withBuildDirectory(TARGET).enablePackagesUpdate(false)
+                .enableImportsUpdate(true).runNpmInstall(false)
+                .withEmbeddableWebComponents(false)
                 .setJavaResourceFolder(propertiesDir);
 
         Assert.assertEquals(
@@ -254,10 +254,10 @@ public class NodeTasksWebpackTest {
         Mockito.doReturn(
                 new DefaultClassFinder(this.getClass().getClassLoader()))
                 .when(mockedLookup).lookup(ClassFinder.class);
-        Options options = new Options(mockedLookup)
-                .withNpmFolder(new File(userDir)).withBuildDirectory(TARGET)
-                .enablePackagesUpdate(false).enableImportsUpdate(true)
-                .runNpmInstall(false).withEmbeddableWebComponents(false)
+        Options options = new Options(mockedLookup, new File(userDir))
+                .withBuildDirectory(TARGET).enablePackagesUpdate(false)
+                .enableImportsUpdate(true).runNpmInstall(false)
+                .withEmbeddableWebComponents(false)
                 .setJavaResourceFolder(propertiesDir);
 
         Assert.assertEquals(
@@ -281,9 +281,8 @@ public class NodeTasksWebpackTest {
         Mockito.doReturn(
                 new DefaultClassFinder(this.getClass().getClassLoader()))
                 .when(mockedLookup).lookup(ClassFinder.class);
-        Options options = new Options(mockedLookup)
-                .withNpmFolder(new File(userDir)).withBuildDirectory(TARGET)
-                .enablePackagesUpdate(false)
+        Options options = new Options(mockedLookup, new File(userDir))
+                .withBuildDirectory(TARGET).enablePackagesUpdate(false)
                 .withWebpack(new File(userDir, TARGET + "webapp"),
                         new File(userDir, TARGET + "classes"))
                 .enableImportsUpdate(true).runNpmInstall(false)

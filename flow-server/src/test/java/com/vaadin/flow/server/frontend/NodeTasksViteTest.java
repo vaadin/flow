@@ -102,10 +102,10 @@ public class NodeTasksViteTest {
         ClassFinder finder = NodeUpdateTestUtil.getClassFinder(classes);
         Mockito.doReturn(finder).when(mockedLookup).lookup(ClassFinder.class);
 
-        Options options = new Options(mockedLookup)
-                .withNpmFolder(new File(userDir)).withBuildDirectory(TARGET)
-                .enablePackagesUpdate(false).enableImportsUpdate(true)
-                .runNpmInstall(false).withEmbeddableWebComponents(false)
+        Options options = new Options(mockedLookup, new File(userDir))
+                .withBuildDirectory(TARGET).enablePackagesUpdate(false)
+                .enableImportsUpdate(true).runNpmInstall(false)
+                .withEmbeddableWebComponents(false)
                 .withJarFrontendResourcesFolder(
                         getJarFrontendResourcesFolder());
 
@@ -142,10 +142,10 @@ public class NodeTasksViteTest {
         ClassFinder finder = NodeUpdateTestUtil.getClassFinder(classes);
         Mockito.doReturn(finder).when(mockedLookup).lookup(ClassFinder.class);
 
-        Options options = new Options(mockedLookup)
-                .withNpmFolder(new File(userDir)).withBuildDirectory(TARGET)
-                .enablePackagesUpdate(false).enableImportsUpdate(true)
-                .runNpmInstall(false).withEmbeddableWebComponents(false)
+        Options options = new Options(mockedLookup, new File(userDir))
+                .withBuildDirectory(TARGET).enablePackagesUpdate(false)
+                .enableImportsUpdate(true).runNpmInstall(false)
+                .withEmbeddableWebComponents(false)
                 .setJavaResourceFolder(propertiesDir)
                 .withJarFrontendResourcesFolder(
                         getJarFrontendResourcesFolder());
@@ -170,10 +170,10 @@ public class NodeTasksViteTest {
         Mockito.doReturn(
                 new DefaultClassFinder(this.getClass().getClassLoader()))
                 .when(mockedLookup).lookup(ClassFinder.class);
-        Options options = new Options(mockedLookup)
-                .withNpmFolder(new File(userDir)).withBuildDirectory(TARGET)
-                .enablePackagesUpdate(false).enableImportsUpdate(true)
-                .runNpmInstall(false).withEmbeddableWebComponents(false)
+        Options options = new Options(mockedLookup, new File(userDir))
+                .withBuildDirectory(TARGET).enablePackagesUpdate(false)
+                .enableImportsUpdate(true).runNpmInstall(false)
+                .withEmbeddableWebComponents(false)
                 .withJarFrontendResourcesFolder(
                         getJarFrontendResourcesFolder());
 
@@ -197,10 +197,10 @@ public class NodeTasksViteTest {
         Mockito.doReturn(
                 new DefaultClassFinder(this.getClass().getClassLoader()))
                 .when(mockedLookup).lookup(ClassFinder.class);
-        Options options = new Options(mockedLookup)
-                .withNpmFolder(new File(userDir)).withBuildDirectory(TARGET)
-                .enablePackagesUpdate(false).enableImportsUpdate(true)
-                .runNpmInstall(false).withEmbeddableWebComponents(false)
+        Options options = new Options(mockedLookup, new File(userDir))
+                .withBuildDirectory(TARGET).enablePackagesUpdate(false)
+                .enableImportsUpdate(true).runNpmInstall(false)
+                .withEmbeddableWebComponents(false)
                 .withJarFrontendResourcesFolder(
                         getJarFrontendResourcesFolder());
 
@@ -227,10 +227,10 @@ public class NodeTasksViteTest {
         Mockito.doReturn(
                 new DefaultClassFinder(this.getClass().getClassLoader()))
                 .when(mockedLookup).lookup(ClassFinder.class);
-        Options options = new Options(mockedLookup)
-                .withNpmFolder(new File(userDir)).withBuildDirectory(TARGET)
-                .enablePackagesUpdate(false).enableImportsUpdate(true)
-                .runNpmInstall(false).withEmbeddableWebComponents(false)
+        Options options = new Options(mockedLookup, new File(userDir))
+                .withBuildDirectory(TARGET).enablePackagesUpdate(false)
+                .enableImportsUpdate(true).runNpmInstall(false)
+                .withEmbeddableWebComponents(false)
                 .withJarFrontendResourcesFolder(
                         getJarFrontendResourcesFolder());
 
@@ -261,10 +261,10 @@ public class NodeTasksViteTest {
         Mockito.doReturn(
                 new DefaultClassFinder(this.getClass().getClassLoader()))
                 .when(mockedLookup).lookup(ClassFinder.class);
-        Options options = new Options(mockedLookup)
-                .withNpmFolder(new File(userDir)).withBuildDirectory(TARGET)
-                .enablePackagesUpdate(false).enableImportsUpdate(true)
-                .runNpmInstall(false).withEmbeddableWebComponents(false)
+        Options options = new Options(mockedLookup, new File(userDir))
+                .withBuildDirectory(TARGET).enablePackagesUpdate(false)
+                .enableImportsUpdate(true).runNpmInstall(false)
+                .withEmbeddableWebComponents(false)
                 .withJarFrontendResourcesFolder(
                         getJarFrontendResourcesFolder());
         new NodeTasks(options).execute();
@@ -301,10 +301,10 @@ public class NodeTasksViteTest {
             Mockito.doReturn(
                     new DefaultClassFinder(this.getClass().getClassLoader()))
                     .when(mockedLookup).lookup(ClassFinder.class);
-            Options options = new Options(mockedLookup)
-                    .withNpmFolder(new File(userDir)).withBuildDirectory(TARGET)
-                    .enablePackagesUpdate(false).enableImportsUpdate(true)
-                    .runNpmInstall(false).withEmbeddableWebComponents(false)
+            Options options = new Options(mockedLookup, new File(userDir))
+                    .withBuildDirectory(TARGET).enablePackagesUpdate(false)
+                    .enableImportsUpdate(true).runNpmInstall(false)
+                    .withEmbeddableWebComponents(false)
                     .withJarFrontendResourcesFolder(
                             getJarFrontendResourcesFolder());
 

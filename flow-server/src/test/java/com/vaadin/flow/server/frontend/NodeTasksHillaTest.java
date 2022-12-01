@@ -94,7 +94,7 @@ public class NodeTasksHillaTest {
         Mockito.doReturn(taskGenerateHilla).when(lookup)
                 .lookup(TaskGenerateHilla.class);
 
-        options = new Options(lookup).withNpmFolder(new File(userDir))
+        options = new Options(lookup, new File(userDir))
                 .withBuildDirectory(TARGET).enablePackagesUpdate(false)
                 .enableImportsUpdate(true).runNpmInstall(false)
                 .withEmbeddableWebComponents(false)
