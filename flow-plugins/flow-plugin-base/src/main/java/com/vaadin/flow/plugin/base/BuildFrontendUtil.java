@@ -46,6 +46,7 @@ import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendToolsSettings;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
+import com.vaadin.flow.server.frontend.Options;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.scanner.ReflectionsClassFinder;
 import com.vaadin.flow.utils.FlowFileUtils;
@@ -153,9 +154,9 @@ public class BuildFrontendUtil {
         ClassFinder classFinder = adapter.getClassFinder();
         Lookup lookup = adapter.createLookup(classFinder);
 
-        NodeTasks.Builder builder = new NodeTasks.Builder(lookup,
-                adapter.npmFolder(), adapter.generatedFolder(),
-                adapter.frontendDirectory(), adapter.buildFolder())
+        Options options = new Options(lookup, adapter.npmFolder(),
+                adapter.generatedFolder(), adapter.frontendDirectory(),
+                adapter.buildFolder())
                 .useV14Bootstrap(adapter.isUseDeprecatedV14Bootstrapping())
                 .withJarFrontendResourcesFolder(
                         getJarFrontendResourcesFolder(adapter))
@@ -170,10 +171,10 @@ public class BuildFrontendUtil {
                 .withProductionMode(adapter.productionMode());
 
         // Copy jar artifact contents in TaskCopyFrontendFiles
-        builder.copyResources(adapter.getJarFiles());
+        options.copyResources(adapter.getJarFiles());
 
         try {
-            builder.build().execute();
+            new NodeTasks(options).execute();
         } catch (ExecutionFailedException exception) {
             throw exception;
         } catch (Throwable throwable) { // NOSONAR Intentionally throwable
@@ -310,7 +311,7 @@ public class BuildFrontendUtil {
         Lookup lookup = adapter.createLookup(classFinder);
 
         try {
-            new NodeTasks.Builder(lookup, adapter.npmFolder(),
+            Options options = new Options(lookup, adapter.npmFolder(),
                     adapter.generatedFolder(), adapter.frontendDirectory(),
                     adapter.buildFolder())
                     .runNpmInstall(adapter.runNpmInstall())
@@ -338,8 +339,8 @@ public class BuildFrontendUtil {
                     .withNodeDownloadRoot(nodeDownloadRootURI)
                     .setNodeAutoUpdate(adapter.nodeAutoUpdate())
                     .setJavaResourceFolder(adapter.javaResourceFolder())
-                    .withPostinstallPackages(adapter.postinstallPackages())
-                    .build().execute();
+                    .withPostinstallPackages(adapter.postinstallPackages());
+            new NodeTasks(options).execute();
         } catch (ExecutionFailedException exception) {
             throw exception;
         } catch (Throwable throwable) { // NOSONAR Intentionally throwable

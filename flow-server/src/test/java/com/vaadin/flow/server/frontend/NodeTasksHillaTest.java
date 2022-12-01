@@ -18,7 +18,6 @@ package com.vaadin.flow.server.frontend;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.ExecutionFailedException;
-import com.vaadin.flow.server.frontend.NodeTasks.Builder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 import org.apache.commons.io.FileUtils;
@@ -70,7 +69,7 @@ public class NodeTasksHillaTest {
     @Mock
     private TaskGenerateHilla taskGenerateHilla;
 
-    private Builder builder;
+    private Options options;
 
     @Before
     public void setup() throws Exception {
@@ -95,7 +94,7 @@ public class NodeTasksHillaTest {
         Mockito.doReturn(taskGenerateHilla).when(lookup)
                 .lookup(TaskGenerateHilla.class);
 
-        builder = new Builder(lookup, new File(userDir), TARGET)
+        options = new Options(lookup, new File(userDir), TARGET)
                 .enablePackagesUpdate(false).enableImportsUpdate(true)
                 .runNpmInstall(false).withEmbeddableWebComponents(false)
                 .withJarFrontendResourcesFolder(new File(userDir,
@@ -140,7 +139,7 @@ public class NodeTasksHillaTest {
     @Test
     public void should_notHillaEngine_whenOpenAPIFileIsNull()
             throws ExecutionFailedException, IOException {
-        builder.withEndpointGeneratedOpenAPIFile(null);
+        options.withEndpointGeneratedOpenAPIFile(null);
 
         runEndpointTasks(true);
         verifyHillaTask(false);
@@ -150,7 +149,7 @@ public class NodeTasksHillaTest {
     @Test
     public void should_notUseOldGenerator_whenOpenAPIFileIsNull()
             throws ExecutionFailedException, IOException {
-        builder.withEndpointGeneratedOpenAPIFile(null);
+        options.withEndpointGeneratedOpenAPIFile(null);
 
         runEndpointTasks(false);
         verifyHillaTask(false);
@@ -165,7 +164,7 @@ public class NodeTasksHillaTest {
                         withHillaTask),
                 StandardCharsets.UTF_8);
 
-        builder.build().execute();
+        new NodeTasks(options).execute();
     }
 
     private static void setPropertyIfPresent(String key, String value) {

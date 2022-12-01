@@ -53,18 +53,17 @@ public class NodeTasksExecutionTest {
     public void init() throws Exception {
 
         // Make a builder that doesn't add any commands.
-        NodeTasks.Builder builder = new NodeTasks.Builder(
-                Mockito.mock(Lookup.class), null, TARGET);
-        builder.withProductionMode(false);
+        Options options = new Options(Mockito.mock(Lookup.class), null, TARGET);
+        options.withProductionMode(false);
 
         if (DEV_SERVER_WEBPACK.equals(devServerImpl)) {
-            builder.useV14Bootstrap(true);
-            builder.setJavaResourceFolder(temporaryFolder.getRoot());
+            options.useV14Bootstrap(true);
+            options.setJavaResourceFolder(temporaryFolder.getRoot());
             createFeatureFlagsFile(
                     "com.vaadin.experimental.webpackForFrontendBuild=true");
         }
 
-        nodeTasks = builder.build();
+        nodeTasks = new NodeTasks(options);
 
         // get the private list of task execution order
         final Field commandOrderField = NodeTasks.class

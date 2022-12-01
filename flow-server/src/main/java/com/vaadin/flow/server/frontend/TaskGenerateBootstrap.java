@@ -92,7 +92,7 @@ public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
     private Collection<String> getThemeLines() {
         Collection<String> lines = new ArrayList<>();
         if (shouldApplyAppTheme()) {
-            lines.add("import { applyTheme } from './theme';");
+            lines.add("import { applyTheme } from './theme.js';");
             lines.add("applyTheme(document);");
             lines.add("");
         }

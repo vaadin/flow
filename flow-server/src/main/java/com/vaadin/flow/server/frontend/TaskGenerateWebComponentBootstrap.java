@@ -59,14 +59,12 @@ public class TaskGenerateWebComponentBootstrap
     protected String getFileContent() {
         List<String> lines = new ArrayList<>();
 
-        String generatedImportsRelativePath = FrontendUtils
-                .getUnixRelativePath(frontendGeneratedDirectory.toPath(),
-                        generatedImports.toPath())
-                .replaceFirst("\\.(js|ts)$", "");
+        String generatedImportsRelativePath = FrontendUtils.getUnixRelativePath(
+                frontendGeneratedDirectory.toPath(), generatedImports.toPath());
 
         lines.add(String.format("import '%s';", generatedImportsRelativePath));
         lines.add("import { init } from '" + FrontendUtils.JAR_RESOURCES_IMPORT
-                + "FlowClient';");
+                + "FlowClient.js';");
         lines.add("init();");
 
         return String.join("\n", lines);

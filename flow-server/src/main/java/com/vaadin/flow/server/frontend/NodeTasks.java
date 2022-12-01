@@ -17,32 +17,20 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
-import java.io.Serializable;
-import java.net.URI;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.PwaConfiguration;
-import com.vaadin.flow.server.frontend.installer.NodeInstaller;
-import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
-import elemental.json.JsonObject;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
 
 /**
  * An executor that it's run when the servlet context is initialised in dev-mode
@@ -53,638 +41,6 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
  * @since 2.0
  */
 public class NodeTasks implements FallibleCommand {
-
-    /**
-     * Build a <code>NodeExecutor</code> instance.
-     */
-    public static class Builder implements Serializable {
-
-        private final String buildDirectory;
-
-        private final ClassFinder classFinder;
-
-        private final File frontendDirectory;
-
-        private File webappResourcesDirectory = null;
-
-        private File resourceOutputDirectory = null;
-
-        private boolean enablePackagesUpdate = false;
-
-        private boolean createMissingPackageJson = false;
-
-        private boolean enableImportsUpdate = false;
-
-        private boolean enableWebpackConfigUpdate = false;
-
-        private boolean runNpmInstall = false;
-
-        private Set<File> jarFiles = null;
-
-        private boolean generateEmbeddableWebComponents = true;
-
-        private boolean cleanNpmFiles = false;
-
-        private File jarFrontendResourcesFolder = null;
-
-        private File localResourcesFolder = null;
-
-        private boolean useByteCodeScanner = false;
-
-        private JsonObject tokenFileData;
-
-        private File tokenFile;
-
-        private boolean enablePnpm = Constants.ENABLE_PNPM_DEFAULT;
-
-        private boolean useGlobalPnpm = false;
-
-        private File endpointSourceFolder;
-
-        private File endpointGeneratedOpenAPIFile;
-
-        private File applicationProperties;
-
-        private File frontendGeneratedFolder;
-
-        private boolean requireHomeNodeExec;
-
-        private boolean copyTemplates = false;
-
-        /**
-         * Directory for npm and folders and files.
-         */
-        private final File npmFolder;
-
-        /**
-         * Directory where generated files are written.
-         */
-        private final File generatedFolder;
-
-        /**
-         * Is in client-side bootstrapping mode.
-         */
-        private boolean useLegacyV14Bootstrap;
-
-        /**
-         * The node.js version to be used when node.js is installed
-         * automatically by Vaadin, for example <code>"v16.0.0"</code>. Defaults
-         * to {@value FrontendTools#DEFAULT_NODE_VERSION}.
-         */
-        private String nodeVersion = FrontendTools.DEFAULT_NODE_VERSION;
-
-        /**
-         * Download node.js from this URL. Handy in heavily firewalled corporate
-         * environments where the node.js download can be provided from an
-         * intranet mirror. Defaults to
-         * {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT}.
-         */
-        private URI nodeDownloadRoot = URI
-                .create(Platform.guess().getNodeDownloadRoot());
-
-        private boolean nodeAutoUpdate = false;
-
-        private Lookup lookup;
-
-        /**
-         * Default is true here so we do not accidentally include development
-         * stuff into production.
-         */
-        private boolean productionMode = true;
-
-        /**
-         * The resource folder for java resources.
-         */
-        private File javaResourceFolder;
-
-        /**
-         * Additional npm packages to run postinstall for.
-         */
-        private List<String> postinstallPackages;
-
-        /**
-         * Create a builder instance given an specific npm folder.
-         *
-         * @param lookup
-         *            a {@link Lookup} to discover services used by Flow (SPI)
-         * @param npmFolder
-         *            folder with the `package.json` file
-         * @param buildDirectory
-         *            project build directory
-         */
-        public Builder(Lookup lookup, File npmFolder, String buildDirectory) {
-            this(lookup, npmFolder,
-                    new File(npmFolder,
-                            System.getProperty(PARAM_GENERATED_DIR,
-                                    Paths.get(buildDirectory,
-                                            DEFAULT_GENERATED_DIR).toString())),
-                    buildDirectory);
-        }
-
-        /**
-         * Create a builder instance with custom npmFolder and generatedPath
-         *
-         * @param lookup
-         *            a {@link Lookup} to discover services used by Flow (SPI)
-         * @param npmFolder
-         *            folder with the `package.json` file
-         * @param generatedPath
-         *            folder where flow generated files will be placed.
-         * @param buildDirectory
-         *            project build directory
-         */
-        public Builder(Lookup lookup, File npmFolder, File generatedPath,
-                String buildDirectory) {
-            this(lookup, npmFolder, generatedPath, new File(npmFolder, System
-                    .getProperty(PARAM_FRONTEND_DIR, DEFAULT_FRONTEND_DIR)),
-                    buildDirectory);
-        }
-
-        /**
-         * Create a builder instance with all parameters.
-         *
-         * @param lookup
-         *            a {@link Lookup} to discover services used by Flow (SPI)
-         * @param npmFolder
-         *            folder with the `package.json` file
-         * @param generatedPath
-         *            folder where flow generated files will be placed.
-         * @param frontendDirectory
-         *            a directory with project's frontend files
-         * @param buildDirectory
-         *            project build directory
-         */
-        public Builder(Lookup lookup, File npmFolder, File generatedPath,
-                File frontendDirectory, String buildDirectory) {
-            this.lookup = lookup;
-            this.classFinder = lookup.lookup(ClassFinder.class);
-            this.npmFolder = npmFolder;
-            this.generatedFolder = generatedPath.isAbsolute() ? generatedPath
-                    : new File(npmFolder, generatedPath.getPath());
-            this.frontendDirectory = frontendDirectory.isAbsolute()
-                    ? frontendDirectory
-                    : new File(npmFolder, frontendDirectory.getPath());
-            this.buildDirectory = buildDirectory;
-        }
-
-        /**
-         * Creates a <code>NodeExecutor</code> using this configuration.
-         *
-         * @return a <code>NodeExecutor</code> instance
-         */
-        public NodeTasks build() {
-            return new NodeTasks(this);
-        }
-
-        /**
-         * Sets the webpack related properties.
-         *
-         * @param webappResourcesDirectory
-         *            the directory to set for webpack to output its build
-         *            results, meant for serving from context root.
-         * @param resourceOutputDirectory
-         *            the directory to output generated non-served resources,
-         *            such as the "config/stats.json" stats file, and the
-         *            "config/flow-build-info.json" token file.
-         * @return this builder
-         */
-        public Builder withWebpack(File webappResourcesDirectory,
-                File resourceOutputDirectory) {
-            this.enableWebpackConfigUpdate = true;
-            this.webappResourcesDirectory = webappResourcesDirectory;
-            this.resourceOutputDirectory = resourceOutputDirectory;
-            return this;
-        }
-
-        /**
-         * Sets whether to enable packages and webpack file updates. Default is
-         * <code>true</code>.
-         *
-         * @param enablePackagesUpdate
-         *            <code>true</code> to enable packages and webpack update,
-         *            otherwise <code>false</code>
-         * @return this builder
-         */
-        public Builder enablePackagesUpdate(boolean enablePackagesUpdate) {
-            this.enablePackagesUpdate = enablePackagesUpdate;
-            return this;
-        }
-
-        /**
-         * Sets whether to perform always perform clean up procedure. Default is
-         * <code>false</code>. When the value is false, npm related files will
-         * only be removed when a platform version update is detected.
-         *
-         * @param forceClean
-         *            <code>true</code> to clean npm files always, otherwise
-         *            <code>false</code>
-         * @return this builder
-         */
-        // This method is only used in tests ...
-        Builder enableNpmFileCleaning(boolean forceClean) {
-            this.cleanNpmFiles = forceClean;
-            return this;
-        }
-
-        /**
-         * Sets whether to enable imports file update. Default is
-         * <code>false</code>. This will also enable creation of missing package
-         * files if set to true.
-         *
-         * @param enableImportsUpdate
-         *            <code>true</code> to enable imports file update, otherwise
-         *            <code>false</code>
-         * @return this builder
-         */
-        public Builder enableImportsUpdate(boolean enableImportsUpdate) {
-            this.enableImportsUpdate = enableImportsUpdate;
-            this.createMissingPackageJson = enableImportsUpdate
-                    || createMissingPackageJson;
-            return this;
-        }
-
-        /**
-         * Sets whether run <code>npm install</code> after updating
-         * dependencies.
-         *
-         * @param runNpmInstall
-         *            run npm install. Default is <code>false</code>
-         * @return the builder
-         */
-        public Builder runNpmInstall(boolean runNpmInstall) {
-            this.runNpmInstall = runNpmInstall;
-            return this;
-        }
-
-        /**
-         * Sets the appropriate npm package folder for copying flow resources in
-         * jars.
-         *
-         * @param jarFrontendResourcesFolder
-         *            target folder
-         * @return the builder
-         */
-        public Builder withJarFrontendResourcesFolder(
-                File jarFrontendResourcesFolder) {
-            this.jarFrontendResourcesFolder = jarFrontendResourcesFolder
-                    .isAbsolute() ? jarFrontendResourcesFolder
-                            : new File(npmFolder,
-                                    jarFrontendResourcesFolder.getPath());
-            return this;
-        }
-
-        /**
-         * Sets whether copy resources from classpath to the appropriate npm
-         * package folder so as they are available for webpack build.
-         *
-         * @param jars
-         *            set of class nodes to be visited. Not {@code null}
-         *
-         * @return the builder
-         */
-        public Builder copyResources(Set<File> jars) {
-            Objects.requireNonNull(jars, "Parameter 'jars' must not be null!");
-            this.jarFiles = jars;
-            return this;
-        }
-
-        /**
-         * Sets whether copy templates to
-         * {@code META-INF/VAADIN/config/templates}.
-         *
-         * @param copyTemplates
-         *            whether to copy templates
-         *
-         * @return the builder
-         */
-        public Builder copyTemplates(boolean copyTemplates) {
-            this.copyTemplates = copyTemplates;
-            return this;
-        }
-
-        /**
-         * Sets whether to collect and package
-         * {@link com.vaadin.flow.component.WebComponentExporter} dependencies.
-         *
-         * @param generateEmbeddableWebComponents
-         *            collect dependencies. Default is {@code true}
-         * @return the builder
-         */
-        public Builder withEmbeddableWebComponents(
-                boolean generateEmbeddableWebComponents) {
-            this.generateEmbeddableWebComponents = generateEmbeddableWebComponents;
-            return this;
-        }
-
-        /**
-         * Sets whether to create the package file if missing.
-         *
-         * @param create
-         *            create the package
-         * @return the builder
-         */
-        public Builder createMissingPackageJson(boolean create) {
-            this.createMissingPackageJson = create;
-            return this;
-        }
-
-        /**
-         * Set local frontend files to be copied from given folder.
-         *
-         * @param localResourcesFolder
-         *            folder to copy local frontend files from
-         * @return the builder, for chaining
-         */
-        public Builder copyLocalResources(File localResourcesFolder) {
-            this.localResourcesFolder = localResourcesFolder;
-            return this;
-        }
-
-        /**
-         * Use V14 bootstrapping that disables index.html entry point.
-         *
-         * @param useDeprecatedV14Bootstrapping
-         *            <code>true</code> to use legacy V14 bootstrapping
-         * @return the builder, for chaining
-         */
-        public Builder useV14Bootstrap(boolean useDeprecatedV14Bootstrapping) {
-            this.useLegacyV14Bootstrap = useDeprecatedV14Bootstrapping;
-            return this;
-        }
-
-        /**
-         * Set the folder where frontend files should be generated.
-         *
-         * @param frontendGeneratedFolder
-         *            folder to generate frontend files in.
-         * @return the builder, for chaining
-         */
-        public Builder withFrontendGeneratedFolder(
-                File frontendGeneratedFolder) {
-            this.frontendGeneratedFolder = frontendGeneratedFolder;
-            return this;
-        }
-
-        /**
-         * Set application properties file for Spring project.
-         *
-         * @param applicationProperties
-         *            application properties file.
-         * @return this builder, for chaining
-         */
-        public Builder withApplicationProperties(File applicationProperties) {
-            this.applicationProperties = applicationProperties;
-            return this;
-        }
-
-        /**
-         * Set output location for the generated OpenAPI file.
-         *
-         * @param endpointGeneratedOpenAPIFile
-         *            the generated output file.
-         * @return the builder, for chaining
-         */
-        public Builder withEndpointGeneratedOpenAPIFile(
-                File endpointGeneratedOpenAPIFile) {
-            this.endpointGeneratedOpenAPIFile = endpointGeneratedOpenAPIFile;
-            return this;
-        }
-
-        /**
-         * Set source paths that OpenAPI generator searches for endpoints.
-         *
-         * @param endpointSourceFolder
-         *            java source folder
-         * @return the builder, for chaining
-         */
-        public Builder withEndpointSourceFolder(File endpointSourceFolder) {
-            this.endpointSourceFolder = endpointSourceFolder;
-            return this;
-        }
-
-        /**
-         * Sets frontend scanner strategy: byte code scanning strategy is used
-         * if {@code byteCodeScanner} is {@code true}, full classpath scanner
-         * strategy is used otherwise (by default).
-         *
-         * @param byteCodeScanner
-         *            if {@code true} then byte code scanner is used, full
-         *            scanner is used otherwise (by default).
-         * @return the builder, for chaining
-         */
-        public Builder useByteCodeScanner(boolean byteCodeScanner) {
-            this.useByteCodeScanner = byteCodeScanner;
-            return this;
-        }
-
-        /**
-         * Fill token file data into the provided {@code object}.
-         *
-         * @param object
-         *            the object to fill with token file data
-         * @return the builder, for chaining
-         */
-        public Builder populateTokenFileData(JsonObject object) {
-            tokenFileData = object;
-            return this;
-        }
-
-        /**
-         * Sets the token file (flow-build-info.json) path.
-         *
-         * @param tokenFile
-         *            token file path
-         * @return the builder, for chaining
-         */
-        public Builder withTokenFile(File tokenFile) {
-            this.tokenFile = tokenFile;
-            return this;
-        }
-
-        /**
-         * Enables pnpm tool.
-         * <p>
-         * "pnpm" will be used instead of "npm".
-         *
-         * @param enable
-         *            enables pnpm.
-         * @return the builder, for chaining
-         */
-        public Builder enablePnpm(boolean enable) {
-            enablePnpm = enable;
-            return this;
-        }
-
-        /**
-         * Uses globally installed pnpm tool for frontend packages installation.
-         *
-         * @param useGlobalPnpm
-         *            uses globally installed pnpm instead of default one, see
-         *            {@link FrontendTools#DEFAULT_PNPM_VERSION}.
-         * @return the builder, for chaining
-         */
-        public Builder useGlobalPnpm(boolean useGlobalPnpm) {
-            this.useGlobalPnpm = useGlobalPnpm;
-            return this;
-        }
-
-        /**
-         * Requires node executable to be installed in vaadin home folder.
-         *
-         * @param requireHomeNodeExec
-         *            requires vaadin home node exec
-         * @return the builder, for chaining
-         */
-        public Builder withHomeNodeExecRequired(boolean requireHomeNodeExec) {
-            this.requireHomeNodeExec = requireHomeNodeExec;
-            return this;
-        }
-
-        /**
-         * Sets the node.js version to be used when node.js is installed
-         * automatically by Vaadin, for example <code>"v16.0.0"</code>. Defaults
-         * to {@value FrontendTools#DEFAULT_NODE_VERSION}.
-         *
-         * @param nodeVersion
-         *            the new node version to download, not null.
-         * @return the builder, for chaining
-         */
-        public Builder withNodeVersion(String nodeVersion) {
-            this.nodeVersion = Objects.requireNonNull(nodeVersion);
-            return this;
-        }
-
-        /**
-         * Sets the download node.js URL. Handy in heavily firewalled corporate
-         * environments where the node.js download can be provided from an
-         * intranet mirror. Defaults to
-         * {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT}.
-         *
-         * @param nodeDownloadRoot
-         *            the new download URL to set, not null.
-         * @return the builder, for chaining
-         */
-        public Builder withNodeDownloadRoot(URI nodeDownloadRoot) {
-            this.nodeDownloadRoot = Objects.requireNonNull(nodeDownloadRoot);
-            return this;
-        }
-
-        /**
-         * Sets the production mode.
-         *
-         * @param productionMode
-         *            <code>true</code> to enable production mode, otherwise
-         *            <code>false</code>
-         * @return this builder
-         */
-        public Builder withProductionMode(boolean productionMode) {
-            this.productionMode = productionMode;
-            return this;
-        }
-
-        /**
-         * Sets whether it is fine to automatically update the alternate node
-         * installation if installed version is older than the current default.
-         *
-         * @param update
-         *            true to update alternate node when used
-         * @return the builder
-         */
-        public Builder setNodeAutoUpdate(boolean update) {
-            this.nodeAutoUpdate = update;
-            return this;
-        }
-
-        /**
-         * Get the npm folder used for this build.
-         *
-         * @return npmFolder
-         */
-        public File getNpmFolder() {
-            return npmFolder;
-        }
-
-        /**
-         * Get the generated folder for this build.
-         *
-         * @return generatedFolder
-         */
-        public File getGeneratedFolder() {
-            return generatedFolder;
-        }
-
-        /**
-         * Get the output directory for webpack output.
-         *
-         * @return webpackOutputDirectory
-         */
-        public File getWebappResourcesDirectory() {
-            return webappResourcesDirectory;
-        }
-
-        /**
-         * Get the defined frontend directory.
-         *
-         * @return frontendDirectory
-         */
-        public File getFrontendDirectory() {
-            return frontendDirectory;
-        }
-
-        /**
-         * Get the name of the used build directory.
-         * <p>
-         * By default this will be {@code target} for maven and {@code build}
-         * for gradle.
-         *
-         * @return buildDirectory
-         */
-        public String getBuildDirectory() {
-            return buildDirectory;
-        }
-
-        /**
-         * Set the java resources folder to be checked for feature file.
-         * <p>
-         * Needed for plugin execution.
-         *
-         * @param javaResourceFolder
-         *            java resources folder
-         * @return this builder
-         */
-        public Builder setJavaResourceFolder(File javaResourceFolder) {
-            this.javaResourceFolder = javaResourceFolder;
-            return this;
-        }
-
-        protected FeatureFlags getFeatureFlags() {
-            final FeatureFlags featureFlags = new FeatureFlags(lookup);
-            if (javaResourceFolder != null) {
-                featureFlags.setPropertiesLocation(javaResourceFolder);
-            }
-            return featureFlags;
-        }
-
-        /**
-         * Sets the additional npm packages to run {@code postinstall} for.
-         * <p>
-         * By default, postinstall is only run for internal dependencies which
-         * rely on post install scripts to work, e.g. esbuild
-         *
-         * @param postinstallPackages
-         *            the additional npm packages to run postinstall for
-         * @return the builder, for chaining
-         */
-        public Builder withPostinstallPackages(
-                List<String> postinstallPackages) {
-            this.postinstallPackages = postinstallPackages;
-            return this;
-        }
-
-        public File getJarFrontendResourcesFolder() {
-            return jarFrontendResourcesFolder;
-        }
-    }
 
     //@formatter:off
     private static final String V14_BOOTSTRAPPING_VITE_ERROR_MESSAGE =
@@ -733,117 +89,123 @@ public class NodeTasks implements FallibleCommand {
 
     private final List<FallibleCommand> commands = new ArrayList<>();
 
-    private NodeTasks(Builder builder) {
+    /**
+     * Initialize tasks with the given options.
+     *
+     * @param options
+     *            the options
+     */
+    public NodeTasks(Options options) {
 
         ClassFinder classFinder = new ClassFinder.CachedClassFinder(
-                builder.classFinder);
+                options.classFinder);
         FrontendDependenciesScanner frontendDependencies = null;
 
-        final FeatureFlags featureFlags = builder.getFeatureFlags();
+        final FeatureFlags featureFlags = options.getFeatureFlags();
 
-        if (builder.enablePackagesUpdate || builder.enableImportsUpdate
-                || builder.enableWebpackConfigUpdate) {
+        if (options.enablePackagesUpdate || options.enableImportsUpdate
+                || options.enableWebpackConfigUpdate) {
             frontendDependencies = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
-                    .createScanner(!builder.useByteCodeScanner, classFinder,
-                            builder.generateEmbeddableWebComponents,
-                            builder.useLegacyV14Bootstrap, featureFlags);
+                    .createScanner(!options.useByteCodeScanner, classFinder,
+                            options.generateEmbeddableWebComponents,
+                            options.useLegacyV14Bootstrap, featureFlags);
 
-            if (builder.generateEmbeddableWebComponents) {
+            if (options.generateEmbeddableWebComponents) {
                 FrontendWebComponentGenerator generator = new FrontendWebComponentGenerator(
                         classFinder);
                 Set<File> webComponents = generator.generateWebComponents(
-                        builder.generatedFolder,
+                        options.generatedFolder,
                         frontendDependencies.getThemeDefinition());
 
                 if (webComponents.size() > 0) {
                     commands.add(new TaskGenerateWebComponentHtml(
-                            builder.frontendDirectory));
+                            options.frontendDirectory));
                     commands.add(new TaskGenerateWebComponentBootstrap(
-                            builder.frontendDirectory,
-                            new File(builder.generatedFolder, IMPORTS_NAME)));
+                            options.frontendDirectory,
+                            new File(options.generatedFolder, IMPORTS_NAME)));
                 }
             }
 
             TaskUpdatePackages packageUpdater = null;
-            if (builder.enablePackagesUpdate
-                    && builder.jarFrontendResourcesFolder != null) {
+            if (options.enablePackagesUpdate
+                    && options.jarFrontendResourcesFolder != null) {
                 packageUpdater = new TaskUpdatePackages(classFinder,
-                        frontendDependencies, builder.npmFolder,
-                        builder.generatedFolder,
-                        builder.jarFrontendResourcesFolder,
-                        builder.cleanNpmFiles, builder.enablePnpm,
-                        builder.buildDirectory, featureFlags);
+                        frontendDependencies, options.npmFolder,
+                        options.generatedFolder,
+                        options.jarFrontendResourcesFolder,
+                        options.cleanNpmFiles, options.enablePnpm,
+                        options.buildDirectory, featureFlags);
                 commands.add(packageUpdater);
 
             }
-            if (packageUpdater != null && builder.runNpmInstall) {
+            if (packageUpdater != null && options.runNpmInstall) {
                 commands.add(new TaskRunNpmInstall(packageUpdater,
-                        builder.enablePnpm, builder.requireHomeNodeExec,
-                        builder.nodeVersion, builder.nodeDownloadRoot,
-                        builder.useGlobalPnpm, builder.nodeAutoUpdate,
-                        builder.postinstallPackages));
+                        options.enablePnpm, options.requireHomeNodeExec,
+                        options.nodeVersion, options.nodeDownloadRoot,
+                        options.useGlobalPnpm, options.nodeAutoUpdate,
+                        options.postinstallPackages));
 
                 commands.add(new TaskInstallWebpackPlugins(
-                        new File(builder.npmFolder, builder.buildDirectory)));
+                        new File(options.npmFolder, options.buildDirectory)));
             }
 
         }
 
-        if (builder.createMissingPackageJson) {
+        if (options.createMissingPackageJson) {
             TaskGeneratePackageJson packageCreator = new TaskGeneratePackageJson(
-                    builder.npmFolder, builder.generatedFolder,
-                    builder.buildDirectory, featureFlags);
+                    options.npmFolder, options.generatedFolder,
+                    options.buildDirectory, featureFlags);
             commands.add(packageCreator);
         }
 
         if (frontendDependencies != null) {
-            addGenerateServiceWorkerTask(builder,
+            addGenerateServiceWorkerTask(options,
                     frontendDependencies.getPwaConfiguration());
-            addGenerateTsConfigTask(builder);
+            addGenerateTsConfigTask(options);
         }
 
-        if (builder.useLegacyV14Bootstrap) {
+        if (options.useLegacyV14Bootstrap) {
             if (!featureFlags.isEnabled(FeatureFlags.WEBPACK)) {
                 throw new IllegalStateException(
                         V14_BOOTSTRAPPING_VITE_ERROR_MESSAGE);
             }
         } else {
-            addBootstrapTasks(builder);
+            addBootstrapTasks(options);
 
             // use the new Hilla generator if enabled, otherwise use the old
             // generator.
             TaskGenerateHilla hillaTask;
-            if (builder.endpointGeneratedOpenAPIFile != null
+            if (options.endpointGeneratedOpenAPIFile != null
                     && featureFlags.isEnabled(FeatureFlags.HILLA_ENGINE)
-                    && (hillaTask = builder.lookup
+                    && (hillaTask = options.lookup
                             .lookup(TaskGenerateHilla.class)) != null) {
-                hillaTask.configure(builder.getNpmFolder(),
-                        builder.getBuildDirectory());
+                hillaTask.configure(options.getNpmFolder(),
+                        options.getBuildDirectory());
                 commands.add(hillaTask);
-            } else if (builder.endpointGeneratedOpenAPIFile != null
-                    && builder.endpointSourceFolder != null
-                    && builder.endpointSourceFolder.exists()) {
-                addEndpointServicesTasks(builder);
+            } else if (options.endpointGeneratedOpenAPIFile != null
+                    && options.endpointSourceFolder != null
+                    && options.endpointSourceFolder.exists()) {
+                addEndpointServicesTasks(options);
             }
 
             commands.add(new TaskGenerateBootstrap(frontendDependencies,
-                    builder.frontendDirectory, builder.productionMode));
+                    options.frontendDirectory, options.productionMode));
 
-            commands.add(new TaskGenerateFeatureFlags(builder.frontendDirectory,
+            commands.add(new TaskGenerateFeatureFlags(options.frontendDirectory,
                     featureFlags));
         }
 
-        if (builder.jarFiles != null
-                && builder.jarFrontendResourcesFolder != null) {
+        if (options.jarFiles != null
+                && options.jarFrontendResourcesFolder != null) {
             commands.add(new TaskCopyFrontendFiles(
-                    builder.jarFrontendResourcesFolder, builder.jarFiles));
+                    options.jarFrontendResourcesFolder, options.jarFiles));
         }
 
-        if (builder.localResourcesFolder != null
-                && builder.jarFrontendResourcesFolder != null) {
+        if (options.localResourcesFolder != null
+                && options.jarFrontendResourcesFolder != null) {
             commands.add(new TaskCopyLocalFrontendFiles(
-                    builder.jarFrontendResourcesFolder,
-                    builder.localResourcesFolder));
+                    options.jarFrontendResourcesFolder,
+                    options.localResourcesFolder));
         }
 
         if (!featureFlags.isEnabled(FeatureFlags.WEBPACK)) {
@@ -859,44 +221,44 @@ public class NodeTasks implements FallibleCommand {
                 pwa = new PwaConfiguration();
             }
             commands.add(new TaskNotifyWebpackConfExistenceWhileUsingVite(
-                    builder.npmFolder));
-            commands.add(new TaskUpdateSettingsFile(builder, themeName, pwa));
-            commands.add(new TaskUpdateVite(builder.npmFolder,
-                    builder.buildDirectory));
-        } else if (builder.enableWebpackConfigUpdate) {
+                    options.npmFolder));
+            commands.add(new TaskUpdateSettingsFile(options, themeName, pwa));
+            commands.add(new TaskUpdateVite(options.npmFolder,
+                    options.buildDirectory));
+        } else if (options.enableWebpackConfigUpdate) {
             PwaConfiguration pwaConfiguration = frontendDependencies
                     .getPwaConfiguration();
-            commands.add(new TaskUpdateWebpack(builder.frontendDirectory,
-                    builder.npmFolder, builder.webappResourcesDirectory,
-                    builder.resourceOutputDirectory,
-                    new File(builder.generatedFolder, IMPORTS_NAME),
-                    builder.useLegacyV14Bootstrap, pwaConfiguration,
-                    builder.buildDirectory));
+            commands.add(new TaskUpdateWebpack(options.frontendDirectory,
+                    options.npmFolder, options.webappResourcesDirectory,
+                    options.resourceOutputDirectory,
+                    new File(options.generatedFolder, IMPORTS_NAME),
+                    options.useLegacyV14Bootstrap, pwaConfiguration,
+                    options.buildDirectory));
         }
 
-        if (builder.enableImportsUpdate) {
+        if (options.enableImportsUpdate) {
             commands.add(new TaskUpdateImports(classFinder,
                     frontendDependencies,
-                    finder -> getFallbackScanner(builder, finder, featureFlags),
-                    builder.npmFolder, builder.generatedFolder,
-                    builder.frontendDirectory, builder.tokenFile,
-                    builder.tokenFileData, builder.enablePnpm,
-                    builder.buildDirectory, builder.productionMode,
-                    builder.useLegacyV14Bootstrap, featureFlags));
+                    finder -> getFallbackScanner(options, finder, featureFlags),
+                    options.npmFolder, options.generatedFolder,
+                    options.frontendDirectory, options.tokenFile,
+                    options.tokenFileData, options.enablePnpm,
+                    options.buildDirectory, options.productionMode,
+                    options.useLegacyV14Bootstrap, featureFlags));
 
-            commands.add(new TaskUpdateThemeImport(builder.npmFolder,
+            commands.add(new TaskUpdateThemeImport(options.npmFolder,
                     frontendDependencies.getThemeDefinition(),
-                    builder.frontendDirectory));
+                    options.frontendDirectory));
         }
 
-        if (builder.copyTemplates) {
+        if (options.copyTemplates) {
             commands.add(new TaskCopyTemplateFiles(classFinder,
-                    builder.npmFolder, builder.resourceOutputDirectory,
-                    builder.frontendDirectory));
+                    options.npmFolder, options.resourceOutputDirectory,
+                    options.frontendDirectory));
         }
     }
 
-    private void addBootstrapTasks(Builder builder) {
+    private void addBootstrapTasks(Options builder) {
         TaskGenerateIndexHtml taskGenerateIndexHtml = new TaskGenerateIndexHtml(
                 builder.frontendDirectory);
         commands.add(taskGenerateIndexHtml);
@@ -914,7 +276,7 @@ public class NodeTasks implements FallibleCommand {
         }
     }
 
-    private void addGenerateTsConfigTask(Builder builder) {
+    private void addGenerateTsConfigTask(Options builder) {
         TaskGenerateTsConfig taskGenerateTsConfig = new TaskGenerateTsConfig(
                 builder.npmFolder, builder.getFeatureFlags());
         commands.add(taskGenerateTsConfig);
@@ -925,7 +287,7 @@ public class NodeTasks implements FallibleCommand {
 
     }
 
-    private void addGenerateServiceWorkerTask(Builder builder,
+    private void addGenerateServiceWorkerTask(Options builder,
             PwaConfiguration pwaConfiguration) {
         File outputDirectory = new File(builder.npmFolder,
                 builder.buildDirectory);
@@ -935,7 +297,7 @@ public class NodeTasks implements FallibleCommand {
         }
     }
 
-    private void addEndpointServicesTasks(Builder builder) {
+    private void addEndpointServicesTasks(Options builder) {
         Lookup lookup = builder.lookup;
         EndpointGeneratorTaskFactory endpointGeneratorTaskFactory = lookup
                 .lookup(EndpointGeneratorTaskFactory.class);
@@ -960,7 +322,7 @@ public class NodeTasks implements FallibleCommand {
         }
     }
 
-    private FrontendDependenciesScanner getFallbackScanner(Builder builder,
+    private FrontendDependenciesScanner getFallbackScanner(Options builder,
             ClassFinder finder, FeatureFlags featureFlags) {
         if (builder.useByteCodeScanner) {
             return new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
