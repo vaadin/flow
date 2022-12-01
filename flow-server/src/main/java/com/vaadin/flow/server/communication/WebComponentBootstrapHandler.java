@@ -175,18 +175,6 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         if (!hasWebComponentConfigurations(request)) {
             return false;
         }
-        return isBootstrapRequest(request);
-    }
-
-    /**
-     * Checks if the given request is a bootstrap request and can be handled by
-     * this handler.
-     *
-     * @param request
-     *            the request
-     * @return true if it is a bootstrap request, false otherwise
-     */
-    public static boolean isBootstrapRequest(VaadinRequest request) {
         String pathInfo = request.getPathInfo();
         if (pathInfo == null || pathInfo.isEmpty()) {
             return false;

@@ -38,7 +38,6 @@ import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.communication.FaviconHandler;
 import com.vaadin.flow.server.communication.IndexHtmlRequestHandler;
 import com.vaadin.flow.server.communication.PushRequestHandler;
-import com.vaadin.flow.server.communication.WebComponentBootstrapHandler;
 import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -219,9 +218,6 @@ public class VaadinServletService extends VaadinService {
             hashCode = -hashCode;
         }
         appId = appId + "-" + hashCode;
-        if (WebComponentBootstrapHandler.isBootstrapRequest(request)) {
-            appId = "WC-" + appId;
-        }
         return appId;
     }
 
