@@ -63,5 +63,10 @@ public enum NavigationTrigger {
      *
      * @see com.vaadin.flow.component.internal.JavaScriptBootstrapUI
      */
-    CLIENT_SIDE
+    CLIENT_SIDE,
+
+    /**
+     * Navigation is for a reload event on a preserveOnRefresh route.
+     */
+    REFRESH
 }

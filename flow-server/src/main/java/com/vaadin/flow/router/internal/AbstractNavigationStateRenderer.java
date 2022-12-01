@@ -189,6 +189,13 @@ public abstract class AbstractNavigationStateRenderer
             clearAllPreservedChains(ui);
         }
 
+        // Set navigationTrigger to RELOAD if this is a refresh of a preserve
+        // view.
+        if (preserveOnRefreshTarget && !chain.isEmpty()) {
+            event = new NavigationEvent(event.getSource(), event.getLocation(),
+                    event.getUI(), NavigationTrigger.REFRESH);
+        }
+
         // If the navigation is postponed, using BeforeLeaveEvent#postpone,
         // pushing history state shouldn't be done. So, it's done here to make
         // sure that when history state is pushed the navigation is not
