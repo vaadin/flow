@@ -95,6 +95,11 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         protected Optional<PwaRegistry> getPwaRegistry() {
             return Optional.empty();
         }
+
+        @Override
+        public String getAppId() {
+            return "wc-" + super.getAppId();
+        }
     }
 
     private static class WebComponentBootstrapPageBuilder

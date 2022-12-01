@@ -59,8 +59,8 @@ public class WebComponentUI extends UI {
     public static final String NO_NAVIGATION = "Navigation is not available for WebComponents";
 
     @Override
-    public void doInit(VaadinRequest request, int uiId) {
-        super.doInit(request, uiId);
+    public void doInit(VaadinRequest request, int uiId, String appId) {
+        super.doInit(request, uiId, appId);
 
         assignThemeVariant();
         getEventBus().addListener(WebComponentConnectEvent.class,
