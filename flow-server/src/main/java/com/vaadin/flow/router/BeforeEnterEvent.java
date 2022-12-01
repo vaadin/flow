@@ -27,8 +27,6 @@ import com.vaadin.flow.component.UI;
  */
 public class BeforeEnterEvent extends BeforeEvent {
 
-    private boolean refreshEvent = false;
-
     /**
      * Constructs event from a NavigationEvent.
      *
@@ -120,17 +118,6 @@ public class BeforeEnterEvent extends BeforeEvent {
      * @return true if refresh of a preserve on refresh view
      */
     public boolean isRefreshEvent() {
-        return refreshEvent;
-    }
-
-    /**
-     * Sets the event flag that it has been fired for a refresh on a view with
-     * preserveOnRefresh.
-     *
-     * @param refreshEvent
-     *            if event is for a page refresh
-     */
-    public void setRefreshEvent(boolean refreshEvent) {
-        this.refreshEvent = refreshEvent;
+        return getTrigger().equals(NavigationTrigger.REFRESH);
     }
 }

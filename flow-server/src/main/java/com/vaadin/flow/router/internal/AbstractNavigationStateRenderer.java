@@ -189,6 +189,13 @@ public abstract class AbstractNavigationStateRenderer
             clearAllPreservedChains(ui);
         }
 
+        // Set navigationTrigger to RELOAD if this is a refresh of a preserve
+        // view.
+        if (preserveOnRefreshTarget && !chain.isEmpty()) {
+            event = new NavigationEvent(event.getSource(), event.getLocation(),
+                    event.getUI(), NavigationTrigger.REFRESH);
+        }
+
         // If the navigation is postponed, using BeforeLeaveEvent#postpone,
         // pushing history state shouldn't be done. So, it's done here to make
         // sure that when history state is pushed the navigation is not
@@ -198,9 +205,6 @@ public abstract class AbstractNavigationStateRenderer
 
         BeforeEnterEvent beforeNavigationActivating = new BeforeEnterEvent(
                 event, routeTargetType, parameters, routeLayoutTypes);
-        final boolean isRefreshEvent = preserveOnRefreshTarget
-                && !chain.isEmpty();
-        beforeNavigationActivating.setRefreshEvent(isRefreshEvent);
 
         result = createChainIfEmptyAndExecuteBeforeEnterNavigation(
                 beforeNavigationActivating, event, chain);
@@ -235,7 +239,7 @@ public abstract class AbstractNavigationStateRenderer
                 .addAll(EventUtil.collectAfterNavigationObservers(ui));
 
         fireAfterNavigationListeners(
-                new AfterNavigationEvent(locationChangeEvent, isRefreshEvent),
+                new AfterNavigationEvent(locationChangeEvent),
                 afterNavigationHandlers);
 
         updatePageTitle(event, componentInstance);
