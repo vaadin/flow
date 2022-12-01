@@ -206,8 +206,29 @@ public class UI extends Component
      *            the id of the new ui
      *
      * @see #getUIId()
+     * @deprecated Use {@link #doInit(VaadinRequest, int, String)} instead
      */
+    @Deprecated
     public void doInit(VaadinRequest request, int uiId) {
+        doInit(request, uiId,
+                getSession().getService().getMainDivId(getSession(), request));
+    }
+
+    /**
+     * Internal initialization method, should not be overridden. This method is
+     * not declared as final because that would break compatibility with e.g.
+     * CDI.
+     *
+     * @param request
+     *            the initialization request
+     * @param uiId
+     *            the id of the new ui
+     * @param appId
+     *            the application id
+     *
+     * @see #getUIId()
+     */
+    public void doInit(VaadinRequest request, int uiId, String appId) {
         if (this.uiId != -1) {
             String message = "This UI instance is already initialized (as UI id "
                     + this.uiId
@@ -224,8 +245,6 @@ public class UI extends Component
         }
         this.uiId = uiId;
 
-        String appId = getSession().getService().getMainDivId(getSession(),
-                request);
         appId = APP_ID_REPLACE_PATTERN.matcher(appId).replaceAll("");
         getInternals().setAppId(appId);
 

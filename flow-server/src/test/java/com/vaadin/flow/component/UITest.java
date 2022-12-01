@@ -189,7 +189,7 @@ public class UITest {
         MockLogger mockLogger = new MockLogger();
         UI ui = new UI() {
             @Override
-            public void doInit(VaadinRequest request, int uiId) {
+            public void doInit(VaadinRequest request, int uiId, String appId) {
 
             }
 
