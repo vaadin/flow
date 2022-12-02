@@ -349,6 +349,19 @@
                         </configuration>
                     </execution>
                     <execution>
+                        <id>install-esbuild</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>node</executable>
+                            <arguments>
+                                <argument>node_modules/esbuild/install.js</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>typescript-compile</id>
                         <phase>compile</phase>
                         <goals>
