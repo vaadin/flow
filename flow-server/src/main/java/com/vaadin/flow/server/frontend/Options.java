@@ -621,10 +621,14 @@ public class Options implements Serializable {
      * By default this will be {@code target} for maven and {@code build} for
      * gradle.
      *
-     * @return buildDirectory
+     * @return The name of the build directory
      */
     public String getBuildDirectoryName() {
         return buildDirectoryName;
+    }
+
+    public File getBuildDirectory() {
+        return new File(npmFolder, getBuildDirectoryName());
     }
 
     public Options withFeatureFlags(FeatureFlags featureFlags) {

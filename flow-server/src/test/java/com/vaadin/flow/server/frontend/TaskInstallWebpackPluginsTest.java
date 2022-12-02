@@ -58,8 +58,9 @@ public class TaskInstallWebpackPluginsTest {
     @Before
     public void init() throws IOException {
         rootFolder = temporaryFolder.newFolder();
-        task = new TaskInstallWebpackPlugins(
-                new File(rootFolder, BUILD_DIRECTORY));
+        Options options = new Options(Mockito.mock(Lookup.class), rootFolder)
+                .withBuildDirectory(TARGET);
+        task = new TaskInstallWebpackPlugins(options);
     }
 
     @Test
