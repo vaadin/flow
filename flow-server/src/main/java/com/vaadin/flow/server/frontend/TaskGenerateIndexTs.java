@@ -15,6 +15,10 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_JS;
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,10 +28,6 @@ import org.apache.commons.io.IOUtils;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.Version;
-
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_JS;
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Generate <code>index.js</code> if it is missing in frontend folder.

@@ -237,64 +237,53 @@ public class NodeTasks implements FallibleCommand {
         commands.add(taskGenerateIndexTs);
         if (!options.getFeatureFlags().isEnabled(FeatureFlags.WEBPACK)
                 && !options.productionMode) {
-            commands.add(new TaskGenerateViteDevMode(
-                    options.getFrontendDirectory()));
+            commands.add(new TaskGenerateViteDevMode(options));
         }
     }
 
-    private void addGenerateTsConfigTask(Options builder) {
+    private void addGenerateTsConfigTask(Options options) {
         TaskGenerateTsConfig taskGenerateTsConfig = new TaskGenerateTsConfig(
-                builder.npmFolder, builder.getFeatureFlags());
+                options);
         commands.add(taskGenerateTsConfig);
 
         TaskGenerateTsDefinitions taskGenerateTsDefinitions = new TaskGenerateTsDefinitions(
-                builder.npmFolder);
+                options);
         commands.add(taskGenerateTsDefinitions);
 
     }
 
     private void addGenerateServiceWorkerTask(Options options,
             PwaConfiguration pwaConfiguration) {
-        File outputDirectory = new File(options.npmFolder,
-                options.getBuildDirectoryName());
         if (pwaConfiguration.isEnabled()) {
-            commands.add(new TaskGenerateServiceWorker(
-                    options.getFrontendDirectory(), outputDirectory));
+            commands.add(new TaskGenerateServiceWorker(options));
         }
     }
 
-    private void addEndpointServicesTasks(Options builder) {
-        Lookup lookup = builder.lookup;
+    private void addEndpointServicesTasks(Options options) {
+        Lookup lookup = options.lookup;
         EndpointGeneratorTaskFactory endpointGeneratorTaskFactory = lookup
                 .lookup(EndpointGeneratorTaskFactory.class);
 
         if (endpointGeneratorTaskFactory != null) {
             TaskGenerateOpenAPI taskGenerateOpenAPI = endpointGeneratorTaskFactory
-                    .createTaskGenerateOpenAPI(builder.applicationProperties,
-                            builder.endpointSourceFolder,
-                            builder.classFinder.getClassLoader(),
-                            builder.endpointGeneratedOpenAPIFile);
+                    .createTaskGenerateOpenAPI(options);
             commands.add(taskGenerateOpenAPI);
 
-            if (builder.frontendGeneratedFolder != null) {
+            if (options.frontendGeneratedFolder != null) {
                 TaskGenerateEndpoint taskGenerateEndpoint = endpointGeneratorTaskFactory
-                        .createTaskGenerateEndpoint(
-                                builder.applicationProperties,
-                                builder.endpointGeneratedOpenAPIFile,
-                                builder.frontendGeneratedFolder,
-                                builder.getFrontendDirectory());
+                        .createTaskGenerateEndpoint(options);
                 commands.add(taskGenerateEndpoint);
             }
         }
     }
 
-    private FrontendDependenciesScanner getFallbackScanner(Options builder,
+    private FrontendDependenciesScanner getFallbackScanner(Options options,
             ClassFinder finder, FeatureFlags featureFlags) {
-        if (builder.useByteCodeScanner) {
+        if (options.useByteCodeScanner) {
             return new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
                     .createScanner(true, finder,
-                            builder.generateEmbeddableWebComponents,
-                            builder.useLegacyV14Bootstrap, featureFlags, true);
+                            options.generateEmbeddableWebComponents,
+                            options.useLegacyV14Bootstrap, featureFlags, true);
         } else {
             return null;
         }

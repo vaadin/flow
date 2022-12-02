@@ -357,6 +357,10 @@ public class Options implements Serializable {
         return this;
     }
 
+    public File getFrontendGeneratedFolder() {
+        return frontendGeneratedFolder;
+    }
+
     /**
      * Set application properties file for Spring project.
      *
@@ -380,6 +384,10 @@ public class Options implements Serializable {
             File endpointGeneratedOpenAPIFile) {
         this.endpointGeneratedOpenAPIFile = endpointGeneratedOpenAPIFile;
         return this;
+    }
+
+    public File getEndpointGeneratedOpenAPIFile() {
+        return endpointGeneratedOpenAPIFile;
     }
 
     /**
