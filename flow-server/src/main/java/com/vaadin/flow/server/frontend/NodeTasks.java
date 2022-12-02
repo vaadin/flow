@@ -209,14 +209,7 @@ public class NodeTasks implements FallibleCommand {
             commands.add(new TaskUpdateSettingsFile(options, themeName, pwa));
             commands.add(new TaskUpdateVite(options));
         } else if (options.enableWebpackConfigUpdate) {
-            PwaConfiguration pwaConfiguration = frontendDependencies
-                    .getPwaConfiguration();
-            commands.add(new TaskUpdateWebpack(options.getFrontendDirectory(),
-                    options.npmFolder, options.webappResourcesDirectory,
-                    options.resourceOutputDirectory,
-                    new File(options.getGeneratedFolder(), IMPORTS_NAME),
-                    options.useLegacyV14Bootstrap, pwaConfiguration,
-                    options.getBuildDirectoryName()));
+            commands.add(new TaskUpdateWebpack(frontendDependencies, options));
         }
 
         if (options.enableImportsUpdate) {
