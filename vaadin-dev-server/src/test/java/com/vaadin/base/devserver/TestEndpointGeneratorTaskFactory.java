@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
+import java.util.Objects;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -118,7 +119,10 @@ public class TestEndpointGeneratorTaskFactory
 
         @Override
         public void execute() {
-            writeFile(options.getEndpointGeneratedOpenAPIFile(), "{}");
+            if (Objects.requireNonNull(
+                    options.getEndpointSourceFolder().listFiles()).length > 0) {
+                writeFile(options.getEndpointGeneratedOpenAPIFile(), "{}");
+            }
         }
     }
 

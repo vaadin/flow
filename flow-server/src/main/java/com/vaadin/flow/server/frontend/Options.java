@@ -416,6 +416,15 @@ public class Options implements Serializable {
     }
 
     /**
+     * Gets the source paths that OpenAPI generator searches for endpoints.
+     *
+     * @return java source folder
+     */
+    public File getEndpointSourceFolder() {
+        return endpointSourceFolder;
+    }
+
+    /**
      * Sets frontend scanner strategy: byte code scanning strategy is used if
      * {@code byteCodeScanner} is {@code true}, full classpath scanner strategy
      * is used otherwise (by default).
