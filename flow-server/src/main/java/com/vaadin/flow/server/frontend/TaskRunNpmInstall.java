@@ -498,7 +498,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
             packageUpdater.log().error("Failed to determine pnpm version", e);
         }
 
-        File pnpmFile = new File(options.npmFolder.getAbsolutePath(),
+        File pnpmFile = new File(options.getNpmFolder().getAbsolutePath(),
                 pnpmFileName);
         try (InputStream content = TaskRunNpmInstall.class
                 .getResourceAsStream("/pnpmfile.js")) {
@@ -519,7 +519,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
      * Create an .npmrc file the project directory if there is none.
      */
     private void createNpmRcFile() throws IOException {
-        File npmrcFile = new File(options.npmFolder.getAbsolutePath(),
+        File npmrcFile = new File(options.getNpmFolder().getAbsolutePath(),
                 ".npmrc");
         boolean shouldWrite;
         if (npmrcFile.exists()) {

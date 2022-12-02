@@ -205,7 +205,7 @@ public class NodeTasks implements FallibleCommand {
                 pwa = new PwaConfiguration();
             }
             commands.add(new TaskNotifyWebpackConfExistenceWhileUsingVite(
-                    options.npmFolder));
+                    options.getNpmFolder()));
             commands.add(new TaskUpdateSettingsFile(options, themeName, pwa));
             commands.add(new TaskUpdateVite(options));
         } else if (options.enableWebpackConfigUpdate) {

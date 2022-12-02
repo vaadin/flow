@@ -75,7 +75,7 @@ public class Options implements Serializable {
 
     boolean copyTemplates = false;
 
-    File npmFolder;
+    private File npmFolder;
 
     private File generatedFolder;
 
