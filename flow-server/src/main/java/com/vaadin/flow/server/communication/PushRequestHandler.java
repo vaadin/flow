@@ -267,9 +267,8 @@ public class PushRequestHandler
 
     private static String findFirstUrlMapping(
             ServletRegistration registration) {
-        String firstMapping = "/";
-        firstMapping = registration.getMappings().stream().sorted().findFirst()
-                .orElse("/");
+        String firstMapping = registration.getMappings().stream().sorted()
+                .findFirst().orElse("/");
         return firstMapping.replace("/*", "/");
     }
 
