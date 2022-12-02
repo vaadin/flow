@@ -23,7 +23,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
@@ -37,7 +36,6 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -402,26 +400,24 @@ public class FrontendUtilsTest {
         ClassFinder finder = Mockito.mock(ClassFinder.class);
 
         Logger logger = Mockito.spy(LoggerFactory.getLogger(NodeUpdater.class));
-
+        Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
+                .withGeneratedFolder(generatedPath).withBuildDirectory(TARGET);
         NodeUpdater nodeUpdater = new NodeUpdater(finder,
-                Mockito.mock(FrontendDependencies.class), npmFolder,
-                generatedPath, TARGET, Mockito.mock(FeatureFlags.class)) {
-
+                Mockito.mock(FrontendDependencies.class), options) {
             @Override
-            public void execute() {
+            public void execute() throws ExecutionFailedException {
             }
 
             @Override
             Logger log() {
                 return logger;
             }
-
         };
 
-        new TaskRunNpmInstall(nodeUpdater, false, false,
-                FrontendTools.DEFAULT_NODE_VERSION,
-                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false,
-                false, Collections.emptyList()).execute();
+        options.withNodeVersion(FrontendTools.DEFAULT_NODE_VERSION)
+                .withNodeDownloadRoot(
+                        URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT));
+        new TaskRunNpmInstall(nodeUpdater, options).execute();
 
         FrontendUtils.deleteNodeModules(new File(npmFolder, "node_modules"));
 

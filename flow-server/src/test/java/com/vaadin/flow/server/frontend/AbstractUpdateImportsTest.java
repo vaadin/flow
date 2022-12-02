@@ -17,6 +17,15 @@
 
 package com.vaadin.flow.server.frontend;
 
+import static com.vaadin.flow.server.Constants.TARGET;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
+import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -54,6 +63,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -61,15 +71,6 @@ import com.vaadin.flow.server.frontend.scanner.CssData;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
-
-import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
@@ -97,6 +98,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
     private FeatureFlags featureFlags;
 
+    private Options options;
+
     private class UpdateImports extends AbstractUpdateImports {
 
         private final ClassFinder finder;
@@ -104,11 +107,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         private List<String> resultingLines;
 
         UpdateImports(ClassFinder classFinder,
-                FrontendDependenciesScanner scanner, File npmDirectory,
-                File tokenFile, boolean productionMode,
-                FeatureFlags featureFlags) {
-            super(frontendDirectory, npmDirectory, generatedPath, tokenFile,
-                    productionMode, false, featureFlags);
+                FrontendDependenciesScanner scanner, Options options) {
+            super(options);
             this.scanner = scanner;
             finder = classFinder;
         }
@@ -184,8 +184,11 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
         ClassFinder classFinder = getClassFinder();
         featureFlags = Mockito.mock(FeatureFlags.class);
+        options = new Options(Mockito.mock(Lookup.class), tmpRoot)
+                .withTokenFile(tokenFile).withProductionMode(true)
+                .withFeatureFlags(featureFlags);
         updater = new UpdateImports(classFinder, getScanner(classFinder),
-                tmpRoot, tokenFile, true, featureFlags);
+                options);
         assertTrue(nodeModulesPath.mkdirs());
         createExpectedImports(frontendDirectory, nodeModulesPath);
         assertTrue(
@@ -248,8 +251,9 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     public void getModuleLines_oneFrontendDependencyAndFrontendDirectoryDontExist_throwExceptionAdvisingUserToRunPrepareFrontend()
             throws Exception {
         ClassFinder classFinder = getClassFinder();
+        options.withTokenFile(null);
         updater = new UpdateImports(classFinder, getScanner(classFinder),
-                tmpRoot, null, true, featureFlags);
+                options);
 
         Files.move(frontendDirectory.toPath(),
                 new File(tmpRoot, "_frontend").toPath());
@@ -464,8 +468,9 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         Class<?>[] testClasses = { SimpleCssImport.class };
         ClassFinder classFinder = getClassFinder(testClasses);
 
+        options.withTokenFile(new File(tmpRoot, TOKEN_FILE));
         updater = new UpdateImports(classFinder, getScanner(classFinder),
-                tmpRoot, new File(tmpRoot, TOKEN_FILE), true, featureFlags);
+                options);
         updater.run();
 
         Assert.assertTrue("Should import unsafeCSS",
@@ -484,8 +489,9 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 NodeTestComponents.JavaScriptOrder.class, UI.class };
         ClassFinder classFinder = getClassFinder(testClasses);
 
+        options.withTokenFile(new File(tmpRoot, TOKEN_FILE));
         updater = new UpdateImports(classFinder, getScanner(classFinder),
-                tmpRoot, new File(tmpRoot, TOKEN_FILE), true, featureFlags);
+                options);
         updater.run();
 
         // Imports are collected as

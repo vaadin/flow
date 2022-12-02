@@ -84,10 +84,10 @@ public class NodeTasksHillaTest {
                 new DefaultClassFinder(this.getClass().getClassLoader()))
                 .when(lookup).lookup(ClassFinder.class);
         Mockito.doReturn(taskGenerateOpenAPI).when(endpointGeneratorTaskFactory)
-                .createTaskGenerateOpenAPI(any(), any(), any(), any());
+                .createTaskGenerateOpenAPI(any());
         Mockito.doReturn(taskGenerateEndpoint)
                 .when(endpointGeneratorTaskFactory)
-                .createTaskGenerateEndpoint(any(), any(), any(), any());
+                .createTaskGenerateEndpoint(any());
         Mockito.doReturn(endpointGeneratorTaskFactory).when(lookup)
                 .lookup(EndpointGeneratorTaskFactory.class);
 
@@ -184,10 +184,9 @@ public class NodeTasksHillaTest {
             throws ExecutionFailedException {
         Mockito.verify(endpointGeneratorTaskFactory,
                 expected ? times(1) : never())
-                .createTaskGenerateEndpoint(any(), any(), any(), any());
+                .createTaskGenerateEndpoint(any());
         Mockito.verify(endpointGeneratorTaskFactory,
-                expected ? times(1) : never())
-                .createTaskGenerateOpenAPI(any(), any(), any(), any());
+                expected ? times(1) : never()).createTaskGenerateOpenAPI(any());
         Mockito.verify(taskGenerateOpenAPI, expected ? times(1) : never())
                 .execute();
         Mockito.verify(taskGenerateEndpoint, expected ? times(1) : never())

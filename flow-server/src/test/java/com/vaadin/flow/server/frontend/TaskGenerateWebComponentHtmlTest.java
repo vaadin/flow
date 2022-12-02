@@ -20,13 +20,15 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.WEB_COMPONENT_HTML;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.Mockito;
+
+import com.vaadin.flow.di.Lookup;
 
 public class TaskGenerateWebComponentHtmlTest {
     @Rule
@@ -38,14 +40,17 @@ public class TaskGenerateWebComponentHtmlTest {
     @Before
     public void setup() throws IOException {
         frontendFolder = temporaryFolder.newFolder();
+        Options options = new Options(Mockito.mock(Lookup.class), null)
+                .withFrontendDirectory(frontendFolder);
         taskGenerateWebComponentHtml = new TaskGenerateWebComponentHtml(
-                frontendFolder);
+                options);
     }
 
     @Test
     public void should_loadCorrectContentOfDefaultFile() throws Exception {
         String defaultContent = IOUtils.toString(
-                getClass().getResourceAsStream(WEB_COMPONENT_HTML),
+                getClass()
+                        .getResourceAsStream(FrontendUtils.WEB_COMPONENT_HTML),
                 StandardCharsets.UTF_8);
 
         Assert.assertEquals(
@@ -70,7 +75,8 @@ public class TaskGenerateWebComponentHtmlTest {
     public void should_generateWebComponentHtml_webComponentHtmlNotExist()
             throws Exception {
         String defaultContent = IOUtils.toString(
-                getClass().getResourceAsStream(WEB_COMPONENT_HTML),
+                getClass()
+                        .getResourceAsStream(FrontendUtils.WEB_COMPONENT_HTML),
                 StandardCharsets.UTF_8);
         Assert.assertTrue(
                 "Should generate web-component.html when it doesn't exists in the frontend folder",
