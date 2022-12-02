@@ -230,14 +230,10 @@ public class NodeTasks implements FallibleCommand {
 
     private void addBootstrapTasks(Options options) {
         TaskGenerateIndexHtml taskGenerateIndexHtml = new TaskGenerateIndexHtml(
-                options.getFrontendDirectory());
+                options);
         commands.add(taskGenerateIndexHtml);
-        File buildDirectory = new File(options.npmFolder,
-                options.getBuildDirectoryName());
         TaskGenerateIndexTs taskGenerateIndexTs = new TaskGenerateIndexTs(
-                options.getFrontendDirectory(),
-                new File(options.getGeneratedFolder(), IMPORTS_NAME),
-                buildDirectory);
+                options);
         commands.add(taskGenerateIndexTs);
         if (!options.getFeatureFlags().isEnabled(FeatureFlags.WEBPACK)
                 && !options.productionMode) {

@@ -70,7 +70,8 @@ public class TaskUpdateWebpack implements FallibleCommand {
      *            the task options
      */
     @SuppressWarnings("squid:S00107")
-    TaskUpdateWebpack(FrontendDependenciesScanner frontendDependencies, Options options) {
+    TaskUpdateWebpack(FrontendDependenciesScanner frontendDependencies,
+            Options options) {
         this.frontendDirectory = options.getFrontendDirectory().toPath();
         this.webpackOutputPath = options.webappResourcesDirectory.toPath();
         this.resourceOutputPath = options.resourceOutputDirectory.toPath();
