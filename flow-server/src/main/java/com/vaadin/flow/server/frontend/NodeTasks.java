@@ -136,7 +136,7 @@ public class NodeTasks implements FallibleCommand {
                 commands.add(new TaskRunNpmInstall(packageUpdater, options));
 
                 commands.add(new TaskInstallWebpackPlugins(
-                        new File(options.npmFolder, options.buildDirectory)));
+                        new File(options.npmFolder, options.getBuildDirectoryName())));
             }
 
         }
@@ -169,7 +169,7 @@ public class NodeTasks implements FallibleCommand {
                     && (hillaTask = options.lookup
                             .lookup(TaskGenerateHilla.class)) != null) {
                 hillaTask.configure(options.getNpmFolder(),
-                        options.getBuildDirectory());
+                        options.getBuildDirectoryName());
                 commands.add(hillaTask);
             } else if (options.endpointGeneratedOpenAPIFile != null
                     && options.endpointSourceFolder != null
@@ -217,7 +217,7 @@ public class NodeTasks implements FallibleCommand {
                     options.resourceOutputDirectory,
                     new File(options.getGeneratedFolder(), IMPORTS_NAME),
                     options.useLegacyV14Bootstrap, pwaConfiguration,
-                    options.buildDirectory));
+                    options.getBuildDirectoryName()));
         }
 
         if (options.enableImportsUpdate) {
@@ -241,7 +241,7 @@ public class NodeTasks implements FallibleCommand {
                 options.getFrontendDirectory());
         commands.add(taskGenerateIndexHtml);
         File buildDirectory = new File(options.npmFolder,
-                options.buildDirectory);
+                options.getBuildDirectoryName());
         TaskGenerateIndexTs taskGenerateIndexTs = new TaskGenerateIndexTs(
                 options.getFrontendDirectory(),
                 new File(options.getGeneratedFolder(), IMPORTS_NAME),
@@ -268,7 +268,7 @@ public class NodeTasks implements FallibleCommand {
     private void addGenerateServiceWorkerTask(Options options,
             PwaConfiguration pwaConfiguration) {
         File outputDirectory = new File(options.npmFolder,
-                options.buildDirectory);
+                options.getBuildDirectoryName());
         if (pwaConfiguration.isEnabled()) {
             commands.add(new TaskGenerateServiceWorker(
                     options.getFrontendDirectory(), outputDirectory));

@@ -23,7 +23,7 @@ import elemental.json.JsonObject;
  */
 public class Options implements Serializable {
 
-    String buildDirectory;
+    private String buildDirectoryName;
 
     ClassFinder classFinder;
 
@@ -165,7 +165,7 @@ public class Options implements Serializable {
      * @return this builder
      */
     public Options withBuildDirectory(String buildDirectory) {
-        this.buildDirectory = buildDirectory;
+        this.buildDirectoryName = buildDirectory;
         return this;
     }
 
@@ -578,11 +578,11 @@ public class Options implements Serializable {
             }
         }
 
-        if (buildDirectory != null && npmFolder != null) {
+        if (buildDirectoryName != null && npmFolder != null) {
             // Use default if not specified
             String generatedDir = System
                     .getProperty(FrontendUtils.PARAM_GENERATED_DIR,
-                            Paths.get(buildDirectory,
+                            Paths.get(buildDirectoryName,
                                     FrontendUtils.DEFAULT_GENERATED_DIR)
                                     .toString());
             return new File(npmFolder, generatedDir);
@@ -623,8 +623,8 @@ public class Options implements Serializable {
      *
      * @return buildDirectory
      */
-    public String getBuildDirectory() {
-        return buildDirectory;
+    public String getBuildDirectoryName() {
+        return buildDirectoryName;
     }
 
     public Options withFeatureFlags(FeatureFlags featureFlags) {

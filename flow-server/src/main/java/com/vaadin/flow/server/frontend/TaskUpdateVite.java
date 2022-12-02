@@ -77,9 +77,9 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
 
         template = template
                 .replace("#settingsImport#",
-                        "./" + options.getBuildDirectory() + "/"
+                        "./" + options.getBuildDirectoryName() + "/"
                                 + TaskUpdateSettingsFile.DEV_SETTINGS_FILE)
-                .replace("#buildFolder#", "./" + options.getBuildDirectory());
+                .replace("#buildFolder#", "./" + options.getBuildDirectoryName());
         FileUtils.write(generatedConfigFile, template, StandardCharsets.UTF_8);
         log().debug("Created vite generated configuration file: '{}'",
                 generatedConfigFile);

@@ -149,7 +149,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         this.npmFolder = options.npmFolder;
         this.nodeModulesFolder = new File(npmFolder, NODE_MODULES);
         this.generatedFolder = options.getGeneratedFolder();
-        this.buildDir = options.getBuildDirectory();
+        this.buildDir = options.getBuildDirectoryName();
         this.featureFlags = options.getFeatureFlags();
     }
 
