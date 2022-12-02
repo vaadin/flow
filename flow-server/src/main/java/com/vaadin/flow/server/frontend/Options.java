@@ -667,15 +667,13 @@ public class Options implements Serializable {
     }
 
     protected FeatureFlags getFeatureFlags() {
-        if (featureFlags != null) {
-            return featureFlags;
+        if (featureFlags == null) {
+            featureFlags = new FeatureFlags(lookup);
+            if (javaResourceFolder != null) {
+                featureFlags.setPropertiesLocation(javaResourceFolder);
+            }
         }
-
-        final FeatureFlags flags = new FeatureFlags(lookup);
-        if (javaResourceFolder != null) {
-            flags.setPropertiesLocation(javaResourceFolder);
-        }
-        return flags;
+        return featureFlags;
     }
 
     public File getJarFrontendResourcesFolder() {
