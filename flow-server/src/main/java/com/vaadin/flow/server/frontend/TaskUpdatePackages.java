@@ -31,7 +31,6 @@ import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.server.Platform;
@@ -42,7 +41,6 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
-import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 
 /**
@@ -131,7 +129,8 @@ public class TaskUpdatePackages extends NodeUpdater {
         }
         boolean versionLockingUpdated = false;
 
-        File generatedVersionsFile = new File(npmFolder, versionsPath);
+        File generatedVersionsFile = new File(options.getNpmFolder(),
+                versionsPath);
         final JsonObject versionsJson = Json.parse(FileUtils.readFileToString(
                 generatedVersionsFile, StandardCharsets.UTF_8));
 
@@ -185,8 +184,8 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     private boolean isInternalPseudoDependency(String dependencyVersion) {
-        return dependencyVersion != null
-                && dependencyVersion.startsWith("./" + buildDir);
+        return dependencyVersion != null && dependencyVersion
+                .startsWith("./" + options.getBuildDirectoryName());
     }
 
     private JsonObject getOverridesSection(JsonObject packageJson) {
@@ -374,7 +373,8 @@ public class TaskUpdatePackages extends NodeUpdater {
         // if no record of current version is present, version is not
         // considered updated
         Optional<String> platformVersion = Platform.getVaadinVersion();
-        if (platformVersion.isPresent() && nodeModulesFolder.exists()) {
+        if (platformVersion.isPresent()
+                && options.getNodeModulesFolder().exists()) {
             JsonObject vaadinJsonContents = getVaadinJsonContents();
             // If no record of previous version, version is considered updated
             if (!vaadinJsonContents.hasKey(NodeUpdater.VAADIN_VERSION)) {
@@ -438,7 +438,7 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     private void cleanUp() throws IOException {
-        FrontendUtils.deleteNodeModules(nodeModulesFolder);
+        FrontendUtils.deleteNodeModules(options.getNodeModulesFolder());
 
         if (jarResourcesFolder != null && jarResourcesFolder.exists()) {
             // This feels like cleanup done in the wrong place but is left here
@@ -448,14 +448,15 @@ public class TaskUpdatePackages extends NodeUpdater {
             }
         }
 
-        File generatedNodeModules = new File(generatedFolder, NODE_MODULES);
+        File generatedNodeModules = new File(options.getGeneratedFolder(),
+                NODE_MODULES);
         if (generatedNodeModules.exists()) {
             FrontendUtils.deleteNodeModules(generatedNodeModules);
         }
     }
 
     private void deletePnpmLockFile() throws IOException {
-        File lockFile = new File(npmFolder, "pnpm-lock.yaml");
+        File lockFile = new File(options.getNpmFolder(), "pnpm-lock.yaml");
         if (lockFile.exists()) {
             FileUtils.forceDelete(lockFile);
         }

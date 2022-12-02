@@ -18,7 +18,6 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Map;
@@ -380,7 +379,7 @@ public class NodeUpdaterTest {
     public void generateVersionsJson_versionsGeneratedFromPackageJson_containsBothDepsAndDevDeps()
             throws IOException {
 
-        File packageJson = new File(nodeUpdater.npmFolder, PACKAGE_JSON);
+        File packageJson = new File(npmFolder, PACKAGE_JSON);
         packageJson.createNewFile();
 
         // Write package json file

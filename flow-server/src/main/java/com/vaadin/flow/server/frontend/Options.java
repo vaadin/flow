@@ -685,4 +685,8 @@ public class Options implements Serializable {
     public ClassFinder getClassFinder() {
         return classFinder;
     }
+
+    public File getNodeModulesFolder() {
+        return new File(getNpmFolder(), FrontendUtils.NODE_MODULES);
+    }
 }

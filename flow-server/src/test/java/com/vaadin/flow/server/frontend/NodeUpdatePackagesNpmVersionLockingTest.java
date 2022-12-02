@@ -34,7 +34,6 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -63,13 +62,9 @@ public class NodeUpdatePackagesNpmVersionLockingTest
 
     private ClassFinder classFinder;
 
-    private FeatureFlags featureFlags;
-
     @Before
     public void setup() throws Exception {
         baseDir = temporaryFolder.getRoot();
-
-        featureFlags = Mockito.mock(FeatureFlags.class);
 
         generatedDir = new File(baseDir,
                 Paths.get(TARGET, DEFAULT_GENERATED_DIR).toString());
@@ -173,7 +168,8 @@ public class NodeUpdatePackagesNpmVersionLockingTest
         Assert.assertNull(packageJson.getObject(OVERRIDES));
 
         String versionsPath = packageUpdater.generateVersionsJson(packageJson);
-        File output = new File(packageUpdater.npmFolder, versionsPath);
+        File output = new File(packageUpdater.options.getNpmFolder(),
+                versionsPath);
         Assert.assertTrue(
                 FileUtils.readFileToString(output, StandardCharsets.UTF_8)
                         .contains(TEST_DEPENDENCY));

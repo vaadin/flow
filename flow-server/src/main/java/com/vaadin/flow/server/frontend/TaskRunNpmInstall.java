@@ -149,8 +149,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
             packageUpdater.log().info(
                     "Skipping `{} install` because the frontend packages are already "
                             + "installed in the folder '{}' and the hash in the file '{}' is the same as in '{}'",
-                    toolName,
-                    packageUpdater.nodeModulesFolder.getAbsolutePath(),
+                    toolName, options.getNodeModulesFolder().getAbsolutePath(),
                     packageUpdater.getVaadinJsonFile().getAbsolutePath(),
                     Constants.PACKAGE_JSON);
 
@@ -186,7 +185,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
             Platform.getVaadinVersion()
                     .ifPresent(s -> updates.put(VAADIN_VERSION, s));
             updates.put(PROJECT_FOLDER,
-                    packageUpdater.npmFolder.getAbsolutePath());
+                    options.getNpmFolder().getAbsolutePath());
             packageUpdater.updateVaadinJsonContents(updates);
         } catch (IOException e) {
             packageUpdater.log().warn("Failed to update node_modules hash.", e);
@@ -194,12 +193,12 @@ public class TaskRunNpmInstall implements FallibleCommand {
     }
 
     private boolean shouldRunNpmInstall() {
-        if (!packageUpdater.nodeModulesFolder.isDirectory()) {
+        if (!options.getNodeModulesFolder().isDirectory()) {
             return true;
         }
         // Ignore .bin and pnpm folders as those are always installed for
         // pnpm execution
-        File[] installedPackages = packageUpdater.nodeModulesFolder
+        File[] installedPackages = options.getNodeModulesFolder()
                 .listFiles((dir, name) -> !ignoredNodeFolders.contains(name));
         assert installedPackages != null;
         if (installedPackages.length == 0) {
@@ -223,7 +222,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
                 }
 
                 if (nodeModulesVaadinJson.hasKey(PROJECT_FOLDER)
-                        && !packageUpdater.npmFolder.getAbsolutePath()
+                        && !options.getNpmFolder().getAbsolutePath()
                                 .equals(nodeModulesVaadinJson
                                         .getString(PROJECT_FOLDER))) {
                     return true;
@@ -249,7 +248,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
         Logger logger = packageUpdater.log();
 
-        String baseDir = packageUpdater.npmFolder.getAbsolutePath();
+        String baseDir = options.getNpmFolder().getAbsolutePath();
 
         FrontendToolsSettings settings = new FrontendToolsSettings(baseDir,
                 () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
@@ -313,7 +312,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
         if (logger.isDebugEnabled()) {
             logger.debug(
-                    commandToString(packageUpdater.npmFolder.getAbsolutePath(),
+                    commandToString(options.getNpmFolder().getAbsolutePath(),
                             npmInstallCommand));
         }
 
@@ -339,8 +338,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
         Process process = null;
         try {
-            process = runNpmCommand(npmInstallCommand,
-                    packageUpdater.npmFolder);
+            process = runNpmCommand(npmInstallCommand, options.getNpmFolder());
 
             logger.debug("Output of `{}`:", commandString);
             StringBuilder toolOutput = new StringBuilder();
@@ -442,10 +440,10 @@ public class TaskRunNpmInstall implements FallibleCommand {
         }
         if (module.equals(".")) {
             // The location of the project package.json
-            return new File(packageUpdater.npmFolder, "package.json");
+            return new File(options.getNpmFolder(), "package.json");
         }
 
-        return new File(new File(packageUpdater.nodeModulesFolder, module),
+        return new File(new File(options.getNodeModulesFolder(), module),
                 "package.json");
 
     }
@@ -500,7 +498,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
             packageUpdater.log().error("Failed to determine pnpm version", e);
         }
 
-        File pnpmFile = new File(packageUpdater.npmFolder.getAbsolutePath(),
+        File pnpmFile = new File(options.npmFolder.getAbsolutePath(),
                 pnpmFileName);
         try (InputStream content = TaskRunNpmInstall.class
                 .getResourceAsStream("/pnpmfile.js")) {
@@ -521,7 +519,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
      * Create an .npmrc file the project directory if there is none.
      */
     private void createNpmRcFile() throws IOException {
-        File npmrcFile = new File(packageUpdater.npmFolder.getAbsolutePath(),
+        File npmrcFile = new File(options.npmFolder.getAbsolutePath(),
                 ".npmrc");
         boolean shouldWrite;
         if (npmrcFile.exists()) {
@@ -575,24 +573,23 @@ public class TaskRunNpmInstall implements FallibleCommand {
     }
 
     private void cleanUp() throws ExecutionFailedException {
-        if (!packageUpdater.nodeModulesFolder.exists()) {
+        if (!options.getNodeModulesFolder().exists()) {
             lastInstallStats.cleanupTimeMs = 0;
             return;
         }
         long startTime = System.currentTimeMillis();
-        File modulesYaml = new File(packageUpdater.nodeModulesFolder,
+        File modulesYaml = new File(options.getNodeModulesFolder(),
                 MODULES_YAML);
         boolean hasModulesYaml = modulesYaml.exists() && modulesYaml.isFile();
         if (!options.enablePnpm && hasModulesYaml) {
-            deleteNodeModules(packageUpdater.nodeModulesFolder);
+            deleteNodeModules(options.getNodeModulesFolder());
         } else if (options.enablePnpm && !hasModulesYaml) {
             // presence of .staging dir with a "pnpm-*" folder means that pnpm
             // download is in progress, don't remove anything in this case
-            File staging = new File(packageUpdater.nodeModulesFolder,
-                    ".staging");
+            File staging = new File(options.getNodeModulesFolder(), ".staging");
             if (!staging.isDirectory() || staging.listFiles(
                     (dir, name) -> name.startsWith("pnpm-")).length == 0) {
-                deleteNodeModules(packageUpdater.nodeModulesFolder);
+                deleteNodeModules(options.getNodeModulesFolder());
             }
         }
         lastInstallStats.cleanupTimeMs = System.currentTimeMillis() - startTime;
@@ -606,7 +603,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
             Logger log = packageUpdater.log();
             log.debug("Exception removing node_modules", exception);
             log.error("Failed to remove '"
-                    + packageUpdater.nodeModulesFolder.getAbsolutePath()
+                    + options.getNodeModulesFolder().getAbsolutePath()
                     + "'. Please remove it manually.");
             throw new ExecutionFailedException(
                     "Exception removing node_modules. Please remove it manually.");
