@@ -41,18 +41,14 @@ public class TaskGenerateWebComponentBootstrap
      * Create a task to generate <code>vaadin-web-component.ts</code> if
      * necessary.
      *
-     * @param frontendDirectory
-     *            frontend directory is to check if the file already exists
-     *            there.
-     * @param generatedImports
-     *            the flow generated imports file to include in the
-     *            <code>vaadin-web-component.ts</code>
+     * @param options
+     *            the task options
      */
-    TaskGenerateWebComponentBootstrap(File frontendDirectory,
-            File generatedImports) {
-        this.frontendGeneratedDirectory = new File(frontendDirectory,
-                GENERATED);
-        this.generatedImports = generatedImports;
+    TaskGenerateWebComponentBootstrap(Options options) {
+        this.frontendGeneratedDirectory = new File(
+                options.getFrontendDirectory(), GENERATED);
+        this.generatedImports = new File(options.getGeneratedFolder(),
+                FrontendUtils.IMPORTS_NAME);
     }
 
     @Override

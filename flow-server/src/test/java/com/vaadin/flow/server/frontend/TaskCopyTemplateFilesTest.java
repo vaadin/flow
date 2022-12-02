@@ -31,6 +31,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.Template;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -86,8 +87,11 @@ public class TaskCopyTemplateFilesTest {
         frontendDirectory.mkdirs();
         new File(frontendDirectory, "my-lit-element-view.js").createNewFile();
 
-        TaskCopyTemplateFiles task = new TaskCopyTemplateFiles(finder,
-                projectDirectory, resourceOutputDirectory, frontendDirectory);
+        Options options = new Options(Mockito.mock(Lookup.class),
+                projectDirectory)
+                .withWebpack(frontendDirectory, resourceOutputDirectory)
+                .withFrontendDirectory(frontendDirectory);
+        TaskCopyTemplateFiles task = new TaskCopyTemplateFiles(finder, options);
         task.execute();
 
         List<String> files = TestUtils

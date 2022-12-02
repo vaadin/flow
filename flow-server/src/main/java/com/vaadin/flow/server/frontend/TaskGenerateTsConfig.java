@@ -61,20 +61,16 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
             + "%n**************************************************************************%n%n";
     //@formatter:on
 
-    private final File projectRootDir;
-    private final FeatureFlags featureFlags;
+    private Options options;
 
     /**
      * Create a task to generate <code>tsconfig.json</code> file.
      *
-     * @param projectRootDir
-     *            project folder where the file will be generated.
-     * @param featureFlags
-     *            available feature flags and their status
+     * @param options
+     *            the task options
      */
-    TaskGenerateTsConfig(File projectRootDir, FeatureFlags featureFlags) {
-        this.projectRootDir = projectRootDir;
-        this.featureFlags = featureFlags;
+    TaskGenerateTsConfig(Options options) {
+        this.options = options;
     }
 
     @Override
@@ -94,7 +90,7 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
         try (InputStream tsConfStream = getClass()
                 .getResourceAsStream(fileName)) {
             String config = IOUtils.toString(tsConfStream, UTF_8);
-            if (featureFlags.isEnabled(FeatureFlags.WEBPACK)) {
+            if (options.getFeatureFlags().isEnabled(FeatureFlags.WEBPACK)) {
                 // webpack 4 cannot use anything newer than es2019...
                 config = config.replaceFirst("\"target\".*",
                         "\"target\": \"es2019\",");
@@ -109,7 +105,7 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
             super.execute();
         } else {
             overrideIfObsolete();
-            if (featureFlags.isEnabled(FeatureFlags.WEBPACK)) {
+            if (options.getFeatureFlags().isEnabled(FeatureFlags.WEBPACK)) {
                 ensureTarget("es2019");
             } else {
                 ensureTarget(getDefaultEsTargetVersion());
@@ -119,7 +115,8 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
 
     private void ensureTarget(String esVersion) {
         try {
-            File projectTsconfig = new File(projectRootDir, TSCONFIG_JSON);
+            File projectTsconfig = new File(options.getNpmFolder(),
+                    TSCONFIG_JSON);
             String current = FileUtils.readFileToString(projectTsconfig,
                     StandardCharsets.UTF_8);
             String currentEsVersion = getEsTargetVersion(current);
@@ -157,19 +154,19 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
 
     @Override
     protected File getGeneratedFile() {
-        return new File(projectRootDir, TSCONFIG_JSON);
+        return new File(options.getNpmFolder(), TSCONFIG_JSON);
     }
 
     @Override
     protected boolean shouldGenerate() {
-        return !new File(projectRootDir, TSCONFIG_JSON).exists();
+        return !getGeneratedFile().exists();
     }
 
     private void overrideIfObsolete() throws ExecutionFailedException {
         try {
             // Project's TS config
-            File projectTsConfigFile = new File(projectRootDir.getPath(),
-                    TSCONFIG_JSON);
+            File projectTsConfigFile = new File(
+                    options.getNpmFolder().getPath(), TSCONFIG_JSON);
             String projectTsConfigAsString = FileUtils
                     .readFileToString(projectTsConfigFile, UTF_8);
 

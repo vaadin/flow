@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.Serializable;
 import java.net.URI;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -22,7 +23,7 @@ import elemental.json.JsonObject;
  */
 public class Options implements Serializable {
 
-    String buildDirectory;
+    private String buildDirectoryName;
 
     ClassFinder classFinder;
 
@@ -74,7 +75,7 @@ public class Options implements Serializable {
 
     boolean copyTemplates = false;
 
-    File npmFolder;
+    private File npmFolder;
 
     private File generatedFolder;
 
@@ -115,7 +116,9 @@ public class Options implements Serializable {
     /**
      * Additional npm packages to run postinstall for.
      */
-    List<String> postinstallPackages;
+    List<String> postinstallPackages = new ArrayList<>();
+
+    private FeatureFlags featureFlags;
 
     /**
      * Creates a new instance.
@@ -156,13 +159,16 @@ public class Options implements Serializable {
     }
 
     /**
+     * Use the specified directory name (inside the project folder) for the
+     * build output.
+     *
      * @param buildDirectory
      *            project build directory
      *
      * @return this builder
      */
     public Options withBuildDirectory(String buildDirectory) {
-        this.buildDirectory = buildDirectory;
+        this.buildDirectoryName = buildDirectory;
         return this;
     }
 
@@ -205,13 +211,15 @@ public class Options implements Serializable {
      * <code>false</code>. When the value is false, npm related files will only
      * be removed when a platform version update is detected.
      *
+     * This method is only for tests.
+     *
      * @param forceClean
      *            <code>true</code> to clean npm files always, otherwise
      *            <code>false</code>
      * @return this builder
      */
-    // This method is only used in tests ...
-    Options enableNpmFileCleaning(boolean forceClean) {
+    @Deprecated
+    public Options enableNpmFileCleaning(boolean forceClean) {
         this.cleanNpmFiles = forceClean;
         return this;
     }
@@ -353,6 +361,15 @@ public class Options implements Serializable {
     }
 
     /**
+     * Gets the folder where frontend files should be generated.
+     *
+     * @return folder to generate frontend files in
+     */
+    public File getFrontendGeneratedFolder() {
+        return frontendGeneratedFolder;
+    }
+
+    /**
      * Set application properties file for Spring project.
      *
      * @param applicationProperties
@@ -378,6 +395,15 @@ public class Options implements Serializable {
     }
 
     /**
+     * Gets the output location for the generated OpenAPI file. .
+     *
+     * @return the generated output file
+     */
+    public File getEndpointGeneratedOpenAPIFile() {
+        return endpointGeneratedOpenAPIFile;
+    }
+
+    /**
      * Set source paths that OpenAPI generator searches for endpoints.
      *
      * @param endpointSourceFolder
@@ -387,6 +413,15 @@ public class Options implements Serializable {
     public Options withEndpointSourceFolder(File endpointSourceFolder) {
         this.endpointSourceFolder = endpointSourceFolder;
         return this;
+    }
+
+    /**
+     * Gets the source paths that OpenAPI generator searches for endpoints.
+     *
+     * @return java source folder
+     */
+    public File getEndpointSourceFolder() {
+        return endpointSourceFolder;
     }
 
     /**
@@ -573,11 +608,11 @@ public class Options implements Serializable {
             }
         }
 
-        if (buildDirectory != null && npmFolder != null) {
+        if (buildDirectoryName != null && npmFolder != null) {
             // Use default if not specified
             String generatedDir = System
                     .getProperty(FrontendUtils.PARAM_GENERATED_DIR,
-                            Paths.get(buildDirectory,
+                            Paths.get(buildDirectoryName,
                                     FrontendUtils.DEFAULT_GENERATED_DIR)
                                     .toString());
             return new File(npmFolder, generatedDir);
@@ -616,16 +651,27 @@ public class Options implements Serializable {
      * By default this will be {@code target} for maven and {@code build} for
      * gradle.
      *
-     * @return buildDirectory
+     * @return The name of the build directory
      */
-    public String getBuildDirectory() {
-        return buildDirectory;
+    public String getBuildDirectoryName() {
+        return buildDirectoryName;
+    }
+
+    public File getBuildDirectory() {
+        return new File(npmFolder, getBuildDirectoryName());
+    }
+
+    public Options withFeatureFlags(FeatureFlags featureFlags) {
+        this.featureFlags = featureFlags;
+        return this;
     }
 
     protected FeatureFlags getFeatureFlags() {
-        final FeatureFlags featureFlags = new FeatureFlags(lookup);
-        if (javaResourceFolder != null) {
-            featureFlags.setPropertiesLocation(javaResourceFolder);
+        if (featureFlags == null) {
+            featureFlags = new FeatureFlags(lookup);
+            if (javaResourceFolder != null) {
+                featureFlags.setPropertiesLocation(javaResourceFolder);
+            }
         }
         return featureFlags;
     }
@@ -636,5 +682,9 @@ public class Options implements Serializable {
 
     public ClassFinder getClassFinder() {
         return classFinder;
+    }
+
+    public File getNodeModulesFolder() {
+        return new File(getNpmFolder(), FrontendUtils.NODE_MODULES);
     }
 }

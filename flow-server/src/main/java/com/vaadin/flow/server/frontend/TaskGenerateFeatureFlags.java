@@ -33,14 +33,10 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.*;
  */
 public class TaskGenerateFeatureFlags extends AbstractTaskClientGenerator {
 
-    private final File frontendGeneratedDirectory;
-    private final FeatureFlags featureFlags;
+    private final Options options;
 
-    TaskGenerateFeatureFlags(File frontendDirectory,
-            FeatureFlags featureFlags) {
-        this.frontendGeneratedDirectory = new File(frontendDirectory,
-                GENERATED);
-        this.featureFlags = featureFlags;
+    TaskGenerateFeatureFlags(Options options) {
+        this.options = options;
     }
 
     @Override
@@ -51,6 +47,7 @@ public class TaskGenerateFeatureFlags extends AbstractTaskClientGenerator {
         lines.add(
                 "window.Vaadin.featureFlags = window.Vaadin.featureFlags || {};");
 
+        FeatureFlags featureFlags = options.getFeatureFlags();
         featureFlags.getFeatures().forEach(feature -> {
             lines.add(String.format("window.Vaadin.featureFlags.%s = %s;",
                     feature.getId(), featureFlags.isEnabled(feature)));
@@ -64,6 +61,8 @@ public class TaskGenerateFeatureFlags extends AbstractTaskClientGenerator {
 
     @Override
     protected File getGeneratedFile() {
+        File frontendGeneratedDirectory = new File(
+                options.getFrontendDirectory(), GENERATED);
         return new File(frontendGeneratedDirectory, FEATURE_FLAGS_FILE_NAME);
     }
 
