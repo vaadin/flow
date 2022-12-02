@@ -159,6 +159,9 @@ public class Options implements Serializable {
     }
 
     /**
+     * Use the specified directory name (inside the project folder) for the
+     * build output.
+     *
      * @param buildDirectory
      *            project build directory
      *
@@ -357,6 +360,11 @@ public class Options implements Serializable {
         return this;
     }
 
+    /**
+     * Gets the folder where frontend files should be generated.
+     *
+     * @return folder to generate frontend files in
+     */
     public File getFrontendGeneratedFolder() {
         return frontendGeneratedFolder;
     }
@@ -386,6 +394,11 @@ public class Options implements Serializable {
         return this;
     }
 
+    /**
+     * Gets the output location for the generated OpenAPI file. .
+     *
+     * @return the generated output file
+     */
     public File getEndpointGeneratedOpenAPIFile() {
         return endpointGeneratedOpenAPIFile;
     }
