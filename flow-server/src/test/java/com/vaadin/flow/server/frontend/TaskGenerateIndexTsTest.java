@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.Constants;
 import org.apache.commons.io.IOUtils;
@@ -28,6 +29,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.Mockito;
 
 import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
@@ -39,20 +41,23 @@ public class TaskGenerateIndexTsTest {
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     private File frontendFolder;
-    private File outputFolder;
     private File generatedImports;
     private TaskGenerateIndexTs taskGenerateIndexTs;
+
+    private Options options;
 
     @Before
     public void setUp() throws IOException {
         frontendFolder = temporaryFolder.newFolder(FRONTEND);
-        outputFolder = temporaryFolder.newFolder(TARGET);
         File generatedFolder = temporaryFolder.newFolder(TARGET, FRONTEND);
         generatedImports = new File(generatedFolder,
                 "flow-generated-imports.js");
         generatedImports.createNewFile();
-        taskGenerateIndexTs = new TaskGenerateIndexTs(frontendFolder,
-                generatedImports, outputFolder);
+        options = new Options(Mockito.mock(Lookup.class),
+                temporaryFolder.getRoot()).withFrontendDirectory(frontendFolder)
+                .withBuildDirectory(TARGET);
+
+        taskGenerateIndexTs = new TaskGenerateIndexTs(options);
     }
 
     @Test
@@ -126,15 +131,15 @@ public class TaskGenerateIndexTsTest {
             throws Exception {
         String content = taskGenerateIndexTs.getFileContent();
         Assert.assertTrue(content.contains(
-                "import('../../target/frontend/flow-generated-imports.js'"));
+                "import('../../target/frontend/generated-flow-imports.js'"));
 
         // custom frontend folder
-        taskGenerateIndexTs = new TaskGenerateIndexTs(
-                temporaryFolder.newFolder("src", "main", FRONTEND),
-                generatedImports, outputFolder);
+        options.withFrontendDirectory(
+                temporaryFolder.newFolder("src", "main", FRONTEND));
+        taskGenerateIndexTs = new TaskGenerateIndexTs(options);
         content = taskGenerateIndexTs.getFileContent();
         Assert.assertTrue(content.contains(
-                "import('../../../../target/frontend/flow-generated-imports.js'"));
+                "import('../../../../target/frontend/generated-flow-imports.js'"));
     }
 
     @Test

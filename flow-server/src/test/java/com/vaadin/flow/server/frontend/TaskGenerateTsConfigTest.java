@@ -33,6 +33,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.experimental.Feature;
 import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.ExecutionFailedException;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -52,8 +53,10 @@ public class TaskGenerateTsConfigTest {
     public void setUp() throws IOException {
         npmFolder = temporaryFolder.newFolder();
         featureFlags = Mockito.mock(FeatureFlags.class);
-        taskGenerateTsConfig = new TaskGenerateTsConfig(npmFolder,
-                featureFlags);
+        Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
+                .withFeatureFlags(featureFlags);
+
+        taskGenerateTsConfig = new TaskGenerateTsConfig(options);
     }
 
     @Test

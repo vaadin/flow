@@ -15,6 +15,12 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.Constants.PACKAGE_LOCK_JSON;
+import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
+import static elemental.json.impl.JsonUtil.stringify;
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,14 +53,6 @@ import elemental.json.Json;
 import elemental.json.JsonException;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
-
-import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
-import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.Constants.PACKAGE_LOCK_JSON;
-import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
-import static elemental.json.impl.JsonUtil.stringify;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Base abstract class for frontend updaters that needs to be run when in
@@ -100,39 +98,21 @@ public abstract class NodeUpdater implements FallibleCommand {
     static final String PROJECT_FOLDER = "projectFolder";
 
     /**
-     * Base directory for {@link Constants#PACKAGE_JSON},
-     * {@link FrontendUtils#WEBPACK_CONFIG}, {@link FrontendUtils#NODE_MODULES}.
-     */
-    protected final File npmFolder;
-
-    /**
-     * The path to the {@link FrontendUtils#NODE_MODULES} directory.
-     */
-    protected final File nodeModulesFolder;
-
-    /**
-     * Base directory for flow generated files.
-     */
-    protected final File generatedFolder;
-
-    /**
      * The {@link FrontendDependencies} object representing the application
      * dependencies.
      */
     protected final FrontendDependenciesScanner frontDeps;
 
-    protected String buildDir;
-
     final ClassFinder finder;
 
     boolean modified;
-
-    FeatureFlags featureFlags;
 
     /**
      * path to the versions.json file
      */
     String versionsPath;
+
+    protected Options options;
 
     /**
      * Constructor.
@@ -141,33 +121,22 @@ public abstract class NodeUpdater implements FallibleCommand {
      *            a reusable class finder
      * @param frontendDependencies
      *            a reusable frontend dependencies
-     * @param npmFolder
-     *            folder with the `package.json` file
-     * @param generatedPath
-     *            folder where flow generated files will be placed.
-     * @param buildDir
-     *            the used build directory
-     * @param featureFlags
-     *            FeatureFlags for this build
+     * @param options
+     *            the task options
      */
     protected NodeUpdater(ClassFinder finder,
-            FrontendDependenciesScanner frontendDependencies, File npmFolder,
-            File generatedPath, String buildDir, FeatureFlags featureFlags) {
-        this.frontDeps = frontendDependencies;
+            FrontendDependenciesScanner frontendDependencies, Options options) {
         this.finder = finder;
-        this.npmFolder = npmFolder;
-        this.nodeModulesFolder = new File(npmFolder, NODE_MODULES);
-        this.generatedFolder = generatedPath;
-        this.buildDir = buildDir;
-        this.featureFlags = featureFlags;
+        this.frontDeps = frontendDependencies;
+        this.options = options;
     }
 
     protected File getPackageJsonFile() {
-        return new File(npmFolder, PACKAGE_JSON);
+        return new File(options.getNpmFolder(), PACKAGE_JSON);
     }
 
     protected File getPackageLockFile() {
-        return new File(npmFolder, PACKAGE_LOCK_JSON);
+        return new File(options.getNpmFolder(), PACKAGE_LOCK_JSON);
     }
 
     /**
@@ -268,7 +237,8 @@ public abstract class NodeUpdater implements FallibleCommand {
     }
 
     private void removeWebpackPlugins(JsonObject packageJson) {
-        Path targetFolder = Paths.get(npmFolder.toString(), buildDir,
+        Path targetFolder = Paths.get(options.getNpmFolder().toString(),
+                options.getBuildDirectoryName(),
                 WebpackPluginsUtil.PLUGIN_TARGET);
 
         if (!packageJson.hasKey(DEV_DEPENDENCIES)) {
@@ -278,8 +248,8 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         String atVaadinPrefix = "@vaadin/";
         String pluginTargetPrefix = "./"
-                + (npmFolder.toPath().relativize(targetFolder) + "/")
-                        .replace('\\', '/');
+                + (options.getNpmFolder().toPath().relativize(targetFolder)
+                        + "/").replace('\\', '/');
 
         // Clean previously installed plugins
         for (String depKey : devDependencies.keys()) {
@@ -371,7 +341,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         Map<String, String> defaults = new HashMap<>();
         defaults.putAll(readDependencies("default", "devDependencies"));
 
-        if (featureFlags.isEnabled(FeatureFlags.WEBPACK)) {
+        if (options.getFeatureFlags().isEnabled(FeatureFlags.WEBPACK)) {
             defaults.putAll(readDependencies("webpack", "devDependencies"));
         } else {
             defaults.putAll(readDependencies("vite", "devDependencies"));
@@ -514,7 +484,8 @@ public abstract class NodeUpdater implements FallibleCommand {
     }
 
     String writePackageFile(JsonObject packageJson) throws IOException {
-        return writePackageFile(packageJson, new File(npmFolder, PACKAGE_JSON));
+        return writePackageFile(packageJson,
+                new File(options.getNpmFolder(), PACKAGE_JSON));
     }
 
     String writePackageFile(JsonObject json, File packageFile)
@@ -527,7 +498,8 @@ public abstract class NodeUpdater implements FallibleCommand {
     }
 
     File getVaadinJsonFile() {
-        return new File(nodeModulesFolder, VAADIN_JSON);
+        return new File(new File(options.getNpmFolder(), NODE_MODULES),
+                VAADIN_JSON);
     }
 
     JsonObject getVaadinJsonContents() throws IOException {
@@ -564,7 +536,7 @@ public abstract class NodeUpdater implements FallibleCommand {
      */
     protected String generateVersionsJson(JsonObject packageJson)
             throws IOException {
-        File versions = new File(generatedFolder, "versions.json");
+        File versions = new File(options.getGeneratedFolder(), "versions.json");
 
         JsonObject versionsJson = getPlatformPinnedDependencies();
         JsonObject packageJsonVersions = generateVersionsFromPackageJson(
@@ -582,8 +554,8 @@ public abstract class NodeUpdater implements FallibleCommand {
                 StandardCharsets.UTF_8);
         Path versionsPath = versions.toPath();
         if (versions.isAbsolute()) {
-            return FrontendUtils.getUnixRelativePath(npmFolder.toPath(),
-                    versionsPath);
+            return FrontendUtils.getUnixRelativePath(
+                    options.getNpmFolder().toPath(), versionsPath);
         } else {
             return FrontendUtils.getUnixPath(versionsPath);
         }

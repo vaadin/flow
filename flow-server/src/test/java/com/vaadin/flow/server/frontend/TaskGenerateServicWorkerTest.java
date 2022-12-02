@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC;
+import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC_JS;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -26,9 +29,9 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.Mockito;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC;
-import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC_JS;;
+import com.vaadin.flow.di.Lookup;;
 
 public class TaskGenerateServicWorkerTest {
     @Rule
@@ -42,8 +45,10 @@ public class TaskGenerateServicWorkerTest {
     public void setUp() throws IOException {
         frontendFolder = temporaryFolder.newFolder();
         outputFolder = temporaryFolder.newFolder();
-        taskGenerateServiceWorker = new TaskGenerateServiceWorker(
-                frontendFolder, outputFolder);
+        Options options = new Options(Mockito.mock(Lookup.class),
+                temporaryFolder.getRoot()).withFrontendDirectory(frontendFolder)
+                .withBuildDirectory(outputFolder.getName());
+        taskGenerateServiceWorker = new TaskGenerateServiceWorker(options);
     }
 
     @Test
