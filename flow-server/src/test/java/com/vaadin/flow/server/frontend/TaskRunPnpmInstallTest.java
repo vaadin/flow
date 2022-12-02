@@ -149,7 +149,6 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
             throws IOException, ExecutionFailedException {
         exception.expectMessage(
                 "it's either not a file or not a 'node' executable.");
-        Options options = new Options(Mockito.mock(Lookup.class), null);
         options.withHomeNodeExecRequired(true).enablePnpm(true)
                 .withNodeVersion(FrontendTools.DEFAULT_NODE_VERSION)
                 .withNodeDownloadRoot(
