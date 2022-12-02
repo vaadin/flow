@@ -1,10 +1,5 @@
 package com.vaadin.flow.server.frontend;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
-
 import java.io.File;
 import java.io.Serializable;
 import java.net.URI;
@@ -27,11 +22,11 @@ import elemental.json.JsonObject;
  */
 public class Options implements Serializable {
 
-    final String buildDirectory;
+    String buildDirectory;
 
-    final ClassFinder classFinder;
+    ClassFinder classFinder;
 
-    final File frontendDirectory;
+    private File frontendDirectory;
 
     File webappResourcesDirectory = null;
 
@@ -79,15 +74,9 @@ public class Options implements Serializable {
 
     boolean copyTemplates = false;
 
-    /**
-     * Directory for npm and folders and files.
-     */
-    final File npmFolder;
+    File npmFolder;
 
-    /**
-     * Directory where generated files are written.
-     */
-    final File generatedFolder;
+    private File generatedFolder;
 
     /**
      * Is in client-side bootstrapping mode.
@@ -129,66 +118,52 @@ public class Options implements Serializable {
     List<String> postinstallPackages;
 
     /**
-     * Create a builder instance given an specific npm folder.
+     * Creates a new instance.
      *
      * @param lookup
      *            a {@link Lookup} to discover services used by Flow (SPI)
-     * @param npmFolder
-     *            folder with the `package.json` file
-     * @param buildDirectory
-     *            project build directory
      */
-    public Options(Lookup lookup, File npmFolder, String buildDirectory) {
-        this(lookup, npmFolder, new File(npmFolder, System.getProperty(
-                PARAM_GENERATED_DIR,
-                Paths.get(buildDirectory, DEFAULT_GENERATED_DIR).toString())),
-                buildDirectory);
-    }
-
-    /**
-     * Create a builder instance with custom npmFolder and generatedPath
-     *
-     * @param lookup
-     *            a {@link Lookup} to discover services used by Flow (SPI)
-     * @param npmFolder
-     *            folder with the `package.json` file
-     * @param generatedPath
-     *            folder where flow generated files will be placed.
-     * @param buildDirectory
-     *            project build directory
-     */
-    public Options(Lookup lookup, File npmFolder, File generatedPath,
-            String buildDirectory) {
-        this(lookup, npmFolder, generatedPath, new File(npmFolder,
-                System.getProperty(PARAM_FRONTEND_DIR, DEFAULT_FRONTEND_DIR)),
-                buildDirectory);
-    }
-
-    /**
-     * Create a builder instance with all parameters.
-     *
-     * @param lookup
-     *            a {@link Lookup} to discover services used by Flow (SPI)
-     * @param npmFolder
-     *            folder with the `package.json` file
-     * @param generatedPath
-     *            folder where flow generated files will be placed.
-     * @param frontendDirectory
-     *            a directory with project's frontend files
-     * @param buildDirectory
-     *            project build directory
-     */
-    public Options(Lookup lookup, File npmFolder, File generatedPath,
-            File frontendDirectory, String buildDirectory) {
+    public Options(Lookup lookup, File npmFolder) {
         this.lookup = lookup;
         this.classFinder = lookup.lookup(ClassFinder.class);
         this.npmFolder = npmFolder;
-        this.generatedFolder = generatedPath.isAbsolute() ? generatedPath
-                : new File(npmFolder, generatedPath.getPath());
+    }
+
+    /**
+     * Sets the irectory where generated files are written.
+     *
+     * @param generatedFolder
+     *            folder where flow generated files will be placed
+     * @return this
+     */
+    public Options withGeneratedFolder(File generatedFolder) {
+        this.generatedFolder = generatedFolder;
+        return this;
+    }
+
+    /**
+     * Sets the directory containing the project's frontend files
+     *
+     * @param frontendDirectory
+     *            a directory with project's frontend files
+     * @return this
+     */
+    public Options withFrontendDirectory(File frontendDirectory) {
         this.frontendDirectory = frontendDirectory.isAbsolute()
                 ? frontendDirectory
                 : new File(npmFolder, frontendDirectory.getPath());
+        return this;
+    }
+
+    /**
+     * @param buildDirectory
+     *            project build directory
+     *
+     * @return this builder
+     */
+    public Options withBuildDirectory(String buildDirectory) {
         this.buildDirectory = buildDirectory;
+        return this;
     }
 
     /**
@@ -585,11 +560,29 @@ public class Options implements Serializable {
     }
 
     /**
-     * Get the generated folder for this build.
+     * Get the generated folder for this build, always an absolute path.
      *
-     * @return generatedFolder
+     * @return the generated folder
      */
     public File getGeneratedFolder() {
+        if (generatedFolder != null) {
+            if (generatedFolder.isAbsolute()) {
+                return generatedFolder;
+            } else {
+                return new File(npmFolder, generatedFolder.getPath());
+            }
+        }
+
+        if (buildDirectory != null && npmFolder != null) {
+            // Use default if not specified
+            String generatedDir = System
+                    .getProperty(FrontendUtils.PARAM_GENERATED_DIR,
+                            Paths.get(buildDirectory,
+                                    FrontendUtils.DEFAULT_GENERATED_DIR)
+                                    .toString());
+            return new File(npmFolder, generatedDir);
+
+        }
         return generatedFolder;
     }
 
@@ -608,6 +601,12 @@ public class Options implements Serializable {
      * @return frontendDirectory
      */
     public File getFrontendDirectory() {
+        if (frontendDirectory == null && npmFolder != null) {
+            // Use default if not specified
+            return new File(npmFolder,
+                    System.getProperty(FrontendUtils.PARAM_FRONTEND_DIR,
+                            FrontendUtils.DEFAULT_FRONTEND_DIR));
+        }
         return frontendDirectory;
     }
 
