@@ -89,7 +89,8 @@ public class FrontendResourcesAreCopiedAfterCleaningTest {
         Lookup mockLookup = Mockito.mock(Lookup.class);
         Mockito.doReturn(classFinder).when(mockLookup)
                 .lookup(ClassFinder.class);
-        Options options = new Options(mockLookup, npmFolder, TARGET);
+        Options options = new Options(mockLookup, npmFolder)
+                .withBuildDirectory(TARGET);
 
         new NodeTasks(options.withEmbeddableWebComponents(false)
                 .enableImportsUpdate(false).createMissingPackageJson(true)
@@ -106,13 +107,14 @@ public class FrontendResourcesAreCopiedAfterCleaningTest {
         Lookup mockLookup = Mockito.mock(Lookup.class);
         Mockito.doReturn(classFinder).when(mockLookup)
                 .lookup(ClassFinder.class);
-        Options options = new Options(mockLookup, npmFolder, TARGET);
-        new NodeTasks(options.withEmbeddableWebComponents(false)
+        Options options = new Options(mockLookup, npmFolder)
+                .withBuildDirectory(TARGET).withEmbeddableWebComponents(false)
                 .enableImportsUpdate(false).createMissingPackageJson(true)
                 .enableImportsUpdate(true).runNpmInstall(false)
                 .enableNpmFileCleaning(true)
                 .withJarFrontendResourcesFolder(getJarFrontendResourcesFolder())
                 .copyResources(Collections.emptySet())
-                .enablePackagesUpdate(true)).execute();
+                .enablePackagesUpdate(true);
+        new NodeTasks(options).execute();
     }
 }
