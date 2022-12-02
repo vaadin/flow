@@ -107,7 +107,6 @@ public class TaskRunNpmInstallTest {
     }
 
     protected TaskRunNpmInstall createTask(List<String> additionalPostInstall) {
-        Options options = new Options(Mockito.mock(Lookup.class), null);
         options.withPostinstallPackages(additionalPostInstall);
         options.withNodeVersion(FrontendTools.DEFAULT_NODE_VERSION)
                 .withNodeDownloadRoot(
@@ -265,7 +264,6 @@ public class TaskRunNpmInstallTest {
         exception.expectMessage(
                 "it's either not a file or not a 'node' executable.");
 
-        Options options = new Options(Mockito.mock(Lookup.class), null);
         options.withHomeNodeExecRequired(true)
                 .withNodeVersion(FrontendTools.DEFAULT_NODE_VERSION)
                 .withNodeDownloadRoot(
