@@ -231,7 +231,7 @@ public class PushRequestHandler
                     findFirstUrlMapping(servletRegistration.get())
                             + Constants.PUSH_MAPPING);
         } else {
-            getLogger().warn(
+            getLogger().debug(
                     "Unable to determine servlet registration for {}. "
                             + "Using root mapping for push",
                     vaadinServletConfig.getServletName());
