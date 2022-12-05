@@ -519,6 +519,21 @@ public class RouterTest extends RoutingTestBase {
     public static class ChildWithoutTitle extends Component {
     }
 
+    @RoutePrefix("parent-with-dynamic-title")
+    @Tag(Tag.DIV)
+    public static class ParentWithDynamicTitle extends Component
+            implements RouterLayout, HasDynamicTitle {
+        @Override
+        public String getPageTitle() {
+            return DYNAMIC_TITLE;
+        }
+    }
+
+    @Route(value = "child2", layout = ParentWithDynamicTitle.class)
+    @Tag(Tag.DIV)
+    public static class ChildWithoutTitle2 extends Component {
+    }
+
     @Route("navigation-target-with-dynamic-title")
     @Tag(Tag.DIV)
     public static class NavigationTargetWithDynamicTitle extends Component
@@ -1702,6 +1717,17 @@ public class RouterTest extends RoutingTestBase {
                 NavigationTrigger.PROGRAMMATIC);
 
         Assert.assertEquals("", ui.getInternals().getTitle());
+    }
+
+    @Test
+    public void page_title_set_from_dynamic_title_in_parent()
+            throws InvalidRouteConfigurationException {
+        setNavigationTargets(ChildWithoutTitle2.class);
+
+        router.navigate(ui, new Location("parent-with-dynamic-title/child2"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals(DYNAMIC_TITLE, ui.getInternals().getTitle());
     }
 
     @Test
