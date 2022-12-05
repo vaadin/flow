@@ -45,7 +45,7 @@ import static com.vaadin.flow.server.frontend.NodeUpdater.DEV_DEPENDENCIES;
 import static com.vaadin.flow.server.frontend.WebpackPluginsUtil.PLUGIN_TARGET;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
-public class TaskInstallWebpackPluginsTest {
+public class TaskInstallFrontendBuildPluginsTest {
 
     public static final String BUILD_DIRECTORY = TARGET;
     @Rule
@@ -53,14 +53,14 @@ public class TaskInstallWebpackPluginsTest {
 
     private File rootFolder;
 
-    private TaskInstallWebpackPlugins task;
+    private TaskInstallFrontendBuildPlugins task;
 
     @Before
     public void init() throws IOException {
         rootFolder = temporaryFolder.newFolder();
         Options options = new Options(Mockito.mock(Lookup.class), rootFolder)
                 .withBuildDirectory(TARGET);
-        task = new TaskInstallWebpackPlugins(options);
+        task = new TaskInstallFrontendBuildPlugins(options);
     }
 
     @Test

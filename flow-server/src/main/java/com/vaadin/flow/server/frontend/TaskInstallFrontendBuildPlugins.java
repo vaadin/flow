@@ -42,7 +42,7 @@ import static com.vaadin.flow.server.frontend.WebpackPluginsUtil.PLUGIN_TARGET;
  *
  * @since
  */
-public class TaskInstallWebpackPlugins implements FallibleCommand {
+public class TaskInstallFrontendBuildPlugins implements FallibleCommand {
 
     private File targetFolder;
 
@@ -53,7 +53,7 @@ public class TaskInstallWebpackPlugins implements FallibleCommand {
      * @param options
      *            the task options
      */
-    public TaskInstallWebpackPlugins(Options options) {
+    public TaskInstallFrontendBuildPlugins(Options options) {
         targetFolder = new File(options.getBuildDirectory(), PLUGIN_TARGET);
     }
 
@@ -117,6 +117,6 @@ public class TaskInstallWebpackPlugins implements FallibleCommand {
     }
 
     private Logger log() {
-        return LoggerFactory.getLogger(TaskInstallWebpackPlugins.class);
+        return LoggerFactory.getLogger(TaskInstallFrontendBuildPlugins.class);
     }
 }

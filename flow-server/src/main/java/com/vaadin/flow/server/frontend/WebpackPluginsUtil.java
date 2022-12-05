@@ -119,7 +119,7 @@ class WebpackPluginsUtil {
      * @return resource URL
      */
     protected static URL getResourceUrl(String resource) {
-        ClassLoader cl = TaskInstallWebpackPlugins.class.getClassLoader();
+        ClassLoader cl = TaskInstallFrontendBuildPlugins.class.getClassLoader();
         return cl.getResource(resource);
     }
 
@@ -131,7 +131,7 @@ class WebpackPluginsUtil {
      * @return input stream for resource
      */
     protected static InputStream getResourceAsStream(String resource) {
-        ClassLoader cl = TaskInstallWebpackPlugins.class.getClassLoader();
+        ClassLoader cl = TaskInstallFrontendBuildPlugins.class.getClassLoader();
         return cl.getResourceAsStream(resource);
     }
 

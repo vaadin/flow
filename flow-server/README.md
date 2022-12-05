@@ -3,7 +3,7 @@
 Flow now uses webpack plugins to make the `webpack.generated.js` cleaner and easier to extend
 without cluttering the file and making it long and complex.
 
-The files get installed with the task `TaskInstallWebpackPlugins` which reads the `webpack-plugins.json`
+The files get installed with the task `TaskInstallFrontendBuildPlugins` which reads the `webpack-plugins.json`
 in from `src/main/resources/plugins` and installs the plugins named here e.g.
 
 ```json
