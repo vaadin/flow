@@ -61,7 +61,10 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import jakarta.servlet.annotation.HandlesTypes;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.base.devserver.ViteHandler;
 import com.vaadin.base.devserver.WebpackHandler;
@@ -80,20 +83,16 @@ import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
-import com.vaadin.flow.server.frontend.NodeTasks.Builder;
+import com.vaadin.flow.server.frontend.Options;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.VaadinInitializerException;
 import com.vaadin.pro.licensechecker.LicenseChecker;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import elemental.json.Json;
 import elemental.json.JsonObject;
+import jakarta.servlet.annotation.HandlesTypes;
 
 /**
  * Initializer for starting node updaters as well as the dev mode server.
@@ -232,25 +231,26 @@ public class DevModeInitializer implements Serializable {
         Lookup lookupForClassFinder = Lookup.of(new DevModeClassFinder(classes),
                 ClassFinder.class);
         Lookup lookup = Lookup.compose(lookupForClassFinder, lookupFromContext);
-        Builder builder = new NodeTasks.Builder(lookup, new File(baseDir),
-                new File(generatedDir), new File(frontendFolder),
-                config.getBuildFolder());
+        Options options = new Options(lookup, new File(baseDir))
+                .withGeneratedFolder(new File(generatedDir))
+                .withFrontendDirectory(new File(frontendFolder))
+                .withBuildDirectory(config.getBuildFolder());
 
         log().info("Starting dev-mode updaters in {} folder.",
-                builder.getNpmFolder());
+                options.getNpmFolder());
 
-        if (!builder.getGeneratedFolder().exists()) {
+        if (!options.getGeneratedFolder().exists()) {
             try {
-                FileUtils.forceMkdir(builder.getGeneratedFolder());
+                FileUtils.forceMkdir(options.getGeneratedFolder());
             } catch (IOException e) {
                 throw new UncheckedIOException(
                         String.format("Failed to create directory '%s'",
-                                builder.getGeneratedFolder()),
+                                options.getGeneratedFolder()),
                         e);
             }
         }
 
-        File generatedPackages = new File(builder.getGeneratedFolder(),
+        File generatedPackages = new File(options.getGeneratedFolder(),
                 PACKAGE_JSON);
 
         // Regenerate webpack configuration, as it may be necessary to
@@ -259,13 +259,13 @@ public class DevModeInitializer implements Serializable {
         // config,
         // see https://github.com/vaadin/flow/issues/9082
         File target = new File(baseDir, config.getBuildFolder());
-        builder.withWebpack(
+        options.withWebpack(
                 Paths.get(target.getPath(), "classes", VAADIN_WEBAPP_RESOURCES)
                         .toFile(),
                 Paths.get(target.getPath(), "classes", VAADIN_SERVLET_RESOURCES)
                         .toFile());
 
-        builder.useV14Bootstrap(config.useV14Bootstrap());
+        options.useV14Bootstrap(config.useV14Bootstrap());
 
         if (!config.useV14Bootstrap() && isEndpointServiceAvailable(lookup)) {
             String connectJavaSourceFolder = config.getStringProperty(
@@ -282,7 +282,7 @@ public class DevModeInitializer implements Serializable {
                                     DEFAULT_CONNECT_OPENAPI_JSON_FILE)
                                     .toString());
 
-            builder.withEndpointSourceFolder(new File(connectJavaSourceFolder))
+            options.withEndpointSourceFolder(new File(connectJavaSourceFolder))
                     .withApplicationProperties(
                             new File(connectApplicationProperties))
                     .withEndpointGeneratedOpenAPIFile(
@@ -292,9 +292,9 @@ public class DevModeInitializer implements Serializable {
         // If we are missing either the base or generated package json
         // files
         // generate those
-        if (!new File(builder.getNpmFolder(), PACKAGE_JSON).exists()
+        if (!new File(options.getNpmFolder(), PACKAGE_JSON).exists()
                 || !generatedPackages.exists()) {
-            builder.createMissingPackageJson(true);
+            options.createMissingPackageJson(true);
         }
 
         Set<File> frontendLocations = getFrontendLocationsFromClassloader(
@@ -326,7 +326,7 @@ public class DevModeInitializer implements Serializable {
         File jarFrontendResourcesFolder = new File(frontendGeneratedFolder,
                 FrontendUtils.JAR_RESOURCES_FOLDER);
         JsonObject tokenFileData = Json.createObject();
-        NodeTasks tasks = builder.enablePackagesUpdate(true)
+        options.enablePackagesUpdate(true)
                 .useByteCodeScanner(useByteCodeScanner)
                 .withFrontendGeneratedFolder(frontendGeneratedFolder)
                 .withJarFrontendResourcesFolder(jarFrontendResourcesFolder)
@@ -340,8 +340,8 @@ public class DevModeInitializer implements Serializable {
                 .withHomeNodeExecRequired(useHomeNodeExec)
                 .withProductionMode(config.isProductionMode())
                 .withPostinstallPackages(
-                        Arrays.asList(additionalPostinstallPackages))
-                .build();
+                        Arrays.asList(additionalPostinstallPackages));
+        NodeTasks tasks = new NodeTasks(options);
 
         Runnable runnable = () -> {
             runNodeTasks(context, tokenFileData, tasks);
@@ -369,10 +369,10 @@ public class DevModeInitializer implements Serializable {
                 .parseInt(config.getStringProperty("devServerPort", "0"));
         if (featureFlags.isEnabled(FeatureFlags.WEBPACK)) {
             return new WebpackHandler(devServerLookup, port,
-                    builder.getNpmFolder(), nodeTasksFuture);
+                    options.getNpmFolder(), nodeTasksFuture);
         } else {
             return new ViteHandler(devServerLookup, port,
-                    builder.getNpmFolder(), nodeTasksFuture);
+                    options.getNpmFolder(), nodeTasksFuture);
         }
     }
 

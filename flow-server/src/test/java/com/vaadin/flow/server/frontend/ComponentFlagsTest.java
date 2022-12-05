@@ -144,9 +144,11 @@ public class ComponentFlagsTest extends NodeUpdateTestUtil {
     private TaskUpdateImports createUpdater() throws IOException {
         ClassFinder classFinder = getClassFinder(testClasses);
 
+        Options options = new Options(Mockito.mock(Lookup.class), tmpRoot)
+                .withGeneratedFolder(generatedPath)
+                .withFrontendDirectory(frontendDirectory)
+                .withBuildDirectory(TARGET).withProductionMode(true);
         return new TaskUpdateImports(classFinder,
-                getScanner(classFinder, featureFlags), finder -> null, tmpRoot,
-                generatedPath, frontendDirectory, null, null, false, TARGET,
-                true, false, featureFlags);
+                getScanner(classFinder, featureFlags), finder -> null, options);
     }
 }

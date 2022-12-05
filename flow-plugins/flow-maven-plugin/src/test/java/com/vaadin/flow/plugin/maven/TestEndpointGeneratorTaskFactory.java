@@ -15,18 +15,20 @@
  */
 package com.vaadin.flow.plugin.maven;
 
-import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
-import com.vaadin.flow.server.frontend.FallibleCommand;
-import com.vaadin.flow.server.frontend.TaskGenerateEndpoint;
-import com.vaadin.flow.server.frontend.TaskGenerateOpenAPI;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
+import com.vaadin.flow.server.frontend.FallibleCommand;
+import com.vaadin.flow.server.frontend.Options;
+import com.vaadin.flow.server.frontend.TaskGenerateEndpoint;
+import com.vaadin.flow.server.frontend.TaskGenerateOpenAPI;
 
 /**
  * A test factory that creates endpoint tasks.
@@ -36,18 +38,13 @@ import java.nio.file.StandardOpenOption;
 public class TestEndpointGeneratorTaskFactory
         implements EndpointGeneratorTaskFactory {
     @Override
-    public TaskGenerateEndpoint createTaskGenerateEndpoint(
-            File applicationProperties, File openApi, File outputFolder,
-            File frontendDirectory) {
-        return new TestTaskGenerateEndpoint(applicationProperties, openApi,
-                outputFolder, frontendDirectory);
+    public TaskGenerateEndpoint createTaskGenerateEndpoint(Options options) {
+        return new TestTaskGenerateEndpoint(options);
     }
 
     @Override
-    public TaskGenerateOpenAPI createTaskGenerateOpenAPI(File properties,
-            File javaSourceFolder, ClassLoader classLoader, File output) {
-        return new TestTaskGenerateOpenAPI(properties, javaSourceFolder,
-                classLoader, output);
+    public TaskGenerateOpenAPI createTaskGenerateOpenAPI(Options options) {
+        return new TestTaskGenerateOpenAPI(options);
     }
 
     /**
@@ -92,10 +89,9 @@ public class TestEndpointGeneratorTaskFactory
 
         private final File outputFolder;
 
-        public TestTaskGenerateEndpoint(File applicationProperties,
-                File openApi, File outputFolder, File frontendDirectory) {
+        public TestTaskGenerateEndpoint(Options options) {
             super();
-            this.outputFolder = outputFolder;
+            this.outputFolder = options.getFrontendGeneratedFolder();
         }
 
         @Override
@@ -113,17 +109,16 @@ public class TestEndpointGeneratorTaskFactory
     static private class TestTaskGenerateOpenAPI extends
             AbstractTestTaskEndpointGenerator implements TaskGenerateOpenAPI {
 
-        private final File output;
+        private final Options options;
 
-        public TestTaskGenerateOpenAPI(File applicationProperties,
-                File javaSourceFolder, ClassLoader classLoader, File output) {
+        public TestTaskGenerateOpenAPI(Options options) {
             super();
-            this.output = output;
+            this.options = options;
         }
 
         @Override
         public void execute() {
-            writeFile(output, "{}");
+            writeFile(options.getEndpointGeneratedOpenAPIFile(), "{}");
         }
     }
 

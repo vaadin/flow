@@ -28,8 +28,9 @@ public class TaskUpdateViteTest {
 
     @Test
     public void generatedTemplate_correctSettingsPath() throws IOException {
-        TaskUpdateVite task = new TaskUpdateVite(temporaryFolder.getRoot(),
-                "build");
+        Options options = new Options(Mockito.mock(Lookup.class),
+                temporaryFolder.getRoot()).withBuildDirectory("build");
+        TaskUpdateVite task = new TaskUpdateVite(options);
         task.execute();
 
         File configFile = new File(temporaryFolder.getRoot(),
@@ -48,8 +49,10 @@ public class TaskUpdateViteTest {
                 FrontendUtils.VITE_CONFIG);
         final String importString = "Hello Fake configuration";
         FileUtils.write(configFile, importString, StandardCharsets.UTF_8);
+        Options options = new Options(Mockito.mock(Lookup.class),
+                temporaryFolder.getRoot()).withBuildDirectory("build");
 
-        new TaskUpdateVite(temporaryFolder.getRoot(), "build").execute();
+        new TaskUpdateVite(options).execute();
 
         String template = IOUtils.toString(configFile.toURI(),
                 StandardCharsets.UTF_8);
@@ -67,7 +70,10 @@ public class TaskUpdateViteTest {
         FileUtils.write(generatedConfigFile, importString,
                 StandardCharsets.UTF_8);
 
-        new TaskUpdateVite(temporaryFolder.getRoot(), "build").execute();
+        Options options = new Options(Mockito.mock(Lookup.class),
+                temporaryFolder.getRoot()).withBuildDirectory("build");
+
+        new TaskUpdateVite(options).execute();
 
         String template = IOUtils.toString(generatedConfigFile.toURI(),
                 StandardCharsets.UTF_8);
@@ -79,8 +85,10 @@ public class TaskUpdateViteTest {
     @Test
     public void usedSettings_matchThoseCreatedToSettingsFile()
             throws IOException {
-        TaskUpdateVite task = new TaskUpdateVite(temporaryFolder.getRoot(),
-                "build");
+        Options options = new Options(Mockito.mock(Lookup.class),
+                temporaryFolder.getRoot()).withBuildDirectory("build");
+
+        TaskUpdateVite task = new TaskUpdateVite(options);
         task.execute();
 
         File generatedConfigFile = new File(temporaryFolder.getRoot(),
@@ -88,15 +96,13 @@ public class TaskUpdateViteTest {
 
         String template = IOUtils.toString(generatedConfigFile.toURI(),
                 StandardCharsets.UTF_8);
-        NodeTasks.Builder builder = new NodeTasks.Builder(
-                Mockito.mock(Lookup.class), temporaryFolder.getRoot(),
-                temporaryFolder.newFolder("generated"),
-                temporaryFolder.newFolder("frontend"), "target");
-        builder.withJarFrontendResourcesFolder(
-                temporaryFolder.newFolder("resources"));
+        options.withGeneratedFolder(temporaryFolder.newFolder("generated"))
+                .withFrontendDirectory(temporaryFolder.newFolder("frontend"))
+                .withBuildDirectory("target").withJarFrontendResourcesFolder(
+                        temporaryFolder.newFolder("resources"));
 
         TaskUpdateSettingsFile updateSettings = new TaskUpdateSettingsFile(
-                builder, "theme", new PwaConfiguration());
+                options, "theme", new PwaConfiguration());
         updateSettings.execute();
         File settings = new File(temporaryFolder.getRoot(),
                 "target/" + DEV_SETTINGS_FILE);

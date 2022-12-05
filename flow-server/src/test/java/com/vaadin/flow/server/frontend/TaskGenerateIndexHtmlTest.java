@@ -27,6 +27,9 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.Mockito;
+
+import com.vaadin.flow.di.Lookup;
 
 public class TaskGenerateIndexHtmlTest {
     @Rule
@@ -38,7 +41,9 @@ public class TaskGenerateIndexHtmlTest {
     @Before
     public void setUp() throws IOException {
         frontendFolder = temporaryFolder.newFolder();
-        taskGenerateIndexHtml = new TaskGenerateIndexHtml(frontendFolder);
+        Options options = new Options(Mockito.mock(Lookup.class), null)
+                .withFrontendDirectory(frontendFolder);
+        taskGenerateIndexHtml = new TaskGenerateIndexHtml(options);
     }
 
     @Test

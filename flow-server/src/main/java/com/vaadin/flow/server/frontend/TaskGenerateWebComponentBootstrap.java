@@ -41,32 +41,26 @@ public class TaskGenerateWebComponentBootstrap
      * Create a task to generate <code>vaadin-web-component.ts</code> if
      * necessary.
      *
-     * @param frontendDirectory
-     *            frontend directory is to check if the file already exists
-     *            there.
-     * @param generatedImports
-     *            the flow generated imports file to include in the
-     *            <code>vaadin-web-component.ts</code>
+     * @param options
+     *            the task options
      */
-    TaskGenerateWebComponentBootstrap(File frontendDirectory,
-            File generatedImports) {
-        this.frontendGeneratedDirectory = new File(frontendDirectory,
-                GENERATED);
-        this.generatedImports = generatedImports;
+    TaskGenerateWebComponentBootstrap(Options options) {
+        this.frontendGeneratedDirectory = new File(
+                options.getFrontendDirectory(), GENERATED);
+        this.generatedImports = new File(options.getGeneratedFolder(),
+                FrontendUtils.IMPORTS_NAME);
     }
 
     @Override
     protected String getFileContent() {
         List<String> lines = new ArrayList<>();
 
-        String generatedImportsRelativePath = FrontendUtils
-                .getUnixRelativePath(frontendGeneratedDirectory.toPath(),
-                        generatedImports.toPath())
-                .replaceFirst("\\.(js|ts)$", "");
+        String generatedImportsRelativePath = FrontendUtils.getUnixRelativePath(
+                frontendGeneratedDirectory.toPath(), generatedImports.toPath());
 
         lines.add(String.format("import '%s';", generatedImportsRelativePath));
         lines.add("import { init } from '" + FrontendUtils.JAR_RESOURCES_IMPORT
-                + "FlowClient';");
+                + "FlowClient.js';");
         lines.add("init();");
 
         return String.join("\n", lines);

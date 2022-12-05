@@ -18,7 +18,6 @@ package com.vaadin.flow.server.frontend;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.ExecutionFailedException;
-import com.vaadin.flow.server.frontend.NodeTasks.Builder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 import org.apache.commons.io.FileUtils;
@@ -70,7 +69,7 @@ public class NodeTasksHillaTest {
     @Mock
     private TaskGenerateHilla taskGenerateHilla;
 
-    private Builder builder;
+    private Options options;
 
     @Before
     public void setup() throws Exception {
@@ -85,19 +84,20 @@ public class NodeTasksHillaTest {
                 new DefaultClassFinder(this.getClass().getClassLoader()))
                 .when(lookup).lookup(ClassFinder.class);
         Mockito.doReturn(taskGenerateOpenAPI).when(endpointGeneratorTaskFactory)
-                .createTaskGenerateOpenAPI(any(), any(), any(), any());
+                .createTaskGenerateOpenAPI(any());
         Mockito.doReturn(taskGenerateEndpoint)
                 .when(endpointGeneratorTaskFactory)
-                .createTaskGenerateEndpoint(any(), any(), any(), any());
+                .createTaskGenerateEndpoint(any());
         Mockito.doReturn(endpointGeneratorTaskFactory).when(lookup)
                 .lookup(EndpointGeneratorTaskFactory.class);
 
         Mockito.doReturn(taskGenerateHilla).when(lookup)
                 .lookup(TaskGenerateHilla.class);
 
-        builder = new Builder(lookup, new File(userDir), TARGET)
-                .enablePackagesUpdate(false).enableImportsUpdate(true)
-                .runNpmInstall(false).withEmbeddableWebComponents(false)
+        options = new Options(lookup, new File(userDir))
+                .withBuildDirectory(TARGET).enablePackagesUpdate(false)
+                .enableImportsUpdate(true).runNpmInstall(false)
+                .withEmbeddableWebComponents(false)
                 .withJarFrontendResourcesFolder(new File(userDir,
                         FrontendUtils.GENERATED
                                 + FrontendUtils.JAR_RESOURCES_FOLDER))
@@ -140,7 +140,7 @@ public class NodeTasksHillaTest {
     @Test
     public void should_notHillaEngine_whenOpenAPIFileIsNull()
             throws ExecutionFailedException, IOException {
-        builder.withEndpointGeneratedOpenAPIFile(null);
+        options.withEndpointGeneratedOpenAPIFile(null);
 
         runEndpointTasks(true);
         verifyHillaTask(false);
@@ -150,7 +150,7 @@ public class NodeTasksHillaTest {
     @Test
     public void should_notUseOldGenerator_whenOpenAPIFileIsNull()
             throws ExecutionFailedException, IOException {
-        builder.withEndpointGeneratedOpenAPIFile(null);
+        options.withEndpointGeneratedOpenAPIFile(null);
 
         runEndpointTasks(false);
         verifyHillaTask(false);
@@ -165,7 +165,7 @@ public class NodeTasksHillaTest {
                         withHillaTask),
                 StandardCharsets.UTF_8);
 
-        builder.build().execute();
+        new NodeTasks(options).execute();
     }
 
     private static void setPropertyIfPresent(String key, String value) {
@@ -184,10 +184,9 @@ public class NodeTasksHillaTest {
             throws ExecutionFailedException {
         Mockito.verify(endpointGeneratorTaskFactory,
                 expected ? times(1) : never())
-                .createTaskGenerateEndpoint(any(), any(), any(), any());
+                .createTaskGenerateEndpoint(any());
         Mockito.verify(endpointGeneratorTaskFactory,
-                expected ? times(1) : never())
-                .createTaskGenerateOpenAPI(any(), any(), any(), any());
+                expected ? times(1) : never()).createTaskGenerateOpenAPI(any());
         Mockito.verify(taskGenerateOpenAPI, expected ? times(1) : never())
                 .execute();
         Mockito.verify(taskGenerateEndpoint, expected ? times(1) : never())

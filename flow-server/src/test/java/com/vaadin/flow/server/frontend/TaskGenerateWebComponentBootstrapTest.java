@@ -17,6 +17,7 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.ExecutionFailedException;
 
 import org.junit.Assert;
@@ -24,6 +25,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.Mockito;
 
 import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
@@ -42,10 +44,14 @@ public class TaskGenerateWebComponentBootstrapTest {
         frontendDirectory = temporaryFolder.newFolder(DEFAULT_FRONTEND_DIR);
         File generatedFolder = temporaryFolder.newFolder(TARGET, FRONTEND);
         generatedImports = new File(generatedFolder,
-                "flow-generated-imports.js");
+                FrontendUtils.IMPORTS_NAME);
         generatedImports.createNewFile();
+        Options options = new Options(Mockito.mock(Lookup.class), null)
+                .withGeneratedFolder(generatedFolder)
+                .withFrontendDirectory(frontendDirectory);
+
         taskGenerateWebComponentBootstrap = new TaskGenerateWebComponentBootstrap(
-                frontendDirectory, generatedImports);
+                options);
     }
 
     @Test
@@ -53,8 +59,8 @@ public class TaskGenerateWebComponentBootstrapTest {
             throws ExecutionFailedException {
         taskGenerateWebComponentBootstrap.execute();
         String content = taskGenerateWebComponentBootstrap.getFileContent();
-        Assert.assertTrue(content.contains(
-                "import '../../target/frontend/flow-generated-imports'"));
+        Assert.assertTrue(content.contains("import '../../target/frontend/"
+                + FrontendUtils.IMPORTS_NAME + "'"));
     }
 
     @Test
@@ -64,6 +70,6 @@ public class TaskGenerateWebComponentBootstrapTest {
         String content = taskGenerateWebComponentBootstrap.getFileContent();
         Assert.assertTrue(content.contains(
                 "import { init } from '" + FrontendUtils.JAR_RESOURCES_IMPORT
-                        + "FlowClient';\n" + "init()"));
+                        + "FlowClient.js';\n" + "init()"));
     }
 }

@@ -16,7 +16,6 @@
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -39,7 +38,7 @@ public class TaskCopyFrontendFiles implements FallibleCommand {
             "**/*.js", "**/*.js.map", "**/*.css", "**/*.css.map", "**/*.ts",
             "**/*.ts.map", "**/*.tsx", "**/*.tsx.map" };
     private static final String WILDCARD_INCLUSION_APP_THEME_JAR = "**/themes/**/*";
-    private File targetDirectory;
+    private final Options options;
     private Set<File> resourceLocations = null;
 
     /**
@@ -50,13 +49,9 @@ public class TaskCopyFrontendFiles implements FallibleCommand {
      * @param resourcesToScan
      *            folders and jar files to scan.
      */
-    TaskCopyFrontendFiles(File targetDirectory, Set<File> resourcesToScan) {
-        Objects.requireNonNull(targetDirectory,
-                "Parameter 'targetDirectory' must not be " + "null");
-        Objects.requireNonNull(resourcesToScan,
-                "Parameter 'jarFilesToScan' must not be null");
-        this.targetDirectory = targetDirectory;
-        resourceLocations = resourcesToScan.stream().filter(File::exists)
+    TaskCopyFrontendFiles(Options options) {
+        this.options = options;
+        resourceLocations = options.jarFiles.stream().filter(File::exists)
                 .collect(Collectors.toSet());
     }
 
@@ -64,6 +59,7 @@ public class TaskCopyFrontendFiles implements FallibleCommand {
     public void execute() {
         long start = System.nanoTime();
         log().info("Copying frontend resources from jar files ...");
+        File targetDirectory = options.getJarFrontendResourcesFolder();
         TaskCopyLocalFrontendFiles.createTargetFolder(targetDirectory);
         JarContentsManager jarContentsManager = new JarContentsManager();
         for (File location : resourceLocations) {

@@ -1,262 +1,1119 @@
-Commercial Vaadin Developer License version 4
+Vaadin Commercial License and Service Terms
 
 Terms and Conditions for Use, Reproduction and Distribution
 
-NOTICE TO USER: PLEASE READ THIS LICENSE AGREEMENT CAREFULLY.
+NOTICE TO USER: PLEASE READ THESE VAADIN COMMERCIAL LICENSE AND SERVICE TERMS
+CAREFULLY.
 
-BY USING ALL OR ANY PART OF THE LICENSED SOFTWARE YOU ACCEPT ALL THE TERMS AND
-CONDITIONS OF THIS AGREEMENT, INCLUDING, IN PARTICULAR THE RESTRICTIONS ON: USE
-AND TRANSFERABILITY CONTAINED IN CLAUSE 2; WARRANTY IN CLAUSE 6; LIABILITY IN
-CLAUSE 7. YOU ACCEPT THAT THIS AGREEMENT IS ENFORCEABLE LIKE ANY WRITTEN
-NEGOTIATED AGREEMENT DULY SIGNED BY YOU. IF YOU DO NOT AGREE ON ALL THE TERMS
-AND CONDITIONS OF THIS AGREEMENT, STOP THE USE OF THE LICENSED SOFTWARE
-IMMEDIATELY.
+BY USING ALL OR ANY PART OF THE LICENSED SOFTWARE OR COMMERCIAL SERVICE, YOU
+AGREE ON BEHALF OF YOURSELF AND YOUR COMPANY (IF APPLICABLE) TO THE TERMS
+BELOW. IF YOU DO NOT AGREE WITH THESE TERMS, OR DO NOT HAVE THE AUTHORITY TO
+BIND YOUR COMPANY, DO NOT INSTALL, REGISTER FOR OR USE THE PRODUCT OR SERVICE,
+AND DESTROY OR RETURN ALL COPIES OF THE PRODUCT.
+
+IF YOU ARE AGREEING TO THESE TERMS ON BEHALF OF YOURSELF IN YOUR INDIVIDUAL
+CAPACITY, THEN YOU ARE THE CUSTOMER. IF YOU ARE AGREEING TO THESE TERMS ON
+BEHALF OF YOUR COMPANY, THEN YOUR COMPANY IS THE CUSTOMER.
 
 1. Definitions
-In this Agreement, unless the context requires otherwise, the following words
-and phrases shall have the following meanings:
+1.1. In these Commercial Terms, unless the context requires otherwise, the
+following words and phrases shall have the following meanings:
 
-  * "Developer" shall mean a software developer, tester, designer or other
-    person developing a software application.
-  * "Vaadin Platform" shall mean the Vaadin web framework, components, themes,
-    tools and libraries that help Developers in building software applications.
-  * "Licensed Software" shall mean an add-on software component, extended
-    support version of Vaadin Platform, library, theme, tool or other software
-    or resource that is part of or adds functionality to Vaadin Platform or
-    helps Developers in developing applications. Licensed Software include, but
-    are not limited to, user interface components, integration components,
-    themes, libraries and development tools.
-  * "Use Licensed Software" shall mean either directly interacting with,
-    including without limitations using the user interface of, running or
-    installing, the Licensed Software during Project or editing Project source
-    code file that refers to or depends on Licensed Software either directly or
-    indirectly. Developer who edits source code that can not be compiled and/or
-    run without a copy of Licensed Software is considered to Use Licensed
-    Software. Interacting with a server that runs Licensed Software as a part
-    of an automated test suite or a design system is not considered as Use of
-    Licensed Software, but the maintainers of the mentioned test suite or
-    design system are considered to Use Licensed Software.
-  * "Agreement" shall mean this Commercial Vaadin Developer License version 4
-    agreement. Previous versions of the agreement were called Commercial Vaadin
-    Add-on License.
-  * "License" shall mean the right to Use Licensed Software according to
-    Agreement by one Developer.
-  * "Intellectual Property Rights" shall mean any and all patent, copyright,
-    trademark, design right, petty patent, service mark, domain name or any
-    other right or trade secret whether registered or not.
-  * "Licensee" shall mean the entity that has subscribed to a Subscription that
-     includes the right to Use Licensed Software.
-  * "Licensor" shall mean Vaadin Ltd. or a third party licensing Licensed
-     Software under the Agreement.
-  * "Parties/Party" shall mean Licensee and Licensor, or either of them.
-  * "Project" shall mean Licensee's software development project during which
-     the participating Developers Use Licensed Software and which aims to
-     produce Project Result.
-  * "Project Result" shall mean the outcome of the Project.
-  * “End User” shall mean a person using Project Result that does not involve
-     changing any source code.
-  * "Subscription" shall mean a subscription offered by Licensor in which
-    Licensor grants rights to Use Licensed Software according to the terms of
-    the subscription agreement and this Agreement.
+1.2. “Agreement” shall mean an accepted Order, SOW or other agreement document
+that refers to and incorporates these Commercial Terms.
 
-2. Grant of License
-2.1 Licensor grants to Licensee, against full payment of the Subscription fee, a
-worldwide, royalty-free, non-exclusive limited License to Use Licensed Software
-in Project(s) by a Developer.
+1.3. “Authorized Application” shall mean a software application developed by
+Customer using Licensed Software under a valid Runtime License.
 
-2.2 Licensee shall not, unless expressly provided in Agreement or in the
-applicable legislation
+1.4. “Authorized User” shall mean Customer if Customer is a natural person; or
+Customer’s employee or third-party consultant if Customer is a company and
+Customer authorizes such employee or third-party consultant to Use Licensed
+Software or use another item that is subject to a Subscription on behalf of
+Customer within Customer’s internal operations.
 
-2.2.1 rent, lease or loan Licensed Software or any copy of it;
+1.5. "Commercial Terms" shall mean these Vaadin Commercial License and Service
+Terms.
 
-2.2.2 remove, obliterate, deface or in any way alter the notice of Licensor’s or
-a third party’s proprietary rights related to Licensed Software;
+1.6. “Consulting” shall mean Services, by which Customer purchases Vaadin’s
+professional expertise, either outside a Subscription or as part of Services
+provided under a Subscription.
 
-2.2.3 grant sub-licenses to Licensed Software or assign its rights or
-obligations under this Agreement to a third party.
+1.7. "Customer" shall mean the customer who has executed the Agreement and
+subscribed to or purchased Licensed Software and/or Services.
 
-2.3 Licensee may grant licenses, for free or against a payment, to the Project
-Result including Licensed Software whether regarded as derivative works or not.
-End Users are not required to have a valid License. If the Project Result is
-further developed or modified by changing its source code or the Project Results
-is used as a software component or framework in a software development project,
-all Developers who Use Licensed Software in such a context need to have a valid
-License. If the Project Result is a software development tool, component or
-environment that provides the functionality of the Licensed Software for use in
-software development projects, all Developers who Use Licensed Software need to
-have a valid License.
+1.8. “Customer Work Products” shall mean all Materials created by Vaadin for
+Customer through performance of the Consulting, other than Vaadin
+Non-Commercial Materials, Vaadin Commercial Materials and Pre-Existing
+Materials.
 
-3. Intellectual Property Rights
-3.1 All Intellectual Property Rights in and to Licensed Software are and shall
-at all times remain the sole and exclusive property of Licensor and its third
-party licensors, if any.
+1.9. "Developer" shall mean a software developer, tester, designer or other
+person developing a software application.
 
-3.2 Licensee will not at any time do or cause to be done any such act or thing
-which in any way impairs, or intends to impair, any right, title, interest or
-any Intellectual Property Right of Licensor or its third party licensors.
-Licensee shall not in any manner represent that it has any ownership of any kind
-in any of the above mentioned Intellectual Property Rights.
+1.10. “Effective Date” means the date when Vaadin has accepted Customer’s Order
+for Licensed Products or Services, or when both Parties have signed an
+Agreement by physical signature or electronic signature.
 
-4. Subscription fee and Subscription term
-4.1 In consideration for the Subscription based license granted herein, Licensor
-shall charge a recurring Subscription fee from the Licensee.
+1.11. “Intellectual Property Rights” shall mean all copyrights (including the
+right to modify and assign such copyright), patents, utility models, designs,
+trademarks, logos, domain names, inventions, improvements, trade secrets,
+know-how and all other intellectual property rights (including any applications
+or rights to the foregoing).
 
-4.2 Licensee must have a valid License for all Developers who Use Licensed
-Software in the Project. During the Subscription term, the License may be Used
-in many Projects simultaneously without additional payments. The Project Result
-may be copied an unlimited number of times and deployed to an unlimited number
-of computers without additional payments.
+1.12. "License" shall mean the right to Use Licensed Software in accordance
+with the Agreement and in particular the limitations and other license type
+related terms and conditions set out under Section 4 below.
 
-4.3 Licensee's License will be valid starting from the beginning of the
-Subscription term and remain in force until the end of the Subscription term.
-The start date of the Subscription term and its possible renewal mechanism are
-set out in the Subscription agreement or the Licensor’s invoice to the Licensee.
-If no Subscription start date is specified in the Subscription agreement or the
-invoice, the start date shall be the date when the Licensor provides the
-Licensee access to the Licensed Software.
+1.13. "Licensed Software" shall mean such computer software program(s), which
+are provided by Vaadin to Customer under the terms and conditions of these
+Commercial Terms, as well as any related updates and upgrades, and which are
+identified in more detail in an Order or an Agreement.
 
-4.4 If License is given without a fee, the License is valid for the time defined
-by the Licensor.
+1.14. “Materials” shall mean all works of authorship, programs, software, code,
+source code, system design, processes, tools, reports, manuals, supporting
+materials, drawings, diagrams, flowcharts, business templates, documents,
+materials, technology, trademarks, trade secrets, websites, modifications,
+updates, enhancements, innovations (whether or not patented) and concepts.
 
-5. Term and termination
-5.1 This Agreement is effective as of the effective date of the Subscription and
-expires on the day that the Subscription term for the Licensed Software has
-expired. Notwithstanding the aforesaid, in the event that the Licensee fails to
-comply with the terms set in this Agreement, the License granted herein shall
-not be valid and Licensee must at once cease the use of Licensed Software and
-any of its rights under Clause 2, and delete all copies of Licensed Software.
+1.15. “Order” shall mean a written or electronic order document (an order form,
+invoice, or similar document) entered into between Customer and Vaadin for
+Licensed Software or Services. Unless an Order says something different, each
+Order will be governed by the terms of these Commercial Terms and identify the
+Licensed Software and/or Service to be delivered as well as any usage
+limitations, applicable fees, and any other details related to the Subscription
+or other transaction.
 
-5.2 Licensor has the right, in addition and without prejudice to any other
-rights or remedies, to terminate this Agreement immediately as follows:
+1.16. "Parties/Party" shall mean Customer and Vaadin, or either of them.
 
-5.2.1 for any material breach of Agreement, that is not cured within seven (7)
-days of receipt by Licensee in default of a written notice specifying the breach
-and requiring its cure;
+1.17. “Pre-Existing Materials” shall mean all Materials, which existed prior to
+the Effective Date of an Agreement on Consulting, or which are thereafter
+created independently of such Agreement, other than Vaadin Non-Commercial
+Materials and Vaadin Commercial Materials.
 
-5.2.2 upon receiving a written notice, if (a) all or a substantial portion of
-the assets of Licensee are transferred to an assignee for the benefit of
-creditors, or to a receiver or a trustee in bankruptcy, (b) a proceeding is
-commenced by or against Licensee for relief under bankruptcy or similar laws and
-such proceeding is not dismissed within sixty (60) days, or (c) Licensee is
-adjudged bankrupt.
+1.18. "Project" shall mean Customer’s software development project during which
+the participating Developers Use Licensed Software and which aims to produce
+Project Result.
 
-5.3 If and when this Agreement is terminated due to any reason or cause
-whatsoever, the Licensee shall cease to Use Licensed Software and any of its
-rights under Clause 2, and delete all copies of Licensed Software. For clarity,
-the termination of this Agreement shall not affect the validity of any licenses
-granted by the Licensee to End Users with respect to Project Results prior to
-the termination of this Agreement, but the Licensee shall not be entitled to
-Use Licensed Software after the termination of the Agreement.
+1.19. "Project Result" shall mean the outcome of the Project.
 
-5.4 Provisions of the Agreement which, by their nature, are intended to survive
-its termination or expiration, shall survive its termination or expiration.
+1.20. “Service(s)” shall mean any services, information or products (other than
+Licensed Software) that are supplied by Vaadin to Customer and that are defined
+in the Agreement. Services may be provided as part of a Subscription or as
+separately invoiced Consulting.
 
-6. Warranties
-THE LICENSED SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND EXPRESS
-OR IMPLIED, AND TO THE MAXIMUM EXTENT PERMITTED BY THE APPLICABLE LAW. EXCEPT AS
-EXPRESSLY PROVIDED IN THIS CLAUSE, NO WARRANTY, CONDITION, UNDERTAKING,
-LIABILITY OR TERM, EXPRESS OR IMPLIED, STATUTORY OR OTHERWISE, AS TO CONDITION,
-QUALITY, PERFORMANCE, FUNCTIONALITY, INFRINGEMENT, MERCHANTABILITY, DURABILITY
-OR FITNESS FOR PURPOSE, IS GIVEN OR ASSUMED BY VAADIN LTD., LICENSOR OR ITS
-LICENSORS AND ALL SUCH WARRANTIES, CONDITIONS, UNDERTAKINGS AND TERMS ARE HEREBY
-EXCLUDED.
+1.21. “SOW” shall mean a statement of work documents that the Parties enter
+into under the Agreement and that concerns Consulting.
 
-7. Limitation of Liability
-VAADIN LTD. AND/OR LICENSOR WILL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL,
-PUNITIVE OR CONSEQUENTIAL LOSS, DAMAGE, COST OR EXPENSE OF ANY KIND WHATSOEVER
-AND HOWSOEVER CAUSED (INCLUDING BUSINESS INTERRUPTION, OR ANY LOSS OF BUSINESS,
-ANTICIPATED SAVINGS, REVENUE, GOODWILL, MANAGEMENT TIME, LOSS OF PROFITS OR OF
-CONTRACTS, LOSS OF OPERATION TIME, LOSS OF REPUTATION OR OF DATA) INCLUDING
-NEGLIGENCE, WHETHER IN CONTRACT OR TORT, EVEN IF THEY HAVE BEEN ADVISED OF THE
-POSSIBILITY. DEVELOPER AND/OR LICENSEE WILL USE REASONABLE EFFORTS TO MITIGATE
-THEIR LOSS SUFFERED. VAADIN LTD'S AND/OR LICENSOR'S AGGREGATE LIABILITY AND THAT
-OF ITS AFFILIATES AND SUPPLIERS UNDER OR IN CONNECTION WITH THIS LICENSE
-AGREEMENT WILL BE LIMITED TO THE AMOUNT ACTUALLY PAID FOR THE LICENSED SOFTWARE
-DURING THE MOST RECENT SUBSCRIPTION PERIOD.
+1.22. "Subscription" shall mean a subscription in which Customer subscribes to
+one or more of the following: (a) a right to use a Service, (b) a right to use
+Vaadin Commercial Materials, or (c) a right to Use Licensed Software; all for
+the agreed Subscription term and in accordance with the Agreement.
 
-8. Updates, new versions maintenance and support
-Licensor may, at its sole discretion, during the Subscription term provide
-maintenance releases, updates and upgrades as new versions of the Licensed
+1.23. “Supported Software” consists of the latest minor version of Vaadin
+platform version 10, version 14 and all major versions starting from version
+23, and second latest minor versions of Vaadin platform versions starting from
+version 23, for a period described on vaadin.com website. The contents of each
+Vaadin platform version is defined in the respective release notes. Supported
+Software does not include pre-release versions, such as beta, alpha or release
+candidate versions.
+
+1.24. “Support Hours” are between 7 am and 8 pm GMT from Monday to Friday,
+except for the 1st of Jan, 6th of Jan, Good Friday, Easter Monday, 1st of May,
+Ascension Day, Midsummer eve, 6th of Dec and 24–26 of Dec. GMT+1 Summer Time is
+used between the last Sunday of March and the last Sunday of October.
+
+1.25. "Use Licensed Software" shall mean using Licensed Software either in
+object code form or source code form or using Licensed Software as a part of an
+automation test suite or an automated build process.
+
+1.26. “Vaadin” shall mean the Vaadin company who has executed the Agreement. If
+Customer’s domicile is in the United States, such Vaadin company shall be
+Vaadin, Inc., located at 405 El Camino Real, Menlo Park, CA 94025, United
+States. If Customer’s domicile is outside the United States, such Vaadin
+company shall be Vaadin Ltd (Finnish Business ID 1613563-9), located at
+Ruukinkatu 2–4, FI-20540 Turku, Finland.
+
+1.27. “Vaadin Commercial Materials” shall mean all Licensed Software and other
+Materials that are owned by Vaadin Ltd (Finnish Business ID 1613563-9) and that
+are made available, based on a payment, through the vaadin.com online service,
+Github and/or other services, under a commercial license in connection with a
+Subscription or Consulting.
+
+1.28. “Vaadin Non-Commercial Materials” shall mean all Materials that are owned
+by Vaadin Ltd (Finnish Business ID 1613563-9) and that are made available for
+free in the vaadin.com online service, Github and/or other services, typically
+under an open source or other non-commercial license.
+
+2. Scope of Application
+2.1. These Commercial Terms are applied to the provision of commercial Licensed
+Software and commercial Services by Vaadin to its Customers, including
+Subscriptions and Consulting that are provided against payment.
+
+3. Subscriptions, Orders and SOWs
+3.1. Vaadin offers non-free Subscriptions that to varying degrees give access
+to Services, Licensed Software and other Vaadin Commercial Materials.
+
+3.2. The detailed content of each Subscription or other transaction is set out
+in an Order document delivered by Vaadin to Customer when a new Subscription is
+created, an existing Subscription is renewed, or other transaction is executed.
+
+3.3 The Order sets out (a) the identity of Customer, (b) the ordered Service,
+Licensed Software or other Vaadin Commercial Materials, (c) the Subscription
+fee, (d) the Subscription term, (e) the relevant License type (where
+applicable), i.e., Developer License, Runtime License or Trial License, (f)
+possible specific restrictions and limitations, (g) possible specific rights,
+such as redistribution rights, (h) possible maintenance and support services
+related to Licensed Software, and (i) possible other relevant details of the
+Subscription or other transaction.
+
+3.4. Unless otherwise set out for Licenses under Section 4 below, all
+Subscriptions may only be used by such Authorized Users that have been named by
+Customer and that have been connected to a Subscription. The number of
+Authorized Users included in a Subscription depends on the number of named
+users purchased by Customer. Unless otherwise set out for Licenses under
+Section 4 below, the list of Authorized Users can be changed at any time by
+Customer’s Subscription administrator.
+
+3.5. Customer is responsible for ensuring that its Authorized Users maintain
+the usernames, passwords and other identifiers necessary for the use of
+Licensed Software, or use of another item that is subject to a Subscription,
+diligently and that they do not disclose them to third parties. Customer must
+promptly notify Vaadin about any unauthorized use of such identifiers. Customer
+shall ensure that its Authorized Users comply with the Agreement and Customer
+shall be responsible for its Authorized Users’ use of Licensed Software or use
+of another item that is subject to a Subscription.
+
+3.6. Vaadin Pro Subscriptions come with a thirty (30) day money-back guarantee.
+If Customer for any reason wishes to cancel such Subscriptions within thirty
+(30) days from the beginning of the first Subscription term, Customer can
+contact Vaadin for a refund of the Subscription fees.
+
+3.3. In case of Consulting the relevant Services to be delivered by Vaadin to
+Customer, as well as the relevant fees and other terms applicable to such
+Services, are set out in a SOW that is entered into under the Agreement.
+
+4. Grant of License to Use Licensed Software, License Types
+4.1 This Section 4 sets out the terms under which Vaadin grants Licenses to
+Customer and it also includes License type specific terms and conditions. Any
+License being granted as well as the relevant License type shall be determined
+at the time of the Subscription and set out in the Order or other Agreement
+document.
+
+4.2 Except for the License explicitly set out below in this Section 4, Customer
+(and each Authorized User) may not use, copy, modify, rent, loan, lease, sell,
+sublicense, create derivative works from, transfer or distribute, the Licensed
+Software for any purposes, or make the Licensed Software available to any
+person or entity that is not an Authorized User, or assign its rights or
+obligations under the Agreement to a third party. Furthermore, Customer shall
+not decompile, disassemble, decode, adapt, or otherwise attempt to derive or
+gain access to the source code of the Licensed Software, in whole or in part or
+reverse engineer the Licensed Software or any elements of the Licensed
+Software, or remove any proprietary notices from the Licensed Software, or use
+the Licensed Software in any manner or for any purpose that infringes,
+misappropriates, or otherwise violates any Intellectual Property Rights or
+other right of any person, or that violates any applicable law. Customer shall
+not use Licensed Software to develop, test, support or market services or
+products that are competing with and/or provide similar functionality to the
+Licensed Software (wrapping is forbidden). Vaadin grants no rights other than
+those explicitly granted herein, and Customer shall not exceed the scope of its
+License as set forth herein and in the applicable Order.
+
+4.3. Developer License
+4.3.1 General Provisions
+4.3.1.2 This Section 4.3 contains the terms and conditions of Vaadin’s
+developer License (“Developer License”), under which Vaadin licenses
+development components for use by a Developer.
+Vaadin grants to Customer, based on full payment of the Subscription fee, a
+worldwide, royalty-free, non-exclusive, limited License to Use Licensed
+Software in Project(s).
+
+4.3.1.3 Customer must procure the right to Use Licensed Software for each
+individual Developer separately. For clarity, if the Project Result that
+includes the Licensed Software is further developed or modified or is used as a
+component or framework in a software development project or otherwise provides
+the functionality of the Licensed Software for use in a software development
+project, all Developers who Use Licensed Software in such context need to have
+a valid Developer License.
+
+4.3.1.4 The list of Developers can be changed by Customer, but after an
+individual Developer has been designated by Customer, Customer may not
+reallocate the Developer License from the designated Developer to another
+Developer before sixty (60) days have passed from such designation.
+
+4.3.1.5 Customer is entitled to Use Licensed Software for the purpose of
+testing and building software applications as part of Customer’s Project. As
+long as Customer has at least one valid Developer License, Customer’s right to
+Use Licensed Software also includes interacting with a server that runs
+Licensed Software as a part of an automated test suite, automated build system
+or corresponding system (without this requiring a separate License).
+
+4.3.2 Redistribution Right
+4.3.2.1. Under the Developer License, Customer may be entitled to redistribute
+the Licensed Software as part of Customer’s Project Result, as set out in this
+Section 4.3.2. Such possible redistribution right is set out for each Licensed
+Software component separately and indicated in the Order.
+
+4.3.2.2. The redistribution permitted under Section 4.3.2.1 above allows
+Customer to redistribute the Licensed Software in object code form only, and
+only as embedded in Customer’s Project Result for use by end users of the
+Project Result.
+
+4.3.2.3. Customer may not distribute Licensed Software as a standalone product,
+or as a part of any product other than Customer’s Project Result, or in any
+form that allows any Licensed Software (or portion thereof) to be reused by any
+application other than Customer’s Project Result. Accordingly, Customer shall
+not use the Licensed Software to develop, test, support or market services or
+products that are competing with and/or provide similar functionality to the
+Licensed Software (wrapping is forbidden).
+
+4.3.2.4. For the avoidance of doubt, Customer’s end users of the Project Result
+are not allowed to use the Licensed Software, or any portions thereof, for
+software development or application development purposes unless they first
+purchase a separate Developer License from Vaadin for each relevant end user.
+Customer or the Developer must not grant end users of the Project Result any
+right to further sublicense the Licensed Software or any portions thereof.
+
+4.3.2.5. If the Order expressly grants Customer the right to redistribute or
+offer access to all or a portion of the Licensed Software, then, in conjunction
+with any such grant, Customer must comply with any limitations or requirements
+specified in the Order or in these Commercial Terms, as applicable, and Vaadin
+must distribute or offer access to the Project Result including the Licensed
+Software subject to a license agreement or terms of use between Vaadin and each
+customer of Customer accessing such Project Result that: (a) protects Vaadin’s
+interests consistent with the terms contained in these Commercial Terms, (b)
+prohibits Vaadin’s customer or other end user from any further distribution of
+the Licensed Software, (c) includes a limitation of damages clause that, to the
+maximum extent permitted by applicable law, disclaims on behalf of Vaadin or
+its respective Vaadins, suppliers or resellers, liability for any and all
+damages, whether direct, special, incidental or consequential damages, (d)
+contains terms substantially similar to those in these Commercial Terms.
+Furthermore, Customer must include a valid copyright message in the Project
+Result in a location viewable by its end users that will serve to protect
+Vaadin’s copyright and other Intellectual Property Rights in the Licensed
 Software.
 
-Licensee is not entitled to receive support for the Licensed Software, but
-Licensor may, at its sole discretion during the Subscription term, provide
-support either for free or for a fee.
+4.4. Runtime License
+4.4.1. This Section 4.4 contains the terms and conditions of Vaadin’s runtime
+License (“Runtime License”), under which Vaadin provides access rights to
+Licensed Software embedded in an application.
 
-9. Miscellaneous
-9.1 No Waiver
+4.4.2. In consideration of Customer’s payment of the fees for the Licensed
+Software Subscription as set out in the applicable Order, Vaadin grants to
+Customer a worldwide, non-exclusive, non-transferable, non-assignable, limited
+right, during the applicable Subscription term, to use, via its Authorized
+Users, the Licensed Software according to the Commercial Terms solely: (i) for
+Authorized Application(s) set forth in the relevant Order; (ii) in Customer's
+internal operations as set out below; and (iii) within the specific scope and
+limitations, and for the specific configuration(s), in each case, as specified
+in the applicable Order.
 
-The failure of Licensor to exercise any of its rights under this Agreement or to
-require the performance of any term or provision of this Agreement, or any
-waiver by the Licensor of any term or provision or breach of this Agreement,
-shall not prevent a subsequent exercise or enforcement of such right or be
-deemed a waiver of any subsequent breach of the same or any other term or
-provision of this Agreement. Any waiver of the performance of any of the terms
-or conditions of this Agreement shall be effective only if in writing and signed
-by the Party against which such waiver is to be enforced.
+4.4.3. Customer may grant licenses, for free or based on a payment, to the
+Authorized Application(s) including Licensed Software, whether regarded as
+derivative works or not, as long as Customer has obtained from Vaadin a valid
+Runtime License for and on behalf of Customer’s own Customers (that Use
+Licensed Software), or Customer clearly communicates that anyone Using Licensed
+Software needs to obtain a valid Runtime License from Vaadin prior to
+installation and use of the Authorized Application(s) including Licensed
+Software.
 
-9.2 Headings
+4.4.4. Customer is entitled to offer its Authorized Application(s) including
+Licensed Software to its end users as a cloud service, without such end users
+of the cloud service obtaining separate Runtime Licenses to the Licensed
+Software, required that this is done in accordance with these Commercial Terms
+and the scope and limitations set out in the applicable Order.
 
-The headings in this Agreement are for the convenience of the Parties only and
-are not intended to define or limit the scope or interpretation of the Agreement
-or any provision hereof.
+4.4.5. In case Customer wishes to use the Licensed Software in connection to a
+new Authorized Application or wishes to order Licenses to additional Licensed
+Software, the Parties shall agree thereupon in an Order.
 
-9.3 Severability
+4.5. Trial License
+4.5.1. This Section 4.5 contains the terms and conditions of Vaadin’s trial
+License (“Trial License”), under which Vaadin may make certain software
+components available for free evaluation use by Customer. Further terms and
+conditions applicable to a particular Trial License may be set out in the Order
+or appear in connection with a trial registration form.
 
-If any term of this Agreement is invalid or unenforceable, such terms or
-provisions shall not invalidate the rest of the Agreement which shall remain in
-full force and effect as if such invalidated or unenforceable terms or
-conditions had not been made a part of this Agreement. In the event this Clause
-(Severability) becomes operative, Parties agree to attempt to negotiate
-settlement that carries out the economic intent of the terms or provisions found
-invalid or unenforceable.
+4.5.2. Vaadin grants to Customer a limited, non-exclusive License to Use
+Licensed Software solely in Customer’s internal operations for evaluation
+purposes. The Trial License may be subject to one or more usage limits.
 
-9.4 Export Control
+4.5.3. Customer may not (a) circumvent any technical limitations included in
+the Licensed Software offered to Customer under a Trial License; (b) integrate
+the Licensed Software into Project Results or use it for any commercial,
+production or training purpose; or (c) transfer the Trial License to any third
+party, or redistribute the Licensed Software being subject to a Trial License.
 
-The Licensed Software may be subject to import and export controls in other
-countries. Licensee agrees to strictly comply with all applicable import and
-export regulations and acknowledge that Licensee has the responsibility to
-obtain licenses to export, re-export, transfer or import Licensed Software.
+4.5.4. Vaadin makes the Licensed Software available to Customer on a trial
+basis until the earlier of (a) the end of the trial period for which Customer
+registered; (b) the start date of any paid Subscription to such Licensed
+Software; or (c) termination of the trial by Vaadin in its discretion. The
+trial period is not automatically renewed, and Customer may not register for a
+new free trial with respect to a particular Licensed Software, before twelve
+(12) months have passed from the beginning of the previous trial period.
+Customer may request an extension to the trial period from Vaadin, and Vaadin
+may in its discretion decide to extend such trial period for Customer.
 
-9.5 Entire Agreement and Assignment
+4.5.5. Any data that Customer enters into a Licensed Software, and any
+configurations or customizations made to a Licensed Software by or for
+Customer, during Customer’s free trial will be permanently lost unless Customer
+purchases a paid Subscription to the same Licensed Software as covered by the
+trial, or export such data, before the end of the trial period.
 
-Agreement sets forth the entire agreement between the Parties with respect to
-the subject matter hereof and supersedes any prior proposals and
-representations, whether written or oral. Neither Party shall have the right to
-assign this Agreement to a third party without the prior written consent of the
-other party. However, Licensor shall have the right to assign this Agreement and
-the rights and obligations contained therein to a company belonging to the same
-group of companies as Licensor, and to a third party to which the business of
-Licensor is transferred.
+5. Updates, Upgrades, Maintenance and Support for Licensed Software
+5.1. Vaadin may, at its sole discretion, during the Subscription term offer
+maintenance releases, updates and upgrades (new versions) to Licensed Software.
+Installed updates replace and/or supplement (and may disable) the version of
+the Licensed Software previously provided under the License. The updated
+Licensed Software remains subject to the terms of the License and to any
+special terms and conditions possibly accompanying such update.
 
-9.6 Governing Law and Jurisdiction
+5.2. Customer is not entitled to receive support for the Licensed Software,
+except as set out in the Order or other Agreement document. Vaadin may also
+otherwise at its sole discretion provide support for the Licensed Software
+during the Subscription term, either for free or for a fee.
 
-9.6.1 For customers domiciled in the United States
+6. Subscription-based Services, Tools, and Features
+6.1. This Section 6 sets out the terms under which Customer may purchase
+certain Subscription-based tools, features and other Services from Vaadin. Any
+tool, feature or other Service to be delivered by Vaadin to Customer shall be
+set out and agreed upon in an Order or other Agreement. Sections 6.2–6.10 below
+apply with respect to Customer only to such extent that Customer has explicitly
+agreed upon the delivery of such tools, features or other Services by Vaadin to
+Customer.
 
-If the Customer’s domicile is in the United States, the Agreement shall be
+6.2 Training Courses
+6.2.1. Customer is offered access to Vaadin’s recorded and/or live, instructor
+led online training courses during the term of the Subscription.
+
+6.2.2. Customer Users can enroll to live training courses subject to
+availability of seats. Once Vaadin has processed the Customer User’s
+enrollment, Vaadin will send such Customer User a confirmation email.
+
+6.2.3. Vaadin exclusively owns and retains all title, Intellectual Property
+Rights, and any other rights in and to Vaadin Materials used in connection with
+training courses. Customer agrees not to copy or distribute Vaadin’s
+copyrighted material without Vaadin’s prior written consent and not to use
+recording equipment in Vaadin’s classes without Vaadin’s prior written consent.
+
+6.3. Vaadin Commercial Tools
+6.3.1. Customer is given access to existing and upcoming versions of Vaadin’s
+commercial components and tools as defined in an Order or other Agreement
+document. Vaadin grants Customer a license to use the commercial Vaadin tools
+and components for the duration of the Subscription in accordance with the
+applicable license terms set for each tool and component. Unless otherwise set
+out in the applicable license terms set for each tool or component, Customer’s
+right of use shall expire without a separate notice when the Subscription is
+terminated or expires.
+
+6.4. Expert Chat
+6.4.1. Customer is offered access to a chat service, where Vaadin’s expert team
+helps Customer by answering technical questions. This Service allows Customer
+to get advice regarding any issues related to Supported Software through a chat
+service during the Support Hours. Only advice is provided as part of this
+Service. For example, implementation of software, UX design, hands-on sessions
+through screen sharing or corresponding, or training services are not provided
+as part of this Service.
+
+6.5. Expert on Demand
+6.5.1. Customer is provided with an on-demand software development and advisory
+Service, where Vaadin’s expert team helps Customer with Vaadin’s applications.
+This Service is provided as ticket-based Consulting in accordance with this
+Section 6.5 and Section 7.1 below.
+
+6.5.2. This Service may include a number of hours that are added into the time
+balance in the beginning of the Subscription term or on a monthly basis or that
+are purchased separately. Customer may submit service requests to the Service.
+The time used for resolving the service requests is deducted from Customer’s
+time balance. The Subscription has a credit limit that allows resolution of
+service requests in case the time balance is zero (0) or negative, up to the
+credit limit. The negative time balance will be invoiced monthly. At the end of
+the Subscription term any unused positive balance is lost. When the
+Subscription is terminated, any remaining time balance is lost.
+
+6.5.3. During the Support Hours, the resolution of a support request will be
+started within two (2) business days. If Vaadin fails to start the resolution
+as agreed, Customer will be compensated with one (1) free Expert on Demand hour
+that is added to the time balance.
+
+6.5.4. If the estimated work effort for resolving a service request totals to
+more than four (4) hours, a confirmation is requested from Customer before
+starting the work. If the estimated work effort is inadequate for completing
+the work, Vaadin is not obligated to continue working and will stop working on
+the service request when the estimated number of hours is reached, if Customer
+does not authorize the continuation of the service request at their expense.
+
+6.6. Warranty
+6.6.1. This Service allows Customer to request a specific bug in Supported
+Software to be fixed. There can be only one open warranty request at a time per
+Subscription. Vaadin reserves the right to choose, at its sole discretion,
+which warranty requests will be fixed.
+During the Support Hours, the resolution of a support request will be started
+within two (2) business days. If Vaadin fails to start the resolution as
+agreed, Customer will be compensated with one (1) free Expert on Demand hour
+that is added to the time balance.
+
+6.6.2. During the Support Hours, the resolution of a support request will be
+started within two (2) business days. If Vaadin fails to start the resolution
+as agreed, Customer will be compensated with one (1) free Expert on Demand hour
+that is added to the time balance.
+
+6.7. Vaadin Mentor
+6.7.1. This Service is provided as Consulting in accordance with Section 7.1
+below.
+
+6.8. Indemnification
+6.8.1. Vaadin shall indemnify, defend and hold harmless Customer from and
+against any and all third-party claims and/or liabilities, including attorneys’
+fees and costs, arising directly out of the use of Vaadin products by Customer
+in compliance with the Agreement. The aforesaid claims include claims of
+misappropriation, infringement, and invalid licensing of copyrighted work. If
+any action or proceeding is brought against Customer by reason of any of the
+foregoing matters, Vaadin shall upon written notice in English defend the same
+at Vaadin’s expense and Customer shall cooperate with Vaadin in such defense.
+If in the reasonable opinion of Vaadin a Vaadin product infringes third-party
+Intellectual Property Rights or if such infringement has been confirmed in a
+trial, Vaadin shall and may at its own expense and discretion either (a) obtain
+the right to continue use of the Vaadin product for Customer; (b) replace the
+Vaadin product with a product or service that complies with the Agreement and
+corresponds to the Vaadin product; or (c) modify the Vaadin product in order to
+eliminate the infringement in such a manner that the modified Vaadin product
+with the Agreement. If none of the above-mentioned alternatives is available to
+Vaadin on reasonable terms, Customer shall, at the request of the supplier,
+stop using the Vaadin product and return it, and Vaadin shall refund the price
+paid by Customer for the deliverable less the proportion of the price
+corresponding to the actual time of use. Vaadin shall not, however, be liable
+if the claim (a) is due to willful misconduct or gross negligence by Customer,
+(b) is asserted by a group company of Customer, (c) results from alteration of
+the Vaadin product by Customer or from compliance with Customer’s written
+instructions; (d) results from use of the Vaadin product in combination with
+any product or service not supplied by Vaadin; or (e) could have been avoided
+by the use of a released product or service that complies with the Agreement
+and corresponds with the deliverables and which product or service is offered
+for use to Customer by Vaadin without separate charge. The aforesaid indemnity
+obligation of Vaadin shall, however, always be limited to an amount equal to
+three times the yearly Subscription fee, and Vaadin’s liability for indemnified
+claims shall be limited to this Section 6.9.
+
+6.9. Extended Maintenance for Vaadin
+6.9.1. The extended maintenance for Vaadin Service extends the coverage of the
+Expert Chat Service (Section 6.4) and the Warranty Service (Section 6.6) thus
+that the latest minor versions of Vaadin Framework versions 7 and 8 and related
+Vaadin components, Vaadin Tools, Vaadin Pro Add-ons and stable status add-ons
+released by Vaadin are covered for the duration of the Subscription term.
+
+6.9.2. The extended maintenance for Vaadin Service extends the coverage of the
+Expert Chat Service (Section 6.4) and the Warranty Service (Section 6.6) thus
+that the latest minor versions of Vaadin platform versions 10, 14, and 23+ are
+covered for the duration of the Subscription term.
+
+6.9.3. Any and all changes to the software covered by Extended Maintenance may
+be published under commercial or non-commercial License and will be made
+available exclusively to Customers that have subscribed to the extended
+maintenance for Vaadin Service.
+
+6.9.4. The scope of the extended maintenance for Vaadin Service is described in
+more detail in the Order or other Agreement document.
+
+6.10. Custom Builds
+6.10.1 This Service allows Customer to request specific bugs fixes or features
+to be backported to a non-supported version of Vaadin Framework or Vaadin
+Platform and released as a Customer specific build under a commercial Runtime
+License (Section 4.4) (“Custom Build”). Features will be backported under the
+Expert on Demand Service (Section 6.5) and charged separately. Vaadin maintains
+the Custom Build for the duration of the Subscription. The license to use the
+Custom Build is valid for the duration of the Subscription and ends when the
+Subscription terminates.
+
+6.10.2. During the Support Hours, the resolution of a support request will be
+started within two (2) business days. If Vaadin fails to start the resolution
+as agreed, Customer will be compensated with one (1) free Expert on Demand hour
+that is added to the time balance.
+
+6.10.3. Vaadin will build a new version of the Custom Build on demand basis,
+however, at most once a month.
+
+7. Consulting
+7.1. Delivery of Consulting
+7.1.1 The Parties may agree upon the delivery of Consulting in an Order, SOW,
+or other Agreement document. Unless otherwise agreed by the Parties, Consulting
+is delivered by Vaadin to Customer on a time-and-material basis. The standard
+working methods and practices of Vaadin shall be followed.
+
+7.1.2. Vaadin warrants that the Consulting will be performed in the agreed
+manner, with due care and with the professional skills required for the task.
+This warranty shall be valid for thirty (30) days from performance of
+Consulting. If during such time period, Customer reasonably determines that the
+Consulting has not been performed in accordance with the aforesaid, Customer
+shall promptly notify Vaadin. If Vaadin determines that the Consulting was
+defective, then Vaadin will take prompt remedial action to re-perform any
+Consulting that fails to meet the limited warranty at its own cost and expense
+or refund to Customer the fees paid for the non-conforming Consulting. THE
+FOREGOING STATES CUSTOMER’S SOLE AND EXCLUSIVE REMEDY AND VAADIN’S ENTIRE
+LIABILITY FOR ANY BREACH OF THE FOREGOING WARRANTY REGARDING CONSULTING.
+
+7.1.3. If either Party finds that a delay will occur or is likely, the Party
+shall without delay inform the other Party in writing of the delay and of the
+effects of the delay on the delivery time schedule.
+
+7.1.4. Unless otherwise agreed, any indicated delivery times of Vaadin are
+approximate. Vaadin’s sole responsibility for delays is to use reasonable
+commercial efforts to meet the specified time of delivery.
+
+7.1.5. If a not-to-exceed hourly limit is specified in the Agreement, Vaadin is
+not obligated to continue working and will stop working on the Consulting when
+such limit is reached if Customer does not authorize the continuation of the
+Consulting at their expense.
+
+7.2. Qualification and Replacement of Personnel
+7.2.1. Customer shall have a right to review and approve the qualifications of
+any Vaadin personnel assigned to perform the Consulting described in an Order
+or a SOW, and Customer may require Vaadin to remove and/or replace any of such
+personnel at any point of time. If Customer has selected named personnel to
+perform the Consulting, such personnel shall be named in an Order or a SOW.
+
+7.3. Non-solicitation
+7.3.1. During the Term of an Agreement concerning Consulting and for a period
+of one (1) year after termination of the Agreement concerning Consulting, both
+Parties hereby agree that they shall not, directly or indirectly, solicit,
+discuss employment or consultancy with, or hire any employee or consultant of
+the other Party, including all affiliates, related and group companies and
+subcontractors. If either Party breaches this Section, the breaching Party
+shall, on demand, pay to the other Party 200 000 euros according to the payment
+terms set forth in this Agreement. This amount represents an agreement between
+the Parties approximating the significant damage likely to result from breach
+of this Section and is not to be interpreted as a penalty or punishment
+therefor.
+
+7.4. Sponsored Development
+The Parties may agree upon the delivery of Sponsored Development in an
+Agreement. This Service is provided as Consulting in accordance with this
+Section 7. Intellectual Property Rights to Sponsored Development results are
+regulated by Section 11 below.
+
+7.5. Change Control
+7.5.1. All changes to any SOW incorporated into the Agreement, including
+changes to the specifications and contents of the delivery and the possible
+effects of the changes to the time schedule, as well as any changes to the
+price and other terms and conditions of the SOW and of the Agreement shall be
+agreed in writing to be valid.
+
+8. Modifying Subscription or Service
+8.1. Vaadin may change its Subscriptions and/or Services by adding, modifying
+or removing any features or functionalities. Vaadin may also stop providing
+parts of, or the whole of, the Subscription or a Service. Vaadin may also
+create new operating guidelines or limitations to the Subscription or a
+Service. Vaadin will notify Customer of significant changes in advance. If the
+change significantly diminishes or impairs the Subscription or Service,
+Customer may terminate the Subscription or Service and any pre-paid fees will
+be refunded in proportion to non-rendered Services or for the remaining
+Subscription term. Vaadin, however, endeavors not to apply such changes that
+significantly diminishes or impairs the Service for Customer during the ongoing
+Subscription term or the ongoing term of a SOW.
+
+9. General Responsibilities of Customer
+9.1. Customer shall pay the applicable Subscription and Service fees in a
+timely manner.
+
+9.2. Customer shall provide Vaadin free of charge with all permissions,
+instructions, information, documentation, access rights, resources and
+assistance that are reasonably necessary for Vaadin to deliver the
+Subscriptions and Services. Customer will adhere to the agreed processes and
+ways of working (e.g., online tools and communication systems) as applicable.
+Customer maintains for its part and at its own cost the data communication
+connections, equipment, ICT environment and software necessary for the use of
+Subscriptions and Services, as reasonably informed by Vaadin from time to time.
+
+9.3. Customer is responsible for the correctness, completeness, suitability and
+non-infringement of any material and information provided and instructions
+issued to Vaadin as well as for the compliance thereof with the laws,
+regulations and orders of the authorities. Customer shall ensure that the
+information and material and agreed use of the Services, Licensed Software,
+Vaadin Commercial Materials or Vaadin Non-Commercial Materials do not violate
+any export control restrictions or international trade sanctions. Customer
+shall ensure that such Services and Materials are used in accordance with
+applicable law and under relevant consents.
+
+10. Fees, Invoicing and Payment Terms
+10.1. Subscriptions
+10.1.1. The applicable Subscription fee is detailed in the Order or other
+Agreement document.
+
+10.1.2. The agreed Subscription fee shall apply for the agreed Subscription
+term. Vaadin shall be entitled to adjust the Subscription fee at any time. The
+adjusted new Subscription fee shall apply with respect to Customer from the
+beginning of the next Subscription term, provided that the Subscription is
+renewed.
+
+10.1.3. As regards Developer Licenses, the Subscription fee is tied to the
+number of Developers and possible other metrics set out in the Order or other
+Agreement document. As regards Runtime Licenses, the Subscription fee is tied
+to the Authorized Application and possible other metrics set out in the Order
+or other Agreement document. As regards Trial Licenses, no Subscription fee is
+charged.
+
+10.2. Consulting
+10.2.1. The applicable prices and hourly rates are detailed in the Agreement
+and/or its appendices. If a price for a Service has not been agreed, the price
+in Vaadin’s price list effective on the order date shall apply.
+
+10.2.2. Vaadin shall be entitled to adjust its prices with thirty (30) days’
+notice to Customer.
+
+10.2.3. Vaadin shall, if pre-approved by Customer, be entitled to charge for
+customary and reasonable travel and accommodation costs as well as other travel
+costs relating to Services. Traveling time shall be charged as 50% of the
+agreed hourly rates.
+
+10.2.5. In case Customer requests that Vaadin personnel performs Consulting
+more than eight (8) hours per day, and Vaadin agrees to such request, Vaadin
+shall be entitled to charge a 50% surplus for each hour exceeding such eight
+(8) hour limit. If no hourly rate is agreed in the Agreement, Vaadin’s price
+list effective on the order date shall apply.
+
+10.3. Invoicing and payment terms
+10.3.1. Vaadin invoices Subscriptions in advance upon order or thirty (30) days
+before renewal. Time-and-material based Services are invoiced for monthly in
+arrears.
+
+10.3.2. Value added tax, sales tax and any other similar taxes, charges and
+withholdings are added to the fees in accordance with the then current
+regulations.
+
+10.3.3. Payment terms are ten (10) days net of the date of an invoice. Vaadin
+reserves the right to charge interest on any unpaid balances, at the rate of
+two percent (2%) per month.
+
+11. Intellectual Property Rights
+11.1. Vaadin Materials
+11.1.1. All Intellectual Property Rights, title and any other rights in and to
+Vaadin Materials are and shall at all times remain the sole and exclusive
+property of Vaadin and its third-party licensors, if any. Such Vaadin Materials
+include, e.g., Licensed Software, Vaadin Commercial Materials, Vaadin
+Non-Commercial Materials, and Vaadin’s Pre-Existing Materials.
+
+11.1.2. Customer’s right to use Licensed Software, other Vaadin Commercial
+Materials, and/or Vaadin Non-Commercial Materials is subject to Customer
+separately obtaining a license to such Materials and Customer complying with
+such license terms and conditions. Customer may use Vaadin’s Materials only for
+the purpose set out in the Agreement.
+
+11.1.3. Customer will not at any time do or cause to be done any such act or
+thing which in any way impairs, or intends to impair, any right, title,
+interest or any Intellectual Property Right of Vaadin or its third-party
+licensors. Customer shall not in any manner represent that it has any ownership
+of any kind in any of the above-mentioned Intellectual Property Rights.
+
+11.1.4. Customer’s License to Use Licensed Software is set out under Section 4
+above. Section 6 contains license terms relating to certain tools, features and
+other Services from Vaadin.
+
+11.2. Customer Work Products
+11.2.1. Unless otherwise agreed between the parties with respect to Vaadin’s
+Pre-Existing Materials, Vaadin grants to Customer a perpetual, worldwide,
+non-exclusive, royalty-free, irrevocable, transferable license to use, make,
+reproduce, prepare derivative works of, publicly display and perform, transmit,
+sell, offer to sell, and distribute Vaadin’s Pre-Existing Materials or any
+derivative works of Vaadin’s Pre-Existing Materials that are used in the
+creation of agreed Customer Work Products as part of Consulting and are an
+inseparable part of the Customer Work Products. This license is limited to
+Vaadin’s Pre-Existing Materials only, as described above, and does not grant
+any rights to any Licensed Software, other Vaadin Commercial Materials, or
+Vaadin Non-Commercial Materials.
+
+11.3. Customer Materials
+11.3.1. Customer exclusively owns and retains all title, Intellectual Property
+Rights, and any other rights in and to Customer’s Pre-Existing Materials.
+Vaadin has the right to use Customer’s Pre-Existing Materials only for the
+purposes of the Agreement.
+
+11.3.2. Customer exclusively owns and retains all rights to the Customer Work
+Products. Vaadin has the right to use the Customer Work Products only for the
+purposes of the Agreement. For the avoidance of doubt, the Customer Work
+Products never includes Licensed Software, other Vaadin Commercial Materials,
+or Vaadin Non-Commercial Materials.
+
+11.4. Sponsored Development Results
+11.4.1. Vaadin exclusively owns and retains all title, Intellectual Property
+Rights and any other rights in and to any results from Sponsored Development
+(“Sponsored Development Results”). Vaadin grants to Customer a perpetual,
+worldwide, non-exclusive, royalty-free, irrevocable, transferable license to
+use, make, reproduce, prepare derivative works of, publicly display and
+perform, transmit, sell, offer to sell, and distribute Sponsored Development
+Results or any derivative works of Sponsored Development Results.
+
+11.5. Contributions to Vaadin Materials
+11.5.1. Customer irrevocably and perpetually assigns to Vaadin all of
+Customer’s right, title and interest in and to any contribution related to
+Licensed Software, other Vaadin Commercial Materials, Vaadin Non-Commercial
+Materials, or Vaadin’s Pre-Existing Rights, including without limitation
+software artefacts, modifications, bug fixes, bug reports, performance reports,
+documentation changes and other enhancements created during the performance of
+the Agreement, including without limitation all proprietary rights and
+Intellectual Property Rights recognized anywhere in the world, now or in the
+future, associated with Customer’s contribution related to said Vaadin
+Materials. Customer represents and warrants that it has the legal right to
+grant these rights to Vaadin.
+
+11.5.2. The Parties may on a case-by-case basis and in advance agree separately
+on more significant Customer contributions to Vaadin Materials.
+
+11.6. Content in Expert on Demand and Expert Chat
+11.6.1. As regards content submitted to the expert on demand or expert chat
+Services, Customer grants Vaadin a worldwide, fully paid-up limited license to
+use and utilize such content for the purposes of improving and operating
+Vaadin’s Services. This license continues even if the Subscription ends and
+Customer stops using Vaadin’s Services. Customer represents and warrants that
+it has the legal right to grant these rights to Vaadin.
+
+11.6.2. Vaadin grants Customer a worldwide, royalty-free, irrevocable,
+non-exclusive license to duplicate, modify, distribute, sell, re-license and
+reuse the answers and advice to the requests that Customer has sent to the
+expert on demand or expert chat Services. This license does not give Customer
+any rights to any Intellectual Property Rights that are not created as part of
+the service request resolution process, including without limitation Licensed
+Software, other Vaadin Commercial Materials, Vaadin Non-Commercial Materials,
+Vaadin’s Pre-Existing Materials, or other software, products or documentation.
+
+11.7. Third-Party Components
+11.7.1. All Intellectual Property Rights to third-party components are owned by
+third parties and exclusively governed by the terms issued by the respective
+third-party vendors. To the extent the use of third-party components has not
+been agreed upon in the Agreement, Vaadin will ask for Customer’s written
+permission for using any third-party components in connection with providing
+the Services. Customer agrees to procure all such licenses for third-party
+components necessary for the provision of the Services.
+
+11.8. Vaadin Trademarks
+11.8.1. “Vaadin”, “}>”, “Fight for Simplicity” and “Thinking of U and I” are
+registered trademarks of Vaadin Ltd and may not be used without permission from
+Vaadin.
+
+11.9. Suspected Violations of Intellectual Property Rights
+11.9.1. Customer is encouraged to notify Vaadin if it suspects that somebody is
+violating Vaadin’s Intellectual Property Rights, by email to privacy@vaadin.com
+or by filling Vaadin’s online contact form.
+
+12. Customer Data
+12.1. Customer acknowledges that it is solely responsible for protecting and
+preserving any and all information and data present on its computer systems or
+which may be otherwise affected by the performance of the Licensed Software
+and/or Services. Vaadin shall not be responsible for the loss of or damage to
+any such information, including where such loss or damage results from failure
+of Customer to properly back-up its data prior to the performance of the
+Licensed Software and/or Services. Customer shall be responsible for taking
+back-up copies of its data and data files and for verifying the functionality
+of such back-up copies.
+
+13. Processing of Personal Data
+13.1. The Privacy Policy describes in detail how Vaadin as a controller
+processes personal data on its customers and community members.
+
+13.2. If Vaadin processes personal data on behalf of Customer, the Parties
+shall enter into a separate data processing agreement.
+
+14. Confidentiality
+14.1. Both Vaadin and Customer agree that the Agreement and all information and
+Materials related to the Agreement constitutes “Confidential Information”.
+Confidential Information further includes information either marked as
+confidential or information reasonably known or understood by the receiving
+Party as being treated by the disclosing party as confidential. Confidential
+Information shall not include information: (i) that is now or becomes generally
+available to the public through no fault or breach of the receiving Party; (ii)
+that the receiving Party can document was already known to it prior to
+disclosure by the disclosing Party; (iii) that is independently developed by
+the receiving Party without the use of any of the other Party’s Confidential
+Information; and (iv) that the receiving Party rightfully obtains from a third
+party who has the right to transfer or disclose it.
+
+14.2. Each Party agrees to keep the other Party’s Confidential Information
+confidential, not to use such information except as authorized by the
+disclosing Party, and to accord to such information the same safeguards and
+protections which it accords to its own confidential business or technical
+information. If the receiving Party is subpoenaed or ordered by any court or
+governmental agency to disclose the other Party's Confidential Information, it
+will provide prompt written notice to the other Party so as to allow such Party
+to seek a protective order or confidential treatment for such information.
+
+14.3. Both Parties may disclose Confidential Information to their personnel
+that have a need to know such Confidential Information for performing the
+duties required by the Agreement with the provision that such personnel is
+bound by confidentiality obligations corresponding to those included in this
+Section 14.
+
+15. Use of Name
+15.1. Vaadin may use Customer’s name and logo in its marketing collateral,
+websites, and promotional materials to identify Customer as a customer of
+Vaadin.
+
+16. Subcontractors
+16.1. Vaadin may subcontract the delivery of its Subscriptions and Services
+wholly or partially, however, such subcontractors must agree to be bound by
+confidentiality provisions corresponding to those set out in the Agreement.
+Vaadin may use resources from any parent, affiliated or related companies to
+perform its Subscriptions and Services.
+
+17. Employees
+17.1. Vaadin is responsible for all Vaadin personnel and for the payment of
+their compensation, including, if applicable, withholding of income taxes and
+the payment and withholding of social security and other payroll taxes,
+unemployment insurance, workers’ compensation insurance payments and disability
+benefits.
+
+18. Competition
+18.1. Customer acknowledges and agrees that Vaadin may, without limitation,
+grant licenses and provide Subscriptions and Services to other persons, firms,
+corporations, or other entities, including entities that compete with Customer,
+on any terms Vaadin deems appropriate.
+
+19. Auditing rights
+19.1. Vaadin shall have a right to inspect and audit Customer’s compliance with
+the Agreement. Before using its audit right, Vaadin may first ask Customer to
+address its compliance with the Agreement by correspondence, reports, and other
+documents. If Vaadin finds such documentation insufficient, Vaadin shall be
+entitled to carry out an audit during regular business hours of Customer. Such
+audit may be carried out no more than once per year unless a follow-up audit is
+required due to revealed violations of the Agreement. If an audit reveals
+violations of the Agreement or an underpayment by Customer, Customer shall
+without delay pay the amount underpaid and/or correct the error/shortage and in
+addition compensate Vaadin for all reasonable costs associated with such an
+audit.
+
+20. Term and Termination
+20.1. Subscriptions
+20.1.1. A Subscription is purchased for a Subscription term chosen at the time
+of purchase.
+
+20.1.2. Customer's right of use starts at the beginning of the Subscription
+term and remains in force until the end of the Subscription term. The start
+date of the Subscription term may be set out in the Order or other Agreement
+document. If no Subscription start date is specified, the start date shall be
+the date when Vaadin provides Customer with access to subscribed product or
+service.
+
+20.1.3. At the end of the Subscription term, the Subscription is automatically
+renewed for the period length corresponding to the length of the original
+Subscription term. Customer will be charged with the same payment method as
+with the most recent Subscription. Customer can terminate any Subscription
+within the vaadin.com service or by contacting Customer’s contact person at
+Vaadin at any time. If a right of use is given without a fee, such right of use
+is valid for the time defined by Vaadin.
+
+20.1.4. Details regarding Subscriptions for Licensed Software
+20.1.5 Upon expiration or termination of a License (in connection with the
+expiration of a Subscription term or a premature termination of the Agreement),
+Customer’s and its Authorized Users’ right to Use Licensed Software shall end.
+Except as set out in Section 20.1.6 below, Customer shall promptly cease use of
+the Licensed Software and destroy all copies of the Licensed Software in its
+possession.
+
+20.1.6. With respect to Developer Licenses, Customer may also after the
+Subscription term continue permitted redistribution of the Licensed Software as
+part of Customer’s Project Result, providing that the Licensed Software is not
+further developed or modified or used as a component or framework in a software
+development project or used in another way that would require a valid Developer
+License. In case the Agreement is terminated due to Customer’s breach of the
+Agreement, Vaadin shall, however, be entitled to terminate Customer’s possible
+right of redistribution. Any licenses Customer has granted to the Project
+Result in accordance with the terms and conditions of these Commercial Terms
+will, however, survive termination of the Agreement.
+
+20.1.7. With respect to Runtime Licenses, Customer’s and its sub-licensees’
+(i.e., possible permitted customers of Customer’s Authorized Application(s))
+right to Use Licensed Software ends on the day that the Subscription expires or
+is terminated.
+
+20.2. Consulting
+20.2.1. An Agreement on Consulting shall commence as of the Effective Date and
+remain in effect until further notice or for any fixed term agreed by the
+Parties (“Consulting Term”). During the Consulting Term, each SOW shall remain
+in effect until the Services have been delivered to Customer or as otherwise
+agreed by the Parties in the SOW. The termination of a SOW shall not cause the
+termination of any other SOW.
+
+20.2.2. Either Party may terminate any SOW during the Consulting Term for any
+reason or no reason by giving thirty (30) days’ written notice to the other
+Party.
+
+20.3. General provisions
+20.3.1. Vaadin may stop providing its Subscriptions or Services, or terminate
+the Agreement upon written notice of termination to Customer, if Customer has
+not paid a due and correct payment despite a written reminder, or Customer
+otherwise breaches any obligation under the Agreement, becomes insolvent or
+ceases doing business in the ordinary course. Vaadin may also stop providing
+Subscriptions or Services to Customer if Vaadin is investigating suspected
+misuse. If Customer’s breach is capable of being remedied, the Agreement may be
+terminated only if Customer has not rectified its breach within seven (7) days
+from the written notice of Vaadin.
+
+20.3.2. If Customer terminates the Agreement, no pre-paid Subscription or
+Service fees will be returned. If Vaadin terminates the Agreement prematurely,
+excluding termination due to Customer’s breach of any obligations under the
+Agreement, pre-paid Service fees will be refunded in proportion to non-rendered
+Services. All accrued Service fees shall be invoiced and paid upon termination
+of the Agreement within 45 days.
+
+21. Survival
+21.1. Any sections of the Agreement containing provisions on Intellectual
+Property Rights, licensing restrictions, confidentiality, use of name,
+non-solicitation, warranties and warranty disclaimers, limitations of
+liability, audits rights, governing law and jurisdiction, and any term of the
+Agreement which, by its nature, is intended to survive termination or
+expiration, will remain in effect following any termination or expiration if
+the Agreement, as will Customer’s obligation to pay any fees accrued and owing
+to Vaadin as of termination or expiration.
+
+22. Warranties
+22.1. LICENSED SOFTWARE IS PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND
+EXPRESS OR IMPLIED, AND TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW.
+EXCEPT AS EXPRESSLY PROVIDED IN THESE COMMERCIAL TERMS, NEITHER PARTY MAKES ANY
+WARRANTIES OF ANY KIND, WHETHER EXPRESS OR IMPLIED, INCLUDING ANY IMPLIED
+WARRANTY OF MERCHANTABILITY, NON-INFRINGEMENT OR FITNESS FOR A PARTICULAR
+PURPOSE, ANY IMPLIED WARRANTY THAT ANY SOFTWARE, PRODUCT OR SERVICE WILL MEET
+ALL NEEDS AND EXPECTATIONS, BE ERROR-FREE, OR BE OF CERTAIN CONDITION, QUALITY
+OR DURABILITY, OR FUNCTION OR PERFORM IN A CERTAIN WAY. ALL SUCH WARRANTIES,
+CONDITIONS, UNDERTAKINGS AND TERMS ARE HEREBY EXCLUDED.
+23. Limitation of Liability
+23.1. VAADIN AND ITS AFFILIATES AND SUPPLIERS SHALL NOT BE LIABLE FOR ANY
+INDIRECT, SPECIAL, INCIDENTAL, PUNITIVE OR CONSEQUENTIAL DAMAGES, INCLUDING BUT
+NOT LIMITED TO BUSINESS INTERRUPTION, LOSS OF DATA, LOSS OF PROFITS, LOSS OF
+REVENUES, LOSS OF BUSINESS OPPORTUNITIES AND LOSS OF GOODWILL, OR FOR DAMAGES
+CAUSED TO THIRD PARTIES OR BY THE PURCHASE OF REPLACEMENT PRODUCTS OR SERVICES,
+HOWSOEVER CAUSED, EVEN IF THEY HAVE BEEN ADVISED OF OR SHOULD HAVE FORESEEN
+SUCH DAMAGES.
+
+23.2. TO THE FULLEST EXTENT PERMITTED BY LAW, THE TOTAL AGGREGATE LIABILITY OF
+A PARTY TOWARDS THE OTHER PARTY IN RELATION TO THE AGREEMENT IS LIMITED TO A
+MAXIMUM OF 50 % OF THE PRICE PAYABLE FOR THE AGREED SUBSCRIPTION, PRODUCT OR
+SERVICE DIRECTLY RELATED TO THE CAUSE OF ACTION ASSERTED UNDER THE RELEVANT
+AGREEMENT. IN CASE OF SUBSCRIPTIONS, THE AFOREMENTIONED 50 % LIMIT IS
+CALCULATED BASED ON THE SUBSRPTION FEE FOR THE MOST RECENT SUBSCRIPTION TERM.
+IN CASE OF CONSULTING CARRIED OUT OUTSIDE A SUBSCRIPTION, THE AFOREMENTIONED
+50 % LIMIT IS CALCULATED BASED ON THE TOTAL VALUE OF THE CONSULTING UNDER THE
+RELEVANT SOW.
+
+23.3. THIS LIMITATION OF LIABILITY SHALL APPLY REGARDLESS OF THE CAUSE OF
+ACTION OR LEGAL THEORY PLED OR ASSERTED, INCLUDING NEGLIGENCE, TORT, BREACH OF
+CONTRACT AND WARRANTY.
+
+24. Statute of Limitation
+24.1. The Parties agree that any action in relation to an alleged breach of the
+Agreement shall be commenced within one (1) year of the date of the breach,
+without regard to the date the breach is discovered. Any action not brought
+within that one (1) year time period shall be barred, without regard to any
+other limitations period set forth by law or statute.
+
+25. Complaints
+25.1. If at any time a Customer User would like to discuss with Vaadin how the
+Subscriptions or Services can be improved or if a Customer User has a complaint
+about the Subscriptions or Services, such Customer User is invited to contact
+the Vaadin contact person identified in the Agreement. Vaadin will investigate
+any complaints promptly and do what it can to resolve the difficulties.
+
+26. Governing Law and Jurisdiction
+26.1. For customers domiciled in the United States
+26.1.1. If Customer’s domicile is in the United States, the Agreement shall be
 governed by and construed in accordance with the substantive laws of the State
 of California. The Agreement shall be construed and enforced without regard to
 the United Nations Convention on the International Sale of Goods (CISG). Any
-dispute or controversy or claim arising out of or relating to this Agreement, or
+dispute or controversy or claim arising out of or relating to the Agreement, or
 the breach, termination or validity thereof, shall be resolved by final and
 binding arbitration in accordance with the International Chamber of Commerce
 Rules of Arbitration, by one (1) arbitrator appointed according to the
 aforementioned rules. The arbitration shall be conducted in the English
 language in San Francisco, California, United States.
 
-9.6.2 For customers domiciled outside the United States
+26.2. For customers domiciled outside the United States
+26.2.1. If Customer’s domicile is outside the United States, the Agreement
+shall be governed by and construed in accordance with the substantive laws of
+Finland, excluding its choice of law provisions and the United Nations
+Convention on Contracts for the International Sale of Goods (CISG). Any
+dispute, controversy or claim arising out of or relating to the Agreement, or
+the breach, termination or validity thereof, shall be finally settled by
+arbitration in accordance with the Arbitration Rules of the Finland Chamber of
+Commerce. The number of arbitrators shall be one. The seat of arbitration shall
+be Turku, Finland. The language of the arbitration shall be English.
 
-If the Customer’s domicile is outside the United States, the Agreement shall be
-governed by and construed in accordance with the substantive laws of Finland,
-excluding its choice of law provisions and the United Nations Convention on
-Contracts for the International Sale of Goods (CISG). Any dispute, controversy
-or claim arising out of or relating to the Agreement, or the breach, termination
-or validity thereof, shall be finally settled by arbitration in accordance with
-the Arbitration Rules of the Finland Chamber of Commerce. The number of
-arbitrators shall be one. The seat of arbitration shall be Turku, Finland. The
-language of the arbitration shall be English.
+26.3. Waiver of Jury Trial
+26.3.1. UNLESS OTHERWISE EXPRESSLY STATED IN THE AGREEMENT OR ANY SOW
+INCORPORATED IN THE AGREEMENT, THE PARTIES WAIVE ANY RIGHT TO A JURY TRIAL IN
+ANY PROCEEDING ARISING OUT OF OR RELATED TO THE AGREEMENT OR THE SUBSCRIPTIONS,
+PRODUCTS AND SERVICES PROVIDED HEREUNDER.
 
-9.7 Language
+27. Miscellaneous
+27.1. Force Majeure
+27.1.1. Except for the obligation to pay sums due hereunder, neither Party
+shall be responsible for defaults, delays or failures in performance of the
+Agreement (including, without limitation, war or insurrection, earthquake,
+flood or other similar natural catastrophe, pandemics, interruptions in general
+traffic, data communication or supply of electricity, technical malfunctions,
+denial-of-service attacks, computer errors, corruption or loss of information,
+import or export embargo, strike, lockout, boycott or other similar industrial
+action) resulting from acts, events, circumstances or causes beyond its
+control, including also a force majeure encountered by a subcontractor of a
+Party.
 
-The official text of the Agreement or any notices given or accounts or
+27.2. Entire Agreement and Order of Precedence
+27.2.1. The Agreement, including within limitation the Order or SOW, these
+Commercial Terms and any other appendices, comprise the entire agreement
+between Customer and Vaadin and supersedes all prior or contemporaneous
+negotiations, discussions or agreements, whether written or oral, between the
+parties regarding the subject matter of the Agreement.
+
+27.2.2. In case of discrepancies between the documents constituting part of the
+Agreement, the following order of precedence shall apply: (i) the Order, SOW or
+other mutually signed Agreement document, (ii) these Commercial Terms, (iii)
+other appendices of the Agreement (the appendices are applied as mutually
+supplementary).
+
+27.3. Notices
+27.3.1. Notices and communications shall be in writing and deemed served when
+received by hand delivery, certified mail (return receipt requested), by
+recognized overnight courier or by e-mail that is replied to by a contact
+person of the other Party.
+
+27.4. No Waiver
+27.4.1. The failure of a Party to exercise any right or privilege arising out
+of the Agreement shall not preclude it from requiring that the other Party
+fully performs its obligations and shall not preclude the Party from exercising
+such a right or privilege at any time.
+
+27.5. Headings
+27.5.1. The headings in these Commercial Terms are for the convenience of the
+Parties only and are not intended to define or limit the scope or
+interpretation of the Commercial Terms or any provision hereof.
+
+27.6. Severability
+27.6.1. If any provision of the Agreement shall be held invalid, illegal or
+unenforceable, the remaining provisions shall not be affected or impaired.
+
+27.7. Export Control
+27.7.1. The Licensed Software may be subject to import and export controls in
+other countries. Customer agrees to strictly comply with all applicable import
+and export regulations and acknowledge that Customer has the responsibility to
+obtain licenses to export, re-export, transfer or import Licensed Software.
+
+27.8. Assignment
+27.8.1. Neither Party shall have the right to assign the Agreement to a third
+party without the prior written consent of the other Party. However, Vaadin
+shall have the right to assign the Agreement and the rights and obligations
+contained therein to a company belonging to the same group of companies as
+Vaadin, and to a third party to which the business of Vaadin is transferred.
+Furthermore, Vaadin may assign its rights to amounts payable to it under the
+Agreement.
+
+27.9. Language
+27.9.1. The official text of the Agreement, any notices given, or accounts or
 statements required hereby shall be in English.
+
+27.10. Changes to these Commercial Terms
+Vaadin may change these Commercial Terms at any time, upon thirty (30) days
+prior written notice. The changed Commercial Terms shall apply to any new
+Orders and Agreements entered into after the effective date of the change. As
+regards Subscriptions, the changed Commercial Terms shall apply from the
+beginning of a renewed Subscription term, provided that Vaadin has notified
+Customer of the changed Commercial Terms no less than thirty (30) days prior to
+the renewal of the Subscription. If Customer does not agree to the amendment,
+it may terminate the affected Agreement by providing written notice to Vaadin
+prior to the effective date of the change (unless Vaadin decides to cancel the
+respective amendment before such effective date, in which case no termination
+right exists). Otherwise, the Agreement may be modified only by an express
+written agreement executed by authorized representatives of each Party.

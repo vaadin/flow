@@ -37,33 +37,28 @@ import org.slf4j.LoggerFactory;
  */
 public class TaskCopyLocalFrontendFiles implements FallibleCommand {
 
-    private final File flowResourcesFolder;
-    private final File localResourcesFolder;
+    private final Options options;
 
     /**
      * Copy project local frontend files from defined frontendResourcesDirectory
      * (by default 'src/main/resources/META-INF/resources/frontend'). This
      * enables running jar projects locally.
      *
-     * @param flowResourcesFolder
-     *            target directory for the discovered files
-     * @param localResourcesFolder
-     *            local folder containing resources to copy
      */
-    TaskCopyLocalFrontendFiles(File flowResourcesFolder,
-            File localResourcesFolder) {
-        this.flowResourcesFolder = flowResourcesFolder;
-        this.localResourcesFolder = localResourcesFolder;
+    TaskCopyLocalFrontendFiles(Options options) {
+        this.options = options;
     }
 
     @Override
     public void execute() {
-        createTargetFolder(flowResourcesFolder);
+        File target = options.getJarFrontendResourcesFolder();
+        File localResourcesFolder = options.localResourcesFolder;
+        createTargetFolder(target);
 
         if (localResourcesFolder != null
                 && localResourcesFolder.isDirectory()) {
             log().info("Copying project local frontend resources.");
-            copyLocalResources(localResourcesFolder, flowResourcesFolder);
+            copyLocalResources(localResourcesFolder, target);
             log().info("Copying frontend directory completed.");
         } else {
             log().debug("Found no local frontend resources for the project");

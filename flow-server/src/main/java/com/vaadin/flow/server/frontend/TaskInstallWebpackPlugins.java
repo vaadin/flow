@@ -50,11 +50,11 @@ public class TaskInstallWebpackPlugins implements FallibleCommand {
      * Copy Flow webpack plugins into <code>PLUGIN_TARGET</code> under the build
      * directory.
      *
-     * @param buildDirectory
-     *            project build folder
+     * @param options
+     *            the task options
      */
-    public TaskInstallWebpackPlugins(File buildDirectory) {
-        targetFolder = new File(buildDirectory, PLUGIN_TARGET);
+    public TaskInstallWebpackPlugins(Options options) {
+        targetFolder = new File(options.getBuildDirectory(), PLUGIN_TARGET);
     }
 
     @Override

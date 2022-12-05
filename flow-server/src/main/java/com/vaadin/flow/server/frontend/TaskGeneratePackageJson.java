@@ -15,11 +15,8 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
-
-import com.vaadin.experimental.FeatureFlags;
 
 import elemental.json.JsonObject;
 
@@ -42,9 +39,8 @@ public class TaskGeneratePackageJson extends NodeUpdater {
      * @param buildDir
      *            the used build directory
      */
-    TaskGeneratePackageJson(File npmFolder, File generatedPath, String buildDir,
-            FeatureFlags featureFlags) {
-        super(null, null, npmFolder, generatedPath, buildDir, featureFlags);
+    TaskGeneratePackageJson(Options options) {
+        super(null, null, options);
     }
 
     @Override

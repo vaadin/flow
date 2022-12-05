@@ -33,27 +33,23 @@ import org.apache.commons.io.IOUtils;
  */
 public class TaskGenerateViteDevMode extends AbstractTaskClientGenerator {
 
-    private final File frontendDirectory;
+    private Options options;
 
     /**
      * Create a task to generate <code>index.js</code> if necessary.
      *
-     * @param frontendDirectory
-     *            frontend directory is to check if the file already exists
-     *            there.
-     * @param generatedImports
-     *            the flow generated imports file to include in the
-     *            <code>index.js</code>
-     * @param outputDirectory
-     *            the build output directory
+     * @param options
+     *            the task options
      */
-    TaskGenerateViteDevMode(File frontendDirectory) {
-        this.frontendDirectory = frontendDirectory;
+    TaskGenerateViteDevMode(Options options) {
+        this.options = options;
     }
 
     @Override
     protected File getGeneratedFile() {
-        return new File(new File(frontendDirectory, FrontendUtils.GENERATED),
+        return new File(
+                new File(options.getFrontendDirectory(),
+                        FrontendUtils.GENERATED),
                 FrontendUtils.VITE_DEVMODE_TS);
     }
 

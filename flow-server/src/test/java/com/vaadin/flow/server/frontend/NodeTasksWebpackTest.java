@@ -40,7 +40,6 @@ import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.ExecutionFailedException;
-import com.vaadin.flow.server.frontend.NodeTasks.Builder;
 import com.vaadin.flow.server.frontend.NodeTestComponents.ExampleExperimentalComponent;
 import com.vaadin.flow.server.frontend.NodeTestComponents.FlagView;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -113,15 +112,16 @@ public class NodeTasksWebpackTest {
         ClassFinder finder = NodeUpdateTestUtil.getClassFinder(classes);
         Mockito.doReturn(finder).when(mockedLookup).lookup(ClassFinder.class);
 
-        Builder builder = new Builder(mockedLookup, new File(userDir), TARGET)
-                .enablePackagesUpdate(false).enableImportsUpdate(true)
-                .runNpmInstall(false).withEmbeddableWebComponents(false)
+        Options options = new Options(mockedLookup, new File(userDir))
+                .withBuildDirectory(TARGET).enablePackagesUpdate(false)
+                .enableImportsUpdate(true).runNpmInstall(false)
+                .withEmbeddableWebComponents(false)
                 .setJavaResourceFolder(propertiesDir);
 
         assertEquals(1, finder.getAnnotatedClasses(JsModule.class).size());
         assertEquals(1, finder.getAnnotatedClasses(JavaScript.class).size());
 
-        builder.build().execute();
+        new NodeTasks(options).execute();
         File importsFile = Paths
                 .get(userDir, TARGET, DEFAULT_GENERATED_DIR, IMPORTS_NAME)
                 .toFile();
@@ -151,12 +151,13 @@ public class NodeTasksWebpackTest {
         ClassFinder finder = NodeUpdateTestUtil.getClassFinder(classes);
         Mockito.doReturn(finder).when(mockedLookup).lookup(ClassFinder.class);
 
-        Builder builder = new Builder(mockedLookup, new File(userDir), TARGET)
-                .enablePackagesUpdate(false).enableImportsUpdate(true)
-                .runNpmInstall(false).withEmbeddableWebComponents(false)
+        Options options = new Options(mockedLookup, new File(userDir))
+                .withBuildDirectory(TARGET).enablePackagesUpdate(false)
+                .enableImportsUpdate(true).runNpmInstall(false)
+                .withEmbeddableWebComponents(false)
                 .setJavaResourceFolder(propertiesDir);
 
-        builder.build().execute();
+        new NodeTasks(options).execute();
         File importsFile = Paths
                 .get(userDir, TARGET, DEFAULT_GENERATED_DIR, IMPORTS_NAME)
                 .toFile();
@@ -176,22 +177,21 @@ public class NodeTasksWebpackTest {
         Mockito.doReturn(
                 new DefaultClassFinder(this.getClass().getClassLoader()))
                 .when(mockedLookup).lookup(ClassFinder.class);
-        Builder builder = new Builder(mockedLookup, new File(userDir), TARGET)
-                .enablePackagesUpdate(false).enableImportsUpdate(true)
-                .runNpmInstall(false).withEmbeddableWebComponents(false)
+        Options options = new Options(mockedLookup, new File(userDir))
+                .withBuildDirectory(TARGET).enablePackagesUpdate(false)
+                .enableImportsUpdate(true).runNpmInstall(false)
+                .withEmbeddableWebComponents(false)
                 .setJavaResourceFolder(propertiesDir);
 
         Assert.assertEquals(
                 new File(userDir, DEFAULT_FRONTEND_DIR).getAbsolutePath(),
-                ((File) getFieldValue(builder, "frontendDirectory"))
-                        .getAbsolutePath());
+                options.getFrontendDirectory().getAbsolutePath());
         Assert.assertEquals(
                 Paths.get(userDir, TARGET, DEFAULT_GENERATED_DIR).toFile()
                         .getAbsolutePath(),
-                ((File) getFieldValue(builder, "generatedFolder"))
-                        .getAbsolutePath());
+                options.getGeneratedFolder().getAbsolutePath());
 
-        builder.build().execute();
+        new NodeTasks(options).execute();
         Assert.assertTrue(
                 Paths.get(userDir, TARGET, DEFAULT_GENERATED_DIR, IMPORTS_NAME)
                         .toFile().exists());
@@ -205,12 +205,13 @@ public class NodeTasksWebpackTest {
         Mockito.doReturn(
                 new DefaultClassFinder(this.getClass().getClassLoader()))
                 .when(mockedLookup).lookup(ClassFinder.class);
-        Builder builder = new Builder(mockedLookup, new File(userDir), TARGET)
-                .enablePackagesUpdate(false).enableImportsUpdate(true)
-                .runNpmInstall(false).withEmbeddableWebComponents(false)
+        Options options = new Options(mockedLookup, new File(userDir))
+                .withBuildDirectory(TARGET).enablePackagesUpdate(false)
+                .enableImportsUpdate(true).runNpmInstall(false)
+                .withEmbeddableWebComponents(false)
                 .setJavaResourceFolder(propertiesDir);
 
-        NodeTasks nodeTasks = builder.build();
+        NodeTasks nodeTasks = new NodeTasks(options);
 
         Assert.assertFalse(
                 "TaskNotifyWebpackConfExistenceWhileUsingVite should not be in the list of node tasks when webpack is used.",
@@ -224,22 +225,21 @@ public class NodeTasksWebpackTest {
         Mockito.doReturn(
                 new DefaultClassFinder(this.getClass().getClassLoader()))
                 .when(mockedLookup).lookup(ClassFinder.class);
-        Builder builder = new Builder(mockedLookup, new File(userDir), TARGET)
-                .enablePackagesUpdate(false).enableImportsUpdate(true)
-                .runNpmInstall(false).withEmbeddableWebComponents(false)
+        Options options = new Options(mockedLookup, new File(userDir))
+                .withBuildDirectory(TARGET).enablePackagesUpdate(false)
+                .enableImportsUpdate(true).runNpmInstall(false)
+                .withEmbeddableWebComponents(false)
                 .setJavaResourceFolder(propertiesDir);
 
         Assert.assertEquals(
                 new File(userDir, DEFAULT_FRONTEND_DIR).getAbsolutePath(),
-                ((File) getFieldValue(builder, "frontendDirectory"))
-                        .getAbsolutePath());
+                options.getFrontendDirectory().getAbsolutePath());
         Assert.assertEquals(
                 new File(new File(userDir, TARGET), DEFAULT_GENERATED_DIR)
                         .getAbsolutePath(),
-                ((File) getFieldValue(builder, "generatedFolder"))
-                        .getAbsolutePath());
+                options.getGeneratedFolder().getAbsolutePath());
 
-        builder.build().execute();
+        new NodeTasks(options).execute();
         Assert.assertTrue(new File(userDir, Paths
                 .get(TARGET, DEFAULT_GENERATED_DIR, IMPORTS_NAME).toString())
                 .exists());
@@ -254,22 +254,21 @@ public class NodeTasksWebpackTest {
         Mockito.doReturn(
                 new DefaultClassFinder(this.getClass().getClassLoader()))
                 .when(mockedLookup).lookup(ClassFinder.class);
-        Builder builder = new Builder(mockedLookup, new File(userDir), TARGET)
-                .enablePackagesUpdate(false).enableImportsUpdate(true)
-                .runNpmInstall(false).withEmbeddableWebComponents(false)
+        Options options = new Options(mockedLookup, new File(userDir))
+                .withBuildDirectory(TARGET).enablePackagesUpdate(false)
+                .enableImportsUpdate(true).runNpmInstall(false)
+                .withEmbeddableWebComponents(false)
                 .setJavaResourceFolder(propertiesDir);
 
         Assert.assertEquals(
                 new File(userDir, "my_custom_sources_folder").getAbsolutePath(),
-                ((File) getFieldValue(builder, "frontendDirectory"))
-                        .getAbsolutePath());
+                options.getFrontendDirectory().getAbsolutePath());
         Assert.assertEquals(
                 new File(userDir, "my/custom/generated/folder")
                         .getAbsolutePath(),
-                ((File) getFieldValue(builder, "generatedFolder"))
-                        .getAbsolutePath());
+                options.getGeneratedFolder().getAbsolutePath());
 
-        builder.build().execute();
+        new NodeTasks(options).execute();
         Assert.assertTrue(
                 new File(userDir, "my/custom/generated/folder/" + IMPORTS_NAME)
                         .exists());
@@ -282,8 +281,8 @@ public class NodeTasksWebpackTest {
         Mockito.doReturn(
                 new DefaultClassFinder(this.getClass().getClassLoader()))
                 .when(mockedLookup).lookup(ClassFinder.class);
-        Builder builder = new Builder(mockedLookup, new File(userDir), TARGET)
-                .enablePackagesUpdate(false)
+        Options options = new Options(mockedLookup, new File(userDir))
+                .withBuildDirectory(TARGET).enablePackagesUpdate(false)
                 .withWebpack(new File(userDir, TARGET + "webapp"),
                         new File(userDir, TARGET + "classes"))
                 .enableImportsUpdate(true).runNpmInstall(false)
@@ -295,7 +294,7 @@ public class NodeTasksWebpackTest {
                 .withFrontendGeneratedFolder(new File(userDir,
                         DEFAULT_PROJECT_FRONTEND_GENERATED_DIR))
                 .setJavaResourceFolder(propertiesDir);
-        builder.build().execute();
+        new NodeTasks(options).execute();
         String webpackGeneratedContent = Files
                 .lines(new File(userDir, WEBPACK_GENERATED).toPath())
                 .collect(Collectors.joining("\n"));

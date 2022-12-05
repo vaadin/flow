@@ -43,17 +43,12 @@ public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
             "import '%svaadin-dev-tools.js';%n",
             FrontendUtils.JAR_RESOURCES_IMPORT);
     private final FrontendDependenciesScanner frontDeps;
-    private final File frontendGeneratedDirectory;
-    private final File frontendDirectory;
-    private boolean productionMode;
+    private final Options options;
 
     TaskGenerateBootstrap(FrontendDependenciesScanner frontDeps,
-            File frontendDirectory, boolean productionMode) {
+            Options options) {
         this.frontDeps = frontDeps;
-        this.frontendDirectory = frontendDirectory;
-        this.productionMode = productionMode;
-        this.frontendGeneratedDirectory = new File(frontendDirectory,
-                GENERATED);
+        this.options = options;
     }
 
     @Override
@@ -61,7 +56,7 @@ public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
         List<String> lines = new ArrayList<>();
         lines.add(String.format("import './%s';%n", FEATURE_FLAGS_FILE_NAME));
         lines.add(String.format("import '%s';%n", getIndexTsEntryPath()));
-        if (!productionMode) {
+        if (!options.productionMode) {
             lines.add(DEV_TOOLS_IMPORT);
         }
         lines.addAll(getThemeLines());
@@ -71,6 +66,8 @@ public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
 
     @Override
     protected File getGeneratedFile() {
+        File frontendGeneratedDirectory = new File(
+                options.getFrontendDirectory(), GENERATED);
         return new File(frontendGeneratedDirectory, BOOTSTRAP_FILE_NAME);
     }
 
@@ -80,6 +77,7 @@ public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
     }
 
     private String getIndexTsEntryPath() {
+        File frontendDirectory = options.getFrontendDirectory();
         boolean hasCustomIndexFile = new File(frontendDirectory, INDEX_TS)
                 .exists() || new File(frontendDirectory, INDEX_JS).exists();
         if (hasCustomIndexFile) {
@@ -92,7 +90,7 @@ public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
     private Collection<String> getThemeLines() {
         Collection<String> lines = new ArrayList<>();
         if (shouldApplyAppTheme()) {
-            lines.add("import { applyTheme } from './theme';");
+            lines.add("import { applyTheme } from './theme.js';");
             lines.add("applyTheme(document);");
             lines.add("");
         }
