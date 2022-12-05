@@ -416,7 +416,7 @@ public class FrontendToolsTest {
                 not(containsString(vaadinHomeDir)));
         assertThat(tools.getNodeExecutable(), not(containsString(baseDir)));
 
-        assertEquals(4, tools.getNpmExecutable().size());
+        assertEquals(5, tools.getNpmExecutable().size());
         assertThat(tools.getNpmExecutable().get(0), containsString("npm"));
         assertThat(tools.getNpmExecutable().get(1),
                 containsString("--no-update-notifier"));
