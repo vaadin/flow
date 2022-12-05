@@ -362,9 +362,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         /**
          * Gets the application id.
          *
-         * The application id is defined by
-         * {@link VaadinService#getMainDivId(VaadinSession, VaadinRequest)}
-         *
          * @return the application id
          */
         public String getAppId() {
@@ -1525,12 +1522,11 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 .orElseGet(deploymentConfiguration::getPushMode);
         setupPushConnectionFactory(pushConfiguration, context);
         pushConfiguration.setPushMode(pushMode);
-        pushConfiguration.setPushUrl(deploymentConfiguration.getPushURL());
         push.map(Push::transport).ifPresent(pushConfiguration::setTransport);
 
         // Set thread local here so it is available in init
         UI.setCurrent(ui);
-        ui.doInit(request, session.getNextUIid());
+        ui.doInit(request, session.getNextUIid(), context.getAppId());
         session.addUI(ui);
 
         // After init and adding UI to session fire init listeners.

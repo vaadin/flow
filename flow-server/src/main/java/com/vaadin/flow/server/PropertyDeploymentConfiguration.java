@@ -256,11 +256,6 @@ public class PropertyDeploymentConfiguration
     }
 
     @Override
-    public String getPushURL() {
-        return "";
-    }
-
-    @Override
     public Properties getInitParameters() {
         return allProperties;
     }

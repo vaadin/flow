@@ -92,7 +92,6 @@ public class DefaultDeploymentConfiguration
     private int webComponentDisconnect;
     private boolean closeIdleSessions;
     private PushMode pushMode;
-    private String pushURL;
     private boolean syncIdCheck;
     private boolean sendUrlsAsParameters;
     private boolean requestTiming;
@@ -129,7 +128,6 @@ public class DefaultDeploymentConfiguration
         checkWebComponentDisconnectTimeout();
         checkCloseIdleSessions();
         checkPushMode();
-        checkPushURL();
         checkSyncIdCheck();
         checkSendUrlsAsParameters();
 
@@ -255,16 +253,6 @@ public class DefaultDeploymentConfiguration
     @Override
     public PushMode getPushMode() {
         return pushMode;
-    }
-
-    /**
-     * {@inheritDoc}
-     * <p>
-     * The default mode is <code>""</code> which uses the servlet URL.
-     */
-    @Override
-    public String getPushURL() {
-        return pushURL;
     }
 
     /**
@@ -402,11 +390,6 @@ public class DefaultDeploymentConfiguration
             warnings.add(WARNING_PUSH_MODE_NOT_RECOGNIZED);
             pushMode = PushMode.DISABLED;
         }
-    }
-
-    private void checkPushURL() {
-        pushURL = getStringProperty(InitParameters.SERVLET_PARAMETER_PUSH_URL,
-                "");
     }
 
     private void checkSyncIdCheck() {

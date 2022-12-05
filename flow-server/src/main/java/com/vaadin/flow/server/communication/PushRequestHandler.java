@@ -18,8 +18,10 @@ package com.vaadin.flow.server.communication;
 
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletException;
+import javax.servlet.ServletRegistration;
 
 import java.io.IOException;
+import java.util.Optional;
 
 import org.atmosphere.cache.UUIDBroadcasterCache;
 import org.atmosphere.client.TrackMessageSizeInterceptor;
@@ -35,6 +37,7 @@ import org.atmosphere.util.VoidAnnotationProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.InitParameters;
@@ -221,6 +224,22 @@ public class PushRequestHandler
         atmosphere.addInitParameter("org.atmosphere.cpr.showSupportMessage",
                 "false");
 
+        Optional<ServletRegistration> servletRegistration = getServletRegistration(
+                vaadinServletConfig);
+        if (servletRegistration.isPresent()) {
+            atmosphere.addInitParameter(ApplicationConfig.JSR356_MAPPING_PATH,
+                    findFirstUrlMapping(servletRegistration.get())
+                            + Constants.PUSH_MAPPING);
+        } else {
+            getLogger().debug(
+                    "Unable to determine servlet registration for {}. "
+                            + "Using root mapping for push",
+                    vaadinServletConfig.getServletName());
+        }
+
+        atmosphere.addInitParameter(
+                ApplicationConfig.JSR356_PATH_MAPPING_LENGTH, "0");
+
         try {
             atmosphere.init(vaadinServletConfig);
 
@@ -234,6 +253,23 @@ public class PushRequestHandler
             throw new RuntimeException("Atmosphere init failed", e);
         }
         return atmosphere;
+    }
+
+    private static Optional<ServletRegistration> getServletRegistration(
+            ServletConfig config) {
+        String name = config.getServletName();
+        if (name != null) {
+            return Optional.ofNullable(config.getServletContext()
+                    .getServletRegistrations().get(name));
+        }
+        return Optional.empty();
+    }
+
+    private static String findFirstUrlMapping(
+            ServletRegistration registration) {
+        String firstMapping = registration.getMappings().stream().sorted()
+                .findFirst().orElse("/");
+        return firstMapping.replace("/*", "/");
     }
 
     @Override
