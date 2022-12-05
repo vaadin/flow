@@ -19,7 +19,9 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
+import com.vaadin.flow.function.SerializablePredicate;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -90,7 +92,10 @@ public class HierarchicalCommunicatorDataTest {
     private MockUI ui;
     private Element element;
 
-    private static class UpdateQueue implements HierarchicalUpdate {
+    private boolean parentClearCalled = false;
+
+    private class UpdateQueue implements HierarchicalUpdate {
+
         @Override
         public void clear(int start, int length) {
         }
@@ -113,6 +118,7 @@ public class HierarchicalCommunicatorDataTest {
 
         @Override
         public void clear(int start, int length, String parentKey) {
+            parentClearCalled = true;
         }
 
         @Override
@@ -220,6 +226,28 @@ public class HierarchicalCommunicatorDataTest {
                 .forEach(i -> Assert.assertNotNull("Expected key '" + i
                         + "' to be generated when unique key provider is not set",
                         communicator.getKeyMapper().get(i)));
+    }
+
+    @Test
+    public void expandRoot_filterOutAllChildren_clearCalled() {
+        parentClearCalled = false;
+
+        communicator.expand(ROOT);
+        fakeClientCommunication();
+
+        communicator.setParentRequestedRange(0, 50, ROOT);
+        fakeClientCommunication();
+
+        SerializablePredicate<Item> filter = item -> ROOT.equals(item);
+        communicator.setFilter(filter);
+        fakeClientCommunication();
+
+        dataProvider.refreshItem(ROOT, true);
+        fakeClientCommunication();
+
+        communicator.reset();
+
+        Assert.assertTrue(parentClearCalled);
     }
 
     private void fakeClientCommunication() {

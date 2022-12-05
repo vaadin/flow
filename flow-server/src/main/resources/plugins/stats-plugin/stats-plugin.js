@@ -103,24 +103,28 @@ function collectChunks(statsJson, acceptedChunks) {
         const modules = [];
         // Add all modules for chunk as slimmed down modules
         chunk.modules.forEach(function (module) {
-          const slimModule = {
-            id: module.id,
-            name: module.name,
-            source: module.source
-          };
-          if (module.modules) {
-            slimModule.modules = collectSubModules(module);
+          if(module.name.includes("flow-frontend") || module.name.startsWith("./")) {
+            const slimModule = {
+              id: module.id,
+              name: module.name,
+              source: module.source
+            };
+            if (module.modules) {
+              slimModule.modules = collectSubModules(module);
+            }
+            modules.push(slimModule);
           }
-          modules.push(slimModule);
         });
-        const slimChunk = {
-          id: chunk.id,
-          names: chunk.names,
-          files: chunk.files,
-          hash: chunk.hash,
-          modules: modules
+        if(modules) {
+          const slimChunk = {
+            id: chunk.id,
+            names: chunk.names,
+            files: chunk.files,
+            hash: chunk.hash,
+            modules: modules
+          }
+          chunks.push(slimChunk);
         }
-        chunks.push(slimChunk);
       }
     });
   }
