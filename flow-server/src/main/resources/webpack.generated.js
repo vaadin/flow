@@ -205,7 +205,7 @@ const processThemeResourcesCallback = (logger) => processThemeResources(themeOpt
 
 function getVersion(module) {
   const packageJson = `node_modules/${module}/package.json`;
-  return JSON.parse(readFileSync(packageJson, { encoding: 'utf-8' })).version;
+  return JSON.parse(fs.readFileSync(packageJson, { encoding: 'utf-8' })).version;
 }
 
 exports = {
