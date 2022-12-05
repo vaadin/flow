@@ -279,7 +279,8 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo {
         validateLicenses();
     }
 
-    private void validateLicenses() {
+    // package-private for a sake of testing
+    void validateLicenses() {
         if (compatibility || oldLicenseChecker) {
             return;
         }
