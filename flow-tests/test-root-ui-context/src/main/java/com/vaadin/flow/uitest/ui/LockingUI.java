@@ -1,8 +1,8 @@
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.uitest.servlet.CustomDeploymentConfiguration;
@@ -10,7 +10,7 @@ import com.vaadin.flow.uitest.servlet.CustomDeploymentConfiguration.Conf;
 
 @CustomDeploymentConfiguration({
         @Conf(name = "heartbeatInterval", value = "2") })
-public class LockingUI extends UI {
+public class LockingUI extends JavaScriptBootstrapUI {
 
     public static final String LOCKING_ENDED = "Locking has ended";
     public static final String ALL_OK = "All is fine";

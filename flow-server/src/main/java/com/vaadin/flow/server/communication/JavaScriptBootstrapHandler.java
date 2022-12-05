@@ -274,8 +274,9 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
     protected JsonObject getInitialJson(VaadinRequest request,
             VaadinResponse response, VaadinSession session) {
 
-        BootstrapContext context = createAndInitUI(UI.class, request, response,
-                session);
+        Class<? extends UI> uiClass = getUIClass(request);
+        BootstrapContext context = createAndInitUI(uiClass,
+                request, response, session);
 
         JsonObject initial = Json.createObject();
 
