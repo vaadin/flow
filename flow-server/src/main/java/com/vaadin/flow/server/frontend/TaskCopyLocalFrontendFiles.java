@@ -50,6 +50,11 @@ public class TaskCopyLocalFrontendFiles implements FallibleCommand {
     }
 
     @Override
+    public int order() {
+        return 200;
+    }
+
+    @Override
     public void execute() {
         File target = options.getJarFrontendResourcesFolder();
         File localResourcesFolder = options.localResourcesFolder;

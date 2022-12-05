@@ -58,6 +58,11 @@ public class TaskInstallWebpackPlugins implements FallibleCommand {
     }
 
     @Override
+    public int order() {
+        return 150;
+    }
+
+    @Override
     public void execute() {
         WebpackPluginsUtil.getPlugins().forEach(plugin -> {
             try {

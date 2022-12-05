@@ -49,6 +49,11 @@ public class TaskCopyTemplateFiles implements FallibleCommand {
     }
 
     @Override
+    public int order() {
+        return 260;
+    }
+
+    @Override
     public void execute() throws ExecutionFailedException {
         Set<Class<?>> classes = new HashSet<>(
                 classFinder.getSubTypesOf(Template.class));

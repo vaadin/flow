@@ -136,6 +136,11 @@ public class TaskRunNpmInstall implements FallibleCommand {
     }
 
     @Override
+    public int order() {
+        return 170;
+    }
+
+    @Override
     public void execute() throws ExecutionFailedException {
         String toolName = options.enablePnpm ? "pnpm" : "npm";
         if (packageUpdater.modified || shouldRunNpmInstall()) {

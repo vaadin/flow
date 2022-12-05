@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
+import java.util.Collections;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,6 +97,11 @@ public class TestEndpointGeneratorTaskFactory
         }
 
         @Override
+        public int order() {
+            return 100;
+        }
+
+        @Override
         public void execute() {
             writeFile(new File(outputFolder, "connect-client.default.ts"),
                     "// fake test client");
@@ -114,6 +121,11 @@ public class TestEndpointGeneratorTaskFactory
         public TestTaskGenerateOpenAPI(Options options) {
             super();
             this.options = options;
+        }
+
+        @Override
+        public int order() {
+            return 90;
         }
 
         @Override

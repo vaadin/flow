@@ -18,6 +18,7 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 
@@ -61,5 +62,10 @@ public class TaskGenerateIndexHtml extends AbstractTaskClientGenerator {
     @Override
     protected boolean shouldGenerate() {
         return !indexHtml.exists();
+    }
+
+    @Override
+    public int order() {
+        return 30;
     }
 }

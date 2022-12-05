@@ -40,4 +40,11 @@ public interface FallibleCommand {
      *             if there is an execution error
      */
     void execute() throws ExecutionFailedException;
+
+    /**
+     * Order number for when given task should be executed.
+     *
+     * @return task order number
+     */
+    int order();
 }

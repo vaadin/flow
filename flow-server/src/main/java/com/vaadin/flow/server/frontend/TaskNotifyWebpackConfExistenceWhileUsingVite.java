@@ -105,6 +105,11 @@ public class TaskNotifyWebpackConfExistenceWhileUsingVite
         }
     }
 
+    @Override
+    public int order() {
+        return 10;
+    }
+
     private void validate() throws IOException, ExecutionFailedException {
         Path webpackConfigFilePath = Paths.get(configFolder.getPath(),
                 WEBPACK_CONFIG);

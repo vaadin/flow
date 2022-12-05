@@ -74,6 +74,11 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
     }
 
     @Override
+    public int order() {
+        return 60;
+    }
+
+    @Override
     protected String getFileContent() throws IOException {
         return getFileContentForVersion("latest");
     }

@@ -93,6 +93,11 @@ public class NodeUpdaterTest {
             public void execute() {
             }
 
+            @Override
+            public int order() {
+                return 10;
+            }
+
         };
     }
 

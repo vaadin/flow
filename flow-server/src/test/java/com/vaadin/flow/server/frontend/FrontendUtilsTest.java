@@ -409,6 +409,11 @@ public class FrontendUtilsTest {
             }
 
             @Override
+            public int order() {
+                return 10;
+            }
+
+            @Override
             Logger log() {
                 return logger;
             }

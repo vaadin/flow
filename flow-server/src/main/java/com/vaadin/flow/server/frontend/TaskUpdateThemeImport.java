@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -64,6 +65,11 @@ public class TaskUpdateThemeImport implements FallibleCommand {
         themeImportFile = new File(frontendGeneratedFolder, THEME_IMPORTS_NAME);
         themeImportFileDefinition = new File(frontendGeneratedFolder,
                 THEME_IMPORTS_D_TS_NAME);
+    }
+
+    @Override
+    public int order() {
+        return 250;
     }
 
     @Override

@@ -128,6 +128,11 @@ public class NodeTasksExecutionTest {
         @Override
         public void execute() throws ExecutionFailedException {
         }
+
+        @Override
+        public int order() {
+            return 10;
+        }
     }
 
     /**

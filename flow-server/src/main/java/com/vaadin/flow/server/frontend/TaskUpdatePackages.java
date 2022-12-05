@@ -90,6 +90,11 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     @Override
+    public int order() {
+        return 160;
+    }
+
+    @Override
     public void execute() {
         try {
             Map<String, String> scannedApplicationDependencies = frontDeps

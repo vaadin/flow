@@ -90,6 +90,11 @@ public class TaskUpdateWebpack implements FallibleCommand {
     }
 
     @Override
+    public int order() {
+        return 220;
+    }
+
+    @Override
     public void execute() {
         try {
             createWebpackConfig();

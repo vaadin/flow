@@ -47,6 +47,11 @@ public class TaskGenerateServiceWorker extends AbstractTaskClientGenerator {
     }
 
     @Override
+    public int order() {
+        return 80;
+    }
+
+    @Override
     protected String getFileContent() throws IOException {
         try (InputStream swStream = getClass()
                 .getResourceAsStream(SERVICE_WORKER_SRC)) {

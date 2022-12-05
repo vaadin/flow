@@ -40,6 +40,11 @@ public class TaskGenerateFeatureFlags extends AbstractTaskClientGenerator {
     }
 
     @Override
+    public int order() {
+        return 140;
+    }
+
+    @Override
     protected String getFileContent() {
         List<String> lines = new ArrayList<>();
         lines.add("// @ts-nocheck");

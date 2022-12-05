@@ -17,6 +17,7 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.util.List;
 
 import elemental.json.JsonObject;
 
@@ -55,5 +56,10 @@ public class TaskGeneratePackageJson extends NodeUpdater {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    @Override
+    public int order() {
+        return 20;
     }
 }

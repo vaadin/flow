@@ -46,6 +46,11 @@ public class TaskGenerateViteDevMode extends AbstractTaskClientGenerator {
     }
 
     @Override
+    public int order() {
+        return 50;
+    }
+
+    @Override
     protected File getGeneratedFile() {
         return new File(
                 new File(options.getFrontendDirectory(),

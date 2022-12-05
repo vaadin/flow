@@ -18,8 +18,8 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
@@ -29,8 +29,6 @@ import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
-
-import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
 
 /**
  * An executor that it's run when the servlet context is initialised in dev-mode
@@ -52,40 +50,6 @@ public class NodeTasks implements FallibleCommand {
             + "\n*  (you may create the file if not exists) and restart the application.            *"
             + "\n************************************************************************************\n\n";
     //@formatter:on
-
-    // @formatter:off
-    // This list keeps the tasks in order so that they are executed
-    // without depending on when they are added.
-    private static final List<Class<? extends FallibleCommand>> commandOrder =
-        Collections.unmodifiableList(Arrays.asList(
-            TaskNotifyWebpackConfExistenceWhileUsingVite.class,
-            TaskGeneratePackageJson.class,
-            TaskGenerateIndexHtml.class,
-            TaskGenerateIndexTs.class,
-            TaskGenerateViteDevMode.class,
-            TaskGenerateTsConfig.class,
-            TaskGenerateTsDefinitions.class,
-            TaskGenerateServiceWorker.class,
-            TaskGenerateOpenAPI.class,
-            TaskGenerateEndpoint.class,
-            TaskGenerateBootstrap.class,
-            TaskGenerateWebComponentHtml.class,
-            TaskGenerateWebComponentBootstrap.class,
-            TaskGenerateFeatureFlags.class,
-            TaskInstallWebpackPlugins.class,
-            TaskUpdatePackages.class,
-            TaskRunNpmInstall.class,
-            TaskGenerateHilla.class,
-            TaskCopyFrontendFiles.class,
-            TaskCopyLocalFrontendFiles.class,
-            TaskUpdateSettingsFile.class,
-            TaskUpdateWebpack.class,
-            TaskUpdateVite.class,
-            TaskUpdateImports.class,
-            TaskUpdateThemeImport.class,
-            TaskCopyTemplateFiles.class
-        ));
-    // @formatter:on
 
     private final List<FallibleCommand> commands = new ArrayList<>();
 
@@ -298,40 +262,19 @@ public class NodeTasks implements FallibleCommand {
         }
     }
 
+    @Override
+    public int order() {
+        return 0;
+    }
+
     /**
-     * Sort command list so we always execute commands in a pre-defined order.
+     * Sort command list so that we always execute commands in a pre-defined
+     * order.
      *
      * @param commandList
      *            list of FallibleCommands to sort
      */
     private void sortCommands(List<FallibleCommand> commandList) {
-        commandList.sort((c1, c2) -> {
-            final int indexOf1 = getIndex(c1);
-            final int indexOf2 = getIndex(c2);
-            if (indexOf1 == -1 || indexOf2 == -1) {
-                return 0;
-            }
-            return indexOf1 - indexOf2;
-        });
-    }
-
-    /**
-     * Find index of command for which it is assignable to.
-     *
-     * @param command
-     *            command to find execution index for
-     * @return index of command or -1 if not available
-     */
-    private int getIndex(FallibleCommand command) {
-        int index = commandOrder.indexOf(command.getClass());
-        if (index != -1) {
-            return index;
-        }
-        for (int i = 0; i < commandOrder.size(); i++) {
-            if (commandOrder.get(i).isAssignableFrom(command.getClass())) {
-                return i;
-            }
-        }
-        throw new UnknownTaskException(command);
+        commandList.sort(Comparator.comparingInt(FallibleCommand::order));
     }
 }

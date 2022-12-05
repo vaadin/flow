@@ -47,6 +47,11 @@ public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
     }
 
     @Override
+    public int order() {
+        return 70;
+    }
+
+    @Override
     protected String getFileContent() throws IOException {
         try (InputStream tsDefinitionStream = getClass()
                 .getResourceAsStream(TS_DEFINITIONS)) {

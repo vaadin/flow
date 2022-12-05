@@ -105,6 +105,11 @@ public class TaskInstallWebpackPluginsTest {
             @Override
             public void execute() {
             }
+
+            @Override
+            public int order() {
+                return 10;
+            }
         };
 
         task.execute();

@@ -353,6 +353,11 @@ public class TaskUpdateImports extends NodeUpdater {
     }
 
     @Override
+    public int order() {
+        return 240;
+    }
+
+    @Override
     public void execute() {
         File fallBack = null;
         if (fallbackScanner != null) {

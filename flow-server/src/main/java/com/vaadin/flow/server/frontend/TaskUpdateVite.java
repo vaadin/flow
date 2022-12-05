@@ -42,6 +42,11 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
     }
 
     @Override
+    public int order() {
+        return 230;
+    }
+
+    @Override
     public void execute() {
         try {
             createConfig();

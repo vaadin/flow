@@ -67,6 +67,11 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
     }
 
     @Override
+    public int order() {
+        return 210;
+    }
+
+    @Override
     public void execute() {
         if (npmFolder == null)
             return;

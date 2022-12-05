@@ -56,6 +56,11 @@ public class TaskCopyFrontendFiles implements FallibleCommand {
     }
 
     @Override
+    public int order() {
+        return 190;
+    }
+
+    @Override
     public void execute() {
         long start = System.nanoTime();
         log().info("Copying frontend resources from jar files ...");

@@ -52,6 +52,11 @@ public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
     }
 
     @Override
+    public int order() {
+        return 110;
+    }
+
+    @Override
     protected String getFileContent() {
         List<String> lines = new ArrayList<>();
         lines.add(String.format("import './%s';%n", FEATURE_FLAGS_FILE_NAME));

@@ -55,6 +55,11 @@ public class TaskGenerateWebComponentHtml extends AbstractTaskClientGenerator {
     }
 
     @Override
+    public int order() {
+        return 120;
+    }
+
+    @Override
     protected String getFileContent() throws IOException {
         try (InputStream indexStream = getClass()
                 .getResourceAsStream(WEB_COMPONENT_HTML)) {

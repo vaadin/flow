@@ -52,6 +52,11 @@ public class TaskGenerateWebComponentBootstrap
     }
 
     @Override
+    public int order() {
+        return 130;
+    }
+
+    @Override
     protected String getFileContent() {
         List<String> lines = new ArrayList<>();
 

@@ -56,6 +56,11 @@ public class TaskGenerateIndexTs extends AbstractTaskClientGenerator {
     }
 
     @Override
+    public int order() {
+        return 40;
+    }
+
+    @Override
     protected File getGeneratedFile() {
         return new File(new File(frontendDirectory, FrontendUtils.GENERATED),
                 INDEX_TS);

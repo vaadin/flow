@@ -711,6 +711,11 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
             }
 
             @Override
+            public int order() {
+                return 10;
+            }
+
+            @Override
             protected String generateVersionsJson(JsonObject packageJson)
                     throws IOException {
                 try {
