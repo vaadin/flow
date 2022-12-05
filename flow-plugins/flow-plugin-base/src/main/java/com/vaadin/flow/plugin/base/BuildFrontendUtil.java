@@ -514,14 +514,14 @@ public class BuildFrontendUtil {
         return LoggerFactory.getLogger(BuildFrontendUtil.class);
     }
 
-    private static List<Product> findCommercialFrontendComponents(
+    static List<Product> findCommercialFrontendComponents(
             File nodeModulesFolder, File statsFile) {
         List<Product> components = new ArrayList<>();
         try (InputStream in = new FileInputStream(statsFile)) {
             String contents = IOUtils.toString(in, StandardCharsets.UTF_8);
-            JsonArray npmModules = Json.parse(contents).getArray("npmModules");
-            for (int i = 0; i < npmModules.length(); i++) {
-                String npmModule = npmModules.getString(i);
+            JsonObject npmModules = Json.parse(contents)
+                    .getObject("npmModules");
+            for (String npmModule : npmModules.keys()) {
                 Product product = CvdlProducts
                         .getProductIfCvdl(nodeModulesFolder, npmModule);
                 if (product != null) {
@@ -534,7 +534,7 @@ public class BuildFrontendUtil {
         }
     }
 
-    private static List<Product> findCommercialJavaComponents(
+    static List<Product> findCommercialJavaComponents(
             PluginAdapterBase adapter) {
         List<Product> components = new ArrayList<>();
 
