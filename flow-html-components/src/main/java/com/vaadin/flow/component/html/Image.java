@@ -49,6 +49,9 @@ public class Image extends HtmlContainer implements ClickNotifier<Image> {
 
     /**
      * Creates an image with the given URL and an alternative text.
+     * <p>
+     * The alternative text given to constructor is always set even if it is the
+     * default empty string which is not retained with {@link #setAlt(String)}.
      *
      * @param src
      *            the image URL
@@ -60,11 +63,14 @@ public class Image extends HtmlContainer implements ClickNotifier<Image> {
      */
     public Image(String src, String alt) {
         setSrc(src);
-        setAlt(alt);
+        getElement().setProperty("alt", alt);
     }
 
     /**
      * Creates an image with the given stream resource and an alternative text.
+     * <p>
+     * The alternative text given to constructor is always set even if it is the
+     * default empty string which is not retained with {@link #setAlt(String)}.
      *
      * @param src
      *            the resource value, not null
@@ -76,7 +82,7 @@ public class Image extends HtmlContainer implements ClickNotifier<Image> {
      */
     public Image(AbstractStreamResource src, String alt) {
         setSrc(src);
-        setAlt(alt);
+        getElement().setProperty("alt", alt);
     }
 
     /**

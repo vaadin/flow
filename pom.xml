@@ -104,7 +104,7 @@
         <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
         <maven.clean.plugin.version>3.0.0</maven.clean.plugin.version>
         <maven.exec.plugin.version>1.6.0</maven.exec.plugin.version>
-        <testbench.version>6.5.0</testbench.version>
+        <testbench.version>6.5.1</testbench.version>
         <jetty.version>9.4.43.v20210629</jetty.version>
 
         <!-- Frontend -->
@@ -242,13 +242,13 @@
             <dependency>
                 <groupId>net.bytebuddy</groupId>
                 <artifactId>byte-buddy</artifactId>
-                <version>1.11.22</version>
+                <version>1.12.19</version>
             </dependency>
 
             <dependency>
                 <groupId>com.vaadin</groupId>
                 <artifactId>license-checker</artifactId>
-                <version>1.10.1</version>
+                <version>1.11.2</version>
             </dependency>
 
             <dependency>

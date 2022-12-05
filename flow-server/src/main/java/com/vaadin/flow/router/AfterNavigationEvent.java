@@ -64,4 +64,13 @@ public class AfterNavigationEvent extends EventObject {
     public Router getSource() {
         return (Router) super.getSource();
     }
+
+    /**
+     * Check if event is for a refresh of a preserveOnRefresh view.
+     *
+     * @return true if refresh of a preserve on refresh view
+     */
+    public boolean isRefreshEvent() {
+        return event.getTrigger().equals(NavigationTrigger.REFRESH);
+    }
 }
