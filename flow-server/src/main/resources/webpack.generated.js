@@ -203,6 +203,11 @@ if (devMode) {
 
 const processThemeResourcesCallback = (logger) => processThemeResources(themeOptions, logger);
 
+function getVersion(module) {
+  const packageJson = `node_modules/${module}/package.json`;
+  return JSON.parse(readFileSync(packageJson, { encoding: 'utf-8' })).version;
+}
+
 exports = {
   frontendFolder: `${frontendFolder}`,
   buildFolder: `${buildFolder}`,
@@ -353,10 +358,12 @@ module.exports = {
           })
           .sort()
           .filter((value, index, self) => self.indexOf(value) === index);
+          
+        const npmModuleAndVersion = Object.fromEntries(npmModules.map((module) => [module, getVersion(module)]));
 
         let miniStats = {
           assetsByChunkName: st.assetsByChunkName,
-          npmModules: npmModules
+          npmModules: npmModuleAndVersion
         };
 
         if (!devMode) {
