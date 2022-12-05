@@ -669,7 +669,13 @@ public abstract class Component
         UI currentUi = UI.getCurrent();
         Locale locale = currentUi == null ? null : currentUi.getLocale();
         if (locale == null) {
-            List<Locale> locales = getI18NProvider().getProvidedLocales();
+            final I18NProvider i18NProvider = getI18NProvider();
+            // If a i18nProvider is not defined we should just return the
+            // default locale.
+            if (i18NProvider == null) {
+                return Locale.getDefault();
+            }
+            List<Locale> locales = i18NProvider.getProvidedLocales();
             if (locales != null && !locales.isEmpty()) {
                 locale = locales.get(0);
             } else {

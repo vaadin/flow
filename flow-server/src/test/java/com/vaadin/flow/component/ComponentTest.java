@@ -308,6 +308,15 @@ public class ComponentTest {
     }
 
     @Test
+    public void getComponentLocale_noCurrentUI_returnsDefaultLocale() {
+        UI.setCurrent(null);
+        Component test = new TestButton();
+        final Locale locale = test.getLocale();
+        Assert.assertEquals("System default locale should be returned",
+                Locale.getDefault(), locale);
+    }
+
+    @Test
     public void getElement() {
         Assert.assertEquals(Tag.DIV,
                 divWithTextComponent.getElement().getTag());
