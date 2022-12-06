@@ -7,7 +7,6 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -27,6 +26,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
+import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -131,6 +131,10 @@ public class MockServletServiceSessionSetup {
             this.context = context;
         }
 
+        @Override
+        protected Instantiator createInstantiator() throws ServiceException {
+            return Mockito.spy(super.createInstantiator());
+        }
     }
 
     public class TestVaadinServlet extends VaadinServlet {
