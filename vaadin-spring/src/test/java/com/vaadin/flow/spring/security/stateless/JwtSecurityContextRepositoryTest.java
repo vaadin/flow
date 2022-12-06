@@ -46,6 +46,7 @@ import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextHolderStrategy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -90,6 +91,7 @@ public class JwtSecurityContextRepositoryTest {
 
     @Mock
     private HttpServletResponse response;
+    private SecurityContextHolderStrategy originalontextHolderStrategy;
 
     private static JWTClaimsSet.Builder getClaimsSetBuilder() {
         return new JWTClaimsSet.Builder().issueTime(Date.from(TEST_PAST))
@@ -114,6 +116,8 @@ public class JwtSecurityContextRepositoryTest {
     public void setup() throws Exception {
         MockitoAnnotations.openMocks(this);
 
+        originalontextHolderStrategy = SecurityContextHolder
+                .getContextHolderStrategy();
         SecurityContextHolder.setStrategyName(
                 TestSecurityContextHolderStrategy.class.getName());
 
@@ -133,6 +137,12 @@ public class JwtSecurityContextRepositoryTest {
     public void teardown() {
         Mockito.verifyNoInteractions(request);
         Mockito.verifyNoInteractions(response);
+        if (originalontextHolderStrategy != null) {
+            SecurityContextHolder
+                    .setContextHolderStrategy(originalontextHolderStrategy);
+        } else {
+            SecurityContextHolder.setStrategyName(null);
+        }
     }
 
     @Test

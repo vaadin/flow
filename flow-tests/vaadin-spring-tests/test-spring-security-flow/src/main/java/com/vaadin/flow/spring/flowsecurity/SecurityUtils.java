@@ -6,9 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.internal.UrlUtil;
-import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.spring.flowsecurity.data.UserInfo;
 import com.vaadin.flow.spring.flowsecurity.service.UserInfoService;
 import com.vaadin.flow.spring.security.AuthenticationContext;
@@ -34,9 +31,6 @@ public class SecurityUtils {
 
     public void logout() {
         authenticationContext.logout();
-        UI.getCurrent().getPage().setLocation(UrlUtil.getServletPathRelative(
-                securityConfig.getLogoutSuccessUrl(),
-                VaadinServletRequest.getCurrent().getHttpServletRequest()));
     }
 
 }
