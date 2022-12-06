@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -49,6 +50,7 @@ import org.springframework.security.web.access.DelegatingAccessDeniedHandler;
 import org.springframework.security.web.access.RequestMatcherDelegatingAccessDeniedHandler;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CsrfException;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
@@ -127,6 +129,7 @@ public abstract class VaadinWebSecurity {
         // needs to refresh transient fields after deserialization
         logoutConfigurer = http.logout();
         logoutConfigurer.invalidateHttpSession(true);
+        addLogoutHandlers(logoutConfigurer::addLogoutHandler);
         DefaultSecurityFilterChain securityFilterChain = http.build();
 
         authenticationContext.setLogoutHandlers(
@@ -526,6 +529,17 @@ public abstract class VaadinWebSecurity {
      */
     protected ViewAccessChecker getViewAccessChecker() {
         return viewAccessChecker;
+    }
+
+    /**
+     * Sets additional {@link LogoutHandler}s that will participate in logout
+     * process.
+     *
+     * @param registry
+     *            used to add custom handlers.
+     */
+    protected void addLogoutHandlers(Consumer<LogoutHandler> registry) {
+
     }
 
     private void configureLogout(HttpSecurity http, String logoutSuccessUrl)
