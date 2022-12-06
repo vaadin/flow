@@ -19,6 +19,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.server.InitParameters;
+
 public class DeploymentConfigurationTest {
 
     public abstract static class TestDeploymentConfiguration
@@ -41,5 +43,25 @@ public class DeploymentConfigurationTest {
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
         Mockito.when(configuration.isCompatibilityMode()).thenReturn(false);
         Assert.assertFalse(configuration.useCompiledFrontendResources());
+    }
+
+    @Test
+    public void licenseChecker_liveReloadDisabled_useOldLicenseChecker() {
+        Mockito.when(configuration.isDevModeLiveReloadEnabled()).thenReturn(false);
+        Assert.assertTrue(configuration.isOldLicenseCheckerEnabled());
+    }
+
+    @Test
+    public void licenseChecker_configParameterIsTrue_useOldLicenseChecker() {
+        Mockito.when(configuration.isDevModeLiveReloadEnabled()).thenReturn(true);
+        Mockito.when(configuration.getBooleanProperty(
+                Mockito.eq(InitParameters.SERVLET_PARAMETER_ENABLE_OLD_LICENSE_CHECKER),
+                Mockito.eq(false))).thenReturn(true);
+        Assert.assertTrue(configuration.isOldLicenseCheckerEnabled());
+    }
+
+    @Test
+    public void licenseChecker_default_useNewLicenseChecker() {
+        Assert.assertFalse(configuration.isOldLicenseCheckerEnabled());
     }
 }

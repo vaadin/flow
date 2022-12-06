@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
 
+import com.vaadin.flow.function.SerializablePredicate;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -90,7 +91,12 @@ public class HierarchicalCommunicatorDataTest {
     private MockUI ui;
     private Element element;
 
-    private static class UpdateQueue implements HierarchicalUpdate {
+    private boolean parentClearCalled = false;
+
+    private int committedUpdateId;
+
+    private class UpdateQueue implements HierarchicalUpdate {
+
         @Override
         public void clear(int start, int length) {
         }
@@ -101,6 +107,7 @@ public class HierarchicalCommunicatorDataTest {
 
         @Override
         public void commit(int updateId) {
+            committedUpdateId = updateId;
         }
 
         @Override
@@ -113,6 +120,7 @@ public class HierarchicalCommunicatorDataTest {
 
         @Override
         public void clear(int start, int length, String parentKey) {
+            parentClearCalled = true;
         }
 
         @Override
@@ -220,6 +228,68 @@ public class HierarchicalCommunicatorDataTest {
                 .forEach(i -> Assert.assertNotNull("Expected key '" + i
                         + "' to be generated when unique key provider is not set",
                         communicator.getKeyMapper().get(i)));
+    }
+
+    @Test
+    public void expandRoot_filterOutAllChildren_clearCalled() {
+        parentClearCalled = false;
+
+        communicator.expand(ROOT);
+        fakeClientCommunication();
+
+        communicator.setParentRequestedRange(0, 50, ROOT);
+        fakeClientCommunication();
+
+        SerializablePredicate<Item> filter = item -> ROOT.equals(item);
+        communicator.setFilter(filter);
+        fakeClientCommunication();
+
+        dataProvider.refreshItem(ROOT, true);
+        fakeClientCommunication();
+
+        communicator.reset();
+
+        Assert.assertTrue(parentClearCalled);
+    }
+
+    @Test
+    public void expandItem_requestNonOverlappingRange_expandedItemPersistsInKeyMapper() {
+        committedUpdateId = -1;
+
+        int indexToTest = 2;
+        int requestedRangeLength = 5;
+
+        treeData = new TreeData<>();
+        for (int id = 0; id < requestedRangeLength * 4; id++) {
+            treeData.addItems(null, new Item(id, "Item " + id));
+        }
+        Item itemToTest = treeData.getRootItems().get(indexToTest);
+        treeData.addItems(itemToTest, new Item(treeData.getRootItems().size(),
+                "Item " + indexToTest + "_" + 0));
+        dataProvider = new TreeDataProvider<>(treeData);
+        communicator.setDataProvider(dataProvider, null);
+
+        communicator.setRequestedRange(0, requestedRangeLength);
+        fakeClientCommunication();
+        Assert.assertTrue(communicator.getKeyMapper().has(itemToTest));
+        String initialKey = communicator.getKeyMapper().key(itemToTest);
+
+        communicator.expand(itemToTest);
+        communicator.setRequestedRange(requestedRangeLength * 2,
+                requestedRangeLength);
+        fakeClientCommunication();
+        assertKeyItemPairIsPresentInKeyMapper(initialKey, itemToTest);
+
+        communicator.confirmUpdate(committedUpdateId);
+        fakeClientCommunication();
+        assertKeyItemPairIsPresentInKeyMapper(initialKey, itemToTest);
+
+        communicator.reset();
+    }
+
+    private void assertKeyItemPairIsPresentInKeyMapper(String key, Item item) {
+        Assert.assertTrue(communicator.getKeyMapper().has(item));
+        Assert.assertEquals(key, communicator.getKeyMapper().key(item));
     }
 
     private void fakeClientCommunication() {

@@ -28,6 +28,7 @@ public class MockDeploymentConfiguration
     private boolean sendUrlsAsParameters = true;
     private boolean brotli = false;
     private boolean devModeLiveReloadEnabled = false;
+    private boolean oldLicenseChecker = false;
 
     @Override
     public boolean isProductionMode() {
@@ -179,5 +180,14 @@ public class MockDeploymentConfiguration
 
     public void setDevModeLiveReloadEnabled(boolean devModeLiveReloadEnabled) {
         this.devModeLiveReloadEnabled = devModeLiveReloadEnabled;
+    }
+
+    @Override
+    public boolean isOldLicenseCheckerEnabled() {
+        return oldLicenseChecker;
+    }
+
+    public void enableOldLicenseChecker(boolean enable) {
+        oldLicenseChecker = enable;
     }
 }

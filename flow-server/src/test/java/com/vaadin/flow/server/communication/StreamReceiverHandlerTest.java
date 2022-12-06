@@ -34,6 +34,7 @@ import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.StreamReceiver;
 import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.StreamVariable;
+import com.vaadin.flow.server.UploadException;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletRequest;
@@ -423,6 +424,26 @@ public class StreamReceiverHandlerTest {
 
         verifyZeroInteractions(errorHandler);
         verify(streamVariable).streamingFailed(Mockito.any());
+    }
+
+    @Test
+    public void handleFileUploadValidationAndData_inputStreamThrowsIOExceptionOnClose_exceptionIsNotRethrown_exceptionIsNotHandlerByErrorHandler()
+            throws UploadException {
+        InputStream inputStream = new InputStream() {
+            @Override
+            public int read() {
+                return -1;
+            }
+
+            @Override
+            public void close() throws IOException {
+                throw new IOException();
+            }
+        };
+        handler.handleFileUploadValidationAndData(session, inputStream,
+                streamReceiver, null, null, 0, stateNode);
+
+        Mockito.verifyNoInteractions(errorHandler);
     }
 
     @Test

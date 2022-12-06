@@ -340,7 +340,7 @@ public class StreamReceiverHandler implements Serializable {
         sendUploadResponse(response, success);
     }
 
-    private boolean handleFileUploadValidationAndData(VaadinSession session,
+    protected boolean handleFileUploadValidationAndData(VaadinSession session,
             InputStream inputStream, StreamReceiver streamReceiver,
             String filename, String mimeType, long contentLength,
             StateNode node) throws UploadException {
@@ -367,7 +367,11 @@ public class StreamReceiverHandler implements Serializable {
                 cleanStreamVariable(session, streamReceiver);
             }
             return result.getSecond() == UploadStatus.OK;
-        } catch (Exception e) {
+        } catch (IOException ioe) {
+            // Mostly premature closing of stream from client that throws on
+            // close
+            getLogger().debug("Exception closing inputStream", ioe);
+        } catch (UploadException e) {
             session.lock();
             try {
                 session.getErrorHandler().error(new ErrorEvent(e));
@@ -514,7 +518,7 @@ public class StreamReceiverHandler implements Serializable {
             // IOException happens
             onStreamingFailed(session, filename, type, contentLength,
                     streamVariable, out, totalBytes, e);
-            // Interrupted exception and IOEXception are not thrown forward:
+            // Interrupted exception and IOException are not thrown forward:
             // it's enough to fire them via streamVariable
         } catch (final Exception e) {
             onStreamingFailed(session, filename, type, contentLength,

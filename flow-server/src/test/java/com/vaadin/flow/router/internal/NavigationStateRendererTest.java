@@ -45,6 +45,11 @@ import com.vaadin.flow.component.page.History;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.router.AfterNavigationEvent;
+import com.vaadin.flow.router.AfterNavigationObserver;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
+import com.vaadin.flow.router.BeforeLeaveEvent;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.router.NavigationState;
@@ -81,6 +86,29 @@ public class NavigationStateRendererTest {
     private static class PreservedView extends Text {
         PreservedView() {
             super("");
+        }
+    }
+
+    @Route(value = "preserved")
+    @PreserveOnRefresh
+    private static class PreservedEventView extends Text
+            implements BeforeEnterObserver, AfterNavigationObserver {
+        static boolean refreshBeforeEnter;
+        static boolean refreshAfterNavigation;
+
+        PreservedEventView() {
+            super("");
+        }
+
+        @Override
+        public void beforeEnter(BeforeEnterEvent event) {
+            refreshBeforeEnter = event.isRefreshEvent();
+        }
+
+        @Override
+        public void afterNavigation(AfterNavigationEvent event) {
+            refreshAfterNavigation = event.isRefreshEvent();
+
         }
     }
 
@@ -324,6 +352,59 @@ public class NavigationStateRendererTest {
         Assert.assertFalse("Session expected to not have cached view",
                 AbstractNavigationStateRenderer.hasPreservedChainOfLocation(
                         session, new Location("preserved")));
+    }
+
+    @Test
+    public void handle_preserveOnRefresh_refreshIsFlaggedInEvent() {
+        // given a service with instantiator
+        MockVaadinServletService service = createMockServiceWithInstantiator();
+
+        // given a locked session
+        MockVaadinSession session = new AlwaysLockedVaadinSession(service);
+        session.setConfiguration(new MockDeploymentConfiguration());
+
+        // given a UI that contain a window name ROOT.123
+        MockUI ui = new MockUI(session);
+        ExtendedClientDetails details = Mockito
+                .mock(ExtendedClientDetails.class);
+        Mockito.when(details.getWindowName()).thenReturn("ROOT.123");
+        ui.getInternals().setExtendedClientDetails(details);
+
+        // given a NavigationStateRenderer mapping to PreservedEventView
+        NavigationStateRenderer renderer = new NavigationStateRenderer(
+                navigationStateFromTarget(PreservedEventView.class));
+
+        // when a navigation event reaches the renderer
+        renderer.handle(new NavigationEvent(new Router(new TestRouteRegistry()),
+                new Location("preserved"), ui, NavigationTrigger.PAGE_LOAD));
+
+        // then the session has a cached record of the view
+        Assert.assertTrue("Session expected to have cached view",
+                AbstractNavigationStateRenderer.getPreservedChain(session,
+                        "ROOT.123", new Location("preserved")).isPresent());
+
+        // given the recently instantiated view
+        final PreservedEventView view = (PreservedEventView) ui.getInternals()
+                .getActiveRouterTargetsChain().get(0);
+        Assert.assertFalse(
+                "Initial view load should not be a refresh for before",
+                view.refreshBeforeEnter);
+        Assert.assertFalse(
+                "Initial view load should not be a refresh for after",
+                view.refreshAfterNavigation);
+
+        // when another navigation targets the same location
+        renderer.handle(new NavigationEvent(new Router(new TestRouteRegistry()),
+                new Location("preserved"), ui, NavigationTrigger.PAGE_LOAD));
+
+        // then the same view is routed to
+        Assert.assertEquals("Expected same view", view,
+                ui.getInternals().getActiveRouterTargetsChain().get(0));
+
+        Assert.assertTrue("Reload should be flagged for before",
+                view.refreshBeforeEnter);
+        Assert.assertTrue("Reload should be flagged for after",
+                view.refreshAfterNavigation);
     }
 
     @Test

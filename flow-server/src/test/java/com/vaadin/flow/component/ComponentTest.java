@@ -18,6 +18,7 @@ package com.vaadin.flow.component;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -305,6 +306,15 @@ public class ComponentTest {
     public void tearDown() {
         UI.setCurrent(null);
         mocks.cleanup();
+    }
+
+    @Test
+    public void getComponentLocale_noCurrentUI_returnsDefaultLocale() {
+        UI.setCurrent(null);
+        Component test = new TestButton();
+        final Locale locale = test.getLocale();
+        Assert.assertEquals("System default locale should be returned",
+                Locale.getDefault(), locale);
     }
 
     @Test

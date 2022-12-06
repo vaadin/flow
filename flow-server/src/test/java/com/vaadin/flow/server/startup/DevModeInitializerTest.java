@@ -1,5 +1,6 @@
 package com.vaadin.flow.server.startup;
 
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 
 import java.io.File;
@@ -35,15 +36,18 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.ArgumentCaptor;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DevModeHandler;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.pro.licensechecker.LicenseChecker;
 
 import static com.vaadin.flow.server.Constants.RESOURCES_THEME_JAR_DEFAULT;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_COMPATIBILITY_MODE;
@@ -52,6 +56,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.times;
 
 @NotThreadSafe
 public class DevModeInitializerTest extends DevModeInitializerTestBase {
@@ -450,6 +455,46 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
             if (originalUserDirValue != null) {
                 System.setProperty("user.dir", originalUserDirValue);
             }
+        }
+    }
+
+    @Test
+    public void licenseChecker_newLicenseCheckerUsed_setStrictOfflineCalled() throws ServletException {
+        ServletContext servletContext = Mockito.mock(ServletContext.class);
+        DeploymentConfiguration deploymentConfiguration =
+                Mockito.mock(DeploymentConfiguration.class);
+        Mockito.when(deploymentConfiguration.enableDevServer())
+                .thenReturn(true);
+
+        try (MockedStatic<LicenseChecker> licenseChecker = Mockito.mockStatic(LicenseChecker.class)) {
+            try {
+                DevModeInitializer.initDevModeHandler(new HashSet<>(), servletContext, deploymentConfiguration);
+            } catch (NullPointerException e) {
+                // expected exception within dev server init
+            }
+
+            licenseChecker.verify(() -> LicenseChecker.setStrictOffline(true));
+        }
+    }
+
+    @Test
+    public void licenseChecker_oldLicenseCheckerUsed_setStrictOfflineNotCalled() throws ServletException {
+        ServletContext servletContext = Mockito.mock(ServletContext.class);
+        DeploymentConfiguration deploymentConfiguration =
+                Mockito.mock(DeploymentConfiguration.class);
+        Mockito.when(deploymentConfiguration.enableDevServer())
+                .thenReturn(true);
+
+        try (MockedStatic<LicenseChecker> licenseChecker = Mockito.mockStatic(LicenseChecker.class)) {
+            Mockito.when(deploymentConfiguration.isOldLicenseCheckerEnabled())
+                    .thenReturn(true);
+            try {
+                DevModeInitializer.initDevModeHandler(new HashSet<>(), servletContext, deploymentConfiguration);
+            } catch (NullPointerException e) {
+                // expected exception within dev server init
+            }
+
+            licenseChecker.verify(() -> LicenseChecker.setStrictOffline(true), times(0));
         }
     }
 

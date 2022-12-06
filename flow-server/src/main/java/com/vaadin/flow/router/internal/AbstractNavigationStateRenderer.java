@@ -212,6 +212,13 @@ public abstract class AbstractNavigationStateRenderer
             clearAllPreservedChains(ui);
         }
 
+        // Set navigationTrigger to RELOAD if this is a refresh of a preserve
+        // view.
+        if (preserveOnRefreshTarget && !chain.isEmpty()) {
+            event = new NavigationEvent(event.getSource(), event.getLocation(),
+                    event.getUI(), NavigationTrigger.REFRESH);
+        }
+
         BeforeEnterEvent beforeNavigationActivating = new BeforeEnterEvent(
                 event, routeTargetType, parameters, routeLayoutTypes);
 

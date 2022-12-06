@@ -52,6 +52,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.plugin.TestUtils;
@@ -59,6 +60,7 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
+import com.vaadin.pro.licensechecker.LicenseChecker;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -79,6 +81,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
 import static java.io.File.pathSeparator;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.when;
 
 public class BuildFrontendMojoTest {
@@ -444,6 +447,100 @@ public class BuildFrontendMojoTest {
         mojo.runWebpack(tools);
 
         // terminates successfully
+    }
+
+    @Test
+    public void offlineLicenseChecking_compatibilityMode_setStrictOfflineNotCalled()
+            throws IllegalAccessException, MojoExecutionException {
+        ReflectionUtils.setVariableValueInObject(mojo, "compatibility",
+                true);
+        FrontendTools tools = Mockito.mock(FrontendTools.class);
+
+        try(MockedStatic<LicenseChecker> licenseChecker = Mockito.mockStatic(LicenseChecker.class)) {
+            try {
+                mojo.runWebpack(tools);
+            } catch (IllegalStateException e) {
+                // expected 'Unable to locate webpack executable ...'
+            }
+            licenseChecker.verify(() -> LicenseChecker.setStrictOffline(true), times(0));
+
+            ReflectionUtils.setVariableValueInObject(mojo, "compatibility",
+                    false);
+
+            try {
+                mojo.runWebpack(tools);
+            } catch (IllegalStateException e) {
+                // expected 'Unable to locate webpack executable ...'
+            }
+            licenseChecker.verify(() -> LicenseChecker.setStrictOffline(true));
+        }
+    }
+
+    @Test
+    public void offlineLicenseChecking_enableOldLicenseChecker_setStrictOfflineNotCalled()
+            throws IllegalAccessException, MojoExecutionException {
+        ReflectionUtils.setVariableValueInObject(mojo, "oldLicenseChecker",
+                true);
+        FrontendTools tools = Mockito.mock(FrontendTools.class);
+
+        try(MockedStatic<LicenseChecker> licenseChecker = Mockito.mockStatic(LicenseChecker.class)) {
+            try {
+                mojo.runWebpack(tools);
+            } catch (IllegalStateException e) {
+                // expected 'Unable to locate webpack executable ...'
+            }
+            licenseChecker.verify(() -> LicenseChecker.setStrictOffline(true), times(0));
+
+            ReflectionUtils.setVariableValueInObject(mojo, "oldLicenseChecker",
+                    false);
+
+            try {
+                mojo.runWebpack(tools);
+            } catch (IllegalStateException e) {
+                // expected 'Unable to locate webpack executable ...'
+            }
+            licenseChecker.verify(() -> LicenseChecker.setStrictOffline(true));
+        }
+    }
+
+    @Test
+    public void validateLicenses_compatibilityMode_noValidation() throws IllegalAccessException {
+        ReflectionUtils.setVariableValueInObject(mojo, "compatibility",
+                true);
+        // simulate no stats.json file to verify target method execution
+        File resourceOutput = new File(temporaryFolder.getRoot(), "fakeOutputDir");
+        ReflectionUtils.setVariableValueInObject(mojo, "webpackOutputDirectory",
+                resourceOutput);
+
+        // method return immediately with no exception
+        mojo.validateLicenses();
+
+        ReflectionUtils.setVariableValueInObject(mojo, "compatibility",
+                    false);
+
+        Assert.assertThrows(
+                "Expected license validation fail because of no stats.json file",
+                RuntimeException.class, mojo::validateLicenses);
+    }
+
+    @Test
+    public void validateLicenses_configParameter_noValidation() throws IllegalAccessException {
+        ReflectionUtils.setVariableValueInObject(mojo, "oldLicenseChecker",
+                true);
+        // simulate no stats.json file to verify target method execution
+        File resourceOutput = new File(temporaryFolder.getRoot(), "fakeOutputDir");
+        ReflectionUtils.setVariableValueInObject(mojo, "webpackOutputDirectory",
+                resourceOutput);
+
+        // method return immediately with no exception
+        mojo.validateLicenses();
+
+        ReflectionUtils.setVariableValueInObject(mojo, "oldLicenseChecker",
+                false);
+
+        Assert.assertThrows(
+                "Expected license validation fail because of no stats.json file",
+                RuntimeException.class, mojo::validateLicenses);
     }
 
     static void assertContainsPackage(JsonObject dependencies,

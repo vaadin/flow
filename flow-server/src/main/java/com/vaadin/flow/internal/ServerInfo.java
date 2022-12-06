@@ -66,14 +66,15 @@ public class ServerInfo implements DebugWindowData {
 
     private String fetchVaadinVersion() {
         try (InputStream vaadinVersionsStream = getClass().getClassLoader()
-                .getResourceAsStream(Constants.VAADIN_VERSIONS_JSON)) {
+                .getResourceAsStream(Constants.VAADIN_CORE_VERSIONS_JSON)) {
             if (vaadinVersionsStream != null) {
                 JsonObject vaadinVersions = Json.parse(IOUtils.toString(
                         vaadinVersionsStream, StandardCharsets.UTF_8));
                 return vaadinVersions.get("platform").asString();
             } else {
                 LoggerFactory.getLogger(getClass()).info(
-                        "Unable to determine version information. No vaadin_versions.json found");
+                        "Unable to determine version information. No {} found",
+                        Constants.VAADIN_CORE_VERSIONS_JSON);
             }
         } catch (Exception e) {
             LoggerFactory.getLogger(getClass())
