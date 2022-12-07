@@ -15,17 +15,20 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.Mockito;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
+import com.vaadin.flow.di.Lookup;
 
 public class TaskGenerateTsDefinitionsTest {
     @Rule
@@ -36,7 +39,9 @@ public class TaskGenerateTsDefinitionsTest {
     @Before
     public void setUp() throws IOException {
         outputFolder = temporaryFolder.newFolder();
-        taskGenerateTsDefinitions = new TaskGenerateTsDefinitions(outputFolder);
+        Options options = new Options(Mockito.mock(Lookup.class), outputFolder);
+
+        taskGenerateTsDefinitions = new TaskGenerateTsDefinitions(options);
     }
 
     @Test

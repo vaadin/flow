@@ -17,6 +17,14 @@
 
 package com.vaadin.flow.server.frontend;
 
+import static com.vaadin.flow.server.Constants.TARGET;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -41,17 +49,9 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 
-import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
-
-import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
 
@@ -82,14 +82,17 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
         importsFile = new File(generatedPath, IMPORTS_NAME);
 
         ClassFinder classFinder = getClassFinder();
+        Options options = new Options(Mockito.mock(Lookup.class), tmpRoot)
+                .withGeneratedFolder(generatedPath)
+                .withFrontendDirectory(frontendDirectory)
+                .withBuildDirectory(TARGET).withProductionMode(true);
         updater = new TaskUpdateImports(classFinder, getScanner(classFinder),
-                finder -> null, tmpRoot, generatedPath, frontendDirectory, null,
-                null, false, TARGET, true, false,
-                Mockito.mock(FeatureFlags.class)) {
+                finder -> null, options) {
             @Override
             Logger log() {
                 return logger;
             }
+
         };
 
         assertTrue(nodeModulesPath.mkdirs());

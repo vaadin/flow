@@ -39,18 +39,19 @@ public class TaskGenerateWebComponentHtml extends AbstractTaskClientGenerator {
      * Create a task to generate <code>web-component.html</code> in the frontend
      * directory if necessary.
      *
-     * @param frontendDirectory
+     * @param options
      *            frontend directory is to check if the file already exists
      *            there.
      */
-    TaskGenerateWebComponentHtml(File frontendDirectory) {
+    TaskGenerateWebComponentHtml(Options options) {
         // The user is generally not supposed to modify web-component.html and
         // therefore you might have expected it to be generated
         // in the frontend generated directory.
         // It is however generated in the frontend directory like index.html
         // since it is easier to serve it from there in terms of the Vite
         // config.
-        webComponentHtml = new File(frontendDirectory, WEB_COMPONENT_HTML);
+        webComponentHtml = new File(options.getFrontendDirectory(),
+                WEB_COMPONENT_HTML);
     }
 
     @Override

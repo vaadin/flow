@@ -118,12 +118,9 @@ public class NodeTasks implements FallibleCommand {
                         frontendDependencies.getThemeDefinition());
 
                 if (webComponents.size() > 0) {
-                    commands.add(new TaskGenerateWebComponentHtml(
-                            options.getFrontendDirectory()));
-                    commands.add(new TaskGenerateWebComponentBootstrap(
-                            options.getFrontendDirectory(),
-                            new File(options.getGeneratedFolder(),
-                                    IMPORTS_NAME)));
+                    commands.add(new TaskGenerateWebComponentHtml(options));
+                    commands.add(
+                            new TaskGenerateWebComponentBootstrap(options));
                 }
             }
 
@@ -131,31 +128,21 @@ public class NodeTasks implements FallibleCommand {
             if (options.enablePackagesUpdate
                     && options.jarFrontendResourcesFolder != null) {
                 packageUpdater = new TaskUpdatePackages(classFinder,
-                        frontendDependencies, options.npmFolder,
-                        options.getGeneratedFolder(),
-                        options.jarFrontendResourcesFolder,
-                        options.cleanNpmFiles, options.enablePnpm,
-                        options.buildDirectory, featureFlags);
+                        frontendDependencies, options);
                 commands.add(packageUpdater);
 
             }
             if (packageUpdater != null && options.runNpmInstall) {
-                commands.add(new TaskRunNpmInstall(packageUpdater,
-                        options.enablePnpm, options.requireHomeNodeExec,
-                        options.nodeVersion, options.nodeDownloadRoot,
-                        options.useGlobalPnpm, options.nodeAutoUpdate,
-                        options.postinstallPackages));
+                commands.add(new TaskRunNpmInstall(packageUpdater, options));
 
-                commands.add(new TaskInstallWebpackPlugins(
-                        new File(options.npmFolder, options.buildDirectory)));
+                commands.add(new TaskInstallWebpackPlugins(options));
             }
 
         }
 
         if (options.createMissingPackageJson) {
             TaskGeneratePackageJson packageCreator = new TaskGeneratePackageJson(
-                    options.npmFolder, options.getGeneratedFolder(),
-                    options.buildDirectory, featureFlags);
+                    options);
             commands.add(packageCreator);
         }
 
@@ -181,7 +168,7 @@ public class NodeTasks implements FallibleCommand {
                     && (hillaTask = options.lookup
                             .lookup(TaskGenerateHilla.class)) != null) {
                 hillaTask.configure(options.getNpmFolder(),
-                        options.getBuildDirectory());
+                        options.getBuildDirectoryName());
                 commands.add(hillaTask);
             } else if (options.endpointGeneratedOpenAPIFile != null
                     && options.endpointSourceFolder != null
@@ -189,24 +176,20 @@ public class NodeTasks implements FallibleCommand {
                 addEndpointServicesTasks(options);
             }
 
-            commands.add(new TaskGenerateBootstrap(frontendDependencies,
-                    options.getFrontendDirectory(), options.productionMode));
+            commands.add(
+                    new TaskGenerateBootstrap(frontendDependencies, options));
 
-            commands.add(new TaskGenerateFeatureFlags(
-                    options.getFrontendDirectory(), featureFlags));
+            commands.add(new TaskGenerateFeatureFlags(options));
         }
 
         if (options.jarFiles != null
                 && options.jarFrontendResourcesFolder != null) {
-            commands.add(new TaskCopyFrontendFiles(
-                    options.jarFrontendResourcesFolder, options.jarFiles));
+            commands.add(new TaskCopyFrontendFiles(options));
         }
 
         if (options.localResourcesFolder != null
                 && options.jarFrontendResourcesFolder != null) {
-            commands.add(new TaskCopyLocalFrontendFiles(
-                    options.jarFrontendResourcesFolder,
-                    options.localResourcesFolder));
+            commands.add(new TaskCopyLocalFrontendFiles(options));
         }
 
         if (!featureFlags.isEnabled(FeatureFlags.WEBPACK)) {
@@ -222,114 +205,85 @@ public class NodeTasks implements FallibleCommand {
                 pwa = new PwaConfiguration();
             }
             commands.add(new TaskNotifyWebpackConfExistenceWhileUsingVite(
-                    options.npmFolder));
+                    options.getNpmFolder()));
             commands.add(new TaskUpdateSettingsFile(options, themeName, pwa));
-            commands.add(new TaskUpdateVite(options.npmFolder,
-                    options.buildDirectory));
+            commands.add(new TaskUpdateVite(options));
         } else if (options.enableWebpackConfigUpdate) {
-            PwaConfiguration pwaConfiguration = frontendDependencies
-                    .getPwaConfiguration();
-            commands.add(new TaskUpdateWebpack(options.getFrontendDirectory(),
-                    options.npmFolder, options.webappResourcesDirectory,
-                    options.resourceOutputDirectory,
-                    new File(options.getGeneratedFolder(), IMPORTS_NAME),
-                    options.useLegacyV14Bootstrap, pwaConfiguration,
-                    options.buildDirectory));
+            commands.add(new TaskUpdateWebpack(frontendDependencies, options));
         }
 
         if (options.enableImportsUpdate) {
             commands.add(new TaskUpdateImports(classFinder,
                     frontendDependencies,
                     finder -> getFallbackScanner(options, finder, featureFlags),
-                    options.npmFolder, options.getGeneratedFolder(),
-                    options.getFrontendDirectory(), options.tokenFile,
-                    options.tokenFileData, options.enablePnpm,
-                    options.buildDirectory, options.productionMode,
-                    options.useLegacyV14Bootstrap, featureFlags));
+                    options));
 
-            commands.add(new TaskUpdateThemeImport(options.npmFolder,
-                    frontendDependencies.getThemeDefinition(),
-                    options.getFrontendDirectory()));
+            commands.add(new TaskUpdateThemeImport(
+                    frontendDependencies.getThemeDefinition(), options));
         }
 
         if (options.copyTemplates) {
-            commands.add(new TaskCopyTemplateFiles(classFinder,
-                    options.npmFolder, options.resourceOutputDirectory,
-                    options.getFrontendDirectory()));
+            commands.add(new TaskCopyTemplateFiles(classFinder, options));
+
         }
     }
 
     private void addBootstrapTasks(Options options) {
         TaskGenerateIndexHtml taskGenerateIndexHtml = new TaskGenerateIndexHtml(
-                options.getFrontendDirectory());
+                options);
         commands.add(taskGenerateIndexHtml);
-        File buildDirectory = new File(options.npmFolder,
-                options.buildDirectory);
         TaskGenerateIndexTs taskGenerateIndexTs = new TaskGenerateIndexTs(
-                options.getFrontendDirectory(),
-                new File(options.getGeneratedFolder(), IMPORTS_NAME),
-                buildDirectory);
+                options);
         commands.add(taskGenerateIndexTs);
         if (!options.getFeatureFlags().isEnabled(FeatureFlags.WEBPACK)
                 && !options.productionMode) {
-            commands.add(new TaskGenerateViteDevMode(
-                    options.getFrontendDirectory()));
+            commands.add(new TaskGenerateViteDevMode(options));
         }
     }
 
-    private void addGenerateTsConfigTask(Options builder) {
+    private void addGenerateTsConfigTask(Options options) {
         TaskGenerateTsConfig taskGenerateTsConfig = new TaskGenerateTsConfig(
-                builder.npmFolder, builder.getFeatureFlags());
+                options);
         commands.add(taskGenerateTsConfig);
 
         TaskGenerateTsDefinitions taskGenerateTsDefinitions = new TaskGenerateTsDefinitions(
-                builder.npmFolder);
+                options);
         commands.add(taskGenerateTsDefinitions);
 
     }
 
     private void addGenerateServiceWorkerTask(Options options,
             PwaConfiguration pwaConfiguration) {
-        File outputDirectory = new File(options.npmFolder,
-                options.buildDirectory);
         if (pwaConfiguration.isEnabled()) {
-            commands.add(new TaskGenerateServiceWorker(
-                    options.getFrontendDirectory(), outputDirectory));
+            commands.add(new TaskGenerateServiceWorker(options));
         }
     }
 
-    private void addEndpointServicesTasks(Options builder) {
-        Lookup lookup = builder.lookup;
+    private void addEndpointServicesTasks(Options options) {
+        Lookup lookup = options.lookup;
         EndpointGeneratorTaskFactory endpointGeneratorTaskFactory = lookup
                 .lookup(EndpointGeneratorTaskFactory.class);
 
         if (endpointGeneratorTaskFactory != null) {
             TaskGenerateOpenAPI taskGenerateOpenAPI = endpointGeneratorTaskFactory
-                    .createTaskGenerateOpenAPI(builder.applicationProperties,
-                            builder.endpointSourceFolder,
-                            builder.classFinder.getClassLoader(),
-                            builder.endpointGeneratedOpenAPIFile);
+                    .createTaskGenerateOpenAPI(options);
             commands.add(taskGenerateOpenAPI);
 
-            if (builder.frontendGeneratedFolder != null) {
+            if (options.frontendGeneratedFolder != null) {
                 TaskGenerateEndpoint taskGenerateEndpoint = endpointGeneratorTaskFactory
-                        .createTaskGenerateEndpoint(
-                                builder.applicationProperties,
-                                builder.endpointGeneratedOpenAPIFile,
-                                builder.frontendGeneratedFolder,
-                                builder.getFrontendDirectory());
+                        .createTaskGenerateEndpoint(options);
                 commands.add(taskGenerateEndpoint);
             }
         }
     }
 
-    private FrontendDependenciesScanner getFallbackScanner(Options builder,
+    private FrontendDependenciesScanner getFallbackScanner(Options options,
             ClassFinder finder, FeatureFlags featureFlags) {
-        if (builder.useByteCodeScanner) {
+        if (options.useByteCodeScanner) {
             return new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
                     .createScanner(true, finder,
-                            builder.generateEmbeddableWebComponents,
-                            builder.useLegacyV14Bootstrap, featureFlags, true);
+                            options.generateEmbeddableWebComponents,
+                            options.useLegacyV14Bootstrap, featureFlags, true);
         } else {
             return null;
         }

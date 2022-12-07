@@ -54,15 +54,13 @@ public class TaskUpdateThemeImport implements FallibleCommand {
     private final File themeImportFile;
     private final File themeImportFileDefinition;
     private final ThemeDefinition theme;
-    private final File frontendDirectory;
-    private final File npmFolder;
+    private final Options options;
 
-    TaskUpdateThemeImport(File npmFolder, ThemeDefinition theme,
-            File frontendDirectory) {
+    TaskUpdateThemeImport(ThemeDefinition theme, Options options) {
         this.theme = theme;
-        this.frontendDirectory = frontendDirectory;
-        this.npmFolder = npmFolder;
-        File frontendGeneratedFolder = new File(frontendDirectory, GENERATED);
+        this.options = options;
+        File frontendGeneratedFolder = new File(options.getFrontendDirectory(),
+                GENERATED);
         themeImportFile = new File(frontendGeneratedFolder, THEME_IMPORTS_NAME);
         themeImportFileDefinition = new File(frontendGeneratedFolder,
                 THEME_IMPORTS_D_TS_NAME);
@@ -109,8 +107,8 @@ public class TaskUpdateThemeImport implements FallibleCommand {
         List<String> appThemePossiblePaths = getAppThemePossiblePaths(
                 themePath);
         List<File> existingAppThemeDirectories = appThemePossiblePaths.stream()
-                .map(path -> new File(npmFolder, path)).filter(File::exists)
-                .collect(Collectors.toList());
+                .map(path -> new File(options.getNpmFolder(), path))
+                .filter(File::exists).collect(Collectors.toList());
 
         if (existingAppThemeDirectories.isEmpty()) {
             String errorMessage = "Discovered @Theme annotation with theme "
@@ -120,8 +118,8 @@ public class TaskUpdateThemeImport implements FallibleCommand {
                     + "or have mistyped the theme or folder name for '%s'.";
             throw new ExecutionFailedException(
                     String.format(errorMessage, themeName,
-                            new File(frontendDirectory, APPLICATION_THEME_ROOT)
-                                    .getPath(),
+                            new File(options.getFrontendDirectory(),
+                                    APPLICATION_THEME_ROOT).getPath(),
                             themeName));
         }
         if (existingAppThemeDirectories.size() >= 2) {
@@ -145,17 +143,18 @@ public class TaskUpdateThemeImport implements FallibleCommand {
                         + "'%s' exists in the your project. "
                         + "The recommended place to put the theme folder "
                         + "inside the project is '%s'";
-                throw new ExecutionFailedException(String.format(errorMessage,
-                        themeName, themeName,
-                        new File(frontendDirectory, APPLICATION_THEME_ROOT)
-                                .getPath()));
+                throw new ExecutionFailedException(
+                        String.format(errorMessage, themeName, themeName,
+                                new File(options.getFrontendDirectory(),
+                                        APPLICATION_THEME_ROOT).getPath()));
             }
         }
     }
 
     private List<String> getAppThemePossiblePaths(String themePath) {
-        String frontendTheme = String.join("/", npmFolder.toPath()
-                .relativize(frontendDirectory.toPath()).toString(), themePath);
+        String frontendTheme = String.join("/", options.getNpmFolder().toPath()
+                .relativize(options.getFrontendDirectory().toPath()).toString(),
+                themePath);
 
         String themePathInMetaInfResources = String.join("/",
                 APPLICATION_META_INF_RESOURCES, themePath);

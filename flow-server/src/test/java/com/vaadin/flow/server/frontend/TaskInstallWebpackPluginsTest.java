@@ -33,7 +33,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
-import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 
@@ -58,8 +58,9 @@ public class TaskInstallWebpackPluginsTest {
     @Before
     public void init() throws IOException {
         rootFolder = temporaryFolder.newFolder();
-        task = new TaskInstallWebpackPlugins(
-                new File(rootFolder, BUILD_DIRECTORY));
+        Options options = new Options(Mockito.mock(Lookup.class), rootFolder)
+                .withBuildDirectory(TARGET);
+        task = new TaskInstallWebpackPlugins(options);
     }
 
     @Test
@@ -96,11 +97,11 @@ public class TaskInstallWebpackPluginsTest {
     @Test
     public void pluginsNotAddedToPackageJson() throws IOException {
         ClassFinder finder = Mockito.mock(ClassFinder.class);
+        Options options = new Options(Mockito.mock(Lookup.class), rootFolder)
+                .withGeneratedFolder(new File(""))
+                .withBuildDirectory(BUILD_DIRECTORY);
         NodeUpdater nodeUpdater = new NodeUpdater(finder,
-                Mockito.mock(FrontendDependencies.class), rootFolder,
-                new File(""), BUILD_DIRECTORY,
-                Mockito.mock(FeatureFlags.class)) {
-
+                Mockito.mock(FrontendDependencies.class), options) {
             @Override
             public void execute() {
             }

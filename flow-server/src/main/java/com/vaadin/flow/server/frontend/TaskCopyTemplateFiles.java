@@ -41,17 +41,11 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 public class TaskCopyTemplateFiles implements FallibleCommand {
 
     private final ClassFinder classFinder;
-    private final File projectDirectory;
-    private final File resourceOutputDirectory;
+    private final Options options;
 
-    private final File frontendDirectory;
-
-    TaskCopyTemplateFiles(ClassFinder classFinder, File projectDirectory,
-            File resourceOutputDirectory, File frontendDirectory) {
+    TaskCopyTemplateFiles(ClassFinder classFinder, Options options) {
         this.classFinder = classFinder;
-        this.projectDirectory = projectDirectory;
-        this.resourceOutputDirectory = resourceOutputDirectory;
-        this.frontendDirectory = frontendDirectory;
+        this.options = options;
     }
 
     @Override
@@ -71,12 +65,14 @@ public class TaskCopyTemplateFiles implements FallibleCommand {
                     .getAnnotationsByType(jsModuleAnnotationClass)) {
                 String path = getJsModuleAnnotationValue(jsmAnnotation);
                 File source = FrontendUtils.resolveFrontendPath(
-                        projectDirectory, path, this.frontendDirectory);
+                        options.getNpmFolder(), path,
+                        options.getFrontendDirectory());
                 if (source == null) {
                     throw new ExecutionFailedException(
                             "Unable to locate file " + path);
                 }
-                File templateDirectory = new File(resourceOutputDirectory,
+                File templateDirectory = new File(
+                        options.resourceOutputDirectory,
                         Constants.TEMPLATE_DIRECTORY);
                 File target = new File(templateDirectory, path).getParentFile();
                 target.mkdirs();

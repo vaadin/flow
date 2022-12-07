@@ -35,12 +35,10 @@ import org.slf4j.LoggerFactory;
  */
 public class TaskUpdateVite implements FallibleCommand, Serializable {
 
-    private File configFolder;
-    private String buildFolder;
+    private final Options options;
 
-    TaskUpdateVite(File configFolder, String buildFolder) {
-        this.configFolder = configFolder;
-        this.buildFolder = buildFolder;
+    TaskUpdateVite(Options options) {
+        this.options = options;
     }
 
     @Override
@@ -55,7 +53,8 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
 
     private void createConfig() throws IOException {
         // Only create it if it does not exist
-        File configFile = new File(configFolder, FrontendUtils.VITE_CONFIG);
+        File configFile = new File(options.getNpmFolder(),
+                FrontendUtils.VITE_CONFIG);
         if (configFile.exists()) {
             return;
         }
@@ -70,7 +69,7 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
 
     private void createGeneratedConfig() throws IOException {
         // Always overwrite this
-        File generatedConfigFile = new File(configFolder,
+        File generatedConfigFile = new File(options.getNpmFolder(),
                 FrontendUtils.VITE_GENERATED_CONFIG);
         URL resource = this.getClass().getClassLoader()
                 .getResource(FrontendUtils.VITE_GENERATED_CONFIG);
@@ -78,9 +77,10 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
 
         template = template
                 .replace("#settingsImport#",
-                        "./" + buildFolder + "/"
+                        "./" + options.getBuildDirectoryName() + "/"
                                 + TaskUpdateSettingsFile.DEV_SETTINGS_FILE)
-                .replace("#buildFolder#", "./" + buildFolder);
+                .replace("#buildFolder#",
+                        "./" + options.getBuildDirectoryName());
         FileUtils.write(generatedConfigFile, template, StandardCharsets.UTF_8);
         log().debug("Created vite generated configuration file: '{}'",
                 generatedConfigFile);

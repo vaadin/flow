@@ -29,7 +29,7 @@ const frontendBundleFolder = path.resolve(__dirname, settings.frontendBundleOutp
 const jarResourcesFolder = path.resolve(__dirname, settings.jarResourcesFolder);
 const generatedFlowImportsFolder = path.resolve(__dirname, settings.generatedFlowImportsFolder);
 const themeResourceFolder = path.resolve(__dirname, settings.themeResourceFolder);
-
+const projectPackageJsonFile = path.resolve(__dirname, 'package.json');
 const statsFile = path.resolve(statsFolder, 'stats.json');
 
 const projectStaticAssetsFolders = [
@@ -184,9 +184,19 @@ function statsExtracterPlugin(): PluginOption {
         })
         .sort()
         .filter((value, index, self) => self.indexOf(value) === index);
+      const npmModuleAndVersion = Object.fromEntries(npmModules.map((module) => [module, getVersion(module)]));
 
       mkdirSync(path.dirname(statsFile), { recursive: true });
-      writeFileSync(statsFile, JSON.stringify({ npmModules }, null, 1));
+      const projectPackageJson = JSON.parse(readFileSync(projectPackageJsonFile, { encoding: 'utf-8' }));
+
+      const entryScripts = Object.values(bundle).filter(bundle => bundle.isEntry).map(bundle => bundle.fileName);
+
+      const stats = {
+        npmModules: npmModuleAndVersion,
+        entryScripts,
+        packageJsonHash: projectPackageJson?.vaadin?.hash
+      };
+      writeFileSync(statsFile, JSON.stringify(stats, null, 1));
     }
   };
 }
@@ -637,3 +647,8 @@ export const vaadinConfig: UserConfigFn = (env) => {
 export const overrideVaadinConfig = (customConfig: UserConfigFn) => {
   return defineConfig((env) => mergeConfig(vaadinConfig(env), customConfig(env)));
 };
+function getVersion(module: string):string {
+  const packageJson = `node_modules/${module}/package.json`;
+  return JSON.parse(readFileSync(packageJson, {encoding: 'utf-8'})).version;
+}
+

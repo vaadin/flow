@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.PwaConfiguration;
+import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.BOOTSTRAP_FILE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
@@ -65,39 +66,27 @@ public class TaskUpdateWebpack implements FallibleCommand {
     /**
      * Create an instance of the updater given all configurable parameters.
      *
-     * @param frontendDirectory
-     *            the directory used for {@code Frontend} alias
-     * @param webpackConfigFolder
-     *            folder with the `webpack.config.js` file.
-     * @param webpackOutputDirectory
-     *            the directory to set for webpack to output its build results.
-     * @param resourceOutputDirectory
-     *            the directory for generated non-served resources.
-     * @param generatedFlowImports
-     *            name of the JS file to update with the Flow project imports
-     * @param useV14Bootstrapping
-     *            whether the application running with deprecated V14
-     *            bootstrapping
-     * @param buildFolder
-     *            build target folder
+     * @param options
+     *            the task options
      */
     @SuppressWarnings("squid:S00107")
-    TaskUpdateWebpack(File frontendDirectory, File webpackConfigFolder,
-            File webpackOutputDirectory, File resourceOutputDirectory,
-            File generatedFlowImports, boolean useV14Bootstrapping,
-            PwaConfiguration pwaConfiguration, String buildFolder) {
-        this.frontendDirectory = frontendDirectory.toPath();
-        this.webpackOutputPath = webpackOutputDirectory.toPath();
-        this.resourceOutputPath = resourceOutputDirectory.toPath();
+    TaskUpdateWebpack(FrontendDependenciesScanner frontendDependencies,
+            Options options) {
+        this.frontendDirectory = options.getFrontendDirectory().toPath();
+        this.webpackOutputPath = options.webappResourcesDirectory.toPath();
+        this.resourceOutputPath = options.resourceOutputDirectory.toPath();
+        File generatedFlowImports = new File(options.getGeneratedFolder(),
+                FrontendUtils.IMPORTS_NAME);
         this.flowImportsFilePath = generatedFlowImports.toPath();
-        this.webpackConfigPath = webpackConfigFolder.toPath();
-        this.useV14Bootstrapping = useV14Bootstrapping;
-        this.pwaConfiguration = pwaConfiguration;
-        this.resourceFolder = new File(webpackOutputDirectory,
+        this.webpackConfigPath = options.getNpmFolder().toPath();
+        this.useV14Bootstrapping = options.useLegacyV14Bootstrap;
+        this.pwaConfiguration = frontendDependencies.getPwaConfiguration();
+        this.resourceFolder = new File(options.webappResourcesDirectory,
                 VAADIN_STATIC_FILES_PATH).toPath();
         this.frontendGeneratedFolder = this.frontendDirectory
                 .resolve(GENERATED);
-        this.buildFolder = buildFolder;
+        this.buildFolder = options.getBuildDirectoryName();
+
     }
 
     @Override

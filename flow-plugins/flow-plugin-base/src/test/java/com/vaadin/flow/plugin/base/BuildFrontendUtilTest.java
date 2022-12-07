@@ -8,15 +8,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
-import com.vaadin.experimental.FeatureFlags;
-import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.ExecutionFailedException;
-import com.vaadin.flow.server.frontend.*;
-import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
@@ -28,8 +23,22 @@ import org.mockito.InOrder;
 import org.mockito.MockedConstruction;
 import org.mockito.Mockito;
 
+import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
+import com.vaadin.flow.server.frontend.FrontendTools;
+import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.frontend.TaskGenerateHilla;
+import com.vaadin.flow.server.frontend.TaskRunNpmInstall;
+import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.utils.LookupImpl;
+import com.vaadin.pro.licensechecker.Product;
+
+import elemental.json.Json;
+import elemental.json.JsonObject;
 
 public class BuildFrontendUtilTest {
 
@@ -40,6 +49,8 @@ public class BuildFrontendUtilTest {
     private FrontendTools tools;
 
     private Lookup lookup;
+
+    private File statsJson;
 
     @Before
     public void setup() throws IOException {
@@ -73,11 +84,10 @@ public class BuildFrontendUtilTest {
         File resourceOutput = new File(baseDir, "resOut");
         Mockito.when(adapter.servletResourceOutputDirectory())
                 .thenReturn(resourceOutput);
-        File statsJson = new File(new File(resourceOutput, "config"),
-                "stats.json");
+        statsJson = new File(new File(resourceOutput, "config"), "stats.json");
         statsJson.getParentFile().mkdirs();
         try (FileOutputStream out = new FileOutputStream(statsJson)) {
-            IOUtils.write("{\"npmModules\":[]}", out, StandardCharsets.UTF_8);
+            IOUtils.write("{\"npmModules\":{}}", out, StandardCharsets.UTF_8);
         }
     }
 
@@ -172,6 +182,45 @@ public class BuildFrontendUtilTest {
         InOrder inOrder = Mockito.inOrder(taskRunNpmInstall, taskGenerateHilla);
         inOrder.verify(taskRunNpmInstall).execute();
         inOrder.verify(taskGenerateHilla).execute();
+    }
+
+    @Test
+    public void detectsCommercialComponents()
+            throws URISyntaxException, ExecutionFailedException, IOException {
+
+        try (FileOutputStream out = new FileOutputStream(statsJson)) {
+            IOUtils.write(
+                    "{\"npmModules\":{\"component\":\"1.2.3\", \"comm-component\":\"4.6.5\"}}",
+                    out, StandardCharsets.UTF_8);
+        }
+
+        File nodeModulesFolder = new File(baseDir, "node_modules");
+        writePackageJson(nodeModulesFolder, "component", "1.2.3", null);
+        writePackageJson(nodeModulesFolder, "comm-component", "4.6.5",
+                "comm-comp");
+        List<Product> components = BuildFrontendUtil
+                .findCommercialFrontendComponents(nodeModulesFolder, statsJson);
+        Assert.assertEquals(1, components.size());
+        Assert.assertEquals("comm-comp", components.get(0).getName());
+        Assert.assertEquals("4.6.5", components.get(0).getVersion());
+    }
+
+    private void writePackageJson(File nodeModulesFolder, String name,
+            String version, String cvdlName) throws IOException {
+        File componentFolder = new File(nodeModulesFolder, name);
+        componentFolder.mkdirs();
+        JsonObject json = Json.createObject();
+        json.put("name", name);
+        json.put("version", version);
+        if (cvdlName == null) {
+            json.put("license", "MIT");
+        } else {
+            json.put("license", "CVDL");
+            json.put("cvdlName", cvdlName);
+        }
+        FileUtils.write(new File(componentFolder, "package.json"),
+                json.toJson(), StandardCharsets.UTF_8);
+
     }
 
     private void setupPluginAdapterDefaults() throws URISyntaxException {
