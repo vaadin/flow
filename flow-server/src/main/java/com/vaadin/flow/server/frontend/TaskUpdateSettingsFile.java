@@ -31,6 +31,8 @@ import com.vaadin.flow.server.PwaConfiguration;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+import elemental.json.JsonValue;
+
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC;
 import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC_JS;
@@ -91,11 +93,20 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
         String staticOutput = combinePath(webappResources,
                 VAADIN_STATIC_FILES_PATH);
 
+        File devBundleOutputFolder = new File(new File(npmFolder, "dev-bundle"),
+                "webapp");
+        String devBundleOutputFolderString = FrontendUtils
+                .getUnixPath(devBundleOutputFolder.toPath());
+        String devBundleStatsFolderString = FrontendUtils.getUnixPath(
+                new File(devBundleOutputFolder.getParentFile(), "config")
+                        .toPath());
         settings.put("staticOutput",
                 FrontendUtils.getUnixPath(new File(staticOutput).toPath()));
         settings.put("generatedFolder", "generated");
         settings.put("statsOutput", statsOutput);
         settings.put("frontendBundleOutput", webappResources);
+        settings.put("devBundleOutput", devBundleOutputFolderString);
+        settings.put("devBundleStatsOutput", devBundleStatsFolderString);
         settings.put("jarResourcesFolder",
                 FrontendUtils.getUnixPath(jarFrontendResourcesFolder.toPath()));
         settings.put("generatedFlowImportsFolder",

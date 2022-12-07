@@ -81,7 +81,8 @@ public class NodeTasks implements FallibleCommand {
             TaskUpdateVite.class,
             TaskUpdateImports.class,
             TaskUpdateThemeImport.class,
-            TaskCopyTemplateFiles.class
+            TaskCopyTemplateFiles.class,
+            TaskRunDevBundleBuild.class
         ));
     // @formatter:on
 
@@ -100,6 +101,15 @@ public class NodeTasks implements FallibleCommand {
         FrontendDependenciesScanner frontendDependencies = null;
 
         final FeatureFlags featureFlags = options.getFeatureFlags();
+
+        if (options.isDevBundleBuild()) {
+            if (TaskRunDevBundleBuild.needsBuild(options.getNpmFolder())) {
+                options.runNpmInstall(true);
+            } else {
+                // A dev bundle build is not needed after all, skip it
+                options.withDevBundleBuild(false);
+            }
+        }
 
         if (options.enablePackagesUpdate || options.enableImportsUpdate
                 || options.enableWebpackConfigUpdate) {
@@ -134,6 +144,10 @@ public class NodeTasks implements FallibleCommand {
                 commands.add(new TaskRunNpmInstall(packageUpdater, options));
 
                 commands.add(new TaskInstallFrontendBuildPlugins(options));
+            }
+
+            if (packageUpdater != null && options.isDevBundleBuild()) {
+                commands.add(new TaskRunDevBundleBuild(options));
             }
 
         }
