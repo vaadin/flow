@@ -25,7 +25,6 @@ import static com.vaadin.flow.server.Constants.NPM_TOKEN;
 import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
 import static com.vaadin.flow.server.InitParameters.NODE_DOWNLOAD_ROOT;
 import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_INITIAL_UIDL;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
@@ -78,7 +77,6 @@ import com.vaadin.pro.licensechecker.LicenseChecker;
 import com.vaadin.pro.licensechecker.Product;
 
 import elemental.json.Json;
-import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
 
@@ -614,7 +612,6 @@ public class BuildFrontendUtil {
             buildInfo.remove(Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN);
             buildInfo.remove(InitParameters.BUILD_FOLDER);
 
-            buildInfo.put(SERVLET_PARAMETER_ENABLE_DEV_SERVER, false);
             FileUtils.write(tokenFile, JsonUtil.stringify(buildInfo, 2) + "\n",
                     StandardCharsets.UTF_8.name());
         } catch (IOException e) {
