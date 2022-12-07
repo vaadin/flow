@@ -1,4 +1,4 @@
-import { css, html, LitElement, nothing } from 'lit';
+import { css, html, LitElement, nothing, render } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -23,7 +23,7 @@ interface Feature {
 }
 
 interface Tab {
-  id: 'log' | 'info' | 'features';
+  id: 'log' | 'info' | 'features' | 'code';
   title: string;
   render: () => unknown;
   activate?: () => void;
@@ -157,6 +157,9 @@ export class Connection extends Object {
   }
   sendLicenseCheck(product: Product) {
     this.send('checkLicense', product);
+  }
+  sendShowComponentInCode(nodeId: number, appId: string) {
+    this.send('showComponentInCode', { nodeId, appId });
   }
 }
 
@@ -867,6 +870,10 @@ export class VaadinDevTools extends LitElement {
           background-color: var(--dev-tools-background-color-active-blurred);
         }
       }
+
+      .pick-active {
+        background: darkblue;
+      }
     `;
   }
 
@@ -930,7 +937,8 @@ export class VaadinDevTools extends LitElement {
   private tabs: readonly Tab[] = [
     { id: 'log', title: 'Log', render: this.renderLog, activate: this.activateLog },
     { id: 'info', title: 'Info', render: this.renderInfo },
-    { id: 'features', title: 'Experimental Features', render: this.renderFeatures }
+    { id: 'features', title: 'Experimental Features', render: this.renderFeatures },
+    { id: 'code', title: 'Code', render: this.renderCode }
   ];
 
   @state()
@@ -953,6 +961,12 @@ export class VaadinDevTools extends LitElement {
 
   @query('.window')
   private root!: HTMLElement;
+
+  @state()
+  componentPickMode: boolean = false;
+  componentPickModeHighlight: HTMLElement | undefined = undefined;
+
+  shim: HTMLElement | undefined;
 
   private javaConnection?: Connection;
   private frontendConnection?: Connection;
@@ -1468,6 +1482,17 @@ export class VaadinDevTools extends LitElement {
     });
   }
 
+  renderCode() {
+    return html`<div class="info-tray">
+      <button
+        class="button pick ${this.componentPickMode ? 'pick-active' : ''}"
+        @click=${this.pickForFindComponentInCode}
+      >
+        Find component in code
+      </button>
+    </div>`;
+  }
+
   renderInfo() {
     return html`<div class="info-tray">
       <button class="button copy" @click=${this.copyInfoToClipboard}>Copy</button>
@@ -1532,6 +1557,79 @@ export class VaadinDevTools extends LitElement {
         </div>`
       )}
     </div>`;
+  }
+
+  getNodeId(element: Element): number {
+    return (window as any).Vaadin.Flow.clients[this.getAppId()].getNodeId(element);
+  }
+  getAppId(): string {
+    // FIXME
+    return Object.keys((window as any).Vaadin.Flow.clients).filter((key) => key !== 'TypeScript')[0];
+  }
+
+  getShimTarget(e: MouseEvent): HTMLElement {
+    this.shim!.style.display = 'none';
+    let element = document.elementFromPoint(e.clientX, e.clientY);
+    this.shim!.style.display = '';
+
+    let nodeId: number = this.getNodeId(element!);
+    // Find the first element that is a component
+    while (nodeId === -1 && element && element.parentNode) {
+      element = element.parentElement
+        ? element.parentElement
+        : ((element.parentNode as ShadowRoot).host as HTMLElement);
+      nodeId = this.getNodeId(element);
+    }
+
+    return element as HTMLElement;
+  }
+
+  shimMove(e: MouseEvent) {
+    const element = this.getShimTarget(e);
+    if (this.componentPickModeHighlight) {
+      this.componentPickModeHighlight.style.outline = '';
+    }
+    element.style.outline = '1px solid red';
+    this.componentPickModeHighlight = element;
+  }
+
+  shimClick(e: MouseEvent) {
+    if (this.componentPickMode) {
+      const element: HTMLElement | null = this.getShimTarget(e);
+      const nodeId = this.getNodeId(element);
+      if (nodeId !== -1) {
+        this.frontendConnection!.sendShowComponentInCode(nodeId, 'ROOT');
+      } else {
+        this.showNotification(MessageType.ERROR, 'Component not found', undefined, undefined, 'versionInfoCopied');
+      }
+      this.componentPickMode = false;
+      if (this.componentPickModeHighlight) {
+        this.componentPickModeHighlight.style.outline = '';
+        this.componentPickModeHighlight = undefined;
+      }
+      this.shim!.style.display = 'none';
+    }
+  }
+
+  pickForFindComponentInCode() {
+    this.componentPickMode = true;
+    if (!this.shim) {
+      render(
+        html`<style>
+            #vaadin-dev-tools-shim {
+              background: rgba(255, 255, 255, 0);
+              position: absolute;
+              inset: 0px;
+              z-index: 1000000;
+            }
+          </style>
+          <div id="vaadin-dev-tools-shim" @mousemove=${this.shimMove} @click=${this.shimClick}></div> `,
+        document.body,
+        { host: this }
+      );
+      this.shim = document.querySelector('#vaadin-dev-tools-shim') as HTMLElement;
+    }
+    this.shim.style.display = 'block';
   }
 
   copyInfoToClipboard() {

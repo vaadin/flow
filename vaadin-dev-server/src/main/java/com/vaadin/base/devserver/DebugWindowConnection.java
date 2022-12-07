@@ -15,27 +15,37 @@
  */
 package com.vaadin.base.devserver;
 
+import java.io.File;
 import java.lang.ref.WeakReference;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vaadin.base.devserver.stats.DevModeUsageStatistics;
-import com.vaadin.experimental.FeatureFlags;
-import com.vaadin.flow.internal.BrowserLiveReload;
-import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.pro.licensechecker.BuildType;
-import com.vaadin.pro.licensechecker.LicenseChecker;
-import com.vaadin.pro.licensechecker.Product;
 
 import org.atmosphere.cpr.AtmosphereResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vaadin.base.devserver.stats.DevModeUsageStatistics;
+import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.ComponentTracker;
+import com.vaadin.flow.internal.BrowserLiveReload;
+import com.vaadin.flow.internal.nodefeature.ComponentMapping;
+import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
+import com.vaadin.pro.licensechecker.BuildType;
+import com.vaadin.pro.licensechecker.LicenseChecker;
+import com.vaadin.pro.licensechecker.Product;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -61,6 +71,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
             Backend.class);
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private ApplicationConfiguration configuration;
 
     static {
         IDENTIFIER_CLASSES.put(Backend.JREBEL, Collections.singletonList(
@@ -79,6 +90,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
     DebugWindowConnection(ClassLoader classLoader, VaadinContext context) {
         this.classLoader = classLoader;
         this.context = context;
+        this.configuration = ApplicationConfiguration.get(context);
     }
 
     @Override
@@ -174,15 +186,13 @@ public class DebugWindowConnection implements BrowserLiveReload {
         }
         JsonObject json = Json.parse(message);
         String command = json.getString("command");
+        JsonObject data = json.getObject("data");
         if ("setFeature".equals(command)) {
-            JsonObject data = json.getObject("data");
             FeatureFlags.get(context).setEnabled(data.getString("featureId"),
                     data.getBoolean("enabled"));
         } else if ("reportTelemetry".equals(command)) {
-            JsonObject data = json.getObject("data");
             DevModeUsageStatistics.handleBrowserData(data);
         } else if ("checkLicense".equals(command)) {
-            JsonObject data = json.getObject("data");
             String name = data.getString("name");
             String version = data.getString("version");
             Product product = new Product(name, version);
@@ -207,6 +217,44 @@ public class DebugWindowConnection implements BrowserLiveReload {
                         errorMessage);
                 send(resource, "license-check-failed", pm);
             }
+        } else if ("showComponentInCode".equals(command)) {
+            // getui
+            int nodeId = (int) data.getNumber("nodeId");
+            String appId = data.getString("appId");
+            VaadinSession session = VaadinSession.getCurrent();
+            session.access(() -> {
+                Optional<UI> ui = session.getUIs().stream()
+                        .filter(u -> u.getInternals().getAppId().equals(appId))
+                        .findFirst();
+                if (!ui.isPresent()) {
+                    System.out.println("Failed to find UI");
+                }
+                Component component = ui.get().getInternals().getStateTree()
+                        .getNodeById(nodeId).getFeature(ComponentMapping.class)
+                        .getComponent().get();
+                StackTraceElement location = ComponentTracker
+                        .findCreate(component);
+                String cls = location.getClassName();
+                String filename = location.getFileName();
+
+                if (cls.endsWith(filename.replace(".java", ""))) {
+                    File f = Path
+                            .of(configuration.getStringProperty(
+                                    FrontendUtils.PROJECT_BASEDIR, ""))
+                            .toAbsolutePath().toFile();
+                    f = new File(f, "src");
+                    f = new File(f, "main");
+                    f = new File(f, "java");
+                    f = new File(f, cls.replace(".", "/") + ".java");
+                    String absoluteFilename = f.getAbsolutePath();
+                    if (!OpenInIde.openFile(absoluteFilename,
+                            location.getLineNumber())) {
+                        System.out.println(location);
+                    }
+                } else {
+                    System.out.println(location);
+                }
+            });
         } else {
             getLogger().info("Unknown command from the browser: " + command);
         }
