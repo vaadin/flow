@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
+import org.slf4j.LoggerFactory;
 import org.springframework.security.web.DefaultRedirectStrategy;
 
 import com.vaadin.flow.component.UI;
@@ -22,7 +23,15 @@ public class UidlRedirectStrategy extends DefaultRedirectStrategy {
             HttpServletResponse response, String url) throws IOException {
         final var servletMapping = request.getHttpServletMapping().getPattern();
         if (HandlerHelper.isFrameworkInternalRequest(servletMapping, request)) {
-            UI.getCurrent().getPage().setLocation(url);
+            UI ui = UI.getCurrent();
+            if (ui != null) {
+                ui.getPage().setLocation(url);
+            } else {
+                LoggerFactory.getLogger(UidlRedirectStrategy.class).warn(
+                        "A redirect to {} was request during a Vaadin request, "
+                                + "but it was not possible to get the UI instance to perform the action.",
+                        url);
+            }
         } else {
             super.sendRedirect(request, response, url);
         }
