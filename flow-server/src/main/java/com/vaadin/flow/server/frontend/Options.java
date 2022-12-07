@@ -43,7 +43,7 @@ public class Options implements Serializable {
 
     boolean runNpmInstall = false;
 
-    private boolean devBundleBuild = true;
+    private boolean devBundleBuild = false;
 
     Set<File> jarFiles = null;
 

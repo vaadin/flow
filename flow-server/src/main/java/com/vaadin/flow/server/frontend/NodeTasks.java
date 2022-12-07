@@ -102,7 +102,7 @@ public class NodeTasks implements FallibleCommand {
 
         final FeatureFlags featureFlags = options.getFeatureFlags();
 
-        if (options.isDevBundleBuild()) {
+        if (!options.productionMode && options.isDevBundleBuild()) {
             if (TaskRunDevBundleBuild.needsBuild(options.getNpmFolder())) {
                 options.runNpmInstall(true);
             } else {
