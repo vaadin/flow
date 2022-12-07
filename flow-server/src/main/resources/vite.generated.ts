@@ -173,6 +173,7 @@ function statsExtracterPlugin(): PluginOption {
       const modules = Object.values(bundle).flatMap((b) => (b.modules ? Object.keys(b.modules) : []));
       const nodeModulesFolders = modules.filter((id) => id.includes('node_modules'));
       const npmModules = nodeModulesFolders
+        .map((id) => id.replace(/\\/g, '/'))
         .map((id) => id.replace(/.*node_modules./, ''))
         .map((id) => {
           const parts = id.split('/');

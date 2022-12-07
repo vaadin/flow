@@ -347,6 +347,7 @@ module.exports = {
           .map((module) => module.identifier)
           .filter((id) => id.includes('node_modules'));
         const npmModules = nodeModulesFolders
+          .map((id) => id.replace(/\\/g, '/'))
           .map((id) => id.replace(/.*node_modules./, ''))
           .map((id) => {
             const parts = id.split('/');
