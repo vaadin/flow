@@ -1,17 +1,14 @@
 package com.vaadin.flow.spring.flowsecurity;
 
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Component;
 
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.internal.UrlUtil;
-import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.spring.flowsecurity.data.UserInfo;
 import com.vaadin.flow.spring.flowsecurity.service.UserInfoService;
+import com.vaadin.flow.spring.security.AuthenticationContext;
 
 @Component
 public class SecurityUtils {
@@ -20,38 +17,20 @@ public class SecurityUtils {
     private UserInfoService userInfoService;
     @Autowired
     private SecurityConfig securityConfig;
-
-    public UserDetails getAuthenticatedUser() {
-        SecurityContext context = SecurityContextHolder.getContext();
-        if (context == null) {
-            throw new IllegalStateException("No security context available");
-        }
-        if (context.getAuthentication() == null) {
-            return null;
-        }
-        Object principal = context.getAuthentication().getPrincipal();
-        if (principal instanceof UserDetails) {
-            return (UserDetails) context.getAuthentication().getPrincipal();
-        }
-        // Anonymous or no authentication.
-        return null;
-    }
+    @Autowired
+    private AuthenticationContext authenticationContext;
 
     public UserInfo getAuthenticatedUserInfo() {
-        UserDetails details = getAuthenticatedUser();
-        if (details == null) {
+        Optional<UserDetails> userDetails = authenticationContext
+                .getAuthenticatedUser(UserDetails.class);
+        if (userDetails.isEmpty()) {
             return null;
         }
-        return userInfoService.findByUsername(details.getUsername());
+        return userInfoService.findByUsername(userDetails.get().getUsername());
     }
 
     public void logout() {
-        SecurityContextLogoutHandler logoutHandler = new SecurityContextLogoutHandler();
-        logoutHandler.setInvalidateHttpSession(false);
-        VaadinServletRequest request = VaadinServletRequest.getCurrent();
-        logoutHandler.logout(request, null, null);
-        UI.getCurrent().getPage().setLocation(UrlUtil.getServletPathRelative(
-                securityConfig.getLogoutSuccessUrl(), request));
+        authenticationContext.logout();
     }
 
 }

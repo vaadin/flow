@@ -15,18 +15,18 @@
  */
 package com.vaadin.flow.spring.security;
 
+import javax.crypto.SecretKey;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import javax.crypto.SecretKey;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -38,9 +38,11 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
 import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
+import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextHolderStrategy;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.access.AccessDeniedHandlerImpl;
@@ -48,6 +50,8 @@ import org.springframework.security.web.access.DelegatingAccessDeniedHandler;
 import org.springframework.security.web.access.RequestMatcherDelegatingAccessDeniedHandler;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
+import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 import org.springframework.security.web.csrf.CsrfException;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.savedrequest.RequestCache;
@@ -105,6 +109,9 @@ public abstract class VaadinWebSecurity {
     @Value("#{servletContext.contextPath}")
     private String servletContextPath;
 
+    private final AuthenticationContext authenticationContext = new AuthenticationContext();
+    private LogoutConfigurer<HttpSecurity> logoutConfigurer;
+
     /**
      * Registers default {@link SecurityFilterChain} bean.
      * <p>
@@ -118,7 +125,27 @@ public abstract class VaadinWebSecurity {
     @Bean(name = "VaadinSecurityFilterChainBean")
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         configure(http);
-        return http.build();
+        // Keeps a reference to LogoutConfigurer in case AuthenticationContext
+        // needs to refresh transient fields after deserialization
+        logoutConfigurer = http.logout();
+        logoutConfigurer.invalidateHttpSession(true);
+        addLogoutHandlers(logoutConfigurer::addLogoutHandler);
+        DefaultSecurityFilterChain securityFilterChain = http.build();
+
+        authenticationContext.setLogoutHandlers(
+                logoutConfigurer.getLogoutSuccessHandler(),
+                logoutConfigurer.getLogoutHandlers());
+        return securityFilterChain;
+    }
+
+    /**
+     * Gets the default authentication-context bean.
+     *
+     * @return the authentication-context bean
+     */
+    @Bean(name = "VaadinAuthenticationContext")
+    public AuthenticationContext getAuthenticationContext() {
+        return authenticationContext;
     }
 
     /**
@@ -343,7 +370,7 @@ public abstract class VaadinWebSecurity {
         formLogin.loginPage(hillaLoginViewPath).permitAll();
         formLogin.successHandler(
                 getVaadinSavedRequestAwareAuthenticationSuccessHandler(http));
-        http.logout().logoutSuccessUrl(logoutSuccessUrl);
+        configureLogout(http, logoutSuccessUrl);
         http.exceptionHandling().defaultAuthenticationEntryPointFor(
                 new LoginUrlAuthenticationEntryPoint(hillaLoginViewPath),
                 AnyRequestMatcher.INSTANCE);
@@ -402,7 +429,7 @@ public abstract class VaadinWebSecurity {
         formLogin.successHandler(
                 getVaadinSavedRequestAwareAuthenticationSuccessHandler(http));
         http.csrf().ignoringRequestMatchers(loginPath);
-        http.logout().logoutSuccessUrl(logoutSuccessUrl);
+        configureLogout(http, logoutSuccessUrl);
         http.exceptionHandling().defaultAuthenticationEntryPointFor(
                 new LoginUrlAuthenticationEntryPoint(loginPath),
                 AnyRequestMatcher.INSTANCE);
@@ -502,6 +529,25 @@ public abstract class VaadinWebSecurity {
      */
     protected ViewAccessChecker getViewAccessChecker() {
         return viewAccessChecker;
+    }
+
+    /**
+     * Sets additional {@link LogoutHandler}s that will participate in logout
+     * process.
+     *
+     * @param registry
+     *            used to add custom handlers.
+     */
+    protected void addLogoutHandlers(Consumer<LogoutHandler> registry) {
+
+    }
+
+    private void configureLogout(HttpSecurity http, String logoutSuccessUrl)
+            throws Exception {
+        SimpleUrlLogoutSuccessHandler logoutSuccessHandler = new SimpleUrlLogoutSuccessHandler();
+        logoutSuccessHandler.setDefaultTargetUrl(logoutSuccessUrl);
+        logoutSuccessHandler.setRedirectStrategy(new UidlRedirectStrategy());
+        http.logout().logoutSuccessHandler(logoutSuccessHandler);
     }
 
     private VaadinSavedRequestAwareAuthenticationSuccessHandler getVaadinSavedRequestAwareAuthenticationSuccessHandler(
