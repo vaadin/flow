@@ -43,6 +43,7 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.ResponseWriter;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
@@ -68,8 +69,8 @@ public class StaticFileServer implements StaticFileHandler {
 
     private final ResponseWriter responseWriter;
     private final VaadinService vaadinService;
-    private DeploymentConfiguration deploymentConfiguration;
     private DevModeHandler devModeHandler;
+    private ApplicationConfiguration configuration;
 
     // Matcher to match string starting with '/themes/[theme-name]/'
     public static final Pattern APP_THEME_PATTERN = Pattern
@@ -87,7 +88,10 @@ public class StaticFileServer implements StaticFileHandler {
      */
     public StaticFileServer(VaadinService vaadinService) {
         this.vaadinService = vaadinService;
-        deploymentConfiguration = vaadinService.getDeploymentConfiguration();
+        DeploymentConfiguration deploymentConfiguration = vaadinService
+                .getDeploymentConfiguration();
+        configuration = ApplicationConfiguration
+                .get(vaadinService.getContext());
         responseWriter = new ResponseWriter(deploymentConfiguration);
 
         this.devModeHandler = DevModeHandlerManager
@@ -341,9 +345,8 @@ public class StaticFileServer implements StaticFileHandler {
     // paths. Hence, these methods:
 
     private boolean shouldFixIncorrectWebjarPaths() {
-        return deploymentConfiguration.isProductionMode()
-                && deploymentConfiguration.getBooleanProperty(
-                        PROPERTY_FIX_INCORRECT_WEBJAR_PATHS, false);
+        return configuration.isProductionMode() && configuration
+                .getBooleanProperty(PROPERTY_FIX_INCORRECT_WEBJAR_PATHS, false);
     }
 
     private boolean isIncorrectWebjarPath(String requestFilename) {
@@ -414,7 +417,7 @@ public class StaticFileServer implements StaticFileHandler {
             HttpServletResponse response) {
         int resourceCacheTime = getCacheTime(filenameWithPath);
         String cacheControl;
-        if (!deploymentConfiguration.isProductionMode()) {
+        if (!configuration.isProductionMode()) {
             cacheControl = "no-cache";
         } else if (resourceCacheTime > 0) {
             cacheControl = "max-age=" + resourceCacheTime;
