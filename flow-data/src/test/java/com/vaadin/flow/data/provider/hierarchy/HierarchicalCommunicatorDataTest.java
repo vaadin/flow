@@ -19,7 +19,6 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 import com.vaadin.flow.function.SerializablePredicate;
 import org.junit.Assert;
@@ -85,6 +84,8 @@ public class HierarchicalCommunicatorDataTest {
 
     private boolean parentClearCalled = false;
 
+    private int committedUpdateId;
+
     private class UpdateQueue implements HierarchicalUpdate {
 
         @Override
@@ -97,6 +98,7 @@ public class HierarchicalCommunicatorDataTest {
 
         @Override
         public void commit(int updateId) {
+            committedUpdateId = updateId;
         }
 
         @Override
@@ -239,6 +241,46 @@ public class HierarchicalCommunicatorDataTest {
         communicator.reset();
 
         Assert.assertTrue(parentClearCalled);
+    }
+
+    @Test
+    public void expandItem_requestNonOverlappingRange_expandedItemPersistsInKeyMapper() {
+        committedUpdateId = -1;
+
+        int indexToTest = 2;
+        int requestedRangeLength = 5;
+
+        treeData = new TreeData<>();
+        for (int id = 0; id < requestedRangeLength * 4; id++) {
+            treeData.addItems(null, new Item(id, "Item " + id));
+        }
+        Item itemToTest = treeData.getRootItems().get(indexToTest);
+        treeData.addItems(itemToTest, new Item(treeData.getRootItems().size(),
+                "Item " + indexToTest + "_" + 0));
+        dataProvider = new TreeDataProvider<>(treeData);
+        communicator.setDataProvider(dataProvider, null);
+
+        communicator.setRequestedRange(0, requestedRangeLength);
+        fakeClientCommunication();
+        Assert.assertTrue(communicator.getKeyMapper().has(itemToTest));
+        String initialKey = communicator.getKeyMapper().key(itemToTest);
+
+        communicator.expand(itemToTest);
+        communicator.setRequestedRange(requestedRangeLength * 2,
+                requestedRangeLength);
+        fakeClientCommunication();
+        assertKeyItemPairIsPresentInKeyMapper(initialKey, itemToTest);
+
+        communicator.confirmUpdate(committedUpdateId);
+        fakeClientCommunication();
+        assertKeyItemPairIsPresentInKeyMapper(initialKey, itemToTest);
+
+        communicator.reset();
+    }
+
+    private void assertKeyItemPairIsPresentInKeyMapper(String key, Item item) {
+        Assert.assertTrue(communicator.getKeyMapper().has(item));
+        Assert.assertEquals(key, communicator.getKeyMapper().key(item));
     }
 
     private void fakeClientCommunication() {
