@@ -34,6 +34,7 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -149,7 +150,8 @@ public class DeploymentConfigurationFactoryTest {
                 notUiClass, servlet), UI.class.isAssignableFrom(notUiClass));
         assertEquals(String.format(
                 "Expected DeploymentConfiguration for servlet '%s' to have its enclosing UI class",
-                servlet), UI.class.getName(), config.getUIClassName());
+                servlet), JavaScriptBootstrapUI.class.getName(),
+                config.getUIClassName());
     }
 
     @Test

@@ -18,6 +18,7 @@ package com.vaadin.flow.server;
 import java.util.Map;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 
 /**
@@ -44,7 +45,8 @@ public abstract class AbstractDeploymentConfiguration extends
     @Override
     public String getUIClassName() {
         return getStringProperty(InitParameters.UI_PARAMETER,
-                UI.class.getName());
+                useV14Bootstrap() ? UI.class.getName()
+                        : JavaScriptBootstrapUI.class.getName());
     }
 
     @Override

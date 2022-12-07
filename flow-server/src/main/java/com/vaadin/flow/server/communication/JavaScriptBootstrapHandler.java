@@ -275,8 +275,8 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
             VaadinResponse response, VaadinSession session) {
 
         Class<? extends UI> uiClass = getUIClass(request);
-        BootstrapContext context = createAndInitUI(uiClass,
-                request, response, session);
+        BootstrapContext context = createAndInitUI(uiClass, request, response,
+                session);
 
         JsonObject initial = Json.createObject();
 
