@@ -31,6 +31,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
