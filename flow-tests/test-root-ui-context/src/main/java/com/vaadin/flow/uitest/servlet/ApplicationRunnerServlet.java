@@ -50,6 +50,7 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationTrigger;
+import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.Attributes;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
@@ -186,8 +187,17 @@ public class ApplicationRunnerServlet extends VaadinServlet {
      *         context, runner, application classname
      */
     private static String getApplicationRunnerURIs(HttpServletRequest request) {
-        final String[] urlParts = request.getRequestURI().toString()
+        String[] urlParts = request.getRequestURI().toString()
                 .split("\\/");
+        if(urlParts.length == 0 && request.getQueryString().contains("location")) {
+            String location = QueryParameters.fromString(
+                            request.getQueryString()).getParameters().get("location")
+                    .get(0);
+            if(!location.startsWith("/")) {
+                location = "/" + location;
+            }
+            urlParts = location.split("\\/");
+        }
         String contextPath = request.getContextPath();
         if (urlParts[1].equals(contextPath.replaceAll("\\/", ""))) {
             // class name comes after web context and runner application
