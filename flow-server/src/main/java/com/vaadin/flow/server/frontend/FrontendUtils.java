@@ -24,6 +24,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -1409,6 +1410,31 @@ public class FrontendUtils {
         }
 
         return mapping;
+    }
+
+    /**
+     * Finds the given file inside the express mode development bundle that is
+     * used.
+     * <p>
+     *
+     * @param projectDir
+     *            the project root folder
+     * @param filename
+     *            the file name inside the bundle
+     * @return a URL referring to the file inside the bundle or {@code null} if
+     *         the file was not found
+     */
+    public static URL findBundleFile(File projectDir, String filename)
+            throws IOException {
+        File devBundleFolder = new File(projectDir, "dev-bundle");
+        if (devBundleFolder.exists()) {
+            // Has an application bundle
+            File bundleFile = new File(devBundleFolder, filename);
+            if (bundleFile.exists()) {
+                return bundleFile.toURI().toURL();
+            }
+        }
+        return null;
     }
 
 }
