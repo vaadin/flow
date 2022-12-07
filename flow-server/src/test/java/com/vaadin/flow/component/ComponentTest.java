@@ -41,6 +41,7 @@ import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.internal.DependencyList;
 import com.vaadin.flow.component.internal.UIInternals;
+import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.Element;
@@ -308,6 +309,8 @@ public class ComponentTest {
     @Test
     public void getComponentLocale_noCurrentUI_returnsDefaultLocale() {
         UI.setCurrent(null);
+        Instantiator instantiator = mocks.getService().getInstantiator();
+        Mockito.when(instantiator.getI18NProvider()).thenReturn(null);
         Component test = new TestButton();
         final Locale locale = test.getLocale();
         Assert.assertEquals("System default locale should be returned",
