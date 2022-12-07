@@ -15,6 +15,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.internal.UrlUtil;
+import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.spring.RootMappedCondition;
 import com.vaadin.flow.spring.VaadinConfigurationProperties;
 import com.vaadin.flow.spring.flowsecurity.data.UserInfo;
@@ -59,6 +62,11 @@ public class SecurityConfig extends VaadinWebSecurity {
         http.authorizeRequests().antMatchers("/public/**").permitAll();
         super.configure(http);
         setLoginView(http, LoginView.class, getLogoutSuccessUrl());
+        http.logout().addLogoutHandler((request, response, authentication) -> {
+            UI ui = UI.getCurrent();
+            ui.accessSynchronously(() -> ui.getPage().setLocation(UrlUtil
+                    .getServletPathRelative(getLogoutSuccessUrl(), request)));
+        });
     }
 
     @Bean
