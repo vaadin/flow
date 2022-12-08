@@ -382,6 +382,15 @@ public class Options implements Serializable {
     }
 
     /**
+     * Get application properties file for Spring project.
+     *
+     * @return application properties file
+     **/
+    public File getApplicationProperties() {
+        return applicationProperties;
+    }
+
+    /**
      * Set output location for the generated OpenAPI file.
      *
      * @param endpointGeneratedOpenAPIFile
