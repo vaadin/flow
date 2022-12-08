@@ -23,7 +23,7 @@ import jakarta.servlet.annotation.WebServlet;
 import com.vaadin.flow.server.VaadinServlet;
 
 @WebServlet(asyncSupported = true, urlPatterns = {
-        "/view/*" }, initParams = @WebInitParam(name = "productionMode", value = "false"))
+        "/view/*" })
 public class ViewTestServlet extends VaadinServlet {
 
     private static ViewClassLocator viewLocator;
