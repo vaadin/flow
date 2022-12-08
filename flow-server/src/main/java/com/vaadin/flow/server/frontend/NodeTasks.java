@@ -72,7 +72,7 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateWebComponentHtml.class,
             TaskGenerateWebComponentBootstrap.class,
             TaskGenerateFeatureFlags.class,
-            TaskInstallWebpackPlugins.class,
+            TaskInstallFrontendBuildPlugins.class,
             TaskUpdatePackages.class,
             TaskRunNpmInstall.class,
             TaskGenerateHilla.class,
@@ -135,7 +135,7 @@ public class NodeTasks implements FallibleCommand {
             if (packageUpdater != null && options.runNpmInstall) {
                 commands.add(new TaskRunNpmInstall(packageUpdater, options));
 
-                commands.add(new TaskInstallWebpackPlugins(options));
+                commands.add(new TaskInstallFrontendBuildPlugins(options));
             }
 
         }
