@@ -353,7 +353,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                     StandardCharsets.UTF_8);
             addBundleEntryPoints(indexHtmlDocument, config,
                     Json.parse(statsJson));
-        } else if (!getFeatureFlags(service).isEnabled(FeatureFlags.WEBPACK)) {
+        }
+        if (!getFeatureFlags(service).isEnabled(FeatureFlags.WEBPACK)) {
             modifyIndexHtmlForVite(indexHtmlDocument);
         }
         return indexHtmlDocument;
@@ -391,7 +392,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     // circumstances under which it'll break. It seems unlikely that
     // VaadinContext
     // will be serialized/deserialized.
-    private static final class IndexHtmlHolder implements Serializable {
+    static final class IndexHtmlHolder implements Serializable {
         private final transient Document indexHtmlDocument;
 
         private IndexHtmlHolder(VaadinService service) {

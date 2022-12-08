@@ -538,10 +538,11 @@ public class FrontendUtils {
 
     private static InputStream getFileFromFrontendDir(
             AbstractConfiguration config, String path) {
-        File f = new File(new File(config.getProjectFolder(), "frontend"), path);
-        if (f.exists()) {
+        File file = new File(new File(config.getProjectFolder(), "frontend"),
+                path);
+        if (file.exists()) {
             try {
-                return new FileInputStream(f);
+                return Files.newInputStream(file.toPath());
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }

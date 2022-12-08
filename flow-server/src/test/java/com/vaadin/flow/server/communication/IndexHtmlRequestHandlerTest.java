@@ -15,20 +15,27 @@
  */
 package com.vaadin.flow.server.communication;
 
+import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.internal.StringUtil;
 import org.jsoup.nodes.Document;
@@ -37,7 +44,9 @@ import org.jsoup.select.Elements;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
@@ -54,6 +63,7 @@ import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
@@ -70,8 +80,8 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
@@ -88,7 +98,7 @@ public class IndexHtmlRequestHandlerTest {
     private VaadinResponse response;
     private ByteArrayOutputStream responseOutput;
     private MockDeploymentConfiguration deploymentConfiguration;
-    private VaadinContext context;
+    private VaadinServletContext context;
 
     private String springTokenString;
     private String springTokenHeaderName = "x-CSRF-TOKEN";
@@ -96,8 +106,12 @@ public class IndexHtmlRequestHandlerTest {
 
     private int expectedScriptsTagsOnBootstrapPage = 4;
 
+    @Rule
+    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
     @Before
     public void setUp() throws Exception {
+
         mocks = new MockServletServiceSessionSetup();
         service = mocks.getService();
         session = mocks.getSession();
@@ -106,8 +120,12 @@ public class IndexHtmlRequestHandlerTest {
         Mockito.when(response.getOutputStream()).thenReturn(responseOutput);
         deploymentConfiguration = mocks.getDeploymentConfiguration();
         deploymentConfiguration.setEnableDevServer(false);
+        deploymentConfiguration.setProductionMode(true);
         indexHtmlRequestHandler = new IndexHtmlRequestHandler();
-        context = Mockito.mock(VaadinContext.class);
+        context = Mockito.mock(VaadinServletContext.class);
+        ServletContext servletContext = Mockito.mock(ServletContext.class);
+        Mockito.when(context.getContext()).thenReturn(servletContext);
+        Mockito.when(context.getAttribute(Mockito.any(), Mockito.any())).thenCallRealMethod();
         springTokenString = UUID.randomUUID().toString();
     }
 
@@ -151,14 +169,10 @@ public class IndexHtmlRequestHandlerTest {
                 .mock(VaadinServletRequest.class);
         Mockito.when(vaadinRequest.getService()).thenReturn(vaadinService);
 
-        String path = DEFAULT_FRONTEND_DIR + "index.html";
+        String expectedError = "java.io.IOException: Unable to find index.html. " +
+                               "It should be available on the classpath when running in production mode";
 
-        String expectedError = String
-                .format("Failed to load content of '%1$s'. "
-                        + "It is required to have '%1$s' file when "
-                        + "using client side bootstrapping.", path);
-
-        IOException expectedException = assertThrows(IOException.class,
+        UncheckedIOException expectedException = assertThrows(UncheckedIOException.class,
                 () -> indexHtmlRequestHandler.synchronizedHandleRequest(session,
                         vaadinRequest, response));
         Assert.assertEquals(expectedError, expectedException.getMessage());
@@ -530,12 +544,18 @@ public class IndexHtmlRequestHandlerTest {
         deploymentConfiguration.setEnableDevServer(true);
         deploymentConfiguration.setProductionMode(false);
 
+        final ByteArrayInputStream indexHtmlInputStream =
+                new ByteArrayInputStream(
+                "<html><head></head></html>".getBytes());
+
         DevModeHandler devServer = Mockito.mock(DevModeHandler.class);
         Mockito.when(devServer.getFailedOutput())
                 .thenReturn("Failed to compile");
+        HttpURLConnection httpURLConnection = Mockito.mock(
+                HttpURLConnection.class);
+        when(httpURLConnection.getInputStream()).thenReturn(indexHtmlInputStream);
         Mockito.when(devServer.prepareConnection(Mockito.anyString(),
-                Mockito.anyString()))
-                .thenReturn(Mockito.mock(HttpURLConnection.class));
+                Mockito.anyString())).thenReturn(httpURLConnection);
         service.setContext(context);
         DevModeHandlerManager devModeHandlerManager = new DevModeHandlerManager() {
 
@@ -584,8 +604,7 @@ public class IndexHtmlRequestHandlerTest {
         Mockito.when(resourceProvider
                 .getApplicationResource(VAADIN_WEBAPP_RESOURCES + INDEX_HTML))
                 .thenReturn(resource);
-        when(resource.openStream()).thenReturn(new ByteArrayInputStream(
-                "<html><head></head></html>".getBytes()));
+        when(resource.openStream()).thenReturn(indexHtmlInputStream);
 
         // Send the request
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
@@ -692,6 +711,11 @@ public class IndexHtmlRequestHandlerTest {
     @Test
     public void should_add_elements_when_appShellWithConfigurator()
             throws Exception {
+        File projectRootFolder = temporaryFolder.newFolder();
+        createIndexHtml(projectRootFolder);
+        createStatsJson(projectRootFolder);
+        deploymentConfiguration.setProductionMode(false);
+        deploymentConfiguration.setProjectFolder(projectRootFolder);
         // Set class in context and do not call initializer
         AppShellRegistry registry = AppShellRegistry.getInstance(context);
         registry.setShell(MyAppShellWithConfigurator.class);
@@ -736,13 +760,23 @@ public class IndexHtmlRequestHandlerTest {
 
         Elements bodyInlineElements = document.body()
                 .getElementsByTag("script");
-        assertEquals(3, bodyInlineElements.size());
+        // <script>window.Vaadin = window.Vaadin || {};window.Vaadin
+        // .registrations = window.Vaadin.registrations || [];window.Vaadin.registrations.push({"is":"java","version":"17.0.2"});
+        // </script>"
+        // <script type="text/javascript">window.messages = window.messages
+        // || [];window.messages.push("inline.js");
+        // </script>"
+        assertEquals(2, bodyInlineElements.size());
     }
 
     @Test
     public void should_export_usage_statistics_in_development_mode()
             throws IOException {
+        File projectRootFolder = temporaryFolder.newFolder();
+        createIndexHtml(projectRootFolder);
+        createStatsJson(projectRootFolder);
         deploymentConfiguration.setProductionMode(false);
+        deploymentConfiguration.setProjectFolder(projectRootFolder);
 
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
@@ -753,7 +787,11 @@ public class IndexHtmlRequestHandlerTest {
 
         Elements bodyInlineElements = document.body()
                 .getElementsByTag("script");
-        assertEquals(2, bodyInlineElements.size());
+        // <script>window.Vaadin = window.Vaadin || {};
+        // window.Vaadin.registrations = window.Vaadin.registrations || [];
+        // window.Vaadin.registrations.push({"is":"java","version":"17.0.2"});
+        // </script>
+        assertEquals(1, bodyInlineElements.size());
 
         String entries = UsageStatistics.getEntries().map(entry -> {
             JsonObject json = Json.createObject();
@@ -769,7 +807,7 @@ public class IndexHtmlRequestHandlerTest {
                         + "window.Vaadin.registrations = window.Vaadin.registrations || [];\n"
                         + "window.Vaadin.registrations.push(" + entries + ");");
 
-        String htmlContent = bodyInlineElements.get(1).childNode(0).outerHtml();
+        String htmlContent = bodyInlineElements.get(0).childNode(0).outerHtml();
         htmlContent = htmlContent.replace("\r", "");
         htmlContent = htmlContent.replace("\n", " ");
         assertEquals(StringUtil.normaliseWhitespace(expected), htmlContent);
@@ -979,5 +1017,28 @@ public class IndexHtmlRequestHandlerTest {
         } catch (Exception e) {
             Assert.fail("Unable to parse the index html page");
         }
+    }
+
+    private void createIndexHtml(File projectRootFolder) throws IOException {
+        try (InputStream indexStream = IndexHtmlRequestHandlerTest.class
+                .getClassLoader().getResourceAsStream(INDEX_HTML)) {
+            String indexHtmlContent = IOUtils.toString(
+                    Objects.requireNonNull(indexStream), UTF_8);
+            File indexHtml = new File(
+                    new File(projectRootFolder, "frontend"), INDEX_HTML);
+            FileUtils.forceMkdirParent(indexHtml);
+            FileUtils.writeStringToFile(indexHtml, indexHtmlContent, UTF_8);
+        }
+    }
+
+    private void createStatsJson(File projectRootFolder) throws IOException {
+        File statsJson = new File(
+                new File(projectRootFolder, "dev-bundle/config/"),
+                "stats.json");
+        FileUtils.forceMkdirParent(statsJson);
+        FileUtils.writeStringToFile(statsJson, "{\"npmModules\": {}, " +
+                                               "\"entryScripts\": [\"foo.js\"], " +
+                                               "\"packageJsonHash\": \"42\"}",
+                UTF_8);
     }
 }
