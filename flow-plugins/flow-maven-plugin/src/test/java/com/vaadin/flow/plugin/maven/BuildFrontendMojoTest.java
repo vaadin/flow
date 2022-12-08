@@ -16,7 +16,6 @@
  */
 package com.vaadin.flow.plugin.maven;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -44,7 +43,6 @@ import org.codehaus.plexus.util.ReflectionUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;

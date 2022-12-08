@@ -14,7 +14,6 @@ import org.junit.Test;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.testutil.TestUtils;
 
-import static com.vaadin.flow.server.Constants.TARGET;
 
 public class DevModeInitializerClassLoaderTest {
 

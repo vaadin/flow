@@ -8,7 +8,6 @@
  */
 package com.vaadin.flow.component.polymertemplate;
 
-import static elemental.json.JsonType.STRING;
 
 import java.util.Optional;
 import java.util.regex.Matcher;

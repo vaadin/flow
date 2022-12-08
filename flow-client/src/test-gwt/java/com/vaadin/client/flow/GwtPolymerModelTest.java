@@ -6,7 +6,6 @@ import java.util.function.Function;
 
 import com.google.gwt.core.client.impl.SchedulerImpl;
 
-import com.vaadin.client.ClientEngineTestBase;
 import com.vaadin.client.CustomScheduler;
 import com.vaadin.client.PolymerUtils;
 import com.vaadin.client.WidgetUtil;

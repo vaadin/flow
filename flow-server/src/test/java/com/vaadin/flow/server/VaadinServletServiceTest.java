@@ -15,7 +15,6 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Instantiator;
-import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
 import com.vaadin.flow.theme.AbstractTheme;
 

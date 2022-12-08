@@ -30,7 +30,6 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServletContext;
-import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import jakarta.servlet.ServletContext;
 
