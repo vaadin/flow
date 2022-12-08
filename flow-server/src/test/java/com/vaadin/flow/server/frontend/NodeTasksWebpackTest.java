@@ -312,12 +312,12 @@ public class NodeTasksWebpackTest {
         Mockito.doReturn(
                 new DefaultClassFinder(this.getClass().getClassLoader()))
                 .when(mockedLookup).lookup(ClassFinder.class);
-        Builder builder = new Builder(mockedLookup, new File(userDir), TARGET)
+        Options options = new Options(mockedLookup, new File(userDir), TARGET)
                 .enablePackagesUpdate(false).useV14Bootstrap(true)
                 .enableImportsUpdate(true).runNpmInstall(false)
                 .withEmbeddableWebComponents(false).useV14Bootstrap(false)
                 .setJavaResourceFolder(propertiesDir);
-        builder.build().execute();
+        new NodeTasks(options).execute();
 
         Assert.assertTrue(new File(userDir, "tsconfig.json").exists());
         Assert.assertTrue(new File(userDir, "types.d.ts").exists());

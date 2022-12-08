@@ -25,6 +25,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.apache.commons.io.FileUtils;
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
@@ -256,31 +258,6 @@ public class NodeTasksViteTest {
                 + FrontendUtils.JAR_RESOURCES_FOLDER);
     }
 
-    @Ignore("Making Vite support v14 bootstrapping is not planned. V14 bootstrapping requires Webpack to be enabled.")
-    @Test
-    public void should_SetIsClientBootstrapMode_When_EnableClientSideBootstrapMode()
-            throws ExecutionFailedException, IOException {
-        Lookup mockedLookup = mock(Lookup.class);
-        Mockito.doReturn(
-                new DefaultClassFinder(this.getClass().getClassLoader()))
-                .when(mockedLookup).lookup(ClassFinder.class);
-        Builder builder = new Builder(mockedLookup, new File(userDir), TARGET)
-                .enablePackagesUpdate(false).enableImportsUpdate(true)
-                .runNpmInstall(false).withEmbeddableWebComponents(false)
-                .useV14Bootstrap(false)
-                .withJarFrontendResourcesFolder(getJarFrontendResourcesFolder())
-                .withFrontendGeneratedFolder(new File(userDir,
-                        DEFAULT_PROJECT_FRONTEND_GENERATED_DIR));
-        builder.build().execute();
-        String viteGeneratedContent = Files
-                .lines(new File(userDir, VITE_GENERATED_CONFIG).toPath())
-                .collect(Collectors.joining("\n"));
-        Assert.assertTrue(
-                "useClientSideIndexFileForBootstrapping should be true",
-                viteGeneratedContent.contains(
-                        "const useClientSideIndexFileForBootstrapping = true;"));
-    }
-
     @Test
     public void should_GenerateTsConfigAndTsDefinitions_When_Vaadin14BootstrapMode()
             throws ExecutionFailedException {
@@ -305,11 +282,12 @@ public class NodeTasksViteTest {
         Mockito.doReturn(
                 new DefaultClassFinder(this.getClass().getClassLoader()))
                 .when(mockedLookup).lookup(ClassFinder.class);
-        Builder builder = new Builder(mockedLookup, new File(userDir), TARGET)
+        Options options = new Options(mockedLookup, new File(userDir), TARGET)
                 .useV14Bootstrap(true);
 
         IllegalStateException exception = Assert.assertThrows(
-                IllegalStateException.class, () -> builder.build().execute());
+                IllegalStateException.class,
+                () -> new NodeTasks(options).execute());
         MatcherAssert.assertThat(exception.getMessage(),
                 CoreMatchers.containsString(
                         "Vite build tool is not supported when 'useDeprecatedV14Bootstrapping' is used"));
