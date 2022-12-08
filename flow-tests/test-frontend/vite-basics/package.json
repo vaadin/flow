@@ -19,8 +19,8 @@
     "construct-style-sheets-polyfill": "3.1.0",
     "copy-to-clipboard": "^3.3.1",
     "lit": "2.4.1",
-    "package-outside-npm": "file:package-outside-npm",
-    "package2-outside-npm": "./package2-outside-npm"
+    "package-outside-npm": "file:../vite-test-assets/packages/package-outside-npm",
+    "package2-outside-npm": "../vite-test-assets/packages/package2-outside-npm"
   },
   "devDependencies": {
     "@rollup/plugin-replace": "3.1.0",
@@ -31,9 +31,9 @@
     "rollup-plugin-brotli": "3.1.0",
     "strip-css-comments": "5.0.0",
     "transform-ast": "2.4.4",
-    "typescript": "4.7.4",
-    "vite": "v3.2.3",
-    "vite-plugin-checker": "0.4.9",
+    "typescript": "4.9.3",
+    "vite": "v4.0.0-alpha.6",
+    "vite-plugin-checker": "0.5.1",
     "workbox-build": "6.5.0",
     "workbox-core": "6.5.0",
     "workbox-precaching": "6.5.0"
@@ -77,13 +77,13 @@
       "rollup-plugin-brotli": "3.1.0",
       "strip-css-comments": "5.0.0",
       "transform-ast": "2.4.4",
-      "typescript": "4.7.4",
-      "vite": "v3.2.3",
-      "vite-plugin-checker": "0.4.9",
+      "typescript": "4.9.3",
+      "vite": "v4.0.0-alpha.6",
+      "vite-plugin-checker": "0.5.1",
       "workbox-build": "6.5.0",
       "workbox-core": "6.5.0",
       "workbox-precaching": "6.5.0"
     },
-    "hash": "e754f39771a40db99825f9a1ac5f1b0410805614ed8d41076b74eb77a6693bd2"
+    "hash": "1dcb4cd20949590f5059908b48b415dc7a387bf0044f84e8eaf230d0fc54535a"
   }
 }
