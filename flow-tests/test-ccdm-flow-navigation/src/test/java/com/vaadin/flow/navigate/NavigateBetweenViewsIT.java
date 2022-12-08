@@ -15,12 +15,14 @@
  */
 package com.vaadin.flow.navigate;
 
+import org.asynchttpclient.util.UriEncoder;
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.component.html.testbench.SpanElement;
+import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
@@ -29,6 +31,8 @@ import static com.vaadin.flow.navigate.HelloWorldView.IS_CONNECTED_ON_INIT;
 import static com.vaadin.flow.navigate.HelloWorldView.NAVIGATE_ABOUT;
 
 public class NavigateBetweenViewsIT extends ChromeBrowserTest {
+
+    private static final String ROUTE_SPECIAL_CHARACTERS = "special åäö $%20'´`";
 
     @Test
     public void openFlowView_navigateToTsView_navigationSuccessful() {
@@ -111,6 +115,51 @@ public class NavigateBetweenViewsIT extends ChromeBrowserTest {
         getCommandExecutor().waitForVaadin();
 
         assertIsConnected();
+    }
+
+    @Test
+    public void openViewWithSpecialCharactersInRoute() {
+        getDriver().get(getRootURL() + "/"
+                + UrlUtil.encodeURI(ROUTE_SPECIAL_CHARACTERS));
+        waitForDevServer();
+        assertSpecialViewShown();
+    }
+
+    @Test
+    public void navigateToViewWithSpecialCharactersInRoute() {
+        getDriver().get(getRootURL() + "/hello");
+        waitForDevServer();
+        waitUntil(input -> {
+            TestBenchElement view = $("*").id("hello-world-view");
+            TestBenchElement link = view.$("a").id("navigate-special");
+            return link;
+        }).click();
+
+        assertSpecialViewShown();
+    }
+
+    @Test
+    public void navigateFromViewWithSpecialCharactersInRoute() {
+        getDriver().get(getRootURL() + "/"
+                + UrlUtil.encodeURI(ROUTE_SPECIAL_CHARACTERS));
+        waitForDevServer();
+
+        waitUntil(input -> {
+            TestBenchElement view = $("*").id("special-view");
+            TestBenchElement link = view.$("a").id("navigate-hello");
+            return link;
+        }).click();
+        assertHelloViewShown();
+    }
+
+    private void assertSpecialViewShown() {
+        Assert.assertEquals("This is the special view",
+                $("*").id("special-view").$("*").id("title").getText());
+    }
+
+    private void assertHelloViewShown() {
+        Assert.assertEquals("Say hello", $("*").id("hello-world-view").$("*")
+                .id("navigate-about").getText());
     }
 
     @Override

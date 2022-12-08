@@ -22,6 +22,7 @@ import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouterLink;
 
 @Route(value = "hello")
 @PageTitle("Hello World")
@@ -49,6 +50,12 @@ public class HelloWorldView extends Span {
                 event -> updateIsConnected(isConnectedOnAttach));
         add(new Paragraph(new Text("Connected on attach: "),
                 isConnectedOnAttach));
+
+        RouterLink specialLink = new RouterLink("Special char view",
+                SpecialCharactersView.class);
+        specialLink.setId("navigate-special");
+        add(specialLink);
+
     }
 
     private void updateIsConnected(Span output) {
