@@ -13,7 +13,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.TemplateAttributeView", layout = ViewTestLayout.class)
 @Tag("attribute-template")
-@JsModule("AttributeTemplate.js")
+@JsModule("./AttributeTemplate.js")
 public class TemplateAttributeView extends PolymerTemplate<TemplateModel>
         implements HasComponents {
 

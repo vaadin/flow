@@ -25,7 +25,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.InjectsJsTemplateView", layout = ViewTestLayout.class)
 @Tag("injects-js-template")
-@JsModule("InjectsJsTemplate.js")
+@JsModule("./InjectsJsTemplate.js")
 public class InjectsJsTemplateView extends PolymerTemplate<TemplateModel> {
 
     @Id("injected-template")

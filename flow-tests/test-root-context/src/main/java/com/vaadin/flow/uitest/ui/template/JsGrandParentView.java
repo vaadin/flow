@@ -26,7 +26,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 @Tag("js-grand-parent")
 @Route(value = "com.vaadin.flow.uitest.ui.template.JsGrandParentView", layout = ViewTestLayout.class)
 @Uses(JsSubTemplate.class)
-@JsModule("JsGrandParent.js")
+@JsModule("./JsGrandParent.js")
 public class JsGrandParentView extends PolymerTemplate<TemplateModel> {
 
     public void updateChildViaClientSide() {

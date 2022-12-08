@@ -20,7 +20,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
 
 @Tag("template-with-connected-callbacks")
-@JsModule("TemplateWithConnectedCallbacks.js")
+@JsModule("./TemplateWithConnectedCallbacks.js")
 public class TemplateWithConnectedCallbacks extends Component {
 
     public TemplateWithConnectedCallbacks() {

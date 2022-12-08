@@ -25,7 +25,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.scroll.ServerRequestScrollView", layout = ViewTestLayout.class)
 @Tag("server-request")
-@JsModule("ServerRequest.js")
+@JsModule("./ServerRequest.js")
 public class ServerRequestScrollView extends PolymerTemplate<TemplateModel> {
 
     public ServerRequestScrollView() {

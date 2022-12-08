@@ -25,7 +25,7 @@ import com.vaadin.flow.templatemodel.TemplateModel;
 import com.vaadin.flow.uitest.ui.template.PolymerDefaultPropertyValue.MyModel;
 
 @Tag("default-property")
-@JsModule("PolymerDefaultPropertyValue.js")
+@JsModule("./PolymerDefaultPropertyValue.js")
 public class PolymerDefaultPropertyValue extends PolymerTemplate<MyModel> {
 
     public interface MyModel extends TemplateModel {

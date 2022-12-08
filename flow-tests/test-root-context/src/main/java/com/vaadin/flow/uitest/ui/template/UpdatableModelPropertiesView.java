@@ -32,7 +32,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Tag("updatable-model-properties")
 @Route(value = "com.vaadin.flow.uitest.ui.template.UpdatableModelPropertiesView", layout = ViewTestLayout.class)
-@JsModule("UpdatableModelProperties.js")
+@JsModule("./UpdatableModelProperties.js")
 public class UpdatableModelPropertiesView extends
         PolymerTemplate<UpdatableModelPropertiesView.UpdatablePropertiesModel>
         implements HasComponents {

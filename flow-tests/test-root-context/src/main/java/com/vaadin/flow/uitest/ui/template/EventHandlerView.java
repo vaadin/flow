@@ -31,7 +31,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.EventHandlerView", layout = ViewTestLayout.class)
 @Tag("event-handler")
-@JsModule("EventHandler.js")
+@JsModule("./EventHandler.js")
 public class EventHandlerView extends PolymerTemplate<TemplateModel> {
     public EventHandlerView() {
         setId("template");
