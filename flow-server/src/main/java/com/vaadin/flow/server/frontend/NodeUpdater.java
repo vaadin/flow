@@ -239,7 +239,7 @@ public abstract class NodeUpdater implements FallibleCommand {
     private void removeWebpackPlugins(JsonObject packageJson) {
         Path targetFolder = Paths.get(options.getNpmFolder().toString(),
                 options.getBuildDirectoryName(),
-                WebpackPluginsUtil.PLUGIN_TARGET);
+                FrontendPluginsUtil.PLUGIN_TARGET);
 
         if (!packageJson.hasKey(DEV_DEPENDENCIES)) {
             return;
