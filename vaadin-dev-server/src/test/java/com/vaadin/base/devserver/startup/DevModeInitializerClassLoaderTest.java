@@ -14,7 +14,6 @@ import org.junit.Test;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.testutil.TestUtils;
 
-
 public class DevModeInitializerClassLoaderTest {
 
     @Test

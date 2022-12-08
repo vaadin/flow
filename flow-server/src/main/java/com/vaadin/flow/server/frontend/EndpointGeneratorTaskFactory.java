@@ -16,7 +16,6 @@
 
 package com.vaadin.flow.server.frontend;
 
-
 /**
  * A factory for creating Vaadin Endpoint generator tasks.
  * <p>
