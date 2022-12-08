@@ -42,7 +42,7 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.NodeUpdater.DEV_DEPENDENCIES;
-import static com.vaadin.flow.server.frontend.WebpackPluginsUtil.PLUGIN_TARGET;
+import static com.vaadin.flow.server.frontend.FrontendPluginsUtil.PLUGIN_TARGET;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class TaskInstallFrontendBuildPluginsTest {
@@ -68,14 +68,12 @@ public class TaskInstallFrontendBuildPluginsTest {
         String[] expectedPlugins = new String[] { "application-theme-plugin",
                 "theme-loader", "theme-live-reload-plugin",
                 "build-status-plugin", "rollup-plugin-postcss-lit-custom" };
-        final List<String> plugins = WebpackPluginsUtil.getPlugins();
-        Assert.assertEquals(
-                "Unexpected amount of plugins in 'webpack-plugins.json'",
+        final List<String> plugins = FrontendPluginsUtil.getPlugins();
+        Assert.assertEquals("Unexpected number of plugins in 'plugins.json'",
                 expectedPlugins.length, plugins.size());
 
         for (String plugin : expectedPlugins) {
-            Assert.assertTrue(
-                    "'webpack-plugins.json' didn't contain '" + plugin + "'",
+            Assert.assertTrue("'plugins.json' didn't contain '" + plugin + "'",
                     plugins.contains(plugin));
         }
     }
@@ -89,7 +87,7 @@ public class TaskInstallFrontendBuildPluginsTest {
 
     @Test
     public void pluginsDefineAllScriptFiles() throws IOException {
-        for (String plugin : WebpackPluginsUtil.getPlugins()) {
+        for (String plugin : FrontendPluginsUtil.getPlugins()) {
             verifyPluginScriptFilesAreDefined(plugin);
         }
     }
@@ -113,7 +111,7 @@ public class TaskInstallFrontendBuildPluginsTest {
 
         final JsonObject devDependencies = packageJson
                 .getObject(DEV_DEPENDENCIES);
-        for (String plugin : WebpackPluginsUtil.getPlugins()) {
+        for (String plugin : FrontendPluginsUtil.getPlugins()) {
             Assert.assertFalse("Plugin " + plugin + " added to packageJson",
                     devDependencies.hasKey("@vaadin/" + plugin));
         }
@@ -123,7 +121,7 @@ public class TaskInstallFrontendBuildPluginsTest {
         Assert.assertTrue("No @vaadin folder created",
                 Paths.get(rootFolder.toString(), BUILD_DIRECTORY, PLUGIN_TARGET)
                         .toFile().exists());
-        for (String plugin : WebpackPluginsUtil.getPlugins()) {
+        for (String plugin : FrontendPluginsUtil.getPlugins()) {
             assertPlugin(plugin);
         }
     }

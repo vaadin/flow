@@ -29,7 +29,7 @@ import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.frontend.WebpackPluginsUtil.PLUGIN_TARGET;
+import static com.vaadin.flow.server.frontend.FrontendPluginsUtil.PLUGIN_TARGET;
 
 /**
  * Task that installs any Flow webpack plugins into node_modules/@vaadin for use
@@ -59,7 +59,7 @@ public class TaskInstallFrontendBuildPlugins implements FallibleCommand {
 
     @Override
     public void execute() {
-        WebpackPluginsUtil.getPlugins().forEach(plugin -> {
+        FrontendPluginsUtil.getPlugins().forEach(plugin -> {
             try {
                 generatePluginFiles(plugin);
             } catch (IOException ioe) {
@@ -76,7 +76,7 @@ public class TaskInstallFrontendBuildPlugins implements FallibleCommand {
         File pluginTargetFile = new File(targetFolder, pluginName);
 
         final String pluginFolderName = PLUGIN_TARGET + "/" + pluginName + "/";
-        final JsonObject packageJson = WebpackPluginsUtil
+        final JsonObject packageJson = FrontendPluginsUtil
                 .getJsonFile(pluginFolderName + PACKAGE_JSON);
         if (packageJson == null) {
             log().error(
@@ -106,12 +106,12 @@ public class TaskInstallFrontendBuildPlugins implements FallibleCommand {
         for (int i = 0; i < files.length(); i++) {
             final String file = files.getString(i);
             FileUtils.copyURLToFile(
-                    WebpackPluginsUtil.getResourceUrl(pluginFolderName + file),
+                    FrontendPluginsUtil.getResourceUrl(pluginFolderName + file),
                     new File(pluginTargetFile, file));
         }
         // copy package.json to plugin directory
         FileUtils.copyURLToFile(
-                WebpackPluginsUtil
+                FrontendPluginsUtil
                         .getResourceUrl(pluginFolderName + PACKAGE_JSON),
                 new File(pluginTargetFile, PACKAGE_JSON));
     }

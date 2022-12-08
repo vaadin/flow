@@ -35,15 +35,15 @@ import elemental.json.JsonObject;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
- * Utility class for Flow Webpack plugins.
+ * Utility class for frontend build plugins.
  *
  * Unifies getting the list of available plugins.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
-class WebpackPluginsUtil {
+class FrontendPluginsUtil {
 
-    private WebpackPluginsUtil() {
+    private FrontendPluginsUtil() {
     }
 
     /**
@@ -58,13 +58,10 @@ class WebpackPluginsUtil {
      */
     protected static List<String> getPlugins() {
         try {
-            final JsonObject jsonFile = getJsonFile(
-                    "plugins/webpack-plugins.json");
+            final JsonObject jsonFile = getJsonFile("plugins/plugins.json");
             if (jsonFile == null) {
-                LoggerFactory.getLogger("WebpackPlugins").error(
-                        "Couldn't locate plugins/webpack-plugins.json, no Webpack plugins for Flow will be installed."
-                                + "If webpack build fails validate flow-server jar content.");
-                return Collections.emptyList();
+                throw new IllegalStateException(
+                        "Couldn't locate plugins/plugins.json");
             }
 
             final JsonArray plugins = jsonFile.getArray("plugins");
@@ -74,8 +71,8 @@ class WebpackPluginsUtil {
             }
             return pluginsToInstall;
         } catch (IOException ioe) {
-            throw new UncheckedIOException(
-                    "Couldn't load webpack-plugins.json file", ioe);
+            throw new UncheckedIOException("Couldn't load plugins/plugins.json",
+                    ioe);
         }
     }
 
