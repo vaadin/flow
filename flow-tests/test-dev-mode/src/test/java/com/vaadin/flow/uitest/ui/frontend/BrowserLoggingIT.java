@@ -33,17 +33,6 @@ import static org.junit.Assert.assertThat;
 public class BrowserLoggingIT extends ChromeBrowserTest {
 
     @Test
-    @Ignore
-    public void productionModeHasNoLogEntries() {
-        openProduction();
-        waitForElementPresent(By.id("elementId"));
-
-        assertThat(
-                "Flow in production mode should output nothing into the console",
-                getLogEntriesCount(), is(0L));
-    }
-
-    @Test
     public void nonProductionModeHasLogEntries() {
         open();
         waitForElementPresent(By.id("elementId"));
