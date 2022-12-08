@@ -239,10 +239,12 @@ public class StaticFileServer implements StaticFileHandler {
             return true;
         }
 
-        if (devModeHandler != null
+        if (devModeHandler != null && !"/index.html".equals(filenameWithPath)
                 && devModeHandler.serveDevModeRequest(request, response)) {
             // We don't know what the dev server can serve, but if it served
-            // something we are happy.
+            // something we are happy. There is always an index.html in the dev
+            // server but
+            // we never want to serve that one directly.
             return true;
         }
 
