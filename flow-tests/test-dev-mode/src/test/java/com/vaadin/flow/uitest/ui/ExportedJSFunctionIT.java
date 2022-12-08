@@ -22,27 +22,10 @@ public class ExportedJSFunctionIT extends ChromeBrowserTest {
     }
 
     @Test
-    @Ignore
-    public void versionInfoNotAvailableInProductionMode() {
-        openProduction();
-        WebElement version = findElement(By.id("version"));
-        Assert.assertEquals("versionInfoMethod not published",
-                version.getText());
-    }
-
-    @Test
     public void productionModeFalseInDevelopmentMode() {
         open();
         WebElement productionMode = findElement(By.id("productionMode"));
         Assert.assertEquals("Production mode: false", productionMode.getText());
-    }
-
-    @Test
-    @Ignore
-    public void productionModeTrueInProductionMode() {
-        openProduction();
-        WebElement productionMode = findElement(By.id("productionMode"));
-        Assert.assertEquals("Production mode: true", productionMode.getText());
     }
 
     @Test
@@ -61,33 +44,11 @@ public class ExportedJSFunctionIT extends ChromeBrowserTest {
     }
 
     @Test
-    @Ignore
-    public void pollUsingJSProduction() {
-        openProduction();
-        poll();
-    }
-
-    @Test
     public void profilingInfoAvailableInDevelopmentMode() {
         open();
         $(TestBenchElement.class).id("poll").click();
         List<Long> profilingData = getProfilingData();
         assertProfilingDataSensible(profilingData);
-    }
-
-    @Test(expected = IllegalStateException.class)
-    @Ignore
-    public void profilingInfoNotAvailableInProduction() {
-        openProduction();
-        getProfilingData();
-    }
-
-    @Test
-    @Ignore
-    public void profilingInfoAvailableWhenRequestedInProduction() {
-        openProductionWithTiming();
-        $(TestBenchElement.class).id("poll").click();
-        assertProfilingDataSensible(getProfilingData());
     }
 
     private void assertProfilingDataSensible(List<Long> profilingData) {

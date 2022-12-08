@@ -134,14 +134,6 @@ public abstract class AbstractTestBenchTest extends TestBenchHelpers {
         waitForDevServer();
     }
 
-    protected void openProduction(String... parameters) {
-        openUrl("view-production", parameters);
-    }
-
-    protected void openProductionWithTiming(String... parameters) {
-        openUrl("view-production-timing", parameters);
-    }
-
     protected void openForEs6Url(String... parameters) {
         openUrl("view-es6-url", parameters);
     }

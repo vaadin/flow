@@ -34,8 +34,6 @@ import org.osgi.service.http.context.ServletContextHelper;
 import org.osgi.service.http.whiteboard.HttpWhiteboardConstants;
 
 import com.vaadin.flow.server.InitParameters;
-import com.vaadin.flow.uitest.servlet.ProductionModeTimingDataViewTestServlet;
-import com.vaadin.flow.uitest.servlet.ProductionModeViewTestServlet;
 import com.vaadin.flow.uitest.servlet.RouterLayoutCustomScopeServlet;
 import com.vaadin.flow.uitest.servlet.RouterTestServlet;
 import com.vaadin.flow.uitest.servlet.ViewTestServlet;
@@ -96,31 +94,6 @@ public class Activator {
         }
     }
 
-    private static class FixedProductionModeViewServlet
-            extends ProductionModeViewTestServlet {
-
-        @Override
-        public void init(ServletConfig servletConfig) throws ServletException {
-            super.init(servletConfig);
-
-            if (getService() != null) {
-                getService().setClassLoader(getClass().getClassLoader());
-            }
-        }
-    }
-
-    private static class FixedProductionModeTimingDataViewServlet
-            extends ProductionModeTimingDataViewTestServlet {
-        @Override
-        public void init(ServletConfig servletConfig) throws ServletException {
-            super.init(servletConfig);
-
-            if (getService() != null) {
-                getService().setClassLoader(getClass().getClassLoader());
-            }
-        }
-    }
-
     private static class FixedLogoutWithNotificationServlet
             extends LogoutWithNotificationServlet {
         @Override
@@ -158,14 +131,6 @@ public class Activator {
 
         context.registerService(Servlet.class, new FixedRouterServlet(),
                 createProperties("/new-router-session/*", false));
-
-        context.registerService(Servlet.class,
-                new FixedProductionModeViewServlet(),
-                createProperties("/view-production/*", true));
-
-        context.registerService(Servlet.class,
-                new FixedProductionModeTimingDataViewServlet(),
-                createProperties("/view-production-timing/*", true));
 
         context.registerService(Servlet.class,
                 new FixedLogoutWithNotificationServlet(),
