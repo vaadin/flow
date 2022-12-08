@@ -161,6 +161,21 @@ public interface AbstractConfiguration extends Serializable {
     }
 
     /**
+     * Return the project root folder.
+     * <p>
+     * Only available in development mode.
+     *
+     * @return the project root folder, or {@code null} if unknown
+     */
+    default File getProjectFolder() {
+        String folder = getStringProperty(FrontendUtils.PROJECT_BASEDIR, null);
+        if (folder == null) {
+            return null;
+        }
+        return new File(folder);
+    }
+
+    /**
      * Gets the folder where resource sources are stored.
      * <p>
      * Only available in development mode.
