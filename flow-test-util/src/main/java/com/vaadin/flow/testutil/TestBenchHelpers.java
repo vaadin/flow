@@ -346,6 +346,9 @@ public class TestBenchHelpers extends ParallelTest {
                         "Received error message in browser log console right after opening the page, message: %s",
                         logEntry));
             } else {
+                if (logEntry.getMessage().contains("Lit is in dev mode. Not recommended for production")) {
+                    return;
+                }
                 LoggerFactory.getLogger(TestBenchHelpers.class.getName()).warn(
                         "This message in browser log console may be a potential error: '{}'",
                         logEntry);
