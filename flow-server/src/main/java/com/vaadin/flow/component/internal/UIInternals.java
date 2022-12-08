@@ -318,8 +318,8 @@ public class UIInternals implements Serializable {
      */
     public void incrementServerId() {
         serverSyncId++;
-        if (getLogger().isDebugEnabled()) {
-            getLogger().debug("Increment syncId:\n{}", Arrays
+        if (getLogger().isTraceEnabled()) {
+            getLogger().trace("Increment syncId:\n{}", Arrays
                     .stream(Thread.currentThread().getStackTrace()).skip(1)
                     .map(String::valueOf)
                     .collect(Collectors.joining(System.lineSeparator())));
