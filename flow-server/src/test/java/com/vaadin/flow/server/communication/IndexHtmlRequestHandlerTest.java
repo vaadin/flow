@@ -75,6 +75,7 @@ import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.MyAppShellWi
 import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.MyAppShellWithReconnectionDialogConfig;
 import com.vaadin.flow.server.startup.VaadinInitializerException;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
+import com.vaadin.tests.util.TestUtil;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
@@ -712,8 +713,8 @@ public class IndexHtmlRequestHandlerTest {
     public void should_add_elements_when_appShellWithConfigurator()
             throws Exception {
         File projectRootFolder = temporaryFolder.newFolder();
-        createIndexHtml(projectRootFolder);
-        createStatsJson(projectRootFolder);
+        TestUtil.createIndexHtmlStub(projectRootFolder);
+        TestUtil.createStatsJsonStub(projectRootFolder);
         deploymentConfiguration.setProductionMode(false);
         deploymentConfiguration.setProjectFolder(projectRootFolder);
         // Set class in context and do not call initializer
@@ -773,8 +774,8 @@ public class IndexHtmlRequestHandlerTest {
     public void should_export_usage_statistics_in_development_mode()
             throws IOException {
         File projectRootFolder = temporaryFolder.newFolder();
-        createIndexHtml(projectRootFolder);
-        createStatsJson(projectRootFolder);
+        TestUtil.createIndexHtmlStub(projectRootFolder);
+        TestUtil.createStatsJsonStub(projectRootFolder);
         deploymentConfiguration.setProductionMode(false);
         deploymentConfiguration.setProjectFolder(projectRootFolder);
 
@@ -1017,28 +1018,5 @@ public class IndexHtmlRequestHandlerTest {
         } catch (Exception e) {
             Assert.fail("Unable to parse the index html page");
         }
-    }
-
-    private void createIndexHtml(File projectRootFolder) throws IOException {
-        try (InputStream indexStream = IndexHtmlRequestHandlerTest.class
-                .getClassLoader().getResourceAsStream(INDEX_HTML)) {
-            String indexHtmlContent = IOUtils.toString(
-                    Objects.requireNonNull(indexStream), UTF_8);
-            File indexHtml = new File(
-                    new File(projectRootFolder, "frontend"), INDEX_HTML);
-            FileUtils.forceMkdirParent(indexHtml);
-            FileUtils.writeStringToFile(indexHtml, indexHtmlContent, UTF_8);
-        }
-    }
-
-    private void createStatsJson(File projectRootFolder) throws IOException {
-        File statsJson = new File(
-                new File(projectRootFolder, "dev-bundle/config/"),
-                "stats.json");
-        FileUtils.forceMkdirParent(statsJson);
-        FileUtils.writeStringToFile(statsJson, "{\"npmModules\": {}, " +
-                                               "\"entryScripts\": [\"foo.js\"], " +
-                                               "\"packageJsonHash\": \"42\"}",
-                UTF_8);
     }
 }
