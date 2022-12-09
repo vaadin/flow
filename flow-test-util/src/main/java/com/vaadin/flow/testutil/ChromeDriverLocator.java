@@ -18,6 +18,8 @@ package com.vaadin.flow.testutil;
 
 import java.io.File;
 
+import org.slf4j.LoggerFactory;
+
 import io.github.bonigarcia.wdm.WebDriverManager;
 
 /**
@@ -48,8 +50,8 @@ final public class ChromeDriverLocator {
             // This sets the same property
             WebDriverManager.chromedriver().setup();
         } else {
-            System.out
-                    .println("Using chromedriver from " + chromedriverProperty);
+            LoggerFactory.getLogger(ChromeDriverLocator.class)
+                    .debug("Using chromedriver from " + chromedriverProperty);
         }
 
     }
