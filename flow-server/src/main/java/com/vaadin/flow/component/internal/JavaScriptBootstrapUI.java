@@ -107,8 +107,10 @@ public class JavaScriptBootstrapUI extends UI {
      *            client side element tag
      * @param clientElementId
      *            client side element id
-     * @param flowRoute
-     *            flow route that should be attached to the client element
+     * @param flowRoutePath
+     *            flow route path that should be attached to the client element
+     * @param flowRouteQuery
+     *            flow route query string
      * @param appShellTitle
      *            client side title of the application shell
      * @param historyState
