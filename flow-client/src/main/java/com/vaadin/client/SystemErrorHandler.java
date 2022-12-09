@@ -15,12 +15,21 @@
  */
 package com.vaadin.client;
 
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import com.google.web.bindery.event.shared.UmbrellaException;
 
+import com.google.gwt.core.client.Scheduler;
+import com.google.gwt.xhr.client.XMLHttpRequest;
 import com.vaadin.client.bootstrap.ErrorMessage;
+import com.vaadin.client.communication.MessageHandler;
+import com.vaadin.client.gwt.elemental.js.util.Xhr;
+import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.flow.shared.JsonConstants;
+import com.vaadin.flow.shared.util.SharedUtil;
 
 import elemental.client.Browser;
 import elemental.dom.Document;
@@ -116,6 +125,8 @@ public class SystemErrorHandler {
         if (caption == null && message == null && details == null) {
             if (!isWebComponentMode()) {
                 WidgetUtil.redirect(url);
+            } else {
+                resynchronizeSession();
             }
             return;
         }
@@ -134,6 +145,63 @@ public class SystemErrorHandler {
             }, false);
         }
     }
+
+    /**
+     * Send GET async request to acquire new JSESSIONID, browser will set cookie
+     * automatically based on Set-Cookie response header.
+     */
+    private void resynchronizeSession() {
+        String serviceUrl = registry.getApplicationConfiguration()
+                .getServiceUrl();
+        String sessionResyncUri = SharedUtil.addGetParameter(serviceUrl,
+                ApplicationConstants.REQUEST_TYPE_PARAMETER,
+                ApplicationConstants.REQUEST_TYPE_SESSION_RESYNC);
+
+        Xhr.Callback sessionResyncCallback = new Xhr.Callback() {
+            @Override
+            public void onFail(XMLHttpRequest xhr, Exception exception) {
+                Console.log(exception);
+            }
+
+            @Override
+            public void onSuccess(XMLHttpRequest xhr) {
+                ValueMap json = MessageHandler
+                        .parseWrappedJson(xhr.getResponseText());
+                registry.getMessageHandler().handleMessage(json);
+                registry.getApplicationConfiguration()
+                        .setUIId(json.getInt(ApplicationConstants.UI_ID));
+
+                Scheduler.get().scheduleDeferred(() -> Arrays
+                        .stream(registry.getApplicationConfiguration()
+                                .getExportedWebComponents())
+                        .forEach(SystemErrorHandler.this::recreateNodes));
+            }
+        };
+
+        Xhr.Callback newSessionIdCallback = new Xhr.Callback() {
+            @Override
+            public void onFail(XMLHttpRequest xhr, Exception exception) {
+                Console.log(exception);
+            }
+
+            @Override
+            public void onSuccess(XMLHttpRequest xhr) {
+                Xhr.post(sessionResyncUri, "{}",
+                        JsonConstants.JSON_CONTENT_TYPE, sessionResyncCallback);
+            }
+        };
+
+        Xhr.get(serviceUrl, newSessionIdCallback);
+    }
+
+    private native void recreateNodes(String elementName)
+    /*-{
+        var elements = document.getElementsByTagName(elementName);
+        for (var i = 0 ; i < elements.length ; ++i) {
+            var elem = elements[i];
+            elem.parentNode.replaceChild(elem.cloneNode(false), elem);
+        }
+    }-*/;
 
     /**
      * Shows the given error message if not running in production mode and logs

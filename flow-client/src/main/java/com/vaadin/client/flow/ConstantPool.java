@@ -42,7 +42,7 @@ public class ConstantPool {
         assert json != null;
 
         for (String key : json.keys()) {
-            assert !constants.has(key);
+            // assert !constants.has(key);
             JsonValue value = json.get(key);
 
             assert value != null && value.getType() != JsonType.NULL;

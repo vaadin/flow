@@ -440,7 +440,6 @@ public class MessageHandler {
                     } else if (uiState != UIState.TERMINATED) {
                         registry.getSystemErrorHandler()
                                 .handleSessionExpiredError(null);
-                        registry.getUILifecycle().setState(UIState.TERMINATED);
                     }
                 } else if (meta.containsKey("appError")
                         && uiState != UIState.TERMINATED) {
