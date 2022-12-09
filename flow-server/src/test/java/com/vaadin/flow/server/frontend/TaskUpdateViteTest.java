@@ -88,7 +88,7 @@ public class TaskUpdateViteTest {
 
         String template = IOUtils.toString(generatedConfigFile.toURI(),
                 StandardCharsets.UTF_8);
-        NodeTasks.Builder builder = new NodeTasks.Builder(
+        NodeTasks.Options builder = new NodeTasks.Options(
                 Mockito.mock(Lookup.class), temporaryFolder.getRoot(),
                 temporaryFolder.newFolder("generated"),
                 temporaryFolder.newFolder("frontend"), "target");
