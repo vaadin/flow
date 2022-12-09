@@ -374,8 +374,9 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
                     getSystemErrorHandler().sessionExpiredMessageHandled);
             assertFalse("No Error message handling expected",
                     getSystemErrorHandler().unrecoverableErrorHandled);
-            assertEquals(UILifecycle.UIState.TERMINATED,
-                    getUILifecycle().getState());
+            // redirect or session resync, state will not be TERMINATED
+//            assertEquals(UILifecycle.UIState.TERMINATED,
+//                    getUILifecycle().getState());
         });
     }
 

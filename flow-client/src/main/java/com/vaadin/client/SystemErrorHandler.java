@@ -18,7 +18,6 @@ package com.vaadin.client;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Consumer;
 
 import com.google.web.bindery.event.shared.UmbrellaException;
 
@@ -156,29 +155,7 @@ public class SystemErrorHandler {
         String sessionResyncUri = SharedUtil.addGetParameter(serviceUrl,
                 ApplicationConstants.REQUEST_TYPE_PARAMETER,
                 ApplicationConstants.REQUEST_TYPE_SESSION_RESYNC);
-
-        Xhr.Callback sessionResyncCallback = new Xhr.Callback() {
-            @Override
-            public void onFail(XMLHttpRequest xhr, Exception exception) {
-                Console.log(exception);
-            }
-
-            @Override
-            public void onSuccess(XMLHttpRequest xhr) {
-                ValueMap json = MessageHandler
-                        .parseWrappedJson(xhr.getResponseText());
-                registry.getMessageHandler().handleMessage(json);
-                registry.getApplicationConfiguration()
-                        .setUIId(json.getInt(ApplicationConstants.UI_ID));
-
-                Scheduler.get().scheduleDeferred(() -> Arrays
-                        .stream(registry.getApplicationConfiguration()
-                                .getExportedWebComponents())
-                        .forEach(SystemErrorHandler.this::recreateNodes));
-            }
-        };
-
-        Xhr.Callback newSessionIdCallback = new Xhr.Callback() {
+        Xhr.get(serviceUrl, new Xhr.Callback() {
             @Override
             public void onFail(XMLHttpRequest xhr, Exception exception) {
                 Console.log(exception);
@@ -187,11 +164,33 @@ public class SystemErrorHandler {
             @Override
             public void onSuccess(XMLHttpRequest xhr) {
                 Xhr.post(sessionResyncUri, "{}",
-                        JsonConstants.JSON_CONTENT_TYPE, sessionResyncCallback);
-            }
-        };
+                        JsonConstants.JSON_CONTENT_TYPE, new Xhr.Callback() {
+                            @Override
+                            public void onFail(XMLHttpRequest xhr,
+                                    Exception exception) {
+                                Console.log(exception);
+                            }
 
-        Xhr.get(serviceUrl, newSessionIdCallback);
+                            @Override
+                            public void onSuccess(XMLHttpRequest xhr) {
+                                ValueMap json = MessageHandler.parseWrappedJson(
+                                        xhr.getResponseText());
+                                registry.getMessageHandler()
+                                        .handleMessage(json);
+                                registry.getApplicationConfiguration()
+                                        .setUIId(json.getInt(
+                                                ApplicationConstants.UI_ID));
+
+                                Scheduler.get().scheduleDeferred(() -> Arrays
+                                        .stream(registry
+                                                .getApplicationConfiguration()
+                                                .getExportedWebComponents())
+                                        .forEach(
+                                                SystemErrorHandler.this::recreateNodes));
+                            }
+                        });
+            }
+        });
     }
 
     private native void recreateNodes(String elementName)
