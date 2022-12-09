@@ -31,6 +31,7 @@ const generatedFlowImportsFolder = path.resolve(__dirname, settings.generatedFlo
 const themeResourceFolder = path.resolve(__dirname, settings.themeResourceFolder);
 const projectPackageJsonFile = path.resolve(__dirname, 'package.json');
 const statsFile = path.resolve(statsFolder, 'stats.json');
+const nodeModulesFolder = path.resolve(__dirname, 'node_modules');
 
 const projectStaticAssetsFolders = [
   path.resolve(__dirname, 'src', 'main', 'resources', 'META-INF', 'resources'),
@@ -171,10 +172,11 @@ function statsExtracterPlugin(): PluginOption {
     enforce: 'post',
     async writeBundle(options: OutputOptions, bundle: { [fileName: string]: AssetInfo | ChunkInfo }) {
       const modules = Object.values(bundle).flatMap((b) => (b.modules ? Object.keys(b.modules) : []));
-      const nodeModulesFolders = modules.filter((id) => id.includes('node_modules'));
+      const nodeModulesFolders = modules
+          .filter((id) => id.startsWith(nodeModulesFolder))
+          .map(id => id.substring(nodeModulesFolder.length + 1));
       const npmModules = nodeModulesFolders
         .map((id) => id.replace(/\\/g, '/'))
-        .map((id) => id.replace(/.*node_modules./, ''))
         .map((id) => {
           const parts = id.split('/');
           if (id.startsWith('@')) {
@@ -224,7 +226,7 @@ function vaadinBundlesPlugin(): PluginOption {
 
   const disabledMessage = 'Vaadin component dependency bundles are disabled.';
 
-  const modulesDirectory = path.resolve(__dirname, 'node_modules').replace(/\\/g, '/');
+  const modulesDirectory = nodeModulesFolder.replace(/\\/g, '/');
 
   let vaadinBundleJson: BundleJson;
 
@@ -476,7 +478,7 @@ let spaMiddlewareForceRemoved = false;
 const allowedFrontendFolders = [
   frontendFolder,
   path.resolve(generatedFlowImportsFolder), // Contains only generated-flow-imports
-  path.resolve(__dirname, 'node_modules')
+  nodeModulesFolder
 ];
 
 function setHmrPortToServerPort(): PluginOption {
@@ -649,7 +651,7 @@ export const overrideVaadinConfig = (customConfig: UserConfigFn) => {
   return defineConfig((env) => mergeConfig(vaadinConfig(env), customConfig(env)));
 };
 function getVersion(module: string):string {
-  const packageJson = `node_modules/${module}/package.json`;
+  const packageJson = path.resolve(nodeModulesFolder, module, 'package.json');
   return JSON.parse(readFileSync(packageJson, {encoding: 'utf-8'})).version;
 }
 
