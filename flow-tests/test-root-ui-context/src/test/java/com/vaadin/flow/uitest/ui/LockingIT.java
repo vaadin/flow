@@ -13,9 +13,9 @@ public class LockingIT extends ChromeBrowserTest {
     public void testLockingTheUIFor4HeartBeats() {
         open();
 
-        clickButtonAndCheckMessage("check", LockingUI.ALL_OK);
-        clickButtonAndCheckMessage("lock", LockingUI.LOCKING_ENDED);
-        clickButtonAndCheckMessage("check", LockingUI.ALL_OK);
+        clickButtonAndCheckMessage("check", LockingView.ALL_OK);
+        clickButtonAndCheckMessage("lock", LockingView.LOCKING_ENDED);
+        clickButtonAndCheckMessage("check", LockingView.ALL_OK);
     }
 
     private void clickButtonAndCheckMessage(String buttonId, String text) {

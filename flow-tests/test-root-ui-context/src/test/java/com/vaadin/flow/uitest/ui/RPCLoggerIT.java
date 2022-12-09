@@ -45,12 +45,12 @@ public class RPCLoggerIT extends ChromeBrowserTest {
                 .perform();
         // button click -> one log item with type event and required node
         List<WebElement> logs = findElements(By.className("log"));
-        Assert.assertEquals(1, logs.size());
-        Assert.assertEquals("Node is 5",
-                logs.get(0).findElement(By.className("node")).getText());
-        String json = logs.get(0).findElement(By.className("json")).getText();
+        Assert.assertEquals(2, logs.size());
+        Assert.assertEquals("Node is 6",
+                logs.get(1).findElement(By.className("node")).getText());
+        String json = logs.get(1).findElement(By.className("json")).getText();
         Assert.assertTrue(json.contains("\"type\":\"event\""));
-        Assert.assertTrue(json.contains("\"node\":5"));
+        Assert.assertTrue(json.contains("\"node\":6"));
 
         WebElement input = findElement(By.tagName("input"));
         input.sendKeys("foo");
@@ -58,22 +58,22 @@ public class RPCLoggerIT extends ChromeBrowserTest {
         // set text in the input -> RPCs for property synchronization, and dom
         // event
         logs = findElements(By.className("log"));
-        Assert.assertEquals(3, logs.size());
+        Assert.assertEquals(4, logs.size());
 
-        Assert.assertEquals("Node is 3",
-                logs.get(1).findElement(By.className("node")).getText());
-        json = logs.get(1).findElement(By.className("json")).getText();
+        Assert.assertEquals("Node is 4",
+                logs.get(2).findElement(By.className("node")).getText());
+        json = logs.get(2).findElement(By.className("json")).getText();
         Assert.assertTrue(json.contains("\"type\":\"mSync\""));
         Assert.assertTrue(json
                 .contains("\"feature\":" + NodeFeatures.ELEMENT_PROPERTIES));
-        Assert.assertTrue(json.contains("\"node\":3"));
+        Assert.assertTrue(json.contains("\"node\":4"));
         Assert.assertTrue(json.contains("\"value\":\"foo\""));
 
-        Assert.assertEquals("Node is 3",
-                logs.get(2).findElement(By.className("node")).getText());
-        json = logs.get(2).findElement(By.className("json")).getText();
+        Assert.assertEquals("Node is 4",
+                logs.get(3).findElement(By.className("node")).getText());
+        json = logs.get(3).findElement(By.className("json")).getText();
         Assert.assertTrue(json.contains("\"type\":\"event\""));
-        Assert.assertTrue(json.contains("\"node\":3"));
+        Assert.assertTrue(json.contains("\"node\":4"));
         Assert.assertTrue(json.contains("\"event\":\"change\""));
     }
 

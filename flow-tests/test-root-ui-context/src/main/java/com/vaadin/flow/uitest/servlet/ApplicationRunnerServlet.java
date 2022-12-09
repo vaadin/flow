@@ -69,7 +69,7 @@ import com.vaadin.flow.uitest.servlet.CustomDeploymentConfiguration.Conf;
 
 import elemental.json.JsonValue;
 
-@WebServlet(asyncSupported = true, urlPatterns = { "/*" })
+@WebServlet(asyncSupported = true, urlPatterns = { "/view/*" })
 public class ApplicationRunnerServlet extends VaadinServlet {
 
     public static String CUSTOM_SYSTEM_MESSAGES_PROPERTY = "custom-"
@@ -187,13 +187,13 @@ public class ApplicationRunnerServlet extends VaadinServlet {
      *         context, runner, application classname
      */
     private static String getApplicationRunnerURIs(HttpServletRequest request) {
-        String[] urlParts = request.getRequestURI().toString()
-                .split("\\/");
-        if(urlParts.length == 0 && request.getQueryString().contains("location")) {
-            String location = QueryParameters.fromString(
-                            request.getQueryString()).getParameters().get("location")
-                    .get(0);
-            if(!location.startsWith("/")) {
+        String[] urlParts = request.getRequestURI().toString().split("\\/");
+        if (urlParts.length == 0
+                && request.getQueryString().contains("location")) {
+            String location = QueryParameters
+                    .fromString(request.getQueryString()).getParameters()
+                    .get("location").get(0);
+            if (!location.startsWith("/")) {
                 location = "/" + location;
             }
             urlParts = location.split("\\/");

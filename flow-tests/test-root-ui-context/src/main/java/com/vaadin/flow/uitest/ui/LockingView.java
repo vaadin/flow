@@ -1,23 +1,25 @@
 package com.vaadin.flow.uitest.ui;
 
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
-import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
-import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.uitest.servlet.CustomDeploymentConfiguration;
 import com.vaadin.flow.uitest.servlet.CustomDeploymentConfiguration.Conf;
 
 @CustomDeploymentConfiguration({
         @Conf(name = "heartbeatInterval", value = "2") })
-public class LockingUI extends JavaScriptBootstrapUI {
+@Route("com.vaadin.flow.uitest.ui.LockingView")
+public class LockingView extends Div {
 
     public static final String LOCKING_ENDED = "Locking has ended";
     public static final String ALL_OK = "All is fine";
     private Div message;
 
     @Override
-    protected void init(VaadinRequest request) {
+    protected void onAttach(AttachEvent event) {
+        super.onAttach(event);
         message = new Div();
         message.setId("message");
         message.setText("default");
