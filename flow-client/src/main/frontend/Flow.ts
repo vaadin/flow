@@ -232,7 +232,7 @@ export class Flow {
     return decodeURIComponent(context.pathname).replace(this.baseRegex, '');
   }
   private getFlowRouteQuery(context: NavigationParameters | Location): string {
-    return context.search || '';
+    return (context.search && context.search.substring(1)) || '';
   }
 
   // import flow client modules and initialize UI in server side.
