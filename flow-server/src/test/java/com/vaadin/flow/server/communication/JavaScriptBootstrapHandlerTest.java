@@ -167,7 +167,7 @@ public class JavaScriptBootstrapHandlerTest {
     @Test
     public void should_attachViewTo_Body_when_serverRouting() throws Exception {
         VaadinRequest request = mocks.createRequest(mocks, "/",
-                "v-r=init&location=bar%3Fpar1%26par2&serverSideRouting");
+                "v-r=init&location=bar&query=par1%26par2&serverSideRouting");
 
         jsInitHandler.handleRequest(session, request, response);
 

@@ -81,8 +81,6 @@ public class Location implements Serializable {
      *            interpreted as <code>""</code>
      * @param queryParameters
      *            query parameters information, not {@code null}
-     * @throws IllegalArgumentException
-     *             if location string contains query parameters inside
      * @throws InvalidLocationException
      *             If the given string cannot be used for the {@link Location}
      */
