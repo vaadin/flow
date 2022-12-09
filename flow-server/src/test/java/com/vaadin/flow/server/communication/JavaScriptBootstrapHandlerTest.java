@@ -147,7 +147,7 @@ public class JavaScriptBootstrapHandlerTest {
         jsInitHandler.handleRequest(session, request, response);
 
         JavaScriptBootstrapUI ui = (JavaScriptBootstrapUI) UI.getCurrent();
-        ui.connectClient("a-tag", "an-id", "a-route", "", null);
+        ui.connectClient("a-tag", "an-id", "a-route", "", "", null);
 
         TestNodeVisitor visitor = new TestNodeVisitor(true);
         BasicElementStateProvider.get().visit(ui.getElement().getNode(),
