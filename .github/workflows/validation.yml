@@ -84,13 +84,21 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-
       - uses: actions/download-artifact@v3
+        if: ${{ github.run_attempt == 1 }}
         with:
           name: saved-workspace
       - name: Restore Workspace
+        if: ${{ github.run_attempt == 1 }}
         run: |
           set -x
           tar xf workspace.tar
           tar cf - .m2 | (cd ~ && tar xf -)
+      - name: Compile and Install Flow
+        if: ${{ github.run_attempt > 1 }}
+        run: |
+          ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
+          cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
+          eval $cmd -T 2C -q || eval $cmd
       - name: Set TB License
         run: |
           TB_LICENSE=${{secrets.TB_LICENSE}}
@@ -112,7 +120,7 @@ jobs:
       - uses: actions/upload-artifact@v3
         if: ${{ failure() || success() }}
         with:
-          name: unit-tests-output
+          name: tests-output
           path: |
             **/target/*-reports/*
             mvn-*.out
@@ -153,12 +161,20 @@ jobs:
           chrome-version: stable
       - uses: nanasess/setup-chromedriver@master
       - uses: actions/download-artifact@v3
+        if: ${{ github.run_attempt == 1 }}
         with:
           name: saved-workspace
       - name: Restore Workspace
+        if: ${{ github.run_attempt == 1 }}
         run: |
           tar xf workspace.tar
           tar cf - .m2 | (cd ~ && tar xf -)
+      - name: Compile and Install Flow
+        if: ${{ github.run_attempt > 1 }}
+        run: |
+          ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
+          cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
+          eval $cmd -T 2C -q || eval $cmd
       - name: Set TB License
         run: |
           TB_LICENSE=${{secrets.TB_LICENSE}}
@@ -189,7 +205,7 @@ jobs:
       - uses: actions/upload-artifact@v3
         if: ${{ failure() || success() }}
         with:
-          name: it-tests-output
+          name: tests-output
           path: |
             **/target/*-reports/*
             **/error-screenshots/*.png
@@ -209,10 +225,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
       - uses: actions/download-artifact@v3
         with:
-          name: unit-tests-output
-      - uses: actions/download-artifact@v3
-        with:
-          name: it-tests-output
+          name: tests-output
       - name: Display structure of downloaded files
         run: ls -R
       - name: Publish Unit Test Results
@@ -225,8 +238,7 @@ jobs:
         with:
           name: |
             saved-workspace
-            unit-tests-output
-            it-tests-output
+            tests-output
       - name: Compute Stats
         run: |
           ./scripts/computeMatrix.js test-results
