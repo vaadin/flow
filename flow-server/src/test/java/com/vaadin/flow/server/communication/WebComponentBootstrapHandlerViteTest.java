@@ -42,7 +42,6 @@ import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;

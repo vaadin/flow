@@ -1,7 +1,5 @@
 package com.vaadin.viteapp;
 
-import com.vaadin.testbench.TestBench;
-import com.vaadin.testbench.TestBenchElement;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;

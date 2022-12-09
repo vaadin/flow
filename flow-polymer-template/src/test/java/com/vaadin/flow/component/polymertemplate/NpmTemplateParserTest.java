@@ -31,7 +31,6 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.MockVaadinServletService;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
 public class NpmTemplateParserTest {
