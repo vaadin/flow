@@ -499,8 +499,8 @@ public class BuildFrontendMojoTest {
         String json = org.apache.commons.io.FileUtils
                 .readFileToString(tokenFile, "UTF-8");
         JsonObject buildInfo = JsonUtil.parse(json);
-        Assert.assertNull("enable dev server token shouldn't be added " +
-                          "automatically",
+        Assert.assertNull(
+                "enable dev server token shouldn't be added " + "automatically",
                 buildInfo.get(SERVLET_PARAMETER_ENABLE_DEV_SERVER));
         Assert.assertNotNull("productionMode token should be available",
                 buildInfo.get(SERVLET_PARAMETER_PRODUCTION_MODE));
