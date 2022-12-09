@@ -13,12 +13,16 @@ import com.vaadin.flow.router.Route;
 @Route("")
 @JsModule("@testscope/button")
 @JsModule("@testscope/map")
+@JsModule("package-outside-npm/index.js")
+@JsModule("package2-outside-npm/index.js")
 @JsModule("./lit-invalid-imports.ts")
 @CssImport("./image.css")
 public class MainView extends Div {
 
     public static final String PLANT = "plant";
     public static final String HIDEPLANT = "hideplant";
+    public static final String OUTSIDE = "outsideButton";
+    public static final String OUTSIDE_RESULT = "outsideResult";
 
     public MainView() {
         Image img = new Image("themes/vite-production/images/plant.png",
@@ -37,6 +41,17 @@ public class MainView extends Div {
         add(button);
         setSizeFull();
         getStyle().set("text-align", "center");
+
+        NativeButton checkOutsideJs = new NativeButton("Check outside JS",
+                e -> {
+                    getElement().executeJs(OUTSIDE_RESULT
+                            + ".innerText = window.packageOutsideNpm() + ' - ' + window.package2OutsideNpm();");
+                });
+        checkOutsideJs.setId(OUTSIDE);
+        add(checkOutsideJs);
+        Paragraph outsideStatus = new Paragraph();
+        outsideStatus.setId(OUTSIDE_RESULT);
+        add(outsideStatus);
 
         add(new HtmlComponent("testscope-button"));
         add(new HtmlComponent("testscope-map"));
