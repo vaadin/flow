@@ -23,7 +23,7 @@ import com.vaadin.flow.templatemodel.AllowClientUpdates;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
 @Tag("js-sub-template")
-@JsModule("JsSubTemplate.js")
+@JsModule("./JsSubTemplate.js")
 public class JsSubTemplate
         extends PolymerTemplate<JsSubTemplate.JsSubTemplateModel> {
 

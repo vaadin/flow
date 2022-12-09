@@ -25,7 +25,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.ElementInitOrderView", layout = ViewTestLayout.class)
-@JsModule("ElementInitOrder.js")
+@JsModule("./ElementInitOrder.js")
 public class ElementInitOrderView extends AbstractDivView {
     public ElementInitOrderView() {
         NativeButton reattach = createButton("Reattach components", "reattach",

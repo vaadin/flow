@@ -20,7 +20,7 @@ import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
-@JsModule("CustomElement.js")
+@JsModule("./CustomElement.js")
 @Tag("custom-element")
 public class CustomElement extends PolymerTemplate<TemplateModel> {
 

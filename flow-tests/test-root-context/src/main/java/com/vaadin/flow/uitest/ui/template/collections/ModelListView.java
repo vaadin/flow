@@ -31,7 +31,7 @@ import com.vaadin.flow.uitest.ui.template.collections.ModelListView.MyModel;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.collections.ModelListView", layout = ViewTestLayout.class)
 @Tag("model-list")
-@JsModule("ModelList.js")
+@JsModule("./ModelList.js")
 public class ModelListView extends PolymerTemplate<MyModel> {
 
     public interface MyModel extends TemplateModel {

@@ -56,7 +56,7 @@ public class TemplateMappingDetectorView extends AbstractDivView {
     }
 
     @Tag("template-mapping-detector")
-    @JsModule("TemplateMappingDetector.js")
+    @JsModule("./TemplateMappingDetector.js")
     public static class TemplateMappingDetectorContainer
             extends PolymerTemplate<TemplateModel> {
         @Id
@@ -83,7 +83,7 @@ public class TemplateMappingDetectorView extends AbstractDivView {
     }
 
     @Tag("template-mapping-detector-parent")
-    @JsModule("TemplateMappingDetectorParent.js")
+    @JsModule("./TemplateMappingDetectorParent.js")
     public static class TemplateMappingDetectorContainerParent
             extends PolymerTemplate<TemplateModel> {
         @Id

@@ -19,7 +19,7 @@ import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
 
-@JsModule("divConnector.js")
+@JsModule("./divConnector.js")
 public class JsInjectedDiv extends Div {
 
     public JsInjectedDiv() {
