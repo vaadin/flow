@@ -26,7 +26,7 @@ import com.vaadin.flow.templatemodel.TemplateModel;
 import com.vaadin.flow.uitest.ui.template.SubPropertyModelTemplate.SubPropertyModel;
 
 @Tag("sub-property-model")
-@JsModule("SubPropertyModel.js")
+@JsModule("./SubPropertyModel.js")
 public class SubPropertyModelTemplate
         extends PolymerTemplate<SubPropertyModel> {
 

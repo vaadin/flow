@@ -32,7 +32,7 @@ import com.vaadin.flow.uitest.ui.AbstractDivView;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.collections.TwoWayListBindingView", layout = ViewTestLayout.class)
 @Tag("two-way-list-binding")
-@JsModule("TwoWayListBinding.js")
+@JsModule("./TwoWayListBinding.js")
 public class TwoWayListBindingView
         extends PolymerTemplate<TwoWayListBindingView.TwoWayBindingModel>
         implements HasComponents {

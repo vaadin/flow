@@ -28,7 +28,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.PolymerModelPropertiesView", layout = ViewTestLayout.class)
 @Tag("model-properties")
-@JsModule("PolymerModelProperties.js")
+@JsModule("./PolymerModelProperties.js")
 public class PolymerModelPropertiesView extends PolymerTemplate<Message> {
 
     @DomEvent("text-changed")

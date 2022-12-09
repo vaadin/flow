@@ -25,7 +25,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.TemplateHasInjectedSubTemplateView", layout = ViewTestLayout.class)
 @Tag("parent-inject-child")
-@JsModule("ParentTemplateInjectChild.js")
+@JsModule("./ParentTemplateInjectChild.js")
 public class TemplateHasInjectedSubTemplateView
         extends PolymerTemplate<Message> {
 

@@ -28,7 +28,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.ChildOrderView", layout = ViewTestLayout.class)
 @Tag("child-order-template")
-@JsModule("ChildOrderTemplate.js")
+@JsModule("./ChildOrderTemplate.js")
 public class ChildOrderView extends PolymerTemplate<TemplateModel> {
 
     @Id

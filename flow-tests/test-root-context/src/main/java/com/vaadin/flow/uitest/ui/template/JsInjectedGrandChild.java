@@ -22,7 +22,7 @@ import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
 @Tag("js-injected-grand-child")
-@JsModule("JsInjectedGrandChild.js")
+@JsModule("./JsInjectedGrandChild.js")
 public class JsInjectedGrandChild extends PolymerTemplate<TemplateModel> {
 
     public JsInjectedGrandChild() {
