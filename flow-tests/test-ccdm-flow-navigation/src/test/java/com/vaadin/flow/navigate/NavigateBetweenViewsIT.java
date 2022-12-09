@@ -32,6 +32,7 @@ import static com.vaadin.flow.navigate.HelloWorldView.NAVIGATE_ABOUT;
 
 public class NavigateBetweenViewsIT extends ChromeBrowserTest {
 
+    private static final String PARAM_VALUE_SPECIAL_CHARACTERS = "a=b%20  `'¨åäö";
     private static final String ROUTE_SPECIAL_CHARACTERS = "special åäö $%20'´`";
 
     @Test
@@ -123,6 +124,16 @@ public class NavigateBetweenViewsIT extends ChromeBrowserTest {
                 + UrlUtil.encodeURI(ROUTE_SPECIAL_CHARACTERS));
         waitForDevServer();
         assertSpecialViewShown();
+    }
+
+    @Test
+    public void openViewWithSpecialCharactersInQueryParameters() {
+        getDriver().get(getRootURL() + "/hello?value="
+                + UrlUtil.encodeURIComponent(PARAM_VALUE_SPECIAL_CHARACTERS));
+        waitForDevServer();
+        assertHelloViewShown();
+        Assert.assertEquals("value: " + PARAM_VALUE_SPECIAL_CHARACTERS,
+                $("*").id("params").getText());
     }
 
     @Test
