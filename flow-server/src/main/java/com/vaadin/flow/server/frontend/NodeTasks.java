@@ -105,6 +105,7 @@ public class NodeTasks implements FallibleCommand {
         if (!options.productionMode && options.isDevBundleBuild()) {
             if (TaskRunDevBundleBuild.needsBuild(options.getNpmFolder())) {
                 options.runNpmInstall(true);
+                options.copyTemplates(true);
             } else {
                 // A dev bundle build is not needed after all, skip it
                 options.withDevBundleBuild(false);

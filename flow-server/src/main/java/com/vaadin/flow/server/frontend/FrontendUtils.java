@@ -1454,4 +1454,15 @@ public class FrontendUtils {
         return null;
     }
 
+    /**
+     * Get the folder where an application specific bundle is stored.
+     *
+     * @param npmFolder
+     *            the project base directory
+     * @return the bundle directory
+     */
+    public static File getDevBundleFolder(File npmFolder) {
+        return new File(npmFolder, "dev-bundle");
+    }
+
 }
