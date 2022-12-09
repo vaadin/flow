@@ -145,9 +145,6 @@
                 <artifactId>flow-maven-plugin</artifactId>
                 <version>${project.version}</version>
                 <!-- Configure the output folder so that spring-boot-maven-plugin gets the generated resources -->
-                <configuration>
-                    <productionMode>true</productionMode>
-                </configuration>
                 <executions>
                     <execution>
                         <goals>
