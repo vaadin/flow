@@ -8,7 +8,6 @@
  */
 package com.vaadin.flow.component.polymertemplate;
 
-import java.nio.file.Paths;
 import java.util.Properties;
 import java.util.stream.Stream;
 
@@ -21,7 +20,6 @@ import org.mockito.Mockito;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.MockVaadinServletService;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 
 public class BundleParserTest {
 

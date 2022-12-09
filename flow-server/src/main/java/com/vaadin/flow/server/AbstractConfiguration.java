@@ -17,7 +17,6 @@ package com.vaadin.flow.server;
 
 import java.io.File;
 import java.io.Serializable;
-import java.nio.file.Paths;
 
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
