@@ -20,6 +20,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -110,6 +111,10 @@ public class MockServletServiceSessionSetup {
             this.context = context;
         }
 
+        @Override
+        protected Instantiator createInstantiator() throws ServiceException {
+            return Mockito.spy(super.createInstantiator());
+        }
     }
 
     public class TestVaadinServlet extends VaadinServlet {
