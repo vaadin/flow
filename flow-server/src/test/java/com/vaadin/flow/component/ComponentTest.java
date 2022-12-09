@@ -18,6 +18,7 @@ package com.vaadin.flow.component;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -40,6 +41,7 @@ import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.internal.DependencyList;
 import com.vaadin.flow.component.internal.UIInternals;
+import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.Element;
@@ -305,6 +307,17 @@ public class ComponentTest {
     public void tearDown() {
         UI.setCurrent(null);
         mocks.cleanup();
+    }
+
+    @Test
+    public void getComponentLocale_noCurrentUI_returnsDefaultLocale() {
+        UI.setCurrent(null);
+        Instantiator instantiator = mocks.getService().getInstantiator();
+        Mockito.when(instantiator.getI18NProvider()).thenReturn(null);
+        Component test = new TestButton();
+        final Locale locale = test.getLocale();
+        Assert.assertEquals("System default locale should be returned",
+                Locale.getDefault(), locale);
     }
 
     @Test
