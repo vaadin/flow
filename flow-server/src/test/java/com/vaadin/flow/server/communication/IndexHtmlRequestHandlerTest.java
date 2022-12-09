@@ -126,7 +126,8 @@ public class IndexHtmlRequestHandlerTest {
         context = Mockito.mock(VaadinServletContext.class);
         ServletContext servletContext = Mockito.mock(ServletContext.class);
         Mockito.when(context.getContext()).thenReturn(servletContext);
-        Mockito.when(context.getAttribute(Mockito.any(), Mockito.any())).thenCallRealMethod();
+        Mockito.when(context.getAttribute(Mockito.any(), Mockito.any()))
+                .thenCallRealMethod();
         springTokenString = UUID.randomUUID().toString();
     }
 

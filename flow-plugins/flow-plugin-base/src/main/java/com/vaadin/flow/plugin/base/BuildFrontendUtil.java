@@ -166,7 +166,7 @@ public class BuildFrontendUtil {
                 .setNodeAutoUpdate(adapter.nodeAutoUpdate())
                 .withHomeNodeExecRequired(adapter.requireHomeNodeExec())
                 .setJavaResourceFolder(adapter.javaResourceFolder())
-                .withProductionMode(adapter.productionMode());
+                .withProductionMode(false);
 
         // Copy jar artifact contents in TaskCopyFrontendFiles
         options.copyResources(adapter.getJarFiles());
@@ -220,8 +220,7 @@ public class BuildFrontendUtil {
         File token = new File(adapter.servletResourceOutputDirectory(),
                 TOKEN_FILE);
         JsonObject buildInfo = Json.createObject();
-        buildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE,
-                adapter.productionMode());
+        buildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, false);
         buildInfo.put(SERVLET_PARAMETER_USE_V14_BOOTSTRAP,
                 adapter.isUseDeprecatedV14Bootstrapping());
         buildInfo.put(SERVLET_PARAMETER_INITIAL_UIDL,
@@ -267,17 +266,13 @@ public class BuildFrontendUtil {
             if (adapter.isDebugEnabled()) {
                 adapter.logDebug(String.format(
                         "%n>>> Running prepare-frontend%nSystem"
-                                + ".properties:%n productionMode: %s%n"
-                                + " webpackPort: %s%n "
+                                + ".properties:%n" + " webpackPort: %s%n "
                                 + "project.basedir: %s%nGoal parameters:%n "
-                                + "productionMode: %s%n "
                                 + "npmFolder: %s%nToken file: " + "%s%n"
                                 + "Token content: %s%n",
-                        adapter.productionMode(),
                         System.getProperty(
                                 "vaadin.devmode.webpack.running-port"),
-                        adapter.projectBaseDirectory(),
-                        adapter.productionMode(), adapter.npmFolder(),
+                        adapter.projectBaseDirectory(), adapter.npmFolder(),
                         token.getAbsolutePath(), buildInfo.toJson()));
             }
             return token;
@@ -575,9 +570,10 @@ public class BuildFrontendUtil {
     }
 
     /**
-     * Add the devMode token to build token file so we don't try to start the
-     * dev server. Remove the abstract folder paths as they should not be used
-     * for prebuilt bundles.
+     * Updates the build info after the bundle has been built by build-frontend.
+     * <p>
+     * Removes the abstract folder paths as they should not be used for prebuilt
+     * bundles and ensures production mode is set to true.
      *
      * @param adapter
      *            - the PluginAdapterBase.
@@ -611,6 +607,7 @@ public class BuildFrontendUtil {
             buildInfo.remove(Constants.CONNECT_OPEN_API_FILE_TOKEN);
             buildInfo.remove(Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN);
             buildInfo.remove(InitParameters.BUILD_FOLDER);
+            buildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, true);
 
             FileUtils.write(tokenFile, JsonUtil.stringify(buildInfo, 2) + "\n",
                     StandardCharsets.UTF_8.name());
