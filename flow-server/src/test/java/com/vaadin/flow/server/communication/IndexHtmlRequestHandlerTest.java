@@ -171,10 +171,11 @@ public class IndexHtmlRequestHandlerTest {
                 .mock(VaadinServletRequest.class);
         Mockito.when(vaadinRequest.getService()).thenReturn(vaadinService);
 
-        String expectedError = "java.io.IOException: Unable to find index.html. " +
-                               "It should be available on the classpath when running in production mode";
+        String expectedError = "java.io.IOException: Unable to find index.html. "
+                + "It should be available on the classpath when running in production mode";
 
-        UncheckedIOException expectedException = assertThrows(UncheckedIOException.class,
+        UncheckedIOException expectedException = assertThrows(
+                UncheckedIOException.class,
                 () -> indexHtmlRequestHandler.synchronizedHandleRequest(session,
                         vaadinRequest, response));
         Assert.assertEquals(expectedError, expectedException.getMessage());
@@ -546,16 +547,16 @@ public class IndexHtmlRequestHandlerTest {
         deploymentConfiguration.setEnableDevServer(true);
         deploymentConfiguration.setProductionMode(false);
 
-        final ByteArrayInputStream indexHtmlInputStream =
-                new ByteArrayInputStream(
+        final ByteArrayInputStream indexHtmlInputStream = new ByteArrayInputStream(
                 "<html><head></head></html>".getBytes());
 
         DevModeHandler devServer = Mockito.mock(DevModeHandler.class);
         Mockito.when(devServer.getFailedOutput())
                 .thenReturn("Failed to compile");
-        HttpURLConnection httpURLConnection = Mockito.mock(
-                HttpURLConnection.class);
-        when(httpURLConnection.getInputStream()).thenReturn(indexHtmlInputStream);
+        HttpURLConnection httpURLConnection = Mockito
+                .mock(HttpURLConnection.class);
+        when(httpURLConnection.getInputStream())
+                .thenReturn(indexHtmlInputStream);
         Mockito.when(devServer.prepareConnection(Mockito.anyString(),
                 Mockito.anyString())).thenReturn(httpURLConnection);
         service.setContext(context);
@@ -763,7 +764,8 @@ public class IndexHtmlRequestHandlerTest {
         Elements bodyInlineElements = document.body()
                 .getElementsByTag("script");
         // <script>window.Vaadin = window.Vaadin || {};window.Vaadin
-        // .registrations = window.Vaadin.registrations || [];window.Vaadin.registrations.push({"is":"java","version":"17.0.2"});
+        // .registrations = window.Vaadin.registrations ||
+        // [];window.Vaadin.registrations.push({"is":"java","version":"17.0.2"});
         // </script>"
         // <script type="text/javascript">window.messages = window.messages
         // || [];window.messages.push("inline.js");

@@ -80,35 +80,39 @@ public class TestUtil {
         return false;
     }
 
-    public static void createIndexHtmlStub(File projectRootFolder) throws IOException {
+    public static void createIndexHtmlStub(File projectRootFolder)
+            throws IOException {
         createStubFileInFrontend(projectRootFolder, INDEX_HTML);
     }
 
-    public static void createWebComponentHtmlStub(File projectRootFolder) throws IOException {
+    public static void createWebComponentHtmlStub(File projectRootFolder)
+            throws IOException {
         createStubFileInFrontend(projectRootFolder, WEB_COMPONENT_HTML);
     }
 
     public static void createStubFileInFrontend(File projectRootFolder,
-                                                String stubFileName) throws IOException {
+            String stubFileName) throws IOException {
         try (InputStream indexStream = IndexHtmlRequestHandlerTest.class
-                .getClassLoader().getResourceAsStream("frontend/" + stubFileName)) {
-            String indexHtmlContent = IOUtils.toString(
-                    Objects.requireNonNull(indexStream), UTF_8);
-            File indexHtml = new File(
-                    new File(projectRootFolder, "frontend"), stubFileName);
+                .getClassLoader()
+                .getResourceAsStream("frontend/" + stubFileName)) {
+            String indexHtmlContent = IOUtils
+                    .toString(Objects.requireNonNull(indexStream), UTF_8);
+            File indexHtml = new File(new File(projectRootFolder, "frontend"),
+                    stubFileName);
             FileUtils.forceMkdirParent(indexHtml);
             FileUtils.writeStringToFile(indexHtml, indexHtmlContent, UTF_8);
         }
     }
 
-    public static void createStatsJsonStub(File projectRootFolder) throws IOException {
+    public static void createStatsJsonStub(File projectRootFolder)
+            throws IOException {
         File statsJson = new File(
                 new File(projectRootFolder, "dev-bundle/config/"),
                 "stats.json");
         FileUtils.forceMkdirParent(statsJson);
-        FileUtils.writeStringToFile(statsJson, "{\"npmModules\": {}, " +
-                                               "\"entryScripts\": [\"foo.js\"], " +
-                                               "\"packageJsonHash\": \"42\"}",
+        FileUtils.writeStringToFile(statsJson,
+                "{\"npmModules\": {}, " + "\"entryScripts\": [\"foo.js\"], "
+                        + "\"packageJsonHash\": \"42\"}",
                 UTF_8);
     }
 }
