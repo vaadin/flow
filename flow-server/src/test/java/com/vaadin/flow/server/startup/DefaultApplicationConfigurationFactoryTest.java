@@ -94,7 +94,6 @@ public class DefaultApplicationConfigurationFactoryTest {
         Assert.assertTrue(configuration
                 .getBooleanProperty(Constants.EXTERNAL_STATS_FILE, false));
         Assert.assertFalse(configuration.isProductionMode());
-        Assert.assertFalse(configuration.enableDevServer());
     }
 
     @Test
@@ -113,7 +112,6 @@ public class DefaultApplicationConfigurationFactoryTest {
         Assert.assertTrue(configuration
                 .getBooleanProperty(Constants.EXTERNAL_STATS_FILE, false));
         Assert.assertFalse(configuration.isProductionMode());
-        Assert.assertFalse(configuration.enableDevServer());
     }
 
     @Test
@@ -133,7 +131,6 @@ public class DefaultApplicationConfigurationFactoryTest {
         Assert.assertEquals("http://my.server/static/stats.json", configuration
                 .getStringProperty(Constants.EXTERNAL_STATS_URL, null));
         Assert.assertFalse(configuration.isProductionMode());
-        Assert.assertFalse(configuration.enableDevServer());
     }
 
     @Test
@@ -159,7 +156,6 @@ public class DefaultApplicationConfigurationFactoryTest {
         Assert.assertEquals("http://my.server/static/stats.json", configuration
                 .getStringProperty(Constants.EXTERNAL_STATS_URL, null));
         Assert.assertFalse(configuration.isProductionMode());
-        Assert.assertFalse(configuration.enableDevServer());
     }
 
     @Test
