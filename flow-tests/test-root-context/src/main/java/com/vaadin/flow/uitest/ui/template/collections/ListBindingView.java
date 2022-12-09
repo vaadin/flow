@@ -36,7 +36,7 @@ import com.vaadin.flow.uitest.ui.template.collections.ListBindingView.ListBindin
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.collections.ListBindingView", layout = ViewTestLayout.class)
 @Tag("list-binding")
-@JsModule("ListBinding.js")
+@JsModule("./ListBinding.js")
 public class ListBindingView extends PolymerTemplate<ListBindingModel> {
     static final List<String> RESET_STATE = Arrays.asList("1", "2", "3");
     static final String INITIAL_STATE = "foo";

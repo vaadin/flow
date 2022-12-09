@@ -13,7 +13,7 @@ import com.vaadin.flow.uitest.ui.template.InjectScriptTagView.InjectionModel;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.InjectScriptTagView", layout = ViewTestLayout.class)
 @Tag("inject-script-tag-template")
-@JsModule("InjectScriptTagTemplate.js")
+@JsModule("./InjectScriptTagTemplate.js")
 public class InjectScriptTagView extends PolymerTemplate<InjectionModel> {
 
     public interface InjectionModel extends TemplateModel {

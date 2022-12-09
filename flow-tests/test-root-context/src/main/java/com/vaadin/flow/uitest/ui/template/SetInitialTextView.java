@@ -13,7 +13,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.SetInitialTextView", layout = ViewTestLayout.class)
 @Tag("set-initial-text")
-@JsModule("SetInitialText.js")
+@JsModule("./SetInitialText.js")
 public class SetInitialTextView extends PolymerTemplate<TemplateModel>
         implements HasComponents {
 

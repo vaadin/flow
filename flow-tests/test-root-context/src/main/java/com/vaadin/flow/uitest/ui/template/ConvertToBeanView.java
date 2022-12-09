@@ -33,7 +33,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.ConvertToBeanView", layout = ViewTestLayout.class)
 @Tag("convert-to-bean")
-@JsModule("ConvertToBean.js")
+@JsModule("./ConvertToBean.js")
 public class ConvertToBeanView
         extends PolymerTemplate<ConvertToBeanView.ConvertToBeanModel> {
 

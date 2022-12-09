@@ -32,7 +32,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.DomRepeatView", layout = ViewTestLayout.class)
 @Tag("employees-list")
-@JsModule("DomRepeatPolymerTemplate.js")
+@JsModule("./DomRepeatPolymerTemplate.js")
 public class DomRepeatView
         extends PolymerTemplate<DomRepeatView.EmployeesModel> {
     static final int NUMBER_OF_EMPLOYEES = 3;

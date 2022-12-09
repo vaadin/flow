@@ -30,7 +30,7 @@ import com.vaadin.flow.uitest.ui.template.ExceptionsDuringPropertyUpdatesView.Ex
 
 @Tag("exceptions-property-update")
 @Route(value = "com.vaadin.flow.uitest.ui.template.ExceptionsDuringPropertyUpdatesView", layout = ViewTestLayout.class)
-@JsModule("ExceptionsDuringPropertyUpdates.js")
+@JsModule("./ExceptionsDuringPropertyUpdates.js")
 public class ExceptionsDuringPropertyUpdatesView
         extends PolymerTemplate<ExceptionsDuringPropertyUpdatesModel>
         implements HasComponents {

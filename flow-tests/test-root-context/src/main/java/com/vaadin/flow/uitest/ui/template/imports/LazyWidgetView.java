@@ -26,7 +26,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.imports.LazyWidgetView", layout = ViewTestLayout.class)
 @Tag("x-lazy-widget")
-@JsModule("x-lazy-widget.js")
+@JsModule("./x-lazy-widget.js")
 public class LazyWidgetView extends PolymerTemplate<LazyWidgetView.Model> {
     static final String GREETINGS_TEMPLATE = "Greetings from server, %s!";
 
