@@ -28,7 +28,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.OneWayPolymerBindingView", layout = ViewTestLayout.class)
 @Tag("my-one-way-template")
-@JsModule("OneWayPolymerBinding.js")
+@JsModule("./OneWayPolymerBinding.js")
 public class OneWayPolymerBindingView
         extends PolymerTemplate<OneWayPolymerBindingView.MessageModel> {
     static final String MESSAGE = "testMessage";

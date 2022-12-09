@@ -25,7 +25,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
 
 @Tag("multiple-props-mutation")
-@JsModule("MultiplePropsMutation.js")
+@JsModule("./MultiplePropsMutation.js")
 @Route(value = "com.vaadin.flow.uitest.ui.template.MutationSeveralSyncedPropsView", layout = ViewTestLayout.class)
 public class MutationSeveralSyncedPropsView
         extends PolymerTemplate<TemplateModel> {

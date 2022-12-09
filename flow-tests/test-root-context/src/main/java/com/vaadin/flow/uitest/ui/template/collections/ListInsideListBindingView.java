@@ -34,7 +34,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.collections.ListInsideListBindingView", layout = ViewTestLayout.class)
 @Tag("list-inside-list-binding")
-@JsModule("ListInsideListBinding.js")
+@JsModule("./ListInsideListBinding.js")
 public class ListInsideListBindingView extends
         PolymerTemplate<ListInsideListBindingView.ListInsideListBindingModel> {
     static final String UPDATED_TEXT = "test";

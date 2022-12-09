@@ -29,7 +29,7 @@ import com.vaadin.flow.uitest.ui.template.BeanInListingView.ListModel;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.BeanInListingView", layout = ViewTestLayout.class)
 @Tag("listing-bean-view")
-@JsModule("BeanInListing.js")
+@JsModule("./BeanInListing.js")
 public class BeanInListingView extends PolymerTemplate<ListModel> {
 
     public interface ListModel extends TemplateModel {

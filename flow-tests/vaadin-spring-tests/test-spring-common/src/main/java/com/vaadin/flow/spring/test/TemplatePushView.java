@@ -16,7 +16,7 @@ import com.vaadin.flow.shared.ui.Transport;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
 @Route("template-push")
-@JsModule("TemplatePushView.js")
+@JsModule("./TemplatePushView.js")
 @Tag("template-push-view")
 public class TemplatePushView extends PolymerTemplate<TemplateModel> {
 
