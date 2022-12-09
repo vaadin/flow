@@ -332,6 +332,10 @@ public class TestBenchHelpers extends ParallelTest {
     protected void checkLogsForErrors(
             Predicate<String> acceptableMessagePredicate) {
         getLogEntries(Level.WARNING).forEach(logEntry -> {
+            if (logEntry.getMessage().contains(
+                    "Lit is in dev mode. Not recommended for production")) {
+                return;
+            }
             if ((Objects.equals(logEntry.getLevel(), Level.SEVERE)
                     || logEntry.getMessage().contains(" 404 "))
                     && !logEntry.getMessage()
