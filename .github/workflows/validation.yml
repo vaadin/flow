@@ -229,7 +229,7 @@ jobs:
             it-tests-output
       - name: Compute Stats
         run: |
-          ./scripts/computeMatrix.js test-results
+          ./scripts/computeMatrix.js test-results >> $GITHUB_STEP_SUMMARY
       - uses: actions/upload-artifact@v3
         if: ${{ always() }}
         with:
