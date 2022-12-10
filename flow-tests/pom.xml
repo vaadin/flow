@@ -189,7 +189,7 @@
                 <!-- jetty plugin for those child modules that need it -->
                 <plugin>
                     <groupId>org.eclipse.jetty</groupId>
-                    <artifactId>jetty-maven-plugin</artifactId>
+                    <artifactId>jetty-ee10-maven-plugin</artifactId>
                     <version>${jetty.version}</version>
                     <executions>
                         <execution>
@@ -333,7 +333,7 @@
                 <plugins>
                     <plugin>
                         <groupId>org.eclipse.jetty</groupId>
-                        <artifactId>jetty-maven-plugin</artifactId>
+                        <artifactId>jetty-ee10-maven-plugin</artifactId>
                         <version>${jetty.version}</version>
                         <configuration>
                             <webAppConfig>

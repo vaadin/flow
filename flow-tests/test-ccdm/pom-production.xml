@@ -32,7 +32,7 @@
         <plugins>
             <plugin>
                 <groupId>org.eclipse.jetty</groupId>
-                <artifactId>jetty-maven-plugin</artifactId>
+                <artifactId>jetty-ee10-maven-plugin</artifactId>
                 <configuration>
                     <webApp>
                         <contextPath>/foo</contextPath>
