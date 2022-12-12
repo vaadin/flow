@@ -95,6 +95,7 @@ public class DefaultDeploymentConfiguration
     private boolean syncIdCheck;
     private boolean sendUrlsAsParameters;
     private boolean requestTiming;
+    private boolean enableDevServer = true;
 
     private static AtomicBoolean logging = new AtomicBoolean(true);
     private List<String> warnings = new ArrayList<>();
@@ -130,6 +131,7 @@ public class DefaultDeploymentConfiguration
         checkPushMode();
         checkSyncIdCheck();
         checkSendUrlsAsParameters();
+        checkEnableDevServer(log);
 
         if (log) {
             logMessages();
@@ -253,6 +255,11 @@ public class DefaultDeploymentConfiguration
     @Override
     public PushMode getPushMode() {
         return pushMode;
+    }
+
+    @Override
+    public boolean enableDevServer() {
+        return enableDevServer;
     }
 
     /**
@@ -402,6 +409,20 @@ public class DefaultDeploymentConfiguration
         sendUrlsAsParameters = getBooleanProperty(
                 InitParameters.SERVLET_PARAMETER_SEND_URLS_AS_PARAMETERS,
                 DEFAULT_SEND_URLS_AS_PARAMETERS);
+    }
+
+    private void checkEnableDevServer(boolean log) {
+        if (FeatureFlags.get(getParentConfiguration().getContext())
+                .isEnabled(FeatureFlags.EXPRESS_BUILD)) {
+            enableDevServer = false;
+
+            if (log) {
+                info.add("Vaadin is running in a development mode using "
+                        + "pre-compiled bundle (Express Build) and won't use "
+                        + "the dev server since the corresponding feature flag"
+                        + " is set.");
+            }
+        }
     }
 
 }
