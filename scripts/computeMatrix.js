@@ -22,91 +22,93 @@ const globalExclusions = ['flow-tests/servlet-containers/tomcat10'];
 // Containers 4, 5 & 6:
 //  Spring tests, they need also spring shared modules to be generated in validation.yml
 const moduleWeights = {
-  'flow-client': { weight: 8 },
-  'flow-server': { weight: 6 },
-  'vaadin-dev-server': { weight: 5 },
+  'flow-client': { weight: 7 },
+  'flow-server': { weight: 5 },
+  'vaadin-dev-server': { weight: 2 },
   'flow-data': { weight: 2 },
-  'flow-plugins/flow-maven-plugin': { weight: 5 },
-  'flow-plugins/flow-gradle-plugin': { weight: 6 },
-  'flow-bom': { weight: 2},
-
-  'flow-tests/test-multi-war/test-war2': { pos: 1, weight: 2 },
-  'flow-tests/test-memory-leaks': {pos:1},
-  'flow-tests/test-embedding/test-embedding-application-theme': { pos: 1, weight: 4 },
+  'flow-bom': { weight: 2 },
+  'flow-polymer-template': { weight: 2 },
+  'flow-tests/test-embedding/test-embedding-application-theme': { pos: 1, weight: 3 },
   'flow-tests/test-application-theme/test-theme-live-reload': { pos: 1, weight: 3 },
   'flow-tests/test-npm-only-features/test-npm-performance-regression': { pos: 1, weight: 3 },
   'flow-tests/test-v14-bootstrap': { pos: 1, weight: 3 },
+  'flow-tests/test-multi-war/test-war2': { pos: 1, weight: 2 },
   'flow-tests/test-npm-only-features/test-npm-bytecode-scanning/pom-prod-fallback.xml': { pos: 1, weight: 2 },
   'flow-tests/test-custom-route-registry': { pos: 1, weight: 2 },
   'flow-tests/test-frontend/test-npm': { pos: 1, weight: 2 },
   'flow-tests/test-no-theme': { pos: 1, weight: 2 },
+  'flow-tests/test-memory-leaks': { pos: 1 },
   'flow-tests/test-resources': { pos: 1 },
+  'flow-tests/test-frontend/vite-basics': { pos: 2, weight: 5 },
   'flow-tests/test-embedding/test-embedding-production-mode': { pos: 2, weight: 4 },
-  'flow-tests/test-frontend/vite-basics': { pos: 2, weight: 3 },
+  'flow-tests/test-ccdm-flow-navigation/pom-production.xml': { pos: 2, weight: 3 },
   'flow-tests/test-frontend/test-pnpm/pom-production.xml': { pos: 2, weight: 2 },
-  'flow-tests/test-ccdm-flow-navigation/pom-production.xml': { pos: 2, weight: 2 },
   'flow-tests/test-application-theme/test-reusable-as-parent': { pos: 2, weight: 2 },
   'flow-tests/test-application-theme/test-reusable-as-parent-vite': { pos: 2, weight: 2 },
   'flow-tests/test-live-reload': { pos: 3, weight: 3 },
   'flow-tests/test-embedding/test-embedding-generic': { pos: 3, weight: 3 },
   'flow-tests/test-mixed/pom-npm-production.xml': { pos: 3, weight: 3 },
+  'flow-tests/test-application-theme/test-theme-reusable': { pos: 3, weight: 3 },
   'flow-tests/test-embedding/test-embedding-reusable-theme': { pos: 3, weight: 2 },
   'flow-tests/test-multi-war/deployment': { pos: 3, weight: 2 },
-  'flow-tests/test-application-theme/test-theme-reusable': { pos: 3, weight: 2 },
   'flow-tests/test-application-theme/test-theme-reusable-vite': { pos: 3, weight: 2 },
   'flow-tests/test-frontend/vite-production': { pos: 3, weight: 2 },
   'flow-tests/test-frontend/vite-production-custom-frontend': { pos: 3, weight: 2 },
   'flow-tests/test-frontend/vite-test-assets': { pos: 3 },
-  'flow-tests/vaadin-spring-tests/test-spring-common': { pos: 4, weight: 2 },
-  'flow-tests/vaadin-spring-tests/test-spring-helpers': { pos: 4, weight: 1 },
+  'flow-tests/vaadin-spring-tests/test-spring-boot-only-prepare': { pos: 4, weight: 5 },
   'flow-tests/vaadin-spring-tests/test-spring-boot': { pos: 4, weight: 4 },
-  'flow-tests/vaadin-spring-tests/test-spring-boot-only-prepare': { pos: 4, weight: 3 },
   'flow-tests/vaadin-spring-tests/test-spring-boot-scan': { pos: 4, weight: 3 },
   'flow-tests/vaadin-spring-tests/test-spring-war': { pos: 4, weight: 3 },
   'flow-tests/vaadin-spring-tests/test-spring-boot-contextpath': { pos: 4, weight: 3 },
   'flow-tests/vaadin-spring-tests/test-spring-boot-reverseproxy': { pos: 4, weight: 3 },
+  'flow-tests/vaadin-spring-tests/test-spring-common': { pos: 4, weight: 2 },
   'flow-tests/vaadin-spring-tests/test-spring-white-list': { pos: 4, weight: 2 },
-  'flow-tests/vaadin-spring-tests/test-spring-security-flow': { pos: 5, weight: 5 },
-  'flow-tests/vaadin-spring-tests/test-spring-security-flow-contextpath': { pos: 5, weight: 4 },
-  'flow-tests/vaadin-spring-tests/test-spring-security-flow-urlmapping': { pos: 5, weight: 4 },
-  'flow-tests/vaadin-spring-tests/test-spring-security-flow-reverseproxy': { pos: 5, weight: 4 },
-  'flow-tests/vaadin-spring-tests/test-spring': { pos: 5, weight: 3 },
+  'flow-tests/vaadin-spring-tests/test-spring-helpers': { pos: 4, weight: 1 },
+  'flow-tests/vaadin-spring-tests/test-spring': { pos: 5, weight: 4 },
+  'flow-tests/vaadin-spring-tests/test-spring-security-flow': { pos: 5, weight: 3 },
+  'flow-tests/vaadin-spring-tests/test-spring-security-flow-contextpath': { pos: 5, weight: 3 },
+  'flow-tests/vaadin-spring-tests/test-spring-security-flow-urlmapping': { pos: 5, weight: 3 },
+  'flow-tests/vaadin-spring-tests/test-spring-security-flow-reverseproxy': { pos: 5, weight: 3 },
   'flow-tests/vaadin-spring-tests/test-mvc-without-endpoints': { pos: 5, weight: 2 },
+  'flow-tests/test-ccdm-flow-navigation': { weight: 7 },
+  'flow-tests/test-frontend/vite-pwa': { weight: 7 },
+  'flow-tests/test-custom-frontend-directory/test-themes-custom-frontend-directory/pom-generatedTsDir.xml': { weight: 7 },
   'flow-tests/test-router-custom-context': { weight: 6 },
-  'flow-tests/test-pwa-disabled-offline': { weight: 7 },
-  'flow-tests/test-ccdm-flow-navigation': { weight: 5 },
-  'flow-tests/test-pwa': { weight: 7 },
-  'flow-tests/test-ccdm': { weight: 8 },
-  'flow-tests/test-dev-mode': { weight: 4 },
-  'flow-tests/test-pwa/pom-production.xml': { weight: 3 },
+  'flow-tests/test-pwa-disabled-offline': { weight: 6 },
+  'flow-tests/test-custom-frontend-directory/test-themes-custom-frontend-directory': { weight: 6 },
+  'flow-tests/test-pwa': { weight: 5 },
+  'flow-tests/test-dev-mode': { weight: 5 },
   'flow-tests/test-frontend/vite-pwa-disabled-offline': { weight: 5 },
-  'flow-tests/test-servlet': { weight: 3 },
+  'flow-tests/test-eager-bootstrap': { weight: 5 },
+  'flow-plugins/flow-maven-plugin': { weight: 4 },
+  'flow-plugins/flow-gradle-plugin': { weight: 4 },
+  'flow-tests/test-ccdm': { weight: 4 },
+  'flow-tests/test-npm-only-features/test-npm-no-buildmojo': { weight: 4 },
+  'flow-tests/test-frontend/vite-pwa-custom-offline-path': { weight: 4 },
+  'flow-tests/test-frontend/vite-embedded': { weight: 4 },
+  'flow-tests/test-pwa/pom-production.xml': { weight: 3 },
   'flow-tests/test-root-ui-context': { weight: 3 },
-  'flow-tests/test-npm-only-features/test-npm-no-buildmojo': { weight: 3 },
   'flow-tests/test-ccdm/pom-production.xml': { weight: 3 },
   'flow-tests/test-themes': { weight: 3 },
   'flow-tests/test-redeployment': { weight: 3 },
   'flow-tests/test-application-theme/test-theme-component-live-reload': { weight: 3 },
   'flow-tests/test-pwa-disabled-offline/pom-production.xml': { weight: 3 },
-  'flow-tests/test-v14-bootstrap/pom-production.xml': { weight: 2 },
+  'flow-tests/test-frontend/vite-context-path/pom-production.xml': { weight: 3 },
+  'flow-tests/test-servlet': { weight: 2 },
   'flow-tests/test-frontend/test-npm/pom-production.xml': { weight: 2 },
   'flow-tests/test-npm-only-features/test-npm-custom-frontend-directory': { weight: 2 },
   'flow-tests/test-npm-only-features/test-npm-bytecode-scanning/pom-production.xml': { weight: 2 },
   'flow-tests/test-npm-only-features/test-npm-bytecode-scanning/pom-devmode.xml': { weight: 2 },
-  'flow-tests/test-frontend/vite-context-path/pom-production.xml': { weight: 2 },
   'flow-tests/test-embedding/test-embedding-theme-variant': { weight: 2 },
   'flow-tests/test-npm-only-features/test-npm-general': { weight: 2 },
   'flow-tests/test-misc': { weight: 2 },
   'flow-tests/test-theme-no-polymer': { weight: 2 },
-  'flow-tests/test-frontend/vite-pwa-production-custom-offline-path': { weight: 2 },
   'flow-tests/test-multi-war/test-war1': { weight: 2 },
   'flow-tests/test-frontend/vite-pwa-production': { weight: 2 },
   'flow-tests/test-frontend/vite-pwa-disabled-offline/pom-production.xml': { weight: 2 },
   'flow-tests/test-frontend/vite-pwa-custom-offline-path/pom-production.xml': { weight: 2 },
-  'flow-tests/test-frontend/vite-pwa-custom-offline-path': { weight: 3 },
-  'flow-tests/test-frontend/vite-pwa': { weight: 5 },
   'flow-tests/test-frontend/vite-embedded/pom-production.xml': { weight: 2 },
-  'flow-tests/test-frontend/vite-embedded': { weight: 2 },
+  'flow-plugins/flow-plugin-base': { weight: 2 },
 
   'RemoveRoutersLayoutContentIT': {weight: 2},
   'BrowserWindowResizeIT': {weight: 2},
@@ -363,6 +365,15 @@ function secs2Weight(secs) {
 }
 
 /**
+ * format seconds to HH:MM:SS.m
+ */
+function formatSecs(s) {
+  const pad = (n, p) => ("" + n).padStart(p || 2, 0);
+  const r = {h:~~(s / 3600),m:~~((s % 3600) / 60),s:~~s % 60, f:~~(s%1*10)};
+  return `${pad(r.m)}':${pad(r.s)}"`;
+}
+
+/**
  * Compute module weights by parsing mvn outputs
  */
 function computeResultWeights(suite, prefix, weights) {
@@ -443,11 +454,17 @@ function computeTestStats() {
   });
   const sorted = Object.keys(stats).map(k => Object.assign(stats[k], {name: k}))
     .sort((a, b) => (b.failed - a.failed) || (b.secs - a.secs));
-  const totalMin = sorted.reduce((prev, curr) => prev + curr.secs, 0) / 60;
+  const totalSecs = sorted.reduce((prev, curr) => prev + curr.secs, 0);
   const totalTests = sorted.reduce((prev, curr) => prev + curr.tests, 0);
   const totalFailed = sorted.reduce((prev, curr) => prev + curr.failed, 0);
-  const out = sorted.map(e => `${e.secs} ${e.tests} ${e.module} ${e.name}`).join('\n') +
-    `\nTOTAL - classes: ${sorted.length} tests: ${totalTests} failed: ${totalFailed} time: ${totalMin} mins.\n`;
+
+  const out =
+  `<details><summary><code>` +
+  `Run ${totalTests} tests in ${sorted.length} classes, time: ${formatSecs(totalSecs)}, failed: ${totalFailed}` +
+  `</code></summary>\n\n\n` +
+  `| Time | Tests | Module | Class |\n|------|-------|--------|------|\n` +
+    sorted.map(e => `|${formatSecs(e.secs)}|${e.tests}|\`${e.module}\`|\`${e.name}\`|`).join('\n') +
+  `\n</details>`
   return out;
 }
 
@@ -475,23 +492,30 @@ async function printTestResults() {
     }
   });
 
+  console.log("## Matrix and Test Statistics")
+
+  console.log('### Suggestions\n')
+
   // Show what should be updated
+  console.log('<details><summary>Modifications</summary>\n\n| Action | Change | Module |\n|-----|-----|-----|')
   Object.keys(weights).forEach( m => {
     if (moduleWeights[m] && Math.abs(moduleWeights[m].weight - weights[m].weight) > 1) {
-      console.log(`Update ${m} ${moduleWeights[m].weight || 1} -> ${weights[m].weight}`);
+      console.log(`|update|${moduleWeights[m].weight || 1}→${weights[m].weight}|\`${m}\`|`);
     } else if (!moduleWeights[m]) {
-      console.log(`Add ${m} ${weights[m].weight} `);
+      console.log(`|add|${weights[m].weight}|\`${m}\`|`);
       newWeights[m] = weights[m];
     }
   });
   Object.keys(moduleWeights).forEach(m => {
     if (/\-/.test(m) && !moduleWeights[m].pos && !weights[m] && moduleWeights[m].weight > 2) {
-      console.log(`Remove ${m} ${moduleWeights[m].weight}`);
+      console.log(`|remove|${moduleWeights[m].weight}|\`${m}\`|`);
       delete newWeights[m];
     }
   });
+  console.log('\n</details>')
 
   // Sort and Print weight objects
+  console.log('<details><summary>Configuration Object</summary>\n\n```\n')
   const ordered = Object.keys(newWeights).sort((a, b) => {
     const [o1, o2] = [newWeights[a], newWeights[b]];
     const [p1, p2, w1, w2] = [o1.pos || 10, o2.pos || 10, o1.weight || 0, o2.weight ||0];
@@ -501,19 +525,24 @@ async function printTestResults() {
     return o;
   }, {});
   console.log(ordered);
+  console.log('\n```\n</details>\n')
 
   // print module stats
-  Object.keys(moduleStats).forEach(k => {
+  console.log('### Stats per module\n')
+  Object.keys(moduleStats).sort((a, b) => {
+    const r = /(\d+).out$/;
+    return (r.exec(a)[1] || 0 ) - (r.exec(b)[1] || 0);
+  }).forEach(k => {
     if (moduleStats[k].length) {
       const totalSecs = moduleStats[k].reduce((p,o) => p + o.secs, 0);
       const totalWeight = secs2Weight(totalSecs);
-      console.log(`${k} ${totalSecs} secs. ${totalWeight} weight\n  `
-        + moduleStats[k].map(o => `'${o.mod}': {secs: ${o.secs}, weight: ${o.weight}},`).join('\n  '));
+      console.log(`<details><summary><code>${k} time=${formatSecs(totalSecs)} weight=${totalWeight}</code></summary>\n\n`
+        + '\n```\n' + moduleStats[k].map(o => `'${o.mod}': {secs: ${o.secs}, weight: ${o.weight}},`).join('\n') + '\n```\n</details>\n');
     }
   });
 
   // print stats of test classes
-  console.log(testStats);
+  console.log(`### Stats per class\n\n${testStats}`);
 }
 
 /*
