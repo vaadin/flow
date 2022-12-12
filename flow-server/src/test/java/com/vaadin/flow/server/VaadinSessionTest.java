@@ -27,6 +27,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
@@ -382,8 +383,7 @@ public class VaadinSessionTest {
             }
         };
 
-        vaadinSession.setAttribute(VaadinSession.CLOSE_SESSION_EXPLICITLY,
-                true);
+        vaadinSession.sessionClosedExplicitly = true;
 
         WrappedSession httpSession = Mockito.mock(WrappedSession.class);
         vaadinSession.refreshTransients(httpSession, mockService);
@@ -411,7 +411,6 @@ public class VaadinSessionTest {
             protected Lock getSessionLock(WrappedSession wrappedSession) {
                 return lock;
             }
-
         };
 
         VaadinSession vaadinSession = new VaadinSession(mockService) {

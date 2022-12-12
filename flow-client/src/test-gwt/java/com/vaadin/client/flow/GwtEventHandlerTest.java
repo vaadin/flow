@@ -62,6 +62,7 @@ public class GwtEventHandlerTest extends ClientEngineTestBase {
     @Override
     protected void gwtSetUp() throws Exception {
         super.gwtSetUp();
+        restorePromiseImmediateFn();
         Reactive.reset();
 
         registry = new Registry() {
@@ -140,6 +141,11 @@ public class GwtEventHandlerTest extends ClientEngineTestBase {
 
         delayTestFinish(100);
     }
+
+    private static native void restorePromiseImmediateFn()
+    /*-{
+        window.Promise._immediateFn = window.Promise._originalImmediateFn;
+    }-*/;
 
     private static native void addThen(Object promise,
             Consumer<String> callback)

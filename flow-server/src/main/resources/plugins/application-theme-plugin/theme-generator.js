@@ -47,6 +47,12 @@ const createLinkReferences = (css, target) => {
   // [5] matches media query on @import statement
   const importMatcher = /(?:@media\\s(.+?))?(?:\\s{)?\\@import\\s*(?:url\\(\\s*['"]?(.+?)['"]?\\s*\\)|(["'])((?:\\\\.|[^\\\\])*?)\\3)([^;]*);(?:})?/g
   
+  // Only cleanup if comment exist
+  if(/\\/\\*(.|[\\r\\n])*?\\*\\//gm.exec(css) != null) {
+    // clean up comments
+    css = stripCssComments(css);
+  }
+  
   var match;
   var styleCss = css;
   
@@ -115,8 +121,9 @@ function generateThemeFile(themeFolder, themeName, themeProperties, productionMo
   }
 
   if (themeProperties.parent) {
-    themeFile += `import {applyTheme as applyBaseTheme} from './theme-${themeProperties.parent}.generated.js';`;
+    themeFile += `import {applyTheme as applyBaseTheme} from './theme-${themeProperties.parent}.generated.js';\n`;
   }
+  themeFile += `import stripCssComments from 'strip-css-comments';\n`;
 
   themeFile += createLinkReferences;
   themeFile += injectGlobalCssMethod;

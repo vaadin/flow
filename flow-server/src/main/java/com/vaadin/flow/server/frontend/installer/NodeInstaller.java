@@ -289,7 +289,7 @@ public class NodeInstaller {
                             + nodeBinary);
         }
 
-        File destinationDirectory = getNodeInstallDirectory();
+        File destinationDirectory = getNodeBinaryInstallDirectory();
 
         File destination = new File(destinationDirectory,
                 data.getNodeExecutable());
@@ -302,8 +302,10 @@ public class NodeInstaller {
                             + destination + " executable.");
         }
 
+        createSymbolicLinkToBinary(destination, data.getNodeExecutable());
+
         if (npmProvided()) {
-            extractUnixNpm(data, destinationDirectory);
+            extractUnixNpm(data, getNodeInstallDirectory());
         }
 
         deleteTempDirectory(data.getTmpDirectory());
@@ -315,7 +317,8 @@ public class NodeInstaller {
         File tmpNodeModulesDir = new File(data.getTmpDirectory(),
                 data.getNodeFilename() + File.separator + "lib" + File.separator
                         + FrontendUtils.NODE_MODULES);
-        File nodeModulesDirectory = new File(destinationDirectory,
+        File nodeModulesDirectory = new File(
+                destinationDirectory + File.separator + "lib",
                 FrontendUtils.NODE_MODULES);
         File npmDirectory = new File(nodeModulesDirectory, "npm");
 
@@ -323,6 +326,13 @@ public class NodeInstaller {
         // combination of two npm versions in node_modules/npm during upgrade
         if (nodeModulesDirectory.exists()) {
             FileUtils.deleteDirectory(nodeModulesDirectory);
+        }
+        // delete old/windows type node_modules so it is not messing
+        // up the installation
+        final File oldNodeModulesDirectory = new File(destinationDirectory
+                + File.separator + FrontendUtils.NODE_MODULES);
+        if (oldNodeModulesDirectory.exists()) {
+            FileUtils.deleteDirectory(oldNodeModulesDirectory);
         }
 
         FileUtils.copyDirectory(tmpNodeModulesDir, nodeModulesDirectory);
@@ -398,11 +408,15 @@ public class NodeInstaller {
     }
 
     public String getInstallDirectory() {
-        return new File(installDirectory, INSTALL_PATH).getPath();
+        return getInstallDirectoryFile().getPath();
+    }
+
+    private File getInstallDirectoryFile() {
+        return new File(installDirectory, INSTALL_PATH);
     }
 
     private File getNodeInstallDirectory() {
-        File nodeInstallDirectory = new File(installDirectory, INSTALL_PATH);
+        File nodeInstallDirectory = getInstallDirectoryFile();
         if (!nodeInstallDirectory.exists()) {
             getLogger().debug("Creating install directory {}",
                     nodeInstallDirectory);
@@ -412,6 +426,34 @@ public class NodeInstaller {
             }
         }
         return nodeInstallDirectory;
+    }
+
+    private File getNodeBinaryInstallDirectory() {
+        File nodeInstallDirectory = new File(getInstallDirectoryFile(), "bin");
+        if (!nodeInstallDirectory.exists()) {
+            getLogger().debug("Creating install directory {}",
+                    nodeInstallDirectory);
+            boolean success = nodeInstallDirectory.mkdirs();
+            if (!success) {
+                getLogger().debug("Failed to create install directory");
+            }
+        }
+        return nodeInstallDirectory;
+    }
+
+    private void createSymbolicLinkToBinary(File destination,
+            String nodeExecutable) throws InstallationException, IOException {
+        final File symLink = new File(getInstallDirectory(), nodeExecutable);
+        if (symLink.exists()) {
+            FileUtils.delete(symLink);
+        }
+        try {
+            Files.createSymbolicLink(symLink.toPath(), destination.toPath());
+        } catch (IOException e) {
+            throw new InstallationException(String.format(
+                    "Could not install Node: Was not allowed to create symbolic link %s for %s",
+                    symLink, destination), e);
+        }
     }
 
     private void deleteTempDirectory(File tmpDirectory) throws IOException {

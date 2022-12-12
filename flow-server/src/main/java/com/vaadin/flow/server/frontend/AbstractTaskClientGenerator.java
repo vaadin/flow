@@ -17,6 +17,7 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -66,10 +67,7 @@ public abstract class AbstractTaskClientGenerator implements FallibleCommand {
         File generatedFile = getGeneratedFile();
         try {
             String fileContent = getFileContent();
-            log().debug("writing file '{}'", generatedFile);
-
-            FileUtils.forceMkdirParent(generatedFile);
-            FileUtils.writeStringToFile(generatedFile, fileContent, UTF_8);
+            writeIfChanged(generatedFile, fileContent);
         } catch (IOException exception) {
             String errorMessage = String.format("Error writing '%s'",
                     generatedFile);
@@ -77,7 +75,40 @@ public abstract class AbstractTaskClientGenerator implements FallibleCommand {
         }
     }
 
-    Logger log() {
-        return LoggerFactory.getLogger(getClass());
+    static Logger log() {
+        return LoggerFactory.getLogger(AbstractTaskClientGenerator.class);
+    }
+
+    /**
+     * Writes the given content into the given file unless the file already
+     * contains that content.
+     *
+     * @param file
+     *            the file to write to
+     * @param content
+     *            the content to write
+     * @return true if the string was written to the file, false otherwise
+     */
+    static boolean writeIfChanged(File file, String content)
+            throws IOException {
+        String existingFileContent = getExistingFileContent(file);
+        if (content.equals(existingFileContent)) {
+            // Do not write the same contents to avoid frontend recompiles
+            return false;
+        }
+
+        log().debug("writing file '{}'", file);
+
+        FileUtils.forceMkdirParent(file);
+        FileUtils.writeStringToFile(file, content, UTF_8);
+        return true;
+    }
+
+    private static String getExistingFileContent(File generatedFile)
+            throws IOException {
+        if (!generatedFile.exists()) {
+            return null;
+        }
+        return FileUtils.readFileToString(generatedFile, UTF_8);
     }
 }

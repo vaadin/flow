@@ -1,6 +1,7 @@
 package com.vaadin.viteapp.views.empty;
 
 import com.vaadin.flow.component.HtmlComponent;
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
@@ -13,9 +14,11 @@ import com.vaadin.flow.router.Route;
 @JsModule("@testscope/button")
 @JsModule("@testscope/map")
 @JsModule("./lit-invalid-imports.ts")
+@CssImport("./image.css")
 public class MainView extends Div {
 
     public static final String PLANT = "plant";
+    public static final String HIDEPLANT = "hideplant";
 
     public MainView() {
         Image img = new Image("themes/vite-production/images/plant.png",
@@ -30,6 +33,7 @@ public class MainView extends Div {
         NativeButton button = new NativeButton("Show/hide plant", e -> {
             img.setVisible(!img.isVisible());
         });
+        button.setId(HIDEPLANT);
         add(button);
         setSizeFull();
         getStyle().set("text-align", "center");

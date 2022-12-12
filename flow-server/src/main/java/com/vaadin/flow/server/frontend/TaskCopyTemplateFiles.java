@@ -44,11 +44,14 @@ public class TaskCopyTemplateFiles implements FallibleCommand {
     private final File projectDirectory;
     private final File resourceOutputDirectory;
 
+    private final File frontendDirectory;
+
     TaskCopyTemplateFiles(ClassFinder classFinder, File projectDirectory,
-            File resourceOutputDirectory) {
+            File resourceOutputDirectory, File frontendDirectory) {
         this.classFinder = classFinder;
         this.projectDirectory = projectDirectory;
         this.resourceOutputDirectory = resourceOutputDirectory;
+        this.frontendDirectory = frontendDirectory;
     }
 
     @Override
@@ -67,8 +70,8 @@ public class TaskCopyTemplateFiles implements FallibleCommand {
             for (Annotation jsmAnnotation : clazz
                     .getAnnotationsByType(jsModuleAnnotationClass)) {
                 String path = getJsModuleAnnotationValue(jsmAnnotation);
-                File source = FrontendUtils
-                        .resolveFrontendPath(projectDirectory, path);
+                File source = FrontendUtils.resolveFrontendPath(
+                        projectDirectory, path, this.frontendDirectory);
                 if (source == null) {
                     throw new ExecutionFailedException(
                             "Unable to locate file " + path);

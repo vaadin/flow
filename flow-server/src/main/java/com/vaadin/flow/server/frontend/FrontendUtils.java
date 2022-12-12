@@ -698,7 +698,7 @@ public class FrontendUtils {
     }
 
     /**
-     * Looks up the front file at the given path. If the path starts with
+     * Looks up the frontend resource at the given path. If the path starts with
      * {@code ./}, first look in {@code projectRoot/frontend}, then in
      * {@code projectRoot/node_modules/@vaadin/flow-frontend}. If the path does
      * not start with {@code ./}, look in {@code node_modules} instead.
@@ -710,14 +710,32 @@ public class FrontendUtils {
      * @return an existing {@link File} , or null if the file doesn't exist.
      */
     public static File resolveFrontendPath(File projectRoot, String path) {
-        File localFrontendFolder = new File(projectRoot,
-                FrontendUtils.FRONTEND);
+        return resolveFrontendPath(projectRoot, path,
+                new File(projectRoot, FrontendUtils.FRONTEND));
+    }
+
+    /**
+     * Looks up the fronted resource at the given path. If the path starts with
+     * {@code ./}, first look in {@code projectRoot/frontendDirectory}, then in
+     * {@code projectRoot/node_modules/@vaadin/flow-frontend}. If the path does
+     * not start with {@code ./}, look in {@code node_modules} instead.
+     *
+     * @param projectRoot
+     *            the project root folder.
+     * @param path
+     *            the file path.
+     * @param frontendDirectory
+     *            the frontend directory.
+     * @return an existing {@link File} , or null if the file doesn't exist.
+     */
+    public static File resolveFrontendPath(File projectRoot, String path,
+            File frontendDirectory) {
         File nodeModulesFolder = new File(projectRoot, NODE_MODULES);
         File flowFrontendFolder = new File(nodeModulesFolder,
                 "@vaadin/" + DEFAULT_FLOW_RESOURCES_FOLDER);
         List<File> candidateParents = path.startsWith("./")
-                ? Arrays.asList(localFrontendFolder, flowFrontendFolder)
-                : Arrays.asList(nodeModulesFolder, localFrontendFolder,
+                ? Arrays.asList(frontendDirectory, flowFrontendFolder)
+                : Arrays.asList(nodeModulesFolder, frontendDirectory,
                         flowFrontendFolder);
         return candidateParents.stream().map(parent -> new File(parent, path))
                 .filter(File::exists).findFirst().orElse(null);
@@ -995,6 +1013,23 @@ public class FrontendUtils {
         }
 
         /**
+         * Constructs an exception telling what code the command execution
+         * process was exited with and the output that it produced.
+         *
+         * @param processExitCode
+         *            process exit code
+         * @param output
+         *            the output from the command
+         * @param errorOutput
+         *            the error output from the command
+         */
+        public CommandExecutionException(int processExitCode, String output,
+                String errorOutput) {
+            super("Process execution failed with exit code " + processExitCode
+                    + "\nOutput: " + output + "\nError output: " + errorOutput);
+        }
+
+        /**
          * Constructs an exception telling what was the original exception the
          * command execution process failed with.
          *
@@ -1043,7 +1078,9 @@ public class FrontendUtils {
                     .start();
             int exitCode = process.waitFor();
             if (exitCode != 0) {
-                throw new CommandExecutionException(exitCode);
+                throw new CommandExecutionException(exitCode,
+                        streamToString(process.getInputStream()),
+                        streamToString(process.getErrorStream()));
             }
             return streamToString(process.getInputStream());
         } catch (IOException | InterruptedException e) {

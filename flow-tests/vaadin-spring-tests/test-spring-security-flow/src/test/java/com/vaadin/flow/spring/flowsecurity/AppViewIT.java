@@ -19,6 +19,7 @@ import org.junit.Test;
 
 public class AppViewIT extends AbstractIT {
 
+    private static final String LOGIN_PATH = "my/login/page";
     private static final String USER_FULLNAME = "John the User";
     private static final String ADMIN_FULLNAME = "Emma the Admin";
 
@@ -48,7 +49,7 @@ public class AppViewIT extends AbstractIT {
 
     @Test
     public void menu_correct_for_user() {
-        open("login");
+        open(LOGIN_PATH);
         loginUser();
         List<MenuItem> menuItems = getMenuItems();
         List<MenuItem> expectedItems = new ArrayList<MenuItem>();
@@ -60,7 +61,7 @@ public class AppViewIT extends AbstractIT {
 
     @Test
     public void menu_correct_for_admin() {
-        open("login");
+        open(LOGIN_PATH);
         loginAdmin();
         List<MenuItem> menuItems = getMenuItems();
         List<MenuItem> expectedItems = new ArrayList<MenuItem>();
@@ -99,7 +100,7 @@ public class AppViewIT extends AbstractIT {
     @Test
     public void redirect_to_private_view_after_login() {
         open("private");
-        assertPathShown("login");
+        assertPathShown(LOGIN_PATH);
         loginUser();
         assertPrivatePageShown(USER_FULLNAME);
     }
@@ -108,7 +109,7 @@ public class AppViewIT extends AbstractIT {
     public void redirect_to_private_view_after_navigation_and_login() {
         open("");
         navigateTo("private", false);
-        assertPathShown("login");
+        assertPathShown(LOGIN_PATH);
         loginUser();
         assertPrivatePageShown(USER_FULLNAME);
     }
@@ -116,14 +117,14 @@ public class AppViewIT extends AbstractIT {
     @Test
     public void redirect_to_admin_view_after_login() {
         open("admin");
-        assertPathShown("login");
+        assertPathShown(LOGIN_PATH);
         loginAdmin();
         assertAdminPageShown(ADMIN_FULLNAME);
     }
 
     @Test
     public void private_page_logout_should_redirect_to_root() {
-        open("login");
+        open(LOGIN_PATH);
         loginUser();
         navigateTo("private");
         clickLogout();
@@ -132,7 +133,7 @@ public class AppViewIT extends AbstractIT {
 
     @Test
     public void logout_redirects_to_root_page() {
-        open("login");
+        open(LOGIN_PATH);
         loginUser();
         navigateTo("private");
         assertPrivatePageShown(USER_FULLNAME);
@@ -219,7 +220,7 @@ public class AppViewIT extends AbstractIT {
         String shouldBeTextFile = getDriver().getPageSource();
         Assert.assertTrue(
                 shouldBeTextFile.contains("Public document for all users"));
-        open("login");
+        open(LOGIN_PATH);
         loginUser();
         openResource("public/public.txt");
         shouldBeTextFile = getDriver().getPageSource();
@@ -261,7 +262,7 @@ public class AppViewIT extends AbstractIT {
 
     @Test
     public void navigate_in_thread_with_access() {
-        open("login");
+        open(LOGIN_PATH);
         loginAdmin();
         $(ButtonElement.class).id(PublicView.BACKGROUND_NAVIGATION_ID).click();
 

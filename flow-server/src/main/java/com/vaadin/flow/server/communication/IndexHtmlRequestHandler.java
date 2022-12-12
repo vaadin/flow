@@ -105,6 +105,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         configureErrorDialogStyles(indexDocument);
 
+        configureHiddenElementStyles(indexDocument);
+
         showDevServerErrors(session.getService(), indexDocument);
         response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF_8);
 
@@ -291,6 +293,12 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         Element styles = document.createElement("style");
         document.head().appendChild(styles);
         setupErrorDialogs(styles);
+    }
+
+    private void configureHiddenElementStyles(Document document) {
+        Element styles = document.createElement("style");
+        document.head().appendChild(styles);
+        setupHiddenElement(styles);
     }
 
     private static void prependBaseHref(VaadinRequest request,

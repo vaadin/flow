@@ -43,7 +43,6 @@ public class NpmOnlyIndexIT extends ChromeBrowserTest {
         TestBenchElement webComponent = $("themed-web-component").first();
 
         List<TestBenchElement> styles = webComponent.$("style").all();
-        System.out.println(styles.size());
 
         // getAttribute wouldn't work, so we are counting the elements
         Assert.assertEquals(2, styles.size());

@@ -44,6 +44,16 @@ public class ProductionBasicsIT extends ChromeBrowserTest {
     }
 
     @Test
+    public void imageCanBeHidden() {
+        getDriver().get(getRootURL());
+        waitForDevServer();
+        TestBenchElement img = $("img").id(MainView.PLANT);
+        TestBenchElement button = $("button").id(MainView.HIDEPLANT);
+        button.click();
+        Assert.assertEquals("none", img.getCssValue("display"));
+    }
+
+    @Test
     public void applicationHasThemeAndAssets() {
         getDriver().get(getRootURL());
         waitForDevServer();

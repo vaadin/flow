@@ -3,7 +3,7 @@
     "sourceMap": true,
     "inlineSources": true,
     "module": "esNext",
-    "target": "es2019",
+    "target": "es2020",
     "moduleResolution": "node",
     "strict": true,
     "noFallthroughCasesInSwitch": true,

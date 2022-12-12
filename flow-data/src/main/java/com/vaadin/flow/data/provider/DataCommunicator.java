@@ -75,6 +75,7 @@ public class DataCommunicator<T> implements Serializable {
 
     private static final int DEFAULT_PAGE_SIZE = 50;
     private static final int MAXIMUM_ALLOWED_PAGES = 10;
+    private static final int MAXIMUM_ALLOWED_ITEMS_LOWER_LIMIT = 500;
 
     private final DataGenerator<T> dataGenerator;
     private final ArrayUpdater arrayUpdater;
@@ -1095,6 +1096,14 @@ public class DataCommunicator<T> implements Serializable {
     private void requestFlush(boolean forced) {
         if ((flushRequest == null || !flushRequest.canExecute(stateNode)
                 || forced) && fetchEnabled) {
+            if (flushRequest != null) {
+                // this cancels the previous request pushed into the queue,
+                // because a new one is going to be registered forcibly to cover
+                // @PreserveOnRefresh cases. Otherwise two flush requests in the
+                // pending queue may lead to a infinite loop, generating more
+                // and more new requests.
+                flushRequest.setCancelled();
+            }
             flushRequest = FlushRequest.register(stateNode, context -> {
                 if (!context.isClientSideInitialized()) {
                     reset();
@@ -1109,6 +1118,14 @@ public class DataCommunicator<T> implements Serializable {
     private void requestFlushUpdatedData() {
         if (flushUpdatedDataRequest == null
                 || !flushUpdatedDataRequest.canExecute(stateNode)) {
+            if (flushUpdatedDataRequest != null) {
+                // this cancels the previous request pushed into the queue,
+                // because a new one is going to be registered forcibly to cover
+                // @PreserveOnRefresh cases. Otherwise two flush requests in the
+                // pending queue may lead to a infinite loop, generating more
+                // and more new requests.
+                flushUpdatedDataRequest.setCancelled();
+            }
             flushUpdatedDataRequest = FlushRequest.register(stateNode,
                     context -> {
                         flushUpdatedData();
@@ -1304,11 +1321,17 @@ public class DataCommunicator<T> implements Serializable {
             update.commit(updateId);
 
             // Finally clear any passivated items that have now been confirmed
-            oldActive.removeAll(activeKeyOrder);
-            if (!oldActive.isEmpty()) {
-                passivatedByUpdate.put(Integer.valueOf(updateId), oldActive);
+            Set<String> passivatedKeys = getPassivatedKeys(oldActive);
+            if (!passivatedKeys.isEmpty()) {
+                passivatedByUpdate.put(Integer.valueOf(updateId),
+                        passivatedKeys);
             }
         }
+    }
+
+    protected Set<String> getPassivatedKeys(Set<String> oldActive) {
+        oldActive.removeAll(activeKeyOrder);
+        return oldActive;
     }
 
     private boolean collectChangesToSend(final Range previousActive,
@@ -1442,7 +1465,8 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     private int getMaximumAllowedItems() {
-        return MAXIMUM_ALLOWED_PAGES * pageSize;
+        return Math.max(MAXIMUM_ALLOWED_ITEMS_LOWER_LIMIT,
+                MAXIMUM_ALLOWED_PAGES * pageSize);
     }
 
     private UI getUI() {
@@ -1478,6 +1502,7 @@ public class DataCommunicator<T> implements Serializable {
     private static class FlushRequest implements Serializable {
 
         private NodeOwner owner;
+        private boolean cancelled;
 
         static FlushRequest register(StateNode stateNode,
                 SerializableConsumer<ExecutionContext> action) {
@@ -1485,14 +1510,20 @@ public class DataCommunicator<T> implements Serializable {
             request.owner = stateNode.getOwner();
             stateNode.runWhenAttached(ui -> {
                 request.owner = stateNode.getOwner();
-                ui.getInternals().getStateTree().beforeClientResponse(stateNode,
-                        action);
+                if (!request.cancelled) {
+                    ui.getInternals().getStateTree()
+                            .beforeClientResponse(stateNode, action);
+                }
             });
             return request;
         }
 
         boolean canExecute(StateNode stateNode) {
             return owner instanceof NullOwner || owner == stateNode.getOwner();
+        }
+
+        void setCancelled() {
+            cancelled = true;
         }
     }
 

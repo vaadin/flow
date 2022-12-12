@@ -184,6 +184,11 @@ public class VaadinServlet extends HttpServlet {
                     return;
                 }
                 mappings.addAll(urlPatterns);
+                if (mappings.size() > 1) {
+                    // Avoid using /VAADIN/* as that is a mapping to handle
+                    // static files
+                    mappings.remove("/VAADIN/*");
+                }
                 Collections.sort(mappings);
                 frontendMapping = mappings.get(0);
                 getLogger().debug("Using mapping " + frontendMapping

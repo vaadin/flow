@@ -44,6 +44,7 @@ import org.codehaus.plexus.util.ReflectionUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -563,6 +564,7 @@ public class BuildFrontendMojoTest {
         Assert.assertTrue(endpointClientApi.exists());
     }
 
+    @Ignore("Vite is not supported when deprecatedV14Bootstrapping is used")
     @Test
     public void mavenGoal_notGenerateOpenApiJson_when_usingDeprecatedV14Bootstrapping()
             throws Exception {

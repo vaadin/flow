@@ -1,5 +1,7 @@
 package com.vaadin.flow.server.auth;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.lang.reflect.Field;
 import java.security.Principal;
 import java.util.ArrayList;
@@ -7,8 +9,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -34,24 +38,19 @@ import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.auth.AccessControlTestClasses.AnonymousAllowedView;
 import com.vaadin.flow.server.auth.AccessControlTestClasses.DenyAllView;
+import com.vaadin.flow.server.auth.AccessControlTestClasses.NoAnnotationAnonymousAllowedByGrandParentView;
+import com.vaadin.flow.server.auth.AccessControlTestClasses.NoAnnotationAnonymousAllowedByParentView;
+import com.vaadin.flow.server.auth.AccessControlTestClasses.NoAnnotationDenyAllAsInterfacesIgnoredView;
+import com.vaadin.flow.server.auth.AccessControlTestClasses.NoAnnotationDenyAllByGrandParentView;
+import com.vaadin.flow.server.auth.AccessControlTestClasses.NoAnnotationPermitAllByGrandParentAsInterfacesIgnoredView;
+import com.vaadin.flow.server.auth.AccessControlTestClasses.NoAnnotationPermitAllByGrandParentView;
+import com.vaadin.flow.server.auth.AccessControlTestClasses.NoAnnotationRolesAllowedAdminByGrandParentView;
+import com.vaadin.flow.server.auth.AccessControlTestClasses.NoAnnotationRolesAllowedUserByGrandParentView;
 import com.vaadin.flow.server.auth.AccessControlTestClasses.NoAnnotationView;
 import com.vaadin.flow.server.auth.AccessControlTestClasses.PermitAllView;
 import com.vaadin.flow.server.auth.AccessControlTestClasses.RolesAllowedAdminView;
 import com.vaadin.flow.server.auth.AccessControlTestClasses.RolesAllowedUserView;
 import com.vaadin.flow.server.auth.AccessControlTestClasses.TestLoginView;
-import com.vaadin.flow.server.auth.AccessControlTestClasses.NoAnnotationAnonymousAllowedByParentView;
-import com.vaadin.flow.server.auth.AccessControlTestClasses.NoAnnotationAnonymousAllowedByGrandParentView;
-import com.vaadin.flow.server.auth.AccessControlTestClasses.NoAnnotationPermitAllByGrandParentView;
-import com.vaadin.flow.server.auth.AccessControlTestClasses.NoAnnotationDenyAllByGrandParentView;
-import com.vaadin.flow.server.auth.AccessControlTestClasses.NoAnnotationRolesAllowedUserByGrandParentView;
-import com.vaadin.flow.server.auth.AccessControlTestClasses.NoAnnotationRolesAllowedAdminByGrandParentView;
-import com.vaadin.flow.server.auth.AccessControlTestClasses.NoAnnotationDenyAllAsInterfacesIgnoredView;
-import com.vaadin.flow.server.auth.AccessControlTestClasses.NoAnnotationPermitAllByGrandParentAsInterfacesIgnoredView;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
 
 public class ViewAccessCheckerTest {
 
@@ -233,6 +232,11 @@ public class ViewAccessCheckerTest {
     public void redirectUrlStoredForAnonymousUsers() {
         Result result = checkAccess(RolesAllowedAdminView.class, null);
         Assert.assertFalse(result.wasTargetViewRendered());
+        Assert.assertEquals(
+                AccessAnnotationCheckerTest.REQUEST_URL
+                        + getRoute(RolesAllowedAdminView.class),
+                result.sessionAttributes.get(
+                        ViewAccessChecker.SESSION_STORED_REDIRECT_ABSOLUTE));
         Assert.assertEquals(getRoute(RolesAllowedAdminView.class),
                 result.sessionAttributes
                         .get(ViewAccessChecker.SESSION_STORED_REDIRECT));
@@ -245,6 +249,8 @@ public class ViewAccessCheckerTest {
         Assert.assertFalse(result.wasTargetViewRendered());
         Assert.assertNull(result.sessionAttributes
                 .get(ViewAccessChecker.SESSION_STORED_REDIRECT));
+        Assert.assertNull(result.sessionAttributes
+                .get(ViewAccessChecker.SESSION_STORED_REDIRECT_ABSOLUTE));
     }
 
     @Test
@@ -308,7 +314,7 @@ public class ViewAccessCheckerTest {
         viewAccessChecker.setLoginView("/log-in");
         Result result = checkAccess(RolesAllowedAdminView.class, null);
         Assert.assertFalse(result.wasTargetViewRendered());
-        Assert.assertEquals("/log-in", result.getRedirectUsingPageLocation());
+        Assert.assertEquals("/log-in", result.getExternalForwardUrl());
     }
 
     @Test
@@ -559,7 +565,6 @@ public class ViewAccessCheckerTest {
 
         public BeforeEnterEvent event;
         public Map<String, Object> sessionAttributes;
-        public String redirectUsingPageLocation;
 
         public Class<? extends Component> getReroutedTo() {
             if (!event.hasRerouteTarget()
@@ -594,10 +599,6 @@ public class ViewAccessCheckerTest {
             return event.getErrorParameter().getException().getClass();
         }
 
-        public String getRedirectUsingPageLocation() {
-            return redirectUsingPageLocation;
-        }
-
         public String getRerouteURL() {
             if (event.hasUnknownForward()) {
                 return event.getUnknownForward();
@@ -606,9 +607,18 @@ public class ViewAccessCheckerTest {
             }
         }
 
+        public String getExternalForwardUrl() {
+            if (event.hasExternalForwardUrl()) {
+                return event.getExternalForwardUrl();
+            } else {
+                return null;
+            }
+        }
+
         public boolean wasTargetViewRendered() {
             return getReroutedTo() == null && getForwardedTo() == null
-                    && getRerouteError() == null && getRerouteURL() == null;
+                    && getRerouteError() == null && getRerouteURL() == null
+                    && getExternalForwardUrl() == null;
         }
 
     }
@@ -654,12 +664,15 @@ public class ViewAccessCheckerTest {
         Mockito.when(vaadinServletRequest.getHttpServletRequest())
                 .thenReturn(httpServletRequest);
         Mockito.when(vaadinServletRequest.getUserPrincipal())
-                .thenAnswer(anasert -> httpServletRequest.getUserPrincipal());
+                .thenAnswer(answer -> httpServletRequest.getUserPrincipal());
+        Mockito.when(vaadinServletRequest.getSession())
+                .thenAnswer(answer -> httpServletRequest.getSession());
         Mockito.when(vaadinServletRequest.isUserInRole(Mockito.any()))
                 .thenAnswer(answer -> httpServletRequest
                         .isUserInRole(answer.getArgument(0)));
-        Mockito.when(vaadinServletRequest.getSession())
-                .thenAnswer(answer -> httpServletRequest.getSession());
+        Mockito.when(vaadinServletRequest.getRequestURL()).thenReturn(
+                new StringBuffer(AccessAnnotationCheckerTest.REQUEST_URL));
+
         CurrentInstance.set(VaadinRequest.class, vaadinServletRequest);
 
         Router router = Mockito.mock(Router.class);
@@ -725,11 +738,6 @@ public class ViewAccessCheckerTest {
         Result info = new Result();
         info.event = event;
         info.sessionAttributes = sessionAttributes;
-        Mockito.doAnswer(invocation -> {
-            info.redirectUsingPageLocation = (String) invocation
-                    .getArguments()[0];
-            return null;
-        }).when(page).setLocation(Mockito.anyString());
 
         return info;
     }

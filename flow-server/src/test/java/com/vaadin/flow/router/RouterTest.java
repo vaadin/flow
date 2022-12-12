@@ -409,7 +409,7 @@ public class RouterTest extends RoutingTestBase {
     public static class IntegerParameter extends Component
             implements HasUrlParameter<Integer> {
 
-        private static List<BeforeEvent> events = new ArrayList<>();
+        protected static List<BeforeEvent> events = new ArrayList<>();
 
         private static Integer param;
 
@@ -425,7 +425,7 @@ public class RouterTest extends RoutingTestBase {
     public static class LongParameter extends Component
             implements HasUrlParameter<Long> {
 
-        private static List<BeforeEvent> events = new ArrayList<>();
+        protected static List<BeforeEvent> events = new ArrayList<>();
 
         private static Long param;
 
@@ -441,7 +441,7 @@ public class RouterTest extends RoutingTestBase {
     public static class BooleanParameter extends Component
             implements HasUrlParameter<Boolean> {
 
-        private static List<BeforeEvent> events = new ArrayList<>();
+        protected static List<BeforeEvent> events = new ArrayList<>();
 
         private static Boolean param;
 
@@ -517,6 +517,21 @@ public class RouterTest extends RoutingTestBase {
     @Route(value = "child", layout = ParentWithTitle.class)
     @Tag(Tag.DIV)
     public static class ChildWithoutTitle extends Component {
+    }
+
+    @RoutePrefix("parent-with-dynamic-title")
+    @Tag(Tag.DIV)
+    public static class ParentWithDynamicTitle extends Component
+            implements RouterLayout, HasDynamicTitle {
+        @Override
+        public String getPageTitle() {
+            return DYNAMIC_TITLE;
+        }
+    }
+
+    @Route(value = "child2", layout = ParentWithDynamicTitle.class)
+    @Tag(Tag.DIV)
+    public static class ChildWithoutTitle2 extends Component {
     }
 
     @Route("navigation-target-with-dynamic-title")
@@ -1616,6 +1631,17 @@ public class RouterTest extends RoutingTestBase {
         }
     }
 
+    @Route("forwardtourl")
+    @Tag(Tag.DIV)
+    public static class RedirectToExternalUrl extends Component {
+        static AtomicInteger instancesCreated = new AtomicInteger(0);
+
+        public RedirectToExternalUrl() {
+            instancesCreated.incrementAndGet();
+        }
+
+    }
+
     @Override
     @Before
     public void init() throws NoSuchFieldException, SecurityException,
@@ -1691,6 +1717,17 @@ public class RouterTest extends RoutingTestBase {
                 NavigationTrigger.PROGRAMMATIC);
 
         Assert.assertEquals("", ui.getInternals().getTitle());
+    }
+
+    @Test
+    public void page_title_set_from_dynamic_title_in_parent()
+            throws InvalidRouteConfigurationException {
+        setNavigationTargets(ChildWithoutTitle2.class);
+
+        router.navigate(ui, new Location("parent-with-dynamic-title/child2"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals(DYNAMIC_TITLE, ui.getInternals().getTitle());
     }
 
     @Test
@@ -2219,13 +2256,16 @@ public class RouterTest extends RoutingTestBase {
 
         Assert.assertEquals("Expected event amount was wrong", 1,
                 RootParameter.events.size());
-        Assert.assertEquals("Parameter should be empty", "hello",
+        Assert.assertEquals("Parameter should match the one in url", "hello",
                 RootParameter.param);
     }
 
     @Test
     public void has_url_with_supported_parameters_navigation()
             throws InvalidRouteConfigurationException {
+        IntegerParameter.events.clear();
+        LongParameter.events.clear();
+        BooleanParameter.events.clear();
         setNavigationTargets(IntegerParameter.class, LongParameter.class,
                 BooleanParameter.class);
 
@@ -2233,22 +2273,50 @@ public class RouterTest extends RoutingTestBase {
                 NavigationTrigger.PROGRAMMATIC);
         Assert.assertEquals("Expected event amount was wrong", 1,
                 IntegerParameter.events.size());
-        Assert.assertEquals("Parameter should be empty", 5,
+        Assert.assertEquals("Parameter should match the one in url", 5,
                 IntegerParameter.param.intValue());
 
         router.navigate(ui, new Location("long/5"),
                 NavigationTrigger.PROGRAMMATIC);
         Assert.assertEquals("Expected event amount was wrong", 1,
                 LongParameter.events.size());
-        Assert.assertEquals("Parameter should be empty", 5,
+        Assert.assertEquals("Parameter should match the one in url", 5,
                 LongParameter.param.longValue());
 
         router.navigate(ui, new Location("boolean/true"),
                 NavigationTrigger.PROGRAMMATIC);
         Assert.assertEquals("Expected event amount was wrong", 1,
                 BooleanParameter.events.size());
-        Assert.assertEquals("Parameter should be empty", true,
+        Assert.assertEquals("Parameter should match the one in url", true,
                 BooleanParameter.param);
+    }
+
+    @Test
+    public void longParameter_deserialization()
+            throws InvalidRouteConfigurationException {
+        LongParameter.events.clear();
+        setNavigationTargets(LongParameter.class);
+
+        router.navigate(ui, new Location("long/+" + Long.MAX_VALUE),
+                NavigationTrigger.PROGRAMMATIC);
+        Assert.assertEquals("Expected event amount was wrong", 1,
+                LongParameter.events.size());
+        Assert.assertEquals("Parameter should accept long max with +",
+                Long.MAX_VALUE, LongParameter.param.longValue());
+
+        router.navigate(ui, new Location("long/" + Long.MIN_VALUE),
+                NavigationTrigger.PROGRAMMATIC);
+        Assert.assertEquals("Expected negative and positive event", 2,
+                LongParameter.events.size());
+        Assert.assertEquals("Parameter should accept long max with +",
+                Long.MIN_VALUE, LongParameter.param.longValue());
+
+        // Navigation will give a 404 not found if the deserialization fails.
+        Assert.assertEquals(404,
+                router.navigate(ui, new Location("long/9223372036854775817"),
+                        NavigationTrigger.PROGRAMMATIC));
+        Assert.assertEquals("No faulty event recorded", 2,
+                LongParameter.events.size());
     }
 
     @Test
@@ -3920,6 +3988,37 @@ public class RouterTest extends RoutingTestBase {
                 ForwardSetParameterView.afterNavigationInvoked);
         Assert.assertTrue("forwardTo ForwardSetParameterBackView failed",
                 ForwardSetParameterView.backBeforeEnterInvoked);
+    }
+
+    @Test
+    public void forwardToExternalUrl_preventsViewFromBeingCreated() {
+        setNavigationTargets(RedirectToExternalUrl.class);
+        ui.addBeforeEnterListener(
+                e -> e.forwardToUrl("https://external/enter"));
+
+        navigate("forwardtourl");
+
+        Assert.assertEquals(0, RedirectToExternalUrl.instancesCreated.get());
+    }
+
+    @Test
+    public void forwardToExternalUrl_forwardsToUrl() {
+        String externalForwardUrl = "https://external/enter";
+        setNavigationTargets(RedirectToExternalUrl.class);
+        ui.addBeforeEnterListener(e -> {
+            e.forwardToUrl(externalForwardUrl);
+        });
+
+        navigate("forwardtourl");
+        long historyInvocations = ui.getInternals()
+                .dumpPendingJavaScriptInvocations().stream()
+                .filter(js -> js.getInvocation().getExpression()
+                        .contains("window.open")
+                        && ((String) js.getInvocation().getParameters().get(0))
+                                .contains(externalForwardUrl))
+                .count();
+        assertEquals(1, historyInvocations);
+
     }
 
     private void assertWrongRouteParametersRedirect() {

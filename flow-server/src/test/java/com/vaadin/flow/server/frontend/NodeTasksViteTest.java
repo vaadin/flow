@@ -26,6 +26,8 @@ import java.nio.file.Paths;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
@@ -57,6 +59,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.VITE_GENERATED_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_CONFIG;
+import static com.vaadin.flow.server.frontend.installer.Platform.ALPINE_RELEASE_FILE_PATH;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -287,15 +290,30 @@ public class NodeTasksViteTest {
                 new DefaultClassFinder(this.getClass().getClassLoader()))
                 .when(mockedLookup).lookup(ClassFinder.class);
         Builder builder = new Builder(mockedLookup, new File(userDir), TARGET)
-                .enablePackagesUpdate(false).useV14Bootstrap(true)
-                .enableImportsUpdate(true).runNpmInstall(false)
-                .withEmbeddableWebComponents(false).useV14Bootstrap(false)
-                .withFlowResourcesFolder(
+                .enablePackagesUpdate(false).enableImportsUpdate(true)
+                .runNpmInstall(false).withEmbeddableWebComponents(false)
+                .useV14Bootstrap(false).withFlowResourcesFolder(
                         new File(userDir, TARGET + "flow-frontend"));
         builder.build().execute();
 
         Assert.assertTrue(new File(userDir, "tsconfig.json").exists());
         Assert.assertTrue(new File(userDir, "types.d.ts").exists());
+    }
+
+    @Test
+    public void should_failWithMessage_When_Vaadin14BootstrapModeAndViteAreUsed() {
+        Lookup mockedLookup = mock(Lookup.class);
+        Mockito.doReturn(
+                new DefaultClassFinder(this.getClass().getClassLoader()))
+                .when(mockedLookup).lookup(ClassFinder.class);
+        Builder builder = new Builder(mockedLookup, new File(userDir), TARGET)
+                .useV14Bootstrap(true);
+
+        IllegalStateException exception = Assert.assertThrows(
+                IllegalStateException.class, () -> builder.build().execute());
+        MatcherAssert.assertThat(exception.getMessage(),
+                CoreMatchers.containsString(
+                        "Vite build tool is not supported when 'useDeprecatedV14Bootstrapping' is used"));
     }
 
     @Test
@@ -312,6 +330,8 @@ public class NodeTasksViteTest {
                     .thenReturn(targetPath);
             paths.when(() -> Paths.get(new File(userDir).getPath(),
                     WEBPACK_CONFIG)).thenReturn(webpackConfigFilePath);
+            paths.when(() -> Paths.get(ALPINE_RELEASE_FILE_PATH))
+                    .thenReturn(Path.of(ALPINE_RELEASE_FILE_PATH));
 
             String content = "const merge = require('webpack-merge');\n"
                     + "const flowDefaults = require('./webpack.generated.js');\n"

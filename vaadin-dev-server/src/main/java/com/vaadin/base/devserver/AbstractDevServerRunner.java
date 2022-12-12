@@ -222,14 +222,19 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
             long ms = (System.nanoTime() - start) / 1000000;
             getLogger().info("Started {}. Time: {}ms", getServerName(), ms);
             Stats npmStats = TaskRunNpmInstall.getLastInstallStats();
-            DevModeUsageStatistics.collectEvent(
-                    StatisticsConstants.EVENT_PACKAGEMANAGER_INSTALL_TIME_PREFIX
-                            + npmStats.getPackageManager(),
-                    npmStats.getInstallTimeMs());
-            DevModeUsageStatistics.collectEvent(
-                    StatisticsConstants.EVENT_PACKAGEMANAGER_CLEANUP_TIME_PREFIX
-                            + npmStats.getPackageManager(),
-                    npmStats.getCleanupTimeMs());
+            if (npmStats.getInstallTimeMs() != 0) {
+                DevModeUsageStatistics.collectEvent(
+                        StatisticsConstants.EVENT_PACKAGEMANAGER_INSTALL_TIME_PREFIX
+                                + npmStats.getPackageManager(),
+                        npmStats.getInstallTimeMs());
+            }
+            if (npmStats.getCleanupTimeMs() != 0) {
+                DevModeUsageStatistics.collectEvent(
+                        StatisticsConstants.EVENT_PACKAGEMANAGER_CLEANUP_TIME_PREFIX
+                                + npmStats.getPackageManager(),
+                        npmStats.getCleanupTimeMs());
+            }
+
             DevModeUsageStatistics.collectEvent(
                     StatisticsConstants.EVENT_DEV_SERVER_START_PREFIX
                             + getServerName(),

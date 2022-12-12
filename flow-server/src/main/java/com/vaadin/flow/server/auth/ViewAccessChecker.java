@@ -21,6 +21,7 @@ import java.util.function.Function;
 import javax.annotation.security.DenyAll;
 import javax.annotation.security.PermitAll;
 import javax.annotation.security.RolesAllowed;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import com.vaadin.flow.component.Component;
@@ -43,6 +44,8 @@ public class ViewAccessChecker implements BeforeEnterListener {
 
     public static final String SESSION_STORED_REDIRECT = ViewAccessChecker.class
             .getName() + ".redirect";
+    public static final String SESSION_STORED_REDIRECT_ABSOLUTE = ViewAccessChecker.class
+            .getName() + ".redirectAbsolute";
     private final AccessAnnotationChecker accessAnnotationChecker;
     private Class<? extends Component> loginView;
     private String loginUrl;
@@ -173,8 +176,15 @@ public class ViewAccessChecker implements BeforeEnterListener {
                     ? ((VaadinServletRequest) request).getSession()
                     : null;
             if (session != null) {
-                session.setAttribute(SESSION_STORED_REDIRECT, beforeEnterEvent
-                        .getLocation().getPathWithQueryParameters());
+                VaadinServletRequest servletRequest = (VaadinServletRequest) request;
+                String servletHostAndPath = servletRequest.getRequestURL()
+                        .toString();
+                String viewPathAndParameters = beforeEnterEvent.getLocation()
+                        .getPathWithQueryParameters();
+                session.setAttribute(SESSION_STORED_REDIRECT,
+                        viewPathAndParameters);
+                session.setAttribute(SESSION_STORED_REDIRECT_ABSOLUTE,
+                        servletHostAndPath + viewPathAndParameters);
             } else {
                 if (request == null) {
                     getLogger().debug(
@@ -188,11 +198,10 @@ public class ViewAccessChecker implements BeforeEnterListener {
             if (loginView != null) {
                 beforeEnterEvent.forwardTo(loginView);
             } else {
-                // Prevent the view from being created
-                beforeEnterEvent.rerouteToError(NotFoundException.class);
-
                 if (loginUrl != null) {
-                    beforeEnterEvent.getUI().getPage().setLocation(loginUrl);
+                    beforeEnterEvent.forwardToUrl(loginUrl);
+                } else {
+                    beforeEnterEvent.rerouteToError(NotFoundException.class);
                 }
             }
         } else if (isProductionMode(beforeEnterEvent)) {

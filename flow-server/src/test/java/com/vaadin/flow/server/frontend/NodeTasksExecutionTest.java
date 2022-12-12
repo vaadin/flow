@@ -55,10 +55,10 @@ public class NodeTasksExecutionTest {
         // Make a builder that doesn't add any commands.
         NodeTasks.Builder builder = new NodeTasks.Builder(
                 Mockito.mock(Lookup.class), null, TARGET);
-        builder.useV14Bootstrap(true);
         builder.withProductionMode(false);
 
         if (DEV_SERVER_WEBPACK.equals(devServerImpl)) {
+            builder.useV14Bootstrap(true);
             builder.setJavaResourceFolder(temporaryFolder.getRoot());
             createFeatureFlagsFile(
                     "com.vaadin.experimental.webpackForFrontendBuild=true");

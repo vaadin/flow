@@ -33,7 +33,9 @@ public class FrontendStubs {
     public static final String VITE_SERVER = "node_modules/vite/bin/vite.js";
     public static final String VITE_TEST_OUT_FILE = "vite-out.test";
 
-    private static final String NPM_BIN_PATH = "node/node_modules/npm/bin";
+    private static final String NPM_BIN_PATH = System.getProperty("os.name")
+            .startsWith("Windows") ? "node/node_modules/npm/bin/"
+                    : "node/lib/node_modules/npm/bin/";
     private static final String NPM_CACHE_PATH_STUB = "cache";
 
     /**

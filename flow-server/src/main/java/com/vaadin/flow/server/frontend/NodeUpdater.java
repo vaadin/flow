@@ -102,6 +102,7 @@ public abstract class NodeUpdater implements FallibleCommand {
     protected static final String POLYMER_VERSION = "3.5.1";
 
     static final String VAADIN_VERSION = "vaadinVersion";
+    static final String PROJECT_FOLDER = "projectFolder";
 
     /**
      * Base directory for {@link Constants#PACKAGE_JSON},
@@ -393,7 +394,7 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         defaults.put("@polymer/polymer", POLYMER_VERSION);
 
-        defaults.put("lit", "2.3.0");
+        defaults.put("lit", "2.3.1");
 
         // Constructable style sheets is only implemented for chrome,
         // polyfill needed for FireFox et.al. at the moment
@@ -426,7 +427,7 @@ public abstract class NodeUpdater implements FallibleCommand {
             defaults.put("extract-loader", "5.1.0");
             defaults.put("lit-css-loader", "0.1.0");
             defaults.put("file-loader", "6.2.0");
-            defaults.put("loader-utils", "2.0.0");
+            defaults.put("loader-utils", "2.0.4");
             defaults.put("workbox-webpack-plugin", WORKBOX_VERSION);
 
             // Forcing chokidar version for now until new babel version is
@@ -451,6 +452,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         defaults.put("workbox-precaching", WORKBOX_VERSION);
         defaults.put("glob", "7.2.3");
         defaults.put("async", "3.2.2");
+        defaults.put("strip-css-comments", "5.0.0");
 
         return defaults;
     }
@@ -515,9 +517,9 @@ public abstract class NodeUpdater implements FallibleCommand {
 
     private boolean isNewerVersion(JsonObject json, String pkg,
             String version) {
-        FrontendVersion newVersion = new FrontendVersion(version);
 
         try {
+            FrontendVersion newVersion = new FrontendVersion(version);
             FrontendVersion existingVersion = toVersion(json, pkg);
             return newVersion.isNewerThan(existingVersion);
         } catch (NumberFormatException e) {
@@ -539,9 +541,10 @@ public abstract class NodeUpdater implements FallibleCommand {
     private int handleExistingVaadinDep(JsonObject json, String pkg,
             String version, JsonObject vaadinDeps) {
         boolean added = false;
-        FrontendVersion vaadinVersion = toVersion(vaadinDeps, pkg);
-        if (json.hasKey(pkg)) {
-            try {
+        boolean updatedVaadinVersionSection = false;
+        try {
+            FrontendVersion vaadinVersion = toVersion(vaadinDeps, pkg);
+            if (json.hasKey(pkg)) {
                 FrontendVersion packageVersion = toVersion(json, pkg);
                 FrontendVersion newVersion = new FrontendVersion(version);
                 // Vaadin and package.json versions are the same, but dependency
@@ -557,25 +560,28 @@ public abstract class NodeUpdater implements FallibleCommand {
                     json.put(pkg, version);
                     added = true;
                 }
-            } catch (NumberFormatException e) { // NOSONAR
-                /*
-                 * If the current version is not parseable, it can refer to a
-                 * file and we should leave it alone
-                 */
+            } else {
+                json.put(pkg, version);
+                added = true;
             }
-        } else {
-            json.put(pkg, version);
-            added = true;
+        } catch (NumberFormatException e) { // NOSONAR
+            /*
+             * If the current version is not parseable, it can refer to a file
+             * and we should leave it alone
+             */
         }
         // always update vaadin version to the latest set version
-        vaadinDeps.put(pkg, version);
+        if (!version.equals(vaadinDeps.getString(pkg))) {
+            vaadinDeps.put(pkg, version);
+            updatedVaadinVersionSection = true;
+        }
 
         if (added) {
             log().debug("Added \"{}\": \"{}\" line.", pkg, version);
         } else {
             // we made a change to the package json vaadin defaults
             // even if we didn't add to the dependencies.
-            added = !vaadinVersion.isEqualTo(new FrontendVersion(version));
+            added = updatedVaadinVersionSection;
         }
         return added ? 1 : 0;
     }
@@ -639,12 +645,14 @@ public abstract class NodeUpdater implements FallibleCommand {
      * @throws IOException
      *             when file IO fails
      */
-    protected String generateVersionsJson() throws IOException {
+    protected String generateVersionsJson(JsonObject packageJson)
+            throws IOException {
         File versions = new File(generatedFolder, "versions.json");
 
         JsonObject versionsJson = getPlatformPinnedDependencies();
-        JsonObject packageJsonVersions = generateVersionsFromPackageJson();
-        if (versionsJson == null) {
+        JsonObject packageJsonVersions = generateVersionsFromPackageJson(
+                packageJson);
+        if (versionsJson.keys().length == 0) {
             versionsJson = packageJsonVersions;
         } else {
             for (String key : packageJsonVersions.keys()) {
@@ -673,10 +681,10 @@ public abstract class NodeUpdater implements FallibleCommand {
      * @throws IOException
      *             If reading package.json fails
      */
-    private JsonObject generateVersionsFromPackageJson() throws IOException {
+    private JsonObject generateVersionsFromPackageJson(JsonObject packageJson)
+            throws IOException {
         JsonObject versionsJson = Json.createObject();
         // if we don't have versionsJson lock package dependency versions.
-        final JsonObject packageJson = getPackageJson();
         final JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
         final JsonObject devDependencies = packageJson
                 .getObject(DEV_DEPENDENCIES);

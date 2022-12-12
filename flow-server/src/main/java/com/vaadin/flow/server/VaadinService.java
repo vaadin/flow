@@ -2224,8 +2224,7 @@ public abstract class VaadinService implements Serializable {
         if (vaadinSession != null) {
             // mark Vaadin session as closed explicitly (opposite to closing as
             // a result of invalidated HTTP session)
-            vaadinSession.setAttribute(VaadinSession.CLOSE_SESSION_EXPLICITLY,
-                    true);
+            vaadinSession.sessionClosedExplicitly = true;
         }
         wrappedSession.removeAttribute(getSessionAttributeName());
 

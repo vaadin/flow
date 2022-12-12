@@ -23,8 +23,10 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
@@ -187,6 +189,13 @@ public abstract class AbstractNavigationStateRenderer
             // we don't want to navigate back to them ever so clear cache for
             // window.
             clearAllPreservedChains(ui);
+        }
+
+        // Set navigationTrigger to RELOAD if this is a refresh of a preserve
+        // view.
+        if (preserveOnRefreshTarget && !chain.isEmpty()) {
+            event = new NavigationEvent(event.getSource(), event.getLocation(),
+                    event.getUI(), NavigationTrigger.REFRESH);
         }
 
         // If the navigation is postponed, using BeforeLeaveEvent#postpone,
@@ -658,6 +667,9 @@ public abstract class AbstractNavigationStateRenderer
     protected Optional<Integer> handleTriggeredBeforeEvent(
             NavigationEvent event, BeforeEvent beforeEvent) {
 
+        if (beforeEvent.hasExternalForwardUrl()) {
+            return Optional.of(forwardToExternalUrl(event, beforeEvent));
+        }
         if (beforeEvent.hasForwardTarget()
                 && !isSameNavigationState(beforeEvent.getForwardTargetType(),
                         beforeEvent.getForwardTargetRouteParameters())) {
@@ -682,6 +694,14 @@ public abstract class AbstractNavigationStateRenderer
                 .equals(navigationState.getRouteParameters());
 
         return sameTarget && sameParameters;
+    }
+
+    private int forwardToExternalUrl(NavigationEvent event,
+            BeforeEvent beforeNavigation) {
+        event.getUI().getPage()
+                .setLocation(beforeNavigation.getExternalForwardUrl());
+
+        return HttpStatusCode.OK.getCode();
     }
 
     private int forward(NavigationEvent event, BeforeEvent beforeNavigation) {
@@ -870,14 +890,18 @@ public abstract class AbstractNavigationStateRenderer
 
     private static void updatePageTitle(NavigationEvent navigationEvent,
             Component routeTarget) {
-        String title;
 
-        if (routeTarget instanceof HasDynamicTitle) {
-            title = ((HasDynamicTitle) routeTarget).getPageTitle();
-        } else {
-            title = lookForTitleInTarget(routeTarget).map(PageTitle::value)
-                    .orElse("");
-        }
+        Supplier<String> lookForTitleInTarget = () -> lookForTitleInTarget(
+                routeTarget).map(PageTitle::value).orElse("");
+
+        // check for HasDynamicTitle in current router targets chain
+        String title = navigationEvent.getUI().getInternals()
+                .getActiveRouterTargetsChain().stream()
+                .filter(HasDynamicTitle.class::isInstance)
+                .map(tc -> ((HasDynamicTitle) tc).getPageTitle())
+                .filter(Objects::nonNull).findFirst()
+                .orElseGet(lookForTitleInTarget);
+
         navigationEvent.getUI().getPage().setTitle(title);
     }
 

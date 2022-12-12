@@ -73,7 +73,7 @@ public class ListAddChange<T extends Serializable>
      *
      * @return the added items
      */
-    public List<T> getNewItems() {
+    public List<? extends T> getNewItems() {
         return Collections.unmodifiableList(newItems);
     }
 
@@ -127,6 +127,21 @@ public class ListAddChange<T extends Serializable>
         JsonArray newItemsJson = newItems.stream().map(mapper)
                 .collect(JsonUtils.asArray());
         json.put(addKey, newItemsJson);
+    }
+
+    /**
+     * Removes item from the change list.
+     * <p>
+     * Note: This should be used only when list of changes is being re-indexed
+     * after adding a new change.
+     *
+     * @param item
+     *            Item to be removed.
+     */
+    public void removeItem(T item) {
+        assert (newItems.size() > 1)
+                : "Item list can't be empty after item removal";
+        newItems.remove(item);
     }
 
 }

@@ -57,6 +57,7 @@ public class AccessAnnotationCheckerTest {
             return "John Doe";
         }
     };
+    static final String REQUEST_URL = "http://localhost:8080/myapp/";
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
@@ -364,6 +365,8 @@ public class AccessAnnotationCheckerTest {
                 .thenAnswer(query -> {
                     return roleSet.contains(query.getArguments()[0]);
                 });
+        Mockito.when(request.getRequestURL())
+                .thenReturn(new StringBuffer(REQUEST_URL));
         return request;
     }
 

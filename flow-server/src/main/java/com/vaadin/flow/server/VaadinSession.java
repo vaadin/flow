@@ -78,8 +78,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     @Deprecated
     public static final String UI_PARAMETER = InitParameters.UI_PARAMETER;
 
-    static final String CLOSE_SESSION_EXPLICITLY = "vaadin.close-session."
-            + UUID.randomUUID().toString();
+    volatile boolean sessionClosedExplicitly = false;
 
     /**
      * Configuration for the session.
@@ -132,7 +131,11 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
 
     private final Attributes attributes = new Attributes();
 
-    private final StreamResourceRegistry resourceRegistry;
+    private transient StreamResourceRegistry resourceRegistry;
+
+    private long lastUnlocked;
+
+    private long lastLocked;
 
     /**
      * Creates a new VaadinSession tied to a VaadinService.
@@ -210,15 +213,10 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         // the latter case the session field should be set to {@code null}
         // immediately to avoid using HTTP session object which is invalid (all
         // methods throw exceptions).
-        lock();
-        try {
-            if (getAttribute(CLOSE_SESSION_EXPLICITLY) == null) {
-                session = null;
-            }
-            setAttribute(CLOSE_SESSION_EXPLICITLY, null);
-        } finally {
-            unlock();
+        if (!sessionClosedExplicitly) {
+            session = null;
         }
+        sessionClosedExplicitly = false;
     }
 
     /**
@@ -687,6 +685,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      */
     public void lock() {
         getLockInstance().lock();
+        lastLocked = System.currentTimeMillis();
     }
 
     /**
@@ -724,6 +723,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
                         }
                     }
                 }
+                this.lastUnlocked = System.currentTimeMillis();
             }
         } finally {
             getLockInstance().unlock();
@@ -1056,6 +1056,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         try {
             stream.defaultReadObject();
             uIs = (Map<Integer, UI>) stream.readObject();
+            resourceRegistry = (StreamResourceRegistry) stream.readObject();
             pendingAccessQueue = new ConcurrentLinkedQueue<>();
         } finally {
             CurrentInstance.restoreInstances(old);
@@ -1081,8 +1082,10 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         stream.defaultWriteObject();
         if (serializeUIs) {
             stream.writeObject(uIs);
+            stream.writeObject(resourceRegistry);
         } else {
             stream.writeObject(new HashMap<>());
+            stream.writeObject(new StreamResourceRegistry(this));
         }
     }
 
@@ -1132,4 +1135,29 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         return isInitialized;
     }
 
+    /**
+     * Gets the timestamp of the most recent lock operation performed on this
+     * session.
+     *
+     * Value is expressed as the difference, measured in milliseconds, between
+     * the current time and midnight, January 1, 1970 UTC.
+     *
+     * @return last lock operation timestamp.
+     */
+    public long getLastLocked() {
+        return lastLocked;
+    }
+
+    /**
+     * Gets the timestamp of the most recent unlock operation performed on this
+     * session.
+     *
+     * Value is expressed as the difference, measured in milliseconds, between
+     * the current time and midnight, January 1, 1970 UTC.
+     *
+     * @return last unlock operation timestamp.
+     */
+    public long getLastUnlocked() {
+        return lastUnlocked;
+    }
 }
