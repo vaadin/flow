@@ -69,8 +69,6 @@ jobs:
   unit-tests:
     needs: build
     timeout-minutes: 20
-    outputs:
-      failure: ${{steps.set-failure.outputs.failure}}
     strategy:
       fail-fast: false
       matrix: ${{fromJson(needs.build.outputs.matrix-unit)}}
@@ -122,10 +120,6 @@ jobs:
           cmd="mvn -B -ntp -T 1C $ARGS"
           set -x -e -o pipefail
           $cmd verify -Dmaven.javadoc.skip=false | tee mvn-unit-tests-${{matrix.current}}.out
-      - name: Set build status flag
-        id: set-failure
-        if: ${{ failure() || cancelled() }}
-        run: echo "failure=true" >> $GITHUB_OUTPUT
       - uses: actions/upload-artifact@v3
         if: ${{ failure() || success() }}
         with:
@@ -136,8 +130,6 @@ jobs:
   it-tests:
     needs: build
     timeout-minutes: 20
-    outputs:
-      failure: ${{steps.set-failure.outputs.failure}}
     strategy:
       fail-fast: false
       matrix: ${{fromJson(needs.build.outputs.matrix-it)}}
@@ -207,10 +199,6 @@ jobs:
           cmd="mvn -V -B -ntp -e -fae -Dcom.vaadin.testbench.Parameters.testsInParallel=5 -Dfailsafe.rerunFailingTestsCount=2 -Dmaven.wagon.httpconnectionManager.ttlSeconds=25 -Dmaven.wagon.http.retryHandler.count=3 $ARGS"
           set -x -e -o pipefail
           $cmd verify | tee -a mvn-it-tests-${{matrix.current}}.out
-      - name: Set build status flag
-        id: set-failure
-        if: ${{ failure() || cancelled() }}
-        run: echo "failure=true" >> $GITHUB_OUTPUT
       - uses: actions/upload-artifact@v3
         if: ${{ failure() || success() }}
         with:
@@ -221,7 +209,6 @@ jobs:
             mvn-*.out
   test-results:
     permissions:
-      # for EnricoMi/publish-unit-test-result-action
       issues: read
       checks: write
       pull-requests: write
@@ -261,6 +248,6 @@ jobs:
             mvn-*.out
       - name: Check Failure Status
         run: |
-          fail="${{ needs.unit-tests.outputs.failure }}${{ needs.it-tests.outputs.failure }}"
-          [ -n "$fail" ] && echo "::error::!! THERE ARE TEST MODULES WITH FAILURES !!" && exit 1 || exit 0
-
+          [ ${{needs.unit-tests.result}} != success -o ${{needs.it-tests.result}} != success ] \
+            && echo "🚫 THERE ARE TEST MODULES WITH FAILURES" | tee -a $GITHUB_STEP_SUMMARY \
+            && exit 1 || exit 0
