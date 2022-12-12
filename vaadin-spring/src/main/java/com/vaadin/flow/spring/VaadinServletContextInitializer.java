@@ -416,8 +416,7 @@ public class VaadinServletContextInitializer
             ApplicationConfiguration config = ApplicationConfiguration
                     .get(new VaadinServletContext(event.getServletContext()));
 
-            if (config == null || config.isProductionMode()
-                    || !config.enableDevServer()) {
+            if (config == null || config.isProductionMode()) {
                 return;
             }
 

@@ -147,6 +147,8 @@ public class VaadinServletContextInitializerTest {
         VaadinServletContextInitializer initializer = getStubbedVaadinServletContextInitializer();
         Runnable when = initRouteNotFoundMocksAndGetContextInitializedMockCall(
                 initializer);
+        Mockito.when(devModeHandlerManager.getHandlesTypes())
+                .thenReturn(new Class<?>[0]);
 
         class TestErrorView extends RouteNotFoundError {
         }
@@ -175,6 +177,8 @@ public class VaadinServletContextInitializerTest {
         VaadinServletContextInitializer initializer = getStubbedVaadinServletContextInitializer();
         Runnable when = initRouteNotFoundMocksAndGetContextInitializedMockCall(
                 initializer);
+        Mockito.when(devModeHandlerManager.getHandlesTypes())
+                .thenReturn(new Class<?>[0]);
 
         class TestErrorView extends Component
                 implements HasErrorParameter<NotFoundException> {

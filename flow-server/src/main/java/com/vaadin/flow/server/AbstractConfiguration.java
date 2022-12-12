@@ -45,6 +45,9 @@ public interface AbstractConfiguration extends Serializable {
      * @return true if dev server should be used
      */
     default boolean enableDevServer() {
+        if (isProductionMode()) {
+            return false;
+        }
         return getBooleanProperty(
                 InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER, true);
     }

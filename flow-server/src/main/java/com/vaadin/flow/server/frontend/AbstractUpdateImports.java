@@ -382,7 +382,10 @@ abstract class AbstractUpdateImports implements Runnable {
                     notFoundMessage(resourceNotFound, prefix, suffix));
         }
 
-        if (!npmNotFound.isEmpty() && getLogger().isInfoEnabled()) {
+        boolean devModeWithoutServer = !options.productionMode
+                && !options.isEnableDevServer() && !options.isDevBundleBuild();
+        if (!npmNotFound.isEmpty() && getLogger().isInfoEnabled()
+                && !devModeWithoutServer) {
             getLogger().info(notFoundMessage(npmNotFound,
                     "Failed to find the following imports in the `node_modules` tree:",
                     getImportsNotFoundMessage()));

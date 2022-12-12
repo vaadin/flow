@@ -71,9 +71,19 @@ public class TaskCopyTemplateFiles implements FallibleCommand {
                     throw new ExecutionFailedException(
                             "Unable to locate file " + path);
                 }
-                File templateDirectory = new File(
-                        options.resourceOutputDirectory,
-                        Constants.TEMPLATE_DIRECTORY);
+
+                File templateDirectory;
+                if (options.isDevBundleBuild()) {
+                    templateDirectory = new File(
+                            FrontendUtils
+                                    .getDevBundleFolder(options.getNpmFolder()),
+                            Constants.TEMPLATE_DIRECTORY);
+                } else {
+
+                    templateDirectory = new File(
+                            options.resourceOutputDirectory,
+                            Constants.TEMPLATE_DIRECTORY);
+                }
                 File target = new File(templateDirectory, path).getParentFile();
                 target.mkdirs();
                 try {

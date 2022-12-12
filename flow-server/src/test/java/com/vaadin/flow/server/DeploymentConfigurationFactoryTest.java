@@ -451,8 +451,6 @@ public class DeploymentConfigurationFactoryTest {
                 parameters.get(Constants.EXTERNAL_STATS_URL));
         Assert.assertEquals(Boolean.TRUE.toString(),
                 parameters.get(Constants.EXTERNAL_STATS_FILE));
-        Assert.assertEquals(Boolean.FALSE.toString(), parameters
-                .get(InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER));
     }
 
     @Test
@@ -468,8 +466,6 @@ public class DeploymentConfigurationFactoryTest {
 
         Assert.assertEquals(Boolean.TRUE.toString(),
                 parameters.get(Constants.EXTERNAL_STATS_FILE));
-        Assert.assertEquals(Boolean.FALSE.toString(), parameters
-                .get(InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER));
     }
 
     @Test
@@ -539,7 +535,7 @@ public class DeploymentConfigurationFactoryTest {
                 .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
 
         assertEquals(true, config.isProductionMode());
-        assertEquals(false, config.enableDevServer());
+        assertEquals(true, config.enableDevServer());
         assertEquals(true, config.isStatsExternal());
         assertEquals(Constants.DEFAULT_EXTERNAL_STATS_URL,
                 config.getExternalStatsUrl());

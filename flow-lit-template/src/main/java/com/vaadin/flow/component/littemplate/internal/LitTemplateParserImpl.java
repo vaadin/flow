@@ -15,9 +15,13 @@
  */
 package com.vaadin.flow.component.littemplate.internal;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -192,6 +196,21 @@ public class LitTemplateParserImpl implements LitTemplateParser {
                     + Constants.TEMPLATE_DIRECTORY;
             String resourceUrl = vaadinDirectory + pathWithoutPrefix;
             content = getResourceStream(service, resourceUrl);
+        }
+        if (content == null) {
+            // In express mode, template sources are stored in
+            // dev-bundle/config/templates
+            String pathWithoutPrefix = url.replaceFirst("^\\./", "");
+            Path subFolder = Path.of("dev-bundle", "config", "templates",
+                    pathWithoutPrefix);
+            File templateFile = new File(
+                    service.getDeploymentConfiguration().getProjectFolder(),
+                    subFolder.toString());
+            try {
+                content = new FileInputStream(templateFile);
+            } catch (FileNotFoundException e) {
+                // If it ain't there, it ain't there
+            }
         }
         if (content != null) {
             getLogger().debug(

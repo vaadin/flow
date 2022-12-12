@@ -117,9 +117,6 @@
                         </goals>
                     </execution>
                 </executions>
-                <configuration>
-                    <productionMode>true</productionMode>
-                </configuration>
             </plugin>
             <!-- unpack common tests to run it in the project -->
             <plugin>
