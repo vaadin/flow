@@ -122,6 +122,8 @@ public class Options implements Serializable {
 
     private FeatureFlags featureFlags;
 
+    private boolean enableDevServer = true;
+
     /**
      * Creates a new instance.
      *
@@ -555,10 +557,32 @@ public class Options implements Serializable {
     }
 
     /**
+     * Whether to run with a dev server (when not in production mode).
+     *
+     * @param enableDevServer
+     *            true to run with a dev server, false to run in express mode
+     * @return this builder
+     */
+    public Options withEnableDevServer(boolean enableDevServer) {
+        this.enableDevServer = enableDevServer;
+        return this;
+    }
+
+    /**
+     * Checks if running with a dev server (when not in production mode).
+     *
+     * @return true to run with a dev server, false to run in express mode
+     */
+    public boolean isEnableDevServer() {
+        return enableDevServer;
+    }
+
+    /**
      * Whether to run dev mode bundle build, useful when not using a dev server.
      *
      * @param devBundleBuild
      *            true to run a dev mode bundle build
+     * @return this builder
      */
     public Options withDevBundleBuild(boolean devBundleBuild) {
         this.devBundleBuild = devBundleBuild;

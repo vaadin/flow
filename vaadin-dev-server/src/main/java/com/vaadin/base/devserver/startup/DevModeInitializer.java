@@ -339,6 +339,7 @@ public class DevModeInitializer implements Serializable {
                 .withProductionMode(config.isProductionMode())
                 .withPostinstallPackages(
                         Arrays.asList(additionalPostinstallPackages))
+                .withEnableDevServer(config.enableDevServer())
                 .withDevBundleBuild(!config.isProductionMode()
                         && !config.enableDevServer());
         ;
