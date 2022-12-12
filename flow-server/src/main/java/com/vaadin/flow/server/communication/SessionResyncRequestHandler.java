@@ -25,7 +25,11 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
+
+import elemental.json.JsonObject;
+import elemental.json.impl.JsonUtil;
 
 /**
  * Processes a session resynchronize request from the client.
@@ -50,13 +54,18 @@ public class SessionResyncRequestHandler extends WebComponentBootstrapHandler {
         Class<? extends UI> uiClass = getUIClass(request);
         BootstrapContext context = createAndInitUI(uiClass, request, response,
                 session);
+
+        JsonObject json = new UidlWriter().createUidl(context.getUI(), true,
+                true);
+        json.put(ApplicationConstants.UI_ID, context.getUI().getUIId());
+        json.put(ApplicationConstants.UIDL_SECURITY_TOKEN_ID,
+                context.getUI().getCsrfToken());
+        String responseString = "for(;;);[" + JsonUtil.stringify(json) + "]";
+
         VaadinService service = request.getService();
         service.writeUncachedStringResponse(response,
-                JsonConstants.JSON_CONTENT_TYPE,
-                VaadinService.createSessionResyncJSON(true, context.getUI()));
-        // as this request is setting syncId = 0, we need to manually increment
-        // it for sake of next incoming requests.
-        context.getUI().getInternals().incrementServerId();
+                JsonConstants.JSON_CONTENT_TYPE, responseString);
+
         return true;
     }
 

@@ -85,7 +85,6 @@ import elemental.json.Json;
 import elemental.json.JsonException;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
-
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -1830,40 +1829,6 @@ public abstract class VaadinService implements Serializable {
         }
 
         meta.put(JsonConstants.META_SESSION_EXPIRED, true);
-        return wrapJsonForClient(json);
-    }
-
-    /**
-     * Creates the session resynchronization response JSON to be sent to the
-     * client.
-     *
-     * @param async
-     *            a boolean indicating whether the message is sent synchronously
-     *            or asynchronously.
-     * @param ui
-     *            {@link UI} instance that is used within current request
-     * @return the JSON with required properties for session resynchronization
-     */
-    public static String createSessionResyncJSON(boolean async, UI ui) {
-        JsonObject json = Json.createObject();
-        JsonObject meta = Json.createObject();
-        json.put("meta", meta);
-
-        if (async) {
-            meta.put(JsonConstants.META_ASYNC, true);
-        }
-
-        json.put(ApplicationConstants.SERVER_SYNC_ID,
-                ui.getInternals().getServerSyncId());
-        json.put(ApplicationConstants.UIDL_SECURITY_TOKEN_ID,
-                ui.getCsrfToken());
-        json.put(ApplicationConstants.RESYNCHRONIZE_ID, true);
-        int nextClientToServerMessageId = ui.getInternals()
-                .getLastProcessedClientToServerId() + 1;
-        json.put(ApplicationConstants.CLIENT_TO_SERVER_ID,
-                nextClientToServerMessageId);
-        json.put(ApplicationConstants.UI_ID, ui.getUIId());
-
         return wrapJsonForClient(json);
     }
 
