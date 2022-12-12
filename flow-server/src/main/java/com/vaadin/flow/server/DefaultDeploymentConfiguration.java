@@ -417,7 +417,7 @@ public class DefaultDeploymentConfiguration
             enableDevServer = false;
 
             if (log) {
-                info.add("Vaadin is running in a development mode using "
+                info.add("Vaadin is running in development mode using "
                         + "pre-compiled bundle (Express Build) and won't use "
                         + "the dev server since the corresponding feature flag"
                         + " is set.");
