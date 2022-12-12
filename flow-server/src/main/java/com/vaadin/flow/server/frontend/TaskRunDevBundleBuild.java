@@ -27,11 +27,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.shared.util.SharedUtil;
+
+import elemental.json.Json;
+import elemental.json.JsonObject;
 
 /**
  * Compiles the dev mode bundle if it is out of date.
@@ -85,7 +89,72 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
     private static boolean needsBuildInternal(File npmFolder)
             throws IOException {
 
-        return !new File(npmFolder, "dev-bundle").exists();
+        if (!FrontendUtils.getDevBundleFolder(npmFolder).exists()) {
+            return true;
+        }
+
+        String statsJsonContent = FrontendUtils.findBundleStatsJson(npmFolder);
+        if (statsJsonContent == null) {
+            return true;
+        }
+
+        File packageJsonFile = new File(npmFolder, "package.json");
+
+        String packageJsonHash = null;
+        String bundlePackageJsonHash = null;
+        JsonObject packageJson = null;
+
+        if (packageJsonFile.exists()) {
+            packageJson = Json.parse(FileUtils.readFileToString(packageJsonFile,
+                    StandardCharsets.UTF_8));
+            if (packageJson.hasKey("vaadin")
+                    && packageJson.getObject("vaadin").hasKey("hash")) {
+                packageJsonHash = packageJson.getObject("vaadin")
+                        .getString("hash");
+            }
+        }
+
+        JsonObject statsJson = Json.parse(statsJsonContent);
+        if (statsJson.hasKey("packageJsonHash")) {
+            bundlePackageJsonHash = statsJson.getString("packageJsonHash");
+        }
+
+        if (packageJsonHash != null && !packageJsonHash.isEmpty()) {
+            if (packageJsonHash.equals(bundlePackageJsonHash)) {
+                // Hash in the project matches the bundle hash. It must be ok to
+                // use the bundle
+                return false;
+            }
+        }
+
+        if (!hasAllNpmModules(statsJson, packageJson)) {
+            // The bundle (stats.json) does not include all packages listed in
+            // package.json
+            return true;
+        }
+        // getLogger().info(
+        // "The package.json file has changed since the bundle was built
+        // (package.json
+        // hash "
+        // + packageJsonHash + ", dev bundle hash "
+        // + bundlePackageJsonHash + ")");
+
+        return false;
+    }
+
+    private static boolean hasAllNpmModules(JsonObject statsJson,
+            JsonObject packageJson) {
+        JsonObject bundleNpmModules = statsJson.getObject("npmModules");
+        JsonObject dependencies = packageJson.getObject("dependencies");
+        for (String dependency : dependencies.keys()) {
+            if (!bundleNpmModules.hasKey(dependency)) {
+                getLogger().info("Dependency " + dependency
+                        + " is missing from the bundle");
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private static Logger getLogger() {

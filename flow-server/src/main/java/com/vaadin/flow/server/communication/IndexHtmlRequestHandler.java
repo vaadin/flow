@@ -343,14 +343,13 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             // When running without a frontend server, the index.html comes
             // directly from the frontend folder and the JS entrypoint(s) need
             // to be added
-            URL statsJsonUrl = FrontendUtils.findBundleFile(
-                    config.getProjectFolder(), "config/stats.json");
-            if (statsJsonUrl == null) {
+            String statsJson = FrontendUtils
+                    .findBundleStatsJson(config.getProjectFolder());
+
+            if (statsJson == null) {
                 throw new IllegalStateException(
                         "The application is running in express mode but there is no bundle found. There is no dev-bundle in the project or on the classpath nor is there a default bundle included");
             }
-            String statsJson = IOUtils.toString(statsJsonUrl,
-                    StandardCharsets.UTF_8);
             addBundleEntryPoints(indexHtmlDocument, config,
                     Json.parse(statsJson));
         }
