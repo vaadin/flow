@@ -160,8 +160,8 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     /**
      * Whether or not we are running in productionMode.
      */
-    @Parameter(defaultValue = "${vaadin.productionMode}")
-    private boolean productionMode;
+    @Parameter(defaultValue = "${null}")
+    protected Boolean productionMode;
 
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     MavenProject project;
@@ -397,12 +397,6 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     public boolean useGlobalPnpm() {
 
         return useGlobalPnpm;
-    }
-
-    @Override
-    public boolean productionMode() {
-
-        return productionMode;
     }
 
     @Override

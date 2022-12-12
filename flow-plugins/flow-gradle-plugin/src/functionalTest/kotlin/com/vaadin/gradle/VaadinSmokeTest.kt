@@ -83,44 +83,18 @@ class VaadinSmokeTest : AbstractGradleTest() {
     }
 
     @Test
-    fun `vaadinBuildFrontend can be run manually in development mode`() {
-        checkBuildFrontendInDevelopmentMode("*.br");
-    }
-
-    @Ignore("Webpack uses gzip compression")
-    @Test
-    fun `vaadinBuildFrontend can be run manually in development mode with WEBPACK`() {
-        checkBuildFrontendInDevelopmentMode("*.gz");
-    }
-
-    private fun checkBuildFrontendInDevelopmentMode(compressedExtension: String) {
-        val result: BuildResult = testProject.build("vaadinBuildFrontend")
-        // let's explicitly check that vaadinPrepareFrontend has been run.
-        result.expectTaskSucceded("vaadinPrepareFrontend")
-
-        val build = File(testProject.dir, "build/resources/main/META-INF/VAADIN/webapp/VAADIN/build")
-        expect(true, build.toString()) { build.exists() }
-        build.find(compressedExtension, 5..10)
-        build.find("*.js", 5..10)
-
-        val tokenFile = File(testProject.dir, "build/resources/main/META-INF/VAADIN/config/flow-build-info.json")
-        val buildInfo: JsonObject = JsonUtil.parse(tokenFile.readText())
-        expect(false, buildInfo.toJson()) { buildInfo.getBoolean(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE) }
-    }
-
-    @Test
     fun testBuildFrontendInProductionMode() {
-        checkBuildFrontendInInProductionMode();
+        checkBuildFrontendInProductionMode();
     }
 
 
     @Ignore("Webpack uses gzip compression")
     @Test
     fun testBuildFrontendInProductionModeWithWebpack() {
-        checkBuildFrontendInInProductionMode("*.gz");
+        checkBuildFrontendInProductionMode("*.gz");
     }
 
-    private fun checkBuildFrontendInInProductionMode(compressedExtension: String = "*.br") {
+    private fun checkBuildFrontendInProductionMode(compressedExtension: String = "*.br") {
         val result: BuildResult = testProject.build("-Pvaadin.productionMode", "vaadinBuildFrontend")
         // vaadinBuildFrontend depends on vaadinPrepareFrontend
         // let's explicitly check that vaadinPrepareFrontend has been run

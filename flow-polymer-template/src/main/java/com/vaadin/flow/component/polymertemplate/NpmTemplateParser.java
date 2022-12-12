@@ -8,15 +8,23 @@
  */
 package com.vaadin.flow.component.polymertemplate;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.IOUtils;
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -188,6 +196,21 @@ public class NpmTemplateParser implements TemplateParser {
                     + Constants.TEMPLATE_DIRECTORY;
             String resourceUrl = vaadinDirectory + pathWithoutPrefix;
             content = getResourceStream(service, resourceUrl);
+        }
+        if (content == null) {
+            // In express mode, template sources are stored in
+            // dev-bundle/config/templates
+            String pathWithoutPrefix = url.replaceFirst("^\\./", "");
+            Path subFolder = Path.of("dev-bundle", "config", "templates",
+                    pathWithoutPrefix);
+            File templateFile = new File(
+                    service.getDeploymentConfiguration().getProjectFolder(),
+                    subFolder.toString());
+            try {
+                content = new FileInputStream(templateFile);
+            } catch (FileNotFoundException e) {
+                // If it ain't there, it ain't there
+            }
         }
         if (content != null) {
             getLogger().debug(

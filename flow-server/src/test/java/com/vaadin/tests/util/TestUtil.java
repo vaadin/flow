@@ -1,9 +1,21 @@
 package com.vaadin.tests.util;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.util.Iterator;
+import java.util.Objects;
 
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
+
+import com.vaadin.flow.server.communication.IndexHtmlRequestHandlerTest;
+
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
+import static com.vaadin.flow.server.frontend.FrontendUtils.WEB_COMPONENT_HTML;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class TestUtil {
     public static void assertArrays(Object[] actualObjects,
@@ -66,5 +78,41 @@ public class TestUtil {
             }
         }
         return false;
+    }
+
+    public static void createIndexHtmlStub(File projectRootFolder)
+            throws IOException {
+        createStubFileInFrontend(projectRootFolder, INDEX_HTML);
+    }
+
+    public static void createWebComponentHtmlStub(File projectRootFolder)
+            throws IOException {
+        createStubFileInFrontend(projectRootFolder, WEB_COMPONENT_HTML);
+    }
+
+    public static void createStubFileInFrontend(File projectRootFolder,
+            String stubFileName) throws IOException {
+        try (InputStream indexStream = IndexHtmlRequestHandlerTest.class
+                .getClassLoader()
+                .getResourceAsStream("frontend/" + stubFileName)) {
+            String indexHtmlContent = IOUtils
+                    .toString(Objects.requireNonNull(indexStream), UTF_8);
+            File indexHtml = new File(new File(projectRootFolder, "frontend"),
+                    stubFileName);
+            FileUtils.forceMkdirParent(indexHtml);
+            FileUtils.writeStringToFile(indexHtml, indexHtmlContent, UTF_8);
+        }
+    }
+
+    public static void createStatsJsonStub(File projectRootFolder)
+            throws IOException {
+        File statsJson = new File(
+                new File(projectRootFolder, "dev-bundle/config/"),
+                "stats.json");
+        FileUtils.forceMkdirParent(statsJson);
+        FileUtils.writeStringToFile(statsJson,
+                "{\"npmModules\": {}, " + "\"entryScripts\": [\"foo.js\"], "
+                        + "\"packageJsonHash\": \"42\"}",
+                UTF_8);
     }
 }
