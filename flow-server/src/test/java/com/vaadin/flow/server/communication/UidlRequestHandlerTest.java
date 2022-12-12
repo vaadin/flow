@@ -28,7 +28,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.MockVaadinContext;
@@ -124,7 +124,7 @@ public class UidlRequestHandlerTest {
     @Test
     public void should_not_modifyUidl_when_MPR_nonJavaScriptBootstrapUI()
             throws Exception {
-        JavaScriptBootstrapUI ui = null;
+        UI ui = null;
 
         UidlRequestHandler handler = spy(new UidlRequestHandler());
         StringWriter writer = new StringWriter();
@@ -152,7 +152,7 @@ public class UidlRequestHandlerTest {
     @Test
     public void should_modifyUidl_when_MPR_JavaScriptBootstrapUI()
             throws Exception {
-        JavaScriptBootstrapUI ui = mock(JavaScriptBootstrapUI.class);
+        UI ui = mock(UI.class);
 
         UidlRequestHandler handler = spy(new UidlRequestHandler());
         StringWriter writer = new StringWriter();
@@ -173,7 +173,7 @@ public class UidlRequestHandlerTest {
 
     @Test
     public void should_changeURL_when_v7LocationProvided() throws Exception {
-        JavaScriptBootstrapUI ui = mock(JavaScriptBootstrapUI.class);
+        UI ui = mock(UI.class);
 
         UidlRequestHandler handler = spy(new UidlRequestHandler());
         StringWriter writer = new StringWriter();
@@ -194,7 +194,7 @@ public class UidlRequestHandlerTest {
     @Test
     public void should_updateHash_when_v7LocationNotProvided()
             throws Exception {
-        JavaScriptBootstrapUI ui = mock(JavaScriptBootstrapUI.class);
+        UI ui = mock(UI.class);
 
         UidlRequestHandler handler = spy(new UidlRequestHandler());
         StringWriter writer = new StringWriter();
@@ -214,7 +214,7 @@ public class UidlRequestHandlerTest {
 
     @Test
     public void should_not_modify_non_MPR_Uidl() throws Exception {
-        JavaScriptBootstrapUI ui = mock(JavaScriptBootstrapUI.class);
+        UI ui = mock(UI.class);
 
         UidlRequestHandler handler = spy(new UidlRequestHandler());
         StringWriter writer = new StringWriter();
@@ -239,7 +239,7 @@ public class UidlRequestHandlerTest {
     @Test
     public void should_not_update_browser_history_if_no_hash_in_location()
             throws Exception {
-        JavaScriptBootstrapUI ui = mock(JavaScriptBootstrapUI.class);
+        UI ui = mock(UI.class);
 
         UidlRequestHandler handler = spy(new UidlRequestHandler());
         StringWriter writer = new StringWriter();

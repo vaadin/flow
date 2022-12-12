@@ -20,6 +20,7 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.BeforeLeaveEvent;
 import com.vaadin.flow.router.BeforeLeaveEvent.ContinueNavigationAction;
@@ -30,13 +31,12 @@ import com.vaadin.flow.router.internal.NavigationStateRenderer;
 import com.vaadin.flow.server.HttpStatusCode;
 
 /**
- * Handle navigation events in relation to the client side bootstrap UI
- * {@link JavaScriptBootstrapUI}.
+ * Handle navigation events in relation to the client side bootstrap UI.
  *
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */
-class JavaScriptNavigationStateRenderer extends NavigationStateRenderer {
+public class JavaScriptNavigationStateRenderer extends NavigationStateRenderer {
 
     static final String NOT_SUPPORT_FORWARD_BEFORELEAVE = "BeforeLeaveEvent.forwardTo() is not supported. "
             + "You can use the combination between BeforeLeaveEvent.postpone() and "
@@ -112,17 +112,12 @@ class JavaScriptNavigationStateRenderer extends NavigationStateRenderer {
     protected void pushHistoryState(NavigationEvent event) {
         super.pushHistoryState(event);
 
-        if (event.getUI() instanceof JavaScriptBootstrapUI) {
-            JavaScriptBootstrapUI jsUI = (JavaScriptBootstrapUI) event.getUI();
-
-            if (continueNavigationAction != null
-                    // We're trying to navigate to a client view.
-                    && JavaScriptBootstrapUI.ClientViewPlaceholder.class
-                            .isAssignableFrom(getNavigationState()
-                                    .getNavigationTarget())) {
-                jsUI.navigateToClient(
-                        event.getLocation().getPathWithQueryParameters());
-            }
+        if (continueNavigationAction != null
+                // We're trying to navigate to a client view.
+                && UI.ClientViewPlaceholder.class.isAssignableFrom(
+                        getNavigationState().getNavigationTarget())) {
+            event.getUI().navigateToClient(
+                    event.getLocation().getPathWithQueryParameters());
         }
 
     }

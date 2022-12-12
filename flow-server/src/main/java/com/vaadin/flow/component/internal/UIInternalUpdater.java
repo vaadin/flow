@@ -42,15 +42,34 @@ public interface UIInternalUpdater extends Serializable {
      *            the new root to be added
      */
     default void updateRoot(UI ui, HasElement oldRoot, HasElement newRoot) {
-        Element uiElement = ui.getElement();
-        Element rootElement = newRoot.getElement();
 
-        if (!uiElement.equals(rootElement.getParent())) {
-            if (oldRoot != null) {
-                oldRoot.getElement().removeFromParent();
+        Element wrapperElement = ui.wrapperElement;
+        // server-side routing
+        if (wrapperElement == null) {
+            Element uiElement = ui.getElement();
+            Element rootElement = newRoot.getElement();
+
+            if (!uiElement.equals(rootElement.getParent())) {
+                if (oldRoot != null) {
+                    oldRoot.getElement().removeFromParent();
+                }
+                rootElement.removeFromParent();
+                uiElement.appendChild(rootElement);
             }
-            rootElement.removeFromParent();
-            uiElement.appendChild(rootElement);
+        } else {
+            // client-side routing
+            Element rootElement = newRoot.getElement();
+            if (newRoot instanceof UI.ClientViewPlaceholder) {
+                // only need to remove all children when newRoot is a
+                // placeholder
+                wrapperElement.removeAllChildren();
+            } else if (!wrapperElement.equals(rootElement.getParent())) {
+                if (oldRoot != null) {
+                    oldRoot.getElement().removeFromParent();
+                }
+                rootElement.removeFromParent();
+                wrapperElement.appendChild(rootElement);
+            }
         }
     }
 

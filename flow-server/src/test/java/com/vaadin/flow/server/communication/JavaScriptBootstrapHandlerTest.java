@@ -27,7 +27,6 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.dom.NodeVisitor.ElementType;
@@ -44,7 +43,7 @@ import com.vaadin.flow.shared.communication.PushMode;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
-import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
+import static com.vaadin.flow.component.UI.SERVER_ROUTING;
 
 @NotThreadSafe
 public class JavaScriptBootstrapHandlerTest {
@@ -132,8 +131,7 @@ public class JavaScriptBootstrapHandlerTest {
         jsInitHandler.handleRequest(session, request, response);
 
         Assert.assertNotNull(UI.getCurrent());
-        Assert.assertEquals(JavaScriptBootstrapUI.class,
-                UI.getCurrent().getClass());
+        Assert.assertEquals(UI.class, UI.getCurrent().getClass());
 
         Mockito.verify(session, Mockito.times(0)).setAttribute(SERVER_ROUTING,
                 Boolean.TRUE);
@@ -146,7 +144,7 @@ public class JavaScriptBootstrapHandlerTest {
                 "v-r=init&foo&location=");
         jsInitHandler.handleRequest(session, request, response);
 
-        JavaScriptBootstrapUI ui = (JavaScriptBootstrapUI) UI.getCurrent();
+        UI ui = UI.getCurrent();
         ui.connectClient("a-tag", "an-id", "a-route", "", null);
 
         TestNodeVisitor visitor = new TestNodeVisitor(true);
@@ -171,7 +169,7 @@ public class JavaScriptBootstrapHandlerTest {
 
         jsInitHandler.handleRequest(session, request, response);
 
-        JavaScriptBootstrapUI ui = (JavaScriptBootstrapUI) UI.getCurrent();
+        UI ui = UI.getCurrent();
 
         TestNodeVisitor visitor = new TestNodeVisitor(true);
         BasicElementStateProvider.get().visit(ui.getElement().getNode(),

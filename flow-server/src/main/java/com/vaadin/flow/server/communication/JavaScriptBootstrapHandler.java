@@ -23,7 +23,6 @@ import java.util.function.Function;
 
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
@@ -48,7 +47,7 @@ import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
 
-import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
+import static com.vaadin.flow.component.UI.SERVER_ROUTING;
 
 /**
  * Processes a 'start' request type from the client to initialize server session
@@ -148,8 +147,8 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
             VaadinRequest request, VaadinResponse response,
             VaadinSession session) {
 
-        BootstrapContext context = super.createAndInitUI(
-                JavaScriptBootstrapUI.class, request, response, session);
+        BootstrapContext context = super.createAndInitUI(UI.class, request,
+                response, session);
         JsonObject config = context.getApplicationParameters();
 
         String requestURL = getRequestUrl(request);
@@ -273,8 +272,8 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
     protected JsonObject getInitialJson(VaadinRequest request,
             VaadinResponse response, VaadinSession session) {
 
-        BootstrapContext context = createAndInitUI(JavaScriptBootstrapUI.class,
-                request, response, session);
+        BootstrapContext context = createAndInitUI(UI.class, request, response,
+                session);
 
         JsonObject initial = Json.createObject();
 

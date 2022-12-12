@@ -28,7 +28,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.SessionExpiredHandler;
@@ -145,9 +144,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
     void writeUidl(UI ui, Writer writer, boolean resync) throws IOException {
         JsonObject uidl = createUidl(ui, resync);
 
-        if (ui instanceof JavaScriptBootstrapUI) {
-            removeOffendingMprHashFragment(uidl);
-        }
+        removeOffendingMprHashFragment(uidl);
 
         // some dirt to prevent cross site scripting
         String responseString = "for(;;);[" + uidl.toJson() + "]";
@@ -158,7 +155,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         return new UidlWriter().createUidl(ui, false, resync);
     }
 
-    private static final Logger getLogger() {
+    private static Logger getLogger() {
         return LoggerFactory.getLogger(UidlRequestHandler.class.getName());
     }
 
