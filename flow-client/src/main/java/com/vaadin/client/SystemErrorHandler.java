@@ -198,6 +198,7 @@ public class SystemErrorHandler {
         var elements = document.getElementsByTagName(elementName);
         for (var i = 0 ; i < elements.length ; ++i) {
             var elem = elements[i];
+            elem.$server.disconnected = function(){} // mock disconnected callback not to throw TypeError
             elem.parentNode.replaceChild(elem.cloneNode(false), elem);
         }
     }-*/;
