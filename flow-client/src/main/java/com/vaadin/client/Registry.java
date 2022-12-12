@@ -303,4 +303,13 @@ public class Registry {
     public Poller getPoller() {
         return get(Poller.class);
     }
+
+    /**
+     * Clears some of defined singletons allowing setting new values.
+     */
+    public void reset() {
+        lookupTable.delete(UILifecycle.class);
+        lookupTable.delete(ConstantPool.class);
+        lookupTable.delete(ExistingElementMap.class);
+    }
 }

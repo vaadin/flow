@@ -125,4 +125,12 @@ public class DefaultRegistry extends Registry {
         }
         set(Poller.class, new Poller(this));
     }
+
+    @Override
+    public void reset() {
+        super.reset();
+        set(UILifecycle.class, new UILifecycle());
+        set(ConstantPool.class, new ConstantPool());
+        set(ExistingElementMap.class, new ExistingElementMap());
+    }
 }

@@ -173,6 +173,11 @@ public class SystemErrorHandler {
 
                             @Override
                             public void onSuccess(XMLHttpRequest xhr) {
+
+                                registry.reset();
+                                registry.getUILifecycle()
+                                        .setState(UILifecycle.UIState.RUNNING);
+
                                 ValueMap json = MessageHandler.parseWrappedJson(
                                         xhr.getResponseText());
                                 registry.getMessageHandler()
