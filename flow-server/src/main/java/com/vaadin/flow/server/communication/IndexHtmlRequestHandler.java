@@ -194,7 +194,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 "window.Vaadin.devTools = window.Vaadin.devTools || {};"
                 + "window.Vaadin.devTools.createdCvdlElements = window.Vaadin.devTools.createdCvdlElements || [];"
                 + //
-                "const originalCustomElementDefineFn = window.customElements.define;"
+                "window.Vaadin.originalCustomElementDefineFn = window.Vaadin.originalCustomElementDefineFn || window.customElements.define;"
                 + //
                 "window.customElements.define = function (tagName, constructor, ...args) {"
                 + //
@@ -209,7 +209,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 "  }" + //
                 "}" + //
 
-                "originalCustomElementDefineFn.call(this, tagName, constructor, ...args);"
+                "window.Vaadin.originalCustomElementDefineFn.call(this, tagName, constructor, ...args);"
                 + //
                 "};");
 
