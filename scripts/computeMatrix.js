@@ -55,6 +55,7 @@ const moduleWeights = {
   'flow-tests/test-application-theme/test-theme-reusable': { pos: 3, weight: 2 },
   'flow-tests/test-application-theme/test-theme-reusable-vite': { pos: 3, weight: 2 },
   'flow-tests/test-frontend/vite-production': { pos: 3, weight: 2 },
+  'flow-tests/test-frontend/vite-production-custom-frontend': { pos: 3, weight: 2 },
   'flow-tests/test-frontend/vite-test-assets': { pos: 3 },
   'flow-tests/vaadin-spring-tests/test-spring-boot': { pos: 4, weight: 4 },
   'flow-tests/vaadin-spring-tests/test-spring-boot-only-prepare': { pos: 4, weight: 3 },
@@ -359,6 +360,15 @@ function secs2Weight(secs) {
 }
 
 /**
+ * format seconds to HH:MM:SS.m
+ */
+function formatSecs(s) {
+  const pad = (n, p) => ("" + n).padStart(p || 2, 0);
+  const r = {h:~~(s / 3600),m:~~((s % 3600) / 60),s:~~s % 60, f:~~(s%1*10)};
+  return `${pad(r.m)}':${pad(r.s)}"`;
+}
+
+/**
  * Compute module weights by parsing mvn outputs
  */
 function computeResultWeights(suite, prefix, weights) {
@@ -439,11 +449,17 @@ function computeTestStats() {
   });
   const sorted = Object.keys(stats).map(k => Object.assign(stats[k], {name: k}))
     .sort((a, b) => (b.failed - a.failed) || (b.secs - a.secs));
-  const totalMin = sorted.reduce((prev, curr) => prev + curr.secs, 0) / 60;
+  const totalSecs = sorted.reduce((prev, curr) => prev + curr.secs, 0);
   const totalTests = sorted.reduce((prev, curr) => prev + curr.tests, 0);
   const totalFailed = sorted.reduce((prev, curr) => prev + curr.failed, 0);
-  const out = sorted.map(e => `${e.secs} ${e.tests} ${e.module} ${e.name}`).join('\n') +
-    `\nTOTAL - classes: ${sorted.length} tests: ${totalTests} failed: ${totalFailed} time: ${totalMin} mins.\n`;
+
+  const out =
+  `<details><summary><code>` +
+  `Run ${totalTests} tests in ${sorted.length} classes, time: ${formatSecs(totalSecs)}, failed: ${totalFailed}` +
+  `</code></summary>\n\n\n` +
+  `| Time | Tests | Module | Class |\n|------|-------|--------|------|\n` +
+    sorted.map(e => `|${formatSecs(e.secs)}|${e.tests}|\`${e.module}\`|\`${e.name}\`|`).join('\n') +
+  `\n</details>`
   return out;
 }
 
@@ -471,23 +487,30 @@ async function printTestResults() {
     }
   });
 
+  console.log("## Matrix and Test Statistics")
+
+  console.log('### Suggestions\n')
+
   // Show what should be updated
+  console.log('<details><summary>Modifications</summary>\n\n| Action | Change | Module |\n|-----|-----|-----|')
   Object.keys(weights).forEach( m => {
     if (moduleWeights[m] && Math.abs(moduleWeights[m].weight - weights[m].weight) > 1) {
-      console.log(`Update ${m} ${moduleWeights[m].weight || 1} -> ${weights[m].weight}`);
+      console.log(`|update|${moduleWeights[m].weight || 1}→${weights[m].weight}|\`${m}\`|`);
     } else if (!moduleWeights[m]) {
-      console.log(`Add ${m} ${weights[m].weight} `);
+      console.log(`|add|${weights[m].weight}|\`${m}\`|`);
       newWeights[m] = weights[m];
     }
   });
   Object.keys(moduleWeights).forEach(m => {
     if (/\-/.test(m) && !moduleWeights[m].pos && !weights[m] && moduleWeights[m].weight > 2) {
-      console.log(`Remove ${m} ${moduleWeights[m].weight}`);
+      console.log(`|remove|${moduleWeights[m].weight}|\`${m}\`|`);
       delete newWeights[m];
     }
   });
+  console.log('\n</details>')
 
   // Sort and Print weight objects
+  console.log('<details><summary>Configuration Object</summary>\n\n```\n')
   const ordered = Object.keys(newWeights).sort((a, b) => {
     const [o1, o2] = [newWeights[a], newWeights[b]];
     const [p1, p2, w1, w2] = [o1.pos || 10, o2.pos || 10, o1.weight || 0, o2.weight ||0];
@@ -497,19 +520,24 @@ async function printTestResults() {
     return o;
   }, {});
   console.log(ordered);
+  console.log('\n```\n</details>\n')
 
   // print module stats
-  Object.keys(moduleStats).forEach(k => {
+  console.log('### Stats per module\n')
+  Object.keys(moduleStats).sort((a, b) => {
+    const r = /(\d+).out$/;
+    return (r.exec(a)[1] || 0 ) - (r.exec(b)[1] || 0);
+  }).forEach(k => {
     if (moduleStats[k].length) {
       const totalSecs = moduleStats[k].reduce((p,o) => p + o.secs, 0);
       const totalWeight = secs2Weight(totalSecs);
-      console.log(`${k} ${totalSecs} secs. ${totalWeight} weight\n  `
-        + moduleStats[k].map(o => `'${o.mod}': {secs: ${o.secs}, weight: ${o.weight}},`).join('\n  '));
+      console.log(`<details><summary><code>${k} time=${formatSecs(totalSecs)} weight=${totalWeight}</code></summary>\n\n`
+        + '\n```\n' + moduleStats[k].map(o => `'${o.mod}': {secs: ${o.secs}, weight: ${o.weight}},`).join('\n') + '\n```\n</details>\n');
     }
   });
 
   // print stats of test classes
-  console.log(testStats);
+  console.log(`### Stats per class\n\n${testStats}`);
 }
 
 /*
