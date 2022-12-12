@@ -229,14 +229,15 @@ public class DefaultDeploymentConfigurationTest {
         Mockito.when(featureFlags.isEnabled(FeatureFlags.EXPRESS_BUILD))
                 .thenReturn(true);
 
-        try (MockedStatic<FeatureFlags> featureFlagsStatic =
-                Mockito.mockStatic(FeatureFlags.class)) {
+        try (MockedStatic<FeatureFlags> featureFlagsStatic = Mockito
+                .mockStatic(FeatureFlags.class)) {
             featureFlagsStatic.when(() -> FeatureFlags.get(context))
                     .thenReturn(featureFlags);
             DefaultDeploymentConfiguration config = createDeploymentConfig(
                     new Properties());
-            Assert.assertFalse("Expected dev server to be disabled when the " +
-                               "Express Build feature glag is ON",
+            Assert.assertFalse(
+                    "Expected dev server to be disabled when the "
+                            + "Express Build feature glag is ON",
                     config.enableDevServer());
         }
     }
