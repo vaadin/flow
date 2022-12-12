@@ -122,35 +122,7 @@ public class UidlRequestHandlerTest {
     }
 
     @Test
-    public void should_not_modifyUidl_when_MPR_nonJavaScriptBootstrapUI()
-            throws Exception {
-        UI ui = null;
-
-        UidlRequestHandler handler = spy(new UidlRequestHandler());
-        StringWriter writer = new StringWriter();
-
-        JsonObject uidl = generateUidl(true, true);
-        doReturn(uidl).when(handler).createUidl(ui, false);
-
-        handler.writeUidl(ui, writer, false);
-
-        String out = writer.toString();
-
-        assertTrue(out.startsWith("for(;;);[{"));
-        assertTrue(out.endsWith("}]"));
-
-        uidl = JsonUtil.parse(out.substring(9, out.length() - 1));
-        String v7Uidl = uidl.getArray("execute").getArray(2).getString(1);
-
-        assertTrue(v7Uidl.contains("http://localhost:9998/#!away"));
-        assertTrue(v7Uidl.contains("window.location.hash = '!away';"));
-
-        assertEquals("setTimeout(() => window.history.pushState(null, '', $0))",
-                uidl.getArray("execute").getArray(1).getString(1));
-    }
-
-    @Test
-    public void should_modifyUidl_when_MPR_JavaScriptBootstrapUI()
+    public void should_modifyUidl_when_MPR()
             throws Exception {
         UI ui = mock(UI.class);
 
