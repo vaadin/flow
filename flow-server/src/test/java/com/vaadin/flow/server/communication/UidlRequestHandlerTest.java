@@ -122,8 +122,7 @@ public class UidlRequestHandlerTest {
     }
 
     @Test
-    public void should_modifyUidl_when_MPR()
-            throws Exception {
+    public void should_modifyUidl_when_MPR() throws Exception {
         UI ui = mock(UI.class);
 
         UidlRequestHandler handler = spy(new UidlRequestHandler());
