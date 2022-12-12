@@ -1443,7 +1443,7 @@ public class FrontendUtils {
      */
     public static URL findBundleFile(File projectDir, String filename)
             throws IOException {
-        File devBundleFolder = new File(projectDir, "dev-bundle");
+        File devBundleFolder = getDevBundleFolder(projectDir);
         if (devBundleFolder.exists()) {
             // Has an application bundle
             File bundleFile = new File(devBundleFolder, filename);
@@ -1457,12 +1457,12 @@ public class FrontendUtils {
     /**
      * Get the folder where an application specific bundle is stored.
      *
-     * @param npmFolder
+     * @param projectDir
      *            the project base directory
      * @return the bundle directory
      */
-    public static File getDevBundleFolder(File npmFolder) {
-        return new File(npmFolder, "dev-bundle");
+    public static File getDevBundleFolder(File projectDir) {
+        return new File(projectDir, "dev-bundle");
     }
 
 }
