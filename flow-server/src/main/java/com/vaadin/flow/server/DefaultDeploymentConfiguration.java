@@ -334,13 +334,15 @@ public class DefaultDeploymentConfiguration
     }
 
     /**
-     * Log a warning if new license checker is enabled in compatibility mode
-     * or while the live reload is off.
+     * Log a warning if new license checker is enabled in compatibility mode or
+     * while the live reload is off.
      */
     private void checkNewLicenseChecker(boolean logWarning) {
         boolean enableNewLicenseChecker = !getBooleanProperty(
-                InitParameters.SERVLET_PARAMETER_ENABLE_OLD_LICENSE_CHECKER, false);
-        if (logWarning && !isDevModeLiveReloadEnabled() && enableNewLicenseChecker) {
+                InitParameters.SERVLET_PARAMETER_ENABLE_OLD_LICENSE_CHECKER,
+                false);
+        if (logWarning && !isProductionMode() && !isDevModeLiveReloadEnabled()
+                && enableNewLicenseChecker) {
             warnings.add(WARNING_LIVERELOAD_DISABLED_AND_NEW_LICENSE_CHECKER);
         }
     }
