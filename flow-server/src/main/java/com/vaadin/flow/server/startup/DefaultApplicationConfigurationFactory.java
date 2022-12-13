@@ -30,6 +30,7 @@ import org.osgi.service.component.annotations.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.server.AbstractPropertyConfiguration;
@@ -99,6 +100,14 @@ public class DefaultApplicationConfigurationFactory
                     false);
         }
 
+        @Override
+        public boolean enableDevServer() {
+            if (FeatureFlags.get(getContext())
+                    .isEnabled(FeatureFlags.EXPRESS_BUILD)) {
+                return false;
+            }
+            return super.enableDevServer();
+        }
     }
 
     @Override

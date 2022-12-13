@@ -237,7 +237,7 @@ public class DefaultDeploymentConfigurationTest {
                     new Properties());
             Assert.assertFalse(
                     "Expected dev server to be disabled when the "
-                            + "Express Build feature glag is ON",
+                            + "Express Build feature flag is ON",
                     config.enableDevServer());
         }
     }
