@@ -102,11 +102,8 @@ public class DefaultApplicationConfigurationFactory
 
         @Override
         public boolean enableDevServer() {
-            if (FeatureFlags.get(getContext())
-                    .isEnabled(FeatureFlags.EXPRESS_BUILD)) {
-                return false;
-            }
-            return super.enableDevServer();
+            return !FeatureFlags.get(getContext())
+                    .isEnabled(FeatureFlags.EXPRESS_BUILD);
         }
     }
 
