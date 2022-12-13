@@ -51,7 +51,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.internal.DevModeHandler;
@@ -79,7 +78,7 @@ import com.vaadin.tests.util.TestUtil;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
+import static com.vaadin.flow.component.UI.SERVER_ROUTING;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -535,8 +534,7 @@ public class IndexHtmlRequestHandlerTest {
         Mockito.verify(session, Mockito.times(0)).setAttribute(SERVER_ROUTING,
                 Boolean.FALSE);
 
-        ((JavaScriptBootstrapUI) UI.getCurrent()).connectClient("foo", "bar",
-                "/foo", "", "", null);
+        UI.getCurrent().connectClient("foo", "bar", "/foo", "", "", null);
 
         Mockito.verify(session, Mockito.times(1)).setAttribute(SERVER_ROUTING,
                 Boolean.FALSE);

@@ -60,8 +60,6 @@ public enum NavigationTrigger {
 
     /**
      * Navigation was triggered by client-side.
-     *
-     * @see com.vaadin.flow.component.internal.JavaScriptBootstrapUI
      */
     CLIENT_SIDE,
 

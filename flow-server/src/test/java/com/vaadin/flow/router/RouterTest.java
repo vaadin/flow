@@ -68,6 +68,7 @@ import com.vaadin.flow.shared.Registration;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
+import static com.vaadin.flow.component.UI.SERVER_ROUTING;
 import static com.vaadin.flow.router.internal.RouteModelTest.parameters;
 import static com.vaadin.flow.router.internal.RouteModelTest.varargs;
 import static org.hamcrest.CoreMatchers.is;
@@ -2660,12 +2661,13 @@ public class RouterTest extends RoutingTestBase {
         RedirectToLoopByReroute.events.clear();
         setNavigationTargets(LoopByUINavigate.class,
                 RedirectToLoopByReroute.class);
+        ui.getSession().setAttribute(SERVER_ROUTING, Boolean.TRUE);
 
         ui.navigate("redirect/loop");
 
-        Assert.assertEquals("Expected one events", 1,
+        Assert.assertEquals("Expected one event", 1,
                 LoopByUINavigate.events.size());
-        Assert.assertEquals("Expected onve events", 1,
+        Assert.assertEquals("Expected one event", 1,
                 RedirectToLoopByReroute.events.size());
     }
 
