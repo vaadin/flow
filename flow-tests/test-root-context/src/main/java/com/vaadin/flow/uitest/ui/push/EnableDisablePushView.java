@@ -5,16 +5,21 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
+import com.vaadin.flow.component.AttachEvent;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.UIDetachedException;
 import com.vaadin.flow.component.html.NativeButton;
-import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.communication.PushMode;
 
-public class EnableDisablePushUI extends AbstractTestUIWithLog {
+@Route("com.vaadin.flow.uitest.ui.push.EnableDisablePushView")
+public class EnableDisablePushView extends AbstractTestViewWithLog {
 
     private int c = 0;
 
     private final Timer timer = new Timer(true);
+
+    private UI ui;
 
     private final class CounterTask extends TimerTask {
 
@@ -25,13 +30,13 @@ public class EnableDisablePushUI extends AbstractTestUIWithLog {
                 while (true) {
                     TimeUnit.MILLISECONDS.sleep(500);
 
-                    access(() -> {
+                    ui.access(() -> {
                         log("Counter = " + c++);
                         if (c == 3) {
                             log("Disabling polling, enabling push");
-                            getPushConfiguration()
+                            ui.getPushConfiguration()
                                     .setPushMode(PushMode.AUTOMATIC);
-                            setPollInterval(-1);
+                            ui.setPollInterval(-1);
                             log("Polling disabled, push enabled");
                         }
                     });
@@ -46,40 +51,42 @@ public class EnableDisablePushUI extends AbstractTestUIWithLog {
     }
 
     @Override
-    protected void init(VaadinRequest request) {
-        super.init(request);
-        getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
+    protected void onAttach(AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
+        this.ui = getUI().get();
+
+        ui.getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
         log("Push enabled");
 
         add(createButton("Disable push", "disable-push", () -> {
             log("Disabling push");
-            getPushConfiguration().setPushMode(PushMode.DISABLED);
+            ui.getPushConfiguration().setPushMode(PushMode.DISABLED);
             log("Push disabled");
         }));
 
         add(createButton("Enable push", "enable-push", () -> {
             log("Enabling push");
-            getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
+            ui.getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
             log("Push enabled");
         }));
 
         add(createButton("Disable polling", "disable-polling", () -> {
             log("Disabling poll");
-            setPollInterval(-1);
+            ui.setPollInterval(-1);
             log("Poll disabled");
         }));
 
         add(createButton("Enable polling", "enable-polling", () -> {
             log("Enabling poll");
-            setPollInterval(1000);
+            ui.setPollInterval(1000);
             log("Poll enabled");
         }));
 
         add(createButton("Disable push, re-enable from background thread",
                 "thread-re-enable-push", () -> {
                     log("Disabling push, enabling polling");
-                    getPushConfiguration().setPushMode(PushMode.DISABLED);
-                    setPollInterval(1000);
+                    ui.getPushConfiguration().setPushMode(PushMode.DISABLED);
+                    ui.setPollInterval(1000);
                     timer.schedule(new CounterTask(), new Date());
                     log("Push disabled, polling enabled");
                 }));

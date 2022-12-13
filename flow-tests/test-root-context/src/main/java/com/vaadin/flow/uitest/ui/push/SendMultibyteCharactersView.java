@@ -1,20 +1,19 @@
 package com.vaadin.flow.uitest.ui.push;
 
-import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.flow.server.VaadinRequest;
 
-public abstract class SendMultibyteCharactersUI extends UI {
+public abstract class SendMultibyteCharactersView extends Div {
 
     @Override
-    protected void init(VaadinRequest request) {
-        Push push = getClass().getAnnotation(Push.class);
+    protected void onAttach(AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
+        CustomPush push = getClass().getAnnotation(CustomPush.class);
 
-        getPushConfiguration().setPushMode(push.value());
-        getPushConfiguration().setTransport(push.transport());
+        attachEvent.getUI().getPushConfiguration().setPushMode(push.value());
+        attachEvent.getUI().getPushConfiguration().setTransport(push.transport());
 
         Div div = new Div();
         div.setText("Just a label");

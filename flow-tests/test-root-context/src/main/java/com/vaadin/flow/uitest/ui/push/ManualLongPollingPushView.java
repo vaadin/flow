@@ -3,20 +3,24 @@ package com.vaadin.flow.uitest.ui.push;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import com.vaadin.flow.component.AttachEvent;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.NativeButton;
-import com.vaadin.flow.component.page.Push;
-import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Transport;
 
-@Push(value = PushMode.MANUAL, transport = Transport.LONG_POLLING)
-public class ManualLongPollingPushUI extends AbstractTestUIWithLog {
+@Route("com.vaadin.flow.uitest.ui.push.ManualLongPollingPushView")
+public class ManualLongPollingPushView extends AbstractTestViewWithLog {
 
     private ExecutorService executor = Executors.newFixedThreadPool(1);
 
     @Override
-    protected void init(VaadinRequest request) {
-        super.init(request);
+    protected void onAttach(AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
+        UI ui = attachEvent.getUI();
+        ui.getPushConfiguration().setPushMode(PushMode.MANUAL);
+        ui.getPushConfiguration().setTransport(Transport.LONG_POLLING);
         NativeButton manualPush = new NativeButton("Manual push after 1s",
                 event -> {
                     executor.submit(() -> {
@@ -25,9 +29,9 @@ public class ManualLongPollingPushUI extends AbstractTestUIWithLog {
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
-                        access(() -> {
+                        ui.access(() -> {
                             log("Logged after 1s, followed by manual push");
-                            push();
+                            ui.push();
                         });
                     });
                 });
@@ -41,11 +45,11 @@ public class ManualLongPollingPushUI extends AbstractTestUIWithLog {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                access(() -> {
+                ui.access(() -> {
                     log("First message logged after 1s, followed by manual push");
-                    push();
+                    ui.push();
                     log("Second message logged after 1s, followed by manual push");
-                    push();
+                    ui.push();
                 });
             });
         });

@@ -1,29 +1,31 @@
 package com.vaadin.flow.uitest.ui.push;
 
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
-import com.vaadin.flow.component.page.Push;
-import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.router.Route;
 
-@Push
-public class MakeComponentVisibleWithPushUI extends UI {
+@CustomPush
+@Route("com.vaadin.flow.uitest.ui.push.MakeComponentVisibleWithPushView")
+public class MakeComponentVisibleWithPushView extends Div {
 
     private Div rootLayout;
     private Input input;
     private SearchThread searchThread;
 
     @Override
-    protected void init(VaadinRequest request) {
+    protected void onAttach(AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
         /*
          * Read push settings from the UI instead of the the navigation target /
          * router layout to preserve the structure of these legacy testing UIs
          */
-        Push push = getClass().getAnnotation(Push.class);
-
-        getPushConfiguration().setPushMode(push.value());
-        getPushConfiguration().setTransport(push.transport());
+        CustomPush push = getClass().getAnnotation(CustomPush.class);
+        UI ui = attachEvent.getUI();
+        ui.getPushConfiguration().setPushMode(push.value());
+        ui.getPushConfiguration().setTransport(push.transport());
 
         rootLayout = new Div();
         add(rootLayout);

@@ -1,18 +1,23 @@
 package com.vaadin.flow.uitest.ui.push;
 
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Transport;
 
-public class PushToggleComponentVisibilityUI extends UI {
+@Route("com.vaadin.flow.uitest.ui.push.PushToggleComponentVisibilityView")
+public class PushToggleComponentVisibilityView extends Div {
 
     @Override
-    protected void init(VaadinRequest request) {
-        getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
-        getPushConfiguration().setTransport(Transport.WEBSOCKET_XHR);
+    protected void onAttach(AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
+        UI ui = attachEvent.getUI();
+        ui.getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
+        ui.getPushConfiguration().setTransport(Transport.WEBSOCKET_XHR);
 
         Div mainLayout = new Div();
 
@@ -35,10 +40,10 @@ public class PushToggleComponentVisibilityUI extends UI {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
-                access(() -> {
+                ui.access(() -> {
                     button.setVisible(true);
                     label.setVisible(false);
-                    push();
+                    ui.push();
                 });
             }).start();
         });

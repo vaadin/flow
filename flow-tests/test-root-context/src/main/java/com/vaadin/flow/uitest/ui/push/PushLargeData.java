@@ -3,14 +3,13 @@ package com.vaadin.flow.uitest.ui.push;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
-import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.flow.uitest.util.LoremIpsum;
+import com.vaadin.flow.uitest.ui.util.LoremIpsum;
 
-public abstract class PushLargeData extends AbstractTestUIWithLog {
+public abstract class PushLargeData extends AbstractTestViewWithLog {
 
     // 200KB
     static final int DEFAULT_SIZE_BYTES = 200 * 1000;
@@ -36,8 +35,9 @@ public abstract class PushLargeData extends AbstractTestUIWithLog {
     protected Input duration;
 
     @Override
-    protected void init(VaadinRequest request) {
-        super.init(request);
+    protected void onAttach(AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
+
         dataLabel.setSizeUndefined();
         dataLabel.setId("data");
 
@@ -83,14 +83,14 @@ public abstract class PushLargeData extends AbstractTestUIWithLog {
         private Integer size;
         private Integer interval;
         private Integer duration;
-        private final UI ui;
+        private final PushLargeData pushLargeData;
 
-        public PushRunnable(UI ui, Integer size, Integer interval,
+        public PushRunnable(PushLargeData pushLargeData, Integer size, Integer interval,
                 Integer duration) {
             this.size = size;
             this.interval = interval;
             this.duration = duration;
-            this.ui = ui;
+            this.pushLargeData = pushLargeData;
         }
 
         @Override
@@ -100,13 +100,12 @@ public abstract class PushLargeData extends AbstractTestUIWithLog {
             int packageIndex = 1;
             while (System.currentTimeMillis() < endTime) {
                 final int idx = packageIndex++;
-                ui.access(() -> {
-                    PushLargeData pushUi = (PushLargeData) ui;
+                pushLargeData.getUI().get().access(() -> {
                     // Using description as it is not rendered to the DOM
                     // immediately
-                    pushUi.getDataLabel()
+                    pushLargeData.getDataLabel()
                             .setText(System.currentTimeMillis() + ": " + data);
-                    pushUi.log("Package " + idx + " pushed");
+                    pushLargeData.log("Package " + idx + " pushed");
                 });
                 try {
                     Thread.sleep(interval);
@@ -114,9 +113,8 @@ public abstract class PushLargeData extends AbstractTestUIWithLog {
                     return;
                 }
             }
-            ui.access(() -> {
-                PushLargeData pushUi = (PushLargeData) ui;
-                pushUi.log("Push complete");
+            pushLargeData.getUI().get().access(() -> {
+                pushLargeData.log("Push complete");
             });
 
         }

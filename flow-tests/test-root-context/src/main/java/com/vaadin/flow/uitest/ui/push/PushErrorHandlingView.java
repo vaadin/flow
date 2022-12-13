@@ -1,17 +1,21 @@
 package com.vaadin.flow.uitest.ui.push;
 
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
-import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.communication.PushMode;
 
-public class PushErrorHandlingUI extends UI {
+@Route("com.vaadin.flow.uitest.ui.push.PushErrorHandlingView")
+public class PushErrorHandlingView extends Div {
 
     @Override
-    protected void init(VaadinRequest request) {
-        getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
+    protected void onAttach(AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
+        UI ui = attachEvent.getUI();
+        ui.getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
 
         VaadinSession.getCurrent().setErrorHandler(event -> {
             Div div = new Div();

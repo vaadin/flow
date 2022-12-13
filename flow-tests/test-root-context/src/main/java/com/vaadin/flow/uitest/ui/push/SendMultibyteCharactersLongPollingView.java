@@ -15,11 +15,12 @@
  */
 package com.vaadin.flow.uitest.ui.push;
 
-import com.vaadin.flow.component.page.Push;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.ui.Transport;
 
-@Push(transport = Transport.LONG_POLLING)
-public class SendMultibyteCharactersLongPollingUI
-        extends SendMultibyteCharactersUI {
+@CustomPush(transport = Transport.LONG_POLLING)
+@Route("com.vaadin.flow.uitest.ui.push.SendMultibyteCharactersLongPollingView")
+public class SendMultibyteCharactersLongPollingView
+        extends SendMultibyteCharactersView {
 
 }

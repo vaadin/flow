@@ -3,31 +3,36 @@ package com.vaadin.flow.uitest.ui.push;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.shared.communication.PushMode;
 
-public class TogglePushUI extends UI {
+@Route("com.vaadin.flow.uitest.ui.push.TogglePushView")
+public class TogglePushView extends Div {
     private final Div counterLabel = new Div();
     private int counter = 0;
 
     @Override
-    protected void init(VaadinRequest request) {
+    protected void onAttach(AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
         updateCounter();
         add(counterLabel);
         counterLabel.setId("counter");
 
-        getPushConfiguration()
-                .setPushMode("disabled".equals(request.getParameter("push"))
+        UI ui = attachEvent.getUI();
+        ui.getPushConfiguration()
+                .setPushMode("disabled".equals(VaadinRequest.getCurrent().getParameter("push"))
                         ? PushMode.DISABLED
                         : PushMode.AUTOMATIC);
 
         NativeButton pushSetting = new NativeButton();
         pushSetting.setId("push-setting");
-        if (getPushConfiguration().getPushMode().isEnabled()) {
+        if (ui.getPushConfiguration().getPushMode().isEnabled()) {
             pushSetting.setText("Push enabled, click to disable");
             ComponentUtil.setData(pushSetting, Boolean.class, Boolean.FALSE);
         } else {
@@ -37,10 +42,10 @@ public class TogglePushUI extends UI {
         pushSetting.addClickListener(event -> {
             Boolean data = ComponentUtil.getData(pushSetting, Boolean.class);
             if (data) {
-                getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
+                ui.getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
                 pushSetting.setText("Push enabled, click to disable");
             } else {
-                getPushConfiguration().setPushMode(PushMode.DISABLED);
+                ui.getPushConfiguration().setPushMode(PushMode.DISABLED);
                 pushSetting.setText("Push disabled, click to enable");
             }
             ComponentUtil.setData(pushSetting, Boolean.class, !data);
@@ -57,7 +62,7 @@ public class TogglePushUI extends UI {
                     new Timer().schedule(new TimerTask() {
                         @Override
                         public void run() {
-                            access(() -> updateCounter());
+                            ui.access(() -> updateCounter());
                         }
                     }, 1000);
                 });

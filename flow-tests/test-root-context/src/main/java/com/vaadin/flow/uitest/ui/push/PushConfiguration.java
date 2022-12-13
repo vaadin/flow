@@ -7,12 +7,12 @@ import java.util.TimerTask;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.Html;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.NativeButton;
-import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.router.Route;
 
+@Route("com.vaadin.flow.uitest.ui.push.PushConfiguration")
 public class PushConfiguration extends Div {
 
     private int counter = 0;
