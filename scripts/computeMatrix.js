@@ -107,6 +107,7 @@ const moduleWeights = {
   'flow-tests/test-frontend/vite-pwa': { weight: 5 },
   'flow-tests/test-frontend/vite-embedded/pom-production.xml': { weight: 2 },
   'flow-tests/test-frontend/vite-embedded': { weight: 2 },
+  'flow-tests/test-frontend/vite-embedded-session-resync': { weight: 2 },
 
   'RemoveRoutersLayoutContentIT': {weight: 2},
   'BrowserWindowResizeIT': {weight: 2},
