@@ -40,8 +40,8 @@ import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 
-import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.CLIENT_NAVIGATE_TO;
-import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
+import static com.vaadin.flow.component.UI.CLIENT_NAVIGATE_TO;
+import static com.vaadin.flow.component.UI.SERVER_ROUTING;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
@@ -52,7 +52,7 @@ public class JavaScriptBootstrapUITest {
     private static final String CLIENT_PUSHSTATE_TO = "setTimeout(() => window.history.pushState($0, '', $1))";
 
     private MockServletServiceSessionSetup mocks;
-    private JavaScriptBootstrapUI ui;
+    private UI ui;
 
     @PageTitle("app-shell-title")
     public static class AppShell implements AppShellConfigurator {
@@ -191,7 +191,7 @@ public class JavaScriptBootstrapUITest {
                 "forwardToServerSideViewOnBeforeEnter",
                 ForwardToServerViewOnBeforeEnter.class,
                 Collections.emptyList());
-        ui = new JavaScriptBootstrapUI();
+        ui = new UI();
         ui.getInternals().setSession(mocks.getSession());
 
         Mockito.when(mocks.getSession().getAttribute(SERVER_ROUTING))
@@ -595,7 +595,7 @@ public class JavaScriptBootstrapUITest {
         assertEquals(dynamicTitle, ui.getInternals().getTitle());
 
         String anotherDynamicTitle = UUID.randomUUID().toString();
-        JavaScriptBootstrapUI anotherUI = new JavaScriptBootstrapUI();
+        UI anotherUI = new UI();
         anotherUI.getInternals().setSession(mocks.getSession());
         anotherUI.connectClient("foo", "bar", "clean", "", anotherDynamicTitle,
                 null);
@@ -632,7 +632,7 @@ public class JavaScriptBootstrapUITest {
         Mockito.doThrow(RuntimeException.class).when(router)
                 .resolveNavigationTarget(Mockito.any());
 
-        JavaScriptBootstrapUI ui = new JavaScriptBootstrapUI();
+        UI ui = new UI();
 
         ui.getInternals().setSession(session);
 
