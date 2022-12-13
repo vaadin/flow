@@ -26,11 +26,13 @@ document.getElementById("button2").addEventListener('click', async e => {
 
 document.getElementById('button3').addEventListener('click', async e => {
     const pathname = document.getElementById('pathname').value;
+    const search = "?" + document.getElementById('search').value;
+    const context = { pathname, search };
     // We don't want to depend on `vaadin-router`, thus we do its work here
     // 1. Call action to get the container
-    const view = await flow.serverSideRoutes[0].action({pathname: pathname});
+    const view = await flow.serverSideRoutes[0].action(context);
     // 2. Call event to ask server to put content in the container
-    await view.onBeforeEnter({pathname: pathname}, {prevent: () => {}});
+    await view.onBeforeEnter(context, {prevent: () => {}});
     // 3. Take the router outlet in the page and empty it
     const outlet = document.getElementById('div3');
     outlet.innerHTML = '';

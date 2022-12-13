@@ -101,10 +101,12 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
             // this case, the
             // location comes from the pathinfo + query parameters in the
             // request
-            String pathAndParams = request.getParameter(
+            String path = request.getParameter(
                     ApplicationConstants.REQUEST_LOCATION_PARAMETER);
-            if (pathAndParams != null) {
-                return new Location(pathAndParams);
+            String params = request
+                    .getParameter(ApplicationConstants.REQUEST_QUERY_PARAMETER);
+            if (path != null) {
+                return new Location(path, QueryParameters.fromString(params));
             }
 
             // Case 2, use the request
@@ -196,7 +198,7 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
                 throw new InvalidLocationException(
                         "Location parameter missing from bootstrap request to server.");
             }
-            LocationUtil.parsePathToSegments(pathAndParams);
+            LocationUtil.parsePathToSegments(pathAndParams, false);
         } catch (InvalidLocationException invalidLocationException) {
             response.sendError(400, "Invalid location: "
                     + invalidLocationException.getMessage());
