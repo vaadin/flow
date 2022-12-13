@@ -15,6 +15,13 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
+import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_STATISTICS_JSON;
+import static com.vaadin.flow.server.frontend.FrontendTools.INSTALL_NODE_LOCALLY;
+import static java.lang.String.format;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -24,6 +31,7 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -41,8 +49,6 @@ import java.util.Optional;
 import java.util.Scanner;
 import java.util.stream.Stream;
 
-import jakarta.servlet.ServletContext;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -53,6 +59,7 @@ import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
+import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
@@ -62,13 +69,7 @@ import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
-
-import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
-import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
-import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_STATISTICS_JSON;
-import static com.vaadin.flow.server.frontend.FrontendTools.INSTALL_NODE_LOCALLY;
-import static java.lang.String.format;
+import jakarta.servlet.ServletContext;
 
 /**
  * A class for static methods and definitions that might be used in different
@@ -520,17 +521,34 @@ public class FrontendUtils {
         try {
             Optional<DevModeHandler> devModeHandler = DevModeHandlerManager
                     .getDevModeHandler(service);
-            if (!config.isProductionMode() && devModeHandler.isPresent()) {
+            if (config.isProductionMode()) {
+                // In production mode, this is on the class path
+                content = getFileFromClassPath(service, path);
+            } else if (devModeHandler.isPresent()) {
                 content = getFileFromDevModeHandler(devModeHandler.get(), path);
+            } else {
+                // Get directly from the frontend folder in the project
+                content = getFileFromFrontendDir(config, path);
             }
 
-            if (content == null) {
-                content = getFileFromClassPath(service, path);
-            }
             return content != null ? streamToString(content) : null;
         } finally {
             IOUtils.closeQuietly(content);
         }
+    }
+
+    private static InputStream getFileFromFrontendDir(
+            AbstractConfiguration config, String path) {
+        File file = new File(new File(config.getProjectFolder(), "frontend"),
+                path);
+        if (file.exists()) {
+            try {
+                return Files.newInputStream(file.toPath());
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        }
+        return null;
     }
 
     private static InputStream getFileFromClassPath(VaadinService service,
@@ -1409,6 +1427,42 @@ public class FrontendUtils {
         }
 
         return mapping;
+    }
+
+    /**
+     * Finds the given file inside the express mode development bundle that is
+     * used.
+     * <p>
+     *
+     * @param projectDir
+     *            the project root folder
+     * @param filename
+     *            the file name inside the bundle
+     * @return a URL referring to the file inside the bundle or {@code null} if
+     *         the file was not found
+     */
+    public static URL findBundleFile(File projectDir, String filename)
+            throws IOException {
+        File devBundleFolder = getDevBundleFolder(projectDir);
+        if (devBundleFolder.exists()) {
+            // Has an application bundle
+            File bundleFile = new File(devBundleFolder, filename);
+            if (bundleFile.exists()) {
+                return bundleFile.toURI().toURL();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Get the folder where an application specific bundle is stored.
+     *
+     * @param projectDir
+     *            the project base directory
+     * @return the bundle directory
+     */
+    public static File getDevBundleFolder(File projectDir) {
+        return new File(projectDir, "dev-bundle");
     }
 
 }

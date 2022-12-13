@@ -17,6 +17,7 @@ package com.vaadin.flow.server.communication;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
@@ -26,8 +27,11 @@ import org.hamcrest.MatcherAssert;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
@@ -48,6 +52,7 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
+import com.vaadin.tests.util.TestUtil;
 
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_STATISTICS_JSON;
@@ -55,6 +60,18 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 
 public class WebComponentBootstrapHandlerViteTest {
+
+    @Rule
+    public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
+    private File projectRootFolder;
+
+    @Before
+    public void init() throws IOException {
+        projectRootFolder = temporaryFolder.newFolder();
+        TestUtil.createWebComponentHtmlStub(projectRootFolder);
+        TestUtil.createStatsJsonStub(projectRootFolder);
+    }
 
     private static class TestWebComponentBootstrapHandler
             extends WebComponentBootstrapHandler {
@@ -178,6 +195,7 @@ public class WebComponentBootstrapHandlerViteTest {
         MockDeploymentConfiguration config = (MockDeploymentConfiguration) service
                 .getDeploymentConfiguration();
         config.setEnableDevServer(false);
+        config.setProjectFolder(projectRootFolder);
 
         VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
         Mockito.when(request.getService()).thenReturn(service);
@@ -211,6 +229,7 @@ public class WebComponentBootstrapHandlerViteTest {
         MockDeploymentConfiguration config = (MockDeploymentConfiguration) service
                 .getDeploymentConfiguration();
         config.setEnableDevServer(false);
+        config.setProjectFolder(projectRootFolder);
 
         VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
         Mockito.when(request.getService()).thenReturn(service);
@@ -275,6 +294,7 @@ public class WebComponentBootstrapHandlerViteTest {
         MockDeploymentConfiguration config = (MockDeploymentConfiguration) service
                 .getDeploymentConfiguration();
         config.setEnableDevServer(false);
+        config.setProjectFolder(projectRootFolder);
 
         VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
         Mockito.when(request.getService()).thenReturn(service);
@@ -310,6 +330,7 @@ public class WebComponentBootstrapHandlerViteTest {
         config.setApplicationOrSystemProperty(SERVLET_PARAMETER_STATISTICS_JSON,
                 VAADIN_SERVLET_RESOURCES + "config/stats_no_export.json");
         config.setEnableDevServer(false);
+        config.setProjectFolder(projectRootFolder);
 
         VaadinServletRequest request = Mockito.mock(VaadinServletRequest.class);
         Mockito.when(request.getService()).thenReturn(service);

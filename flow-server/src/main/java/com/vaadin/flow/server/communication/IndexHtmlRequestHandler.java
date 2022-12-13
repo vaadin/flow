@@ -15,12 +15,18 @@
  */
 package com.vaadin.flow.server.communication;
 
-import java.io.File;
+import static com.vaadin.flow.component.UI.SERVER_ROUTING;
+import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8;
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Optional;
 
+import org.apache.commons.io.IOUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
@@ -48,12 +54,9 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import elemental.json.Json;
+import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
-
-import static com.vaadin.flow.component.UI.SERVER_ROUTING;
-import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * This class is responsible for serving the <code>index.html</code> according
@@ -190,7 +193,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 "window.Vaadin.devTools = window.Vaadin.devTools || {};"
                 + "window.Vaadin.devTools.createdCvdlElements = window.Vaadin.devTools.createdCvdlElements || [];"
                 + //
-                "const originalCustomElementDefineFn = window.customElements.define;"
+                "window.Vaadin.originalCustomElementDefineFn = window.Vaadin.originalCustomElementDefineFn || window.customElements.define;"
                 + //
                 "window.customElements.define = function (tagName, constructor, ...args) {"
                 + //
@@ -205,7 +208,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 "  }" + //
                 "}" + //
 
-                "originalCustomElementDefineFn.call(this, tagName, constructor, ...args);"
+                "window.Vaadin.originalCustomElementDefineFn.call(this, tagName, constructor, ...args);"
                 + //
                 "};");
 
@@ -319,30 +322,53 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
     private static Document getIndexHtmlDocument(VaadinService service)
             throws IOException {
+        DeploymentConfiguration config = service.getDeploymentConfiguration();
         String index = FrontendUtils.getIndexHtmlContent(service);
-        if (index != null) {
-            Document indexHtmlDocument = Jsoup.parse(index);
-            if (!getFeatureFlags(service).isEnabled(FeatureFlags.WEBPACK)) {
-                modifyIndexHtmlForVite(indexHtmlDocument);
+        if (index == null) {
+            if (config.isProductionMode()) {
+                throw new IOException(
+                        "Unable to find index.html. It should be available on the classpath when running in production mode");
+            } else {
+                throw new IOException(
+                        "Unable to find index.html. It should be available in the frontend folder when running in development mode");
             }
-            return indexHtmlDocument;
         }
-        String frontendDir = FrontendUtils
-                .getProjectFrontendDir(service.getDeploymentConfiguration());
-        String indexHtmlFilePath;
-        if (frontendDir.endsWith("/") || frontendDir.endsWith(File.separator)) {
-            indexHtmlFilePath = frontendDir + "index.html";
-        } else if (frontendDir.contains(File.separator)) {
-            indexHtmlFilePath = frontendDir + File.separatorChar + "index.html";
-        } else {
-            indexHtmlFilePath = frontendDir + "/index.html";
+
+        Document indexHtmlDocument = Jsoup.parse(index);
+        if (config.isProductionMode()) {
+            // The index.html is fetched from the bundle so it includes the
+            // entry point javascripts
+        } else if (!service.getDeploymentConfiguration().enableDevServer()) {
+            // When running without a frontend server, the index.html comes
+            // directly from the frontend folder and the JS entrypoint(s) need
+            // to be added
+            URL statsJsonUrl = FrontendUtils.findBundleFile(
+                    config.getProjectFolder(), "config/stats.json");
+            if (statsJsonUrl == null) {
+                throw new IllegalStateException(
+                        "The application is running in express mode but there is no bundle found. There is no dev-bundle in the project or on the classpath nor is there a default bundle included");
+            }
+            String statsJson = IOUtils.toString(statsJsonUrl,
+                    StandardCharsets.UTF_8);
+            addBundleEntryPoints(indexHtmlDocument, config,
+                    Json.parse(statsJson));
         }
-        String message = String.format(
-                "Failed to load content of '%1$s'. "
-                        + "It is required to have '%1$s' file when "
-                        + "using client side bootstrapping.",
-                indexHtmlFilePath);
-        throw new IOException(message);
+        if (!getFeatureFlags(service).isEnabled(FeatureFlags.WEBPACK)) {
+            modifyIndexHtmlForVite(indexHtmlDocument);
+        }
+        return indexHtmlDocument;
+    }
+
+    private static void addBundleEntryPoints(Document indexHtmlDocument,
+            DeploymentConfiguration config, JsonObject statsJson) {
+        JsonArray entryScripts = statsJson.getArray("entryScripts");
+        for (int i = 0; i < entryScripts.length(); i++) {
+            String entryScript = entryScripts.getString(i);
+            Element elm = new Element(SCRIPT);
+            elm.attr("type", "module");
+            elm.attr("src", "VAADIN/dev-bundle/" + entryScript);
+            indexHtmlDocument.head().appendChild(elm);
+        }
     }
 
     private static FeatureFlags getFeatureFlags(VaadinService service) {
@@ -365,7 +391,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     // circumstances under which it'll break. It seems unlikely that
     // VaadinContext
     // will be serialized/deserialized.
-    private static final class IndexHtmlHolder implements Serializable {
+    static final class IndexHtmlHolder implements Serializable {
         private final transient Document indexHtmlDocument;
 
         private IndexHtmlHolder(VaadinService service) {

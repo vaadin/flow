@@ -24,12 +24,16 @@ const appShellUrl = '.';
 
 const frontendFolder = path.resolve(__dirname, settings.frontendFolder);
 const themeFolder = path.resolve(frontendFolder, settings.themeFolder);
-const statsFolder = path.resolve(__dirname, settings.statsOutput);
 const frontendBundleFolder = path.resolve(__dirname, settings.frontendBundleOutput);
+const devBundleFolder = path.resolve(__dirname, settings.devBundleOutput);
+const devBundle = !!process.env.devBundle;
 const jarResourcesFolder = path.resolve(__dirname, settings.jarResourcesFolder);
 const generatedFlowImportsFolder = path.resolve(__dirname, settings.generatedFlowImportsFolder);
 const themeResourceFolder = path.resolve(__dirname, settings.themeResourceFolder);
 const projectPackageJsonFile = path.resolve(__dirname, 'package.json');
+
+const buildOutputFolder = devBundle ? devBundleFolder : frontendBundleFolder;
+const statsFolder = path.resolve(__dirname, devBundle ? settings.devBundleStatsOutput : settings.statsOutput);
 const statsFile = path.resolve(statsFolder, 'stats.json');
 const nodeModulesFolder = path.resolve(__dirname, 'node_modules');
 
@@ -533,7 +537,8 @@ export const vaadinConfig: UserConfigFn = (env) => {
       }
     },
     build: {
-      outDir: frontendBundleFolder,
+      outDir: buildOutputFolder,
+      emptyOutDir: devBundle,
       assetsDir: 'VAADIN/build',
       rollupOptions: {
         input: {
