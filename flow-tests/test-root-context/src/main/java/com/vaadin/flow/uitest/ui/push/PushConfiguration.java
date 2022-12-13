@@ -13,7 +13,7 @@ import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.server.VaadinRequest;
 
-public class PushConfigurationUI extends UI {
+public class PushConfiguration extends Div {
 
     private int counter = 0;
     private int counter2 = 0;
@@ -23,7 +23,7 @@ public class PushConfigurationUI extends UI {
 
         @Override
         public void run() {
-            access(() -> {
+            getUI().get().access(() -> {
                 counter2++;
                 serverCounterLabel.setText("" + counter2);
             });
@@ -32,7 +32,8 @@ public class PushConfigurationUI extends UI {
     private Div serverCounterLabel;
 
     @Override
-    protected void init(VaadinRequest request) {
+    protected void onAttach(AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
         add(new PushConfigurator(this));
         spacer();
 
@@ -66,15 +67,12 @@ public class PushConfigurationUI extends UI {
             counter2 = 0;
             serverCounterLabel.setText("0");
         }));
+
+        timer.scheduleAtFixedRate(task, new Date(), 1000);
     }
 
     private void spacer() {
         add(new Html("<hr/>"));
-    }
-
-    @Override
-    protected void onAttach(AttachEvent attachEvent) {
-        timer.scheduleAtFixedRate(task, new Date(), 1000);
     }
 
     @Override

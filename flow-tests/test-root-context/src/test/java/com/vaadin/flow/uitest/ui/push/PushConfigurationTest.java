@@ -8,7 +8,7 @@ import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.testcategory.PushTests;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
@@ -17,8 +17,8 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 abstract class PushConfigurationTest extends ChromeBrowserTest {
 
     @Override
-    protected Class<? extends UI> getUIClass() {
-        return PushConfigurationUI.class;
+    protected Class<? extends Component> getViewClass() {
+        return PushConfiguration.class;
     }
 
     @Override

@@ -13,7 +13,7 @@ import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Pre;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Transport;
-import com.vaadin.flow.uitest.components.NativeRadioButtonGroup;
+import com.vaadin.flow.uitest.ui.push.components.NativeRadioButtonGroup;
 
 public class PushConfigurator extends Div {
     private NativeRadioButtonGroup<PushMode> pushMode = new NativeRadioButtonGroup<>(
@@ -31,8 +31,8 @@ public class PushConfigurator extends Div {
 
     private Pre status = new Pre();
 
-    public PushConfigurator(UI ui) {
-        this.ui = ui;
+    public PushConfigurator(Div div) {
+        this.ui = div.getUI().get();
 
         pushMode.setId("push-mode");
         transport.setId("transport");
