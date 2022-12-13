@@ -1129,7 +1129,7 @@ public class UI extends Component
      * @see #navigate(String)
      * @see Router#navigate(UI, Location, NavigationTrigger)
      *
-     * @param pathname
+     * @param locationString
      *            the location to navigate to, not {@code null}
      * @param queryParameters
      *            query parameters that are used for navigation, not
@@ -1137,11 +1137,11 @@ public class UI extends Component
      * @throws NullPointerException
      *             if the location or queryParameters are null.
      */
-    public void navigate(String pathname, QueryParameters queryParameters) {
-        Objects.requireNonNull(pathname, "Location must not be null");
+    public void navigate(String locationString, QueryParameters queryParameters) {
+        Objects.requireNonNull(locationString, "Location must not be null");
         Objects.requireNonNull(queryParameters,
                 "Query parameters must not be null");
-        Location location = new Location(pathname, queryParameters);
+        Location location = new Location(locationString, queryParameters);
         if (Boolean.TRUE.equals(getSession().getAttribute(SERVER_ROUTING))) {
             // server-side routing
             renderViewForRoute(location, NavigationTrigger.UI_NAVIGATE);
