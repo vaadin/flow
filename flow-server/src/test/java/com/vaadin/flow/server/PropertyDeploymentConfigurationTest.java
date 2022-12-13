@@ -89,7 +89,7 @@ public class PropertyDeploymentConfigurationTest {
     }
 
     @Test
-    public void enableDevServer_valueIsProvidedViaPropertiesAndParent_valueFromPropertiesIsReturned() {
+    public void enableDevServer_valueIsProvidedViaPropertiesAndParent_valueIsAlwaysTrueIfExpressBuildIsOFF() {
         ApplicationConfiguration appConfig = mockAppConfig();
         Mockito.when(appConfig.enableDevServer()).thenReturn(false);
 
@@ -98,7 +98,7 @@ public class PropertyDeploymentConfigurationTest {
                 Boolean.TRUE.toString());
         PropertyDeploymentConfiguration config = createConfiguration(appConfig,
                 properties);
-        Assert.assertTrue(config.enableDevServer());
+        Assert.assertFalse(config.enableDevServer());
         Assert.assertEquals(properties, config.getInitParameters());
     }
 
