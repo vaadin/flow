@@ -81,13 +81,34 @@ public class LocationUtil {
      * @param path
      *            the path to parse
      * @return tha path split into parts
+     * @deprecated use {@link #parsePathToSegments(String, boolean)}
      */
+    @Deprecated
     public static List<String> parsePathToSegments(String path) {
+        return parsePathToSegments(path, true);
+    }
+
+    /**
+     * Parses the given path to parts split by the path separator.
+     * <p>
+     * Ignores the query string and fragment if either is present and
+     * removeExtraParts is true. The path is verified with
+     * {@link #verifyRelativePath(String)}.
+     *
+     * @param path
+     *            the path to parse
+     * @param removeExtraParts
+     *            true to remove a potential query string and a URI fragment,
+     *            false to use the path as is
+     * @return tha path split into parts
+     */
+    public static List<String> parsePathToSegments(String path,
+            boolean removeExtraParts) {
         final String basePath;
         int endIndex = path.indexOf(Location.QUERY_SEPARATOR);
-        if (endIndex >= 0) {
+        if (removeExtraParts && endIndex >= 0) {
             basePath = path.substring(0, endIndex);
-        } else if (path.contains("#")) {
+        } else if (removeExtraParts && path.contains("#")) {
             basePath = path.substring(0, path.indexOf('#'));
         } else {
             basePath = path;

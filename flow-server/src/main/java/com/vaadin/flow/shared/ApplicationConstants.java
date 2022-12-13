@@ -156,6 +156,10 @@ public class ApplicationConstants implements Serializable {
      * has the {@link ApplicationConstants#REQUEST_TYPE_INIT} value
      */
     public static final String REQUEST_LOCATION_PARAMETER = "location";
+    /**
+     * Parameter for the initial query string when JavaScript bootstrapping.
+     */
+    public static final String REQUEST_QUERY_PARAMETER = "query";
 
     /**
      * Get parameter used in framework requests to identify the request type.

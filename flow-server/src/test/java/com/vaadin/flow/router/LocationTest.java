@@ -257,7 +257,8 @@ public class LocationTest {
     public void locationWithParamsInUrlAndParameters() {
         Location location = new Location("foo/bar/?one&two=222",
                 getQueryParameters());
-        assertEquals(Arrays.asList("foo", "bar", ""), location.getSegments());
+        assertEquals(Arrays.asList("foo", "bar", "?one&two=222"),
+                location.getSegments());
         Assert.assertEquals(
                 "Query parameters should be taken from the constructor parameter, not from path",
                 "one=1&one=11&two=2&two=22&three=3",

@@ -107,8 +107,10 @@ public class JavaScriptBootstrapUI extends UI {
      *            client side element tag
      * @param clientElementId
      *            client side element id
-     * @param flowRoute
-     *            flow route that should be attached to the client element
+     * @param flowRoutePath
+     *            flow route path that should be attached to the client element
+     * @param flowRouteQuery
+     *            flow route query string
      * @param appShellTitle
      *            client side title of the application shell
      * @param historyState
@@ -117,18 +119,20 @@ public class JavaScriptBootstrapUI extends UI {
     @ClientCallable
     @AllowInert
     public void connectClient(String clientElementTag, String clientElementId,
-            String flowRoute, String appShellTitle, JsonValue historyState) {
+            String flowRoutePath, String flowRouteQuery, String appShellTitle,
+            JsonValue historyState) {
 
         if (appShellTitle != null && !appShellTitle.isEmpty()) {
             getInternals().setAppShellTitle(appShellTitle);
         }
 
-        final String trimmedRoute = PathUtil.trimPath(flowRoute);
-        if (!trimmedRoute.equals(flowRoute)) {
+        final String trimmedRoute = PathUtil.trimPath(flowRoutePath);
+        if (!trimmedRoute.equals(flowRoutePath)) {
             // See InternalRedirectHandler invoked via Router.
             getPage().getHistory().replaceState(null, trimmedRoute);
         }
-        final Location location = new Location(trimmedRoute);
+        final Location location = new Location(trimmedRoute,
+                QueryParameters.fromString(flowRouteQuery));
 
         if (wrapperElement == null) {
             // Create flow reference for the client outlet element
@@ -181,8 +185,9 @@ public class JavaScriptBootstrapUI extends UI {
      *            the route that is navigating to.
      */
     @ClientCallable
-    public void leaveNavigation(String route) {
-        navigateToPlaceholder(new Location(PathUtil.trimPath(route)));
+    public void leaveNavigation(String route, String query) {
+        navigateToPlaceholder(new Location(PathUtil.trimPath(route),
+                QueryParameters.fromString(query)));
 
         // Inform the client whether the navigation should be postponed
         if (isPostponed()) {
