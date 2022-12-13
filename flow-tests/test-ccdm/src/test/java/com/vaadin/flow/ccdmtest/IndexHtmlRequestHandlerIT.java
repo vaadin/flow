@@ -248,8 +248,8 @@ public class IndexHtmlRequestHandlerIT extends CCDMTest {
         waitForElementPresent(By.id("button3"));
         String inputParam = "123";
         String queryString = "query1=123&query2=456";
-        findElement(By.id("pathname"))
-                .sendKeys("paramview/" + inputParam + "?" + queryString);
+        findElement(By.id("pathname")).sendKeys("paramview/" + inputParam);
+        findElement(By.id("search")).sendKeys(queryString);
         findElement(By.id("button3")).click();
         waitForElementPresent(By.id("result"));
 
