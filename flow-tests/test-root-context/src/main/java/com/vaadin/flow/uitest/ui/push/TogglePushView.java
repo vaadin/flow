@@ -1,34 +1,38 @@
 package com.vaadin.flow.uitest.ui.push;
 
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.shared.communication.PushMode;
 
 @Route("com.vaadin.flow.uitest.ui.push.TogglePushView")
-public class TogglePushView extends Div {
+public class TogglePushView extends Div implements BeforeEnterObserver {
     private final Div counterLabel = new Div();
     private int counter = 0;
 
     @Override
-    protected void onAttach(AttachEvent attachEvent) {
-        super.onAttach(attachEvent);
+    public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
         updateCounter();
         add(counterLabel);
         counterLabel.setId("counter");
 
-        UI ui = attachEvent.getUI();
+        List<String> pushParam = beforeEnterEvent.getLocation()
+                .getQueryParameters().getParameters().get("push");
+        boolean disabled = pushParam != null && pushParam.size() == 1
+                && pushParam.get(0).equals("disabled");
+
+        UI ui = beforeEnterEvent.getUI();
         ui.getPushConfiguration()
-                .setPushMode("disabled".equals(VaadinRequest.getCurrent().getParameter("push"))
-                        ? PushMode.DISABLED
-                        : PushMode.AUTOMATIC);
+                .setPushMode(disabled ? PushMode.DISABLED : PushMode.AUTOMATIC);
 
         NativeButton pushSetting = new NativeButton();
         pushSetting.setId("push-setting");

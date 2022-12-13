@@ -58,7 +58,7 @@ abstract class PushConfigurationTest extends ChromeBrowserTest {
     @SuppressWarnings("unchecked")
     protected Map<String, ?> getClientPushConfig() {
         return (Map<String, ?>) getCommandExecutor().executeScript(
-                "return window.Vaadin.Flow.clients[Object.keys(window.Vaadin.Flow.clients)[0]].debug().pushConfiguration;");
+                "return window.Vaadin.Flow.clients.view.debug().pushConfiguration;");
     }
 
     @SuppressWarnings("unchecked")

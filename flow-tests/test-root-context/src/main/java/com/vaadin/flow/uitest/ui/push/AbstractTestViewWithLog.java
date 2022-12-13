@@ -17,8 +17,10 @@ public abstract class AbstractTestViewWithLog extends Div {
         CustomPush push = getClass().getAnnotation(CustomPush.class);
 
         if (push != null) {
-            attachEvent.getUI().getPushConfiguration().setPushMode(push.value());
-            attachEvent.getUI().getPushConfiguration().setTransport(push.transport());
+            attachEvent.getUI().getPushConfiguration()
+                    .setPushMode(push.value());
+            attachEvent.getUI().getPushConfiguration()
+                    .setTransport(push.transport());
         }
 
         add(log);

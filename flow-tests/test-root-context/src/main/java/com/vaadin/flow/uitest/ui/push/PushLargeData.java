@@ -85,8 +85,8 @@ public abstract class PushLargeData extends AbstractTestViewWithLog {
         private Integer duration;
         private final PushLargeData pushLargeData;
 
-        public PushRunnable(PushLargeData pushLargeData, Integer size, Integer interval,
-                Integer duration) {
+        public PushRunnable(PushLargeData pushLargeData, Integer size,
+                Integer interval, Integer duration) {
             this.size = size;
             this.interval = interval;
             this.duration = duration;
