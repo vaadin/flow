@@ -534,7 +534,7 @@ public class IndexHtmlRequestHandlerTest {
         Mockito.verify(session, Mockito.times(0)).setAttribute(SERVER_ROUTING,
                 Boolean.FALSE);
 
-        UI.getCurrent().connectClient("foo", "bar", "/foo", "", null);
+        UI.getCurrent().connectClient("foo", "bar", "/foo", "", "", null);
 
         Mockito.verify(session, Mockito.times(1)).setAttribute(SERVER_ROUTING,
                 Boolean.FALSE);

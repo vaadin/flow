@@ -120,13 +120,14 @@ jobs:
           cmd="mvn -B -ntp -T 1C $ARGS"
           set -x -e -o pipefail
           $cmd verify -Dmaven.javadoc.skip=false | tee mvn-unit-tests-${{matrix.current}}.out
+      - name: Package test-report files
+        if: ${{ failure() || success() }}
+        run: find . -name surefire-reports -o -name failsafe-reports -o -name error-screenshots -o -name "mvn-*.out" | tar -czf tests-report-unit-${{matrix.current}}.tgz -T -
       - uses: actions/upload-artifact@v3
         if: ${{ failure() || success() }}
         with:
           name: tests-output
-          path: |
-            **/target/*-reports/*
-            mvn-*.out
+          path: tests-report-*.tgz
   it-tests:
     needs: build
     timeout-minutes: 20
@@ -199,14 +200,14 @@ jobs:
           cmd="mvn -V -B -ntp -e -fae -Dcom.vaadin.testbench.Parameters.testsInParallel=5 -Dfailsafe.rerunFailingTestsCount=2 -Dmaven.wagon.httpconnectionManager.ttlSeconds=25 -Dmaven.wagon.http.retryHandler.count=3 $ARGS"
           set -x -e -o pipefail
           $cmd verify | tee -a mvn-it-tests-${{matrix.current}}.out
+      - name: Package test-report files
+        if: ${{ failure() || success() }}
+        run: find . -name surefire-reports -o -name failsafe-reports -o -name error-screenshots -o -name "mvn-*.out" | tar -czf tests-report-it-${{matrix.current}}.tgz -T -
       - uses: actions/upload-artifact@v3
         if: ${{ failure() || success() }}
         with:
           name: tests-output
-          path: |
-            **/target/*-reports/*
-            **/error-screenshots/*.png
-            mvn-*.out
+          path: tests-report-*.tgz
   test-results:
     permissions:
       issues: read
@@ -222,8 +223,8 @@ jobs:
       - uses: actions/download-artifact@v3
         with:
           name: tests-output
-      - name: Display structure of downloaded files
-        run: ls -R
+      - name: extract downloaded files
+        run: for i in *.tgz; do tar xvf $i; done
       - name: Publish Unit Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
@@ -234,20 +235,11 @@ jobs:
         with:
           name: |
             saved-workspace
-            tests-output
       - name: Compute Stats
         run: |
           ./scripts/computeMatrix.js test-results >> $GITHUB_STEP_SUMMARY
-      - uses: actions/upload-artifact@v3
-        if: ${{ always() }}
-        with:
-          name: test-reports
-          path: |
-            **/target/*-reports/*
-            **/error-screenshots/*.png
-            mvn-*.out
-      - name: Check Failure Status
+      - name: Set Failure Status
+        if: ${{ needs.unit-tests.result != 'success' || needs.unit-tests.result != 'success' }}
         run: |
-          [ ${{needs.unit-tests.result}} != success -o ${{needs.it-tests.result}} != success ] \
-            && echo "🚫 THERE ARE TEST MODULES WITH FAILURES" | tee -a $GITHUB_STEP_SUMMARY \
-            && exit 1 || exit 0
+            echo "🚫 THERE ARE TEST MODULES WITH FAILURES" | tee -a $GITHUB_STEP_SUMMARY
+            exit 1
