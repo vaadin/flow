@@ -72,8 +72,8 @@ public @interface JsModule {
      * the browser.
      * <p>
      * NOTE: In the case of using JsModule with LitTemplate, the value needs to
-     * point to a real file as it will be copied to the stats.json. An exported
-     * alias from the package will not work.
+     * point to a real file as it will be copied to the templates folder under
+     * target folder. An exported alias from the package will not work.
      *
      * @return a JavaScript module identifier
      */
