@@ -1,16 +1,15 @@
-package com.vaadin.flow.uitest.ui.push;
+package com.vaadin.flow.uitest.ui.push.components;
 
 import java.util.Timer;
 import java.util.TimerTask;
 
 import com.vaadin.flow.component.DetachEvent;
-import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.flow.server.VaadinRequest;
 
-public class ClientServerCounterUI extends UI {
+public class ClientServerCounter extends Div {
 
     public static final String CLIENT_COUNTER_ID = "clientCounter";
 
@@ -30,8 +29,7 @@ public class ClientServerCounterUI extends UI {
 
     private Element serverCounterElement;
 
-    @Override
-    protected void init(VaadinRequest request) {
+    public ClientServerCounter() {
         spacer();
 
         // Client counter
@@ -60,7 +58,8 @@ public class ClientServerCounterUI extends UI {
         serverCounterElement.setText(serverCounter + "");
         getElement().appendChild(serverCounterElement);
 
-        NativeButton startTimer = new NativeButton("Start timer", e -> {
+        NativeButton startTimer = new NativeButton("Start timer");
+        startTimer.addClickListener(e -> {
             serverCounter = 0;
             if (task != null) {
                 task.cancel();
@@ -68,7 +67,7 @@ public class ClientServerCounterUI extends UI {
             task = new TimerTask() {
                 @Override
                 public void run() {
-                    access(() -> {
+                    startTimer.getUI().get().access(() -> {
                         serverCounter++;
                         serverCounterElement.setText(serverCounter + "");
                     });

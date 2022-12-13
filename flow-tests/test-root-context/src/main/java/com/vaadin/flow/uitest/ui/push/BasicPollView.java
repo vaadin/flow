@@ -15,13 +15,18 @@
  */
 package com.vaadin.flow.uitest.ui.push;
 
+import com.vaadin.flow.component.AttachEvent;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.flow.uitest.ui.push.components.ClientServerCounter;
 
-public class BasicPollUI extends ClientServerCounterUI {
+@Route(value = "com.vaadin.flow.uitest.ui.push.BasicPollView", layout = ViewTestLayout.class)
+public class BasicPollView extends ClientServerCounter {
 
     public static final String STOP_POLLING_BUTTON = "stopPolling";
     public static final String START_POLLING_BUTTON = "startPolling";
@@ -31,24 +36,25 @@ public class BasicPollUI extends ClientServerCounterUI {
     int pollCount = 0;
 
     @Override
-    protected void init(VaadinRequest request) {
-        super.init(request);
+    protected void onAttach(AttachEvent attachEvent) {
+        super.onAttach(attachEvent);
+        UI ui = attachEvent.getUI();
         getElement().insertChild(0, pollInterval);
 
         getElement().insertChild(0, pollCounter);
-        setPollInterval(500);
-        addPollListener(e -> {
+        ui.setPollInterval(500);
+        ui.addPollListener(e -> {
             pollCounter.setText("Polls received: " + (++pollCount));
         });
 
         NativeButton stopPolling = new NativeButton("Stop polling", e -> {
-            setPollInterval(-1);
+            ui.setPollInterval(-1);
             updatePollIntervalText();
         });
         stopPolling.setId(STOP_POLLING_BUTTON);
 
         NativeButton startPolling = new NativeButton("Start polling", e -> {
-            setPollInterval(500);
+            ui.setPollInterval(500);
             updatePollIntervalText();
         });
         startPolling.setId(START_POLLING_BUTTON);
@@ -61,7 +67,8 @@ public class BasicPollUI extends ClientServerCounterUI {
     }
 
     private void updatePollIntervalText() {
-        pollInterval.setText("Poll interval: " + getPollInterval() + "ms");
+        pollInterval.setText(
+                "Poll interval: " + getUI().get().getPollInterval() + "ms");
     }
 
 }

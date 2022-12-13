@@ -15,26 +15,30 @@
  */
 package com.vaadin.flow.uitest.ui.push;
 
-import com.vaadin.flow.component.page.Push;
-import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.component.AttachEvent;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
+import com.vaadin.flow.uitest.ui.push.components.ClientServerCounter;
 
 /*
  * Note that @Push is generally not supported in this location, but instead
  * explicitly picked up by logic in the BasicPushUI constructor.
  */
-@Push
-public class BasicPushUI extends ClientServerCounterUI {
+@CustomPush
+@Route(value = "com.vaadin.flow.uitest.ui.push.BasicPushView", layout = ViewTestLayout.class)
+public class BasicPushView extends ClientServerCounter {
+
     @Override
-    protected void init(VaadinRequest request) {
+    protected void onAttach(AttachEvent attachEvent) {
+        UI ui = attachEvent.getUI();
         /*
          * Read push settings from the UI instead of the the navigation target /
          * router layout to preserve the structure of these legacy testing UIs
          */
-        Push push = getClass().getAnnotation(Push.class);
+        CustomPush push = getClass().getAnnotation(CustomPush.class);
 
-        getPushConfiguration().setPushMode(push.value());
-        getPushConfiguration().setTransport(push.transport());
-
-        super.init(request);
+        ui.getPushConfiguration().setPushMode(push.value());
+        ui.getPushConfiguration().setTransport(push.transport());
     }
 }

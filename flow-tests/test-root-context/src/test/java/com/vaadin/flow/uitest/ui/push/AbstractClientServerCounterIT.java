@@ -8,6 +8,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedCondition;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.flow.uitest.ui.push.components.ClientServerCounter;
 import com.vaadin.testbench.TestBenchTestCase;
 
 public abstract class AbstractClientServerCounterIT extends ChromeBrowserTest {
@@ -33,7 +34,7 @@ public abstract class AbstractClientServerCounterIT extends ChromeBrowserTest {
 
     public static int getClientCounter(TestBenchTestCase t) {
         WebElement clientCounterElem = t
-                .findElement(By.id(ClientServerCounterUI.CLIENT_COUNTER_ID));
+                .findElement(By.id(ClientServerCounter.CLIENT_COUNTER_ID));
         return Integer.parseInt(clientCounterElem.getText());
     }
 
@@ -50,7 +51,7 @@ public abstract class AbstractClientServerCounterIT extends ChromeBrowserTest {
         for (int i = 0; i < 10; i++) {
             try {
                 WebElement serverCounterElem = t.findElement(
-                        By.id(ClientServerCounterUI.SERVER_COUNTER_ID));
+                        By.id(ClientServerCounter.SERVER_COUNTER_ID));
                 return Integer.parseInt(serverCounterElem.getText());
             } catch (WebDriverException e) {
                 lastException = e;
@@ -61,15 +62,15 @@ public abstract class AbstractClientServerCounterIT extends ChromeBrowserTest {
     }
 
     public static WebElement getServerCounterStartButton(TestBenchTestCase t) {
-        return t.findElement(By.id(ClientServerCounterUI.START_TIMER_ID));
+        return t.findElement(By.id(ClientServerCounter.START_TIMER_ID));
     }
 
     public static WebElement getServerCounterStopButton(TestBenchTestCase t) {
-        return t.findElement(By.id(ClientServerCounterUI.STOP_TIMER_ID));
+        return t.findElement(By.id(ClientServerCounter.STOP_TIMER_ID));
     }
 
     public static WebElement getIncrementButton(TestBenchTestCase t) {
-        return t.findElement(By.id(ClientServerCounterUI.INCREMENT_BUTTON_ID));
+        return t.findElement(By.id(ClientServerCounter.INCREMENT_BUTTON_ID));
     }
 
     protected void waitUntilClientCounterChanges(final int expectedValue) {

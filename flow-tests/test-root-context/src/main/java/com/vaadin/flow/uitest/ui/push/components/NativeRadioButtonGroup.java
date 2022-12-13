@@ -1,4 +1,4 @@
-package com.vaadin.flow.uitest.components;
+package com.vaadin.flow.uitest.ui.push.components;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
