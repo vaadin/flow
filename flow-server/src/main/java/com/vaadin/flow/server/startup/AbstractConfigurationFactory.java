@@ -81,12 +81,6 @@ public class AbstractConfigurationFactory implements Serializable {
         }
         if (buildInfo.hasKey(EXTERNAL_STATS_FILE_TOKEN)
                 || buildInfo.hasKey(EXTERNAL_STATS_URL_TOKEN)) {
-            // If external stats file is flagged then
-            // dev server should be false - only variable that can
-            // be configured, in addition to stats variables, is
-            // production mode
-            params.put(SERVLET_PARAMETER_ENABLE_DEV_SERVER,
-                    Boolean.toString(false));
             params.put(EXTERNAL_STATS_FILE, Boolean.toString(true));
             if (buildInfo.hasKey(EXTERNAL_STATS_URL_TOKEN)) {
                 params.put(EXTERNAL_STATS_URL,

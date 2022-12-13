@@ -14,7 +14,7 @@ import java.util.stream.Stream;
 
 import jakarta.servlet.http.HttpServletRequest;
 
-import com.vaadin.flow.component.internal.JavaScriptBootstrapUI.ClientViewPlaceholder;
+import com.vaadin.flow.component.UI.ClientViewPlaceholder;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.InternalServerError;
 import com.vaadin.flow.router.RouteNotFoundError;

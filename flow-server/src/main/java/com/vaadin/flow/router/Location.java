@@ -56,7 +56,7 @@ public class Location implements Serializable {
      */
     public Location(String location) throws InvalidLocationException {
         this(LocationUtil.parsePathToSegments(
-                LocationUtil.ensureRelativeNonNull(location)),
+                LocationUtil.ensureRelativeNonNull(location), true),
                 LocationUtil.parseQueryParameters(location));
         int fragmentIndex = location == null ? -1 : location.indexOf('#');
         if (fragmentIndex > -1) {
@@ -81,15 +81,14 @@ public class Location implements Serializable {
      *            interpreted as <code>""</code>
      * @param queryParameters
      *            query parameters information, not {@code null}
-     * @throws IllegalArgumentException
-     *             if location string contains query parameters inside
      * @throws InvalidLocationException
      *             If the given string cannot be used for the {@link Location}
      */
     public Location(String location, QueryParameters queryParameters)
             throws InvalidLocationException {
         this(LocationUtil.parsePathToSegments(
-                LocationUtil.ensureRelativeNonNull(location)), queryParameters);
+                LocationUtil.ensureRelativeNonNull(location), false),
+                queryParameters);
     }
 
     /**

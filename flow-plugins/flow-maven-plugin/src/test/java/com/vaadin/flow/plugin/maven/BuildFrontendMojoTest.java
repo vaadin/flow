@@ -461,7 +461,7 @@ public class BuildFrontendMojoTest {
     }
 
     @Test
-    public void existingTokenFile_enableDevServerShouldBeAdded()
+    public void existingTokenFile_parametersShouldBeRemoved()
             throws IOException, IllegalAccessException, MojoExecutionException,
             MojoFailureException {
 
@@ -499,7 +499,8 @@ public class BuildFrontendMojoTest {
         String json = org.apache.commons.io.FileUtils
                 .readFileToString(tokenFile, "UTF-8");
         JsonObject buildInfo = JsonUtil.parse(json);
-        Assert.assertNotNull("devMode token should be available",
+        Assert.assertNull(
+                "enable dev server token shouldn't be added " + "automatically",
                 buildInfo.get(SERVLET_PARAMETER_ENABLE_DEV_SERVER));
         Assert.assertNotNull("productionMode token should be available",
                 buildInfo.get(SERVLET_PARAMETER_PRODUCTION_MODE));

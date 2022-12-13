@@ -10,24 +10,26 @@ permissions:
 jobs:
   build:
     timeout-minutes: 20
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     outputs:
       matrix-unit: ${{ steps.set-matrix.outputs.matrix-unit }}
       matrix-it: ${{ steps.set-matrix.outputs.matrix-it }}
     steps:
-      - uses: ZheSun88/check-user-permission@triggering-actor
-        id: check
+      - uses: actions-cool/check-user-permission@main
+        id: checkUser
         with:
+          username: ${{github.triggering_actor}}
           require: 'write'
-      - name: Check Secrets
+      - name: Fail on external workflow triggering
+        if: ${{ steps.checkUser.outputs.require-result != 'true' }}
         run: |
-          [ "${{ steps.check.outputs.require-result }}" != "true" ] \
-            && echo "::error::!! NO USER PERMISSIONS FOR RUNNING VALIDATION: Check if the PR is from an external contributor !!" \
-            && exit 1 || exit 0
-          TB_LICENSE="${{secrets.TB_LICENSE}}"
-          [ -z "$TB_LICENSE" ] \
-            && echo "::error::!! ERROR NO TB_LICENSE: Check that this repo has a valid TB_LICENSE secret !!" \
-            && exit 1 || exit 0
+          echo "🚫 **${{ github.actor }}** is an external contributor, a **${{github.repository}}** team member has to review this changes and re-run this build" \
+            | tee -a $GITHUB_STEP_SUMMARY && exit 1
+      - name: Check secrets
+        run: |
+          [ -z "${{secrets.TB_LICENSE}}" ] \
+            && echo "🚫 **TB_LICENSE** is not defined, check that **${{github.repository}}** repo has a valid secret" \
+            | tee -a $GITHUB_STEP_SUMMARY && exit 1 || exit 0
       - uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.sha }}
@@ -67,12 +69,10 @@ jobs:
   unit-tests:
     needs: build
     timeout-minutes: 20
-    outputs:
-      failure: ${{steps.set-failure.outputs.failure}}
     strategy:
       fail-fast: false
       matrix: ${{fromJson(needs.build.outputs.matrix-unit)}}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
         with:
@@ -91,13 +91,21 @@ jobs:
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-
       - uses: actions/download-artifact@v3
+        if: ${{ github.run_attempt == 1 }}
         with:
           name: saved-workspace
       - name: Restore Workspace
+        if: ${{ github.run_attempt == 1 }}
         run: |
           set -x
           tar xf workspace.tar
           tar cf - .m2 | (cd ~ && tar xf -)
+      - name: Compile and Install Flow
+        if: ${{ github.run_attempt > 1 }}
+        run: |
+          ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
+          cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
+          eval $cmd -T 2C -q || eval $cmd
       - name: Set TB License
         run: |
           TB_LICENSE=${{secrets.TB_LICENSE}}
@@ -112,26 +120,21 @@ jobs:
           cmd="mvn -B -ntp -T 1C $ARGS"
           set -x -e -o pipefail
           $cmd verify -Dmaven.javadoc.skip=false | tee mvn-unit-tests-${{matrix.current}}.out
-      - name: Set build status flag
-        id: set-failure
-        if: ${{ failure() || cancelled() }}
-        run: echo "failure=true" >> $GITHUB_OUTPUT
+      - name: Package test-report files
+        if: ${{ failure() || success() }}
+        run: find . -name surefire-reports -o -name failsafe-reports -o -name error-screenshots -o -name "mvn-*.out" | tar -czf tests-report-unit-${{matrix.current}}.tgz -T -
       - uses: actions/upload-artifact@v3
         if: ${{ failure() || success() }}
         with:
-          name: unit-tests-output
-          path: |
-            **/target/*-reports/*
-            mvn-*.out
+          name: tests-output
+          path: tests-report-*.tgz
   it-tests:
     needs: build
     timeout-minutes: 20
-    outputs:
-      failure: ${{steps.set-failure.outputs.failure}}
     strategy:
       fail-fast: false
       matrix: ${{fromJson(needs.build.outputs.matrix-it)}}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
         with:
@@ -160,12 +163,20 @@ jobs:
           chrome-version: stable
       - uses: nanasess/setup-chromedriver@master
       - uses: actions/download-artifact@v3
+        if: ${{ github.run_attempt == 1 }}
         with:
           name: saved-workspace
       - name: Restore Workspace
+        if: ${{ github.run_attempt == 1 }}
         run: |
           tar xf workspace.tar
           tar cf - .m2 | (cd ~ && tar xf -)
+      - name: Compile and Install Flow
+        if: ${{ github.run_attempt > 1 }}
+        run: |
+          ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
+          cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
+          eval $cmd -T 2C -q || eval $cmd
       - name: Set TB License
         run: |
           TB_LICENSE=${{secrets.TB_LICENSE}}
@@ -189,64 +200,46 @@ jobs:
           cmd="mvn -V -B -ntp -e -fae -Dcom.vaadin.testbench.Parameters.testsInParallel=5 -Dfailsafe.rerunFailingTestsCount=2 -Dmaven.wagon.httpconnectionManager.ttlSeconds=25 -Dmaven.wagon.http.retryHandler.count=3 $ARGS"
           set -x -e -o pipefail
           $cmd verify | tee -a mvn-it-tests-${{matrix.current}}.out
-      - name: Set build status flag
-        id: set-failure
-        if: ${{ failure() || cancelled() }}
-        run: echo "failure=true" >> $GITHUB_OUTPUT
+      - name: Package test-report files
+        if: ${{ failure() || success() }}
+        run: find . -name surefire-reports -o -name failsafe-reports -o -name error-screenshots -o -name "mvn-*.out" | tar -czf tests-report-it-${{matrix.current}}.tgz -T -
       - uses: actions/upload-artifact@v3
         if: ${{ failure() || success() }}
         with:
-          name: it-tests-output
-          path: |
-            **/target/*-reports/*
-            **/error-screenshots/*.png
-            mvn-*.out
+          name: tests-output
+          path: tests-report-*.tgz
   test-results:
     permissions:
-      # for EnricoMi/publish-unit-test-result-action
       issues: read
       checks: write
       pull-requests: write
     if: ${{ failure() || success() }}
     needs: [unit-tests, it-tests]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v3
         with:
           ref: ${{ github.event.pull_request.head.sha }}
       - uses: actions/download-artifact@v3
         with:
-          name: unit-tests-output
-      - uses: actions/download-artifact@v3
-        with:
-          name: it-tests-output
-      - name: Display structure of downloaded files
-        run: ls -R
+          name: tests-output
+      - name: extract downloaded files
+        run: for i in *.tgz; do tar xvf $i; done
       - name: Publish Unit Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
-          files: "**/target/*-reports/TEST*.xml"
+          junit_files: "**/target/*-reports/TEST*.xml"
           check_run_annotations: all tests, skipped tests
           check_run_annotations_branch: master, 9.0
-      - uses: geekyeggo/delete-artifact@v1
+      - uses: geekyeggo/delete-artifact@v2
         with:
           name: |
             saved-workspace
-            unit-tests-output
-            it-tests-output
       - name: Compute Stats
         run: |
-          ./scripts/computeMatrix.js test-results
-      - uses: actions/upload-artifact@v3
-        if: ${{ always() }}
-        with:
-          name: test-reports
-          path: |
-            **/target/*-reports/*
-            **/error-screenshots/*.png
-            mvn-*.out
-      - name: Check Failure Status
+          ./scripts/computeMatrix.js test-results >> $GITHUB_STEP_SUMMARY
+      - name: Set Failure Status
+        if: ${{ needs.unit-tests.result != 'success' || needs.unit-tests.result != 'success' }}
         run: |
-          fail="${{ needs.unit-tests.outputs.failure }}${{ needs.it-tests.outputs.failure }}"
-          [ -n "$fail" ] && echo "::error::!! THERE ARE TEST MODULES WITH FAILURES !!" && exit 1 || exit 0
-
+            echo "🚫 THERE ARE TEST MODULES WITH FAILURES" | tee -a $GITHUB_STEP_SUMMARY
+            exit 1

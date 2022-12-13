@@ -43,6 +43,10 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
+        if (productionMode != null) {
+            logWarn("The productionMode parameter no longer has any effect. Production mode is automatically enabled when you run the build-frontend target.");
+        }
+
         // propagate info via System properties and token file
         File tokenFile = BuildFrontendUtil.propagateBuildInfo(this);
 

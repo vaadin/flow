@@ -15,14 +15,19 @@
  */
 package com.vaadin.flow.server;
 
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Properties;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import static org.junit.Assert.assertEquals;
@@ -216,6 +221,25 @@ public class DefaultDeploymentConfigurationTest {
         // the deployment configuration parameter takes precedence over parent
         // config
         Assert.assertTrue(config.isXsrfProtectionEnabled());
+    }
+
+    @Test
+    public void enableDevServerParameter_expressBuildFeatureFlagIsON_resetsEnableDevServerToFalse() {
+        FeatureFlags featureFlags = Mockito.mock(FeatureFlags.class);
+        Mockito.when(featureFlags.isEnabled(FeatureFlags.EXPRESS_BUILD))
+                .thenReturn(true);
+
+        try (MockedStatic<FeatureFlags> featureFlagsStatic = Mockito
+                .mockStatic(FeatureFlags.class)) {
+            featureFlagsStatic.when(() -> FeatureFlags.get(context))
+                    .thenReturn(featureFlags);
+            DefaultDeploymentConfiguration config = createDeploymentConfig(
+                    new Properties());
+            Assert.assertFalse(
+                    "Expected dev server to be disabled when the "
+                            + "Express Build feature flag is ON",
+                    config.enableDevServer());
+        }
     }
 
     private DefaultDeploymentConfiguration createDeploymentConfig(

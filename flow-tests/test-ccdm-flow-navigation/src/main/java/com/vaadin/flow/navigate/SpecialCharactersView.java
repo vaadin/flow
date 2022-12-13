@@ -13,21 +13,27 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.uitest.ui;
+
+package com.vaadin.flow.navigate;
 
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Input;
-import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouterLink;
 
-@Route("rpc-logger")
-public class RpcLogger extends Div {
+@Route(value = "special åäö $%20'´`")
+public class SpecialCharactersView extends Span {
 
-    public RpcLogger() {
-        NativeButton button = new NativeButton("Click Me");
-        button.addClickListener(event -> {
-        });
-        Input input = new Input();
-        add(button, input);
+    public SpecialCharactersView() {
+        setId("special-view");
+        Div div = new Div();
+        div.setId("title");
+        div.setText("This is the special view");
+        add(div);
+        RouterLink helloLink = new RouterLink("Hello world view",
+                HelloWorldView.class);
+        helloLink.setId("navigate-hello");
+        add(helloLink);
     }
+
 }

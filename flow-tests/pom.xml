@@ -46,6 +46,7 @@
         <!-- make sure we do not leave webpack-dev-server running after IT -->
         <vaadin.reuseDevServer>false</vaadin.reuseDevServer>
         <vaadin.devServerPort>0</vaadin.devServerPort>
+        <vaadin.enableDevServer>true</vaadin.enableDevServer>
     </properties>
 
     <dependencies>
@@ -229,6 +230,7 @@
                             <jetty.scantrigger>${jetty.scantrigger}</jetty.scantrigger>
                             <!-- Allow test clients not on localhost to connect to Vite-->
                             <vaadin.devmode.vite.options>${vaadin.devmode.vite.options}</vaadin.devmode.vite.options>
+                            <vaadin.enableDevServer>${vaadin.enableDevServer}</vaadin.enableDevServer>
                         </systemProperties>
                     </configuration>
                 </plugin>

@@ -148,9 +148,6 @@ public class PropertyDeploymentConfiguration
 
     @Override
     public boolean enableDevServer() {
-        if (isOwnProperty(InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER)) {
-            return super.enableDevServer();
-        }
         return parentConfig.enableDevServer();
     }
 

@@ -15,11 +15,15 @@
  */
 package com.vaadin.flow.server.startup;
 
+import java.util.Enumeration;
 import java.util.function.Supplier;
 
+import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.VaadinContext;
 
@@ -33,6 +37,46 @@ public class ApplicationConfigurationTest {
                 invocation -> invocation.getArgument(1, Supplier.class).get())
                 .when(context).getAttribute(Mockito.any(), Mockito.any());
         ApplicationConfiguration.get(context);
+    }
+
+    @Test
+    public void enableDevServerParameter_expressBuildFeatureFlagIsON_resetsEnableDevServerToFalse() {
+        FeatureFlags featureFlags = Mockito.mock(FeatureFlags.class);
+        Mockito.when(featureFlags.isEnabled(FeatureFlags.EXPRESS_BUILD))
+                .thenReturn(true);
+        VaadinContext vaadinContext = Mockito.mock(VaadinContext.class);
+
+        class EmptyEnumeration implements Enumeration<String> {
+            @Override
+            public boolean hasMoreElements() {
+                return false;
+            }
+
+            @Override
+            public String nextElement() {
+                return null;
+            }
+        }
+
+        Mockito.when(vaadinContext.getContextParameterNames())
+                .thenReturn(new EmptyEnumeration());
+
+        try (MockedStatic<FeatureFlags> featureFlagsStatic = Mockito
+                .mockStatic(FeatureFlags.class)) {
+            featureFlagsStatic.when(() -> FeatureFlags.get(vaadinContext))
+                    .thenReturn(featureFlags);
+            ApplicationConfiguration applicationConfiguration = new DefaultApplicationConfigurationFactory() {
+                @Override
+                protected String getTokenFileFromClassloader(
+                        VaadinContext context) {
+                    return null;
+                }
+            }.create(vaadinContext);
+            Assert.assertFalse(
+                    "Expected dev server to be disabled when the "
+                            + "Express Build feature flag is ON",
+                    applicationConfiguration.enableDevServer());
+        }
     }
 
 }

@@ -57,11 +57,6 @@
             <scope>test</scope>
         </dependency>
 
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>flow-server-production-mode</artifactId>
-            <version>${project.version}</version>
-        </dependency>
     </dependencies>
 
     <build>
@@ -71,9 +66,6 @@
                 <artifactId>flow-maven-plugin</artifactId>
                 <version>${project.version}</version>
                 <!-- Configure the output folder so that spring-boot-maven-plugin gets the generated resources -->
-                <configuration>
-                    <productionMode>true</productionMode>
-                </configuration>
                 <executions>
                     <execution>
                         <goals>

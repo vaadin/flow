@@ -1,5 +1,6 @@
 package com.vaadin.tests.util;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -30,6 +31,8 @@ public class MockDeploymentConfiguration
     private boolean eagerServerLoad = false;
     private boolean devModeLiveReloadEnabled = false;
     private boolean devToolsEnabled = true;
+
+    private File projectFolder = null;
 
     public MockDeploymentConfiguration() {
         super(Collections.emptyMap());
@@ -107,6 +110,11 @@ public class MockDeploymentConfiguration
     @Override
     public boolean isCloseIdleSessions() {
         return closeIdleSessions;
+    }
+
+    @Override
+    public File getProjectFolder() {
+        return projectFolder;
     }
 
     public void setCloseIdleSessions(boolean closeIdleSessions) {
@@ -195,5 +203,9 @@ public class MockDeploymentConfiguration
 
     public void setDevToolsEnabled(boolean devToolsEnabled) {
         this.devToolsEnabled = devToolsEnabled;
+    }
+
+    public void setProjectFolder(File projectFolder) {
+        this.projectFolder = projectFolder;
     }
 }

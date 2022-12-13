@@ -19,6 +19,7 @@ import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -43,6 +44,7 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.ResponseWriter;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
@@ -61,6 +63,7 @@ import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
  * @since 1.0
  */
 public class StaticFileServer implements StaticFileHandler {
+    private static final String EXPRESS_MODE_BUNDLE_PATH_PREFIX = "/VAADIN/dev-bundle/";
     static final String PROPERTY_FIX_INCORRECT_WEBJAR_PATHS = Constants.VAADIN_PREFIX
             + "fixIncorrectWebjarPaths";
     private static final Pattern INCORRECT_WEBJAR_PATH_REGEX = Pattern
@@ -249,11 +252,18 @@ public class StaticFileServer implements StaticFileHandler {
         }
 
         URL resourceUrl = null;
-        if (APP_THEME_PATTERN.matcher(filenameWithPath).find()) {
+        if (!deploymentConfiguration.isProductionMode() && filenameWithPath
+                .startsWith(EXPRESS_MODE_BUNDLE_PATH_PREFIX)) {
+            // Express mode bundle file
+            String filenameInsideBundle = filenameWithPath
+                    .substring(EXPRESS_MODE_BUNDLE_PATH_PREFIX.length());
+            resourceUrl = FrontendUtils.findBundleFile(
+                    deploymentConfiguration.getProjectFolder(),
+                    "webapp/" + filenameInsideBundle);
+        } else if (APP_THEME_PATTERN.matcher(filenameWithPath).find()) {
             resourceUrl = vaadinService.getClassLoader()
                     .getResource(VAADIN_WEBAPP_RESOURCES + "VAADIN/static/"
                             + filenameWithPath.replaceFirst("^/", ""));
-
         } else if (!"/index.html".equals(filenameWithPath)) {
             // index.html needs to be handled by IndexHtmlRequestHandler
             resourceUrl = vaadinService.getClassLoader()

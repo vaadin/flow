@@ -84,6 +84,7 @@ import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.server.frontend.Options;
+import com.vaadin.flow.server.frontend.TaskRunDevBundleBuild;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
@@ -196,11 +197,7 @@ public class DevModeInitializer implements Serializable {
             log().debug("Skipping DEV MODE because PRODUCTION MODE is set.");
             return null;
         }
-        if (!config.enableDevServer()) {
-            log().debug(
-                    "Skipping DEV MODE because dev server shouldn't be enabled.");
-            return null;
-        }
+
         // This needs to be set as there is no "current service" available in
         // this call
         FeatureFlags featureFlags = FeatureFlags.get(context);
@@ -333,19 +330,25 @@ public class DevModeInitializer implements Serializable {
                 .copyResources(frontendLocations)
                 .copyLocalResources(new File(baseDir,
                         Constants.LOCAL_FRONTEND_RESOURCES_PATH))
-                .enableImportsUpdate(true).runNpmInstall(true)
+                .enableImportsUpdate(true)
+                .runNpmInstall(config.enableDevServer())
                 .populateTokenFileData(tokenFileData)
                 .withEmbeddableWebComponents(true).enablePnpm(enablePnpm)
                 .useGlobalPnpm(useGlobalPnpm)
                 .withHomeNodeExecRequired(useHomeNodeExec)
                 .withProductionMode(config.isProductionMode())
                 .withPostinstallPackages(
-                        Arrays.asList(additionalPostinstallPackages));
+                        Arrays.asList(additionalPostinstallPackages))
+                .withEnableDevServer(config.enableDevServer())
+                .withDevBundleBuild(!config.isProductionMode()
+                        && !config.enableDevServer());
+        ;
         NodeTasks tasks = new NodeTasks(options);
 
         Runnable runnable = () -> {
             runNodeTasks(context, tokenFileData, tasks);
-            if (!featureFlags.isEnabled(FeatureFlags.WEBPACK)) {
+            if (config.enableDevServer()
+                    && !featureFlags.isEnabled(FeatureFlags.WEBPACK)) {
                 // For Vite, wait until a VaadinServlet is deployed so we know
                 // which frontend servlet path to use
                 if (VaadinServlet.getFrontendMapping() == null) {
@@ -367,7 +370,11 @@ public class DevModeInitializer implements Serializable {
                 Lookup.of(config, ApplicationConfiguration.class));
         int port = Integer
                 .parseInt(config.getStringProperty("devServerPort", "0"));
-        if (featureFlags.isEnabled(FeatureFlags.WEBPACK)) {
+        if (!config.enableDevServer()) {
+            nodeTasksFuture.join();
+
+            return null;
+        } else if (featureFlags.isEnabled(FeatureFlags.WEBPACK)) {
             return new WebpackHandler(devServerLookup, port,
                     options.getNpmFolder(), nodeTasksFuture);
         } else {

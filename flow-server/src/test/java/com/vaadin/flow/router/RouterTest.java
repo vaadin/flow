@@ -68,6 +68,7 @@ import com.vaadin.flow.shared.Registration;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 
+import static com.vaadin.flow.component.UI.SERVER_ROUTING;
 import static com.vaadin.flow.router.internal.RouteModelTest.parameters;
 import static com.vaadin.flow.router.internal.RouteModelTest.varargs;
 import static org.hamcrest.CoreMatchers.is;
@@ -517,6 +518,21 @@ public class RouterTest extends RoutingTestBase {
     @Route(value = "child", layout = ParentWithTitle.class)
     @Tag(Tag.DIV)
     public static class ChildWithoutTitle extends Component {
+    }
+
+    @RoutePrefix("parent-with-dynamic-title")
+    @Tag(Tag.DIV)
+    public static class ParentWithDynamicTitle extends Component
+            implements RouterLayout, HasDynamicTitle {
+        @Override
+        public String getPageTitle() {
+            return DYNAMIC_TITLE;
+        }
+    }
+
+    @Route(value = "child2", layout = ParentWithDynamicTitle.class)
+    @Tag(Tag.DIV)
+    public static class ChildWithoutTitle2 extends Component {
     }
 
     @Route("navigation-target-with-dynamic-title")
@@ -1705,6 +1721,17 @@ public class RouterTest extends RoutingTestBase {
     }
 
     @Test
+    public void page_title_set_from_dynamic_title_in_parent()
+            throws InvalidRouteConfigurationException {
+        setNavigationTargets(ChildWithoutTitle2.class);
+
+        router.navigate(ui, new Location("parent-with-dynamic-title/child2"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals(DYNAMIC_TITLE, ui.getInternals().getTitle());
+    }
+
+    @Test
     public void page_title_set_dynamically()
             throws InvalidRouteConfigurationException {
         setNavigationTargets(NavigationTargetWithDynamicTitle.class);
@@ -2634,12 +2661,13 @@ public class RouterTest extends RoutingTestBase {
         RedirectToLoopByReroute.events.clear();
         setNavigationTargets(LoopByUINavigate.class,
                 RedirectToLoopByReroute.class);
+        ui.getSession().setAttribute(SERVER_ROUTING, Boolean.TRUE);
 
         ui.navigate("redirect/loop");
 
-        Assert.assertEquals("Expected one events", 1,
+        Assert.assertEquals("Expected one event", 1,
                 LoopByUINavigate.events.size());
-        Assert.assertEquals("Expected onve events", 1,
+        Assert.assertEquals("Expected one event", 1,
                 RedirectToLoopByReroute.events.size());
     }
 
