@@ -1137,7 +1137,8 @@ public class UI extends Component
      * @throws NullPointerException
      *             if the location or queryParameters are null.
      */
-    public void navigate(String locationString, QueryParameters queryParameters) {
+    public void navigate(String locationString,
+            QueryParameters queryParameters) {
         Objects.requireNonNull(locationString, "Location must not be null");
         Objects.requireNonNull(queryParameters,
                 "Query parameters must not be null");
