@@ -17,6 +17,7 @@ package com.vaadin.flow.spring.security;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
@@ -77,6 +78,23 @@ public class AuthenticationContext implements Serializable {
     public <U> Optional<U> getAuthenticatedUser(Class<U> userType) {
         return getAuthentication().map(Authentication::getPrincipal)
                 .map(userType::cast);
+    }
+
+    /**
+     * Gets an {@link Optional} containing of the authenticated principal name
+     * as defined in {@link Principal#getName()}, or empty if the user is not
+     * authenticated.
+     *
+     * The principal name usually refers to a username or an identifier that can
+     * be used to retrieve additional information for the authenticated user.
+     *
+     * Anonymous users are considered not authenticated.
+     *
+     * @return an {@link Optional} containing of the authenticated principal
+     *         name or empty if not available.
+     */
+    public Optional<String> getPrincipalName() {
+        return getAuthentication().map(Principal::getName);
     }
 
     /**
