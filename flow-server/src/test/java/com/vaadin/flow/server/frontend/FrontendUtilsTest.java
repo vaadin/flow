@@ -68,17 +68,6 @@ public class FrontendUtilsTest {
 
     private static final String USER_HOME = "user.home";
 
-    private static Class<?> CACHE_KEY;
-
-    static {
-        try {
-            CACHE_KEY = Class.forName(
-                    "com.vaadin.flow.server.frontend.FrontendUtils$Stats");
-        } catch (ClassNotFoundException e) {
-            Assert.fail("Could not access cache key for stats.json!");
-        }
-    }
-
     @Rule
     public final TemporaryFolder tmpDir = new TemporaryFolder();
 
