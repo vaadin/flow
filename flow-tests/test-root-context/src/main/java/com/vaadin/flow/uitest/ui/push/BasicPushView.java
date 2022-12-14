@@ -21,10 +21,6 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.uitest.ui.push.components.ClientServerCounter;
 
-/*
- * Note that @Push is generally not supported in this location, but instead
- * explicitly picked up by logic in the BasicPushUI constructor.
- */
 @CustomPush
 @Route(value = "com.vaadin.flow.uitest.ui.push.BasicPushView", layout = ViewTestLayout.class)
 public class BasicPushView extends ClientServerCounter {

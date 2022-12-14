@@ -6,10 +6,6 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.ui.Transport;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
-/*
- * Note that @Push is generally not supported in this location, but instead
- * explicitly picked up by logic in the BasicPushUI constructor.
- */
 @CustomPush(transport = Transport.LONG_POLLING)
 @Route(value = "com.vaadin.flow.uitest.ui.push.BasicPushLongPollingView", layout = ViewTestLayout.class)
 public class BasicPushLongPollingView extends BasicPushView {
