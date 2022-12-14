@@ -352,9 +352,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             addBundleEntryPoints(indexHtmlDocument, config,
                     Json.parse(statsJson));
         }
-        if (!getFeatureFlags(service).isEnabled(FeatureFlags.WEBPACK)) {
-            modifyIndexHtmlForVite(indexHtmlDocument);
-        }
+        modifyIndexHtmlForVite(indexHtmlDocument);
         return indexHtmlDocument;
     }
 

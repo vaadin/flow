@@ -273,22 +273,6 @@ public class NodeTasksViteTest {
         Assert.assertTrue(new File(userDir, "types.d.ts").exists());
     }
 
-    @Test
-    public void should_failWithMessage_When_Vaadin14BootstrapModeAndViteAreUsed() {
-        Lookup mockedLookup = mock(Lookup.class);
-        Mockito.doReturn(
-                new DefaultClassFinder(this.getClass().getClassLoader()))
-                .when(mockedLookup).lookup(ClassFinder.class);
-        Builder builder = new Builder(mockedLookup, new File(userDir), TARGET)
-                .useV14Bootstrap(true);
-
-        IllegalStateException exception = Assert.assertThrows(
-                IllegalStateException.class, () -> builder.build().execute());
-        MatcherAssert.assertThat(exception.getMessage(),
-                CoreMatchers.containsString(
-                        "Vite build tool is not supported when 'useDeprecatedV14Bootstrapping' is used"));
-    }
-
     private static void setPropertyIfPresent(String key, String value) {
         if (value != null) {
             System.setProperty(key, value);
