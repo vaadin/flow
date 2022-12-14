@@ -15,38 +15,27 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
-import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_STATISTICS_JSON;
 import static com.vaadin.flow.server.frontend.FrontendTools.INSTALL_NODE_LOCALLY;
 import static java.lang.String.format;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
 import java.io.UncheckedIOException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Scanner;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
@@ -61,8 +50,6 @@ import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
@@ -442,17 +429,6 @@ public class FrontendUtils {
     }
 
     /**
-     * Clears the <code>stats.json</code> cache within this
-     * {@link VaadinContext}.
-     *
-     * @param service
-     *            the vaadin service.
-     */
-    public static void clearCachedStatsContent(VaadinService service) {
-        service.getContext().removeAttribute(Stats.class);
-    }
-
-    /**
      * Gets the content of the <code>frontend/index.html</code> file which is
      * served by vite in dev-mode and read from classpath in production mode.
      * <p>
@@ -550,99 +526,6 @@ public class FrontendUtils {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
-    }
-
-    private static InputStream getStatsFromExternalUrl(String externalStatsUrl,
-            VaadinContext context) {
-        String url;
-        // If url is relative try to get host from request
-        // else fallback on 127.0.0.1:8080
-        if (externalStatsUrl.startsWith("/")) {
-            VaadinRequest request = VaadinRequest.getCurrent();
-            url = getHostString(request) + externalStatsUrl;
-        } else {
-            url = externalStatsUrl;
-        }
-        try {
-            URL uri = new URL(url);
-            HttpURLConnection connection = (HttpURLConnection) uri
-                    .openConnection();
-            connection.setRequestMethod("GET");
-            // one minute timeout should be enough
-            connection.setReadTimeout(60000);
-            connection.setConnectTimeout(60000);
-            String lastModified = connection.getHeaderField("last-modified");
-            if (lastModified != null) {
-                LocalDateTime modified = ZonedDateTime
-                        .parse(lastModified,
-                                DateTimeFormatter.RFC_1123_DATE_TIME)
-                        .toLocalDateTime();
-                Stats statistics = context.getAttribute(Stats.class);
-                if (statistics == null || modified.isAfter(statistics
-                        .getLastModified().orElse(LocalDateTime.MIN))) {
-                    byte[] buffer = IOUtils
-                            .toByteArray(connection.getInputStream());
-                    statistics = new Stats(buffer, lastModified);
-                    context.setAttribute(statistics);
-                }
-                return new ByteArrayInputStream(statistics.statsJson);
-            }
-            return connection.getInputStream();
-        } catch (IOException e) {
-            getLogger().error("Failed to retrieve stats.json from the url {}.",
-                    url, e);
-        }
-        return null;
-    }
-
-    private static String getHostString(VaadinRequest request) {
-        String host = request.getHeader("host");
-        if (host == null) {
-            host = "http://127.0.0.1:8080";
-        } else if (!host.contains("://")) {
-            String scheme = request.getHeader("scheme");
-            if (scheme == null) {
-                scheme = "http";
-            }
-            host = scheme + "://" + host;
-        }
-        return host;
-    }
-
-    private static InputStream getStatsFromClassPath(VaadinService service) {
-        Stats statistics = service.getContext().getAttribute(Stats.class);
-
-        if (statistics != null) {
-            return new ByteArrayInputStream(statistics.statsJson);
-        }
-
-        String stats = service.getDeploymentConfiguration()
-                .getStringProperty(SERVLET_PARAMETER_STATISTICS_JSON,
-                        VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT)
-                // Remove absolute
-                .replaceFirst("^/", "");
-        ResourceProvider resourceProvider = service.getContext()
-                .getAttribute(Lookup.class).lookup(ResourceProvider.class);
-        URL statsUrl = resourceProvider.getApplicationResource(stats);
-        InputStream stream = null;
-        if (statsUrl != null) {
-            try (InputStream statsStream = statsUrl.openStream()) {
-                byte[] buffer = IOUtils.toByteArray(statsStream);
-                statistics = new Stats(buffer, null);
-                service.getContext().setAttribute(statistics);
-                stream = new ByteArrayInputStream(buffer);
-            } catch (IOException exception) {
-                getLogger().warn("Couldn't read content of stats file {}",
-                        stats, exception);
-                stream = null;
-            }
-        }
-        if (stream == null) {
-            getLogger().error(
-                    "Cannot get the 'stats.json' from the classpath '{}'",
-                    stats);
-        }
-        return stream;
     }
 
     private static InputStream getFileFromDevModeHandler(
@@ -1047,42 +930,6 @@ public class FrontendUtils {
 
     private static Logger getLogger() {
         return LoggerFactory.getLogger(FrontendUtils.class);
-    }
-
-    /**
-     * Container class for caching the external stats.json contents.
-     */
-    private static class Stats implements Serializable {
-        private final String lastModified;
-        protected final byte[] statsJson;
-
-        /**
-         * Create a new container for stats.json caching.
-         *
-         * @param statsJson
-         *            the gotten stats.json as a string
-         * @param lastModified
-         *            last modification timestamp for stats.json in RFC-1123
-         *            date-time format, such as 'Tue, 3 Jun 2008 11:05:30 GMT'
-         */
-        public Stats(byte[] statsJson, String lastModified) {
-            this.statsJson = statsJson;
-            this.lastModified = lastModified;
-        }
-
-        /**
-         * Return last modified timestamp for contained stats.json.
-         *
-         * @return timestamp as LocalDateTime
-         */
-        public Optional<LocalDateTime> getLastModified() {
-            if (lastModified == null) {
-                return Optional.empty();
-            }
-            return Optional.of(ZonedDateTime
-                    .parse(lastModified, DateTimeFormatter.RFC_1123_DATE_TIME)
-                    .toLocalDateTime());
-        }
     }
 
     /**
