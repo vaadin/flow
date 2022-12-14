@@ -28,7 +28,7 @@ import java.io.Serializable;
 public final class Constants implements Serializable {
 
     // Keep the version number in sync with flow-push/pom.xml
-    public static final String REQUIRED_ATMOSPHERE_RUNTIME_VERSION = "2.7.3.slf4jvaadin4";
+    public static final String REQUIRED_ATMOSPHERE_RUNTIME_VERSION = "3.0.0.slf4jvaadin2";
 
     /**
      * The prefix used for System property parameters.
@@ -129,13 +129,6 @@ public final class Constants implements Serializable {
      */
     @Deprecated
     public static final String SERVLET_PARAMETER_PUSH_MODE = InitParameters.SERVLET_PARAMETER_PUSH_MODE;
-
-    /**
-     * @deprecated Use {@link InitParameters#SERVLET_PARAMETER_PUSH_URL}
-     *             instead.
-     */
-    @Deprecated
-    public static final String SERVLET_PARAMETER_PUSH_URL = InitParameters.SERVLET_PARAMETER_PUSH_URL;
 
     /**
      * @deprecated Use {@link InitParameters#SERVLET_PARAMETER_SYNC_ID_CHECK}
@@ -337,7 +330,7 @@ public final class Constants implements Serializable {
     /**
      * The default value for {@link InitParameters#NODE_AUTO_UPDATE}.
      */
-    public static final boolean DEFAULT_NODE_AUTO_UPDATE = false;
+    public static final boolean DEFAULT_NODE_AUTO_UPDATE = true;
 
     /**
      * The default value for {@link #REQUIRE_HOME_NODE_EXECUTABLE}.
@@ -371,6 +364,11 @@ public final class Constants implements Serializable {
      * The path used in the vaadin servlet for handling static resources.
      */
     public static final String VAADIN_MAPPING = "VAADIN/";
+
+    /**
+     * The path used in the vaadin servlet for handling push.
+     */
+    public static final String PUSH_MAPPING = VAADIN_MAPPING + "push";
 
     /**
      * The static build resources folder.

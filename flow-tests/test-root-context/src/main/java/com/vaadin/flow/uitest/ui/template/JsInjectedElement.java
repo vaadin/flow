@@ -22,7 +22,7 @@ import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
 @Tag("js-injected-template")
-@JsModule("JsInjectedElement.js")
+@JsModule("./JsInjectedElement.js")
 public class JsInjectedElement extends PolymerTemplate<TemplateModel> {
 
     public JsInjectedElement() {

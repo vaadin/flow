@@ -70,7 +70,8 @@ public class StreamRequestHandler implements RequestHandler {
     @Override
     public boolean handleRequest(VaadinSession session, VaadinRequest request,
             VaadinResponse response) throws IOException {
-        String pathInfo = UrlUtil.getStaticVaadinPathInfo(request);
+
+        String pathInfo = request.getPathInfo();
         if (pathInfo == null) {
             return false;
         }

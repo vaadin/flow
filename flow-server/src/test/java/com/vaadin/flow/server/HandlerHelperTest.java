@@ -5,7 +5,7 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 
@@ -202,6 +202,15 @@ public class HandlerHelperTest {
         VaadinServletRequest request = createVaadinRequest(
                 "VAADIN/dynamic/resource/1/e83d6b6d-2b75-4960-8922-5431f4a23e49/upload",
                 "", null);
+
+        Assert.assertTrue(HandlerHelper.isFrameworkInternalRequest("/*",
+                request.getHttpServletRequest()));
+    }
+
+    @Test
+    public void isFrameworkInternalRequest_hillaPushUrl() {
+        VaadinServletRequest request = createVaadinRequest("HILLA/push", "",
+                null);
 
         Assert.assertTrue(HandlerHelper.isFrameworkInternalRequest("/*",
                 request.getHttpServletRequest()));

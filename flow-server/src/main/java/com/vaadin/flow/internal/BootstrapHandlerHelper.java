@@ -17,6 +17,7 @@ package com.vaadin.flow.internal;
 
 import java.io.Serializable;
 
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinSession;
@@ -66,12 +67,8 @@ public final class BootstrapHandlerHelper implements Serializable {
      */
     public static String getPushURL(VaadinSession vaadinSession,
             VaadinRequest vaadinRequest) {
-        String serviceUrl = getServiceUrl(vaadinRequest);
+        String pushURL = Constants.PUSH_MAPPING;
 
-        String pushURL = vaadinSession.getConfiguration().getPushURL();
-        if (pushURL == null) {
-            pushURL = serviceUrl;
-        }
         String contextPath = vaadinRequest.getService()
                 .getContextRootRelativePath(vaadinRequest);
 

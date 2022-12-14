@@ -27,7 +27,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.HiddenTemplateView", layout = ViewTestLayout.class)
 @Tag("hidden-template")
-@JsModule("HiddenTemplate.js")
+@JsModule("./HiddenTemplate.js")
 public class HiddenTemplateView extends PolymerTemplate<TemplateModel> {
 
     @Id("hidden-child")

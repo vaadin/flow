@@ -1,6 +1,13 @@
+/**
+ * Copyright (C) 2022 Vaadin Ltd
+ *
+ * This program is available under Vaadin Commercial License and Service Terms.
+ *
+ * See <https://vaadin.com/commercial-license-and-service-terms> for the full
+ * license.
+ */
 package com.vaadin.flow.component.polymertemplate;
 
-import java.nio.file.Paths;
 import java.util.Properties;
 import java.util.stream.Stream;
 
@@ -9,13 +16,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.MockVaadinServletService;
-import com.vaadin.flow.server.frontend.FrontendUtils;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
 
 public class BundleParserTest {
 
@@ -28,9 +32,6 @@ public class BundleParserTest {
         Mockito.when(configuration.getStringProperty(Mockito.anyString(),
                 Mockito.anyString()))
                 .thenAnswer(invocation -> invocation.getArgument(1));
-        Mockito.when(configuration.getFlowResourcesFolder()).thenReturn(
-                Paths.get("target", FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER)
-                        .toString());
 
         Properties properties = new Properties();
         Mockito.when(configuration.getInitParameters()).thenReturn(properties);
@@ -46,18 +47,6 @@ public class BundleParserTest {
                 .thenReturn(Stream.empty());
         service = new MockVaadinServletService(configuration);
         service.init(instantiator);
-    }
-
-    @Test
-    public void startsWithSingleLetterDirector_sourcesShouldNotBeFound() {
-        // This test exposes a common error in String#replaceFirst (unescaped
-        // period in regex) in BundleParser#getSourceFromObject
-        final JsonObject module = Json.createObject();
-        module.put("name", "a/src/hello-world.js");
-        module.put("source", "some-source.js");
-        final String source = BundleParser.getSourceFromStatistics(
-                "a/frontend/src/hello-world.js", module, service);
-        Assert.assertNull("Source not expected in module", source);
     }
 
     @Test

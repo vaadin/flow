@@ -21,15 +21,18 @@ declare var VITE_ENABLED: boolean; // defined by Webpack/Vite
 // Combine manifest entries injected at compile-time by Webpack/Vite
 // with ones that Flow injects at runtime through `sw-runtime-resources-precache.js`.
 let manifestEntries: PrecacheEntry[] = self.__WB_MANIFEST || [];
+// If injected entries contains element for root, then discard the one from Flow
+// may only happen when running in development mode, but after a frontend build
+let hasRootEntry = manifestEntries.findIndex((entry) => entry.url === '.') >= 0;
 if (self.additionalManifestEntries?.length) {
-  manifestEntries.push(...self.additionalManifestEntries);
+  manifestEntries.push(...self.additionalManifestEntries.filter( (entry) => entry.url !== '.' || !hasRootEntry));
 }
 
 const offlinePath = OFFLINE_PATH;
 
 // Compute the registration scope path.
 // Example: http://localhost:8888/scope-path/sw.js => /scope-path/
-const scopePath = new URL(self.registration.scope).pathname;
+const scope = new URL(self.registration.scope);
 
 /**
  * Replaces <base href> in pre-cached response HTML with the service worker’s
@@ -79,20 +82,9 @@ if (process.env.NODE_ENV === 'development' && VITE_ENABLED) {
     event.waitUntil(caches.delete(cacheNames.runtime));
   });
 
-  // Vite 2 ping URL
+  // Cache /VAADIN/* resources in dev mode. Ensure the Vite specific URLs on another port are not handled to avoid excessive logging.
   registerRoute(
-    ({ url }) => url.pathname.startsWith(`${scopePath}VAADIN/__vite_ping`),
-    networkOnly
-  );
-
-  // Vite 3 ping URL
-  registerRoute(
-    ({ url }) => url.pathname == `${scopePath}VAADIN/`,
-    networkOnly
-  );
-
-  registerRoute(
-    ({ url }) => url.pathname.startsWith(`${scopePath}VAADIN/`),
+    ({ url }) => url.port === scope.port && url.pathname.startsWith(`${scope.pathname}VAADIN/`),
     networkFirst
   );
 }
@@ -106,7 +98,7 @@ registerRoute(
 
     function serveResourceFromCache() {
       // Always serve the offline fallback at the scope path.
-      if (context.url.pathname === scopePath) {
+      if (context.url.pathname === scope.pathname) {
         return serveOfflineFallback();
       }
 

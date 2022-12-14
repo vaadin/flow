@@ -28,7 +28,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.MockVaadinContext;
@@ -122,37 +122,8 @@ public class UidlRequestHandlerTest {
     }
 
     @Test
-    public void should_not_modifyUidl_when_MPR_nonJavaScriptBootstrapUI()
-            throws Exception {
-        JavaScriptBootstrapUI ui = null;
-
-        UidlRequestHandler handler = spy(new UidlRequestHandler());
-        StringWriter writer = new StringWriter();
-
-        JsonObject uidl = generateUidl(true, true);
-        doReturn(uidl).when(handler).createUidl(ui, false);
-
-        handler.writeUidl(ui, writer, false);
-
-        String out = writer.toString();
-
-        assertTrue(out.startsWith("for(;;);[{"));
-        assertTrue(out.endsWith("}]"));
-
-        uidl = JsonUtil.parse(out.substring(9, out.length() - 1));
-        String v7Uidl = uidl.getArray("execute").getArray(2).getString(1);
-
-        assertTrue(v7Uidl.contains("http://localhost:9998/#!away"));
-        assertTrue(v7Uidl.contains("window.location.hash = '!away';"));
-
-        assertEquals("setTimeout(() => window.history.pushState(null, '', $0))",
-                uidl.getArray("execute").getArray(1).getString(1));
-    }
-
-    @Test
-    public void should_modifyUidl_when_MPR_JavaScriptBootstrapUI()
-            throws Exception {
-        JavaScriptBootstrapUI ui = mock(JavaScriptBootstrapUI.class);
+    public void should_modifyUidl_when_MPR() throws Exception {
+        UI ui = mock(UI.class);
 
         UidlRequestHandler handler = spy(new UidlRequestHandler());
         StringWriter writer = new StringWriter();
@@ -173,7 +144,7 @@ public class UidlRequestHandlerTest {
 
     @Test
     public void should_changeURL_when_v7LocationProvided() throws Exception {
-        JavaScriptBootstrapUI ui = mock(JavaScriptBootstrapUI.class);
+        UI ui = mock(UI.class);
 
         UidlRequestHandler handler = spy(new UidlRequestHandler());
         StringWriter writer = new StringWriter();
@@ -194,7 +165,7 @@ public class UidlRequestHandlerTest {
     @Test
     public void should_updateHash_when_v7LocationNotProvided()
             throws Exception {
-        JavaScriptBootstrapUI ui = mock(JavaScriptBootstrapUI.class);
+        UI ui = mock(UI.class);
 
         UidlRequestHandler handler = spy(new UidlRequestHandler());
         StringWriter writer = new StringWriter();
@@ -214,7 +185,7 @@ public class UidlRequestHandlerTest {
 
     @Test
     public void should_not_modify_non_MPR_Uidl() throws Exception {
-        JavaScriptBootstrapUI ui = mock(JavaScriptBootstrapUI.class);
+        UI ui = mock(UI.class);
 
         UidlRequestHandler handler = spy(new UidlRequestHandler());
         StringWriter writer = new StringWriter();
@@ -234,6 +205,24 @@ public class UidlRequestHandlerTest {
         String actual = uidl.toJson();
 
         assertEquals(expected, actual);
+    }
+
+    @Test
+    public void should_not_update_browser_history_if_no_hash_in_location()
+            throws Exception {
+        UI ui = mock(UI.class);
+
+        UidlRequestHandler handler = spy(new UidlRequestHandler());
+        StringWriter writer = new StringWriter();
+
+        JsonObject uidl = getUidlWithNoHashInLocation();
+
+        doReturn(uidl).when(handler).createUidl(ui, false);
+
+        handler.writeUidl(ui, writer, false);
+
+        String out = writer.toString();
+        Assert.assertFalse(out.contains("history.pushState"));
     }
 
     private JsonObject generateUidl(boolean withLocation, boolean withHash) {
@@ -296,6 +285,32 @@ public class UidlRequestHandlerTest {
 
         uidl.getArray("execute").getArray(2).set(1, v7String);
         return uidl;
+    }
+
+    private JsonObject getUidlWithNoHashInLocation() {
+        // @formatter:off
+        return JsonUtil.parse(
+                "{" +
+                "  \"syncId\": 3," +
+                "  \"clientId\": 3," +
+                "  \"changes\": []," +
+                "  \"execute\": [" +
+                "    [" +
+                "      [" +
+                "        0," +
+                "        9" +
+                "      ]," +
+                "      '\"syncId\": 1, \"clientId\": 0, \"changes\" : [[\"change\",{\"pid\":\"0\"},[\"0\",{\"id\":\"0\",\"location\":\"http://localhost:8080/\",\"v\":{\"action\":\"\"}},[\"actions\",{}]]]], \"state\":{\"1\":{\"componentSettings\":[]}}, \"types\":{\"0\":\"0\",\"1\":\"2\"}, \"hierarchy\":{\"0\":[\"1\"]}, \"rpc\" : [], \"meta\" : {\"async\":true}, \"resources\" : {}, \"timings\":[113, 113]'," +
+                "      \"ROOT\"" +
+                "    ]" +
+                "  ]," +
+                "  \"timings\": [" +
+                "    20880," +
+                "    18181" +
+                "  ]" +
+                "}"
+        );
+        // @formatter:on
     }
 
 }

@@ -15,9 +15,9 @@
  */
 package com.vaadin.flow.osgi;
 
-import javax.servlet.Servlet;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletException;
 
 import java.util.Dictionary;
 import java.util.Hashtable;
@@ -34,8 +34,6 @@ import org.osgi.service.http.context.ServletContextHelper;
 import org.osgi.service.http.whiteboard.HttpWhiteboardConstants;
 
 import com.vaadin.flow.server.InitParameters;
-import com.vaadin.flow.uitest.servlet.ProductionModeTimingDataViewTestServlet;
-import com.vaadin.flow.uitest.servlet.ProductionModeViewTestServlet;
 import com.vaadin.flow.uitest.servlet.RouterLayoutCustomScopeServlet;
 import com.vaadin.flow.uitest.servlet.RouterTestServlet;
 import com.vaadin.flow.uitest.servlet.ViewTestServlet;
@@ -96,31 +94,6 @@ public class Activator {
         }
     }
 
-    private static class FixedProductionModeViewServlet
-            extends ProductionModeViewTestServlet {
-
-        @Override
-        public void init(ServletConfig servletConfig) throws ServletException {
-            super.init(servletConfig);
-
-            if (getService() != null) {
-                getService().setClassLoader(getClass().getClassLoader());
-            }
-        }
-    }
-
-    private static class FixedProductionModeTimingDataViewServlet
-            extends ProductionModeTimingDataViewTestServlet {
-        @Override
-        public void init(ServletConfig servletConfig) throws ServletException {
-            super.init(servletConfig);
-
-            if (getService() != null) {
-                getService().setClassLoader(getClass().getClassLoader());
-            }
-        }
-    }
-
     private static class FixedLogoutWithNotificationServlet
             extends LogoutWithNotificationServlet {
         @Override
@@ -158,14 +131,6 @@ public class Activator {
 
         context.registerService(Servlet.class, new FixedRouterServlet(),
                 createProperties("/new-router-session/*", false));
-
-        context.registerService(Servlet.class,
-                new FixedProductionModeViewServlet(),
-                createProperties("/view-production/*", true));
-
-        context.registerService(Servlet.class,
-                new FixedProductionModeTimingDataViewServlet(),
-                createProperties("/view-production-timing/*", true));
 
         context.registerService(Servlet.class,
                 new FixedLogoutWithNotificationServlet(),
@@ -225,10 +190,7 @@ public class Activator {
                 HttpWhiteboardConstants.HTTP_WHITEBOARD_SERVLET_ASYNC_SUPPORTED,
                 true);
         properties.put(HttpWhiteboardConstants.HTTP_WHITEBOARD_SERVLET_PATTERN,
-                // Adds serve static files from VAADIN in the context root
-                // for non-root servlet mapping.
-                // see https://github.com/vaadin/flow/issues/13769
-                new String[] { mapping, "/VAADIN/*" });
+                mapping);
         return properties;
     }
 

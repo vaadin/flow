@@ -2,8 +2,8 @@ package com.vaadin.flow.spring.security;
 
 import java.util.Collections;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.spring.SpringBootAutoConfiguration;

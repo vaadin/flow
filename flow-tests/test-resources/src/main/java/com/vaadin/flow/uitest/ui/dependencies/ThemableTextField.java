@@ -23,7 +23,7 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 /**
  * Custom vaadin text field for testing component theming.
  */
-@JsModule("@vaadin/vaadin-text-field/vaadin-text-field.js")
+@JsModule("@vaadin/text-field/vaadin-text-field.js")
 @Tag("vaadin-text-field")
 @NpmPackage(value = "@vaadin/vaadin-text-field", version = TestVersion.VAADIN)
 public class ThemableTextField extends Component {

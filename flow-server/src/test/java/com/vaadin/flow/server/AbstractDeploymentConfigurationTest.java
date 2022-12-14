@@ -116,11 +116,6 @@ public class AbstractDeploymentConfigurationTest {
         }
 
         @Override
-        public String getPushURL() {
-            return "";
-        }
-
-        @Override
         public Properties getInitParameters() {
             return null;
         }

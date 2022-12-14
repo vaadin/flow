@@ -16,10 +16,12 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -32,25 +34,34 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.frontend.TaskRunNpmInstall;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.VaadinInitializerException;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
+import org.mockito.MockedConstruction;
 import org.mockito.Mockito;
 
 import net.jcip.annotations.NotThreadSafe;
+
+import jakarta.servlet.ServletException;
 
 @NotThreadSafe
 public class DevModeInitializerTest extends DevModeInitializerTestBase {
@@ -176,21 +187,27 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         URLConnection urlConnection = Mockito.mock(URLConnection.class);
         Mockito.when(urlConnection.getContent()).thenReturn(virtualFile);
 
-        URL.setURLStreamHandlerFactory(protocol -> {
-            if (protocol.equals("vfs")) {
-                return new URLStreamHandler() {
-                    @Override
-                    protected URLConnection openConnection(URL u) {
-                        return urlConnection;
-                    }
-                };
-            }
-            return null;
-        });
-        URL url = new URL("vfs://some-non-existent-place" + path);
+        try {
+            URL.setURLStreamHandlerFactory(protocol -> {
+                if (protocol.equals("vfs")) {
+                    return new URLStreamHandler() {
+                        @Override
+                        protected URLConnection openConnection(URL u) {
+                            return urlConnection;
+                        }
+                    };
+                }
+                return null;
+            });
+            URL url = new URL("vfs://some-non-existent-place" + path);
 
-        loadingFsResources_allFilesExist(Collections.singletonList(url),
-                RESOURCES_FRONTEND_DEFAULT);
+            loadingFsResources_allFilesExist(Collections.singletonList(url),
+                    RESOURCES_FRONTEND_DEFAULT);
+        } finally {
+            Field field = URL.class.getDeclaredField("factory");
+            field.setAccessible(true);
+            field.set(null, null);
+        }
     }
 
     @Test
@@ -203,7 +220,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     @Test
     public void should_Run_Updaters_when_NoNodeConfFiles_doesNotThrow()
             throws Exception {
-        webpackFile.delete();
+        devServerConfigFile.delete();
         mainPackageFile.delete();
         // no any exception means that updaters are executed and dev mode server
         // started
@@ -217,7 +234,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
 
     @Test
     public void should_Run_Updaters_when_NoNodeConfFiles() throws Exception {
-        webpackFile.delete();
+        devServerConfigFile.delete();
         mainPackageFile.delete();
         process();
         assertDevModeHandlerStarted();
@@ -239,7 +256,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
 
     @Test
     public void should_Run_Updaters_when_NoWebpackFile() throws Exception {
-        webpackFile.delete();
+        devServerConfigFile.delete();
         process();
         assertDevModeHandlerStarted();
     }
@@ -404,6 +421,39 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
                 System.clearProperty(
                         "vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN);
             }
+        }
+    }
+
+    @Test
+    public void should_useHillaEngine_whenEnabled()
+            throws ServletException, ExecutionFailedException, IOException {
+        File featureFlagsFile = new File(baseDir,
+                FeatureFlags.PROPERTIES_FILENAME);
+        FileUtils.write(featureFlagsFile,
+                "com.vaadin.experimental.hillaEngine=true\n",
+                StandardCharsets.UTF_8);
+        ResourceProvider resourceProvider = lookup
+                .lookup(ResourceProvider.class);
+        Mockito.doReturn(featureFlagsFile.toURI().toURL())
+                .when(resourceProvider)
+                .getApplicationResource(FeatureFlags.PROPERTIES_FILENAME);
+        MockedConstruction<TaskRunNpmInstall> construction = Mockito
+                .mockConstruction(TaskRunNpmInstall.class);
+        try {
+            devModeStartupListener.onStartup(classes, servletContext);
+            handler = getDevModeHandler();
+            waitForDevServer();
+
+            // Hilla Engine requires npm install, the order of execution is
+            // critical
+            TaskRunNpmInstall taskRunNpmInstall = construction.constructed()
+                    .get(0);
+            InOrder inOrder = Mockito.inOrder(taskRunNpmInstall,
+                    taskGenerateHilla);
+            inOrder.verify(taskRunNpmInstall).execute();
+            inOrder.verify(taskGenerateHilla).execute();
+        } finally {
+            FileUtils.delete(featureFlagsFile);
         }
     }
 

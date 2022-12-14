@@ -21,7 +21,7 @@ import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.littemplate.LitTemplate;
 import com.vaadin.flow.component.template.Id;
 
-@JsModule("lit-templates/test-form.js")
+@JsModule("./lit-templates/test-form.js")
 @Tag("test-form")
 public class TestForm extends LitTemplate {
 

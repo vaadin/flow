@@ -43,8 +43,6 @@ public class DefaultDeploymentConfiguration
 
     public static final String NOT_PRODUCTION_MODE_INFO = "\nVaadin is running in DEVELOPMENT mode - do not use for production deployments.";
 
-    public static final String NOT_PRODUCTION_MODE_WARNING = "\nWARNING: Vaadin is running in DEVELOPMENT mode - do not use for production deployments.";
-
     public static final String WARNING_V14_BOOTSTRAP = "Using deprecated Vaadin 14 bootstrap mode.\n"
             + "Client-side views written in TypeScript are not supported.";
 
@@ -94,7 +92,6 @@ public class DefaultDeploymentConfiguration
     private int webComponentDisconnect;
     private boolean closeIdleSessions;
     private PushMode pushMode;
-    private String pushURL;
     private boolean syncIdCheck;
     private boolean sendUrlsAsParameters;
     private boolean requestTiming;
@@ -131,7 +128,6 @@ public class DefaultDeploymentConfiguration
         checkWebComponentDisconnectTimeout();
         checkCloseIdleSessions();
         checkPushMode();
-        checkPushURL();
         checkSyncIdCheck();
         checkSendUrlsAsParameters();
 
@@ -260,16 +256,6 @@ public class DefaultDeploymentConfiguration
     }
 
     /**
-     * {@inheritDoc}
-     * <p>
-     * The default mode is <code>""</code> which uses the servlet URL.
-     */
-    @Override
-    public String getPushURL() {
-        return pushURL;
-    }
-
-    /**
      * Log a warning if Vaadin is not running in production mode.
      */
     private void checkProductionMode(boolean log) {
@@ -283,11 +269,7 @@ public class DefaultDeploymentConfiguration
             if (productionMode) {
                 info.add("Vaadin is running in production mode.");
             } else {
-                if (enableDevServer()) {
-                    info.add(NOT_PRODUCTION_MODE_INFO);
-                } else {
-                    warnings.add(NOT_PRODUCTION_MODE_WARNING);
-                }
+                info.add(NOT_PRODUCTION_MODE_INFO);
             }
         }
     }
@@ -408,11 +390,6 @@ public class DefaultDeploymentConfiguration
             warnings.add(WARNING_PUSH_MODE_NOT_RECOGNIZED);
             pushMode = PushMode.DISABLED;
         }
-    }
-
-    private void checkPushURL() {
-        pushURL = getStringProperty(InitParameters.SERVLET_PARAMETER_PUSH_URL,
-                "");
     }
 
     private void checkSyncIdCheck() {

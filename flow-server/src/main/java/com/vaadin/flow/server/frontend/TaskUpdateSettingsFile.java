@@ -31,6 +31,8 @@ import com.vaadin.flow.server.PwaConfiguration;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+import elemental.json.JsonValue;
+
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC;
 import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC_JS;
@@ -48,19 +50,20 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
     public static final String DEV_SETTINGS_FILE = "vaadin-dev-server-settings.json";
     File npmFolder;
     File frontendDirectory;
-    File flowResourcesFolder;
+    File jarFrontendResourcesFolder;
     File webappResourcesDirectory;
     String buildDirectory;
     String themeName;
     PwaConfiguration pwaConfiguration;
 
-    TaskUpdateSettingsFile(NodeTasks.Builder builder, String themeName,
+    TaskUpdateSettingsFile(Options builder, String themeName,
             PwaConfiguration pwaConfiguration) {
         this.npmFolder = builder.getNpmFolder();
         this.frontendDirectory = builder.getFrontendDirectory();
-        this.flowResourcesFolder = builder.getFlowResourcesFolder();
+        this.jarFrontendResourcesFolder = builder
+                .getJarFrontendResourcesFolder();
         this.webappResourcesDirectory = builder.getWebappResourcesDirectory();
-        this.buildDirectory = builder.getBuildDirectory();
+        this.buildDirectory = builder.getBuildDirectoryName();
         this.themeName = themeName;
         this.pwaConfiguration = pwaConfiguration;
     }
@@ -75,23 +78,39 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
                 FrontendUtils.getUnixPath(frontendDirectory.toPath()));
         settings.put("themeFolder", "themes");
         settings.put("themeResourceFolder",
-                FrontendUtils.getUnixPath(flowResourcesFolder.toPath()));
-        String webappResources;
+                FrontendUtils.getUnixPath(jarFrontendResourcesFolder.toPath()));
+        String webappResources, statsOutput;
         if (webappResourcesDirectory == null) {
             webappResources = combinePath(buildDirectory, "classes",
                     VAADIN_WEBAPP_RESOURCES);
+            statsOutput = combinePath(buildDirectory, "classes",
+                    VAADIN_WEBAPP_RESOURCES, "..", "config");
         } else {
             webappResources = webappResourcesDirectory.getPath();
+            statsOutput = new File(webappResourcesDirectory.getParentFile(),
+                    "config").getPath();
         }
         String staticOutput = combinePath(webappResources,
                 VAADIN_STATIC_FILES_PATH);
 
+        File devBundleOutputFolder = new File(
+                FrontendUtils.getDevBundleFolder(npmFolder), "webapp");
+        String devBundleOutputFolderString = FrontendUtils
+                .getUnixPath(devBundleOutputFolder.toPath());
+        String devBundleStatsFolderString = FrontendUtils.getUnixPath(
+                new File(FrontendUtils.getDevBundleFolder(npmFolder), "config")
+                        .toPath());
         settings.put("staticOutput",
                 FrontendUtils.getUnixPath(new File(staticOutput).toPath()));
         settings.put("generatedFolder", "generated");
+        settings.put("statsOutput", statsOutput);
         settings.put("frontendBundleOutput", webappResources);
-        settings.put("addonFrontendFolder", combinePath(buildDirectory,
-                FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER));
+        settings.put("devBundleOutput", devBundleOutputFolderString);
+        settings.put("devBundleStatsOutput", devBundleStatsFolderString);
+        settings.put("jarResourcesFolder",
+                FrontendUtils.getUnixPath(jarFrontendResourcesFolder.toPath()));
+        settings.put("generatedFlowImportsFolder",
+                buildDirectory + "/frontend");
 
         settings.put("themeName", themeName);
 

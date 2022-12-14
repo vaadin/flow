@@ -1,9 +1,10 @@
 {
   "compilerOptions": {
     "sourceMap": true,
+    "jsx": "react-jsx",
     "inlineSources": true,
     "module": "esNext",
-    "target": "es2019",
+    "target": "es2020",
     "moduleResolution": "node",
     "strict": true,
     "noFallthroughCasesInSwitch": true,
@@ -13,6 +14,8 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "experimentalDecorators": true,
+    "useDefineForClassFields": false,
+    "skipLibCheck": true,
     "baseUrl": ".",
     "paths": {
       "*": [

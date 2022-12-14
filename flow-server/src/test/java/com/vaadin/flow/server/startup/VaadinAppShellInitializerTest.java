@@ -1,9 +1,9 @@
 package com.vaadin.flow.server.startup;
 
-import javax.annotation.concurrent.NotThreadSafe;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletRegistration;
-import javax.servlet.http.HttpServletRequest;
+import net.jcip.annotations.NotThreadSafe;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletRegistration;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.lang.reflect.Field;
 import java.util.Collections;
@@ -28,7 +28,7 @@ import org.mockito.Mockito;
 import org.slf4j.ILoggerFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.impl.SimpleLoggerFactory;
+import org.slf4j.simple.SimpleLoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.PushConfiguration;

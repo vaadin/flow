@@ -21,6 +21,7 @@ import elemental.json.impl.JsonUtil
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.Before
+import org.junit.Ignore
 import org.junit.Test
 import java.io.File
 import kotlin.test.expect
@@ -44,9 +45,9 @@ class VaadinSmokeTest : AbstractGradleTest() {
                 maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
             }
             dependencies {
-                compile("com.vaadin:flow:$flowVersion")
-                providedCompile("javax.servlet:javax.servlet-api:3.1.0")
-                compile("org.slf4j:slf4j-simple:1.7.30")
+                implementation("com.vaadin:flow:$flowVersion")
+                providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
             vaadin {
                 pnpmEnable = true
@@ -82,23 +83,18 @@ class VaadinSmokeTest : AbstractGradleTest() {
     }
 
     @Test
-    fun `vaadinBuildFrontend can be run manually in development mode`() {
-        val result: BuildResult = testProject.build("vaadinBuildFrontend")
-        // let's explicitly check that vaadinPrepareFrontend has been run.
-        result.expectTaskSucceded("vaadinPrepareFrontend")
-
-        val build = File(testProject.dir, "build/resources/main/META-INF/VAADIN/webapp/VAADIN/build")
-        expect(true, build.toString()) { build.exists() }
-        build.find("*.gz", 5..10)
-        build.find("*.js", 5..10)
-
-        val tokenFile = File(testProject.dir, "build/resources/main/META-INF/VAADIN/config/flow-build-info.json")
-        val buildInfo: JsonObject = JsonUtil.parse(tokenFile.readText())
-        expect(false, buildInfo.toJson()) { buildInfo.getBoolean(InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE) }
+    fun testBuildFrontendInProductionMode() {
+        checkBuildFrontendInProductionMode();
     }
 
+
+    @Ignore("Webpack uses gzip compression")
     @Test
-    fun testBuildFrontendInProductionMode() {
+    fun testBuildFrontendInProductionModeWithWebpack() {
+        checkBuildFrontendInProductionMode("*.gz");
+    }
+
+    private fun checkBuildFrontendInProductionMode(compressedExtension: String = "*.br") {
         val result: BuildResult = testProject.build("-Pvaadin.productionMode", "vaadinBuildFrontend")
         // vaadinBuildFrontend depends on vaadinPrepareFrontend
         // let's explicitly check that vaadinPrepareFrontend has been run
@@ -107,7 +103,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
         val build = File(testProject.dir, "build/resources/main/META-INF/VAADIN/webapp/VAADIN/build")
         expect(true, build.toString()) { build.isDirectory }
         expect(true) { build.listFiles()!!.isNotEmpty() }
-        build.find("*.gz", 5..10)
+        build.find(compressedExtension, 5..10)
         build.find("*.js", 5..10)
         val tokenFile = File(testProject.dir, "build/resources/main/META-INF/VAADIN/config/flow-build-info.json")
         val buildInfo: JsonObject = JsonUtil.parse(tokenFile.readText())
@@ -196,9 +192,9 @@ class VaadinSmokeTest : AbstractGradleTest() {
                 maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
             }
             dependencies {
-                compile("com.vaadin:flow:$flowVersion")
-                providedCompile("javax.servlet:javax.servlet-api:3.1.0")
-                compile("org.slf4j:slf4j-simple:1.7.30")
+                implementation("com.vaadin:flow:$flowVersion")
+                providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
             vaadin {
                 frontendDirectory = file("src/main/frontend")
@@ -227,9 +223,9 @@ class VaadinSmokeTest : AbstractGradleTest() {
                 maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
             }
             dependencies {
-                compile("com.vaadin:flow:$flowVersion")
-                providedCompile("javax.servlet:javax.servlet-api:3.1.0")
-                compile("org.slf4j:slf4j-simple:1.7.30")
+                implementation("com.vaadin:flow:$flowVersion")
+                providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
             vaadin {
                 generatedTsFolder = file("api")
@@ -258,9 +254,9 @@ class VaadinSmokeTest : AbstractGradleTest() {
                 maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
             }
             dependencies {
-                compile("com.vaadin:flow:$flowVersion")
-                providedCompile("javax.servlet:javax.servlet-api:3.1.0")
-                compile("org.slf4j:slf4j-simple:1.7.30")
+                implementation("com.vaadin:flow:$flowVersion")
+                providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
             vaadin {
                 frontendDirectory = file("src/main/frontend")
@@ -276,5 +272,50 @@ class VaadinSmokeTest : AbstractGradleTest() {
         expect(true) {
             File(testProject.dir, "src/main/frontend/generated/index.ts").exists()
         }
+    }
+
+    /**
+     * Tests that build works with resources from classpath, not only from
+     * frontend directory
+     *
+     * https://github.com/vaadin/flow/issues/14420
+     */
+    @Test
+    fun vaadinBuildFrontendShouldScanForResourcesOnClasspath() {
+        testProject.newFile("src/main/java/org/vaadin/example/MainView.java", """
+            package org.vaadin.example;
+
+            import com.vaadin.flow.component.dependency.CssImport;
+            import com.vaadin.flow.component.dependency.NpmPackage;
+            import com.vaadin.flow.component.html.Div;
+            import com.vaadin.flow.component.html.Span;
+            import com.vaadin.flow.router.Route;
+
+            @Route("")
+            @CssImport("./mystyle.css")
+            @NpmPackage(value = "@vaadin/vaadin-themable-mixin", version = "24.0.0-alpha4")
+            public class MainView extends Div {
+
+                public MainView() {
+                    add(new Span("It works!"));
+                }
+            }
+        """.trimIndent())
+        testProject.newFile("src/main/resources/META-INF/resources/frontend/mystyle.css", """
+            #testme {
+                background-color: red;
+                width: 100px;
+                height: 100px;
+                display: block;
+            }
+        """.trimIndent())
+
+        val result: BuildResult = testProject.build("-Pvaadin.productionMode", "build")
+        result.expectTaskSucceded("vaadinPrepareFrontend")
+        result.expectTaskSucceded("vaadinBuildFrontend")
+
+        val cssFile = File(testProject.dir, "frontend/generated/jar-resources/mystyle.css")
+        expect(true, cssFile.toString()) { cssFile.exists() }
+
     }
 }

@@ -189,7 +189,7 @@ export class Flow {
       };
 
       // Call server side to check whether we can leave the view
-      flowRoot.$server.leaveNavigation(this.getFlowRoute(ctx));
+      flowRoot.$server.leaveNavigation(this.getFlowRoutePath(ctx), this.getFlowRouteQuery(ctx));
     });
   }
 
@@ -216,7 +216,8 @@ export class Flow {
         flowRoot.$server.connectClient(
           this.container.localName,
           this.container.id,
-          this.getFlowRoute(ctx),
+          this.getFlowRoutePath(ctx),
+          this.getFlowRouteQuery(ctx),
           this.appShellTitle,
           history.state
         );
@@ -227,8 +228,11 @@ export class Flow {
     }
   }
 
-  private getFlowRoute(context: NavigationParameters | Location): string {
-    return (context.pathname + (context.search || '')).replace(this.baseRegex, '');
+  private getFlowRoutePath(context: NavigationParameters | Location): string {
+    return decodeURIComponent(context.pathname).replace(this.baseRegex, '');
+  }
+  private getFlowRouteQuery(context: NavigationParameters | Location): string {
+    return (context.search && context.search.substring(1)) || '';
   }
 
   // import flow client modules and initialize UI in server side.
@@ -338,7 +342,9 @@ export class Flow {
       const xhr = new XMLHttpRequest();
       const httpRequest = xhr as any;
       const serverRoutingParam = serverSideRouting ? '&serverSideRouting' : '';
-      const requestPath = `?v-r=init&location=${encodeURIComponent(this.getFlowRoute(location))}${serverRoutingParam}`;
+      const requestPath = `?v-r=init&location=${encodeURIComponent(
+        this.getFlowRoutePath(location)
+      )}&query=${encodeURIComponent(this.getFlowRouteQuery(location))}${serverRoutingParam}`;
 
       httpRequest.open('GET', requestPath);
 
@@ -386,7 +392,9 @@ export class Flow {
         http.onerror = () => {
           $wnd.Vaadin.connectionState.state = ConnectionState.CONNECTION_LOST;
         };
-        http.send();
+        // Postpone request to reduce potential net::ERR_INTERNET_DISCONNECTED
+        // errors that sometimes occurs even if browser says it is online
+        setTimeout(() => http.send(), 50);
       }
     });
     $wnd.addEventListener('offline', () => {

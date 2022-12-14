@@ -21,7 +21,6 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.lang.annotation.Annotation;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -31,13 +30,10 @@ import java.util.regex.Pattern;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attribute;
-import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.jsoup.parser.Tag;
 
 import com.vaadin.experimental.FeatureFlags;
-import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.webcomponent.WebComponentUI;
 import com.vaadin.flow.dom.ElementUtil;
@@ -59,7 +55,6 @@ import com.vaadin.flow.shared.ApplicationConstants;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
-
 import static com.vaadin.flow.server.frontend.FrontendUtils.EXPORT_CHUNK;
 import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -100,6 +95,11 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         protected Optional<PwaRegistry> getPwaRegistry() {
             return Optional.empty();
         }
+
+        @Override
+        public String getAppId() {
+            return "wc-" + super.getAppId();
+        }
     }
 
     private static class WebComponentBootstrapPageBuilder
@@ -108,8 +108,8 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         public Document getBootstrapPage(BootstrapContext context) {
             VaadinService service = context.getSession().getService();
 
-            if (FeatureFlags.get(service.getContext())
-                    .isEnabled(FeatureFlags.VITE)) {
+            if (!FeatureFlags.get(service.getContext())
+                    .isEnabled(FeatureFlags.WEBPACK)) {
                 try {
                     Document document = Jsoup.parse(
                             FrontendUtils.getWebComponentHtmlContent(service));
@@ -135,6 +135,8 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                         head.prependChild(createJavaScriptModuleElement(
                                 getPushScript(context), true));
                     }
+
+                    setupCss(head, context);
 
                     return document;
                 } catch (IOException e) {
@@ -215,23 +217,6 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         BootstrapContext context = super.createAndInitUI(WebComponentUI.class,
                 request, response, session);
         JsonObject config = context.getApplicationParameters();
-
-        String pushURL = context.getSession().getConfiguration().getPushURL();
-        if (pushURL == null) {
-            pushURL = serviceUrl;
-        } else {
-            try {
-                URI uri = new URI(serviceUrl);
-                pushURL = uri.resolve(new URI(pushURL)).toASCIIString();
-            } catch (URISyntaxException exception) {
-                throw new IllegalStateException(String.format(
-                        "Can't resolve pushURL '%s' based on the service URL '%s'",
-                        pushURL, serviceUrl), exception);
-            }
-        }
-        PushConfiguration pushConfiguration = context.getUI()
-                .getPushConfiguration();
-        pushConfiguration.setPushUrl(pushURL);
 
         assert serviceUrl.endsWith("/");
         config.put(ApplicationConstants.SERVICE_URL, serviceUrl);

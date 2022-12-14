@@ -1,6 +1,6 @@
 package com.vaadin.flow.spring.flowsecurity.views;
 
-import javax.annotation.security.RolesAllowed;
+import jakarta.annotation.security.RolesAllowed;
 
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;

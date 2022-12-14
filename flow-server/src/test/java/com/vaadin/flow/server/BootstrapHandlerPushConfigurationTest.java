@@ -1,6 +1,6 @@
 package com.vaadin.flow.server;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.io.IOException;
 import java.net.URL;

@@ -25,16 +25,27 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class StartupPerformanceIT extends ChromeBrowserTest {
-    private static final String SERVER_NAME = "Webpack";
 
     @Test
+    public void devModeInitializerToViteUpIsBelowThreshold() {
+        devModeInitializerToDevServerUpIsBelowThreshold("Vite");
+    }
+
+    @Test
+    @Ignore("Webpack specific Test")
     public void devModeInitializerToWebpackUpIsBelowThreshold() {
+        devModeInitializerToDevServerUpIsBelowThreshold("Webpack");
+    }
+
+    private void devModeInitializerToDevServerUpIsBelowThreshold(
+            String serverName) {
         getDriver().get(getRootURL());
         waitForDevServer();
 
@@ -46,7 +57,7 @@ public class StartupPerformanceIT extends ChromeBrowserTest {
 
         int startupTime = measureLogEntryTimeDistance(
                 "- Starting dev-mode updaters in",
-                "- (Started|Reusing) " + SERVER_NAME, true);
+                "- (Started|Reusing) " + serverName, true);
 
         int npmInstallTime = measureLogEntryTimeDistance(
                 "- Running `pnpm install`",
@@ -55,13 +66,8 @@ public class StartupPerformanceIT extends ChromeBrowserTest {
         int startupTimeWithoutNpmInstallTime = startupTime - npmInstallTime;
 
         // https://github.com/vaadin/flow/issues/7596
-        boolean deprecatedBootstrap = Boolean.getBoolean(
-                System.getProperty("vaadin.useDeprecatedV14Bootstrapping"));
-        final int thresholdMs = deprecatedBootstrap ? 5500 : 20000;
+        final int thresholdMs = 20000;
         String key = "webpack-time";
-        if (deprecatedBootstrap) {
-            key += "-v14boostrap";
-        }
         printTeamcityStats(key, startupTimeWithoutNpmInstallTime);
 
         Assert.assertTrue(

@@ -15,8 +15,8 @@
  */
 package com.vaadin.flow.server;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletContext;
 
 import java.util.Enumeration;
 import java.util.Properties;
@@ -43,7 +43,7 @@ public class MockServletConfig implements ServletConfig {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletConfig#getServletName()
+     * @see jakarta.servlet.ServletConfig#getServletName()
      */
     @Override
     public String getServletName() {
@@ -53,7 +53,7 @@ public class MockServletConfig implements ServletConfig {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletConfig#getServletContext()
+     * @see jakarta.servlet.ServletConfig#getServletContext()
      */
     @Override
     public ServletContext getServletContext() {
@@ -63,7 +63,7 @@ public class MockServletConfig implements ServletConfig {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletConfig#getInitParameter(java.lang.String)
+     * @see jakarta.servlet.ServletConfig#getInitParameter(java.lang.String)
      */
     @Override
     public String getInitParameter(String name) {
@@ -73,7 +73,7 @@ public class MockServletConfig implements ServletConfig {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletConfig#getInitParameterNames()
+     * @see jakarta.servlet.ServletConfig#getInitParameterNames()
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override

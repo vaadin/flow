@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.component.littemplate.internal;
 
-import java.nio.file.Paths;
 import java.util.Properties;
 import java.util.stream.Stream;
 
@@ -37,7 +36,6 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.MockVaadinServletService;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 
 public class LitTemplateParserImplTest {
 
@@ -55,9 +53,6 @@ public class LitTemplateParserImplTest {
 
         Properties properties = new Properties();
         Mockito.when(configuration.getInitParameters()).thenReturn(properties);
-        Mockito.when(configuration.getFlowResourcesFolder()).thenReturn(
-                Paths.get("target", FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER)
-                        .toString());
 
         Instantiator instantiator = Mockito.mock(Instantiator.class);
         Mockito.when(instantiator.getServiceInitListeners())

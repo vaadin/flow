@@ -19,6 +19,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.time.LocalDate;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.UUID;
 
 import org.junit.Assert;
@@ -674,62 +675,71 @@ public class BinderInstanceFieldTest {
 
     @Test
     public void bindInstanceFields_fieldsNeedConversion_knownConvertersApplied() {
-        BindAutomaticConverter form = new BindAutomaticConverter();
-        form.stringToInteger = new TestTextField();
-        form.localDateToDate = new TestDatePicker();
-        form.stringToBigDecimal = new TestTextField();
-        form.stringToBigInteger = new TestTextField();
-        form.stringToBoolean = new TestTextField();
-        form.stringToPrimitiveBoolean = new TestTextField();
-        form.stringToDouble = new TestTextField();
-        form.stringToPrimitiveDouble = new TestTextField();
-        form.stringToFloat = new TestTextField();
-        form.stringToPrimitiveFloat = new TestTextField();
-        form.stringToInteger = new TestTextField();
-        form.stringToPrimitiveInteger = new TestTextField();
-        form.stringToLong = new TestTextField();
-        form.stringToPrimitiveLong = new TestTextField();
-        form.stringToUUID = new TestTextField();
+        Locale defaultLocale = Locale.getDefault();
+        Locale.setDefault(Locale.ENGLISH);
+        try {
+            BindAutomaticConverter form = new BindAutomaticConverter();
+            form.stringToInteger = new TestTextField();
+            form.localDateToDate = new TestDatePicker();
+            form.stringToBigDecimal = new TestTextField();
+            form.stringToBigInteger = new TestTextField();
+            form.stringToBoolean = new TestTextField();
+            form.stringToPrimitiveBoolean = new TestTextField();
+            form.stringToDouble = new TestTextField();
+            form.stringToPrimitiveDouble = new TestTextField();
+            form.stringToFloat = new TestTextField();
+            form.stringToPrimitiveFloat = new TestTextField();
+            form.stringToInteger = new TestTextField();
+            form.stringToPrimitiveInteger = new TestTextField();
+            form.stringToLong = new TestTextField();
+            form.stringToPrimitiveLong = new TestTextField();
+            form.stringToUUID = new TestTextField();
 
-        Binder<ConvertibleValues> binder = new Binder<>(
-                ConvertibleValues.class);
-        binder.bindInstanceFields(form);
+            Binder<ConvertibleValues> binder = new Binder<>(
+                    ConvertibleValues.class);
+            binder.bindInstanceFields(form);
 
-        LocalDate now = LocalDate.of(2022, 3, 27);
-        UUID uuid = UUID.randomUUID();
+            LocalDate now = LocalDate.of(2022, 3, 27);
+            UUID uuid = UUID.randomUUID();
 
-        ConvertibleValues data = new ConvertibleValues();
-        data.setStringToBigDecimal(new BigDecimal("20.23"));
-        data.setStringToBigInteger(new BigInteger("30"));
-        data.setStringToDouble(40.56);
-        data.setStringToPrimitiveDouble(50.78);
-        data.setStringToFloat(60.23f);
-        data.setStringToPrimitiveFloat(70.12f);
-        data.setStringToInteger(80);
-        data.setStringToPrimitiveInteger(90);
-        data.setStringToLong(100L);
-        data.setStringToPrimitiveLong(110);
-        data.setStringToBoolean(true);
-        data.setStringToPrimitiveBoolean(false);
-        data.setLocalDateToDate(java.sql.Date.valueOf(now));
-        data.setStringToUUID(uuid);
+            ConvertibleValues data = new ConvertibleValues();
+            data.setStringToBigDecimal(new BigDecimal("20.23"));
+            data.setStringToBigInteger(new BigInteger("30"));
+            data.setStringToDouble(40.56);
+            data.setStringToPrimitiveDouble(50.78);
+            data.setStringToFloat(60.23f);
+            data.setStringToPrimitiveFloat(70.12f);
+            data.setStringToInteger(80);
+            data.setStringToPrimitiveInteger(90);
+            data.setStringToLong(100L);
+            data.setStringToPrimitiveLong(110);
+            data.setStringToBoolean(true);
+            data.setStringToPrimitiveBoolean(false);
+            data.setLocalDateToDate(java.sql.Date.valueOf(now));
+            data.setStringToUUID(uuid);
 
-        binder.setBean(data);
+            binder.setBean(data);
 
-        Assert.assertEquals("20.23", form.stringToBigDecimal.getValue());
-        Assert.assertEquals("30", form.stringToBigInteger.getValue());
-        Assert.assertEquals("40.56", form.stringToDouble.getValue());
-        Assert.assertEquals("50.78", form.stringToPrimitiveDouble.getValue());
-        Assert.assertEquals("60.23", form.stringToFloat.getValue());
-        Assert.assertEquals("70.12", form.stringToPrimitiveFloat.getValue());
-        Assert.assertEquals("80", form.stringToInteger.getValue());
-        Assert.assertEquals("90", form.stringToPrimitiveInteger.getValue());
-        Assert.assertEquals("100", form.stringToLong.getValue());
-        Assert.assertEquals("110", form.stringToPrimitiveLong.getValue());
-        Assert.assertEquals("true", form.stringToBoolean.getValue());
-        Assert.assertEquals("false", form.stringToPrimitiveBoolean.getValue());
-        Assert.assertEquals(now, form.localDateToDate.getValue());
-        Assert.assertEquals(uuid.toString(), form.stringToUUID.getValue());
+            Assert.assertEquals("20.23", form.stringToBigDecimal.getValue());
+            Assert.assertEquals("30", form.stringToBigInteger.getValue());
+            Assert.assertEquals("40.56", form.stringToDouble.getValue());
+            Assert.assertEquals("50.78",
+                    form.stringToPrimitiveDouble.getValue());
+            Assert.assertEquals("60.23", form.stringToFloat.getValue());
+            Assert.assertEquals("70.12",
+                    form.stringToPrimitiveFloat.getValue());
+            Assert.assertEquals("80", form.stringToInteger.getValue());
+            Assert.assertEquals("90", form.stringToPrimitiveInteger.getValue());
+            Assert.assertEquals("100", form.stringToLong.getValue());
+            Assert.assertEquals("110", form.stringToPrimitiveLong.getValue());
+            Assert.assertEquals("true", form.stringToBoolean.getValue());
+            Assert.assertEquals("false",
+                    form.stringToPrimitiveBoolean.getValue());
+            Assert.assertEquals(now, form.localDateToDate.getValue());
+            Assert.assertEquals(uuid.toString(), form.stringToUUID.getValue());
+        } finally {
+            Locale.setDefault(defaultLocale);
+        }
     }
 
     @Test

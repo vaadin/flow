@@ -29,14 +29,6 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 public class InfoIT extends ChromeBrowserTest {
 
     @Test
-    @Ignore
-    public void productionModeServlet() {
-        openProduction();
-        Assert.assertEquals("true", getInfoValue("Production mode"));
-
-    }
-
-    @Test
     public void nonProductionModeServlet() {
         open();
         Assert.assertEquals("false", getInfoValue("Production mode"));

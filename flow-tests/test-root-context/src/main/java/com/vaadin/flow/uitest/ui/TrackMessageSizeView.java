@@ -17,7 +17,7 @@
 
 package com.vaadin.flow.uitest.ui;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.page.Push;

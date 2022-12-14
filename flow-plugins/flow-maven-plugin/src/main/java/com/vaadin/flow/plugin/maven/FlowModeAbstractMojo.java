@@ -41,6 +41,7 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
+import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 /**
@@ -109,7 +110,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * </p>
      * Example: <code>"https://nodejs.org/dist/"</code>.
      */
-    @Parameter(property = InitParameters.NODE_DOWNLOAD_ROOT, defaultValue = NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT)
+    @Parameter(property = InitParameters.NODE_DOWNLOAD_ROOT)
     private String nodeDownloadRoot;
 
     /**
@@ -144,7 +145,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     /**
      * Instructs to use pnpm for installing npm frontend resources.
      */
-    @Parameter(property = Constants.SERVLET_PARAMETER_ENABLE_PNPM, defaultValue = ""
+    @Parameter(property = InitParameters.SERVLET_PARAMETER_ENABLE_PNPM, defaultValue = ""
             + Constants.ENABLE_PNPM_DEFAULT)
     private boolean pnpmEnable;
 
@@ -159,8 +160,8 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     /**
      * Whether or not we are running in productionMode.
      */
-    @Parameter(defaultValue = "${vaadin.productionMode}")
-    private boolean productionMode;
+    @Parameter(defaultValue = "${null}")
+    protected Boolean productionMode;
 
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     MavenProject project;
@@ -351,7 +352,9 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
 
     @Override
     public URI nodeDownloadRoot() throws URISyntaxException {
-
+        if (nodeDownloadRoot == null) {
+            nodeDownloadRoot = Platform.guess().getNodeDownloadRoot();
+        }
         try {
             return new URI(nodeDownloadRoot);
         } catch (URISyntaxException e) {
@@ -394,12 +397,6 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     public boolean useGlobalPnpm() {
 
         return useGlobalPnpm;
-    }
-
-    @Override
-    public boolean productionMode() {
-
-        return productionMode;
     }
 
     @Override

@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -43,6 +42,7 @@ import com.vaadin.flow.server.frontend.FrontendUtils.CommandExecutionException;
 import com.vaadin.flow.server.frontend.FrontendUtils.UnknownVersionException;
 import com.vaadin.flow.server.frontend.installer.InstallationException;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
+import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.frontend.installer.ProxyConfig;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
@@ -66,16 +66,22 @@ public class FrontendTools {
      * the installed version is older than {@link #SUPPORTED_NODE_VERSION}, i.e.
      * {@value #SUPPORTED_NODE_MAJOR_VERSION}.{@value #SUPPORTED_NODE_MINOR_VERSION}.
      */
-    public static final String DEFAULT_NODE_VERSION = "v16.16.0";
+    public static final String DEFAULT_NODE_VERSION = "v18.12.1";
     /**
      * This is the version shipped with the default Node version.
      */
-    public static final String DEFAULT_NPM_VERSION = "8.11.0";
+    public static final String DEFAULT_NPM_VERSION = "8.19.2";
 
     public static final String DEFAULT_PNPM_VERSION = "5.18.10";
 
     public static final String INSTALL_NODE_LOCALLY = "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.10.0:install-node-and-npm "
             + "-DnodeVersion=\"" + DEFAULT_NODE_VERSION + "\" ";
+
+    public static final String NPM_BIN_PATH = FrontendUtils.isWindows()
+            ? "node/node_modules/npm/bin/"
+            : "node/lib/node_modules/npm/bin/";
+
+    private static final String NPM_BIN_LINUX_LEGACY_PATH = "node/node_modules/npm/bin/";
 
     private static final String MSG_PREFIX = "%n%n======================================================================================================";
     private static final String MSG_SUFFIX = "%n======================================================================================================%n";
@@ -101,18 +107,13 @@ public class FrontendTools {
             + FrontendUtils.DISABLE_CHECK //
             + MSG_SUFFIX;
 
-    private static final List<FrontendVersion> NPM_BLACKLISTED_VERSIONS = Arrays
-            .asList(new FrontendVersion("6.11.0"),
-                    new FrontendVersion("6.11.1"),
-                    new FrontendVersion("6.11.2"));
-
     private static final FrontendVersion WHITESPACE_ACCEPTING_NPM_VERSION = new FrontendVersion(
             7, 0);
 
-    private static final int SUPPORTED_NODE_MAJOR_VERSION = 16;
-    private static final int SUPPORTED_NODE_MINOR_VERSION = 14;
+    private static final int SUPPORTED_NODE_MAJOR_VERSION = 18;
+    private static final int SUPPORTED_NODE_MINOR_VERSION = 0;
     private static final int SUPPORTED_NPM_MAJOR_VERSION = 8;
-    private static final int SUPPORTED_NPM_MINOR_VERSION = 3;
+    private static final int SUPPORTED_NPM_MINOR_VERSION = 6;
 
     static final FrontendVersion SUPPORTED_NODE_VERSION = new FrontendVersion(
             SUPPORTED_NODE_MAJOR_VERSION, SUPPORTED_NODE_MINOR_VERSION);
@@ -237,7 +238,7 @@ public class FrontendTools {
     public FrontendTools(String baseDir,
             Supplier<String> alternativeDirGetter) {
         this(baseDir, alternativeDirGetter, DEFAULT_NODE_VERSION,
-                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT), false,
+                URI.create(Platform.guess().getNodeDownloadRoot()), false,
                 false);
     }
 
@@ -267,7 +268,7 @@ public class FrontendTools {
     public FrontendTools(String baseDir, Supplier<String> alternativeDirGetter,
             boolean forceAlternativeNode) {
         this(baseDir, alternativeDirGetter, DEFAULT_NODE_VERSION,
-                URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT),
+                URI.create(Platform.guess().getNodeDownloadRoot()),
                 forceAlternativeNode, false);
     }
 
@@ -425,7 +426,7 @@ public class FrontendTools {
                 NODE_VERSION, FrontendTools.DEFAULT_NODE_VERSION);
         final String nodeDownloadRoot = applicationConfiguration
                 .getStringProperty(NODE_DOWNLOAD_ROOT,
-                        NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT);
+                        Platform.guess().getNodeDownloadRoot());
 
         FrontendToolsSettings settings = new FrontendToolsSettings(
                 projectRoot.getAbsolutePath(),
@@ -629,11 +630,11 @@ public class FrontendTools {
             foundNodeVersionAndExe = getNodeVersionAndExecutable();
             FrontendVersion foundNodeVersion = foundNodeVersionAndExe
                     .getFirst();
-            FrontendUtils.validateToolVersion("node", foundNodeVersion,
-                    SUPPORTED_NODE_VERSION);
             getLogger().debug("Using node {} located at {}",
                     foundNodeVersion.getFullVersion(),
                     foundNodeVersionAndExe.getSecond());
+            FrontendUtils.validateToolVersion("node", foundNodeVersion,
+                    SUPPORTED_NODE_VERSION);
         } catch (UnknownVersionException e) {
             getLogger().warn("Error checking if node is new enough", e);
         } catch (IllegalStateException ise) {
@@ -646,12 +647,11 @@ public class FrontendTools {
 
         try {
             FrontendVersion foundNpmVersion = getNpmVersion();
-            FrontendUtils.validateToolVersion("npm", foundNpmVersion,
-                    SUPPORTED_NPM_VERSION);
-            checkForFaultyNpmVersion(foundNpmVersion);
             getLogger().debug("Using npm {} located at {}",
                     foundNpmVersion.getFullVersion(),
                     getNpmExecutable(false).get(0));
+            FrontendUtils.validateToolVersion("npm", foundNpmVersion,
+                    SUPPORTED_NPM_VERSION);
         } catch (UnknownVersionException e) {
             getLogger().warn("Error checking if npm is new enough", e);
         }
@@ -725,15 +725,6 @@ public class FrontendTools {
         proxyList.addAll(readProxySettingsFromEnvironmentVariables());
 
         return proxyList;
-    }
-
-    void checkForFaultyNpmVersion(FrontendVersion npmVersion) {
-        if (NPM_BLACKLISTED_VERSIONS.contains(npmVersion)) {
-            String badNpmVersion = buildBadVersionString("npm",
-                    npmVersion.getFullVersion(),
-                    "by updating your global npm installation with `npm install -g npm@latest`");
-            throw new IllegalStateException(badNpmVersion);
-        }
     }
 
     /**
@@ -982,6 +973,7 @@ public class FrontendTools {
         returnCommand.add("--no-update-notifier");
         returnCommand.add("--no-audit");
         returnCommand.add("--scripts-prepend-node-path=true");
+        returnCommand.add("--legacy-peer-deps");
 
         if (removePnpmLock) {
             // remove pnpm-lock.yaml which contains pnpm as a dependency.
@@ -1061,7 +1053,10 @@ public class FrontendTools {
         // If `node` is not found in PATH, `node/node_modules/npm/bin/npm` will
         // not work because it's a shell or windows script that looks for node
         // and will fail. Thus we look for the `npm-cli` node script instead
-        File file = new File(dir, "node/node_modules/npm/bin/" + scriptName);
+        File file = new File(dir, NPM_BIN_PATH + scriptName);
+        if (!FrontendUtils.isWindows() && !file.canRead()) {
+            file = new File(dir, NPM_BIN_LINUX_LEGACY_PATH + scriptName);
+        }
         List<String> returnCommand = new ArrayList<>();
         if (file.canRead()) {
             // We return a two element list with node binary and npm-cli script

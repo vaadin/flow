@@ -38,14 +38,11 @@ public class TaskGenerateIndexHtml extends AbstractTaskClientGenerator {
     /**
      * Create a task to generate <code>index.html</code> if necessary.
      *
-     * @param frontendDirectory
-     *            frontend directory is to check if the file already exists
-     *            there.
-     * @param outputDirectory
-     *            the output directory of the generated file
+     * @param options
+     *            the task options
      */
-    TaskGenerateIndexHtml(File frontendDirectory) {
-        indexHtml = new File(frontendDirectory, INDEX_HTML);
+    TaskGenerateIndexHtml(Options options) {
+        indexHtml = new File(options.getFrontendDirectory(), INDEX_HTML);
     }
 
     @Override

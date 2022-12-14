@@ -31,7 +31,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
-import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.testutil.TestUtils;
 
 import elemental.json.JsonObject;
@@ -72,15 +72,17 @@ public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
 
     @Test
     public void should_createPackageJson() throws IOException {
-        TaskGeneratePackageJson task = new TaskGeneratePackageJson(npmFolder,
-                generatedFolder, frontendDepsFolder, TARGET,
-                Mockito.mock(FeatureFlags.class));
+        Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
+                .withGeneratedFolder(generatedFolder)
+                .withBuildDirectory(TARGET);
+
+        TaskGeneratePackageJson task = new TaskGeneratePackageJson(options);
         task.execute();
         Assert.assertTrue(new File(npmFolder, PACKAGE_JSON).exists());
         Assert.assertFalse(new File(generatedFolder, PACKAGE_JSON).exists());
-        Assert.assertTrue(new File(frontendDepsFolder, PACKAGE_JSON).exists());
         JsonObject deps = task.getPackageJson().getObject("dependencies");
-        Assert.assertFalse(deps.hasKey("@vaadin/flow-deps"));
+        Assert.assertFalse(deps.hasKey(NodeUpdater.DEP_NAME_FLOW_DEPS));
+        Assert.assertFalse(deps.hasKey(NodeUpdater.DEP_NAME_FLOW_JARS));
     }
 
     private void should_collectJsAndCssFilesFromJars(String jarFile,
@@ -99,8 +101,10 @@ public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
         // - resourceInFolder.js.map
         File dir = TestUtils.getTestFolder(fsDir);
 
-        TaskCopyFrontendFiles task = new TaskCopyFrontendFiles(
-                frontendDepsFolder, jars(jar, dir));
+        Options options = new Options(Mockito.mock(Lookup.class), null);
+        options.withJarFrontendResourcesFolder(frontendDepsFolder)
+                .copyResources(jars(jar, dir));
+        TaskCopyFrontendFiles task = new TaskCopyFrontendFiles(options);
 
         task.execute();
 

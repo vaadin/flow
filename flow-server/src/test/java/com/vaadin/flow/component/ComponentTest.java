@@ -41,6 +41,7 @@ import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.internal.DependencyList;
 import com.vaadin.flow.component.internal.UIInternals;
+import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.Element;
@@ -303,6 +304,17 @@ public class ComponentTest {
     public void tearDown() {
         UI.setCurrent(null);
         mocks.cleanup();
+    }
+
+    @Test
+    public void getComponentLocale_noCurrentUI_returnsDefaultLocale() {
+        UI.setCurrent(null);
+        Instantiator instantiator = mocks.getService().getInstantiator();
+        Mockito.when(instantiator.getI18NProvider()).thenReturn(null);
+        Component test = new TestButton();
+        final Locale locale = test.getLocale();
+        Assert.assertEquals("System default locale should be returned",
+                Locale.getDefault(), locale);
     }
 
     @Test
@@ -1672,12 +1684,32 @@ public class ComponentTest {
         ui.add(componentContainer);
 
         Assert.assertEquals(componentContainer,
-                component.findAncestor(TestComponentContainer.class).get());
-        Assert.assertEquals(ui, component.findAncestor(UI.class).get());
-        Assert.assertEquals(ui,
-                component.findAncestor(PollNotifier.class).get());
-        Assert.assertFalse(
-                component.findAncestor(TestButton.class).isPresent());
+                component.findAncestor(TestComponentContainer.class));
+        Assert.assertEquals(ui, component.findAncestor(UI.class));
+        Assert.assertEquals(ui, component.findAncestor(PollNotifier.class));
+        Assert.assertNull(component.findAncestor(TestButton.class));
+    }
+
+    @Test
+    public void removeFromParentTest() {
+        UI ui = new UI();
+        TestComponentContainer componentContainer = new TestComponentContainer();
+        TestComponent component = new TestComponent();
+        componentContainer.add(component);
+        ui.add(componentContainer);
+
+        Assert.assertEquals(componentContainer, component.getParent().get());
+        Assert.assertEquals(1, componentContainer.getChildren().count());
+        Assert.assertEquals(ui, componentContainer.getParent().get());
+        Assert.assertEquals(1, ui.getChildren().count());
+
+        component.removeFromParent();
+        Assert.assertTrue(component.getParent().isEmpty());
+        Assert.assertEquals(0, componentContainer.getChildren().count());
+
+        componentContainer.removeFromParent();
+        Assert.assertTrue(componentContainer.getParent().isEmpty());
+        Assert.assertEquals(0, ui.getChildren().count());
 
     }
 

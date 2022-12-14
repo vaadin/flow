@@ -20,9 +20,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
-import javax.servlet.http.HttpServletRequest;
-
-import com.vaadin.flow.server.VaadinRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * Internal utility class for URL handling.
@@ -107,41 +105,49 @@ public class UrlUtil {
     }
 
     /**
-     * Gets the path info for a /VAADIN/something request.
+     * Returns the given absolute path as a path relative to the servlet path.
      *
+     * @param absolutePath
+     *            the path to make relative
      * @param request
-     *            the servlet request
-     * @return the path info starting with /VAADIN/ or <code>null</code> if no
-     *         path information is available
+     *            a request with information about the servlet path
+     * @return a relative path that when applied to the servlet path, refers to
+     *         the absolute path without containing the context path or servlet
+     *         path
      */
-    public static String getStaticVaadinPathInfo(VaadinRequest request) {
-        if (request instanceof HttpServletRequest) {
-            return getStaticVaadinPathInfo(((HttpServletRequest) request));
+    public static String getServletPathRelative(String absolutePath,
+            HttpServletRequest request) {
+        String pathToServlet = request.getContextPath()
+                + request.getServletPath();
+        if (pathToServlet.startsWith("/")) {
+            pathToServlet = pathToServlet.substring(1);
+        }
+        if (absolutePath.startsWith("/")) {
+            absolutePath = absolutePath.substring(1);
+        }
+        String[] servletPathSegments = pathToServlet.isEmpty() ? new String[0]
+                : pathToServlet.split("/");
+        String[] absolutePathSegments = absolutePath.isEmpty() ? new String[0]
+                : absolutePath.split("/");
+        int startFrom = 0;
+        while (absolutePathSegments.length > startFrom
+                && servletPathSegments.length > startFrom
+                && absolutePathSegments[startFrom]
+                        .equals(servletPathSegments[startFrom])) {
+            startFrom++;
         }
 
-        return request.getPathInfo();
-    }
+        String ret = "";
 
-    /**
-     * Gets the path info for a /VAADIN/something request.
-     *
-     * @param request
-     *            the servlet request
-     * @return the path info starting with /VAADIN/ or <code>null</code> if no
-     *         path information is available
-     */
-    public static String getStaticVaadinPathInfo(HttpServletRequest request) {
-        String pathInfo = request.getPathInfo();
-        if (pathInfo == null) {
-            return null;
+        for (int i = startFrom; i < servletPathSegments.length; i++) {
+            ret += "../";
         }
-
-        if ("/VAADIN".equals(request.getServletPath())) {
-            // If the servlet is deployed with a separate /VAADIN/* mapping, we
-            // need to add the missing /VAADIN/
-            String prefix = pathInfo.startsWith("/") ? "/VAADIN" : "/VAADIN/";
-            pathInfo = prefix + pathInfo;
+        for (int i = startFrom; i < absolutePathSegments.length; i++) {
+            ret += absolutePathSegments[i] + "/";
         }
-        return pathInfo;
+        if (ret.isEmpty()) {
+            return ".";
+        }
+        return ret.substring(0, ret.length() - 1);
     }
 }

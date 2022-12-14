@@ -18,7 +18,7 @@ package com.vaadin.base.devserver;
 import java.io.Serializable;
 import java.util.Set;
 
-import javax.servlet.annotation.HandlesTypes;
+import jakarta.servlet.annotation.HandlesTypes;
 
 import com.vaadin.base.devserver.startup.DevModeInitializer;
 import com.vaadin.base.devserver.startup.DevModeStartupListener;
@@ -51,6 +51,7 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
     }
 
     private DevModeHandler devModeHandler;
+    private BrowserLauncher browserLauncher;
 
     @Override
     public Class<?>[] getHandlesTypes() {
@@ -79,7 +80,19 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
         setDevModeHandler(
                 DevModeInitializer.initDevModeHandler(classes, context));
         setDevModeStarted(context);
+        this.browserLauncher = new BrowserLauncher(context);
+    }
 
+    public void stopDevModeHandler() {
+        if (devModeHandler != null) {
+            devModeHandler.stop();
+            devModeHandler = null;
+        }
+    }
+
+    @Override
+    public void launchBrowserInDevelopmentMode(String url) {
+        browserLauncher.launchBrowserInDevelopmentMode(url);
     }
 
     private void setDevModeStarted(VaadinContext context) {

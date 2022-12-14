@@ -15,14 +15,15 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import static com.vaadin.flow.server.frontend.FrontendTools.NPM_BIN_PATH;
 import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
@@ -34,8 +35,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -52,6 +51,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.internal.Pair;
@@ -61,21 +61,20 @@ import com.vaadin.flow.testcategory.SlowTests;
 import com.vaadin.flow.testutil.FrontendStubs;
 
 import net.jcip.annotations.NotThreadSafe;
-import org.slf4j.LoggerFactory;
-
-import static org.hamcrest.MatcherAssert.assertThat;
 
 @NotThreadSafe
 @Category(SlowTests.class)
 public class FrontendToolsTest {
 
+    private static final String SUPPORTED_NODE_BUT_OLDER_THAN_AUTOINSTALLED = "18.0.0";
+
     public static final String DEFAULT_NODE = FrontendUtils.isWindows()
             ? "node\\node.exe"
             : "node/node";
 
-    public static final String NPM_CLI_STRING = Stream
-            .of("node", "node_modules", "npm", "bin", "npm-cli.js")
-            .collect(Collectors.joining(File.separator));
+    public static final String NPM_CLI_STRING = FrontendUtils.isWindows()
+            ? "node\\node_modules\\npm\\bin\\npm-cli.js"
+            : "node/lib/node_modules/npm/bin/npm-cli.js";
 
     private static final String OLD_PNPM_VERSION = "4.5.0";
 
@@ -130,8 +129,13 @@ public class FrontendToolsTest {
         npmVersionCommand.add("--version");
         FrontendVersion npm = FrontendUtils.getVersion("npm",
                 npmVersionCommand);
-        Assert.assertEquals(FrontendTools.DEFAULT_NPM_VERSION,
-                npm.getFullVersion());
+        final FrontendVersion npmDefault = new FrontendVersion(
+                FrontendTools.DEFAULT_NPM_VERSION);
+
+        Assert.assertEquals("Major version should match",
+                npmDefault.getMajorVersion(), npm.getMajorVersion());
+        Assert.assertEquals("Minor version should match",
+                npmDefault.getMinorVersion(), npm.getMinorVersion());
     }
 
     @Test
@@ -150,20 +154,23 @@ public class FrontendToolsTest {
     @Test
     public void nodeIsBeingLocated_supportedNodeInstalled_autoUpdateFalse_NodeNotUpdated()
             throws FrontendUtils.UnknownVersionException {
+        settings.setAutoUpdate(false);
         FrontendVersion updatedNodeVersion = getUpdatedAlternativeNodeVersion(
-                "16.14.0", () -> tools.getNodeExecutable());
+                SUPPORTED_NODE_BUT_OLDER_THAN_AUTOINSTALLED,
+                () -> tools.getNodeExecutable());
 
         Assert.assertEquals(
                 "Locate Node version: Node version updated even if it should not have been touched.",
-                "16.14.0", updatedNodeVersion.getFullVersion());
+                SUPPORTED_NODE_BUT_OLDER_THAN_AUTOINSTALLED,
+                updatedNodeVersion.getFullVersion());
     }
 
     @Test
     public void nodeIsBeingLocated_supportedNodeInstalled_autoUpdateTrue_NodeUpdated()
             throws FrontendUtils.UnknownVersionException {
-        settings.setAutoUpdate(true);
         FrontendVersion updatedNodeVersion = getUpdatedAlternativeNodeVersion(
-                "16.14.0", () -> tools.getNodeExecutable());
+                SUPPORTED_NODE_BUT_OLDER_THAN_AUTOINSTALLED,
+                () -> tools.getNodeExecutable());
 
         Assert.assertEquals(
                 "Locate Node version: Node version was not auto updated.",
@@ -203,7 +210,7 @@ public class FrontendToolsTest {
         FrontendStubs.ToolStubInfo npmStub = FrontendStubs.ToolStubInfo.none();
         createStubNode(nodeStub, npmStub, baseDir);
 
-        tools.installNode("v16.14.0", null);
+        tools.installNode(FrontendTools.DEFAULT_NODE_VERSION, null);
 
         List<String> nodeVersionCommand = new ArrayList<>();
         nodeVersionCommand.add(tools.getNodeExecutable());
@@ -213,7 +220,8 @@ public class FrontendToolsTest {
 
         Assert.assertEquals(
                 "Locate unsupported Node version: Expecting Node in alternative directory to be used, but was not.",
-                "16.14.0", usedNodeVersion.getFullVersion());
+                FrontendTools.DEFAULT_NODE_VERSION.replace("v", ""),
+                usedNodeVersion.getFullVersion());
     }
 
     @Test
@@ -232,20 +240,23 @@ public class FrontendToolsTest {
     @Test
     public void forceAlternativeDirectory_supportedNodeInstalled_autoUpdateFalse_NodeNotUpdated()
             throws FrontendUtils.UnknownVersionException {
+        settings.setAutoUpdate(false);
         FrontendVersion updatedNodeVersion = getUpdatedAlternativeNodeVersion(
-                "16.14.0", () -> tools.forceAlternativeNodeExecutable());
+                SUPPORTED_NODE_BUT_OLDER_THAN_AUTOINSTALLED,
+                () -> tools.forceAlternativeNodeExecutable());
 
         Assert.assertEquals(
                 "Force alternative directory: Node version updated even if it should not have been touched.",
-                "16.14.0", updatedNodeVersion.getFullVersion());
+                SUPPORTED_NODE_BUT_OLDER_THAN_AUTOINSTALLED,
+                updatedNodeVersion.getFullVersion());
     }
 
     @Test
     public void forceAlternativeDirectory_supportedNodeInstalled_autoUpdateTrue_NodeUpdated()
             throws FrontendUtils.UnknownVersionException {
-        settings.setAutoUpdate(true);
         FrontendVersion updatedNodeVersion = getUpdatedAlternativeNodeVersion(
-                "16.14.0", () -> tools.forceAlternativeNodeExecutable());
+                SUPPORTED_NODE_BUT_OLDER_THAN_AUTOINSTALLED,
+                () -> tools.forceAlternativeNodeExecutable());
 
         Assert.assertEquals(
                 "Force alternative directory: Node version was not auto updated.",
@@ -339,17 +350,17 @@ public class FrontendToolsTest {
         String nodeExecutable = installNodeToTempFolder();
         Assert.assertNotNull(nodeExecutable);
 
+        String npmInstallPath = NPM_BIN_PATH + "npm";
+
         Assert.assertTrue("npm should have been copied to node_modules",
-                new File(vaadinHomeDir, "node/node_modules/npm/bin/npm")
-                        .exists());
+                new File(vaadinHomeDir, npmInstallPath).exists());
     }
 
     @Test
     public void installNodeFromFileSystem_ForceAlternativeNodeExecutableInstallsToTargetDirectory()
             throws Exception {
         Assert.assertFalse("npm should not yet be present",
-                new File(vaadinHomeDir, "node/node_modules/npm/bin/npm")
-                        .exists());
+                new File(vaadinHomeDir, NPM_BIN_PATH + "npm").exists());
 
         settings.setNodeDownloadRoot(new File(baseDir).toURI());
         settings.setNodeVersion("v12.10.0");
@@ -357,9 +368,10 @@ public class FrontendToolsTest {
         prepareNodeDownloadableZipAt(baseDir, "v12.10.0");
         tools.forceAlternativeNodeExecutable();
 
+        String npmInstallPath = NPM_BIN_PATH + "npm";
+
         Assert.assertTrue("npm should have been copied to node_modules",
-                new File(vaadinHomeDir, "node/node_modules/npm/bin/npm")
-                        .exists());
+                new File(vaadinHomeDir, npmInstallPath).exists());
     }
 
     @Test
@@ -402,7 +414,7 @@ public class FrontendToolsTest {
                 not(containsString(vaadinHomeDir)));
         assertThat(tools.getNodeExecutable(), not(containsString(baseDir)));
 
-        assertEquals(4, tools.getNpmExecutable().size());
+        assertEquals(5, tools.getNpmExecutable().size());
         assertThat(tools.getNpmExecutable().get(0), containsString("npm"));
         assertThat(tools.getNpmExecutable().get(1),
                 containsString("--no-update-notifier"));
@@ -420,13 +432,6 @@ public class FrontendToolsTest {
         tools.getNpmExecutable();
 
         Assert.assertFalse(file.exists());
-    }
-
-    @Test
-    public void knownFaultyNpmVersionThrowsException() {
-        assertFaultyNpmVersion(new FrontendVersion(6, 11, 0));
-        assertFaultyNpmVersion(new FrontendVersion(6, 11, 1));
-        assertFaultyNpmVersion(new FrontendVersion(6, 11, 2));
     }
 
     @Test
@@ -875,37 +880,6 @@ public class FrontendToolsTest {
         assertThat(npmExecutable.get(0), containsString(path.get()));
         assertThat(npmExecutable.get(0), containsString(DEFAULT_NODE));
         assertThat(npmExecutable.get(1), containsString(NPM_CLI_STRING));
-    }
-
-    private void assertFaultyNpmVersion(FrontendVersion version) {
-        try {
-            tools.checkForFaultyNpmVersion(version);
-            Assert.fail("No exception was thrown for bad npm version");
-        } catch (IllegalStateException e) {
-            Assert.assertTrue(
-                    "Faulty version " + version.getFullVersion()
-                            + " returned wrong exception message",
-                    e.getMessage()
-                            .contains("Your installed 'npm' version ("
-                                    + version.getFullVersion()
-                                    + ") is known to have problems."));
-        }
-    }
-
-    private void createFakePnpm(String defaultPnpmVersion) throws Exception {
-        File npxJs = new File(baseDir, "node/node_modules/npm/bin/npx-cli.js");
-        FileUtils.forceMkdir(npxJs.getParentFile());
-
-        FileWriter fileWriter = new FileWriter(npxJs);
-        try {
-            fileWriter.write(
-                    "pnpmVersion = process.argv.filter(a=>a.startsWith('pnpm')).map(a=>a.substring(5))[0] || '"
-                            + defaultPnpmVersion + "'\n"
-                            + "if (process.argv.includes('--version') || process.argv.includes('-v')) {\n"
-                            + "    console.log(pnpmVersion);\n" + "}\n");
-        } finally {
-            fileWriter.close();
-        }
     }
 
     private void installGlobalPnpm(String pnpmVersion) {

@@ -15,29 +15,38 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
+import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
+import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_STATISTICS_JSON;
+import static com.vaadin.flow.server.frontend.FrontendTools.INSTALL_NODE_LOCALLY;
+import static java.lang.String.format;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Scanner;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
@@ -50,21 +59,17 @@ import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
+import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
 
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
-
-import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
-import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
-import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_STATISTICS_JSON;
-import static com.vaadin.flow.server.frontend.FrontendTools.INSTALL_NODE_LOCALLY;
-import static java.lang.String.format;
+import jakarta.servlet.ServletContext;
 
 /**
  * A class for static methods and definitions that might be used in different
@@ -147,30 +152,23 @@ public class FrontendUtils {
     public static final String SERVICE_WORKER_SRC_JS = "sw.js";
 
     /**
-     * The npm package name that will be used for the javascript files present
-     * in jar resources that will to be copied to the npm folder so as they are
-     * accessible to webpack.
+     * The folder inside the 'generated' folder where frontend resources from
+     * jars are copied.
      */
-    public static final String FLOW_NPM_PACKAGE_NAME = NodeUpdater.DEP_NAME_FLOW_JARS
-            + "/";
+    public static final String JAR_RESOURCES_FOLDER = "jar-resources";
 
     /**
-     * Default folder where front-end resources present in the classpath jars
-     * are copied to. Relative to the
-     * {@link com.vaadin.flow.server.InitParameters#BUILD_FOLDER}.
+     * The location where javascript files present in jar resources are copied
+     * and can be imported from.
      */
-    public static final String DEFAULT_FLOW_RESOURCES_FOLDER = "flow-frontend";
-
+    public static final String JAR_RESOURCES_IMPORT = "Frontend/generated/"
+            + JAR_RESOURCES_FOLDER + "/";
     /**
-     * Default folder under build folder for copying front-end resources present
-     * in the classpath jars.
-     *
-     * @deprecated This is deprecated due to a typo. Use
-     *             DEFAULT_FLOW_RESOURCES_FOLDER instead.
-     * @see #DEFAULT_FLOW_RESOURCES_FOLDER
+     * The location where javascript files present in jar resources are copied
+     * and can be imported from, relative to the frontend folder.
      */
-    @Deprecated
-    public static final String DEAULT_FLOW_RESOURCES_FOLDER = DEFAULT_FLOW_RESOURCES_FOLDER;
+    public static final String JAR_RESOURCES_IMPORT_FRONTEND_RELATIVE = JAR_RESOURCES_IMPORT
+            .replace("Frontend/", "./");
 
     /**
      * Default folder name for flow generated stuff relative to the
@@ -290,12 +288,12 @@ public class FrontendUtils {
     public static final String PARAM_IGNORE_VERSION_CHECKS = "vaadin.ignoreVersionChecks";
 
     /**
-     * A special prefix used by webpack to map imports placed in the
+     * A special prefix used to map imports placed in the
      * {@link FrontendUtils#DEFAULT_FRONTEND_DIR}. e.g.
      * <code>import 'Frontend/foo.js';</code> references the
      * file<code>frontend/foo.js</code>.
      */
-    public static final String WEBPACK_PREFIX_ALIAS = "Frontend/";
+    public static final String FRONTEND_FOLDER_ALIAS = "Frontend/";
 
     /**
      * File used to enable npm mode.
@@ -523,18 +521,34 @@ public class FrontendUtils {
         try {
             Optional<DevModeHandler> devModeHandler = DevModeHandlerManager
                     .getDevModeHandler(service);
-            if (!config.isProductionMode() && config.enableDevServer()
-                    && devModeHandler.isPresent()) {
+            if (config.isProductionMode()) {
+                // In production mode, this is on the class path
+                content = getFileFromClassPath(service, path);
+            } else if (devModeHandler.isPresent()) {
                 content = getFileFromDevModeHandler(devModeHandler.get(), path);
+            } else {
+                // Get directly from the frontend folder in the project
+                content = getFileFromFrontendDir(config, path);
             }
 
-            if (content == null) {
-                content = getFileFromClassPath(service, path);
-            }
             return content != null ? streamToString(content) : null;
         } finally {
             IOUtils.closeQuietly(content);
         }
+    }
+
+    private static InputStream getFileFromFrontendDir(
+            AbstractConfiguration config, String path) {
+        File file = new File(new File(config.getProjectFolder(), "frontend"),
+                path);
+        if (file.exists()) {
+            try {
+                return Files.newInputStream(file.toPath());
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        }
+        return null;
     }
 
     private static InputStream getFileFromClassPath(VaadinService service,
@@ -693,10 +707,10 @@ public class FrontendUtils {
     }
 
     /**
-     * Looks up the front file at the given path. If the path starts with
-     * {@code ./}, first look in {@code projectRoot/frontend}, then in
-     * {@code projectRoot/node_modules/@vaadin/flow-frontend}. If the path does
-     * not start with {@code ./}, look in {@code node_modules} instead.
+     * Looks up the frontend resource at the given path. If the path starts with
+     * {@code ./}, first look in {@code frontend}, then in
+     * {@value FrontendUtils#JAR_RESOURCES_FOLDER}. If the path does not start
+     * with {@code ./}, look in {@code node_modules} instead.
      *
      * @param projectRoot
      *            the project root folder.
@@ -705,17 +719,43 @@ public class FrontendUtils {
      * @return an existing {@link File} , or null if the file doesn't exist.
      */
     public static File resolveFrontendPath(File projectRoot, String path) {
-        File localFrontendFolder = new File(projectRoot,
-                FrontendUtils.FRONTEND);
+        return resolveFrontendPath(projectRoot, path,
+                new File(projectRoot, FrontendUtils.FRONTEND));
+    }
+
+    /**
+     * Looks up the fronted resource at the given path. If the path starts with
+     * {@code ./}, first look in {@code frontend}, then in
+     * {@value FrontendUtils#JAR_RESOURCES_FOLDER}. If the path does not start
+     * with {@code ./}, look in {@code node_modules} instead.
+     *
+     * @param projectRoot
+     *            the project root folder.
+     * @param path
+     *            the file path.
+     * @param frontendDirectory
+     *            the frontend directory.
+     * @return an existing {@link File} , or null if the file doesn't exist.
+     */
+    public static File resolveFrontendPath(File projectRoot, String path,
+            File frontendDirectory) {
         File nodeModulesFolder = new File(projectRoot, NODE_MODULES);
-        File flowFrontendFolder = new File(nodeModulesFolder,
-                "@vaadin/" + DEFAULT_FLOW_RESOURCES_FOLDER);
+        File addonsFolder = getJarResourcesFolder(frontendDirectory);
         List<File> candidateParents = path.startsWith("./")
-                ? Arrays.asList(localFrontendFolder, flowFrontendFolder)
-                : Arrays.asList(nodeModulesFolder, localFrontendFolder,
-                        flowFrontendFolder);
+                ? Arrays.asList(frontendDirectory, addonsFolder)
+                : Arrays.asList(nodeModulesFolder, frontendDirectory,
+                        addonsFolder);
         return candidateParents.stream().map(parent -> new File(parent, path))
                 .filter(File::exists).findFirst().orElse(null);
+    }
+
+    private static File getJarResourcesFolder(File frontendDirectory) {
+        return new File(getFrontendGeneratedFolder(frontendDirectory),
+                JAR_RESOURCES_FOLDER);
+    }
+
+    private static File getFrontendGeneratedFolder(File frontendDirectory) {
+        return new File(frontendDirectory, GENERATED);
     }
 
     /**
@@ -990,6 +1030,23 @@ public class FrontendUtils {
         }
 
         /**
+         * Constructs an exception telling what code the command execution
+         * process was exited with and the output that it produced.
+         *
+         * @param processExitCode
+         *            process exit code
+         * @param output
+         *            the output from the command
+         * @param errorOutput
+         *            the error output from the command
+         */
+        public CommandExecutionException(int processExitCode, String output,
+                String errorOutput) {
+            super("Process execution failed with exit code " + processExitCode
+                    + "\nOutput: " + output + "\nError output: " + errorOutput);
+        }
+
+        /**
          * Constructs an exception telling what was the original exception the
          * command execution process failed with.
          *
@@ -1038,7 +1095,9 @@ public class FrontendUtils {
                     .start();
             int exitCode = process.waitFor();
             if (exitCode != 0) {
-                throw new CommandExecutionException(exitCode);
+                throw new CommandExecutionException(exitCode,
+                        streamToString(process.getInputStream()),
+                        streamToString(process.getErrorStream()));
             }
             return streamToString(process.getInputStream());
         } catch (IOException | InterruptedException e) {
@@ -1259,16 +1318,151 @@ public class FrontendUtils {
                     + " does not look like a node_modules directory");
         }
 
-        Path nodeModulesPath = nodeModules.toPath();
-        try (Stream<Path> walk = Files.walk(nodeModulesPath)) {
-            String undeletable = walk.sorted(Comparator.reverseOrder())
-                    .map(Path::toFile).filter(file -> !file.delete())
-                    .map(File::getAbsolutePath)
-                    .collect(Collectors.joining(", "));
+        deleteDirectory(nodeModules);
+    }
 
-            if (!undeletable.isEmpty() && nodeModules.exists()) {
-                throw new IOException("Unable to delete files: " + undeletable);
+    /**
+     * Recursively delete given directory and contents.
+     * <p>
+     * Will not delete contents of symlink or junction directories, only the
+     * link file.
+     *
+     * @param directory
+     *            directory to delete
+     * @throws IOException
+     *             on failure to delete or read any one file
+     */
+    public static void deleteDirectory(File directory) throws IOException {
+        if (!directory.exists() || !directory.isDirectory()) {
+            return;
+        }
+
+        if (!(Files.isSymbolicLink(directory.toPath())
+                || isJunction(directory.toPath()))) {
+            cleanDirectory(directory);
+        }
+
+        if (!directory.delete()) {
+            String message = "Unable to delete directory " + directory + ".";
+            throw new IOException(message);
+        }
+    }
+
+    /**
+     * Check that directory is not a windows junction which is basically a
+     * symlink.
+     *
+     * @param directory
+     *            directory path to check
+     * @return true if directory is a windows junction
+     * @throws IOException
+     *             if an I/O error occurs
+     */
+    private static boolean isJunction(Path directory) throws IOException {
+        boolean isWindows = System.getProperty("os.name").toLowerCase()
+                .contains("windows");
+        BasicFileAttributes attrs = Files.readAttributes(directory,
+                BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
+        return isWindows && attrs.isDirectory() && attrs.isOther();
+    }
+
+    private static void cleanDirectory(File directory) throws IOException {
+        if (!directory.exists()) {
+            String message = directory + " does not exist";
+            throw new IllegalArgumentException(message);
+        }
+
+        if (!directory.isDirectory()) {
+            String message = directory + " is not a directory";
+            throw new IllegalArgumentException(message);
+        }
+
+        File[] files = directory.listFiles();
+        if (files == null) { // null if security restricted
+            throw new IOException("Failed to list contents of " + directory);
+        }
+
+        IOException exception = null;
+        for (File file : files) {
+            try {
+                forceDelete(file);
+            } catch (IOException ioe) {
+                exception = ioe;
+            }
+        }
+
+        if (exception != null) {
+            throw exception;
+        }
+    }
+
+    private static void forceDelete(File file) throws IOException {
+        if (file.isDirectory()) {
+            deleteDirectory(file);
+        } else {
+            boolean filePresent = file.exists();
+            if (!file.delete()) {
+                if (!filePresent) {
+                    throw new FileNotFoundException(
+                            "File does not exist: " + file);
+                }
+                String message = "Unable to delete file: " + file;
+                throw new IOException(message);
             }
         }
     }
+
+    /**
+     * Gets the servlet path (excluding the context path) for the servlet used
+     * for serving the VAADIN frontend bundle.
+     *
+     * @return the path to the servlet used for the frontend bundle. Empty for a
+     *         /* mapping, otherwise always starts with a slash but never ends
+     *         with a slash
+     */
+    public static String getFrontendServletPath(ServletContext servletContext) {
+        String mapping = VaadinServlet.getFrontendMapping();
+        if (mapping.endsWith("/*")) {
+            mapping = mapping.replace("/*", "");
+        }
+
+        return mapping;
+    }
+
+    /**
+     * Finds the given file inside the express mode development bundle that is
+     * used.
+     * <p>
+     *
+     * @param projectDir
+     *            the project root folder
+     * @param filename
+     *            the file name inside the bundle
+     * @return a URL referring to the file inside the bundle or {@code null} if
+     *         the file was not found
+     */
+    public static URL findBundleFile(File projectDir, String filename)
+            throws IOException {
+        File devBundleFolder = getDevBundleFolder(projectDir);
+        if (devBundleFolder.exists()) {
+            // Has an application bundle
+            File bundleFile = new File(devBundleFolder, filename);
+            if (bundleFile.exists()) {
+                return bundleFile.toURI().toURL();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Get the folder where an application specific bundle is stored.
+     *
+     * @param projectDir
+     *            the project base directory
+     * @return the bundle directory
+     */
+    public static File getDevBundleFolder(File projectDir) {
+        return new File(projectDir, "dev-bundle");
+    }
+
 }

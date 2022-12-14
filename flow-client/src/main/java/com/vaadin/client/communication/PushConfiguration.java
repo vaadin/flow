@@ -25,6 +25,7 @@ import com.vaadin.client.flow.nodefeature.NodeMap;
 import com.vaadin.client.flow.reactive.Reactive;
 import com.vaadin.flow.internal.nodefeature.NodeFeatures;
 import com.vaadin.flow.internal.nodefeature.PushConfigurationMap;
+import com.vaadin.flow.server.Constants;
 
 /**
  * Provides the push configuration stored in the root node with an easier to use
@@ -88,19 +89,12 @@ public class PushConfiguration {
     }
 
     /**
-     * Gets the push URL configured on the server.
+     * Gets the fixed push URL.
      *
-     * @return the push URL configured on the server or null if none has been
-     *         configured
+     * @return the fixed push URL (VAADIN/push)
      */
     public String getPushUrl() {
-        if (getConfigurationMap()
-                .hasPropertyValue(PushConfigurationMap.PUSH_URL_KEY)) {
-            return (String) getConfigurationMap()
-                    .getProperty(PushConfigurationMap.PUSH_URL_KEY).getValue();
-        }
-
-        return null;
+        return Constants.PUSH_MAPPING;
     }
 
     /**

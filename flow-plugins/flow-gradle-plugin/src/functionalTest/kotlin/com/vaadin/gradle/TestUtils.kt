@@ -134,23 +134,20 @@ fun expectArchiveDoesntContain(vararg globs: String, archiveProvider: () -> File
     }
 }
 
-/**
- * Asserts that given archive (jar/war) contains the Vaadin webpack bundle:
- * the `META-INF/VAADIN/build/` directory.
- */
-fun expectArchiveContainsVaadinWebpackBundle(archive: File,
-                                             isSpringBootJar: Boolean) {
+fun expectArchiveContainsVaadinBundle(archive: File,
+                                             isSpringBootJar: Boolean,
+                                      compressedExtension: String = "*.br"
+                                        ) {
     val isWar: Boolean = archive.name.endsWith(".war", true)
     val isStandaloneJar: Boolean = !isWar && !isSpringBootJar
     val resourcePackaging: String = when {
         isWar -> "WEB-INF/classes/"
-        isSpringBootJar -> "BOOT-INF/classes/"
         else -> ""
     }
     expectArchiveContains(
             "${resourcePackaging}META-INF/VAADIN/config/flow-build-info.json",
             "${resourcePackaging}META-INF/VAADIN/config/stats.json",
-            "${resourcePackaging}META-INF/VAADIN/webapp/VAADIN/build/*.gz",
+            "${resourcePackaging}META-INF/VAADIN/webapp/VAADIN/build/${compressedExtension}",
             "${resourcePackaging}META-INF/VAADIN/webapp/VAADIN/build/*.js"
     ) { archive }
     if (!isStandaloneJar) {
@@ -235,7 +232,7 @@ class TestProject {
         .withPluginClasspath()
         .withDebug(true) // use --debug to catch ReflectionsException: https://github.com/vaadin/vaadin-gradle-plugin/issues/99
         .forwardOutput()   // a must, otherwise ./gradlew check freezes on windows!
-        .withGradleVersion("5.0")
+        .withGradleVersion("7.5.1")
 
     override fun toString(): String = "TestProject(dir=$dir)"
 

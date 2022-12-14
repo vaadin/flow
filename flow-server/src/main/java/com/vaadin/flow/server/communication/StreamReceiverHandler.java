@@ -15,8 +15,7 @@
  */
 package com.vaadin.flow.server.communication;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.Part;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -30,13 +29,13 @@ import java.security.MessageDigest;
 import java.util.Collection;
 import java.util.Iterator;
 
-import org.apache.commons.fileupload.FileItemIterator;
-import org.apache.commons.fileupload.FileItemStream;
-import org.apache.commons.fileupload.FileUploadException;
-import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.external.apache.commons.fileupload2.FileItemIterator;
+import com.vaadin.external.apache.commons.fileupload2.FileItemStream;
+import com.vaadin.external.apache.commons.fileupload2.FileUploadException;
+import com.vaadin.external.apache.commons.fileupload2.jaksrvlt.JakSrvltFileUpload;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.internal.StateNode;
@@ -56,7 +55,8 @@ import com.vaadin.flow.server.communication.streaming.StreamingProgressEventImpl
 import com.vaadin.flow.server.communication.streaming.StreamingStartEventImpl;
 import com.vaadin.flow.shared.ApplicationConstants;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.Part;
 
 /**
  * Handles {@link StreamReceiver} instances registered in {@link VaadinSession}.
@@ -389,7 +389,11 @@ public class StreamReceiverHandler implements Serializable {
                 cleanStreamVariable(session, streamReceiver);
             }
             return result.getSecond() == UploadStatus.OK;
-        } catch (Exception e) {
+        } catch (IOException ioe) {
+            // Mostly premature closing of stream from client that throws on
+            // close
+            getLogger().debug("Exception closing inputStream", ioe);
+        } catch (UploadException e) {
             session.lock();
             try {
                 session.getErrorHandler().error(new ErrorEvent(e));
@@ -536,7 +540,7 @@ public class StreamReceiverHandler implements Serializable {
             // IOException happens
             onStreamingFailed(session, filename, type, contentLength,
                     streamVariable, out, totalBytes, e);
-            // Interrupted exception and IOEXception are not thrown forward:
+            // Interrupted exception and IOException are not thrown forward:
             // it's enough to fire them via streamVariable
         } catch (final Exception e) {
             onStreamingFailed(session, filename, type, contentLength,
@@ -597,7 +601,7 @@ public class StreamReceiverHandler implements Serializable {
     }
 
     protected boolean isMultipartUpload(VaadinRequest request) {
-        return request instanceof HttpServletRequest && ServletFileUpload
+        return request instanceof HttpServletRequest && JakSrvltFileUpload
                 .isMultipartContent((HttpServletRequest) request);
     }
 
@@ -608,7 +612,7 @@ public class StreamReceiverHandler implements Serializable {
 
     protected FileItemIterator getItemIterator(VaadinRequest request)
             throws FileUploadException, IOException {
-        ServletFileUpload upload = new ServletFileUpload();
+        JakSrvltFileUpload upload = new JakSrvltFileUpload();
         return upload.getItemIterator((HttpServletRequest) request);
     }
 

@@ -35,9 +35,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 
-import javax.servlet.ServletOutputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import com.vaadin.base.devserver.DevServerOutputTracker.Result;
 import com.vaadin.base.devserver.stats.DevModeUsageStatistics;
@@ -222,14 +222,19 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
             long ms = (System.nanoTime() - start) / 1000000;
             getLogger().info("Started {}. Time: {}ms", getServerName(), ms);
             Stats npmStats = TaskRunNpmInstall.getLastInstallStats();
-            DevModeUsageStatistics.collectEvent(
-                    StatisticsConstants.EVENT_PACKAGEMANAGER_INSTALL_TIME_PREFIX
-                            + npmStats.getPackageManager(),
-                    npmStats.getInstallTimeMs());
-            DevModeUsageStatistics.collectEvent(
-                    StatisticsConstants.EVENT_PACKAGEMANAGER_CLEANUP_TIME_PREFIX
-                            + npmStats.getPackageManager(),
-                    npmStats.getCleanupTimeMs());
+            if (npmStats.getInstallTimeMs() != 0) {
+                DevModeUsageStatistics.collectEvent(
+                        StatisticsConstants.EVENT_PACKAGEMANAGER_INSTALL_TIME_PREFIX
+                                + npmStats.getPackageManager(),
+                        npmStats.getInstallTimeMs());
+            }
+            if (npmStats.getCleanupTimeMs() != 0) {
+                DevModeUsageStatistics.collectEvent(
+                        StatisticsConstants.EVENT_PACKAGEMANAGER_CLEANUP_TIME_PREFIX
+                                + npmStats.getPackageManager(),
+                        npmStats.getCleanupTimeMs());
+            }
+
             DevModeUsageStatistics.collectEvent(
                     StatisticsConstants.EVENT_DEV_SERVER_START_PREFIX
                             + getServerName(),
@@ -630,6 +635,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
                 // Avoid creating a UI that is thrown away for polling requests
                 response.setContentType("text/html;charset=utf-8");
                 response.getWriter().write("Ready");
+                response.setHeader("Cache-Control", "no-cache");
                 return true;
             }
             return false;
@@ -645,6 +651,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
             }
             response.setContentType("text/html;charset=utf-8");
             response.setHeader("X-DevModePending", "true");
+            response.setHeader("Cache-Control", "no-cache");
             return true;
         }
     }
@@ -677,13 +684,11 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         }
         // Since we have 'publicPath=/VAADIN/' in the dev server config,
         // a valid request for the dev server should start with '/VAADIN/'
-
-        String requestFilename = UrlUtil.getStaticVaadinPathInfo(request);
+        String requestFilename = request.getPathInfo();
 
         if (HandlerHelper.isPathUnsafe(requestFilename)
-                || WEBPACK_ILLEGAL_CHAR_PATTERN.matcher(requestFilename).find())
-
-        {
+                || WEBPACK_ILLEGAL_CHAR_PATTERN.matcher(requestFilename)
+                        .find()) {
             getLogger().info("Blocked attempt to access file: {}",
                     requestFilename);
             response.setStatus(HttpStatusCode.FORBIDDEN.getCode());

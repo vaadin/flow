@@ -94,7 +94,6 @@ import elemental.json.JsonObject;
 import elemental.json.JsonType;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
-
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.server.frontend.FrontendUtils.EXPORT_CHUNK;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -363,9 +362,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         /**
          * Gets the application id.
          *
-         * The application id is defined by
-         * {@link VaadinService#getMainDivId(VaadinSession, VaadinRequest)}
-         *
          * @return the application id
          */
         public String getAppId() {
@@ -560,7 +556,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      * Warning: This assumes that the VaadinRequest is targeted for a
      * VaadinServlet and does no further checks to validate this. You want to
      * use
-     * {@link HandlerHelper#isFrameworkInternalRequest(String, javax.servlet.http.HttpServletRequest)}
+     * {@link HandlerHelper#isFrameworkInternalRequest(String, jakarta.servlet.http.HttpServletRequest)}
      * instead.
      * <p>
      * This is public only so that
@@ -766,7 +762,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             setupPwa(document, context);
 
             if (!config.isProductionMode()) {
-                showWebpackErrors(context.getService(), document);
+                showDevServerErrors(context.getService(), document);
             }
 
             BootstrapPageResponse response = new BootstrapPageResponse(
@@ -994,44 +990,51 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         private void appendNpmBundle(Element head, VaadinService service,
                 BootstrapContext context) throws IOException {
             if (FeatureFlags.get(service.getContext())
-                    .isEnabled(FeatureFlags.VITE)) {
+                    .isEnabled(FeatureFlags.WEBPACK)) {
+                appendWebpackNpmBundle(head, service, context);
+            } else {
+                // Use Vite
+                appendViteNpmBundle(head, service, context);
+            }
+        }
 
-                if (!service.getDeploymentConfiguration().isProductionMode()) {
-                    Element script = createJavaScriptModuleElement(
-                            "VAADIN/@vite/client", false);
-                    head.appendChild(script);
-                    return;
-                }
-
-                // Get the index.html to get vite generated bundles
-                String index = FrontendUtils.getIndexHtmlContent(service);
-
-                // Get and add all javascriptbundles
-                Matcher scriptMatcher = Pattern
-                        .compile("src=\\\"VAADIN\\/build\\/(.*\\.js)\\\"")
-                        .matcher(index);
-                while (scriptMatcher.find()) {
-                    Element script = createJavaScriptModuleElement(context
-                            .getUriResolver().resolveVaadinUri("context://"
-                                    + "VAADIN/build/" + scriptMatcher.group(1)),
-                            false);
-                    head.appendChild(script.attr("async", true)
-                            // Fixes basic auth in Safari #6560
-                            .attr("crossorigin", true));
-                }
-
-                // Get and add all css bundle links
-                Matcher cssMatcher = Pattern
-                        .compile("href=\\\"VAADIN\\/build\\/(.*\\.css)\\\"")
-                        .matcher(index);
-                while (cssMatcher.find()) {
-                    Element link = createStylesheetElement(context
-                            .getUriResolver().resolveVaadinUri("context://"
-                                    + "VAADIN/build/" + cssMatcher.group(1)));
-                    head.appendChild(link);
-                }
+        private void appendViteNpmBundle(Element head, VaadinService service,
+                BootstrapContext context) throws IOException {
+            if (!service.getDeploymentConfiguration().isProductionMode()) {
+                Element script = createJavaScriptModuleElement(
+                        "VAADIN/@vite/client", false);
+                head.appendChild(script);
                 return;
             }
+
+            // Get the index.html to get vite generated bundles
+            String index = FrontendUtils.getIndexHtmlContent(service);
+
+            // Get and add all javascriptbundles
+            Matcher scriptMatcher = Pattern
+                    .compile("src=\\\"VAADIN\\/build\\/(.*\\.js)\\\"")
+                    .matcher(index);
+            while (scriptMatcher.find()) {
+                Element script = createJavaScriptModuleElement(
+                        "VAADIN/build/" + scriptMatcher.group(1), false);
+                head.appendChild(script.attr("async", true)
+                        // Fixes basic auth in Safari #6560
+                        .attr("crossorigin", true));
+            }
+
+            // Get and add all css bundle links
+            Matcher cssMatcher = Pattern
+                    .compile("href=\\\"VAADIN\\/build\\/(.*\\.css)\\\"")
+                    .matcher(index);
+            while (cssMatcher.find()) {
+                Element link = createStylesheetElement(
+                        "VAADIN/build/" + cssMatcher.group(1));
+                head.appendChild(link);
+            }
+        }
+
+        private void appendWebpackNpmBundle(Element head, VaadinService service,
+                BootstrapContext context) throws IOException {
             String content = FrontendUtils.getStatsAssetsByChunkName(service);
             if (content == null) {
                 StringBuilder message = new StringBuilder(
@@ -1162,7 +1165,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return null;
         }
 
-        private void setupCss(Element head, BootstrapContext context) {
+        protected void setupCss(Element head, BootstrapContext context) {
             Element styles = head.appendElement("style").attr("type",
                     CSS_TYPE_ATTRIBUTE_VALUE);
             // Add any body style that is defined for the application using
@@ -1173,6 +1176,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             // Basic reconnect and system error dialog styles just to make them
             // visible and outside of normal flow
             setupErrorDialogs(styles);
+
+            setupHiddenElement(styles);
         }
 
         private void setupMetaAndTitle(Element head, BootstrapContext context) {
@@ -1517,12 +1522,11 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 .orElseGet(deploymentConfiguration::getPushMode);
         setupPushConnectionFactory(pushConfiguration, context);
         pushConfiguration.setPushMode(pushMode);
-        pushConfiguration.setPushUrl(deploymentConfiguration.getPushURL());
         push.map(Push::transport).ifPresent(pushConfiguration::setTransport);
 
         // Set thread local here so it is available in init
         UI.setCurrent(ui);
-        ui.doInit(request, session.getNextUIid());
+        ui.doInit(request, session.getNextUIid(), context.getAppId());
         session.addUI(ui);
 
         // After init and adding UI to session fire init listeners.
@@ -1675,8 +1679,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         // Parameter appended to JS to bypass caches after version upgrade.
         String versionQueryParam = "?v=" + Version.getFullVersion();
         // Load client-side dependencies for push support
-        String pushJSPath = context.getService()
-                .getContextRootRelativePath(request);
+        String pushJSPath = BootstrapHandlerHelper.getServiceUrl(request) + "/";
 
         if (request.getService().getDeploymentConfiguration()
                 .isProductionMode()) {
@@ -1689,7 +1692,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         return pushJSPath;
     }
 
-    protected static void showWebpackErrors(VaadinService service,
+    protected static void showDevServerErrors(VaadinService service,
             Document document) {
         Optional<DevModeHandler> devServer = DevModeHandlerManager
                 .getDevModeHandler(service);
@@ -1735,6 +1738,12 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 "color: red;" +
                 "}");
      // @formatter:on
+    }
+
+    protected static void setupHiddenElement(Element styles) {
+        // Component::setVisible relies on hidden attribute.
+        // Adds a global display:none style to elements with hidden attribute
+        styles.appendText("[hidden] { display: none !important; }");
     }
 
     protected static void setupPwa(Document document, VaadinService service) {

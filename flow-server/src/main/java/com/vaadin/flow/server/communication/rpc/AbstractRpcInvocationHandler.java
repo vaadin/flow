@@ -19,7 +19,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.PollEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.StateNode;
@@ -116,8 +115,7 @@ public abstract class AbstractRpcInvocationHandler
     }
 
     private boolean isPollingEnabledForUI(UI ui) {
-        return ui.getPollInterval() > 0
-                && ComponentUtil.hasEventListener(ui, PollEvent.class);
+        return ui.getPollInterval() > 0;
     }
 
     /**

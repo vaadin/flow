@@ -23,7 +23,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.net.URLClassLoader;
 
-import javax.validation.Validation;
+import jakarta.validation.Validation;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;

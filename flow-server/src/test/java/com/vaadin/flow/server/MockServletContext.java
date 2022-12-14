@@ -25,17 +25,17 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterRegistration;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.Servlet;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRegistration;
-import javax.servlet.ServletRegistration.Dynamic;
-import javax.servlet.SessionCookieConfig;
-import javax.servlet.SessionTrackingMode;
-import javax.servlet.descriptor.JspConfigDescriptor;
+import jakarta.servlet.Filter;
+import jakarta.servlet.FilterRegistration;
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRegistration;
+import jakarta.servlet.ServletRegistration.Dynamic;
+import jakarta.servlet.SessionCookieConfig;
+import jakarta.servlet.SessionTrackingMode;
+import jakarta.servlet.descriptor.JspConfigDescriptor;
 
 /**
  *
@@ -49,7 +49,7 @@ public class MockServletContext implements ServletContext {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletContext#getContext(java.lang.String)
+     * @see jakarta.servlet.ServletContext#getContext(java.lang.String)
      */
     @Override
     public ServletContext getContext(String uripath) {
@@ -59,7 +59,7 @@ public class MockServletContext implements ServletContext {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletContext#getMajorVersion()
+     * @see jakarta.servlet.ServletContext#getMajorVersion()
      */
     @Override
     public int getMajorVersion() {
@@ -69,7 +69,7 @@ public class MockServletContext implements ServletContext {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletContext#getMinorVersion()
+     * @see jakarta.servlet.ServletContext#getMinorVersion()
      */
     @Override
     public int getMinorVersion() {
@@ -79,7 +79,7 @@ public class MockServletContext implements ServletContext {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletContext#getMimeType(java.lang.String)
+     * @see jakarta.servlet.ServletContext#getMimeType(java.lang.String)
      */
     @Override
     public String getMimeType(String file) {
@@ -89,7 +89,7 @@ public class MockServletContext implements ServletContext {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletContext#getResourcePaths(java.lang.String)
+     * @see jakarta.servlet.ServletContext#getResourcePaths(java.lang.String)
      */
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
@@ -100,7 +100,7 @@ public class MockServletContext implements ServletContext {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletContext#getResource(java.lang.String)
+     * @see jakarta.servlet.ServletContext#getResource(java.lang.String)
      */
     @Override
     public URL getResource(String path) throws MalformedURLException {
@@ -110,7 +110,7 @@ public class MockServletContext implements ServletContext {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletContext#getResourceAsStream(java.lang.String)
+     * @see jakarta.servlet.ServletContext#getResourceAsStream(java.lang.String)
      */
     @Override
     public InputStream getResourceAsStream(String path) {
@@ -120,7 +120,8 @@ public class MockServletContext implements ServletContext {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletContext#getRequestDispatcher(java.lang.String)
+     * @see
+     * jakarta.servlet.ServletContext#getRequestDispatcher(java.lang.String)
      */
     @Override
     public RequestDispatcher getRequestDispatcher(String path) {
@@ -130,7 +131,7 @@ public class MockServletContext implements ServletContext {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletContext#getNamedDispatcher(java.lang.String)
+     * @see jakarta.servlet.ServletContext#getNamedDispatcher(java.lang.String)
      */
     @Override
     public RequestDispatcher getNamedDispatcher(String name) {
@@ -140,39 +141,7 @@ public class MockServletContext implements ServletContext {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletContext#getServlet(java.lang.String)
-     */
-    @Override
-    public Servlet getServlet(String name) throws ServletException {
-        return null;
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see javax.servlet.ServletContext#getServlets()
-     */
-    @Override
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Enumeration getServlets() {
-        return Collections.enumeration(Collections.EMPTY_SET);
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see javax.servlet.ServletContext#getServletNames()
-     */
-    @Override
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    public Enumeration getServletNames() {
-        return null;
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see javax.servlet.ServletContext#log(java.lang.String)
+     * @see jakarta.servlet.ServletContext#log(java.lang.String)
      */
     @Override
     public void log(String msg) {
@@ -181,17 +150,7 @@ public class MockServletContext implements ServletContext {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletContext#log(java.lang.Exception,
-     * java.lang.String)
-     */
-    @Override
-    public void log(Exception exception, String msg) {
-    }
-
-    /*
-     * (non-Javadoc)
-     *
-     * @see javax.servlet.ServletContext#log(java.lang.String,
+     * @see jakarta.servlet.ServletContext#log(java.lang.String,
      * java.lang.Throwable)
      */
     @Override
@@ -201,7 +160,7 @@ public class MockServletContext implements ServletContext {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletContext#getRealPath(java.lang.String)
+     * @see jakarta.servlet.ServletContext#getRealPath(java.lang.String)
      */
     @Override
     public String getRealPath(String path) {
@@ -211,7 +170,7 @@ public class MockServletContext implements ServletContext {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletContext#getServerInfo()
+     * @see jakarta.servlet.ServletContext#getServerInfo()
      */
     @Override
     public String getServerInfo() {
@@ -221,7 +180,7 @@ public class MockServletContext implements ServletContext {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletContext#getInitParameter(java.lang.String)
+     * @see jakarta.servlet.ServletContext#getInitParameter(java.lang.String)
      */
     @Override
     public String getInitParameter(String name) {
@@ -231,7 +190,7 @@ public class MockServletContext implements ServletContext {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletContext#getInitParameterNames()
+     * @see jakarta.servlet.ServletContext#getInitParameterNames()
      */
     @Override
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -242,7 +201,7 @@ public class MockServletContext implements ServletContext {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletContext#getAttribute(java.lang.String)
+     * @see jakarta.servlet.ServletContext#getAttribute(java.lang.String)
      */
     @Override
     public Object getAttribute(String name) {
@@ -252,7 +211,7 @@ public class MockServletContext implements ServletContext {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletContext#getAttributeNames()
+     * @see jakarta.servlet.ServletContext#getAttributeNames()
      */
     @Override
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -263,7 +222,7 @@ public class MockServletContext implements ServletContext {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletContext#setAttribute(java.lang.String,
+     * @see jakarta.servlet.ServletContext#setAttribute(java.lang.String,
      * java.lang.Object)
      */
     @Override
@@ -274,7 +233,7 @@ public class MockServletContext implements ServletContext {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletContext#removeAttribute(java.lang.String)
+     * @see jakarta.servlet.ServletContext#removeAttribute(java.lang.String)
      */
     @Override
     public void removeAttribute(String name) {
@@ -284,7 +243,7 @@ public class MockServletContext implements ServletContext {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletContext#getServletContextName()
+     * @see jakarta.servlet.ServletContext#getServletContextName()
      */
     @Override
     public String getServletContextName() {
@@ -294,7 +253,7 @@ public class MockServletContext implements ServletContext {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletContext#getContextPath()
+     * @see jakarta.servlet.ServletContext#getContextPath()
      */
     @Override
     public String getContextPath() {
@@ -304,7 +263,7 @@ public class MockServletContext implements ServletContext {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletContext#getEffectiveMajorVersion()
+     * @see jakarta.servlet.ServletContext#getEffectiveMajorVersion()
      */
     @Override
     public int getEffectiveMajorVersion() {
@@ -314,7 +273,7 @@ public class MockServletContext implements ServletContext {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletContext#getEffectiveMinorVersion()
+     * @see jakarta.servlet.ServletContext#getEffectiveMinorVersion()
      */
     @Override
     public int getEffectiveMinorVersion() {
@@ -324,7 +283,7 @@ public class MockServletContext implements ServletContext {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletContext#setInitParameter(java.lang.String,
+     * @see jakarta.servlet.ServletContext#setInitParameter(java.lang.String,
      * java.lang.String)
      */
     @Override
@@ -335,7 +294,7 @@ public class MockServletContext implements ServletContext {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletContext#addServlet(java.lang.String,
+     * @see jakarta.servlet.ServletContext#addServlet(java.lang.String,
      * java.lang.String)
      */
     @Override
@@ -346,8 +305,8 @@ public class MockServletContext implements ServletContext {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletContext#addServlet(java.lang.String,
-     * javax.servlet.Servlet)
+     * @see jakarta.servlet.ServletContext#addServlet(java.lang.String,
+     * jakarta.servlet.Servlet)
      */
     @Override
     public Dynamic addServlet(String servletName, Servlet servlet) {
@@ -357,7 +316,7 @@ public class MockServletContext implements ServletContext {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletContext#addServlet(java.lang.String,
+     * @see jakarta.servlet.ServletContext#addServlet(java.lang.String,
      * java.lang.Class)
      */
     @Override
@@ -369,7 +328,7 @@ public class MockServletContext implements ServletContext {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletContext#createServlet(java.lang.Class)
+     * @see jakarta.servlet.ServletContext#createServlet(java.lang.Class)
      */
     @Override
     public <T extends Servlet> T createServlet(Class<T> clazz)
@@ -381,7 +340,7 @@ public class MockServletContext implements ServletContext {
      * (non-Javadoc)
      *
      * @see
-     * javax.servlet.ServletContext#getServletRegistration(java.lang.String)
+     * jakarta.servlet.ServletContext#getServletRegistration(java.lang.String)
      */
     @Override
     public ServletRegistration getServletRegistration(String servletName) {
@@ -391,7 +350,7 @@ public class MockServletContext implements ServletContext {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletContext#getServletRegistrations()
+     * @see jakarta.servlet.ServletContext#getServletRegistrations()
      */
     @Override
     public Map<String, ? extends ServletRegistration> getServletRegistrations() {
@@ -401,43 +360,43 @@ public class MockServletContext implements ServletContext {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletContext#addFilter(java.lang.String,
+     * @see jakarta.servlet.ServletContext#addFilter(java.lang.String,
      * java.lang.String)
      */
     @Override
-    public javax.servlet.FilterRegistration.Dynamic addFilter(String filterName,
-            String className) {
+    public jakarta.servlet.FilterRegistration.Dynamic addFilter(
+            String filterName, String className) {
         return null;
     }
 
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletContext#addFilter(java.lang.String,
-     * javax.servlet.Filter)
+     * @see jakarta.servlet.ServletContext#addFilter(java.lang.String,
+     * jakarta.servlet.Filter)
      */
     @Override
-    public javax.servlet.FilterRegistration.Dynamic addFilter(String filterName,
-            Filter filter) {
+    public jakarta.servlet.FilterRegistration.Dynamic addFilter(
+            String filterName, Filter filter) {
         return null;
     }
 
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletContext#addFilter(java.lang.String,
+     * @see jakarta.servlet.ServletContext#addFilter(java.lang.String,
      * java.lang.Class)
      */
     @Override
-    public javax.servlet.FilterRegistration.Dynamic addFilter(String filterName,
-            Class<? extends Filter> filterClass) {
+    public jakarta.servlet.FilterRegistration.Dynamic addFilter(
+            String filterName, Class<? extends Filter> filterClass) {
         return null;
     }
 
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletContext#createFilter(java.lang.Class)
+     * @see jakarta.servlet.ServletContext#createFilter(java.lang.Class)
      */
     @Override
     public <T extends Filter> T createFilter(Class<T> clazz)
@@ -448,7 +407,8 @@ public class MockServletContext implements ServletContext {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletContext#getFilterRegistration(java.lang.String)
+     * @see
+     * jakarta.servlet.ServletContext#getFilterRegistration(java.lang.String)
      */
     @Override
     public FilterRegistration getFilterRegistration(String filterName) {
@@ -458,7 +418,7 @@ public class MockServletContext implements ServletContext {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletContext#getFilterRegistrations()
+     * @see jakarta.servlet.ServletContext#getFilterRegistrations()
      */
     @Override
     public Map<String, ? extends FilterRegistration> getFilterRegistrations() {
@@ -468,7 +428,7 @@ public class MockServletContext implements ServletContext {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletContext#getSessionCookieConfig()
+     * @see jakarta.servlet.ServletContext#getSessionCookieConfig()
      */
     @Override
     public SessionCookieConfig getSessionCookieConfig() {
@@ -478,7 +438,8 @@ public class MockServletContext implements ServletContext {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletContext#setSessionTrackingModes(java.util.Set)
+     * @see
+     * jakarta.servlet.ServletContext#setSessionTrackingModes(java.util.Set)
      */
     @Override
     public void setSessionTrackingModes(
@@ -488,7 +449,7 @@ public class MockServletContext implements ServletContext {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletContext#getDefaultSessionTrackingModes()
+     * @see jakarta.servlet.ServletContext#getDefaultSessionTrackingModes()
      */
     @Override
     public Set<SessionTrackingMode> getDefaultSessionTrackingModes() {
@@ -498,7 +459,7 @@ public class MockServletContext implements ServletContext {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletContext#getEffectiveSessionTrackingModes()
+     * @see jakarta.servlet.ServletContext#getEffectiveSessionTrackingModes()
      */
     @Override
     public Set<SessionTrackingMode> getEffectiveSessionTrackingModes() {
@@ -508,7 +469,7 @@ public class MockServletContext implements ServletContext {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletContext#addListener(java.lang.String)
+     * @see jakarta.servlet.ServletContext#addListener(java.lang.String)
      */
     @Override
     public void addListener(String className) {
@@ -517,7 +478,7 @@ public class MockServletContext implements ServletContext {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletContext#addListener(java.util.EventListener)
+     * @see jakarta.servlet.ServletContext#addListener(java.util.EventListener)
      */
     @Override
     public <T extends EventListener> void addListener(T t) {
@@ -526,7 +487,7 @@ public class MockServletContext implements ServletContext {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletContext#addListener(java.lang.Class)
+     * @see jakarta.servlet.ServletContext#addListener(java.lang.Class)
      */
     @Override
     public void addListener(Class<? extends EventListener> listenerClass) {
@@ -535,7 +496,7 @@ public class MockServletContext implements ServletContext {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletContext#createListener(java.lang.Class)
+     * @see jakarta.servlet.ServletContext#createListener(java.lang.Class)
      */
     @Override
     public <T extends EventListener> T createListener(Class<T> clazz)
@@ -546,7 +507,7 @@ public class MockServletContext implements ServletContext {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletContext#getJspConfigDescriptor()
+     * @see jakarta.servlet.ServletContext#getJspConfigDescriptor()
      */
     @Override
     public JspConfigDescriptor getJspConfigDescriptor() {
@@ -556,7 +517,7 @@ public class MockServletContext implements ServletContext {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletContext#getClassLoader()
+     * @see jakarta.servlet.ServletContext#getClassLoader()
      */
     @Override
     public ClassLoader getClassLoader() {
@@ -566,7 +527,7 @@ public class MockServletContext implements ServletContext {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.ServletContext#declareRoles(java.lang.String[])
+     * @see jakarta.servlet.ServletContext#declareRoles(java.lang.String[])
      */
     @Override
     public void declareRoles(String... roleNames) {
@@ -575,6 +536,38 @@ public class MockServletContext implements ServletContext {
     @Override
     public String getVirtualServerName() {
         return null;
+    }
+
+    @Override
+    public Dynamic addJspFile(String servletName, String jspFile) {
+        return null;
+    }
+
+    @Override
+    public int getSessionTimeout() {
+        return 0;
+    }
+
+    @Override
+    public void setSessionTimeout(int sessionTimeout) {
+    }
+
+    @Override
+    public String getRequestCharacterEncoding() {
+        return null;
+    }
+
+    @Override
+    public void setRequestCharacterEncoding(String encoding) {
+    }
+
+    @Override
+    public String getResponseCharacterEncoding() {
+        return null;
+    }
+
+    @Override
+    public void setResponseCharacterEncoding(String encoding) {
     }
 
 }

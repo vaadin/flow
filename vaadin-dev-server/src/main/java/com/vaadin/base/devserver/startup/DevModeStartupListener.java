@@ -18,10 +18,10 @@ package com.vaadin.base.devserver.startup;
 import java.io.Serializable;
 import java.util.Set;
 
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-import javax.servlet.annotation.HandlesTypes;
-import javax.servlet.annotation.WebListener;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
+import jakarta.servlet.annotation.HandlesTypes;
+import jakarta.servlet.annotation.WebListener;
 
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.WebComponentExporterFactory;
@@ -31,8 +31,8 @@ import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
+import com.vaadin.flow.internal.Template;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.PWA;
@@ -59,7 +59,8 @@ import com.vaadin.flow.theme.Theme;
         NpmPackage.Container.class, JsModule.class, JsModule.Container.class,
         CssImport.class, CssImport.Container.class, JavaScript.class,
         JavaScript.Container.class, Theme.class, NoTheme.class,
-        HasErrorParameter.class, PWA.class, AppShellConfigurator.class })
+        HasErrorParameter.class, PWA.class, AppShellConfigurator.class,
+        Template.class })
 @WebListener
 public class DevModeStartupListener
         implements VaadinServletContextStartupInitializer, Serializable,
@@ -82,10 +83,14 @@ public class DevModeStartupListener
 
     @Override
     public void contextDestroyed(ServletContextEvent ctx) {
-        DevModeHandlerManager
-                .getDevModeHandler(
-                        new VaadinServletContext(ctx.getServletContext()))
-                .ifPresent(DevModeHandler::stop);
+        VaadinServletContext context = new VaadinServletContext(
+                ctx.getServletContext());
+        Lookup lookup = context.getAttribute(Lookup.class);
+        DevModeHandlerManager devModeHandlerManager = lookup
+                .lookup(DevModeHandlerManager.class);
+        if (devModeHandlerManager != null) {
+            devModeHandlerManager.stopDevModeHandler();
+        }
     }
 
 }

@@ -1,7 +1,7 @@
 package com.vaadin.flow.server;
 
-import javax.servlet.ServletContext;
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -15,7 +15,6 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Instantiator;
-import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
 import com.vaadin.flow.theme.AbstractTheme;
 
@@ -118,15 +117,6 @@ public class VaadinServletServiceTest {
     }
 
     @Test
-    public void should_report_flow_bootstrapHandler() {
-        mocks.getDeploymentConfiguration().useDeprecatedV14Bootstrapping(true);
-
-        Assert.assertTrue(UsageStatistics.getEntries()
-                .anyMatch(e -> Constants.STATISTIC_FLOW_BOOTSTRAPHANDLER
-                        .equals(e.getName())));
-    }
-
-    @Test
     public void init_classLoaderIsSetUsingServletContext()
             throws ServiceException {
         VaadinServlet servlet = Mockito.mock(VaadinServlet.class);
@@ -175,9 +165,11 @@ public class VaadinServletServiceTest {
             throws Exception {
         HttpServletRequest request = createRequest(base, realContextPath,
                 realServletPath, pathInfo);
-        Mockito.when(request.getAttribute("javax.servlet.include.context_path"))
+        Mockito.when(
+                request.getAttribute("jakarta.servlet.include.context_path"))
                 .thenReturn(null);
-        Mockito.when(request.getAttribute("javax.servlet.include.servlet_path"))
+        Mockito.when(
+                request.getAttribute("jakarta.servlet.include.servlet_path"))
                 .thenReturn(null);
 
         return request;

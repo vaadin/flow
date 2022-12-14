@@ -41,6 +41,7 @@ import java.util.stream.Stream;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.CssData;
@@ -51,9 +52,7 @@ import com.vaadin.flow.theme.ThemeDefinition;
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND_FOLDER_ALIAS;
 
 /**
  * Common logic for generate import file JS content.
@@ -86,29 +85,12 @@ abstract class AbstractUpdateImports implements Runnable {
     // Used to recognize and sort FRONTEND/ imports in the final
     // generated-flow-imports.js
     private static final Pattern FRONTEND_IMPORT_LINE = Pattern.compile(
-            String.format(IMPORT_TEMPLATE, WEBPACK_PREFIX_ALIAS + "\\S*"));
+            String.format(IMPORT_TEMPLATE, FRONTEND_FOLDER_ALIAS + "\\S*"));
 
-    private final File frontendDir;
+    final Options options;
 
-    private final File npmDir;
-
-    private final File generatedDir;
-
-    private final File tokenFile;
-
-    private final boolean productionMode;
-
-    protected final boolean useLegacyV14Bootstrap;
-
-    AbstractUpdateImports(File frontendDirectory, File npmDirectory,
-            File generatedDirectory, File tokenFile, boolean productionMode,
-            boolean useLegacyV14Bootstrap) {
-        frontendDir = frontendDirectory;
-        npmDir = npmDirectory;
-        generatedDir = generatedDirectory;
-        this.tokenFile = tokenFile;
-        this.productionMode = productionMode;
-        this.useLegacyV14Bootstrap = useLegacyV14Bootstrap;
+    AbstractUpdateImports(Options options) {
+        this.options = options;
     }
 
     @Override
@@ -118,7 +100,7 @@ abstract class AbstractUpdateImports implements Runnable {
         lines.addAll(getExportLines());
         lines.addAll(getThemeLines());
         lines.addAll(getCssLines());
-        if (!productionMode && useLegacyV14Bootstrap) {
+        if (!options.productionMode && options.useLegacyV14Bootstrap) {
             // This is only needed for v14bootstrap mode
             lines.add(TaskGenerateBootstrap.DEV_TOOLS_IMPORT);
         }
@@ -235,10 +217,11 @@ abstract class AbstractUpdateImports implements Runnable {
         if (!cssNotFound.isEmpty()) {
             String prefix = String.format(
                     "Failed to find the following css files in the `node_modules` or `%s` directory tree:",
-                    frontendDir.getPath());
+                    options.getFrontendDirectory().getPath());
 
             String suffix;
-            if (tokenFile == null && !frontendDir.exists()) {
+            if (options.tokenFile == null
+                    && !options.getFrontendDirectory().exists()) {
                 suffix = "Unable to locate frontend resources and missing token file. "
                         + "Please run the `prepare-frontend` Vaadin plugin goal before deploying the application";
             } else {
@@ -281,8 +264,7 @@ abstract class AbstractUpdateImports implements Runnable {
         if (!importPath.startsWith("@")) {
 
             // We only should check here those paths starting with './' when all
-            // flow components
-            // have the './' prefix
+            // flow components have the './' prefix
             String resource = resolved.replaceFirst("^\\./+", "");
             if (hasMetaInfResource(resource)) {
                 if (!resolved.startsWith("./")) {
@@ -290,7 +272,8 @@ abstract class AbstractUpdateImports implements Runnable {
                             "Use the './' prefix for files in JAR files: '{}', please update your component.",
                             importPath);
                 }
-                resolved = FLOW_NPM_PACKAGE_NAME + resource;
+                resolved = FrontendUtils.JAR_RESOURCES_IMPORT_FRONTEND_RELATIVE
+                        + resource;
             }
         }
         return resolved;
@@ -377,7 +360,8 @@ abstract class AbstractUpdateImports implements Runnable {
         if (!resourceNotFound.isEmpty()) {
             String prefix = "Failed to find the following files: ";
             String suffix;
-            if (tokenFile == null && !frontendDir.exists()) {
+            if (options.tokenFile == null
+                    && !options.getFrontendDirectory().exists()) {
                 suffix = "Unable to locate frontend resources and missing token file. "
                         + "Please run the `prepare-frontend` Vaadin plugin goal before deploying the application";
             } else {
@@ -388,7 +372,8 @@ abstract class AbstractUpdateImports implements Runnable {
                         + "%n%n  Please, double check that those files exist. If you use a custom directory "
                         + "for your resource files instead of default "
                         + "`frontend` folder then make sure you it's correctly configured "
-                        + "(e.g. set '%s' property)", frontendDir.getPath(),
+                        + "(e.g. set '%s' property)",
+                        options.getFrontendDirectory().getPath(),
                         Constants.RESOURCES_FRONTEND_DEFAULT,
                         COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT,
                         FrontendUtils.PARAM_FRONTEND_DIR);
@@ -397,7 +382,10 @@ abstract class AbstractUpdateImports implements Runnable {
                     notFoundMessage(resourceNotFound, prefix, suffix));
         }
 
-        if (!npmNotFound.isEmpty() && getLogger().isInfoEnabled()) {
+        boolean devModeWithoutServer = !options.productionMode
+                && !options.isEnableDevServer() && !options.isDevBundleBuild();
+        if (!npmNotFound.isEmpty() && getLogger().isInfoEnabled()
+                && !devModeWithoutServer) {
             getLogger().info(notFoundMessage(npmNotFound,
                     "Failed to find the following imports in the `node_modules` tree:",
                     getImportsNotFoundMessage()));
@@ -413,7 +401,7 @@ abstract class AbstractUpdateImports implements Runnable {
     }
 
     private boolean frontendFileExists(String jsImport) {
-        File file = getFile(frontendDir, jsImport);
+        File file = getFile(options.getFrontendDirectory(), jsImport);
         return file.exists();
     }
 
@@ -425,17 +413,19 @@ abstract class AbstractUpdateImports implements Runnable {
 
         // full path import e.g
         // /node_modules/@vaadin/vaadin-grid/vaadin-grid-column.js
-        boolean found = isFile(getNodeModulesDir(), importName);
+        boolean found = isFile(options.getNodeModulesFolder(), importName);
         if (importName.toLowerCase().endsWith(".css")) {
             return found;
         }
         // omitted the .js extension e.g.
         // /node_modules/@vaadin/vaadin-grid/vaadin-grid-column
-        found = found || isFile(getNodeModulesDir(), importName + ".js");
+        found = found
+                || isFile(options.getNodeModulesFolder(), importName + ".js");
         // has a package.json file e.g. /node_modules/package-name/package.json
-        found = found || isFile(getNodeModulesDir(), importName, PACKAGE_JSON);
+        found = found || isFile(options.getNodeModulesFolder(), importName,
+                PACKAGE_JSON);
         // file was generated by flow
-        found = found || isFile(generatedDir,
+        found = found || isFile(options.getGeneratedFolder(),
                 generatedResourcePathIntoRelativePath(importName));
 
         return found;
@@ -443,32 +433,42 @@ abstract class AbstractUpdateImports implements Runnable {
 
     /**
      * Returns a file for the {@code jsImport} path ONLY if it's either in the
-     * {@code "frontend"} folder or
-     * {@code "node_modules/@vaadin/flow-frontend/"} folder.
-     *
+     * {@code frontend} or {@value FrontendUtils#JAR_RESOURCES_IMPORT} folder.
      * <p>
      * This method doesn't care about "published" WC paths (like
      * "@vaadin/vaadin-grid" and so on). See the
      * {@link #importedFileExists(String)} method implementation.
      *
-     * @return a file on FS if it exists and it's inside a frontend folder or in
-     *         node_modules/@vaadin/flow-frontend/, otherwise returns
-     *         {@code null}
+     * @return a file on FS if it exists and it's inside the frontend folder or
+     *         the jar resources folder, otherwise returns {@code null}
      */
     private File getImportedFrontendFile(String jsImport) {
         // file is in /frontend
-        File file = getFile(frontendDir, jsImport);
+        File file = getJsImportFile(options.getFrontendDirectory(), jsImport);
         if (file.exists()) {
             return file;
         }
         // file is a flow resource e.g.
-        // /node_modules/@vaadin/flow-frontend/gridConnector.js
-        file = getFile(getNodeModulesDir(), FLOW_NPM_PACKAGE_NAME, jsImport);
+        // Frontend/generated/addons/gridConnector.js
+        file = getJsImportFile(getJarResourcesFolder(), jsImport);
+
         return file.exists() ? file : null;
     }
 
-    private File getNodeModulesDir() {
-        return new File(npmDir, NODE_MODULES);
+    private File getJarResourcesFolder() {
+        return new File(options.getGeneratedFolder(),
+                FrontendUtils.JAR_RESOURCES_FOLDER);
+    }
+
+    private File getJsImportFile(File base, String path) {
+        File file = getFile(base, path);
+
+        if (file.isDirectory()) {
+            // import './foo' seems to be valid according to tools when 'foo' is
+            // a directory. What is imported is 'foo/index.js'.
+            file = new File(file, "index.js");
+        }
+        return file;
     }
 
     private File getFile(File base, String... path) {
@@ -484,6 +484,10 @@ abstract class AbstractUpdateImports implements Runnable {
         String cssFile = resolveResource(cssData.getValue());
         boolean found = importedFileExists(cssFile);
         String cssImport = toValidBrowserImport(cssFile);
+        if (!options.getFeatureFlags().isEnabled(FeatureFlags.WEBPACK)) {
+            // Without this, Vite adds the CSS also to the document
+            cssImport += "?inline";
+        }
 
         Map<String, String> optionalsMap = new LinkedHashMap<>();
         if (cssData.getInclude() != null) {
@@ -543,13 +547,13 @@ abstract class AbstractUpdateImports implements Runnable {
     private String toValidBrowserImport(String jsImport) {
         if (jsImport.startsWith(NodeUpdater.GENERATED_PREFIX)) {
             return generatedResourcePathIntoRelativePath(jsImport);
-        } else if (isFile(frontendDir, jsImport)) {
+        } else if (isFile(options.getFrontendDirectory(), jsImport)) {
             if (!jsImport.startsWith("./")) {
                 getLogger().warn(
                         "Use the './' prefix for files in the '{}' folder: '{}', please update your annotations.",
-                        frontendDir, jsImport);
+                        options.getFrontendDirectory(), jsImport);
             }
-            return WEBPACK_PREFIX_ALIAS + jsImport.replaceFirst("^\\./", "");
+            return FRONTEND_FOLDER_ALIAS + jsImport.replaceFirst("^\\./", "");
         }
         return jsImport;
     }
@@ -583,7 +587,7 @@ abstract class AbstractUpdateImports implements Runnable {
             if (file == null && !importedPath.startsWith("./")) {
                 // In case such file doesn't exist it may be external: inside
                 // node_modules folder
-                file = getFile(getNodeModulesDir(), importedPath);
+                file = getFile(options.getNodeModulesFolder(), importedPath);
                 if (!file.exists()) {
                     file = null;
                 }

@@ -41,14 +41,11 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 public class TaskCopyTemplateFiles implements FallibleCommand {
 
     private final ClassFinder classFinder;
-    private final File projectDirectory;
-    private final File resourceOutputDirectory;
+    private final Options options;
 
-    TaskCopyTemplateFiles(ClassFinder classFinder, File projectDirectory,
-            File resourceOutputDirectory) {
+    TaskCopyTemplateFiles(ClassFinder classFinder, Options options) {
         this.classFinder = classFinder;
-        this.projectDirectory = projectDirectory;
-        this.resourceOutputDirectory = resourceOutputDirectory;
+        this.options = options;
     }
 
     @Override
@@ -67,14 +64,26 @@ public class TaskCopyTemplateFiles implements FallibleCommand {
             for (Annotation jsmAnnotation : clazz
                     .getAnnotationsByType(jsModuleAnnotationClass)) {
                 String path = getJsModuleAnnotationValue(jsmAnnotation);
-                File source = FrontendUtils
-                        .resolveFrontendPath(projectDirectory, path);
+                File source = FrontendUtils.resolveFrontendPath(
+                        options.getNpmFolder(), path,
+                        options.getFrontendDirectory());
                 if (source == null) {
                     throw new ExecutionFailedException(
                             "Unable to locate file " + path);
                 }
-                File templateDirectory = new File(resourceOutputDirectory,
-                        Constants.TEMPLATE_DIRECTORY);
+
+                File templateDirectory;
+                if (options.isDevBundleBuild()) {
+                    templateDirectory = new File(
+                            FrontendUtils
+                                    .getDevBundleFolder(options.getNpmFolder()),
+                            Constants.TEMPLATE_DIRECTORY);
+                } else {
+
+                    templateDirectory = new File(
+                            options.resourceOutputDirectory,
+                            Constants.TEMPLATE_DIRECTORY);
+                }
                 File target = new File(templateDirectory, path).getParentFile();
                 target.mkdirs();
                 try {

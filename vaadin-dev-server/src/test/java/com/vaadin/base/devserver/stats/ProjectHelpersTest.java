@@ -13,10 +13,24 @@ import java.nio.file.Files;
 import com.vaadin.flow.testutil.TestUtils;
 
 import org.apache.commons.io.IOUtils;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 public class ProjectHelpersTest {
+
+    private String userHome;
+
+    @Before
+    public void saveUserHome() {
+        userHome = System.getProperty("user.home");
+    }
+
+    @After
+    public void restoreUserHome() {
+        System.setProperty("user.home", userHome);
+    }
 
     @Test
     public void readUserKey() throws IOException {

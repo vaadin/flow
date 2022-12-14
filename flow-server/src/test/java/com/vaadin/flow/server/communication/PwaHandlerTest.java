@@ -72,4 +72,25 @@ public class PwaHandlerTest {
         Assert.assertTrue(handler.handleRequest(session, request, response));
     }
 
+    @Test
+    public void handleRequest_pwaRegistryConfigIsEnabled_handlerIsInitializedOnce()
+            throws IOException {
+
+        PwaRegistry registry = Mockito.mock(PwaRegistry.class);
+        PwaConfiguration configuration = Mockito.mock(PwaConfiguration.class);
+        Mockito.when(registry.getPwaConfiguration()).thenReturn(configuration);
+        Mockito.when(configuration.isEnabled()).thenReturn(true);
+        PwaHandler handler = new PwaHandler(() -> registry);
+
+        Mockito.when(response.getWriter())
+                .thenReturn(new PrintWriter(new StringWriter()));
+        Mockito.when(registry.getRuntimeServiceWorkerJs()).thenReturn("");
+        Mockito.when(request.getPathInfo())
+                .thenReturn("/sw-runtime-resources-precache.js");
+
+        Assert.assertTrue(handler.handleRequest(session, request, response));
+        Assert.assertTrue(handler.handleRequest(session, request, response));
+
+        Mockito.verify(registry, Mockito.times(1)).getIcons();
+    }
 }

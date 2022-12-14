@@ -1,48 +1,44 @@
 package com.vaadin.flow.spring.flowsecurity;
 
+import jakarta.servlet.ServletContext;
+
 import java.util.stream.Collectors;
-
-import javax.servlet.ServletContext;
-
-import com.vaadin.flow.spring.RootMappedCondition;
-import com.vaadin.flow.spring.VaadinConfigurationProperties;
-import com.vaadin.flow.spring.flowsecurity.data.UserInfo;
-import com.vaadin.flow.spring.flowsecurity.data.UserInfoRepository;
-import com.vaadin.flow.spring.flowsecurity.views.LoginView;
-import com.vaadin.flow.spring.security.VaadinWebSecurityConfigurerAdapter;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.internal.UrlUtil;
+import com.vaadin.flow.spring.RootMappedCondition;
+import com.vaadin.flow.spring.VaadinConfigurationProperties;
+import com.vaadin.flow.spring.flowsecurity.data.UserInfo;
+import com.vaadin.flow.spring.flowsecurity.service.UserInfoService;
+import com.vaadin.flow.spring.flowsecurity.views.LoginView;
+import com.vaadin.flow.spring.security.VaadinWebSecurity;
+
+import static com.vaadin.flow.spring.flowsecurity.service.UserInfoService.ROLE_ADMIN;
 
 @EnableWebSecurity
 @Configuration
-public class SecurityConfig extends VaadinWebSecurityConfigurerAdapter {
+public class SecurityConfig extends VaadinWebSecurity {
 
-    public static String ROLE_USER = "user";
-    public static String ROLE_ADMIN = "admin";
     @Autowired
-    private UserInfoRepository userInfoRepository;
+    private UserInfoService userInfoService;
 
     @Autowired
     private ServletContext servletContext;
 
     @Autowired
     private VaadinConfigurationProperties vaadinConfigurationProperties;
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
 
     public String getLogoutSuccessUrl() {
         String logoutSuccessUrl;
@@ -60,38 +56,42 @@ public class SecurityConfig extends VaadinWebSecurityConfigurerAdapter {
     }
 
     @Override
-    protected void configure(HttpSecurity http) throws Exception {
-        // Admin only access for given resources
-        http.authorizeRequests().antMatchers("/admin-only/**")
+    public void configure(HttpSecurity http) throws Exception {
+        http.authorizeHttpRequests()
+                .requestMatchers(new AntPathRequestMatcher("/admin-only/**"))
                 .hasAnyRole(ROLE_ADMIN);
-
+        http.authorizeHttpRequests()
+                .requestMatchers(new AntPathRequestMatcher("/public/**"))
+                .permitAll();
         super.configure(http);
-
         setLoginView(http, LoginView.class, getLogoutSuccessUrl());
-    }
-
-    @Override
-    public void configure(WebSecurity web) throws Exception {
-        super.configure(web);
-        web.ignoring().antMatchers("/public/**");
-    }
-
-    @Override
-    protected void configure(AuthenticationManagerBuilder auth)
-            throws Exception {
-        auth.userDetailsService(username -> {
-            UserInfo userInfo = userInfoRepository.findByUsername(username);
-            if (userInfo == null) {
-                throw new UsernameNotFoundException(
-                        "No user present with username: " + username);
-            } else {
-                return new User(userInfo.getUsername(),
-                        userInfo.getEncodedPassword(),
-                        userInfo.getRoles().stream()
-                                .map(role -> new SimpleGrantedAuthority(
-                                        "ROLE_" + role))
-                                .collect(Collectors.toList()));
-            }
+        http.logout().addLogoutHandler((request, response, authentication) -> {
+            UI ui = UI.getCurrent();
+            ui.accessSynchronously(() -> ui.getPage().setLocation(UrlUtil
+                    .getServletPathRelative(getLogoutSuccessUrl(), request)));
         });
     }
+
+    @Bean
+    public InMemoryUserDetailsManager userDetailsService() {
+        return new InMemoryUserDetailsManager() {
+            @Override
+            public UserDetails loadUserByUsername(String username)
+                    throws UsernameNotFoundException {
+                UserInfo userInfo = userInfoService.findByUsername(username);
+                if (userInfo == null) {
+                    throw new UsernameNotFoundException(
+                            "No user present with username: " + username);
+                } else {
+                    return new User(userInfo.getUsername(),
+                            userInfo.getEncodedPassword(),
+                            userInfo.getRoles().stream()
+                                    .map(role -> new SimpleGrantedAuthority(
+                                            "ROLE_" + role))
+                                    .collect(Collectors.toList()));
+                }
+            }
+        };
+    }
+
 }

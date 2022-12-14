@@ -15,15 +15,15 @@
  */
 package com.vaadin.flow.navigate;
 
-import com.vaadin.flow.testutil.ChromeDeviceTest;
-import com.vaadin.testbench.commands.TestBenchCommandExecutor;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.mobile.NetworkConnection;
+
+import com.vaadin.flow.testutil.ChromeDeviceTest;
+import com.vaadin.testbench.commands.TestBenchCommandExecutor;
 
 public class ConnectionIndicatorIT extends ChromeDeviceTest {
 
@@ -38,34 +38,34 @@ public class ConnectionIndicatorIT extends ChromeDeviceTest {
 
     @Test
     public void online_goingOffline_customisedMessageShown() throws Exception {
-        setConnectionType(NetworkConnection.ConnectionType.AIRPLANE_MODE);
+        getDevTools().setOfflineEnabled(true);
         try {
             expectConnectionState("connection-lost");
             Assert.assertEquals("Custom offline",
                     getConnectionIndicatorStatusText());
         } finally {
-            setConnectionType(NetworkConnection.ConnectionType.ALL);
+            getDevTools().setOfflineEnabled(false);
         }
     }
 
     @Test
     public void offline_goingOnline_customisedMessageShown() throws Exception {
-        setConnectionType(NetworkConnection.ConnectionType.AIRPLANE_MODE);
+        getDevTools().setOfflineEnabled(true);
         try {
             expectConnectionState("connection-lost");
-            setConnectionType(NetworkConnection.ConnectionType.ALL);
+            getDevTools().setOfflineEnabled(false);
             expectConnectionState("connected");
             Assert.assertEquals("Custom online",
                     getConnectionIndicatorStatusText());
         } finally {
-            setConnectionType(NetworkConnection.ConnectionType.ALL);
+            getDevTools().setOfflineEnabled(false);
         }
     }
 
     @Test
     public void offline_serverConnectionAttempted_customisedMessageShown()
             throws Exception {
-        setConnectionType(NetworkConnection.ConnectionType.AIRPLANE_MODE);
+        getDevTools().setOfflineEnabled(true);
         try {
             expectConnectionState("connection-lost");
             findElement(By.id(ConnectionIndicatorView.CONNECT_SERVER)).click();
@@ -75,7 +75,7 @@ public class ConnectionIndicatorIT extends ChromeDeviceTest {
             Assert.assertEquals("Custom reconnecting",
                     getConnectionIndicatorStatusText());
         } finally {
-            setConnectionType(NetworkConnection.ConnectionType.ALL);
+            getDevTools().setOfflineEnabled(false);
         }
     }
 
@@ -84,7 +84,7 @@ public class ConnectionIndicatorIT extends ChromeDeviceTest {
             throws Exception {
         findElement(By.id(ConnectionIndicatorView.SET_CUSTOM_MESSAGES)).click();
         ((TestBenchCommandExecutor) testBench()).waitForVaadin();
-        setConnectionType(NetworkConnection.ConnectionType.AIRPLANE_MODE);
+        getDevTools().setOfflineEnabled(true);
         try {
             expectConnectionState("connection-lost");
             Assert.assertEquals(ConnectionIndicatorView.CUSTOM_OFFLINE_MESSAGE,
@@ -97,7 +97,7 @@ public class ConnectionIndicatorIT extends ChromeDeviceTest {
                     ConnectionIndicatorView.CUSTOM_RECONNECTING_MESSAGE,
                     getConnectionIndicatorStatusText());
         } finally {
-            setConnectionType(NetworkConnection.ConnectionType.ALL);
+            getDevTools().setOfflineEnabled(false);
             testBench().enableWaitForVaadin();
         }
     }

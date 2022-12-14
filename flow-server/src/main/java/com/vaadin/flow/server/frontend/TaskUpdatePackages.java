@@ -31,7 +31,6 @@ import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.server.Platform;
@@ -42,7 +41,6 @@ import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
-import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 
 /**
@@ -59,6 +57,7 @@ public class TaskUpdatePackages extends NodeUpdater {
     protected static final String VAADIN_APP_PACKAGE_HASH = "vaadinAppPackageHash";
     private final boolean forceCleanUp;
     private final boolean enablePnpm;
+    private File jarResourcesFolder;
 
     /**
      * Create an instance of the updater given all configurable parameters.
@@ -71,9 +70,8 @@ public class TaskUpdatePackages extends NodeUpdater {
      *            folder with the `package.json` file
      * @param generatedPath
      *            folder where flow generated files will be placed.
-     * @param flowResourcesPath
-     *            folder where flow dependencies taken from resources files will
-     *            be placed. folder where flow generated files will be placed.
+     * @param jarResourcesFolder
+     *            folder where frontend resources from jar files will be placed.
      * @param forceCleanUp
      *            forces the clean up process to be run. If {@code false}, clean
      *            up will be performed when platform version update is detected.
@@ -84,13 +82,11 @@ public class TaskUpdatePackages extends NodeUpdater {
      *            the used build directory
      */
     TaskUpdatePackages(ClassFinder finder,
-            FrontendDependenciesScanner frontendDependencies, File npmFolder,
-            File generatedPath, File flowResourcesPath, boolean forceCleanUp,
-            boolean enablePnpm, String buildDir, FeatureFlags featureFlags) {
-        super(finder, frontendDependencies, npmFolder, generatedPath,
-                flowResourcesPath, buildDir, featureFlags);
-        this.forceCleanUp = forceCleanUp;
-        this.enablePnpm = enablePnpm;
+            FrontendDependenciesScanner frontendDependencies, Options options) {
+        super(finder, frontendDependencies, options);
+        this.jarResourcesFolder = options.jarFrontendResourcesFolder;
+        this.forceCleanUp = options.cleanNpmFiles;
+        this.enablePnpm = options.enablePnpm;
     }
 
     @Override
@@ -101,7 +97,7 @@ public class TaskUpdatePackages extends NodeUpdater {
             JsonObject packageJson = getPackageJson();
             modified = updatePackageJsonDependencies(packageJson,
                     scannedApplicationDependencies);
-            versionsPath = generateVersionsJson();
+            versionsPath = generateVersionsJson(packageJson);
             boolean npmVersionLockingUpdated = lockVersionForNpm(packageJson,
                     versionsPath);
 
@@ -133,7 +129,8 @@ public class TaskUpdatePackages extends NodeUpdater {
         }
         boolean versionLockingUpdated = false;
 
-        File generatedVersionsFile = new File(npmFolder, versionsPath);
+        File generatedVersionsFile = new File(options.getNpmFolder(),
+                versionsPath);
         final JsonObject versionsJson = Json.parse(FileUtils.readFileToString(
                 generatedVersionsFile, StandardCharsets.UTF_8));
 
@@ -170,6 +167,12 @@ public class TaskUpdatePackages extends NodeUpdater {
         }
 
         if (projectDependencies.hasKey(dependency)) {
+            try {
+                new FrontendVersion(projectDependencies.getString(dependency));
+            } catch (Exception e) {
+                // Do not lock non-numeric versions, e.g. folder references
+                return false;
+            }
             return true;
         }
 
@@ -181,8 +184,8 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     private boolean isInternalPseudoDependency(String dependencyVersion) {
-        return dependencyVersion != null
-                && dependencyVersion.startsWith("./" + buildDir);
+        return dependencyVersion != null && dependencyVersion
+                .startsWith("./" + options.getBuildDirectoryName());
     }
 
     private JsonObject getOverridesSection(JsonObject packageJson) {
@@ -234,10 +237,6 @@ public class TaskUpdatePackages extends NodeUpdater {
     private boolean updatePackageJsonDependencies(JsonObject packageJson,
             Map<String, String> applicationDependencies) throws IOException {
         int added = 0;
-
-        JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
-        // Update the dependency for the folder with resources
-        updateFlowFrontendDependencies(dependencies);
 
         // Add application dependencies
         for (Entry<String, String> dep : applicationDependencies.entrySet()) {
@@ -360,33 +359,6 @@ public class TaskUpdatePackages extends NodeUpdater {
         return false;
     }
 
-    private int updateFlowFrontendDependencies(JsonObject dependenciesObject) {
-        return updateNpmLocalDependency(dependenciesObject, DEP_NAME_FLOW_JARS,
-                flowResourcesFolder);
-    }
-
-    private int updateNpmLocalDependency(JsonObject dependenciesObject,
-            String packageName, File folder) {
-        assert dependenciesObject != null
-                : "dependency object should not be null in package.json";
-        if (folder != null) {
-            String depsPkg = "./" + FrontendUtils.getUnixRelativePath(
-                    npmFolder.getAbsoluteFile().toPath(),
-                    folder.getAbsoluteFile().toPath());
-            if (!dependenciesObject.hasKey(packageName) || !depsPkg
-                    .equals(dependenciesObject.getString(packageName))) {
-                dependenciesObject.put(packageName, depsPkg);
-                return 1;
-            }
-        } else {
-            if (dependenciesObject.hasKey(packageName)) {
-                dependenciesObject.remove(packageName);
-                return 1;
-            }
-        }
-        return 0;
-    }
-
     /**
      * Compares current platform version with the one last recorded as installed
      * in node_modules/.vaadin/vaadin_version. In case there was no existing
@@ -401,7 +373,8 @@ public class TaskUpdatePackages extends NodeUpdater {
         // if no record of current version is present, version is not
         // considered updated
         Optional<String> platformVersion = Platform.getVaadinVersion();
-        if (platformVersion.isPresent() && nodeModulesFolder.exists()) {
+        if (platformVersion.isPresent()
+                && options.getNodeModulesFolder().exists()) {
             JsonObject vaadinJsonContents = getVaadinJsonContents();
             // If no record of previous version, version is considered updated
             if (!vaadinJsonContents.hasKey(NodeUpdater.VAADIN_VERSION)) {
@@ -438,6 +411,12 @@ public class TaskUpdatePackages extends NodeUpdater {
                         DEP_NAME_FLOW_DEPS);
                 result++;
             }
+            if (object.hasKey(DEP_NAME_FLOW_JARS)) {
+                object.remove(DEP_NAME_FLOW_JARS);
+                log().debug("Removed \"{}\" as it's not needed anymore.",
+                        DEP_NAME_FLOW_JARS);
+                result++;
+            }
         }
         if (packageJson.hasKey(VAADIN_APP_PACKAGE_HASH)) {
             packageJson.remove(VAADIN_APP_PACKAGE_HASH);
@@ -459,25 +438,25 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     private void cleanUp() throws IOException {
-        FrontendUtils.deleteNodeModules(nodeModulesFolder);
+        FrontendUtils.deleteNodeModules(options.getNodeModulesFolder());
 
-        if (flowResourcesFolder != null && flowResourcesFolder.exists()) {
-            // Clean all files but `package.json`
-            for (File file : flowResourcesFolder.listFiles()) {
-                if (!file.getName().equals(PACKAGE_JSON)) {
-                    file.delete();
-                }
+        if (jarResourcesFolder != null && jarResourcesFolder.exists()) {
+            // This feels like cleanup done in the wrong place but is left here
+            // for historical reasons
+            for (File file : jarResourcesFolder.listFiles()) {
+                file.delete();
             }
         }
 
-        File generatedNodeModules = new File(generatedFolder, NODE_MODULES);
+        File generatedNodeModules = new File(options.getGeneratedFolder(),
+                NODE_MODULES);
         if (generatedNodeModules.exists()) {
             FrontendUtils.deleteNodeModules(generatedNodeModules);
         }
     }
 
     private void deletePnpmLockFile() throws IOException {
-        File lockFile = new File(npmFolder, "pnpm-lock.yaml");
+        File lockFile = new File(options.getNpmFolder(), "pnpm-lock.yaml");
         if (lockFile.exists()) {
             FileUtils.forceDelete(lockFile);
         }

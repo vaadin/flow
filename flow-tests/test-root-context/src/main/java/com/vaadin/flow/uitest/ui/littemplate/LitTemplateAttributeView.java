@@ -12,7 +12,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.littemplate.LitTemplateAttributeView", layout = ViewTestLayout.class)
 @Tag("attribute-lit-template")
-@JsModule("lit-templates/AttributeLitTemplate.js")
+@JsModule("./lit-templates/AttributeLitTemplate.js")
 public class LitTemplateAttributeView extends LitTemplate
         implements HasComponents {
 

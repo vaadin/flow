@@ -30,7 +30,7 @@ import org.junit.Assert;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.WEBPACK_PREFIX_ALIAS;
+import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND_FOLDER_ALIAS;
 import static org.junit.Assert.assertNotNull;
 
 public class NodeUpdateTestUtil {
@@ -93,7 +93,7 @@ public class NodeUpdateTestUtil {
                 "@vaadin/vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
                 "@vaadin/vaadin-mixed-component/theme/lumo/vaadin-something-else.js",
                 "./theme/lumo/vaadin-custom-themed-component.js",
-                "@vaadin/flow-frontend/ExampleConnector.js",
+                "./generated/jar-resources/ExampleConnector.js",
                 "3rdparty/component.js", "./local-p3-template.js", "./foo.js",
                 "./vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
                 "./local-template.js", "./foo-dir/vaadin-npm-component.js",
@@ -131,7 +131,7 @@ public class NodeUpdateTestUtil {
 
     String addWebpackPrefix(String s) {
         if (s.startsWith("./")) {
-            return WEBPACK_PREFIX_ALIAS + s.substring(2);
+            return FRONTEND_FOLDER_ALIAS + s.substring(2);
         }
         return s;
     }

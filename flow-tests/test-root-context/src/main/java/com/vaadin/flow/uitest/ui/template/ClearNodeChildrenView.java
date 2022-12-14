@@ -30,7 +30,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.ClearNodeChildrenView", layout = ViewTestLayout.class)
 @Tag("clear-node-children")
-@JsModule("ClearNodeChildren.js")
+@JsModule("./ClearNodeChildren.js")
 public class ClearNodeChildrenView extends PolymerTemplate<TemplateModel>
         implements HasComponents, HasText {
 

@@ -15,10 +15,10 @@
  */
 package com.vaadin.flow.server;
 
-import javax.annotation.concurrent.NotThreadSafe;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpSessionBindingEvent;
+import net.jcip.annotations.NotThreadSafe;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpSessionBindingEvent;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,10 +26,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -54,7 +52,6 @@ import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
 
 /**
  *
@@ -271,45 +268,6 @@ public class VaadinServiceTest {
     }
 
     @Test
-    public void testBootstrapListenersCreation() throws ServiceException {
-        // in this test the actual behavior of the listeners is not evaluated.
-        // That test can be found at the BootstrapHandlerTest.
-        AtomicBoolean listener1Run = new AtomicBoolean(false);
-        AtomicBoolean listener2Run = new AtomicBoolean(false);
-
-        BootstrapListener listener1 = evt -> listener1Run.set(true);
-        BootstrapListener listener2 = evt -> listener2Run.set(true);
-
-        VaadinServiceInitListener initListener = evt -> evt
-                .addBootstrapListener(listener1);
-        MockInstantiator instantiator = new MockInstantiator(initListener) {
-            @Override
-            public Stream<BootstrapListener> getBootstrapListeners(
-                    Stream<BootstrapListener> serviceInitListeners) {
-                List<BootstrapListener> defaultListeners = serviceInitListeners
-                        .collect(Collectors.toList());
-
-                assertEquals(Collections.singletonList(listener1),
-                        defaultListeners);
-
-                return Stream.of(listener2);
-            }
-        };
-
-        MockVaadinServletService service = new MockVaadinServletService();
-
-        service.init(instantiator);
-
-        Assert.assertFalse(listener1Run.get());
-        Assert.assertFalse(listener2Run.get());
-
-        service.modifyBootstrapPage(null);
-
-        Assert.assertFalse(listener1Run.get());
-        Assert.assertTrue(listener2Run.get());
-    }
-
-    @Test
     public void testServiceInitListener_accessApplicationRouteRegistry_registryAvailable() {
 
         VaadinServiceInitListener initListener = event -> {
@@ -453,8 +411,7 @@ public class VaadinServiceTest {
 
         service.removeFromHttpSession(httpSession);
 
-        Mockito.verify(session)
-                .setAttribute(VaadinSession.CLOSE_SESSION_EXPLICITLY, true);
+        Assert.assertTrue(session.sessionClosedExplicitly);
     }
 
     @Test

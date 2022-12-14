@@ -47,33 +47,34 @@ import org.slf4j.LoggerFactory;
 public class FeatureFlags implements Serializable {
 
     public static final String PROPERTIES_FILENAME = "vaadin-featureflags.properties";
+    public static final String SYSTEM_PROPERTY_PREFIX = "vaadin.";
 
     public static final Feature EXAMPLE = new Feature(
             "Example feature. Will be removed once the first real feature flag is added",
             "exampleFeatureFlag", "https://github.com/vaadin/flow/pull/12004",
             false,
             "com.vaadin.flow.server.frontend.NodeTestComponents$ExampleExperimentalComponent");
-    public static final Feature VITE = new Feature(
-            "Use Vite for faster front-end builds", "viteForFrontendBuild",
-            "https://github.com/vaadin/platform/issues/2448", true, null);
-    public static final Feature MAP_COMPONENT = new Feature(
-            "Map component (Pro)", "mapComponent",
-            "https://vaadin.com/docs/latest/ds/components/map", true,
-            "com.vaadin.flow.component.map.Map");
-    public static final Feature SPREADSHEET_COMPONENT = new Feature(
-            "Spreadsheet component (Pro)", "spreadsheetComponent",
-            "https://github.com/vaadin/platform/issues/2027", true,
-            "com.vaadin.flow.component.spreadsheet.Spreadsheet");
+    public static final Feature WEBPACK = new Feature(
+            "Use Webpack for front-end builds (Deprecated)",
+            "webpackForFrontendBuild",
+            "https://github.com/vaadin/flow/issues/13852", true, null);
     public static final Feature HILLA_PUSH = new Feature(
             "Push support in Hilla", "hillaPush",
             "https://github.com/vaadin/hilla/issues/56", true, null);
-    public static final Feature OFFLINE_LICENSE_CHECKER = new Feature(
-            "Offline license checker", "newLicenseChecker",
-            "https://github.com/vaadin/platform/issues/2938", false, null);
+    public static final Feature HILLA_ENGINE = new Feature(
+            "Multi-module engine in Hilla", "hillaEngine",
+            "https://github.com/vaadin/flow/issues/9010", true, null);
     public static final Feature COLLABORATION_ENGINE_BACKEND = new Feature(
             "Collaboration Engine backend for clustering support",
             "collaborationEngineBackend",
             "https://github.com/vaadin/platform/issues/1988", true, null);
+    public static final Feature ENFORCE_FIELD_VALIDATION = new Feature(
+            "Enforce client / constraint / binder validation",
+            "enforceFieldValidation",
+            "https://github.com/vaadin/platform/issues/3066", false, null);
+    public static final Feature EXPRESS_BUILD = new Feature(
+            "Express Build mode for Flow", "expressBuild",
+            "https://github.com/vaadin/platform/issues/3554", true, null);
     private List<Feature> features = new ArrayList<>();
 
     File propertiesFolder = null;
@@ -91,12 +92,12 @@ public class FeatureFlags implements Serializable {
     public FeatureFlags(Lookup lookup) {
         this.lookup = lookup;
         features.add(new Feature(EXAMPLE));
-        features.add(new Feature(VITE));
-        features.add(new Feature(MAP_COMPONENT));
-        features.add(new Feature(SPREADSHEET_COMPONENT));
         features.add(new Feature(HILLA_PUSH));
-        features.add(new Feature(OFFLINE_LICENSE_CHECKER));
+        features.add(new Feature(HILLA_ENGINE));
         features.add(new Feature(COLLABORATION_ENGINE_BACKEND));
+        features.add(new Feature(WEBPACK));
+        features.add(new Feature(ENFORCE_FIELD_VALIDATION));
+        features.add(new Feature(EXPRESS_BUILD));
         loadProperties();
     }
 
@@ -141,7 +142,7 @@ public class FeatureFlags implements Serializable {
         assert context != null;
 
         FeatureFlagsWrapper attribute;
-        synchronized (context) {
+        synchronized (FeatureFlags.class) {
             attribute = context.getAttribute(FeatureFlagsWrapper.class);
 
             if (attribute == null) {
@@ -194,19 +195,19 @@ public class FeatureFlags implements Serializable {
         if (featureFlagFile == null || !featureFlagFile.exists()) {
             // Disable all features if no file exists
             for (Feature f : features) {
-                f.setEnabled(false);
+                f.setEnabled(
+                        Boolean.getBoolean(SYSTEM_PROPERTY_PREFIX + f.getId()));
             }
-            return;
-        }
-
-        try (FileInputStream propertiesStream = new FileInputStream(
-                featureFlagFile)) {
-            getLogger().debug("Loading properties from file '{}'",
-                    featureFlagFile);
-            loadProperties(propertiesStream);
-        } catch (IOException e) {
-            throw new UncheckedIOException(
-                    "Failed to read properties file from filesystem", e);
+        } else {
+            try (FileInputStream propertiesStream = new FileInputStream(
+                    featureFlagFile)) {
+                getLogger().debug("Loading properties from file '{}'",
+                        featureFlagFile);
+                loadProperties(propertiesStream);
+            } catch (IOException e) {
+                throw new UncheckedIOException(
+                        "Failed to read properties file from filesystem", e);
+            }
         }
     }
 
@@ -218,9 +219,14 @@ public class FeatureFlags implements Serializable {
                 props.load(propertiesStream);
             }
             for (Feature f : features) {
-                f.setEnabled(Boolean.valueOf(
-                        props.getProperty(getPropertyName(f.getId()))));
+                // Allow users to override a feature flag with a system property
+                String propertyValue = System.getProperty(
+                        SYSTEM_PROPERTY_PREFIX + f.getId(),
+                        props.getProperty(getPropertyName(f.getId())));
+
+                f.setEnabled(Boolean.parseBoolean(propertyValue));
             }
+
         } catch (IOException e) {
             getLogger().error("Unable to read feature flags", e);
         }

@@ -24,7 +24,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.template.PolymerPropertiesView", layout = ViewTestLayout.class)
 @Tag("template-properties")
-@JsModule("TemplateProperties.js")
+@JsModule("./TemplateProperties.js")
 public class PolymerPropertiesView extends PolymerTemplate<Message> {
 
     public PolymerPropertiesView() {

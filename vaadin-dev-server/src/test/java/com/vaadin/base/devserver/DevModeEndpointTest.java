@@ -6,7 +6,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_JAVA
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_CONNECT_OPENAPI_JSON_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR;
 import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
-import static com.vaadin.flow.testutil.FrontendStubs.createStubWebpackServer;
+import static com.vaadin.flow.testutil.FrontendStubs.createStubViteServer;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -18,7 +18,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.servlet.ServletRegistration;
+import jakarta.servlet.ServletRegistration;
 
 import com.vaadin.base.devserver.startup.AbstractDevModeTest;
 import com.vaadin.base.devserver.startup.DevModeStartupListener;
@@ -57,7 +57,7 @@ public class DevModeEndpointTest extends AbstractDevModeTest {
                         .isPresent());
 
         createStubNode(false, true, baseDir);
-        createStubWebpackServer("Compiled", 500, baseDir, true);
+        createStubViteServer("ready in 500 ms", 500, baseDir, true);
 
         // Prevent TaskRunNpmInstall#cleanUp from deleting node_modules
         new File(baseDir, "node_modules/.modules.yaml").createNewFile();

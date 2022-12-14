@@ -15,16 +15,16 @@
  */
 package com.vaadin.flow.data.provider;
 
+import com.vaadin.flow.data.provider.DataChangeEvent.DataRefreshEvent;
+import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.shared.Registration;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Consumer;
-
-import com.vaadin.flow.data.provider.DataChangeEvent.DataRefreshEvent;
-import com.vaadin.flow.function.SerializableConsumer;
-import com.vaadin.flow.shared.Registration;
 
 /**
  * Abstract data provider implementation which takes care of refreshing data
@@ -56,9 +56,8 @@ public abstract class AbstractDataProvider<T, F> implements DataProvider<T, F> {
     public Registration addDataProviderListener(
             DataProviderListener<T> listener) {
         // Using an anonymous class instead of lambda or method reference to
-        // prevent potential
-        // self reference serialization issues when clients holds a reference
-        // to the Registration instance returned by this method
+        // prevent potential self reference serialization issues when clients
+        // hold a reference to the Registration instance returned by this method
         SerializableConsumer<DataChangeEvent> consumer = new SerializableConsumer<DataChangeEvent>() {
             @Override
             public void accept(DataChangeEvent dataChangeEvent) {
@@ -105,7 +104,19 @@ public abstract class AbstractDataProvider<T, F> implements DataProvider<T, F> {
 
         DataListenerWrapper wrapper = new DataListenerWrapper(method);
 
-        wrapper.registration = Registration.addAndRemove(list, wrapper);
+        final Registration registration = Registration.addAndRemove(list,
+                wrapper);
+
+        // Using an anonymous class instead of lambda or method reference to
+        // prevent potential self reference serialization issues when clients
+        // hold a reference to the Registration instance returned by this method
+        wrapper.registration = new Registration() {
+            @Override
+            public void remove() {
+                registration.remove();
+            }
+        };
+
         return wrapper.registration;
     }
 

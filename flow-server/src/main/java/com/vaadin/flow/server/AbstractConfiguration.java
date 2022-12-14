@@ -17,7 +17,6 @@ package com.vaadin.flow.server;
 
 import java.io.File;
 import java.io.Serializable;
-import java.nio.file.Paths;
 
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
@@ -46,6 +45,9 @@ public interface AbstractConfiguration extends Serializable {
      * @return true if dev server should be used
      */
     default boolean enableDevServer() {
+        if (isProductionMode()) {
+            return false;
+        }
         return getBooleanProperty(
                 InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER, true);
     }
@@ -161,19 +163,18 @@ public interface AbstractConfiguration extends Serializable {
     }
 
     /**
-     * Get the location for flow resources inside the build folder.
+     * Return the project root folder.
      * <p>
-     * Default will be <code>target/flow-frontend</code> where target is the
-     * defined buildFolder see {@link #getBuildFolder()}.
-     * <p>
-     * Note! The path is made using Paths.get which will use File.separator that
-     * is OS dependent.
+     * Only available in development mode.
      *
-     * @return flow resources folder, default {@code target/flow-frontend}
+     * @return the project root folder, or {@code null} if unknown
      */
-    default String getFlowResourcesFolder() {
-        return Paths.get(getBuildFolder(),
-                FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER).toString();
+    default File getProjectFolder() {
+        String folder = getStringProperty(FrontendUtils.PROJECT_BASEDIR, null);
+        if (folder == null) {
+            return null;
+        }
+        return new File(folder);
     }
 
     /**

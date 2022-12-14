@@ -17,6 +17,14 @@
 
 package com.vaadin.flow.server.frontend;
 
+import static com.vaadin.flow.server.Constants.TARGET;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -41,18 +49,9 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 
-import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
-
-import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
 
@@ -83,20 +82,28 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
         importsFile = new File(generatedPath, IMPORTS_NAME);
 
         ClassFinder classFinder = getClassFinder();
+        Options options = new Options(Mockito.mock(Lookup.class), tmpRoot)
+                .withGeneratedFolder(generatedPath)
+                .withFrontendDirectory(frontendDirectory)
+                .withBuildDirectory(TARGET).withProductionMode(true);
         updater = new TaskUpdateImports(classFinder, getScanner(classFinder),
-                finder -> null, tmpRoot, generatedPath, frontendDirectory, null,
-                null, false, TARGET, true, false,
-                Mockito.mock(FeatureFlags.class)) {
+                finder -> null, options) {
             @Override
             Logger log() {
                 return logger;
             }
+
         };
 
         assertTrue(nodeModulesPath.mkdirs());
         createExpectedImports(frontendDirectory, nodeModulesPath);
-        assertTrue(new File(nodeModulesPath,
-                FLOW_NPM_PACKAGE_NAME + "ExampleConnector.js").exists());
+        assertTrue(
+                new File(
+                        new File(
+                                new File(frontendDirectory,
+                                        FrontendUtils.GENERATED),
+                                FrontendUtils.JAR_RESOURCES_FOLDER),
+                        "ExampleConnector.js").exists());
     }
 
     protected abstract FrontendDependenciesScanner getScanner(
@@ -122,13 +129,19 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
         expectedLines.add("import 'unresolved/component';");
 
         expectedLines.add(
-                "import $cssFromFile_0 from '@vaadin/vaadin-mixed-component/bar.css'");
-        expectedLines.add("import $cssFromFile_1 from 'Frontend/foo.css';");
-        expectedLines.add("import $cssFromFile_2 from 'Frontend/foo.css';");
-        expectedLines.add("import $cssFromFile_3 from 'Frontend/foo.css';");
-        expectedLines.add("import $cssFromFile_4 from 'Frontend/foo.css';");
-        expectedLines.add("import $cssFromFile_5 from 'Frontend/foo.css';");
-        expectedLines.add("import $cssFromFile_6 from 'Frontend/foo.css';");
+                "import $cssFromFile_0 from '@vaadin/vaadin-mixed-component/bar.css?inline'");
+        expectedLines
+                .add("import $cssFromFile_1 from 'Frontend/foo.css?inline';");
+        expectedLines
+                .add("import $cssFromFile_2 from 'Frontend/foo.css?inline';");
+        expectedLines
+                .add("import $cssFromFile_3 from 'Frontend/foo.css?inline';");
+        expectedLines
+                .add("import $cssFromFile_4 from 'Frontend/foo.css?inline';");
+        expectedLines
+                .add("import $cssFromFile_5 from 'Frontend/foo.css?inline';");
+        expectedLines
+                .add("import $cssFromFile_6 from 'Frontend/foo.css?inline';");
         expectedLines.add(
                 "import { css, unsafeCSS, registerStyles } from '@vaadin/vaadin-themable-mixin';");
         expectedLines.add("addCssBlock(`<style>${$css_0}</style>`);");

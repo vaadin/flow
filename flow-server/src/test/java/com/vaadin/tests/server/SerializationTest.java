@@ -13,6 +13,8 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.server.StreamRegistration;
+import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
@@ -47,6 +49,43 @@ public class SerializationTest {
                 session.getUIs());
         Assert.assertTrue("UIs should be empty after empty deserialization",
                 session.getUIs().isEmpty());
+    }
+
+    @Test
+    public void testSerializeVaadinSession_notProductionMode_disableDevModeSerialization_streamResources_deserializedSessionHasNoUIs()
+            throws Exception {
+
+        VaadinService vaadinService = new MockVaadinService(false, false);
+        VaadinSession session = new VaadinSession(vaadinService);
+        // This is done only for test purpose to init the session lock,
+        // should be called by Flow internally as soon as the session has
+        // been created.
+        session.refreshTransients(null, vaadinService);
+        MockUI ui = new MockUI(session);
+        ui.doInit(null, 42);
+        session.addUI(ui);
+
+        session.lock();
+        final StreamRegistration name = session.getResourceRegistry()
+                .registerResource(new StreamResource("name",
+                        () -> new ByteArrayInputStream(new byte[0])));
+        session.unlock();
+
+        session = serializeAndDeserialize(session);
+        // This is done only for test purpose to refresh the session lock,
+        // should be called by Flow internally as soon as the session has
+        // been retrieved from http session.
+        session.refreshTransients(null, vaadinService);
+
+        Assert.assertNotNull(
+                "UIs map should be available after devmode deserialization",
+                session.getUIs());
+        Assert.assertTrue("UIs should be empty after devmode deserialization",
+                session.getUIs().isEmpty());
+        Assert.assertTrue(
+                "StreamResources should be empty after devmode deserialization",
+                session.getResourceRegistry().getResource(name.getResourceUri())
+                        .isEmpty());
     }
 
     @Test

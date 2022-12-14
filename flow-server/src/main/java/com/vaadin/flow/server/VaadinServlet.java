@@ -15,16 +15,25 @@
  */
 package com.vaadin.flow.server;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRegistration;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import com.vaadin.flow.component.UI;
@@ -52,10 +61,14 @@ import com.vaadin.flow.shared.JsonConstants;
  * @since 1.0
  */
 public class VaadinServlet extends HttpServlet {
+
+    public static final String INTERNAL_VAADIN_SERVLET_VITE_DEV_MODE_FRONTEND_PATH = "VAADIN_SERVLET_VITE_DEV_MODE_FRONTEND_PATH";
+
     private VaadinServletService servletService;
     private StaticFileHandler staticFileHandler;
 
     private volatile boolean isServletInitialized;
+    private static String frontendMapping = null;
 
     /**
      * Called by the servlet container to indicate to a servlet that the servlet
@@ -126,10 +139,67 @@ public class VaadinServlet extends HttpServlet {
 
             staticFileHandler = createStaticFileHandler(servletService);
 
+            detectFrontendMapping();
             servletInitialized();
         } finally {
             CurrentInstance.clearAll();
         }
+    }
+
+    private void detectFrontendMapping() {
+        synchronized (VaadinServlet.class) {
+            if (frontendMapping != null) {
+                return;
+            }
+            String definedPath = null;
+            DeploymentConfiguration deploymentConfiguration = getService()
+                    .getDeploymentConfiguration();
+            if (deploymentConfiguration != null) {
+                definedPath = deploymentConfiguration.getInitParameters()
+                        .getProperty(
+                                INTERNAL_VAADIN_SERVLET_VITE_DEV_MODE_FRONTEND_PATH);
+            }
+            if (definedPath != null) {
+                // Use the path define in a property
+                frontendMapping = definedPath;
+                return;
+            }
+
+            List<String> mappings = new ArrayList<>();
+            Map<String, ? extends ServletRegistration> servletRegistrations = this
+                    .getServletContext().getServletRegistrations();
+            if (servletRegistrations != null
+                    && !servletRegistrations.isEmpty()) {
+                ServletRegistration registration = servletRegistrations
+                        .get(this.getServletName());
+                if (registration == null) {
+                    getLogger().warn(
+                            "Unable to determin servlet registration for {}. Ignoring",
+                            getServletName());
+                    return;
+                }
+                Collection<String> urlPatterns = registration.getMappings();
+                if (urlPatterns == null || urlPatterns.isEmpty()) {
+                    // Servlet has no mappings, ignore it
+                    return;
+                }
+                mappings.addAll(urlPatterns);
+                if (mappings.size() > 1) {
+                    // Avoid using /VAADIN/* as that is a mapping to handle
+                    // static files
+                    mappings.remove("/VAADIN/*");
+                }
+                Collections.sort(mappings);
+                frontendMapping = mappings.get(0);
+                getLogger().debug("Using mapping " + frontendMapping
+                        + " from servlet " + getClass().getSimpleName()
+                        + " as the frontend servlet because this was the first deployed VaadinServlet");
+            }
+        }
+    }
+
+    private Logger getLogger() {
+        return LoggerFactory.getLogger(getClass());
     }
 
     @Override
@@ -496,13 +566,13 @@ public class VaadinServlet extends HttpServlet {
                 + request.getRequestURI());
         String servletPath;
         if (request
-                .getAttribute("javax.servlet.include.servlet_path") != null) {
+                .getAttribute("jakarta.servlet.include.servlet_path") != null) {
             // this is an include request
             servletPath = request
-                    .getAttribute("javax.servlet.include.context_path")
+                    .getAttribute("jakarta.servlet.include.context_path")
                     .toString()
-                    + request
-                            .getAttribute("javax.servlet.include.servlet_path");
+                    + request.getAttribute(
+                            "jakarta.servlet.include.servlet_path");
 
         } else {
             servletPath = request.getContextPath() + request.getServletPath();
@@ -519,7 +589,7 @@ public class VaadinServlet extends HttpServlet {
     /*
      * (non-Javadoc)
      *
-     * @see javax.servlet.GenericServlet#destroy()
+     * @see jakarta.servlet.GenericServlet#destroy()
      */
     @Override
     public void destroy() {
@@ -546,6 +616,15 @@ public class VaadinServlet extends HttpServlet {
             initializer.initialize(vaadinServletContext);
         }
         return vaadinServletContext;
+    }
+
+    /**
+     * For internal use only.
+     *
+     * @return the vaadin servlet used for frontend files in development mode
+     */
+    public static String getFrontendMapping() {
+        return frontendMapping;
     }
 
 }

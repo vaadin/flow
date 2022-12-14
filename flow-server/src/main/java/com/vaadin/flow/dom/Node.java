@@ -16,7 +16,11 @@
 package com.vaadin.flow.dom;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Objects;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -41,6 +45,8 @@ public abstract class Node<N extends Node<N>> implements Serializable {
     static final String CANNOT_X_WITH_INDEX_Y_WHEN_THERE_ARE_Z_CHILDREN = "Cannot %s element with index %d when there are %d children";
 
     static final String THE_CHILDREN_ARRAY_CANNOT_BE_NULL = "The children array cannot be null";
+
+    static final String THE_CHILDREN_COLLECTION_CANNOT_BE_NULL = "The children collection cannot be null";
 
     private final ElementStateProvider stateProvider;
     private final StateNode node;
@@ -138,6 +144,22 @@ public abstract class Node<N extends Node<N>> implements Serializable {
                     THE_CHILDREN_ARRAY_CANNOT_BE_NULL);
         }
 
+        return appendChild(Arrays.asList(children));
+    }
+
+    /**
+     * Adds the given children as the last children of this element.
+     *
+     * @param children
+     *            the element(s) to add
+     * @return this element
+     */
+    public N appendChild(Collection<Element> children) {
+        if (children == null) {
+            throw new IllegalArgumentException(
+                    THE_CHILDREN_COLLECTION_CANNOT_BE_NULL);
+        }
+
         insertChild(getChildCount(), children);
 
         return getSelf();
@@ -147,8 +169,8 @@ public abstract class Node<N extends Node<N>> implements Serializable {
      * Appends the given children as the virtual children of the element.
      * <p>
      * The virtual child is not really a child of the DOM element. The
-     * client-side counterpart is created in the memory but it's not attached to
-     * the DOM tree. The resulting element is referenced via the server side
+     * client-side counterpart is created in the memory, but it's not attached
+     * to the DOM tree. The resulting element is referenced via the server side
      * {@link Element} in JS function call as usual.
      *
      * @param children
@@ -159,6 +181,27 @@ public abstract class Node<N extends Node<N>> implements Serializable {
         if (children == null) {
             throw new IllegalArgumentException(
                     THE_CHILDREN_ARRAY_CANNOT_BE_NULL);
+        }
+
+        return appendVirtualChild(Arrays.asList(children));
+    }
+
+    /**
+     * Appends the given children as the virtual children of the element.
+     * <p>
+     * The virtual child is not really a child of the DOM element. The
+     * client-side counterpart is created in the memory, but it's not attached
+     * to the DOM tree. The resulting element is referenced via the server side
+     * {@link Element} in JS function call as usual.
+     *
+     * @param children
+     *            the element(s) to add
+     * @return this element
+     */
+    public N appendVirtualChild(Collection<Element> children) {
+        if (children == null) {
+            throw new IllegalArgumentException(
+                    THE_CHILDREN_COLLECTION_CANNOT_BE_NULL);
         }
 
         for (Element child : children) {
@@ -202,6 +245,33 @@ public abstract class Node<N extends Node<N>> implements Serializable {
         if (children == null) {
             throw new IllegalArgumentException(
                     THE_CHILDREN_ARRAY_CANNOT_BE_NULL);
+        }
+
+        return removeVirtualChild(Arrays.asList(children));
+    }
+
+    /**
+     * Removes the given children that have been attached as the virtual
+     * children of this element.
+     * <p>
+     * The virtual child is not really a child of the DOM element. The
+     * client-side counterpart is created in the memory but it's not attached to
+     * the DOM tree. The resulting element is referenced via the server side
+     * {@link Element} in JS function call as usual. *
+     *
+     * @param children
+     *            the element(s) to remove
+     * @return this element
+     */
+    /*
+     * The use case for removing virtual children is when exported Flow web
+     * components are detached from their parent due to missing heart beats +
+     * timeout.
+     */
+    public N removeVirtualChild(Collection<Element> children) {
+        if (children == null) {
+            throw new IllegalArgumentException(
+                    THE_CHILDREN_COLLECTION_CANNOT_BE_NULL);
         }
 
         if (getNode().hasFeature(VirtualChildrenList.class)) {
@@ -266,15 +336,36 @@ public abstract class Node<N extends Node<N>> implements Serializable {
             throw new IllegalArgumentException(
                     THE_CHILDREN_ARRAY_CANNOT_BE_NULL);
         }
+
+        return insertChild(index, Arrays.asList(children));
+    }
+
+    /**
+     * Inserts the given child element(s) at the given position.
+     *
+     * @param index
+     *            the position at which to insert the new child
+     * @param children
+     *            the child element(s) to insert
+     * @return this element
+     */
+    public N insertChild(int index, Collection<Element> children) {
+        if (children == null) {
+            throw new IllegalArgumentException(
+                    THE_CHILDREN_COLLECTION_CANNOT_BE_NULL);
+        }
         if (index > getChildCount()) {
             throw new IllegalArgumentException(String.format(
                     CANNOT_X_WITH_INDEX_Y_WHEN_THERE_ARE_Z_CHILDREN, "insert",
                     index, getChildCount()));
         }
 
-        for (int i = 0,
-                insertIndex = index; i < children.length; i++, insertIndex++) {
-            Element child = children[i];
+        List<Element> childrenList = children instanceof List
+                ? (List<Element>) children
+                : new ArrayList<>(children);
+        for (int i = 0, insertIndex = index; i < childrenList
+                .size(); i++, insertIndex++) {
+            Element child = childrenList.get(i);
             if (child == null) {
                 throw new IllegalArgumentException(
                         "Element to insert must not be null");
@@ -372,6 +463,21 @@ public abstract class Node<N extends Node<N>> implements Serializable {
                     THE_CHILDREN_ARRAY_CANNOT_BE_NULL);
         }
 
+        return removeChild(Arrays.asList(children));
+    }
+
+    /**
+     * Removes the given child element(s).
+     *
+     * @param children
+     *            the child element(s) to remove
+     * @return this element
+     */
+    public N removeChild(Collection<Element> children) {
+        if (children == null) {
+            throw new IllegalArgumentException(
+                    THE_CHILDREN_COLLECTION_CANNOT_BE_NULL);
+        }
         for (Element child : children) {
             ensureChildHasParent(child, false);
             getStateProvider().removeChild(getNode(), child);

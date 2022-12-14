@@ -34,7 +34,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
 
     private static final String TS_DEFINITIONS = "types.d.ts";
-    private final File npmFolder;
+    private Options options;
 
     /**
      * Create a task to generate <code>types.d.ts</code> file.
@@ -42,8 +42,8 @@ public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
      * @param npmFolder
      *            project folder where the file will be generated.
      */
-    TaskGenerateTsDefinitions(File npmFolder) {
-        this.npmFolder = npmFolder;
+    TaskGenerateTsDefinitions(Options options) {
+        this.options = options;
     }
 
     @Override
@@ -56,14 +56,13 @@ public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
 
     @Override
     protected File getGeneratedFile() {
-        return new File(npmFolder, TS_DEFINITIONS);
+        return new File(options.getNpmFolder(), TS_DEFINITIONS);
     }
 
     @Override
     protected boolean shouldGenerate() {
-        File tsDefinitionsFile = new File(npmFolder, TS_DEFINITIONS);
-        return !tsDefinitionsFile.exists()
-                && new File(npmFolder, TaskGenerateTsConfig.TSCONFIG_JSON)
-                        .exists();
+        File tsDefinitionsFile = getGeneratedFile();
+        return !tsDefinitionsFile.exists() && new File(options.getNpmFolder(),
+                TaskGenerateTsConfig.TSCONFIG_JSON).exists();
     }
 }

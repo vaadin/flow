@@ -20,12 +20,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRegistration.Dynamic;
-
-import com.vaadin.flow.server.Constants;
-
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRegistration.Dynamic;
 import org.atmosphere.cpr.ApplicationConfig;
 import org.springframework.core.env.Environment;
 import org.springframework.util.ClassUtils;
@@ -33,6 +30,8 @@ import org.springframework.web.WebApplicationInitializer;
 import org.springframework.web.context.ContextLoaderListener;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
+
+import com.vaadin.flow.server.Constants;
 
 /**
  * Abstract Vaadin Spring MVC {@link WebApplicationInitializer}.
@@ -53,44 +52,30 @@ public abstract class VaadinMVCWebAppInitializer
         context.setServletContext(servletContext);
         registerConfiguration(context);
         servletContext.addListener(new ContextLoaderListener(context));
-
         context.refresh();
-
         Environment env = context.getBean(Environment.class);
         String mapping = RootMappedCondition.getUrlMapping(env);
         if (mapping == null) {
             mapping = "/*";
         }
-        String pushRegistrationPath;
 
         boolean rootMapping = RootMappedCondition.isRootMapping(mapping);
-
         Dynamic registration = servletContext.addServlet(
                 ClassUtils.getShortNameAsProperty(SpringServlet.class),
                 new SpringServlet(context, rootMapping));
-
         Map<String, String> initParameters = new HashMap<>();
         if (rootMapping) {
             Dynamic dispatcherRegistration = servletContext
                     .addServlet("dispatcher", new DispatcherServlet(context));
             dispatcherRegistration.addMapping("/*");
             mapping = VaadinServletConfiguration.VAADIN_SERVLET_MAPPING;
-            pushRegistrationPath = "";
-        } else {
-            pushRegistrationPath = mapping.replace("/*", "");
         }
-
         registration.addMapping(mapping);
-        registration.addMapping("/VAADIN/*");
 
-        /*
-         * Tell Atmosphere which servlet to use for the push endpoint. Servlet
-         * mappings are returned as a Set from at least Tomcat so even if
-         * Atmosphere always picks the first, it might end up using /VAADIN/*
-         * and websockets will fail.
-         */
-        initParameters.put(ApplicationConfig.JSR356_MAPPING_PATH,
-                pushRegistrationPath);
+        String pushUrl = rootMapping ? "" : mapping.replace("/*", "");
+        pushUrl += "/" + Constants.PUSH_MAPPING;
+
+        initParameters.put(ApplicationConfig.JSR356_MAPPING_PATH, pushUrl);
 
         registration.setInitParameters(initParameters);
 

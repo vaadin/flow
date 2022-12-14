@@ -12,9 +12,9 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 
-import com.vaadin.flow.component.internal.JavaScriptBootstrapUI.ClientViewPlaceholder;
+import com.vaadin.flow.component.UI.ClientViewPlaceholder;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.InternalServerError;
 import com.vaadin.flow.router.RouteNotFoundError;
@@ -57,6 +57,7 @@ public class AccessAnnotationCheckerTest {
             return "John Doe";
         }
     };
+    static final String REQUEST_URL = "http://localhost:8080/myapp/";
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
@@ -364,6 +365,8 @@ public class AccessAnnotationCheckerTest {
                 .thenAnswer(query -> {
                     return roleSet.contains(query.getArguments()[0]);
                 });
+        Mockito.when(request.getRequestURL())
+                .thenReturn(new StringBuffer(REQUEST_URL));
         return request;
     }
 

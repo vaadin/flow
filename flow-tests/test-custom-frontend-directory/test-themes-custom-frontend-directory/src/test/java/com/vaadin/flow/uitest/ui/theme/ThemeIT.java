@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -51,8 +50,8 @@ public class ThemeIT extends ChromeBrowserTest {
 
         checkLogsForErrors();
 
-        final TestBenchElement helloWorld = $(TestBenchElement.class).first()
-                .findElement(By.tagName("hello-world-view"));
+        final TestBenchElement helloWorld = $("hello-world-view")
+                .waitForFirst();
 
         Assert.assertEquals("hello-world-view", helloWorld.getTagName());
 
@@ -99,6 +98,7 @@ public class ThemeIT extends ChromeBrowserTest {
                 driver.getPageSource().contains("HTTP ERROR 404 Not Found"));
 
         getDriver().get(getRootURL() + "/path/themes/no-copy/no-copy.txt");
+        waitForDevServer();
         String source = driver.getPageSource();
         Matcher m = Pattern.compile(
                 ".*Could not navigate to.*themes/no-copy/no-copy.txt.*",
@@ -113,10 +113,9 @@ public class ThemeIT extends ChromeBrowserTest {
         checkLogsForErrors();
 
         final WebElement body = findElement(By.tagName("body"));
-        // Note themes/app-theme gets VAADIN/static from the file-loader
         Assert.assertEquals("body background-image should come from styles.css",
                 "url(\"" + getRootURL()
-                        + "/path/VAADIN/static/themes/app-theme/img/bg.jpg\")",
+                        + "/path/VAADIN/themes/app-theme/img/bg.jpg\")",
                 body.getCssValue("background-image"));
 
         Assert.assertEquals("body font-family should come from styles.css",
@@ -125,9 +124,8 @@ public class ThemeIT extends ChromeBrowserTest {
         Assert.assertEquals("html color from styles.css should be applied.",
                 "rgba(0, 0, 0, 1)", body.getCssValue("color"));
 
-        // Note themes/app-theme gets VAADIN/static from the file-loader
-        getDriver().get(getRootURL()
-                + "/path/VAADIN/static/themes/app-theme/img/bg.jpg");
+        getDriver()
+                .get(getRootURL() + "/path/VAADIN/themes/app-theme/img/bg.jpg");
         Assert.assertFalse("app-theme background file should be served",
                 driver.getPageSource().contains("Could not navigate"));
     }
@@ -199,10 +197,9 @@ public class ThemeIT extends ChromeBrowserTest {
         open();
         checkLogsForErrors();
 
-        // Note themes/app-theme gets VAADIN/static from the file-loader
         Assert.assertEquals("Imported css file URLs should have been handled.",
                 "url(\"" + getRootURL()
-                        + "/path/VAADIN/static/themes/app-theme/icons/archive.png\")",
+                        + "/path/VAADIN/themes/app-theme/icons/archive.png\")",
                 $(SpanElement.class).id(SUB_COMPONENT_ID)
                         .getCssValue("background-image"));
     }

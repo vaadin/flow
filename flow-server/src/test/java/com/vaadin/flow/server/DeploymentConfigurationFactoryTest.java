@@ -1,7 +1,7 @@
 package com.vaadin.flow.server;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletContext;
 
 import java.io.File;
 import java.io.IOException;
@@ -337,7 +337,6 @@ public class DeploymentConfigurationFactoryTest {
                 InitParameters.UI_PARAMETER,
                 InitParameters.SERVLET_PARAMETER_REQUEST_TIMING,
                 InitParameters.SERVLET_PARAMETER_HEARTBEAT_INTERVAL,
-                InitParameters.SERVLET_PARAMETER_PUSH_URL,
                 InitParameters.SERVLET_PARAMETER_PUSH_SUSPEND_TIMEOUT_LONGPOLLING,
                 InitParameters.SERVLET_PARAMETER_MAX_MESSAGE_SUSPEND_TIMEOUT,
                 InitParameters.SERVLET_PARAMETER_STATISTICS_JSON,
@@ -452,8 +451,6 @@ public class DeploymentConfigurationFactoryTest {
                 parameters.get(Constants.EXTERNAL_STATS_URL));
         Assert.assertEquals(Boolean.TRUE.toString(),
                 parameters.get(Constants.EXTERNAL_STATS_FILE));
-        Assert.assertEquals(Boolean.FALSE.toString(), parameters
-                .get(InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER));
     }
 
     @Test
@@ -469,8 +466,6 @@ public class DeploymentConfigurationFactoryTest {
 
         Assert.assertEquals(Boolean.TRUE.toString(),
                 parameters.get(Constants.EXTERNAL_STATS_FILE));
-        Assert.assertEquals(Boolean.FALSE.toString(), parameters
-                .get(InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER));
     }
 
     @Test
@@ -540,7 +535,7 @@ public class DeploymentConfigurationFactoryTest {
                 .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
 
         assertEquals(true, config.isProductionMode());
-        assertEquals(false, config.enableDevServer());
+        assertEquals(true, config.enableDevServer());
         assertEquals(true, config.isStatsExternal());
         assertEquals(Constants.DEFAULT_EXTERNAL_STATS_URL,
                 config.getExternalStatsUrl());
@@ -681,7 +676,6 @@ public class DeploymentConfigurationFactoryTest {
                 .mock(ApplicationConfiguration.class);
         Mockito.when(configuration.enableDevServer()).thenReturn(true);
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
-        Mockito.when(configuration.useV14Bootstrap()).thenReturn(false);
         Mockito.when(configuration.getContext()).thenReturn(context);
         Mockito.when(configuration.getStringProperty(Mockito.anyString(),
                 Mockito.anyString())).thenReturn(null);

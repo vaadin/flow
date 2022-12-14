@@ -29,7 +29,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 
-import javax.annotation.concurrent.NotThreadSafe;
+import net.jcip.annotations.NotThreadSafe;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
@@ -144,9 +144,11 @@ public class ComponentFlagsTest extends NodeUpdateTestUtil {
     private TaskUpdateImports createUpdater() throws IOException {
         ClassFinder classFinder = getClassFinder(testClasses);
 
+        Options options = new Options(Mockito.mock(Lookup.class), tmpRoot)
+                .withGeneratedFolder(generatedPath)
+                .withFrontendDirectory(frontendDirectory)
+                .withBuildDirectory(TARGET).withProductionMode(true);
         return new TaskUpdateImports(classFinder,
-                getScanner(classFinder, featureFlags), finder -> null, tmpRoot,
-                generatedPath, frontendDirectory, null, null, false, TARGET,
-                true, false, featureFlags);
+                getScanner(classFinder, featureFlags), finder -> null, options);
     }
 }

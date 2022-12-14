@@ -17,6 +17,14 @@
 
 package com.vaadin.flow.server.frontend;
 
+import static com.vaadin.flow.server.Constants.TARGET;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
+import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_D_TS_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.URLClassLoader;
@@ -39,7 +47,7 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 
-import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner.FrontendDependenciesScannerFactory;
@@ -47,15 +55,6 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner.Front
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
-
-import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_D_TS_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
-import static org.junit.Assert.assertTrue;
 
 public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
@@ -96,8 +95,13 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         assertTrue(nodeModulesPath.mkdirs());
         createExpectedImports(frontendDirectory, nodeModulesPath);
-        assertTrue(new File(nodeModulesPath,
-                FLOW_NPM_PACKAGE_NAME + "ExampleConnector.js").exists());
+        assertTrue(
+                new File(
+                        new File(
+                                new File(frontendDirectory,
+                                        FrontendUtils.GENERATED),
+                                FrontendUtils.JAR_RESOURCES_FOLDER),
+                        "ExampleConnector.js").exists());
 
         new File(frontendDirectory, "extra-javascript.js").createNewFile();
         new File(frontendDirectory, "extra-css.css").createNewFile();
@@ -117,14 +121,18 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         JsonObject fallBackData = Json.createObject();
 
+        Options options = new Options(Mockito.mock(Lookup.class), tmpRoot)
+                .withGeneratedFolder(generatedPath)
+                .withFrontendDirectory(frontendDirectory)
+                .withTokenFile(tokenFile).populateTokenFileData(fallBackData)
+                .withBuildDirectory(TARGET).withProductionMode(true);
+
         updater = new TaskUpdateImports(classFinder,
                 new FrontendDependenciesScannerFactory().createScanner(false,
                         classFinder, true),
                 finder -> new FrontendDependenciesScannerFactory()
                         .createScanner(true, finder, true),
-                tmpRoot, generatedPath, frontendDirectory, tokenFile,
-                fallBackData, false, TARGET, true, false,
-                Mockito.mock(FeatureFlags.class)) {
+                options) {
             @Override
             Logger log() {
                 return logger;
@@ -148,12 +156,12 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         // Contains CSS import lines
         MatcherAssert.assertThat(mainContent, CoreMatchers.containsString(
-                "import $cssFromFile_0 from '@vaadin/vaadin-mixed-component/bar.css';"));
+                "import $cssFromFile_0 from '@vaadin/vaadin-mixed-component/bar.css?inline';"));
         MatcherAssert.assertThat(mainContent, CoreMatchers
                 .containsString("addCssBlock(`<style>${$css_0}</style>`);"));
 
         MatcherAssert.assertThat(mainContent, CoreMatchers.containsString(
-                "import $cssFromFile_5 from 'Frontend/foo.css';"));
+                "import $cssFromFile_5 from 'Frontend/foo.css?inline';"));
         MatcherAssert.assertThat(mainContent, CoreMatchers.containsString(
                 "registerStyles('foo-bar', $css_5, {moduleId: 'flow_css_mod_5'});"));
 
@@ -201,7 +209,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         // Does not contains CSS import lines
         MatcherAssert.assertThat(fallBackContent,
                 CoreMatchers.not(CoreMatchers.containsString(
-                        "import $cssFromFile_0 from '@vaadin/vaadin-mixed-component/bar.css';")));
+                        "import $cssFromFile_0 from '@vaadin/vaadin-mixed-component/bar.css?inline';")));
 
         // Contain lines to import exported modules from main file
         MatcherAssert.assertThat(fallBackContent, CoreMatchers.containsString(
@@ -209,7 +217,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         // Contains CSS import lines from CP not discovered by byte scanner
         MatcherAssert.assertThat(fallBackContent, CoreMatchers.containsString(
-                "import $cssFromFile_0 from 'Frontend/b-css.css';"));
+                "import $cssFromFile_0 from 'Frontend/b-css.css?inline';"));
         MatcherAssert.assertThat(fallBackContent, CoreMatchers.containsString(
                 "registerStyles('extra-foo', $css_2, {include: 'extra-bar', moduleId: 'fallback_flow_css_mod_2'});"));
 
@@ -256,13 +264,17 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 new URLClassLoader(getClassPath()),
                 EmptyByteScannerDataTestComponents.class.getDeclaredClasses());
 
+        Options options = new Options(Mockito.mock(Lookup.class), tmpRoot)
+                .withGeneratedFolder(generatedPath)
+                .withFrontendDirectory(frontendDirectory)
+                .withTokenFile(tokenFile).withBuildDirectory(TARGET)
+                .withProductionMode(true);
         updater = new TaskUpdateImports(classFinder,
                 new FrontendDependenciesScannerFactory().createScanner(false,
                         classFinder, true),
                 finder -> new FrontendDependenciesScannerFactory()
                         .createScanner(true, finder, true),
-                tmpRoot, generatedPath, frontendDirectory, tokenFile, null,
-                false, TARGET, true, false, Mockito.mock(FeatureFlags.class)) {
+                options) {
             @Override
             Logger log() {
                 return logger;
@@ -304,7 +316,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         // Contains CSS import lines from CP not discovered by byte
         // scanner
         MatcherAssert.assertThat(fallBackContent, CoreMatchers.containsString(
-                "import $cssFromFile_0 from 'Frontend/foo.css';"));
+                "import $cssFromFile_0 from 'Frontend/foo.css?inline';"));
         MatcherAssert.assertThat(fallBackContent, CoreMatchers.containsString(
                 "registerStyles('', $css_0, {include: 'bar', moduleId: 'baz'});"));
 
@@ -316,7 +328,7 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         // Contains Javascript imports
         MatcherAssert.assertThat(fallBackContent, CoreMatchers.containsString(
-                "import '@vaadin/flow-frontend/ExampleConnector.js';"));
+                "import 'Frontend/generated/jar-resources/ExampleConnector.js';"));
     }
 
     @Test
@@ -328,12 +340,16 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 new URLClassLoader(getClassPath()),
                 classes.toArray(Class<?>[]::new));
 
-        updater = new TaskUpdateImports(classFinder,
-                new FrontendDependenciesScannerFactory().createScanner(false,
-                        classFinder, true),
-                finder -> null, tmpRoot, generatedPath, frontendDirectory,
-                tokenFile, null, false, TARGET, true, false,
-                Mockito.mock(FeatureFlags.class)) {
+        Options options = new Options(Mockito.mock(Lookup.class), tmpRoot)
+                .withGeneratedFolder(generatedPath)
+                .withFrontendDirectory(frontendDirectory)
+                .withTokenFile(tokenFile).withBuildDirectory(TARGET)
+                .withProductionMode(true);
+
+        updater = new TaskUpdateImports(
+                classFinder, new FrontendDependenciesScannerFactory()
+                        .createScanner(false, classFinder, true),
+                finder -> null, options) {
             @Override
             Logger log() {
                 return logger;
@@ -374,12 +390,15 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
         fallBackImportsFile.createNewFile();
         Assert.assertTrue(fallBackImportsFile.exists());
 
-        updater = new TaskUpdateImports(classFinder,
-                new FrontendDependenciesScannerFactory().createScanner(false,
-                        classFinder, true),
-                finder -> null, tmpRoot, generatedPath, frontendDirectory,
-                tokenFile, null, false, TARGET, true, false,
-                Mockito.mock(FeatureFlags.class)) {
+        Options options = new Options(Mockito.mock(Lookup.class), tmpRoot)
+                .withGeneratedFolder(generatedPath)
+                .withFrontendDirectory(frontendDirectory)
+                .withTokenFile(tokenFile).withBuildDirectory(TARGET)
+                .withProductionMode(true);
+        updater = new TaskUpdateImports(
+                classFinder, new FrontendDependenciesScannerFactory()
+                        .createScanner(false, classFinder, true),
+                finder -> null, options) {
             @Override
             Logger log() {
                 return logger;
@@ -408,15 +427,18 @@ public class NodeUpdateImportsTest extends NodeUpdateTestUtil {
                 classes.toArray(Class<?>[]::new));
 
         JsonObject fallBackData = Json.createObject();
+        Options options = new Options(Mockito.mock(Lookup.class), tmpRoot)
+                .withGeneratedFolder(generatedPath)
+                .withFrontendDirectory(frontendDirectory)
+                .withTokenFile(tokenFile).populateTokenFileData(fallBackData)
+                .withBuildDirectory(TARGET).withProductionMode(true);
 
         updater = new TaskUpdateImports(classFinder,
                 new FrontendDependenciesScannerFactory().createScanner(false,
                         classFinder, true),
                 finder -> new FrontendDependenciesScannerFactory()
                         .createScanner(true, finder, true),
-                tmpRoot, generatedPath, frontendDirectory, tokenFile,
-                fallBackData, false, TARGET, true, false,
-                Mockito.mock(FeatureFlags.class)) {
+                options) {
             @Override
             Logger log() {
                 return logger;

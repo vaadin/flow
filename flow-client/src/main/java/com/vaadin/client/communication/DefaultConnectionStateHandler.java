@@ -331,18 +331,7 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
         endRequest();
 
         String responseText = xhrConnectionError.getXhr().getResponseText();
-        /*
-         * A servlet filter or equivalent may have intercepted the request and
-         * served non-UIDL content (for instance, a login page if the session
-         * has expired.) If the response contains a magic substring, do a
-         * synchronous refresh. See #8241.
-         */
-        MatchResult refreshToken = RegExp
-                .compile(UIDL_REFRESH_TOKEN + "(:\\s*(.*?))?(\\s|$)")
-                .exec(responseText);
-        if (refreshToken != null) {
-            WidgetUtil.redirect(refreshToken.getGroup(2));
-        } else {
+        if (!redirectIfRefreshToken(responseText)) {
             handleUnrecoverableCommunicationError(
                     "Invalid JSON response from server: " + responseText,
                     xhrConnectionError);
@@ -361,10 +350,10 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
             endRequest();
         }
 
-        // Do nothing special for now. Should likely do the same as
-        // xhrInvalidContent
-        handleUnrecoverableCommunicationError(
-                "Invalid JSON from server: " + message, null);
+        if (!redirectIfRefreshToken(message)) {
+            handleUnrecoverableCommunicationError(
+                    "Invalid JSON from server: " + message, null);
+        }
 
     }
 
@@ -535,6 +524,24 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
     private void resumeHeartbeats() {
         registry.getHeartbeat().setInterval(
                 registry.getApplicationConfiguration().getHeartbeatInterval());
+    }
+
+    private boolean redirectIfRefreshToken(String message) {
+        /*
+         * A servlet filter or equivalent may have intercepted the request and
+         * served non-UIDL content (for instance, a login page if the session
+         * has expired.) If the response contains a magic substring, do a
+         * synchronous refresh. See #8241.
+         */
+        MatchResult refreshToken = RegExp
+                .compile(UIDL_REFRESH_TOKEN + "(:\\s*(.*?))?(\\s|$)")
+                .exec(message);
+        if (refreshToken != null) {
+            WidgetUtil.redirect(refreshToken.getGroup(2));
+            return true;
+        }
+
+        return false;
     }
 
     private void registerConnectionStateEventHandlers() {

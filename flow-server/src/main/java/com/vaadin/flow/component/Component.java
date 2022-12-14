@@ -16,6 +16,8 @@
 package com.vaadin.flow.component;
 
 import java.io.Serializable;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
@@ -366,6 +368,20 @@ public abstract class Component
     }
 
     /**
+     * Returns all listeners that match or extend the given event type.
+     *
+     * @param eventType
+     *            the component event type
+     * @return A collection with all registered listeners for a given event
+     *         type. Empty if no listeners are found.
+     */
+    protected Collection<?> getListeners(
+            Class<? extends ComponentEvent> eventType) {
+        return eventBus != null ? eventBus.getListeners(eventType)
+                : Collections.emptyList();
+    }
+
+    /**
      * Dispatches the event to all listeners registered for the event type.
      *
      * @see ComponentUtil#fireEvent(Component, ComponentEvent)
@@ -606,6 +622,26 @@ public abstract class Component
     }
 
     /**
+     * Get the translation for the component locale.
+     * <p>
+     * The method never returns a null. If there is no {@link I18NProvider}
+     * available or no translation for the {@code key} it returns an exception
+     * string e.g. '!{key}!'.
+     *
+     * @see #getLocale()
+     *
+     * @param key
+     *            translation key
+     * @param params
+     *            parameters used in translation string
+     * @return translation for key if found (implementation should not return
+     *         null)
+     */
+    public String getTranslation(Object key, Object... params) {
+        return getTranslation(key, getLocale(), params);
+    }
+
+    /**
      * Get the translation for key with given locale.
      * <p>
      * The method never returns a null. If there is no {@link I18NProvider}
@@ -637,6 +673,31 @@ public abstract class Component
      * available or no translation for the {@code key} it returns an exception
      * string e.g. '!{key}!'.
      *
+     * @param key
+     *            translation key
+     * @param locale
+     *            locale to use
+     * @param params
+     *            parameters used in translation string
+     * @return translation for key if found
+     * @deprecated Use {@link #getTranslation(Locale, String, Object...)}
+     *             instead
+     */
+    @Deprecated
+    public String getTranslation(Object key, Locale locale, Object... params) {
+        if (getI18NProvider() == null) {
+            return "!{" + key + "}!";
+        }
+        return getI18NProvider().getTranslation(key, locale, params);
+    }
+
+    /**
+     * Get the translation for key with given locale.
+     * <p>
+     * The method never returns a null. If there is no {@link I18NProvider}
+     * available or no translation for the {@code key} it returns an exception
+     * string e.g. '!{key}!'.
+     *
      * @param locale
      *            locale to use
      * @param key
@@ -646,6 +707,25 @@ public abstract class Component
      * @return translation for key if found
      */
     public String getTranslation(Locale locale, String key, Object... params) {
+        return getTranslation(key, locale, params);
+    }
+
+    /**
+     * Get the translation for key with given locale.
+     * <p>
+     * The method never returns a null. If there is no {@link I18NProvider}
+     * available or no translation for the {@code key} it returns an exception
+     * string e.g. '!{key}!'.
+     *
+     * @param locale
+     *            locale to use
+     * @param key
+     *            translation key
+     * @param params
+     *            parameters used in translation string
+     * @return translation for key if found
+     */
+    public String getTranslation(Locale locale, Object key, Object... params) {
         return getTranslation(key, locale, params);
     }
 
@@ -667,7 +747,13 @@ public abstract class Component
         UI currentUi = UI.getCurrent();
         Locale locale = currentUi == null ? null : currentUi.getLocale();
         if (locale == null) {
-            List<Locale> locales = getI18NProvider().getProvidedLocales();
+            final I18NProvider i18NProvider = getI18NProvider();
+            // If a i18nProvider is not defined we should just return the
+            // default locale.
+            if (i18NProvider == null) {
+                return Locale.getDefault();
+            }
+            List<Locale> locales = i18NProvider.getProvidedLocales();
             if (locales != null && !locales.isEmpty()) {
                 locale = locales.get(0);
             } else {
@@ -686,28 +772,34 @@ public abstract class Component
     }
 
     /**
-     * Traverses the component tree up and returns the first component that
-     * matches the given type.
+     * Traverses the component tree up and returns the first ancestor component
+     * that matches the given type.
      *
      * @param componentType
-     *            the class of the component to search for
-     * @return the component as Optional or empty Optional if a parent of given
-     *         type is not found
+     *            the class of the ancestor component to search for
+     * @return The first ancestor that can be assigned to the given class. Null
+     *         if no ancestor with the correct type could be found.
      * @param <T>
-     *            the type of the component to return
+     *            the type of the ancestor component to return
      */
-    @SuppressWarnings("unchecked")
-    public <T> Optional<T> findAncestor(Class<T> componentType) {
-        Optional<Component> parent = getParent();
-        while (parent.isPresent()) {
-            Component component = parent.get();
-            if (componentType.isAssignableFrom(component.getClass())) {
-                return Optional.of((T) component);
+    public <T> T findAncestor(Class<T> componentType) {
+        Optional<Component> optionalParent = getParent();
+        while (optionalParent.isPresent()) {
+            Component parent = optionalParent.get();
+            if (componentType.isAssignableFrom(parent.getClass())) {
+                return componentType.cast(parent);
             } else {
-                parent = component.getParent();
+                optionalParent = parent.getParent();
             }
         }
-        return Optional.empty();
+        return null;
+    }
+
+    /**
+     * Removes the component from its parent.
+     */
+    public void removeFromParent() {
+        getElement().removeFromParent();
     }
 
 }

@@ -11,6 +11,8 @@ import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.core.env.Environment;
 import org.springframework.test.context.TestPropertySource;
 
+import com.vaadin.flow.server.Constants;
+
 @SpringBootTest(classes = SpringBootAutoConfiguration.class)
 @TestPropertySource(properties = { "vaadin.urlMapping = /zing/*" })
 public class SpringBootAutoConfigurationUrlMappedTest {
@@ -24,9 +26,10 @@ public class SpringBootAutoConfigurationUrlMappedTest {
     public void urlMappingPassedToAtmosphere() {
         Assert.assertFalse(RootMappedCondition
                 .isRootMapping(RootMappedCondition.getUrlMapping(environment)));
-        Assert.assertEquals(Set.of("/zing/*", "/VAADIN/*"),
+        Assert.assertEquals(Set.of("/zing/*"),
                 servletRegistrationBean.getUrlMappings());
-        Assert.assertEquals("/zing", servletRegistrationBean.getInitParameters()
-                .get(ApplicationConfig.JSR356_MAPPING_PATH));
+        Assert.assertEquals("/zing/" + Constants.PUSH_MAPPING,
+                servletRegistrationBean.getInitParameters()
+                        .get(ApplicationConfig.JSR356_MAPPING_PATH));
     }
 }

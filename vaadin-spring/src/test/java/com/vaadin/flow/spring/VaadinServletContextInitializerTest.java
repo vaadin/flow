@@ -1,8 +1,8 @@
 package com.vaadin.flow.spring;
 
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -147,6 +147,8 @@ public class VaadinServletContextInitializerTest {
         VaadinServletContextInitializer initializer = getStubbedVaadinServletContextInitializer();
         Runnable when = initRouteNotFoundMocksAndGetContextInitializedMockCall(
                 initializer);
+        Mockito.when(devModeHandlerManager.getHandlesTypes())
+                .thenReturn(new Class<?>[0]);
 
         class TestErrorView extends RouteNotFoundError {
         }
@@ -175,6 +177,8 @@ public class VaadinServletContextInitializerTest {
         VaadinServletContextInitializer initializer = getStubbedVaadinServletContextInitializer();
         Runnable when = initRouteNotFoundMocksAndGetContextInitializedMockCall(
                 initializer);
+        Mockito.when(devModeHandlerManager.getHandlesTypes())
+                .thenReturn(new Class<?>[0]);
 
         class TestErrorView extends Component
                 implements HasErrorParameter<NotFoundException> {

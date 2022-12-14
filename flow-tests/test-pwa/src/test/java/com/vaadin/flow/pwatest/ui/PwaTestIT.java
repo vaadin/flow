@@ -28,15 +28,14 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.zip.GZIPInputStream;
 
+import org.brotli.dec.BrotliInputStream;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.mobile.NetworkConnection;
 
 import com.vaadin.flow.testutil.ChromeDeviceTest;
 
@@ -124,9 +123,22 @@ public class PwaTestIT extends ChromeDeviceTest {
         assertExists(serviceWorkerUrl);
 
         String serviceWorkerJS = readStringFromUrl(serviceWorkerUrl);
+
+        // For Vite search for the precache file as it is loaded at runtime
+        // and not compiled into sw.js during build
+        Assert.assertTrue(
+                "Expected sw-runtime-resources-precache.js to be imported, but was not",
+                serviceWorkerJS.contains(
+                        "importScripts(\"sw-runtime-resources-precache.js\");"));
+
+        serviceWorkerUrl = getRootURL() + "/sw-runtime-resources-precache.js";
+        serviceWorkerJS = readStringFromUrl(serviceWorkerUrl);
+        System.out.println(serviceWorkerJS);
+
         // parse the precache resources (the app bundles) from service worker JS
-        pattern = Pattern
-                .compile("\\{'revision':('[^']+'|null),'url':'([^']+)'}");
+        pattern = Pattern.compile(
+                "\\{ url: '([^']+)', revision: ('[^']+'|null) }",
+                Pattern.MULTILINE);
         matcher = pattern.matcher(serviceWorkerJS);
         ArrayList<String> precacheUrls = new ArrayList<>();
         while (matcher.find()) {
@@ -134,17 +146,18 @@ public class PwaTestIT extends ChromeDeviceTest {
         }
         Assert.assertFalse("Expected at least one precache URL",
                 precacheUrls.isEmpty());
-        Assert.assertTrue("Expected precached appshell",
+        // Vite does not precache appshell if there's an offline path configured
+        Assert.assertFalse("Expected appshell not to be precached",
                 precacheUrls.contains("."));
         checkResources(precacheUrls.toArray(new String[] {}));
         checkResources("yes.png", "offline.html");
     }
 
     @Test
-    public void testPwaResourcesOffline() throws IOException {
+    public void testPwaResourcesOffline() {
         open();
         waitForServiceWorkerReady();
-        setConnectionType(NetworkConnection.ConnectionType.AIRPLANE_MODE);
+        getDevTools().setOfflineEnabled(true);
         try {
             // Ensure we are offline
             Assert.assertEquals("navigator.onLine should be false", false,
@@ -156,12 +169,12 @@ public class PwaTestIT extends ChromeDeviceTest {
             // not all icons are precached.
             checkResources("icons/icon-32x32.png", "yes.png", "offline.html");
         } finally {
-            setConnectionType(NetworkConnection.ConnectionType.ALL);
+            getDevTools().setOfflineEnabled(false);
         }
     }
 
     @Test
-    public void testPwaOfflinePath() throws IOException {
+    public void testPwaOfflinePath() {
         open();
         waitForServiceWorkerReady();
 
@@ -170,7 +183,7 @@ public class PwaTestIT extends ChromeDeviceTest {
                 findElement(By.id("outlet")));
 
         // Set offline network conditions in ChromeDriver
-        setConnectionType(NetworkConnection.ConnectionType.AIRPLANE_MODE);
+        getDevTools().setOfflineEnabled(true);
 
         try {
             Assert.assertEquals("navigator.onLine should be false", false,
@@ -205,7 +218,7 @@ public class PwaTestIT extends ChromeDeviceTest {
                     message.getText().toLowerCase().contains("offline"));
         } finally {
             // Reset network conditions back
-            setConnectionType(NetworkConnection.ConnectionType.ALL);
+            getDevTools().setOfflineEnabled(false);
         }
     }
 
@@ -219,9 +232,9 @@ public class PwaTestIT extends ChromeDeviceTest {
         Assume.assumeTrue(isProductionMode());
 
         byte[] uncompressed = readBytesFromUrl(getRootURL() + "/sw.js");
-        byte[] compressed = readBytesFromUrl(getRootURL() + "/sw.js.gz");
+        byte[] compressed = readBytesFromUrl(getRootURL() + "/sw.js.br");
         byte[] decompressed = readAllBytes(
-                new GZIPInputStream(new ByteArrayInputStream(compressed)));
+                new BrotliInputStream(new ByteArrayInputStream(compressed)));
         Assert.assertArrayEquals(uncompressed, decompressed);
     }
 

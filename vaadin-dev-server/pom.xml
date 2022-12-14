@@ -5,13 +5,14 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-project</artifactId>
-        <version>23.2-SNAPSHOT</version>
+        <version>24.0-SNAPSHOT</version>
     </parent>
     <artifactId>vaadin-dev-server</artifactId>
     <name>Vaadin Development Mode Server</name>
     <packaging>jar</packaging>
 
     <properties>
+        <surefire.argLine>--add-opens=java.base/java.net=ALL-UNNAMED</surefire.argLine>
     </properties>
 
     <dependencies>
@@ -27,13 +28,17 @@
             <groupId>com.vaadin</groupId>
             <artifactId>license-checker</artifactId>
         </dependency>
-
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>open</artifactId>
+            <version>8.4.0.3</version>
+        </dependency>
 
         <!-- API dependencies -->
 
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
             <scope>provided</scope>
         </dependency>
 

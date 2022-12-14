@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.mixedtest.ui;
 
-import javax.servlet.annotation.WebServlet;
+import jakarta.servlet.annotation.WebServlet;
 
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;

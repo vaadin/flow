@@ -70,6 +70,10 @@ public @interface JsModule {
     /**
      * JavaScript module to load before using the annotated {@link Component} in
      * the browser.
+     * <p>
+     * NOTE: In the case of using JsModule with LitTemplate, the value needs to
+     * point to a real file as it will be copied to the templates folder under
+     * target folder. An exported alias from the package will not work.
      *
      * @return a JavaScript module identifier
      */

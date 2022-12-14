@@ -15,20 +15,23 @@
  */
 package com.vaadin.flow.server;
 
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.Properties;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
-import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -133,25 +136,6 @@ public class DefaultDeploymentConfigurationTest {
     }
 
     @Test
-    public void defaultPushUrl() {
-        Properties initParameters = new Properties();
-        DefaultDeploymentConfiguration config = createDeploymentConfig(
-                initParameters);
-        assertThat(config.getPushURL(), is(""));
-    }
-
-    @Test
-    public void pushUrl() {
-        Properties initParameters = new Properties();
-        initParameters.setProperty(InitParameters.SERVLET_PARAMETER_PUSH_URL,
-                "foo");
-
-        DefaultDeploymentConfiguration config = createDeploymentConfig(
-                initParameters);
-        assertThat(config.getPushURL(), is("foo"));
-    }
-
-    @Test
     public void maxMessageSuspendTimeout_validValue_accepted() {
         Properties initParameters = new Properties();
         initParameters.setProperty(
@@ -206,39 +190,6 @@ public class DefaultDeploymentConfigurationTest {
     }
 
     @Test
-    public void useV14Bootstrap_v14ModeIsSetViaParentOnly_v14ModeIsTakenFromParent() {
-        ApplicationConfiguration appConfig = setupAppConfig();
-        Mockito.when(appConfig.useV14Bootstrap()).thenReturn(true);
-
-        // Note: application configuration doesn't contain production mode
-        // parameter !
-        Assert.assertNull(appConfig.getStringProperty(
-                InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP, null));
-
-        DefaultDeploymentConfiguration config = createDeploymentConfig(
-                appConfig, new Properties());
-        Assert.assertTrue(config.useV14Bootstrap());
-        Assert.assertTrue(config.getProperties().isEmpty());
-    }
-
-    @Test
-    public void useV14Bootstrap_v14ModeIsSetViaParentOnlyAndViaParent_v14ModeIsTakenFromParent() {
-        ApplicationConfiguration appConfig = setupAppConfig();
-        Mockito.when(appConfig.useV14Bootstrap()).thenReturn(true);
-
-        Properties initParameters = new Properties();
-        initParameters.setProperty(
-                InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP,
-                Boolean.TRUE.toString());
-
-        DefaultDeploymentConfiguration config = createDeploymentConfig(
-                appConfig, initParameters);
-        // the deployment configuration parameter takes precedence over parent
-        // config
-        Assert.assertTrue(config.useV14Bootstrap());
-    }
-
-    @Test
     public void isXsrfProtectionEnabled_valueIsSetViaParentOnly_valueIsTakenFromParent() {
         ApplicationConfiguration appConfig = setupAppConfig();
         Mockito.when(appConfig.isXsrfProtectionEnabled()).thenReturn(true);
@@ -270,6 +221,25 @@ public class DefaultDeploymentConfigurationTest {
         // the deployment configuration parameter takes precedence over parent
         // config
         Assert.assertTrue(config.isXsrfProtectionEnabled());
+    }
+
+    @Test
+    public void enableDevServerParameter_expressBuildFeatureFlagIsON_resetsEnableDevServerToFalse() {
+        FeatureFlags featureFlags = Mockito.mock(FeatureFlags.class);
+        Mockito.when(featureFlags.isEnabled(FeatureFlags.EXPRESS_BUILD))
+                .thenReturn(true);
+
+        try (MockedStatic<FeatureFlags> featureFlagsStatic = Mockito
+                .mockStatic(FeatureFlags.class)) {
+            featureFlagsStatic.when(() -> FeatureFlags.get(context))
+                    .thenReturn(featureFlags);
+            DefaultDeploymentConfiguration config = createDeploymentConfig(
+                    new Properties());
+            Assert.assertFalse(
+                    "Expected dev server to be disabled when the "
+                            + "Express Build feature flag is ON",
+                    config.enableDevServer());
+        }
     }
 
     private DefaultDeploymentConfiguration createDeploymentConfig(

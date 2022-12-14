@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.spring.test.routescope;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.stereotype.Component;

@@ -15,6 +15,12 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.Constants.PACKAGE_LOCK_JSON;
+import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
+import static elemental.json.impl.JsonUtil.stringify;
+import static java.nio.charset.StandardCharsets.UTF_8;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -47,15 +53,6 @@ import elemental.json.Json;
 import elemental.json.JsonException;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
-
-import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
-import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.Constants.PACKAGE_LOCK_JSON;
-import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
-import static elemental.json.impl.JsonUtil.stringify;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Base abstract class for frontend updaters that needs to be run when in
@@ -92,37 +89,13 @@ public abstract class NodeUpdater implements FallibleCommand {
     private static final String DEP_LICENSE_DEFAULT = "UNLICENSED";
     private static final String DEP_NAME_KEY = "name";
     private static final String DEP_NAME_DEFAULT = "no-name";
-    private static final String DEP_MAIN_KEY = "main";
+    @Deprecated
     protected static final String DEP_NAME_FLOW_DEPS = "@vaadin/flow-deps";
+    @Deprecated
     protected static final String DEP_NAME_FLOW_JARS = "@vaadin/flow-frontend";
-    private static final String DEP_MAIN_VALUE = "index";
-    private static final String DEP_VERSION_KEY = "version";
-    private static final String DEP_VERSION_DEFAULT = "1.0.0";
-    private static final String ROUTER_VERSION = "1.7.4";
-    protected static final String POLYMER_VERSION = "3.5.1";
 
     static final String VAADIN_VERSION = "vaadinVersion";
-
-    /**
-     * Base directory for {@link Constants#PACKAGE_JSON},
-     * {@link FrontendUtils#WEBPACK_CONFIG}, {@link FrontendUtils#NODE_MODULES}.
-     */
-    protected final File npmFolder;
-
-    /**
-     * The path to the {@link FrontendUtils#NODE_MODULES} directory.
-     */
-    protected final File nodeModulesFolder;
-
-    /**
-     * Base directory for flow generated files.
-     */
-    protected final File generatedFolder;
-
-    /**
-     * Base directory for flow dependencies coming from jars.
-     */
-    protected final File flowResourcesFolder;
+    static final String PROJECT_FOLDER = "projectFolder";
 
     /**
      * The {@link FrontendDependencies} object representing the application
@@ -130,18 +103,16 @@ public abstract class NodeUpdater implements FallibleCommand {
      */
     protected final FrontendDependenciesScanner frontDeps;
 
-    protected String buildDir;
-
     final ClassFinder finder;
 
     boolean modified;
-
-    FeatureFlags featureFlags;
 
     /**
      * path to the versions.json file
      */
     String versionsPath;
+
+    protected Options options;
 
     /**
      * Constructor.
@@ -150,37 +121,22 @@ public abstract class NodeUpdater implements FallibleCommand {
      *            a reusable class finder
      * @param frontendDependencies
      *            a reusable frontend dependencies
-     * @param npmFolder
-     *            folder with the `package.json` file
-     * @param generatedPath
-     *            folder where flow generated files will be placed.
-     * @param flowResourcesPath
-     *            folder where flow dependencies will be copied to.
-     * @param buildDir
-     *            the used build directory
-     * @param featureFlags
-     *            FeatureFlags for this build
+     * @param options
+     *            the task options
      */
     protected NodeUpdater(ClassFinder finder,
-            FrontendDependenciesScanner frontendDependencies, File npmFolder,
-            File generatedPath, File flowResourcesPath, String buildDir,
-            FeatureFlags featureFlags) {
-        this.frontDeps = frontendDependencies;
+            FrontendDependenciesScanner frontendDependencies, Options options) {
         this.finder = finder;
-        this.npmFolder = npmFolder;
-        this.nodeModulesFolder = new File(npmFolder, NODE_MODULES);
-        this.generatedFolder = generatedPath;
-        this.flowResourcesFolder = flowResourcesPath;
-        this.buildDir = buildDir;
-        this.featureFlags = featureFlags;
+        this.frontDeps = frontendDependencies;
+        this.options = options;
     }
 
     protected File getPackageJsonFile() {
-        return new File(npmFolder, PACKAGE_JSON);
+        return new File(options.getNpmFolder(), PACKAGE_JSON);
     }
 
     protected File getPackageLockFile() {
-        return new File(npmFolder, PACKAGE_LOCK_JSON);
+        return new File(options.getNpmFolder(), PACKAGE_LOCK_JSON);
     }
 
     /**
@@ -260,33 +216,6 @@ public abstract class NodeUpdater implements FallibleCommand {
                 .collect(Collectors.toSet());
     }
 
-    String resolveResource(String importPath) {
-        String resolved = importPath;
-        if (!importPath.startsWith("@")) {
-
-            // We only should check here those paths starting with './' when all
-            // flow components
-            // have the './' prefix
-            String resource = resolved.replaceFirst("^\\./+", "");
-            if (hasMetaInfResource(resource)) {
-                if (!resolved.startsWith("./")) {
-                    log().warn(
-                            "Use the './' prefix for files in JAR files: '{}', please update your component.",
-                            importPath);
-                }
-                resolved = FLOW_NPM_PACKAGE_NAME + resource;
-            }
-        }
-        return resolved;
-    }
-
-    private boolean hasMetaInfResource(String resource) {
-        return finder.getResource(
-                RESOURCES_FRONTEND_DEFAULT + "/" + resource) != null
-                || finder.getResource(COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT
-                        + "/" + resource) != null;
-    }
-
     JsonObject getPackageJson() throws IOException {
         JsonObject packageJson = getJsonFileContent(getPackageJsonFile());
         if (packageJson == null) {
@@ -308,8 +237,9 @@ public abstract class NodeUpdater implements FallibleCommand {
     }
 
     private void removeWebpackPlugins(JsonObject packageJson) {
-        Path targetFolder = Paths.get(npmFolder.toString(), buildDir,
-                WebpackPluginsUtil.PLUGIN_TARGET);
+        Path targetFolder = Paths.get(options.getNpmFolder().toString(),
+                options.getBuildDirectoryName(),
+                FrontendPluginsUtil.PLUGIN_TARGET);
 
         if (!packageJson.hasKey(DEV_DEPENDENCIES)) {
             return;
@@ -318,8 +248,8 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         String atVaadinPrefix = "@vaadin/";
         String pluginTargetPrefix = "./"
-                + (npmFolder.toPath().relativize(targetFolder) + "/")
-                        .replace('\\', '/');
+                + (options.getNpmFolder().toPath().relativize(targetFolder)
+                        + "/").replace('\\', '/');
 
         // Clean previously installed plugins
         for (String depKey : devDependencies.keys()) {
@@ -329,19 +259,6 @@ public abstract class NodeUpdater implements FallibleCommand {
                 devDependencies.remove(depKey);
             }
         }
-    }
-
-    JsonObject getResourcesPackageJson() throws IOException {
-        JsonObject packageJson = getJsonFileContent(
-                new File(flowResourcesFolder, PACKAGE_JSON));
-        if (packageJson == null) {
-            packageJson = Json.createObject();
-            packageJson.put(DEP_NAME_KEY, DEP_NAME_FLOW_JARS);
-            packageJson.put(DEP_LICENSE_KEY, DEP_LICENSE_DEFAULT);
-            packageJson.put(DEP_MAIN_KEY, DEP_MAIN_VALUE);
-            packageJson.put(DEP_VERSION_KEY, DEP_VERSION_DEFAULT);
-        }
-        return packageJson;
     }
 
     static JsonObject getJsonFileContent(File packageFile) throws IOException {
@@ -387,64 +304,48 @@ public abstract class NodeUpdater implements FallibleCommand {
     }
 
     Map<String, String> getDefaultDependencies() {
-        Map<String, String> defaults = new HashMap<>();
+        return readDependencies("default", "dependencies");
+    }
 
-        defaults.put("@vaadin/router", ROUTER_VERSION);
+    private Map<String, String> readDependencies(String id,
+            String packageJsonKey) {
+        try {
+            Map<String, String> map = new HashMap<>();
+            JsonObject dependencies = readPackageJson(id)
+                    .getObject(packageJsonKey);
+            for (String key : dependencies.keys()) {
+                map.put(key, dependencies.getString(key));
+            }
 
-        defaults.put("@polymer/polymer", POLYMER_VERSION);
+            return map;
+        } catch (IOException e) {
+            log().error(
+                    "Unable to read " + packageJsonKey + " from '" + id + "'",
+                    e);
+            return new HashMap<>();
+        }
 
-        defaults.put("lit", "2.2.6");
+    }
 
-        // Constructable style sheets is only implemented for chrome,
-        // polyfill needed for FireFox et.al. at the moment
-        defaults.put("construct-style-sheets-polyfill", "3.1.0");
+    private JsonObject readPackageJson(String id) throws IOException {
+        try (InputStream packageJson = getClass()
+                .getResourceAsStream("dependencies/" + id + "/package.json")) {
+            JsonObject content = Json.parse(
+                    IOUtils.toString(packageJson, StandardCharsets.UTF_8));
+            return content;
+        }
 
-        defaults.put("@vaadin/common-frontend", "0.0.17");
-
-        return defaults;
     }
 
     Map<String, String> getDefaultDevDependencies() {
         Map<String, String> defaults = new HashMap<>();
+        defaults.putAll(readDependencies("default", "devDependencies"));
 
-        defaults.put("typescript", "4.7.4");
-
-        final String WORKBOX_VERSION = "6.5.0";
-
-        if (featureFlags.isEnabled(FeatureFlags.VITE)) {
-            defaults.put("vite", "v2.9.13");
-            defaults.put("@rollup/plugin-replace", "3.1.0");
-            defaults.put("rollup-plugin-brotli", "3.1.0");
-            defaults.put("vite-plugin-checker", "0.4.6");
-            defaults.put("mkdirp", "1.0.4"); // for application-theme-plugin
-            defaults.put("workbox-build", WORKBOX_VERSION);
+        if (options.getFeatureFlags().isEnabled(FeatureFlags.WEBPACK)) {
+            defaults.putAll(readDependencies("webpack", "devDependencies"));
         } else {
-            // Webpack plugins and helpers
-            defaults.put("esbuild-loader", "2.19.0");
-            defaults.put("html-webpack-plugin", "4.5.1");
-            defaults.put("fork-ts-checker-webpack-plugin", "6.2.1");
-            defaults.put("webpack", "4.46.0");
-            defaults.put("webpack-cli", "4.10.0");
-            defaults.put("webpack-dev-server", "4.9.2");
-            defaults.put("compression-webpack-plugin", "4.0.1");
-            defaults.put("extra-watch-webpack-plugin", "1.0.3");
-            defaults.put("webpack-merge", "4.2.2");
-            defaults.put("css-loader", "5.2.7");
-            defaults.put("extract-loader", "5.1.0");
-            defaults.put("lit-css-loader", "0.1.0");
-            defaults.put("file-loader", "6.2.0");
-            defaults.put("loader-utils", "2.0.0");
-            defaults.put("workbox-webpack-plugin", WORKBOX_VERSION);
-
-            // Forcing chokidar version for now until new babel version is
-            // available
-            // check out https://github.com/babel/babel/issues/11488
-            defaults.put("chokidar", "^3.5.0");
+            defaults.putAll(readDependencies("vite", "devDependencies"));
         }
-        defaults.put("workbox-core", WORKBOX_VERSION);
-        defaults.put("workbox-precaching", WORKBOX_VERSION);
-        defaults.put("glob", "7.2.3");
-        defaults.put("async", "3.2.2");
 
         return defaults;
     }
@@ -509,6 +410,7 @@ public abstract class NodeUpdater implements FallibleCommand {
 
     private boolean isNewerVersion(JsonObject json, String pkg,
             String version) {
+
         try {
             FrontendVersion newVersion = new FrontendVersion(version);
             FrontendVersion existingVersion = toVersion(json, pkg);
@@ -518,7 +420,13 @@ public abstract class NodeUpdater implements FallibleCommand {
                     .contains(VAADIN_FORM_PKG_LEGACY_VERSION)) {
                 return true;
             } else {
-                throw e;
+                // NPM package versions are not always easy to parse, see
+                // https://docs.npmjs.com/cli/v8/configuring-npm/package-json#dependencies
+                // for some examples. So let's return false for unparsable
+                // versions, as we don't want them to be updated.
+                log().warn("Package {} has unparseable version: {}", pkg,
+                        e.getMessage());
+                return false;
             }
         }
     }
@@ -526,9 +434,10 @@ public abstract class NodeUpdater implements FallibleCommand {
     private int handleExistingVaadinDep(JsonObject json, String pkg,
             String version, JsonObject vaadinDeps) {
         boolean added = false;
-        FrontendVersion vaadinVersion = toVersion(vaadinDeps, pkg);
-        if (json.hasKey(pkg)) {
-            try {
+        boolean updatedVaadinVersionSection = false;
+        try {
+            FrontendVersion vaadinVersion = toVersion(vaadinDeps, pkg);
+            if (json.hasKey(pkg)) {
                 FrontendVersion packageVersion = toVersion(json, pkg);
                 FrontendVersion newVersion = new FrontendVersion(version);
                 // Vaadin and package.json versions are the same, but dependency
@@ -544,25 +453,28 @@ public abstract class NodeUpdater implements FallibleCommand {
                     json.put(pkg, version);
                     added = true;
                 }
-            } catch (NumberFormatException e) { // NOSONAR
-                /*
-                 * If the current version is not parseable, it can refer to a
-                 * file and we should leave it alone
-                 */
+            } else {
+                json.put(pkg, version);
+                added = true;
             }
-        } else {
-            json.put(pkg, version);
-            added = true;
+        } catch (NumberFormatException e) { // NOSONAR
+            /*
+             * If the current version is not parseable, it can refer to a file
+             * and we should leave it alone
+             */
         }
         // always update vaadin version to the latest set version
-        vaadinDeps.put(pkg, version);
+        if (!version.equals(vaadinDeps.getString(pkg))) {
+            vaadinDeps.put(pkg, version);
+            updatedVaadinVersionSection = true;
+        }
 
         if (added) {
             log().debug("Added \"{}\": \"{}\" line.", pkg, version);
         } else {
             // we made a change to the package json vaadin defaults
             // even if we didn't add to the dependencies.
-            added = !vaadinVersion.isEqualTo(new FrontendVersion(version));
+            added = updatedVaadinVersionSection;
         }
         return added ? 1 : 0;
     }
@@ -572,13 +484,8 @@ public abstract class NodeUpdater implements FallibleCommand {
     }
 
     String writePackageFile(JsonObject packageJson) throws IOException {
-        return writePackageFile(packageJson, new File(npmFolder, PACKAGE_JSON));
-    }
-
-    String writeResourcesPackageFile(JsonObject packageJson)
-            throws IOException {
         return writePackageFile(packageJson,
-                new File(flowResourcesFolder, PACKAGE_JSON));
+                new File(options.getNpmFolder(), PACKAGE_JSON));
     }
 
     String writePackageFile(JsonObject json, File packageFile)
@@ -591,7 +498,8 @@ public abstract class NodeUpdater implements FallibleCommand {
     }
 
     File getVaadinJsonFile() {
-        return new File(nodeModulesFolder, VAADIN_JSON);
+        return new File(new File(options.getNpmFolder(), NODE_MODULES),
+                VAADIN_JSON);
     }
 
     JsonObject getVaadinJsonContents() throws IOException {
@@ -626,12 +534,14 @@ public abstract class NodeUpdater implements FallibleCommand {
      * @throws IOException
      *             when file IO fails
      */
-    protected String generateVersionsJson() throws IOException {
-        File versions = new File(generatedFolder, "versions.json");
+    protected String generateVersionsJson(JsonObject packageJson)
+            throws IOException {
+        File versions = new File(options.getGeneratedFolder(), "versions.json");
 
         JsonObject versionsJson = getPlatformPinnedDependencies();
-        JsonObject packageJsonVersions = generateVersionsFromPackageJson();
-        if (versionsJson == null) {
+        JsonObject packageJsonVersions = generateVersionsFromPackageJson(
+                packageJson);
+        if (versionsJson.keys().length == 0) {
             versionsJson = packageJsonVersions;
         } else {
             for (String key : packageJsonVersions.keys()) {
@@ -644,8 +554,8 @@ public abstract class NodeUpdater implements FallibleCommand {
                 StandardCharsets.UTF_8);
         Path versionsPath = versions.toPath();
         if (versions.isAbsolute()) {
-            return FrontendUtils.getUnixRelativePath(npmFolder.toPath(),
-                    versionsPath);
+            return FrontendUtils.getUnixRelativePath(
+                    options.getNpmFolder().toPath(), versionsPath);
         } else {
             return FrontendUtils.getUnixPath(versionsPath);
         }
@@ -660,10 +570,10 @@ public abstract class NodeUpdater implements FallibleCommand {
      * @throws IOException
      *             If reading package.json fails
      */
-    private JsonObject generateVersionsFromPackageJson() throws IOException {
+    private JsonObject generateVersionsFromPackageJson(JsonObject packageJson)
+            throws IOException {
         JsonObject versionsJson = Json.createObject();
         // if we don't have versionsJson lock package dependency versions.
-        final JsonObject packageJson = getPackageJson();
         final JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
         final JsonObject devDependencies = packageJson
                 .getObject(DEV_DEPENDENCIES);

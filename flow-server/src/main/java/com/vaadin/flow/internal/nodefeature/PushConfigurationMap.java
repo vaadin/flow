@@ -58,7 +58,6 @@ public class PushConfigurationMap extends NodeMap implements PushConfiguration {
     public static final String FALLBACK_TRANSPORT_KEY = "fallbackTransport";
     public static final String PUSHMODE_KEY = "pushMode";
     public static final String ALWAYS_USE_XHR_TO_SERVER = "alwaysXhrToServer";
-    public static final String PUSH_URL_KEY = "pushUrl";
     public static final String PARAMETERS_KEY = "parameters";
 
     /**
@@ -136,16 +135,6 @@ public class PushConfigurationMap extends NodeMap implements PushConfiguration {
     @Override
     public PushMode getPushMode() {
         return PushMode.valueOf(get(PUSHMODE_KEY).toString());
-    }
-
-    @Override
-    public void setPushUrl(String pushUrl) {
-        put(PUSH_URL_KEY, pushUrl);
-    }
-
-    @Override
-    public String getPushUrl() {
-        return getOrDefault(PUSH_URL_KEY, null);
     }
 
     @Override

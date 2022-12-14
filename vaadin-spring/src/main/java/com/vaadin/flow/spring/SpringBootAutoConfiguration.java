@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.spring;
 
-import javax.servlet.MultipartConfigElement;
+import jakarta.servlet.MultipartConfigElement;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,6 +34,9 @@ import org.springframework.context.annotation.Import;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.socket.server.standard.ServerEndpointExporter;
+
+import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.VaadinServlet;
 
 /**
  * Spring boot auto-configuration class for Flow.
@@ -79,28 +82,21 @@ public class SpringBootAutoConfiguration {
         String mapping = configurationProperties.getUrlMapping();
         Map<String, String> initParameters = new HashMap<>();
         boolean rootMapping = RootMappedCondition.isRootMapping(mapping);
-        String[] urlMappings;
-        String pushRegistrationPath;
 
         if (rootMapping) {
             mapping = VaadinServletConfiguration.VAADIN_SERVLET_MAPPING;
-            pushRegistrationPath = "";
-        } else {
-            pushRegistrationPath = mapping.replace("/*", "");
+            initParameters.put(
+                    VaadinServlet.INTERNAL_VAADIN_SERVLET_VITE_DEV_MODE_FRONTEND_PATH,
+                    "");
         }
 
-        urlMappings = new String[] { mapping, "/VAADIN/*" };
-        /*
-         * Tell Atmosphere which servlet to use for the push endpoint. Servlet
-         * mappings are returned as a Set from at least Tomcat so even if
-         * Atmosphere always picks the first, it might end up using /VAADIN/*
-         * and websockets will fail.
-         */
-        initParameters.put(ApplicationConfig.JSR356_MAPPING_PATH,
-                pushRegistrationPath);
+        String pushUrl = rootMapping ? "" : mapping.replace("/*", "");
+        pushUrl += "/" + Constants.PUSH_MAPPING;
+
+        initParameters.put(ApplicationConfig.JSR356_MAPPING_PATH, pushUrl);
 
         ServletRegistrationBean<SpringServlet> registration = new ServletRegistrationBean<>(
-                new SpringServlet(context, rootMapping), urlMappings);
+                new SpringServlet(context, rootMapping), mapping);
         registration.setInitParameters(initParameters);
         registration
                 .setAsyncSupported(configurationProperties.isAsyncSupported());

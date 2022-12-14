@@ -16,6 +16,14 @@
 
 package com.vaadin.flow.server.frontend;
 
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.Constants.TARGET;
+import static com.vaadin.flow.server.frontend.NodeUpdater.DEPENDENCIES;
+import static com.vaadin.flow.server.frontend.NodeUpdater.DEV_DEPENDENCIES;
+import static com.vaadin.flow.server.frontend.NodeUpdater.OVERRIDES;
+import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
+import static com.vaadin.flow.server.frontend.VersionsJsonConverter.VAADIN_CORE_NPM_PACKAGE;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -28,7 +36,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Before;
@@ -40,7 +47,7 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
@@ -48,14 +55,7 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import elemental.json.Json;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
-
-import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.flow.server.frontend.NodeUpdater.DEPENDENCIES;
-import static com.vaadin.flow.server.frontend.NodeUpdater.DEV_DEPENDENCIES;
-import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
-import static com.vaadin.flow.server.frontend.NodeUpdater.OVERRIDES;
-import static com.vaadin.flow.server.frontend.VersionsJsonConverter.VAADIN_CORE_NPM_PACKAGE;
+import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class TaskUpdatePackagesNpmTest {
@@ -387,7 +387,7 @@ public class TaskUpdatePackagesNpmTest {
 
         verifyVersions(PLATFORM_DIALOG_VERSION, expectedElementMixinVersion,
                 null);
-        verifyVersionLockingWithNpmOverrides(false, true, false);
+        verifyVersionLockingWithNpmOverrides(true, true, false);
         final JsonObject packageJson = getOrCreatePackageJson();
         JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
 
@@ -525,6 +525,29 @@ public class TaskUpdatePackagesNpmTest {
                 task.modified);
     }
 
+    @Test
+    public void nonNumericVersionsNotPinned() throws IOException {
+        final JsonObject packageJson = getOrCreatePackageJson();
+        createBasicVaadinVersionsJson();
+        JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
+        dependencies.put("localdep", "./localdeps/localdep");
+        File file = new File(npmFolder, PACKAGE_JSON);
+        FileUtils.writeStringToFile(file, packageJson.toJson(),
+                StandardCharsets.UTF_8);
+
+        Assert.assertFalse(packageJson.hasKey("overrides")
+                && packageJson.getObject("overrides").hasKey("localdep"));
+
+        final TaskUpdatePackages task = createTask(
+                createApplicationDependencies());
+        task.execute();
+
+        final JsonObject newPackageJson = getOrCreatePackageJson();
+
+        Assert.assertFalse(newPackageJson.hasKey("overrides")
+                && newPackageJson.getObject("overrides").hasKey("localdep"));
+    }
+
     private void createBasicVaadinVersionsJson() {
         createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
                 PLATFORM_ELEMENT_MIXIN_VERSION, PLATFORM_OVERLAY_VERSION);
@@ -576,9 +599,12 @@ public class TaskUpdatePackagesNpmTest {
                 .mock(FrontendDependencies.class);
         Mockito.when(frontendDependenciesScanner.getPackages())
                 .thenReturn(applicationDependencies);
+        Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
+                .withGeneratedFolder(generatedPath).withBuildDirectory(TARGET)
+                .enablePnpm(enablePnpm);
+
         return new TaskUpdatePackages(finder, frontendDependenciesScanner,
-                npmFolder, generatedPath, null, false, enablePnpm, TARGET,
-                Mockito.mock(FeatureFlags.class)) {
+                options) {
         };
     }
 

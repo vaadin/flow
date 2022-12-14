@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.spring;
 
-import javax.servlet.ServletContext;
+import jakarta.servlet.ServletContext;
 
 import java.util.HashMap;
 import java.util.Map;

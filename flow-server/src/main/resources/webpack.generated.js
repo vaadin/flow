@@ -174,7 +174,7 @@ const createServiceWorkerPlugin = function () {
 const flowFrontendThemesFolder = path.resolve(flowFrontendFolder, 'themes');
 const themeOptions = {
   devMode: devMode,
-  // The following matches folder 'target/flow-frontend/themes/'
+  // The following matches folder 'frontend/generated/jar-resources/themes/'
   // (not 'frontend/themes') for theme in JAR that is copied there
   themeResourceFolder: flowFrontendThemesFolder,
   themeProjectFolders: themeProjectFolders,
@@ -202,6 +202,11 @@ if (devMode) {
 }
 
 const processThemeResourcesCallback = (logger) => processThemeResources(themeOptions, logger);
+
+function getVersion(module) {
+  const packageJson = `node_modules/${module}/package.json`;
+  return JSON.parse(fs.readFileSync(packageJson, { encoding: 'utf-8' })).version;
+}
 
 exports = {
   frontendFolder: `${frontendFolder}`,
@@ -305,8 +310,8 @@ module.exports = {
                 if (resourcePath.match(/(\\|\/)node_modules\1/)) {
                   return /(\\|\/)node_modules\1(?!.*node_modules)([\S]+)/.exec(resourcePath)[2].replace(/\\/g, '/');
                 }
-                if (resourcePath.match(/(\\|\/)flow-frontend\1/)) {
-                  return /(\\|\/)flow-frontend\1(?!.*flow-frontend)([\S]+)/.exec(resourcePath)[2].replace(/\\/g, '/');
+                if (resourcePath.match(/(\\|\/)generated\1jar-resources\1/)) {
+                  return /(\\|\/)generated\1jar-resources\1(?!.*jar-resources)([\S]+)/.exec(resourcePath)[2].replace(/\\/g, '/');
                 }
                 return '[path][name].[ext]';
               }
@@ -342,6 +347,7 @@ module.exports = {
           .map((module) => module.identifier)
           .filter((id) => id.includes('node_modules'));
         const npmModules = nodeModulesFolders
+          .map((id) => id.replace(/\\/g, '/'))
           .map((id) => id.replace(/.*node_modules./, ''))
           .map((id) => {
             const parts = id.split('/');
@@ -353,10 +359,12 @@ module.exports = {
           })
           .sort()
           .filter((value, index, self) => self.indexOf(value) === index);
+          
+        const npmModuleAndVersion = Object.fromEntries(npmModules.map((module) => [module, getVersion(module)]));
 
         let miniStats = {
           assetsByChunkName: st.assetsByChunkName,
-          npmModules: npmModules
+          npmModules: npmModuleAndVersion
         };
 
         if (!devMode) {

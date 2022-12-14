@@ -17,6 +17,9 @@
 
 package com.vaadin.flow.server.frontend;
 
+import static com.vaadin.flow.server.Constants.TARGET;
+import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -31,7 +34,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
-import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
@@ -40,9 +43,6 @@ import com.vaadin.flow.testutil.FrontendStubs;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FLOW_RESOURCES_FOLDER;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_GENERATED_DIR;
 
 @Category(SlowTests.class)
 public class NodeUpdatePackagesNpmVersionLockingTest
@@ -59,22 +59,15 @@ public class NodeUpdatePackagesNpmVersionLockingTest
 
     private File baseDir;
     private File generatedDir;
-    private File resourcesDir;
 
     private ClassFinder classFinder;
-
-    private FeatureFlags featureFlags;
 
     @Before
     public void setup() throws Exception {
         baseDir = temporaryFolder.getRoot();
 
-        featureFlags = Mockito.mock(FeatureFlags.class);
-
         generatedDir = new File(baseDir,
                 Paths.get(TARGET, DEFAULT_GENERATED_DIR).toString());
-        resourcesDir = new File(baseDir,
-                Paths.get(TARGET, DEFAULT_FLOW_RESOURCES_FOLDER).toString());
 
         FrontendStubs.createStubNode(true, true, baseDir.getAbsolutePath());
 
@@ -103,7 +96,7 @@ public class NodeUpdatePackagesNpmVersionLockingTest
                 PLATFORM_PINNED_DEPENDENCY_VERSION);
         Assert.assertNull(packageJson.getObject(OVERRIDES));
 
-        String versionsPath = packageUpdater.generateVersionsJson();
+        String versionsPath = packageUpdater.generateVersionsJson(packageJson);
         packageUpdater.lockVersionForNpm(packageJson, versionsPath);
 
         Assert.assertEquals("$" + TEST_DEPENDENCY,
@@ -120,7 +113,7 @@ public class NodeUpdatePackagesNpmVersionLockingTest
         Assert.assertNull(
                 packageJson.getObject(DEPENDENCIES).get(TEST_DEPENDENCY));
 
-        String versionsPath = packageUpdater.generateVersionsJson();
+        String versionsPath = packageUpdater.generateVersionsJson(packageJson);
         packageUpdater.lockVersionForNpm(packageJson, versionsPath);
 
         Assert.assertNull(
@@ -139,7 +132,7 @@ public class NodeUpdatePackagesNpmVersionLockingTest
                 USER_PINNED_DEPENDENCY_VERSION);
         overridesSection.put(TEST_DEPENDENCY, USER_PINNED_DEPENDENCY_VERSION);
 
-        String versionsPath = packageUpdater.generateVersionsJson();
+        String versionsPath = packageUpdater.generateVersionsJson(packageJson);
         packageUpdater.lockVersionForNpm(packageJson, versionsPath);
 
         Assert.assertEquals(USER_PINNED_DEPENDENCY_VERSION,
@@ -155,18 +148,49 @@ public class NodeUpdatePackagesNpmVersionLockingTest
                 PLATFORM_PINNED_DEPENDENCY_VERSION);
         Assert.assertNull(packageJson.getObject(OVERRIDES));
 
-        String versionsPath = packageUpdater.generateVersionsJson();
+        String versionsPath = packageUpdater.generateVersionsJson(packageJson);
         packageUpdater.lockVersionForNpm(packageJson, versionsPath);
 
         Assert.assertNull(packageJson.getObject(OVERRIDES));
     }
 
+    @Test
+    public void shouldRemoveUnusedLocking() throws IOException {
+        // Test when there is no vaadin-version-core.json available
+        Mockito.when(
+                classFinder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
+                .thenReturn(null);
+
+        TaskUpdatePackages packageUpdater = createPackageUpdater(true);
+        JsonObject packageJson = packageUpdater.getPackageJson();
+        packageJson.getObject(DEPENDENCIES).put(TEST_DEPENDENCY,
+                PLATFORM_PINNED_DEPENDENCY_VERSION);
+        Assert.assertNull(packageJson.getObject(OVERRIDES));
+
+        String versionsPath = packageUpdater.generateVersionsJson(packageJson);
+        File output = new File(packageUpdater.options.getNpmFolder(),
+                versionsPath);
+        Assert.assertTrue(
+                FileUtils.readFileToString(output, StandardCharsets.UTF_8)
+                        .contains(TEST_DEPENDENCY));
+
+        packageJson.getObject(DEPENDENCIES).remove(TEST_DEPENDENCY);
+
+        packageUpdater.generateVersionsJson(packageJson);
+        Assert.assertFalse(
+                FileUtils.readFileToString(output, StandardCharsets.UTF_8)
+                        .contains(TEST_DEPENDENCY));
+
+    }
+
     private TaskUpdatePackages createPackageUpdater(boolean enablePnpm) {
         FrontendDependenciesScanner scanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
-        return new TaskUpdatePackages(classFinder, scanner, baseDir,
-                generatedDir, resourcesDir, false, enablePnpm, TARGET,
-                featureFlags);
+        Options options = new Options(Mockito.mock(Lookup.class), baseDir)
+                .withGeneratedFolder(generatedDir).enablePnpm(enablePnpm)
+                .withBuildDirectory(TARGET).withProductionMode(true);
+
+        return new TaskUpdatePackages(classFinder, scanner, options);
     }
 
     private TaskUpdatePackages createPackageUpdater() {

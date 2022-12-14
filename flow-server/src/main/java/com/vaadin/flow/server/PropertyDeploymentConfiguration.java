@@ -148,9 +148,6 @@ public class PropertyDeploymentConfiguration
 
     @Override
     public boolean enableDevServer() {
-        if (isOwnProperty(InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER)) {
-            return super.enableDevServer();
-        }
         return parentConfig.enableDevServer();
     }
 
@@ -173,8 +170,7 @@ public class PropertyDeploymentConfiguration
     @Override
     public boolean isUsageStatisticsEnabled() {
         return !isProductionMode() && getBooleanProperty(
-                InitParameters.SERVLET_PARAMETER_DEVMODE_STATISTICS, true)
-                && enableDevServer();
+                InitParameters.SERVLET_PARAMETER_DEVMODE_STATISTICS, true);
     }
 
     @Override
@@ -213,11 +209,6 @@ public class PropertyDeploymentConfiguration
             return super.getBuildFolder();
         }
         return parentConfig.getBuildFolder();
-    }
-
-    @Override
-    public String getFlowResourcesFolder() {
-        return super.getFlowResourcesFolder();
     }
 
     @Override
@@ -262,11 +253,6 @@ public class PropertyDeploymentConfiguration
     }
 
     @Override
-    public String getPushURL() {
-        return "";
-    }
-
-    @Override
     public Properties getInitParameters() {
         return allProperties;
     }
@@ -279,10 +265,8 @@ public class PropertyDeploymentConfiguration
 
     @Override
     public boolean isDevToolsEnabled() {
-        return !isProductionMode()
-                && getBooleanProperty(
-                        SERVLET_PARAMETER_DEVMODE_ENABLE_DEV_TOOLS, true)
-                && enableDevServer(); // dev tools excluded from prod bundle
+        return !isProductionMode() && getBooleanProperty(
+                SERVLET_PARAMETER_DEVMODE_ENABLE_DEV_TOOLS, true);
     }
 
     /**

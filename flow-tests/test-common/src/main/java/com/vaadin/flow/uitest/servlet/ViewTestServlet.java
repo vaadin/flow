@@ -15,15 +15,13 @@
  */
 package com.vaadin.flow.uitest.servlet;
 
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletException;
-import javax.servlet.annotation.WebInitParam;
-import javax.servlet.annotation.WebServlet;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
 
 import com.vaadin.flow.server.VaadinServlet;
 
-@WebServlet(asyncSupported = true, urlPatterns = { "/view/*",
-        "/VAADIN/*" }, initParams = @WebInitParam(name = "productionMode", value = "false"))
+@WebServlet(asyncSupported = true, urlPatterns = { "/view/*" })
 public class ViewTestServlet extends VaadinServlet {
 
     private static ViewClassLocator viewLocator;

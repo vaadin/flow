@@ -39,7 +39,6 @@ import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
 public class DefaultApplicationConfigurationFactoryTest {
@@ -95,7 +94,6 @@ public class DefaultApplicationConfigurationFactoryTest {
         Assert.assertTrue(configuration
                 .getBooleanProperty(Constants.EXTERNAL_STATS_FILE, false));
         Assert.assertFalse(configuration.isProductionMode());
-        Assert.assertFalse(configuration.enableDevServer());
     }
 
     @Test
@@ -114,27 +112,6 @@ public class DefaultApplicationConfigurationFactoryTest {
         Assert.assertTrue(configuration
                 .getBooleanProperty(Constants.EXTERNAL_STATS_FILE, false));
         Assert.assertFalse(configuration.isProductionMode());
-        Assert.assertFalse(configuration.enableDevServer());
-    }
-
-    @Test
-    public void create_tokenFileIsSetViaContext_tokenFileIsReadViaContextProperty_propertiesAreReadFromContext()
-            throws IOException {
-        VaadinContext context = mockTokenFileViaContextParam(
-                "{ '" + SERVLET_PARAMETER_USE_V14_BOOTSTRAP + "':true }");
-
-        DefaultApplicationConfigurationFactory factory = new DefaultApplicationConfigurationFactory();
-        ApplicationConfiguration configuration = factory.create(context);
-
-        List<String> propertyNames = Collections
-                .list(configuration.getPropertyNames());
-        Assert.assertEquals(2, propertyNames.size());
-        Assert.assertEquals(FrontendUtils.PARAM_TOKEN_FILE,
-                propertyNames.get(0));
-        Assert.assertEquals(SERVLET_PARAMETER_USE_V14_BOOTSTRAP,
-                propertyNames.get(1));
-
-        Assert.assertTrue(configuration.useV14Bootstrap());
     }
 
     @Test
@@ -154,7 +131,6 @@ public class DefaultApplicationConfigurationFactoryTest {
         Assert.assertEquals("http://my.server/static/stats.json", configuration
                 .getStringProperty(Constants.EXTERNAL_STATS_URL, null));
         Assert.assertFalse(configuration.isProductionMode());
-        Assert.assertFalse(configuration.enableDevServer());
     }
 
     @Test
@@ -180,7 +156,6 @@ public class DefaultApplicationConfigurationFactoryTest {
         Assert.assertEquals("http://my.server/static/stats.json", configuration
                 .getStringProperty(Constants.EXTERNAL_STATS_URL, null));
         Assert.assertFalse(configuration.isProductionMode());
-        Assert.assertFalse(configuration.enableDevServer());
     }
 
     @Test

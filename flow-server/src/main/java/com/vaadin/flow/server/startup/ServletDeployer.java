@@ -15,12 +15,12 @@
  */
 package com.vaadin.flow.server.startup;
 
-import javax.servlet.Servlet;
-import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletContextEvent;
-import javax.servlet.ServletContextListener;
-import javax.servlet.ServletRegistration;
+import jakarta.servlet.Servlet;
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
+import jakarta.servlet.ServletRegistration;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -217,7 +217,9 @@ public class ServletDeployer implements ServletContextListener {
         if (servletCreation == null || productionMode) {
             // the servlet creation is explicitly disabled or production mode
             // activated - just info
-            logger.info(servletCreationMessage);
+            if (servletCreationMessage != null) {
+                logger.info(servletCreationMessage);
+            }
         } else if (servletCreation == VaadinServletCreation.NO_CREATION) {
             // debug mode and servlet not created for some reason - make it more
             // visible with warning
@@ -336,6 +338,7 @@ public class ServletDeployer implements ServletContextListener {
 
         registration.setAsyncSupported(true);
         registration.addMapping(path);
+        registration.setLoadOnStartup(1);
         return VaadinServletCreation.SERVLET_CREATED;
     }
 

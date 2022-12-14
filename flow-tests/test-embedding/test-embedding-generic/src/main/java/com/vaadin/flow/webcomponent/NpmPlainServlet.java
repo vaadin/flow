@@ -16,7 +16,7 @@
 
 package com.vaadin.flow.webcomponent;
 
-import javax.servlet.annotation.WebServlet;
+import jakarta.servlet.annotation.WebServlet;
 import java.io.PrintWriter;
 import java.util.function.Consumer;
 

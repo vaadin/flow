@@ -50,6 +50,22 @@ public class VaadinConfigurationProperties {
     }
 
     /**
+     * Gets the excluded URLs using the given environment.
+     *
+     * This is needed only when VaadinConfigurationProperties is not available
+     * for injection, e.g. when using Spring without Boot.
+     *
+     * @param environment
+     *            the application environment
+     * @return the excluded URLs or null if none is defined
+     */
+    public static List<String> getExcludedUrls(Environment environment) {
+        return Binder.get(environment)
+                .bind("vaadin", VaadinConfigurationProperties.class)
+                .map(conf -> conf.getExcludeUrls()).orElse(null);
+    }
+
+    /**
      * Base URL mapping of the Vaadin servlet.
      */
     private String urlMapping = "/*";
@@ -83,6 +99,12 @@ public class VaadinConfigurationProperties {
      * Whether a browser should be launched on startup when in development mode.
      */
     private boolean launchBrowser = false;
+
+    /**
+     * URL patterns that should not be handled by the Vaadin servlet when mapped
+     * to the context root.
+     */
+    private List<String> excludeUrls;
 
     public static class Pnpm {
         private boolean enable;
@@ -153,8 +175,8 @@ public class VaadinConfigurationProperties {
      * <p>
      * If the servlet is not loaded on startup then the first request to the
      * server might be incorrectly handled by
-     * {@link com.vaadin.flow.spring.security.VaadinWebSecurityConfigurerAdapter}
-     * and access to a public view will be denied instead of allowed.
+     * {@link com.vaadin.flow.spring.security.VaadinWebSecurity} and access to a
+     * public view will be denied instead of allowed.
      *
      * @return if servlet is loaded on startup
      */
@@ -167,8 +189,8 @@ public class VaadinConfigurationProperties {
      * <p>
      * If the servlet is not loaded on startup then the first request to the
      * server might be incorrectly handled by
-     * {@link com.vaadin.flow.spring.security.VaadinWebSecurityConfigurerAdapter}
-     * and access to a public view will be denied instead of allowed.
+     * {@link com.vaadin.flow.spring.security.VaadinWebSecurity} and access to a
+     * public view will be denied instead of allowed.
      *
      * @param loadOnStartup
      *            {@code true} to load the servlet on startup, {@code false}
@@ -260,5 +282,26 @@ public class VaadinConfigurationProperties {
      */
     public void setWhitelistedPackages(List<String> whitelistedPackages) {
         this.whitelistedPackages = new ArrayList<>(whitelistedPackages);
+    }
+
+    /**
+     * Get a list of URL patterns that are not handled by the Vaadin servlet
+     * when it is mapped to the context root.
+     *
+     * @return a list of url patterns to exclude
+     */
+    public List<String> getExcludeUrls() {
+        return excludeUrls;
+    }
+
+    /**
+     * Set a list of URL patterns that are not handled by the Vaadin servlet
+     * when it is mapped to the context root.
+     *
+     * @param excludeUrls
+     *            a list of url patterns to exclude
+     */
+    public void setExcludeUrls(List<String> excludeUrls) {
+        this.excludeUrls = excludeUrls;
     }
 }

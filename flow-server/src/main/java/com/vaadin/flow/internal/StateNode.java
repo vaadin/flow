@@ -251,6 +251,7 @@ public class StateNode implements Serializable {
      */
     public void setParent(StateNode parent) {
         if (hasDetached()) {
+            this.parent = null;
             return;
         }
         boolean attachedBefore = isRegistered();

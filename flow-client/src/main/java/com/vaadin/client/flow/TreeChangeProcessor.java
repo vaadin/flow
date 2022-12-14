@@ -64,12 +64,16 @@ public class TreeChangeProcessor {
             for (int i = 0; i < length; i++) {
                 JsonObject change = changes.getObject(i);
                 if (!isAttach(change)) {
-                    nodes.add(processChange(tree, change));
+                    final StateNode value = processChange(tree, change);
+                    if (value != null) {
+                        nodes.add(value);
+                    }
                 }
             }
             return nodes;
         } finally {
             tree.setUpdateInProgress(false);
+            tree.setResync(false);
         }
     }
 
@@ -112,7 +116,11 @@ public class TreeChangeProcessor {
         int nodeId = (int) change.getNumber(JsonConstants.CHANGE_NODE);
 
         StateNode node = tree.getNode(nodeId);
-        assert node != null;
+        if (node == null && tree.isResync()) {
+            // Resync should not stop handling changes
+            return node;
+        }
+        assert node != null : "No attached node found";
 
         switch (type) {
         case JsonConstants.CHANGE_TYPE_NOOP:

@@ -1,10 +1,10 @@
 package com.vaadin.flow.server.communication;
 
-import javax.servlet.ReadListener;
-import javax.servlet.ServletException;
-import javax.servlet.ServletInputStream;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.Part;
+import jakarta.servlet.ReadListener;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletInputStream;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.Part;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -417,6 +417,26 @@ public class StreamReceiverHandlerTest {
 
         Mockito.verifyNoInteractions(errorHandler);
         Mockito.verify(streamVariable).streamingFailed(Mockito.any());
+    }
+
+    @Test
+    public void handleFileUploadValidationAndData_inputStreamThrowsIOExceptionOnClose_exceptionIsNotRethrown_exceptionIsNotHandlerByErrorHandler()
+            throws UploadException {
+        InputStream inputStream = new InputStream() {
+            @Override
+            public int read() {
+                return -1;
+            }
+
+            @Override
+            public void close() throws IOException {
+                throw new IOException();
+            }
+        };
+        handler.handleFileUploadValidationAndData(session, inputStream,
+                streamReceiver, null, null, 0, stateNode);
+
+        Mockito.verifyNoInteractions(errorHandler);
     }
 
     @Test

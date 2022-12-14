@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.server;
 
-import javax.servlet.ServletException;
+import jakarta.servlet.ServletException;
 
 import java.util.Collections;
 import java.util.List;

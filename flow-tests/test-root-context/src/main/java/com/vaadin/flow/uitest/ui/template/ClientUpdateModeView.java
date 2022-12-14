@@ -45,7 +45,7 @@ public class ClientUpdateModeView extends AbstractDivView {
     }
 
     @Tag("client-update-mode")
-    @JsModule("ClientUpdateMode.js")
+    @JsModule("./ClientUpdateMode.js")
     public static class ClientUpdateModeTemplate
             extends PolymerTemplate<ClientUpdateModeModel> {
     }

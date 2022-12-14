@@ -18,6 +18,8 @@ import com.vaadin.flow.uitest.ui.dependencies.ThemableTextField;
 @JsModule("package-outside-npm/index.js")
 @JsModule("package2-outside-npm/index.js")
 @JsModule("./testscopebuttonloader.js")
+@JsModule("./testscopemaploader.js")
+@JsModule("./importdir.js")
 @CssImport(value = "./cssimport-textfield.css", themeFor = "vaadin-text-field")
 @CssImport(value = "./cssimport.css")
 public class MainView extends Div {
@@ -58,10 +60,10 @@ public class MainView extends Div {
 
         final Paragraph viteStatus = new Paragraph(
                 "Vite feature is "
-                        + FeatureFlags
+                        + !FeatureFlags
                                 .get(UI.getCurrent().getSession().getService()
                                         .getContext())
-                                .isEnabled(FeatureFlags.VITE));
+                                .isEnabled(FeatureFlags.WEBPACK));
         viteStatus.setId("status");
         add(viteStatus);
 
@@ -77,6 +79,8 @@ public class MainView extends Div {
         add(outsideStatus);
 
         add(new HtmlComponent("testscope-button"));
+        add(new HtmlComponent("testscope-map"));
+
         ThemableTextField textField = new ThemableTextField();
         textField.setId("themedfield");
         add(textField);

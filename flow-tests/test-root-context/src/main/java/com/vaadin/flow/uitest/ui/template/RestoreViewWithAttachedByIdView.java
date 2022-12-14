@@ -37,7 +37,7 @@ public class RestoreViewWithAttachedByIdView extends AbstractDivView {
     private Component current;
 
     @Tag("template-with-injected-id")
-    @JsModule("TemplateWithInjectedId.js")
+    @JsModule("./TemplateWithInjectedId.js")
     public static class TemplateWithInjectedId
             extends PolymerTemplate<TemplateModel> {
 

@@ -15,8 +15,8 @@
  */
 package com.vaadin.flow.spring.security.stateless;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -51,7 +51,6 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.context.HttpRequestResponseHolder;
-import org.springframework.security.web.context.SaveContextOnUpdateOrErrorResponseWrapper;
 import org.springframework.security.web.context.SecurityContextRepository;
 
 /**
@@ -193,8 +192,6 @@ class JwtSecurityContextRepository implements SecurityContextRepository {
             context.setAuthentication(authentication);
         }
 
-        requestResponseHolder.setResponse(new UpdateJwtResponseWrapper(request,
-                requestResponseHolder.getResponse()));
         return context;
     }
 
@@ -216,22 +213,5 @@ class JwtSecurityContextRepository implements SecurityContextRepository {
     public boolean containsContext(HttpServletRequest request) {
         return serializedJwtSplitCookieRepository
                 .containsSerializedJwt(request);
-    }
-
-    private final class UpdateJwtResponseWrapper
-            extends SaveContextOnUpdateOrErrorResponseWrapper {
-        private final HttpServletRequest request;
-
-        private UpdateJwtResponseWrapper(HttpServletRequest request,
-                HttpServletResponse response) {
-            super(response, true);
-            this.request = request;
-        }
-
-        @Override
-        protected void saveContext(SecurityContext context) {
-            JwtSecurityContextRepository.this.saveContext(context, this.request,
-                    this);
-        }
     }
 }

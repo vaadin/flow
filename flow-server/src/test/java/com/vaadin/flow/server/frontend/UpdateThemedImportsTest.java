@@ -40,7 +40,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
-import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import com.vaadin.flow.theme.AbstractTheme;
@@ -147,9 +147,11 @@ public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
                 return new ThemeDefinition(MyTheme.class, "", "");
             }
         };
-        updater = new TaskUpdateImports(finder, deps, cf -> null, tmpRoot,
-                generatedPath, frontendDirectory, null, null, false, TARGET,
-                true, false, Mockito.mock(FeatureFlags.class));
+        Options options = new Options(Mockito.mock(Lookup.class), tmpRoot)
+                .withGeneratedFolder(generatedPath)
+                .withFrontendDirectory(frontendDirectory)
+                .withBuildDirectory(TARGET).withProductionMode(true);
+        updater = new TaskUpdateImports(finder, deps, cf -> null, options);
     }
 
     @Test

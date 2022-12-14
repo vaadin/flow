@@ -369,8 +369,9 @@ public class ExtendedClientDetails implements Serializable {
      *         information from the browser is present
      */
     public boolean isIPad() {
-        return navigatorPlatform != null
-                && navigatorPlatform.startsWith("iPad");
+        return navigatorPlatform != null && (navigatorPlatform
+                .startsWith("iPad")
+                || (navigatorPlatform.equals("MacIntel") && isTouchDevice()));
     }
 
     /**

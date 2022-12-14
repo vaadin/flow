@@ -77,18 +77,6 @@ public class DependencyIT extends ChromeBrowserTest {
                 && s.endsWith("/not-found.js"));
     }
 
-    @Test
-    @Ignore("Ignored because production mode is not activated by the servlet mapping , "
-            + "see https://github.com/vaadin/flow/issues/7281")
-    public void loadingUnavailableResourcesProduction() {
-        openProduction();
-        findElement(By.id("loadUnavailableResources")).click();
-
-        List<WebElement> errors = findElements(By.className("v-system-error"));
-        // Should not be shown in production
-        Assert.assertEquals(0, errors.size());
-    }
-
     protected WebElement findElementById(String id) {
         return findElement(By.id(id));
     }

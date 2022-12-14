@@ -93,7 +93,7 @@ function findThemeFolderAndHandleTheme(themeName, options, logger) {
   for (let i = 0; i < options.themeProjectFolders.length; i++) {
     const themeProjectFolder = options.themeProjectFolders[i];
     if (fs.existsSync(themeProjectFolder)) {
-      logger.log("Searching themes folder '" + themeProjectFolder + "' for theme '" + themeName + "'");
+      logger.debug("Searching themes folder '" + themeProjectFolder + "' for theme '" + themeName + "'");
       const handled = handleThemes(themeName, themeProjectFolder, options, logger);
       if (handled) {
         if (themeFound) {
@@ -105,7 +105,7 @@ function findThemeFolderAndHandleTheme(themeName, options, logger) {
               "'. Theme should only be available in one folder"
           );
         }
-        logger.log("Found theme files from '" + themeProjectFolder + "'");
+        logger.debug("Found theme files from '" + themeProjectFolder + "'");
         themeFound = themeProjectFolder;
       }
     }

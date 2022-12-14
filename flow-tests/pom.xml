@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-project</artifactId>
-        <version>23.2-SNAPSHOT</version>
+        <version>24.0-SNAPSHOT</version>
     </parent>
     <artifactId>flow-tests</artifactId>
     <name>Flow tests</name>
@@ -45,6 +45,8 @@
         <vaadin.eagerServerLoad>false</vaadin.eagerServerLoad>
         <!-- make sure we do not leave webpack-dev-server running after IT -->
         <vaadin.reuseDevServer>false</vaadin.reuseDevServer>
+        <vaadin.devServerPort>0</vaadin.devServerPort>
+        <vaadin.enableDevServer>true</vaadin.enableDevServer>
     </properties>
 
     <dependencies>
@@ -75,8 +77,8 @@
             <artifactId>slf4j-simple</artifactId>
         </dependency>
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
+            <groupId>jakarta.servlet</groupId>
+            <artifactId>jakarta.servlet-api</artifactId>
             <scope>provided</scope>
         </dependency>
     </dependencies>
@@ -224,9 +226,11 @@
                             <vaadin.devmode.liveReload.enabled>${vaadin.devmode.liveReload.enabled}</vaadin.devmode.liveReload.enabled>
                             <vaadin.allow.appshell.annotations>${vaadin.allow.appshell.annotations}</vaadin.allow.appshell.annotations>
 			    <vaadin.eagerServerLoad>${vaadin.eagerServerLoad}</vaadin.eagerServerLoad>
+			    <vaadin.devServerPort>${vaadin.devServerPort}</vaadin.devServerPort>
                             <jetty.scantrigger>${jetty.scantrigger}</jetty.scantrigger>
                             <!-- Allow test clients not on localhost to connect to Vite-->
                             <vaadin.devmode.vite.options>${vaadin.devmode.vite.options}</vaadin.devmode.vite.options>
+                            <vaadin.enableDevServer>${vaadin.enableDevServer}</vaadin.enableDevServer>
                         </systemProperties>
                     </configuration>
                 </plugin>
@@ -284,7 +288,6 @@
                 <module>test-pwa/pom-production.xml</module>
                 <module>test-pwa-disabled-offline</module>
                 <module>test-pwa-disabled-offline/pom-production.xml</module>
-                <module>test-root-ui-context</module>
                 <module>test-router-custom-context</module>
                 <module>test-live-reload</module>
                 <module>test-redeployment</module>
@@ -311,8 +314,6 @@
                 <module>test-root-context</module>
 
                 <module>test-eager-bootstrap</module>
-                <module>test-v14-bootstrap</module>
-                <module>test-v14-bootstrap/pom-production.xml</module>
 
                 <module>test-custom-route-registry</module>
                 <!-- tests are disabled in this module, this reference is for maven version plugin -->

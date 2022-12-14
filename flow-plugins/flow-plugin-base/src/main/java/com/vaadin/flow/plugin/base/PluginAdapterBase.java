@@ -261,13 +261,6 @@ public interface PluginAdapterBase {
     boolean useGlobalPnpm();
 
     /**
-     * Whether or not we are running in productionMode.
-     *
-     * @return boolean
-     */
-    boolean productionMode();
-
-    /**
      * The projects root Directory.
      *
      * @return {@link Path}
@@ -313,4 +306,5 @@ public interface PluginAdapterBase {
      * @return a list of packages
      */
     List<String> postinstallPackages();
+
 }

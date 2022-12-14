@@ -23,7 +23,6 @@ import java.util.function.Function;
 
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.internal.JavaScriptBootstrapUI;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
@@ -48,7 +47,7 @@ import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 import elemental.json.impl.JsonUtil;
 
-import static com.vaadin.flow.component.internal.JavaScriptBootstrapUI.SERVER_ROUTING;
+import static com.vaadin.flow.component.UI.SERVER_ROUTING;
 
 /**
  * Processes a 'start' request type from the client to initialize server session
@@ -101,10 +100,12 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
             // this case, the
             // location comes from the pathinfo + query parameters in the
             // request
-            String pathAndParams = request.getParameter(
+            String path = request.getParameter(
                     ApplicationConstants.REQUEST_LOCATION_PARAMETER);
-            if (pathAndParams != null) {
-                return new Location(pathAndParams);
+            String params = request
+                    .getParameter(ApplicationConstants.REQUEST_QUERY_PARAMETER);
+            if (path != null) {
+                return new Location(path, QueryParameters.fromString(params));
             }
 
             // Case 2, use the request
@@ -148,20 +149,14 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
             VaadinRequest request, VaadinResponse response,
             VaadinSession session) {
 
-        BootstrapContext context = super.createAndInitUI(
-                JavaScriptBootstrapUI.class, request, response, session);
+        BootstrapContext context = super.createAndInitUI(UI.class, request,
+                response, session);
         JsonObject config = context.getApplicationParameters();
 
         String requestURL = getRequestUrl(request);
-        String serviceUrl = getServiceUrl(request);
 
-        String pushURL = context.getSession().getConfiguration().getPushURL();
-        if (pushURL == null) {
-            pushURL = serviceUrl;
-        }
         PushConfiguration pushConfiguration = context.getUI()
                 .getPushConfiguration();
-        pushConfiguration.setPushUrl(pushURL);
 
         AppShellRegistry registry = AppShellRegistry
                 .getInstance(session.getService().getContext());
@@ -202,7 +197,7 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
                 throw new InvalidLocationException(
                         "Location parameter missing from bootstrap request to server.");
             }
-            LocationUtil.parsePathToSegments(pathAndParams);
+            LocationUtil.parsePathToSegments(pathAndParams, false);
         } catch (InvalidLocationException invalidLocationException) {
             response.sendError(400, "Invalid location: "
                     + invalidLocationException.getMessage());
@@ -279,8 +274,8 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
     protected JsonObject getInitialJson(VaadinRequest request,
             VaadinResponse response, VaadinSession session) {
 
-        BootstrapContext context = createAndInitUI(JavaScriptBootstrapUI.class,
-                request, response, session);
+        BootstrapContext context = createAndInitUI(UI.class, request, response,
+                session);
 
         JsonObject initial = Json.createObject();
 

@@ -35,6 +35,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.StyleSheet;
+import com.vaadin.flow.component.internal.AllowInert;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.dom.Element;
@@ -64,6 +65,7 @@ public class Page implements Serializable {
         private int windowResizeListenersSize;
 
         @ClientCallable
+        @AllowInert
         private void windowResized(int width, int height) {
             if (windowResizeListenersSize != 0) {
                 fireEvent(new ResizeEvent(this, width, height));
@@ -99,6 +101,7 @@ public class Page implements Serializable {
             super(source, true);
             apiEvent = new BrowserWindowResizeEvent(
                     source.getUI().get().getPage(), width, height);
+
         }
 
         private BrowserWindowResizeEvent getApiEvent() {

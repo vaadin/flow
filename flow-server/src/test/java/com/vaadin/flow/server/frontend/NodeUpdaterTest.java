@@ -18,8 +18,9 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -37,7 +38,9 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.experimental.Feature;
 import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
@@ -45,11 +48,8 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import elemental.json.Json;
 import elemental.json.JsonException;
 import elemental.json.JsonObject;
-import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FLOW_NPM_PACKAGE_NAME;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class NodeUpdaterTest {
@@ -65,55 +65,35 @@ public class NodeUpdaterTest {
 
     private File generatedPath;
 
-    private File resourceFolder;
-
     private ClassFinder finder;
 
-    private URL url;
+    private boolean useWebpack = false;
 
     @Before
     public void setUp() throws IOException {
-        url = new URL("file://bar");
         npmFolder = temporaryFolder.newFolder();
-        resourceFolder = temporaryFolder.newFolder();
         generatedPath = temporaryFolder.newFolder();
+        FeatureFlags featureFlags = Mockito.mock(FeatureFlags.class);
+        Mockito.when(featureFlags.isEnabled(Mockito.any(Feature.class)))
+                .thenAnswer((query) -> {
+                    if (query.getArgument(0).equals(FeatureFlags.WEBPACK)) {
+                        return useWebpack;
+                    }
+                    return false;
+                });
         finder = Mockito.mock(ClassFinder.class);
+        Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
+                .withGeneratedFolder(generatedPath).withBuildDirectory(TARGET)
+                .withFeatureFlags(featureFlags);
+
         nodeUpdater = new NodeUpdater(finder,
-                Mockito.mock(FrontendDependencies.class), npmFolder,
-                generatedPath, resourceFolder, TARGET,
-                Mockito.mock(FeatureFlags.class)) {
+                Mockito.mock(FrontendDependencies.class), options) {
 
             @Override
             public void execute() {
             }
 
         };
-    }
-
-    @Test
-    public void resolveResource_startsWithAt_returnsPassedArg() {
-        Assert.assertEquals("@foo", nodeUpdater.resolveResource("@foo"));
-        Assert.assertEquals("@foo", nodeUpdater.resolveResource("@foo"));
-    }
-
-    @Test
-    public void resolveResource_hasObsoleteResourcesFolder() {
-        resolveResource_happyPath(COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT);
-    }
-
-    @Test
-    public void resolveResource_hasModernResourcesFolder() {
-        resolveResource_happyPath(RESOURCES_FRONTEND_DEFAULT);
-    }
-
-    @Test
-    public void resolveResource_doesNotHaveObsoleteResourcesFolder() {
-        resolveResource_unhappyPath(COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT);
-    }
-
-    @Test
-    public void resolveResource_doesNotHaveModernResourcesFolder() {
-        resolveResource_unhappyPath(RESOURCES_FRONTEND_DEFAULT);
     }
 
     @Test
@@ -133,6 +113,85 @@ public class NodeUpdaterTest {
         Assert.assertEquals(1, modules.size());
         // GENERATED/ is an added prefix for files from this method
         Assert.assertTrue(modules.contains("GENERATED/c.js"));
+    }
+
+    @Test
+    public void getDefaultDependencies_includesAllDependencies() {
+        Map<String, String> defaultDeps = nodeUpdater.getDefaultDependencies();
+        Set<String> expectedDependencies = new HashSet<>();
+        expectedDependencies.add("@polymer/polymer");
+        expectedDependencies.add("@vaadin/common-frontend");
+        expectedDependencies.add("@vaadin/router");
+        expectedDependencies.add("construct-style-sheets-polyfill");
+        expectedDependencies.add("lit");
+
+        Set<String> actualDependendencies = defaultDeps.keySet();
+
+        Assert.assertEquals(expectedDependencies, actualDependendencies);
+    }
+
+    @Test
+    public void getDefaultDevDependencies_includesAllDependencies_whenUsingVite() {
+        Map<String, String> defaultDeps = nodeUpdater
+                .getDefaultDevDependencies();
+        Set<String> expectedDependencies = getCommonDevDeps();
+
+        // Vite
+        expectedDependencies.add("vite");
+        expectedDependencies.add("rollup-plugin-brotli");
+        expectedDependencies.add("@rollup/plugin-replace");
+        expectedDependencies.add("@rollup/pluginutils");
+        expectedDependencies.add("vite-plugin-checker");
+        expectedDependencies.add("mkdirp");
+        expectedDependencies.add("workbox-build");
+        expectedDependencies.add("transform-ast");
+        expectedDependencies.add("strip-css-comments");
+
+        Set<String> actualDependendencies = defaultDeps.keySet();
+
+        Assert.assertEquals(expectedDependencies, actualDependendencies);
+    }
+
+    @Test
+    public void getDefaultDevDependencies_includesAllDependencies_whenUsingWebpack() {
+        useWebpack = true;
+        Map<String, String> defaultDeps = nodeUpdater
+                .getDefaultDevDependencies();
+        Set<String> expectedDependencies = getCommonDevDeps();
+
+        // Webpack
+        // Webpack plugins and helpers
+        expectedDependencies.add("esbuild-loader");
+        expectedDependencies.add("html-webpack-plugin");
+        expectedDependencies.add("fork-ts-checker-webpack-plugin");
+        expectedDependencies.add("webpack");
+        expectedDependencies.add("webpack-cli");
+        expectedDependencies.add("webpack-dev-server");
+        expectedDependencies.add("compression-webpack-plugin");
+        expectedDependencies.add("extra-watch-webpack-plugin");
+        expectedDependencies.add("webpack-merge");
+        expectedDependencies.add("css-loader");
+        expectedDependencies.add("extract-loader");
+        expectedDependencies.add("lit-css-loader");
+        expectedDependencies.add("file-loader");
+        expectedDependencies.add("loader-utils");
+        expectedDependencies.add("workbox-webpack-plugin");
+        expectedDependencies.add("chokidar");
+        expectedDependencies.add("strip-css-comments");
+
+        Set<String> actualDependendencies = defaultDeps.keySet();
+
+        Assert.assertEquals(expectedDependencies, actualDependendencies);
+    }
+
+    private Set<String> getCommonDevDeps() {
+        Set<String> expectedDependencies = new HashSet<>();
+        expectedDependencies.add("typescript");
+        expectedDependencies.add("workbox-core");
+        expectedDependencies.add("workbox-precaching");
+        expectedDependencies.add("glob");
+        expectedDependencies.add("async");
+        return expectedDependencies;
     }
 
     @Test
@@ -181,12 +240,12 @@ public class NodeUpdaterTest {
         JsonObject packageJson = nodeUpdater.getPackageJson();
         packageJson.put(NodeUpdater.DEPENDENCIES, Json.createObject());
         packageJson.put(NodeUpdater.DEV_DEPENDENCIES, Json.createObject());
-        packageJson.getObject(NodeUpdater.DEV_DEPENDENCIES).put("webpack",
-                "3.3.10");
+        packageJson.getObject(NodeUpdater.DEV_DEPENDENCIES).put("glob",
+                "7.0.0");
         nodeUpdater.updateDefaultDependencies(packageJson);
 
-        Assert.assertEquals("4.46.0", packageJson
-                .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("webpack"));
+        Assert.assertEquals("7.2.3", packageJson
+                .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("glob"));
     }
 
     @Test // #6907 test when user has set newer versions
@@ -195,12 +254,12 @@ public class NodeUpdaterTest {
         JsonObject packageJson = nodeUpdater.getPackageJson();
         packageJson.put(NodeUpdater.DEPENDENCIES, Json.createObject());
         packageJson.put(NodeUpdater.DEV_DEPENDENCIES, Json.createObject());
-        packageJson.getObject(NodeUpdater.DEV_DEPENDENCIES).put("webpack",
-                "5.0.1");
+        packageJson.getObject(NodeUpdater.DEV_DEPENDENCIES).put("vite",
+                "v4.0.0");
         nodeUpdater.updateDefaultDependencies(packageJson);
 
-        Assert.assertEquals("5.0.1", packageJson
-                .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("webpack"));
+        Assert.assertEquals("v4.0.0", packageJson
+                .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("vite"));
     }
 
     @Test
@@ -224,6 +283,50 @@ public class NodeUpdaterTest {
 
         Assert.assertEquals(newVersion, packageJson
                 .getObject(NodeUpdater.DEPENDENCIES).getString(formPackage));
+    }
+
+    @Test
+    public void shouldSkipUpdatingNonParsableVersions() throws IOException {
+        JsonObject packageJson = Json.createObject();
+        JsonObject dependencies = Json.createObject();
+        packageJson.put(NodeUpdater.DEPENDENCIES, dependencies);
+        JsonObject vaadinDependencies = Json.createObject();
+        vaadinDependencies.put(NodeUpdater.DEPENDENCIES, Json.createObject());
+        packageJson.put(NodeUpdater.VAADIN_DEP_KEY, vaadinDependencies);
+
+        String formPackage = "@vaadin/form";
+        String existingVersion = "../../../some/local/path";
+        String newVersion = "2.0.0";
+
+        dependencies.put(formPackage, existingVersion);
+
+        nodeUpdater.addDependency(packageJson, NodeUpdater.DEPENDENCIES,
+                formPackage, newVersion);
+
+        Assert.assertEquals(existingVersion, packageJson
+                .getObject(NodeUpdater.DEPENDENCIES).getString(formPackage));
+    }
+
+    @Test
+    public void canUpdateNonParseableVersions() throws IOException {
+        JsonObject packageJson = Json.createObject();
+        JsonObject dependencies = Json.createObject();
+        packageJson.put(NodeUpdater.DEPENDENCIES, dependencies);
+        JsonObject vaadinDependencies = Json.createObject();
+        vaadinDependencies.put(NodeUpdater.DEPENDENCIES, Json.createObject());
+        packageJson.put(NodeUpdater.VAADIN_DEP_KEY, vaadinDependencies);
+
+        String pkg = "mypackage";
+        String existingVersion = "./some/path";
+
+        dependencies.put(pkg, existingVersion);
+
+        nodeUpdater.addDependency(packageJson, NodeUpdater.DEPENDENCIES, pkg,
+                existingVersion);
+
+        Assert.assertEquals(existingVersion,
+                packageJson.getObject(NodeUpdater.DEPENDENCIES).getString(pkg));
+
     }
 
     @Test
@@ -262,7 +365,8 @@ public class NodeUpdaterTest {
     @Test
     public void generateVersionsJson_noVersions_noDevDeps_versionsGeneratedFromPackageJson()
             throws IOException {
-        final String versions = nodeUpdater.generateVersionsJson();
+        final String versions = nodeUpdater
+                .generateVersionsJson(Json.createObject());
         Assert.assertNotNull(versions);
 
         File generatedVersionsFile = new File(npmFolder, versions);
@@ -275,7 +379,7 @@ public class NodeUpdaterTest {
     public void generateVersionsJson_versionsGeneratedFromPackageJson_containsBothDepsAndDevDeps()
             throws IOException {
 
-        File packageJson = new File(nodeUpdater.npmFolder, PACKAGE_JSON);
+        File packageJson = new File(npmFolder, PACKAGE_JSON);
         packageJson.createNewFile();
 
         // Write package json file
@@ -305,7 +409,9 @@ public class NodeUpdaterTest {
             + "}", StandardCharsets.UTF_8);
         // @formatter:on
 
-        final String versions = nodeUpdater.generateVersionsJson();
+        final String versions = nodeUpdater.generateVersionsJson(
+                Json.parse(FileUtils.readFileToString(packageJson,
+                        StandardCharsets.UTF_8)));
         Assert.assertNotNull(versions);
 
         File generatedVersionsFile = new File(npmFolder, versions);
@@ -413,22 +519,6 @@ public class NodeUpdaterTest {
         JsonObject deps = object.get("dependencies");
         String version = deps.getString("@polymer/polymer");
         return version;
-    }
-
-    private void resolveResource_happyPath(String resourceFolder) {
-        Mockito.when(finder.getResource(resourceFolder + "/foo"))
-                .thenReturn(url);
-        Assert.assertEquals(FLOW_NPM_PACKAGE_NAME + "foo",
-                nodeUpdater.resolveResource("foo"));
-        Assert.assertEquals(FLOW_NPM_PACKAGE_NAME + "foo",
-                nodeUpdater.resolveResource("foo"));
-    }
-
-    private void resolveResource_unhappyPath(String resourceFolder) {
-        Mockito.when(finder.getResource(resourceFolder + "/foo"))
-                .thenReturn(null);
-        Assert.assertEquals("foo", nodeUpdater.resolveResource("foo"));
-        Assert.assertEquals("foo", nodeUpdater.resolveResource("foo"));
     }
 
     private JsonObject getMockVaadinCoreVersionsJson() {

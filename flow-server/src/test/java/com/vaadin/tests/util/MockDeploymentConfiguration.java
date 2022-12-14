@@ -1,5 +1,6 @@
 package com.vaadin.tests.util;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -15,14 +16,13 @@ public class MockDeploymentConfiguration
     private boolean productionMode = false;
     private boolean enableDevServer = true;
     private boolean reuseDevServer = true;
-    private boolean useDeprecatedV14Bootstrapping = true;
+    private boolean useDeprecatedV14Bootstrapping = false;
     private boolean xsrfProtectionEnabled = true;
     private int heartbeatInterval = 300;
     private int maxMessageSuspendTimeout = 5000;
     private int webComponentDisconnect = 300;
     private boolean closeIdleSessions = false;
     private PushMode pushMode = PushMode.DISABLED;
-    private String pushURL = "";
     private Properties initParameters = new Properties();
     private Map<String, String> applicationOrSystemProperty = new HashMap<>();
     private boolean syncIdCheckEnabled = true;
@@ -31,6 +31,8 @@ public class MockDeploymentConfiguration
     private boolean eagerServerLoad = false;
     private boolean devModeLiveReloadEnabled = false;
     private boolean devToolsEnabled = true;
+
+    private File projectFolder = null;
 
     public MockDeploymentConfiguration() {
         super(Collections.emptyMap());
@@ -110,6 +112,11 @@ public class MockDeploymentConfiguration
         return closeIdleSessions;
     }
 
+    @Override
+    public File getProjectFolder() {
+        return projectFolder;
+    }
+
     public void setCloseIdleSessions(boolean closeIdleSessions) {
         this.closeIdleSessions = closeIdleSessions;
     }
@@ -121,15 +128,6 @@ public class MockDeploymentConfiguration
 
     public void setPushMode(PushMode pushMode) {
         this.pushMode = pushMode;
-    }
-
-    @Override
-    public String getPushURL() {
-        return pushURL;
-    }
-
-    public void setPushURL(String pushURL) {
-        this.pushURL = pushURL;
     }
 
     @Override
@@ -205,5 +203,9 @@ public class MockDeploymentConfiguration
 
     public void setDevToolsEnabled(boolean devToolsEnabled) {
         this.devToolsEnabled = devToolsEnabled;
+    }
+
+    public void setProjectFolder(File projectFolder) {
+        this.projectFolder = projectFolder;
     }
 }
