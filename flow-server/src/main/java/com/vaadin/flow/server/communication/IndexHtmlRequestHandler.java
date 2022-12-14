@@ -19,13 +19,17 @@ import static com.vaadin.flow.component.UI.SERVER_ROUTING;
 import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_HTML_UTF_8;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.DataNode;
@@ -70,6 +74,11 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     private static final String SCRIPT = "script";
     private static final String SCRIPT_INITIAL = "initial";
 
+    private static final Pattern THEME_GENERATED_FILE_PATTERN = Pattern
+            .compile("theme-([\\s\\S]+?)\\.generated\\.js");
+
+    private static String themeName;
+
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException {
@@ -109,6 +118,10 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         configureErrorDialogStyles(indexDocument);
 
         configureHiddenElementStyles(indexDocument);
+
+        if (!config.enableDevServer()) {
+            addStylesCssLink(config, indexDocument);
+        }
 
         showDevServerErrors(session.getService(), indexDocument);
         response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF_8);
@@ -151,6 +164,29 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             return false;
         }
         return true;
+    }
+
+    /**
+     * Adds a link tag to the page head for the themes/my-theme/styles.css,
+     * which is served in express build mode by static file server directly from
+     * frontend/themes folder.
+     * </p>
+     * Example: <link rel="stylesheet" href="themes/hello-speed-foo/styles.css">
+     *
+     * @param config
+     *            deployment configuration
+     * @param indexDocument
+     *            the page document to add the tag to
+     * @throws IOException
+     *             if theme name cannot be extracted from file
+     */
+    private void addStylesCssLink(DeploymentConfiguration config,
+            Document indexDocument) throws IOException {
+        String themeName = getThemeName(config.getProjectFolder());
+        Element element = new Element("link");
+        element.attr("rel", "stylesheet");
+        element.attr("href", "themes/" + themeName + "/styles.css");
+        indexDocument.head().appendChild(element);
     }
 
     private void catchErrorsInDevMode(Document indexDocument) {
@@ -410,6 +446,25 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
     private static Logger getLogger() {
         return LoggerFactory.getLogger(IndexHtmlRequestHandler.class);
+    }
+
+    private static String getThemeName(File projectFolder) throws IOException {
+        if (themeName == null) {
+            File themeJs = new File(projectFolder,
+                    FrontendUtils.FRONTEND + FrontendUtils.GENERATED
+                            + FrontendUtils.THEME_IMPORTS_NAME);
+            String themeJsContent = FileUtils.readFileToString(themeJs,
+                    StandardCharsets.UTF_8);
+            Matcher matcher = THEME_GENERATED_FILE_PATTERN
+                    .matcher(themeJsContent);
+            if (matcher.find()) {
+                themeName = matcher.group(1);
+            } else {
+                throw new IllegalStateException(
+                        "Couldn't extract theme name from theme imports file 'theme.js'");
+            }
+        }
+        return themeName;
     }
 
 }

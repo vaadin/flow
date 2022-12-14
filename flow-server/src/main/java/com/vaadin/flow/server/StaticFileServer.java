@@ -261,9 +261,15 @@ public class StaticFileServer implements StaticFileHandler {
                     deploymentConfiguration.getProjectFolder(),
                     "webapp/" + filenameInsideBundle);
         } else if (APP_THEME_PATTERN.matcher(filenameWithPath).find()) {
-            resourceUrl = vaadinService.getClassLoader()
-                    .getResource(VAADIN_WEBAPP_RESOURCES + "VAADIN/static/"
-                            + filenameWithPath.replaceFirst("^/", ""));
+            if (!deploymentConfiguration.enableDevServer()) {
+                resourceUrl = findAssetInFrontendThemesOrDevBundle(
+                        deploymentConfiguration.getProjectFolder(),
+                        filenameWithPath);
+            } else {
+                resourceUrl = vaadinService.getClassLoader()
+                        .getResource(VAADIN_WEBAPP_RESOURCES + "VAADIN/static/"
+                                + filenameWithPath.replaceFirst("^/", ""));
+            }
         } else if (!"/index.html".equals(filenameWithPath)) {
             // index.html needs to be handled by IndexHtmlRequestHandler
             resourceUrl = vaadinService.getClassLoader()
@@ -309,6 +315,30 @@ public class StaticFileServer implements StaticFileHandler {
         responseWriter.writeResponseContents(filenameWithPath, resourceUrl,
                 request, response);
         return true;
+    }
+
+    private static URL findAssetInFrontendThemesOrDevBundle(File projectFolder,
+            String assetPath) throws IOException {
+        // First, look for the theme assets in the {project.root}/frontend/
+        // themes/my-theme folder
+        File frontendFolder = new File(projectFolder, FrontendUtils.FRONTEND);
+        File assetInFrontendThemes = new File(frontendFolder, assetPath);
+        if (assetInFrontendThemes.exists()) {
+            return assetInFrontendThemes.toURI().toURL();
+        }
+        // Or search in the dev-bundle (if the assets come from node_modules)
+        String assetInDevBundle = "/webapp/assets/" + assetPath;
+        URL assetInDevBundleUrl = FrontendUtils.findBundleFile(projectFolder,
+                assetInDevBundle);
+        if (assetInDevBundleUrl == null) {
+            throw new IllegalStateException(String.format(
+                    "Asset '%s' is not found neither in frontend/themes/theme-name/ "
+                            + "nor in dev-bundle/webapp/assets/. Verify that either the asset "
+                            + "is available in frontend/themes/theme-name/ folder or it is added "
+                            + "in the 'assets' block in 'theme.json'.",
+                    assetPath));
+        }
+        return assetInDevBundleUrl;
     }
 
     /**
