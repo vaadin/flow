@@ -81,9 +81,8 @@ public class AuthenticationContext implements Serializable {
     }
 
     /**
-     * Gets an {@link Optional} containing of the authenticated principal name
-     * as defined in {@link Principal#getName()}, or empty if the user is not
-     * authenticated.
+     * Gets an {@link Optional} containing the authenticated principal name, or
+     * an empty optional if the user is not authenticated.
      *
      * The principal name usually refers to a username or an identifier that can
      * be used to retrieve additional information for the authenticated user.
