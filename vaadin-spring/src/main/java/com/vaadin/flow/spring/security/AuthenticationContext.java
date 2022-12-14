@@ -89,8 +89,8 @@ public class AuthenticationContext implements Serializable {
      *
      * Anonymous users are considered not authenticated.
      *
-     * @return an {@link Optional} containing of the authenticated principal
-     *         name or empty if not available.
+     * @return an {@link Optional} containing the authenticated principal name
+     *         or an empty optional if not available.
      */
     public Optional<String> getPrincipalName() {
         return getAuthentication().map(Principal::getName);
