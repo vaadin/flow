@@ -40,17 +40,6 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
  */
 public class NodeTasks implements FallibleCommand {
 
-    //@formatter:off
-    private static final String V14_BOOTSTRAPPING_VITE_ERROR_MESSAGE =
-            "\n\n************************************************************************************"
-            + "\n*  Vite build tool is not supported when 'useDeprecatedV14Bootstrapping' is used.  *"
-            + "\n*  Please fallback to Webpack build tool via setting the                           *"
-            + "\n*  'com.vaadin.experimental.webpackForFrontendBuild=true' feature flag             *"
-            + "\n*  in [project-root]/src/main/resources/vaadin-featureflags.properties             *"
-            + "\n*  (you may create the file if not exists) and restart the application.            *"
-            + "\n************************************************************************************\n\n";
-    //@formatter:on
-
     // @formatter:off
     // This list keeps the tasks in order so that they are executed
     // without depending on when they are added.
@@ -115,7 +104,7 @@ public class NodeTasks implements FallibleCommand {
             frontendDependencies = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
                     .createScanner(!options.useByteCodeScanner, classFinder,
                             options.generateEmbeddableWebComponents,
-                            options.useLegacyV14Bootstrap, featureFlags);
+                            featureFlags);
 
             if (options.generateEmbeddableWebComponents) {
                 FrontendWebComponentGenerator generator = new FrontendWebComponentGenerator(
@@ -163,33 +152,27 @@ public class NodeTasks implements FallibleCommand {
             addGenerateTsConfigTask(options);
         }
 
-        if (options.useLegacyV14Bootstrap) {
-            throw new IllegalStateException(
-                    V14_BOOTSTRAPPING_VITE_ERROR_MESSAGE);
-        } else {
-            addBootstrapTasks(options);
+        addBootstrapTasks(options);
 
-            // use the new Hilla generator if enabled, otherwise use the old
-            // generator.
-            TaskGenerateHilla hillaTask;
-            if (options.endpointGeneratedOpenAPIFile != null
-                    && featureFlags.isEnabled(FeatureFlags.HILLA_ENGINE)
-                    && (hillaTask = options.lookup
-                            .lookup(TaskGenerateHilla.class)) != null) {
-                hillaTask.configure(options.getNpmFolder(),
-                        options.getBuildDirectoryName());
-                commands.add(hillaTask);
-            } else if (options.endpointGeneratedOpenAPIFile != null
-                    && options.endpointSourceFolder != null
-                    && options.endpointSourceFolder.exists()) {
-                addEndpointServicesTasks(options);
-            }
-
-            commands.add(
-                    new TaskGenerateBootstrap(frontendDependencies, options));
-
-            commands.add(new TaskGenerateFeatureFlags(options));
+        // use the new Hilla generator if enabled, otherwise use the old
+        // generator.
+        TaskGenerateHilla hillaTask;
+        if (options.endpointGeneratedOpenAPIFile != null
+                && featureFlags.isEnabled(FeatureFlags.HILLA_ENGINE)
+                && (hillaTask = options.lookup
+                        .lookup(TaskGenerateHilla.class)) != null) {
+            hillaTask.configure(options.getNpmFolder(),
+                    options.getBuildDirectoryName());
+            commands.add(hillaTask);
+        } else if (options.endpointGeneratedOpenAPIFile != null
+                && options.endpointSourceFolder != null
+                && options.endpointSourceFolder.exists()) {
+            addEndpointServicesTasks(options);
         }
+
+        commands.add(new TaskGenerateBootstrap(frontendDependencies, options));
+
+        commands.add(new TaskGenerateFeatureFlags(options));
 
         if (options.jarFiles != null
                 && options.jarFrontendResourcesFolder != null) {
@@ -284,7 +267,7 @@ public class NodeTasks implements FallibleCommand {
             return new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
                     .createScanner(true, finder,
                             options.generateEmbeddableWebComponents,
-                            options.useLegacyV14Bootstrap, featureFlags, true);
+                            featureFlags, true);
         } else {
             return null;
         }

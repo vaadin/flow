@@ -764,8 +764,6 @@ public class UIInternals implements Serializable {
                     "Root can't be null here since we know there's at least one item in the chain");
         }
 
-        configurePush(root);
-
         internalsHandler.updateRoot(ui, oldRoot, root);
     }
 
@@ -1202,23 +1200,6 @@ public class UIInternals implements Serializable {
         // null has been checked in calling code before this
         return !modalComponentStack.isEmpty()
                 && modalComponentStack.peek() == child;
-    }
-
-    private void configurePush(HasElement root) {
-        DeploymentConfiguration deploymentConfiguration = getSession()
-                .getService().getDeploymentConfiguration();
-        if (!deploymentConfiguration.useV14Bootstrap()) {
-            return;
-        }
-        PushConfiguration pushConfiguration = ui.getPushConfiguration();
-        Optional<Push> push = AnnotationReader.getAnnotationFor(root.getClass(),
-                Push.class);
-        PushMode pushMode = push.map(Push::value)
-                .orElseGet(deploymentConfiguration::getPushMode);
-        pushConfiguration.setPushMode(pushMode);
-        if (push.isPresent()) {
-            pushConfiguration.setTransport(push.get().transport());
-        }
     }
 
     private void removeChildrenContentFromRouterLayout(

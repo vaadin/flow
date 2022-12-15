@@ -35,7 +35,6 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
@@ -366,10 +365,6 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             elm.attr("src", "VAADIN/dev-bundle/" + entryScript);
             indexHtmlDocument.head().appendChild(elm);
         }
-    }
-
-    private static FeatureFlags getFeatureFlags(VaadinService service) {
-        return FeatureFlags.get(service.getContext());
     }
 
     private static void modifyIndexHtmlForVite(Document indexHtmlDocument) {

@@ -16,6 +16,11 @@
 
 package com.vaadin.flow.component;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -73,7 +78,6 @@ import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.AfterNavigationHandler;
 import com.vaadin.flow.router.internal.BeforeEnterHandler;
 import com.vaadin.flow.router.internal.BeforeLeaveHandler;
-import com.vaadin.flow.server.BootstrapHandlerTest;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.MockVaadinServletService;
@@ -87,12 +91,6 @@ import com.vaadin.flow.server.frontend.MockLogger;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
-
-import static com.vaadin.flow.component.UI.SERVER_ROUTING;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
 
 public class UITest {
 
@@ -257,13 +255,18 @@ public class UITest {
 
         ui.doInit(request, 0);
         ui.getInternals().getRouter().initializeUI(ui,
-                BootstrapHandlerTest.requestToLocation(request));
+                requestToLocation(request));
 
         session.unlock();
 
         if (statusCodeCaptor != null) {
             Mockito.verify(response).setStatus(statusCodeCaptor.capture());
         }
+    }
+
+    public static Location requestToLocation(VaadinRequest request) {
+        return new Location(request.getPathInfo(),
+                QueryParameters.full(request.getParameterMap()));
     }
 
     @Test

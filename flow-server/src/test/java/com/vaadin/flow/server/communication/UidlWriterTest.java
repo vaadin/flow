@@ -33,6 +33,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.UITest;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
@@ -46,7 +47,6 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.RoutePathProvider;
 import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.server.BootstrapHandlerTest;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.MockVaadinContext.RoutePathProviderImpl;
 import com.vaadin.flow.server.VaadinServletContext;
@@ -341,7 +341,7 @@ public class UidlWriterTest {
 
         ui.doInit(vaadinRequestMock, 1);
         ui.getInternals().getRouter().initializeUI(ui,
-                BootstrapHandlerTest.requestToLocation(vaadinRequestMock));
+                UITest.requestToLocation(vaadinRequestMock));
 
         return ui;
     }
