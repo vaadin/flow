@@ -46,7 +46,7 @@ import com.vaadin.flow.server.VaadinServletResponse;
  *
  * An instance of this class is available for injection as bean in view and
  * layout classes. The class is not {@link java.io.Serializable}, so potential
- * referencing fields in Vaadin view should be defined {@literal transient}.
+ * referencing fields in Vaadin views should be defined {@literal transient}.
  *
  * @author Vaadin Ltd
  * @since 23.3
