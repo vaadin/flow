@@ -96,6 +96,25 @@ public class AuthenticationContextTest {
     }
 
     @Test
+    public void getPrincipalName_notAuthenticated_getsEmpty() {
+        Assert.assertTrue(authContext.getPrincipalName().isEmpty());
+    }
+
+    @Test
+    @WithAnonymousUser
+    public void getPrincipalName_anonymous_getsEmpty() {
+        Assert.assertTrue(authContext.getPrincipalName().isEmpty());
+    }
+
+    @Test
+    @WithMockUser(username = "the-username")
+    public void getPrincipalName_loggedUser_getsAuthenticationName() {
+        Optional<String> maybePrincipalName = authContext.getPrincipalName();
+        Assert.assertTrue(maybePrincipalName.isPresent());
+        Assert.assertEquals("the-username", maybePrincipalName.get());
+    }
+
+    @Test
     @WithMockUser()
     public void logout_handlersEngaged() throws Exception {
         Authentication authentication = SecurityContextHolder.getContext()
