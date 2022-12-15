@@ -27,11 +27,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.shared.util.SharedUtil;
+
+import elemental.json.Json;
+import elemental.json.JsonObject;
 
 /**
  * Compiles the dev mode bundle if it is out of date.
@@ -63,11 +68,13 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                 "build");
     }
 
-    public static boolean needsBuild(File npmFolder) {
+    public static boolean needsBuild(File npmFolder,
+            FrontendDependenciesScanner frontendDependencies) {
         getLogger().info("Checking if an express mode bundle build is needed");
 
         try {
-            boolean needsBuild = needsBuildInternal(npmFolder);
+            boolean needsBuild = needsBuildInternal(npmFolder,
+                    frontendDependencies);
             if (needsBuild) {
                 getLogger().info("An express mode bundle build is needed");
             } else {
@@ -82,10 +89,159 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         }
     }
 
-    private static boolean needsBuildInternal(File npmFolder)
+    private static boolean needsBuildInternal(File npmFolder,
+            FrontendDependenciesScanner frontendDependencies)
             throws IOException {
 
-        return !new File(npmFolder, "dev-bundle").exists();
+        if (!FrontendUtils.getDevBundleFolder(npmFolder).exists()) {
+            // TODO: check for jar dev-bundle
+            return true;
+        }
+
+        String statsJsonContent = FrontendUtils.findBundleStatsJson(npmFolder);
+        if (statsJsonContent == null) {
+            // without stats.json in bundle we can not say if it is up to date
+            return true;
+        }
+
+        JsonObject packageJson = getPackageJson(npmFolder);
+        JsonObject statsJson = Json.parse(statsJsonContent);
+
+        // Get scanned @NpmPackage annotations
+        final Map<String, String> npmPackages = frontendDependencies
+                .getPackages();
+
+        if (!hashAndBundleModulesEqual(statsJson, packageJson, npmPackages)) {
+            // Hash in the project doesn't matche the bundle hash or NpmPackages
+            // are
+            // missing found.
+            return true;
+        }
+
+        if (!hasAllNpmModules(statsJson, packageJson, npmPackages)) {
+            // The bundle (stats.json) does not include all packages listed in
+            // package.json
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Verify that package hash versions are equal and that all project
+     * npmPackages are in bundle.
+     *
+     * @param statsJson
+     *            devBundle statsJson
+     * @param packageJson
+     *            packageJson
+     * @param npmPackages
+     *            npm packages map
+     * @return {@code true} if up to date
+     */
+    private static boolean hashAndBundleModulesEqual(JsonObject statsJson,
+            JsonObject packageJson, Map<String, String> npmPackages) {
+
+        String packageJsonHash = getPackageJsonHash(packageJson);
+        String bundlePackageJsonHash = getStatsHash(statsJson);
+
+        if (packageJsonHash == null || packageJsonHash.isEmpty()) {
+            return false;
+        }
+
+        JsonObject bundleModules = statsJson.getObject("npmModules");
+
+        // Check that bundle modules contains all package dependencies
+        if (packageJsonHash.equals(bundlePackageJsonHash)) {
+            if (missingNpmPackages(npmPackages, bundleModules)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static JsonObject getPackageJson(File npmFolder) {
+        File packageJsonFile = new File(npmFolder, "package.json");
+
+        if (packageJsonFile.exists()) {
+            try {
+                return Json.parse(FileUtils.readFileToString(packageJsonFile,
+                        StandardCharsets.UTF_8));
+            } catch (IOException e) {
+                getLogger().warn("Failed to read package.json", e);
+            }
+        }
+        return null;
+    }
+
+    private static String getStatsHash(JsonObject statsJson) {
+        if (statsJson.hasKey("packageJsonHash")) {
+            return statsJson.getString("packageJsonHash");
+        }
+
+        return null;
+    }
+
+    private static String getPackageJsonHash(JsonObject packageJson) {
+        if (packageJson != null && packageJson.hasKey("vaadin")
+                && packageJson.getObject("vaadin").hasKey("hash")) {
+            return packageJson.getObject("vaadin").getString("hash");
+        }
+
+        return null;
+    }
+
+    /**
+     * Check that bundle and package.json contents match.
+     * <p>
+     * {@code @NpmPackage}s were already verified against bundle packages.
+     *
+     * @param statsJson
+     *            bundle stats.json
+     * @param packageJson
+     *            package.json
+     * @param npmPackages
+     *            {@code @NpmPackage} key-value map
+     * @return {@code true} if everything matches
+     */
+    private static boolean hasAllNpmModules(JsonObject statsJson,
+            JsonObject packageJson, Map<String, String> npmPackages) {
+
+        JsonObject bundleNpmModules = statsJson.getObject("npmModules");
+        JsonObject dependencies = packageJson.getObject("dependencies");
+
+        for (String dependency : dependencies.keys()) {
+            if (!bundleNpmModules.hasKey(dependency)) {
+                getLogger().info("Dependency " + dependency
+                        + " is missing from the bundle");
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Check that all npmPackages are in the given dependency object.
+     *
+     * @param npmPackages
+     *            {@code @NpmPackage} key-value map
+     * @param dependencies
+     *            json object containing dependencies to check against
+     * @return {@code false} if all packages are found
+     */
+    private static boolean missingNpmPackages(Map<String, String> npmPackages,
+            JsonObject dependencies) {
+        final List<String> collect = npmPackages.keySet().stream()
+                .filter(pkg -> !(dependencies.hasKey(pkg) && dependencies
+                        .getString(pkg).equals(npmPackages.get(pkg))))
+                .collect(Collectors.toList());
+        if (!collect.isEmpty()) {
+            collect.forEach(dependency -> getLogger().info("Dependency "
+                    + dependency + " is missing from the bundle"));
+            return true;
+        }
+        return false;
     }
 
     private static Logger getLogger() {

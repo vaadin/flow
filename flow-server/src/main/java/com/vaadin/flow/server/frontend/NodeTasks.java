@@ -102,22 +102,23 @@ public class NodeTasks implements FallibleCommand {
 
         final FeatureFlags featureFlags = options.getFeatureFlags();
 
-        if (!options.productionMode && options.isDevBundleBuild()) {
-            if (TaskRunDevBundleBuild.needsBuild(options.getNpmFolder())) {
-                options.runNpmInstall(true);
-                options.copyTemplates(true);
-            } else {
-                // A dev bundle build is not needed after all, skip it
-                options.withDevBundleBuild(false);
-            }
-        }
-
         if (options.enablePackagesUpdate || options.enableImportsUpdate
                 || options.enableWebpackConfigUpdate) {
             frontendDependencies = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
                     .createScanner(!options.useByteCodeScanner, classFinder,
                             options.generateEmbeddableWebComponents,
                             options.useLegacyV14Bootstrap, featureFlags);
+
+            if (!options.productionMode && options.isDevBundleBuild()) {
+                if (TaskRunDevBundleBuild.needsBuild(options.getNpmFolder(),
+                        frontendDependencies)) {
+                    options.runNpmInstall(true);
+                    options.copyTemplates(true);
+                } else {
+                    // A dev bundle build is not needed after all, skip it
+                    options.withDevBundleBuild(false);
+                }
+            }
 
             if (options.generateEmbeddableWebComponents) {
                 FrontendWebComponentGenerator generator = new FrontendWebComponentGenerator(
@@ -139,8 +140,8 @@ public class NodeTasks implements FallibleCommand {
                 packageUpdater = new TaskUpdatePackages(classFinder,
                         frontendDependencies, options);
                 commands.add(packageUpdater);
-
             }
+
             if (packageUpdater != null && options.runNpmInstall) {
                 commands.add(new TaskRunNpmInstall(packageUpdater, options));
 

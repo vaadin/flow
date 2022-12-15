@@ -1465,4 +1465,28 @@ public class FrontendUtils {
         return new File(projectDir, "dev-bundle");
     }
 
+    /**
+     * Get the stats.json for the application specific development bundle.
+     *
+     * @param projectDir
+     *            the project base directory
+     * @return stats.json content
+     * @throws IOException
+     *             if an I/O exception occurs.
+     */
+    public static String findBundleStatsJson(File projectDir)
+            throws IOException {
+        URL statsJson = findBundleFile(projectDir, "config/stats.json");
+        if (statsJson == null) {
+            throw new IllegalStateException(
+                    "The application is running in express mode but there is "
+                            + "no bundle found. There is no 'dev-bundle' directory in the "
+                            + "project (or it has an invalid content) or on the "
+                            + "classpath nor is there a default bundle included. Delete"
+                            + " the 'dev-bundle' directory, if it exists, and restart "
+                            + "the application.");
+        } else {
+            return IOUtils.toString(statsJson, StandardCharsets.UTF_8);
+        }
+    }
 }
