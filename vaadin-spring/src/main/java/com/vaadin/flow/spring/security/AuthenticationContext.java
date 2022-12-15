@@ -40,23 +40,25 @@ import com.vaadin.flow.server.VaadinServletResponse;
 /**
  * The authentication context of the application.
  * <p>
- * An instance of this class is available for injection as bean in view and
- * layout classes.
  *
  * It allows to access authenticated user information and to initiate the logout
  * process.
  *
+ * An instance of this class is available for injection as bean in view and
+ * layout classes. The class is not {@link java.io.Serializable}, so potential
+ * referencing fields in Vaadin view should be defined {@literal transient}.
+ *
  * @author Vaadin Ltd
  * @since 23.3
  */
-public class AuthenticationContext implements Serializable {
+public class AuthenticationContext {
 
     private static final Logger LOGGER = LoggerFactory
             .getLogger(AuthenticationContext.class);
 
-    private transient LogoutSuccessHandler logoutSuccessHandler;
+    private LogoutSuccessHandler logoutSuccessHandler;
 
-    private transient CompositeLogoutHandler logoutHandler;
+    private CompositeLogoutHandler logoutHandler;
 
     /**
      * Gets an {@link Optional} with an instance of the current user if it has
@@ -121,9 +123,6 @@ public class AuthenticationContext implements Serializable {
 
     /**
      * Sets component to handle logout process.
-     *
-     * This method should be invoked after deserialization to refresh required
-     * transient fields.
      *
      * @param logoutSuccessHandler
      *            {@link LogoutSuccessHandler} instance, not {@literal null}.
