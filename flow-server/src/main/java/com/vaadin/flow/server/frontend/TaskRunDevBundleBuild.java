@@ -140,6 +140,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         String bundlePackageJsonHash = getStatsHash(statsJson);
 
         if (packageJsonHash == null || packageJsonHash.isEmpty()) {
+            getLogger().warn("No hash found for 'package.json'.");
             return false;
         }
 
@@ -155,7 +156,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         JsonObject dependencies = packageJson.getObject("dependencies");
 
         List<String> collection = Arrays.stream(dependencies.keys())
-                .filter(pkg -> !dependencies.hasKey(pkg))
+                .filter(pkg -> !bundleModules.hasKey(pkg))
                 .collect(Collectors.toList());
 
         if (!collection.isEmpty()) {
