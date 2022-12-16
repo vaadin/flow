@@ -89,7 +89,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         }
     }
 
-    private static boolean needsBuildInternal(File npmFolder,
+    protected static boolean needsBuildInternal(File npmFolder,
             FrontendDependenciesScanner frontendDependencies)
             throws IOException {
 

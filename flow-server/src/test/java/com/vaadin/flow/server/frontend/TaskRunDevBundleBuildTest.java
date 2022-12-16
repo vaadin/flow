@@ -24,7 +24,7 @@ public class TaskRunDevBundleBuildTest {
 
     @Test
     public void noDevBundle_bundleCompilationRequires() {
-        final boolean needsBuild = TaskRunDevBundleBuild.needsBuild(
+        final boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(
                 temporaryFolder.getRoot(),
                 Mockito.mock(FrontendDependenciesScanner.class));
         Assert.assertTrue("Bundle should require creation if not available",
@@ -41,7 +41,7 @@ public class TaskRunDevBundleBuildTest {
                     .findBundleStatsJson(temporaryFolder.getRoot()))
                     .thenReturn(null);
 
-            final boolean needsBuild = TaskRunDevBundleBuild.needsBuild(
+            final boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(
                     temporaryFolder.getRoot(),
                     Mockito.mock(FrontendDependenciesScanner.class));
             Assert.assertTrue("Missing stats.json should require bundling",
@@ -81,7 +81,7 @@ public class TaskRunDevBundleBuildTest {
                             + "}");
 
             final boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuild(temporaryFolder.getRoot(), depScanner);
+                    .needsBuildInternal(temporaryFolder.getRoot(), depScanner);
             Assert.assertFalse("Missing stats.json should require bundling",
                     needsBuild);
         }
@@ -121,7 +121,7 @@ public class TaskRunDevBundleBuildTest {
                             + "}");
 
             final boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuild(temporaryFolder.getRoot(), depScanner);
+                    .needsBuildInternal(temporaryFolder.getRoot(), depScanner);
             Assert.assertTrue("Missing npmPackage should require bundling",
                     needsBuild);
         }
@@ -159,7 +159,7 @@ public class TaskRunDevBundleBuildTest {
                             + "}");
 
             final boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuild(temporaryFolder.getRoot(), depScanner);
+                    .needsBuildInternal(temporaryFolder.getRoot(), depScanner);
             Assert.assertTrue("Bundle missing module dependency should rebuild",
                     needsBuild);
         }
@@ -198,7 +198,7 @@ public class TaskRunDevBundleBuildTest {
                             + "}");
 
             final boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuild(temporaryFolder.getRoot(), depScanner);
+                    .needsBuildInternal(temporaryFolder.getRoot(), depScanner);
             Assert.assertFalse(
                     "Not missing npmPackage in stats.json should not require compilation",
                     needsBuild);
