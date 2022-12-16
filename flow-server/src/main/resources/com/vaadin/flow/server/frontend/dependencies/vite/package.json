@@ -11,7 +11,7 @@
   "dependencies": {},
   "devDependencies": {
     "vite": "v4.0.0",
-    "@rollup/plugin-replace": "3.1.0",
+    "@rollup/plugin-replace": "5.0.1",
     "rollup-plugin-brotli": "3.1.0",
     "vite-plugin-checker": "0.5.2",
     "mkdirp": "1.0.4",
