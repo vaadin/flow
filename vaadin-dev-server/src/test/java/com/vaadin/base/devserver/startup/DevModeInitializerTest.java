@@ -255,7 +255,7 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     }
 
     @Test
-    public void should_Run_Updaters_when_NoWebpackFile() throws Exception {
+    public void should_Run_Updaters_when_NoViteFile() throws Exception {
         devServerConfigFile.delete();
         process();
         assertDevModeHandlerStarted();

@@ -11,6 +11,8 @@ import com.vaadin.flow.server.WrappedSession;
 @Route(value = "com.vaadin.flow.uitest.ui.SessionValueView")
 public class SessionValueView extends Div {
 
+    public static final String TRIGGER_RELOAD_ID = "triggerReload";
+
     // This ensures the view is not serializable
     private Object preventSerialization = new Object();
 
@@ -21,7 +23,7 @@ public class SessionValueView extends Div {
 
         final NativeButton triggerButton = new NativeButton("Trigger reload",
                 event -> Application.triggerReload());
-        triggerButton.setId(WebpackDevServerPortView.TRIGGER_RELOAD_ID);
+        triggerButton.setId(TRIGGER_RELOAD_ID);
         add(triggerButton);
 
         WrappedSession session = VaadinSession.getCurrent().getSession();

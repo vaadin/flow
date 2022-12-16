@@ -266,12 +266,10 @@ public class BuildFrontendUtil {
             if (adapter.isDebugEnabled()) {
                 adapter.logDebug(String.format(
                         "%n>>> Running prepare-frontend%nSystem"
-                                + ".properties:%n" + " webpackPort: %s%n "
+                                + ".properties:%n "
                                 + "project.basedir: %s%nGoal parameters:%n "
                                 + "npmFolder: %s%nToken file: " + "%s%n"
                                 + "Token content: %s%n",
-                        System.getProperty(
-                                "vaadin.devmode.webpack.running-port"),
                         adapter.projectBaseDirectory(), adapter.npmFolder(),
                         token.getAbsolutePath(), buildInfo.toJson()));
             }
@@ -366,31 +364,7 @@ public class BuildFrontendUtil {
         FrontendToolsSettings settings = getFrontendToolsSettings(adapter);
         FrontendTools tools = new FrontendTools(settings);
         tools.validateNodeAndNpmVersion();
-        if (featureFlags.isEnabled(FeatureFlags.WEBPACK)) {
-            BuildFrontendUtil.runWebpack(adapter, tools);
-        } else {
-            BuildFrontendUtil.runVite(adapter, tools);
-        }
-    }
-
-    /**
-     * Runs the Webpack build
-     *
-     * @param adapter
-     *            - the PluginAdapterBase.
-     * @param frontendTools
-     *            - frontend tools access object
-     * @throws TimeoutException
-     *             - while run webpack
-     * @throws URISyntaxException
-     *             - while parsing nodeDownloadRoot()) to URI
-     */
-    public static void runWebpack(PluginAdapterBase adapter,
-            FrontendTools frontendTools)
-            throws TimeoutException, URISyntaxException {
-        runFrontendBuildTool(adapter, frontendTools, "Webpack",
-                "webpack/bin/webpack.js",
-                frontendTools.getWebpackNodeEnvironment());
+        BuildFrontendUtil.runVite(adapter, tools);
     }
 
     /**

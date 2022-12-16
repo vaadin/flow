@@ -232,8 +232,7 @@ public class CleanFrontendMojoTest {
                 "@polymer/polymer", "@webcomponents/webcomponentsjs");
 
         assertNotContainsPackage(packageJsonObject.getObject("devDependencies"),
-                "webpack", "webpack-cli", "webpack-dev-server",
-                "html-webpack-plugin");
+                "vite");
     }
 
     static void assertNotContainsPackage(JsonObject dependencies,
@@ -265,13 +264,7 @@ public class CleanFrontendMojoTest {
 
         vaadinPackages.put("devDependencies", Json.createObject());
         defaults = vaadinPackages.getObject("devDependencies");
-        defaults.put("webpack", "4.30.0");
-        defaults.put("webpack-cli", "3.3.0");
-        defaults.put("webpack-dev-server", "3.3.0");
-        defaults.put("webpack-babel-multi-target-plugin", "2.3.1");
-        defaults.put("compression-webpack-plugin", "3.0.0");
-        defaults.put("webpack-merge", "4.2.1");
-        defaults.put("raw-loader", "3.0.0");
+        defaults.put("vite", "3.4.5");
         packageJson.put("devDependencies", defaults);
 
         vaadinPackages.put("hash", "");

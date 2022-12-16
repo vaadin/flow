@@ -110,7 +110,6 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         configureHiddenElementStyles(indexDocument);
 
-        showDevServerErrors(session.getService(), indexDocument);
         response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF_8);
 
         VaadinContext context = session.getService().getContext();
@@ -353,9 +352,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             addBundleEntryPoints(indexHtmlDocument, config,
                     Json.parse(statsJson));
         }
-        if (!getFeatureFlags(service).isEnabled(FeatureFlags.WEBPACK)) {
-            modifyIndexHtmlForVite(indexHtmlDocument);
-        }
+        modifyIndexHtmlForVite(indexHtmlDocument);
         return indexHtmlDocument;
     }
 
