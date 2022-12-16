@@ -231,9 +231,6 @@ public class TaskRunDevBundleBuildTest {
                     .findBundleStatsJson(temporaryFolder.getRoot()))
                     .thenReturn("{\n" + " \"npmModules\": {\n"
                             + "  \"@vaadin/router\": \"1.7.4\"" + "},\n"
-                            + " \"entryScripts\": [\n"
-                            + "  \"VAADIN/build/indexhtml-aa31f040.js\"\n"
-                            + " ],\n"
                             + " \"packageJsonHash\": \"af45419b27dcb44b875197df4347b97316cc8fa6055458223a73aedddcfe7cc6\"\n"
                             + "}");
 
@@ -246,7 +243,56 @@ public class TaskRunDevBundleBuildTest {
     }
 
     @Test
-    public void hashesMatch_packageJsonHasRange_statsHasNewerFixed_noCompilationRequired()
+    public void hashesMatch_packageJsonHasTildeRange_statsHasNewerFixed_noCompilationRequired()
+            throws IOException {
+
+        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        packageJson.createNewFile();
+
+        FileUtils.write(packageJson, "{\"dependencies\": {"
+                + "\"@vaadin/router\": \"~1.7.4\"}, "
+                + "\"vaadin\": { \"hash\": \"af45419b27dcb44b875197df4347b97316cc8fa6055458223a73aedddcfe7cc6\"} }",
+                StandardCharsets.UTF_8);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        Mockito.when(depScanner.getPackages())
+                .thenReturn(Collections.emptyMap());
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn("{\n" + " \"npmModules\": {\n"
+                            + "  \"@vaadin/router\": \"1.7.6\"" + "},\n"
+                            + " \"packageJsonHash\": \"af45419b27dcb44b875197df4347b97316cc8fa6055458223a73aedddcfe7cc6\"\n"
+                            + "}");
+
+            boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(temporaryFolder.getRoot(), depScanner);
+            Assert.assertFalse(
+                    "No compilation if tilde range only patch update",
+                    needsBuild);
+
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn("{\n" + " \"npmModules\": {\n"
+                            + "  \"@vaadin/router\": \"1.8.1\"" + "},\n"
+                            + " \"packageJsonHash\": \"af45419b27dcb44b875197df4347b97316cc8fa6055458223a73aedddcfe7cc6\"\n"
+                            + "}");
+
+            needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(temporaryFolder.getRoot(), depScanner);
+            Assert.assertTrue(
+                    "Compilation required if minor version change for tilde range",
+                    needsBuild);
+        }
+    }
+
+    @Test
+    public void hashesMatch_packageJsonHasCaretRange_statsHasNewerFixed_noCompilationRequired()
             throws IOException {
 
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
@@ -270,16 +316,26 @@ public class TaskRunDevBundleBuildTest {
                     .findBundleStatsJson(temporaryFolder.getRoot()))
                     .thenReturn("{\n" + " \"npmModules\": {\n"
                             + "  \"@vaadin/router\": \"1.8.6\"" + "},\n"
-                            + " \"entryScripts\": [\n"
-                            + "  \"VAADIN/build/indexhtml-aa31f040.js\"\n"
-                            + " ],\n"
                             + " \"packageJsonHash\": \"af45419b27dcb44b875197df4347b97316cc8fa6055458223a73aedddcfe7cc6\"\n"
                             + "}");
 
-            final boolean needsBuild = TaskRunDevBundleBuild
+            boolean needsBuild = TaskRunDevBundleBuild
                     .needsBuildInternal(temporaryFolder.getRoot(), depScanner);
             Assert.assertFalse(
-                    "Not missing npmPackage in stats.json should not require compilation",
+                    "No compilation if caret range only minor version update",
+                    needsBuild);
+
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn("{\n" + " \"npmModules\": {\n"
+                            + "  \"@vaadin/router\": \"2.0.0\"" + "},\n"
+                            + " \"packageJsonHash\": \"af45419b27dcb44b875197df4347b97316cc8fa6055458223a73aedddcfe7cc6\"\n"
+                            + "}");
+
+            needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(temporaryFolder.getRoot(), depScanner);
+            Assert.assertTrue(
+                    "Compilation required if major version change for caret range",
                     needsBuild);
         }
     }

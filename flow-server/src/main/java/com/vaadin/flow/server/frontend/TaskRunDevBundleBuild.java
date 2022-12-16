@@ -190,10 +190,22 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         FrontendVersion expectedVersion = new FrontendVersion(expected);
         FrontendVersion actualVersion = new FrontendVersion(actual);
 
-        if (expected.startsWith("~") || expected.startsWith("^")) {
+        if (expected.startsWith("~")) {
+            boolean correctRange = expectedVersion
+                    .getMajorVersion() == actualVersion.getMajorVersion()
+                    && expectedVersion.getMinorVersion() == actualVersion
+                            .getMinorVersion();
             // Installed version may be newer than the package version.
-            return expectedVersion.isEqualTo(actualVersion)
-                    || expectedVersion.isOlderThan(actualVersion);
+            return (expectedVersion.isEqualTo(actualVersion)
+                    || expectedVersion.isOlderThan(actualVersion))
+                    && correctRange;
+        } else if (expected.startsWith("^")) {
+            boolean correctRange = expectedVersion
+                    .getMajorVersion() == actualVersion.getMajorVersion();
+            // Installed version may be newer than the package version.
+            return (expectedVersion.isEqualTo(actualVersion)
+                    || expectedVersion.isOlderThan(actualVersion))
+                    && correctRange;
         }
         return expectedVersion.isEqualTo(actualVersion);
     }
