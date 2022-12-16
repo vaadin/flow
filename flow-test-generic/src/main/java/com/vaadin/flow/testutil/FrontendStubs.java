@@ -23,7 +23,7 @@ import java.util.Objects;
 import org.apache.commons.io.FileUtils;
 
 /**
- * Utility class for stubbing Node.JS and Vite scripts.
+ * Utility class for stubbing Node.JS and frontend tooling.
  */
 public class FrontendStubs {
 

@@ -74,8 +74,8 @@ public class NodeTasksExecutionTest {
         commandsField.setAccessible(true);
         commands = (List<FallibleCommand>) commandsField.get(nodeTasks);
 
-        // With Vite we always have two default tasks that cannot be reomve
-        // by configuring builder
+        // With Vite we always have two default tasks that cannot be removed
+        // by configuration options
         commands.clear();
 
         Assert.assertEquals("No commands should be added initially, "
