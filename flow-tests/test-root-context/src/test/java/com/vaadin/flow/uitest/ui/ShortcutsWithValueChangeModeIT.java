@@ -95,8 +95,8 @@ public class ShortcutsWithValueChangeModeIT extends ChromeBrowserTest {
                     text, paragraphText);
         } else {
             Assert.assertEquals(
-                    "Expecting input value not to be synced with server",
-                    "", paragraphText);
+                    "Expecting input value not to be synced with server", "",
+                    paragraphText);
         }
     }
 

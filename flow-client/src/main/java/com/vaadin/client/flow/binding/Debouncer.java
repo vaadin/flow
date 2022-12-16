@@ -59,12 +59,14 @@ public class Debouncer {
     /**
      * Informs this debouncer that an event has occurred.
      *
-     * @param phases  a set of strings identifying the phases for which the
-     *                triggered event should be considered.
-     * @param command a consumer that will may be asynchronously invoked with a
-     *                phase code if an associated phase is triggered
+     * @param phases
+     *            a set of strings identifying the phases for which the
+     *            triggered event should be considered.
+     * @param command
+     *            a consumer that will may be asynchronously invoked with a
+     *            phase code if an associated phase is triggered
      * @return <code>true</code> if the event should be processed as-is without
-     * delaying
+     *         delaying
      */
     public boolean trigger(JsSet<String> phases, Consumer<String> command) {
         lastCommand = command;
@@ -72,13 +74,13 @@ public class Debouncer {
         if (phases != null) {
             phases.forEach(s -> phasesStr.append(s).append(","));
         }
-        nativeConsoleLog("================== Debouncer::trigger " +
-                phasesStr);
+        nativeConsoleLog("================== Debouncer::trigger " + phasesStr);
         boolean triggerImmediately = false;
         if (idleTimer == null) {
             triggerImmediately = phases.has(JsonConstants.EVENT_PHASE_LEADING);
 
-            nativeConsoleLog("================== Debouncer::trigger idleTimer null");
+            nativeConsoleLog(
+                    "================== Debouncer::trigger idleTimer null");
 
             idleTimer = new Timer() {
                 @Override
@@ -88,7 +90,8 @@ public class Debouncer {
                     }
 
                     if (fireTrailing) {
-                        nativeConsoleLog("================== Debouncer::trigger idleTimer invoke command");
+                        nativeConsoleLog(
+                                "================== Debouncer::trigger idleTimer invoke command");
                         lastCommand.accept(JsonConstants.EVENT_PHASE_TRAILING);
                     }
 
@@ -105,7 +108,8 @@ public class Debouncer {
             intermediateTimer = new Timer() {
                 @Override
                 public void run() {
-                    nativeConsoleLog("================== Debouncer::trigger intermediateTimer invoke command");
+                    nativeConsoleLog(
+                            "================== Debouncer::trigger intermediateTimer invoke command");
                     lastCommand.accept(JsonConstants.EVENT_PHASE_INTERMEDIATE);
                 }
             };
@@ -114,8 +118,9 @@ public class Debouncer {
 
         fireTrailing |= phases.has(JsonConstants.EVENT_PHASE_TRAILING);
 
-        nativeConsoleLog("================== Debouncer::trigger triggerImmediately=" + triggerImmediately +
-                " fireTrailing=" + fireTrailing);
+        nativeConsoleLog(
+                "================== Debouncer::trigger triggerImmediately="
+                        + triggerImmediately + " fireTrailing=" + fireTrailing);
 
         return triggerImmediately;
     }
@@ -147,34 +152,45 @@ public class Debouncer {
      * Gets an existing debouncer or creates a new one associated with the given
      * DOM node, identifier and debounce timeout.
      *
-     * @param element    the DOM node to which this debouncer is bound
-     * @param identifier a unique identifier string in the scope of the provided
-     *                   element
-     * @param debounce   the debounce timeout
+     * @param element
+     *            the DOM node to which this debouncer is bound
+     * @param identifier
+     *            a unique identifier string in the scope of the provided
+     *            element
+     * @param debounce
+     *            the debounce timeout
      * @return a debouncer instance
      */
     public static Debouncer getOrCreate(Node element, String identifier,
-                                        double debounce) {
-        nativeConsoleLog("================ Debouncer::getOrCreate " + identifier);
+            double debounce) {
+        nativeConsoleLog(
+                "================ Debouncer::getOrCreate " + identifier);
         JsMap<String, JsMap<Double, Debouncer>> elementMap = debouncers
                 .get(element);
         if (elementMap == null) {
-            nativeConsoleLog("================ Debouncer::getOrCreate (new elementmap)" + identifier);
+            nativeConsoleLog(
+                    "================ Debouncer::getOrCreate (new elementmap)"
+                            + identifier);
             elementMap = JsCollections.map();
             debouncers.set(element, elementMap);
         }
 
         JsMap<Double, Debouncer> identifierMap = elementMap.get(identifier);
         if (identifierMap == null) {
-            nativeConsoleLog("================ Debouncer::getOrCreate (new identifiermap)" + identifier);
+            nativeConsoleLog(
+                    "================ Debouncer::getOrCreate (new identifiermap)"
+                            + identifier);
             identifierMap = JsCollections.map();
             elementMap.set(identifier, identifierMap);
         }
 
-        nativeConsoleLog("================ Debouncer::getOrCreate (search for " + debounce + ")" + identifier);
+        nativeConsoleLog("================ Debouncer::getOrCreate (search for "
+                + debounce + ")" + identifier);
         Debouncer debouncer = identifierMap.get(Double.valueOf(debounce));
         if (debouncer == null) {
-            nativeConsoleLog("================ Debouncer::getOrCreate (new debouncer for " + debounce + ")" + identifier);
+            nativeConsoleLog(
+                    "================ Debouncer::getOrCreate (new debouncer for "
+                            + debounce + ")" + identifier);
             debouncer = new Debouncer(element, identifier, debounce);
             identifierMap.set(Double.valueOf(debounce), debouncer);
         }
@@ -183,7 +199,7 @@ public class Debouncer {
     }
 
     private static native void nativeConsoleLog(String s, Object... args)
-        /*-{ console.log( s, args ); }-*/;
+    /*-{ console.log( s, args ); }-*/;
 
     /**
      * Flushes all pending changes.
@@ -200,8 +216,7 @@ public class Debouncer {
         ForEachCallback<Node, JsMap<String, JsMap<Double, Debouncer>>> flusher = new ForEachCallback<Node, JsMap<String, JsMap<Double, Debouncer>>>() {
 
             @Override
-            public void accept(
-                    JsMap<String, JsMap<Double, Debouncer>> jsmap,
+            public void accept(JsMap<String, JsMap<Double, Debouncer>> jsmap,
                     Node key) {
 
                 nativeConsoleLog("flushAll element: ", key);
@@ -209,20 +224,19 @@ public class Debouncer {
                 jsmap.mapValues().forEach(value -> {
                     nativeConsoleLog("value: " + value.size());
                     value.mapValues().forEach(debouncer -> {
-                        nativeConsoleLog(
-                                "Flushing... " + debouncer.identifier);
+                        nativeConsoleLog("Flushing... " + debouncer.identifier);
                         debouncer.lastCommand.accept(null);
                         executedCommands.add(debouncer.lastCommand);
                         if (debouncer.idleTimer != null) {
                             debouncer.idleTimer.cancel();
-                            debouncer.idleTimer.schedule((int) debouncer.timeout);
+                            debouncer.idleTimer
+                                    .schedule((int) debouncer.timeout);
                         }
-                            /*
-                            if (debouncer.intermediateTimer != null) {
-                                debouncer.intermediateTimer.cancel();
-                            }
-                             */
-                        //debouncer.unregister();
+                        /*
+                         * if (debouncer.intermediateTimer != null) {
+                         * debouncer.intermediateTimer.cancel(); }
+                         */
+                        // debouncer.unregister();
                     });
                 });
             }
@@ -230,7 +244,7 @@ public class Debouncer {
 
         debouncers.forEach(flusher);
 
-        //debouncers.clear();
+        // debouncers.clear();
         return executedCommands;
     }
 }

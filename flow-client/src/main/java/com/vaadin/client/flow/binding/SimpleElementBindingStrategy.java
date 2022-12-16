@@ -1313,7 +1313,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             sendEventToServer(node, type, eventData, debouncePhase);
         };
 
-        nativeConsoleLog("================== handle dome event " + event.getType());
+        nativeConsoleLog(
+                "================== handle dome event " + event.getType());
 
         boolean sendNow = resolveFilters(element, type, expressionSettings,
                 eventData, sendCommand);
@@ -1329,13 +1330,14 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
             if (!executedCommands.contains(sendCommand)) {
                 sendCommand.accept(null);
-                nativeConsoleLog("================== sendNow after sendcommand accept ");
+                nativeConsoleLog(
+                        "================== sendNow after sendcommand accept ");
             }
         }
     }
 
     private static native void nativeConsoleLog(String s)
-        /*-{ console.log( s ); }-*/;
+    /*-{ console.log( s ); }-*/;
 
     private Runnable getSyncPropertyCommand(String propertyName,
             BindingContext context) {
@@ -1403,7 +1405,8 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
             double timeout = debounceSettings.getNumber(0);
 
-            nativeConsoleLog("================== resolveDebounces timeout=" + timeout);
+            nativeConsoleLog(
+                    "================== resolveDebounces timeout=" + timeout);
             if (timeout == 0) {
                 atLeastOneEager = true;
                 continue;
