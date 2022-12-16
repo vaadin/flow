@@ -1324,7 +1324,7 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
             nativeConsoleLog("================== sendNow before flushAll ");
             // Flush all debounced events so that they don't happen
             // in wrong order in the server-side
-            List<Consumer<String>> executedCommands = Debouncer.flushAll(element);
+            List<Consumer<String>> executedCommands = Debouncer.flushAll();
             nativeConsoleLog("================== sendNow after flushAll ");
 
             if (!executedCommands.contains(sendCommand)) {

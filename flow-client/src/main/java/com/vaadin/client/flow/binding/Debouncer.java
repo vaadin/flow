@@ -16,8 +16,6 @@
 package com.vaadin.client.flow.binding;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -117,8 +115,8 @@ public class Debouncer {
         fireTrailing |= phases.has(JsonConstants.EVENT_PHASE_TRAILING);
 
         nativeConsoleLog("================== Debouncer::trigger triggerImmediately=" + triggerImmediately +
-                " fireTrailing="+fireTrailing);
-                
+                " fireTrailing=" + fireTrailing);
+
         return triggerImmediately;
     }
 
@@ -187,48 +185,50 @@ public class Debouncer {
     private static native void nativeConsoleLog(String s, Object... args)
         /*-{ console.log( s, args ); }-*/;
 
+    /**
+     * Flushes all pending changes.
+     *
+     * After command execution, Debouncer idle timers are rescheduled.
+     *
+     * @return the list command executed during flush operation.
+     */
     public static List<Consumer<String>> flushAll() {
-        return flushAll(null);
-    }
-    public static List<Consumer<String>> flushAll(Node element) {
         int size = debouncers.size();
-        nativeConsoleLog("Debouncers: " + size, element);
+        nativeConsoleLog("Debouncers: " + size);
 
         ArrayList<Consumer<String>> executedCommands = new ArrayList<>();
-        debouncers
-                .forEach(
-                new ForEachCallback<Node, JsMap<String, JsMap<Double, Debouncer>>>() {
+        ForEachCallback<Node, JsMap<String, JsMap<Double, Debouncer>>> flusher = new ForEachCallback<Node, JsMap<String, JsMap<Double, Debouncer>>>() {
 
-                    @Override
-                    public void accept(
-                            JsMap<String, JsMap<Double, Debouncer>> jsmap,
-                            Node key) {
+            @Override
+            public void accept(
+                    JsMap<String, JsMap<Double, Debouncer>> jsmap,
+                    Node key) {
 
-                        if (element != null && element == key) {
-                            nativeConsoleLog("flushAll element: ", key);
-                            nativeConsoleLog("jsmap: " + jsmap.size());
-                            jsmap.mapValues().forEach(value -> {
-                                nativeConsoleLog("value: " + value.size());
-                                value.mapValues().forEach(debouncer -> {
-                                    nativeConsoleLog(
-                                            "Flushing... " + debouncer.identifier);
-                                    debouncer.lastCommand.accept(null);
-                                    executedCommands.add(debouncer.lastCommand);
-                                /*
-                                if (debouncer.idleTimer != null) {
-                                    debouncer.idleTimer.cancel();
-                                }
-                                if (debouncer.intermediateTimer != null) {
-                                    debouncer.intermediateTimer.cancel();
-                                }
-                                 */
-                                });
-                            });
-                        } else {
-                            nativeConsoleLog("======= flushAll discard element", key);
+                nativeConsoleLog("flushAll element: ", key);
+                nativeConsoleLog("jsmap: " + jsmap.size());
+                jsmap.mapValues().forEach(value -> {
+                    nativeConsoleLog("value: " + value.size());
+                    value.mapValues().forEach(debouncer -> {
+                        nativeConsoleLog(
+                                "Flushing... " + debouncer.identifier);
+                        debouncer.lastCommand.accept(null);
+                        executedCommands.add(debouncer.lastCommand);
+                        if (debouncer.idleTimer != null) {
+                            debouncer.idleTimer.cancel();
+                            debouncer.idleTimer.schedule((int) debouncer.timeout);
                         }
-                    }
+                            /*
+                            if (debouncer.intermediateTimer != null) {
+                                debouncer.intermediateTimer.cancel();
+                            }
+                             */
+                        //debouncer.unregister();
+                    });
                 });
+            }
+        };
+
+        debouncers.forEach(flusher);
 
         //debouncers.clear();
         return executedCommands;

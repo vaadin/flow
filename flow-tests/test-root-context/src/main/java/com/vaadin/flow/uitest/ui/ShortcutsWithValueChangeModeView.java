@@ -23,15 +23,20 @@ import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.data.value.ValueChangeMode;
+import com.vaadin.flow.router.AfterNavigationEvent;
+import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
-@Route(value = "com.vaadin.flow.uitest.ui.ShortcutsWithLazyValueChangeView", layout = ViewTestLayout.class)
-public class ShortcutsWithLazyValueChangeView extends Div {
+@Route(value = "com.vaadin.flow.uitest.ui.ShortcutsWithValueChangeModeView", layout = ViewTestLayout.class)
+public class ShortcutsWithValueChangeModeView extends Div
+        implements AfterNavigationObserver {
 
-    public ShortcutsWithLazyValueChangeView() {
+    private final Input input;
 
-        Input input = new Input();
+    public ShortcutsWithValueChangeModeView() {
+
+        input = new Input();
         input.setId("input");
 
         NativeButton button = new NativeButton("Report value");
@@ -39,6 +44,7 @@ public class ShortcutsWithLazyValueChangeView extends Div {
 
         Paragraph value = new Paragraph();
         value.setId("value");
+        value.setText("");
 
         add(input, button, value);
 
@@ -47,9 +53,19 @@ public class ShortcutsWithLazyValueChangeView extends Div {
         input.setValueChangeTimeout(3000);
 
         // clickShortcutWorks
-        button.setText("Button triggered by CTRL + S");
-        button.addClickShortcut(Key.KEY_S, KeyModifier.CONTROL);
+        button.setText("Button triggered by CTRL + ALT + S");
+        button.addClickShortcut(Key.KEY_S, KeyModifier.CONTROL,
+                KeyModifier.ALT);
         button.addClickListener(e -> value.setText(input.getValue()));
 
+    }
+
+    @Override
+    public void afterNavigation(AfterNavigationEvent event) {
+        String valueChangeMode = event.getLocation().getQueryParameters()
+                .getQueryString();
+        if (valueChangeMode != null) {
+            input.setValueChangeMode(ValueChangeMode.valueOf(valueChangeMode));
+        }
     }
 }
