@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.server.communication;
 
-import jakarta.servlet.http.HttpServletRequest;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -25,12 +23,14 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import jakarta.servlet.http.HttpServletRequest;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
@@ -59,13 +59,12 @@ import com.vaadin.flow.shared.ui.LoadMode;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
-
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -151,6 +150,12 @@ public class UidlWriterTest {
     @Tag("super-parent")
     public static class SuperParentClass extends Component
             implements RouterLayout {
+    }
+
+    @Tag("components-container")
+    public static class ComponentsContainer extends Component
+            implements HasComponents {
+
     }
 
     @After
@@ -287,6 +292,24 @@ public class UidlWriterTest {
                 response.hasKey(ApplicationConstants.RESYNCHRONIZE_ID));
         assertTrue("Response resynchronize field is set to true",
                 response.getBoolean(ApplicationConstants.RESYNCHRONIZE_ID));
+    }
+
+    @Test
+    public void createUild_allChangesCollected_uiIsNotDirty() throws Exception {
+        UI ui = initializeUIForDependenciesTest(new TestUI());
+
+        ComponentsContainer container = new ComponentsContainer();
+        container.add(new ChildComponent());
+        ui.add(container);
+        // removing all elements causes an additional ListClearChange to be
+        // added during collectChanges process
+        container.removeAll();
+
+        UidlWriter uidlWriter = new UidlWriter();
+        uidlWriter.createUidl(ui, false, true);
+
+        assertFalse("UI is still dirty after creating UIDL",
+                ui.getInternals().isDirty());
     }
 
     private void assertInlineDependencies(List<JsonObject> inlineDependencies) {
