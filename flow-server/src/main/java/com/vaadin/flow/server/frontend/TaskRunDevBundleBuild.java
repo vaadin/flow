@@ -112,15 +112,8 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                 .getPackages();
 
         if (!hashAndBundleModulesEqual(statsJson, packageJson, npmPackages)) {
-            // Hash in the project doesn't matche the bundle hash or NpmPackages
-            // are
-            // missing found.
-            return true;
-        }
-
-        if (!hasAllNpmModules(statsJson, packageJson, npmPackages)) {
-            // The bundle (stats.json) does not include all packages listed in
-            // package.json
+            // Hash in the project doesn't match the bundle hash or NpmPackages
+            // are found missing in bundle.
             return true;
         }
 
@@ -130,6 +123,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
     /**
      * Verify that package hash versions are equal and that all project
      * npmPackages are in bundle.
+     *
      *
      * @param statsJson
      *            devBundle statsJson
@@ -157,6 +151,37 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                 return false;
             }
         }
+
+        JsonObject dependencies = packageJson.getObject("dependencies");
+
+        List<String> collection = Arrays.stream(dependencies.keys())
+                .filter(pkg -> !dependencies.hasKey(pkg))
+                .collect(Collectors.toList());
+
+        if (!collection.isEmpty()) {
+            for (String dependency : collection) {
+                getLogger().info("Dependency " + dependency
+                        + " is missing from the bundle");
+            }
+            return false;
+        }
+
+        // We know here that all dependencies exist
+        collection = Arrays.stream(dependencies.keys())
+                .filter(pkg -> !dependencies.getString(pkg)
+                        .equals(bundleModules.getString(pkg)))
+                .collect(Collectors.toList());
+
+        if (!collection.isEmpty()) {
+            for (String pkg : collection) {
+                getLogger().info(
+                        "Dependency {}:{} has the wrong version {} in the bundle",
+                        pkg, dependencies.getString(pkg),
+                        bundleModules.getString(pkg));
+            }
+            return false;
+        }
+
         return true;
     }
 
@@ -189,36 +214,6 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         }
 
         return null;
-    }
-
-    /**
-     * Check that bundle and package.json contents match.
-     * <p>
-     * {@code @NpmPackage}s were already verified against bundle packages.
-     *
-     * @param statsJson
-     *            bundle stats.json
-     * @param packageJson
-     *            package.json
-     * @param npmPackages
-     *            {@code @NpmPackage} key-value map
-     * @return {@code true} if everything matches
-     */
-    private static boolean hasAllNpmModules(JsonObject statsJson,
-            JsonObject packageJson, Map<String, String> npmPackages) {
-
-        JsonObject bundleNpmModules = statsJson.getObject("npmModules");
-        JsonObject dependencies = packageJson.getObject("dependencies");
-
-        for (String dependency : dependencies.keys()) {
-            if (!bundleNpmModules.hasKey(dependency)) {
-                getLogger().info("Dependency " + dependency
-                        + " is missing from the bundle");
-                return false;
-            }
-        }
-
-        return true;
     }
 
     /**

@@ -1470,7 +1470,7 @@ public class FrontendUtils {
      *
      * @param projectDir
      *            the project base directory
-     * @return stats.json content
+     * @return stats.json content or {@code null} if not found
      * @throws IOException
      *             if an I/O exception occurs.
      */
@@ -1478,15 +1478,14 @@ public class FrontendUtils {
             throws IOException {
         URL statsJson = findBundleFile(projectDir, "config/stats.json");
         if (statsJson == null) {
-            throw new IllegalStateException(
+            getLogger().warn(
                     "The application is running in express mode but there is "
                             + "no bundle found. There is no 'dev-bundle' directory in the "
                             + "project (or it has an invalid content) or on the "
-                            + "classpath nor is there a default bundle included. Delete"
-                            + " the 'dev-bundle' directory, if it exists, and restart "
-                            + "the application.");
-        } else {
-            return IOUtils.toString(statsJson, StandardCharsets.UTF_8);
+                            + "classpath nor is there a default bundle included.");
+            return null;
         }
+
+        return IOUtils.toString(statsJson, StandardCharsets.UTF_8);
     }
 }

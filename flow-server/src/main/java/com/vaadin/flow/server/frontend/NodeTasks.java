@@ -109,6 +109,9 @@ public class NodeTasks implements FallibleCommand {
                             options.generateEmbeddableWebComponents,
                             options.useLegacyV14Bootstrap, featureFlags);
 
+            // The dev bundle check needs the frontendDependencies to be able to
+            // determine if we need a rebuild as the check happens immediately
+            // and no update tasks are executed before it.
             if (!options.productionMode && options.isDevBundleBuild()) {
                 if (TaskRunDevBundleBuild.needsBuild(options.getNpmFolder(),
                         frontendDependencies)) {
