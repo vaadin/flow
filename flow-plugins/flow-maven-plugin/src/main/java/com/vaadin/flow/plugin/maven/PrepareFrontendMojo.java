@@ -28,7 +28,7 @@ import org.sonatype.plexus.build.incremental.BuildContext;
 
 /**
  * This goal checks that node and npm tools are installed and creates or updates
- * `package.json` and `webpack.config.json` files.
+ * `package.json` and the frontend build tool configuration files.
  * <p>
  * Copies frontend resources available inside `.jar` dependencies to
  * `node_modules` when building a jar package.

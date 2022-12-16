@@ -30,11 +30,10 @@ import static com.vaadin.flow.server.Constants.TARGET;
 public class NodeTasksExecutionTest {
 
     private static final String DEV_SERVER_VITE = "VITE";
-    private static final String DEV_SERVER_WEBPACK = "WEBPACK";
 
     @Parameterized.Parameters(name = "{0}")
     public static Collection<String> devServers() {
-        return List.of(DEV_SERVER_VITE, DEV_SERVER_WEBPACK);
+        return List.of(DEV_SERVER_VITE);
     }
 
     @Rule
@@ -57,13 +56,6 @@ public class NodeTasksExecutionTest {
                 .withBuildDirectory(TARGET);
         options.withProductionMode(false);
 
-        if (DEV_SERVER_WEBPACK.equals(devServerImpl)) {
-            options.useV14Bootstrap(true);
-            options.setJavaResourceFolder(temporaryFolder.getRoot());
-            createFeatureFlagsFile(
-                    "com.vaadin.experimental.webpackForFrontendBuild=true");
-        }
-
         nodeTasks = new NodeTasks(options);
 
         // get the private list of task execution order
@@ -82,11 +74,9 @@ public class NodeTasksExecutionTest {
         commandsField.setAccessible(true);
         commands = (List<FallibleCommand>) commandsField.get(nodeTasks);
 
-        if (DEV_SERVER_VITE.equals(devServerImpl)) {
-            // With Vite we always have two default tasks that cannot be reomve
-            // by configuring builder
-            commands.clear();
-        }
+        // With Vite we always have two default tasks that cannot be removed
+        // by configuration options
+        commands.clear();
 
         Assert.assertEquals("No commands should be added initially, "
                 + "update mock builder so that we don't automatically add any tasks!",

@@ -218,7 +218,7 @@ public class PrepareFrontendMojoTest {
     @Test
     public void should_keepDependencies_when_packageJsonExists()
             throws Exception {
-        JsonObject json = TestUtils.getInitalPackageJson();
+        JsonObject json = TestUtils.getInitialPackageJson();
         json.put("dependencies", Json.createObject());
         json.getObject("dependencies").put("foo", "bar");
         FileUtils.fileWrite(packageJson, json.toJson());

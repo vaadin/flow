@@ -40,7 +40,7 @@ public class SessionValueIT extends ChromeBrowserTest {
                 .replace("The custom value in the session is: ", "");
 
         // trigger reload
-        findElement(By.id(WebpackDevServerPortView.TRIGGER_RELOAD_ID)).click();
+        findElement(By.id(SessionValueView.TRIGGER_RELOAD_ID)).click();
 
         waitForElementPresent(By.id("customAttribute"));
         div = $("div").id("customAttribute");
@@ -49,7 +49,7 @@ public class SessionValueIT extends ChromeBrowserTest {
         Assert.assertEquals(customAttribute, customAttributeAfterReload);
 
         // trigger reload
-        findElement(By.id(WebpackDevServerPortView.TRIGGER_RELOAD_ID)).click();
+        findElement(By.id(SessionValueView.TRIGGER_RELOAD_ID)).click();
 
         waitForElementPresent(By.id("customAttribute"));
         div = $("div").id("customAttribute");

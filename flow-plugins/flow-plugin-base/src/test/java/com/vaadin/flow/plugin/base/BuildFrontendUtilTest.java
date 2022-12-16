@@ -3,19 +3,14 @@ package com.vaadin.flow.plugin.base;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeoutException;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -69,12 +64,6 @@ public class BuildFrontendUtilTest {
 
         tools = Mockito.mock(FrontendTools.class);
 
-        // setup: mock a webpack executable
-        File webpackBin = new File(baseDir, "node_modules/webpack/bin");
-        Assert.assertTrue(webpackBin.mkdirs());
-        File webPackExecutableMock = new File(webpackBin, "webpack.js");
-        Assert.assertTrue(webPackExecutableMock.createNewFile());
-
         // setup: mock a vite executable
         File viteBin = new File(baseDir, "node_modules/vite/bin");
         Assert.assertTrue(viteBin.mkdirs());
@@ -89,36 +78,6 @@ public class BuildFrontendUtilTest {
         try (FileOutputStream out = new FileOutputStream(statsJson)) {
             IOUtils.write("{\"npmModules\":{}}", out, StandardCharsets.UTF_8);
         }
-    }
-
-    @Test
-    public void testWebpackRequiredFlagsPassedToNodeEnvironment()
-            throws IOException, URISyntaxException, TimeoutException {
-        Assume.assumeFalse("Test not runnable on Windows",
-                FrontendUtils.isWindows());
-        Assume.assumeTrue("Test requires /bin/bash",
-                new File("/bin/bash").exists());
-
-        // given: "node" stub that exits normally only if expected environment
-        // set
-        File fakeNode = new File(baseDir, "node");
-        try (PrintWriter out = new PrintWriter(fakeNode)) {
-            out.println("#!/bin/bash");
-            out.println("[ x$NODE_OPTIONS == xexpected ]");
-            out.println("exit $?");
-        }
-        Assert.assertTrue(fakeNode.setExecutable(true));
-        Mockito.when(tools.getNodeExecutable())
-                .thenReturn(fakeNode.getAbsolutePath());
-
-        Map<String, String> environment = new HashMap<>();
-        environment.put("NODE_OPTIONS", "expected");
-        Mockito.when(tools.getWebpackNodeEnvironment()).thenReturn(environment);
-
-        // then
-        BuildFrontendUtil.runWebpack(adapter, tools);
-
-        // terminates successfully
     }
 
     @Test
