@@ -269,6 +269,20 @@ public final class Constants implements Serializable {
             + APPLICATION_THEME_ROOT + "/";
 
     /**
+     * @deprecated Use
+     *             {@link InitParameters#SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE}
+     *             instead.
+     */
+    @Deprecated
+    public static final String SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE = InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE;
+    /**
+     * @deprecated Use {@link InitParameters#SERVLET_PARAMETER_ENABLE_PNPM}
+     *             instead.
+     */
+    @Deprecated
+    public static final String SERVLET_PARAMETER_ENABLE_PNPM = InitParameters.SERVLET_PARAMETER_ENABLE_PNPM;
+
+    /**
      * Constant for whether pnpm is default or not.
      */
     public static final boolean ENABLE_PNPM_DEFAULT = false;

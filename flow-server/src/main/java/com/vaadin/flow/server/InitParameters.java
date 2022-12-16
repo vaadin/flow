@@ -86,7 +86,7 @@ public class InitParameters implements Serializable {
      * Configuration name for the time waiting for the frontend build tool to
      * output a success or error pattern.
      */
-    public static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT = "devmode.webpack.output.pattern.timeout";
+    public static final String SERVLET_PARAMETER_DEVMODE_TIMEOUT = "devmode.output.pattern.timeout";
 
     /**
      * Configuration name for adding extra options to the vite.
