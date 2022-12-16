@@ -23,8 +23,7 @@ public class TaskRunDevBundleBuildTest {
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     @Test
-    public void noDevBundle_bundleCompilationRequires()
-            throws IOException {
+    public void noDevBundle_bundleCompilationRequires() throws IOException {
         final boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(
                 temporaryFolder.getRoot(),
                 Mockito.mock(FrontendDependenciesScanner.class));

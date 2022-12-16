@@ -148,19 +148,19 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
 
         // Check that bundle modules contains all package dependencies
         if (packageJsonHash.equals(bundlePackageJsonHash)) {
-            if (missingNpmPackages(npmPackages, bundleModules)) {
+            if (!dependenciesContainsAllPackages(npmPackages, bundleModules)) {
                 return false;
             }
         }
 
         JsonObject dependencies = packageJson.getObject("dependencies");
 
-        List<String> collection = Arrays.stream(dependencies.keys())
+        List<String> missingFromBundle = Arrays.stream(dependencies.keys())
                 .filter(pkg -> !bundleModules.hasKey(pkg))
                 .collect(Collectors.toList());
 
-        if (!collection.isEmpty()) {
-            for (String dependency : collection) {
+        if (!missingFromBundle.isEmpty()) {
+            for (String dependency : missingFromBundle) {
                 getLogger().info("Dependency " + dependency
                         + " is missing from the bundle");
             }
@@ -168,13 +168,13 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         }
 
         // We know here that all dependencies exist
-        collection = Arrays.stream(dependencies.keys())
+        missingFromBundle = Arrays.stream(dependencies.keys())
                 .filter(pkg -> !dependencies.getString(pkg)
                         .equals(bundleModules.getString(pkg)))
                 .collect(Collectors.toList());
 
-        if (!collection.isEmpty()) {
-            for (String pkg : collection) {
+        if (!missingFromBundle.isEmpty()) {
+            for (String pkg : missingFromBundle) {
                 getLogger().info(
                         "Dependency {}:{} has the wrong version {} in the bundle",
                         pkg, dependencies.getString(pkg),
@@ -226,8 +226,8 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
      *            json object containing dependencies to check against
      * @return {@code false} if all packages are found
      */
-    private static boolean missingNpmPackages(Map<String, String> npmPackages,
-            JsonObject dependencies) {
+    private static boolean dependenciesContainsAllPackages(
+            Map<String, String> npmPackages, JsonObject dependencies) {
         final List<String> collect = npmPackages.keySet().stream()
                 .filter(pkg -> !(dependencies.hasKey(pkg) && dependencies
                         .getString(pkg).equals(npmPackages.get(pkg))))
@@ -235,9 +235,9 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         if (!collect.isEmpty()) {
             collect.forEach(dependency -> getLogger().info("Dependency "
                     + dependency + " is missing from the bundle"));
-            return true;
+            return false;
         }
-        return false;
+        return true;
     }
 
     private static Logger getLogger() {
