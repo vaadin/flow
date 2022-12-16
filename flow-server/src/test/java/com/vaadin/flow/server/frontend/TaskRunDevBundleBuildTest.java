@@ -205,4 +205,44 @@ public class TaskRunDevBundleBuildTest {
                     needsBuild);
         }
     }
+
+    @Test
+    public void hashesMatch_packageJsonHasRange_statsHasFixed_noCompilationRequired()
+            throws IOException {
+
+        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        packageJson.createNewFile();
+
+        FileUtils.write(packageJson, "{\"dependencies\": {"
+                + "\"@vaadin/router\": \"^1.7.4\"}, "
+                + "\"vaadin\": { \"hash\": \"af45419b27dcb44b875197df4347b97316cc8fa6055458223a73aedddcfe7cc6\"} }",
+                StandardCharsets.UTF_8);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        Mockito.when(depScanner.getPackages())
+                .thenReturn(Collections.emptyMap());
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn("{\n" + " \"npmModules\": {\n"
+                            + "  \"@vaadin/router\": \"1.7.4\""
+                            + "},\n"
+                            + " \"entryScripts\": [\n"
+                            + "  \"VAADIN/build/indexhtml-aa31f040.js\"\n"
+                            + " ],\n"
+                            + " \"packageJsonHash\": \"af45419b27dcb44b875197df4347b97316cc8fa6055458223a73aedddcfe7cc6\"\n"
+                            + "}");
+
+            final boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(temporaryFolder.getRoot(), depScanner);
+            Assert.assertFalse(
+                    "Not missing npmPackage in stats.json should not require compilation",
+                    needsBuild);
+        }
+    }
 }

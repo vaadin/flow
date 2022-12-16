@@ -169,8 +169,8 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
 
         // We know here that all dependencies exist
         missingFromBundle = Arrays.stream(dependencies.keys())
-                .filter(pkg -> !dependencies.getString(pkg)
-                        .equals(bundleModules.getString(pkg)))
+                .filter(pkg -> !versionsMatch(dependencies.getString(pkg),
+                        bundleModules.getString(pkg)))
                 .collect(Collectors.toList());
 
         if (!missingFromBundle.isEmpty()) {
@@ -184,6 +184,13 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         }
 
         return true;
+    }
+
+    private static boolean versionsMatch(String first, String second) {
+        FrontendVersion firstVersion = new FrontendVersion(first);
+        FrontendVersion secondVersion = new FrontendVersion(second);
+
+        return firstVersion.isEqualTo(secondVersion);
     }
 
     private static JsonObject getPackageJson(File npmFolder) {
@@ -229,8 +236,8 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
     private static boolean dependenciesContainsAllPackages(
             Map<String, String> npmPackages, JsonObject dependencies) {
         final List<String> collect = npmPackages.keySet().stream()
-                .filter(pkg -> !(dependencies.hasKey(pkg) && dependencies
-                        .getString(pkg).equals(npmPackages.get(pkg))))
+                .filter(pkg -> !(dependencies.hasKey(pkg) && versionsMatch(
+                        dependencies.getString(pkg), npmPackages.get(pkg))))
                 .collect(Collectors.toList());
         if (!collect.isEmpty()) {
             collect.forEach(dependency -> getLogger().info("Dependency "
