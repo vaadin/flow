@@ -14,7 +14,6 @@ const globalExclusions = ['flow-tests/servlet-containers/tomcat10'];
 
 // Container 1:
 //  When running `flow-tests/test-mixed/pom-npm.xml` together with the following modules they fail
-//  - flow-tests/test-root-ui-context
 //  - flow-tests/test-live-reload
 //  - flow-tests/test-dev-mode
 // Containers 2 & 3:
@@ -87,7 +86,6 @@ const moduleWeights = {
   'flow-tests/test-frontend/vite-pwa-custom-offline-path': { weight: 4 },
   'flow-tests/test-frontend/vite-embedded': { weight: 4 },
   'flow-tests/test-pwa/pom-production.xml': { weight: 3 },
-  'flow-tests/test-root-ui-context': { weight: 3 },
   'flow-tests/test-ccdm/pom-production.xml': { weight: 3 },
   'flow-tests/test-themes': { weight: 3 },
   'flow-tests/test-redeployment': { weight: 3 },
