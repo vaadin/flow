@@ -202,7 +202,7 @@ public class BuildFrontendMojoTest {
         // need to run `npm install`
         createExpectedImports(frontendDirectory, nodeModulesPath);
         FileUtils.fileWrite(packageJson, "UTF-8",
-                TestUtils.getInitalPackageJson().toJson());
+                TestUtils.getInitialPackageJson().toJson());
 
         lookup = Mockito.mock(Lookup.class);
         Mockito.doReturn(new TestEndpointGeneratorTaskFactory()).when(lookup)
@@ -438,7 +438,7 @@ public class BuildFrontendMojoTest {
     @Test
     public void mavenGoalWhenPackageJsonContainsDependencies_onlyFrameworkHandledDependencyIsTouched()
             throws Exception {
-        JsonObject json = TestUtils.getInitalPackageJson();
+        JsonObject json = TestUtils.getInitialPackageJson();
         JsonObject dependencies = Json.createObject();
         // Add dependencies foo-bar and bar-foo
         dependencies.put("foo", "bar");
@@ -571,16 +571,16 @@ public class BuildFrontendMojoTest {
             Arrays.asList(imports)
                     .forEach(s -> Assert.assertTrue(
                             s + " not found in:\n" + content,
-                            content.contains(addWebpackPrefix(s))));
+                            content.contains(addFrontendPrefix(s))));
         } else {
             Arrays.asList(imports)
                     .forEach(s -> Assert.assertFalse(
                             s + " found in:\n" + content,
-                            content.contains(addWebpackPrefix(s))));
+                            content.contains(addFrontendPrefix(s))));
         }
     }
 
-    private String addWebpackPrefix(String s) {
+    private String addFrontendPrefix(String s) {
         if (s.startsWith("./")) {
             return FRONTEND_FOLDER_ALIAS + s.substring(2);
         }
@@ -592,9 +592,9 @@ public class BuildFrontendMojoTest {
 
         List<String> current = FileUtils.loadFile(importsFile);
 
-        Set<String> removed = current
-                .stream().filter(line -> importsList.stream()
-                        .map(this::addWebpackPrefix).anyMatch(line::contains))
+        Set<String> removed = current.stream()
+                .filter(line -> importsList.stream()
+                        .map(this::addFrontendPrefix).anyMatch(line::contains))
                 .collect(Collectors.toSet());
 
         current.removeAll(removed);
@@ -605,7 +605,7 @@ public class BuildFrontendMojoTest {
     }
 
     private void addImports(String... imports) throws IOException {
-        String content = Arrays.stream(imports).map(this::addWebpackPrefix)
+        String content = Arrays.stream(imports).map(this::addFrontendPrefix)
                 .map(s -> "import '" + s + "';")
                 .collect(Collectors.joining("\n"));
 

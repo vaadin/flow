@@ -173,7 +173,6 @@
                                 <directory>${project.basedir}</directory>
                                 <includes>
                                     <include>package*.json</include>
-                                    <include>webpack*.js</include>
                                 </includes>
                             </fileset>
                         </filesets>
@@ -422,7 +421,6 @@
                                     <directory>${project.basedir}</directory>
                                     <includes>
                                         <include>package*.json</include>
-                                        <include>webpack.*.js</include>
                                         <include>types.d.ts</include>
                                         <include>tsconfig.json</include>
                                         <include>pnpm-lock.yaml</include>

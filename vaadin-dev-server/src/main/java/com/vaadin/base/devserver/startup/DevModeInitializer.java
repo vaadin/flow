@@ -67,7 +67,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.base.devserver.ViteHandler;
-import com.vaadin.base.devserver.WebpackHandler;
 import com.vaadin.base.devserver.stats.DevModeUsageStatistics;
 import com.vaadin.base.devserver.stats.StatisticsSender;
 import com.vaadin.base.devserver.stats.StatisticsStorage;
@@ -250,7 +249,7 @@ public class DevModeInitializer implements Serializable {
         File generatedPackages = new File(options.getGeneratedFolder(),
                 PACKAGE_JSON);
 
-        // Regenerate webpack configuration, as it may be necessary to
+        // Regenerate Vite configuration, as it may be necessary to
         // update it
         // TODO: make sure target directories are aligned with build
         // config,
@@ -347,8 +346,7 @@ public class DevModeInitializer implements Serializable {
 
         Runnable runnable = () -> {
             runNodeTasks(context, tokenFileData, tasks);
-            if (config.enableDevServer()
-                    && !featureFlags.isEnabled(FeatureFlags.WEBPACK)) {
+            if (config.enableDevServer()) {
                 // For Vite, wait until a VaadinServlet is deployed so we know
                 // which frontend servlet path to use
                 if (VaadinServlet.getFrontendMapping() == null) {
@@ -374,9 +372,6 @@ public class DevModeInitializer implements Serializable {
             nodeTasksFuture.join();
 
             return null;
-        } else if (featureFlags.isEnabled(FeatureFlags.WEBPACK)) {
-            return new WebpackHandler(devServerLookup, port,
-                    options.getNpmFolder(), nodeTasksFuture);
         } else {
             return new ViteHandler(devServerLookup, port,
                     options.getNpmFolder(), nodeTasksFuture);
