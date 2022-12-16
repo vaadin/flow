@@ -169,7 +169,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
 
         // We know here that all dependencies exist
         missingFromBundle = Arrays.stream(dependencies.keys())
-                .filter(pkg -> !versionsMatch(dependencies.getString(pkg),
+                .filter(pkg -> !versionAccepted(dependencies.getString(pkg),
                         bundleModules.getString(pkg)))
                 .collect(Collectors.toList());
 
@@ -186,11 +186,16 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         return true;
     }
 
-    private static boolean versionsMatch(String first, String second) {
-        FrontendVersion firstVersion = new FrontendVersion(first);
-        FrontendVersion secondVersion = new FrontendVersion(second);
+    private static boolean versionAccepted(String expected, String actual) {
+        FrontendVersion expectedVersion = new FrontendVersion(expected);
+        FrontendVersion actualVersion = new FrontendVersion(actual);
 
-        return firstVersion.isEqualTo(secondVersion);
+        if(expected.startsWith("~") || expected.startsWith("^")) {
+            // Installed version may be newer than the package version.
+            return expectedVersion.isEqualTo(actualVersion)
+                    || expectedVersion.isOlderThan(actualVersion);
+        }
+        return expectedVersion.isEqualTo(actualVersion);
     }
 
     private static JsonObject getPackageJson(File npmFolder) {
@@ -236,7 +241,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
     private static boolean dependenciesContainsAllPackages(
             Map<String, String> npmPackages, JsonObject dependencies) {
         final List<String> collect = npmPackages.keySet().stream()
-                .filter(pkg -> !(dependencies.hasKey(pkg) && versionsMatch(
+                .filter(pkg -> !(dependencies.hasKey(pkg) && versionAccepted(
                         dependencies.getString(pkg), npmPackages.get(pkg))))
                 .collect(Collectors.toList());
         if (!collect.isEmpty()) {
