@@ -23,7 +23,8 @@ public class TaskRunDevBundleBuildTest {
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     @Test
-    public void noDevBundle_bundleCompilationRequires() {
+    public void noDevBundle_bundleCompilationRequires()
+            throws IOException {
         final boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(
                 temporaryFolder.getRoot(),
                 Mockito.mock(FrontendDependenciesScanner.class));
@@ -32,7 +33,8 @@ public class TaskRunDevBundleBuildTest {
     }
 
     @Test
-    public void devBundleStatsJsonMissing_bundleCompilationRequires() {
+    public void devBundleStatsJsonMissing_bundleCompilationRequires()
+            throws IOException {
         try (MockedStatic<FrontendUtils> utils = Mockito
                 .mockStatic(FrontendUtils.class)) {
             utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
