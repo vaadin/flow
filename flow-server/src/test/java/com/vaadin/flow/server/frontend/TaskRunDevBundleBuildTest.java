@@ -230,8 +230,7 @@ public class TaskRunDevBundleBuildTest {
             utils.when(() -> FrontendUtils
                     .findBundleStatsJson(temporaryFolder.getRoot()))
                     .thenReturn("{\n" + " \"npmModules\": {\n"
-                            + "  \"@vaadin/router\": \"1.7.4\""
-                            + "},\n"
+                            + "  \"@vaadin/router\": \"1.7.4\"" + "},\n"
                             + " \"entryScripts\": [\n"
                             + "  \"VAADIN/build/indexhtml-aa31f040.js\"\n"
                             + " ],\n"
@@ -270,8 +269,7 @@ public class TaskRunDevBundleBuildTest {
             utils.when(() -> FrontendUtils
                     .findBundleStatsJson(temporaryFolder.getRoot()))
                     .thenReturn("{\n" + " \"npmModules\": {\n"
-                            + "  \"@vaadin/router\": \"1.8.6\""
-                            + "},\n"
+                            + "  \"@vaadin/router\": \"1.8.6\"" + "},\n"
                             + " \"entryScripts\": [\n"
                             + "  \"VAADIN/build/indexhtml-aa31f040.js\"\n"
                             + " ],\n"
