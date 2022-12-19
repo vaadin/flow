@@ -58,15 +58,6 @@ public class MainView extends Div {
         setSizeFull();
         getStyle().set("text-align", "center");
 
-        final Paragraph viteStatus = new Paragraph(
-                "Vite feature is "
-                        + !FeatureFlags
-                                .get(UI.getCurrent().getSession().getService()
-                                        .getContext())
-                                .isEnabled(FeatureFlags.WEBPACK));
-        viteStatus.setId("status");
-        add(viteStatus);
-
         NativeButton checkOutsideJs = new NativeButton("Check outside JS",
                 e -> {
                     getElement().executeJs(OUTSIDE_RESULT

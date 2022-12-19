@@ -26,8 +26,8 @@ import org.slf4j.LoggerFactory;
  * Opens a server socket which is supposed to be opened until dev mode is active
  * inside JVM.
  * <p>
- * If this socket is closed then there is no anymore Java "client" for the
- * webpack dev server and it should be stopped.
+ * If this socket is closed then there is no anymore Java "client" for the dev
+ * server and it should be stopped.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *

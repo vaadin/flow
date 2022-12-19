@@ -112,7 +112,7 @@ public final class TestUtils {
         }
     }
 
-    public static JsonObject getInitalPackageJson() {
+    public static JsonObject getInitialPackageJson() {
         JsonObject packageJson = Json.createObject();
         JsonObject vaadinPackages = Json.createObject();
 
@@ -123,13 +123,7 @@ public final class TestUtils {
 
         vaadinPackages.put("devDependencies", Json.createObject());
         defaults = vaadinPackages.getObject("devDependencies");
-        defaults.put("webpack", "4.30.0");
-        defaults.put("webpack-cli", "3.3.0");
-        defaults.put("webpack-dev-server", "3.3.0");
-        defaults.put("webpack-babel-multi-target-plugin", "2.3.1");
-        defaults.put("compression-webpack-plugin", "3.0.0");
-        defaults.put("webpack-merge", "4.2.1");
-        defaults.put("raw-loader", "3.0.0");
+        defaults.put("vite", "3.4.5");
 
         vaadinPackages.put("hash", "");
         packageJson.put("vaadin", vaadinPackages);

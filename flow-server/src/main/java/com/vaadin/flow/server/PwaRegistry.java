@@ -41,7 +41,6 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.server.communication.PwaHandler;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
@@ -633,7 +632,6 @@ public class PwaRegistry implements Serializable {
         VaadinContext context = VaadinService.getCurrent().getContext();
         ApplicationConfiguration configuration = ApplicationConfiguration
                 .get(context);
-        return configuration != null && !configuration.isProductionMode()
-                && !FeatureFlags.get(context).isEnabled(FeatureFlags.WEBPACK);
+        return configuration != null && !configuration.isProductionMode();
     }
 }

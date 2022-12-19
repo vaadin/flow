@@ -178,7 +178,8 @@ function statsExtracterPlugin(): PluginOption {
     async writeBundle(options: OutputOptions, bundle: { [fileName: string]: AssetInfo | ChunkInfo }) {
       const modules = Object.values(bundle).flatMap((b) => (b.modules ? Object.keys(b.modules) : []));
       const nodeModulesFolders = modules
-          .filter((id) => id.startsWith(nodeModulesFolder))
+          .map((id) => id.replace(/\\/g, '/'))
+          .filter((id) => id.startsWith(nodeModulesFolder.replace(/\\/g, '/')))
           .map(id => id.substring(nodeModulesFolder.length + 1));
       const npmModules = nodeModulesFolders
         .map((id) => id.replace(/\\/g, '/'))

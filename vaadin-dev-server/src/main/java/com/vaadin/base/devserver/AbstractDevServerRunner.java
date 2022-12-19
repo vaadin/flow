@@ -394,7 +394,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
             getLogger().info(LOG_START, getServerName());
 
             int timeout = Integer.parseInt(config.getStringProperty(
-                    InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT,
+                    InitParameters.SERVLET_PARAMETER_DEVMODE_TIMEOUT,
                     DEFAULT_TIMEOUT_FOR_PATTERN));
             outputTracker.awaitFirstMatch(timeout);
 
