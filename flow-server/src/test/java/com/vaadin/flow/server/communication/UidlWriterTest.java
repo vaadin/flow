@@ -31,16 +31,19 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
+import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.internal.JsonUtils;
+import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteConfiguration;
@@ -59,15 +62,15 @@ import com.vaadin.flow.shared.ui.LoadMode;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
-
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 @NotThreadSafe
@@ -151,6 +154,12 @@ public class UidlWriterTest {
     @Tag("super-parent")
     public static class SuperParentClass extends Component
             implements RouterLayout {
+    }
+
+    @Tag("components-container")
+    public static class ComponentsContainer extends Component
+            implements HasComponents {
+
     }
 
     @After
@@ -287,6 +296,43 @@ public class UidlWriterTest {
                 response.hasKey(ApplicationConstants.RESYNCHRONIZE_ID));
         assertTrue("Response resynchronize field is set to true",
                 response.getBoolean(ApplicationConstants.RESYNCHRONIZE_ID));
+    }
+
+    @Test
+    public void createUidl_allChangesCollected_uiIsNotDirty() throws Exception {
+        UI ui = initializeUIForDependenciesTest(new TestUI());
+
+        ComponentsContainer container = new ComponentsContainer();
+        container.add(new ChildComponent());
+        ui.add(container);
+        // removing all elements causes an additional ListClearChange to be
+        // added during collectChanges process
+        container.removeAll();
+
+        UidlWriter uidlWriter = new UidlWriter();
+        uidlWriter.createUidl(ui, false, true);
+
+        assertFalse("UI is still dirty after creating UIDL",
+                ui.getInternals().isDirty());
+    }
+
+    @Test
+    public void createUidl_collectChangesUIStillDirty_shouldNotLoopEndlessly()
+            throws Exception {
+        UI ui = initializeUIForDependenciesTest(spy(new TestUI()));
+        StateTree stateTree = spy(ui.getInternals().getStateTree());
+        UIInternals internals = spy(ui.getInternals());
+
+        when(ui.getInternals()).thenReturn(internals);
+        when(internals.getStateTree()).thenReturn(stateTree);
+        when(stateTree.hasDirtyNodes()).thenReturn(true);
+
+        UidlWriter uidlWriter = new UidlWriter();
+        uidlWriter.createUidl(ui, false, true);
+
+        assertTrue(
+                "Simulating collectChanges bug and expecting UI to be still dirty after creating UIDL",
+                ui.getInternals().isDirty());
     }
 
     private void assertInlineDependencies(List<JsonObject> inlineDependencies) {
