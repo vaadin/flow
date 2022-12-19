@@ -727,17 +727,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
             document.outputSettings().prettyPrint(false);
 
-            // In V14 legacy bootstrap mode, the theme is initialized in
-            // target/frontend/generated-flow-imports.js but not in normal
-            // bootstrap mode and for exported webcomponents; set a flag in
-            // the DOM only if initialization is needed.
-            if (context.isInitTheme()) {
-                head.prependElement(SCRIPT_TAG).attr("type", "text/javascript")
-                        .appendChild(new DataNode(
-                                "window.Vaadin = window.Vaadin || {}; window.Vaadin.theme = window.Vaadin.theme || {};"
-                                        + "window.Vaadin.theme.flowBootstrap = true;"));
-            }
-
             BootstrapUtils.getInlineTargets(context)
                     .ifPresent(targets -> handleInlineTargets(context, head,
                             document.body(), targets));
