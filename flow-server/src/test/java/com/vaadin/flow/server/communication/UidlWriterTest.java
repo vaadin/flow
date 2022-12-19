@@ -298,7 +298,7 @@ public class UidlWriterTest {
     }
 
     @Test
-    public void createUild_allChangesCollected_uiIsNotDirty() throws Exception {
+    public void createUidl_allChangesCollected_uiIsNotDirty() throws Exception {
         UI ui = initializeUIForDependenciesTest(new TestUI());
 
         ComponentsContainer container = new ComponentsContainer();
@@ -316,7 +316,7 @@ public class UidlWriterTest {
     }
 
     @Test
-    public void createUild_collectChangesUIStillDirty_shouldNotLoopEndlessly()
+    public void createUidl_collectChangesUIStillDirty_shouldNotLoopEndlessly()
             throws Exception {
         UI ui = initializeUIForDependenciesTest(spy(new TestUI()));
         StateTree stateTree = spy(ui.getInternals().getStateTree());
