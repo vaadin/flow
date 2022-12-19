@@ -346,6 +346,81 @@ public class BuildFrontendUtil {
     }
 
     /**
+     * Run a dev-bundle build.
+     *
+     * @param adapter
+     *            - the PluginAdapterBase.
+     * @throws ExecutionFailedException
+     *             - a ExecutionFailedException.
+     * @throws URISyntaxException
+     *             - - Could not build an URI from nodeDownloadRoot().
+     */
+    public static void runDevBuildNodeUpdater(PluginAdapterBuild adapter)
+            throws ExecutionFailedException, URISyntaxException, IOException {
+
+        Set<File> jarFiles = adapter.getJarFiles();
+        final URI nodeDownloadRootURI;
+
+        nodeDownloadRootURI = adapter.nodeDownloadRoot();
+
+        ClassFinder classFinder = adapter.getClassFinder();
+
+        Lookup lookup = adapter.createLookup(classFinder);
+
+        try {
+            FileUtils.forceMkdir(adapter.generatedFolder());
+        } catch (IOException e) {
+            throw new IOException(
+                    "Failed to create folder '" + adapter.generatedFolder()
+                            + "'. Verify that you may write to path.",
+                    e);
+        }
+
+        try {
+            Options options = new com.vaadin.flow.server.frontend.Options(
+                    lookup, adapter.npmFolder()).withProductionMode(false)
+                    .withGeneratedFolder(adapter.generatedFolder())
+                    .withFrontendDirectory(adapter.frontendDirectory())
+                    .withBuildDirectory(adapter.buildFolder())
+                    .runNpmInstall(adapter.runNpmInstall())
+                    .withWebpack(adapter.webpackOutputDirectory(),
+                            adapter.servletResourceOutputDirectory())
+                    .useV14Bootstrap(false).enablePackagesUpdate(true)
+                    .useByteCodeScanner(false)
+                    .withJarFrontendResourcesFolder(
+                            getJarFrontendResourcesFolder(adapter))
+                    .copyResources(jarFiles).copyTemplates(true)
+                    .copyLocalResources(adapter.frontendResourcesDirectory())
+                    .enableImportsUpdate(true)
+                    .withEmbeddableWebComponents(
+                            adapter.generateEmbeddableWebComponents())
+                    .withTokenFile(BuildFrontendUtil.getTokenFile(adapter))
+                    .enablePnpm(adapter.pnpmEnable())
+                    .useGlobalPnpm(adapter.useGlobalPnpm())
+                    .withApplicationProperties(adapter.applicationProperties())
+                    .withEndpointSourceFolder(adapter.javaSourceFolder())
+                    .withEndpointGeneratedOpenAPIFile(adapter.openApiJsonFile())
+                    .withFrontendGeneratedFolder(adapter.generatedTsFolder())
+                    .withHomeNodeExecRequired(adapter.requireHomeNodeExec())
+                    .withNodeVersion(adapter.nodeVersion())
+                    .withNodeDownloadRoot(nodeDownloadRootURI)
+                    .setNodeAutoUpdate(adapter.nodeAutoUpdate())
+                    .setJavaResourceFolder(adapter.javaResourceFolder())
+                    .withPostinstallPackages(adapter.postinstallPackages())
+                    .withDevBundleBuild(true);
+            new NodeTasks(options).execute();
+        } catch (ExecutionFailedException exception) {
+            throw exception;
+        } catch (Throwable throwable) { // NOSONAR Intentionally throwable
+            throw new ExecutionFailedException(
+                    "Error occured during goal execution: "
+                            + throwable.getMessage()
+                            + "Please run Maven with the -e switch (or Gradle with the --stacktrace switch), to learn the full stack trace.",
+                    throwable);
+        }
+    }
+
+    /**
      * Execute the frontend build with the wanted build system.
      *
      * @param adapter
@@ -587,6 +662,24 @@ public class BuildFrontendUtil {
                     StandardCharsets.UTF_8.name());
         } catch (IOException e) {
             adapter.logWarn("Unable to read token file", e);
+        }
+    }
+
+    /**
+     * Delete the build token file. This is used with dev-bundle build as token
+     * file should never be added to the package.
+     *
+     * @param adapter
+     *            used plugin adapter implementation
+     */
+    public static void removeBuildFile(PluginAdapterBuild adapter) {
+        File tokenFile = getTokenFile(adapter);
+        if (tokenFile.exists()) {
+            try {
+                FileUtils.delete(tokenFile);
+            } catch (IOException e) {
+                adapter.logWarn("Unable to delete token file", e);
+            }
         }
     }
 }

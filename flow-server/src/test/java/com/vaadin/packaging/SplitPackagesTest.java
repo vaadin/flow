@@ -34,9 +34,10 @@ public class SplitPackagesTest {
     /*
      * Modules that contain known split packages that we don't care about
      */
-    private static final Set<String> ignoredModules = new HashSet<>(Arrays
-            .asList("demo-flow-components", "flow-tests", "flow-test-generic",
-                    "flow-code-generator", "flow-generated-components"));
+    private static final Set<String> ignoredModules = new HashSet<>(
+            Arrays.asList("demo-flow-components", "flow-tests",
+                    "flow-test-generic", "flow-code-generator",
+                    "flow-generated-components", "flow-dev-bundle-plugin"));
 
     /*
      * Scans through all Maven modules to collect for which Java packages that
