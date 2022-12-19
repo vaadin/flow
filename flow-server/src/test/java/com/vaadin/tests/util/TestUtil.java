@@ -14,6 +14,7 @@ import org.junit.Assert;
 import com.vaadin.flow.server.communication.IndexHtmlRequestHandlerTest;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
+import static com.vaadin.flow.server.frontend.FrontendUtils.THEME_IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEB_COMPONENT_HTML;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -106,13 +107,38 @@ public class TestUtil {
 
     public static void createStatsJsonStub(File projectRootFolder)
             throws IOException {
-        File statsJson = new File(
-                new File(projectRootFolder, "dev-bundle/config/"),
-                "stats.json");
-        FileUtils.forceMkdirParent(statsJson);
-        FileUtils.writeStringToFile(statsJson,
-                "{\"npmModules\": {}, " + "\"entryScripts\": [\"foo.js\"], "
-                        + "\"packageJsonHash\": \"42\"}",
-                UTF_8);
+        String content = "{\"npmModules\": {}, "
+                + "\"entryScripts\": [\"foo.js\"], "
+                + "\"packageJsonHash\": \"42\"}";
+        createStubFile(projectRootFolder, "dev-bundle/config/stats.json",
+                content);
+    }
+
+    public static void createStylesCssStubInBundle(File projectRootFolder,
+            String themeName, String content) throws IOException {
+        createStubFile(projectRootFolder,
+                "dev-bundle/webapp/assets/themes/" + themeName + "/styles.css",
+                content);
+    }
+
+    public static void createThemeJs(File projectRootFolder)
+            throws IOException {
+        String content = "import {applyTheme as _applyTheme} from './theme-my-theme.generated.js';"
+                + "export const applyTheme = _applyTheme;";
+        createStubFile(projectRootFolder,
+                "frontend/generated/" + THEME_IMPORTS_NAME, content);
+    }
+
+    public static void createStyleCssStubInFrontend(File projectRootFolder,
+            String themeName, String content) throws IOException {
+        createStubFile(projectRootFolder,
+                "frontend/themes/" + themeName + "/styles.css", content);
+    }
+
+    public static void createStubFile(File projectRootFolder,
+            String relativePath, String content) throws IOException {
+        File stub = new File(projectRootFolder, relativePath);
+        FileUtils.forceMkdirParent(stub);
+        FileUtils.writeStringToFile(stub, content, UTF_8);
     }
 }

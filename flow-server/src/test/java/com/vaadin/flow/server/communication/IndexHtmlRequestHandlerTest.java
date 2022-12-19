@@ -903,6 +903,26 @@ public class IndexHtmlRequestHandlerTest {
         Assert.assertFalse(bootstrapHandler.canHandleRequest(request));
     }
 
+    @Test
+    public void servingStylesCss_expressBuildMode_addsLinkTagWithStylesCssUrl()
+            throws IOException {
+        File projectRootFolder = temporaryFolder.newFolder();
+        TestUtil.createThemeJs(projectRootFolder);
+        deploymentConfiguration.setProjectFolder(projectRootFolder);
+
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+
+        String indexHtml = responseOutput.toString(UTF_8);
+        Document document = Jsoup.parse(indexHtml);
+
+        Elements linkElements = document.head().getElementsByTag("link");
+        assertEquals(1, linkElements.size());
+        assertEquals("stylesheet", linkElements.get(0).attr("rel"));
+        assertEquals("themes/my-theme/styles.css",
+                linkElements.get(0).attr("href"));
+    }
+
     private VaadinRequest createVaadinRequestWithSpringCsrfToken() {
         VaadinRequest request = Mockito.spy(createVaadinRequest("/"));
         Map<String, String> csrfJsonMap = new HashMap<>();
