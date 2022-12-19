@@ -77,8 +77,6 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     private static final Pattern THEME_GENERATED_FILE_PATTERN = Pattern
             .compile("theme-([\\s\\S]+?)\\.generated\\.js");
 
-    private static String themeName;
-
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException {
@@ -446,22 +444,19 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     }
 
     private static String getThemeName(File projectFolder) throws IOException {
-        if (themeName == null) {
-            File themeJs = new File(projectFolder,
-                    FrontendUtils.FRONTEND + FrontendUtils.GENERATED
-                            + FrontendUtils.THEME_IMPORTS_NAME);
-            String themeJsContent = FileUtils.readFileToString(themeJs,
-                    StandardCharsets.UTF_8);
-            Matcher matcher = THEME_GENERATED_FILE_PATTERN
-                    .matcher(themeJsContent);
-            if (matcher.find()) {
-                themeName = matcher.group(1);
-            } else {
-                throw new IllegalStateException(
-                        "Couldn't extract theme name from theme imports file 'theme.js'");
-            }
+        File themeJs = new File(projectFolder,
+                FrontendUtils.FRONTEND + FrontendUtils.GENERATED
+                        + FrontendUtils.THEME_IMPORTS_NAME);
+        String themeJsContent = FileUtils.readFileToString(themeJs,
+                StandardCharsets.UTF_8);
+        Matcher matcher = THEME_GENERATED_FILE_PATTERN
+                .matcher(themeJsContent);
+        if (matcher.find()) {
+            return matcher.group(1);
+        } else {
+            throw new IllegalStateException(
+                    "Couldn't extract theme name from theme imports file 'theme.js'");
         }
-        return themeName;
     }
 
 }
