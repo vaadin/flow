@@ -36,11 +36,13 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
+import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.internal.JsonUtils;
+import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteConfiguration;
@@ -67,6 +69,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 @NotThreadSafe
@@ -309,6 +312,32 @@ public class UidlWriterTest {
         uidlWriter.createUidl(ui, false, true);
 
         assertFalse("UI is still dirty after creating UIDL",
+                ui.getInternals().isDirty());
+    }
+
+    @Test
+    public void createUild_collectChangesUIStillDirty_shouldNotLoopEndlessly()
+            throws Exception {
+        UI ui = initializeUIForDependenciesTest(spy(new TestUI()));
+        StateTree stateTree = spy(ui.getInternals().getStateTree());
+        UIInternals internals = spy(ui.getInternals());
+
+        when(ui.getInternals()).thenReturn(internals);
+        when(internals.getStateTree()).thenReturn(stateTree);
+        when(stateTree.hasDirtyNodes()).thenReturn(true);
+
+        ComponentsContainer container = new ComponentsContainer();
+        container.add(new ChildComponent());
+        ui.add(container);
+        // removing all elements causes an additional ListClearChange to be
+        // added during collectChanges process
+        container.removeAll();
+
+        UidlWriter uidlWriter = new UidlWriter();
+        uidlWriter.createUidl(ui, false, true);
+
+        assertTrue(
+                "Simulating collectChanges but and expecting UI to be still dirty after creating UIDL",
                 ui.getInternals().isDirty());
     }
 

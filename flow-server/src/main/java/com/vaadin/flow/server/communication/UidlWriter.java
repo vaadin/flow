@@ -404,11 +404,17 @@ public class UidlWriter implements Serializable {
         };
         // A collectChanges round may add additional changes that needs to be
         // collected.
-        // Usually, at most 2 rounds should be necessary.
         // For example NodeList.generateChangesFromEmpty adds a ListClearChange
         // in case of remove has been invoked previously
-        while (stateTree.hasDirtyNodes()) {
+        // Usually, at most 2 rounds should be necessary, so stop checking after
+        // five attempts to avoid infinite loops in case of bugs.
+        int attempts = 5;
+        while (stateTree.hasDirtyNodes() && attempts-- > 0) {
             stateTree.collectChanges(changesCollector);
+        }
+        if (stateTree.hasDirtyNodes()) {
+            getLogger().warn("UI still dirty after collecting changes, "
+                    + "this should not happen and may cause unexpected PUSH invocation.");
         }
 
         componentsWithDependencies
