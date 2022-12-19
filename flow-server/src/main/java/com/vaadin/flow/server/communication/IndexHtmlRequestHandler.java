@@ -180,10 +180,12 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     private void addStylesCssLink(DeploymentConfiguration config,
             Document indexDocument) throws IOException {
         String themeName = getThemeName(config.getProjectFolder());
-        Element element = new Element("link");
-        element.attr("rel", "stylesheet");
-        element.attr("href", "themes/" + themeName + "/styles.css");
-        indexDocument.head().appendChild(element);
+        if (themeName != null) {
+            Element element = new Element("link");
+            element.attr("rel", "stylesheet");
+            element.attr("href", "themes/" + themeName + "/styles.css");
+            indexDocument.head().appendChild(element);
+        }
     }
 
     private void catchErrorsInDevMode(Document indexDocument) {
@@ -444,13 +446,18 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     }
 
     private static String getThemeName(File projectFolder) throws IOException {
-        File themeJs = new File(projectFolder,
-                FrontendUtils.FRONTEND + FrontendUtils.GENERATED
-                        + FrontendUtils.THEME_IMPORTS_NAME);
+        File themeJs = new File(projectFolder, FrontendUtils.FRONTEND
+                + FrontendUtils.GENERATED + FrontendUtils.THEME_IMPORTS_NAME);
+
+        if (!themeJs.exists()) {
+            getLogger().debug(
+                    "Couldn't find file 'theme.js'. A link tag for styles.css won't be added");
+            return null;
+        }
+
         String themeJsContent = FileUtils.readFileToString(themeJs,
                 StandardCharsets.UTF_8);
-        Matcher matcher = THEME_GENERATED_FILE_PATTERN
-                .matcher(themeJsContent);
+        Matcher matcher = THEME_GENERATED_FILE_PATTERN.matcher(themeJsContent);
         if (matcher.find()) {
             return matcher.group(1);
         } else {
