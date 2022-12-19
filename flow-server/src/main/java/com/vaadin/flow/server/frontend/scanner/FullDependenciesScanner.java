@@ -77,7 +77,6 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
 
     private final SerializableBiFunction<Class<?>, Class<? extends Annotation>, List<? extends Annotation>> annotationFinder;
 
-    private final boolean useV14Bootstrap;
     private final boolean fallback;
 
     /**
@@ -86,15 +85,11 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
      *
      * @param finder
      *            a class finder
-     * @param useV14Bootstrap
-     *            whether we are in V14 bootstrap mode
      * @param featureFlags
      *            available feature flags and their status
      */
-    FullDependenciesScanner(ClassFinder finder, boolean useV14Bootstrap,
-            FeatureFlags featureFlags) {
-        this(finder, AnnotationReader::getAnnotationsFor, useV14Bootstrap,
-                featureFlags, false);
+    FullDependenciesScanner(ClassFinder finder, FeatureFlags featureFlags) {
+        this(finder, AnnotationReader::getAnnotationsFor, featureFlags, false);
     }
 
     /**
@@ -103,17 +98,15 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
      *
      * @param finder
      *            a class finder
-     * @param useV14Bootstrap
-     *            whether we are in V14 bootstrap mode
      * @param featureFlags
      *            available feature flags and their status
      * @param fallback
      *            whether dependency scanner is used as fallback
      */
-    FullDependenciesScanner(ClassFinder finder, boolean useV14Bootstrap,
-            FeatureFlags featureFlags, boolean fallback) {
-        this(finder, AnnotationReader::getAnnotationsFor, useV14Bootstrap,
-                featureFlags, fallback);
+    FullDependenciesScanner(ClassFinder finder, FeatureFlags featureFlags,
+            boolean fallback) {
+        this(finder, AnnotationReader::getAnnotationsFor, featureFlags,
+                fallback);
     }
 
     /**
@@ -124,8 +117,6 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
      *            a class finder
      * @param annotationFinder
      *            a strategy to discover class annotations
-     * @param useV14Bootstrap
-     *            whether we are in V14 bootstrap mode
      * @param featureFlags
      *            available feature flags and their status
      * @param fallback
@@ -133,12 +124,10 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
      */
     FullDependenciesScanner(ClassFinder finder,
             SerializableBiFunction<Class<?>, Class<? extends Annotation>, List<? extends Annotation>> annotationFinder,
-            boolean useV14Bootstrap, FeatureFlags featureFlags,
-            boolean fallback) {
+            FeatureFlags featureFlags, boolean fallback) {
         super(finder, featureFlags);
 
         this.fallback = fallback;
-        this.useV14Bootstrap = useV14Bootstrap;
 
         long start = System.currentTimeMillis();
         this.annotationFinder = annotationFinder;
@@ -497,17 +486,16 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
             Set<Class<?>> annotatedClasses = getFinder()
                     .getAnnotatedClasses(loadedPWAAnnotation);
             if (annotatedClasses.isEmpty()) {
-                return new PwaConfiguration(useV14Bootstrap);
+                return new PwaConfiguration();
             } else if (annotatedClasses.size() != 1) {
                 throw new IllegalStateException(ERROR_INVALID_PWA_ANNOTATION);
             }
 
             Class<?> hopefullyAppShellClass = annotatedClasses.iterator()
                     .next();
-            if (!useV14Bootstrap
-                    && !Arrays.stream(hopefullyAppShellClass.getInterfaces())
-                            .map(Class::getName).collect(Collectors.toList())
-                            .contains(AppShellConfigurator.class.getName())) {
+            if (!Arrays.stream(hopefullyAppShellClass.getInterfaces())
+                    .map(Class::getName).collect(Collectors.toList())
+                    .contains(AppShellConfigurator.class.getName())) {
                 throw new IllegalStateException(ERROR_INVALID_PWA_ANNOTATION);
             }
 
@@ -534,8 +522,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
 
             return new PwaConfiguration(true, name, shortName, description,
                     backgroundColor, themeColor, iconPath, manifestPath,
-                    offlinePath, display, startPath, offlineResources, offline,
-                    useV14Bootstrap);
+                    offlinePath, display, startPath, offlineResources, offline);
         } catch (ClassNotFoundException exception) {
             throw new IllegalStateException(
                     "Could not load PWA annotation class", exception);

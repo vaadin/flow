@@ -41,11 +41,6 @@ public class InitParameters implements Serializable {
 
     public static final String SERVLET_PARAMETER_PRODUCTION_MODE = "productionMode";
 
-    /**
-     * Enable it if your project is using client-side bootstrapping (CCDM).
-     */
-    public static final String SERVLET_PARAMETER_USE_V14_BOOTSTRAP = "useDeprecatedV14Bootstrapping";
-
     public static final String SERVLET_PARAMETER_INITIAL_UIDL = "eagerServerLoad";
     public static final String SERVLET_PARAMETER_ENABLE_DEV_SERVER = "enableDevServer";
     public static final String SERVLET_PARAMETER_REUSE_DEV_SERVER = "reuseDevServer";

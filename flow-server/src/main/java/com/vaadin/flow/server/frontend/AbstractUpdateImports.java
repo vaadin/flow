@@ -99,10 +99,6 @@ abstract class AbstractUpdateImports implements Runnable {
         lines.addAll(getExportLines());
         lines.addAll(getThemeLines());
         lines.addAll(getCssLines());
-        if (!options.productionMode && options.useLegacyV14Bootstrap) {
-            // This is only needed for v14bootstrap mode
-            lines.add(TaskGenerateBootstrap.DEV_TOOLS_IMPORT);
-        }
         collectModules(lines);
 
         writeImportLines(lines);
