@@ -326,18 +326,11 @@ public class UidlWriterTest {
         when(internals.getStateTree()).thenReturn(stateTree);
         when(stateTree.hasDirtyNodes()).thenReturn(true);
 
-        ComponentsContainer container = new ComponentsContainer();
-        container.add(new ChildComponent());
-        ui.add(container);
-        // removing all elements causes an additional ListClearChange to be
-        // added during collectChanges process
-        container.removeAll();
-
         UidlWriter uidlWriter = new UidlWriter();
         uidlWriter.createUidl(ui, false, true);
 
         assertTrue(
-                "Simulating collectChanges but and expecting UI to be still dirty after creating UIDL",
+                "Simulating collectChanges bug and expecting UI to be still dirty after creating UIDL",
                 ui.getInternals().isDirty());
     }
 
