@@ -90,6 +90,7 @@ public class SpringClassesSerializableTest extends ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.spring\\.scopes\\.VaadinSessionScope",
                 "com\\.vaadin\\.flow\\.spring\\.scopes\\.AbstractScope",
                 "com\\.vaadin\\.flow\\.spring\\.scopes\\.VaadinUIScope",
+                "com\\.vaadin\\.flow\\.spring\\.security\\.AuthenticationContext",
                 "com\\.vaadin\\.flow\\.spring\\.security\\.VaadinAwareSecurityContextHolderStrategy",
                 "com\\.vaadin\\.flow\\.spring\\.security\\.VaadinWebSecurity",
                 "com\\.vaadin\\.flow\\.spring\\.security\\.VaadinWebSecurity\\$Http401UnauthorizedAccessDeniedHandler",
