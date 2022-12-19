@@ -152,14 +152,6 @@ public class PropertyDeploymentConfiguration
     }
 
     @Override
-    public boolean useV14Bootstrap() {
-        if (isOwnProperty(InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP)) {
-            return super.useV14Bootstrap();
-        }
-        return parentConfig.useV14Bootstrap();
-    }
-
-    @Override
     public boolean isPnpmEnabled() {
         if (isOwnProperty(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM)) {
             return super.isPnpmEnabled();

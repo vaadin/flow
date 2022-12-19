@@ -56,7 +56,6 @@ import org.jsoup.nodes.DocumentType;
 import org.jsoup.nodes.Element;
 import org.jsoup.parser.Parser;
 import org.jsoup.parser.Tag;
-import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,8 +69,6 @@ import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
-import com.vaadin.flow.internal.BrowserLiveReload;
-import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.UsageStatisticsExporter;
 import com.vaadin.flow.router.InvalidLocationException;
@@ -699,8 +696,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      *
      * Do not subclass this, unless you really know why you are doing it.
      */
-    protected static class BootstrapPageBuilder
-            implements PageBuilder, Serializable {
+    protected static class BootstrapPageBuilder implements PageBuilder {
 
         /**
          * Returns the bootstrap page for the given context.
@@ -731,24 +727,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
             document.outputSettings().prettyPrint(false);
 
-            // In V14 legacy bootstrap mode, the theme is initialized in
-            // target/frontend/generated-flow-imports.js but not in normal
-            // bootstrap mode and for exported webcomponents; set a flag in
-            // the DOM only if initialization is needed.
-            if (config.useV14Bootstrap() && context.isInitTheme()) {
-                head.prependElement(SCRIPT_TAG).attr("type", "text/javascript")
-                        .appendChild(new DataNode(
-                                "window.Vaadin = window.Vaadin || {}; window.Vaadin.theme = window.Vaadin.theme || {};"
-                                        + "window.Vaadin.theme.flowBootstrap = true;"));
-            }
-
             BootstrapUtils.getInlineTargets(context)
                     .ifPresent(targets -> handleInlineTargets(context, head,
                             document.body(), targets));
-
-            BootstrapUtils.getInitialPageSettings(context).ifPresent(
-                    initialPageSettings -> handleInitialPageSettings(context,
-                            head, initialPageSettings));
 
             if (!config.isProductionMode()) {
                 UsageStatisticsExporter
@@ -757,12 +738,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             }
 
             setupPwa(document, context);
-
-            BootstrapPageResponse response = new BootstrapPageResponse(
-                    context.getRequest(), context.getSession(),
-                    context.getResponse(), document, context.getUI(),
-                    context.getUriResolver());
-            context.getSession().getService().modifyBootstrapPage(response);
 
             return document;
         }
@@ -799,42 +774,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     dependency -> createDependencyElement(context, dependency))
                     .forEach(element -> insertElements(element,
                             body::appendChild));
-        }
-
-        private void handleInitialPageSettings(BootstrapContext context,
-                Element head, InitialPageSettings initialPageSettings) {
-            if (initialPageSettings.getViewport() != null) {
-                Elements viewport = head.getElementsByAttributeValue("name",
-                        VIEWPORT);
-                if (!viewport.isEmpty() && viewport.size() == 1) {
-                    viewport.get(0).attr(CONTENT_ATTRIBUTE,
-                            initialPageSettings.getViewport());
-                } else {
-                    head.appendElement(META_TAG).attr("name", VIEWPORT).attr(
-                            CONTENT_ATTRIBUTE,
-                            initialPageSettings.getViewport());
-                }
-            }
-
-            initialPageSettings.getInline(InitialPageSettings.Position.PREPEND)
-                    .stream()
-                    .map(dependency -> createDependencyElement(context,
-                            dependency))
-                    .forEach(element -> insertElements(element,
-                            head::prependChild));
-            initialPageSettings.getInline(InitialPageSettings.Position.APPEND)
-                    .stream()
-                    .map(dependency -> createDependencyElement(context,
-                            dependency))
-                    .forEach(element -> insertElements(element,
-                            head::appendChild));
-
-            initialPageSettings.getElement(InitialPageSettings.Position.PREPEND)
-                    .forEach(element -> insertElements(element,
-                            head::prependChild));
-            initialPageSettings.getElement(InitialPageSettings.Position.APPEND)
-                    .forEach(element -> insertElements(element,
-                            head::appendChild));
         }
 
         private void insertElements(Element element, Consumer<Element> action) {
@@ -1033,18 +972,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             return Arrays.stream(chunks.keys())
                     .filter(s -> !EXPORT_CHUNK.equals(s))
                     .collect(Collectors.toList());
-        }
-
-        private String getArrayChunkName(JsonObject chunks, String key) {
-            JsonArray chunkArray = chunks.getArray(key);
-
-            for (int i = 0; i < chunkArray.length(); i++) {
-                String chunkName = chunkArray.getString(0);
-                if (chunkName.endsWith(".js")) {
-                    return chunkName;
-                }
-            }
-            return "";
         }
 
         private String getClientEngineUrl(BootstrapContext context) {
@@ -1337,25 +1264,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 appConfig.put("versionInfo", versionInfo);
                 appConfig.put(ApplicationConstants.DEV_TOOLS_ENABLED,
                         deploymentConfiguration.isDevToolsEnabled());
-
-                VaadinService service = session.getService();
-                Optional<BrowserLiveReload> liveReload = BrowserLiveReloadAccessor
-                        .getLiveReloadFromService(service);
-
-                // With V15+ bootstrap, dev tools is added to generated
-                // index.html
-                if (liveReload.isPresent()
-                        && deploymentConfiguration.useV14Bootstrap()) {
-                    appConfig.put("liveReloadUrl", BootstrapHandlerHelper
-                            .getPushURL(session, request));
-                    BrowserLiveReload.Backend backend = liveReload.get()
-                            .getBackend();
-                    if (backend != null) {
-                        appConfig.put("liveReloadBackend", backend.toString());
-                    }
-                    appConfig.put("springBootLiveReloadPort",
-                            Constants.SPRING_BOOT_DEFAULT_LIVE_RELOAD_PORT);
-                }
             }
 
             // Use locale from session if set, else from the request

@@ -87,7 +87,6 @@ public open class VaadinFlowPluginExtension(project: Project) {
 
     /**
      * Instructs to use pnpm for installing npm frontend resources. Default is [Constants.ENABLE_PNPM_DEFAULT]
-     * Responds to the `-Pvaadin.useDeprecatedV14Bootstrapping` property.
      *
      * pnpm, a.k.a. performant npm, is a better front-end dependency management option.
      * With pnpm, packages are cached locally by default and linked (instead of
@@ -110,12 +109,6 @@ public open class VaadinFlowPluginExtension(project: Project) {
      * installed installed 'node'.
      */
     public var requireHomeNodeExec: Boolean = false
-
-    /**
-     * Whether or not we are running in legacy V14 bootstrap mode. Defaults to false.
-     * Responds to the `-Pvaadin.useDeprecatedV14Bootstrapping` property.
-     */
-    public var useDeprecatedV14Bootstrapping: Boolean = false
 
     /**
      * Whether or not insert the initial Uidl object in the bootstrap index.html. Defaults to false.
@@ -232,11 +225,6 @@ public open class VaadinFlowPluginExtension(project: Project) {
             eagerServerLoad = eagerServerLoadProperty
         }
 
-        val useDeprecatedV14BootstrappingProperty: Boolean? = project.getBooleanProperty("vaadin.useDeprecatedV14Bootstrapping")
-        if (useDeprecatedV14BootstrappingProperty != null) {
-            useDeprecatedV14Bootstrapping = useDeprecatedV14BootstrappingProperty
-        }
-
         val pnpmEnableProperty: Boolean? = project.getBooleanProperty(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM)
         if (pnpmEnableProperty != null) {
             pnpmEnable = pnpmEnableProperty
@@ -262,7 +250,6 @@ public open class VaadinFlowPluginExtension(project: Project) {
             "pnpmEnable=$pnpmEnable, " +
             "useGlobalPnpm=$useGlobalPnpm, " +
             "requireHomeNodeExec=$requireHomeNodeExec, " +
-            "useDeprecatedV14Bootstrapping=$useDeprecatedV14Bootstrapping, " +
             "eagerServerLoad=$eagerServerLoad, " +
             "applicationProperties=$applicationProperties, " +
             "openApiJsonFile=$openApiJsonFile, " +
