@@ -213,10 +213,10 @@ public class NodeUpdaterTest {
         packageJson.put(NodeUpdater.DEPENDENCIES, Json.createObject());
         packageJson.put(NodeUpdater.DEV_DEPENDENCIES, Json.createObject());
         packageJson.getObject(NodeUpdater.DEV_DEPENDENCIES).put("vite",
-                "v4.0.0");
+                "78.2.3");
         nodeUpdater.updateDefaultDependencies(packageJson);
 
-        Assert.assertEquals("v4.0.0", packageJson
+        Assert.assertEquals("78.2.3", packageJson
                 .getObject(NodeUpdater.DEV_DEPENDENCIES).getString("vite"));
     }
 
