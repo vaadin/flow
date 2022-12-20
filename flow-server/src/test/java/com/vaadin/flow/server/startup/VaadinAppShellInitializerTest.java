@@ -1,9 +1,9 @@
 package com.vaadin.flow.server.startup;
 
-import net.jcip.annotations.NotThreadSafe;
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.ServletRegistration;
-import jakarta.servlet.http.HttpServletRequest;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.lang.reflect.Field;
 import java.util.Collections;
@@ -48,11 +48,9 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.AppShellSettings;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.InitialPageSettings;
 import com.vaadin.flow.server.InvalidApplicationConfigurationException;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.PWA;
-import com.vaadin.flow.server.PageConfigurator;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.shared.communication.PushMode;
@@ -60,10 +58,10 @@ import com.vaadin.flow.shared.ui.Transport;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletRegistration;
+import jakarta.servlet.http.HttpServletRequest;
+import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class VaadinAppShellInitializerTest {
@@ -161,13 +159,6 @@ public class VaadinAppShellInitializerTest {
         }
     }
 
-    public static class OffendingClassWithConfigurator
-            implements PageConfigurator {
-        @Override
-        public void configurePage(InitialPageSettings settings) {
-        }
-    }
-
     @PWA(name = "name", shortName = "n")
     @Viewport("my-viewport")
     public static class OffendingPwaClass {
@@ -181,33 +172,6 @@ public class VaadinAppShellInitializerTest {
     @Viewport("my-viewport")
     @BodySize(height = "my-height", width = "my-width")
     public static class AppShellWithPWA implements AppShellConfigurator {
-    }
-
-    public static class MyAppShellWithLoadingIndicatorConfig
-            implements AppShellConfigurator {
-        @Override
-        public void configurePage(AppShellSettings settings) {
-            settings.getLoadingIndicatorConfiguration().ifPresent(
-                    indicator -> indicator.setApplyDefaultTheme(false));
-        }
-    }
-
-    public static class MyAppShellWithReconnectionDialogConfig
-            implements AppShellConfigurator {
-        @Override
-        public void configurePage(AppShellSettings settings) {
-            settings.getReconnectDialogConfiguration()
-                    .ifPresent(dialog -> dialog.setDialogText("custom text"));
-        }
-    }
-
-    public static class MyAppShellWithPushConfig
-            implements AppShellConfigurator {
-        @Override
-        public void configurePage(AppShellSettings settings) {
-            settings.getPushConfiguration()
-                    .ifPresent(push -> push.setPushMode(PushMode.MANUAL));
-        }
     }
 
     @Rule
@@ -432,28 +396,6 @@ public class VaadinAppShellInitializerTest {
 
         classes.add(MyAppShellWithoutAnnotations.class);
         classes.add(MyAppShellWithMultipleAnnotations.class);
-        initializer.process(classes, servletContext);
-    }
-
-    @Test
-    public void should_throw_when_offendingClassWithConfigurator()
-            throws Exception {
-        exception.expect(InvalidApplicationConfigurationException.class);
-        exception.expectMessage(containsString(
-                "The `PageConfigurator` interface is deprecated since Vaadin 15 and has no effect."));
-        exception.expectMessage(
-                containsString(MyAppShellWithoutAnnotations.class.getName()));
-        exception.expectMessage(containsString(
-                "- " + OffendingClassWithConfigurator.class.getName()));
-        classes.add(MyAppShellWithoutAnnotations.class);
-        classes.add(OffendingClassWithConfigurator.class);
-        initializer.process(classes, servletContext);
-    }
-
-    @Test
-    public void should_not_throw_when_classWithPageConfigurator()
-            throws Exception {
-        classes.add(OffendingClassWithConfigurator.class);
         initializer.process(classes, servletContext);
     }
 

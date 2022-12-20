@@ -15,8 +15,15 @@
  */
 package com.vaadin.flow.server.communication;
 
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.http.HttpServletRequest;
+import static com.vaadin.flow.component.UI.SERVER_ROUTING;
+import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -56,25 +63,15 @@ import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.AppShellWithPWA;
 import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.MyAppShellWithConfigurator;
-import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.MyAppShellWithLoadingIndicatorConfig;
-import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.MyAppShellWithPushConfig;
-import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.MyAppShellWithReconnectionDialogConfig;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.TestUtil;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-import static com.vaadin.flow.component.UI.SERVER_ROUTING;
-import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpServletRequest;
 
 public class IndexHtmlRequestHandlerTest {
     private static final String SPRING_CSRF_ATTRIBUTE_IN_SESSION = "org.springframework.security.web.csrf.CsrfToken";
@@ -751,42 +748,6 @@ public class IndexHtmlRequestHandlerTest {
                 UI.getCurrent().getInternals().getAppShellTitle());
     }
 
-    @Test(expected = UnsupportedOperationException.class)
-    public void should_throwUnSupportedException_when_usingAppShellToConfigureLoadingIndicator()
-            throws Exception {
-        // Set class in context and do not call initializer
-        AppShellRegistry registry = AppShellRegistry.getInstance(context);
-        registry.setShell(MyAppShellWithLoadingIndicatorConfig.class);
-        mocks.setAppShellRegistry(registry);
-
-        indexHtmlRequestHandler.synchronizedHandleRequest(session,
-                createVaadinRequest("/"), response);
-    }
-
-    @Test(expected = UnsupportedOperationException.class)
-    public void should_throwUnSupportedException_when_usingAppShellToConfigureReconnectionDialog()
-            throws Exception {
-        // Set class in context and do not call initializer
-        AppShellRegistry registry = AppShellRegistry.getInstance(context);
-        registry.setShell(MyAppShellWithReconnectionDialogConfig.class);
-        mocks.setAppShellRegistry(registry);
-
-        indexHtmlRequestHandler.synchronizedHandleRequest(session,
-                createVaadinRequest("/"), response);
-    }
-
-    @Test(expected = UnsupportedOperationException.class)
-    public void should_throwUnSupportedException_when_usingAppShellToConfigurePushMode()
-            throws Exception {
-        // Set class in context and do not call initializer
-        AppShellRegistry registry = AppShellRegistry.getInstance(context);
-        registry.setShell(MyAppShellWithPushConfig.class);
-        mocks.setAppShellRegistry(registry);
-
-        indexHtmlRequestHandler.synchronizedHandleRequest(session,
-                createVaadinRequest("/"), response);
-    }
-
     @After
     public void tearDown() throws Exception {
         session.unlock();
@@ -827,19 +788,6 @@ public class IndexHtmlRequestHandlerTest {
         Mockito.doAnswer(invocation -> new StringBuffer(pathInfo)).when(request)
                 .getRequestURL();
         return request;
-    }
-
-    private void mockApplicationConfiguration(
-            ApplicationConfiguration appConfig) {
-        Mockito.when(appConfig.isProductionMode()).thenReturn(false);
-        Mockito.when(appConfig.enableDevServer()).thenReturn(true);
-
-        Mockito.when(appConfig.getStringProperty(Mockito.anyString(),
-                Mockito.anyString()))
-                .thenAnswer(invocation -> invocation.getArgument(1));
-        Mockito.when(appConfig.getBooleanProperty(Mockito.anyString(),
-                Mockito.anyBoolean()))
-                .thenAnswer(invocation -> invocation.getArgument(1));
     }
 
     @Test

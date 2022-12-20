@@ -99,17 +99,10 @@ public class PwaRegistry implements Serializable {
             System.setProperty(HEADLESS_PROPERTY, Boolean.TRUE.toString());
         }
 
-        boolean useV14Bootstrap = false;
-        ApplicationConfiguration applicationConfiguration = (ApplicationConfiguration) servletContext
-                .getAttribute(ApplicationConfiguration.class.getName());
-        if (applicationConfiguration != null) {
-            useV14Bootstrap = applicationConfiguration.useV14Bootstrap();
-        }
-
         // set basic configuration by given PWA annotation
         // fall back to defaults if unavailable
-        pwaConfiguration = pwa == null ? new PwaConfiguration(useV14Bootstrap)
-                : new PwaConfiguration(pwa, useV14Bootstrap);
+        pwaConfiguration = pwa == null ? new PwaConfiguration()
+                : new PwaConfiguration(pwa);
 
         // Build pwa elements only if they are enabled
         initializeResources(servletContext);

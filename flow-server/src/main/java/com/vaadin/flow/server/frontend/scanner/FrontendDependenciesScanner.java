@@ -62,7 +62,7 @@ public interface FrontendDependenciesScanner extends Serializable {
                 boolean allDependenciesScan, ClassFinder finder,
                 boolean generateEmbeddableWebComponents) {
             return createScanner(allDependenciesScan, finder,
-                    generateEmbeddableWebComponents, false, null);
+                    generateEmbeddableWebComponents, null);
         }
 
         /**
@@ -78,8 +78,6 @@ public interface FrontendDependenciesScanner extends Serializable {
          * @param generateEmbeddableWebComponents
          *            checks {@code WebComponentExporter} classes for
          *            dependencies if {@code true}, doesn't check otherwise
-         * @param useV14Bootstrap
-         *            whether we are in legacy V14 bootstrap mode
          * @param featureFlags
          *            available feature flags and their status
          * @return a scanner implementation strategy
@@ -88,10 +86,9 @@ public interface FrontendDependenciesScanner extends Serializable {
         public FrontendDependenciesScanner createScanner(
                 boolean allDependenciesScan, ClassFinder finder,
                 boolean generateEmbeddableWebComponents,
-                boolean useV14Bootstrap, FeatureFlags featureFlags) {
+                FeatureFlags featureFlags) {
             return createScanner(allDependenciesScan, finder,
-                    generateEmbeddableWebComponents, useV14Bootstrap,
-                    featureFlags, false);
+                    generateEmbeddableWebComponents, featureFlags, false);
         }
 
         /**
@@ -107,8 +104,6 @@ public interface FrontendDependenciesScanner extends Serializable {
          * @param generateEmbeddableWebComponents
          *            checks {@code WebComponentExporter} classes for
          *            dependencies if {@code true}, doesn't check otherwise
-         * @param useV14Bootstrap
-         *            whether we are in legacy V14 bootstrap mode
          * @param featureFlags
          *            available feature flags and their status
          * @param fallback
@@ -119,17 +114,15 @@ public interface FrontendDependenciesScanner extends Serializable {
         public FrontendDependenciesScanner createScanner(
                 boolean allDependenciesScan, ClassFinder finder,
                 boolean generateEmbeddableWebComponents,
-                boolean useV14Bootstrap, FeatureFlags featureFlags,
-                boolean fallback) {
+                FeatureFlags featureFlags, boolean fallback) {
             if (allDependenciesScan) {
                 // this dep scanner can't distinguish embeddable web component
                 // frontend related annotations
-                return new FullDependenciesScanner(finder, useV14Bootstrap,
-                        featureFlags, fallback);
+                return new FullDependenciesScanner(finder, featureFlags,
+                        fallback);
             } else {
                 return new FrontendDependencies(finder,
-                        generateEmbeddableWebComponents, useV14Bootstrap,
-                        featureFlags);
+                        generateEmbeddableWebComponents, featureFlags);
             }
         }
     }
