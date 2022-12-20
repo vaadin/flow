@@ -46,8 +46,6 @@ public class ShortcutsWithValueChangeModeView extends Div
         value.setId("value");
         value.setText("");
 
-        add(input, button, value);
-
         input.setValueChangeMode(ValueChangeMode.LAZY);
         // make this really big to make testing easier
         input.setValueChangeTimeout(3000);
@@ -64,7 +62,7 @@ public class ShortcutsWithValueChangeModeView extends Div
     public void afterNavigation(AfterNavigationEvent event) {
         String valueChangeMode = event.getLocation().getQueryParameters()
                 .getQueryString();
-        if (valueChangeMode != null) {
+        if (valueChangeMode != null && !valueChangeMode.isBlank()) {
             input.setValueChangeMode(ValueChangeMode.valueOf(valueChangeMode));
         }
     }
