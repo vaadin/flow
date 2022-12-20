@@ -1165,7 +1165,8 @@ public class FrontendUtils {
                 return bundleFile.toURI().toURL();
             }
         }
-        return null;
+        return TaskRunDevBundleBuild.class.getClassLoader()
+                .getResource("vaadin-dev-bundle/" + filename);
     }
 
     /**
@@ -1202,4 +1203,5 @@ public class FrontendUtils {
 
         return IOUtils.toString(statsJson, StandardCharsets.UTF_8);
     }
+
 }

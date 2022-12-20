@@ -19,6 +19,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -93,7 +94,8 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             FrontendDependenciesScanner frontendDependencies)
             throws IOException {
 
-        if (!FrontendUtils.getDevBundleFolder(npmFolder).exists()) {
+        if (!FrontendUtils.getDevBundleFolder(npmFolder).exists()
+                && !hasJarBundle()) {
             // TODO: check for jar dev-bundle
             return true;
         }
@@ -118,6 +120,12 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         }
 
         return false;
+    }
+
+    private static boolean hasJarBundle() {
+        final URL resource = TaskRunDevBundleBuild.class.getClassLoader()
+                .getResource("vaadin-dev-bundle/config/stats.json");
+        return resource != null;
     }
 
     /**
