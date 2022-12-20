@@ -29,6 +29,7 @@
                 <module>test-reusable-as-parent-vite</module>
                 <module>test-theme-live-reload</module>
                 <module>test-theme-component-live-reload</module>
+                <module>test-theme-dev-bundle</module>
             </modules>
         </profile>
     </profiles>
