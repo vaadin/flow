@@ -118,7 +118,8 @@ public class DevBundleThemeIT extends ChromeBrowserTest {
     }
 
     private void verifyFontInBundle() {
-        File font = new File(themeAssetsInBundle, "fonts/" + fontFile.getName());
+        File font = new File(themeAssetsInBundle,
+                "fonts/" + fontFile.getName());
         Assert.assertTrue("Font file is not found in the bundle",
                 font.exists());
     }
@@ -158,11 +159,10 @@ public class DevBundleThemeIT extends ChromeBrowserTest {
             String content = FileUtils.readFileToString(stylesCss,
                     StandardCharsets.UTF_8);
             content = content.replace(from, to);
-            FileUtils.write(stylesCss, content,
-                    StandardCharsets.UTF_8.name());
+            FileUtils.write(stylesCss, content, StandardCharsets.UTF_8.name());
         } catch (IOException e) {
-            throw new RuntimeException(
-                    "Failed to apply new background styles", e);
+            throw new RuntimeException("Failed to apply new background styles",
+                    e);
         }
     }
 
