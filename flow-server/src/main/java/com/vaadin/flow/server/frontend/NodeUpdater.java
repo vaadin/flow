@@ -340,12 +340,7 @@ public abstract class NodeUpdater implements FallibleCommand {
     Map<String, String> getDefaultDevDependencies() {
         Map<String, String> defaults = new HashMap<>();
         defaults.putAll(readDependencies("default", "devDependencies"));
-
-        if (options.getFeatureFlags().isEnabled(FeatureFlags.WEBPACK)) {
-            defaults.putAll(readDependencies("webpack", "devDependencies"));
-        } else {
-            defaults.putAll(readDependencies("vite", "devDependencies"));
-        }
+        defaults.putAll(readDependencies("vite", "devDependencies"));
 
         return defaults;
     }

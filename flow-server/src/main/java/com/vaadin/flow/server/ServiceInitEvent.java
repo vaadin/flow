@@ -29,9 +29,6 @@ import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
  * <p>
  * This event can also be used to add {@link RequestHandler}s that will be used
  * by the {@code VaadinService} for handling all requests.
- * <p>
- * {@link BootstrapListener}s can also be registered, that are used to modify
- * the initial HTML of the application.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -39,7 +36,6 @@ import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
 public class ServiceInitEvent extends EventObject {
 
     private List<RequestHandler> addedRequestHandlers = new ArrayList<>();
-    private List<BootstrapListener> addedBootstrapListeners = new ArrayList<>();
     private List<IndexHtmlRequestListener> addedIndexHtmlRequestListeners = new ArrayList<>();
     private List<DependencyFilter> addedDependencyFilters = new ArrayList<>();
 
@@ -67,33 +63,6 @@ public class ServiceInitEvent extends EventObject {
                 "Request handler cannot be null");
 
         addedRequestHandlers.add(requestHandler);
-    }
-
-    /**
-     * Adds a new bootstrap listener that will be used by this service. The
-     * ordering of multiple added bootstrap listeners is not guaranteed.
-     *
-     * @param bootstrapListener
-     *            the bootstrap listener to add, not <code>null</code>
-     * @deprecated Since 3.0, this API is deprecated in favor of
-     *             {@link ServiceInitEvent#addIndexHtmlRequestListener} when
-     *             using client-side bootstrapping
-     */
-    @Deprecated
-    public void addBootstrapListener(BootstrapListener bootstrapListener) {
-        if (!getSource().getDeploymentConfiguration().useV14Bootstrap()) {
-            throw new IllegalStateException(""
-                    + "The BootstrapListener API is not supported in the "
-                    + "client-side mode. Please use the IndexHtmlRequestListener "
-                    + "API instead, or disable the client-side mode with"
-                    + "-Dvaadin.useDeprecatedV14Bootstrapping=true to keep compatibility "
-                    + "with V14.");
-        }
-
-        Objects.requireNonNull(bootstrapListener,
-                "Bootstrap listener cannot be null");
-
-        addedBootstrapListeners.add(bootstrapListener);
     }
 
     /**
@@ -131,20 +100,6 @@ public class ServiceInitEvent extends EventObject {
      */
     public Stream<RequestHandler> getAddedRequestHandlers() {
         return addedRequestHandlers.stream();
-    }
-
-    /**
-     * Gets a stream of all bootstrap listeners that have been added for the
-     * service.
-     *
-     * @return the stream of added bootstrap listeners
-     * @deprecated Since 3.0, this API is deprecated in favor of
-     *             {@link ServiceInitEvent#getAddedIndexHtmlRequestListeners()}
-     *             when using client-side bootstrapping
-     */
-    @Deprecated
-    public Stream<BootstrapListener> getAddedBootstrapListeners() {
-        return addedBootstrapListeners.stream();
     }
 
     /**

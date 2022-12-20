@@ -5,11 +5,14 @@ import java.util.Locale;
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Transport;
+import com.vaadin.flow.testcategory.IgnoreOSGi;
 
+@Category(IgnoreOSGi.class)
 public class PushConfigurationWebSocketIT extends PushConfigurationTest {
 
     @Test

@@ -43,10 +43,6 @@ public class DeploymentConfigurationFactory extends AbstractConfigurationFactory
     public static final Object FALLBACK_CHUNK = new Serializable() {
     };
 
-    public static final String ERROR_DEV_MODE_NO_FILES = "There are neither 'flow-build-info.json' nor 'webpack.config.js' file available in "
-            + "the project/working directory. Ensure 'webpack.config.js' is present or trigger creation of "
-            + "'flow-build-info.json' via running 'prepare-frontend' Maven goal.";
-
     /**
      * Creates a {@link DeploymentConfiguration} instance that is filled with
      * all parameters, specified for the current app.

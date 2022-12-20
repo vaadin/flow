@@ -930,7 +930,7 @@ export class VaadinDevTools extends LitElement {
   private tabs: readonly Tab[] = [
     { id: 'log', title: 'Log', render: this.renderLog, activate: this.activateLog },
     { id: 'info', title: 'Info', render: this.renderInfo },
-    { id: 'features', title: 'Experimental Features', render: this.renderFeatures }
+    { id: 'features', title: 'Feature Flags', render: this.renderFeatures }
   ];
 
   @state()
@@ -1511,10 +1511,6 @@ export class VaadinDevTools extends LitElement {
 
   private renderFeatures() {
     return html`<div class="features-tray">
-      <p>
-        These features are work in progress. The behavior, API, look and feel can still change significantly before (and
-        if) they become part of a stable release.
-      </p>
       ${this.features.map(
         (feature) => html`<div class="feature">
           <label class="switch">

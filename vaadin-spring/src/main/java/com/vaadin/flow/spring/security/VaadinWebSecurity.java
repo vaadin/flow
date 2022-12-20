@@ -125,8 +125,6 @@ public abstract class VaadinWebSecurity {
     @Bean(name = "VaadinSecurityFilterChainBean")
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         configure(http);
-        // Keeps a reference to LogoutConfigurer in case AuthenticationContext
-        // needs to refresh transient fields after deserialization
         logoutConfigurer = http.logout();
         logoutConfigurer.invalidateHttpSession(true);
         addLogoutHandlers(logoutConfigurer::addLogoutHandler);
@@ -339,7 +337,7 @@ public abstract class VaadinWebSecurity {
      */
     protected void setLoginView(HttpSecurity http, String hillaLoginViewPath)
             throws Exception {
-        setLoginView(http, hillaLoginViewPath, "/");
+        setLoginView(http, hillaLoginViewPath, servletContextPath);
     }
 
     /**
@@ -389,7 +387,7 @@ public abstract class VaadinWebSecurity {
      */
     protected void setLoginView(HttpSecurity http,
             Class<? extends Component> flowLoginView) throws Exception {
-        setLoginView(http, flowLoginView, "/");
+        setLoginView(http, flowLoginView, servletContextPath);
     }
 
     /**

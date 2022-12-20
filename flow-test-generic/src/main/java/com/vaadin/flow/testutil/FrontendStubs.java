@@ -23,12 +23,9 @@ import java.util.Objects;
 import org.apache.commons.io.FileUtils;
 
 /**
- * Utility class for stubbing Node.JS and Webpack scripts.
+ * Utility class for stubbing Node.JS and frontend tooling.
  */
 public class FrontendStubs {
-
-    public static final String WEBPACK_SERVER = "node_modules/webpack-dev-server/bin/webpack-dev-server.js";
-    public static final String WEBPACK_TEST_OUT_FILE = "webpack-out.test";
 
     public static final String VITE_SERVER = "node_modules/vite/bin/vite.js";
     public static final String VITE_TEST_OUT_FILE = "vite-out.test";
@@ -126,49 +123,6 @@ public class FrontendStubs {
                 .withCacheDir(defaultNpmCacheDirStub.getAbsolutePath()).build()
                 : ToolStubInfo.none();
         createStubNode(nodeStubInfo, npmStubInfo, baseDir);
-    }
-
-    /**
-     * Creates a stub webpack-dev-server able to output a ready string, sleep
-     * for a while and output arguments passed to a file, so as tests can check
-     * it.
-     *
-     * @param readyString
-     *            string to output
-     * @param milliSecondsToRun
-     *            time to keep the server running
-     * @param baseDir
-     *            parent directory
-     * @param enableListening
-     *            enable listening to port passed via `--port`
-     * @throws IOException
-     *             when a file operation fails
-     */
-    public static void createStubWebpackServer(String readyString,
-            int milliSecondsToRun, String baseDir, boolean enableListening)
-            throws IOException {
-        createStubDevServer(new File(baseDir, WEBPACK_SERVER),
-                WEBPACK_TEST_OUT_FILE, readyString, milliSecondsToRun,
-                enableListening);
-    }
-
-    /**
-     * Creates a stub webpack-dev-server able to output a ready string, sleep
-     * for a while and output arguments passed to a file, so as tests can check
-     * it.
-     *
-     * @param readyString
-     *            string to output
-     * @param milliSecondsToRun
-     *            time to keep the server running
-     * @param baseDir
-     *            parent directory
-     * @throws IOException
-     *             when a file operation fails
-     */
-    public static void createStubWebpackServer(String readyString,
-            int milliSecondsToRun, String baseDir) throws IOException {
-        createStubWebpackServer(readyString, milliSecondsToRun, baseDir, false);
     }
 
     /**

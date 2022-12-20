@@ -47,32 +47,6 @@ public class DefaultApplicationConfigurationFactoryTest {
     public final TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     @Test
-    public void getTokenFileFromClassloader_tokenFileIsRead_checkWebpackGeneratedFromContext()
-            throws IOException {
-        VaadinContext context = Mockito.mock(VaadinContext.class);
-        VaadinConfig config = Mockito.mock(VaadinConfig.class);
-
-        ResourceProvider resourceProvider = mockResourceProvider(config,
-                context);
-
-        String path = VAADIN_SERVLET_RESOURCES + TOKEN_FILE;
-
-        String content = "{ 'foo':'bar' }";
-        mockClassPathTokenFile(resourceProvider, content);
-
-        DefaultApplicationConfigurationFactory factory = new DefaultApplicationConfigurationFactory();
-
-        String tokenFileContent = factory.getTokenFileFromClassloader(context);
-
-        Mockito.verify(resourceProvider)
-                .getApplicationResource(FrontendUtils.WEBPACK_GENERATED);
-
-        Mockito.verify(resourceProvider).getApplicationResources(path);
-
-        Assert.assertEquals(content, tokenFileContent.trim());
-    }
-
-    @Test
     public void create_tokenFileIsReadFromClassloader_externalStatsFileIsReadFromTokenFile_predefinedContext()
             throws MalformedURLException, IOException {
         VaadinContext context = Mockito.mock(VaadinContext.class);

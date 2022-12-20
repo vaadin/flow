@@ -49,7 +49,7 @@ import com.vaadin.flow.theme.Theme;
  * <li>Update the {@link FrontendUtils#IMPORTS_NAME} file imports with the
  * {@link JsModule} {@link Theme} and {@link JavaScript} annotations defined in
  * the classpath,</li>
- * <li>Update {@link FrontendUtils#WEBPACK_CONFIG} file.</li>
+ * <li>Update {@link FrontendUtils#VITE_CONFIG} file.</li>
  * </ul>
  *
  * @since 2.0
@@ -79,7 +79,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
 
     /**
      * Defines the project frontend directory from where resources should be
-     * copied from for use with webpack.
+     * copied from for use with the frontend build tool.
      */
     @Parameter(defaultValue = "${project.basedir}/"
             + Constants.LOCAL_FRONTEND_RESOURCES_PATH)

@@ -164,13 +164,19 @@ public class NavigateBetweenViewsIT extends ChromeBrowserTest {
     }
 
     private void assertSpecialViewShown() {
+        TestBenchElement specialView = waitUntil(driver -> {
+            return $("*").id("special-view");
+        });
         Assert.assertEquals("This is the special view",
-                $("*").id("special-view").$("*").id("title").getText());
+                specialView.$("*").id("title").getText());
     }
 
     private void assertHelloViewShown() {
-        Assert.assertEquals("Say hello", $("*").id("hello-world-view").$("*")
-                .id("navigate-about").getText());
+        TestBenchElement helloView = waitUntil(driver -> {
+            return $("*").id("hello-world-view");
+        });
+        Assert.assertEquals("Say hello",
+                helloView.$("*").id("navigate-about").getText());
     }
 
     @Override
