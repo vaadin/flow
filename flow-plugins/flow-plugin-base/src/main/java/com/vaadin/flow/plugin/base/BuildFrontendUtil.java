@@ -27,7 +27,6 @@ import static com.vaadin.flow.server.InitParameters.NODE_DOWNLOAD_ROOT;
 import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_INITIAL_UIDL;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
@@ -155,7 +154,6 @@ public class BuildFrontendUtil {
                 .withGeneratedFolder(adapter.generatedFolder())
                 .withFrontendDirectory(adapter.frontendDirectory())
                 .withBuildDirectory(adapter.buildFolder())
-                .useV14Bootstrap(adapter.isUseDeprecatedV14Bootstrapping())
                 .withJarFrontendResourcesFolder(
                         getJarFrontendResourcesFolder(adapter))
                 .createMissingPackageJson(true).enableImportsUpdate(false)
@@ -221,8 +219,6 @@ public class BuildFrontendUtil {
                 TOKEN_FILE);
         JsonObject buildInfo = Json.createObject();
         buildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, false);
-        buildInfo.put(SERVLET_PARAMETER_USE_V14_BOOTSTRAP,
-                adapter.isUseDeprecatedV14Bootstrapping());
         buildInfo.put(SERVLET_PARAMETER_INITIAL_UIDL,
                 adapter.eagerServerLoad());
         buildInfo.put(NPM_TOKEN, adapter.npmFolder().getAbsolutePath());
@@ -266,12 +262,10 @@ public class BuildFrontendUtil {
             if (adapter.isDebugEnabled()) {
                 adapter.logDebug(String.format(
                         "%n>>> Running prepare-frontend%nSystem"
-                                + ".properties:%n" + " webpackPort: %s%n "
+                                + ".properties:%n "
                                 + "project.basedir: %s%nGoal parameters:%n "
                                 + "npmFolder: %s%nToken file: " + "%s%n"
                                 + "Token content: %s%n",
-                        System.getProperty(
-                                "vaadin.devmode.webpack.running-port"),
                         adapter.projectBaseDirectory(), adapter.npmFolder(),
                         token.getAbsolutePath(), buildInfo.toJson()));
             }
@@ -312,7 +306,6 @@ public class BuildFrontendUtil {
                     .runNpmInstall(adapter.runNpmInstall())
                     .withWebpack(adapter.webpackOutputDirectory(),
                             adapter.servletResourceOutputDirectory())
-                    .useV14Bootstrap(adapter.isUseDeprecatedV14Bootstrapping())
                     .enablePackagesUpdate(true)
                     .useByteCodeScanner(adapter.optimizeBundle())
                     .withJarFrontendResourcesFolder(
@@ -366,31 +359,7 @@ public class BuildFrontendUtil {
         FrontendToolsSettings settings = getFrontendToolsSettings(adapter);
         FrontendTools tools = new FrontendTools(settings);
         tools.validateNodeAndNpmVersion();
-        if (featureFlags.isEnabled(FeatureFlags.WEBPACK)) {
-            BuildFrontendUtil.runWebpack(adapter, tools);
-        } else {
-            BuildFrontendUtil.runVite(adapter, tools);
-        }
-    }
-
-    /**
-     * Runs the Webpack build
-     *
-     * @param adapter
-     *            - the PluginAdapterBase.
-     * @param frontendTools
-     *            - frontend tools access object
-     * @throws TimeoutException
-     *             - while run webpack
-     * @throws URISyntaxException
-     *             - while parsing nodeDownloadRoot()) to URI
-     */
-    public static void runWebpack(PluginAdapterBase adapter,
-            FrontendTools frontendTools)
-            throws TimeoutException, URISyntaxException {
-        runFrontendBuildTool(adapter, frontendTools, "Webpack",
-                "webpack/bin/webpack.js",
-                frontendTools.getWebpackNodeEnvironment());
+        BuildFrontendUtil.runVite(adapter, tools);
     }
 
     /**

@@ -100,8 +100,6 @@ internal class GradlePluginAdapter(val project: Project, private val isBeforePro
 
     override fun isJarProject(): Boolean = project.tasks.withType(War::class.java).isEmpty()
 
-    override fun getUseDeprecatedV14Bootstrapping(): String = extension.useDeprecatedV14Bootstrapping.toString()
-
     override fun isDebugEnabled(): Boolean = true
 
     override fun javaSourceFolder(): File = extension.javaSourceFolder

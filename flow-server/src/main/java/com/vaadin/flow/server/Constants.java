@@ -55,14 +55,6 @@ public final class Constants implements Serializable {
     public static final String EXTERNAL_STATS_URL_TOKEN = "externalStatsUrl";
 
     /**
-     * @deprecated Use
-     *             {@link InitParameters#SERVLET_PARAMETER_USE_V14_BOOTSTRAP}
-     *             instead.
-     */
-    @Deprecated
-    public static final String SERVLET_PARAMETER_USE_V14_BOOTSTRAP = InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
-
-    /**
      * @deprecated Use {@link InitParameters#SERVLET_PARAMETER_INITIAL_UIDL}
      *             instead.
      */
@@ -212,8 +204,8 @@ public final class Constants implements Serializable {
     public static final String SERVLET_PARAMETER_STATISTICS_JSON = InitParameters.SERVLET_PARAMETER_STATISTICS_JSON;
 
     /**
-     * Default path for the WebPack profile statistics json file. It can be
-     * modified by setting the system property "statistics.file.path".
+     * Default path for the frontend statistics json file. It can be modified by
+     * setting the system property "statistics.file.path".
      */
     public static final String STATISTICS_JSON_DEFAULT = Constants.VAADIN_CONFIGURATION
             + "stats.json";
@@ -270,44 +262,11 @@ public final class Constants implements Serializable {
 
     /**
      * @deprecated Use
-     *             {@link InitParameters#SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT}
-     *             instead.
-     */
-    @Deprecated
-    public static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT = InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_TIMEOUT;
-
-    /**
-     * @deprecated Use
-     *             {@link InitParameters#SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN}
-     *             instead.
-     */
-    @Deprecated
-    public static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN = InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_SUCCESS_PATTERN;
-
-    /**
-     * @deprecated Use
-     *             {@link InitParameters#SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN}
-     *             instead.
-     */
-    @Deprecated
-    public static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN = InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_ERROR_PATTERN;
-
-    /**
-     * @deprecated Use
-     *             {@link InitParameters#SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS}
-     *             instead.
-     */
-    @Deprecated
-    public static final String SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS = InitParameters.SERVLET_PARAMETER_DEVMODE_WEBPACK_OPTIONS;
-
-    /**
-     * @deprecated Use
      *             {@link InitParameters#SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE}
      *             instead.
      */
     @Deprecated
     public static final String SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE = InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE;
-
     /**
      * @deprecated Use {@link InitParameters#SERVLET_PARAMETER_ENABLE_PNPM}
      *             instead.
@@ -351,7 +310,7 @@ public final class Constants implements Serializable {
 
     /**
      * Internal parameter which prevent validation for annotations which are
-     * allowed on an AppShell class in non V14 bootstrap mode.
+     * allowed on an AppShell class
      */
     public static final String ALLOW_APPSHELL_ANNOTATIONS = "allow.appshell.annotations";
 

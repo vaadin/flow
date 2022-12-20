@@ -41,8 +41,6 @@ public class BundleParserTest {
                 .thenReturn(Stream.empty());
         Mockito.when(instantiator.getDependencyFilters(Mockito.any()))
                 .thenReturn(Stream.empty());
-        Mockito.when(instantiator.getBootstrapListeners(Mockito.any()))
-                .thenReturn(Stream.empty());
         Mockito.when(instantiator.getIndexHtmlRequestListeners(Mockito.any()))
                 .thenReturn(Stream.empty());
         service = new MockVaadinServletService(configuration);

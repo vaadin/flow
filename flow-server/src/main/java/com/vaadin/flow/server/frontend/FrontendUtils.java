@@ -15,38 +15,27 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
-import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_STATISTICS_JSON;
 import static com.vaadin.flow.server.frontend.FrontendTools.INSTALL_NODE_LOCALLY;
 import static java.lang.String.format;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
 import java.io.UncheckedIOException;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Scanner;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
@@ -61,8 +50,6 @@ import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.FallbackChunk.CssImportData;
@@ -85,8 +72,7 @@ public class FrontendUtils {
 
     /**
      * Default folder for the node related content. It's the base directory for
-     * {@link Constants#PACKAGE_JSON}, {@link FrontendUtils#WEBPACK_CONFIG},
-     * {@link FrontendUtils#NODE_MODULES}.
+     * {@link Constants#PACKAGE_JSON} and {@link FrontendUtils#NODE_MODULES}.
      *
      * By default it's the project root folder.
      */
@@ -120,11 +106,6 @@ public class FrontendUtils {
             + FRONTEND;
 
     /**
-     * The name of the webpack configuration file.
-     */
-    public static final String WEBPACK_CONFIG = "webpack.config.js";
-
-    /**
      * The name of the vite configuration file.
      */
     public static final String VITE_CONFIG = "vite.config.ts";
@@ -135,13 +116,8 @@ public class FrontendUtils {
     public static final String VITE_GENERATED_CONFIG = "vite.generated.ts";
 
     /**
-     * The name of the webpack generated configuration file.
-     */
-    public static final String WEBPACK_GENERATED = "webpack.generated.js";
-
-    /**
      * The name of the service worker source file for InjectManifest method of
-     * workbox-webpack-plugin.
+     * the workbox plugin.
      */
     public static final String SERVICE_WORKER_SRC = "sw.ts";
 
@@ -178,8 +154,8 @@ public class FrontendUtils {
 
     /**
      * Name of the file that contains application imports, javascript, theme and
-     * style annotations. It is also the entry-point for webpack. It is always
-     * generated in the {@link FrontendUtils#DEFAULT_GENERATED_DIR} folder.
+     * style annotations. It is always generated in the
+     * {@link FrontendUtils#DEFAULT_GENERATED_DIR} folder.
      */
     public static final String IMPORTS_NAME = "generated-flow-imports.js";
 
@@ -334,10 +310,6 @@ public class FrontendUtils {
 
     public static final String DISABLE_CHECK = "%nYou can disable the version check using -D%s=true";
 
-    private static final String NO_CONNECTION = "Webpack-dev-server couldn't be reached for %s.%n"
-            + "Check the startup logs for exceptions in running webpack-dev-server.%n"
-            + "If server should be running in production mode check that production mode flag is set correctly.";
-
     private static final String TOO_OLD = "%n%n======================================================================================================"
             + "%nYour installed '%s' version (%s) is too old. Supported versions are %d.%d+" //
             + "%nPlease install a new one either:"
@@ -457,25 +429,13 @@ public class FrontendUtils {
     }
 
     /**
-     * Clears the <code>stats.json</code> cache within this
-     * {@link VaadinContext}.
-     *
-     * @param service
-     *            the vaadin service.
-     */
-    public static void clearCachedStatsContent(VaadinService service) {
-        service.getContext().removeAttribute(Stats.class);
-    }
-
-    /**
      * Gets the content of the <code>frontend/index.html</code> file which is
-     * served by webpack or vite in dev-mode and read from classpath in
-     * production mode.
+     * served by vite in dev-mode and read from classpath in production mode.
      * <p>
      * NOTE: In dev mode, the file content is fetched using an http request so
      * that we don't need to have a separate index.html's content watcher.
-     * Auto-reloading will work automatically, like other files managed by
-     * webpack in `frontend/` folder.
+     * Auto-reloading will work automatically, like other files in the
+     * `frontend/` folder.
      *
      * @param service
      *            the vaadin service
@@ -492,13 +452,13 @@ public class FrontendUtils {
 
     /**
      * Gets the content of the <code>frontend/web-component.html</code> file
-     * which is served by webpack or vite in dev-mode and read from classpath in
-     * production mode.
+     * which is served by vite in dev-mode and read from classpath in production
+     * mode.
      * <p>
      * NOTE: In dev mode, the file content is fetched using an http request so
      * that we don't need to have a separate web-component.html's content
-     * watcher. Auto-reloading will work automatically, like other files managed
-     * by webpack in `frontend/` folder.
+     * watcher. Auto-reloading will work automatically, like other files in the
+     * `frontend/` folder.
      *
      * @param service
      *            the vaadin service
@@ -566,111 +526,6 @@ public class FrontendUtils {
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
-    }
-
-    private static InputStream getResourceFromWebpack(
-            DevModeHandler devModeHandler, String resource,
-            String exceptionMessage) throws IOException {
-        HttpURLConnection statsConnection = devModeHandler
-                .prepareConnection(resource, "GET");
-        if (statsConnection.getResponseCode() != HttpURLConnection.HTTP_OK) {
-            throw new WebpackConnectionException(
-                    String.format(NO_CONNECTION, exceptionMessage));
-        }
-        return statsConnection.getInputStream();
-    }
-
-    private static InputStream getStatsFromExternalUrl(String externalStatsUrl,
-            VaadinContext context) {
-        String url;
-        // If url is relative try to get host from request
-        // else fallback on 127.0.0.1:8080
-        if (externalStatsUrl.startsWith("/")) {
-            VaadinRequest request = VaadinRequest.getCurrent();
-            url = getHostString(request) + externalStatsUrl;
-        } else {
-            url = externalStatsUrl;
-        }
-        try {
-            URL uri = new URL(url);
-            HttpURLConnection connection = (HttpURLConnection) uri
-                    .openConnection();
-            connection.setRequestMethod("GET");
-            // one minute timeout should be enough
-            connection.setReadTimeout(60000);
-            connection.setConnectTimeout(60000);
-            String lastModified = connection.getHeaderField("last-modified");
-            if (lastModified != null) {
-                LocalDateTime modified = ZonedDateTime
-                        .parse(lastModified,
-                                DateTimeFormatter.RFC_1123_DATE_TIME)
-                        .toLocalDateTime();
-                Stats statistics = context.getAttribute(Stats.class);
-                if (statistics == null || modified.isAfter(statistics
-                        .getLastModified().orElse(LocalDateTime.MIN))) {
-                    byte[] buffer = IOUtils
-                            .toByteArray(connection.getInputStream());
-                    statistics = new Stats(buffer, lastModified);
-                    context.setAttribute(statistics);
-                }
-                return new ByteArrayInputStream(statistics.statsJson);
-            }
-            return connection.getInputStream();
-        } catch (IOException e) {
-            getLogger().error("Failed to retrieve stats.json from the url {}.",
-                    url, e);
-        }
-        return null;
-    }
-
-    private static String getHostString(VaadinRequest request) {
-        String host = request.getHeader("host");
-        if (host == null) {
-            host = "http://127.0.0.1:8080";
-        } else if (!host.contains("://")) {
-            String scheme = request.getHeader("scheme");
-            if (scheme == null) {
-                scheme = "http";
-            }
-            host = scheme + "://" + host;
-        }
-        return host;
-    }
-
-    private static InputStream getStatsFromClassPath(VaadinService service) {
-        Stats statistics = service.getContext().getAttribute(Stats.class);
-
-        if (statistics != null) {
-            return new ByteArrayInputStream(statistics.statsJson);
-        }
-
-        String stats = service.getDeploymentConfiguration()
-                .getStringProperty(SERVLET_PARAMETER_STATISTICS_JSON,
-                        VAADIN_SERVLET_RESOURCES + STATISTICS_JSON_DEFAULT)
-                // Remove absolute
-                .replaceFirst("^/", "");
-        ResourceProvider resourceProvider = service.getContext()
-                .getAttribute(Lookup.class).lookup(ResourceProvider.class);
-        URL statsUrl = resourceProvider.getApplicationResource(stats);
-        InputStream stream = null;
-        if (statsUrl != null) {
-            try (InputStream statsStream = statsUrl.openStream()) {
-                byte[] buffer = IOUtils.toByteArray(statsStream);
-                statistics = new Stats(buffer, null);
-                service.getContext().setAttribute(statistics);
-                stream = new ByteArrayInputStream(buffer);
-            } catch (IOException exception) {
-                getLogger().warn("Couldn't read content of stats file {}",
-                        stats, exception);
-                stream = null;
-            }
-        }
-        if (stream == null) {
-            getLogger().error(
-                    "Cannot get the 'stats.json' from the classpath '{}'",
-                    stats);
-        }
-        return stream;
     }
 
     private static InputStream getFileFromDevModeHandler(
@@ -758,94 +613,6 @@ public class FrontendUtils {
         return new File(frontendDirectory, GENERATED);
     }
 
-    /**
-     * Load the asset chunks from <code>stats.json</code>. We will only read the
-     * file until we have reached the assetsByChunkName json and return that as
-     * a json object string.
-     *
-     * Note: The <code>stats.json</code> is cached when external stats is
-     * enabled or <code>stats.json</code> is provided from the class path. To
-     * clear the cache use {@link #clearCachedStatsContent(VaadinService)}.
-     *
-     * @param service
-     *            the Vaadin service.
-     * @return json for assetsByChunkName object in stats.json or {@code null}
-     *         if stats.json not found or content not found.
-     * @throws IOException
-     *             if an I/O error occurs while creating the input stream.
-     */
-    public static String getStatsAssetsByChunkName(VaadinService service)
-            throws IOException {
-        DeploymentConfiguration config = service.getDeploymentConfiguration();
-        Optional<DevModeHandler> devModeHandler = DevModeHandlerManager
-                .getDevModeHandler(service);
-        if (!config.isProductionMode() && config.enableDevServer()
-                && devModeHandler.isPresent()) {
-            return streamToString(getResourceFromWebpack(devModeHandler.get(),
-                    "/assetsByChunkName", "getting assets by chunk name."));
-        }
-        InputStream resourceAsStream;
-        if (config.isStatsExternal()) {
-            resourceAsStream = getStatsFromExternalUrl(
-                    config.getExternalStatsUrl(), service.getContext());
-        } else {
-            resourceAsStream = getStatsFromClassPath(service);
-        }
-        if (resourceAsStream == null) {
-            return null;
-        }
-        try (Scanner scan = new Scanner(resourceAsStream,
-                StandardCharsets.UTF_8.name())) {
-            StringBuilder assets = new StringBuilder();
-            assets.append("{");
-            // Scan until we reach the assetsByChunkName object line
-            scanToAssetChunkStart(scan, assets);
-            // Add lines until we reach the first } breaking the object
-            while (scan.hasNextLine()) {
-                String line = scan.nextLine().trim();
-                if ("}".equals(line) || "},".equals(line)) {
-                    // Encountering } or }, means end of asset chunk
-                    return assets.append("}").toString();
-                } else if (line.endsWith("}") || line.endsWith("},")) {
-                    return assets
-                            .append(line.substring(0, line.indexOf('}')).trim())
-                            .append("}").toString();
-                } else if (line.contains("{")) {
-                    // Encountering { means something is wrong as the assets
-                    // should only contain key-value pairs.
-                    break;
-                }
-                assets.append(line);
-            }
-            getLogger()
-                    .error("Could not parse assetsByChunkName from stats.json");
-        }
-        return null;
-    }
-
-    /**
-     * Scan until we reach the assetsByChunkName json object start. If faulty
-     * format add first jsonObject to assets builder.
-     *
-     * @param scan
-     *            Scanner used to scan data
-     * @param assets
-     *            assets builder
-     */
-    private static void scanToAssetChunkStart(Scanner scan,
-            StringBuilder assets) {
-        do {
-            String line = scan.nextLine().trim();
-            // Walk file until we get to the assetsByChunkName object.
-            if (line.startsWith("\"assetsByChunkName\"")) {
-                if (!line.endsWith("{")) {
-                    assets.append(line.substring(line.indexOf('{') + 1).trim());
-                }
-                break;
-            }
-        } while (scan.hasNextLine());
-    }
-
     private static String buildTooOldString(String tool, String version,
             int supportedMajor, int supportedMinor) {
         return String.format(TOO_OLD, tool, version, supportedMajor,
@@ -865,23 +632,6 @@ public class FrontendUtils {
             DeploymentConfiguration configuration) {
         return configuration.getStringProperty(PARAM_FRONTEND_DIR,
                 DEFAULT_FRONTEND_DIR);
-    }
-
-    /**
-     * Checks whether the {@code file} is a webpack configuration file with the
-     * expected content (includes a configuration generated by Flow).
-     *
-     * @param file
-     *            a file to check
-     * @return {@code true} iff the file exists and includes a generated
-     *         configuration
-     * @throws IOException
-     *             if an I/O error occurs while reading the file
-     */
-    public static boolean isWebpackConfigFile(File file) throws IOException {
-        return file.exists()
-                && FileUtils.readFileToString(file, StandardCharsets.UTF_8)
-                        .contains("./webpack.generated.js");
     }
 
     /**
@@ -1183,42 +933,6 @@ public class FrontendUtils {
     }
 
     /**
-     * Container class for caching the external stats.json contents.
-     */
-    private static class Stats implements Serializable {
-        private final String lastModified;
-        protected final byte[] statsJson;
-
-        /**
-         * Create a new container for stats.json caching.
-         *
-         * @param statsJson
-         *            the gotten stats.json as a string
-         * @param lastModified
-         *            last modification timestamp for stats.json in RFC-1123
-         *            date-time format, such as 'Tue, 3 Jun 2008 11:05:30 GMT'
-         */
-        public Stats(byte[] statsJson, String lastModified) {
-            this.statsJson = statsJson;
-            this.lastModified = lastModified;
-        }
-
-        /**
-         * Return last modified timestamp for contained stats.json.
-         *
-         * @return timestamp as LocalDateTime
-         */
-        public Optional<LocalDateTime> getLastModified() {
-            if (lastModified == null) {
-                return Optional.empty();
-            }
-            return Optional.of(ZonedDateTime
-                    .parse(lastModified, DateTimeFormatter.RFC_1123_DATE_TIME)
-                    .toLocalDateTime());
-        }
-    }
-
-    /**
      * Pretty prints a command line order. It split in lines adapting to 80
      * columns, and allowing copy and paste in console. It also removes the
      * current directory to avoid security issues in log files.
@@ -1465,4 +1179,27 @@ public class FrontendUtils {
         return new File(projectDir, "dev-bundle");
     }
 
+    /**
+     * Get the stats.json for the application specific development bundle.
+     *
+     * @param projectDir
+     *            the project base directory
+     * @return stats.json content or {@code null} if not found
+     * @throws IOException
+     *             if an I/O exception occurs.
+     */
+    public static String findBundleStatsJson(File projectDir)
+            throws IOException {
+        URL statsJson = findBundleFile(projectDir, "config/stats.json");
+        if (statsJson == null) {
+            getLogger().warn(
+                    "The application is running in express mode but there is "
+                            + "no bundle found. There is no 'dev-bundle' directory in the "
+                            + "project (or it has an invalid content) or on the "
+                            + "classpath nor is there a default bundle included.");
+            return null;
+        }
+
+        return IOUtils.toString(statsJson, StandardCharsets.UTF_8);
+    }
 }

@@ -35,7 +35,6 @@ import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
@@ -110,7 +109,6 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         configureHiddenElementStyles(indexDocument);
 
-        showDevServerErrors(session.getService(), indexDocument);
         response.setContentType(CONTENT_TYPE_TEXT_HTML_UTF_8);
 
         VaadinContext context = session.getService().getContext();
@@ -353,9 +351,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             addBundleEntryPoints(indexHtmlDocument, config,
                     Json.parse(statsJson));
         }
-        if (!getFeatureFlags(service).isEnabled(FeatureFlags.WEBPACK)) {
-            modifyIndexHtmlForVite(indexHtmlDocument);
-        }
+        modifyIndexHtmlForVite(indexHtmlDocument);
         return indexHtmlDocument;
     }
 
@@ -369,10 +365,6 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             elm.attr("src", "VAADIN/dev-bundle/" + entryScript);
             indexHtmlDocument.head().appendChild(elm);
         }
-    }
-
-    private static FeatureFlags getFeatureFlags(VaadinService service) {
-        return FeatureFlags.get(service.getContext());
     }
 
     private static void modifyIndexHtmlForVite(Document indexHtmlDocument) {

@@ -161,8 +161,6 @@ public abstract class VaadinService implements Serializable {
 
     private Iterable<RequestHandler> requestHandlers;
 
-    private Iterable<BootstrapListener> bootstrapListeners;
-
     private transient Iterable<IndexHtmlRequestListener> indexHtmlRequestListeners;
 
     private Iterable<DependencyFilter> dependencyFilters;
@@ -247,9 +245,6 @@ public abstract class VaadinService implements Serializable {
             dependencyFilters = Collections.unmodifiableCollection(instantiator
                     .getDependencyFilters(event.getAddedDependencyFilters())
                     .collect(Collectors.toList()));
-            bootstrapListeners = instantiator
-                    .getBootstrapListeners(event.getAddedBootstrapListeners())
-                    .collect(Collectors.toList());
             indexHtmlRequestListeners = instantiator
                     .getIndexHtmlRequestListeners(
                             event.getAddedIndexHtmlRequestListeners())
@@ -579,27 +574,6 @@ public abstract class VaadinService implements Serializable {
     public Registration addSessionDestroyListener(
             SessionDestroyListener listener) {
         return Registration.addAndRemove(sessionDestroyListeners, listener);
-    }
-
-    /**
-     * Fires the
-     * {@link BootstrapListener#modifyBootstrapPage(BootstrapPageResponse)}
-     * event to all registered {@link BootstrapListener}. This is called
-     * internally when the bootstrap page is created, so listeners can intercept
-     * the creation and change the result HTML.
-     *
-     * @param response
-     *            The object containing all relevant info needed by listeners to
-     *            change the bootstrap page.
-     *
-     * @deprecated Since 3.0, this API is deprecated in favor of
-     *             {@link VaadinService#modifyIndexHtmlResponse(IndexHtmlResponse)}
-     *             when using client-side bootstrapping
-     */
-    @Deprecated
-    public void modifyBootstrapPage(BootstrapPageResponse response) {
-        bootstrapListeners
-                .forEach(listener -> listener.modifyBootstrapPage(response));
     }
 
     /**

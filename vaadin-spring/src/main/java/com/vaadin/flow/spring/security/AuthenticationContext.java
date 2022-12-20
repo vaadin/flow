@@ -17,6 +17,7 @@ package com.vaadin.flow.spring.security;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,23 +41,25 @@ import com.vaadin.flow.server.VaadinServletResponse;
 /**
  * The authentication context of the application.
  * <p>
- * An instance of this class is available for injection as bean in view and
- * layout classes.
  *
  * It allows to access authenticated user information and to initiate the logout
  * process.
  *
+ * An instance of this class is available for injection as bean in view and
+ * layout classes. The class is not {@link java.io.Serializable}, so potential
+ * referencing fields in Vaadin views should be defined {@literal transient}.
+ *
  * @author Vaadin Ltd
  * @since 23.3
  */
-public class AuthenticationContext implements Serializable {
+public class AuthenticationContext {
 
     private static final Logger LOGGER = LoggerFactory
             .getLogger(AuthenticationContext.class);
 
-    private transient LogoutSuccessHandler logoutSuccessHandler;
+    private LogoutSuccessHandler logoutSuccessHandler;
 
-    private transient CompositeLogoutHandler logoutHandler;
+    private CompositeLogoutHandler logoutHandler;
 
     /**
      * Gets an {@link Optional} with an instance of the current user if it has
@@ -77,6 +80,22 @@ public class AuthenticationContext implements Serializable {
     public <U> Optional<U> getAuthenticatedUser(Class<U> userType) {
         return getAuthentication().map(Authentication::getPrincipal)
                 .map(userType::cast);
+    }
+
+    /**
+     * Gets an {@link Optional} containing the authenticated principal name, or
+     * an empty optional if the user is not authenticated.
+     *
+     * The principal name usually refers to a username or an identifier that can
+     * be used to retrieve additional information for the authenticated user.
+     *
+     * Anonymous users are considered not authenticated.
+     *
+     * @return an {@link Optional} containing the authenticated principal name
+     *         or an empty optional if not available.
+     */
+    public Optional<String> getPrincipalName() {
+        return getAuthentication().map(Principal::getName);
     }
 
     /**
@@ -121,9 +140,6 @@ public class AuthenticationContext implements Serializable {
 
     /**
      * Sets component to handle logout process.
-     *
-     * This method should be invoked after deserialization to refresh required
-     * transient fields.
      *
      * @param logoutSuccessHandler
      *            {@link LogoutSuccessHandler} instance, not {@literal null}.

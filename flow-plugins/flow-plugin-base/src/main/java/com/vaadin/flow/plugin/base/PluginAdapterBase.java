@@ -108,37 +108,11 @@ public interface PluginAdapterBase {
     boolean isJarProject();
 
     /**
-     * Whether or not we are running in legacy V14 bootstrap mode. True if
-     * defined or if it's set to true.
-     *
-     * @return {@link String}
-     **/
-    String getUseDeprecatedV14Bootstrapping();
-
-    /**
      * Checks the debug Mode.
      *
      * @return boolean
      */
     boolean isDebugEnabled();
-
-    /**
-     * Check if the plugin is running in legacy V14 bootstrap mode or not.
-     * Default: false.
-     *
-     * @return true if the `useDeprecatedV14Bootstrapping` is empty or true.
-     */
-    default boolean isUseDeprecatedV14Bootstrapping() {
-
-        String useDeprecatedV14Bootstrapping = getUseDeprecatedV14Bootstrapping();
-        if (useDeprecatedV14Bootstrapping == null) {
-            return false;
-        }
-        if (useDeprecatedV14Bootstrapping.isEmpty()) {
-            return true;
-        }
-        return Boolean.parseBoolean(useDeprecatedV14Bootstrapping);
-    }
 
     /**
      * Java source folders for scanning.

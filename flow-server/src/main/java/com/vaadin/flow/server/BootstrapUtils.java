@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import com.vaadin.flow.component.HasElement;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.component.page.Inline;
@@ -35,16 +34,10 @@ import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
-import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.Location;
-import com.vaadin.flow.router.LocationChangeEvent;
-import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.router.NavigationState;
-import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.ParentLayout;
-import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.RouteUtil;
 
@@ -105,56 +98,6 @@ class BootstrapUtils {
                     "Meta tags added via Meta annotation contain null value on name or content attribute.");
         }
         return map;
-    }
-
-    /**
-     * Get initial page settings if a {@link PageConfigurator} is found for the
-     * current component tree after navigation has resolved.
-     *
-     * @param context
-     *            the bootstrap context
-     * @return initial page settings or empty optional if no
-     *         {@link PageConfigurator} found
-     */
-    static Optional<InitialPageSettings> getInitialPageSettings(
-            BootstrapHandler.BootstrapContext context) {
-        UI ui = context.getUI();
-
-        Optional<PageConfigurator> pageConfigurator = ui.getChildren()
-                .filter(component -> component instanceof PageConfigurator)
-                .map(component -> (PageConfigurator) component).findFirst();
-        if (pageConfigurator.isPresent()) {
-            InitialPageSettings settings = createInitialPageSettingsObject(
-                    context);
-
-            pageConfigurator.get().configurePage(settings);
-
-            return Optional.of(settings);
-        }
-
-        return Optional.empty();
-    }
-
-    private static InitialPageSettings createInitialPageSettingsObject(
-            BootstrapHandler.BootstrapContext context) {
-        UI ui = context.getUI();
-        WebBrowser browser = context.getSession().getBrowser();
-
-        Router router = ui.getInternals().getRouter();
-        NavigationEvent navigationEvent = new NavigationEvent(router,
-                context.getRoute(), ui, NavigationTrigger.PAGE_LOAD);
-
-        List<HasElement> components = ui.getChildren()
-                .map(component -> (HasElement) component)
-                .collect(Collectors.toList());
-
-        AfterNavigationEvent afterNavigationEvent = new AfterNavigationEvent(
-                new LocationChangeEvent(navigationEvent.getSource(),
-                        navigationEvent.getUI(), navigationEvent.getTrigger(),
-                        navigationEvent.getLocation(), components));
-
-        return new InitialPageSettings(context.getRequest(), ui,
-                afterNavigationEvent, browser);
     }
 
     /**
@@ -259,32 +202,6 @@ class BootstrapUtils {
                     file));
         }
         return stream;
-    }
-
-    /**
-     * Finds the class on on which page configuration annotation should be
-     * defined.
-     * <p>
-     * This method is only valid for V14 bootstrapping
-     *
-     * @param ui
-     *            the UI for which to do the lookup, not <code>null</code>
-     * @param request
-     *            the request for which to do the lookup, not <code>null</code>
-     * @return the class for which page configuration annotations should be
-     *         defined, or an empty optional if no such class is available
-     * @deprecated use {@link #resolvePageConfigurationHolder(UI, Location)}
-     *             instead
-     */
-    @Deprecated
-    public static Optional<Class<?>> resolvePageConfigurationHolder(UI ui,
-            VaadinRequest request) {
-        assert ui != null;
-        assert request != null;
-
-        Location route = new Location(request.getPathInfo(),
-                QueryParameters.full(request.getParameterMap()));
-        return resolvePageConfigurationHolder(ui, route);
     }
 
     /**
