@@ -15,6 +15,8 @@
  */
 package com.vaadin.client;
 
+import java.util.function.Supplier;
+
 import com.vaadin.client.communication.ConnectionStateHandler;
 import com.vaadin.client.communication.Heartbeat;
 import com.vaadin.client.communication.MessageHandler;
@@ -43,6 +45,8 @@ public class Registry {
 
     private JsMap<Class<?>, Object> lookupTable = JsCollections.map();
 
+    private JsMap<Class<?>, Supplier<?>> resettable = JsCollections.map();
+
     /**
      * Creates a new empty registry.
      * <p>
@@ -55,8 +59,9 @@ public class Registry {
     /**
      * Stores an instance of the given type.
      * <p>
-     * Note that all instances are considered final and you are not allowed to
-     * update an instance of any given type.
+     * Note that instances by default are considered final, and you are not
+     * allowed to update an instance of any given type manually. In case
+     * instance is allowed to be recreated use {@link #set(Class, Supplier)}.
      *
      * @param type
      *            the type to store
@@ -69,6 +74,26 @@ public class Registry {
         assert !lookupTable.has(type) : "Registry already has a class of type "
                 + type.getName() + " registered";
         lookupTable.set(type, instance);
+    }
+
+    /**
+     * Stores an instance of the given type.
+     * <p>
+     * Note that instances by default are considered final, and you are not
+     * allowed to update an instance of any given type manually. Uses resettable
+     * supplier to allow Registry to recreate given instance during session
+     * resynchronization.
+     *
+     * @param type
+     *            the type to store
+     * @param instanceSupplier
+     *            new instances supplier if given registry entry can be reset
+     * @param <T>
+     *            the type
+     */
+    protected final <T> void set(Class<T> type, Supplier<T> instanceSupplier) {
+        set(type, instanceSupplier.get());
+        resettable.set(type, instanceSupplier);
     }
 
     /**
@@ -305,11 +330,12 @@ public class Registry {
     }
 
     /**
-     * Clears some of defined singletons allowing setting new values.
+     * Deletes and recreates resettable instances of registry singletons.
      */
     public void reset() {
-        lookupTable.delete(UILifecycle.class);
-        lookupTable.delete(ConstantPool.class);
-        lookupTable.delete(ExistingElementMap.class);
+        resettable.forEach((v, k) -> {
+            lookupTable.delete(k);
+            lookupTable.set(k, v.get());
+        });
     }
 }

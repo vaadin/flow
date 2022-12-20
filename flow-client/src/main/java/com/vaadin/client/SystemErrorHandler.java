@@ -158,7 +158,7 @@ public class SystemErrorHandler {
         Xhr.get(serviceUrl, new Xhr.Callback() {
             @Override
             public void onFail(XMLHttpRequest xhr, Exception exception) {
-                Console.log(exception);
+                handleError(exception);
             }
 
             @Override
@@ -168,11 +168,15 @@ public class SystemErrorHandler {
                             @Override
                             public void onFail(XMLHttpRequest xhr,
                                     Exception exception) {
-                                Console.log(exception);
+                                handleError(exception);
                             }
 
                             @Override
                             public void onSuccess(XMLHttpRequest xhr) {
+
+                                Console.log(
+                                        "Received xhr HTTP session resynchronization message: "
+                                                + xhr.getResponseText());
 
                                 registry.reset();
                                 registry.getUILifecycle()
