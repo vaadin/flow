@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.IOUtils;
@@ -390,7 +391,7 @@ public class UidlWriter implements Serializable {
         stateTree.runExecutionsBeforeClientResponse();
 
         Set<Class<? extends Component>> componentsWithDependencies = new LinkedHashSet<>();
-        stateTree.collectChanges(change -> {
+        Consumer<NodeChange> changesCollector = change -> {
             if (attachesComponent(change)) {
                 ComponentMapping.getComponent(change.getNode())
                         .ifPresent(component -> addComponentHierarchy(ui,
@@ -400,7 +401,21 @@ public class UidlWriter implements Serializable {
             // Encode the actual change
             stateChanges.set(stateChanges.length(),
                     change.toJson(uiInternals.getConstantPool()));
-        });
+        };
+        // A collectChanges round may add additional changes that needs to be
+        // collected.
+        // For example NodeList.generateChangesFromEmpty adds a ListClearChange
+        // in case of remove has been invoked previously
+        // Usually, at most 2 rounds should be necessary, so stop checking after
+        // five attempts to avoid infinite loops in case of bugs.
+        int attempts = 5;
+        while (stateTree.hasDirtyNodes() && attempts-- > 0) {
+            stateTree.collectChanges(changesCollector);
+        }
+        if (stateTree.hasDirtyNodes()) {
+            getLogger().warn("UI still dirty after collecting changes, "
+                    + "this should not happen and may cause unexpected PUSH invocation.");
+        }
 
         componentsWithDependencies
                 .forEach(uiInternals::addComponentDependencies);
