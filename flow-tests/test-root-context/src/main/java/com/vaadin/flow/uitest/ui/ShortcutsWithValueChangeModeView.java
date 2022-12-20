@@ -56,6 +56,7 @@ public class ShortcutsWithValueChangeModeView extends Div
                 KeyModifier.ALT);
         button.addClickListener(e -> value.setText(input.getValue()));
 
+        add(input, button, value);
     }
 
     @Override
