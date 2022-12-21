@@ -104,8 +104,9 @@ public class BasicComponentIT extends ChromeDeviceTest {
             server.setConnectors(new ServerConnector[] { connector });
         }
 
-        File[] warDirs = new File("target").listFiles(file -> file.getName()
-                .matches("vite-embedded-session-resync-.*-SNAPSHOT\\.war"));
+        File[] warDirs = new File("target")
+                .listFiles(file -> file.getName().matches(
+                        "vite-embedded-webcomponent-resync-.*-SNAPSHOT\\.war"));
         String warfile = "target/" + warDirs[0].getName();
 
         context = new WebAppContext(warfile, "/");
