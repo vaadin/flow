@@ -8,7 +8,7 @@
         <artifactId>test-frontend</artifactId>
         <version>24.0-SNAPSHOT</version>
     </parent>
-    <artifactId>vite-embedded-session-resync</artifactId>
+    <artifactId>vite-embedded-webcomponent-resync</artifactId>
     <name>Vite embedded app - session resync</name>
     <packaging>war</packaging>
 
