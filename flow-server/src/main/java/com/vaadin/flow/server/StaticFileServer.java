@@ -327,13 +327,13 @@ public class StaticFileServer implements StaticFileHandler {
             return assetInFrontendThemes.toURI().toURL();
         }
         // Or search in the dev-bundle (if the assets come from node_modules)
-        String assetInDevBundle = "/webapp/assets/" + assetPath;
+        String assetInDevBundle = "/assets/" + assetPath;
         URL assetInDevBundleUrl = FrontendUtils.findBundleFile(projectFolder,
                 assetInDevBundle);
         if (assetInDevBundleUrl == null) {
             throw new IllegalStateException(String.format(
                     "Asset '%s' is not found neither in frontend/themes/theme-name/ "
-                            + "nor in dev-bundle/webapp/assets/. Verify that either the asset "
+                            + "nor in dev-bundle/assets/. Verify that either the asset "
                             + "is available in frontend/themes/theme-name/ folder or it is added "
                             + "in the 'assets' block in 'theme.json'.",
                     assetPath));

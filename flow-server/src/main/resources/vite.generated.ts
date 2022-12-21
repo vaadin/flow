@@ -53,7 +53,7 @@ const themeOptions = {
   // (not 'frontend/themes') for theme in JAR that is copied there
   themeResourceFolder: path.resolve(themeResourceFolder, settings.themeFolder),
   themeProjectFolders: themeProjectFolders,
-  projectStaticAssetsOutputFolder: devBundle ? path.resolve(devBundleFolder, 'assets') : path.resolve(__dirname, settings.staticOutput),
+  projectStaticAssetsOutputFolder: devBundle ? path.resolve(devBundleFolder, '../assets') : path.resolve(__dirname, settings.staticOutput),
   frontendGeneratedFolder: path.resolve(frontendFolder, settings.generatedFolder)
 };
 
@@ -540,7 +540,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
     },
     build: {
       outDir: buildOutputFolder,
-      // emptyOutDir: devBundle,
+      emptyOutDir: devBundle,
       assetsDir: 'VAADIN/build',
       rollupOptions: {
         input: {

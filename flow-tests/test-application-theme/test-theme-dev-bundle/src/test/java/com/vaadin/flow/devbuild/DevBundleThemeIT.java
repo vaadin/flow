@@ -37,6 +37,7 @@ public class DevBundleThemeIT extends ChromeBrowserTest {
 
     private static final String RED_COLOR = "rgba(255, 0, 0, 1)";
     private static final String GREEN_COLOR = "rgba(0, 255, 0, 1)";
+    private static final String BLUE_COLOR = "rgba(0, 0, 255, 1)";
     private static final String THEME_FOLDER = "frontend/themes/my-theme/";
 
     private File fontFile;
@@ -48,7 +49,7 @@ public class DevBundleThemeIT extends ChromeBrowserTest {
     public void init() {
         File baseDir = new File(System.getProperty("user.dir", "."));
         themeAssetsInBundle = new File(baseDir,
-                "dev-bundle/webapp/assets/themes/my-theme");
+                "dev-bundle/assets/themes/my-theme");
         final File themeFolder = new File(baseDir, THEME_FOLDER);
         fontFile = new File(themeFolder, "fonts/ostrich-sans-regular.ttf");
         stylesCss = new File(themeFolder, "styles.css");
@@ -91,7 +92,7 @@ public class DevBundleThemeIT extends ChromeBrowserTest {
             WebElement paragraph = findElement(By.tagName("p"));
             if (paragraph != null) {
                 String color = paragraph.getCssValue("color");
-                Assert.assertEquals(RED_COLOR, color);
+                Assert.assertEquals(BLUE_COLOR, color);
                 return true;
             }
             return false;
