@@ -7,12 +7,13 @@ import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.testcategory.IgnoreOSGi;
 import com.vaadin.flow.testcategory.PushTests;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 import static org.junit.Assert.assertFalse;
 
-@Category(PushTests.class)
+@Category({ PushTests.class, IgnoreOSGi.class })
 public class TogglePushIT extends ChromeBrowserTest {
 
     @Test
