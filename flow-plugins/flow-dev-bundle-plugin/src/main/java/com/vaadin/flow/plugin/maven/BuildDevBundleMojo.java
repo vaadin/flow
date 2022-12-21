@@ -274,11 +274,6 @@ public class BuildDevBundleMojo extends AbstractMojo
     }
 
     @Override
-    public String getUseDeprecatedV14Bootstrapping() {
-        return "false";
-    }
-
-    @Override
     public boolean isDebugEnabled() {
         return getLog().isDebugEnabled();
     }

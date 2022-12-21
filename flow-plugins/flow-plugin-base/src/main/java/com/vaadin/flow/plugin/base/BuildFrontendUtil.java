@@ -380,7 +380,7 @@ public class BuildFrontendUtil {
                     .runNpmInstall(adapter.runNpmInstall())
                     .withWebpack(adapter.webpackOutputDirectory(),
                             adapter.servletResourceOutputDirectory())
-                    .useV14Bootstrap(false).enablePackagesUpdate(true)
+                    .enablePackagesUpdate(true)
                     .useByteCodeScanner(false)
                     .withJarFrontendResourcesFolder(
                             getJarFrontendResourcesFolder(adapter))
