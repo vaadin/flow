@@ -70,10 +70,6 @@ public class Debouncer {
      */
     public boolean trigger(JsSet<String> phases, Consumer<String> command) {
         lastCommand = command;
-        StringBuilder phasesStr = new StringBuilder();
-        if (phases != null) {
-            phases.forEach(s -> phasesStr.append(s).append(","));
-        }
         boolean triggerImmediately = false;
         if (idleTimer == null) {
             triggerImmediately = phases.has(JsonConstants.EVENT_PHASE_LEADING);
