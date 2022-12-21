@@ -1,0 +1,66 @@
+{
+  "name": "no-name",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "@polymer/paper-checkbox": "3.0.1",
+    "@polymer/paper-input": "3.0.2",
+    "@polymer/polymer": "3.5.1",
+    "@vaadin/common-frontend": "0.0.17",
+    "@vaadin/router": "1.7.4",
+    "construct-style-sheets-polyfill": "3.1.0",
+    "lit": "2.4.1"
+  },
+  "devDependencies": {
+    "@rollup/plugin-replace": "5.0.1",
+    "@rollup/pluginutils": "4.1.0",
+    "async": "3.2.2",
+    "glob": "7.2.3",
+    "mkdirp": "1.0.4",
+    "rollup-plugin-brotli": "3.1.0",
+    "strip-css-comments": "5.0.0",
+    "transform-ast": "2.4.4",
+    "typescript": "4.9.3",
+    "vite": "v4.0.0",
+    "vite-plugin-checker": "0.5.2",
+    "workbox-build": "6.5.0",
+    "workbox-core": "6.5.4",
+    "workbox-precaching": "6.5.4"
+  },
+  "vaadin": {
+    "dependencies": {
+      "@polymer/paper-checkbox": "3.0.1",
+      "@polymer/paper-input": "3.0.2",
+      "@polymer/polymer": "3.5.1",
+      "@vaadin/common-frontend": "0.0.17",
+      "@vaadin/router": "1.7.4",
+      "construct-style-sheets-polyfill": "3.1.0",
+      "lit": "2.4.1"
+    },
+    "devDependencies": {
+      "@rollup/plugin-replace": "5.0.1",
+      "@rollup/pluginutils": "4.1.0",
+      "async": "3.2.2",
+      "glob": "7.2.3",
+      "mkdirp": "1.0.4",
+      "rollup-plugin-brotli": "3.1.0",
+      "strip-css-comments": "5.0.0",
+      "transform-ast": "2.4.4",
+      "typescript": "4.9.3",
+      "vite": "v4.0.0",
+      "vite-plugin-checker": "0.5.2",
+      "workbox-build": "6.5.0",
+      "workbox-core": "6.5.4",
+      "workbox-precaching": "6.5.4"
+    },
+    "hash": "262f22b5e6e95a9d784b5b75c7a1913c06a97b123649efd9180b99bac4c7fff5"
+  },
+  "overrides": {
+    "@vaadin/common-frontend": "$@vaadin/common-frontend",
+    "construct-style-sheets-polyfill": "$construct-style-sheets-polyfill",
+    "lit": "$lit",
+    "@vaadin/router": "$@vaadin/router",
+    "@polymer/polymer": "$@polymer/polymer",
+    "@polymer/paper-checkbox": "$@polymer/paper-checkbox",
+    "@polymer/paper-input": "$@polymer/paper-input"
+  }
+}
