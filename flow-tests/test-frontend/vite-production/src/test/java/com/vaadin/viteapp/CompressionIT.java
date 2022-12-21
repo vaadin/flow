@@ -7,8 +7,8 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
 import org.brotli.dec.BrotliInputStream;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class CompressionIT {
 
@@ -22,7 +22,7 @@ public class CompressionIT {
 
         String file = IOUtils.toString(new URL(getRootURL() + bundleName),
                 StandardCharsets.UTF_8);
-        Assert.assertTrue(file.contains("generated-flow-imports"));
+        Assertions.assertTrue(file.contains("generated-flow-imports"));
     }
 
     @Test
@@ -34,7 +34,7 @@ public class CompressionIT {
                 compressedUrl.openStream());
 
         String file = IOUtils.toString(stream, StandardCharsets.UTF_8);
-        Assert.assertTrue(file.contains("generated-flow-imports"));
+        Assertions.assertTrue(file.contains("generated-flow-imports"));
     }
 
     private String getJsBundleName() throws Exception {

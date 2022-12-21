@@ -1,35 +1,34 @@
 package com.vaadin.viteapp;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
+import io.github.bonigarcia.wdm.WebDriverManager;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.openqa.selenium.Dimension;
+
+import com.vaadin.flow.testutil.jupiter.ChromeBrowserTest;
+import com.vaadin.testbench.BrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 import com.vaadin.viteapp.views.empty.MainView;
 
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.openqa.selenium.Dimension;
-
-import io.github.bonigarcia.wdm.WebDriverManager;
-
 public class ProductionBasicsIT extends ChromeBrowserTest {
 
-    @BeforeClass
+    @BeforeAll
     public static void driver() {
         WebDriverManager.chromedriver().setup();
     }
 
-    @Test
+    @BrowserTest
     public void applicationStarts() {
         getDriver().get(getRootURL());
         waitForDevServer();
         TestBenchElement header = $("h2").first();
-        Assert.assertEquals("This place intentionally left empty",
+        Assertions.assertEquals("This place intentionally left empty",
                 header.getText());
-        Assert.assertFalse((Boolean) getCommandExecutor()
+        Assertions.assertFalse((Boolean) getCommandExecutor()
                 .executeScript("return Vaadin.developmentMode"));
     }
 
-    @Test
+    @BrowserTest
     public void imageFromThemeShown() {
         getDriver().get(getRootURL());
         waitForDevServer();
@@ -43,26 +42,26 @@ public class ProductionBasicsIT extends ChromeBrowserTest {
         });
     }
 
-    @Test
+    @BrowserTest
     public void imageCanBeHidden() {
         getDriver().get(getRootURL());
         waitForDevServer();
         TestBenchElement img = $("img").id(MainView.PLANT);
         TestBenchElement button = $("button").id(MainView.HIDEPLANT);
         button.click();
-        Assert.assertEquals("none", img.getCssValue("display"));
+        Assertions.assertEquals("none", img.getCssValue("display"));
     }
 
-    @Test
+    @BrowserTest
     public void applicationHasThemeAndAssets() {
         getDriver().get(getRootURL());
         waitForDevServer();
 
         String pColor = $("p").first().getCssValue("color");
-        Assert.assertEquals("rgba(0, 100, 0, 1)", pColor);
+        Assertions.assertEquals("rgba(0, 100, 0, 1)", pColor);
 
         Dimension size = $("img").first().getSize();
-        Assert.assertEquals(200, size.getWidth());
-        Assert.assertEquals(200, size.getHeight());
+        Assertions.assertEquals(200, size.getWidth());
+        Assertions.assertEquals(200, size.getHeight());
     }
 }
