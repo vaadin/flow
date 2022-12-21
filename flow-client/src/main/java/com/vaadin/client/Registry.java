@@ -81,8 +81,7 @@ public class Registry {
      * <p>
      * Note that instances by default are considered final, and you are not
      * allowed to update an instance of any given type manually. Uses resettable
-     * supplier to allow Registry to recreate given instance during session
-     * resynchronization.
+     * supplier to allow Registry to recreate given instances.
      *
      * @param type
      *            the type to store

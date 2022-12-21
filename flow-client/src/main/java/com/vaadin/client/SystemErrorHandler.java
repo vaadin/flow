@@ -151,11 +151,12 @@ public class SystemErrorHandler {
      */
     private void resynchronizeSession() {
         String serviceUrl = registry.getApplicationConfiguration()
-                .getServiceUrl();
+                .getServiceUrl() + "web-component/web-component-bootstrap.js";
         String sessionResyncUri = SharedUtil.addGetParameter(serviceUrl,
                 ApplicationConstants.REQUEST_TYPE_PARAMETER,
-                ApplicationConstants.REQUEST_TYPE_SESSION_RESYNC);
-        Xhr.get(serviceUrl, new Xhr.Callback() {
+                ApplicationConstants.REQUEST_TYPE_WEBCOMPONENT_RESYNC);
+
+        Xhr.get(sessionResyncUri, new Xhr.Callback() {
             @Override
             public void onFail(XMLHttpRequest xhr, Exception exception) {
                 handleError(exception);
@@ -163,41 +164,24 @@ public class SystemErrorHandler {
 
             @Override
             public void onSuccess(XMLHttpRequest xhr) {
-                Xhr.post(sessionResyncUri, "{}",
-                        JsonConstants.JSON_CONTENT_TYPE, new Xhr.Callback() {
-                            @Override
-                            public void onFail(XMLHttpRequest xhr,
-                                    Exception exception) {
-                                handleError(exception);
-                            }
 
-                            @Override
-                            public void onSuccess(XMLHttpRequest xhr) {
+                Console.log(
+                        "Received xhr HTTP session resynchronization message: "
+                                + xhr.getResponseText());
 
-                                Console.log(
-                                        "Received xhr HTTP session resynchronization message: "
-                                                + xhr.getResponseText());
+                registry.reset();
+                registry.getUILifecycle().setState(UILifecycle.UIState.RUNNING);
 
-                                registry.reset();
-                                registry.getUILifecycle()
-                                        .setState(UILifecycle.UIState.RUNNING);
+                ValueMap json = MessageHandler
+                        .parseWrappedJson(xhr.getResponseText());
+                registry.getMessageHandler().handleMessage(json);
+                registry.getApplicationConfiguration()
+                        .setUIId(json.getInt(ApplicationConstants.UI_ID));
 
-                                ValueMap json = MessageHandler.parseWrappedJson(
-                                        xhr.getResponseText());
-                                registry.getMessageHandler()
-                                        .handleMessage(json);
-                                registry.getApplicationConfiguration()
-                                        .setUIId(json.getInt(
-                                                ApplicationConstants.UI_ID));
-
-                                Scheduler.get().scheduleDeferred(() -> Arrays
-                                        .stream(registry
-                                                .getApplicationConfiguration()
-                                                .getExportedWebComponents())
-                                        .forEach(
-                                                SystemErrorHandler.this::recreateNodes));
-                            }
-                        });
+                Scheduler.get().scheduleDeferred(() -> Arrays
+                        .stream(registry.getApplicationConfiguration()
+                                .getExportedWebComponents())
+                        .forEach(SystemErrorHandler.this::recreateNodes));
             }
         });
     }

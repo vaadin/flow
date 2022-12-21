@@ -193,10 +193,10 @@ public class ApplicationConstants implements Serializable {
     public static final String REQUEST_TYPE_PUSH = "push";
 
     /**
-     * Request type parameter value indicating a session resynchronization
+     * Request type parameter value indicating a WebComponent resynchronization
      * request.
      */
-    public static final String REQUEST_TYPE_SESSION_RESYNC = "session-resync";
+    public static final String REQUEST_TYPE_WEBCOMPONENT_RESYNC = "webcomponent-resync";
 
     /**
      * Attribute name for marking internal router link anchors.
