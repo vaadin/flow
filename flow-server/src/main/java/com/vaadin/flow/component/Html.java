@@ -146,21 +146,30 @@ public class Html extends Component {
         }
 
         org.jsoup.nodes.Element root = doc.body().child(0);
-        Attributes attrs = root.attributes();
+        if (root.nodeName().equals("svg")) {
+            // SVG can't be handled like normal elements on the
+            // client side due to different namespace, wrap in div
+            Component.setElement(this, new Element("div"));
+            getElement().setProperty("innerHTML", outerHtml);
+        } else {
 
-        if (!update) {
-            Component.setElement(this, new Element(root.tagName()));
+            Attributes attrs = root.attributes();
+
+            if (!update) {
+                Component.setElement(this, new Element(root.tagName()));
+            }
+            attrs.forEach(this::setAttribute);
+
+            if (update && !root.tagName().equals(getElement().getTag())) {
+                throw new IllegalStateException("Existing root tag '"
+                        + getElement().getTag() + "' can't be changed to '"
+                        + root.tagName() + "'");
+            }
+
+            doc.outputSettings().prettyPrint(false);
+            setInnerHtml(root.html());
         }
-        attrs.forEach(this::setAttribute);
 
-        if (update && !root.tagName().equals(getElement().getTag())) {
-            throw new IllegalStateException(
-                    "Existing root tag '" + getElement().getTag()
-                            + "' can't be changed to '" + root.tagName() + "'");
-        }
-
-        doc.outputSettings().prettyPrint(false);
-        setInnerHtml(root.html());
     }
 
     private void setAttribute(Attribute attribute) {
