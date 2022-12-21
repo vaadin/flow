@@ -19,6 +19,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -37,6 +38,7 @@ import com.vaadin.flow.shared.util.SharedUtil;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
 
 /**
  * Compiles the dev mode bundle if it is out of date.
@@ -93,8 +95,8 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             FrontendDependenciesScanner frontendDependencies)
             throws IOException {
 
-        if (!FrontendUtils.getDevBundleFolder(npmFolder).exists()) {
-            // TODO: check for jar dev-bundle
+        if (!FrontendUtils.getDevBundleFolder(npmFolder).exists()
+                && !hasJarBundle()) {
             return true;
         }
 
@@ -118,6 +120,12 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         }
 
         return false;
+    }
+
+    private static boolean hasJarBundle() {
+        final URL resource = TaskRunDevBundleBuild.class.getClassLoader()
+                .getResource(DEV_BUNDLE_JAR_PATH + "config/stats.json");
+        return resource != null;
     }
 
     /**
@@ -220,6 +228,8 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             } catch (IOException e) {
                 getLogger().warn("Failed to read package.json", e);
             }
+        } else {
+            // new NodeUpdater();
         }
         return null;
     }

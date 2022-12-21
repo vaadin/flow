@@ -201,7 +201,8 @@ function statsExtracterPlugin(): PluginOption {
       const entryScripts = Object.values(bundle).filter(bundle => bundle.isEntry).map(bundle => bundle.fileName);
 
       const stats = {
-        npmModules: npmModuleAndVersion,
+        npmModules: projectPackageJson.dependencies,
+        handledModules: npmModuleAndVersion,
         entryScripts,
         packageJsonHash: projectPackageJson?.vaadin?.hash
       };
