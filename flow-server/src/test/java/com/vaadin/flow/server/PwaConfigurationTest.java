@@ -19,7 +19,7 @@ public class PwaConfigurationTest {
     @Test
     public void pwaOfflinePathEmpty_should_beDisabled() {
         PwaConfiguration pwaConfiguration = new PwaConfiguration(
-                App.class.getAnnotation(PWA.class), false);
+                App.class.getAnnotation(PWA.class));
         Assert.assertFalse(pwaConfiguration.isOfflinePathEnabled());
         Assert.assertEquals("", pwaConfiguration.getOfflinePath());
     }

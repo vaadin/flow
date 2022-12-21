@@ -26,7 +26,6 @@ import org.mockito.Mockito;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.RouteConfiguration;
-import com.vaadin.flow.server.BootstrapHandlerTest;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.MockVaadinServletService;
@@ -105,8 +104,7 @@ public class InvalidUrlTest {
         });
 
         ui.doInit(request, 0);
-        ui.getRouter().initializeUI(ui,
-                BootstrapHandlerTest.requestToLocation(request));
+        ui.getRouter().initializeUI(ui, UITest.requestToLocation(request));
 
         session.unlock();
 

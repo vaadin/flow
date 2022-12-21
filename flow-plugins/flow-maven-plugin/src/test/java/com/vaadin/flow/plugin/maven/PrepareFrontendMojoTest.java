@@ -54,7 +54,6 @@ import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.setProject;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
@@ -166,7 +165,6 @@ public class PrepareFrontendMojoTest {
 
         JsonObject initialBuildInfo = Json.createObject();
         initialBuildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, false);
-        initialBuildInfo.put(SERVLET_PARAMETER_USE_V14_BOOTSTRAP, false);
         initialBuildInfo.put(SERVLET_PARAMETER_ENABLE_DEV_SERVER, false);
         org.apache.commons.io.FileUtils.forceMkdir(tokenFile.getParentFile());
         org.apache.commons.io.FileUtils.write(tokenFile,

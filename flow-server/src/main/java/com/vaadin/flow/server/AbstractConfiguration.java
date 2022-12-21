@@ -21,7 +21,6 @@ import java.io.Serializable;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
 
 /**
  * Defines a base contract for configuration (e.g. on an application level,
@@ -62,15 +61,6 @@ public interface AbstractConfiguration extends Serializable {
     default boolean reuseDevServer() {
         return getBooleanProperty(
                 InitParameters.SERVLET_PARAMETER_REUSE_DEV_SERVER, true);
-    }
-
-    /**
-     * Returns whether Vaadin is running in useDeprecatedV14Bootstrapping.
-     *
-     * @return true if in useDeprecatedV14Bootstrapping, false otherwise.
-     */
-    default boolean useV14Bootstrap() {
-        return getBooleanProperty(SERVLET_PARAMETER_USE_V14_BOOTSTRAP, false);
     }
 
     /**

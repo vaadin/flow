@@ -45,8 +45,6 @@ The following actions are performed when creating a package:
  Default value is: "${project.basedir}/" + FRONTEND
 * **productionMode** `boolean` - Whether or not we are running in productionMode.
  Default value is: ${vaadin.productionMode}
-* **useDeprecatedV14Bootstrapping** `String` - Whether or not we are running in legacy V14 bootstrap mode. True if defined or if it's set to true.
- Default value is: ${vaadin.useDeprecatedV14Bootstrapping}
 * **eagerServerLoad** `boolean` - Whether or not insert the initial Uidl object in the bootstrap index.html.
  Default value is: "${vaadin." + Constants.SERVLET_PARAMETER_INITIAL_UIDL + "}"
 * **webpackOutputDirectory** `File` - The folder where webpack should output index.js and other generated files.

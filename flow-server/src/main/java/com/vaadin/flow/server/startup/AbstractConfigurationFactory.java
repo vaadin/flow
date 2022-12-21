@@ -50,7 +50,6 @@ import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_ENABLE_DEV
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_INITIAL_UIDL;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_REUSE_DEV_SERVER;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_USE_V14_BOOTSTRAP;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PROJECT_BASEDIR;
 
 /**
@@ -88,14 +87,6 @@ public class AbstractConfigurationFactory implements Serializable {
             }
             // NO OTHER CONFIGURATION:
             return params;
-        }
-        if (buildInfo.hasKey(SERVLET_PARAMETER_USE_V14_BOOTSTRAP)) {
-            params.put(SERVLET_PARAMETER_USE_V14_BOOTSTRAP, String.valueOf(
-                    buildInfo.getBoolean(SERVLET_PARAMETER_USE_V14_BOOTSTRAP)));
-            // Need to be sure that we remove the system property,
-            // because it has priority in the configuration getter
-            System.clearProperty(
-                    VAADIN_PREFIX + SERVLET_PARAMETER_USE_V14_BOOTSTRAP);
         }
         if (buildInfo.hasKey(SERVLET_PARAMETER_INITIAL_UIDL)) {
             params.put(SERVLET_PARAMETER_INITIAL_UIDL, String.valueOf(
