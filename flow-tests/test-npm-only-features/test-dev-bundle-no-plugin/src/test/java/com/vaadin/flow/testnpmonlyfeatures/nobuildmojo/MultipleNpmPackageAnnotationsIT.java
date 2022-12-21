@@ -29,15 +29,4 @@ public class MultipleNpmPackageAnnotationsIT extends ChromeBrowserTest {
         Assert.assertNotNull(paperInput.$("paper-input-container"));
         Assert.assertNotNull(paperCheckbox.$("checkboxContainer"));
     }
-
-    // Tests funtionaity of TaskCopyLocalFrontendFiles
-    @Test
-    @Ignore("Local resource is not taken into account in the dev-bundle")
-    public void lazyComponentShouldExistInBody() {
-        waitForElementPresent(By.id("lazy-element"));
-        WebElement element = findElement(By.id("lazy-element"));
-
-        Assert.assertTrue("Lazy created element should be displayed",
-                element.isDisplayed());
-    }
 }

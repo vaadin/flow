@@ -65,5 +65,5 @@ The following actions are performed when creating a package:
  Default value is: true
 * **requireHomeNodeExec** `boolean` - Whether vaadin home node executable usage is forced. 
  If it's set to {@code true} then vaadin home 'node' is checked and installed if it's absent. 
- Then it will be used instead of globally 'node' or locally installed installed 'node'.
+ Then it will be used instead of globally 'node' or locally installed 'node'.
  Default value is: false

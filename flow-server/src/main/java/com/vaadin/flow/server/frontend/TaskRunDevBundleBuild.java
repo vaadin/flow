@@ -38,6 +38,7 @@ import com.vaadin.flow.shared.util.SharedUtil;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
 
 /**
  * Compiles the dev mode bundle if it is out of date.
@@ -96,7 +97,6 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
 
         if (!FrontendUtils.getDevBundleFolder(npmFolder).exists()
                 && !hasJarBundle()) {
-            // TODO: check for jar dev-bundle
             return true;
         }
 
@@ -124,7 +124,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
 
     private static boolean hasJarBundle() {
         final URL resource = TaskRunDevBundleBuild.class.getClassLoader()
-                .getResource("vaadin-dev-bundle/config/stats.json");
+                .getResource(DEV_BUNDLE_JAR_PATH + "config/stats.json");
         return resource != null;
     }
 
@@ -228,6 +228,8 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             } catch (IOException e) {
                 getLogger().warn("Failed to read package.json", e);
             }
+        } else {
+            // new NodeUpdater();
         }
         return null;
     }

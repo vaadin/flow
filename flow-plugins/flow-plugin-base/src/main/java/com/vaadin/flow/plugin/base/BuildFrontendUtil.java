@@ -672,14 +672,11 @@ public class BuildFrontendUtil {
      * @param adapter
      *            used plugin adapter implementation
      */
-    public static void removeBuildFile(PluginAdapterBuild adapter) {
+    public static void removeBuildFile(PluginAdapterBuild adapter)
+            throws IOException {
         File tokenFile = getTokenFile(adapter);
         if (tokenFile.exists()) {
-            try {
-                FileUtils.delete(tokenFile);
-            } catch (IOException e) {
-                adapter.logWarn("Unable to delete token file", e);
-            }
+            FileUtils.delete(tokenFile);
         }
     }
 }

@@ -449,6 +449,11 @@ public final class Constants implements Serializable {
     // Non-default port currently not supported (#7970)
     public static final int SPRING_BOOT_DEFAULT_LIVE_RELOAD_PORT = 35729;
 
+    /**
+     * The path part where dev-bundle is located inside the jar.
+     */
+    public static final String DEV_BUNDLE_JAR_PATH = "vaadin-dev-bundle/";
+
     private Constants() {
         // prevent instantiation constants class only
     }

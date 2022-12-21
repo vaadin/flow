@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendTools.INSTALL_NODE_LOCALLY;
 import static java.lang.String.format;
@@ -1166,7 +1167,7 @@ public class FrontendUtils {
             }
         }
         return TaskRunDevBundleBuild.class.getClassLoader()
-                .getResource("vaadin-dev-bundle/" + filename);
+                .getResource(DEV_BUNDLE_JAR_PATH + filename);
     }
 
     /**
