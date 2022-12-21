@@ -117,7 +117,7 @@ public class TestUtil {
     public static void createStylesCssStubInBundle(File projectRootFolder,
             String themeName, String content) throws IOException {
         createStubFile(projectRootFolder,
-                "dev-bundle/webapp/assets/themes/" + themeName + "/styles.css",
+                "dev-bundle/assets/themes/" + themeName + "/styles.css",
                 content);
     }
 
