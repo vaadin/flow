@@ -380,8 +380,7 @@ public class BuildFrontendUtil {
                     .runNpmInstall(adapter.runNpmInstall())
                     .withWebpack(adapter.webpackOutputDirectory(),
                             adapter.servletResourceOutputDirectory())
-                    .enablePackagesUpdate(true)
-                    .useByteCodeScanner(false)
+                    .enablePackagesUpdate(true).useByteCodeScanner(false)
                     .withJarFrontendResourcesFolder(
                             getJarFrontendResourcesFolder(adapter))
                     .copyResources(jarFiles).copyTemplates(true)
