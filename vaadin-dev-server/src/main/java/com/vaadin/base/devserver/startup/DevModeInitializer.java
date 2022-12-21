@@ -83,7 +83,6 @@ import com.vaadin.flow.server.frontend.FallbackChunk;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.server.frontend.Options;
-import com.vaadin.flow.server.frontend.TaskRunDevBundleBuild;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
@@ -368,7 +367,6 @@ public class DevModeInitializer implements Serializable {
                 .parseInt(config.getStringProperty("devServerPort", "0"));
         if (!config.enableDevServer()) {
             nodeTasksFuture.join();
-
             return null;
         } else {
             return new ViteHandler(devServerLookup, port,
