@@ -48,11 +48,12 @@ const themeProjectFolders = projectStaticAssetsFolders.map((folder) => path.reso
 
 const themeOptions = {
   devMode: false,
+  useDevBundle: devBundle,
   // The following matches folder 'frontend/generated/themes/'
   // (not 'frontend/themes') for theme in JAR that is copied there
   themeResourceFolder: path.resolve(themeResourceFolder, settings.themeFolder),
   themeProjectFolders: themeProjectFolders,
-  projectStaticAssetsOutputFolder: path.resolve(__dirname, settings.staticOutput),
+  projectStaticAssetsOutputFolder: devBundle ? path.resolve(devBundleFolder, '../assets') : path.resolve(__dirname, settings.staticOutput),
   frontendGeneratedFolder: path.resolve(frontendFolder, settings.generatedFolder)
 };
 
@@ -200,7 +201,8 @@ function statsExtracterPlugin(): PluginOption {
       const entryScripts = Object.values(bundle).filter(bundle => bundle.isEntry).map(bundle => bundle.fileName);
 
       const stats = {
-        npmModules: npmModuleAndVersion,
+        npmModules: projectPackageJson.dependencies,
+        handledModules: npmModuleAndVersion,
         entryScripts,
         packageJsonHash: projectPackageJson?.vaadin?.hash
       };

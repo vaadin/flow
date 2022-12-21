@@ -90,6 +90,7 @@ const moduleWeights = {
   'flow-tests/test-themes': { weight: 3 },
   'flow-tests/test-redeployment': { weight: 3 },
   'flow-tests/test-application-theme/test-theme-component-live-reload': { weight: 3 },
+  'flow-tests/test-application-theme/test-theme-dev-bundle': { weight: 3 },
   'flow-tests/test-pwa-disabled-offline/pom-production.xml': { weight: 3 },
   'flow-tests/test-frontend/vite-context-path/pom-production.xml': { weight: 3 },
   'flow-tests/test-servlet': { weight: 2 },

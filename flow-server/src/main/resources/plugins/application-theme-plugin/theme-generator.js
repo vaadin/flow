@@ -103,10 +103,12 @@ export const injectGlobalCss = (css, target, first) => {
  * @param {string} themeFolder folder of the theme
  * @param {string} themeName name of the handled theme
  * @param {JSON} themeProperties content of theme.json
- * @param {boolean} productionMode true if making a production build.
+ * @param {Object} options build options (e.g. prod or dev mode)
  * @returns {string} theme file content
  */
-function generateThemeFile(themeFolder, themeName, themeProperties, productionMode) {
+function generateThemeFile(themeFolder, themeName, themeProperties, options) {
+  const productionMode = !options.devMode;
+  const useDevServer = !options.useDevBundle;
   const styles = path.resolve(themeFolder, stylesCssFile);
   const document = path.resolve(themeFolder, documentCssFile);
   const autoInjectComponents = themeProperties.autoInjectComponents ?? true;
@@ -158,7 +160,9 @@ function generateThemeFile(themeFolder, themeName, themeProperties, productionMo
   // styles.css will always be available as we write one if it doesn't exist.
   let filename = path.basename(styles);
   let variable = camelCase(filename);
-  imports.push(`import ${variable} from 'themes/${themeName}/${filename}?inline';\n`);
+  if (useDevServer) {
+    imports.push(`import ${variable} from 'themes/${themeName}/${filename}?inline';\n`);
+  }
   /* Lumo must be first so that custom styles override Lumo styles */
   const lumoImports = themeProperties.lumoImports || ['color', 'typography'];
   if (lumoImports && lumoImports.length > 0) {
@@ -171,7 +175,9 @@ function generateThemeFile(themeFolder, themeName, themeProperties, productionMo
     });
   }
 
-  globalCssCode.push(`injectGlobalCss(${variable}.toString(), target);\n    `);
+  if (useDevServer) {
+    globalCssCode.push(`injectGlobalCss(${variable}.toString(), target);\n    `);
+  }
   if (fs.existsSync(document)) {
     filename = path.basename(document);
     variable = camelCase(filename);

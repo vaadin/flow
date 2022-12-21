@@ -62,6 +62,7 @@ import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.ArgumentMatchers;
@@ -71,6 +72,7 @@ import com.vaadin.flow.WarURLStreamHandlerFactory;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.ResponseWriter;
+import com.vaadin.tests.util.TestUtil;
 
 import static com.vaadin.flow.server.Constants.POLYFILLS_DEFAULT_VALUE;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
@@ -94,6 +96,9 @@ public class StaticFileServerTest implements Serializable {
 
     private static final String WEBAPP_RESOURCE_PREFIX = "META-INF/VAADIN/webapp";
     private CapturingServletOutputStream out;
+
+    @Rule
+    public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
     private static URL createFileURLWithDataAndLength(String name, String data)
             throws MalformedURLException {
@@ -1160,6 +1165,40 @@ public class StaticFileServerTest implements Serializable {
 
         Mockito.verify(servletService).getStaticResource("foo");
         Assert.assertSame(url, result);
+    }
+
+    @Test
+    public void serveStaticResource_projectThemeResourceRequest_serveFromFrontend()
+            throws IOException {
+        File projectRootFolder = temporaryFolder.newFolder();
+        final String styles = "body { background: black; }";
+        TestUtil.createStyleCssStubInFrontend(projectRootFolder, "my-theme",
+                styles);
+
+        Mockito.when(configuration.enableDevServer()).thenReturn(false);
+        Mockito.when(configuration.getProjectFolder())
+                .thenReturn(projectRootFolder);
+
+        setupRequestURI("", "", "/themes/my-theme/styles.css");
+        Assert.assertTrue(fileServer.serveStaticResource(request, response));
+        Assert.assertEquals(styles, out.getOutputString());
+    }
+
+    @Test
+    public void serveStaticResource_externalThemeResourceRequest_serveFromBundle()
+            throws IOException {
+        File projectRootFolder = temporaryFolder.newFolder();
+        final String styles = "body { background: black; }";
+        TestUtil.createStylesCssStubInBundle(projectRootFolder, "my-theme",
+                styles);
+
+        Mockito.when(configuration.enableDevServer()).thenReturn(false);
+        Mockito.when(configuration.getProjectFolder())
+                .thenReturn(projectRootFolder);
+
+        setupRequestURI("", "", "/themes/my-theme/styles.css");
+        Assert.assertTrue(fileServer.serveStaticResource(request, response));
+        Assert.assertEquals(styles, out.getOutputString());
     }
 
     private static class CapturingServletOutputStream

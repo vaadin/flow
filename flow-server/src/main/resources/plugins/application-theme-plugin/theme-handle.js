@@ -167,7 +167,7 @@ function handleThemes(themeName, themesFolder, options, logger) {
     }
     copyStaticAssets(themeName, themeProperties, options.projectStaticAssetsOutputFolder, logger);
     copyThemeResources(themeFolder, options.projectStaticAssetsOutputFolder, logger);
-    const themeFile = generateThemeFile(themeFolder, themeName, themeProperties, !options.devMode);
+    const themeFile = generateThemeFile(themeFolder, themeName, themeProperties, options);
 
     fs.writeFileSync(path.resolve(options.frontendGeneratedFolder, 'theme-' + themeName + '.generated.js'), themeFile);
     return true;
