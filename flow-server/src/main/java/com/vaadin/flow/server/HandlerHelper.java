@@ -71,6 +71,13 @@ public class HandlerHelper implements Serializable {
          * UIDL requests.
          */
         UIDL(ApplicationConstants.REQUEST_TYPE_UIDL),
+
+        /**
+         * WebComponent resynchronization requests.
+         */
+        WEBCOMPONENT_RESYNC(
+                ApplicationConstants.REQUEST_TYPE_WEBCOMPONENT_RESYNC),
+
         /**
          * Heartbeat requests.
          */
