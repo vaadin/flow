@@ -3,7 +3,7 @@ on:
   push:
     branches: [master, '9.0']
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened, edited]
   workflow_dispatch:
 permissions:
   contents: read
