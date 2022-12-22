@@ -21,6 +21,7 @@ import javax.servlet.http.HttpSessionEvent;
 import javax.servlet.http.HttpSessionListener;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.webapp.Configuration;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.junit.After;
 import org.junit.Assert;
@@ -110,6 +111,10 @@ public class BasicComponentIT extends ChromeDeviceTest {
         String warfile = "target/" + warDirs[0].getName();
 
         context = new WebAppContext(warfile, "/");
+
+        Configuration.ClassList classlist = Configuration.ClassList.setServerDefault(server);
+        classlist.addBefore("org.eclipse.jetty.webapp.JettyWebXmlConfiguration",
+                "org.eclipse.jetty.annotations.AnnotationConfiguration");
 
         // store session id to be able to invalidate it during test
         context.getSessionHandler().addEventListener(new HttpSessionListener() {
