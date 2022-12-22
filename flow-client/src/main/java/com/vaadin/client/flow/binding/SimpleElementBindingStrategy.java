@@ -15,6 +15,7 @@
  */
 package com.vaadin.client.flow.binding;
 
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -74,7 +75,6 @@ import elemental.json.JsonValue;
  *
  * @author Vaadin Ltd
  * @since 1.0
- *
  */
 public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
@@ -125,7 +125,6 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
      * <p>
      * It's used to avoid having methods with a long numbers of parameters and
      * because the strategy instance is stateless.
-     *
      */
     private static class BindingContext {
 
@@ -1316,7 +1315,14 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
 
         if (sendNow) {
             // Send if there were not filters or at least one matched
-            sendCommand.accept(null);
+
+            // Flush all debounced events so that they don't happen
+            // in wrong order in the server-side
+            List<Consumer<String>> executedCommands = Debouncer.flushAll();
+
+            if (!executedCommands.contains(sendCommand)) {
+                sendCommand.accept(null);
+            }
         }
     }
 
