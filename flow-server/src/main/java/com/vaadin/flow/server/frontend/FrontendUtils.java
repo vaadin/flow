@@ -500,8 +500,7 @@ public class FrontendUtils {
 
     private static InputStream getFileFromFrontendDir(
             AbstractConfiguration config, String path) {
-        File file = new File(new File(config.getProjectFolder(), "frontend"),
-                path);
+        File file = new File(config.getFrontendDirectory(), path);
         if (file.exists()) {
             try {
                 return Files.newInputStream(file.toPath());
@@ -551,8 +550,9 @@ public class FrontendUtils {
                 .getDevModeHandler(service);
         if (devModeHandler.isPresent()) {
             try {
+                DeploymentConfiguration deploymentConfiguration = service.getDeploymentConfiguration();
                 File frontendFile = resolveFrontendPath(
-                        devModeHandler.get().getProjectRoot(), path);
+                        deploymentConfiguration, path);
                 return frontendFile == null ? null
                         : new FileInputStream(frontendFile);
             } catch (IOException e) {
@@ -574,9 +574,10 @@ public class FrontendUtils {
      *            the file path.
      * @return an existing {@link File} , or null if the file doesn't exist.
      */
-    public static File resolveFrontendPath(File projectRoot, String path) {
-        return resolveFrontendPath(projectRoot, path,
-                new File(projectRoot, FrontendUtils.FRONTEND));
+    public static File resolveFrontendPath(DeploymentConfiguration configuration,
+                                           String path) {
+        return resolveFrontendPath(configuration.getProjectFolder(), path,
+                configuration.getFrontendDirectory(), configuration.getFrontendGeneratedDirectory());
     }
 
     /**
@@ -594,9 +595,9 @@ public class FrontendUtils {
      * @return an existing {@link File} , or null if the file doesn't exist.
      */
     public static File resolveFrontendPath(File projectRoot, String path,
-            File frontendDirectory) {
+            File frontendDirectory, File frontendGeneratedDirectory) {
         File nodeModulesFolder = new File(projectRoot, NODE_MODULES);
-        File addonsFolder = getJarResourcesFolder(frontendDirectory);
+        File addonsFolder = getJarResourcesFolder(frontendGeneratedDirectory);
         List<File> candidateParents = path.startsWith("./")
                 ? Arrays.asList(frontendDirectory, addonsFolder)
                 : Arrays.asList(nodeModulesFolder, frontendDirectory,
@@ -605,34 +606,14 @@ public class FrontendUtils {
                 .filter(File::exists).findFirst().orElse(null);
     }
 
-    private static File getJarResourcesFolder(File frontendDirectory) {
-        return new File(getFrontendGeneratedFolder(frontendDirectory),
-                JAR_RESOURCES_FOLDER);
-    }
-
-    private static File getFrontendGeneratedFolder(File frontendDirectory) {
-        return new File(frontendDirectory, GENERATED);
+    private static File getJarResourcesFolder(File frontendGeneratedDirectory) {
+        return new File(frontendGeneratedDirectory, JAR_RESOURCES_FOLDER);
     }
 
     private static String buildTooOldString(String tool, String version,
             int supportedMajor, int supportedMinor) {
         return String.format(TOO_OLD, tool, version, supportedMajor,
                 supportedMinor, PARAM_IGNORE_VERSION_CHECKS);
-    }
-
-    /**
-     * Get directory where project's frontend files are located.
-     *
-     * @param configuration
-     *            the current deployment configuration
-     *
-     * @return {@link #DEFAULT_FRONTEND_DIR} or value of
-     *         {@link #PARAM_FRONTEND_DIR} if it is set.
-     */
-    public static String getProjectFrontendDir(
-            DeploymentConfiguration configuration) {
-        return configuration.getStringProperty(PARAM_FRONTEND_DIR,
-                DEFAULT_FRONTEND_DIR);
     }
 
     /**

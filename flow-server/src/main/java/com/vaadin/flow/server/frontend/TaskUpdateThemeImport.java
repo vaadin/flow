@@ -45,12 +45,11 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.THEME_IMPORTS_NAME;
  */
 public class TaskUpdateThemeImport implements FallibleCommand {
 
-    private static final String JAR_RESOURCES = "frontend/"
-            + FrontendUtils.GENERATED + FrontendUtils.JAR_RESOURCES_FOLDER;
     public static final String APPLICATION_META_INF_RESOURCES = "src/main/resources/META-INF/resources";
     public static final String APPLICATION_STATIC_RESOURCES = "src/main/resources/static";
     private static final String EXPORT_MODULES_DEF = "export declare const applyTheme: (target: Node) => void;";
 
+    private final String jarResources;
     private final File themeImportFile;
     private final File themeImportFileDefinition;
     private final ThemeDefinition theme;
@@ -59,8 +58,9 @@ public class TaskUpdateThemeImport implements FallibleCommand {
     TaskUpdateThemeImport(ThemeDefinition theme, Options options) {
         this.theme = theme;
         this.options = options;
-        File frontendGeneratedFolder = new File(options.getFrontendDirectory(),
-                GENERATED);
+        File frontendGeneratedFolder = options.getFrontendGeneratedFolder();
+        jarResources = new File(frontendGeneratedFolder,
+                FrontendUtils.JAR_RESOURCES_FOLDER).getPath();
         themeImportFile = new File(frontendGeneratedFolder, THEME_IMPORTS_NAME);
         themeImportFileDefinition = new File(frontendGeneratedFolder,
                 THEME_IMPORTS_D_TS_NAME);
@@ -126,7 +126,7 @@ public class TaskUpdateThemeImport implements FallibleCommand {
 
             boolean themeFoundInJar = existingAppThemeDirectories.stream()
                     .map(File::getPath).anyMatch(path -> path
-                            .contains(Paths.get(JAR_RESOURCES).toString()));
+                            .contains(Paths.get(jarResources).toString()));
 
             if (themeFoundInJar) {
                 String errorMessage = "Theme '%s' should not exist inside a "
@@ -162,7 +162,7 @@ public class TaskUpdateThemeImport implements FallibleCommand {
         String themePathInStaticResources = String.join("/",
                 APPLICATION_STATIC_RESOURCES, themePath);
 
-        String themePathInClassPathResources = String.join("", JAR_RESOURCES,
+        String themePathInClassPathResources = String.join("", jarResources,
                 "/", themePath);
 
         return Arrays.asList(frontendTheme, themePathInMetaInfResources,

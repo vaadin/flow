@@ -179,4 +179,37 @@ public interface AbstractConfiguration extends Serializable {
         return new File(getStringProperty(Constants.JAVA_RESOURCE_FOLDER_TOKEN,
                 "src/main/resources"));
     }
+
+    /**
+     * Return the folder containing application frontend source files.
+     *
+     * @return the folder containing frontend source files, by default it is
+     * <code>/frontend</code> in the project folder.
+     */
+    default File getFrontendDirectory() {
+        File frontendDirectory =
+                new File(getStringProperty(FrontendUtils.PARAM_FRONTEND_DIR,
+                FrontendUtils.DEFAULT_FRONTEND_DIR));
+        return frontendDirectory.isAbsolute()
+                ? frontendDirectory
+                : new File(getProjectFolder(), frontendDirectory.getPath());
+    }
+
+    /**
+     * Return the folder containing client-side generated files.
+     *
+     * @return the folder containing generated files, by default it is
+     * <code>generated/</code>.
+     */
+    default File getFrontendGeneratedDirectory() {
+        File frontendDirectory = getFrontendDirectory();
+        File frontendGeneratedDefault = new File(frontendDirectory,
+                FrontendUtils.GENERATED);
+        File frontendGeneratedDirectory = new File(
+                getStringProperty(FrontendUtils.PARAM_GENERATED_DIR,
+                        frontendGeneratedDefault.getPath()));
+        return frontendGeneratedDirectory.isAbsolute()
+                ? frontendGeneratedDirectory
+                : new File(getProjectFolder(), frontendGeneratedDirectory.getPath());
+    }
 }

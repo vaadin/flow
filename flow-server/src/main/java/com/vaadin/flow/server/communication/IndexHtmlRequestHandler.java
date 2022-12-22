@@ -178,7 +178,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
      */
     private void addStylesCssLink(DeploymentConfiguration config,
             Document indexDocument) throws IOException {
-        String themeName = getThemeName(config.getProjectFolder());
+        String themeName = getThemeName(config);
         if (themeName != null) {
             Element element = new Element("link");
             element.attr("rel", "stylesheet");
@@ -440,10 +440,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         return LoggerFactory.getLogger(IndexHtmlRequestHandler.class);
     }
 
-    private static String getThemeName(File projectFolder) throws IOException {
-        File themeJs = new File(projectFolder, FrontendUtils.FRONTEND
-                + FrontendUtils.GENERATED + FrontendUtils.THEME_IMPORTS_NAME);
-
+    private static String getThemeName(DeploymentConfiguration configuration) throws IOException {
+        File themeJs = new File(configuration.getFrontendGeneratedDirectory(), FrontendUtils.THEME_IMPORTS_NAME);
         if (!themeJs.exists()) {
             getLogger().debug(
                     "Couldn't find file 'theme.js'. A link tag for styles.css won't be added");

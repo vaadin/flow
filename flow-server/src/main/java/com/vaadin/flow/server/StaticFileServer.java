@@ -263,8 +263,7 @@ public class StaticFileServer implements StaticFileHandler {
         } else if (APP_THEME_PATTERN.matcher(filenameWithPath).find()) {
             if (!deploymentConfiguration.enableDevServer()) {
                 resourceUrl = findAssetInFrontendThemesOrDevBundle(
-                        deploymentConfiguration.getProjectFolder(),
-                        filenameWithPath);
+                        deploymentConfiguration, filenameWithPath);
             } else {
                 resourceUrl = vaadinService.getClassLoader()
                         .getResource(VAADIN_WEBAPP_RESOURCES + "VAADIN/static/"
@@ -317,11 +316,12 @@ public class StaticFileServer implements StaticFileHandler {
         return true;
     }
 
-    private static URL findAssetInFrontendThemesOrDevBundle(File projectFolder,
+    private static URL findAssetInFrontendThemesOrDevBundle(DeploymentConfiguration configuration,
             String assetPath) throws IOException {
+        File projectFolder = configuration.getProjectFolder();
+        File frontendFolder = configuration.getFrontendDirectory();
         // First, look for the theme assets in the {project.root}/frontend/
         // themes/my-theme folder
-        File frontendFolder = new File(projectFolder, FrontendUtils.FRONTEND);
         File assetInFrontendThemes = new File(frontendFolder, assetPath);
         if (assetInFrontendThemes.exists()) {
             return assetInFrontendThemes.toURI().toURL();

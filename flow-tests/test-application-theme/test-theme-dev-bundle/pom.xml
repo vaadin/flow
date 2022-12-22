@@ -44,6 +44,10 @@
             <plugin>
                 <groupId>com.vaadin</groupId>
                 <artifactId>flow-maven-plugin</artifactId>
+                <configuration>
+                    <frontendDirectory>${project.basedir}/myfrontend</frontendDirectory>
+                    <generatedTsFolder>${project.basedir}/myfrontend/generated</generatedTsFolder>
+                </configuration>
             </plugin>
             <!-- Run jetty before integration tests, and stop after -->
             <plugin>

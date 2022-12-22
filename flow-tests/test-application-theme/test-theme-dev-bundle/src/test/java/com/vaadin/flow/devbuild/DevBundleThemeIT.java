@@ -38,7 +38,7 @@ public class DevBundleThemeIT extends ChromeBrowserTest {
     private static final String RED_COLOR = "rgba(255, 0, 0, 1)";
     private static final String GREEN_COLOR = "rgba(0, 255, 0, 1)";
     private static final String BLUE_COLOR = "rgba(0, 0, 255, 1)";
-    private static final String THEME_FOLDER = "frontend/themes/my-theme/";
+    private static final String THEME_FOLDER = "myfrontend/themes/my-theme/";
 
     private File fontFile;
 
