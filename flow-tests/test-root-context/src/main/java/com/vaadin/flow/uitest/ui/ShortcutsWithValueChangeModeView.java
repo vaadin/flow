@@ -63,7 +63,7 @@ public class ShortcutsWithValueChangeModeView extends Div
     public void afterNavigation(AfterNavigationEvent event) {
         String valueChangeMode = event.getLocation().getQueryParameters()
                 .getQueryString();
-        if (valueChangeMode != null && !valueChangeMode.isBlank()) {
+        if (valueChangeMode != null && !valueChangeMode.trim().isEmpty()) {
             input.setValueChangeMode(ValueChangeMode.valueOf(valueChangeMode));
         }
     }
