@@ -46,6 +46,7 @@ import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.PwaRegistry;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
