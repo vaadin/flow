@@ -32,6 +32,8 @@ import java.util.regex.Pattern;
 import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
@@ -44,14 +46,17 @@ import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.PwaRegistry;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.flow.shared.JsonConstants;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
+import elemental.json.impl.JsonUtil;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.EXPORT_CHUNK;
 import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8;
@@ -215,6 +220,10 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
 
         BootstrapContext context = createAndInitUI(uiClass, request, response,
                 session);
+
+        if (handleWebComponentResyncRequest(context, request, response)) {
+            return true;
+        }
 
         HandlerHelper.setResponseNoCacheHeaders(response::setHeader,
                 response::setDateHeader);
@@ -488,5 +497,47 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 // proxies
                 // which proxies to the same http:// url
                 .replaceFirst("^" + ".*://", "//");
+    }
+
+    /**
+     * Handles WebComponents resynchronization request
+     *
+     * @param context
+     *            the bootstrap context object
+     * @param request
+     *            the request object
+     * @param response
+     *            the response object
+     * @return true if request has been handled, false otherwise
+     */
+    protected boolean handleWebComponentResyncRequest(BootstrapContext context,
+            VaadinRequest request, VaadinResponse response) {
+
+        if (!HandlerHelper.isRequestType(request,
+                HandlerHelper.RequestType.WEBCOMPONENT_RESYNC)) {
+            return false;
+        }
+
+        JsonObject json = new UidlWriter().createUidl(context.getUI(), true,
+                true);
+        json.put(ApplicationConstants.UI_ID, context.getUI().getUIId());
+        json.put(ApplicationConstants.UIDL_SECURITY_TOKEN_ID,
+                context.getUI().getCsrfToken());
+        String responseString = "for(;;);[" + JsonUtil.stringify(json) + "]";
+
+        try {
+            VaadinService service = request.getService();
+            service.writeUncachedStringResponse(response,
+                    JsonConstants.JSON_CONTENT_TYPE, responseString);
+        } catch (IOException e) {
+            getLogger().error("Error writing JSON to response", e);
+        }
+
+        return true;
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory
+                .getLogger(WebComponentBootstrapHandler.class.getName());
     }
 }
