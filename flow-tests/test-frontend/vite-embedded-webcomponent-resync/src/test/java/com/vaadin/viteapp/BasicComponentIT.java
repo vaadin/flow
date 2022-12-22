@@ -117,6 +117,11 @@ public class BasicComponentIT extends ChromeDeviceTest {
             public void sessionCreated(HttpSessionEvent httpSessionEvent) {
                 sessionId = httpSessionEvent.getSession().getId();
             }
+
+            @Override
+            public void sessionDestroyed(HttpSessionEvent se) {
+                // NOP
+            }
         });
 
         server.setHandler(context);
