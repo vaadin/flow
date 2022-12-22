@@ -316,8 +316,9 @@ public class StaticFileServer implements StaticFileHandler {
         return true;
     }
 
-    private static URL findAssetInFrontendThemesOrDevBundle(DeploymentConfiguration configuration,
-            String assetPath) throws IOException {
+    private static URL findAssetInFrontendThemesOrDevBundle(
+            DeploymentConfiguration configuration, String assetPath)
+            throws IOException {
         File projectFolder = configuration.getProjectFolder();
         File frontendFolder = configuration.getFrontendDirectory();
         // First, look for the theme assets in the {project.root}/frontend/

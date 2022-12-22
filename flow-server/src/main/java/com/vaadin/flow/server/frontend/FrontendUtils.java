@@ -550,9 +550,10 @@ public class FrontendUtils {
                 .getDevModeHandler(service);
         if (devModeHandler.isPresent()) {
             try {
-                DeploymentConfiguration deploymentConfiguration = service.getDeploymentConfiguration();
-                File frontendFile = resolveFrontendPath(
-                        deploymentConfiguration, path);
+                DeploymentConfiguration deploymentConfiguration = service
+                        .getDeploymentConfiguration();
+                File frontendFile = resolveFrontendPath(deploymentConfiguration,
+                        path);
                 return frontendFile == null ? null
                         : new FileInputStream(frontendFile);
             } catch (IOException e) {
@@ -574,10 +575,11 @@ public class FrontendUtils {
      *            the file path.
      * @return an existing {@link File} , or null if the file doesn't exist.
      */
-    public static File resolveFrontendPath(DeploymentConfiguration configuration,
-                                           String path) {
+    public static File resolveFrontendPath(
+            DeploymentConfiguration configuration, String path) {
         return resolveFrontendPath(configuration.getProjectFolder(), path,
-                configuration.getFrontendDirectory(), configuration.getFrontendGeneratedDirectory());
+                configuration.getFrontendDirectory(),
+                configuration.getFrontendGeneratedDirectory());
     }
 
     /**
