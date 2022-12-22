@@ -175,7 +175,6 @@ public class Debouncer {
      * @return the list command executed during flush operation.
      */
     public static List<Consumer<String>> flushAll() {
-        int size = debouncers.size();
         ArrayList<Consumer<String>> executedCommands = new ArrayList<>();
         ForEachCallback<Node, JsMap<String, JsMap<Double, Debouncer>>> flusher = new ForEachCallback<Node, JsMap<String, JsMap<Double, Debouncer>>>() {
 
