@@ -17,6 +17,7 @@ package com.vaadin.base.devserver;
 
 import java.io.File;
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Objects;
 
 import org.apache.commons.io.monitor.FileAlterationListener;
@@ -27,54 +28,122 @@ import org.apache.commons.io.monitor.FileAlterationObserver;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializablePredicate;
 
+/**
+ * Watches for the file or sub-directory changes in the given directory.
+ */
 public class FileWatcher implements Serializable {
     private static final long DEFAULT_TIMEOUT = 1000;
     private final FileAlterationMonitor monitor;
     private long timeout = DEFAULT_TIMEOUT;
 
-    public FileWatcher(File watchDirectory,
-            SerializableConsumer<File> onChangeConsumer) {
-        this(watchDirectory, file -> true, onChangeConsumer);
+    /**
+     * Creates an instance of the file watcher for the given directory.
+     * <p>
+     * Reports the changed file or directory as a {@link File} instance to
+     * the provided consumer.
+     * <p>
+     * Watches the files create/delete and directory create/delete events.
+     *
+     * @param onChangeConsumer to be called when any change detected
+     * @param watchDirectory the directory to watch for the changes
+     */
+    public FileWatcher(SerializableConsumer<File> onChangeConsumer,
+                       File ... watchDirectory) {
+        this(onChangeConsumer, file -> true, watchDirectory);
     }
 
-    public FileWatcher(File watchDirectory,
-            SerializablePredicate<File> fileFilter,
-            SerializableConsumer<File> onChangeConsumer) {
-        this(watchDirectory, fileFilter,
-                new DefaultFileListener(onChangeConsumer));
+    /**
+     * Creates an instance of the file watcher for the given directory taking
+     * into account the given file filter.
+     * <p>
+     * Reports the changed file or directory as a {@link File} instance to
+     * the provided consumer.
+     * <p>
+     * Watches the files create/delete and directory create/delete events.
+     *
+     * @param fileFilter defined if the given file or directory should be
+     *                   watched
+     * @param onChangeConsumer to be called when any change detected
+     * @param watchDirectory the directory to watch for the changes
+     */
+    public FileWatcher(SerializableConsumer<File> onChangeConsumer,
+                       SerializablePredicate<File> fileFilter,
+                       File ... watchDirectory) {
+        this(new DefaultFileListener(onChangeConsumer), fileFilter, watchDirectory);
     }
 
-    public FileWatcher(File watchDirectory,
+    /**
+     * Creates an instance of the file watcher for the given directory taking
+     * into account the given file filter.
+     * <p>
+     * Reports the changed file or directory as a {@link File} instance to
+     * the provided consumer.
+     * <p>
+     * Reports file and directory changes to the given listener.
+     *
+     * @param fileFilter defined if the given file or directory should be
+     *                   watched
+     * @param listener to be invoked once any changes detected
+     * @param watchDirectory the directory to watch for the changes
+     */
+    public FileWatcher(FileAlterationListener listener,
             SerializablePredicate<File> fileFilter,
-            FileAlterationListener listener) {
+            File ... watchDirectory) {
         Objects.requireNonNull(watchDirectory,
                 "Watch directory cannot be empty");
+        if (watchDirectory.length < 1) {
+            throw new IllegalArgumentException("Watch directory cannot be empty");
+        }
         Objects.requireNonNull(fileFilter, "File filter cannot be empty");
         Objects.requireNonNull(listener,
                 "File alteration listener cannot be empty");
-        FileAlterationObserver observer = new FileAlterationObserver(
-                watchDirectory, fileFilter::test);
-        observer.addListener(listener);
         monitor = new FileAlterationMonitor(timeout);
-        monitor.addObserver(observer);
+        Arrays.stream(watchDirectory).forEach(dir -> {
+            FileAlterationObserver observer = new FileAlterationObserver(
+                    dir, fileFilter::test);
+            observer.addListener(listener);
+            monitor.addObserver(observer);
+        });
     }
 
+    /**
+     * Starts the file watching.
+     * @throws Exception if an error occurs during startup
+     */
     public void start() throws Exception {
         monitor.start();
     }
 
+    /**
+     * Stops the file watching.
+     * @throws Exception if an error occurs during stop
+     */
     public void stop() throws Exception {
         monitor.stop();
     }
 
+    /**
+     * Stops the file watching and waits for a given stop interval for
+     * watching thread to finish.
+     * @param stopInterval time interval to wait for the watching thread
+     * @throws Exception if an error occurs during stop
+     */
     public void stop(long stopInterval) throws Exception {
         monitor.stop(stopInterval);
     }
 
+    /**
+     * Sets the time interval between file/directory checks.
+     * @param timeout time interval between file/directory checks
+     */
     public void setTimeout(long timeout) {
         this.timeout = timeout;
     }
 
+    /**
+     * Default file change listener which triggers the callback only when
+     * file or directory is changed/deleted.
+     */
     private static final class DefaultFileListener
             extends FileAlterationListenerAdaptor implements Serializable {
 
