@@ -337,7 +337,7 @@ public abstract class VaadinWebSecurity {
      */
     protected void setLoginView(HttpSecurity http, String hillaLoginViewPath)
             throws Exception {
-        setLoginView(http, hillaLoginViewPath, servletContextPath);
+        setLoginView(http, hillaLoginViewPath, getDefaultLogoutUrl());
     }
 
     /**
@@ -387,7 +387,7 @@ public abstract class VaadinWebSecurity {
      */
     protected void setLoginView(HttpSecurity http,
             Class<? extends Component> flowLoginView) throws Exception {
-        setLoginView(http, flowLoginView, servletContextPath);
+        setLoginView(http, flowLoginView, getDefaultLogoutUrl());
     }
 
     /**
@@ -546,6 +546,11 @@ public abstract class VaadinWebSecurity {
         logoutSuccessHandler.setDefaultTargetUrl(logoutSuccessUrl);
         logoutSuccessHandler.setRedirectStrategy(new UidlRedirectStrategy());
         http.logout().logoutSuccessHandler(logoutSuccessHandler);
+    }
+
+    private String getDefaultLogoutUrl() {
+        return servletContextPath.startsWith("/") ? servletContextPath
+                : "/" + servletContextPath;
     }
 
     private VaadinSavedRequestAwareAuthenticationSuccessHandler getVaadinSavedRequestAwareAuthenticationSuccessHandler(
