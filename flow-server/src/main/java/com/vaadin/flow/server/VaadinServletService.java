@@ -170,7 +170,9 @@ public class VaadinServletService extends VaadinService {
         String type = request
                 .getParameter(ApplicationConstants.REQUEST_TYPE_PARAMETER);
         return type == null
-                || ApplicationConstants.REQUEST_TYPE_INIT.equals(type);
+                || ApplicationConstants.REQUEST_TYPE_INIT.equals(type)
+                || ApplicationConstants.REQUEST_TYPE_WEBCOMPONENT_RESYNC
+                        .equals(type);
     }
 
     public static HttpServletRequest getCurrentServletRequest() {

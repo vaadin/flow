@@ -107,6 +107,8 @@ const moduleWeights = {
   'flow-tests/test-frontend/vite-pwa-disabled-offline/pom-production.xml': { weight: 2 },
   'flow-tests/test-frontend/vite-pwa-custom-offline-path/pom-production.xml': { weight: 2 },
   'flow-tests/test-frontend/vite-embedded/pom-production.xml': { weight: 2 },
+  'flow-tests/test-frontend/vite-embedded': { weight: 2 },
+  'flow-tests/test-frontend/vite-embedded-session-resync': { weight: 2 },
   'flow-plugins/flow-plugin-base': { weight: 2 },
 
   'RemoveRoutersLayoutContentIT': {weight: 2},
