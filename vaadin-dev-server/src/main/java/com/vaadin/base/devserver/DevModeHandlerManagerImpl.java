@@ -97,9 +97,15 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
     }
 
     private void startWatchingThemeFolder(VaadinContext context) {
+        ApplicationConfiguration config = ApplicationConfiguration
+                .get(context);
+
+        if (config.isProductionMode() || config.enableDevServer()) {
+            // Theme files are watched by Vite or app runs in prod mode
+            return;
+        }
+
         try {
-            ApplicationConfiguration config = ApplicationConfiguration
-                    .get(context);
             File projectFolder = config.getProjectFolder();
             String themeName = FrontendUtils.getThemeName(projectFolder);
 
