@@ -75,6 +75,7 @@ const moduleWeights = {
   'flow-tests/test-mixed/pom-npm-production.xml': {pos: 3, weight: 3},
   'flow-tests/test-v14-bootstrap/pom-production.xml': {pos: 3, weight: 2},
   'flow-tests/test-ccdm-flow-navigation/pom-production.xml': {pos: 2, weight: 2},
+  'flow-tests/test-frontend/vite-embedded-session-resync': { weight: 2 },
 
   // flow-tests/test-root-context module is split in tests
   'RemoveRoutersLayoutContentIT': {weight: 2},
