@@ -81,6 +81,9 @@ public class GenerateMainImports extends AbstractUpdateImports {
 
     @Override
     protected Collection<String> getGeneratedModules() {
+        if (options.getGeneratedFolder() == null) {
+            return Collections.emptySet();
+        }
         return NodeUpdater.getGeneratedModules(options.getGeneratedFolder(),
                 Collections.emptySet());
     }
