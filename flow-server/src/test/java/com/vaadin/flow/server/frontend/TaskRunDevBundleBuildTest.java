@@ -9,24 +9,41 @@ import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
+
+import elemental.json.JsonObject;
 
 public class TaskRunDevBundleBuildTest {
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
 
+    private Options options;
+
+    ClassFinder finder;
+
+    @Before
+    public void init() {
+        options = new Options(Mockito.mock(Lookup.class),
+                temporaryFolder.getRoot()).withBuildDirectory("target");
+        finder = Mockito.mock(ClassFinder.class);
+    }
+
     @Test
     public void noDevBundle_bundleCompilationRequires() throws IOException {
         final boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(
-                temporaryFolder.getRoot(),
-                Mockito.mock(FrontendDependenciesScanner.class));
+                options, Mockito.mock(FrontendDependenciesScanner.class),
+                finder);
         Assert.assertTrue("Bundle should require creation if not available",
                 needsBuild);
     }
@@ -43,8 +60,8 @@ public class TaskRunDevBundleBuildTest {
                     .thenReturn(null);
 
             final boolean needsBuild = TaskRunDevBundleBuild.needsBuildInternal(
-                    temporaryFolder.getRoot(),
-                    Mockito.mock(FrontendDependenciesScanner.class));
+                    options, Mockito.mock(FrontendDependenciesScanner.class),
+                    finder);
             Assert.assertTrue("Missing stats.json should require bundling",
                     needsBuild);
         }
@@ -82,7 +99,7 @@ public class TaskRunDevBundleBuildTest {
                             + "}");
 
             final boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(temporaryFolder.getRoot(), depScanner);
+                    .needsBuildInternal(options, depScanner, finder);
             Assert.assertFalse("Missing stats.json should require bundling",
                     needsBuild);
         }
@@ -122,7 +139,7 @@ public class TaskRunDevBundleBuildTest {
                             + "}");
 
             final boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(temporaryFolder.getRoot(), depScanner);
+                    .needsBuildInternal(options, depScanner, finder);
             Assert.assertTrue("Missing npmPackage should require bundling",
                     needsBuild);
         }
@@ -160,7 +177,7 @@ public class TaskRunDevBundleBuildTest {
                             + "}");
 
             final boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(temporaryFolder.getRoot(), depScanner);
+                    .needsBuildInternal(options, depScanner, finder);
             Assert.assertTrue("Bundle missing module dependency should rebuild",
                     needsBuild);
         }
@@ -199,7 +216,7 @@ public class TaskRunDevBundleBuildTest {
                             + "}");
 
             final boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(temporaryFolder.getRoot(), depScanner);
+                    .needsBuildInternal(options, depScanner, finder);
             Assert.assertFalse(
                     "Not missing npmPackage in stats.json should not require compilation",
                     needsBuild);
@@ -235,7 +252,7 @@ public class TaskRunDevBundleBuildTest {
                             + "}");
 
             final boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(temporaryFolder.getRoot(), depScanner);
+                    .needsBuildInternal(options, depScanner, finder);
             Assert.assertFalse(
                     "Not missing npmPackage in stats.json should not require compilation",
                     needsBuild);
@@ -271,7 +288,7 @@ public class TaskRunDevBundleBuildTest {
                             + "}");
 
             boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(temporaryFolder.getRoot(), depScanner);
+                    .needsBuildInternal(options, depScanner, finder);
             Assert.assertFalse(
                     "No compilation if tilde range only patch update",
                     needsBuild);
@@ -283,8 +300,8 @@ public class TaskRunDevBundleBuildTest {
                             + " \"packageJsonHash\": \"af45419b27dcb44b875197df4347b97316cc8fa6055458223a73aedddcfe7cc6\"\n"
                             + "}");
 
-            needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(temporaryFolder.getRoot(), depScanner);
+            needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+                    depScanner, finder);
             Assert.assertTrue(
                     "Compilation required if minor version change for tilde range",
                     needsBuild);
@@ -320,7 +337,7 @@ public class TaskRunDevBundleBuildTest {
                             + "}");
 
             boolean needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(temporaryFolder.getRoot(), depScanner);
+                    .needsBuildInternal(options, depScanner, finder);
             Assert.assertFalse(
                     "No compilation if caret range only minor version update",
                     needsBuild);
@@ -332,10 +349,125 @@ public class TaskRunDevBundleBuildTest {
                             + " \"packageJsonHash\": \"af45419b27dcb44b875197df4347b97316cc8fa6055458223a73aedddcfe7cc6\"\n"
                             + "}");
 
-            needsBuild = TaskRunDevBundleBuild
-                    .needsBuildInternal(temporaryFolder.getRoot(), depScanner);
+            needsBuild = TaskRunDevBundleBuild.needsBuildInternal(options,
+                    depScanner, finder);
             Assert.assertTrue(
                     "Compilation required if major version change for caret range",
+                    needsBuild);
+        }
+    }
+
+    @Test
+    public void noPackageJson_defaultPackagesAndModulesInStats_noBuildNeeded()
+            throws IOException {
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        Mockito.when(depScanner.getPackages())
+                .thenReturn(Collections.singletonMap("@vaadin/text", "1.0.0"));
+
+        String defaultHash = TaskRunDevBundleBuild
+                .getDefaultPackageJson(options, depScanner, finder)
+                .getObject(NodeUpdater.VAADIN_DEP_KEY)
+                .getString(NodeUpdater.HASH_KEY);
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn("{\n" + " \"npmModules\": {\n"
+                            + "    \"@polymer/polymer\": \"3.5.1\",\n"
+                            + "    \"@vaadin/common-frontend\": \"0.0.17\",\n"
+                            + "    \"@vaadin/router\": \"1.7.4\",\n"
+                            + "    \"construct-style-sheets-polyfill\": \"3.1.0\",\n"
+                            + "    \"lit\": \"2.4.1\",\n"
+                            + "    \"@vaadin/text\": \"1.0.0\"\n},\n"
+                            + " \"entryScripts\": [\n"
+                            + "  \"VAADIN/build/indexhtml-aa31f040.js\"\n"
+                            + " ],\n" + " \"packageJsonHash\": \"" + defaultHash
+                            + "\"\n" + "}");
+
+            final boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertFalse(
+                    "Default package.json should be built and validated",
+                    needsBuild);
+        }
+    }
+
+    @Test
+    public void noPackageJson_defaultPackagesInStats_missingNpmModules_buildNeeded()
+            throws IOException {
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        Mockito.when(depScanner.getPackages())
+                .thenReturn(Collections.singletonMap("@vaadin/text", "1.0.0"));
+
+        String defaultHash = TaskRunDevBundleBuild
+                .getDefaultPackageJson(options, depScanner, finder)
+                .getObject(NodeUpdater.VAADIN_DEP_KEY)
+                .getString(NodeUpdater.HASH_KEY);
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn("{\n" + " \"npmModules\": {\n"
+                            + "    \"@polymer/polymer\": \"3.5.1\",\n"
+                            + "    \"@vaadin/common-frontend\": \"0.0.17\",\n"
+                            + "    \"@vaadin/router\": \"1.7.4\",\n"
+                            + "    \"construct-style-sheets-polyfill\": \"3.1.0\",\n"
+                            + "    \"lit\": \"2.4.1\"\n" + " },\n"
+                            + " \"entryScripts\": [\n"
+                            + "  \"VAADIN/build/indexhtml-aa31f040.js\"\n"
+                            + " ],\n" + " \"packageJsonHash\": \"" + defaultHash
+                            + "\"\n" + "}");
+
+            final boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertTrue(
+                    "Missing NpmPackage with default bundle should require rebuild",
+                    needsBuild);
+        }
+    }
+
+    @Test
+    public void noPackageJson_defaultPackagesInStats_noBuildNeeded()
+            throws IOException {
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        Mockito.when(depScanner.getPackages())
+                .thenReturn(Collections.emptyMap());
+
+        String defaultHash = TaskRunDevBundleBuild
+                .getDefaultPackageJson(options, depScanner, finder)
+                .getObject(NodeUpdater.VAADIN_DEP_KEY)
+                .getString(NodeUpdater.HASH_KEY);
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn("{\n" + " \"npmModules\": {\n"
+                            + "    \"@polymer/polymer\": \"3.5.1\",\n"
+                            + "    \"@vaadin/common-frontend\": \"0.0.17\",\n"
+                            + "    \"@vaadin/router\": \"1.7.4\",\n"
+                            + "    \"construct-style-sheets-polyfill\": \"3.1.0\",\n"
+                            + "    \"lit\": \"2.4.1\"\n" + " },\n"
+                            + " \"entryScripts\": [\n"
+                            + "  \"VAADIN/build/indexhtml-aa31f040.js\"\n"
+                            + " ],\n" + " \"packageJsonHash\": \"" + defaultHash
+                            + "\"\n" + "}");
+
+            final boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertFalse(
+                    "Default package.json should be built and validated",
                     needsBuild);
         }
     }

@@ -100,8 +100,8 @@ public class NodeTasks implements FallibleCommand {
             // determine if we need a rebuild as the check happens immediately
             // and no update tasks are executed before it.
             if (!options.productionMode && options.isDevBundleBuild()) {
-                if (TaskRunDevBundleBuild.needsBuild(options.getNpmFolder(),
-                        frontendDependencies)) {
+                if (TaskRunDevBundleBuild.needsBuild(options,
+                        frontendDependencies, classFinder)) {
                     options.runNpmInstall(true);
                     options.copyTemplates(true);
                 } else {
