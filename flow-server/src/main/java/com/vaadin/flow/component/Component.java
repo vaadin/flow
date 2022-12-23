@@ -196,26 +196,32 @@ public abstract class Component
     /**
      * Gets the low level root element of this component.
      * <p>
-     * <b>Note!</b> If you see a call to this method in your application UI
+     * <b>Note!</b> If you see a call to this method in your applications UI
      * code, you should consider that as a sign that you are probably doing
      * something wrong. This method is breaking the abstraction layer Component
-     * interface (and its implementations) are providing and you should only use
-     * this when creating components or when you otherwise need to break through
-     * the abstraction layer. If it is a hack or a workaround, it is also better
-     * to hide that into an extension, helper class or to separate add-on
-     * module.
+     * interface and its implementations are providing. You should only call
+     * this method this when creating or extending components, or when you
+     * otherwise need to break through the abstraction layer. If it is a hack or
+     * a workaround, it is also better to hide that into an extension, helper
+     * class, separate add-on module or at least into private helper method
+     * documenting it.
      * <p>
      * Each component must have exactly one root element. When the component is
      * attached to a parent component, this element is attached to the parent
      * component's element hierarchy.
      *
      * @return the root element of this component
-     * @deprecated This is deprecated as you should never call this method in
-     * your Vaadin application code. This not planned to be removed and calling
-     * this method is the way to go when creating components/extension to be
-     * used in your application or to be shared as add-on components.
+     * @deprecated This is deprecated as a warning as you should never call this
+     *             method directly from your UI logic. This not planned to be
+     *             removed and calling this method is perfectly fine when
+     *             creating components/extension to be used in your application
+     *             or to be shared as add-on components. If your project
+     *             settings don't allow you to call deprecated methods
+     *             suppressing and suppressing warnings, use
+     *             {@link Element#of(com.vaadin.flow.component.Component) }
+     *             instead.
      */
-    @Deprecated
+    @Deprecated(forRemoval = false)
     @Override
     public Element getElement() {
         assert element != null
