@@ -39,16 +39,18 @@ public class FileWatcher implements Serializable {
     /**
      * Creates an instance of the file watcher for the given directory.
      * <p>
-     * Reports the changed file or directory as a {@link File} instance to
-     * the provided consumer.
+     * Reports the changed file or directory as a {@link File} instance to the
+     * provided consumer.
      * <p>
      * Watches the files create/delete and directory create/delete events.
      *
-     * @param onChangeConsumer to be called when any change detected
-     * @param watchDirectory the directory to watch for the changes
+     * @param onChangeConsumer
+     *            to be called when any change detected
+     * @param watchDirectory
+     *            the directory to watch for the changes, cannot be empty
      */
     public FileWatcher(SerializableConsumer<File> onChangeConsumer,
-                       File ... watchDirectory) {
+            File... watchDirectory) {
         this(onChangeConsumer, file -> true, watchDirectory);
     }
 
@@ -56,51 +58,55 @@ public class FileWatcher implements Serializable {
      * Creates an instance of the file watcher for the given directory taking
      * into account the given file filter.
      * <p>
-     * Reports the changed file or directory as a {@link File} instance to
-     * the provided consumer.
+     * Reports the changed file or directory as a {@link File} instance to the
+     * provided consumer.
      * <p>
      * Watches the files create/delete and directory create/delete events.
      *
-     * @param fileFilter defined if the given file or directory should be
-     *                   watched
-     * @param onChangeConsumer to be called when any change detected
-     * @param watchDirectory the directory to watch for the changes
+     * @param fileFilter
+     *            defined if the given file or directory should be watched
+     * @param onChangeConsumer
+     *            to be called when any change detected
+     * @param watchDirectory
+     *            the directory to watch for the changes, cannot be empty
      */
     public FileWatcher(SerializableConsumer<File> onChangeConsumer,
-                       SerializablePredicate<File> fileFilter,
-                       File ... watchDirectory) {
-        this(new DefaultFileListener(onChangeConsumer), fileFilter, watchDirectory);
+            SerializablePredicate<File> fileFilter, File... watchDirectory) {
+        this(new DefaultFileListener(onChangeConsumer), fileFilter,
+                watchDirectory);
     }
 
     /**
      * Creates an instance of the file watcher for the given directory taking
      * into account the given file filter.
      * <p>
-     * Reports the changed file or directory as a {@link File} instance to
-     * the provided consumer.
+     * Reports the changed file or directory as a {@link File} instance to the
+     * provided consumer.
      * <p>
      * Reports file and directory changes to the given listener.
      *
-     * @param fileFilter defined if the given file or directory should be
-     *                   watched
-     * @param listener to be invoked once any changes detected
-     * @param watchDirectory the directory to watch for the changes
+     * @param fileFilter
+     *            defined if the given file or directory should be watched
+     * @param listener
+     *            to be invoked once any changes detected
+     * @param watchDirectory
+     *            the directory to watch for the changes, cannot be empty
      */
     public FileWatcher(FileAlterationListener listener,
-            SerializablePredicate<File> fileFilter,
-            File ... watchDirectory) {
+            SerializablePredicate<File> fileFilter, File... watchDirectory) {
         Objects.requireNonNull(watchDirectory,
                 "Watch directory cannot be empty");
         if (watchDirectory.length < 1) {
-            throw new IllegalArgumentException("Watch directory cannot be empty");
+            throw new IllegalArgumentException(
+                    "Watch directory cannot be empty");
         }
         Objects.requireNonNull(fileFilter, "File filter cannot be empty");
         Objects.requireNonNull(listener,
                 "File alteration listener cannot be empty");
         monitor = new FileAlterationMonitor(timeout);
         Arrays.stream(watchDirectory).forEach(dir -> {
-            FileAlterationObserver observer = new FileAlterationObserver(
-                    dir, fileFilter::test);
+            FileAlterationObserver observer = new FileAlterationObserver(dir,
+                    fileFilter::test);
             observer.addListener(listener);
             monitor.addObserver(observer);
         });
@@ -108,7 +114,9 @@ public class FileWatcher implements Serializable {
 
     /**
      * Starts the file watching.
-     * @throws Exception if an error occurs during startup
+     *
+     * @throws Exception
+     *             if an error occurs during startup
      */
     public void start() throws Exception {
         monitor.start();
@@ -116,17 +124,22 @@ public class FileWatcher implements Serializable {
 
     /**
      * Stops the file watching.
-     * @throws Exception if an error occurs during stop
+     *
+     * @throws Exception
+     *             if an error occurs during stop
      */
     public void stop() throws Exception {
         monitor.stop();
     }
 
     /**
-     * Stops the file watching and waits for a given stop interval for
-     * watching thread to finish.
-     * @param stopInterval time interval to wait for the watching thread
-     * @throws Exception if an error occurs during stop
+     * Stops the file watching and waits for a given stop interval for watching
+     * thread to finish.
+     *
+     * @param stopInterval
+     *            time interval to wait for the watching thread
+     * @throws Exception
+     *             if an error occurs during stop
      */
     public void stop(long stopInterval) throws Exception {
         monitor.stop(stopInterval);
@@ -134,15 +147,17 @@ public class FileWatcher implements Serializable {
 
     /**
      * Sets the time interval between file/directory checks.
-     * @param timeout time interval between file/directory checks
+     *
+     * @param timeout
+     *            time interval between file/directory checks
      */
     public void setTimeout(long timeout) {
         this.timeout = timeout;
     }
 
     /**
-     * Default file change listener which triggers the callback only when
-     * file or directory is changed/deleted.
+     * Default file change listener which triggers the callback only when file
+     * or directory is changed/deleted.
      */
     private static final class DefaultFileListener
             extends FileAlterationListenerAdaptor implements Serializable {

@@ -97,8 +97,7 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
     }
 
     private void startWatchingThemeFolder(VaadinContext context) {
-        ApplicationConfiguration config = ApplicationConfiguration
-                .get(context);
+        ApplicationConfiguration config = ApplicationConfiguration.get(context);
 
         if (config.isProductionMode() || config.enableDevServer()) {
             // Theme files are watched by Vite or app runs in prod mode
@@ -110,7 +109,7 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
             String themeName = FrontendUtils.getThemeName(projectFolder);
 
             // TODO: frontend folder to be taken from config
-            //  see https://github.com/vaadin/flow/pull/15552
+            // see https://github.com/vaadin/flow/pull/15552
             File watchDirectory = new File(projectFolder,
                     Path.of(FrontendUtils.FRONTEND,
                             Constants.APPLICATION_THEME_ROOT, themeName)
@@ -119,8 +118,8 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
             Optional<BrowserLiveReload> liveReload = BrowserLiveReloadAccessor
                     .getLiveReloadFromContext(context);
             if (liveReload.isPresent()) {
-                themeFilesWatcher =
-                        new FileWatcher(file -> liveReload.get().reload(), watchDirectory);
+                themeFilesWatcher = new FileWatcher(
+                        file -> liveReload.get().reload(), watchDirectory);
                 themeFilesWatcher.start();
             } else {
                 getLogger().error(
