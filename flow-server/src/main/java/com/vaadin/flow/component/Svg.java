@@ -18,11 +18,7 @@ package com.vaadin.flow.component;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
-import java.util.stream.Collectors;
-
-import org.jsoup.Jsoup;
 import org.jsoup.helper.DataUtil;
-import org.jsoup.nodes.Document;
 
 import com.vaadin.flow.dom.Element;
 
@@ -31,7 +27,13 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 /**
  * A component that displays a given SVG image.
  * <p>
- * Note, because of implementation details, we wrap the SVG in a div element.
+ * Note that it is the developer's responsibility to sanitize and remove any
+ * dangerous parts of the SVG before sending it to the user through this
+ * component. Passing raw input data to the user will possibly lead to
+ * cross-site scripting attacks.
+ * <p>
+ * Note, because of implementation details, we currently wrap the SVG in a div element.
+ * This might change in the future.
  *
  * @author Vaadin Ltd
  * @since 24.0
@@ -42,11 +44,57 @@ public class Svg extends Component {
      * Creates an instance based on the given SVG input. The string must have
      * exactly one root element.
      *
-     * @param stream
-     *            the SVG to display
+     * @param stream the SVG to display
      */
     public Svg(InputStream stream) {
-        super(null);
+        super(new Element("div"));
+        setSvg(stream);
+    }
+
+    /**
+     * Creates an instance based on the given SVG string. The the string must
+     * have exactly one root element.
+     *
+     * @param svg the SVG to display
+     */
+    public Svg(String svg) {
+        super(new Element("div"));
+        if (svg == null || svg.isEmpty()) {
+            throw new IllegalArgumentException("SVG cannot be null or empty");
+        }
+        validateAndSet(svg);
+    }
+
+    /**
+     * Creates an empty Svg.
+     */
+    public Svg() {
+        super(new Element("div"));
+    }
+
+    /**
+     * Sets the graphics shown in this component.
+     *
+     * @param svg the SVG string
+     */
+    public void setSvg(String svg) {
+        if (svg == null || svg.isEmpty()) {
+            setInnerHtml("");
+        } else {
+            validateAndSet(svg);
+        }
+    }
+
+    /**
+     * Sets the graphics shown in this component.
+     *
+     * @param stream the input stream where SVG is read from
+     */
+    public void setSvg(InputStream stream) {
+        validateAndSet(readSvgStreamAsString(stream));
+    }
+
+    private String readSvgStreamAsString(InputStream stream) {
         if (stream == null) {
             throw new IllegalArgumentException("SVG stream cannot be null");
         }
@@ -58,56 +106,28 @@ public class Svg extends Component {
              * internally by JSoup if you strip away all the logic to guess an
              * encoding in case one isn't defined.
              */
-            setOuterHtml(UTF_8.decode(DataUtil.readToByteBuffer(stream, 0))
-                    .toString(), false);
+            return UTF_8.decode(DataUtil.readToByteBuffer(stream, 0))
+                    .toString();
         } catch (IOException e) {
-            throw new UncheckedIOException("Unable to read HTML from stream",
+            throw new UncheckedIOException("Unable to read SVG from stream",
                     e);
         }
     }
 
-    /**
-     * Creates an instance based on the given SVG string. The the string must
-     * have exactly one root element.
-     *
-     * @param svg
-     *            the SVG to display
-     */
-    public Svg(String svg) {
-        super(null);
-        if (svg == null || svg.isEmpty()) {
-            throw new IllegalArgumentException("HTML cannot be null or empty");
+    private void validateAndSet(String svgInput) {
+        if(!svgInput.startsWith("<svg")) {
+            // remove possible xml header & doc types
+            int startIndex = svgInput.indexOf("<svg");
+            if(startIndex == -1) {
+                throw new IllegalArgumentException("The content don't appear to be SVG");
+            }
+            svgInput = svgInput.substring(startIndex);
         }
-
-        setOuterHtml(svg, false);
+        setInnerHtml(svgInput);
     }
 
-    private void setOuterHtml(String outerHtml, boolean update) {
-        Document doc = Jsoup.parseBodyFragment(outerHtml);
-        int nrChildren = doc.body().children().size();
-        if (nrChildren != 1) {
-            String message = "SVG must contain exactly one top level element (ignoring text nodes). Found "
-                    + nrChildren;
-            if (nrChildren > 1) {
-                String tagNames = doc.body().children().stream()
-                        .map(org.jsoup.nodes.Element::tagName)
-                        .collect(Collectors.joining(", "));
-                message += " elements with the tag names " + tagNames;
-            }
-            throw new IllegalArgumentException(message);
-        }
-
-        org.jsoup.nodes.Element root = doc.body().child(0);
-        if (root.nodeName().equals("svg")) {
-            // SVG can't be handled like normal elements on the
-            // client side due to different namespace, wrap in div
-            Component.setElement(this, new Element("div"));
-            getElement().setProperty("innerHTML", outerHtml);
-        } else {
-            throw new IllegalArgumentException(
-                    "SVG must contain single svg node as a root");
-        }
-
+    private void setInnerHtml(String html) {
+        getElement().setProperty("innerHTML", html);
     }
 
 }
