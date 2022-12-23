@@ -19,14 +19,14 @@ jobs:
           TB_LICENSE="${{secrets.TB_LICENSE}}"
           [ -z "TB_LICENSE" ] && echo "::error::!! ERROR NO TB_LICENSE: Check if the PR is from an external contributor !!" && exit 1 || exit 0
       - uses: actions/checkout@v3
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: '16.0'
-      - uses: actions/setup-java@v2
+      - uses: actions/setup-java@v3
         with:
           java-version: '8'
           distribution: 'adopt'
-      - uses: actions/cache@v1
+      - uses: actions/cache@v3
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
@@ -47,7 +47,7 @@ jobs:
         run: |
           tar cf workspace.tar -C ~/ .m2
           tar rf workspace.tar `find . -name target -o -name "pom*xml"`
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: saved-workspace
           path: workspace.tar
@@ -61,11 +61,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-java@v2
+      - uses: actions/setup-java@v3
         with:
           java-version: '8'
           distribution: 'adopt'
-      - uses: actions/cache@v1
+      - uses: actions/cache@v3
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
@@ -91,7 +91,7 @@ jobs:
         id: set-failure
         if: ${{ failure() || cancelled() }}
         run: echo "failure=true" >> $GITHUB_OUTPUT
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         if: ${{ failure() || success() }}
         with:
           name: test-reports
@@ -108,18 +108,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v3
         with:
           node-version: '16'
       - uses: pnpm/action-setup@v2.0.1
         with:
           version: '5.15.0'
       - name: Set up JDK 8
-        uses: actions/setup-java@v2
+        uses: actions/setup-java@v3
         with:
           java-version: '8'
           distribution: 'adopt'
-      - uses: actions/cache@v1
+      - uses: actions/cache@v3
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
@@ -159,7 +159,7 @@ jobs:
         id: set-failure
         if: ${{ failure() || cancelled() }}
         run: echo "failure=true" >> $GITHUB_OUTPUT
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         if: ${{ failure() || success() }}
         with:
           name: test-reports
