@@ -52,6 +52,9 @@ public class GenerateMainImports extends AbstractUpdateImports {
     }
 
     public List<String> getLines() {
+        if (lines == null) {
+            return Collections.emptyList();
+        }
         return lines;
     }
 
