@@ -57,7 +57,8 @@ public class DevBundleThemeIT extends ChromeBrowserTest {
 
     @After
     public void cleanUp() {
-        changeBackgroundColor(GREEN_COLOR, RED_COLOR);
+        doActionAndWaitUntilLiveReloadComplete(
+                () -> changeBackgroundColor(GREEN_COLOR, RED_COLOR));
     }
 
     @Test
@@ -67,8 +68,9 @@ public class DevBundleThemeIT extends ChromeBrowserTest {
         waitUntilInitialStyles();
         checkLogsForErrors();
 
-        changeBackgroundColor(RED_COLOR, GREEN_COLOR);
-        open();
+        // Live reload upon styles.css change
+        doActionAndWaitUntilLiveReloadComplete(
+                () -> changeBackgroundColor(RED_COLOR, GREEN_COLOR));
         waitUntilCustomBackgroundColor();
         checkLogsForErrors();
     }
@@ -165,6 +167,16 @@ public class DevBundleThemeIT extends ChromeBrowserTest {
             throw new RuntimeException("Failed to apply new background styles",
                     e);
         }
+    }
+
+    private void doActionAndWaitUntilLiveReloadComplete(Runnable action) {
+        // Add a new active client with 'blocker' key and let the
+        // waitForVaadin() to block until new page/document will be loaded as a
+        // result of live reload.
+        executeScript(
+                "window.Vaadin.Flow.clients[\"blocker\"] = {isActive: () => true};");
+        action.run();
+        getCommandExecutor().waitForVaadin();
     }
 
 }

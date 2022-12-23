@@ -37,6 +37,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
@@ -333,6 +335,9 @@ public class FrontendUtils {
     public static final String GREEN = "\u001b[38;5;35m%s\u001b[0m";
 
     public static final String BRIGHT_BLUE = "\u001b[94m%s\u001b[0m";
+
+    private static final Pattern THEME_GENERATED_FILE_PATTERN = Pattern
+            .compile("theme-([\\s\\S]+?)\\.generated\\.js");
 
     /**
      * Only static stuff here.
@@ -1203,6 +1208,27 @@ public class FrontendUtils {
         }
 
         return IOUtils.toString(statsJson, StandardCharsets.UTF_8);
+    }
+
+    public static String getThemeName(File projectFolder) throws IOException {
+        File themeJs = new File(projectFolder, FrontendUtils.FRONTEND
+                + FrontendUtils.GENERATED + FrontendUtils.THEME_IMPORTS_NAME);
+
+        if (!themeJs.exists()) {
+            getLogger().debug(
+                    "Couldn't find file 'theme.js'. A link tag for styles.css won't be added");
+            return null;
+        }
+
+        String themeJsContent = FileUtils.readFileToString(themeJs,
+                StandardCharsets.UTF_8);
+        Matcher matcher = THEME_GENERATED_FILE_PATTERN.matcher(themeJsContent);
+        if (matcher.find()) {
+            return matcher.group(1);
+        } else {
+            throw new IllegalStateException(
+                    "Couldn't extract theme name from theme imports file 'theme.js'");
+        }
     }
 
 }
