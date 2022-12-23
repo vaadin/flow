@@ -199,10 +199,16 @@ function statsExtracterPlugin(): PluginOption {
       const projectPackageJson = JSON.parse(readFileSync(projectPackageJsonFile, { encoding: 'utf-8' }));
 
       const entryScripts = Object.values(bundle).filter(bundle => bundle.isEntry).map(bundle => bundle.fileName);
+      //After dev-bundle build add used Flow frontend imports JsModule/JavaScript/CssImport
+      const generatedImports = readFileSync(path.resolve(generatedFlowImportsFolder, "generated-flow-imports.js"), {encoding: 'utf-8'})
+          .split("\n")
+          .filter((line: string) => line.startsWith("import"))
+          .map((line: string) => line.substring(line.indexOf("'")+1, line.lastIndexOf("'")));
 
       const stats = {
         npmModules: projectPackageJson.dependencies,
         handledModules: npmModuleAndVersion,
+        bundleImports: generatedImports,
         entryScripts,
         packageJsonHash: projectPackageJson?.vaadin?.hash
       };

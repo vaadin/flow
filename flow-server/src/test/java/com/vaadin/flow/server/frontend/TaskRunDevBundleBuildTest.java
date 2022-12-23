@@ -13,15 +13,12 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
-
-import elemental.json.JsonObject;
 
 public class TaskRunDevBundleBuildTest {
 
@@ -470,5 +467,93 @@ public class TaskRunDevBundleBuildTest {
                     "Default package.json should be built and validated",
                     needsBuild);
         }
+    }
+
+    @Test
+    public void generatedFlowImports_bundleMissingImports_buildRequired()
+            throws IOException {
+
+        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        packageJson.createNewFile();
+
+        FileUtils.write(packageJson, "{\"dependencies\": {"
+                + "\"@vaadin/router\": \"^1.7.4\"}, "
+                + "\"vaadin\": { \"hash\": \"af45419b27dcb44b875197df4347b97316cc8fa6055458223a73aedddcfe7cc6\"} }",
+                StandardCharsets.UTF_8);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        Mockito.when(depScanner.getPackages())
+                .thenReturn(Collections.emptyMap());
+        Mockito.when(depScanner.getModules()).thenReturn(Collections
+                .singletonList("@polymer/paper-checkbox/paper-checkbox.js"));
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn("{\n" + " \"npmModules\": {\n"
+                            + "  \"@vaadin/router\": \"1.8.6\"" + "},\n"
+                            + " \"bundleImports\": [\n"
+                            + "  \"@polymer/paper-input/paper-input.js\",\n"
+                            + "  \"@vaadin/common-frontend/ConnectionIndicator.js\",\n"
+                            + "  \"Frontend/generated/jar-resources/dndConnector-es6.js\"\n"
+                            + " ],\n"
+                            + " \"packageJsonHash\": \"af45419b27dcb44b875197df4347b97316cc8fa6055458223a73aedddcfe7cc6\"\n"
+                            + "}");
+
+            boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertTrue(
+                    "Compilation required as stats.json missing import",
+                    needsBuild);
+        }
+
+    }
+
+    @Test
+    public void generatedFlowImports_bundleHasAllImports_noBuildRequired()
+            throws IOException {
+
+        File packageJson = new File(temporaryFolder.getRoot(), "package.json");
+        packageJson.createNewFile();
+
+        FileUtils.write(packageJson, "{\"dependencies\": {"
+                + "\"@vaadin/router\": \"^1.7.4\"}, "
+                + "\"vaadin\": { \"hash\": \"af45419b27dcb44b875197df4347b97316cc8fa6055458223a73aedddcfe7cc6\"} }",
+                StandardCharsets.UTF_8);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        Mockito.when(depScanner.getPackages())
+                .thenReturn(Collections.emptyMap());
+        Mockito.when(depScanner.getModules()).thenReturn(Collections
+                .singletonList("@polymer/paper-checkbox/paper-checkbox.js"));
+
+        try (MockedStatic<FrontendUtils> utils = Mockito
+                .mockStatic(FrontendUtils.class)) {
+            utils.when(() -> FrontendUtils.getDevBundleFolder(Mockito.any()))
+                    .thenReturn(temporaryFolder.getRoot());
+            utils.when(() -> FrontendUtils
+                    .findBundleStatsJson(temporaryFolder.getRoot()))
+                    .thenReturn("{\n" + " \"npmModules\": {\n"
+                            + "  \"@vaadin/router\": \"1.8.6\"" + "},\n"
+                            + " \"bundleImports\": [\n"
+                            + "  \"@polymer/paper-checkbox/paper-checkbox.js\",\n"
+                            + "  \"@polymer/paper-input/paper-input.js\",\n"
+                            + "  \"@vaadin/common-frontend/ConnectionIndicator.js\",\n"
+                            + "  \"Frontend/generated/jar-resources/dndConnector-es6.js\"\n"
+                            + " ],\n"
+                            + " \"packageJsonHash\": \"af45419b27dcb44b875197df4347b97316cc8fa6055458223a73aedddcfe7cc6\"\n"
+                            + "}");
+
+            boolean needsBuild = TaskRunDevBundleBuild
+                    .needsBuildInternal(options, depScanner, finder);
+            Assert.assertFalse("All imports in stats, no compilation required",
+                    needsBuild);
+        }
+
     }
 }

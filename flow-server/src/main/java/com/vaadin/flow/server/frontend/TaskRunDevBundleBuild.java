@@ -38,6 +38,7 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.shared.util.SharedUtil;
 
 import elemental.json.Json;
+import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
 
@@ -97,6 +98,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             FrontendDependenciesScanner frontendDependencies,
             ClassFinder finder) throws IOException {
         File npmFolder = options.getNpmFolder();
+
         if (!FrontendUtils.getDevBundleFolder(npmFolder).exists()
                 && !hasJarBundle()) {
             return true;
@@ -121,7 +123,51 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             // are found missing in bundle.
             return true;
         }
+        if (!frontendImportsFound(statsJson, options, finder,
+                frontendDependencies)) {
+            return true;
+        }
 
+        return false;
+    }
+
+    private static boolean frontendImportsFound(JsonObject statsJson,
+            Options options, ClassFinder finder,
+            FrontendDependenciesScanner frontendDependencies) {
+
+        // Validate frontend requirements in flow-generated-imports.js
+        final GenerateMainImports generateMainImports = new GenerateMainImports(
+                finder, frontendDependencies, options);
+        generateMainImports.run();
+        final List<String> imports = generateMainImports.getLines().stream()
+                .filter(line -> line.startsWith("import"))
+                .map(line -> line.substring(line.indexOf('\'') + 1,
+                        line.lastIndexOf('\'')))
+                .collect(Collectors.toList());
+        JsonArray statsBundle = statsJson.hasKey("bundleImports")
+                ? statsJson.getArray("bundleImports")
+                : Json.createArray();
+        final List<String> missingFromBundle = imports.stream().filter(
+                importString -> !arrayContainsString(statsBundle, importString))
+                .collect(Collectors.toList());
+
+        if (!missingFromBundle.isEmpty()) {
+            for (String dependency : missingFromBundle) {
+                getLogger().info("Frontend import " + dependency
+                        + " is missing from the bundle");
+            }
+            return false;
+        }
+
+        return true;
+    }
+
+    private static boolean arrayContainsString(JsonArray array, String string) {
+        for (int i = 0; i < array.length(); i++) {
+            if (string.equals(array.getString(i))) {
+                return true;
+            }
+        }
         return false;
     }
 

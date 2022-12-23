@@ -211,6 +211,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.AbstractTaskClientGenerator",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.EndpointGeneratorTaskFactory",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.CvdlProducts",
+                "com\\.vaadin\\.flow\\.server\\.frontend\\.GenerateMainImports",
 
                 // Flow client classes
                 "com\\.vaadin\\.client\\..*",
