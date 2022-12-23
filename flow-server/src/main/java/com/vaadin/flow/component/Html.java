@@ -47,7 +47,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * The HTML fragment cannot be changed after creation. You should create a new
  * instance to encapsulate another fragment.
  * <p>
- * Note that this component doesn't support svg element as a root node.  See
+ * Note that this component doesn't support svg element as a root node. See
  * separate {@link Svg} component if you want to display SVG images.
  *
  * @author Vaadin Ltd

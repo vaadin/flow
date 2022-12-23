@@ -32,8 +32,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * component. Passing raw input data to the user will possibly lead to
  * cross-site scripting attacks.
  * <p>
- * Note, because of implementation details, we currently wrap the SVG in a div element.
- * This might change in the future.
+ * Note, because of implementation details, we currently wrap the SVG in a div
+ * element. This might change in the future.
  *
  * @author Vaadin Ltd
  * @since 24.0
@@ -44,7 +44,8 @@ public class Svg extends Component {
      * Creates an instance based on the given SVG input. The string must have
      * exactly one root element.
      *
-     * @param stream the SVG to display
+     * @param stream
+     *            the SVG to display
      */
     public Svg(InputStream stream) {
         super(new Element("div"));
@@ -55,7 +56,8 @@ public class Svg extends Component {
      * Creates an instance based on the given SVG string. The the string must
      * have exactly one root element.
      *
-     * @param svg the SVG to display
+     * @param svg
+     *            the SVG to display
      */
     public Svg(String svg) {
         super(new Element("div"));
@@ -75,7 +77,8 @@ public class Svg extends Component {
     /**
      * Sets the graphics shown in this component.
      *
-     * @param svg the SVG string
+     * @param svg
+     *            the SVG string
      */
     public void setSvg(String svg) {
         if (svg == null || svg.isEmpty()) {
@@ -88,7 +91,8 @@ public class Svg extends Component {
     /**
      * Sets the graphics shown in this component.
      *
-     * @param stream the input stream where SVG is read from
+     * @param stream
+     *            the input stream where SVG is read from
      */
     public void setSvg(InputStream stream) {
         validateAndSet(readSvgStreamAsString(stream));
@@ -109,17 +113,17 @@ public class Svg extends Component {
             return UTF_8.decode(DataUtil.readToByteBuffer(stream, 0))
                     .toString();
         } catch (IOException e) {
-            throw new UncheckedIOException("Unable to read SVG from stream",
-                    e);
+            throw new UncheckedIOException("Unable to read SVG from stream", e);
         }
     }
 
     private void validateAndSet(String svgInput) {
-        if(!svgInput.startsWith("<svg")) {
+        if (!svgInput.startsWith("<svg")) {
             // remove possible xml header & doc types
             int startIndex = svgInput.indexOf("<svg");
-            if(startIndex == -1) {
-                throw new IllegalArgumentException("The content don't appear to be SVG");
+            if (startIndex == -1) {
+                throw new IllegalArgumentException(
+                        "The content don't appear to be SVG");
             }
             svgInput = svgInput.substring(startIndex);
         }
