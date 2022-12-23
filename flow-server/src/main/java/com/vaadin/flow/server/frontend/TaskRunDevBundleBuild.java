@@ -33,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.shared.util.SharedUtil;
 
@@ -70,13 +71,14 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                 "build");
     }
 
-    public static boolean needsBuild(File npmFolder,
-            FrontendDependenciesScanner frontendDependencies) {
+    public static boolean needsBuild(Options options,
+            FrontendDependenciesScanner frontendDependencies,
+            ClassFinder finder) {
         getLogger().info("Checking if an express mode bundle build is needed");
 
         try {
-            boolean needsBuild = needsBuildInternal(npmFolder,
-                    frontendDependencies);
+            boolean needsBuild = needsBuildInternal(options,
+                    frontendDependencies, finder);
             if (needsBuild) {
                 getLogger().info("An express mode bundle build is needed");
             } else {
@@ -91,10 +93,10 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         }
     }
 
-    protected static boolean needsBuildInternal(File npmFolder,
-            FrontendDependenciesScanner frontendDependencies)
-            throws IOException {
-
+    protected static boolean needsBuildInternal(Options options,
+            FrontendDependenciesScanner frontendDependencies,
+            ClassFinder finder) throws IOException {
+        File npmFolder = options.getNpmFolder();
         if (!FrontendUtils.getDevBundleFolder(npmFolder).exists()
                 && !hasJarBundle()) {
             return true;
@@ -106,7 +108,8 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             return true;
         }
 
-        JsonObject packageJson = getPackageJson(npmFolder);
+        JsonObject packageJson = getPackageJson(options, frontendDependencies,
+                finder);
         JsonObject statsJson = Json.parse(statsJsonContent);
 
         // Get scanned @NpmPackage annotations
@@ -218,8 +221,10 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         return expectedVersion.isEqualTo(actualVersion);
     }
 
-    private static JsonObject getPackageJson(File npmFolder) {
-        File packageJsonFile = new File(npmFolder, "package.json");
+    private static JsonObject getPackageJson(Options options,
+            FrontendDependenciesScanner frontendDependencies,
+            ClassFinder finder) {
+        File packageJsonFile = new File(options.getNpmFolder(), "package.json");
 
         if (packageJsonFile.exists()) {
             try {
@@ -229,7 +234,34 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                 getLogger().warn("Failed to read package.json", e);
             }
         } else {
-            // new NodeUpdater();
+            JsonObject packageJson = getDefaultPackageJson(options,
+                    frontendDependencies, finder);
+            if (packageJson != null) {
+                return packageJson;
+            }
+        }
+        return null;
+    }
+
+    protected static JsonObject getDefaultPackageJson(Options options,
+            FrontendDependenciesScanner frontendDependencies,
+            ClassFinder finder) {
+        NodeUpdater nodeUpdater = new NodeUpdater(finder, frontendDependencies,
+                options) {
+            @Override
+            public void execute() {
+            }
+        };
+        try {
+            JsonObject packageJson = nodeUpdater.getPackageJson();
+            nodeUpdater.updateDefaultDependencies(packageJson);
+            final String hash = TaskUpdatePackages
+                    .generatePackageJsonHash(packageJson);
+            packageJson.getObject(NodeUpdater.VAADIN_DEP_KEY)
+                    .put(NodeUpdater.HASH_KEY, hash);
+            return packageJson;
+        } catch (IOException e) {
+            getLogger().warn("Failed to generate package.json", e);
         }
         return null;
     }
