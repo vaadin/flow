@@ -400,7 +400,14 @@ abstract class AbstractUpdateImports implements Runnable {
         return file.exists();
     }
 
-    private boolean importedFileExists(String importName) {
+    /**
+     * Validate that the file {@code importName} can be found.
+     *
+     * @param importName
+     *            name of the file
+     * @return {@code true} if file is found
+     */
+    protected boolean importedFileExists(String importName) {
         File file = getImportedFrontendFile(importName);
         if (file != null) {
             return true;
