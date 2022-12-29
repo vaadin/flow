@@ -23,6 +23,8 @@ public class ComponentTracker {
 
     private static Map<Component, StackTraceElement> createLocation = Collections
             .synchronizedMap(new WeakHashMap<>());
+    private static Map<Component, StackTraceElement> attachLocation = Collections
+            .synchronizedMap(new WeakHashMap<>());
 
     private static Set<String> classesToSkip = new HashSet<>();
     static {
@@ -67,6 +69,40 @@ public class ComponentTracker {
         createLocation.put(component, location);
     }
 
+    /**
+     * Finds the location where the given component instance was attached to a
+     * parent.
+     *
+     * @param component
+     *            the component to find
+     * @return an element from the stack trace describing the relevant location
+     *         where the component was attached
+     */
+    public static StackTraceElement findAttach(Component component) {
+        return attachLocation.get(component);
+    }
+
+    /**
+     * Tracks the location where the component was attached. This should be
+     * called from the Component attach logic so that the creation location can
+     * be found from the current stacktrace.
+     *
+     * @param component
+     *            the component to track
+     */
+    public static void trackAttach(Component component) {
+        if (isProductionMode()) {
+            return;
+        }
+        StackTraceElement[] stack = Thread.currentThread().getStackTrace();
+        StackTraceElement location = findRelevantElement(component.getClass(),
+                stack);
+        if (isNavigatorCreate(location)) {
+            location = findRelevantElement(null, stack);
+        }
+        attachLocation.put(component, location);
+    }
+
     private static boolean isNavigatorCreate(StackTraceElement location) {
         return location.getClassName()
                 .equals(AbstractNavigationStateRenderer.class.getName());
@@ -81,8 +117,12 @@ public class ComponentTracker {
                         || !e.getClassName().equals(excludeClass.getName()))
                 .filter(e -> !e.getClassName()
                         .startsWith("com.vaadin.flow.component."))
-                .filter(e -> !e.getClassName().startsWith("java.lang.reflect."))
-                .filter(e -> !e.getClassName().startsWith("jdk.internal."))
+                .filter(e -> !e.getClassName()
+                        .startsWith("com.vaadin.flow.internal."))
+                .filter(e -> !e.getClassName()
+                        .startsWith("com.vaadin.flow.dom."))
+                .filter(e -> !e.getClassName().startsWith("java."))
+                .filter(e -> !e.getClassName().startsWith("jdk."))
                 .filter(e -> !e.getClassName()
                         .startsWith("org.springframework.beans."))
                 .findFirst().orElse(null);
