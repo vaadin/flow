@@ -180,6 +180,9 @@ public class ApplicationConnection {
         client.getByNodeId = $entry(function(nodeId) {
             return ap.@ApplicationConnection::getDomElementByNodeId(*)(nodeId);
         });
+        client.getNodeId = $entry(function(element) {
+            return ap.@ApplicationConnection::getNodeId(*)(element);
+        });
         client.addDomBindingListener = $entry(function(nodeId, callback) {
             ap.@ApplicationConnection::addDomSetListener(*)(nodeId, callback);
         });
@@ -229,6 +232,12 @@ public class ApplicationConnection {
     private Node getDomElementByNodeId(int id) {
         StateNode node = registry.getStateTree().getNode(id);
         return node == null ? null : node.getDomNode();
+    }
+
+    private int getNodeId(Element element) {
+        StateNode node = registry.getStateTree()
+                .getStateNodeForDomNode(DomApi.wrap(element));
+        return node == null ? -1 : node.getId();
     }
 
     private void addDomSetListener(int nodeId, JavaScriptObject callback) {

@@ -23,6 +23,9 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.component.Component.MapToExistingElement;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
@@ -40,10 +43,12 @@ import com.vaadin.flow.i18n.LocaleChangeObserver;
 import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
+import com.vaadin.flow.internal.nodefeature.ComponentMapping;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.Attributes;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
 
 /**
@@ -645,6 +650,42 @@ public class ComponentUtil {
                     "Implicit router instance is not available.");
         }
         return router;
+    }
+
+    /**
+     * Finds the given component in the given session.
+     *
+     * @param session
+     *            the session
+     * @param componentReference
+     *            the ids referencing to the component
+     * @return the component or null if no component was found
+     */
+    public static Component findComponent(VaadinSession session,
+            ComponentReference componentReference) {
+        String appId = componentReference.getAppId();
+        int nodeId = componentReference.getNodeId();
+        Optional<UI> ui = session.getUIs().stream().filter(u -> {
+            return u.getInternals().getAppId().equals(appId);
+        }).findFirst();
+        if (!ui.isPresent()) {
+            getLogger().error("Unable to find the UI for app id " + appId);
+            return null;
+        }
+        StateNode node = ui.get().getInternals().getStateTree()
+                .getNodeById(nodeId);
+        if (node == null) {
+            getLogger().error("Unable to find the component for node " + nodeId
+                    + " in app " + appId);
+            return null;
+        }
+        Component component = node.getFeature(ComponentMapping.class)
+                .getComponent().get();
+        return component;
+    }
+
+    private static Logger getLogger() {
+        return LoggerFactory.getLogger(ComponentUtil.class);
     }
 
 }

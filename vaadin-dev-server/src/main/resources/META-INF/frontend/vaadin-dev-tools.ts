@@ -1,10 +1,12 @@
 import { css, html, LitElement, nothing } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
+import { handlePickKeyEvent, pickComponent } from './component-picker';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { copy } from './copy-to-clipboard.js';
 import { licenseCheckFailed, licenseCheckNoKey, licenseCheckOk, Product, licenseInit } from './License';
+import { ComponentReference } from './shim';
 
 interface ServerInfo {
   vaadinVersion: string;
@@ -23,7 +25,7 @@ interface Feature {
 }
 
 interface Tab {
-  id: 'log' | 'info' | 'features';
+  id: 'log' | 'info' | 'features' | 'code';
   title: string;
   render: () => unknown;
   activate?: () => void;
@@ -157,6 +159,9 @@ export class Connection extends Object {
   }
   sendLicenseCheck(product: Product) {
     this.send('checkLicense', product);
+  }
+  sendShowComponentInCode(component: ComponentReference) {
+    this.send('showComponentInCode', component);
   }
 }
 
@@ -813,6 +818,26 @@ export class VaadinDevTools extends LitElement {
         vertical-align: -4px;
       }
 
+      .popup {
+        width: auto;
+        position: fixed;
+        background-color: var(--dev-tools-background-color-active-blurred);
+        color: var(--dev-tools-text-color-primary);
+        padding: 0.1875rem 0.75rem 0.1875rem 1rem;
+        background-clip: padding-box;
+      }
+
+      .component-picker-info {
+        left: 1em;
+      }
+      .component-picker-components-info {
+        right: 3em;
+      }
+
+      .component-picker-components-info .selected {
+        font-weight: bold;
+      }
+
       @keyframes slideIn {
         from {
           transform: translateX(100%);
@@ -930,7 +955,8 @@ export class VaadinDevTools extends LitElement {
   private tabs: readonly Tab[] = [
     { id: 'log', title: 'Log', render: this.renderLog, activate: this.activateLog },
     { id: 'info', title: 'Info', render: this.renderInfo },
-    { id: 'features', title: 'Feature Flags', render: this.renderFeatures }
+    { id: 'features', title: 'Feature Flags', render: this.renderFeatures },
+    { id: 'code', title: 'Code', render: this.renderCode }
   ];
 
   @state()
@@ -953,6 +979,14 @@ export class VaadinDevTools extends LitElement {
 
   @query('.window')
   private root!: HTMLElement;
+
+  @state()
+  componentPickActive: boolean = false;
+
+  @state()
+  componentPickComponents: ComponentReference[] = [];
+  @state()
+  componentPickComponentsIndex: number = 0;
 
   private javaConnection?: Connection;
   private frontendConnection?: Connection;
@@ -1362,7 +1396,7 @@ export class VaadinDevTools extends LitElement {
   /* eslint-disable lit/no-template-map */
   render() {
     return html` <div
-        class="window ${this.expanded ? 'visible' : 'hidden'}"
+        class="window ${this.expanded && !this.componentPickActive ? 'visible' : 'hidden'}"
         tabindex="0"
         @keydown=${(e: KeyboardEvent) => e.key === 'Escape' && this.toggleExpanded()}
       >
@@ -1401,6 +1435,26 @@ export class VaadinDevTools extends LitElement {
       </div>
 
       <div class="notification-tray">${this.notifications.map((msg) => this.renderMessage(msg))}</div>
+      <div class="window popup component-picker-info ${!this.componentPickActive ? 'hidden' : ''}">
+        <div>
+          <h3>Locate a component in source code</h3>
+          <p>Use the mouse cursor to highligh components in the UI.</p>
+          <p>Use arrow down/up to cycle through and highlight specific components under the cursor.</p>
+          <p>
+            Click the primary mouse button to open the corresponding source code line of the highlighted component in
+            your IDE.
+          </p>
+        </div>
+      </div>
+      <div class="window popup  component-picker-components-info ${!this.componentPickActive ? 'hidden' : ''}">
+        <div>${this.componentPickComponents.map(
+          (component, index) =>
+            html`<div class=${index === this.componentPickComponentsIndex ? 'selected' : ''}>
+              ${component.element!.tagName.toLowerCase()}
+            </div>`
+        )}
+        </div>
+      </div>
       <div
         class="dev-tools ${this.splashMessage ? 'active' : ''}${this.unreadErrors ? ' error' : ''}"
         @click=${() => this.toggleExpanded()}
@@ -1466,6 +1520,38 @@ export class VaadinDevTools extends LitElement {
         lastMessage.scrollIntoView();
       }
     });
+  }
+
+  renderCode() {
+    return html`<div class="info-tray">
+      <button
+        class="button pick ${this.componentPickActive ? 'pick-active' : ''}"
+        @click=${() => {
+          this.componentPickActive = true;
+          pickComponent(
+            (component) => {
+              this.frontendConnection!.sendShowComponentInCode(component);
+              this.componentPickActive = false;
+            },
+            (components, selectedComponentIndex) => {
+              this.componentPickComponents = components;
+              this.componentPickComponentsIndex = selectedComponentIndex;
+            },
+            () => {
+              this.componentPickActive = false;
+            }
+          );
+        }}
+        @keydown=${(e: KeyboardEvent) => {
+          if (!this.componentPickActive) {
+            return;
+          }
+          handlePickKeyEvent(e);
+        }}
+      >
+        Find component in code
+      </button>
+    </div>`;
   }
 
   renderInfo() {
