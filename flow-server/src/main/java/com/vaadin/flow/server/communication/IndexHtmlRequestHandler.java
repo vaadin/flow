@@ -73,9 +73,6 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     private static final String SCRIPT = "script";
     private static final String SCRIPT_INITIAL = "initial";
 
-    private static final Pattern THEME_GENERATED_FILE_PATTERN = Pattern
-            .compile("theme-([\\s\\S]+?)\\.generated\\.js");
-
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException {
@@ -178,7 +175,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
      */
     private void addStylesCssLink(DeploymentConfiguration config,
             Document indexDocument) throws IOException {
-        String themeName = getThemeName(config.getProjectFolder());
+        String themeName = FrontendUtils
+                .getThemeName(config.getProjectFolder());
         if (themeName != null) {
             Element element = new Element("link");
             element.attr("rel", "stylesheet");
@@ -438,27 +436,6 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
     private static Logger getLogger() {
         return LoggerFactory.getLogger(IndexHtmlRequestHandler.class);
-    }
-
-    private static String getThemeName(File projectFolder) throws IOException {
-        File themeJs = new File(projectFolder, FrontendUtils.FRONTEND
-                + FrontendUtils.GENERATED + FrontendUtils.THEME_IMPORTS_NAME);
-
-        if (!themeJs.exists()) {
-            getLogger().debug(
-                    "Couldn't find file 'theme.js'. A link tag for styles.css won't be added");
-            return null;
-        }
-
-        String themeJsContent = FileUtils.readFileToString(themeJs,
-                StandardCharsets.UTF_8);
-        Matcher matcher = THEME_GENERATED_FILE_PATTERN.matcher(themeJsContent);
-        if (matcher.find()) {
-            return matcher.group(1);
-        } else {
-            throw new IllegalStateException(
-                    "Couldn't extract theme name from theme imports file 'theme.js'");
-        }
     }
 
 }

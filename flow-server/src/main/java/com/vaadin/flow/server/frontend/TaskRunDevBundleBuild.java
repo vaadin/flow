@@ -33,10 +33,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.shared.util.SharedUtil;
 
 import elemental.json.Json;
+import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
 
@@ -70,13 +72,14 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                 "build");
     }
 
-    public static boolean needsBuild(File npmFolder,
-            FrontendDependenciesScanner frontendDependencies) {
+    public static boolean needsBuild(Options options,
+            FrontendDependenciesScanner frontendDependencies,
+            ClassFinder finder) {
         getLogger().info("Checking if an express mode bundle build is needed");
 
         try {
-            boolean needsBuild = needsBuildInternal(npmFolder,
-                    frontendDependencies);
+            boolean needsBuild = needsBuildInternal(options,
+                    frontendDependencies, finder);
             if (needsBuild) {
                 getLogger().info("An express mode bundle build is needed");
             } else {
@@ -91,9 +94,10 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         }
     }
 
-    protected static boolean needsBuildInternal(File npmFolder,
-            FrontendDependenciesScanner frontendDependencies)
-            throws IOException {
+    protected static boolean needsBuildInternal(Options options,
+            FrontendDependenciesScanner frontendDependencies,
+            ClassFinder finder) throws IOException {
+        File npmFolder = options.getNpmFolder();
 
         if (!FrontendUtils.getDevBundleFolder(npmFolder).exists()
                 && !hasJarBundle()) {
@@ -106,7 +110,8 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             return true;
         }
 
-        JsonObject packageJson = getPackageJson(npmFolder);
+        JsonObject packageJson = getPackageJson(options, frontendDependencies,
+                finder);
         JsonObject statsJson = Json.parse(statsJsonContent);
 
         // Get scanned @NpmPackage annotations
@@ -118,7 +123,51 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             // are found missing in bundle.
             return true;
         }
+        if (!frontendImportsFound(statsJson, options, finder,
+                frontendDependencies)) {
+            return true;
+        }
 
+        return false;
+    }
+
+    private static boolean frontendImportsFound(JsonObject statsJson,
+            Options options, ClassFinder finder,
+            FrontendDependenciesScanner frontendDependencies) {
+
+        // Validate frontend requirements in flow-generated-imports.js
+        final GenerateMainImports generateMainImports = new GenerateMainImports(
+                finder, frontendDependencies, options);
+        generateMainImports.run();
+        final List<String> imports = generateMainImports.getLines().stream()
+                .filter(line -> line.startsWith("import"))
+                .map(line -> line.substring(line.indexOf('\'') + 1,
+                        line.lastIndexOf('\'')))
+                .collect(Collectors.toList());
+        JsonArray statsBundle = statsJson.hasKey("bundleImports")
+                ? statsJson.getArray("bundleImports")
+                : Json.createArray();
+        final List<String> missingFromBundle = imports.stream().filter(
+                importString -> !arrayContainsString(statsBundle, importString))
+                .collect(Collectors.toList());
+
+        if (!missingFromBundle.isEmpty()) {
+            for (String dependency : missingFromBundle) {
+                getLogger().info("Frontend import " + dependency
+                        + " is missing from the bundle");
+            }
+            return false;
+        }
+
+        return true;
+    }
+
+    private static boolean arrayContainsString(JsonArray array, String string) {
+        for (int i = 0; i < array.length(); i++) {
+            if (string.equals(array.getString(i))) {
+                return true;
+            }
+        }
         return false;
     }
 
@@ -218,8 +267,10 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         return expectedVersion.isEqualTo(actualVersion);
     }
 
-    private static JsonObject getPackageJson(File npmFolder) {
-        File packageJsonFile = new File(npmFolder, "package.json");
+    private static JsonObject getPackageJson(Options options,
+            FrontendDependenciesScanner frontendDependencies,
+            ClassFinder finder) {
+        File packageJsonFile = new File(options.getNpmFolder(), "package.json");
 
         if (packageJsonFile.exists()) {
             try {
@@ -229,7 +280,34 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                 getLogger().warn("Failed to read package.json", e);
             }
         } else {
-            // new NodeUpdater();
+            JsonObject packageJson = getDefaultPackageJson(options,
+                    frontendDependencies, finder);
+            if (packageJson != null) {
+                return packageJson;
+            }
+        }
+        return null;
+    }
+
+    protected static JsonObject getDefaultPackageJson(Options options,
+            FrontendDependenciesScanner frontendDependencies,
+            ClassFinder finder) {
+        NodeUpdater nodeUpdater = new NodeUpdater(finder, frontendDependencies,
+                options) {
+            @Override
+            public void execute() {
+            }
+        };
+        try {
+            JsonObject packageJson = nodeUpdater.getPackageJson();
+            nodeUpdater.updateDefaultDependencies(packageJson);
+            final String hash = TaskUpdatePackages
+                    .generatePackageJsonHash(packageJson);
+            packageJson.getObject(NodeUpdater.VAADIN_DEP_KEY)
+                    .put(NodeUpdater.HASH_KEY, hash);
+            return packageJson;
+        } catch (IOException e) {
+            getLogger().warn("Failed to generate package.json", e);
         }
         return null;
     }

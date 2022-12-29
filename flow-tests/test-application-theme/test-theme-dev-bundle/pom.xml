@@ -12,6 +12,7 @@
     <packaging>war</packaging>
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
+        <vaadin.devmode.liveReload.enabled>true</vaadin.devmode.liveReload.enabled>
     </properties>
 
     <dependencies>
