@@ -162,7 +162,7 @@ public interface AbstractConfiguration extends Serializable {
     default File getProjectFolder() {
         String folder = getStringProperty(FrontendUtils.PROJECT_BASEDIR, null);
         if (folder == null) {
-            return null;
+            return new File("").getAbsoluteFile();
         }
         return new File(folder);
     }
