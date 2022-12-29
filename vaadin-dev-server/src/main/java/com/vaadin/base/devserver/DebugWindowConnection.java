@@ -33,11 +33,13 @@ import com.vaadin.base.devserver.stats.DevModeUsageStatistics;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.ComponentReference;
 import com.vaadin.flow.internal.BrowserLiveReload;
+import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.pro.licensechecker.BuildType;
 import com.vaadin.pro.licensechecker.LicenseChecker;
+import com.vaadin.pro.licensechecker.LocalProKey;
 import com.vaadin.pro.licensechecker.Product;
 
 import elemental.json.Json;
@@ -133,6 +135,10 @@ public class DebugWindowConnection implements BrowserLiveReload {
                 .get(context).getFeatures().stream()
                 .filter(feature -> !feature.equals(FeatureFlags.EXAMPLE))
                 .collect(Collectors.toList())));
+
+        if (LocalProKey.get() != null) {
+            send(resource, "vaadin-dev-tools-code-ok", null);
+        }
     }
 
     private void send(AtmosphereResource resource, String command,
@@ -212,14 +218,21 @@ public class DebugWindowConnection implements BrowserLiveReload {
                         errorMessage);
                 send(resource, "license-check-failed", pm);
             }
-        } else if ("showComponentInCode".equals(command)) {
+        } else if ("showComponentCreateLocation".equals(command)
+                || "showComponentAttachLocation".equals(command)) {
             int nodeId = (int) data.getNumber("nodeId");
             String appId = data.getString("appId");
 
-            ComponentReference componentReference = new ComponentReference(
+            ComponentReference componentReference = new ComponentReference(VaadinSession.getCurrent(),
                     nodeId, appId);
-            ideIntegration.showComponentCreateInIde(VaadinSession.getCurrent(),
-                    componentReference);
+
+            if ("showComponentCreateLocation".equals(command)) {
+                ideIntegration.showComponentCreateInIde(
+                        componentReference);
+            } else {
+                ideIntegration.showComponentAttachInIde(
+                        componentReference);
+            }
         } else {
             getLogger().info("Unknown command from the browser: " + command);
         }

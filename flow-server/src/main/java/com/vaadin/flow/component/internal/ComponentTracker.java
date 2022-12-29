@@ -98,7 +98,9 @@ public class ComponentTracker {
         StackTraceElement location = findRelevantElement(component.getClass(),
                 stack);
         if (isNavigatorCreate(location)) {
-            location = findRelevantElement(null, stack);
+            // For routes, we can just show the init location as we have nothing
+            // better
+            location = createLocation.get(component);
         }
         attachLocation.put(component, location);
     }

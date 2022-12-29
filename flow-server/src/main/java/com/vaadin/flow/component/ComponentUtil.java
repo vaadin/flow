@@ -656,19 +656,18 @@ public class ComponentUtil {
     /**
      * Finds the given component in the given session.
      *
-     * @param session
-     *            the session
      * @param componentReference
      *            the ids referencing to the component
      * @return the component or null if no component was found
      */
-    public static Component findComponent(VaadinSession session,
+    public static Component findComponent(
             ComponentReference componentReference) {
         String appId = componentReference.getAppId();
         int nodeId = componentReference.getNodeId();
-        Optional<UI> ui = session.getUIs().stream().filter(u -> {
-            return u.getInternals().getAppId().equals(appId);
-        }).findFirst();
+        Optional<UI> ui = componentReference.getSession().getUIs().stream()
+                .filter(u -> {
+                    return u.getInternals().getAppId().equals(appId);
+                }).findFirst();
         if (!ui.isPresent()) {
             getLogger().error("Unable to find the UI for app id " + appId);
             return null;

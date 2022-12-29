@@ -160,8 +160,11 @@ export class Connection extends Object {
   sendLicenseCheck(product: Product) {
     this.send('checkLicense', product);
   }
-  sendShowComponentInCode(component: ComponentReference) {
-    this.send('showComponentInCode', component);
+  sendShowComponentCreateLocation(component: ComponentReference) {
+    this.send('showComponentCreateLocation', component);
+  }
+  sendShowComponentAttachLocation(component: ComponentReference) {
+    this.send('showComponentAttachLocation', component);
   }
 }
 
@@ -952,11 +955,10 @@ export class VaadinDevTools extends LitElement {
   javaStatus: ConnectionStatus = ConnectionStatus.UNAVAILABLE;
 
   @state()
-  private tabs: readonly Tab[] = [
+  private tabs: Tab[] = [
     { id: 'log', title: 'Log', render: this.renderLog, activate: this.activateLog },
     { id: 'info', title: 'Info', render: this.renderInfo },
-    { id: 'features', title: 'Feature Flags', render: this.renderFeatures },
-    { id: 'code', title: 'Code', render: this.renderCode }
+    { id: 'features', title: 'Feature Flags', render: this.renderFeatures }
   ];
 
   @state()
@@ -1052,6 +1054,8 @@ export class VaadinDevTools extends LitElement {
         this.serverInfo = message.data as ServerInfo;
       } else if (message?.command === 'featureFlags') {
         this.features = message.data.features as Feature[];
+      } else if (message?.command === 'vaadin-dev-tools-code-ok') {
+        this.tabs.push({ id: 'code', title: 'Code', render: this.renderCode });
       } else {
         // eslint-disable-next-line no-console
         console.error('Unknown message from front-end connection:', JSON.stringify(message));
@@ -1447,12 +1451,13 @@ export class VaadinDevTools extends LitElement {
         </div>
       </div>
       <div class="window popup  component-picker-components-info ${!this.componentPickActive ? 'hidden' : ''}">
-        <div>${this.componentPickComponents.map(
-          (component, index) =>
-            html`<div class=${index === this.componentPickComponentsIndex ? 'selected' : ''}>
-              ${component.element!.tagName.toLowerCase()}
-            </div>`
-        )}
+        <div>
+          ${this.componentPickComponents.map(
+            (component, index) =>
+              html`<div class=${index === this.componentPickComponentsIndex ? 'selected' : ''}>
+                ${component.element!.tagName.toLowerCase()}
+              </div>`
+          )}
         </div>
       </div>
       <div
@@ -1524,33 +1529,45 @@ export class VaadinDevTools extends LitElement {
 
   renderCode() {
     return html`<div class="info-tray">
-      <button
-        class="button pick ${this.componentPickActive ? 'pick-active' : ''}"
-        @click=${() => {
-          this.componentPickActive = true;
-          pickComponent(
-            (component) => {
-              this.frontendConnection!.sendShowComponentInCode(component);
-              this.componentPickActive = false;
-            },
-            (components, selectedComponentIndex) => {
-              this.componentPickComponents = components;
-              this.componentPickComponentsIndex = selectedComponentIndex;
-            },
-            () => {
-              this.componentPickActive = false;
+      <div>
+        <select id="locationType">
+          <option value="create" selected>Create</option>
+          <option value="attach">Attach</option>
+        </select>
+        <button
+          class="button pick ${this.componentPickActive ? 'pick-active' : ''}"
+          @click=${() => {
+            this.componentPickActive = true;
+            pickComponent(
+              (component) => {
+                const locationType = (this.renderRoot.querySelector('#locationType') as HTMLSelectElement).value;
+                if (locationType === 'create') {
+                  this.frontendConnection!.sendShowComponentCreateLocation(component);
+                } else {
+                  this.frontendConnection!.sendShowComponentAttachLocation(component);
+                }
+                this.componentPickActive = false;
+              },
+              (components, selectedComponentIndex) => {
+                this.componentPickComponents = components;
+                this.componentPickComponentsIndex = selectedComponentIndex;
+              },
+              () => {
+                this.componentPickActive = false;
+              }
+            );
+          }}
+          @keydown=${(e: KeyboardEvent) => {
+            if (!this.componentPickActive) {
+              return;
             }
-          );
-        }}
-        @keydown=${(e: KeyboardEvent) => {
-          if (!this.componentPickActive) {
-            return;
-          }
-          handlePickKeyEvent(e);
-        }}
-      >
-        Find component in code
-      </button>
+            handlePickKeyEvent(e);
+          }}
+        >
+          Find component in code
+        </button>
+      </div>
+      </div>
     </div>`;
   }
 

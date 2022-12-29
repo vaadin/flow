@@ -1,7 +1,6 @@
 package com.vaadin.base.devserver;
 
 import java.io.File;
-import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,11 +8,8 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentReference;
 import com.vaadin.flow.component.ComponentUtil;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.ComponentTracker;
-import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.internal.nodefeature.ComponentMapping;
-import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 /**
@@ -38,19 +34,39 @@ public class IdeIntegration {
     /**
      * Try to open the location where the given component was created.
      *
-     * @param session
-     *            the user session
      * @param componentReference
      *            a reference to the component, from the browser
      */
-    public void showComponentCreateInIde(VaadinSession session,
+    public void showComponentCreateInIde(
             ComponentReference componentReference) {
-        session.access(() -> internalShowComponentCreateInIde(
-                ComponentUtil.findComponent(session, componentReference)));
+                componentReference.getSession().access(() -> {
+            UsageStatistics.markAsUsed("flow/showComponentCreateInIde", null);
+            Component component = ComponentUtil.findComponent(
+                    componentReference);
+            internalShowInIde(component,
+                    ComponentTracker.findCreate(component));
+        });
     }
 
-    private void internalShowComponentCreateInIde(Component component) {
-        StackTraceElement location = ComponentTracker.findCreate(component);
+    /**
+     * Try to open the location where the given component was attached.
+     *
+     * @param componentReference
+     *            a reference to the component, from the browser
+     */
+    public void showComponentAttachInIde(
+            ComponentReference componentReference) {
+                componentReference.getSession().access(() -> {
+            UsageStatistics.markAsUsed("flow/showComponentAttachInIde", null);
+            Component component = ComponentUtil.findComponent(
+                    componentReference);
+            internalShowInIde(component,
+                    ComponentTracker.findAttach(component));
+        });
+    }
+
+    private void internalShowInIde(Component component,
+            StackTraceElement location) {
         if (location == null) {
             getLogger().error("Unable to find the location where the component "
                     + component.getClass().getName() + " was created");
