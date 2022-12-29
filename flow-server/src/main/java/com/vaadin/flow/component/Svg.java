@@ -53,7 +53,7 @@ public class Svg extends Component {
     }
 
     /**
-     * Creates an instance based on the given SVG string. The the string must
+     * Creates an instance based on the given SVG string. The string must
      * have exactly one root element.
      *
      * @param svg
