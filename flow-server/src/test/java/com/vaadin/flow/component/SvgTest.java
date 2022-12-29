@@ -46,11 +46,6 @@ public class SvgTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void twoRoots() {
-        new Svg("<svg></svg><svg></svg>");
-    }
-
-    @Test(expected = IllegalArgumentException.class)
     public void text() {
         new Svg("hello");
     }
