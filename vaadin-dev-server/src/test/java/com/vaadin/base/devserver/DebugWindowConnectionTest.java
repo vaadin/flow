@@ -186,9 +186,12 @@ public class DebugWindowConnectionTest {
 
     private VaadinContext getMockContext() {
         VaadinContext context = new MockVaadinContext();
+        ApplicationConfiguration appConfig = Mockito
+                .mock(ApplicationConfiguration.class);
+        Mockito.when(appConfig.isProductionMode()).thenReturn(false);
+        context.setAttribute(ApplicationConfiguration.class, appConfig);
         context.setAttribute(Lookup.class,
-                Lookup.of(Mockito.mock(ApplicationConfiguration.class),
-                        ApplicationConfiguration.class));
+                Lookup.of(appConfig, ApplicationConfiguration.class));
         return context;
     }
 
