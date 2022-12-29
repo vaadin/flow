@@ -1,6 +1,7 @@
 import { css, html, LitElement, nothing } from 'lit';
 import { property, query, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
+import { ComponentReference } from './component-util';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { copy } from './copy-to-clipboard.js';
@@ -23,7 +24,7 @@ interface Feature {
 }
 
 interface Tab {
-  id: 'log' | 'info' | 'features';
+  id: 'log' | 'info' | 'features' | 'code';
   title: string;
   render: () => unknown;
   activate?: () => void;
@@ -158,6 +159,12 @@ export class Connection extends Object {
   sendLicenseCheck(product: Product) {
     this.send('checkLicense', product);
   }
+  sendShowComponentCreateLocation(component: ComponentReference) {
+    this.send('showComponentCreateLocation', component);
+  }
+  sendShowComponentAttachLocation(component: ComponentReference) {
+    this.send('showComponentAttachLocation', component);
+  }
 }
 
 enum MessageType {
@@ -178,6 +185,31 @@ interface Message {
   deleted: boolean;
 }
 
+export const popupStyles = css`
+  .popup {
+    width: auto;
+    position: fixed;
+    background-color: var(--dev-tools-background-color-active-blurred);
+    color: var(--dev-tools-text-color-primary);
+    padding: 0.1875rem 0.75rem 0.1875rem 1rem;
+    background-clip: padding-box;
+    border-radius: var(--dev-tools-border-radius);
+    overflow: hidden;
+    margin: 0.5rem;
+    width: 30rem;
+    max-width: calc(100% - 1rem);
+    max-height: calc(100vh - 1rem);
+    flex-shrink: 1;
+    background-color: var(--dev-tools-background-color-active);
+    color: var(--dev-tools-text-color);
+    transition: var(--dev-tools-transition-duration);
+    transform-origin: bottom right;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--dev-tools-box-shadow);
+    outline: none;
+  }
+`;
 export class VaadinDevTools extends LitElement {
   static BLUE_HSL = css`206, 100%, 70%`;
   static GREEN_HSL = css`145, 80%, 42%`;
@@ -868,7 +900,8 @@ export class VaadinDevTools extends LitElement {
             background-color: var(--dev-tools-background-color-active-blurred);
           }
         }
-      `
+      `,
+      popupStyles
     ];
   }
 
@@ -929,7 +962,7 @@ export class VaadinDevTools extends LitElement {
   javaStatus: ConnectionStatus = ConnectionStatus.UNAVAILABLE;
 
   @state()
-  private tabs: readonly Tab[] = [
+  private tabs: Tab[] = [
     { id: 'log', title: 'Log', render: this.renderLog, activate: this.activateLog },
     { id: 'info', title: 'Info', render: this.renderInfo },
     { id: 'features', title: 'Feature Flags', render: this.renderFeatures }
@@ -955,6 +988,9 @@ export class VaadinDevTools extends LitElement {
 
   @query('.window')
   private root!: HTMLElement;
+
+  @state()
+  componentPickActive: boolean = false;
 
   private javaConnection?: Connection;
   private frontendConnection?: Connection;
@@ -1020,6 +1056,8 @@ export class VaadinDevTools extends LitElement {
         this.serverInfo = message.data as ServerInfo;
       } else if (message?.command === 'featureFlags') {
         this.features = message.data.features as Feature[];
+      } else if (message?.command === 'vaadin-dev-tools-code-ok') {
+        this.tabs.push({ id: 'code', title: 'Code', render: this.renderCode });
       } else {
         // eslint-disable-next-line no-console
         console.error('Unknown message from front-end connection:', JSON.stringify(message));
@@ -1364,7 +1402,7 @@ export class VaadinDevTools extends LitElement {
   /* eslint-disable lit/no-template-map */
   render() {
     return html` <div
-        class="window ${this.expanded ? 'visible' : 'hidden'}"
+        class="window ${this.expanded && !this.componentPickActive ? 'visible' : 'hidden'}"
         tabindex="0"
         @keydown=${(e: KeyboardEvent) => e.key === 'Escape' && this.expanded && this.toggleExpanded()}
       >
@@ -1403,6 +1441,22 @@ export class VaadinDevTools extends LitElement {
       </div>
 
       <div class="notification-tray">${this.notifications.map((msg) => this.renderMessage(msg))}</div>
+      <vaadin-dev-tools-component-picker
+        .active=${this.componentPickActive}
+        @component-picker-pick=${(e: CustomEvent) => {
+          const component: ComponentReference = e.detail.component;
+          const locationType = (this.renderRoot.querySelector('#locationType') as HTMLSelectElement).value;
+          if (locationType === 'create') {
+            this.frontendConnection!.sendShowComponentCreateLocation(component);
+          } else {
+            this.frontendConnection!.sendShowComponentAttachLocation(component);
+          }
+          this.componentPickActive = false;
+        }}
+        @component-picker-abort=${(e: CustomEvent) => {
+          this.componentPickActive = false;
+        }}
+      ></vaadin-dev-tools-component-picker>
       <div
         class="dev-tools ${this.splashMessage ? 'active' : ''}${this.unreadErrors ? ' error' : ''}"
         @click=${() => this.toggleExpanded()}
@@ -1468,6 +1522,27 @@ export class VaadinDevTools extends LitElement {
         lastMessage.scrollIntoView();
       }
     });
+  }
+
+  renderCode() {
+    return html`<div class="info-tray">
+      <div>
+        <select id="locationType">
+          <option value="create" selected>Create</option>
+          <option value="attach">Attach</option>
+        </select>
+        <button
+          class="button pick"
+          @click=${() => {
+            this.componentPickActive = true;
+            import('./component-picker.js');
+          }}
+        >
+          Find component in code
+        </button>
+      </div>
+      </div>
+    </div>`;
   }
 
   renderInfo() {
