@@ -48,7 +48,7 @@ public class Svg extends Component {
      *            the SVG to display
      */
     public Svg(InputStream stream) {
-        super(new Element("div"));
+        this();
         setSvg(stream);
     }
 
@@ -60,11 +60,8 @@ public class Svg extends Component {
      *            the SVG to display
      */
     public Svg(String svg) {
-        super(new Element("div"));
-        if (svg == null || svg.isEmpty()) {
-            throw new IllegalArgumentException("SVG cannot be null or empty");
-        }
-        validateAndSet(svg);
+        this();
+        setSvg(svg);
     }
 
     /**
