@@ -29,6 +29,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.internal.AllowInert;
 import com.vaadin.flow.component.internal.JavaScriptNavigationStateRenderer;
 import com.vaadin.flow.component.page.History;
@@ -1844,4 +1845,34 @@ public class UI extends Component
     @AnonymousAllowed
     public static class ClientViewPlaceholder extends Component {
     }
+
+    /**
+     * Close all the Dialog components associated with this UI.
+     */
+    public void closeDialogs() {
+        getChildren().forEach(component -> {
+            if (component instanceof Dialog) {
+                Dialog dialog = (Dialog) component;
+                if (dialog.isModal()) {
+                    removeModals(dialog);
+                }
+                dialog.close();
+            }
+        });
+    }
+
+    private void removeModals(Component modalComponent) {
+        if (modalComponent instanceof HasComponents) {
+            modalComponent.getChildren().forEach(component -> {
+                if (component instanceof Dialog) {
+                    Dialog dialog = (Dialog) component;
+                    if (dialog.isModal()) {
+                        removeModals(dialog);
+                    }
+                    dialog.close();
+                }
+            });
+        }
+    }
+
 }
