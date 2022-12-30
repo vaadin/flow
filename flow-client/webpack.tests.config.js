@@ -4,7 +4,6 @@ module.exports = {
   mode: "development",
   entry: {
     flow: "./src/test/frontend/FlowTests.ts",
-    devtools: "./src/test/frontend/vaadin-dev-tools-tests.js",
   },
   output: {
     filename: "[name].spec.js",
