@@ -1,6 +1,8 @@
 package com.vaadin.flow;
 
+import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
+import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -10,6 +12,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.internal.ComponentTracker;
+import com.vaadin.tests.util.TestUtil;
 
 /**
  * Note that this is intentionally in the "wrong" package as internal packages
@@ -37,6 +40,42 @@ public class ComponentTrackerTest {
                 .getDeclaredField("productionMode");
         prodMode.setAccessible(true);
         prodMode.set(null, false);
+    }
+
+    @Test
+    public void memoryIsReleased() throws Exception {
+        Field createLocationField = ComponentTracker.class
+                .getDeclaredField("createLocation");
+        Field attachLocationField = ComponentTracker.class
+                .getDeclaredField("attachLocation");
+        createLocationField.setAccessible(true);
+        attachLocationField.setAccessible(true);
+        Map<Component, StackTraceElement> createMap = (Map<Component, StackTraceElement>) createLocationField
+                .get(null);
+        Map<Component, StackTraceElement> attachMap = (Map<Component, StackTraceElement>) attachLocationField
+                .get(null);
+
+        Assert.assertEquals(0, createMap.size());
+        Assert.assertEquals(0, attachMap.size());
+
+        new Layout(new Component1());
+
+        Assert.assertEquals(2, createMap.size());
+        Assert.assertEquals(1, attachMap.size());
+
+        Assert.assertTrue(isCleared(createMap));
+        Assert.assertTrue(isCleared(attachMap));
+    }
+
+    private boolean isCleared(Map<?, ?> map) throws InterruptedException {
+        for (int i = 0; i < 5; i++) {
+            System.gc();
+            if (map.size() == 0) {
+                return true;
+            }
+            Thread.sleep(1);
+        }
+        return false;
     }
 
     @Test
