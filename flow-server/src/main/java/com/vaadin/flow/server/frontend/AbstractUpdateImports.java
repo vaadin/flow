@@ -613,7 +613,10 @@ abstract class AbstractUpdateImports implements Runnable {
             return;
         }
         Path filePath = file.toPath();
-        visitedImports.add(filePath.normalize().toString().replace("\\", "/"));
+        String normalizedPath = filePath.normalize().toString().replace("\\", "/");
+        if (!visitedImports.add(normalizedPath)) {
+            return;
+        }
         try {
             visitImportsRecursively(filePath, path, theme, imports,
                     visitedImports);
