@@ -1,13 +1,16 @@
 package com.vaadin.flow.component.internal;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.WeakHashMap;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.internal.AbstractNavigationStateRenderer;
+import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
@@ -110,7 +113,7 @@ public class ComponentTracker {
     private static StackTraceElement findRelevantElement(
             Class<? extends Component> excludeClass, StackTraceElement[] stack,
             StackTraceElement preferredClass) {
-        Stream<StackTraceElement> candidates = Stream.of(stack)
+        List<StackTraceElement> candidates = Stream.of(stack)
                 .filter(e -> excludeClass == null
                         || !e.getClassName().equals(excludeClass.getName()))
                 .filter(e -> {
@@ -120,16 +123,17 @@ public class ComponentTracker {
                         }
                     }
                     return true;
-                });
+                }).collect(Collectors.toList());
         if (preferredClass != null) {
-            Optional<StackTraceElement> preferredCandidate = candidates.filter(
-                    e -> e.getClassName().equals(preferredClass.getClassName()))
+            Optional<StackTraceElement> preferredCandidate = candidates.stream()
+                    .filter(e -> e.getClassName()
+                            .equals(preferredClass.getClassName()))
                     .findFirst();
             if (preferredCandidate.isPresent()) {
                 return preferredCandidate.get();
             }
         }
-        return candidates.findFirst().orElse(null);
+        return candidates.stream().findFirst().orElse(null);
     }
 
     /**
@@ -153,8 +157,12 @@ public class ComponentTracker {
             return true;
         }
 
+        VaadinContext context = service.getContext();
+        if (context == null) {
+            return true;
+        }
         ApplicationConfiguration applicationConfiguration = ApplicationConfiguration
-                .get(service.getContext());
+                .get(context);
         if (applicationConfiguration == null) {
             return true;
         }
