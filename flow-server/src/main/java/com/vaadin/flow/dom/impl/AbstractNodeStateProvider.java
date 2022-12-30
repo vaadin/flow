@@ -10,6 +10,7 @@ package com.vaadin.flow.dom.impl;
 
 import java.util.Optional;
 
+import com.vaadin.flow.component.internal.ComponentTracker;
 import com.vaadin.flow.dom.ChildElementConsumer;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementStateProvider;
@@ -97,6 +98,9 @@ public abstract class AbstractNodeStateProvider
                 : "index " + index + " outside range " + getChildCount(node);
 
         getChildrenFeature(node).add(index, child.getNode());
+        if (child.getComponent().isPresent()) {
+            ComponentTracker.trackAttach(child.getComponent().get());
+        }
     }
 
     @Override
