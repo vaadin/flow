@@ -24,7 +24,7 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>vaadin-dialog-flow</artifactId>
-            <version>${project.version}</version>
+            <version>24.0-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
 
