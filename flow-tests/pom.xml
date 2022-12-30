@@ -245,7 +245,7 @@
         <module>test-resources</module>
         <module>test-common</module>
         <module>test-lumo</module>
-        <module>test-dev-bundle</module>
+        <module>test-express-build</module>
     </modules>
 
     <profiles>

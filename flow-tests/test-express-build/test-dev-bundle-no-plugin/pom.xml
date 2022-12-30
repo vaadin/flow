@@ -17,7 +17,7 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>flow-test-npm-only-features</artifactId>
+        <artifactId>test-express-build</artifactId>
         <groupId>com.vaadin</groupId>
         <version>24.0-SNAPSHOT</version>
     </parent>
