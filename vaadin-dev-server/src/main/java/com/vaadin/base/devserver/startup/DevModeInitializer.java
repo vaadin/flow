@@ -203,11 +203,7 @@ public class DevModeInitializer implements Serializable {
 
         featureFlags.setPropertiesLocation(config.getJavaResourceFolder());
 
-        String baseDir = config.getStringProperty(FrontendUtils.PROJECT_BASEDIR,
-                null);
-        if (baseDir == null) {
-            baseDir = getBaseDirectoryFallback();
-        }
+        String baseDir = config.getProjectFolder().getAbsolutePath();
 
         // Initialize the usage statistics if enabled
         if (config.isUsageStatisticsEnabled()) {
@@ -383,30 +379,6 @@ public class DevModeInitializer implements Serializable {
 
     private static Logger log() {
         return LoggerFactory.getLogger(DevModeStartupListener.class);
-    }
-
-    /*
-     * Accept user.dir or cwd as a fallback only if the directory seems to be a
-     * Maven or Gradle project. Check to avoid cluttering server directories
-     * (see tickets #8249, #8403).
-     */
-    private static String getBaseDirectoryFallback() {
-        String baseDirCandidate = System.getProperty("user.dir", ".");
-        Path path = Paths.get(baseDirCandidate);
-        if (path.toFile().isDirectory()
-                && (path.resolve("pom.xml").toFile().exists()
-                        || path.resolve("build.gradle").toFile().exists())) {
-            return path.toString();
-        } else {
-            throw new IllegalStateException(String.format(
-                    "Failed to determine project directory for dev mode. "
-                            + "Directory '%s' does not look like a Maven or "
-                            + "Gradle project. Ensure that you have run the "
-                            + "prepare-frontend Maven goal, which generates "
-                            + "'flow-build-info.json', prior to deploying your "
-                            + "application",
-                    path.toString()));
-        }
     }
 
     /*

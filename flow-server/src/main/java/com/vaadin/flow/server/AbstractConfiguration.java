@@ -17,6 +17,8 @@ package com.vaadin.flow.server;
 
 import java.io.File;
 import java.io.Serializable;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
@@ -160,9 +162,33 @@ public interface AbstractConfiguration extends Serializable {
      * @return the project root folder, or {@code null} if unknown
      */
     default File getProjectFolder() {
+        if (isProductionMode()) {
+            return null;
+        }
+
         String folder = getStringProperty(FrontendUtils.PROJECT_BASEDIR, null);
         if (folder == null) {
-            return null;
+            /*
+             * Accept user.dir or cwd as a fallback only if the directory seems
+             * to be a Maven or Gradle project. Check to avoid cluttering server
+             * directories (see tickets #8249, #8403).
+             */
+            String baseDirCandidate = System.getProperty("user.dir", ".");
+            Path path = Paths.get(baseDirCandidate);
+            if (path.toFile().isDirectory()
+                    && (path.resolve("pom.xml").toFile().exists() || path
+                            .resolve("build.gradle").toFile().exists())) {
+                return path.toAbsolutePath().toFile();
+            } else {
+                throw new IllegalStateException(String.format(
+                        "Failed to determine project directory for dev mode. "
+                                + "Directory '%s' does not look like a Maven or "
+                                + "Gradle project. Ensure that you have run the "
+                                + "prepare-frontend Maven goal, which generates "
+                                + "'flow-build-info.json', prior to deploying your "
+                                + "application",
+                        path.toString()));
+            }
         }
         return new File(folder);
     }
