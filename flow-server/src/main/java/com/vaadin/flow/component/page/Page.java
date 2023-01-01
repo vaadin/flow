@@ -675,11 +675,10 @@ public class Page implements Serializable {
      *            to be notified when the direction is resolved.
      */
     public void fetchPageDirection(SerializableConsumer<Direction> callback) {
-        UI.getCurrent().getPage().executeJs("return document.dir")
-                .then(String.class, dir -> {
-                    Direction direction = getDirectionByClientName(dir);
-                    callback.accept(direction);
-                });
+        executeJs("return document.dir").then(String.class, dir -> {
+            Direction direction = getDirectionByClientName(dir);
+            callback.accept(direction);
+        });
     }
 
     private Direction getDirectionByClientName(String directionClientName) {
