@@ -1,8 +1,10 @@
 package com.vaadin.flow.uitest.ui;
 
+import com.vaadin.flow.component.Direction;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.IFrame;
 import com.vaadin.flow.component.html.Input;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.Route;
@@ -78,6 +80,32 @@ public class PageView extends AbstractDivView {
                         .info(currentUrl.toString());
             }));
         }));
+
+        Label directionLbl = new Label();
+        directionLbl.setId("direction-value");
+        add(directionLbl);
+
+        Div fetchDirectionButton = new Div();
+        fetchDirectionButton.setId("fetch-direction");
+        fetchDirectionButton.setText("Fetch Page Direction");
+        fetchDirectionButton.addClickListener(
+                e -> getUI().ifPresent(ui -> ui.getPage().fetchPageDirection(
+                        direction -> directionLbl.setText(direction.name()))));
+        add(fetchDirectionButton);
+
+        Div setRTLDirectionButton = new Div();
+        setRTLDirectionButton.setId("set-RTL-direction");
+        setRTLDirectionButton.setText("Set RTL Direction");
+        setRTLDirectionButton.addClickListener(e -> getUI()
+                .ifPresent(ui -> ui.setDirection(Direction.RIGHT_TO_LEFT)));
+        add(setRTLDirectionButton);
+
+        Div setLTRDirectionButton = new Div();
+        setLTRDirectionButton.setId("set-LTR-direction");
+        setLTRDirectionButton.setText("Set LTR Direction");
+        setLTRDirectionButton.addClickListener(e -> getUI()
+                .ifPresent(ui -> ui.setDirection(Direction.LEFT_TO_RIGHT)));
+        add(setLTRDirectionButton);
     }
 
 }
