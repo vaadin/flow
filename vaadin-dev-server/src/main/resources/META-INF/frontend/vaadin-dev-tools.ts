@@ -5,6 +5,7 @@ import { handlePickKeyEvent, pickComponent } from './component-picker';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import { copy } from './copy-to-clipboard.js';
+import { activateEditMode, deactiveEditMode } from './edit-mode';
 import { licenseCheckFailed, licenseCheckNoKey, licenseCheckOk, Product, licenseInit } from './License';
 import { ComponentReference } from './shim';
 
@@ -165,6 +166,9 @@ export class Connection extends Object {
   }
   sendShowComponentAttachLocation(component: ComponentReference) {
     this.send('showComponentAttachLocation', component);
+  }
+  sendEditCode(editType: string, component: ComponentReference, value: string) {
+    this.send('editCode', { editType, appId: component.appId, nodeId: component.nodeId, value });
   }
 }
 
@@ -841,6 +845,25 @@ export class VaadinDevTools extends LitElement {
         font-weight: bold;
       }
 
+      .popup.edit-mode {
+        top: 1em;
+        left: 45%;
+        animation: edit-mode-bounce 0.5s;
+        animation-iteration-count: infinite;
+        transform-origin: center;
+      }
+
+      @keyframes edit-mode-bounce {
+        0% {
+          transform: scale(0.95);
+        }
+        50% {
+          transform: scale(1);
+        }
+        100% {
+          transform: scale(0.95);
+        }
+      }
       @keyframes slideIn {
         from {
           transform: translateX(100%);
@@ -989,6 +1012,9 @@ export class VaadinDevTools extends LitElement {
   componentPickComponents: ComponentReference[] = [];
   @state()
   componentPickComponentsIndex: number = 0;
+
+  @state()
+  editMode: boolean = false;
 
   private javaConnection?: Connection;
   private frontendConnection?: Connection;
@@ -1141,6 +1167,7 @@ export class VaadinDevTools extends LitElement {
   connectedCallback() {
     super.connectedCallback();
     this.catchErrors();
+    this.catchShortcuts();
 
     // when focus or clicking anywhere, move the splash message to the message tray
     this.disableEventListener = (_: any) => this.demoteSplashMessage();
@@ -1186,6 +1213,22 @@ export class VaadinDevTools extends LitElement {
         this.log(MessageType.ERROR, args.map((o) => this.format(o)).join(' '));
       }
     };
+  }
+
+  catchShortcuts() {
+    document.body.addEventListener('keydown', (e) => {
+      if (e.metaKey && e.key === 'e') {
+        if (this.editMode) {
+          this.stopEditMode();
+        } else {
+          this.enterEditMode();
+        }
+      } else if (e.key === 'Escape') {
+        if (this.editMode) {
+          this.stopEditMode();
+        }
+      }
+    });
   }
 
   disconnectedCallback() {
@@ -1400,7 +1443,7 @@ export class VaadinDevTools extends LitElement {
   /* eslint-disable lit/no-template-map */
   render() {
     return html` <div
-        class="window ${this.expanded && !this.componentPickActive ? 'visible' : 'hidden'}"
+        class="window ${this.expanded && !this.componentPickActive && !this.editMode ? 'visible' : 'hidden'}"
         tabindex="0"
         @keydown=${(e: KeyboardEvent) => e.key === 'Escape' && this.expanded && this.toggleExpanded()}
       >
@@ -1459,6 +1502,9 @@ export class VaadinDevTools extends LitElement {
               </div>`
           )}
         </div>
+      </div>
+      <div @click="${() => this.stopEditMode()}" class="window popup edit-mode ${this.editMode ? '' : 'hidden'}">
+        <h1>EDIT MODE</h1>
       </div>
       <div
         class="dev-tools ${this.splashMessage ? 'active' : ''}${this.unreadErrors ? ' error' : ''}"
@@ -1566,9 +1612,27 @@ export class VaadinDevTools extends LitElement {
         >
           Find component in code
         </button>
+        <button
+        @click="${() => {
+          this.enterEditMode();
+        }}"
+      >
+        Edit mode
+      </button>   
       </div>
       </div>
     </div>`;
+  }
+
+  enterEditMode() {
+    this.editMode = true;
+    activateEditMode((editComponent: ComponentReference, editType: string, value: string) => {
+      this.frontendConnection!.sendEditCode(editType, editComponent, value);
+    });
+  }
+  stopEditMode() {
+    this.editMode = false;
+    deactiveEditMode();
   }
 
   renderInfo() {

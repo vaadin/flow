@@ -57,7 +57,7 @@ public abstract class AbstractDevModeTest {
         npmFolder = temporaryFolder.getRoot();
 
         Boolean enablePnpm = Boolean.TRUE;
-        appConfig = Mockito.spy(ApplicationConfiguration.class);
+        appConfig = Mockito.mock(ApplicationConfiguration.class);
 
         servletContext = Mockito.mock(ServletContext.class);
         Mockito.when(servletContext
