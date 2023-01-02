@@ -17,11 +17,15 @@ package com.vaadin.flow.component;
 
 import java.util.Collection;
 
-import com.vaadin.flow.shared.Registration;
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.internal.runners.statements.ExpectException;
 
+import com.vaadin.flow.component.ComponentTest.TestComponent;
 import com.vaadin.flow.component.ComponentTest.TestDiv;
+import com.vaadin.flow.server.MockVaadinSession;
+import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.shared.Registration;
 
 public class ComponentUtilTest {
     private Component component = new TestDiv();
@@ -106,5 +110,48 @@ public class ComponentUtilTest {
         listener.remove();
         Assert.assertTrue(ComponentUtil.getListeners(component, PollEvent.class)
                 .isEmpty());
+    }
+
+    @Test
+    public void findComponent_existingComponentFound() {
+        TestComponent testComponent = createTestComponentInSession();
+        int nodeId = testComponent.getElement().getNode().getId();
+        String appId = testComponent.getUI().get().getInternals().getAppId();
+        VaadinSession session = testComponent.getUI().get().getSession();
+        ComponentReference ref = new ComponentReference(session, nodeId, appId);
+        Assert.assertSame(testComponent, ComponentUtil.findComponent(ref));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void findComponent_nonExistingNodeIdThrows() {
+        TestComponent testComponent = createTestComponentInSession();
+        int nodeId = testComponent.getElement().getNode().getId();
+        String appId = testComponent.getUI().get().getInternals().getAppId();
+        VaadinSession session = testComponent.getUI().get().getSession();
+        ComponentReference ref = new ComponentReference(session, nodeId * 10,
+                appId);
+        ComponentUtil.findComponent(ref);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void findComponent_nonExistingAppIdThrows() {
+        TestComponent testComponent = createTestComponentInSession();
+        int nodeId = testComponent.getElement().getNode().getId();
+        VaadinSession session = testComponent.getUI().get().getSession();
+        ComponentReference ref = new ComponentReference(session, nodeId, "foo");
+        ComponentUtil.findComponent(ref);
+    }
+
+    private TestComponent createTestComponentInSession() {
+        TestComponent testComponent = new TestComponent();
+        MockVaadinSession session = new MockVaadinSession();
+        session.lock();
+
+        UI ui = new UI();
+        ui.getInternals().setSession(session);
+        ui.add(testComponent);
+        ui.doInit(null, 0, "unit-test-app");
+        session.addUI(ui);
+        return testComponent;
     }
 }
