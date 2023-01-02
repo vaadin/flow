@@ -36,8 +36,10 @@ public class FindComponentView extends Div {
         NativeButton button = new NativeButton("Check", e -> {
             String appId = "view";
             int nodeId = Integer.parseInt(nodeIdInput.getValue());
-            ComponentReference ref = new ComponentReference(VaadinSession.getCurrent(), nodeId, appId);
-            result.setText("Found component with id " + ComponentUtil.findComponent(ref).getId().get());
+            ComponentReference ref = new ComponentReference(
+                    VaadinSession.getCurrent(), nodeId, appId);
+            result.setText("Found component with id "
+                    + ComponentUtil.findComponent(ref).getId().get());
         });
         button.setId("check");
 
