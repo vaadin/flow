@@ -109,6 +109,49 @@ public class PageIT extends ChromeBrowserTest {
                 Matchers.endsWith(BaseHrefView.class.getName()));
     }
 
+    @Test
+    public void fetchPageDirection_noDirectionSetExplicitly_leftToRightIsPassedToCallback() {
+        open();
+
+        Assert.assertEquals("",
+                findElement(By.id("direction-value")).getText());
+
+        findElement(By.id("fetch-direction")).click();
+
+        Assert.assertEquals("LEFT_TO_RIGHT",
+                findElement(By.id("direction-value")).getText());
+    }
+
+    @Test
+    public void fetchPageDirection_setRTLDirection_rightToLeftIsPassedToCallback() {
+        open();
+
+        Assert.assertEquals("",
+                findElement(By.id("direction-value")).getText());
+
+        findElement(By.id("set-RTL-direction")).click();
+
+        findElement(By.id("fetch-direction")).click();
+
+        Assert.assertEquals("RIGHT_TO_LEFT",
+                findElement(By.id("direction-value")).getText());
+    }
+
+    @Test
+    public void fetchPageDirection_setLTRDirection_leftToRightIsPassedToCallback() {
+        open();
+
+        Assert.assertEquals("",
+                findElement(By.id("direction-value")).getText());
+
+        findElement(By.id("set-LTR-direction")).click();
+
+        findElement(By.id("fetch-direction")).click();
+
+        Assert.assertEquals("LEFT_TO_RIGHT",
+                findElement(By.id("direction-value")).getText());
+    }
+
     private String getIframeUrl() {
         return (String) ((JavascriptExecutor) driver).executeScript(
                 "return document.getElementById('newWindow').contentWindow.location.href;");
