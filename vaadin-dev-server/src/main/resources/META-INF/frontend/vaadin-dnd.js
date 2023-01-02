@@ -8,7 +8,27 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 
 import { afterNextRender } from '@polymer/polymer/lib/utils/render-status.js';
 import { PolymerElement } from '@polymer/polymer/polymer-element.js';
+import { getComponents, isComponent } from './shim.ts';
 
+const getComponent = (element) => {
+  return getComponents(element).pop().element;
+};
+
+const emptyLayoutsStyles = new CSSStyleSheet();
+emptyLayoutsStyles.replaceSync(`
+vaadin-horizontal-layout:empty, 
+vaadin-vertical-layout:empty {
+  min-width: 20px;min-height: 20px;
+}
+`);
+
+const hackEmptyLayouts = (on) => {
+  if (on) {
+    document.adoptedStyleSheets.push(emptyLayoutsStyles);
+  } else {
+    document.adoptedStyleSheets = [...document.adoptedStyleSheets];
+  }
+};
 /**
  * Vaadin.Dnd provides a way to drag and drop elements for your Polymer element.
  *
@@ -39,16 +59,17 @@ class VaadinDnd extends PolymerElement {
         #parent i {
           background-color: rgba(0, 0, 0, 0.5);
           color: #fff;
-          font-size: 8px;
+          font-size: 12px;
           padding: 2px;
           position: relative;
           top: -20px;
+          white-space: nowrap;
         }
 
         #indicator {
           min-width: 1px;
           min-height: 1px;
-          background-color: rgba(0, 191, 255, 0.2);
+          background-color: rgba(0, 191, 255, 1);
           outline: 1px solid #000;
           box-shadow: 0 0 5px #000;
         }
@@ -215,6 +236,8 @@ class VaadinDnd extends PolymerElement {
     this._isLocalDrag = true;
     event.dataTransfer.setData('text/html', this._currentDrag.outerHTML);
     event.dataTransfer.setDragImage(this._currentDrag, 0, 0);
+
+    hackEmptyLayouts(true);
   }
 
   _handleDragEnd(event) {
@@ -222,6 +245,7 @@ class VaadinDnd extends PolymerElement {
     this._hide(this.$.source);
     this._isLocalDrag = false;
     this._currentDrag = undefined;
+    hackEmptyLayouts(false);
   }
 
   _handleDragLeave(event) {
@@ -304,7 +328,7 @@ class VaadinDnd extends PolymerElement {
     }
 
     if (!this.editableElement) {
-      return elementsFromPoint[0];
+      return getComponent(elementsFromPoint[0]);
     }
     let isInsideANestedElement = false;
     let nestedElement = null;
@@ -420,25 +444,27 @@ class VaadinDnd extends PolymerElement {
    */
   _getNearestInsertPoint(location, target) {
     target = this._reTargetToEditableElement(target);
-    const elements = [target];
-    if (target.parentNode && this._contains(target.parentNode)) {
-      elements.push(target.parentNode);
-    }
+    const elements = getComponents(target).map((c) => c.element);
     const visible = [];
     const parents = [];
     const rects = [];
     let closestDist = Number.MAX_VALUE;
     let closestIndex = -1;
+    const indicatorSize = 3;
     // 1. Collect insert points around all visible nodes
     for (const element of elements) {
       if (!element || (element.nodeType !== 1 && element.nodeType !== 11)) {
         // can't put stuff inside non-element nodes
         continue;
       }
+      const elementRect = this._getRect(element);
       // Collect visible nodes
       const v = []; // visible nodes
       const r = []; // bounding rects
       for (const node of element.childNodes) {
+        if (!isComponent(node)) {
+          continue;
+        }
         const rect = this._getRect(node);
         if (rect) {
           // elements and non-empty text nodes
@@ -481,25 +507,55 @@ class VaadinDnd extends PolymerElement {
         // multiple children, use first two to guess vert/horiz
         const vertical = r[0].bottom <= r[1].top;
         // insert right/bottom insert point for last node
-        const last = r[r.length - 1];
-        const x = vertical ? last.left : last.right;
-        const y = vertical ? last.bottom : last.top;
-        const w = vertical ? last.width : 1;
-        const h = vertical ? 1 : last.height;
-        const right = this._createDOMRect(x, y, w, h);
-        visible.push(null);
-        rects.push(right);
-        parents.push(element);
+        {
+          const last = r[r.length - 1];
+          let lastDrop;
+          if (vertical) {
+            lastDrop = this._createDOMRect(last.left, last.bottom, elementRect.width, indicatorSize);
+          } else {
+            lastDrop = this._createDOMRect(last.right, last.top, indicatorSize, elementRect.height);
+          }
+          visible.push(null);
+          rects.push(lastDrop);
+          parents.push(element);
+        }
+
+        {
+          const first = r[0];
+          let firstDrop;
+          if (vertical) {
+            firstDrop = this._createDOMRect(
+              elementRect.left,
+              first.top - indicatorSize,
+              elementRect.width,
+              indicatorSize
+            );
+          } else {
+            firstDrop = this._createDOMRect(
+              first.left - indicatorSize,
+              elementRect.top,
+              indicatorSize,
+              elementRect.height
+            );
+          }
+          visible.push(v[0]);
+          rects.push(firstDrop);
+          parents.push(element);
+        }
+
         // insertpoints for the rest
-        for (let i = 0; i < r.length; i++) {
-          const rect = r[i];
+        for (let i = 0; i < r.length - 1; i++) {
+          const thisRect = r[i];
+          const nextRect = r[i + 1];
           let newRect;
           if (vertical) {
-            newRect = this._createDOMRect(rect.left, rect.top, rect.width, 1);
+            const y = thisRect.bottom + (nextRect.top - thisRect.bottom) / 2 - indicatorSize / 2;
+            newRect = this._createDOMRect(elementRect.left, thisRect.top, elementRect.width, indicatorSize);
           } else {
-            newRect = this._createDOMRect(rect.left, rect.top, 1, rect.height);
+            const x = thisRect.right + (nextRect.left - thisRect.right) / 2 - indicatorSize / 2;
+            newRect = this._createDOMRect(x, elementRect.top, indicatorSize, elementRect.height);
           }
-          visible.push(v[i]);
+          visible.push(v[i+1]);
           rects.push(newRect);
           parents.push(element);
         }

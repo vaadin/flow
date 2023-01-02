@@ -20,6 +20,16 @@ export function activateShim(moveHandler: ShimEventHandler, clickHandler: ShimEv
             inset: 0px;
             z-index: 1000000;
           }
+
+          vaadin-devtools-drop-slot {
+            display: block;
+            background: #add8e682;
+            min-width: 30px;
+            min-height: 30px;
+            animation: emphasize 1s;
+            animation-iteration-count: infinite;
+            animation-direction: alternate;
+          }
         </style>
         <div id="vaadin-dev-tools-shim" @mousemove=${shimMove} @click=${shimClick}></div> `,
       document.body
@@ -90,6 +100,9 @@ export type ComponentReference = {
   element?: HTMLElement;
 };
 
+export function isComponent(element: HTMLElement): boolean {
+  return getComponent(element).nodeId !== -1;
+}
 function getComponent(element: HTMLElement): ComponentReference {
   const { clients } = (window as any).Vaadin.Flow;
   const appIds = Object.keys(clients);

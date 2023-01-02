@@ -6,6 +6,7 @@ import { handlePickKeyEvent, pickComponent } from './component-picker';
 // @ts-ignore
 import { copy } from './copy-to-clipboard.js';
 import { activateEditMode, deactiveEditMode } from './edit-mode';
+import { activateAddMode, deactiveAddMode, handleKeyEvent, Where } from './add-mode';
 import { licenseCheckFailed, licenseCheckNoKey, licenseCheckOk, Product, licenseInit } from './License';
 import { ComponentReference } from './shim';
 
@@ -169,6 +170,9 @@ export class Connection extends Object {
   }
   sendEditCode(editType: string, component: ComponentReference, value: string) {
     this.send('editCode', { editType, appId: component.appId, nodeId: component.nodeId, value });
+  }
+  sendAddComponent(referenceComponent: ComponentReference, where: Where) {
+    this.send('addComponent', { appId: referenceComponent.appId, nodeId: referenceComponent.nodeId, where });
   }
 }
 
@@ -837,15 +841,23 @@ export class VaadinDevTools extends LitElement {
       .component-picker-info {
         left: 1em;
       }
-      .component-picker-components-info {
+      .component-hierarchy {
         right: 3em;
       }
 
-      .component-picker-components-info .selected {
+      .component-hierarchy .selected {
         font-weight: bold;
       }
 
       .popup.edit-mode {
+        top: 1em;
+        left: 45%;
+        animation: edit-mode-bounce 0.5s;
+        animation-iteration-count: infinite;
+        transform-origin: center;
+      }
+
+      .popup.add-mode {
         top: 1em;
         left: 45%;
         animation: edit-mode-bounce 0.5s;
@@ -1009,12 +1021,15 @@ export class VaadinDevTools extends LitElement {
   componentPickActive: boolean = false;
 
   @state()
-  componentPickComponents: ComponentReference[] = [];
+  componentHierarchy: ComponentReference[] = [];
   @state()
-  componentPickComponentsIndex: number = 0;
+  componentHierarchySelectedIndex: number = 0;
 
   @state()
   editMode: boolean = false;
+
+  @state()
+  addMode: boolean = false;
 
   private javaConnection?: Connection;
   private frontendConnection?: Connection;
@@ -1217,7 +1232,13 @@ export class VaadinDevTools extends LitElement {
 
   catchShortcuts() {
     document.body.addEventListener('keydown', (e) => {
-      if (e.metaKey && e.key === 'e') {
+      if (e.metaKey && e.key === 'e' && e.shiftKey) {
+        if (this.addMode) {
+          this.stopAddMode();
+        } else {
+          this.enterAddMode();
+        }
+      } else if (e.metaKey && e.key === 'e' && !e.shiftKey) {
         if (this.editMode) {
           this.stopEditMode();
         } else {
@@ -1443,7 +1464,7 @@ export class VaadinDevTools extends LitElement {
   /* eslint-disable lit/no-template-map */
   render() {
     return html` <div
-        class="window ${this.expanded && !this.componentPickActive && !this.editMode ? 'visible' : 'hidden'}"
+        class="window ${this.showMainWindow() ? 'visible' : 'hidden'}"
         tabindex="0"
         @keydown=${(e: KeyboardEvent) => e.key === 'Escape' && this.expanded && this.toggleExpanded()}
       >
@@ -1493,11 +1514,11 @@ export class VaadinDevTools extends LitElement {
           </p>
         </div>
       </div>
-      <div class="window popup  component-picker-components-info ${!this.componentPickActive ? 'hidden' : ''}">
+      <div class="window popup  component-hierarchy ${this.componentHierarchy.length === 0 ? 'hidden' : ''}">
         <div>
-          ${this.componentPickComponents.map(
+          ${this.componentHierarchy.map(
             (component, index) =>
-              html`<div class=${index === this.componentPickComponentsIndex ? 'selected' : ''}>
+              html`<div class=${index === this.componentHierarchySelectedIndex ? 'selected' : ''}>
                 ${component.element!.tagName.toLowerCase()}
               </div>`
           )}
@@ -1505,6 +1526,9 @@ export class VaadinDevTools extends LitElement {
       </div>
       <div @click="${() => this.stopEditMode()}" class="window popup edit-mode ${this.editMode ? '' : 'hidden'}">
         <h1>EDIT MODE</h1>
+      </div>
+      <div @click="${() => this.stopAddMode()}" class="window popup add-mode ${this.addMode ? '' : 'hidden'}">
+        <h1>EDIT EDIT EDIT</h1>
       </div>
       <div
         class="dev-tools ${this.splashMessage ? 'active' : ''}${this.unreadErrors ? ' error' : ''}"
@@ -1560,6 +1584,10 @@ export class VaadinDevTools extends LitElement {
       </div>`;
   }
 
+  showMainWindow() {
+    return this.expanded && !this.componentPickActive && !this.editMode && !this.addMode;
+  }
+
   renderLog() {
     return html`<div class="message-tray">${this.messages.map((msg) => this.renderMessage(msg))}</div>`;
   }
@@ -1595,8 +1623,8 @@ export class VaadinDevTools extends LitElement {
                 this.componentPickActive = false;
               },
               (components, selectedComponentIndex) => {
-                this.componentPickComponents = components;
-                this.componentPickComponentsIndex = selectedComponentIndex;
+                this.componentHierarchy = components;
+                this.componentHierarchySelectedIndex = selectedComponentIndex;
               },
               () => {
                 this.componentPickActive = false;
@@ -1619,6 +1647,14 @@ export class VaadinDevTools extends LitElement {
       >
         Edit mode
       </button>   
+        <button
+        @click="${() => {
+          this.enterAddMode();
+        }}"
+        @keydown=${(e: KeyboardEvent) => handleKeyEvent(e)}
+      >
+        Add mode
+      </button>   
       </div>
       </div>
     </div>`;
@@ -1633,6 +1669,24 @@ export class VaadinDevTools extends LitElement {
   stopEditMode() {
     this.editMode = false;
     deactiveEditMode();
+  }
+
+  enterAddMode() {
+    this.addMode = true;
+
+    activateAddMode(
+      (referenceComponent: ComponentReference, where: Where) => {
+        this.frontendConnection!.sendAddComponent(referenceComponent, where);
+      },
+      (componentHierarchy, componentHierarchySelectedIndex) => {
+        this.componentHierarchy = componentHierarchy;
+        this.componentHierarchySelectedIndex = componentHierarchySelectedIndex;
+      }
+    );
+  }
+  stopAddMode() {
+    this.addMode = false;
+    deactiveAddMode();
   }
 
   renderInfo() {
