@@ -16,7 +16,7 @@
     "rollup-plugin-brotli": "3.1.0",
     "vite-plugin-checker": "0.5.2",
     "mkdirp": "1.0.4",
-    "workbox-build": "6.5.0",
+    "workbox-build": "6.5.4",
     "transform-ast": "2.4.4"
   }
 }
