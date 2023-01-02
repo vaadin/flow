@@ -8,7 +8,7 @@
     "@testscope/map": "../vite-test-assets/packages/@testscope/map",
     "@vaadin/bundles": "../vite-test-assets/packages/@vaadin/bundles",
     "@vaadin/common-frontend": "0.0.17",
-    "@vaadin/polymer-legacy-adapter": "23.3.0-alpha2",
+    "@vaadin/polymer-legacy-adapter": "23.3.0",
     "@vaadin/router": "1.7.4",
     "@vaadin/vaadin-lumo-styles": "23.3.0-alpha2",
     "@vaadin/vaadin-text-field": "23.3.0-alpha2",
