@@ -25,8 +25,8 @@ SOFTWARE.
 // to make it work with Vite 3
 // Once / if https://github.com/umbopepato/rollup-plugin-postcss-lit/pull/54 is merged this should be removed and rollup-plugin-postcss-lit should be used instead
 
-const createFilter = require('@rollup/pluginutils').createFilter;
-const transformAst = require('transform-ast');
+import { createFilter } from '@rollup/pluginutils';
+import transformAst from 'transform-ast';
 
 const assetUrlRE = /__VITE_ASSET__([a-z\d]{8})__(?:\$_(.*?)__)?/g;
 
@@ -36,7 +36,7 @@ const escape = (str) =>
     .replace(/`/g, '\\`')
     .replace(/\\(?!`)/g, '\\\\');
 
-module.exports = function postcssLit(options = {}) {
+export default function postcssLit(options = {}) {
   const defaultOptions = {
     include: '**/*.{css,sss,pcss,styl,stylus,sass,scss,less}',
     exclude: null,
