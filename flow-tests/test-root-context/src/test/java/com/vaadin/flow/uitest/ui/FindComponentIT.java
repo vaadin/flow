@@ -33,8 +33,9 @@ public class FindComponentIT extends ChromeBrowserTest {
     }
 
     private long getNodeId(TestBenchElement element) {
-        return (long) executeScript("return window.Vaadin.Flow.clients[arguments[0]].getNodeId(arguments[1])", "view",
-                element);
+        return (long) executeScript(
+                "return window.Vaadin.Flow.clients[arguments[0]].getNodeId(arguments[1])",
+                "view", element);
     }
 
 }
