@@ -36,7 +36,7 @@ function shimClick(targetElement: HTMLElement, _e: MouseEvent): void {
   }
 }
 
-function getInputEditor() {
+function getInputEditor(): HTMLInputElement {
   const labelEditor = document.createElement('input');
   labelEditor.type = 'text';
   labelEditor.addEventListener('blur', () => {
@@ -54,6 +54,7 @@ function getInputEditor() {
     }
     e.stopPropagation();
   });
+
   return labelEditor;
 }
 function isLabel(targetElement: HTMLElement) {
@@ -65,13 +66,17 @@ function isButton(targetElement: HTMLElement) {
 }
 function editLabel(targetElement: HTMLElement) {
   const editor = getInputEditor();
-  editor.slot = targetElement.slot;
   editor.value = targetElement.innerText;
+  
+  const editorWrapper = document.createElement('label');
+  editorWrapper.slot = targetElement.slot;
+  editorWrapper.append(editor);
+
   const storedElement = targetElement;
   editComponent = getComponents(storedElement).pop();
-  storedElement.parentElement!.replaceChild(editor, storedElement);
+  storedElement.parentElement!.replaceChild(editorWrapper, storedElement);
   restoreElement = () => {
-    editor!.parentElement!.replaceChild(storedElement!, editor!);
+    editorWrapper!.parentElement!.replaceChild(storedElement!, editorWrapper!);
   };
   newValueAssigner = (value) => {
     storedElement.innerText = value;

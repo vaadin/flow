@@ -9,16 +9,35 @@ import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 import { afterNextRender } from '@polymer/polymer/lib/utils/render-status.js';
 import { PolymerElement } from '@polymer/polymer/polymer-element.js';
 import { getComponents, isComponent } from './shim.ts';
+import './dnd-palette.ts';
 
-const getComponent = (element) => {
-  return getComponents(element).pop().element;
+const isAddedComponent = (element) => {
+  return element.added;
+};
+const isValidTarget = (element) => {
+  return isComponent(element) || isAddedComponent(element);
+};
+const getComponentOrAdded = (element) => {
+  if (isComponent(element)) {
+    return element;
+  }
+  if (element.added) {
+    return element;
+  }
+  if (element.parentElement) {
+    return getComponentOrAdded(element.parentElement);
+  }
+  return undefined;
+  // const components = getComponents(element);
+  // console.log('components', components);
+  // return components.pop().element;
 };
 
 const emptyLayoutsStyles = new CSSStyleSheet();
 emptyLayoutsStyles.replaceSync(`
 vaadin-horizontal-layout:empty, 
 vaadin-vertical-layout:empty {
-  min-width: 20px;min-height: 20px;
+  min-width: 30px;min-height: 30px;
 }
 `);
 
@@ -253,6 +272,7 @@ class VaadinDnd extends PolymerElement {
   }
 
   _handleDragOver(event) {
+    console.log('dragOver');
     if (this._dataTransferHasHtmlText(event.dataTransfer)) {
       event.preventDefault();
       this._setDragHoverTarget(event);
@@ -278,7 +298,17 @@ class VaadinDnd extends PolymerElement {
 
     const ip = this._getNearestInsertPoint(this._getEventLocation(event), target);
     if (ip) {
-      this._insertElement(element, ip.parent, ip.insertBefore);
+      this.dispatchEvent(
+        new CustomEvent('vaadin-dnd-drop', { details: { element, parent: ip.parent, insertBefore: ip.insertBefore } })
+      );
+      const template = element.querySelector('template');
+      if (template) {
+        const e = template.content.firstElementChild.cloneNode(true);
+        e.added = true;
+        this._insertElement(e, ip.parent, ip.insertBefore);
+      } else {
+        this._insertElement(element, ip.parent, ip.insertBefore);
+      }
       if (element.tagName === undefined) {
         this._broadcastOutsideDnd(dragEventData.snippet, ip.parent, ip.insertBefore, dragEventData.elementName);
       } else {
@@ -295,7 +325,7 @@ class VaadinDnd extends PolymerElement {
     }
 
     const target = this._getTarget(event);
-
+    console.log('target', target);
     if (target === undefined) {
       this._hide(this.$.indicator, this.$.parent, this.$.source);
       return;
@@ -328,7 +358,21 @@ class VaadinDnd extends PolymerElement {
     }
 
     if (!this.editableElement) {
-      return getComponent(elementsFromPoint[0]);
+      const cursorElement = elementsFromPoint[0];
+      console.log('cursorElement', cursorElement);
+      if (cursorElement.hasAttribute('palette')) {
+        return cursorElement;
+      }
+      // const e = parentWithProperty(customElement, "added");
+      // if (e) {
+      //   return e;
+      // }
+      const c = getComponentOrAdded(cursorElement);
+      if (c === document.body) {
+        return undefined;
+      }
+      console.log('component', c);
+      return c;
     }
     let isInsideANestedElement = false;
     let nestedElement = null;
@@ -427,6 +471,7 @@ class VaadinDnd extends PolymerElement {
    */
   _dataTransferHasHtmlText(dataTransferObject) {
     for (const item of dataTransferObject.items) {
+      console.log('item', item);
       if (item.kind === 'string' && item.type === 'text/html') {
         return true;
       }
@@ -462,7 +507,7 @@ class VaadinDnd extends PolymerElement {
       const v = []; // visible nodes
       const r = []; // bounding rects
       for (const node of element.childNodes) {
-        if (!isComponent(node)) {
+        if (!isValidTarget(node)) {
           continue;
         }
         const rect = this._getRect(node);
@@ -555,7 +600,7 @@ class VaadinDnd extends PolymerElement {
             const x = thisRect.right + (nextRect.left - thisRect.right) / 2 - indicatorSize / 2;
             newRect = this._createDOMRect(x, elementRect.top, indicatorSize, elementRect.height);
           }
-          visible.push(v[i+1]);
+          visible.push(v[i + 1]);
           rects.push(newRect);
           parents.push(element);
         }

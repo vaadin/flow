@@ -14,16 +14,30 @@ let restoreElement: (() => void) | undefined;
 let componentHierarchy: ComponentReference[] = [];
 let componentHierarchySelected = -1;
 
+let outlet: HTMLElement | null;
+let dnd: HTMLElement | null;
+
 export function activateAddMode(addHandler: AddHandler, moveHandler: MoveHandler) {
   activeAddHandler = addHandler;
   activeMoveHandler = moveHandler;
-  const dnd = document.createElement('vaadin-dev-tools-dnd');
-  wrap(document.querySelector('#outlet')!, dnd);
+  dnd = document.createElement('vaadin-dev-tools-dnd');
+  dnd.addEventListener('vaadin-dnd-drop', (e) => {
+    console.log(e);
+  });
+  outlet = document.querySelector('#outlet');
+  wrap(outlet!, dnd);
+  dnd.append(document.createElement('dnd-palette'));
   // activateShim(shimMove, shimClick);
 }
 export function deactiveAddMode() {
   // deactivateShim();
   activeAddHandler = undefined;
+
+  outlet!.parentElement!.parentElement!.append(outlet!);
+  dnd!.remove();
+
+  dnd = null;
+  outlet = null;
 }
 
 function shimMove(targetElement: HTMLElement, _e: MouseEvent): void {
@@ -83,7 +97,6 @@ function updateComponentHierarchy(hierarchy: ComponentReference[], selected: num
   highlight(component);
   activeMoveHandler!(componentHierarchy, componentHierarchySelected);
 }
-
 
 function wrap(element: HTMLElement, wrapWith: HTMLElement) {
   element.parentElement?.insertBefore(wrapWith, element);

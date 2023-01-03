@@ -1524,6 +1524,16 @@ export class VaadinDevTools extends LitElement {
           )}
         </div>
       </div>
+      <div class="window popup  component-hierarchy ${this.componentHierarchy.length === 0 ? 'hidden' : ''}">
+        <div>
+          ${this.componentHierarchy.map(
+            (component, index) =>
+              html`<div class=${index === this.componentHierarchySelectedIndex ? 'selected' : ''}>
+                ${component.element!.tagName.toLowerCase()}
+              </div>`
+          )}
+        </div>
+      </div>
       <div @click="${() => this.stopEditMode()}" class="window popup edit-mode ${this.editMode ? '' : 'hidden'}">
         <h1>EDIT MODE</h1>
       </div>
