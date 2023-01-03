@@ -17,6 +17,7 @@ package com.vaadin.flow.server.frontend;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_JS;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TSX;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 import java.io.File;
@@ -30,7 +31,7 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.Version;
 
 /**
- * Generate <code>index.js</code> if it is missing in frontend folder.
+ * Generate <code>index.ts</code> if it is missing in frontend folder.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -65,8 +66,9 @@ public class TaskGenerateIndexTs extends AbstractTaskClientGenerator {
     protected boolean shouldGenerate() {
         File indexTs = new File(frontendDirectory, INDEX_TS);
         File indexJs = new File(frontendDirectory, INDEX_JS);
-        compareActualIndexTsOrJsWithIndexTempalate(indexTs, indexJs);
-        return !indexTs.exists() && !indexJs.exists();
+        File indexTsx = new File(frontendDirectory, INDEX_TSX);
+        compareActualIndexTsOrJsWithIndexTemplate(indexTs, indexJs);
+        return !indexTs.exists() && !indexJs.exists() && !indexTsx.exists();
     }
 
     @Override
@@ -108,7 +110,7 @@ public class TaskGenerateIndexTs extends AbstractTaskClientGenerator {
         return relativePath;
     }
 
-    private void compareActualIndexTsOrJsWithIndexTempalate(File indexTs,
+    private void compareActualIndexTsOrJsWithIndexTemplate(File indexTs,
             File indexJs) {
         if (indexTs.exists() || indexJs.exists()) {
             File indexFileExist = indexTs.exists() ? indexTs : indexJs;
