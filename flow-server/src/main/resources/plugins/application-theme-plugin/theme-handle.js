@@ -18,10 +18,10 @@
  * This file contains functions for look up and handle the theme resources
  * for application theme plugin.
  */
-const fs = require('fs');
-const path = require('path');
-const generateThemeFile = require('./theme-generator');
-const { copyStaticAssets, copyThemeResources } = require('./theme-copy');
+import { existsSync, writeFileSync, readFileSync } from 'fs';
+import { resolve } from 'path';
+import { generateThemeFile } from './theme-generator';
+import { copyStaticAssets, copyThemeResources } from './theme-copy';
 
 // matches theme name in './theme-my-theme.generated.js'
 const nameRegex = /theme-(.*)\.generated\.js/;
@@ -92,7 +92,7 @@ function findThemeFolderAndHandleTheme(themeName, options, logger) {
   let themeFound = false;
   for (let i = 0; i < options.themeProjectFolders.length; i++) {
     const themeProjectFolder = options.themeProjectFolders[i];
-    if (fs.existsSync(themeProjectFolder)) {
+    if (existsSync(themeProjectFolder)) {
       logger.debug("Searching themes folder '" + themeProjectFolder + "' for theme '" + themeName + "'");
       const handled = handleThemes(themeName, themeProjectFolder, options, logger);
       if (handled) {
@@ -111,8 +111,8 @@ function findThemeFolderAndHandleTheme(themeName, options, logger) {
     }
   }
 
-  if (fs.existsSync(options.themeResourceFolder)) {
-    if (themeFound && fs.existsSync(path.resolve(options.themeResourceFolder, themeName))) {
+  if (existsSync(options.themeResourceFolder)) {
+    if (themeFound && existsSync(resolve(options.themeResourceFolder, themeName))) {
       throw new Error(
         "Theme '" +
           themeName +
@@ -147,8 +147,8 @@ function findThemeFolderAndHandleTheme(themeName, options, logger) {
  * @returns true if theme was found else false.
  */
 function handleThemes(themeName, themesFolder, options, logger) {
-  const themeFolder = path.resolve(themesFolder, themeName);
-  if (fs.existsSync(themeFolder)) {
+  const themeFolder = resolve(themesFolder, themeName);
+  if (existsSync(themeFolder)) {
     logger.debug('Found theme ', themeName, ' in folder ', themeFolder);
 
     const themeProperties = getThemeProperties(themeFolder);
@@ -169,18 +169,18 @@ function handleThemes(themeName, themesFolder, options, logger) {
     copyThemeResources(themeFolder, options.projectStaticAssetsOutputFolder, logger);
     const themeFile = generateThemeFile(themeFolder, themeName, themeProperties, options);
 
-    fs.writeFileSync(path.resolve(options.frontendGeneratedFolder, 'theme-' + themeName + '.generated.js'), themeFile);
+    writeFileSync(resolve(options.frontendGeneratedFolder, 'theme-' + themeName + '.generated.js'), themeFile);
     return true;
   }
   return false;
 }
 
 function getThemeProperties(themeFolder) {
-  const themePropertyFile = path.resolve(themeFolder, 'theme.json');
-  if (!fs.existsSync(themePropertyFile)) {
+  const themePropertyFile = resolve(themeFolder, 'theme.json');
+  if (!existsSync(themePropertyFile)) {
     return {};
   }
-  const themePropertyFileAsString = fs.readFileSync(themePropertyFile);
+  const themePropertyFileAsString = readFileSync(themePropertyFile);
   if (themePropertyFileAsString.length === 0) {
     return {};
   }
@@ -202,11 +202,11 @@ function extractThemeName(frontendGeneratedFolder) {
         ' parameters.'
     );
   }
-  const generatedThemeFile = path.resolve(frontendGeneratedFolder, 'theme.js');
-  if (fs.existsSync(generatedThemeFile)) {
+  const generatedThemeFile = resolve(frontendGeneratedFolder, 'theme.js');
+  if (existsSync(generatedThemeFile)) {
     // read theme name from the 'generated/theme.js' as there we always
     // mark the used theme for webpack to handle.
-    const themeName = nameRegex.exec(fs.readFileSync(generatedThemeFile, { encoding: 'utf8' }))[1];
+    const themeName = nameRegex.exec(readFileSync(generatedThemeFile, { encoding: 'utf8' }))[1];
     if (!themeName) {
       throw new Error("Couldn't parse theme name from '" + generatedThemeFile + "'.");
     }
@@ -228,7 +228,7 @@ function extractThemeName(frontendGeneratedFolder) {
  */
 function findParentThemes(themeName, options) {
   const existingThemeFolders = [options.themeResourceFolder, ...options.themeProjectFolders].filter((folder) =>
-    fs.existsSync(folder)
+    existsSync(folder)
   );
   return collectParentThemes(themeName, existingThemeFolders, false);
 }
@@ -236,8 +236,8 @@ function findParentThemes(themeName, options) {
 function collectParentThemes(themeName, themeFolders, isParent) {
   let foundParentThemes = [];
   themeFolders.forEach((folder) => {
-    const themeFolder = path.resolve(folder, themeName);
-    if (fs.existsSync(themeFolder)) {
+    const themeFolder = resolve(folder, themeName);
+    if (existsSync(themeFolder)) {
       const themeProperties = getThemeProperties(themeFolder);
 
       if (themeProperties.parent) {
@@ -261,4 +261,4 @@ function collectParentThemes(themeName, themeFolders, isParent) {
   return foundParentThemes;
 }
 
-module.exports = { processThemeResources, extractThemeName, findParentThemes };
+export { processThemeResources, extractThemeName, findParentThemes };

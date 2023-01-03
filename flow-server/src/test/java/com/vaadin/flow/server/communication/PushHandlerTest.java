@@ -247,13 +247,13 @@ public class PushHandlerTest {
             Mockito.when(resource.getRequest()
                     .getParameter(ApplicationConstants.DEBUG_WINDOW_CONNECTION))
                     .thenReturn("");
-            Mockito.doNothing().when(handler).callWithService(Mockito.any(),
-                    Mockito.any());
+            Mockito.doNothing().when(handler)
+                    .callWithServiceAndSession(Mockito.any(), Mockito.any());
 
             handler.onConnect(resource);
 
             Mockito.verify(handler, Mockito.never())
-                    .callWithService(Mockito.any(), Mockito.any());
+                    .callWithServiceAndSession(Mockito.any(), Mockito.any());
             Mockito.verify(handler, Mockito.never()).callWithUi(Mockito.any(),
                     Mockito.any());
         });

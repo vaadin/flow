@@ -14,7 +14,7 @@
  * the License.
  */
 
-const { processThemeResources, extractThemeName, findParentThemes } = require('./theme-handle');
+import { processThemeResources, extractThemeName, findParentThemes } from './theme-handle';
 
 /**
  * The application theme plugin is for generating, collecting and copying of theme files for the application theme.
@@ -53,4 +53,4 @@ class ApplicationThemePlugin {
   }
 }
 
-module.exports = { ApplicationThemePlugin, processThemeResources, extractThemeName, findParentThemes };
+export { ApplicationThemePlugin, processThemeResources, extractThemeName, findParentThemes };
