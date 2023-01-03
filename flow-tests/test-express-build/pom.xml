@@ -9,13 +9,14 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>test-application-theme</artifactId>
-    <name>Flow Application Theme Test</name>
+    <artifactId>test-express-build</artifactId>
+    <name>Flow Express Build Tests</name>
     <packaging>pom</packaging>
 
     <modules>
-        <module>reusable-theme</module>
+        <module>test-dev-bundle</module>
     </modules>
+
     <profiles>
         <profile>
             <id>run-tests</id>
@@ -25,10 +26,8 @@
                 </property>
             </activation>
             <modules>
-                <module>test-theme-reusable-vite</module>
-                <module>test-reusable-as-parent-vite</module>
-                <module>test-theme-live-reload</module>
-                <module>test-theme-component-live-reload</module>
+                <module>test-dev-bundle-no-plugin</module>
+                <module>test-theme-dev-bundle</module>
             </modules>
         </profile>
     </profiles>

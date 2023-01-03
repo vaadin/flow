@@ -18,10 +18,10 @@
  * This file handles the generation of the '[theme-name].js' to
  * the themes/[theme-name] folder according to properties from 'theme.json'.
  */
-const glob = require('glob');
-const path = require('path');
-const fs = require('fs');
-const { checkModules } = require('./theme-copy');
+import { sync } from 'glob';
+import { resolve, basename } from 'path';
+import { existsSync, writeFileSync } from 'fs';
+import { checkModules } from './theme-copy';
 
 // Special folder inside a theme for component themes that go inside the component shadow root
 const themeComponentsFolder = 'components';
@@ -109,23 +109,22 @@ export const injectGlobalCss = (css, target, first) => {
 function generateThemeFile(themeFolder, themeName, themeProperties, options) {
   const productionMode = !options.devMode;
   const useDevServer = !options.useDevBundle;
-  const styles = path.resolve(themeFolder, stylesCssFile);
-  const document = path.resolve(themeFolder, documentCssFile);
+  const styles = resolve(themeFolder, stylesCssFile);
+  const document = resolve(themeFolder, documentCssFile);
   const autoInjectComponents = themeProperties.autoInjectComponents ?? true;
   let themeFile = headerImport;
   var componentsFiles;
 
   if (autoInjectComponents) {
-      componentsFiles = glob.sync('*.css', {
-        cwd: path.resolve(themeFolder, themeComponentsFolder),
-        nodir: true
-      });
+    componentsFiles = sync('*.css', {
+      cwd: resolve(themeFolder, themeComponentsFolder),
+      nodir: true
+    });
 
-      if (componentsFiles.length > 0) {
-        themeFile += "import { unsafeCSS, registerStyles } from '@vaadin/vaadin-themable-mixin/register-styles';\n";
-      }
+    if (componentsFiles.length > 0) {
+      themeFile += "import { unsafeCSS, registerStyles } from '@vaadin/vaadin-themable-mixin/register-styles';\n";
+    }
   }
-
 
   if (themeProperties.parent) {
     themeFile += `import {applyTheme as applyBaseTheme} from './theme-${themeProperties.parent}.generated.js';\n`;
@@ -146,11 +145,11 @@ function generateThemeFile(themeFolder, themeName, themeProperties, options) {
   const globalCssFlag = themeIdentifier + 'globalCss';
   const componentCssFlag = themeIdentifier + 'componentCss';
 
-  if (!fs.existsSync(styles)) {
+  if (!existsSync(styles)) {
     if (productionMode) {
       throw new Error(`styles.css file is missing and is needed for '${themeName}' in folder '${themeFolder}'`);
     }
-    fs.writeFileSync(
+    writeFileSync(
       styles,
       '/* Import your application global css files here or add the styles directly to this file */',
       'utf8'
@@ -158,7 +157,7 @@ function generateThemeFile(themeFolder, themeName, themeProperties, options) {
   }
 
   // styles.css will always be available as we write one if it doesn't exist.
-  let filename = path.basename(styles);
+  let filename = basename(styles);
   let variable = camelCase(filename);
   if (useDevServer) {
     imports.push(`import ${variable} from 'themes/${themeName}/${filename}?inline';\n`);
@@ -178,8 +177,8 @@ function generateThemeFile(themeFolder, themeName, themeProperties, options) {
   if (useDevServer) {
     globalCssCode.push(`injectGlobalCss(${variable}.toString(), target);\n    `);
   }
-  if (fs.existsSync(document)) {
-    filename = path.basename(document);
+  if (existsSync(document)) {
+    filename = basename(document);
     variable = camelCase(filename);
     imports.push(`import ${variable} from 'themes/${themeName}/${filename}?inline';\n`);
     globalCssCode.push(`injectGlobalCss(${variable}.toString(), document);\n    `);
@@ -226,7 +225,7 @@ function generateThemeFile(themeFolder, themeName, themeProperties, options) {
 
   if (autoInjectComponents) {
     componentsFiles.forEach((componentCss) => {
-      const filename = path.basename(componentCss);
+      const filename = basename(componentCss);
       const tag = filename.replace('.css', '');
       const variable = camelCase(filename);
       imports.push(`import ${variable} from 'themes/${themeName}/${themeComponentsFolder}/${filename}?inline';\n`);
@@ -314,4 +313,4 @@ function camelCase(str) {
     .replace(/\.|\-/g, '');
 }
 
-module.exports = generateThemeFile;
+export { generateThemeFile };
